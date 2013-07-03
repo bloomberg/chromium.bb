@@ -33,7 +33,7 @@ const FieldTranslationEntry eap_fields[] = {
   // { eap::kOuter, flimflam::kEapMethodProperty },
   { eap::kPassword, flimflam::kEapPasswordProperty },
   { eap::kSaveCredentials, flimflam::kSaveCredentialsProperty },
-  { eap::kServerCARef, flimflam::kEapCaCertNssProperty },
+  { eap::kServerCAPEMs, shill::kEapCaCertPemProperty },
   { eap::kUseSystemCAs, flimflam::kEapUseSystemCasProperty },
   { NULL }
 };
@@ -46,7 +46,7 @@ const FieldTranslationEntry ipsec_fields[] = {
   // { ipsec::kIKEVersion, flimflam::kL2tpIpsecIkeVersion },
   { ipsec::kPSK, flimflam::kL2tpIpsecPskProperty },
   { vpn::kSaveCredentials, flimflam::kSaveCredentialsProperty },
-  { ipsec::kServerCARef, flimflam::kL2tpIpsecCaCertNssProperty },
+  { ipsec::kServerCAPEMs, shill::kL2tpIpsecCaCertPemProperty },
   { NULL }
 };
 
@@ -78,7 +78,7 @@ const FieldTranslationEntry openvpn_fields[] = {
   { openvpn::kRemoteCertTLS, flimflam::kOpenVPNRemoteCertTLSProperty },
   { openvpn::kRenegSec, flimflam::kOpenVPNRenegSecProperty },
   { vpn::kSaveCredentials, flimflam::kSaveCredentialsProperty },
-  { openvpn::kServerCARef, flimflam::kOpenVPNCaCertNSSProperty },
+  { openvpn::kServerCAPEMs, shill::kOpenVPNCaCertPemProperty },
   { openvpn::kServerPollTimeout, flimflam::kOpenVPNServerPollTimeoutProperty },
   { openvpn::kShaper, flimflam::kOpenVPNShaperProperty },
   { openvpn::kStaticChallenge, flimflam::kOpenVPNStaticChallengeProperty },

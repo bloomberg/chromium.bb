@@ -19,14 +19,17 @@ CertificateHandler::~CertificateHandler() {
 bool CertificateHandler::ImportCertificates(
     const base::ListValue& certificates,
     onc::ONCSource source,
-    net::CertificateList* onc_trusted_certificates) {
+    net::CertificateList* onc_trusted_certificates,
+    CertsByGUID* imported_server_and_ca_certs) {
   VLOG(2) << "ONC file has " << certificates.GetSize() << " certificates";
 
   // Web trust is only granted to certificates imported by the user.
   bool allow_trust_imports = source == onc::ONC_SOURCE_USER_IMPORT;
   onc::CertificateImporter cert_importer(allow_trust_imports);
   if (cert_importer.ParseAndStoreCertificates(
-          certificates, onc_trusted_certificates) !=
+          certificates,
+          onc_trusted_certificates,
+          imported_server_and_ca_certs) !=
       onc::CertificateImporter::IMPORT_OK) {
     LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
                << onc::GetSourceAsString(source);

@@ -6,12 +6,14 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -48,8 +50,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kEapAnonymousIdentityProperty,
     PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY },
   { flimflam::kEapCaCertIdProperty, PROPERTY_INDEX_EAP_CA_CERT_ID },
-  { flimflam::kEapCaCertNssProperty, PROPERTY_INDEX_EAP_CA_CERT_NSS },
-  { flimflam::kEapCaCertProperty, PROPERTY_INDEX_EAP_CA_CERT },
+  { shill::kEapCaCertPemProperty, PROPERTY_INDEX_EAP_CA_CERT_PEM },
   { flimflam::kEapCertIdProperty, PROPERTY_INDEX_EAP_CERT_ID },
   { flimflam::kEapClientCertNssProperty, PROPERTY_INDEX_EAP_CLIENT_CERT_NSS },
   { flimflam::kEapClientCertProperty, PROPERTY_INDEX_EAP_CLIENT_CERT },
@@ -82,8 +83,8 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kIsActiveProperty, PROPERTY_INDEX_IS_ACTIVE },
   { flimflam::kL2tpIpsecAuthenticationType,
     PROPERTY_INDEX_IPSEC_AUTHENTICATIONTYPE },
-  { flimflam::kL2tpIpsecCaCertNssProperty,
-    PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS },
+  { shill::kL2tpIpsecCaCertPemProperty,
+    PROPERTY_INDEX_L2TPIPSEC_CA_CERT_PEM },
   { flimflam::kL2tpIpsecClientCertIdProperty,
     PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID },
   { flimflam::kL2tpIpsecClientCertSlotProp,
@@ -153,7 +154,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
     PROPERTY_INDEX_OPEN_VPN_AUTHNOCACHE },
   { flimflam::kOpenVPNAuthUserPassProperty,
     PROPERTY_INDEX_OPEN_VPN_AUTHUSERPASS },
-  { flimflam::kOpenVPNCaCertNSSProperty, PROPERTY_INDEX_OPEN_VPN_CACERT },
+  { shill::kOpenVPNCaCertPemProperty, PROPERTY_INDEX_OPEN_VPN_CA_CERT_PEM },
   { flimflam::kOpenVPNClientCertSlotProperty,
     PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_SLOT },
   { flimflam::kOpenVPNCipherProperty, PROPERTY_INDEX_OPEN_VPN_CIPHER },
@@ -1237,12 +1238,11 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       wifi_network->set_eap_client_cert_pkcs11_id(eap_client_cert_pkcs11_id);
       return true;
     }
-    case PROPERTY_INDEX_EAP_CA_CERT_NSS: {
-      std::string eap_server_ca_cert_nss_nickname;
-      if (!value.GetAsString(&eap_server_ca_cert_nss_nickname))
+    case PROPERTY_INDEX_EAP_CA_CERT_PEM: {
+      std::string ca_cert_pem;
+      if (!value.GetAsString(&ca_cert_pem))
         break;
-      wifi_network->set_eap_server_ca_cert_nss_nickname(
-          eap_server_ca_cert_nss_nickname);
+      wifi_network->set_eap_server_ca_cert_pem(ca_cert_pem);
       return true;
     }
     case PROPERTY_INDEX_EAP_USE_SYSTEM_CAS: {
@@ -1257,13 +1257,6 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       if (!value.GetAsString(&eap_passphrase))
         break;
       wifi_network->set_eap_passphrase(eap_passphrase);
-      return true;
-    }
-    case PROPERTY_INDEX_EAP_CA_CERT: {
-      std::string eap_cert_nickname;
-      if (!value.GetAsString(&eap_cert_nickname))
-        break;
-      wifi_network->set_eap_server_ca_cert_nss_nickname(eap_cert_nickname);
       return true;
     }
     case PROPERTY_INDEX_WIFI_AUTH_MODE:
@@ -1379,12 +1372,12 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
       network->set_provider_type(ParseProviderType(provider_type_string));
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS:
-    case PROPERTY_INDEX_OPEN_VPN_CACERT: {
-      std::string ca_cert_nss;
-      if (!value.GetAsString(&ca_cert_nss))
+    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_PEM:
+    case PROPERTY_INDEX_OPEN_VPN_CA_CERT_PEM: {
+      std::string ca_cert_pem;
+      if (!value.GetAsString(&ca_cert_pem))
         break;
-      network->set_ca_cert_nss(ca_cert_nss);
+      network->set_ca_cert_pem(ca_cert_pem);
       return true;
     }
     case PROPERTY_INDEX_L2TPIPSEC_PSK: {

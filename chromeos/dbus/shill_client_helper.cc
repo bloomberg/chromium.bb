@@ -384,6 +384,26 @@ void ShillClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
       writer->CloseContainer(&variant_writer);
       break;
     }
+    case base::Value::TYPE_LIST: {
+      const base::ListValue* list = NULL;
+      value.GetAsList(&list);
+      dbus::MessageWriter variant_writer(NULL);
+      writer->OpenVariant("as", &variant_writer);
+      dbus::MessageWriter array_writer(NULL);
+      variant_writer.OpenArray("s", &array_writer);
+      for (base::ListValue::const_iterator it = list->begin();
+           it != list->end(); ++it) {
+        const base::Value& value = **it;
+        LOG_IF(ERROR, value.GetType() != base::Value::TYPE_STRING)
+            << "Unexpected type " << value.GetType();
+        std::string value_string;
+        value.GetAsString(&value_string);
+        array_writer.AppendString(value_string);
+      }
+      variant_writer.CloseContainer(&array_writer);
+      writer->CloseContainer(&variant_writer);
+      break;
+    }
     case base::Value::TYPE_BOOLEAN:
     case base::Value::TYPE_INTEGER:
     case base::Value::TYPE_DOUBLE:

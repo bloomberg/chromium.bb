@@ -140,6 +140,7 @@ const char kEmailAddress[] = "EmailAddress";
 const char kEnrollmentURI[] = "EnrollmentURI";
 const char kGUID[] = "GUID";
 const char kIssuerCARef[] = "IssuerCARef";
+const char kIssuerCAPEMs[] = "IssuerCAPEMs";
 const char kIssuer[] = "Issuer";
 const char kLocality[] = "Locality";
 const char kNone[] = "None";
@@ -192,6 +193,7 @@ const char kPAP[] = "PAP";
 const char kPEAP[] = "PEAP";
 const char kPassword[] = "Password";
 const char kSaveCredentials[] = "SaveCredentials";
+const char kServerCAPEMs[] = "ServerCAPEMs";
 const char kServerCARef[] = "ServerCARef";
 const char kUseSystemCAs[] = "UseSystemCAs";
 }  // namespace eap
@@ -220,6 +222,7 @@ const char kGroup[] = "Group";
 const char kIKEVersion[] = "IKEVersion";
 const char kPSK[] = "PSK";
 const char kServerCARef[] = "ServerCARef";
+const char kServerCAPEMs[] = "ServerCAPEMs";
 const char kXAUTH[] = "XAUTH";
 }  // namespace ipsec
 
@@ -243,6 +246,8 @@ const char kRemoteCertKU[] = "RemoteCertKU";
 const char kRemoteCertTLS[] = "RemoteCertTLS";
 const char kRenegSec[] = "RenegSec";
 const char kServerCARef[] = "ServerCARef";
+const char kServerCAPEMs[] = "ServerCAPEMs";
+const char kServerCertPEM[] = "ServerCertPEM";
 const char kServerCertRef[] = "ServerCertRef";
 const char kServerPollTimeout[] = "ServerPollTimeout";
 const char kServer[] = "server";

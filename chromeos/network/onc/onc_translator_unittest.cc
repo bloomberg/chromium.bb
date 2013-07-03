@@ -44,15 +44,16 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         std::make_pair("managed_ethernet.onc", "shill_ethernet.json"),
         std::make_pair("valid_wifi_psk.onc", "shill_wifi_psk.json"),
-        std::make_pair("valid_wifi_clientcert.onc",
+        std::make_pair("wifi_clientcert_with_cert_pems.onc",
                        "shill_wifi_clientcert.json"),
         std::make_pair("valid_wifi_clientref.onc",
                        "shill_wifi_clientref.json"),
         std::make_pair("valid_l2tpipsec.onc", "shill_l2tpipsec.json"),
-        std::make_pair("valid_l2tpipsec_clientcert.onc",
+        std::make_pair("l2tpipsec_clientcert_with_cert_pems.onc",
                        "shill_l2tpipsec_clientcert.json"),
-        std::make_pair("valid_openvpn.onc", "shill_openvpn.json"),
-        std::make_pair("valid_openvpn_clientcert.onc",
+        std::make_pair("valid_openvpn_with_cert_pems.onc",
+                       "shill_openvpn.json"),
+        std::make_pair("openvpn_clientcert_with_cert_pems.onc",
                        "shill_openvpn_clientcert.json")));
 
 // First parameter: Filename of source Shill json.
@@ -87,7 +88,7 @@ INSTANTIATE_TEST_CASE_P(
          std::make_pair("shill_l2tpipsec.json",
                         "translation_of_shill_l2tpipsec.onc"),
          std::make_pair("shill_openvpn.json",
-                        "valid_openvpn.onc"),
+                        "translation_of_shill_openvpn.onc"),
          std::make_pair("shill_openvpn_with_errors.json",
                         "translation_of_shill_openvpn_with_errors.onc"),
          std::make_pair("shill_wifi_with_state.json",

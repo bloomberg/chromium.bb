@@ -1,0 +1,137 @@
+{
+  "OpenVPN and IssuerCARef": {
+    "WithCertRefs": [
+      {
+        "GUID": "{a3860e83-f03d-4cb1-bafa-789oij}",
+        "Type": "VPN",
+        "VPN": {
+          "Type": "OpenVPN",
+          "OpenVPN": {
+            "PushPeerInfo": true,
+            "Recommended" : [ "Username", "Password" ],
+            "RemoteCertEKU": "TLS Web Server Authentication",
+            "ServerCARef": "cert_google",
+            "ClientCertType": "Pattern",
+            "ClientCertPattern": {
+              "IssuerCARef": [
+                "cert_google",
+                "cert_webkit"
+              ],
+            }
+          }
+        },
+        "ProxySettings": {
+          "Type": "PAC",
+          "PAC": "http://proxycfg.my.domain/proxy.dat"
+        }
+      } ],
+    "WithResolvedRefs": [
+      {
+        "GUID": "{a3860e83-f03d-4cb1-bafa-789oij}",
+        "Type": "VPN",
+        "VPN": {
+          "Type": "OpenVPN",
+          "OpenVPN": {
+            "PushPeerInfo": true,
+            "Recommended" : [ "Username", "Password" ],
+            "RemoteCertEKU": "TLS Web Server Authentication",
+            "ServerCAPEMs":  [ 
+              "-----BEGIN CERTIFICATE-----\nMIIDITCCAoqgAwIBAgIQASo5dg0/T8kL570rz5UuejANBgkqhkiG9w0BAQUFADBM\nMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkg\nTHRkLjEWMBQGA1UEAxMNVGhhd3RlIFNHQyBDQTAeFw0wOTAzMjcyMjIwMDdaFw0x\nMDAzMjcyMjIwMDdaMGgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlh\nMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMRcw\nFQYDVQQDEw53d3cuZ29vZ2xlLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkC\ngYEA1rnhrbhhCx9OtjwJPavo4yu26KQ6eC/TUSAiRZXYAJEzmqeiSOowVyaXZsda\n7/GbDD/huX97w8fMr5zQHzyBFRBY/Aazv7ycArlR3PumuRdC5kbnIs9sJxD+VOaS\nbAxgdprO+H+suFoIStyxZL2gdEGyrI+GnRreWAn9bAol4HkCAwEAAaOB5zCB5DAo\nBgNVHSUEITAfBggrBgEFBQcDAQYIKwYBBQUHAwIGCWCGSAGG+EIEATA2BgNVHR8E\nLzAtMCugKaAnhiVodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlU0dDQ0EuY3Js\nMHIGCCsGAQUFBwEBBGYwZDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3AudGhhd3Rl\nLmNvbTA+BggrBgEFBQcwAoYyaHR0cDovL3d3dy50aGF3dGUuY29tL3JlcG9zaXRv\ncnkvVGhhd3RlX1NHQ19DQS5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQUF\nAAOBgQA5tvsRvDMsw5BI427DmzixQtEACVhjoOGYHIXy7xAdYE5RCWL1Bb2dT4ds\nmHIHgMNZSBTi1u/QjzNqaDH6t7uFzPfHR3tnkzzDFlGbb4cg/WdMK+pqSdsR0b3X\nlSJDegZ7TvY3jqK5zx+l0r07BJc5sw/6OLWvVSCIYJPy3tv/3w==\n-----END CERTIFICATE-----\n" 
+            ],
+            "ClientCertType": "Pattern",
+            "ClientCertPattern": {
+              "IssuerCAPEMs": [
+                "-----BEGIN CERTIFICATE-----\nMIIDITCCAoqgAwIBAgIQASo5dg0/T8kL570rz5UuejANBgkqhkiG9w0BAQUFADBM\nMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkg\nTHRkLjEWMBQGA1UEAxMNVGhhd3RlIFNHQyBDQTAeFw0wOTAzMjcyMjIwMDdaFw0x\nMDAzMjcyMjIwMDdaMGgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlh\nMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMRcw\nFQYDVQQDEw53d3cuZ29vZ2xlLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkC\ngYEA1rnhrbhhCx9OtjwJPavo4yu26KQ6eC/TUSAiRZXYAJEzmqeiSOowVyaXZsda\n7/GbDD/huX97w8fMr5zQHzyBFRBY/Aazv7ycArlR3PumuRdC5kbnIs9sJxD+VOaS\nbAxgdprO+H+suFoIStyxZL2gdEGyrI+GnRreWAn9bAol4HkCAwEAAaOB5zCB5DAo\nBgNVHSUEITAfBggrBgEFBQcDAQYIKwYBBQUHAwIGCWCGSAGG+EIEATA2BgNVHR8E\nLzAtMCugKaAnhiVodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlU0dDQ0EuY3Js\nMHIGCCsGAQUFBwEBBGYwZDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3AudGhhd3Rl\nLmNvbTA+BggrBgEFBQcwAoYyaHR0cDovL3d3dy50aGF3dGUuY29tL3JlcG9zaXRv\ncnkvVGhhd3RlX1NHQ19DQS5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQUF\nAAOBgQA5tvsRvDMsw5BI427DmzixQtEACVhjoOGYHIXy7xAdYE5RCWL1Bb2dT4ds\nmHIHgMNZSBTi1u/QjzNqaDH6t7uFzPfHR3tnkzzDFlGbb4cg/WdMK+pqSdsR0b3X\nlSJDegZ7TvY3jqK5zx+l0r07BJc5sw/6OLWvVSCIYJPy3tv/3w==\n-----END CERTIFICATE-----\n",
+                "-----BEGIN CERTIFICATE-----\nMIIFDTCCA/WgAwIBAgIDQ91jMA0GCSqGSIb3DQEBBQUAMIHKMQswCQYDVQQGEwJV\nUzEQMA4GA1UECBMHQXJpem9uYTETMBEGA1UEBxMKU2NvdHRzZGFsZTEaMBgGA1UE\nChMRR29EYWRkeS5jb20sIEluYy4xMzAxBgNVBAsTKmh0dHA6Ly9jZXJ0aWZpY2F0\nZXMuZ29kYWRkeS5jb20vcmVwb3NpdG9yeTEwMC4GA1UEAxMnR28gRGFkZHkgU2Vj\ndXJlIENlcnRpZmljYXRpb24gQXV0aG9yaXR5MREwDwYDVQQFEwgwNzk2OTI4NzAe\nFw0wODAzMTgyMzM1MTlaFw0xMTAzMTgyMzM1MTlaMHkxCzAJBgNVBAYTAlVTMRMw\nEQYDVQQIEwpDYWxpZm9ybmlhMRIwEAYDVQQHEwlDdXBlcnRpbm8xEzARBgNVBAoT\nCkFwcGxlIEluYy4xFTATBgNVBAsTDE1hYyBPUyBGb3JnZTEVMBMGA1UEAxMMKi53\nZWJraXQub3JnMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCnYnlB2ijywE/g\nJaqhLjswlLXJJjob4tDMopXikcDwQJ4nbr1u3ny2MFy4mwEvkgSh70qxbLF+js2m\n9EBzHyyWrf8qbQ66UoSDsDnuyTncHjTQ2F16Cayp7spl9oU6a+7kXF742tHOiEfN\nBiHguUvkB8tX3MqZVPcO1ReVBS7psQIDAQABo4IBzjCCAcowCQYDVR0TBAIwADAL\nBgNVHQ8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMFcGA1Ud\nHwRQME4wTKBKoEiGRmh0dHA6Ly9jZXJ0aWZpY2F0ZXMuZ29kYWRkeS5jb20vcmVw\nb3NpdG9yeS9nb2RhZGR5ZXh0ZW5kZWRpc3N1aW5nMy5jcmwwUgYDVR0gBEswSTBH\nBgtghkgBhv1tAQcXAjA4MDYGCCsGAQUFBwIBFipodHRwOi8vY2VydGlmaWNhdGVz\nLmdvZGFkZHkuY29tL3JlcG9zaXRvcnkwfwYIKwYBBQUHAQEEczBxMCMGCCsGAQUF\nBzABhhdodHRwOi8vb2NzcC5nb2RhZGR5LmNvbTBKBggrBgEFBQcwAoY+aHR0cDov\nL2NlcnRpZmljYXRlcy5nb2RhZGR5LmNvbS9yZXBvc2l0b3J5L2dkX2ludGVybWVk\naWF0ZS5jcnQwHQYDVR0OBBYEFEjfYDLMiQG23C/jc7WcFlgyaKnDMB8GA1UdIwQY\nMBaAFP2sYTKTbEXW4u6FX5q653aZaMznMCMGA1UdEQQcMBqCDCoud2Via2l0Lm9y\nZ4IKd2Via2l0Lm9yZzANBgkqhkiG9w0BAQUFAAOCAQEAHmrn4E/nTdBpfPiPmbQY\nlTYkDw6j6jQ39H3VkjVTcnY/afCCVuOUeh0aga+fx0MBZNN8DcgRTkrmGsMBdOg1\nh1xhqopGBr6YlSSeAePmoJjuNkRWjSOcZepVat9m7kXooOl9mrqUxcjES5j/mgEx\nbfkrWOfnKsVNu7vNDXDhrQP1/vSEcQjSvAR7JhyoD5zYEmpvK2ehA4CaEQvp4LWz\nuBlODKTZKzvCyiDTDKT/kxMf/LqUk4xkFS4oqVWMLEjT08FQaRnoNNPxBJ8KeiGH\nv7lZNy70caU+vs1wgxj4inKFRR8IAW839St76rmLo8z9NVLdZt5PMMVzgbboPNhI\nig==\n-----END CERTIFICATE-----\n"
+              ],
+            }
+          }
+        },
+        "ProxySettings": {
+          "Type": "PAC",
+          "PAC": "http://proxycfg.my.domain/proxy.dat"
+        }
+      } ]
+  },
+  "EAP and L2TP without ref": {
+    "WithCertRefs": 
+    [ { "WiFi": {
+          "EAP": {
+            "ServerCARef": "cert_google",
+            "ClientCertType": "Pattern",
+            "ClientCertPattern": {
+              "EnrollmentURI": [
+                "http://youtu.be/dQw4w9WgXcQ",
+                "chrome-extension://abc/keygen-cert.html"
+              ]
+            }
+          }
+        }
+      },
+      { "VPN": {
+          "IPsec": {
+            "SaveCredentials": true,
+          }
+        }
+      }
+    ],
+    "WithResolvedRefs": 
+    [ { "WiFi": {
+          "EAP": {
+            "ServerCAPEMs": [ 
+              "-----BEGIN CERTIFICATE-----\nMIIDITCCAoqgAwIBAgIQASo5dg0/T8kL570rz5UuejANBgkqhkiG9w0BAQUFADBM\nMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkg\nTHRkLjEWMBQGA1UEAxMNVGhhd3RlIFNHQyBDQTAeFw0wOTAzMjcyMjIwMDdaFw0x\nMDAzMjcyMjIwMDdaMGgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlh\nMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMRcw\nFQYDVQQDEw53d3cuZ29vZ2xlLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkC\ngYEA1rnhrbhhCx9OtjwJPavo4yu26KQ6eC/TUSAiRZXYAJEzmqeiSOowVyaXZsda\n7/GbDD/huX97w8fMr5zQHzyBFRBY/Aazv7ycArlR3PumuRdC5kbnIs9sJxD+VOaS\nbAxgdprO+H+suFoIStyxZL2gdEGyrI+GnRreWAn9bAol4HkCAwEAAaOB5zCB5DAo\nBgNVHSUEITAfBggrBgEFBQcDAQYIKwYBBQUHAwIGCWCGSAGG+EIEATA2BgNVHR8E\nLzAtMCugKaAnhiVodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlU0dDQ0EuY3Js\nMHIGCCsGAQUFBwEBBGYwZDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3AudGhhd3Rl\nLmNvbTA+BggrBgEFBQcwAoYyaHR0cDovL3d3dy50aGF3dGUuY29tL3JlcG9zaXRv\ncnkvVGhhd3RlX1NHQ19DQS5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQUF\nAAOBgQA5tvsRvDMsw5BI427DmzixQtEACVhjoOGYHIXy7xAdYE5RCWL1Bb2dT4ds\nmHIHgMNZSBTi1u/QjzNqaDH6t7uFzPfHR3tnkzzDFlGbb4cg/WdMK+pqSdsR0b3X\nlSJDegZ7TvY3jqK5zx+l0r07BJc5sw/6OLWvVSCIYJPy3tv/3w==\n-----END CERTIFICATE-----\n"
+            ],
+            "ClientCertType": "Pattern",
+            "ClientCertPattern": {
+              "EnrollmentURI": [
+                "http://youtu.be/dQw4w9WgXcQ",
+                "chrome-extension://abc/keygen-cert.html"
+              ]
+            }
+          }
+        }
+      },
+      { "VPN": {
+          "IPsec": {
+            "SaveCredentials": true,
+          }
+        }
+      }
+    ]
+  },
+  "L2TP and EAP with unknown ref": {
+    "WithCertRefs": 
+    [ { "WiFi": {
+          "EAP": {
+            "ServerCARef": "cert_unknown",
+            "ClientCertType": "Pattern",
+            "ClientCertPattern": {
+              "EnrollmentURI": [
+                "http://youtu.be/dQw4w9WgXcQ",
+                "chrome-extension://abc/keygen-cert.html"
+              ]
+            }
+          }
+        }
+      },
+      { "VPN": {
+          "IPsec": {
+            "SaveCredentials": true,
+            "ServerCARef": "cert_google"
+          }
+        }
+      }
+    ],
+    "WithResolvedRefs": 
+    [ { "VPN": {
+          "IPsec": {
+            "SaveCredentials": true,
+            "ServerCAPEMs": [ 
+              "-----BEGIN CERTIFICATE-----\nMIIDITCCAoqgAwIBAgIQASo5dg0/T8kL570rz5UuejANBgkqhkiG9w0BAQUFADBM\nMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkg\nTHRkLjEWMBQGA1UEAxMNVGhhd3RlIFNHQyBDQTAeFw0wOTAzMjcyMjIwMDdaFw0x\nMDAzMjcyMjIwMDdaMGgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlh\nMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMRcw\nFQYDVQQDEw53d3cuZ29vZ2xlLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkC\ngYEA1rnhrbhhCx9OtjwJPavo4yu26KQ6eC/TUSAiRZXYAJEzmqeiSOowVyaXZsda\n7/GbDD/huX97w8fMr5zQHzyBFRBY/Aazv7ycArlR3PumuRdC5kbnIs9sJxD+VOaS\nbAxgdprO+H+suFoIStyxZL2gdEGyrI+GnRreWAn9bAol4HkCAwEAAaOB5zCB5DAo\nBgNVHSUEITAfBggrBgEFBQcDAQYIKwYBBQUHAwIGCWCGSAGG+EIEATA2BgNVHR8E\nLzAtMCugKaAnhiVodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlU0dDQ0EuY3Js\nMHIGCCsGAQUFBwEBBGYwZDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3AudGhhd3Rl\nLmNvbTA+BggrBgEFBQcwAoYyaHR0cDovL3d3dy50aGF3dGUuY29tL3JlcG9zaXRv\ncnkvVGhhd3RlX1NHQ19DQS5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQUF\nAAOBgQA5tvsRvDMsw5BI427DmzixQtEACVhjoOGYHIXy7xAdYE5RCWL1Bb2dT4ds\nmHIHgMNZSBTi1u/QjzNqaDH6t7uFzPfHR3tnkzzDFlGbb4cg/WdMK+pqSdsR0b3X\nlSJDegZ7TvY3jqK5zx+l0r07BJc5sw/6OLWvVSCIYJPy3tv/3w==\n-----END CERTIFICATE-----\n"
+            ],
+          }
+        }
+      }
+    ]
+  }
+}

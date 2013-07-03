@@ -1568,22 +1568,31 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   std::string error;
   if (!chromeos::onc::ParseAndValidateOncForImport(
           onc_blob, onc_source, passcode, &network_configs, &certificates)) {
-    error = "Errors occurred during the ONC parsing.";
+    error = "Errors occurred during the ONC parsing. ";
+    LOG(ERROR) << error;
+  }
+
+  chromeos::CertificateHandler::CertsByGUID imported_server_and_ca_certs;
+  chromeos::CertificateHandler certificate_handler;
+  if (!certificate_handler.ImportCertificates(certificates, onc_source, NULL,
+                                              &imported_server_and_ca_certs)) {
+    error += "Some certificates couldn't be imported. ";
+    LOG(ERROR) << error;
+  }
+
+  if (!chromeos::onc::ResolveServerCertRefsInNetworks(
+          imported_server_and_ca_certs, &network_configs)) {
+    error += "Some certificate references could not be resolved. ";
     LOG(ERROR) << error;
   }
 
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   network_library->LoadOncNetworks(network_configs, onc_source);
+
   // Now that we've added the networks, we need to rescan them so they'll be
   // available from the menu more immediately.
   network_library->RequestNetworkScan();
-
-  chromeos::CertificateHandler certificate_handler;
-  if (!certificate_handler.ImportCertificates(certificates, onc_source, NULL)) {
-    error += "Some certificates couldn't be imported.";
-    LOG(ERROR) << error;
-  }
 
   SendJavascriptCommand("receivedONCFileParse",
                         Value::CreateStringValue(error));

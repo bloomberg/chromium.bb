@@ -165,11 +165,20 @@ void NetworkConfigurationUpdaterImplCros::ApplyNetworkConfiguration(
   ParseAndValidateOncForImport(
       onc_blob, onc_source, "", &network_configs, &certificates);
 
-  network_library_->LoadOncNetworks(network_configs, onc_source);
-
+  chromeos::CertificateHandler::CertsByGUID imported_server_and_ca_certs;
   scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList);
   certificate_handler_->ImportCertificates(
-      certificates, onc_source, web_trust_certs.get());
+      certificates, onc_source, web_trust_certs.get(),
+      &imported_server_and_ca_certs);
+
+  if (!chromeos::onc::ResolveServerCertRefsInNetworks(
+          imported_server_and_ca_certs, &network_configs)) {
+    LOG(ERROR) << "Some certificate references in the ONC policy for source "
+               << chromeos::onc::GetSourceAsString(onc_source)
+               << " could not be resolved.";
+  }
+
+  network_library_->LoadOncNetworks(network_configs, onc_source);
 
   if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY)
     SetTrustAnchors(web_trust_certs.Pass());

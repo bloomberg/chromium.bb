@@ -33,7 +33,8 @@ CertificateImporter::CertificateImporter(bool allow_trust_imports)
 
 CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
     const base::ListValue& certificates,
-    net::CertificateList* onc_trusted_certificates) {
+    net::CertificateList* onc_trusted_certificates,
+    CertsByGUID* imported_server_and_ca_certs) {
   size_t successful_imports = 0;
   for (size_t i = 0; i < certificates.GetSize(); ++i) {
     const base::DictionaryValue* certificate = NULL;
@@ -42,7 +43,8 @@ CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
 
     VLOG(2) << "Parsing certificate at index " << i << ": " << *certificate;
 
-    if (!ParseAndStoreCertificate(*certificate, onc_trusted_certificates)) {
+    if (!ParseAndStoreCertificate(*certificate, onc_trusted_certificates,
+                                  imported_server_and_ca_certs)) {
       ONC_LOG_ERROR(
           base::StringPrintf("Cannot parse certificate at index %zu", i));
     } else {
@@ -120,7 +122,8 @@ bool CertificateImporter::DeleteCertAndKeyByNickname(const std::string& label) {
 
 bool CertificateImporter::ParseAndStoreCertificate(
     const base::DictionaryValue& certificate,
-    net::CertificateList* onc_trusted_certificates) {
+    net::CertificateList* onc_trusted_certificates,
+    CertsByGUID* imported_server_and_ca_certs) {
   // Get out the attributes of the given certificate.
   std::string guid;
   certificate.GetStringWithoutPathExpansion(certificate::kGUID, &guid);
@@ -141,8 +144,9 @@ bool CertificateImporter::ParseAndStoreCertificate(
   certificate.GetStringWithoutPathExpansion(certificate::kType, &cert_type);
   if (cert_type == certificate::kServer ||
       cert_type == certificate::kAuthority) {
-    return ParseServerOrCaCertificate(
-        cert_type, guid, certificate, onc_trusted_certificates);
+    return ParseServerOrCaCertificate(cert_type, guid, certificate,
+                                      onc_trusted_certificates,
+                                      imported_server_and_ca_certs);
   } else if (cert_type == certificate::kClient) {
     return ParseClientCertificate(guid, certificate);
   }
@@ -155,7 +159,8 @@ bool CertificateImporter::ParseServerOrCaCertificate(
     const std::string& cert_type,
     const std::string& guid,
     const base::DictionaryValue& certificate,
-    net::CertificateList* onc_trusted_certificates) {
+    net::CertificateList* onc_trusted_certificates,
+    CertsByGUID* imported_server_and_ca_certs) {
   bool web_trust_flag = false;
   const base::ListValue* trust_list = NULL;
   if (certificate.GetListWithoutPathExpansion(certificate::kTrustBits,
@@ -198,84 +203,69 @@ bool CertificateImporter::ParseServerOrCaCertificate(
   }
 
   scoped_refptr<net::X509Certificate> x509_cert =
-      DecodePEMCertificate(x509_data, guid);
+      DecodePEMCertificate(x509_data);
   if (!x509_cert.get()) {
     ONC_LOG_ERROR("Unable to create certificate from PEM encoding, type: " +
                   cert_type);
     return false;
   }
 
-  // Due to a mismatch regarding cert identity between NSS (cert identity is
-  // determined by the raw bytes) and ONC (cert identity is determined by
-  // GUIDs), we have to special-case a number of situations here:
-  //
-  // a) The cert bits we're trying to insert are already present in the NSS cert
-  //    store. This is indicated by the isperm bit in CERTCertificateStr. Since
-  //    we might have to update the nick name, we just delete the existing cert
-  //    and reimport the cert bits.
-  // b) NSS gives us an actual temporary certificate. In this case, there is no
-  //    identical certificate known to NSS, so we can safely import the
-  //    certificate. The GUID being imported may still be on a different
-  //    certificate, and we could jump through hoops to reimport the existing
-  //    certificate with a different nickname. However, that would mean lots of
-  //    effort for a case that's pretty much illegal (reusing GUIDs contradicts
-  //    the intention of GUIDs), so we just report an error.
-  //
-  // TODO(mnissler, gspencer): We should probably switch to a mode where we
-  // keep our own database for mapping GUIDs to certs in order to enable several
-  // GUIDs to map to the same cert. See http://crosbug.com/26073.
+  net::NSSCertDatabase::TrustBits trust = (import_with_ssl_trust ?
+                                           net::NSSCertDatabase::TRUSTED_SSL :
+                                           net::NSSCertDatabase::TRUST_DEFAULT);
+
   net::NSSCertDatabase* cert_database = net::NSSCertDatabase::GetInstance();
   if (x509_cert->os_cert_handle()->isperm) {
-    if (!cert_database->DeleteCertAndKey(x509_cert.get())) {
-      ONC_LOG_ERROR("Unable to delete X509 certificate.");
+    net::CertType net_cert_type =
+        cert_type == certificate::kServer ? net::SERVER_CERT : net::CA_CERT;
+    VLOG(1) << "Certificate is already installed.";
+    net::NSSCertDatabase::TrustBits missing_trust_bits =
+        trust & ~cert_database->GetCertTrust(x509_cert.get(), net_cert_type);
+    if (missing_trust_bits) {
+      std::string error_reason;
+      bool success = false;
+      if (cert_database->IsReadOnly(x509_cert.get())) {
+        error_reason = " Certificate is stored read-only.";
+      } else {
+        success = cert_database->SetCertTrust(x509_cert.get(),
+                                              net_cert_type,
+                                              trust);
+      }
+      if (!success) {
+        ONC_LOG_ERROR("Certificate of type " + cert_type +
+                      " was already present, but trust couldn't be set." +
+                      error_reason);
+      }
+    }
+  } else {
+    net::CertificateList cert_list;
+    cert_list.push_back(x509_cert);
+    net::NSSCertDatabase::ImportCertFailureList failures;
+    bool success = false;
+    if (cert_type == certificate::kServer)
+      success = cert_database->ImportServerCert(cert_list, trust, &failures);
+    else  // Authority cert
+      success = cert_database->ImportCACerts(cert_list, trust, &failures);
+
+    if (!failures.empty()) {
+      ONC_LOG_ERROR(
+          base::StringPrintf("Error ( %s ) importing %s certificate",
+                             net::ErrorToString(failures[0].net_error),
+                             cert_type.c_str()));
       return false;
     }
 
-    // Reload the cert here to get an actual temporary cert instance.
-    x509_cert = DecodePEMCertificate(x509_data, guid);
-    if (!x509_cert.get()) {
-      ONC_LOG_ERROR("Unable to create X509 certificate from bytes.");
+    if (!success) {
+      ONC_LOG_ERROR("Unknown error importing " + cert_type + " certificate.");
       return false;
     }
-    DCHECK(!x509_cert->os_cert_handle()->isperm);
-    DCHECK(x509_cert->os_cert_handle()->istemp);
-  }
-
-  // Make sure the GUID is not already taken. Note that for the reimport case we
-  // have removed the existing cert above.
-  net::CertificateList certs;
-  ListCertsWithNickname(guid, &certs);
-  if (!certs.empty()) {
-    ONC_LOG_ERROR("Certificate GUID is already in use: " + guid);
-    return false;
-  }
-
-  net::CertificateList cert_list;
-  cert_list.push_back(x509_cert);
-  net::NSSCertDatabase::ImportCertFailureList failures;
-  bool success = false;
-  net::NSSCertDatabase::TrustBits trust = import_with_ssl_trust ?
-                                          net::NSSCertDatabase::TRUSTED_SSL :
-                                          net::NSSCertDatabase::TRUST_DEFAULT;
-  if (cert_type == certificate::kServer) {
-    success = cert_database->ImportServerCert(cert_list, trust, &failures);
-  } else {  // Authority cert
-    success = cert_database->ImportCACerts(cert_list, trust, &failures);
-  }
-
-  if (!failures.empty()) {
-    ONC_LOG_ERROR(base::StringPrintf("Error ( %s ) importing %s certificate",
-                                     net::ErrorToString(failures[0].net_error),
-                                     cert_type.c_str()));
-    return false;
-  }
-  if (!success) {
-    ONC_LOG_ERROR("Unknown error importing " + cert_type + " certificate.");
-    return false;
   }
 
   if (web_trust_flag && onc_trusted_certificates)
     onc_trusted_certificates->push_back(x509_cert);
+
+  if (imported_server_and_ca_certs)
+    (*imported_server_and_ca_certs)[guid] = x509_cert;
 
   return true;
 }

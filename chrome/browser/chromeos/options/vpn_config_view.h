@@ -106,7 +106,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   const std::string GetUserPassphrase() const;
   const std::string GetOTP() const;
   const std::string GetGroupName() const;
-  const std::string GetServerCACertNssNickname() const;
+  const std::string GetServerCACertPEM() const;
   const std::string GetUserCertID() const;
   bool GetSaveCredentials() const;
 

@@ -681,7 +681,7 @@ bool WifiConfigView::Login() {
       chromeos::NetworkLibrary::EAPConfigData config_data;
       config_data.method = GetEapMethod();
       config_data.auth = GetEapPhase2Auth();
-      config_data.server_ca_cert_nss_nickname = GetEapServerCaCertNssNickname();
+      config_data.server_ca_cert_pem = GetEapServerCaCertPEM();
       config_data.use_system_cas = GetEapUseSystemCas();
       config_data.client_cert_pkcs11_id = GetEapClientCertPkcs11Id();
       config_data.identity = GetEapIdentity();
@@ -708,7 +708,7 @@ bool WifiConfigView::Login() {
       DCHECK(method != EAP_METHOD_UNKNOWN);
       wifi->SetEAPMethod(method);
       wifi->SetEAPPhase2Auth(GetEapPhase2Auth());
-      wifi->SetEAPServerCaCertNssNickname(GetEapServerCaCertNssNickname());
+      wifi->SetEAPServerCaCertPEM(GetEapServerCaCertPEM());
       wifi->SetEAPUseSystemCAs(GetEapUseSystemCas());
       wifi->SetEAPClientCertPkcs11Id(GetEapClientCertPkcs11Id());
       wifi->SetEAPIdentity(GetEapIdentity());
@@ -799,7 +799,7 @@ EAPPhase2Auth WifiConfigView::GetEapPhase2Auth() const {
   }
 }
 
-std::string WifiConfigView::GetEapServerCaCertNssNickname() const {
+std::string WifiConfigView::GetEapServerCaCertPEM() const {
   DCHECK(server_ca_cert_combobox_);
   int index = server_ca_cert_combobox_->selected_index();
   if (index == 0) {
@@ -810,7 +810,7 @@ std::string WifiConfigView::GetEapServerCaCertNssNickname() const {
     return std::string();
   } else {
     int cert_index = index - 1;
-    return CertLibrary::Get()->GetCertNicknameAt(
+    return CertLibrary::Get()->GetCertPEMAt(
         CertLibrary::CERT_TYPE_SERVER_CA, cert_index);
   }
 }
@@ -1180,9 +1180,9 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
     // Server CA certificate.
     if (CaCertActive()) {
-      const std::string& nss_nickname =
-          (wifi ? wifi->eap_server_ca_cert_nss_nickname() : std::string());
-      if (nss_nickname.empty()) {
+      const std::string& ca_cert_pem =
+          (wifi ? wifi->eap_server_ca_cert_pem() : std::string());
+      if (ca_cert_pem.empty()) {
         if (wifi->eap_use_system_cas()) {
           // "Default".
           server_ca_cert_combobox_->SetSelectedIndex(0);
@@ -1193,8 +1193,8 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
         }
       } else {
         // Select the certificate if available.
-        int cert_index = CertLibrary::Get()->GetCertIndexByNickname(
-            CertLibrary::CERT_TYPE_SERVER_CA, nss_nickname);
+        int cert_index = CertLibrary::Get()->GetCertIndexByPEM(
+            CertLibrary::CERT_TYPE_SERVER_CA, ca_cert_pem);
         if (cert_index >= 0) {
           // Skip item for "Default".
           server_ca_cert_combobox_->SetSelectedIndex(1 + cert_index);

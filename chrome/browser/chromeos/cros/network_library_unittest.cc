@@ -154,13 +154,15 @@ class NetworkLibraryStubTest : public ::testing::Test {
                                 std::string shill_json,
                                 onc::ONCSource source,
                                 bool expect_successful_import) {
-    MockUserManager* mock_user_manager = new MockUserManager;
+    MockUserManager* mock_user_manager =
+        new ::testing::StrictMock<MockUserManager>;
     // Takes ownership of |mock_user_manager|.
     ScopedUserManagerEnabler user_manager_enabler(mock_user_manager);
     mock_user_manager->SetActiveUser("madmax@my.domain.com");
     EXPECT_CALL(*mock_user_manager, IsUserLoggedIn())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_user_manager, Shutdown());
 
     scoped_ptr<base::DictionaryValue> onc_blob =
         onc::test_utils::ReadTestDictionary(onc_file);
@@ -289,14 +291,14 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectWifi) {
 
 TEST_F(NetworkLibraryStubTest, NetworkConnectWifiWithCertPattern) {
   scoped_ptr<base::DictionaryValue> onc_root =
-      onc::test_utils::ReadTestDictionary("toplevel_wifi_eap_clientcert.onc");
+      onc::test_utils::ReadTestDictionary("certificate-client.onc");
   base::ListValue* certificates;
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
   onc::CertificateImporter importer(true /* allow trust imports */);
   ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
-            importer.ParseAndStoreCertificates(*certificates, NULL));
+            importer.ParseAndStoreCertificates(*certificates, NULL, NULL));
 
   WifiNetwork* wifi = cros_->FindWifiNetworkByPath("wifi_cert_pattern");
 
@@ -318,14 +320,14 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectWifiWithCertPattern) {
 
 TEST_F(NetworkLibraryStubTest, NetworkConnectVPNWithCertPattern) {
   scoped_ptr<base::DictionaryValue> onc_root =
-      onc::test_utils::ReadTestDictionary("toplevel_openvpn_clientcert.onc");
+      onc::test_utils::ReadTestDictionary("certificate-client.onc");
   base::ListValue* certificates;
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
   onc::CertificateImporter importer(true /* allow trust imports */);
   ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
-            importer.ParseAndStoreCertificates(*certificates, NULL));
+            importer.ParseAndStoreCertificates(*certificates, NULL, NULL));
 
   VirtualNetwork* vpn = cros_->FindVirtualNetworkByPath("vpn_cert_pattern");
 
@@ -404,10 +406,10 @@ INSTANTIATE_TEST_CASE_P(
     LoadOncNetworksTest,
     LoadOncNetworksTest,
     ::testing::Values(
-         ImportParams("managed_toplevel1.onc",
+         ImportParams("managed_toplevel1_with_cert_pems.onc",
                       "chromeos/net/shill_for_managed_toplevel1.json",
                       onc::ONC_SOURCE_USER_POLICY),
-         ImportParams("managed_toplevel2.onc",
+         ImportParams("managed_toplevel2_with_cert_pems.onc",
                       "chromeos/net/shill_for_managed_toplevel2.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("managed_toplevel_l2tpipsec.onc",
@@ -429,10 +431,10 @@ INSTANTIATE_TEST_CASE_P(
                       "chromeos/net/shill_for_toplevel_wifi_leap.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams(
-            "toplevel_wifi_eap_clientcert.onc",
+            "toplevel_wifi_eap_clientcert_with_cert_pems.onc",
             "chromeos/net/shill_for_toplevel_wifi_eap_clientcert.json",
             onc::ONC_SOURCE_USER_POLICY),
-         ImportParams("toplevel_openvpn_clientcert.onc",
+         ImportParams("toplevel_openvpn_clientcert_with_cert_pems.onc",
                       "chromeos/net/shill_for_toplevel_openvpn_clientcert.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("toplevel_wifi_remove.onc",

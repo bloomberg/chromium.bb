@@ -14,7 +14,6 @@
     // Int instead of String.
     "OpenVPN.ServerPollTimeout": 10,
     "OpenVPN.RemoteCertKU": "e0",
-    "OpenVPN.CACertNSS": "{14ff4d51-64c1-4c86-a622-054xyz}",
     "OpenVPN.RemoteCertTLS": "server",
     "OpenVPN.Port": "443",
     "OpenVPN.TLSRemote": "my.domain.com",

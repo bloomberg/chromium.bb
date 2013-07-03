@@ -19,6 +19,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"
 #include "grit/generated_resources.h"
@@ -59,6 +60,16 @@ string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
         issued_by,
         issued_to);
   }
+}
+
+std::string CertToPEM(const net::X509Certificate& cert) {
+  std::string pem_encoded_cert;
+  if (!net::X509Certificate::GetPEMEncoded(cert.os_cert_handle(),
+                                           &pem_encoded_cert)) {
+    LOG(ERROR) << "Couldn't PEM-encode certificate";
+    return std::string();
+  }
+  return pem_encoded_cert;
 }
 
 }  // namespace
@@ -148,9 +159,8 @@ string16 CertLibrary::GetCertDisplayStringAt(CertType type, int index) const {
   return GetDisplayString(cert, hardware_backed);
 }
 
-std::string CertLibrary::GetCertNicknameAt(CertType type, int index) const {
-  net::X509Certificate* cert = GetCertificateAt(type, index);
-  return x509_certificate_model::GetNickname(cert->os_cert_handle());
+std::string CertLibrary::GetCertPEMAt(CertType type, int index) const {
+  return CertToPEM(*GetCertificateAt(type, index));
 }
 
 std::string CertLibrary::GetCertPkcs11IdAt(CertType type, int index) const {
@@ -168,17 +178,16 @@ bool CertLibrary::IsCertHardwareBackedAt(CertType type, int index) const {
       NetworkHandler::Get()->cert_loader()->tpm_token_name();
 }
 
-int CertLibrary::GetCertIndexByNickname(CertType type,
-                                        const std::string& nickname) const {
+int CertLibrary::GetCertIndexByPEM(CertType type,
+                                   const std::string& pem_encoded) const {
   int num_certs = NumCertificates(type);
   for (int index = 0; index < num_certs; ++index) {
     net::X509Certificate* cert = GetCertificateAt(type, index);
-    net::X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
-    std::string nick = x509_certificate_model::GetNickname(cert_handle);
-    if (nick == nickname)
-      return index;
+    if (CertToPEM(*cert) != pem_encoded)
+      continue;
+    return index;
   }
-  return -1;  // Not found.
+  return -1;
 }
 
 int CertLibrary::GetCertIndexByPkcs11Id(CertType type,
@@ -272,4 +281,4 @@ const net::CertificateList& CertLibrary::GetCertificateListForType(
   return certs_;
 }
 
-}  // chromeos
+}  // namespace chromeos

@@ -8,7 +8,7 @@
     "Provider.Host": "policys host",
     "Provider.Type": "openvpn",
     "Type": "vpn",
-    "UIData": "{\"certificate_pattern\":{\"IssuerCARef\":[\"openvpn-test-ca\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
+    "UIData": "{\"certificate_pattern\":{\"IssuerCAPEMs\":[\"pem1\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
   },
   "Fake Ethernet": {
     "GUID": "guid",

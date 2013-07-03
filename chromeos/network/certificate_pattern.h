@@ -82,9 +82,6 @@ class CHROMEOS_EXPORT CertificatePattern {
   // Clears out all the values in this pattern (so Empty returns true).
   void Clear();
 
-  void set_issuer_ca_ref_list(const std::vector<std::string>& ref_list) {
-    issuer_ca_ref_list_ = ref_list;
-  }
   void set_issuer(const IssuerSubjectPattern& issuer) { issuer_ = issuer; }
   void set_subject(const IssuerSubjectPattern& subject) { subject_ = subject; }
   void set_enrollment_uri_list(const std::vector<std::string>& uri_list) {
@@ -97,8 +94,8 @@ class CHROMEOS_EXPORT CertificatePattern {
   const IssuerSubjectPattern& subject() const {
     return subject_;
   }
-  const std::vector<std::string>& issuer_ca_ref_list() const {
-    return issuer_ca_ref_list_;
+  const std::vector<std::string>& issuer_ca_pems() const {
+    return issuer_ca_pems_;
   }
   const std::vector<std::string>& enrollment_uri_list() const {
     return enrollment_uri_list_;
@@ -113,7 +110,7 @@ class CHROMEOS_EXPORT CertificatePattern {
   bool CopyFromDictionary(const base::DictionaryValue& dictionary);
 
  private:
-  std::vector<std::string> issuer_ca_ref_list_;
+  std::vector<std::string> issuer_ca_pems_;
   IssuerSubjectPattern issuer_;
   IssuerSubjectPattern subject_;
   std::vector<std::string> enrollment_uri_list_;

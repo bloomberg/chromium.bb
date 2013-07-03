@@ -19,6 +19,7 @@
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
 #include "net/cert/pem_tokenizer.h"
+#include "net/cert/x509_certificate.h"
 
 #define ONC_LOG_WARNING(message) NET_LOG_WARNING("ONC", message)
 #define ONC_LOG_ERROR(message) NET_LOG_ERROR("ONC", message)
@@ -347,9 +348,9 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   return success;
 }
 
-scoped_refptr<net::X509Certificate> DecodePEMCertificate(
-    const std::string& pem_encoded,
-    const std::string& nickname) {
+namespace {
+
+std::string DecodePEM(const std::string& pem_encoded) {
   // The PEM block header used for DER certificates
   static const char kCertificateHeader[] = "CERTIFICATE";
   // This is an older PEM marker for DER certificates.
@@ -369,17 +370,185 @@ scoped_refptr<net::X509Certificate> DecodePEMCertificate(
     // to be no white space, and it has to only contain the base64-encoded data.
     if (!base::Base64Decode(pem_encoded, &decoded)) {
       LOG(ERROR) << "Unable to base64 decode X509 data: " << pem_encoded;
-      return scoped_refptr<net::X509Certificate>();
+      return std::string();
     }
   }
+  return decoded;
+}
 
+}  // namespace
+
+scoped_refptr<net::X509Certificate> DecodePEMCertificate(
+    const std::string& pem_encoded) {
+  std::string decoded = DecodePEM(pem_encoded);
   scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromBytesWithNickname(decoded.data(),
-                                                        decoded.size(),
-                                                        nickname.c_str());
+      net::X509Certificate::CreateFromBytes(decoded.data(), decoded.size());
   LOG_IF(ERROR, !cert) << "Couldn't create certificate from X509 data: "
                        << decoded;
   return cert;
+}
+
+namespace {
+
+bool GUIDRefToPEMEncoding(const CertsByGUIDMap& certs_by_guid,
+                          const std::string& guid_ref,
+                          std::string* pem_encoded) {
+  CertsByGUIDMap::const_iterator it = certs_by_guid.find(guid_ref);
+  if (it == certs_by_guid.end()) {
+    LOG(ERROR) << "Couldn't resolve certificate reference " << guid_ref;
+    return false;
+  }
+  if (!net::X509Certificate::GetPEMEncoded(it->second->os_cert_handle(),
+                                           pem_encoded)) {
+    LOG(ERROR) << "Couldn't PEM-encode certificate with GUID " << guid_ref;
+    return false;
+  }
+  return true;
+}
+
+bool ResolveSingleCertRef(const CertsByGUIDMap& certs_by_guid,
+                          const std::string& key_guid_ref,
+                          const std::string& key_pem,
+                          base::DictionaryValue* onc_object) {
+  std::string guid_ref;
+  if (!onc_object->GetStringWithoutPathExpansion(key_guid_ref, &guid_ref))
+    return true;
+
+  std::string pem_encoded;
+  if (!GUIDRefToPEMEncoding(certs_by_guid, guid_ref, &pem_encoded))
+    return false;
+
+  onc_object->RemoveWithoutPathExpansion(key_guid_ref, NULL);
+  onc_object->SetStringWithoutPathExpansion(key_pem, pem_encoded);
+  return true;
+}
+
+bool ResolveCertRefList(const CertsByGUIDMap& certs_by_guid,
+                        const std::string& key_guid_ref_list,
+                        const std::string& key_pem_list,
+                        base::DictionaryValue* onc_object) {
+  const base::ListValue* guid_ref_list = NULL;
+  if (!onc_object->GetListWithoutPathExpansion(key_guid_ref_list,
+                                               &guid_ref_list)) {
+    return true;
+  }
+
+  scoped_ptr<base::ListValue> pem_list(new base::ListValue);
+  for (base::ListValue::const_iterator it = guid_ref_list->begin();
+       it != guid_ref_list->end(); ++it) {
+    std::string guid_ref;
+    (*it)->GetAsString(&guid_ref);
+
+    std::string pem_encoded;
+    if (!GUIDRefToPEMEncoding(certs_by_guid, guid_ref, &pem_encoded))
+      return false;
+
+    pem_list->AppendString(pem_encoded);
+  }
+
+  onc_object->RemoveWithoutPathExpansion(key_guid_ref_list, NULL);
+  onc_object->SetWithoutPathExpansion(key_pem_list, pem_list.release());
+  return true;
+}
+
+bool ResolveSingleCertRefToList(const CertsByGUIDMap& certs_by_guid,
+                                const std::string& key_guid_ref,
+                                const std::string& key_pem_list,
+                                base::DictionaryValue* onc_object) {
+  std::string guid_ref;
+  if (!onc_object->GetStringWithoutPathExpansion(key_guid_ref, &guid_ref))
+    return true;
+
+  std::string pem_encoded;
+  if (!GUIDRefToPEMEncoding(certs_by_guid, guid_ref, &pem_encoded))
+    return false;
+
+  scoped_ptr<base::ListValue> pem_list(new base::ListValue);
+  pem_list->AppendString(pem_encoded);
+  onc_object->RemoveWithoutPathExpansion(key_guid_ref, NULL);
+  onc_object->SetWithoutPathExpansion(key_pem_list, pem_list.release());
+  return true;
+}
+
+bool ResolveServerCertRefsInObject(const CertsByGUIDMap& certs_by_guid,
+                                   const OncValueSignature& signature,
+                                   base::DictionaryValue* onc_object) {
+  if (&signature == &kCertificatePatternSignature) {
+    if (!ResolveCertRefList(certs_by_guid, certificate::kIssuerCARef,
+                            certificate::kIssuerCAPEMs, onc_object)) {
+      return false;
+    }
+  } else if (&signature == &kEAPSignature) {
+    if (!ResolveSingleCertRefToList(certs_by_guid, eap::kServerCARef,
+                                    eap::kServerCAPEMs, onc_object)) {
+      return false;
+    }
+  } else if (&signature == &kIPsecSignature) {
+    if (!ResolveSingleCertRefToList(certs_by_guid, ipsec::kServerCARef,
+                                    ipsec::kServerCAPEMs, onc_object)) {
+      return false;
+    }
+  } else if (&signature == &kIPsecSignature ||
+             &signature == &kOpenVPNSignature) {
+    if (!ResolveSingleCertRef(certs_by_guid, openvpn::kServerCertRef,
+                              openvpn::kServerCertPEM, onc_object) ||
+        !ResolveSingleCertRefToList(certs_by_guid, openvpn::kServerCARef,
+                                    openvpn::kServerCAPEMs, onc_object)) {
+      return false;
+    }
+  }
+
+  // Recurse into nested objects.
+  for (base::DictionaryValue::Iterator it(*onc_object); !it.IsAtEnd();
+       it.Advance()) {
+    base::DictionaryValue* inner_object = NULL;
+    if (!onc_object->GetDictionaryWithoutPathExpansion(it.key(), &inner_object))
+      continue;
+
+    const OncFieldSignature* field_signature =
+        GetFieldSignature(signature, it.key());
+    if (!field_signature)
+      continue;
+
+    if (!ResolveServerCertRefsInObject(certs_by_guid,
+                                       *field_signature->value_signature,
+                                       inner_object)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
+bool ResolveServerCertRefsInNetworks(const CertsByGUIDMap& certs_by_guid,
+                                     base::ListValue* network_configs) {
+  bool success = true;
+  for (base::ListValue::iterator it = network_configs->begin();
+       it != network_configs->end(); ) {
+    base::DictionaryValue* network = NULL;
+    (*it)->GetAsDictionary(&network);
+    if (!ResolveServerCertRefsInNetwork(certs_by_guid, network)) {
+      std::string guid;
+      network->GetStringWithoutPathExpansion(network_config::kGUID, &guid);
+      // This might happen even with correct validation, if the referenced
+      // certificate couldn't be imported.
+      LOG(ERROR) << "Couldn't resolve some certificate reference of network "
+                 << guid;
+      it = network_configs->Erase(it, NULL);
+      success = false;
+      continue;
+    }
+    ++it;
+  }
+  return success;
+}
+
+bool ResolveServerCertRefsInNetwork(const CertsByGUIDMap& certs_by_guid,
+                                    base::DictionaryValue* network_config) {
+  return ResolveServerCertRefsInObject(certs_by_guid,
+                                       kNetworkConfigurationSignature,
+                                       network_config);
 }
 
 }  // namespace onc

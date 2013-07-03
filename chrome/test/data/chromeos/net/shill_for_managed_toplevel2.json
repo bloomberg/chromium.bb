@@ -11,7 +11,7 @@
     "SaveCredentials": true,
     "Security": "802_1x",
     "Type": "wifi",
-    "UIData": "{\"certificate_pattern\":{\"EnrollmentURI\":[\"chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html\"],\"IssuerCARef\":[\"{58ac1967-a0e7-49e9-be68-123abc}\",\"{42cb13cd-140c-4941-9fb6-456def}\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
+    "UIData": "{\"certificate_pattern\":{\"EnrollmentURI\":[\"chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html\"],\"IssuerCAPEMs\":[\"pem1\",\"pem2\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
   },
   "{a3860e83-f03d-4cb1-bafa-789oij}": {
     "GUID": "{a3860e83-f03d-4cb1-bafa-789oij}",
@@ -19,7 +19,7 @@
     "OpenVPN.AuthRetry": "interact",
 // Not needed by Shill.
 //    "OpenVPN.AuthUserPass": "",
-    "OpenVPN.CACertNSS": "{14ff4d51-64c1-4c86-a622-054dxyz}",
+    "OpenVPN.CACertPEM": [ "pem1", "pem2" ],
     "OpenVPN.CompLZO": "true",
     "OpenVPN.KeyDirection": "1",
 // Ignored by Shill.
@@ -42,7 +42,7 @@
     "ProxyConfig": "{\"mode\":\"pac_script\",\"pac_mandatory\":false,\"pac_url\":\"http://proxycfg.my.domain/proxy.dat\"}",
     "SaveCredentials": false,
     "Type": "vpn",
-    "UIData": "{\"certificate_pattern\":{\"EnrollmentURI\":[\"chrome-extension://deicdjjibodjclmdijflfnimdmgdagfk/keygen-cert.html\"],\"IssuerCARef\":[\"{58ac1967-a0e7-49e9-be68-eb44b8827bcc}\",\"{42cb13cd-140c-4941-9fb6-0824ea2fde17}\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
+    "UIData": "{\"certificate_pattern\":{\"EnrollmentURI\":[\"chrome-extension://deicdjjibodjclmdijflfnimdmgdagfk/keygen-cert.html\"],\"IssuerCAPEMs\":[\"pem3\",\"pem4\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
 // Ignored by Shill.
 //    "VPN.Domain": ""
   }

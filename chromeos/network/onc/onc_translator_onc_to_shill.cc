@@ -114,7 +114,8 @@ void LocalTranslator::TranslateOpenVPN() {
        it.Advance()) {
     scoped_ptr<base::Value> translated;
     if (it.key() == vpn::kSaveCredentials ||
-        it.key() == openvpn::kRemoteCertKU) {
+        it.key() == openvpn::kRemoteCertKU ||
+        it.key() == openvpn::kServerCAPEMs) {
       translated.reset(it.value().DeepCopy());
     } else {
       // Shill wants all Provider/VPN fields to be strings.

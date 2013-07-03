@@ -263,7 +263,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
     std::string otp;
     std::string group_name;
     std::string server_hostname;
-    std::string server_ca_cert_nss_nickname;
+    std::string server_ca_cert_pem;
     std::string client_cert_pkcs11_id;
     EAPMethod eap_method;
     EAPPhase2Auth eap_auth;

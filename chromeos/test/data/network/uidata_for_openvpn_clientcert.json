@@ -3,9 +3,9 @@
     "EnrollmentURI": [
       "my.enrollment.url"
     ],
-    "IssuerCARef": [
-      "def",
-      "abc"
+    "IssuerCAPEMs": [
+      "pem1",
+      "pem2"
     ],
     "Subject": {
       "CommonName": "common_name",

@@ -16,10 +16,12 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chromeos/network/cert_loader.h"
 #include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/certificate_pattern_matcher.h"
 #include "chromeos/network/cros_network_functions.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
@@ -591,7 +593,7 @@ VirtualNetwork::VirtualNetwork(const std::string& service_path)
 VirtualNetwork::~VirtualNetwork() {}
 
 void VirtualNetwork::EraseCredentials() {
-  WipeString(&ca_cert_nss_);
+  WipeString(&ca_cert_pem_);
   WipeString(&psk_passphrase_);
   WipeString(&client_cert_id_);
   WipeString(&user_passphrase_);
@@ -619,8 +621,8 @@ void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
   VirtualNetwork* remembered_vpn = static_cast<VirtualNetwork*>(remembered);
   VLOG(1) << "Copy VPN credentials: " << name()
           << " username: " << remembered_vpn->username();
-  if (ca_cert_nss_.empty())
-    ca_cert_nss_ = remembered_vpn->ca_cert_nss();
+  if (ca_cert_pem_.empty())
+    ca_cert_pem_ = remembered_vpn->ca_cert_pem();
   if (psk_passphrase_.empty())
     psk_passphrase_ = remembered_vpn->psk_passphrase();
   if (client_cert_id_.empty())
@@ -711,13 +713,16 @@ bool VirtualNetwork::IsUserPassphraseRequired() const {
   return user_passphrase_required_ && user_passphrase_.empty();
 }
 
-void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
+void VirtualNetwork::SetCACertPEM(const std::string& ca_cert_pem) {
+  VLOG(1) << "SetCACertPEM " << ca_cert_pem;
   if (provider_type_ == PROVIDER_TYPE_OPEN_VPN) {
-    SetStringProperty(
-        flimflam::kOpenVPNCaCertNSSProperty, ca_cert_nss, &ca_cert_nss_);
+    ca_cert_pem_ = ca_cert_pem;
+    base::ListValue pem_list;
+    pem_list.AppendString(ca_cert_pem_);
+    SetValueProperty(shill::kOpenVPNCaCertPemProperty, pem_list);
   } else {
     SetStringProperty(
-        flimflam::kL2tpIpsecCaCertNssProperty, ca_cert_nss, &ca_cert_nss_);
+        shill::kL2tpIpsecCaCertPemProperty, ca_cert_pem, &ca_cert_pem_);
   }
 }
 
@@ -1109,6 +1114,7 @@ void WifiNetwork::SetPassphrase(const std::string& passphrase) {
 void WifiNetwork::EraseCredentials() {
   WipeString(&passphrase_);
   WipeString(&user_passphrase_);
+  WipeString(&eap_server_ca_cert_pem_);
   WipeString(&eap_client_cert_pkcs11_id_);
   WipeString(&eap_identity_);
   WipeString(&eap_anonymous_identity_);
@@ -1182,11 +1188,13 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
   }
 }
 
-void WifiNetwork::SetEAPServerCaCertNssNickname(
-    const std::string& nss_nickname) {
-  VLOG(1) << "SetEAPServerCaCertNssNickname " << nss_nickname;
-  SetOrClearStringProperty(flimflam::kEapCaCertNssProperty,
-                           nss_nickname, &eap_server_ca_cert_nss_nickname_);
+void WifiNetwork::SetEAPServerCaCertPEM(
+    const std::string& ca_cert_pem) {
+  VLOG(1) << "SetEAPServerCaCertPEM " << ca_cert_pem;
+  eap_server_ca_cert_pem_ = ca_cert_pem;
+  base::ListValue pem_list;
+  pem_list.AppendString(ca_cert_pem);
+  SetValueProperty(shill::kEapCaCertPemProperty, pem_list);
 }
 
 void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {

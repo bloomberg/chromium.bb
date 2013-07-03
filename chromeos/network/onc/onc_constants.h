@@ -162,6 +162,7 @@ CHROMEOS_EXPORT extern const char kEmailAddress[];
 CHROMEOS_EXPORT extern const char kEnrollmentURI[];
 CHROMEOS_EXPORT extern const char kGUID[];
 CHROMEOS_EXPORT extern const char kIssuerCARef[];
+CHROMEOS_EXPORT extern const char kIssuerCAPEMs[];
 CHROMEOS_EXPORT extern const char kIssuer[];
 CHROMEOS_EXPORT extern const char kLocality[];
 CHROMEOS_EXPORT extern const char kNone[];
@@ -214,6 +215,7 @@ CHROMEOS_EXPORT extern const char kPEAP[];
 CHROMEOS_EXPORT extern const char kPassword[];
 CHROMEOS_EXPORT extern const char kSaveCredentials[];
 CHROMEOS_EXPORT extern const char kServerCARef[];
+CHROMEOS_EXPORT extern const char kServerCAPEMs[];
 CHROMEOS_EXPORT extern const char kUseSystemCAs[];
 }  // namespace eap
 
@@ -241,6 +243,7 @@ CHROMEOS_EXPORT extern const char kGroup[];
 CHROMEOS_EXPORT extern const char kIKEVersion[];
 CHROMEOS_EXPORT extern const char kPSK[];
 CHROMEOS_EXPORT extern const char kServerCARef[];
+CHROMEOS_EXPORT extern const char kServerCAPEMs[];
 CHROMEOS_EXPORT extern const char kXAUTH[];
 }  // namespace ipsec
 
@@ -263,7 +266,9 @@ CHROMEOS_EXPORT extern const char kRemoteCertEKU[];
 CHROMEOS_EXPORT extern const char kRemoteCertKU[];
 CHROMEOS_EXPORT extern const char kRemoteCertTLS[];
 CHROMEOS_EXPORT extern const char kRenegSec[];
+CHROMEOS_EXPORT extern const char kServerCAPEMs[];
 CHROMEOS_EXPORT extern const char kServerCARef[];
+CHROMEOS_EXPORT extern const char kServerCertPEM[];
 CHROMEOS_EXPORT extern const char kServerCertRef[];
 CHROMEOS_EXPORT extern const char kServerPollTimeout[];
 CHROMEOS_EXPORT extern const char kServer[];

@@ -5,18 +5,23 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_UTILS_H_
 #define CHROMEOS_NETWORK_ONC_ONC_UTILS_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_constants.h"
-#include "net/cert/x509_certificate.h"
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+}
+
+namespace net {
+class X509Certificate;
 }
 
 namespace chromeos {
@@ -27,6 +32,9 @@ struct OncValueSignature;
 // A valid but empty (no networks and no certificates) and unencrypted
 // configuration.
 CHROMEOS_EXPORT extern const char kEmptyUnencryptedConfiguration[];
+
+typedef std::map<std::string,
+                 scoped_refptr<net::X509Certificate> > CertsByGUIDMap;
 
 // Parses |json| according to the JSON format. If |json| is a JSON formatted
 // dictionary, the function returns the dictionary as a DictionaryValue.
@@ -91,8 +99,23 @@ CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
 // Parse the given PEM encoded certificate |pem_encoded| and create a
 // X509Certificate from it.
 CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> DecodePEMCertificate(
-    const std::string& pem_encoded,
-    const std::string& nickname);
+    const std::string& pem_encoded);
+
+// Replaces all references by GUID to Server or CA certs by their PEM
+// encoding. Returns true if all references could be resolved. Otherwise returns
+// false and network configurations with unresolveable references are removed
+// from |network_configs|. |network_configs| must be a list of ONC
+// NetworkConfiguration dictionaries.
+CHROMEOS_EXPORT bool ResolveServerCertRefsInNetworks(
+    const CertsByGUIDMap& certs_by_guid,
+    base::ListValue* network_configs);
+
+// Replaces all references by GUID to Server or CA certs by their PEM
+// encoding. Returns true if all references could be resolved. |network_config|
+// must be a ONC NetworkConfiguration.
+CHROMEOS_EXPORT bool ResolveServerCertRefsInNetwork(
+    const CertsByGUIDMap& certs_by_guid,
+    base::DictionaryValue* network_config);
 
 }  // namespace onc
 }  // namespace chromeos

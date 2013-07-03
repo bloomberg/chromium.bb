@@ -1,7 +1,7 @@
-{ 
+{
   "{88dc6576-a740-ded0-3c0f16c4c7f5fb51}": {
     "AutoConnect": false,
-    "EAP.CACertNSS": "{f5f2c9c9-0079-a712-49da21137af62fdd}",
+    "EAP.CACertPEM": [ "pem1", "pem2" ],
     "EAP.EAP": "TLS",
     "EAP.UseSystemCAs": true,
     "GUID": "{88dc6576-a740-ded0-3c0f16c4c7f5fb51}",

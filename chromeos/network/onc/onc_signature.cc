@@ -45,6 +45,7 @@ const OncFieldSignature certificate_pattern_fields[] = {
   { certificate::kEnrollmentURI, &kStringListSignature },
   { certificate::kIssuer, &kIssuerSubjectPatternSignature },
   { certificate::kIssuerCARef, &kStringListSignature },
+  { certificate::kIssuerCAPEMs, &kStringListSignature },
   { certificate::kSubject, &kIssuerSubjectPatternSignature },
   { NULL }
 };
@@ -60,6 +61,7 @@ const OncFieldSignature eap_fields[] = {
   { eap::kOuter, &kStringSignature },
   { eap::kPassword, &kStringSignature },
   { eap::kSaveCredentials, &kBoolSignature },
+  { eap::kServerCAPEMs, &kStringListSignature },
   { eap::kServerCARef, &kStringSignature },
   { eap::kUseSystemCAs, &kBoolSignature },
   { NULL }
@@ -75,6 +77,7 @@ const OncFieldSignature ipsec_fields[] = {
   { ipsec::kIKEVersion, &kIntegerSignature },
   { ipsec::kPSK, &kStringSignature },
   { vpn::kSaveCredentials, &kBoolSignature },
+  { ipsec::kServerCAPEMs, &kStringSignature },
   { ipsec::kServerCARef, &kStringSignature },
   // Not yet supported.
   //  { ipsec::kEAP, &kEAPSignature },
@@ -112,8 +115,10 @@ const OncFieldSignature openvpn_fields[] = {
   { openvpn::kRemoteCertTLS, &kStringSignature },
   { openvpn::kRenegSec, &kIntegerSignature },
   { vpn::kSaveCredentials, &kBoolSignature },
+  { openvpn::kServerCAPEMs, &kStringListSignature },
   { openvpn::kServerCARef, &kStringSignature },
   // Not supported, yet.
+  { openvpn::kServerCertPEM, &kStringSignature },
   { openvpn::kServerCertRef, &kStringSignature },
   { openvpn::kServerPollTimeout, &kIntegerSignature },
   { openvpn::kShaper, &kIntegerSignature },

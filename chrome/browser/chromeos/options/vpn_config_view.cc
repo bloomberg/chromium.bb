@@ -313,7 +313,7 @@ bool VPNConfigView::Login() {
         config_data.group_name = GetGroupName();
         break;
       case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT: {
-        config_data.server_ca_cert_nss_nickname = GetServerCACertNssNickname();
+        config_data.server_ca_cert_pem = GetServerCACertPEM();
         config_data.client_cert_pkcs11_id = GetUserCertID();
         config_data.username = GetUsername();
         config_data.user_passphrase = GetUserPassphrase();
@@ -321,7 +321,7 @@ bool VPNConfigView::Login() {
         break;
       }
       case PROVIDER_TYPE_OPEN_VPN:
-        config_data.server_ca_cert_nss_nickname = GetServerCACertNssNickname();
+        config_data.server_ca_cert_pem = GetServerCACertPEM();
         config_data.client_cert_pkcs11_id = GetUserCertID();
         config_data.username = GetUsername();
         config_data.user_passphrase = GetUserPassphrase();
@@ -421,7 +421,7 @@ const std::string VPNConfigView::GetOTP() const {
   return GetTextFromField(otp_textfield_, true);
 }
 
-const std::string VPNConfigView::GetServerCACertNssNickname() const {
+const std::string VPNConfigView::GetServerCACertPEM() const {
   int index = server_ca_cert_combobox_ ?
       server_ca_cert_combobox_->selected_index() : 0;
   if (index == 0) {
@@ -429,7 +429,7 @@ const std::string VPNConfigView::GetServerCACertNssNickname() const {
     return std::string();
   } else {
     int cert_index = index - 1;
-    return CertLibrary::Get()->GetCertNicknameAt(
+    return CertLibrary::Get()->GetCertPEMAt(
         CertLibrary::CERT_TYPE_SERVER_CA, cert_index);
   }
 }
@@ -724,10 +724,10 @@ void VPNConfigView::Refresh() {
   if (server_ca_cert_combobox_) {
     server_ca_cert_combobox_->ModelChanged();
     if (enable_server_ca_cert_ &&
-        (vpn && !vpn->ca_cert_nss().empty())) {
+        (vpn && !vpn->ca_cert_pem().empty())) {
       // Select the current server CA certificate in the combobox.
-      int cert_index = CertLibrary::Get()->GetCertIndexByNickname(
-          CertLibrary::CERT_TYPE_SERVER_CA, vpn->ca_cert_nss());
+      int cert_index = CertLibrary::Get()->GetCertIndexByPEM(
+          CertLibrary::CERT_TYPE_SERVER_CA, vpn->ca_cert_pem());
       if (cert_index >= 0) {
         // Skip item for "Default"
         server_ca_cert_combobox_->SetSelectedIndex(1 + cert_index);

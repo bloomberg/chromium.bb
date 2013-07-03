@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_NETWORK_CERTIFICATE_HANDLER_H_
 #define CHROMEOS_NETWORK_CERTIFICATE_HANDLER_H_
 
+#include <map>
+
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "net/cert/x509_certificate.h"
@@ -17,17 +19,23 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT CertificateHandler {
  public:
+  typedef std::map<std::string, scoped_refptr<net::X509Certificate> >
+      CertsByGUID;
+
   CertificateHandler();
   virtual ~CertificateHandler();
 
   // Import the |certificates|, which must be a list of ONC Certificate objects.
   // If |onc_trusted_certificates| is not NULL, it will be filled with the list
-  // of certificates that requested the TrustBit "Web". Returns true if all
-  // certificates were imported successfully.
+  // of certificates that requested the TrustBit "Web". If
+  // |imported_server_and_ca_certs| is not null, it will be filled with the
+  // (GUID, Certificate) pairs of all successfully imported Server and CA
+  // certificates. Returns true if all certificates were imported successfully.
   virtual bool ImportCertificates(
       const base::ListValue& certificates,
       onc::ONCSource source,
-      net::CertificateList* onc_trusted_certificates);
+      net::CertificateList* onc_trusted_certificates,
+      CertsByGUID* imported_server_and_ca_certs);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CertificateHandler);

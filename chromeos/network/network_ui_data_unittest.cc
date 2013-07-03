@@ -103,15 +103,15 @@ INSTANTIATE_TEST_CASE_P(
     CreateUIDataTest,
     CreateUIDataTest,
     ::testing::Values(
-         std::make_pair("valid_wifi_clientcert.onc",
+         std::make_pair("wifi_clientcert_with_cert_pems.onc",
                         "uidata_for_wifi_clientcert.json"),
          std::make_pair("valid_wifi_clientref.onc",
                         "uidata_for_wifi_clientref.json"),
          std::make_pair("valid_wifi_psk.onc",
                         "uidata_for_wifi_psk.json"),
-         std::make_pair("valid_openvpn_clientcert.onc",
+         std::make_pair("openvpn_clientcert_with_cert_pems.onc",
                         "uidata_for_openvpn_clientcert.json"),
-         std::make_pair("valid_l2tpipsec_clientcert.onc",
+         std::make_pair("l2tpipsec_clientcert_with_cert_pems.onc",
                         "uidata_for_l2tpipsec_clientcert.json")));
 
 }  // namespace chromeos

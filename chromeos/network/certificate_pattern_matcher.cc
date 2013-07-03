@@ -95,11 +95,11 @@ class PrivateKeyFilter {
 };
 
 // Functor to filter out certs that don't have an issuer in the associated
-// IssuerCARef list.
-class IssuerCaRefFilter {
+// IssuerCAPEMs list.
+class IssuerCaFilter {
  public:
-  explicit IssuerCaRefFilter(const std::vector<std::string>& issuer_ca_ref_list)
-    : issuer_ca_ref_list_(issuer_ca_ref_list) {}
+  explicit IssuerCaFilter(const std::vector<std::string>& issuer_ca_pems)
+    : issuer_ca_pems_(issuer_ca_pems) {}
   bool operator()(const scoped_refptr<net::X509Certificate>& cert) const {
     // Find the certificate issuer for each certificate.
     // TODO(gspencer): this functionality should be available from
@@ -107,25 +107,21 @@ class IssuerCaRefFilter {
     CERTCertificate* issuer_cert = CERT_FindCertIssuer(
         cert.get()->os_cert_handle(), PR_Now(), certUsageAnyCA);
 
-    if (issuer_cert && issuer_cert->nickname) {
-      // Separate the nickname stored in the certificate at the colon, since
-      // NSS likes to store it as token:nickname.
-      const char* delimiter = ::strchr(issuer_cert->nickname, ':');
-      if (delimiter) {
-        delimiter++;  // move past the colon.
-        std::vector<std::string>::const_iterator pat_iter =
-            issuer_ca_ref_list_.begin();
-        while (pat_iter != issuer_ca_ref_list_.end()) {
-          if (*pat_iter == delimiter)
-            return false;
-          ++pat_iter;
-        }
-      }
+    if (!issuer_cert)
+      return true;
+
+    std::string pem_encoded;
+    if (!net::X509Certificate::GetPEMEncoded(issuer_cert, &pem_encoded)) {
+      LOG(ERROR) << "Couldn't PEM-encode certificate.";
+      return true;
     }
-    return true;
+
+    return (std::find(issuer_ca_pems_.begin(), issuer_ca_pems_.end(),
+                      pem_encoded) ==
+            issuer_ca_pems_.end());
   }
  private:
-  const std::vector<std::string>& issuer_ca_ref_list_;
+  const std::vector<std::string>& issuer_ca_pems_;
 };
 
 }  // namespace
@@ -162,8 +158,8 @@ scoped_refptr<net::X509Certificate> GetCertificateMatch(
       return NULL;
   }
 
-  if (!pattern.issuer_ca_ref_list().empty()) {
-    matching_certs.remove_if(IssuerCaRefFilter(pattern.issuer_ca_ref_list()));
+  if (!pattern.issuer_ca_pems().empty()) {
+    matching_certs.remove_if(IssuerCaFilter(pattern.issuer_ca_pems()));
     if (matching_certs.empty())
       return NULL;
   }

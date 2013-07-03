@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -656,7 +658,7 @@ class VirtualNetwork : public Network {
 
   const std::string& server_hostname() const { return server_hostname_; }
   ProviderType provider_type() const { return provider_type_; }
-  const std::string& ca_cert_nss() const { return ca_cert_nss_; }
+  const std::string& ca_cert_pem() const { return ca_cert_pem_; }
   const std::string& psk_passphrase() const { return psk_passphrase_; }
   bool psk_passphrase_required() const { return psk_passphrase_required_; }
   const std::string& client_cert_id() const { return client_cert_id_; }
@@ -683,7 +685,7 @@ class VirtualNetwork : public Network {
   bool IsUserPassphraseRequired() const;
 
   // Public setters.
-  void SetCACertNSS(const std::string& ca_cert_nss);
+  void SetCACertPEM(const std::string& ca_cert_pem);
   void SetL2TPIPsecPSKCredentials(const std::string& psk_passphrase,
                                   const std::string& username,
                                   const std::string& user_passphrase,
@@ -720,8 +722,8 @@ class VirtualNetwork : public Network {
   void set_provider_type(ProviderType provider_type) {
     provider_type_ = provider_type;
   }
-  void set_ca_cert_nss(const std::string& ca_cert_nss) {
-    ca_cert_nss_ = ca_cert_nss;
+  void set_ca_cert_pem(const std::string& ca_cert_pem) {
+    ca_cert_pem_ = ca_cert_pem;
   }
   void set_psk_passphrase(const std::string& psk_passphrase) {
     psk_passphrase_ = psk_passphrase;
@@ -761,8 +763,7 @@ class VirtualNetwork : public Network {
 
   std::string server_hostname_;
   ProviderType provider_type_;
-  // NSS nickname for server CA certificate.
-  std::string ca_cert_nss_;
+  std::string ca_cert_pem_;
   std::string psk_passphrase_;
   bool psk_passphrase_required_;
   // PKCS#11 ID for client certificate.
@@ -995,8 +996,8 @@ class WifiNetwork : public WirelessNetwork {
 
   EAPMethod eap_method() const { return eap_method_; }
   EAPPhase2Auth eap_phase_2_auth() const { return eap_phase_2_auth_; }
-  const std::string& eap_server_ca_cert_nss_nickname() const {
-    return eap_server_ca_cert_nss_nickname_; }
+  const std::string& eap_server_ca_cert_pem() const {
+    return eap_server_ca_cert_pem_; }
   const std::string& eap_client_cert_pkcs11_id() const {
     return eap_client_cert_pkcs11_id_; }
   const bool eap_use_system_cas() const { return eap_use_system_cas_; }
@@ -1018,7 +1019,7 @@ class WifiNetwork : public WirelessNetwork {
   // 802.1x properties
   void SetEAPMethod(EAPMethod method);
   void SetEAPPhase2Auth(EAPPhase2Auth auth);
-  void SetEAPServerCaCertNssNickname(const std::string& nss_nickname);
+  void SetEAPServerCaCertPEM(const std::string& ca_cert_pem);
   void SetEAPClientCertPkcs11Id(const std::string& pkcs11_id);
   void SetEAPUseSystemCAs(bool use_system_cas);
   void SetEAPIdentity(const std::string& identity);
@@ -1079,9 +1080,8 @@ class WifiNetwork : public WirelessNetwork {
   void set_eap_phase_2_auth(EAPPhase2Auth eap_phase_2_auth) {
     eap_phase_2_auth_ = eap_phase_2_auth;
   }
-  void set_eap_server_ca_cert_nss_nickname(
-      const std::string& eap_server_ca_cert_nss_nickname) {
-    eap_server_ca_cert_nss_nickname_ = eap_server_ca_cert_nss_nickname;
+  void set_eap_server_ca_cert_pem(const std::string& eap_server_ca_cert_pem) {
+    eap_server_ca_cert_pem_ = eap_server_ca_cert_pem;
   }
   void set_eap_client_cert_pkcs11_id(
       const std::string& eap_client_cert_pkcs11_id) {
@@ -1126,7 +1126,7 @@ class WifiNetwork : public WirelessNetwork {
 
   EAPMethod eap_method_;
   EAPPhase2Auth eap_phase_2_auth_;
-  std::string eap_server_ca_cert_nss_nickname_;
+  std::string eap_server_ca_cert_pem_;
   std::string eap_client_cert_pkcs11_id_;
   bool eap_use_system_cas_;
   std::string eap_identity_;
@@ -1564,7 +1564,7 @@ class NetworkLibrary {
     ~EAPConfigData();
     EAPMethod method;
     EAPPhase2Auth auth;
-    std::string server_ca_cert_nss_nickname;
+    std::string server_ca_cert_pem;
     bool use_system_cas;
     std::string client_cert_pkcs11_id;
     std::string identity;
@@ -1584,7 +1584,7 @@ class NetworkLibrary {
     VPNConfigData();
     ~VPNConfigData();
     std::string psk;
-    std::string server_ca_cert_nss_nickname;
+    std::string server_ca_cert_pem;
     std::string client_cert_pkcs11_id;
     std::string username;
     std::string user_passphrase;
@@ -1655,7 +1655,7 @@ class NetworkLibrary {
   // changes.
   virtual void SwitchToPreferredNetwork() = 0;
 
-  // Load networks from an NetworkConfigurations list of ONC.
+  // Load networks from a list of NetworkConfigurations of ONC.
   virtual void LoadOncNetworks(const base::ListValue& network_configs,
                                onc::ONCSource source) = 0;
 

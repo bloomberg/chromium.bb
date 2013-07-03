@@ -12,7 +12,7 @@
         "EAP": {
           "Outer": "EAP-TLS",
           "UseSystemCAs": true,
-          "ServerCARef": "{f5f2c9c9-0079-a712-49da21137af62fdd}",
+          "ServerCAPEMs": [ "pem1", "pem2" ],
           "ClientCertType": "Pattern",
           "ClientCertPattern": {
             "Issuer": {

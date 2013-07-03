@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_CERTIFICATE_IMPORTER_H_
 #define CHROMEOS_NETWORK_ONC_ONC_CERTIFICATE_IMPORTER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -28,10 +29,15 @@ namespace chromeos {
 namespace onc {
 
 // This class handles certificate imports from ONC (both policy and user
-// imports) into the certificate store. In particular, the GUID of certificates
-// is stored together with the certificate as Nickname.
+// imports) into the certificate store. The GUID of Client certificates is
+// stored together with the certificate as Nickname. In contrast, Server and CA
+// certificates are identified by their PEM and not by GUID.
+// TODO(pneubeck): Replace Nickname by PEM for Client
+// certificates. http://crbug.com/252119
 class CHROMEOS_EXPORT CertificateImporter {
  public:
+  typedef std::map<std::string, scoped_refptr<net::X509Certificate> >
+      CertsByGUID;
   enum ParseResult {
     IMPORT_OK,
     IMPORT_INCOMPLETE,
@@ -49,12 +55,15 @@ class CHROMEOS_EXPORT CertificateImporter {
   // removes the certificate from the store instead of importing. Returns the
   // result of the parse operation. In case of IMPORT_INCOMPLETE, some of the
   // certificates may be stored/removed successfully while others had errors.
-  // If |onc_trusted_certificates| is not NULL then it will be filled with the
-  // list of certificates that requested the Web trust flag.
-  // If no error occurred, returns IMPORT_OK.
+  // If no error occurred, returns IMPORT_OK. If |onc_trusted_certificates| is
+  // not NULL, it will be filled with the list of certificates that requested
+  // the Web trust flag. If |imported_server_and_ca_certs| is not null, it will
+  // be filled with the (GUID, Certificate) pairs of all successfully imported
+  // Server and CA certificates.
   ParseResult ParseAndStoreCertificates(
       const base::ListValue& onc_certificates,
-      net::CertificateList* onc_trusted_certificates);
+      net::CertificateList* onc_trusted_certificates,
+      CertsByGUID* imported_server_and_ca_certs);
 
   // Lists the certificates that have the string |label| as their certificate
   // nickname (exact match).
@@ -71,13 +80,15 @@ class CHROMEOS_EXPORT CertificateImporter {
   // store. Returns true if the operation succeeded.
   bool ParseAndStoreCertificate(
       const base::DictionaryValue& certificate,
-      net::CertificateList* onc_trusted_certificates);
+      net::CertificateList* onc_trusted_certificates,
+      CertsByGUID* imported_server_and_ca_certs);
 
   bool ParseServerOrCaCertificate(
       const std::string& cert_type,
       const std::string& guid,
       const base::DictionaryValue& certificate,
-      net::CertificateList* onc_trusted_certificates);
+      net::CertificateList* onc_trusted_certificates,
+      CertsByGUID* imported_server_and_ca_certs);
 
   bool ParseClientCertificate(const std::string& guid,
                               const base::DictionaryValue& certificate);

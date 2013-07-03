@@ -99,7 +99,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   // Get various 802.1X EAP values from the widgets.
   EAPMethod GetEapMethod() const;
   EAPPhase2Auth GetEapPhase2Auth() const;
-  std::string GetEapServerCaCertNssNickname() const;
+  std::string GetEapServerCaCertPEM() const;
   bool GetEapUseSystemCas() const;
   std::string GetEapClientCertPkcs11Id() const;
   std::string GetEapIdentity() const;

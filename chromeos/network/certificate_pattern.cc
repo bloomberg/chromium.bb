@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace chromeos {
 
@@ -16,7 +17,6 @@ const char kCommonNameKey[] = "CommonName";
 const char kLocalityKey[] = "Locality";
 const char kOrganizationKey[] = "Organization";
 const char kOrganizationalUnitKey[] = "OrganizationalUnit";
-const char kIssuerCaRefKey[] = "IssuerCARef";
 const char kIssuerKey[] = "Issuer";
 const char kSubjectKey[] = "Subject";
 const char kEnrollmentUriKey[] = "EnrollmentURI";
@@ -114,13 +114,13 @@ CertificatePattern::CertificatePattern() {}
 CertificatePattern::~CertificatePattern() {}
 
 bool CertificatePattern::Empty() const {
-  return issuer_ca_ref_list_.empty() &&
+  return issuer_ca_pems_.empty() &&
          issuer_.Empty() &&
          subject_.Empty();
 }
 
 void CertificatePattern::Clear() {
-  issuer_ca_ref_list_.clear();
+  issuer_ca_pems_.clear();
   issuer_.Clear();
   subject_.Clear();
   enrollment_uri_list_.clear();
@@ -129,8 +129,10 @@ void CertificatePattern::Clear() {
 base::DictionaryValue* CertificatePattern::CreateAsDictionary() const {
   base::DictionaryValue* dict = new base::DictionaryValue;
 
-  if (!issuer_ca_ref_list_.empty())
-    dict->Set(kIssuerCaRefKey, CreateListFromStrings(issuer_ca_ref_list_));
+  if (!issuer_ca_pems_.empty()) {
+    dict->Set(onc::certificate::kIssuerCAPEMs,
+              CreateListFromStrings(issuer_ca_pems_));
+  }
 
   if (!issuer_.Empty())
     dict->Set(kIssuerKey, issuer_.CreateAsDictionary());
@@ -149,8 +151,9 @@ bool CertificatePattern::CopyFromDictionary(const base::DictionaryValue &dict) {
   Clear();
 
   // All of these are optional.
-  if (dict.GetList(kIssuerCaRefKey, &child_list) && child_list) {
-    if (!GetAsListOfStrings(*child_list, &issuer_ca_ref_list_))
+  if (dict.GetList(onc::certificate::kIssuerCAPEMs, &child_list) &&
+      child_list) {
+    if (!GetAsListOfStrings(*child_list, &issuer_ca_pems_))
       return false;
   }
   if (dict.GetDictionary(kIssuerKey, &child_dict) && child_dict) {

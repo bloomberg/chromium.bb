@@ -12,6 +12,7 @@
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace chromeos {
@@ -26,11 +27,11 @@ std::string ReadTestData(const std::string& filename);
 scoped_ptr<base::DictionaryValue> ReadTestDictionary(
     const std::string& filename);
 
-// Checks that the pointer |actual| is not NULL but points to a dictionary that
+// Checks that the pointer |actual| is not NULL but points to a value that
 // equals |expected| (using Value::Equals). The intended use case is:
 // EXPECT_TRUE(test_utils::Equals(expected, actual));
-::testing::AssertionResult Equals(const base::DictionaryValue* expected,
-                                  const base::DictionaryValue* actual);
+::testing::AssertionResult Equals(const base::Value* expected,
+                                  const base::Value* actual);
 
 }  // namespace test_utils
 }  // namespace onc

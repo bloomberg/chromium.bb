@@ -64,18 +64,18 @@ scoped_ptr<base::DictionaryValue> ReadTestDictionary(
   return make_scoped_ptr(dict);
 }
 
-::testing::AssertionResult Equals(const base::DictionaryValue* expected,
-                                  const base::DictionaryValue* actual) {
+::testing::AssertionResult Equals(const base::Value* expected,
+                                  const base::Value* actual) {
   CHECK(expected != NULL);
   if (actual == NULL)
-    return ::testing::AssertionFailure() << "Actual dictionary pointer is NULL";
+    return ::testing::AssertionFailure() << "Actual value pointer is NULL";
 
   if (expected->Equals(actual))
-    return ::testing::AssertionSuccess() << "Dictionaries are equal";
+    return ::testing::AssertionSuccess() << "Values are equal";
 
-  return ::testing::AssertionFailure() << "Dictionaries are unequal.\n"
-                                       << "Expected dictionary:\n" << *expected
-                                       << "Actual dictionary:\n" << *actual;
+  return ::testing::AssertionFailure() << "Values are unequal.\n"
+                                       << "Expected value:\n" << *expected
+                                       << "Actual value:\n" << *actual;
 }
 
 }  // namespace test_utils

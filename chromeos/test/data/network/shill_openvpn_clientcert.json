@@ -1,7 +1,6 @@
 {
    "GUID": "{84391467-dd8b-4c66-9b52-860583038351}",
    "Name": "TestOpenVPN",
-   "OpenVPN.CACertNSS": "{126ea985-9ece-4250-8a32-6badf52a99e5}",
    "OpenVPN.Password": "********",
    "OpenVPN.Port": "1234",
    "OpenVPN.Proto": "udp",

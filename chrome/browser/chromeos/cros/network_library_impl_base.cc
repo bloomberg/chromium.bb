@@ -304,10 +304,11 @@ const VirtualNetworkVector&
   return remembered_virtual_networks_;
 }
 
+namespace {
+
 // Use shill's ordering of the services to determine which type of
 // network to return (i.e. don't assume priority of network types).
 // Note: This does not include any virtual networks.
-namespace {
 const Network* highest_priority(const Network* a, const Network*b) {
   if (!a)
     return b;
@@ -317,7 +318,8 @@ const Network* highest_priority(const Network* a, const Network*b) {
     return b;
   return a;
 }
-}
+
+}  // namespace
 
 const Network* NetworkLibraryImplBase::active_network() const {
   const Network* result = active_nonvirtual_network();
@@ -806,8 +808,7 @@ void NetworkLibraryImplBase::ConnectToUnconfiguredWifiNetwork(
     connect_data_.service_name = ssid;
     connect_data_.eap_method = eap_config->method;
     connect_data_.eap_auth = eap_config->auth;
-    connect_data_.server_ca_cert_nss_nickname =
-        eap_config->server_ca_cert_nss_nickname;
+    connect_data_.server_ca_cert_pem = eap_config->server_ca_cert_pem;
     connect_data_.eap_use_system_cas = eap_config->use_system_cas;
     connect_data_.client_cert_pkcs11_id =
         eap_config->client_cert_pkcs11_id;
@@ -828,8 +829,7 @@ void NetworkLibraryImplBase::ConnectToUnconfiguredVirtualNetwork(
   connect_data_.service_name = service_name;
   connect_data_.server_hostname = server_hostname;
   connect_data_.psk_key = config.psk;
-  connect_data_.server_ca_cert_nss_nickname =
-      config.server_ca_cert_nss_nickname;
+  connect_data_.server_ca_cert_pem = config.server_ca_cert_pem;
   connect_data_.client_cert_pkcs11_id = config.client_cert_pkcs11_id;
   connect_data_.username = config.username;
   connect_data_.passphrase = config.user_passphrase;
@@ -867,7 +867,7 @@ void NetworkLibraryImplBase::ConnectToWifiNetworkUsingConnectData(
     // Enterprise 802.1X EAP network.
     wifi->SetEAPMethod(data.eap_method);
     wifi->SetEAPPhase2Auth(data.eap_auth);
-    wifi->SetEAPServerCaCertNssNickname(data.server_ca_cert_nss_nickname);
+    wifi->SetEAPServerCaCertPEM(data.server_ca_cert_pem);
     wifi->SetEAPUseSystemCAs(data.eap_use_system_cas);
     wifi->SetEAPClientCertPkcs11Id(data.client_cert_pkcs11_id);
     wifi->SetEAPIdentity(data.eap_identity);
@@ -913,7 +913,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkUsingConnectData(
   if (!data.server_hostname.empty())
     vpn->set_server_hostname(data.server_hostname);
 
-  vpn->SetCACertNSS(data.server_ca_cert_nss_nickname);
+  vpn->SetCACertPEM(data.server_ca_cert_pem);
   switch (vpn->provider_type()) {
     case PROVIDER_TYPE_L2TP_IPSEC_PSK:
       vpn->SetL2TPIPsecPSKCredentials(

@@ -16,13 +16,14 @@ class CHROMEOS_EXPORT MockCertificateHandler : public CertificateHandler {
  public:
   MockCertificateHandler();
   virtual ~MockCertificateHandler();
-  MOCK_METHOD3(ImportCertificates, bool(const base::ListValue&,
+  MOCK_METHOD4(ImportCertificates, bool(const base::ListValue&,
                                         onc::ONCSource,
-                                        net::CertificateList*));
+                                        net::CertificateList*,
+                                        CertsByGUID*));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCertificateHandler);
 };
 
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROMEOS_NETWORK_MOCK_CERTIFICATE_HANDLER_H_

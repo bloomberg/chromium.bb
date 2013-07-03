@@ -9,9 +9,9 @@
           "ClientCertType": "Pattern",
           "ClientCertPattern": {
               "EnrollmentURI": [ "my.enrollment.url" ],
-              "IssuerCARef": [
-                  "def",
-                  "abc"
+              "IssuerCAPEMs": [
+                  "pem1",
+                  "pem2"
               ],
               "Issuer": {
                   "CommonName": "common_name",
