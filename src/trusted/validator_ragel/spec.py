@@ -506,11 +506,14 @@ def ValidateRegularInstruction(instruction, bitness):
   if bitness == 32:
     if _InstructionNameIn(
         name,
-        ['mov', 'add', 'sub', 'and', 'or', 'xor',
+        ['mov',  # including MOVD
+         'add', 'sub', 'and', 'or', 'xor',
          'xchg', 'xadd',
          'inc', 'dec', 'neg', 'not',
          'lea',
         ]):
+      return Condition(), Condition()
+    elif re.match(r'mov[sz][bwl][lqw]$', name):  # MOVSX, MOVSXD, MOVZX
       return Condition(), Condition()
     else:
       raise DoNotMatchError(instruction)
@@ -522,7 +525,13 @@ def ValidateRegularInstruction(instruction, bitness):
     touches_memory = True
 
     if _InstructionNameIn(
-          name, ['mov', 'add', 'sub', 'and', 'or', 'xor']):
+          name, [
+            'mov',  # including MOVD
+            'add', 'sub', 'and', 'or', 'xor']):
+      assert len(ops) == 2
+      zero_extending = True
+      write_ops = [ops[1]]
+    elif re.match(r'mov[sz][bwl][lqw]$', name):  # MOVSX, MOVSXD, MOVZX
       assert len(ops) == 2
       zero_extending = True
       write_ops = [ops[1]]
