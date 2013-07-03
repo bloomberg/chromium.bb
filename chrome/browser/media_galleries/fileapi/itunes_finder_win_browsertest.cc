@@ -38,8 +38,6 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
  public:
   ITunesFinderWinTest() : test_finder_callback_called_(false) {}
 
-  virtual ~ITunesFinderWinTest() {}
-
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(app_data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(music_dir_.CreateUniqueTempDir());
