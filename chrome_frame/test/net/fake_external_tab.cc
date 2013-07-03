@@ -73,6 +73,11 @@
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(USE_AURA)
+#include "ui/gfx/screen.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -539,6 +544,10 @@ void FakeExternalTab::Initialize() {
 }
 
 void FakeExternalTab::InitializePostThreadsCreated() {
+#if defined(USE_AURA)
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
+                                 views::CreateDesktopScreen());
+#endif
   base::FilePath profile_path(
       ProfileManager::GetDefaultProfileDir(user_data()));
   Profile* profile =
