@@ -199,11 +199,19 @@ QueryTracker::QueryTracker(MappedMemoryManager* manager)
 }
 
 QueryTracker::~QueryTracker() {
-  queries_.clear();
+  while (!queries_.empty()) {
+    delete queries_.begin()->second;
+    queries_.erase(queries_.begin());
+  }
+  while (!removed_queries_.empty()) {
+    delete removed_queries_.front();
+    removed_queries_.pop_front();
+  }
 }
 
 QueryTracker::Query* QueryTracker::CreateQuery(GLuint id, GLenum target) {
   GPU_DCHECK_NE(0u, id);
+  FreeCompletedQueries();
   QuerySyncManager::QueryInfo info;
   if (!query_sync_manager_.Alloc(&info)) {
     return NULL;
@@ -221,20 +229,39 @@ QueryTracker::Query* QueryTracker::GetQuery(
   return it != queries_.end() ? it->second : NULL;
 }
 
-void QueryTracker::RemoveQuery(GLuint client_id, bool context_lost) {
-  (void)context_lost;  // stop unused warning
+void QueryTracker::RemoveQuery(GLuint client_id) {
   QueryMap::iterator it = queries_.find(client_id);
   if (it != queries_.end()) {
     Query* query = it->second;
-    GPU_DCHECK(context_lost || !query->Pending());
-    query_sync_manager_.Free(query->info_);
+    // When you delete a query you can't mark its memory as unused until it's
+    // completed.
+    // Note: If you don't do this you won't mess up the service but you will
+    // mess up yourself.
+    removed_queries_.push_back(query);
     queries_.erase(it);
-    delete query;
+    FreeCompletedQueries();
   }
 }
 
 void QueryTracker::Shrink() {
+  FreeCompletedQueries();
   query_sync_manager_.Shrink();
+}
+
+void QueryTracker::FreeCompletedQueries() {
+  QueryList::iterator it = removed_queries_.begin();
+  while (it != removed_queries_.end()) {
+    Query* query = *it;
+    if (query->Pending() &&
+        query->info_.sync->process_count != query->submit_count()) {
+      ++it;
+      continue;
+    }
+
+    query_sync_manager_.Free(query->info_);
+    it = removed_queries_.erase(it);
+    delete query;
+  }
 }
 
 }  // namespace gles2

@@ -96,6 +96,10 @@ class QueryTrackerTest : public testing::Test {
     return query->info_.sync;
   }
 
+  QuerySyncManager::Bucket* GetBucket(QueryTracker::Query* query) {
+    return query->info_.bucket;
+  }
+
   scoped_ptr<CommandBuffer> command_buffer_;
   scoped_ptr<GLES2CmdHelper> helper_;
   scoped_ptr<MappedMemoryManager> mapped_memory_;
@@ -115,7 +119,7 @@ TEST_F(QueryTrackerTest, Basic) {
   // Check we get nothing for a non-existent query.
   EXPECT_TRUE(query_tracker_->GetQuery(kId2) == NULL);
   // Check we can delete the query.
-  query_tracker_->RemoveQuery(kId1, false);
+  query_tracker_->RemoveQuery(kId1);
   // Check we get nothing for a non-existent query.
   EXPECT_TRUE(query_tracker_->GetQuery(kId1) == NULL);
 }
@@ -163,6 +167,39 @@ TEST_F(QueryTrackerTest, Query) {
   EXPECT_EQ(kResult, query->GetResult());
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_FALSE(query->Pending());
+}
+
+TEST_F(QueryTrackerTest, Remove) {
+  const GLuint kId1 = 123;
+  const int32 kToken = 46;
+  const uint32 kResult = 456;
+
+  // Create a Query.
+  QueryTracker::Query* query = query_tracker_->CreateQuery(
+      kId1, GL_ANY_SAMPLES_PASSED_EXT);
+  ASSERT_TRUE(query != NULL);
+
+  QuerySyncManager::Bucket* bucket = GetBucket(query);
+  EXPECT_EQ(1u, bucket->used_query_count);
+
+  query->MarkAsActive();
+  query->MarkAsPending(kToken);
+
+  query_tracker_->RemoveQuery(kId1);
+  // Check we get nothing for a non-existent query.
+  EXPECT_TRUE(query_tracker_->GetQuery(kId1) == NULL);
+
+  // Check that memory was not freed.
+  EXPECT_EQ(1u, bucket->used_query_count);
+
+  // Simulate GPU process marking it as available.
+  QuerySync* sync = GetSync(query);
+  sync->process_count = query->submit_count();
+  sync->result = kResult;
+
+  // Check FreeCompletedQueries.
+  query_tracker_->FreeCompletedQueries();
+  EXPECT_EQ(0u, bucket->used_query_count);
 }
 
 }  // namespace gles2

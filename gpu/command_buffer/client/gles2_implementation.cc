@@ -3174,36 +3174,10 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
         "glDeleteTextures", "id not created by this context.");
     return;
   }
-  // When you delete a query you can't mark its memory as unused until it's
-  // completed.
-  // Note: If you don't do this you won't mess up the service but you will mess
-  // up yourself.
 
-  // TODO(gman): Consider making this faster by putting pending quereies
-  // on some queue to be removed when they are finished.
-  bool query_pending = false;
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
-    if (query && query->Pending()) {
-      query_pending = true;
-      break;
-    }
-  }
+  for (GLsizei ii = 0; ii < n; ++ii)
+    query_tracker_->RemoveQuery(queries[ii]);
 
-  if (query_pending) {
-    WaitForCmd();
-  }
-
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
-    if (query && query->Pending()) {
-      if (!query->CheckResultsAvailable(helper_)) {
-        // Should only get here on context lost.
-        MustBeContextLost();
-      }
-    }
-    query_tracker_->RemoveQuery(queries[ii], helper_->IsContextLost());
-  }
   helper_->DeleteQueriesEXTImmediate(n, queries);
 }
 
