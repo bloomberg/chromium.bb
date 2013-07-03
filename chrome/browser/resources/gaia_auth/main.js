@@ -39,8 +39,6 @@ Authenticator.prototype = {
     this.gaiaUrl_ = params['gaiaUrl'] || this.GAIA_URL;
     this.inputLang_ = params['hl'];
     this.inputEmail_ = params['email'];
-    this.testEmail_ = params['test_email'];
-    this.testPassword_ = params['test_password'];
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
   },
@@ -64,10 +62,6 @@ Authenticator.prototype = {
       url += '&hl=' + encodeURIComponent(this.inputLang_);
     if (this.inputEmail_)
       url += '&Email=' + encodeURIComponent(this.inputEmail_);
-    if (this.testEmail_)
-      url += '&test_email=' + encodeURIComponent(this.testEmail_);
-    if (this.testPassword_)
-      url += '&test_pwd=' + encodeURIComponent(this.testPassword_);
     return url;
   },
 

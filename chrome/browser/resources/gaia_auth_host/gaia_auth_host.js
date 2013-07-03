@@ -43,9 +43,7 @@ cr.define('cr.login', function() {
   var SUPPORTED_PARAMS = [
     'gaiaUrl',       // Gaia url to use;
     'hl',            // Language code for the user interface;
-    'email',         // Pre-fill the email field in Gaia UI;
-    'test_email',    // Used for test;
-    'test_password'  // Used for test;
+    'email'          // Pre-fill the email field in Gaia UI;
   ];
 
   /**

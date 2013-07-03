@@ -425,30 +425,3 @@ chromeos::VirtualNetwork* VirtualConnectObserver::GetVirtualNetwork(
   }
   return virt;
 }
-
-EnrollmentObserver::EnrollmentObserver(AutomationProvider* automation,
-    IPC::Message* reply_message,
-    chromeos::EnrollmentScreen* enrollment_screen)
-    : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message),
-      enrollment_screen_(enrollment_screen) {
-  enrollment_screen_->AddTestingObserver(this);
-}
-
-EnrollmentObserver::~EnrollmentObserver() {}
-
-void EnrollmentObserver::OnEnrollmentComplete(bool succeeded) {
-  enrollment_screen_->RemoveTestingObserver(this);
-  if (automation_) {
-    if (succeeded) {
-      AutomationJSONReply(automation_.get(), reply_message_.release())
-          .SendSuccess(NULL);
-    } else {
-      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-      return_value->SetString("error_string", "Enrollment failed.");
-      AutomationJSONReply(automation_.get(), reply_message_.release())
-          .SendSuccess(return_value.get());
-    }
-  }
-  delete this;
-}

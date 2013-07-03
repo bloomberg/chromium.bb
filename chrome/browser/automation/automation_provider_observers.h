@@ -936,28 +936,6 @@ class VirtualConnectObserver
   DISALLOW_COPY_AND_ASSIGN(VirtualConnectObserver);
 };
 
-// Waits for enterprise device enrollment to complete and returns the status to
-// the automation provider.
-class EnrollmentObserver
-    : public chromeos::EnrollmentScreen::TestingObserver {
- public:
-  EnrollmentObserver(AutomationProvider* automation,
-                     IPC::Message* reply_message,
-                     chromeos::EnrollmentScreen* enrollment_screen);
-
-  virtual ~EnrollmentObserver();
-
-  // chromeos::EnrollmentScreen::Observer implementation.
-  virtual void OnEnrollmentComplete(bool succeeded);
-
- private:
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  chromeos::EnrollmentScreen* enrollment_screen_;
-
-  DISALLOW_COPY_AND_ASSIGN(EnrollmentObserver);
-};
-
 #endif  // defined(OS_CHROMEOS)
 
 // Waits for the bookmark model to load.

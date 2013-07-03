@@ -288,8 +288,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         '--skip-oauth-login',
         # Enables injection of test content script for webui login automation
         '--auth-ext-path=%s' % auth_ext_path,
-        # Enable automation provider and chromeos net logs
-        '--vmodule=*/browser/automation/*=2,*/chromeos/net/*=2',
+        # Enable automation provider, chromeos net and chromeos login logs
+        '--vmodule=*/browser/automation/*=2,*/chromeos/net/*=2,' +
+            '*/chromeos/login/*=2',
       ]
     else:
       return []

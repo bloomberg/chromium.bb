@@ -277,14 +277,6 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
   NOTREACHED();
 }
 
-void EnrollmentScreenHandler::SubmitTestCredentials(
-    const std::string& email,
-    const std::string& password) {
-  test_email_ = email;
-  test_password_ = password;
-  DoShow();
-}
-
 // EnrollmentScreenHandler BaseScreenHandler implementation -----
 
 void EnrollmentScreenHandler::Initialize() {
@@ -467,10 +459,6 @@ void EnrollmentScreenHandler::DoShow() {
   screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   screen_data.SetBoolean("is_auto_enrollment", is_auto_enrollment_);
   screen_data.SetBoolean("prevent_cancellation", !can_exit_enrollment_);
-  if (!test_email_.empty()) {
-    screen_data.SetString("test_email", test_email_);
-    screen_data.SetString("test_password", test_password_);
-  }
 
   ShowScreen(OobeUI::kScreenOobeEnrollment, &screen_data);
 }

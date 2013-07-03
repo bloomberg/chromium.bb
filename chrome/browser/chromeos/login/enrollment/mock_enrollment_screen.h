@@ -38,8 +38,6 @@ class MockEnrollmentScreenActor
   MOCK_METHOD1(ShowAuthError, void(const GoogleServiceAuthError&));
   MOCK_METHOD1(ShowUIError, void(UIError));
   MOCK_METHOD1(ShowEnrollmentStatus, void(policy::EnrollmentStatus status));
-  MOCK_METHOD2(SubmitTestCredentials, void(const std::string& email,
-                                           const std::string& password));
 };
 
 }  // namespace chromeos

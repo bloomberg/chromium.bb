@@ -168,10 +168,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     onBeforeShow: function(data) {
       var url = data.signin_url;
       url += '?gaiaUrl=' + encodeURIComponent(data.gaiaUrl);
-      if (data.test_email) {
-        url += '&test_email=' + encodeURIComponent(data.test_email);
-        url += '&test_password=' + encodeURIComponent(data.test_password);
-      }
       this.signInUrl_ = url;
       this.setIsAutoEnrollment(data.is_auto_enrollment);
       this.preventCancellation_ = data.prevent_cancellation;

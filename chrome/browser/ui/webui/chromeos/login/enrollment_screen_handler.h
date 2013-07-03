@@ -51,8 +51,6 @@ class EnrollmentScreenHandler
   virtual void ShowAuthError(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) OVERRIDE;
   virtual void ShowUIError(UIError error_code) OVERRIDE;
-  virtual void SubmitTestCredentials(const std::string& email,
-                                     const std::string& password) OVERRIDE;
 
   // Implements BaseScreenHandler:
   virtual void Initialize() OVERRIDE;
@@ -122,10 +120,6 @@ class EnrollmentScreenHandler
 
   // Username of the user signing in.
   std::string user_;
-
-  // Credentials used for tests.
-  std::string test_email_;
-  std::string test_password_;
 
   // This intentionally lives here and not in the controller, since it needs to
   // execute requests in the context of the profile that displays the webui.

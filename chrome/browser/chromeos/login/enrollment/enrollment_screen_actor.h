@@ -84,10 +84,6 @@ class EnrollmentScreenActor {
 
   // Update the UI to report the |status| of the enrollment procedure.
   virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) = 0;
-
-  // Used for testing only.
-  virtual void SubmitTestCredentials(const std::string& email,
-                                     const std::string& password) = 0;
 };
 
 }  // namespace chromeos

@@ -105,7 +105,6 @@ void EnrollmentScreen::OnAuthError(
     const GoogleServiceAuthError& error) {
   enrollment_failed_once_ = true;
   actor_->ShowAuthError(error);
-  NotifyTestingObservers(false);
 
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
@@ -162,7 +161,6 @@ void EnrollmentScreen::OnCancel() {
       base::Bind(&ScreenObserver::OnExit,
                  base::Unretained(get_screen_observer()),
                  ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED));
-  NotifyTestingObservers(false);
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {
@@ -189,15 +187,6 @@ void EnrollmentScreen::OnConfirmationClosed() {
   }
 }
 
-void EnrollmentScreen::AddTestingObserver(TestingObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void EnrollmentScreen::RemoveTestingObserver(
-    TestingObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void EnrollmentScreen::RegisterForDevicePolicy(
     const std::string& token) {
   policy::BrowserPolicyConnector* connector =
@@ -209,7 +198,6 @@ void EnrollmentScreen::RegisterForDevicePolicy(
     UMAFailure(policy::kMetricEnrollmentWrongUserError);
     actor_->ShowUIError(
         EnrollmentScreenActor::UI_ERROR_DOMAIN_MISMATCH);
-    NotifyTestingObservers(false);
     return;
   }
 
@@ -228,7 +216,6 @@ void EnrollmentScreen::ReportEnrollmentStatus(
   bool success = status.status() == policy::EnrollmentStatus::STATUS_SUCCESS;
   enrollment_failed_once_ |= !success;
   actor_->ShowEnrollmentStatus(status);
-  NotifyTestingObservers(success);
 
   switch (status.status()) {
     case policy::EnrollmentStatus::STATUS_SUCCESS:
@@ -294,11 +281,6 @@ void EnrollmentScreen::UMAFailure(int sample) {
 void EnrollmentScreen::ShowSigninScreen() {
   actor_->Show();
   actor_->ShowSigninScreen();
-}
-
-void EnrollmentScreen::NotifyTestingObservers(bool succeeded) {
-  FOR_EACH_OBSERVER(TestingObserver, observers_,
-                    OnEnrollmentComplete(succeeded));
 }
 
 }  // namespace chromeos

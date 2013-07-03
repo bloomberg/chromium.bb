@@ -34,7 +34,7 @@ void LoadGaiaAuthExtension(Profile* profile) {
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
     base::FilePath auth_extension_path =
         command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
-    component_loader->Add(IDR_GAIA_TEST_AUTH_MANIFEST, auth_extension_path);
+    component_loader->Add(IDR_GAIA_AUTH_MANIFEST, auth_extension_path);
     return;
   }
 

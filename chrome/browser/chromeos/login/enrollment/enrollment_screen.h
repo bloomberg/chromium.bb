@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
@@ -25,15 +24,6 @@ class EnrollmentScreen
     : public WizardScreen,
       public EnrollmentScreenActor::Controller {
  public:
-  // Used in PyAuto testing.
-  class TestingObserver {
-   public:
-    virtual ~TestingObserver() {}
-
-    // Notifies observers of a change in enrollment state.
-    virtual void OnEnrollmentComplete(bool succeeded) = 0;
-  };
-
   EnrollmentScreen(ScreenObserver* observer,
                    EnrollmentScreenActor* actor);
   virtual ~EnrollmentScreen();
@@ -61,10 +51,6 @@ class EnrollmentScreen
     return actor_;
   }
 
-  // Used for testing.
-  void AddTestingObserver(TestingObserver* observer);
-  void RemoveTestingObserver(TestingObserver* observer);
-
  private:
   // Starts the Lockbox storage process.
   void WriteInstallAttributesData();
@@ -84,9 +70,6 @@ class EnrollmentScreen
   // Shows the signin screen. Used as a callback to run after auth reset.
   void ShowSigninScreen();
 
-  // Notifies testing observers about the result of the enrollment.
-  void NotifyTestingObservers(bool succeeded);
-
   EnrollmentScreenActor* actor_;
   bool is_auto_enrollment_;
   bool can_exit_enrollment_;
@@ -94,9 +77,6 @@ class EnrollmentScreen
   std::string user_;
   int lockbox_init_duration_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
-
-  // Observers.
-  ObserverList<TestingObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);
 };

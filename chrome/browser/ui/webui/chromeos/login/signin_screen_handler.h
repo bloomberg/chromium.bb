@@ -376,6 +376,9 @@ class SigninScreenHandler
   // Returns true if offline login is allowed.
   bool IsOfflineLoginAllowed() const;
 
+  // Attempts login for test.
+  void SubmitLoginFormForTest();
+
   // Current UI state of the signin screen.
   UIState ui_state_;
 
@@ -432,6 +435,7 @@ class SigninScreenHandler
   // Test credentials.
   std::string test_user_;
   std::string test_pass_;
+  bool test_expects_complete_login_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

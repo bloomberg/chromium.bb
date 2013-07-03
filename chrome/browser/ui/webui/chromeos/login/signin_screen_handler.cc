@@ -328,6 +328,7 @@ SigninScreenHandler::SigninScreenHandler(
       dns_clear_task_running_(false),
       cookies_cleared_(false),
       network_state_informer_(network_state_informer),
+      test_expects_complete_login_(false),
       weak_factory_(this),
       webui_visible_(false),
       preferences_changed_delayed_(false),
@@ -897,11 +898,20 @@ void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
 void SigninScreenHandler::ShowSigninScreenForCreds(
     const std::string& username,
     const std::string& password) {
-  VLOG(2) << "ShowSigninScreenForCreds " << username << " " << password;
+  VLOG(2) << "ShowSigninScreenForCreds  for user " << username
+          << ", frame_state=" << frame_state_;
 
   test_user_ = username;
   test_pass_ = password;
-  HandleShowAddUser(NULL);
+  test_expects_complete_login_ = true;
+
+  // Submit login form for test if gaia is ready. If gaia is loading, login
+  // will be attempted in HandleLoginWebuiReady after gaia is ready. Otherwise,
+  // reload gaia then follow the loading case.
+  if (frame_state_ == FRAME_STATE_LOADED)
+    SubmitLoginFormForTest();
+  else if (frame_state_ != FRAME_STATE_LOADING)
+    HandleShowAddUser(NULL);
 }
 
 void SigninScreenHandler::OnCookiesCleared(base::Closure on_clear_callback) {
@@ -1056,18 +1066,6 @@ void SigninScreenHandler::LoadAuthExtension(
           GaiaUrls::GetInstance()->gaia_url();
   params.SetString("gaiaUrl", gaia_url.spec());
 
-  // Test automation data:
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
-    if (!test_user_.empty()) {
-      params.SetString("test_email", test_user_);
-      test_user_.clear();
-    }
-    if (!test_pass_.empty()) {
-      params.SetString("test_password", test_pass_);
-      test_pass_.clear();
-    }
-  }
   frame_state_ = FRAME_STATE_LOADING;
   ignore_next_user_abort_frame_error_ = true;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
@@ -1093,6 +1091,15 @@ void SigninScreenHandler::HandleCompleteLogin(const std::string& typed_email,
   delegate_->CompleteLogin(UserContext(sanitized_email,
                                        password,
                                        std::string()));  // auth_code
+
+  if (test_expects_complete_login_) {
+    VLOG(2) << "Complete test login for " << typed_email
+            << ", requested=" << test_user_;
+
+    test_expects_complete_login_ = false;
+    test_user_.clear();
+    test_pass_.clear();
+  }
 }
 
 void SigninScreenHandler::HandleCompleteAuthentication(
@@ -1386,6 +1393,9 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
     RefocusCurrentPod();
   }
   HandleFrameLoadingCompleted(0);
+
+  if (test_expects_complete_login_)
+    SubmitLoginFormForTest();
 }
 
 void SigninScreenHandler::HandleDemoWebuiReady() {
@@ -1647,6 +1657,24 @@ bool SigninScreenHandler::IsOfflineLoginAllowed() const {
   bool show_pods;
   cros_settings->GetBoolean(kAccountsPrefShowUserNamesOnSignIn, &show_pods);
   return !show_pods;
+}
+
+void SigninScreenHandler::SubmitLoginFormForTest() {
+  VLOG(2) << "Submit login form for test, user=" << test_user_;
+
+  std::string code;
+  code += "document.getElementById('Email').value = '" + test_user_ + "';";
+  code += "document.getElementById('Passwd').value = '" + test_pass_ + "';";
+  code += "document.getElementById('signIn').click();";
+
+  RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
+  rvh->ExecuteJavascriptInWebFrame(
+      ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
+      ASCIIToUTF16(code));
+
+  // Test properties are cleared in HandleCompleteLogin because the form
+  // submission might fail and login will not be attempted after reloading
+  // if they are cleared here.
 }
 
 }  // namespace chromeos
