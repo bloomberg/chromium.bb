@@ -20,8 +20,6 @@
 class SkCanvas;
 
 namespace WebKit {
-class WebMediaPlayer;
-class WebMediaPlayerClient;
 struct WebRect;
 }
 
@@ -30,7 +28,6 @@ class WebTestProxyBase;
 }
 
 namespace content {
-class ShellMediaStreamClient;
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
@@ -95,13 +92,6 @@ class WebKitTestRunner : public RenderViewObserver,
       WebKit::WebVector<WebKit::WebHistoryItem>* history,
       size_t* currentEntryIndex);
 
-  // TODO(scherkus): Remove once https://codereview.chromium.org/18130006
-  // rolls into Chromium.
-  virtual WebKit::WebMediaPlayer* createWebMediaPlayer(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURL& url,
-      WebKit::WebMediaPlayerClient* client);
-
   void Reset();
 
   void set_proxy(::WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
@@ -136,10 +126,6 @@ class WebKitTestRunner : public RenderViewObserver,
   bool is_main_window_;
 
   bool focus_on_next_commit_;
-
-  // TODO(scherkus): Remove this after switching to using
-  // RenderViewImpl::createMediaPlayer() http://crbug.com/239826
-  scoped_ptr<ShellMediaStreamClient> shell_media_stream_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

@@ -25,9 +25,7 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/webkit_test_helpers.h"
-#include "content/shell/renderer/shell_media_stream_client.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
-#include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -61,9 +59,6 @@
 #include "ui/gfx/rect.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/media/webmediaplayer_impl.h"
-#include "webkit/renderer/media/webmediaplayer_ms.h"
-#include "webkit/renderer/media/webmediaplayer_params.h"
 
 using WebKit::Platform;
 using WebKit::WebArrayBufferView;
@@ -74,8 +69,6 @@ using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
 using WebKit::WebHistoryItem;
-using WebKit::WebMediaPlayer;
-using WebKit::WebMediaPlayerClient;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebScriptSource;
@@ -513,42 +506,6 @@ void WebKitTestRunner::captureHistoryForWindow(
         PageStateToHistoryItem(session_histories_[pos][entry]);
   }
   history->swap(result);
-}
-
-// TODO(scherkus): Remove once https://codereview.chromium.org/18130006
-// rolls into Chromium.
-WebMediaPlayer* WebKitTestRunner::createWebMediaPlayer(
-    WebFrame* frame,
-    const WebURL& url,
-    WebMediaPlayerClient* client) {
-  if (!shell_media_stream_client_) {
-    shell_media_stream_client_.reset(new ShellMediaStreamClient());
-  }
-
-  if (shell_media_stream_client_->IsMediaStream(url)) {
-    return new webkit_media::WebMediaPlayerMS(
-        frame,
-        client,
-        base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-        shell_media_stream_client_.get(),
-        new media::MediaLog());
-  }
-
-#if defined(OS_ANDROID)
-  return NULL;
-#else
-  webkit_media::WebMediaPlayerParams params(
-      GetMediaThreadMessageLoopProxy(),
-      base::Callback<void(const base::Closure&)>(),
-      NULL,
-      NULL,
-      new media::MediaLog());
-  return new webkit_media::WebMediaPlayerImpl(
-      frame,
-      client,
-      base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-      params);
-#endif
 }
 
 // RenderViewObserver  --------------------------------------------------------
