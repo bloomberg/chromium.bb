@@ -1601,6 +1601,15 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kGaiaProfileInfo)
   },
+#if defined(OS_WIN)
+  {
+    "disable-app-launcher",
+    IDS_FLAGS_DISABLE_APP_LIST_NAME,
+    IDS_FLAGS_DISABLE_APP_LIST_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableAppList)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
