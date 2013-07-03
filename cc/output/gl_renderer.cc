@@ -1818,40 +1818,6 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   draw_cache_.matrix_data.push_back(m);
 }
 
-void GLRenderer::DrawTextureQuad(const DrawingFrame* frame,
-                                 const TextureDrawQuad* quad) {
-  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, &highp_threshold_cache_, highp_threshold_min_,
-      quad->shared_quad_state->visible_content_rect.bottom_right());
-
-  TexTransformTextureProgramBinding binding;
-  if (quad->premultiplied_alpha) {
-    binding.Set(GetTextureProgram(tex_coord_precision), Context());
-  } else {
-    binding.Set(GetNonPremultipliedTextureProgram(tex_coord_precision),
-                Context());
-  }
-  SetUseProgram(binding.program_id);
-  GLC(Context(), Context()->uniform1i(binding.sampler_location, 0));
-  Float4 uv_xform = UVTransform(quad);
-  GLC(Context(),
-      Context()->uniform4f(binding.tex_transform_location,
-                           uv_xform.data[0],
-                           uv_xform.data[1],
-                           uv_xform.data[2],
-                           uv_xform.data[3]));
-
-  GLC(Context(),
-      Context()->uniform1fv(
-          binding.vertex_opacity_location, 4, quad->vertex_opacity));
-
-  ResourceProvider::ScopedSamplerGL quad_resource_lock(
-      resource_provider_, quad->resource_id, GL_TEXTURE_2D, GL_LINEAR);
-
-  DrawQuadGeometry(
-      frame, quad->quadTransform(), quad->rect, binding.matrix_location);
-}
-
 void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
                                    const IOSurfaceDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());

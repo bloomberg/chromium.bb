@@ -138,7 +138,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                           const SolidColorDrawQuad* quad);
   void DrawStreamVideoQuad(const DrawingFrame* frame,
                            const StreamVideoDrawQuad* quad);
-  void DrawTextureQuad(const DrawingFrame* frame, const TextureDrawQuad* quad);
   void EnqueueTextureQuad(const DrawingFrame* frame,
                           const TextureDrawQuad* quad);
   void FlushTextureQuadCache();
