@@ -218,12 +218,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual base::TimeDelta GetTotalProcessingCommandsTime() = 0;
   virtual void AddProcessingCommandsTime(base::TimeDelta) = 0;
 
-  // Returns true if the context was lost either by GL_ARB_robustness, forced
-  // context loss or command buffer parse error.
+  // Returns true if the context was just lost due to e.g. GL_ARB_robustness.
   virtual bool WasContextLost() = 0;
-
-  // Returns true if the context was lost specifically by GL_ARB_robustness.
-  virtual bool WasContextLostByRobustnessExtension() = 0;
 
   // Lose this context.
   virtual void LoseContext(uint32 reset_status) = 0;
