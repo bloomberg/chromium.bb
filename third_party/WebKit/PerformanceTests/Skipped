@@ -75,3 +75,6 @@ Parser/query-selector-id-deep.html
 
 # Does not run on Android
 Interactive/window-resize.html
+
+# Microbenchmark that we aren't interested in monitoring.
+Bindings/named-property-enumerator.html
