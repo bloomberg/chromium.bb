@@ -15,6 +15,7 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/file_ref_create_info.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 
 namespace ppapi {
@@ -87,6 +88,11 @@ class PPAPI_PROXY_EXPORT FileRefResource
 
   // Populated after creation.
   FileRef_CreateInfo create_info_;
+
+  // Some file ref operations may fail if the the file system resource inside
+  // create_info_ is destroyed. Therefore, we explicitly hold a reference to
+  // the file system resource to make sure it outlives the file ref.
+  ScopedPPResource file_system_resource_;
 
   scoped_refptr<StringVar> name_var_;
   scoped_refptr<StringVar> path_var_;

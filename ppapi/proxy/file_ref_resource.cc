@@ -24,7 +24,8 @@ FileRefResource::FileRefResource(
     PP_Instance instance,
     const FileRef_CreateInfo& create_info)
     : PluginResource(connection, instance),
-      create_info_(create_info) {
+      create_info_(create_info),
+      file_system_resource_(create_info.file_system_plugin_resource) {
   if (create_info_.file_system_type != PP_FILESYSTEMTYPE_EXTERNAL) {
     // If path ends with a slash, then normalize it away unless path is
     // the root path.
