@@ -157,7 +157,7 @@
       <kb-key class="left-shift dark" toKeyset="upper" char="Invalid" align="left">shift</kb-key>
       <kb-key>z</kb-key><kb-key>x</kb-key><kb-key accents="c">c</kb-key><kb-key>v</kb-key>
       <kb-key>b</kb-key><kb-key accents="n">n</kb-key><kb-key>m</kb-key>
-      <kb-key superscript="!">,</kb-key><kb-key superscript="?">.</kb-key>
+      <kb-key superscript="!" accents="comma">,</kb-key><kb-key superscript="?" accents="period">.</kb-key>
       <kb-key class="right-shift dark" toKeyset="upper" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>
@@ -252,6 +252,14 @@
       <kb-accent-set id="n" offset=1>
         <kb-accent-key>&#x00F1;</kb-accent-key>
         <kb-accent-key class="active">n</kb-accent-key>
+      </kb-accent-set>
+      <kb-accent-set id="comma" offset=1>
+        <kb-accent-key>!</kb-accent-key>
+        <kb-accent-key class="active">,</kb-accent-key>
+      </kb-accent-set>
+      <kb-accent-set id="period" offset=1>
+        <kb-accent-key>?</kb-accent-key>
+        <kb-accent-key class="active">.</kb-accent-key>
       </kb-accent-set>
     </kb-accent-container>
   </kb-keyset>
