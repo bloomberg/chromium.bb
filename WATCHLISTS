@@ -151,8 +151,8 @@
                   'chrome/browser/chromeos/net/',
     },
     'chromeos_power': {
-      'filepath': 'chromeos/dbus/power_.*|'\
-                  'chromeos/power/|'\
+      'filepath': 'ash/system/chromeos/power/|'\
+                  'chromeos/dbus/power_.*|'\
                   'chrome/browser/chromeos/power/',
     },
     'chromeos_webui': {
