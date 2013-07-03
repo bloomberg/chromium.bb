@@ -273,6 +273,8 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
 
   if (*it == largest_received_missing_packet_sequence_number_) {
     ++it;
+    if (it == missing_packets.end())
+      return;
   }
   // Scan through the list and log consecutive ranges of missing packets.
   size_t num_consecutive_missing_packets = 0;
