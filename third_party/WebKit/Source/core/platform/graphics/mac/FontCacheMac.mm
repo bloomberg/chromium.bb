@@ -39,11 +39,6 @@
 #import <wtf/StdLibExtras.h>
 
 // Forward declare Mac SPIs.
-// Request for public API: rdar://13787490
-extern "C" {
-void CGFontSetShouldUseMulticache(bool enable);
-}
-
 // Request for public API: rdar://13803570
 @interface NSFont (WebKitSPI)
 + (NSFont*)findFontLike:(NSFont*)font forString:(NSString*)string withRange:(NSRange)range inLanguage:(id)useNil;
@@ -71,8 +66,6 @@ static void fontCacheRegisteredFontsChangedNotificationCallback(CFNotificationCe
 
 void FontCache::platformInit()
 {
-    // Note: This may break on future OS releases, per https://bugs.webkit.org/show_bug.cgi?id=102405#c8.
-    CGFontSetShouldUseMulticache(true);
     CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this, fontCacheRegisteredFontsChangedNotificationCallback, kCTFontManagerRegisteredFontsChangedNotification, 0, CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 
