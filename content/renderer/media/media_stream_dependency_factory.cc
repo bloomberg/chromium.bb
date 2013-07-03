@@ -11,7 +11,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
-#include "content/renderer/media/rtc_encoding_video_capturer_factory.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
@@ -34,6 +33,10 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
+
+#if defined(ENABLE_WEBRTC)
+#include "content/renderer/media/rtc_encoding_video_capturer_factory.h"
+#endif
 
 #if defined(USE_OPENSSL)
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
@@ -496,7 +499,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     decoder_factory = decoder_factory_tv_ = new RTCVideoDecoderFactoryTv;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(ENABLE_WEBRTC) && defined(OS_CHROMEOS)
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kEnableEncodedScreenCapture)) {
       // PeerConnectionFactory owns the encoder factory. Pass a weak pointer of
