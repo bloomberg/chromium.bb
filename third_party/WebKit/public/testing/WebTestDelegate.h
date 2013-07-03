@@ -42,8 +42,6 @@ namespace WebKit {
 class WebFrame;
 class WebGamepads;
 class WebHistoryItem;
-class WebMediaPlayer;
-class WebMediaPlayerClient;
 struct WebRect;
 struct WebSize;
 struct WebURLError;
@@ -162,9 +160,6 @@ public:
     // Returns the back/forward history for the WebView associated with the
     // given WebTestProxyBase as well as the index of the current entry.
     virtual void captureHistoryForWindow(WebTestProxyBase*, WebKit::WebVector<WebKit::WebHistoryItem>*, size_t* currentEntryIndex) = 0;
-
-    // Returns a media player corresponding to |url| as src.
-    virtual WebKit::WebMediaPlayer* createWebMediaPlayer(WebKit::WebFrame*, const WebKit::WebURL&, WebKit::WebMediaPlayerClient*) = 0;
 };
 
 }

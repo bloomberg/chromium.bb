@@ -63,8 +63,6 @@ class WebFrame;
 class WebGeolocationClient;
 class WebGeolocationClientMock;
 class WebImage;
-class WebMediaPlayer;
-class WebMediaPlayerClient;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebNode;
@@ -172,7 +170,6 @@ protected:
     void didStopLoading();
     void showContextMenu(WebKit::WebFrame*, const WebKit::WebContextMenuData&);
     WebKit::WebUserMediaClient* userMediaClient();
-    WebKit::WebMediaPlayer* createMediaPlayer(WebKit::WebFrame*, const WebKit::WebURL&, WebKit::WebMediaPlayerClient*);
     void printPage(WebKit::WebFrame*);
     WebKit::WebNotificationPresenter* notificationPresenter();
     WebKit::WebGeolocationClient* geolocationClient();
@@ -405,10 +402,6 @@ public:
     virtual WebKit::WebUserMediaClient* userMediaClient()
     {
         return WebTestProxyBase::userMediaClient();
-    }
-    virtual WebKit::WebMediaPlayer* createMediaPlayer(WebKit::WebFrame* frame, const WebKit::WebURL& url, WebKit::WebMediaPlayerClient* client)
-    {
-        return WebTestProxyBase::createMediaPlayer(frame, url, client);
     }
     virtual void printPage(WebKit::WebFrame* frame)
     {

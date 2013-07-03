@@ -1059,11 +1059,6 @@ WebUserMediaClient* WebTestProxyBase::userMediaClient()
     return m_userMediaClient.get();
 }
 
-WebMediaPlayer* WebTestProxyBase::createMediaPlayer(WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
-{
-    return m_delegate->createWebMediaPlayer(frame, url, client);
-}
-
 // Simulate a print by going into print mode and then exit straight away.
 void WebTestProxyBase::printPage(WebFrame* frame)
 {
