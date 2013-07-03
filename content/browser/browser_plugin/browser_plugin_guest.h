@@ -32,6 +32,7 @@
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/edit_command.h"
 #include "content/port/common/input_event_ack_state.h"
+#include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
@@ -261,6 +262,9 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Called when the drag started by this guest ends at an OS-level.
   void EndSystemDrag();
 
+  // |this| takes ownership of |delegate|.
+  void SetDelegate(BrowserPluginGuestDelegate* delegate);
+
  private:
   class EmbedderRenderViewHostObserver;
   friend class TestBrowserPluginGuest;
@@ -489,6 +493,8 @@ class CONTENT_EXPORT BrowserPluginGuest
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.
   std::queue<IPC::Message*> pending_messages_;
+
+  scoped_ptr<BrowserPluginGuestDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

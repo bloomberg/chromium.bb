@@ -37,8 +37,6 @@ class AdViewGuest : public GuestView,
       const GURL& url,
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AdViewGuest);
 };

@@ -324,9 +324,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // IPC message handlers.
   // Please keep in alphabetical order.
-  void OnAddMessageToConsole(
-      int instance_id,
-      const base::DictionaryValue& message_info);
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnAttachACK(int instance_id,
                    const BrowserPluginMsg_Attach_ACK_Params& ack_params);

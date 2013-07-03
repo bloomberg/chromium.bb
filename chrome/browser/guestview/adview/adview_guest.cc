@@ -50,7 +50,3 @@ void AdViewGuest::DidCommitProvisionalLoadForFrame(
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   DispatchEvent(new GuestView::Event(adview::kEventLoadCommit, args.Pass()));
 }
-
-void AdViewGuest::WebContentsDestroyed(WebContents* web_contents) {
-  delete this;
-}

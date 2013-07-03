@@ -81,6 +81,7 @@ class AccessTokenStore;
 class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
+class BrowserPluginGuestDelegate;
 class BrowserPpapiHost;
 class BrowserURLHandler;
 class LocationProvider;
@@ -143,10 +144,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // If the guest was created via navigation, then |extra_params| will be
   // non-NULL. |extra_params| are parameters passed to the BrowserPlugin object
   // element by the content embedder. These parameters may include the API to
-  // enable for the given guest.
+  // enable for the given guest. |guest_delegate| is a return parameter of
+  // the delegate in the content embedder that will service the guest in the
+  // content layer. The content layer takes ownership of the |guest_delegate|.
   virtual void GuestWebContentsCreated(
       WebContents* guest_web_contents,
       WebContents* opener_web_contents,
+      BrowserPluginGuestDelegate** guest_delegate,
       scoped_ptr<base::DictionaryValue> extra_params) {}
 
   // Notifies that a guest WebContents has been attached to a BrowserPlugin.

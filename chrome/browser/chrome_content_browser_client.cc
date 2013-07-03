@@ -701,6 +701,7 @@ static bool IsExtensionActivityLogEnabledForProfile(Profile* profile) {
 void ChromeContentBrowserClient::GuestWebContentsCreated(
     WebContents* guest_web_contents,
     WebContents* opener_web_contents,
+    content::BrowserPluginGuestDelegate** guest_delegate,
     scoped_ptr<base::DictionaryValue> extra_params) {
   if (opener_web_contents) {
     GuestView* guest = GuestView::FromWebContents(opener_web_contents);
@@ -711,11 +712,11 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 
     switch (guest->GetViewType()) {
       case GuestView::WEBVIEW: {
-        new WebViewGuest(guest_web_contents);
+        *guest_delegate = new WebViewGuest(guest_web_contents);
         break;
       }
       case GuestView::ADVIEW: {
-        new AdViewGuest(guest_web_contents);
+        *guest_delegate = new AdViewGuest(guest_web_contents);
         break;
       }
       default:
@@ -733,9 +734,9 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
   extra_params->GetString(guestview::kAttributeApi, &api_type);
 
   if (api_type == "adview") {
-    new AdViewGuest(guest_web_contents);
+    *guest_delegate  = new AdViewGuest(guest_web_contents);
   } else if (api_type == "webview") {
-    new WebViewGuest(guest_web_contents);
+    *guest_delegate = new WebViewGuest(guest_web_contents);
   } else {
     NOTREACHED();
   }

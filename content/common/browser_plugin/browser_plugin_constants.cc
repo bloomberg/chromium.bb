@@ -42,7 +42,6 @@ const char kAttributeSrc[] = "src";
 
 // Events.
 const char kEventClose[] = "close";
-const char kEventConsoleMessage[] = "consolemessage";
 const char kEventExit[] = "exit";
 const char kEventLoadAbort[] = "loadabort";
 const char kEventLoadStart[] = "loadstart";
@@ -57,9 +56,6 @@ const char kInitialHeight[] = "initialHeight";
 const char kInitialWidth[] = "initialWidth";
 const char kIsTopLevel[] = "isTopLevel";
 const char kLastUnlockedBySelf[] = "lastUnlockedBySelf";
-const char kLevel[] = "level";
-const char kLine[] = "line";
-const char kMessage[] = "message";
 const char kName[] = "name";
 const char kNewHeight[] = "newHeight";
 const char kNewWidth[] = "newWidth";
@@ -76,7 +72,6 @@ const char kProcessId[] = "processId";
 const char kReason[] = "reason";
 const char kRequestId[] = "requestId";
 const char kRequestMethod[] = "requestMethod";
-const char kSourceId[] = "sourceId";
 const char kTargetURL[] = "targetUrl";
 const char kURL[] = "url";
 const char kWindowID[] = "windowId";

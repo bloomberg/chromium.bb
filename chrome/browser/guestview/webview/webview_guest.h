@@ -39,6 +39,12 @@ class WebViewGuest : public GuestView,
   virtual WebViewGuest* AsWebView() OVERRIDE;
   virtual AdViewGuest* AsAdView() OVERRIDE;
 
+  // GuestDelegate implementation.
+  virtual void AddMessageToConsole(int32 level,
+                                   const string16& message,
+                                   int32 line_no,
+                                   const string16& source_id) OVERRIDE;
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,

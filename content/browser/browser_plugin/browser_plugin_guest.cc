@@ -301,19 +301,11 @@ bool BrowserPluginGuest::AddMessageToConsole(WebContents* source,
                                              const string16& message,
                                              int32 line_no,
                                              const string16& source_id) {
-  base::DictionaryValue message_info;
-  // Log levels are from base/logging.h: LogSeverity.
-  message_info.Set(browser_plugin::kLevel,
-                   base::Value::CreateIntegerValue(level));
-  message_info.Set(browser_plugin::kMessage,
-                   base::Value::CreateStringValue(message));
-  message_info.Set(browser_plugin::kLine,
-                   base::Value::CreateIntegerValue(line_no));
-  message_info.Set(browser_plugin::kSourceId,
-                   base::Value::CreateStringValue(source_id));
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_AddMessageToConsole(instance_id_, message_info));
-  return false;
+  if (!delegate_)
+    return false;
+
+  delegate_->AddMessageToConsole(level, message, line_no, source_id);
+  return true;
 }
 
 void BrowserPluginGuest::DestroyUnattachedWindows() {
@@ -475,8 +467,10 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     guest = new BrowserPluginGuest(instance_id, web_contents, NULL, false);
   }
   web_contents->SetBrowserPluginGuest(guest);
+  BrowserPluginGuestDelegate* delegate = NULL;
   GetContentClient()->browser()->GuestWebContentsCreated(
-      web_contents, NULL, extra_params.Pass());
+      web_contents, NULL, &delegate, extra_params.Pass());
+  guest->SetDelegate(delegate);
   return guest;
 }
 
@@ -490,9 +484,11 @@ BrowserPluginGuest* BrowserPluginGuest::CreateWithOpener(
       new BrowserPluginGuest(
           instance_id, web_contents, opener, has_render_view);
   web_contents->SetBrowserPluginGuest(guest);
+  BrowserPluginGuestDelegate* delegate = NULL;
   GetContentClient()->browser()->GuestWebContentsCreated(
-      web_contents, opener->GetWebContents(),
+      web_contents, opener->GetWebContents(), &delegate,
       scoped_ptr<base::DictionaryValue>());
+  guest->SetDelegate(delegate);
   return guest;
 }
 
@@ -803,6 +799,11 @@ void BrowserPluginGuest::EndSystemDrag() {
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
   guest_rvh->ForwardMouseEvent(mouse_event);
+}
+
+void BrowserPluginGuest::SetDelegate(BrowserPluginGuestDelegate* delegate) {
+  DCHECK(!delegate_);
+  delegate_.reset(delegate);
 }
 
 void BrowserPluginGuest::AskEmbedderForGeolocationPermission(

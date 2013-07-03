@@ -78,6 +78,20 @@ AdViewGuest* WebViewGuest::AsAdView() {
   return NULL;
 }
 
+void WebViewGuest::AddMessageToConsole(int32 level,
+                                       const string16& message,
+                                       int32 line_no,
+                                       const string16& source_id) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  // Log levels are from base/logging.h: LogSeverity.
+  args->SetInteger(webview::kLevel, level);
+  args->SetString(webview::kMessage, message);
+  args->SetInteger(webview::kLine, line_no);
+  args->SetString(webview::kSourceId, source_id);
+  DispatchEvent(
+      new GuestView::Event(webview::kEventConsoleMessage, args.Pass()));
+}
+
 void WebViewGuest::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
@@ -161,7 +175,6 @@ void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
           browser_context(), extension_id(),
           embedder_render_process_id(),
           view_instance_id()));
-  delete this;
 }
 
 void WebViewGuest::LoadHandlerCalled() {

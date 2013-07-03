@@ -10,11 +10,18 @@
 namespace webview {
 
 // Events.
+extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
 extern const char kEventLoadCommit[];
 extern const char kEventLoadRedirect[];
 extern const char kEventLoadStart[];
 extern const char kEventLoadStop[];
+
+// Parameters/properties on events.
+extern const char kLevel[];
+extern const char kMessage[];
+extern const char kLine[];
+extern const char kSourceId[];
 
 // Internal parameters/properties on events.
 extern const char kInternalCurrentEntryIndex[];

@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "base/values.h"
+#include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/web_contents.h"
 
 class AdViewGuest;
@@ -17,7 +18,7 @@ class WebViewGuest;
 // tag. GuestView maintains an association between a guest WebContents and an
 // embedder WebContents. It receives events issued from the guest and relays
 // them to the embedder.
-class GuestView {
+class GuestView : public content::BrowserPluginGuestDelegate {
  public:
   enum Type {
     WEBVIEW,
