@@ -62,6 +62,8 @@
         'shell/android/shell_jni_registrar.h',
         'shell/android/shell_manager.cc',
         'shell/android/shell_manager.h',
+        'shell/app/paths_mac.h',
+        'shell/app/paths_mac.mm',
         'shell/app/shell_main_delegate.cc',
         'shell/app/shell_main_delegate.h',
         'shell/app/webkit_test_platform_support.h',
@@ -85,8 +87,6 @@
         'shell/minimal_ash.h',
         'shell/notify_done_forwarder.cc',
         'shell/notify_done_forwarder.h',
-        'shell/paths_mac.h',
-        'shell/paths_mac.mm',
         'shell/renderer/shell_content_renderer_client.cc',
         'shell/renderer/shell_content_renderer_client.h',
         'shell/renderer/shell_media_stream_client.cc',
@@ -514,7 +514,7 @@
             '..',
           ],
           'sources': [
-            'shell/app/shell_content_main.cc',
+            'shell/app/shell_content_main.mm',
             'shell/app/shell_content_main.h',
           ],
           'copies': [
