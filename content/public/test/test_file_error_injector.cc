@@ -123,10 +123,20 @@ DownloadFileWithErrors::DownloadFileWithErrors(
           source_url_(url),
           error_info_(error_info),
           destruction_callback_(dtor_callback) {
-  ctor_callback.Run(source_url_);
+  // DownloadFiles are created on the UI thread and are destroyed on the FILE
+  // thread. Schedule the ConstructionCallback on the FILE thread so that if a
+  // DownloadItem schedules a DownloadFile to be destroyed and creates another
+  // one (as happens during download resumption), then the DestructionCallback
+  // for the old DownloadFile is run before the ConstructionCallback for the
+  // next DownloadFile.
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(ctor_callback, source_url_));
 }
 
 DownloadFileWithErrors::~DownloadFileWithErrors() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   destruction_callback_.Run(source_url_);
 }
 

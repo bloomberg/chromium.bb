@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -68,6 +69,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
@@ -183,6 +185,64 @@ class PercentWaiter : public content::DownloadItem::Observer {
   int prev_percent_;
 
   DISALLOW_COPY_AND_ASSIGN(PercentWaiter);
+};
+
+// DownloadTestObserver subclass that observes one download until it transitions
+// from a non-resumable state to a resumable state a specified number of
+// times. Note that this observer can only observe a single download.
+class DownloadTestObserverResumable : public content::DownloadTestObserver {
+ public:
+  // Construct a new observer. |transition_count| is the number of times the
+  // download should transition from a non-resumable state to a resumable state.
+  DownloadTestObserverResumable(DownloadManager* download_manager,
+                                size_t transition_count)
+      : DownloadTestObserver(download_manager, 1,
+                             ON_DANGEROUS_DOWNLOAD_FAIL),
+        was_previously_resumable_(false),
+        transitions_left_(transition_count) {
+    Init();
+  }
+  virtual ~DownloadTestObserverResumable() {}
+
+ private:
+  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE {
+    bool is_resumable_now = download->CanResume();
+    if (!was_previously_resumable_ && is_resumable_now)
+      --transitions_left_;
+    was_previously_resumable_ = is_resumable_now;
+    return transitions_left_ == 0;
+  }
+
+  bool was_previously_resumable_;
+  size_t transitions_left_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverResumable);
+};
+
+// DownloadTestObserver subclass that observes a download until it transitions
+// from IN_PROGRESS to another state, but only after StartObserving() is called.
+class DownloadTestObserverNotInProgress : public content::DownloadTestObserver {
+ public:
+  DownloadTestObserverNotInProgress(DownloadManager* download_manager,
+                                    size_t count)
+      : DownloadTestObserver(download_manager, count,
+                             ON_DANGEROUS_DOWNLOAD_FAIL),
+        started_observing_(false) {
+    Init();
+  }
+  virtual ~DownloadTestObserverNotInProgress() {}
+
+  void StartObserving() {
+    started_observing_ = true;
+  }
+
+ private:
+  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE {
+    return started_observing_ &&
+        download->GetState() != DownloadItem::IN_PROGRESS;
+  }
+
+  bool started_observing_;
 };
 
 // IDs and paths of CRX files used in tests.
@@ -1003,6 +1063,49 @@ class DownloadTest : public InProcessBrowserTest {
     download_crx_util::SetMockInstallPromptForTesting(
         new MockAutoConfirmExtensionInstallPrompt(
             browser()->tab_strip_model()->GetActiveWebContents()));
+  }
+
+  // This method:
+  // * Starts a mock download by navigating browser() to a URLRequestMockHTTPJob
+  //   mock URL.
+  // * Injects |error| on the first write using |error_injector|.
+  // * Waits for the download to be interrupted.
+  // * Clears the errors on |error_injector|.
+  // * Returns the resulting interrupted download.
+  DownloadItem* StartMockDownloadAndInjectError(
+      content::TestFileErrorInjector* error_injector,
+      content::DownloadInterruptReason error) {
+    base::FilePath file_path(FILE_PATH_LITERAL("download-test1.lib"));
+    GURL url = URLRequestMockHTTPJob::GetMockUrl(file_path);
+
+    content::TestFileErrorInjector::FileErrorInfo error_info;
+    error_info.url = url.spec();
+    error_info.code = content::TestFileErrorInjector::FILE_OPERATION_WRITE;
+    error_info.operation_instance = 0;
+    error_info.error = error;
+    error_injector->ClearErrors();
+    error_injector->AddError(error_info);
+    error_injector->InjectErrors();
+
+    scoped_ptr<content::DownloadTestObserver> observer(
+        new DownloadTestObserverResumable(
+            DownloadManagerForBrowser(browser()), 1));
+    ui_test_utils::NavigateToURL(browser(), url);
+    observer->WaitForFinished();
+
+    content::DownloadManager::DownloadVector downloads;
+    DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+    EXPECT_EQ(1u, downloads.size());
+
+    if (downloads.size() != 1)
+      return NULL;
+
+    error_injector->ClearErrors();
+    error_injector->InjectErrors();
+    DownloadItem* download = downloads[0];
+    EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
+    EXPECT_EQ(error, download->GetLastReason());
+    return download;
   }
 
  private:
@@ -2970,4 +3073,157 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadPrefs_SaveFilePath) {
   on_prefs->SetSaveFilePath(dir.AppendASCII("on"));
   EXPECT_EQ(dir.AppendASCII("on").value(), on_prefs->SaveFilePath().value());
   EXPECT_EQ(dir.AppendASCII("off").value(), off_prefs->SaveFilePath().value());
+}
+
+// A download that is interrupted due to a file error should be able to be
+// resumed.
+IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_NoPrompt) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  scoped_refptr<content::TestFileErrorInjector> error_injector(
+      content::TestFileErrorInjector::Create(
+          DownloadManagerForBrowser(browser())));
+  scoped_ptr<content::DownloadTestObserver> completion_observer(
+      CreateWaiter(browser(), 1));
+  EnableFileChooser(true);
+
+  DownloadItem* download = StartMockDownloadAndInjectError(
+      error_injector,
+      content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+  ASSERT_TRUE(download);
+
+  download->Resume();
+  completion_observer->WaitForFinished();
+
+  EXPECT_EQ(
+      1u, completion_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  EXPECT_FALSE(DidShowFileChooser());
+}
+
+// A download that's interrupted due to a reason that indicates that the target
+// path is invalid or unusable should cause a prompt to be displayed on
+// resumption.
+IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPrompt) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  scoped_refptr<content::TestFileErrorInjector> error_injector(
+      content::TestFileErrorInjector::Create(
+          DownloadManagerForBrowser(browser())));
+  scoped_ptr<content::DownloadTestObserver> completion_observer(
+      CreateWaiter(browser(), 1));
+  EnableFileChooser(true);
+
+  DownloadItem* download = StartMockDownloadAndInjectError(
+      error_injector,
+      content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+  ASSERT_TRUE(download);
+
+  download->Resume();
+  completion_observer->WaitForFinished();
+
+  EXPECT_EQ(
+      1u, completion_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  EXPECT_TRUE(DidShowFileChooser());
+}
+
+// The user shouldn't be prompted on a resumed download unless a prompt is
+// necessary due to the interrupt reason.
+IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPromptAlways) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kPromptForDownload, true);
+  scoped_refptr<content::TestFileErrorInjector> error_injector(
+      content::TestFileErrorInjector::Create(
+          DownloadManagerForBrowser(browser())));
+  scoped_ptr<content::DownloadTestObserver> completion_observer(
+      CreateWaiter(browser(), 1));
+  EnableFileChooser(true);
+
+  DownloadItem* download = StartMockDownloadAndInjectError(
+      error_injector,
+      content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+  ASSERT_TRUE(download);
+
+  // Prompts the user initially because of the kPromptForDownload preference.
+  EXPECT_TRUE(DidShowFileChooser());
+
+  download->Resume();
+  completion_observer->WaitForFinished();
+
+  EXPECT_EQ(
+      1u, completion_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  // Shouldn't prompt for resumption.
+  EXPECT_FALSE(DidShowFileChooser());
+}
+
+// A download that is interrupted due to a transient error should be resumed
+// automatically.
+IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_Automatic) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  scoped_refptr<content::TestFileErrorInjector> error_injector(
+      content::TestFileErrorInjector::Create(
+          DownloadManagerForBrowser(browser())));
+
+  DownloadItem* download = StartMockDownloadAndInjectError(
+      error_injector,
+      content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
+  ASSERT_TRUE(download);
+
+  // The number of times this the download is resumed automatically is defined
+  // in DownloadItemImpl::kMaxAutoResumeAttempts. The number of DownloadFiles
+  // created should be that number + 1 (for the original download request). We
+  // only care that it is greater than 1.
+  EXPECT_GT(1u, error_injector->TotalFileCount());
+}
+
+// An interrupting download should be resumable multiple times.
+IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  scoped_refptr<content::TestFileErrorInjector> error_injector(
+      content::TestFileErrorInjector::Create(
+          DownloadManagerForBrowser(browser())));
+  scoped_ptr<DownloadTestObserverNotInProgress> completion_observer(
+      new DownloadTestObserverNotInProgress(
+          DownloadManagerForBrowser(browser()), 1));
+  // Wait for two transitions to a resumable state
+  scoped_ptr<content::DownloadTestObserver> resumable_observer(
+      new DownloadTestObserverResumable(
+          DownloadManagerForBrowser(browser()), 2));
+
+  EnableFileChooser(true);
+  DownloadItem* download = StartMockDownloadAndInjectError(
+      error_injector,
+      content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+  ASSERT_TRUE(download);
+
+  content::TestFileErrorInjector::FileErrorInfo error_info;
+  error_info.url = download->GetOriginalUrl().spec();
+  error_info.code = content::TestFileErrorInjector::FILE_OPERATION_WRITE;
+  error_info.operation_instance = 0;
+  error_info.error = content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+  error_injector->AddError(error_info);
+  error_injector->InjectErrors();
+
+  // Resuming should cause the download to be interrupted again due to the
+  // errors we are injecting.
+  download->Resume();
+  resumable_observer->WaitForFinished();
+  ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
+  ASSERT_EQ(content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+            download->GetLastReason());
+
+  error_injector->ClearErrors();
+  error_injector->InjectErrors();
+
+  // No errors this time. The download should complete successfully.
+  EXPECT_FALSE(completion_observer->IsFinished());
+  completion_observer->StartObserving();
+  download->Resume();
+  completion_observer->WaitForFinished();
+  EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
+
+  EXPECT_FALSE(DidShowFileChooser());
 }
