@@ -20,8 +20,8 @@
 #include "chrome/common/extensions/api/cookies.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;

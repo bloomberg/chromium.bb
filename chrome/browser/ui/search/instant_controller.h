@@ -25,11 +25,11 @@
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_types.h"
 #include "content/public/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 struct AutocompleteMatch;
 struct InstantAutocompleteResult;

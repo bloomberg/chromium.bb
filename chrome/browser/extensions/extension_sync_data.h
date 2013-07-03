@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/version.h"
-#include "googleurl/src/gurl.h"
 #include "sync/api/sync_change.h"
+#include "url/gurl.h"
 
 namespace syncer {
 class SyncData;

@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -24,6 +23,7 @@
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "url/gurl.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

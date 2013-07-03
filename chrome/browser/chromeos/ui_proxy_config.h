@@ -8,9 +8,9 @@
 #include <string>
 
 #include "chrome/browser/prefs/proxy_prefs.h"
-#include "googleurl/src/gurl.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;

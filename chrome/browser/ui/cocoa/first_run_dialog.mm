@@ -19,10 +19,10 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "grit/locale_settings.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/prefs/pref_service.h"

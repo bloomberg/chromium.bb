@@ -9,10 +9,10 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 class Profile;
 namespace net {

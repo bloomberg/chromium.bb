@@ -32,7 +32,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -40,6 +39,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/views/corewm/corewm_switches.h"
+#include "url/gurl.h"
 #include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;

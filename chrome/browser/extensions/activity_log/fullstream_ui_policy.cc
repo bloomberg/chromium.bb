@@ -15,8 +15,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "googleurl/src/gurl.h"
 #include "sql/error_delegate_util.h"
+#include "url/gurl.h"
 
 using base::Callback;
 using base::FilePath;

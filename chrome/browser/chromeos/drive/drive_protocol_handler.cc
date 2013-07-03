@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/drive/drive_url_request_job.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 

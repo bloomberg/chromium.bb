@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using base::TimeDelta;
 

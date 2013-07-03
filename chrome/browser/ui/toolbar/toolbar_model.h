@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 class X509Certificate;

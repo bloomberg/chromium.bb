@@ -14,7 +14,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using content::OpenURLParams;
 

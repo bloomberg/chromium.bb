@@ -9,10 +9,10 @@
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace onc {

@@ -6,7 +6,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browsertest.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class MostVisitedWebUITest : public WebUIBrowserTest {
  public:

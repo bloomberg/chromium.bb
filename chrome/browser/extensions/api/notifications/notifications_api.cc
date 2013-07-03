@@ -21,13 +21,13 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_util.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

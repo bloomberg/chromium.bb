@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/animation/slide_animation.h"
@@ -30,6 +29,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "ui/base/l10n/l10n_util_win.h"

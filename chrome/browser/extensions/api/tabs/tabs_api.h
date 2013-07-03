@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_resource.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class BackingStore;
 class GURL;

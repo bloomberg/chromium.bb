@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "googleurl/src/gurl.h"
 #include "net/dns/mock_host_resolver.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

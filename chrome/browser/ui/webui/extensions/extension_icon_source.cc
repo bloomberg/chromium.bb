@@ -26,7 +26,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "extensions/common/extension_resource.h"
-#include "googleurl/src/gurl.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
@@ -37,6 +36,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "url/gurl.h"
 
 namespace {
 

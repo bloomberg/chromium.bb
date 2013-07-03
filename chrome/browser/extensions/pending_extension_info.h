@@ -10,7 +10,7 @@
 #include "base/version.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 FORWARD_DECLARE_TEST(ExtensionServiceTest, AddPendingExtensionFromSync);
 

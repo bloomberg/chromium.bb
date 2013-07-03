@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Profile;
 

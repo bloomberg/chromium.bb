@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "url/gurl.h"
 
 class BookmarkModel;
 class Profile;

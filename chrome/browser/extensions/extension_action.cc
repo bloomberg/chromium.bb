@@ -12,7 +12,6 @@
 #include "chrome/common/badge_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/icon_with_badge_image_source.h"
-#include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -30,6 +29,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "url/gurl.h"
 
 namespace {
 

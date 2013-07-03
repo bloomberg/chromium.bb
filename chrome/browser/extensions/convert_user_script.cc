@@ -23,7 +23,7 @@
 #include "chrome/common/extensions/user_script.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;

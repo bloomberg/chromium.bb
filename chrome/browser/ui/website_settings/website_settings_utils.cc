@@ -6,7 +6,7 @@
 
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Returns true if the passed |url| refers to an internal chrome page.
 bool InternalChromePage(const GURL& url) {

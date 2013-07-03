@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 

@@ -17,8 +17,8 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 using content::LoadNotificationDetails;
 using content::NavigationController;

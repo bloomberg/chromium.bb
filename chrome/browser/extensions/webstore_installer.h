@@ -18,9 +18,9 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
 
 class Profile;
 

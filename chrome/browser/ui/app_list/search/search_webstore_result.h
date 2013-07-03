@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Profile;
 

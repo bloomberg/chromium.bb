@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "googleurl/src/gurl.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_compat.h"
@@ -45,6 +44,7 @@
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/pango_util.h"
+#include "url/gurl.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>  // NOLINT

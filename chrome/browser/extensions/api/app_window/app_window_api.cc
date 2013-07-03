@@ -23,9 +23,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"

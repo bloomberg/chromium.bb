@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "ipc/ipc_sender.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class ChromeRenderMessageFilter;
 class ExtensionInfoMap;

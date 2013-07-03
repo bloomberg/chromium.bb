@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_PROTOCOL_DIALOG_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Interface implemented by objects that wish to show a dialog box Window for
 // handling special protocols. The window that is displayed uses this interface

@@ -59,8 +59,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/url_util.h"
 #include "ui/gfx/image/image.h"
+#include "url/url_util.h"
 
 using content::UserMetricsAction;
 using predictors::AutocompleteActionPredictor;

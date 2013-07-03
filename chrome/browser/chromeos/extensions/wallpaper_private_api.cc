@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
@@ -39,6 +38,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 using base::BinaryValue;
 using content::BrowserThread;

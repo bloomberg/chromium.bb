@@ -10,7 +10,7 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

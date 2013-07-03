@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // The loading/waiting state of the tab.
 enum TabLoadingState {

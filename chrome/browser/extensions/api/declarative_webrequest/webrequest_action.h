@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/common/extensions/api/events.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class ExtensionInfoMap;
 class WebRequestPermission;

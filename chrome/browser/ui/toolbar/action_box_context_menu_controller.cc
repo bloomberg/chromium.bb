@@ -21,11 +21,11 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
-#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 using extensions::Extension;
 

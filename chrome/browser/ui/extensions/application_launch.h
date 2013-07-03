@@ -7,9 +7,9 @@
 
 #include "base/files/file_path.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 class Browser;
 class CommandLine;

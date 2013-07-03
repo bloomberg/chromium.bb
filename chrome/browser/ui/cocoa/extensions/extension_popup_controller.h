@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 
 class Browser;

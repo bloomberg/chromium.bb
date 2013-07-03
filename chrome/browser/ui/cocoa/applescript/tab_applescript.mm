@@ -21,7 +21,7 @@
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using content::NavigationController;
 using content::NavigationEntry;

@@ -17,7 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using content::PluginService;
 

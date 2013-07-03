@@ -16,10 +16,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "url/gurl.h"
 #include "webkit/glue/resource_type.h"
 
 namespace base {

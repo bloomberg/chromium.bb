@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_STARTUP_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_STARTUP_INSTALLER_H_
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webstore_standalone_installer.h"
 
 namespace content {

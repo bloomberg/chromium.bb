@@ -10,7 +10,7 @@
 
 #include "base/synchronization/lock.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
 class CookieSettings;

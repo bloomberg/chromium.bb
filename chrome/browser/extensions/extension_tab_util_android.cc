@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using base::DictionaryValue;
 using base::ListValue;

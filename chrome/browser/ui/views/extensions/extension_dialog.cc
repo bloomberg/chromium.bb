@@ -17,11 +17,11 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
 
 using content::WebContents;
 

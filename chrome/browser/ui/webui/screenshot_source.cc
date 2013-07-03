@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_util.h"
+#include "url/url_canon.h"
+#include "url/url_util.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"

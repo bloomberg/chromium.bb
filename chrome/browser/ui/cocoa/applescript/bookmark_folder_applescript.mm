@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 @implementation BookmarkFolderAppleScript
 

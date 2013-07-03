@@ -13,8 +13,8 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 namespace content {
 class CertStore;

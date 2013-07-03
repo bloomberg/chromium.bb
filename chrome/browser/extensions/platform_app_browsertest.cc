@@ -43,7 +43,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using apps::ShellWindow;
 using content::WebContents;

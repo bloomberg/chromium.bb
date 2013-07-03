@@ -47,8 +47,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_parse.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -62,6 +60,8 @@
 #include "net/ssl/ssl_config_service.h"
 #include "third_party/libevent/evdns.h"
 #include "third_party/libevent/event.h"
+#include "url/gurl.h"
+#include "url/url_parse.h"
 
 using content::BrowserThread;
 

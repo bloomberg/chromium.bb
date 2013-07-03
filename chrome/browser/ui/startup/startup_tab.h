@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Represents tab data at startup.
 struct StartupTab {

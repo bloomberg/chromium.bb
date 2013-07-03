@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 @class BrowserWindowController;
 class Browser;

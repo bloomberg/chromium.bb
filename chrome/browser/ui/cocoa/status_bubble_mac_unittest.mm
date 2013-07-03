@@ -11,11 +11,11 @@
 #import "chrome/browser/ui/cocoa/bubble_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/point.h"
+#include "url/gurl.h"
 
 // The test delegate records all of the status bubble object's state
 // transitions.

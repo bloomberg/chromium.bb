@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
-#include "googleurl/src/gurl.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "url/gurl.h"
 
 namespace {
 

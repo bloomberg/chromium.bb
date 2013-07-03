@@ -10,11 +10,11 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/url_parse.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/webui/web_ui_util.h"
+#include "url/url_parse.h"
 
 namespace {
 

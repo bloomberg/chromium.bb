@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/interstitial_page_delegate.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;

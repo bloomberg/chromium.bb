@@ -13,8 +13,8 @@
 #include "base/memory/singleton.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class PrefRegistrySimple;
 

@@ -7,8 +7,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 // static
 void InlineLoginDialog::Show(Profile* profile) {

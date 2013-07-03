@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // TODO(battre) Remove the Extension prefix.
 

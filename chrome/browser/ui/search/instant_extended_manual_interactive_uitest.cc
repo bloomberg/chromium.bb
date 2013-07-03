@@ -27,9 +27,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "url/gurl.h"
 
 // !!! IMPORTANT !!!
 // These tests are run against a mock GWS using the web-page-replay system.

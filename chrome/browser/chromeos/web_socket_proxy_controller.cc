@@ -26,8 +26,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
+#include "url/gurl.h"
 
 namespace {
 

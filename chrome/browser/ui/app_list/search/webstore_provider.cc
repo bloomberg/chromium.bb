@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/app_list/search/webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore_search_fetcher.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace app_list {
 

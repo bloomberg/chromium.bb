@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_INFO_UI_H_
 
 #include "content/public/browser/web_ui_controller.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 
 namespace base {

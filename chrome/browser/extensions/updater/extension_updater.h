@@ -23,7 +23,7 @@
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class ExtensionServiceInterface;
 class ExtensionSet;

@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/common/extensions/dom_action_types.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

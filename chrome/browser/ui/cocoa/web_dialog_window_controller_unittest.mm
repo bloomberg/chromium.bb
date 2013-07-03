@@ -18,11 +18,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
+#include "url/gurl.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;

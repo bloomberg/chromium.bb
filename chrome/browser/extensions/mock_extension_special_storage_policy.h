@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // This class is the same as MockSpecialStoragePolicy (in
 // webkit/browser/quota/mock_special_storage_policy.h), but it inherits

@@ -16,8 +16,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 OmniboxCurrentPageDelegateImpl::OmniboxCurrentPageDelegateImpl(
     OmniboxEditController* controller,

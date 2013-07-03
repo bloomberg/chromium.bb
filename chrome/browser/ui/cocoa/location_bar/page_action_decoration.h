@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 @class ExtensionActionContextMenu;
 class Browser;

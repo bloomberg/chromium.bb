@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 

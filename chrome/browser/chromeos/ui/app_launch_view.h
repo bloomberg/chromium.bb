@@ -10,8 +10,8 @@
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "googleurl/src/gurl.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "url/gurl.h"
 
 namespace content {
 class BrowserContent;

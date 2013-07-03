@@ -26,8 +26,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/re2/re2/re2.h"
+#include "url/gurl.h"
 
 namespace {
 

@@ -9,10 +9,10 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 typedef BookmarkAppleScriptTest BookmarkItemAppleScriptTest;
 

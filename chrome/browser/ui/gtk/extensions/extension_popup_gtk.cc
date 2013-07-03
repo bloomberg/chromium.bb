@@ -28,7 +28,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using content::RenderViewHost;
 

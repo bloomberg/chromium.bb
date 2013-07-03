@@ -22,8 +22,8 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;

@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Browser;
 class CommandLine;

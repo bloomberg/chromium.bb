@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace google_apis {
 class AboutResource;

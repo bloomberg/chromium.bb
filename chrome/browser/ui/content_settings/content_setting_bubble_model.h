@@ -16,8 +16,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/media_stream_request.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 class ContentSettingBubbleModelDelegate;
 class Profile;

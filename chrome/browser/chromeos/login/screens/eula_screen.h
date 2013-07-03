@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/screens/eula_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/tpm_password_fetcher.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 

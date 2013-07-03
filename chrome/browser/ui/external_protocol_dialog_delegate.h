@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/protocol_dialog_delegate.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Provides text for the external protocol handler dialog and handles whether
 // or not to launch the application for the given protocol.

@@ -20,7 +20,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using content::NavigationEntry;
 

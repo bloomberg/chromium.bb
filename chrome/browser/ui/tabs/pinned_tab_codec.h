@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/startup/startup_tab.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Profile;
 

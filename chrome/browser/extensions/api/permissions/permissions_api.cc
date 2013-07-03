@@ -16,7 +16,7 @@
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

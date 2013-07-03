@@ -9,10 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
-#include "googleurl/src/gurl.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "url/gurl.h"
 
 class BookmarkBubbleViewObserver;
 class Profile;

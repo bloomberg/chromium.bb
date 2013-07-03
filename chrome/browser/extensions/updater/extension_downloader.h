@@ -9,8 +9,8 @@
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -23,8 +23,8 @@
 #include "chrome/browser/extensions/updater/request_queue.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLFetcher;

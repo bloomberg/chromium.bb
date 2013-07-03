@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_DATA_DELETER_H_
 #define CHROME_BROWSER_EXTENSIONS_DATA_DELETER_H_
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Profile;
 

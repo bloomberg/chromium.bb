@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // TODO(yoshiki): move the following method to accessibility_manager.cc and
 // remove this file.

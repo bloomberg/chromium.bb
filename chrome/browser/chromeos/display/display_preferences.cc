@@ -20,12 +20,12 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/display/output_configurator.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
+#include "url/url_canon.h"
+#include "url/url_util.h"
 
 namespace chromeos {
 namespace {

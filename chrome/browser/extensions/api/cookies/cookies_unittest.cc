@@ -12,9 +12,9 @@
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/test/base/testing_profile.h"
-#include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "url/gurl.h"
 
 using extensions::api::cookies::Cookie;
 using extensions::api::cookies::CookieStore;

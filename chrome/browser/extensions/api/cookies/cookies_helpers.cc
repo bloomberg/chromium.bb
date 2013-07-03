@@ -24,9 +24,9 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
-#include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
+#include "url/gurl.h"
 
 using extensions::api::cookies::Cookie;
 using extensions::api::cookies::CookieStore;

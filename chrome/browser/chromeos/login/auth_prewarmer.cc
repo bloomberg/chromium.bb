@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 

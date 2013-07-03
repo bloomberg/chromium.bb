@@ -13,8 +13,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 using content::ResourceRequestInfo;
 

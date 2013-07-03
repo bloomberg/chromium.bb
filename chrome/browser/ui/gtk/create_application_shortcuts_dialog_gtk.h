@@ -11,8 +11,8 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/shell_integration.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 

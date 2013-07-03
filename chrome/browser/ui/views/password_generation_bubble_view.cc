@@ -14,7 +14,6 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -29,6 +28,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/layout_constants.h"
+#include "url/gurl.h"
 
 namespace {
 // Constants for PasswordGenerationBubbleView.

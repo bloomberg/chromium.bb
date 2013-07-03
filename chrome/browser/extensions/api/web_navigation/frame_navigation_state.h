@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 class RenderViewHost;

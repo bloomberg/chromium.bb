@@ -12,8 +12,8 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace utils = extension_function_test_utils;
 

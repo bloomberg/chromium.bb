@@ -31,7 +31,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/error_utils.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
 namespace GetPlatformInfo = extensions::api::runtime::GetPlatformInfo;
