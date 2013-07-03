@@ -22,8 +22,6 @@ namespace {
 // stub_hash = "[user_id]-hash";
 static const char kUserIdStubHashSuffix[] = "-hash";
 
-static const char kCryptohomeAsyncAddKey[] = "AsyncAddKey";
-
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
@@ -179,7 +177,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                            const std::string& new_key,
                            const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 /*cryptohome::*/kCryptohomeAsyncAddKey);
+                                 cryptohome::kCryptohomeAsyncAddKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     writer.AppendString(key);
