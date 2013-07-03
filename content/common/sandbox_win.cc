@@ -82,7 +82,8 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"rapportnikko.dll",            // Trustware Rapport.
   L"rlhook.dll",                  // Trustware Bufferzone.
   L"rooksdol.dll",                // Trustware Rapport.
-  L"rpchromebrowserrecordhelper.dll",  // RealPlayer.
+  L"rndlpepperbrowserrecordhelper.dll", // RealPlayer.
+  L"rpchromebrowserrecordhelper.dll",   // RealPlayer.
   L"r3hook.dll",                  // Kaspersky Internet Security.
   L"sahook.dll",                  // McAfee Site Advisor.
   L"sbrige.dll",                  // Unknown.
