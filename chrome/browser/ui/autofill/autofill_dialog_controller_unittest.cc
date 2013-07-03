@@ -559,30 +559,30 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
   }
 }
 
-TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
+TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
   // Construct DetailOutputMap from AutofillProfile data.
   SwitchToAutofill();
 
   DetailOutputMap outputs;
   const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC);
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
 
-  // Input an empty card holder name with VALIDATE_FINAL.
-  SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "");
+  // Input an empty billing name with VALIDATE_FINAL.
+  SetOutputValue(inputs, &outputs, NAME_FULL, "");
   ValidityData validity_data =
-      controller()->InputsAreValid(SECTION_CC, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
+      controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_FINAL);
+  EXPECT_EQ(1U, validity_data.count(NAME_FULL));
 
-  // Input an empty card holder name with VALIDATE_EDIT.
+  // Input an empty billing name with VALIDATE_EDIT.
   validity_data =
-      controller()->InputsAreValid(SECTION_CC, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+      controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
 
-  // Input a non-empty card holder name.
-  SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "Bob");
+  // Input a non-empty billing name.
+  SetOutputValue(inputs, &outputs, NAME_FULL, "Bob");
   validity_data =
-      controller()->InputsAreValid(SECTION_CC, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+      controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_FINAL);
+  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
 
   // Switch to Wallet which only considers names with with at least two names to
   // be valid.
@@ -596,51 +596,51 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
   const DetailInputs& wallet_inputs =
       controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
 
-  // Input an empty card holder name with VALIDATE_FINAL. Data source should not
+  // Input an empty billing name with VALIDATE_FINAL. Data source should not
   // change this behavior.
-  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "");
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL, "");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
+  EXPECT_EQ(1U, validity_data.count(NAME_FULL));
 
-  // Input an empty card holder name with VALIDATE_EDIT. Data source should not
+  // Input an empty billing name with VALIDATE_EDIT. Data source should not
   // change this behavior.
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
 
-  // Input a one name card holder name. Wallet does not currently support this.
-  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "Bob");
+  // Input a one name billing name. Wallet does not currently support this.
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL, "Bob");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
+  EXPECT_EQ(1U, validity_data.count(NAME_FULL));
 
-  // Input a two name card holder name.
-  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
+  // Input a two name billing name.
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL,
                  "Bob Barker");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
 
-  // Input a more than two name card holder name.
-  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
+  // Input a more than two name billing name.
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL,
                  "John Jacob Jingleheimer Schmidt");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
 
-  // Input a card holder name with lots of crazy whitespace.
-  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
+  // Input a billing name with lots of crazy whitespace.
+  SetOutputValue(wallet_inputs, &wallet_outputs, NAME_FULL,
                  "     \\n\\r John \\n  Jacob Jingleheimer \\t Schmidt  ");
   validity_data =
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+  EXPECT_EQ(0U, validity_data.count(NAME_FULL));
 }
 
 TEST_F(AutofillDialogControllerTest, CreditCardNumberValidation) {
@@ -927,7 +927,7 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
 
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(6)->type());
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(6)->type());
   string16 billing_name = form_structure()->field(6)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
   string16 shipping_name = form_structure()->field(13)->value;
@@ -936,8 +936,7 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
   EXPECT_FALSE(billing_name.empty());
   EXPECT_FALSE(shipping_name.empty());
   // Billing name should always be the same as cardholder name.
-  // TODO(estade): this currently fails. http://crbug.com/246417
-  // EXPECT_EQ(cc_name, billing_name);
+  EXPECT_EQ(cc_name, billing_name);
   EXPECT_NE(cc_name, shipping_name);
 }
 
@@ -965,7 +964,7 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
 
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(6)->type());
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(6)->type());
   string16 billing_name = form_structure()->field(6)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
   string16 shipping_name = form_structure()->field(13)->value;
@@ -1410,10 +1409,12 @@ TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
 
 // Tests that adding an autofill profile and then submitting works.
 TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
 
   ui::MenuModel* model = controller()->MenuModelForSection(SECTION_BILLING);
   // Activate the "Add billing address" menu item.
@@ -1430,17 +1431,6 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
   }
   controller()->GetView()->SetUserInput(SECTION_BILLING, outputs);
 
-  // Fill in some CC info. The name field will be used to fill in the billing
-  // address name in the newly minted AutofillProfile.
-  DetailOutputMap cc_outputs;
-  const DetailInputs& cc_inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC);
-  for (size_t i = 0; i < cc_inputs.size(); ++i) {
-    cc_outputs[&cc_inputs[i]] = cc_inputs[i].type == CREDIT_CARD_NAME ?
-        ASCIIToUTF16("Bill Money") : ASCIIToUTF16("111");
-  }
-  controller()->GetView()->SetUserInput(SECTION_CC, cc_outputs);
-
   controller()->OnAccept();
   const AutofillProfile& added_profile =
       controller()->GetTestingManager()->imported_profile();
@@ -1449,10 +1439,8 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   for (size_t i = 0; i < shipping_inputs.size(); ++i) {
     const DetailInput& input = shipping_inputs[i];
-    string16 expected = input.type == NAME_FULL ?
-        ASCIIToUTF16("Bill Money") :
-        full_profile2.GetInfo(input.type, "en-US");
-    EXPECT_EQ(expected, added_profile.GetInfo(input.type, "en-US"));
+    EXPECT_EQ(full_profile2.GetInfo(input.type, "en-US"),
+              added_profile.GetInfo(input.type, "en-US"));
   }
 
   // Also, the currently selected email address should get added to the new

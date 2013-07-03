@@ -763,11 +763,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, PreservedSections) {
   EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC_BILLING));
 
   // Create some valid inputted billing data.
-  const DetailInput& cc_name =
-      controller()->RequestedFieldsForSection(SECTION_CC_BILLING)[4];
-  ASSERT_EQ(CREDIT_CARD_NAME, cc_name.type);
+  const DetailInput& cc_number =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING)[0];
+  EXPECT_EQ(CREDIT_CARD_NUMBER, cc_number.type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
-  view->SetTextContentsOfInput(cc_name, ASCIIToUTF16("credit card name"));
+  view->SetTextContentsOfInput(cc_number, ASCIIToUTF16("4111111111111111"));
 
   // Select "Add new shipping info..." from suggestions menu.
   ui::MenuModel* shipping_model =
@@ -796,11 +796,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, PreservedSections) {
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
-  const DetailInput& new_cc_name =
-      controller()->RequestedFieldsForSection(SECTION_CC).back();
-  ASSERT_EQ(cc_name.type, new_cc_name.type);
-  EXPECT_EQ(ASCIIToUTF16("credit card name"),
-            view->GetTextContentsOfInput(new_cc_name));
+  const DetailInput& new_cc_number =
+      controller()->RequestedFieldsForSection(SECTION_CC).front();
+  EXPECT_EQ(cc_number.type, new_cc_number.type);
+  EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
+            view->GetTextContentsOfInput(new_cc_number));
 
   EXPECT_NE(ASCIIToUTF16("shipping name"),
             view->GetTextContentsOfInput(shipping_zip));

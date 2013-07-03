@@ -119,6 +119,21 @@ void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
   }
 }
 
+void AutofillProfileWrapper::FillFormField(AutofillField* field) const {
+  AutofillFieldType field_type = field->type();
+
+  if (field_type == CREDIT_CARD_NAME) {
+    // Requests for the user's credit card are filled from the billing address,
+    // but the AutofillProfile class doesn't know how to fill credit card
+    // fields. So, temporarily set the type to the corresponding profile type.
+    field->set_heuristic_type(NAME_FULL);
+  }
+
+  AutofillDataModelWrapper::FillFormField(field);
+
+  field->set_heuristic_type(field_type);
+}
+
 // AutofillCreditCardWrapper
 
 AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
@@ -144,21 +159,6 @@ string16 AutofillCreditCardWrapper::GetDisplayText() {
     return string16();
 
   return card_->TypeAndLastFourDigits();
-}
-
-void AutofillCreditCardWrapper::FillFormField(AutofillField* field) const {
-  AutofillFieldType field_type = field->type();
-
-  if (field_type == NAME_FULL) {
-    // Requests for the user's full name are filled from the credit card data,
-    // but the CreditCard class only knows how to fill credit card fields.  So,
-    // temporarily set the type to the corresponding credit card type.
-    field->set_heuristic_type(CREDIT_CARD_NAME);
-  }
-
-  AutofillDataModelWrapper::FillFormField(field);
-
-  field->set_heuristic_type(field_type);
 }
 
 // WalletAddressWrapper

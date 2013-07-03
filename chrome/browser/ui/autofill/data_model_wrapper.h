@@ -108,7 +108,9 @@ class AutofillProfileWrapper : public AutofillDataModelWrapper {
   AutofillProfileWrapper(const AutofillProfile* profile, size_t variant);
   virtual ~AutofillProfileWrapper();
 
+ protected:
   virtual void FillInputs(DetailInputs* inputs) OVERRIDE;
+  virtual void FillFormField(AutofillField* field) const OVERRIDE;
 
  private:
   const AutofillProfile* profile_;
@@ -125,9 +127,6 @@ class AutofillCreditCardWrapper : public AutofillDataModelWrapper {
   virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
-
- protected:
-  virtual void FillFormField(AutofillField* field) const OVERRIDE;
 
  private:
   const CreditCard* card_;

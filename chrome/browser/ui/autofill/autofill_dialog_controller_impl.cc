@@ -124,9 +124,17 @@ bool InputTypeMatchesFieldType(const DetailInput& input,
   return input.type == field_type;
 }
 
-// Returns true if |input| should be used for a site-requested |field|.
-bool DetailInputMatchesField(const DetailInput& input,
+// Returns true if |input| in the given |section| should be used for a
+// site-requested |field|.
+bool DetailInputMatchesField(DialogSection section,
+                             const DetailInput& input,
                              const AutofillField& field) {
+  // The credit card name is filled from the billing section's data.
+  if (field.type() == CREDIT_CARD_NAME &&
+      (section == SECTION_BILLING || section == SECTION_CC_BILLING)) {
+    return input.type == NAME_FULL;
+  }
+
   return InputTypeMatchesFieldType(input, field.type());
 }
 
@@ -139,9 +147,6 @@ bool IsCreditCardType(AutofillFieldType type) {
 // the billing address as the shipping address.
 bool DetailInputMatchesShippingField(const DetailInput& input,
                                      const AutofillField& field) {
-  if (field.type() == NAME_FULL)
-    return input.type == CREDIT_CARD_NAME;
-
   // Equivalent billing field type is used to support UseBillingAsShipping
   // usecase.
   AutofillFieldType field_type =
@@ -202,8 +207,8 @@ void GetBillingInfoFromOutputs(const DetailOutputMap& output,
     } else {
       // Copy the credit card name to |profile| in addition to |card| as
       // wallet::Instrument requires a recipient name for its billing address.
-      if (profile && it->first->type == CREDIT_CARD_NAME)
-        profile->SetRawInfo(NAME_FULL, trimmed);
+      if (card && it->first->type == NAME_FULL)
+        card->SetRawInfo(CREDIT_CARD_NAME, trimmed);
 
       if (IsCreditCardType(it->first->type)) {
         if (card)
@@ -467,8 +472,9 @@ void AutofillDialogControllerImpl::Show() {
   // Determine what field types should be included in the dialog.
   bool has_types = false;
   bool has_sections = false;
-  form_structure_.ParseFieldTypesFromAutocompleteAttributes(&has_types,
-                                                            &has_sections);
+  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
+      FormStructure::PARSE_FOR_AUTOFILL_DIALOG, &has_types, &has_sections);
+
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
     callback_.Run(NULL, std::string());
@@ -486,10 +492,10 @@ void AutofillDialogControllerImpl::Show() {
     { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR },
     { 3, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC,
       1.5 },
-    { 4, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
   };
 
   const DetailInput kBillingInputs[] = {
+    { 4, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
     { 5, ADDRESS_BILLING_LINE1,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1 },
     { 6, ADDRESS_BILLING_LINE2,
@@ -547,7 +553,7 @@ void AutofillDialogControllerImpl::Show() {
   EmptyDataModelWrapper empty_wrapper;
   cares_about_shipping_ = empty_wrapper.FillFormStructure(
       inputs,
-      base::Bind(DetailInputMatchesField),
+      base::Bind(DetailInputMatchesField, SECTION_SHIPPING),
       &form_structure_);
 
   SuggestionsUpdated();
@@ -1433,15 +1439,6 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       break;
     }
 
-    case CREDIT_CARD_NAME:
-      // Wallet requires a first and last name.
-      if (!value.empty() && IsPayingWithWallet() &&
-          !IsCardHolderNameValidForWallet(value)) {
-        return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_DIALOG_VALIDATION_WALLET_REQUIRES_TWO_NAMES);
-      }
-      break;
-
     case CREDIT_CARD_EXP_MONTH:
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
       break;
@@ -1475,7 +1472,14 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       }
       break;
 
-    case NAME_FULL:  // Used for shipping.
+    case NAME_FULL:
+      // Wallet requires a first and last billing name.
+      if (section == SECTION_CC_BILLING && !value.empty() &&
+          !IsCardHolderNameValidForWallet(value)) {
+        DCHECK(IsPayingWithWallet());
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_WALLET_REQUIRES_TWO_NAMES);
+      }
       break;
 
     case PHONE_HOME_WHOLE_NUMBER:  // Used in shipping section.
@@ -2569,6 +2573,10 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       card.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &card);
 
+      // The card holder name comes from the billing address section.
+      card.SetRawInfo(CREDIT_CARD_NAME,
+                      GetValueFromSection(SECTION_BILLING, NAME_FULL));
+
       if (ShouldSaveDetailsLocally())
         GetManager()->SaveImportedCreditCard(card);
 
@@ -2582,10 +2590,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       profile.set_origin(kAutofillDialogOrigin);
       FillFormGroupFromOutputs(output, &profile);
 
-      // For billing, the profile name has to come from the CC section.
+      // For billing, the email address comes from the separate email section.
       if (section == SECTION_BILLING) {
-        profile.SetRawInfo(NAME_FULL,
-                           GetValueFromSection(SECTION_CC, CREDIT_CARD_NAME));
         profile.SetRawInfo(EMAIL_ADDRESS,
                            GetValueFromSection(SECTION_EMAIL, EMAIL_ADDRESS));
       }
@@ -2600,8 +2606,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 }
 
 void AutofillDialogControllerImpl::FillOutputForSection(DialogSection section) {
-  FillOutputForSectionWithComparator(section,
-                                     base::Bind(DetailInputMatchesField));
+  FillOutputForSectionWithComparator(
+      section, base::Bind(DetailInputMatchesField, section));
 }
 
 bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(

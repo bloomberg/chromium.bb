@@ -345,7 +345,8 @@ void FormStructure::DetermineHeuristicTypes(
   // autocomplete type hint, don't try to apply other heuristics to match fields
   // in this form.
   bool has_author_specified_sections;
-  ParseFieldTypesFromAutocompleteAttributes(&has_author_specified_types_,
+  ParseFieldTypesFromAutocompleteAttributes(PARSE_FOR_AUTOFILL,
+                                            &has_author_specified_types_,
                                             &has_author_specified_sections);
 
   if (!has_author_specified_types_) {
@@ -1045,6 +1046,7 @@ bool FormStructure::EncodeFormRequest(
 }
 
 void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
+    ParseTarget parse_target,
     bool* found_types,
     bool* found_sections) {
   const std::string kDefaultSection = "-default";
@@ -1122,8 +1124,17 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
         (tokens.back() == kShippingSection ||
          tokens.back() == kBillingSection)) {
       // Set Autofill field type to billing if section is billing.
-      if (tokens.back() == kBillingSection)
+      if (tokens.back() == kBillingSection) {
         field_type = AutofillType::GetEquivalentBillingFieldType(field_type);
+
+        // The Autofill dialog uses the type CREDIT_CARD_NAME to refer to both
+        // the credit card holder's name and the name on the billing address.
+        if (parse_target == PARSE_FOR_AUTOFILL_DIALOG &&
+            field_type == NAME_FULL) {
+          field_type = CREDIT_CARD_NAME;
+        }
+      }
+
       section = "-" + tokens.back();
       tokens.pop_back();
     }
