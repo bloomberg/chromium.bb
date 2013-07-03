@@ -1432,8 +1432,7 @@ String InspectorStyleSheet::sourceURL() const
         bool deprecated;
         String commentValue = ContentSearchUtils::findSourceURL(styleSheetText, ContentSearchUtils::CSSMagicComment, &deprecated);
         if (!commentValue.isEmpty()) {
-            if (deprecated)
-                m_pageAgent->page()->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "\"/*@ sourceURL=\" source URL declaration is deprecated, \"/*# sourceURL=\" declaration should be used instead.", finalURL(), 0);
+            // FIXME: add deprecated console message here.
             m_sourceURL = commentValue;
             return commentValue;
         }
@@ -1486,8 +1485,7 @@ String InspectorStyleSheet::sourceMapURL() const
         bool deprecated;
         String commentValue = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment, &deprecated);
         if (!commentValue.isEmpty()) {
-            if (deprecated)
-                m_pageAgent->page()->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "\"/*@ sourceMappingURL=\" source mapping URL declaration is deprecated, \"/*# sourceMappingURL=\" declaration should be used instead.", finalURL(), 0);
+            // FIXME: add deprecated console message here.
             return commentValue;
         }
     }

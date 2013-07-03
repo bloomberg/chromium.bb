@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: "//@ sourceURL=" source URL declaration is deprecated, "//# sourceURL=" declaration should be used instead.
 Tests that evals with sourceURL comment are shown in scripts panel.
 
 Debugger was enabled.

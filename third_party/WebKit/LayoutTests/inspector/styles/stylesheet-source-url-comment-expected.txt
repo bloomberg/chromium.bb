@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: "/*@ sourceURL=" source URL declaration is deprecated, "/*# sourceURL=" declaration should be used instead.
 Tests that stylesheets with sourceURL comment are shown in the Sources panel.
 
 

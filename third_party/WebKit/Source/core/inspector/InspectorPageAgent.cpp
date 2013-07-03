@@ -907,7 +907,7 @@ String InspectorPageAgent::resourceSourceMapURL(const String& url)
         return String();
     String deprecatedHeaderSourceMapURL = resource->response().httpHeaderField(deprecatedSourceMapHttpHeader);
     if (!deprecatedHeaderSourceMapURL.isEmpty()) {
-        m_page->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "Resource is served with deprecated header X-SourceMap, SourceMap should be used instead.", url, 0);
+        // FIXME: add deprecated console message here.
         return deprecatedHeaderSourceMapURL;
     }
     return resource->response().httpHeaderField(sourceMapHttpHeader);

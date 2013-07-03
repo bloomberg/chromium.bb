@@ -666,8 +666,7 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
     bool deprecated;
     String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
     if (!sourceMapURL.isEmpty()) {
-        if (deprecated)
-            addConsoleMessage(NetworkMessageSource, WarningMessageLevel, "\"//@ sourceMappingURL=\" source mapping URL declaration is deprecated, \"//# sourceMappingURL=\" declaration should be used instead.", script.url);
+        // FIXME: add deprecated console message here.
         return sourceMapURL;
     }
 
@@ -692,8 +691,7 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     if (!script.startLine && !script.startColumn) {
         bool deprecated;
         sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
-        if (deprecated)
-            addConsoleMessage(NetworkMessageSource, WarningMessageLevel, "\"//@ sourceURL=\" source URL declaration is deprecated, \"//# sourceURL=\" declaration should be used instead.", script.url);
+        // FIXME: add deprecated console message here.
     }
     bool hasSourceURL = !sourceURL.isEmpty();
     String scriptURL = hasSourceURL ? sourceURL : script.url;

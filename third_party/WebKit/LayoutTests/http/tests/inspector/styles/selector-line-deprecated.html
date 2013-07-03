@@ -21,8 +21,7 @@ function addStylesheet()
 function test()
 {
     WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
-    InspectorTest.addConsoleSniffer(step1);
-    InspectorTest.evaluateInPage("addStylesheet()");
+    InspectorTest.evaluateInPage("addStylesheet()", step1);
 
     function step1()
     {
