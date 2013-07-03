@@ -114,7 +114,6 @@ bool SVGFEImageElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
-        SVGLangSpace::addSupportedAttributes(supportedAttributes);
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::preserveAspectRatioAttr);
     }
@@ -136,8 +135,6 @@ void SVGFEImageElement::parseAttribute(const QualifiedName& name, const AtomicSt
     }
 
     if (SVGURIReference::parseAttribute(name, value))
-        return;
-    if (SVGLangSpace::parseAttribute(name, value))
         return;
     if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
@@ -164,7 +161,7 @@ void SVGFEImageElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    if (SVGLangSpace::isKnownAttribute(attrName) || SVGExternalResourcesRequired::isKnownAttribute(attrName))
+    if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
         return;
 
     ASSERT_NOT_REACHED();

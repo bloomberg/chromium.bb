@@ -58,7 +58,6 @@ bool SVGSymbolElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGLangSpace::addSupportedAttributes(supportedAttributes);
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
     }
@@ -72,8 +71,6 @@ void SVGSymbolElement::parseAttribute(const QualifiedName& name, const AtomicStr
         return;
     }
 
-    if (SVGLangSpace::parseAttribute(name, value))
-        return;
     if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
     if (SVGFitToViewBox::parseAttribute(this, name, value))

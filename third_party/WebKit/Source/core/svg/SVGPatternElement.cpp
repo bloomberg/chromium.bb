@@ -86,7 +86,6 @@ bool SVGPatternElement::isSupportedAttribute(const QualifiedName& attrName)
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
         SVGTests::addSupportedAttributes(supportedAttributes);
-        SVGLangSpace::addSupportedAttributes(supportedAttributes);
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::patternUnitsAttr);
@@ -132,7 +131,6 @@ void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicSt
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
     else if (SVGURIReference::parseAttribute(name, value)
              || SVGTests::parseAttribute(name, value)
-             || SVGLangSpace::parseAttribute(name, value)
              || SVGExternalResourcesRequired::parseAttribute(name, value)
              || SVGFitToViewBox::parseAttribute(this, name, value)) {
     } else

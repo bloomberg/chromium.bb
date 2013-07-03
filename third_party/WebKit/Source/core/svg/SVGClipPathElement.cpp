@@ -57,7 +57,6 @@ bool SVGClipPathElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGLangSpace::addSupportedAttributes(supportedAttributes);
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::clipPathUnitsAttr);
     }
@@ -78,8 +77,6 @@ void SVGClipPathElement::parseAttribute(const QualifiedName& name, const AtomicS
         return;
     }
 
-    if (SVGLangSpace::parseAttribute(name, value))
-        return;
     if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
 

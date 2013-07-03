@@ -54,10 +54,8 @@ PassRefPtr<SVGGElement> SVGGElement::create(const QualifiedName& tagName, Docume
 bool SVGGElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGLangSpace::addSupportedAttributes(supportedAttributes);
+    if (supportedAttributes.isEmpty())
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
-    }
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
@@ -69,8 +67,6 @@ void SVGGElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     }
 
     if (SVGLangSpace::parseAttribute(name, value))
-        return;
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
 
     ASSERT_NOT_REACHED();
