@@ -297,19 +297,8 @@ class OmniboxEditModel {
                              bool just_deleted_text,
                              bool allow_keyword_ui_change);
 
-  // TODO(beaudoin): Mac code still calls this here. We should try to untangle
-  // this.
-  // Invoked when the popup has changed its bounds to |bounds|. |bounds| here
-  // is in screen coordinates.
-  void OnPopupBoundsChanged(const gfx::Rect& bounds) {
-    omnibox_controller_->OnPopupBoundsChanged(bounds);
-  }
-
   // Called when the current match has changed in the OmniboxController.
-  void OnCurrentMatchChanged(bool is_temporary_set_by_instant);
-
-  // Callend when the gray text suggestion has changed in the OmniboxController.
-  void OnGrayTextChanged();
+  void OnCurrentMatchChanged();
 
   // Access the current view text.
   string16 GetViewText() const;
@@ -492,26 +481,6 @@ class OmniboxEditModel {
   bool has_temporary_text_;
   GURL original_url_;
 
-  // True if Instant set the current temporary text, as opposed to it being set
-  // due to the user arrowing up/down through the popup. This can only be true
-  // if |has_temporary_text_| is true.
-  // TODO(sreeram): This is a temporary hack. Remove it once the omnibox edit
-  // model/view code is decoupled from Instant (among other things).
-  bool is_temporary_text_set_by_instant_;
-
-  // The index of the selected AutocompleteMatch in AutocompleteResult. This is
-  // needed to get the metadata details of the temporary text set by instant on
-  // the Local NTP. If the Instant extended is disabled or an Instant NTP is
-  // used, this is set to OmniboxPopupModel::kNoMatch.
-  size_t selected_instant_autocomplete_match_index_;
-
-  // True if the current temporary text set by Instant is a search query; false
-  // if it is a URL that can be directly navigated to. This is only valid if
-  // |is_temporary_text_set_by_instant_| is true. This field is needed because
-  // Instant's temporary text doesn't come from the popup model, so we can't
-  // lookup its type from the current match.
-  bool is_instant_temporary_text_a_search_query_;
-
   // When the user's last action was to paste, we disallow inline autocomplete
   // (on the theory that the user is trying to paste in a new URL or part of
   // one, and in either case inline autocomplete would get in the way).
@@ -551,11 +520,6 @@ class OmniboxEditModel {
   // is NOT called for "bar" again), this leaves Instant showing results for
   // "foo", which is wrong.
   bool in_revert_;
-
-  // InstantController needs this in extended mode to distinguish the case in
-  // which it should instruct a committed search results page to revert to
-  // showing results for the original query.
-  bool in_escape_handler_;
 
   // Indicates if the upcoming autocomplete search is allowed to be treated as
   // an exact keyword match.  If this is true then keyword mode will be

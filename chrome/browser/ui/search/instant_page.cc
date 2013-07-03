@@ -89,14 +89,6 @@ bool InstantPage::ShouldProcessAboutToNavigateMainFrame() {
   return false;
 }
 
-bool InstantPage::ShouldProcessSetSuggestions() {
-  return false;
-}
-
-bool InstantPage::ShouldProcessShowInstantOverlay() {
-  return false;
-}
-
 bool InstantPage::ShouldProcessFocusOmnibox() {
   return false;
 }
@@ -123,9 +115,6 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InstantPage, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetSuggestions, OnSetSuggestions)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowInstantOverlay,
-                        OnShowInstantOverlay)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
                         OnSearchBoxNavigate);
@@ -183,33 +172,6 @@ void InstantPage::InstantSupportDetermined(bool supports_instant) {
   // If the page doesn't support Instant, stop listening to it.
   if (!supports_instant)
     ClearContents();
-}
-
-void InstantPage::OnSetSuggestions(
-    int page_id,
-    const std::vector<InstantSuggestion>& suggestions) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
-
-  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
-  if (!ShouldProcessSetSuggestions())
-    return;
-
-  delegate_->SetSuggestions(contents(), suggestions);
-}
-
-void InstantPage::OnShowInstantOverlay(int page_id,
-                                       int height,
-                                       InstantSizeUnits units) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
-
-  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
-  delegate_->LogDropdownShown();
-  if (!ShouldProcessShowInstantOverlay())
-    return;
-
-  delegate_->ShowInstantOverlay(contents(), height, units);
 }
 
 void InstantPage::OnFocusOmnibox(int page_id, OmniboxFocusState state) {

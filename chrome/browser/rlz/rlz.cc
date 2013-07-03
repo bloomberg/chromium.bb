@@ -278,10 +278,6 @@ bool RLZTracker::Init(bool first_run,
     // the user performs a first search.
     registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                    content::NotificationService::AllSources());
-    // If instant is enabled we'll start searching as soon as the user starts
-    // typing in the omnibox (which triggers INSTANT_CONTROLLER_UPDATED).
-    registrar_.Add(this, chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
-                   content::NotificationService::AllSources());
 
     // Register for notifications from navigations, to see if the user has used
     // the home page.
@@ -386,11 +382,8 @@ void RLZTracker::Observe(int type,
                          const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL:
-    case chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED:
       RecordFirstSearch(CHROME_OMNIBOX);
       registrar_.Remove(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                        content::NotificationService::AllSources());
-      registrar_.Remove(this, chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
                         content::NotificationService::AllSources());
       break;
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {

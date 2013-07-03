@@ -1082,17 +1082,6 @@ enum NotificationType {
   // Send when a context menu is closed.
   NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
 
-  // Sent each time the InstantController is updated.
-  NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
-
-  // Sent when an Instant overlay is committed. The Source is the WebContents
-  // containing the committed overlay.
-  NOTIFICATION_INSTANT_COMMITTED,
-
-  // Sent when the Instant Controller determines whether the overlay supports
-  // the Instant API or not.
-  NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
-
   // Sent when the Instant Controller determines whether an Instant tab supports
   // the Instant API or not.
   NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
@@ -1104,12 +1093,6 @@ enum NotificationType {
   // Sent when the Instant Controller has sent the Most Visited Items to the
   // renderer.
   NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
-
-  // Sent when the Instant Controller sets an omnibox suggestion.
-  NOTIFICATION_INSTANT_SET_SUGGESTION,
-
-  // Sent when the Instant Controller has sent autocomplete results.
-  NOTIFICATION_INSTANT_SENT_AUTOCOMPLETE_RESULTS,
 
   // Sent when the CaptivePortalService checks if we're behind a captive portal.
   // The Source is the Profile the CaptivePortalService belongs to, and the

@@ -11,7 +11,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
-#include "chrome/browser/ui/search/instant_overlay.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -21,36 +20,6 @@
 using base::HistogramBase;
 using base::HistogramSamples;
 using base::StatisticsRecorder;
-
-class TestableInstantOverlay : public InstantOverlay {
- public:
-  TestableInstantOverlay(InstantController* controller,
-                         const std::string& instant_url)
-      : InstantOverlay(controller, instant_url, false) {
-  }
-
-  // Overrides from InstantPage
-  virtual bool supports_instant() const OVERRIDE {
-    return test_supports_instant_;
-  }
-
-  virtual bool IsLocal() const OVERRIDE {
-    return test_is_local_;
-  };
-
-  void set_supports_instant(bool supports_instant) {
-    test_supports_instant_ = supports_instant;
-  }
-
-  void set_is_local(bool is_local) {
-    test_is_local_ = is_local;
-  }
-
- private:
-  std::string test_instant_url_;
-  bool test_supports_instant_;
-  bool test_is_local_;
-};
 
 class TestableInstantNTP : public InstantNTP {
  public:
@@ -99,7 +68,6 @@ class TestableInstantController : public InstantController {
         override_javascript_enabled_(true),
         test_javascript_enabled_(true),
         test_in_startup_(false),
-        test_overlay_(NULL),
         test_ntp_(NULL) {}
 
   // Overrides from InstantController
@@ -115,10 +83,6 @@ class TestableInstantController : public InstantController {
     return test_extended_enabled_;
   }
 
-  virtual InstantOverlay* overlay() const OVERRIDE {
-    return test_overlay_;
-  }
-
   virtual InstantNTP* ntp() const OVERRIDE {
     return test_ntp_;
   }
@@ -129,10 +93,6 @@ class TestableInstantController : public InstantController {
 
   void set_extended_enabled(bool extended_enabled) {
     test_extended_enabled_ = extended_enabled;
-  }
-
-  void set_overlay(InstantOverlay* overlay) {
-    test_overlay_ = overlay;
   }
 
   void set_ntp(InstantNTP* ntp) {
@@ -173,7 +133,6 @@ private:
   bool override_javascript_enabled_;
   bool test_javascript_enabled_;
   bool test_in_startup_;
-  InstantOverlay* test_overlay_;
   InstantNTP* test_ntp_;
   mutable TestingProfile profile_;
 };
@@ -197,53 +156,6 @@ class InstantControllerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestableInstantController> instant_controller_;
 };
-
-TEST_F(InstantControllerTest, ShouldSwitchToLocalOverlay) {
-  InstantController::InstantFallbackReason fallback_reason;
-
-  instant_controller()->set_extended_enabled(false);
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason, InstantController::INSTANT_FALLBACK_NONE);
-
-  instant_controller()->set_extended_enabled(true);
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason, InstantController::INSTANT_FALLBACK_NO_OVERLAY);
-
-  std::string instant_url("http://test_url");
-  scoped_ptr<TestableInstantOverlay> test_overlay(
-      new TestableInstantOverlay(instant_controller(), instant_url));
-  test_overlay->set_is_local(true);
-  instant_controller()->set_overlay(test_overlay.get());
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason, InstantController::INSTANT_FALLBACK_NONE);
-
-  instant_controller()->set_javascript_enabled(false);
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason,
-            InstantController::INSTANT_FALLBACK_JAVASCRIPT_DISABLED);
-  instant_controller()->set_javascript_enabled(true);
-
-  test_overlay->set_is_local(false);
-  instant_controller()->set_instant_url("");
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason,
-            InstantController::INSTANT_FALLBACK_INSTANT_URL_EMPTY);
-
-  instant_controller()->set_instant_url("http://instant_url");
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason,
-            InstantController::INSTANT_FALLBACK_ORIGIN_PATH_MISMATCH);
-
-  instant_controller()->set_instant_url(instant_url);
-  test_overlay->set_supports_instant(false);
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason,
-            InstantController::INSTANT_FALLBACK_INSTANT_NOT_SUPPORTED);
-
-  test_overlay->set_supports_instant(true);
-  fallback_reason = instant_controller()->ShouldSwitchToLocalOverlay();
-  ASSERT_EQ(fallback_reason, InstantController::INSTANT_FALLBACK_NONE);
-}
 
 TEST_F(InstantControllerTest, PrefersRemoteNTPOnStartup) {
   std::string instant_url("http://instant_url");

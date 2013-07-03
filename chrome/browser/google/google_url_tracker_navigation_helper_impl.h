@@ -40,12 +40,6 @@ class GoogleURLTrackerNavigationHelperImpl
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Handles instant commit notifications by simulating the relevant navigation
-  // callbacks.
-  void OnInstantCommitted(content::NavigationController* nav_controller,
-                          InfoBarService* infobar_service,
-                          const GURL& search_url);
-
   // Returns a WebContents NavigationSource for the WebContents corresponding to
   // the given NavigationController NotificationSource.
   virtual content::NotificationSource GetWebContentsSource(
