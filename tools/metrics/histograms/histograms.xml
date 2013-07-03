@@ -12542,6 +12542,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.LevelDBOpenErrors.Corruption"
+    enum="LevelDBCorruptionTypes">
+  Types of corruption that LevelDB encounters when opening a database.
+</histogram>
+
 <histogram name="WebCore.IndexedDB.LevelDBOpenErrors.EnvMethod"
     enum="LevelDBIOErrorMethods">
   <summary>
@@ -12569,6 +12574,11 @@ other types of suffix sets.
   <summary>
     Error classes returned by LevelDB when it failed to write to a database.
   </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBWriteErrors.Corruption"
+    enum="LevelDBCorruptionTypes">
+  Types of corruption returned by LevelDB when it failed to write to a database.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.LevelDBWriteErrors.EnvMethod"
@@ -16482,6 +16492,41 @@ other types of suffix sets.
   <int value="8025454" label="Zuni"/>
   <int value="8026232" label="No linguistic content"/>
   <int value="8026721" label="Zaza"/>
+</enum>
+
+<enum name="LevelDBCorruptionTypes" type="int">
+  <int value="0" label="other"/>
+  <int value="1" label="missing files"/>
+  <int value="2" label="log record too small"/>
+  <int value="3" label="corrupted internal key"/>
+  <int value="4" label="partial record"/>
+  <int value="5" label="missing start of fragmented record"/>
+  <int value="6" label="error in middle of record"/>
+  <int value="7" label="unknown record type"/>
+  <int value="8" label="truncated record at end"/>
+  <int value="9" label="bad record length"/>
+  <int value="10" label="VersionEdit"/>
+  <int value="11" label="FileReader invoked with unexpected value"/>
+  <int value="12" label="corrupted key"/>
+  <int value="13" label="CURRENT file does not end with newline"/>
+  <int value="14" label="no meta-nextfile entry"/>
+  <int value="15" label="no meta-lognumber entry"/>
+  <int value="16" label="no last-sequence-number entry"/>
+  <int value="17" label="malformed WriteBatch"/>
+  <int value="18" label="bad WriteBatch Put"/>
+  <int value="19" label="bad WriteBatch Delete"/>
+  <int value="20" label="unknown WriteBatch tag"/>
+  <int value="21" label="WriteBatch has wrong count"/>
+  <int value="22" label="bad entry in block"/>
+  <int value="23" label="bad block contents"/>
+  <int value="24" label="bad block handle"/>
+  <int value="25" label="truncated block read"/>
+  <int value="26" label="block checksum mismatch"/>
+  <int value="27" label="checksum mismatch"/>
+  <int value="28" label="corrupted compressed block contents"/>
+  <int value="29" label="bad block type"/>
+  <int value="30" label="bad magic number"/>
+  <int value="31" label="file is too short"/>
 </enum>
 
 <enum name="LevelDBErrorCount" type="int">
