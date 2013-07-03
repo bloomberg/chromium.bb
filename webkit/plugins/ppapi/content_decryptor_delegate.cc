@@ -869,6 +869,7 @@ void ContentDecryptorDelegate::DeliverFrame(
           frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_V],
           base::TimeDelta::FromMicroseconds(
               frame_info->tracking_info.timestamp),
+          ppb_buffer->shared_memory()->handle(),
           media::BindToLoop(
               base::MessageLoopProxy::current(),
               base::Bind(&BufferNoLongerNeeded, ppb_buffer,

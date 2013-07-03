@@ -97,10 +97,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     int32 y_stride, int32 u_stride, int32 v_stride,
     uint8* y_data, uint8* u_data, uint8* v_data,
     base::TimeDelta timestamp,
+    base::SharedMemoryHandle shm_handle,
     const base::Closure& no_longer_needed_cb) {
   DCHECK(format == YV12 || format == YV16 || format == I420) << format;
   scoped_refptr<VideoFrame> frame(new VideoFrame(
       format, coded_size, visible_rect, natural_size, timestamp));
+  frame->shared_memory_handle_ = shm_handle;
   frame->strides_[kYPlane] = y_stride;
   frame->strides_[kUPlane] = u_stride;
   frame->strides_[kVPlane] = v_stride;
@@ -268,6 +270,7 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
       visible_rect_(visible_rect),
       natural_size_(natural_size),
       texture_target_(0),
+      shared_memory_handle_(base::SharedMemory::NULLHandle()),
       timestamp_(timestamp) {
   memset(&strides_, 0, sizeof(strides_));
   memset(&data_, 0, sizeof(data_));
@@ -349,6 +352,10 @@ const scoped_refptr<VideoFrame::MailboxHolder>& VideoFrame::texture_mailbox()
 uint32 VideoFrame::texture_target() const {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
   return texture_target_;
+}
+
+base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
+  return shared_memory_handle_;
 }
 
 bool VideoFrame::IsEndOfStream() const {

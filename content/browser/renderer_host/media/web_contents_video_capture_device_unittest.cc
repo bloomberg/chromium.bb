@@ -311,8 +311,8 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
   StubConsumer()
       : error_encountered_(false),
         wait_color_yuv_(0xcafe1950) {
-    buffer_pool_ = new VideoCaptureBufferPool(
-        gfx::Size(kTestWidth, kTestHeight), 2);
+    buffer_pool_ =
+        new VideoCaptureBufferPool(kTestWidth * kTestHeight * 3 / 2, 2);
     EXPECT_TRUE(buffer_pool_->Allocate());
   }
   virtual ~StubConsumer() {}
@@ -356,7 +356,9 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
   }
 
   virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
-    return buffer_pool_->ReserveForProducer(0);
+    return buffer_pool_->ReserveI420VideoFrame(gfx::Size(kTestWidth,
+                                                         kTestHeight),
+                                               0);
   }
 
   virtual void OnIncomingCapturedFrame(
@@ -374,7 +376,9 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
       base::Time timestamp) OVERRIDE {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
     EXPECT_EQ(media::VideoFrame::YV12, frame->format());
-    EXPECT_NE(0, buffer_pool_->RecognizeReservedBuffer(frame));
+    EXPECT_LE(
+        0,
+        buffer_pool_->RecognizeReservedBuffer(frame->shared_memory_handle()));
     uint8 yuv[3];
     for (int plane = 0; plane < 3; ++plane) {
       yuv[plane] = frame->data(plane)[0];

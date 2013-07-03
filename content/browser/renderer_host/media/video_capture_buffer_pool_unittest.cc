@@ -6,8 +6,10 @@
 
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,18 +22,21 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12, size,
                                      gfx::Rect(size), size, base::TimeDelta());
   scoped_refptr<VideoCaptureBufferPool> pool =
-      new VideoCaptureBufferPool(size, 3);
+      new VideoCaptureBufferPool(size.GetArea() * 3 / 2, 3);
 
   ASSERT_EQ(460800u, pool->GetMemorySize());
-
   ASSERT_TRUE(pool->Allocate());
-  scoped_refptr<media::VideoFrame> frame1 = pool->ReserveForProducer(0);
+
+  scoped_refptr<media::VideoFrame> frame1 =
+      pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame1.get());
   ASSERT_EQ(size, frame1->coded_size());
-  scoped_refptr<media::VideoFrame> frame2 = pool->ReserveForProducer(0);
+  scoped_refptr<media::VideoFrame> frame2 =
+      pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame2.get());
   ASSERT_EQ(size, frame2->coded_size());
-  scoped_refptr<media::VideoFrame> frame3 = pool->ReserveForProducer(0);
+  scoped_refptr<media::VideoFrame> frame3 =
+      pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame3.get());
 
   // Touch the memory.
@@ -40,61 +45,74 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   media::FillYUV(frame3.get(), 0x77, 0x88, 0x99);
 
   // Fourth frame should fail.
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
 
   // Release 1st frame and retry; this should succeed.
   frame1 = NULL;
-  scoped_refptr<media::VideoFrame> frame4 = pool->ReserveForProducer(0);
+  scoped_refptr<media::VideoFrame> frame4 =
+      pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame4.get());
 
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
 
   // Validate the IDs
-  int buffer_id2 = pool->RecognizeReservedBuffer(frame2);
-  ASSERT_NE(0, buffer_id2);
-  int buffer_id3 = pool->RecognizeReservedBuffer(frame3);
-  ASSERT_NE(0, buffer_id3);
-  int buffer_id4 = pool->RecognizeReservedBuffer(frame4);
-  ASSERT_NE(0, buffer_id4);
-  int buffer_id_non_pool = pool->RecognizeReservedBuffer(non_pool_frame);
-  ASSERT_EQ(0, buffer_id_non_pool);
+  int buffer_id2 =
+      pool->RecognizeReservedBuffer(frame2->shared_memory_handle());
+  ASSERT_LE(0, buffer_id2);
+  int buffer_id3 =
+      pool->RecognizeReservedBuffer(frame3->shared_memory_handle());
+  ASSERT_LE(0, buffer_id3);
+  int buffer_id4 =
+      pool->RecognizeReservedBuffer(frame4->shared_memory_handle());
+  ASSERT_LE(0, buffer_id4);
+  int buffer_id_non_pool =
+      pool->RecognizeReservedBuffer(non_pool_frame->shared_memory_handle());
+  ASSERT_GT(0, buffer_id_non_pool);
 
   ASSERT_FALSE(pool->IsAnyBufferHeldForConsumers());
 
   // Deliver a frame.
-  pool->HoldForConsumers(frame3, buffer_id3, 2);
+  pool->HoldForConsumers(buffer_id3, 2);
 
   ASSERT_TRUE(pool->IsAnyBufferHeldForConsumers());
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
   frame3 = NULL;   // Old producer releases frame. Should be a noop.
   ASSERT_TRUE(pool->IsAnyBufferHeldForConsumers());
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
   frame2 = NULL;  // Active producer releases frame. Should free a frame.
   buffer_id2 = 0;
 
   ASSERT_TRUE(pool->IsAnyBufferHeldForConsumers());
-  frame1 = pool->ReserveForProducer(0);
+  frame1 = pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame1.get());
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
   ASSERT_TRUE(pool->IsAnyBufferHeldForConsumers());
 
   // First consumer finishes.
   pool->RelinquishConsumerHold(buffer_id3, 1);
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
   ASSERT_TRUE(pool->IsAnyBufferHeldForConsumers());
 
   // Second consumer finishes. This should free that frame.
   pool->RelinquishConsumerHold(buffer_id3, 1);
   ASSERT_FALSE(pool->IsAnyBufferHeldForConsumers());
-  frame3 = pool->ReserveForProducer(0);
+  frame3 = pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame3.get());
   ASSERT_FALSE(pool->IsAnyBufferHeldForConsumers());
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
 
   // Now deliver & consume frame1, but don't release the VideoFrame.
-  int buffer_id1 = pool->RecognizeReservedBuffer(frame1);
-  ASSERT_NE(0, buffer_id1);
-  pool->HoldForConsumers(frame1, buffer_id1, 5);
+  int buffer_id1 =
+      pool->RecognizeReservedBuffer(frame1->shared_memory_handle());
+  ASSERT_LE(0, buffer_id1);
+  pool->HoldForConsumers(buffer_id1, 5);
   ASSERT_TRUE(pool->IsAnyBufferHeldForConsumers());
   pool->RelinquishConsumerHold(buffer_id1, 5);
   ASSERT_FALSE(pool->IsAnyBufferHeldForConsumers());
@@ -103,20 +121,25 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   // be re-allocated to the producer, because |frame1| still references it. But
   // when |frame1| goes away, we should be able to re-reserve the buffer (and
   // the ID ought to be the same).
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
   frame1 = NULL;  // Should free the frame.
-  frame2 = pool->ReserveForProducer(0);
+  frame2 = pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame2.get());
-  ASSERT_EQ(buffer_id1, pool->RecognizeReservedBuffer(frame2));
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(buffer_id1,
+            pool->RecognizeReservedBuffer(frame2->shared_memory_handle()));
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
 
   // For good measure, do one more cycle of free/realloc without delivery, now
   // that this buffer has been through the consumer-hold cycle.
   frame2 = NULL;
-  frame1 = pool->ReserveForProducer(0);
+  frame1 = pool->ReserveI420VideoFrame(size, 0);
   ASSERT_TRUE(NULL != frame1.get());
-  ASSERT_EQ(buffer_id1, pool->RecognizeReservedBuffer(frame1));
-  ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
+  ASSERT_EQ(buffer_id1,
+            pool->RecognizeReservedBuffer(frame1->shared_memory_handle()));
+  ASSERT_EQ(NULL, pool->ReserveI420VideoFrame(size, 0).get())
+      << "Pool should be empty";
 
   // Tear down the pool, writing into the frames. The VideoFrame should
   // preserve the lifetime of the underlying memory.

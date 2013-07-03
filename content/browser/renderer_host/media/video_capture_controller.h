@@ -79,8 +79,7 @@ class CONTENT_EXPORT VideoCaptureController
       const scoped_refptr<media::VideoFrame>& frame,
       base::Time timestamp) OVERRIDE;
   virtual void OnError() OVERRIDE;
-  virtual void OnFrameInfo(
-      const media::VideoCaptureCapability& info) OVERRIDE;
+  virtual void OnFrameInfo(const media::VideoCaptureCapability& info) OVERRIDE;
 
  protected:
   virtual ~VideoCaptureController();
@@ -120,7 +119,8 @@ class CONTENT_EXPORT VideoCaptureController
   // can stay in kStopping state, or go to kStopped, or restart capture.
   void PostStopping();
 
-  // Protects access to the |buffer_pool_| pointer on non-IO threads.
+  // Protects access to the |buffer_pool_| pointer on non-IO threads.  IO thread
+  // must hold this lock when modifying the |buffer_pool_| pointer itself.
   // TODO(nick): Make it so that this lock isn't required.
   base::Lock buffer_pool_lock_;
 

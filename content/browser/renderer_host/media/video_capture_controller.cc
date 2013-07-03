@@ -249,7 +249,9 @@ scoped_refptr<media::VideoFrame> VideoCaptureController::ReserveOutputBuffer() {
   base::AutoLock lock(buffer_pool_lock_);
   if (!buffer_pool_.get())
     return NULL;
-  return buffer_pool_->ReserveForProducer(0);
+  return buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
+                                                       frame_info_.height),
+                                             0);
 }
 
 // Implements VideoCaptureDevice::EventHandler.
@@ -271,7 +273,9 @@ void VideoCaptureController::OnIncomingCapturedFrame(
     base::AutoLock lock(buffer_pool_lock_);
     if (!buffer_pool_.get())
       return;
-    dst = buffer_pool_->ReserveForProducer(rotation);
+    dst = buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
+                                                        frame_info_.height),
+                                              rotation);
   }
 
   if (!dst.get())
@@ -373,7 +377,8 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
 
     // If this is a frame that belongs to the buffer pool, we can forward it
     // directly to the IO thread and be done.
-    if (buffer_pool_->RecognizeReservedBuffer(frame)) {
+    if (buffer_pool_->RecognizeReservedBuffer(
+        frame->shared_memory_handle()) >= 0) {
       BrowserThread::PostTask(BrowserThread::IO,
           FROM_HERE,
           base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
@@ -382,7 +387,9 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
     }
     // Otherwise, this is a frame that belongs to the caller, and we must copy
     // it to a frame from the buffer pool.
-    target = buffer_pool_->ReserveForProducer(0);
+    target = buffer_pool_->ReserveI420VideoFrame(gfx::Size(frame_info_.width,
+                                                           frame_info_.height),
+                                                 0);
   }
 
   if (!target.get())
@@ -524,8 +531,9 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
   if (!buffer_pool_.get())
     return;
 
-  int buffer_id = buffer_pool_->RecognizeReservedBuffer(reserved_frame);
-  if (!buffer_id) {
+  int buffer_id = buffer_pool_->RecognizeReservedBuffer(
+      reserved_frame->shared_memory_handle());
+  if (buffer_id < 0) {
     NOTREACHED();
     return;
   }
@@ -544,7 +552,7 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
     }
   }
 
-  buffer_pool_->HoldForConsumers(reserved_frame, buffer_id, count);
+  buffer_pool_->HoldForConsumers(buffer_id, count);
 }
 
 void VideoCaptureController::DoFrameInfoOnIOThread() {
@@ -557,8 +565,8 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
     return;
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool =
-      new VideoCaptureBufferPool(
-          gfx::Size(frame_info_.width, frame_info_.height), kNoOfBuffers);
+      new VideoCaptureBufferPool(frame_info_.width * frame_info_.height * 3 / 2,
+                                 kNoOfBuffers);
 
   // Check whether all buffers were created successfully.
   if (!buffer_pool->Allocate()) {
@@ -613,7 +621,7 @@ void VideoCaptureController::SendFrameInfoAndBuffers(ControllerClient* client) {
   if (!buffer_pool_.get())
     return;
 
-  for (int buffer_id = 1; buffer_id <= buffer_pool_->count(); ++buffer_id) {
+  for (int buffer_id = 0; buffer_id < buffer_pool_->count(); ++buffer_id) {
     base::SharedMemoryHandle remote_handle =
         buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle);
 

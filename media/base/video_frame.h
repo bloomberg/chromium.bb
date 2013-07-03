@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/md5.h"
+#include "base/shared_memory.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/buffers.h"
 #include "ui/gfx/rect.h"
@@ -148,6 +149,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8* u_data,
       uint8* v_data,
       base::TimeDelta timestamp,
+      base::SharedMemoryHandle shm_handle,  // may be NULLHandle()
       const base::Closure& no_longer_needed_cb);
 
   // Creates a frame with format equals to VideoFrame::EMPTY, width, height,
@@ -197,6 +199,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns the texture target. Only valid for NATIVE_TEXTURE frames.
   uint32 texture_target() const;
+
+  // Returns the shared-memory handle, if present
+  base::SharedMemoryHandle shared_memory_handle() const;
 
   // Returns true if this VideoFrame represents the end of the stream.
   bool IsEndOfStream() const;
@@ -254,6 +259,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   scoped_refptr<MailboxHolder> texture_mailbox_holder_;
   uint32 texture_target_;
   ReadPixelsCB read_pixels_cb_;
+
+  // Shared memory handle, if this frame was allocated from shared memory.
+  base::SharedMemoryHandle shared_memory_handle_;
 
   base::Closure no_longer_needed_cb_;
 
