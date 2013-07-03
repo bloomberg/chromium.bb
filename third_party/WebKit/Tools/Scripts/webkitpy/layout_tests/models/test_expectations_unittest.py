@@ -59,6 +59,7 @@ class Base(unittest.TestCase):
         return [self.get_test('failures/expected/text.html'),
                 self.get_test('failures/expected/image_checksum.html'),
                 self.get_test('failures/expected/crash.html'),
+                self.get_test('failures/expected/needsrebaseline.html'),
                 self.get_test('failures/expected/missing_text.html'),
                 self.get_test('failures/expected/image.html'),
                 self.get_test('passes/text.html')]
@@ -67,6 +68,7 @@ class Base(unittest.TestCase):
         return """
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/crash.html [ WontFix ]
+Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
 Bug(test) failures/expected/missing_image.html [ Rebaseline Missing ]
 Bug(test) failures/expected/image_checksum.html [ WontFix ]
 Bug(test) failures/expected/image.html [ WontFix Mac ]
@@ -116,6 +118,14 @@ class MiscTests(Base):
         # test handling of MISSING results and the REBASELINE modifier
         self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS]), test_needs_rebaselining=True), True)
         self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS]), test_needs_rebaselining=False), False)
+
+        self.assertTrue(TestExpectations.result_was_expected(MISSING, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(TEXT, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(IMAGE, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(IMAGE_PLUS_TEXT, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(AUDIO, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertFalse(TestExpectations.result_was_expected(TIMEOUT, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertFalse(TestExpectations.result_was_expected(CRASH, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
 
     def test_remove_pixel_failures(self):
         self.assertEqual(TestExpectations.remove_pixel_failures(set([FAIL])), set([FAIL]))
@@ -233,6 +243,8 @@ class MiscTests(Base):
         self.assertTrue(match('failures/expected/image_checksum.html', PASS,
                               False))
         self.assertTrue(match('failures/expected/crash.html', PASS, False))
+        self.assertTrue(match('failures/expected/needsrebaseline.html', TEXT, True))
+        self.assertFalse(match('failures/expected/needsrebaseline.html', CRASH, True))
         self.assertTrue(match('passes/text.html', PASS, False))
 
     def test_more_specific_override_resets_skip(self):
