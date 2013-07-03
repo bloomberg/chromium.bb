@@ -1776,7 +1776,9 @@ def download_test_data(isolated_hash, target_directory, remote):
           os.chmod(outfile, properties['m'])
 
       if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
-        logging.info('%d files remaining...' % len(remaining))
+        msg = '%d files remaining...' % len(remaining)
+        print msg
+        logging.info(msg)
         last_update = time.time()
 
   print('.isolated files successfully downloaded and setup in %s' %
@@ -1832,7 +1834,9 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
               os.chmod(outfile, properties['m'])
 
           if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
-            logging.info('%d files remaining...' % len(remaining))
+            msg = '%d files remaining...' % len(remaining)
+            print msg
+            logging.info(msg)
             last_update = time.time()
 
       if settings.read_only:
