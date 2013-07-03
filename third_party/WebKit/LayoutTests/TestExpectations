@@ -1836,3 +1836,8 @@ crbug.com/256226 [ Win7 Mac Linux Debug ] webmidi/requestmidiaccess.html [ Crash
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Pass Failure ]
 
 Bug(cbiesinger) [ Win Mac ] fast/forms/button-default-title.html [ Failure ]
+
+# A new test introduced with a crash fix (crbug.com/112427) doesn't work well on Windows trybots.
+# Could not reproduce on a local workstation.
+crbug.com/256913 [ Win Debug ] fast/dom/Range/detach-range-during-deletecontents.html [ Crash ]
+crbug.com/256913 [ Win Release ] fast/dom/Range/detach-range-during-deletecontents.html [ Timeout ]
