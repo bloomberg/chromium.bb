@@ -1346,7 +1346,6 @@ release_pgo.add_group('lumpy-release-pgo',
 
 _release.add_config('butterfly-release',
   boards=['butterfly'],
-  useflags=_release['useflags'] + ['oem_wallpaper'],
 )
 
 _release.add_config('falco-release',
