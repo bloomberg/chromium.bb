@@ -620,8 +620,6 @@
         'browser/chromeos/drive/job_queue_unittest.cc',
         'browser/chromeos/drive/job_scheduler_unittest.cc',
         'browser/chromeos/drive/local_file_reader_unittest.cc',
-        'browser/chromeos/drive/mock_directory_change_observer.cc',
-        'browser/chromeos/drive/mock_directory_change_observer.h',
         'browser/chromeos/drive/remove_stale_cache_files_unittest.cc',
         'browser/chromeos/drive/resource_entry_conversion_unittest.cc',
         'browser/chromeos/drive/resource_metadata_storage_unittest.cc',

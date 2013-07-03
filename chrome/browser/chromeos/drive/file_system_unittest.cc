@@ -17,9 +17,9 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -27,13 +27,7 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::AtLeast;
-using ::testing::Eq;
-using ::testing::StrictMock;
-using ::testing::_;
 
 namespace drive {
 namespace {
@@ -57,6 +51,27 @@ void AsyncInitializationCallback(
   if (*counter >= expected_counter)
     quit.Run();
 }
+
+// This class is used to record directory changes and examine them later.
+class MockDirectoryChangeObserver : public FileSystemObserver {
+ public:
+  MockDirectoryChangeObserver() {}
+  virtual ~MockDirectoryChangeObserver() {}
+
+  // FileSystemObserver overrides.
+  virtual void OnDirectoryChanged(
+      const base::FilePath& directory_path) OVERRIDE {
+    changed_directories_.push_back(directory_path);
+  }
+
+  const std::vector<base::FilePath>& changed_directories() const {
+    return changed_directories_;
+  }
+
+ private:
+  std::vector<base::FilePath> changed_directories_;
+  DISALLOW_COPY_AND_ASSIGN(MockDirectoryChangeObserver);
+};
 
 }  // namespace
 
@@ -88,7 +103,7 @@ class FileSystemTest : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
         profile_.get()).Append(util::kTemporaryFileDirectory)));
 
-    mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
+    mock_directory_observer_.reset(new MockDirectoryChangeObserver);
 
     SetUpResourceMetadataAndFileSystem();
   }
@@ -302,14 +317,10 @@ class FileSystemTest : public testing::Test {
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
+  scoped_ptr<MockDirectoryChangeObserver> mock_directory_observer_;
 };
 
 TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
-  // "Fast fetch" will fire an OnirectoryChanged event.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
-
   base::RunLoop loop;
 
   int counter = 0;
@@ -329,6 +340,11 @@ TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
   // See the comment in GetMyDriveRoot test case why this is 2.
   EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
+
+  // "Fast fetch" will fire an OnirectoryChanged event.
+  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive")),
+            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, GetGrandRootEntry) {
@@ -355,10 +371,6 @@ TEST_F(FileSystemTest, GetOtherDirEntry) {
 }
 
 TEST_F(FileSystemTest, GetMyDriveRoot) {
-  // "Fast fetch" will fire an OnirectoryChanged event.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
-
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
   ASSERT_TRUE(entry);
@@ -375,6 +387,11 @@ TEST_F(FileSystemTest, GetMyDriveRoot) {
 
   // After "fast fetch" is done, full resource list is fetched.
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
+
+  // "Fast fetch" will fire an OnirectoryChanged event.
+  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive")),
+            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, GetExistingFile) {
@@ -473,9 +490,6 @@ TEST_F(FileSystemTest, GetOrphanFile) {
 }
 
 TEST_F(FileSystemTest, ReadDirectoryByPath_Root) {
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
-
   // ReadDirectoryByPath() should kick off the resource list loading.
   scoped_ptr<ResourceEntryVector> entries(
       ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));
@@ -498,6 +512,10 @@ TEST_F(FileSystemTest, ReadDirectoryByPath_Root) {
 
   EXPECT_TRUE(found_other);
   EXPECT_TRUE(found_my_drive);
+
+  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive")),
+            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
@@ -572,18 +590,15 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
   fake_drive_service_->set_offline(false);
 
   file_system_->CheckForUpdates();
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
-      .Times(AtLeast(1));
 
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
+
+  ASSERT_LE(1u, mock_directory_observer_->changed_directories().size());
 }
 
 TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
-      .Times(AtLeast(1));
-
   // Enter the "refreshing" state so the fast fetch will be performed.
   ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
   file_system_->CheckForUpdates();
@@ -592,6 +607,8 @@ TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
   EXPECT_TRUE(ReadDirectoryByPathSync(base::FilePath(
       FILE_PATH_LITERAL("drive/root/Dir1"))));
   EXPECT_EQ(1, fake_drive_service_->directory_load_count());
+
+  ASSERT_LE(1u, mock_directory_observer_->changed_directories().size());
 }
 
 TEST_F(FileSystemTest, GetResourceEntryExistingWhileRefreshing) {
@@ -606,9 +623,6 @@ TEST_F(FileSystemTest, GetResourceEntryExistingWhileRefreshing) {
 }
 
 TEST_F(FileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
-      .Times(AtLeast(1));
-
   // Enter the "refreshing" state so the fast fetch will be performed.
   ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
   file_system_->CheckForUpdates();
@@ -617,6 +631,8 @@ TEST_F(FileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
   EXPECT_FALSE(GetResourceEntryByPathSync(base::FilePath(
       FILE_PATH_LITERAL("drive/root/Dir1/NonExistentFile"))));
   EXPECT_EQ(1, fake_drive_service_->directory_load_count());
+
+  ASSERT_LE(1u, mock_directory_observer_->changed_directories().size());
 }
 
 TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
@@ -638,10 +654,6 @@ TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
 }
 
 TEST_F(FileSystemTest, PinAndUnpin) {
-  // Pinned file gets synced and it results in entry state changes.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(AtLeast(1));
-
   ASSERT_TRUE(LoadFullResourceList());
 
   base::FilePath file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -673,6 +685,11 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   EXPECT_TRUE(cache_->GetCacheEntry(
       entry->resource_id(), std::string(), &cache_entry));
   EXPECT_FALSE(cache_entry.is_pinned());
+
+  // Pinned file gets synced and it results in entry state changes.
+  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
+            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
@@ -720,25 +737,21 @@ TEST_F(FileSystemTest, GetAvailableSpace) {
 TEST_F(FileSystemTest, RefreshDirectory) {
   ASSERT_TRUE(LoadFullResourceList());
 
-  // We'll notify the directory change to the observer.
-  EXPECT_CALL(*mock_directory_observer_,
-              OnDirectoryChanged(Eq(util::GetDriveMyDriveRootPath()))).Times(1);
-
   FileError error = FILE_ERROR_FAILED;
   file_system_->RefreshDirectory(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // We'll notify the directory change to the observer.
+  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
+  EXPECT_EQ(util::GetDriveMyDriveRootPath(),
+            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, OpenAndCloseFile) {
   ASSERT_TRUE(LoadFullResourceList());
-
-  // The transfered file is cached and the change of "offline available"
-  // attribute is notified.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(AtLeast(1));
 
   const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(kFileInRoot));
@@ -756,6 +769,13 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
 
   // Verify that the file was properly opened.
   EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // The opened file is downloaded, which means the file is available
+  // offline. The directory change should be notified so Files.app can change
+  // the offline availability status of the file.
+  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
+            mock_directory_observer_->changed_directories()[0]);
 
   // Try to open the already opened file.
   file_system_->OpenFile(
@@ -808,6 +828,12 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   ASSERT_TRUE(gdata_entry);
   EXPECT_EQ(static_cast<int>(kNewContent.size()), gdata_entry->file_size());
 
+  // The modified file is uploaded. The directory change should be notified
+  // so Files.app can show new metadata of the modified file.
+  ASSERT_EQ(2u, mock_directory_observer_->changed_directories().size());
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
+            mock_directory_observer_->changed_directories()[1]);
+
   // Try to close the same file twice.
   file_system_->CloseFile(
       kFileInRoot,
@@ -816,6 +842,8 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
 
   // It must fail.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
+  // There should be no new directory change.
+  ASSERT_EQ(2u, mock_directory_observer_->changed_directories().size());
 }
 
 TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
