@@ -9,8 +9,8 @@
 #include "base/win/registry.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/data_encryption_win.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/webdata/encryptor/encryptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
@@ -91,7 +91,8 @@ void EncryptAndWrite(RegKey* key, const ValueDescription* value) {
   data.resize(data_size);
   memcpy(&data[0], value->value, data_size);
 
-  std::vector<uint8> encrypted_data = EncryptData(data);
+  std::string encrypted_data;
+  Encryptor::EncryptString(data, &encrypted_data);
   EXPECT_EQ(ERROR_SUCCESS, key->WriteValue(value->value_name,
       &encrypted_data[0], encrypted_data.size(), REG_BINARY));
 }

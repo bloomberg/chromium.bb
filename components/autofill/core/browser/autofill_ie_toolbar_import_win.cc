@@ -18,13 +18,13 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/crypto/rc4_decryptor.h"
-#include "components/autofill/core/browser/data_encryption_win.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/webdata/encryptor/encryptor.h"
 
 using base::win::RegKey;
 
@@ -81,12 +81,12 @@ base::string16 ReadAndDecryptValue(const RegKey& key,
   LONG result = key.ReadValue(value_name, NULL, &data_size, &data_type);
   if ((result != ERROR_SUCCESS) || !data_size || data_type != REG_BINARY)
     return base::string16();
-  std::vector<uint8> data;
+  std::string data;
   data.resize(data_size);
   result = key.ReadValue(value_name, &(data[0]), &data_size, &data_type);
   if (result == ERROR_SUCCESS) {
     std::string out_data;
-    if (DecryptData(data, &out_data)) {
+    if (Encryptor::DecryptString(data, &out_data)) {
       // The actual data is in UTF16 already.
       if (!(out_data.size() & 1) && (out_data.size() > 2) &&
           !out_data[out_data.size() - 1] && !out_data[out_data.size() - 2]) {

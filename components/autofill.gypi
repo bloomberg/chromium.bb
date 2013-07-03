@@ -163,8 +163,6 @@
             'autofill/core/browser/credit_card.h',
             'autofill/core/browser/credit_card_field.cc',
             'autofill/core/browser/credit_card_field.h',
-            'autofill/core/browser/data_encryption_win.cc',
-            'autofill/core/browser/data_encryption_win.h',
             'autofill/core/browser/email_field.cc',
             'autofill/core/browser/email_field.h',
             'autofill/core/browser/field_types.h',
