@@ -149,7 +149,7 @@ void DrawBulletInFrame(NSRect frame) {
     nibName = @"ExtensionInstallPromptBundle";
   } else if (prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT) {
     nibName = @"ExtensionInstallPromptInline";
-  } else if (prompt.GetPermissionCount() == 0 &&
+  } else if (!prompt.ShouldShowPermissions() &&
              prompt.GetOAuthIssueCount() == 0 &&
              prompt.GetRetainedFileCount() == 0) {
     nibName = @"ExtensionInstallPromptNoWarnings";
@@ -270,7 +270,7 @@ void DrawBulletInFrame(NSRect frame) {
 
   // If there are any warnings or OAuth issues, then we have to do some special
   // layout.
-  if (prompt_->GetPermissionCount() > 0 || prompt_->GetOAuthIssueCount() > 0 ||
+  if (prompt_->ShouldShowPermissions() || prompt_->GetOAuthIssueCount() > 0 ||
       prompt_->GetRetainedFileCount() > 0) {
     NSSize spacing = [outlineView_ intercellSpacing];
     spacing.width += 2;
@@ -490,17 +490,29 @@ void DrawBulletInFrame(NSRect frame) {
 
 - (NSArray*)buildWarnings:(const ExtensionInstallPrompt::Prompt&)prompt {
   NSMutableArray* warnings = [NSMutableArray array];
+  NSString* heading = nil;
 
-  if (prompt.GetPermissionCount() > 0) {
+  if (prompt.ShouldShowPermissions()) {
     NSMutableArray* children = [NSMutableArray array];
-    for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
+    if (prompt.GetPermissionCount() > 0) {
+      for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
+        [children addObject:
+            [self buildItemWithTitle:SysUTF16ToNSString(prompt.GetPermission(i))
+                         isGroupItem:NO
+                            children:nil]];
+      }
+
+      heading = SysUTF16ToNSString(prompt.GetPermissionsHeading());
+    } else {
       [children addObject:
-          [self buildItemWithTitle:SysUTF16ToNSString(prompt.GetPermission(i))
+          [self buildItemWithTitle:
+              l10n_util::GetNSString(IDS_EXTENSION_NO_SPECIAL_PERMISSIONS)
                        isGroupItem:NO
                           children:nil]];
+      heading = @"";
     }
     [warnings addObject:[self
-        buildItemWithTitle:SysUTF16ToNSString(prompt.GetPermissionsHeading())
+        buildItemWithTitle:heading
                isGroupItem:YES
                   children:children]];
   }
