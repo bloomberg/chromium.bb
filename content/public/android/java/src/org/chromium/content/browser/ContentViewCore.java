@@ -1207,10 +1207,7 @@ import java.util.Map;
         if (lastInputEventForVSync && isVSyncNotificationEnabled()) {
             assert type == ContentViewGestureHandler.GESTURE_SCROLL_BY ||
                     type == ContentViewGestureHandler.GESTURE_PINCH_BY;
-            // TODO(brianderson): Set this back to true once we've figured out
-            // race conditions and what to do with timestamps when sending
-            // BeginFrame early. crbug.com/247043.
-            mDidSignalVSyncUsingInputEvent = false;
+            mDidSignalVSyncUsingInputEvent = true;
         }
         switch (type) {
             case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:

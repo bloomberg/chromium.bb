@@ -987,6 +987,12 @@ void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
   event.data.scrollUpdate.deltaY = -dy / GetDpiScale();
 
   SendGestureEvent(event);
+
+  // TODO(brianderson): Clean up last_input_event_for_vsync. crbug.com/247043
+  if (last_input_event_for_vsync) {
+    SendBeginFrame(base::TimeTicks() +
+                   base::TimeDelta::FromMilliseconds(time_ms));
+  }
 }
 
 void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
@@ -1116,6 +1122,12 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
   event.data.pinchUpdate.scale = delta;
 
   SendGestureEvent(event);
+
+  // TODO(brianderson): Clean up last_input_event_for_vsync. crbug.com/247043
+  if (last_input_event_for_vsync) {
+    SendBeginFrame(base::TimeTicks() +
+                   base::TimeDelta::FromMilliseconds(time_ms));
+  }
 }
 
 void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
@@ -1251,12 +1263,16 @@ void ContentViewCoreImpl::UpdateVSyncParameters(JNIEnv* env, jobject /* obj */,
 
 void ContentViewCoreImpl::OnVSync(JNIEnv* env, jobject /* obj */,
                                   jlong frame_time_micros) {
+  base::TimeTicks frame_time =
+      base::TimeTicks::FromInternalValue(frame_time_micros);
+  SendBeginFrame(frame_time);
+}
+
+void ContentViewCoreImpl::SendBeginFrame(base::TimeTicks frame_time) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view)
     return;
 
-  base::TimeTicks frame_time =
-      base::TimeTicks::FromInternalValue(frame_time_micros);
   base::TimeTicks display_time = frame_time + vsync_interval_;
   base::TimeTicks deadline = display_time - expected_browser_composite_time_;
 

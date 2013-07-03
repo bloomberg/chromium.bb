@@ -325,6 +325,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   WebKit::WebGestureEvent MakeGestureEvent(
       WebKit::WebInputEvent::Type type, long time_ms, float x, float y) const;
 
+  void SendBeginFrame(base::TimeTicks frame_time);
+
   gfx::Size GetViewportSizePix() const;
   gfx::Size GetViewportSizeOffsetPix() const;
 
