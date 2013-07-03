@@ -60,11 +60,13 @@ message PowerSupplyProperties {
   optional double battery_percent = 7;
 
   // Estimated time until the battery is empty, in seconds, or zero if the
-  // battery isn't discharging.
+  // battery isn't discharging. -1 if the estimated time would be huge
+  // (e.g. because the current is zero or close to zero).
   optional int64 battery_time_to_empty_sec = 5;
 
   // Estimated time until the battery is full, in seconds, or zero if the
-  // battery isn't charging.
+  // battery isn't charging. -1 if the estimated time would be huge (e.g.
+  // because the current is zero or close to zero).
   optional int64 battery_time_to_full_sec = 6;
 
   // True when |battery_time_to_*| can't be trusted, e.g. because the power
