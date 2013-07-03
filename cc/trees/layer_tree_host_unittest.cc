@@ -59,37 +59,6 @@ namespace {
 class LayerTreeHostTest : public LayerTreeTest {
 };
 
-// Test interleaving of redraws and commits
-class LayerTreeHostTestCommitingWithContinuousRedraw
-    : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestCommitingWithContinuousRedraw()
-      : num_complete_commits_(0), num_draws_(0) {}
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_complete_commits_++;
-    if (num_complete_commits_ == 2)
-      EndTest();
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    if (num_draws_ == 1)
-      PostSetNeedsCommitToMainThread();
-    num_draws_++;
-    PostSetNeedsRedrawToMainThread();
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  int num_complete_commits_;
-  int num_draws_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestCommitingWithContinuousRedraw);
-
 // Two setNeedsCommits in a row should lead to at least 1 commit and at least 1
 // draw with frame 0.
 class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
