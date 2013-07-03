@@ -10,6 +10,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_profile_observer.h"
@@ -27,6 +28,7 @@ NetworkHandler::NetworkHandler() {
 
   cert_loader_.reset(new CertLoader);
   network_state_handler_.reset(new NetworkStateHandler());
+  network_device_handler_.reset(new NetworkDeviceHandler());
   network_profile_handler_.reset(new NetworkProfileHandler());
   network_configuration_handler_.reset(new NetworkConfigurationHandler());
   managed_network_configuration_handler_.reset(
@@ -85,6 +87,10 @@ CertLoader* NetworkHandler::cert_loader() {
 
 NetworkStateHandler* NetworkHandler::network_state_handler() {
   return network_state_handler_.get();
+}
+
+NetworkDeviceHandler* NetworkHandler::network_device_handler() {
+  return network_device_handler_.get();
 }
 
 NetworkProfileHandler* NetworkHandler::network_profile_handler() {

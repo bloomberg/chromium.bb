@@ -16,6 +16,7 @@ class GeolocationHandler;
 class ManagedNetworkConfigurationHandler;
 class NetworkConfigurationHandler;
 class NetworkConnectionHandler;
+class NetworkDeviceHandler;
 class NetworkProfileHandler;
 class NetworkStateHandler;
 
@@ -41,6 +42,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   // NetworkHandler.
   CertLoader* cert_loader();
   NetworkStateHandler* network_state_handler();
+  NetworkDeviceHandler* network_device_handler();
   NetworkProfileHandler* network_profile_handler();
   NetworkConfigurationHandler* network_configuration_handler();
   ManagedNetworkConfigurationHandler* managed_network_configuration_handler();
@@ -56,6 +58,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   // The order of these determines the (inverse) destruction order.
   scoped_ptr<CertLoader> cert_loader_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
+  scoped_ptr<NetworkDeviceHandler> network_device_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandler>
