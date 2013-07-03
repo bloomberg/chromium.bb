@@ -325,8 +325,14 @@ FileSelectionHandler.prototype.setPreviewPanelMustBeHidden = function(hidden) {
 FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
   var panel = this.previewPanel_;
   var state = panel.getAttribute('visibility');
-  var mustBeVisible = (this.selection.totalCount > 0 ||
-      !PathUtil.isRootPath(this.fileManager_.getCurrentDirectory()));
+  var mustBeVisible =
+       // If one or more files are selected, show the file info.
+      (this.selection.totalCount > 0 ||
+       // If the directory is not root dir, show the directory info.
+       !PathUtil.isRootPath(this.fileManager_.getCurrentDirectory()) ||
+       // On Open File dialog, the preview panel is always shown.
+       this.fileManager_.dialogType == DialogType.SELECT_OPEN_FILE ||
+       this.fileManager_.dialogType == DialogType.SELECT_OPEN_MULTI_FILE);
 
   var stopHidingAndShow = function() {
     clearTimeout(this.hidingTimeout_);
@@ -375,7 +381,7 @@ FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
  * @private
  */
 FileSelectionHandler.prototype.isPreviewPanelVisibile_ = function() {
-  return this.previewPanel_.getAttribute('visibility') != 'hidden';
+  return this.previewPanel_.getAttribute('visibility') == 'visible';
 };
 
 /**
@@ -512,9 +518,10 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   if (selection.totalCount == 1) {
     // Shows the breadcrumb list when a file is selected.
     updateTarget = selection.entries[0].fullPath;
-  } else if (selection.totalCount == 0 && !PathUtil.isRootPath(path)) {
-    // Shows the breadcrumb list when no file is selected and the current
-    // directory is non-root path.
+  } else if (selection.totalCount == 0 &&
+             this.isPreviewPanelVisibile_()) {
+    // Shows the breadcrumb list when no file is selected and the preview
+    // panel is visible.
     updateTarget = path;
   }
   this.updatePreviewPanelBreadcrumbs_(updateTarget);

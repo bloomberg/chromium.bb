@@ -477,18 +477,19 @@ div.splitter {
   padding: 10px;
 }
 
-.dialog-footer:not([progress]) .progress-bar,
-.dialog-footer:not([progress]) .preparing-label {
+.progressable:not([progress]) .progress-bar,
+.progressable:not([progress]) .preparing-label {
   display: none;
 }
 
-.dialog-footer[progress] .ok,
-.dialog-footer[progress] #filename-input-box,
-.dialog-footer[progress] #file-type {
+.progressable[progress] .ok,
+.progressable[progress] #filename-input-box,
+.progressable[progress] #preview-lines,
+.progressable[progress] .file-type {
   display: none;
 }
 
-.dialog-footer .progress-bar {
+.progressable .progress-bar {
   -webkit-box-flex: 1;
   -webkit-margin-end: 20px;
   -webkit-margin-start: 20px;
@@ -1105,6 +1106,14 @@ input.rename {
 .preview-panel > .right,
 .dialog-footer > .right {
   -webkit-box-pack: end;
+}
+
+.preview-panel .preparing-label {
+  -webkit-margin-start: 30px;
+}
+
+.preview-panel .progress-bar {
+  -webkit-box-flex: 1;
 }
 
 .preview-thumbnails {

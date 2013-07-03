@@ -200,7 +200,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     content::RenderViewHost* host = dialog_->GetRenderViewHost();
     string16 main_frame;
     std::string button_class =
-        (button_type == DIALOG_BTN_OK) ? ".ok" : ".cancel";
+        (button_type == DIALOG_BTN_OK) ? ".button-panel .ok" :
+                                         ".button-panel .cancel";
     string16 script = ASCIIToUTF16(
         "console.log(\'Test JavaScript injected.\');"
         "document.querySelector(\'" + button_class + "\').click();");

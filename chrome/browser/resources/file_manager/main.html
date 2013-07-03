@@ -319,7 +319,7 @@
               <div class=downloads-warning hidden></div>
             </div>
           </div>
-          <div class="preview-panel" visibility="hidden">
+          <div class="preview-panel progressable" visibility="hidden">
             <div class="left">
               <div>
                 <div class="preview-thumbnails"></div>
@@ -339,6 +339,15 @@
               <button id="delete-button" command="#delete" tabindex="3"
                       i18n-values="aria-label:DELETE_BUTTON_LABEL"></button>
             </div>
+            <div class=preparing-label i18n-content=PREPARING_LABEL></div>
+            <div class=progress-bar>
+              <div class=progress-track></div>
+            </div>
+            <div class="right buttonbar" id="open-panel" visibleif="open-file open-multi-file">
+              <select class="file-type"></select>
+              <button class=ok disabled tabindex="6"></button>
+              <button class=cancel i18n-content=CANCEL_LABEL tabindex="7"></button>
+            </div>
           </div>
           <div id="unmounted-panel"></div>
           <div id="format-panel">
@@ -348,7 +357,7 @@
         </div>
       </div>
     </div>
-    <div class=dialog-footer invisibleif="full-page">
+    <div class="dialog-footer progressable" visibleif="saveas-file folder">
       <div class="left">
         <button id="new-folder" i18n-content=NEW_FOLDER_BUTTON_LABEL
                 visibleif="saveas-file folder" command="#newfolder"
@@ -364,7 +373,7 @@
         </div>
       </div>
       <div class="right buttonbar">
-        <select id="file-type"></select>
+        <select class="file-type"></select>
         <button class=ok disabled tabindex="6"></button>
         <button class=cancel i18n-content=CANCEL_LABEL tabindex="7"></button>
       </div>

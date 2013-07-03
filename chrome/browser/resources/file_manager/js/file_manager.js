@@ -849,8 +849,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.metadataCache_ = MetadataCache.createFull();
 
-    this.okButton_ = this.dialogDom_.querySelector('.ok');
-    this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
+    this.hasFooterPanel_ =
+        this.dialogType == DialogType.SELECT_SAVEAS_FILE ||
+        this.dialogType == DialogType.SELECT_FOLDER;
+
+    // If the footer panel exists, the buttons are placed there. Otherwise,
+    // the buttons are on the preview panel.
+    var parentPanelOfButtons = this.dialogDom_.querySelector(
+        !this.hasFooterPanel_ ? '.preview-panel' : '.dialog-footer');
+    parentPanelOfButtons.classList.add('button-panel');
+    this.fileTypeSelector_ = parentPanelOfButtons.querySelector('.file-type');
+    this.okButton_ = parentPanelOfButtons.querySelector('.ok');
+    this.cancelButton_ = parentPanelOfButtons.querySelector('.cancel');
 
     // Pre-populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
@@ -1080,7 +1090,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
-    this.fileTypeSelector_ = this.dialogDom_.querySelector('#file-type');
     this.initFileTypeFilter_();
 
     util.addIsFocusedMethod();
@@ -3100,7 +3109,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var shade = this.document_.createElement('div');
     shade.className = 'shade';
-    var footer = this.document_.querySelector('.dialog-footer');
+    var footer = this.dialogDom_.querySelector('.button-panel');
     var progress = footer.querySelector('.progress-track');
     progress.style.width = '0%';
     var cancelled = false;
