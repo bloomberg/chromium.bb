@@ -35,13 +35,21 @@ function doSomeCanvasCalls(repeats)
 
 function test()
 {
-    // FIXME: Remove once taken out of experiments.
+    // FIXME: Remove once taken out of experiments. Also a hack below should be removed.
     WebInspector.experimentsSettings.canvasInspection = {};
     WebInspector.experimentsSettings.canvasInspection.isEnabled = function() { return true; };
 
     WebInspector.showPanel("profiles");
     var profilesPanel = WebInspector.panels.profiles;
     var profileType = profilesPanel.getProfileType(WebInspector.CanvasProfileType.TypeId);
+
+    // FIXME: This hack is added because ProfilesPanel might have been already created before experiment was enabled.
+    // This could be removed once canvas inspection is out of experiments.
+    if (!profileType) {
+        profilesPanel._registerProfileType(new WebInspector.CanvasProfileType());
+        profileType = profilesPanel.getProfileType(WebInspector.CanvasProfileType.TypeId);
+    }
+
     profilesPanel._onProfileTypeSelected({data: profileType});
 
     InspectorTest.override(profileType, "_isSingleFrameMode", function() { return false; }, true /*sticky*/);
