@@ -133,10 +133,10 @@ InspectorTest.createHeapSnapshotMockWithDOM = function()
             //    |----->Window--->B--->C
             //    |        |     \
             //  (root)   hidden   --->D--internal / "native"-->N
-            //    |         \         |
-            //    |----->E   H     internal
+            //    |          \        |
+            //    |----->(E)  H     internal
             //    |                   v
-            //    |----->F--->G       M
+            //    |----->(F)--->G     M
             //
             /* (root) */    0,  0,  1, 4,
             /* Window */    1, 11,  2, 2,
@@ -160,7 +160,7 @@ InspectorTest.createHeapSnapshotMockWithDOM = function()
             /* from B */       0,  1, 40,
             /* from D */       2, 12, 44, 2, 1, 48
             ],
-        strings: ["", "A", "B", "C", "D", "E", "F", "G", "H", "M", "N", "Window", "native"]
+        strings: ["", "A", "B", "C", "D", "(E)", "(F)", "G", "H", "M", "N", "Window", "native"]
     });
 };
 
