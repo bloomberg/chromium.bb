@@ -48,26 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# These failures are likely due to r209827 or r209833, but snuck in during the
-# Mesa upgrade suppressions, and will have to be rebaselined again.
-crbug.com/238755 compositing/3d-corners.html [ ImageOnlyFailure ]
-crbug.com/238755 compositing/perpendicular-layer-sorting.html [ ImageOnlyFailure ]
-crbug.com/238755 [ Win ] compositing/flat-with-transformed-child.html [ ImageOnlyFailure ]
-crbug.com/238755 compositing/geometry/layer-due-to-layer-children-deep.html [ ImageOnlyFailure ]
-crbug.com/238755 compositing/geometry/layer-due-to-layer-children.html [ ImageOnlyFailure ]
-crbug.com/238755 [ MountainLion ] css3/filters/effect-brightness-hw.html [ ImageOnlyFailure ]
-crbug.com/238755 transforms/3d/general/perspective-units.html [ ImageOnlyFailure ]
-crbug.com/238755 transforms/3d/point-mapping/3d-point-mapping-2.html [ ImageOnlyFailure ]
-crbug.com/238755 transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure ]
-crbug.com/238755 transforms/3d/point-mapping/3d-point-mapping-deep.html [ ImageOnlyFailure Slow ]
-crbug.com/238755 transforms/3d/point-mapping/3d-point-mapping-origins.html [ ImageOnlyFailure ]
-crbug.com/238755 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ ImageOnlyFailure ]
-crbug.com/238755 transforms/3d/point-mapping/3d-point-mapping.html [ ImageOnlyFailure ]
-
-# Still need rebaselines due to Mesa upgrade.
-crbug.com/238755 [ Linux ] fast/canvas/webgl/uniform-location.html [ Failure ]
-crbug.com/238755 [ Linux ] fast/canvas/webgl/gl-uniform-arrays.html [ Failure ]
-crbug.com/238755 [ Linux ] virtual/gpu/fast/canvas/webgl/point-size.html [ Failure ]
-crbug.com/238755 [ Linux ] css3/filters/custom/effect-custom-combined-missing.html [ ImageOnlyFailure Crash ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
