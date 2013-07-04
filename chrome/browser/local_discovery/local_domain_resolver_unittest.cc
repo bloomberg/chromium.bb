@@ -69,6 +69,10 @@ class LocalDomainResolverTest : public testing::Test {
   ~LocalDomainResolverTest() {
   }
 
+  virtual void SetUp() OVERRIDE {
+    mdns_client_.StartListening();
+  }
+
   void AddressCallback(bool resolved, const net::IPAddressNumber& address) {
     if (address == net::IPAddressNumber()) {
       AddressCallbackInternal(resolved, "");
