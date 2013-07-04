@@ -19,6 +19,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -644,6 +645,36 @@ TEST_F(FramePainterTest, MinimalHeaderStyle) {
   w->GetNativeWindow()->GetRootWindow()->SetProperty(
       ash::internal::kCyclingThroughWorkspacesKey, true);
   EXPECT_FALSE(p.ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO));
+}
+
+// Ensure the title text is vertically aligned with the window icon.
+TEST_F(FramePainterTest, TitleIconAlignment) {
+  scoped_ptr<Widget> w(CreateTestWidget());
+  FramePainter p;
+  ImageButton size(NULL);
+  ImageButton close(NULL);
+  views::View window_icon;
+  window_icon.SetBounds(0, 0, 16, 16);
+  p.Init(w.get(),
+         &window_icon,
+         &size,
+         &close,
+         FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w->SetBounds(gfx::Rect(0, 0, 500, 500));
+  w->Show();
+
+  // Title and icon are aligned when shorter_header is false.
+  p.LayoutHeader(w->non_client_view()->frame_view(), false);
+  gfx::Font default_font;
+  gfx::Rect large_header_title_bounds = p.GetTitleBounds(default_font);
+  EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
+            large_header_title_bounds.CenterPoint().y());
+
+  // Title and icon are aligned when shorter_header is true.
+  p.LayoutHeader(w->non_client_view()->frame_view(), true);
+  gfx::Rect short_header_title_bounds = p.GetTitleBounds(default_font);
+  EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
+            short_header_title_bounds.CenterPoint().y());
 }
 
 }  // namespace ash

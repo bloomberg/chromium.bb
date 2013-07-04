@@ -48,14 +48,12 @@ namespace {
 const int kBorderThickness = 0;
 // Space between left edge of window and popup window icon.
 const int kIconOffsetX = 9;
-// Space between top of window and popup window icon.
-const int kIconOffsetY = 5;
 // Height and width of window icon.
 const int kIconSize = 16;
 // Space between the title text and the caption buttons.
 const int kTitleLogoSpacing = 5;
 // Space between window icon and title text.
-const int kTitleIconOffsetX = 4;
+const int kTitleIconOffsetX = 5;
 // Space between window edge and title text, when there is no icon.
 const int kTitleNoIconOffsetX = 8;
 // Color for the non-maximized window title text.
@@ -592,7 +590,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
   // The window icon is painted by its own views::View.
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
-    gfx::Rect title_bounds = GetTitleBounds(view, title_font);
+    gfx::Rect title_bounds = GetTitleBounds(title_font);
     SkColor title_color = frame_->IsMaximized() ?
         kMaximizedWindowTitleTextColor : kNonMaximizedWindowTitleTextColor;
     canvas->DrawStringInt(delegate->GetWindowTitle(),
@@ -672,15 +670,14 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
       size_button_size.height());
 
   if (window_icon_) {
-    window_icon_->SetBoundsRect(
-        gfx::Rect(kIconOffsetX, kIconOffsetY, kIconSize, kIconSize));
+    // Vertically center the window icon with respect to the close button.
+    int icon_offset_y = GetCloseButtonCenterY() - window_icon_->height() / 2;
+    window_icon_->SetBounds(kIconOffsetX, icon_offset_y, kIconSize, kIconSize);
   }
 }
 
-void FramePainter::SchedulePaintForTitle(views::NonClientFrameView* view,
-                                         const gfx::Font& title_font) {
-  frame_->non_client_view()->SchedulePaintInRect(
-      GetTitleBounds(view, title_font));
+void FramePainter::SchedulePaintForTitle(const gfx::Font& title_font) {
+  frame_->non_client_view()->SchedulePaintInRect(GetTitleBounds(title_font));
 }
 
 void FramePainter::OnThemeChanged() {
@@ -837,6 +834,10 @@ int FramePainter::GetTitleOffsetX() const {
       kTitleNoIconOffsetX;
 }
 
+int FramePainter::GetCloseButtonCenterY() const {
+  return close_button_->y() + close_button_->height() / 2;
+}
+
 int FramePainter::GetHeaderOpacity(
     HeaderMode header_mode,
     int theme_frame_id,
@@ -941,13 +942,12 @@ void FramePainter::SchedulePaintForHeader() {
                 std::max(top_left_height, top_right_height)));
 }
 
-gfx::Rect FramePainter::GetTitleBounds(views::NonClientFrameView* view,
-                                       const gfx::Font& title_font) {
+gfx::Rect FramePainter::GetTitleBounds(const gfx::Font& title_font) {
   int title_x = GetTitleOffsetX();
-  // Center the text in the middle of the caption - this way it adapts
-  // automatically to the caption height (which is given by the owner).
-  int title_y =
-      (view->GetBoundsForClientView().y() - title_font.GetHeight()) / 2;
+  // Center the text with respect to the close button. This way it adapts to
+  // the caption height and aligns exactly with the window icon. Don't use
+  // |window_icon_| for this computation as it may be NULL.
+  int title_y = GetCloseButtonCenterY() - title_font.GetHeight() / 2;
   return gfx::Rect(
       title_x,
       std::max(0, title_y),

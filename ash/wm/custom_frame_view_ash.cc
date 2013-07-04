@@ -109,7 +109,7 @@ void CustomFrameViewAsh::UpdateWindowIcon() {
 }
 
 void CustomFrameViewAsh::UpdateWindowTitle() {
-  frame_painter_->SchedulePaintForTitle(this, GetTitleFont());
+  frame_painter_->SchedulePaintForTitle(GetTitleFont());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

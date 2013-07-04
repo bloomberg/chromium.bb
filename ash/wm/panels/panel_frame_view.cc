@@ -88,7 +88,7 @@ void PanelFrameView::UpdateWindowIcon() {
 void PanelFrameView::UpdateWindowTitle() {
   if (!frame_painter_)
     return;
-  frame_painter_->SchedulePaintForTitle(this, title_font_);
+  frame_painter_->SchedulePaintForTitle(title_font_);
 }
 
 void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {

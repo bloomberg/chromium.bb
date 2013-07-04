@@ -217,7 +217,7 @@ void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
 
 void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
   if (!frame()->IsFullscreen())
-    frame_painter_->SchedulePaintForTitle(this, BrowserFrame::GetTitleFont());
+    frame_painter_->SchedulePaintForTitle(BrowserFrame::GetTitleFont());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
