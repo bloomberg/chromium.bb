@@ -2771,10 +2771,13 @@
               'sources': [
                 'app/breakpad_linux.cc',
                 'app/breakpad_linux.h',
+                'app/chrome_breakpad_client.cc',
+                'app/chrome_breakpad_client.h',
                 'browser/crash_handler_host_linux.cc',
               ],
               'dependencies': [
                 '../breakpad/breakpad.gyp:breakpad_client',
+                '../components/components.gyp:breakpad_component',
                 # make sure file_version_info_linux.h is generated first.
                 'common',
               ],

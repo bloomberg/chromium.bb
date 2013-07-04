@@ -19,19 +19,18 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
-#include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/breakpad/breakpad_client.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #include "policy/policy_constants.h"
@@ -239,30 +238,8 @@ void InitCrashReporter() {
   if (is_browser)
     [breakpad_config setObject:@"NO" forKey:@BREAKPAD_SEND_AND_EXIT];
 
-  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
-  // location to write brekapad crash dumps can be set.
-  const char* alternate_minidump_location = getenv("BREAKPAD_DUMP_LOCATION");
-  if (alternate_minidump_location) {
-    base::FilePath alternate_minidump_location_path(
-        alternate_minidump_location);
-    if (!file_util::PathExists(alternate_minidump_location_path)) {
-      LOG(ERROR) << "Directory " << alternate_minidump_location <<
-          " doesn't exist";
-    } else {
-      PathService::Override(
-          chrome::DIR_CRASH_DUMPS,
-          base::FilePath(alternate_minidump_location));
-      if (is_browser) {
-        // Print out confirmation message to the stdout, but only print
-        // from browser process so we don't flood the terminal.
-        LOG(WARNING) << "Breakpad dumps will now be written in " <<
-            alternate_minidump_location;
-      }
-    }
-  }
-
   base::FilePath dir_crash_dumps;
-  PathService::Get(chrome::DIR_CRASH_DUMPS, &dir_crash_dumps);
+  breakpad::GetBreakpadClient()->GetCrashDumpLocation(&dir_crash_dumps);
   [breakpad_config setObject:base::SysUTF8ToNSString(dir_crash_dumps.value())
                       forKey:@BREAKPAD_DUMP_DIRECTORY];
 

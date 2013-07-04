@@ -386,6 +386,11 @@
             'utility/media_galleries/pmp_test_helper.h',
           ],
         }],
+        ['OS=="mac"', {
+          'dependencies': [
+            '../components/components.gyp:breakpad_stubs',
+          ],
+        }],
       ],
     },
     {
@@ -501,7 +506,6 @@
         '../extensions/common/one_shot_event_unittest.cc',
         '../extensions/common/url_pattern_set_unittest.cc',
         '../extensions/common/url_pattern_unittest.cc',
-        'app/breakpad_mac_stubs.mm',
         'app/chrome_dll.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
         # All unittests in browser, common, renderer and service.
@@ -2572,6 +2576,7 @@
           'dependencies': [
             # breakpad is currently only tested on Windows.
             '../breakpad/breakpad.gyp:*',
+            '../components/components.gyp:breakpad_component',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {

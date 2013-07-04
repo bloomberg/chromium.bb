@@ -49,11 +49,13 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/os_crash_dumps.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/app/chrome_breakpad_client.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "chrome/common/mac/objc_zombie.h"
+#include "components/breakpad/breakpad_client.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
@@ -86,6 +88,8 @@
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
+#include "chrome/app/chrome_breakpad_client.h"
+#include "components/breakpad/breakpad_client.h"
 #endif
 
 base::LazyInstance<chrome::ChromeContentBrowserClient>
@@ -96,6 +100,11 @@ base::LazyInstance<chrome::ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
+
+#if defined(OS_MACOSX) || defined(USE_LINUX_BREAKPAD)
+base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
+    g_chrome_breakpad_client = LAZY_INSTANCE_INITIALIZER;
+#endif
 
 extern int NaClMain(const content::MainFunctionParams&);
 extern int ServiceProcessMain(const content::MainFunctionParams&);
@@ -478,6 +487,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
   nacl::RegisterPathProvider();
+#endif
+
+#if defined(OS_MACOSX) || defined(USE_LINUX_BREAKPAD)
+  breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
 #endif
 
 #if defined(OS_MACOSX)

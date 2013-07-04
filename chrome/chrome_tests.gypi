@@ -1985,7 +1985,8 @@
           # chrome_resources.gyp:{packed_extra_resources,packed_resources},
           # and can build this target standalone much faster.
           'dependencies': [
-            'chrome'
+            'chrome',
+            '../components/components.gyp:breakpad_stubs',
           ],
           'sources': [
             'browser/renderer_host/chrome_render_widget_host_view_mac_delegate_browsertest.cc',
@@ -2211,7 +2212,8 @@
           # chrome_resources.gyp:{packed_extra_resources,packed_resources},
           # and can build this target standalone much faster.
           'dependencies': [
-            'chrome'
+            'chrome',
+            '../components/components.gyp:breakpad_stubs',
           ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {

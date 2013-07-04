@@ -1,5 +1,7 @@
 include_rules = [
   "+chrome/app/breakpad_win.h",
+  "+chrome/app/chrome_breakpad_client.h",
+  "+components/breakpad",
   "+components/nacl",
   "+content/public/app/startup_helper_win.h",
   "+sandbox/linux/seccomp-bpf",

@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
@@ -11,11 +12,13 @@
 #include "base/strings/string_util.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "chrome/app/breakpad_win.h"
+#include "chrome/app/chrome_breakpad_client.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/nacl/nacl_broker_listener.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
+#include "components/breakpad/breakpad_client.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/content_switches.h"
@@ -24,6 +27,13 @@
 #include "sandbox/win/src/sandbox_types.h"
 
 extern int NaClMain(const content::MainFunctionParams&);
+
+namespace {
+
+base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
+    g_chrome_breakpad_client = LAZY_INSTANCE_INITIALIZER;
+
+} // namespace
 
 // main() routine for the NaCl broker process.
 // This is necessary for supporting NaCl in Chrome on Win64.
@@ -49,6 +59,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   base::AtExitManager exit_manager;
   CommandLine::Init(0, NULL);
 
+  breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
   InitCrashReporter();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

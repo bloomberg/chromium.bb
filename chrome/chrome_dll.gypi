@@ -283,14 +283,20 @@
                 ['mac_breakpad_compiled_in==1', {
                   'dependencies': [
                     '../breakpad/breakpad.gyp:breakpad',
+                    '../components/components.gyp:breakpad_component',
                     'app/policy/cloud_policy_codegen.gyp:policy',
                   ],
                   'sources': [
                     'app/breakpad_mac.mm',
                     'app/breakpad_mac.h',
+                    'app/chrome_breakpad_client.cc',
+                    'app/chrome_breakpad_client.h',
                   ],
                 }, {  # else: mac_breakpad_compiled_in!=1
                   # No Breakpad, put in the stubs.
+                  'dependencies': [
+                    '../components/components.gyp:breakpad_stubs',
+                  ],
                   'sources': [
                     'app/breakpad_mac_stubs.mm',
                     'app/breakpad_mac.h',

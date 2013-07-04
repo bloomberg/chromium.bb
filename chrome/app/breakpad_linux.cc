@@ -39,13 +39,13 @@
 #include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
+#include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
 
 #if defined(OS_ANDROID)
@@ -533,7 +533,7 @@ void EnableCrashDumping(bool unattended) {
   PathService::Get(base::DIR_TEMP, &tmp_path);
 
   base::FilePath dumps_path(tmp_path);
-  if (PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
+  if (breakpad::GetBreakpadClient()->GetCrashDumpLocation(&dumps_path)) {
     base::FilePath logfile =
         dumps_path.AppendASCII(CrashUploadList::kReporterLogFilename);
     std::string logfile_str = logfile.value();
@@ -1457,17 +1457,6 @@ void InitCrashReporter() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kDisableBreakpad))
     return;
-
-  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
-  // location to write brekapad crash dumps can be set.
-  const char* alternate_minidump_location = getenv("BREAKPAD_DUMP_LOCATION");
-  if (alternate_minidump_location) {
-    base::FilePath alternate_minidump_location_path(
-        alternate_minidump_location);
-    PathService::Override(
-        chrome::DIR_CRASH_DUMPS,
-        base::FilePath(alternate_minidump_location));
-  }
 
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);

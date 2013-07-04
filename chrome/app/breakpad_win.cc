@@ -32,7 +32,6 @@
 #include "chrome/app/breakpad_field_trial_win.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -40,6 +39,7 @@
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "components/breakpad/breakpad_client.h"
 #include "policy/policy_constants.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
@@ -320,18 +320,11 @@ static bool MetricsReportingControlledByPolicy(bool* result) {
 // Appends the breakpad dump path to |g_custom_entries|.
 void SetBreakpadDumpPath() {
   DCHECK(g_custom_entries);
-  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
-  // location to write breakpad crash dumps can be set.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string alternate_crash_dump_location;
   base::FilePath crash_dumps_dir_path;
-  if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_crash_dump_location)) {
-    crash_dumps_dir_path = base::FilePath::FromUTF8Unsafe(
-        alternate_crash_dump_location);
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(
-            L"breakpad-dump-location",
-            crash_dumps_dir_path.value().c_str()));
+  if (breakpad::GetBreakpadClient()->GetAlternativeCrashDumpLocation(
+          &crash_dumps_dir_path)) {
+    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+        L"breakpad-dump-location", crash_dumps_dir_path.value().c_str()));
   }
 }
 
