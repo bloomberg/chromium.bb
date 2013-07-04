@@ -84,13 +84,8 @@ IN_PROC_BROWSER_TEST_F(AdViewTest, AdViewPermissionIsRequired) {
 // This test checks that 1) it is possible change the value of the "ad-network"
 // attribute of an <adview> element and 2) changing the value will reset the
 // "src" attribute.
-#if defined(OS_MACOSX)
-// Very flaky on MacOS 10.8 - crbug.com/253644.
-#define MAYBE_ChangeAdNetworkValue DISABLED_ChangeAdNetworkValue
-#else
-#define MAYBE_ChangeAdNetworkValue ChangeAdNetworkValue
-#endif
-IN_PROC_BROWSER_TEST_F(AdViewTest, MAYBE_ChangeAdNetworkValue) {
+// Broken test: http://crbug.com/257465.
+IN_PROC_BROWSER_TEST_F(AdViewTest, DISABLED_ChangeAdNetworkValue) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ASSERT_TRUE(RunPlatformAppTest(
