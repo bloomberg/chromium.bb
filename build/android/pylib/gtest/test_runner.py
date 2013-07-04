@@ -25,7 +25,7 @@ import run_isolated
 
 
 _ISOLATE_FILE_PATHS = {
-  'base_unittests': 'base/base_unittests.isolate',
+  #'base_unittests': 'base/base_unittests.isolate',
   #'net_unittests': 'net/net_unittests.isolate',
   #'unit_tests': 'chrome/unit_tests.isolate',
   #'content_browsertests': 'content/content_browsertests.isolate',
@@ -74,7 +74,11 @@ def _GetDataFilesForTestSuite(product_dir, test_suite_basename):
   # Ideally, we'd just push all test data. However, it has >100MB, and a lot
   # of the files are not relevant (some are used for browser_tests, others for
   # features not supported, etc..).
-  if test_suite_basename == 'unit_tests':
+  if test_suite_basename == 'base_unittests':
+    return [
+        'base/test/data/',
+    ]
+  elif test_suite_basename == 'unit_tests':
     test_files = [
         'base/test/data/',
         'chrome/test/data/download-test1.lib',
