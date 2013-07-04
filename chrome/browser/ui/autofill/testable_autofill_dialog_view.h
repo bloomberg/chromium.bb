@@ -11,7 +11,7 @@ namespace autofill {
 // to assist in unit testing.
 class TestableAutofillDialogView {
  public:
-  virtual ~TestableAutofillDialogView();
+  virtual ~TestableAutofillDialogView() {}
 
   // Simulates the user pressing 'Submit' to accept the dialog.
   virtual void SubmitForTesting() = 0;

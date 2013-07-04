@@ -304,9 +304,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
 
-// TODO(isherman): Enable these tests on other platforms once the UI is
-// implemented on those platforms.
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 // Submit the form data.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
@@ -331,8 +329,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
   EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger().dialog_type());
 }
 
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_Hide DISABLED_Hide
+#else
+#define MAYBE_Hide Hide
+#endif
 // Take some other action that dismisses the dialog.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_Hide) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->Hide();
 
@@ -407,7 +412,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutCancelled) {
   EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_FillInputFromAutofill DISABLED_FillInputFromAutofill
+#else
+#define MAYBE_FillInputFromAutofill FillInputFromAutofill
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       MAYBE_FillInputFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
@@ -474,10 +487,19 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_TRUE(controller()->ShouldShowProgressBar());
 }
 
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_RequestAutocompleteDoesntShowSteps \
+    DISABLED_RequestAutocompleteDoesntShowSteps
+#else
+#define MAYBE_RequestAutocompleteDoesntShowSteps \
+    RequestAutocompleteDoesntShowSteps
+#endif
 // Test that Autocheckout steps are not showing after submitting the
 // dialog for controller with type DIALOG_TYPE_REQUEST_AUTOCOMPLETE.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       RequestAutocompleteDoesntShowSteps) {
+                       MAYBE_RequestAutocompleteDoesntShowSteps) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
 
@@ -491,9 +513,17 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 }
 
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_FillComboboxFromAutofill DISABLED_FillComboboxFromAutofill
+#else
+#define MAYBE_FillComboboxFromAutofill FillComboboxFromAutofill
+#endif
 // Tests that changing the value of a CC expiration date combobox works as
 // expected when Autofill is used to fill text inputs.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillComboboxFromAutofill) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       MAYBE_FillComboboxFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
@@ -673,7 +703,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
             controller()->GetTestableView()->GetSize().width());
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_AutocompleteEvent DISABLED_AutocompleteEvent
+#else
+#define MAYBE_AutocompleteEvent AutocompleteEvent
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
 
@@ -687,8 +724,17 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
   ExpectDomMessage("success");
 }
 
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_AutocompleteErrorEventReasonInvalid \
+    DISABLED_AutocompleteErrorEventReasonInvalid
+#else
+#define MAYBE_AutocompleteErrorEventReasonInvalid \
+    AutocompleteErrorEventReasonInvalid
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       AutocompleteErrorEventReasonInvalid) {
+                       MAYBE_AutocompleteErrorEventReasonInvalid) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name' pattern='.*zebra.*'>");
 
@@ -706,8 +752,17 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   ExpectDomMessage("error: invalid");
 }
 
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_AutocompleteErrorEventReasonCancel \
+    DISABLED_AutocompleteErrorEventReasonCancel
+#else
+#define MAYBE_AutocompleteErrorEventReasonCancel \
+    AutocompleteErrorEventReasonCancel
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       AutocompleteErrorEventReasonCancel) {
+                       MAYBE_AutocompleteErrorEventReasonCancel) {
   SetUpHtmlAndInvoke("<input autocomplete='cc-name'>")->GetTestableView()->
       CancelForTesting();
   ExpectDomMessage("error: cancel");
@@ -726,7 +781,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
       controller()->GetTestableView()->SubmitForTesting());
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, PreservedSections) {
+#if defined(OS_MACOSX)
+// TODO(groby): Implement the necessary functionality and enable this test:
+// http://crbug.com/256864
+#define MAYBE_PreservedSections  DISABLED_PreservedSections
+#else
+#define MAYBE_PreservedSections PreservedSections
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->set_use_validation(true);
 
@@ -805,6 +867,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, PreservedSections) {
   EXPECT_NE(ASCIIToUTF16("shipping name"),
             view->GetTextContentsOfInput(shipping_zip));
 }
-#endif  // defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
 }  // namespace autofill

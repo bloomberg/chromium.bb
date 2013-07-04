@@ -133,6 +133,9 @@ class TestAutofillDialogView : public AutofillDialogView {
       OVERRIDE {
     *output = outputs_[section];
   }
+  virtual TestableAutofillDialogView* GetTestableView() OVERRIDE {
+    return NULL;
+  }
 
   virtual string16 GetCvc() OVERRIDE { return string16(); }
   virtual bool SaveDetailsLocally() OVERRIDE { return true; }
