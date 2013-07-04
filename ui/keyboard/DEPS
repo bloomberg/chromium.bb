@@ -1,5 +1,4 @@
 include_rules = [
   "+content/public",
   "+grit/keyboard_resources.h",
-  "+grit/keyboard_resources_map.h",
 ]

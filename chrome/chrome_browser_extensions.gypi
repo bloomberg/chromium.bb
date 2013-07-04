@@ -881,7 +881,6 @@
         }],
         ['use_aura==1', {
           'dependencies': [
-            '../ui/keyboard/keyboard.gyp:keyboard',
             '../ui/keyboard/keyboard.gyp:keyboard_resources',
           ],
         }],

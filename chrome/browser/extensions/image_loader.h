@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_IMAGE_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_IMAGE_LOADER_H_
 
+#include <map>
 #include <set>
 
 #include "base/callback_forward.h"

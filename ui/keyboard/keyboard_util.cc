@@ -9,8 +9,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "grit/keyboard_resources.h"
-#include "grit/keyboard_resources_map.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/input_method.h"
@@ -62,37 +60,6 @@ bool InsertText(const base::string16& text, aura::RootWindow* root_window) {
   tic->InsertText(text);
 
   return true;
-}
-
-const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
-  // This looks a lot like the contents of a resource map; however it is
-  // necessary to have a custom path for the extension path, so the resource
-  // map cannot be used directly.
-  static const GritResourceMap kKeyboardResources[] = {
-    {"keyboard/api_adapter.js", IDR_KEYBOARD_API_ADAPTER_JS},
-    {"keyboard/constants.js", IDR_KEYBOARD_CONSTANTS_JS},
-    {"keyboard/elements/kb-accent-container.html",
-        IDR_KEYBOARD_ELEMENTS_ACCENT_CONTAINER},
-    {"keyboard/elements/kb-accent-key.html", IDR_KEYBOARD_ELEMENTS_ACCENT_KEY},
-    {"keyboard/elements/kb-accent-set.html", IDR_KEYBOARD_ELEMENTS_ACCENT_SET},
-    {"keyboard/elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY},
-    {"keyboard/elements/kb-keyboard.html", IDR_KEYBOARD_ELEMENTS_KEYBOARD},
-    {"keyboard/elements/kb-keyset.html", IDR_KEYBOARD_ELEMENTS_KEYSET},
-    {"keyboard/elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW},
-    {"keyboard/images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD},
-    {"keyboard/images/mic.svg", IDR_KEYBOARD_IMAGES_MIC},
-    {"keyboard/images/mic-green.svg", IDR_KEYBOARD_IMAGES_MIC_GREEN},
-    {"keyboard/index.html", IDR_KEYBOARD_INDEX},
-    {"keyboard/keysets.html", IDR_KEYBOARD_KEYSETS},
-    {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
-    {"keyboard/manifest.json", IDR_KEYBOARD_MANIFEST},
-    {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
-    {"keyboard/polymer.min.js", IDR_KEYBOARD_POLYMER},
-    {"keyboard/voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS},
-  };
-  static const size_t kKeyboardResourcesSize = arraysize(kKeyboardResources);
-  *size = kKeyboardResourcesSize;
-  return kKeyboardResources;
 }
 
 }  // namespace keyboard
