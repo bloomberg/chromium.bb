@@ -102,8 +102,8 @@ class LocalSyncDelegate {
       scoped_ptr<google_apis::ResourceEntry> entry);
 
   void HandleManualResolutionCase(const SyncStatusCallback& callback);
-  void NotifyConflict(const SyncStatusCallback& callback,
-                      SyncStatusCode status);
+  void DidMarkConflict(const SyncStatusCallback& callback,
+                       SyncStatusCode status);
 
   void HandleLocalWinCase(const SyncStatusCallback& callback);
   void HandleRemoteWinCase(const SyncStatusCallback& callback,
