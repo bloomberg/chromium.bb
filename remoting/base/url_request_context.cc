@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/url_request_context.h"
+#include "remoting/base/url_request_context.h"
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/cert/cert_verifier.h"
@@ -15,7 +15,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "remoting/host/vlog_net_log.h"
+#include "remoting/base/vlog_net_log.h"
 
 #if defined(OS_WIN)
 #include "net/proxy/proxy_config_service_win.h"

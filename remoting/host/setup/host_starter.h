@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/base/url_request_context.h"
 #include "remoting/host/service_client.h"
 #include "remoting/host/setup/daemon_controller.h"
-#include "remoting/host/url_request_context.h"
 
 namespace remoting {
 

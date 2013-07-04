@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_URL_REQUEST_CONTEXT_H_
-#define REMOTING_HOST_URL_REQUEST_CONTEXT_H_
+#ifndef REMOTING_BASE_URL_REQUEST_CONTEXT_H_
+#define REMOTING_BASE_URL_REQUEST_CONTEXT_H_
 
 #include <string>
 
@@ -61,4 +61,4 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_URL_REQUEST_CONTEXT_H_
+#endif  // REMOTING_BASE_URL_REQUEST_CONTEXT_H_

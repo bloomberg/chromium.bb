@@ -10,8 +10,8 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "remoting/base/url_request_context.h"
 #include "remoting/host/setup/win/host_configurer_window.h"
-#include "remoting/host/url_request_context.h"
 
 class HostConfigurerModule
     : public ATL::CAtlExeModuleT<HostConfigurerModule> {
