@@ -180,7 +180,7 @@ class CreateDirectoryRequest : public GetDataRequest {
   CreateDirectoryRequest(RequestSender* sender,
                          const DriveApiUrlGenerator& url_generator,
                          const std::string& parent_resource_id,
-                         const std::string& directory_name,
+                         const std::string& directory_title,
                          const FileResourceCallback& callback);
   virtual ~CreateDirectoryRequest();
 
@@ -194,7 +194,7 @@ class CreateDirectoryRequest : public GetDataRequest {
  private:
   const DriveApiUrlGenerator url_generator_;
   const std::string parent_resource_id_;
-  const std::string directory_name_;
+  const std::string directory_title_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryRequest);
 };
@@ -208,7 +208,7 @@ class RenameResourceRequest : public EntryActionRequest {
   RenameResourceRequest(RequestSender* sender,
                         const DriveApiUrlGenerator& url_generator,
                         const std::string& resource_id,
-                        const std::string& new_name,
+                        const std::string& new_title,
                         const EntryActionCallback& callback);
   virtual ~RenameResourceRequest();
 
@@ -224,7 +224,7 @@ class RenameResourceRequest : public EntryActionRequest {
   const DriveApiUrlGenerator url_generator_;
 
   const std::string resource_id_;
-  const std::string new_name_;
+  const std::string new_title_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceRequest);
 };
@@ -269,7 +269,7 @@ class TouchResourceRequest : public GetDataRequest {
 // This class performs the request for copying a resource.
 //
 // Copies the resource with |resource_id| into a directory with
-// |parent_resource_id|. The new resource will be named as |new_name|.
+// |parent_resource_id|. The new resource will be named as |new_title|.
 // |parent_resource_id| can be empty. In the case, the copy will be created
 // directly under the default root directory (this is the default behavior
 // of Drive API v2's copy request).
@@ -283,7 +283,7 @@ class CopyResourceRequest : public GetDataRequest {
                       const DriveApiUrlGenerator& url_generator,
                       const std::string& resource_id,
                       const std::string& parent_resource_id,
-                      const std::string& new_name,
+                      const std::string& new_title,
                       const FileResourceCallback& callback);
   virtual ~CopyResourceRequest();
 
@@ -296,7 +296,7 @@ class CopyResourceRequest : public GetDataRequest {
   const DriveApiUrlGenerator url_generator_;
   const std::string resource_id_;
   const std::string parent_resource_id_;
-  const std::string new_name_;
+  const std::string new_title_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyResourceRequest);
 };

@@ -517,7 +517,7 @@ CancelCallback DriveAPIService::DeleteResource(
 
 CancelCallback DriveAPIService::AddNewDirectory(
     const std::string& parent_resource_id,
-    const std::string& directory_name,
+    const std::string& directory_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -527,14 +527,14 @@ CancelCallback DriveAPIService::AddNewDirectory(
           sender_.get(),
           url_generator_,
           parent_resource_id,
-          directory_name,
+          directory_title,
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -545,13 +545,13 @@ CancelCallback DriveAPIService::CopyResource(
           url_generator_,
           resource_id,
           parent_resource_id,
-          new_name,
+          new_title,
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::CopyHostedDocument(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -562,13 +562,13 @@ CancelCallback DriveAPIService::CopyHostedDocument(
           url_generator_,
           resource_id,
           std::string(),  // parent_resource_id.
-          new_name,
+          new_title,
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::RenameResource(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -578,7 +578,7 @@ CancelCallback DriveAPIService::RenameResource(
           sender_.get(),
           url_generator_,
           resource_id,
-          new_name,
+          new_title,
           callback));
 }
 

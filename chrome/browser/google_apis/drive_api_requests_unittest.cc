@@ -560,7 +560,7 @@ TEST_F(DriveApiRequestsTest, RenameResourceRequest) {
             request_sender_.get(),
             *url_generator_,
             "resource_id",
-            "new name",
+            "new title",
             test_util::CreateQuitCallback(
                 &run_loop,
                 test_util::CreateCopyResultCallback(&error)));
@@ -574,7 +574,7 @@ TEST_F(DriveApiRequestsTest, RenameResourceRequest) {
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
+  EXPECT_EQ("{\"title\":\"new title\"}", http_request_.content);
 }
 
 TEST_F(DriveApiRequestsTest, TouchResourceRequest) {
@@ -627,7 +627,7 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> file_resource;
 
-  // Copy the file to a new file named "new name".
+  // Copy the file to a new file named "new title".
   {
     base::RunLoop run_loop;
     drive::CopyResourceRequest* request =
@@ -636,7 +636,7 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest) {
             *url_generator_,
             "resource_id",
             "parent_resource_id",
-            "new name",
+            "new title",
             test_util::CreateQuitCallback(
                 &run_loop,
                 test_util::CreateCopyResultCallback(&error, &file_resource)));
@@ -651,7 +651,7 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest) {
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ(
-      "{\"parents\":[{\"id\":\"parent_resource_id\"}],\"title\":\"new name\"}",
+      "{\"parents\":[{\"id\":\"parent_resource_id\"}],\"title\":\"new title\"}",
       http_request_.content);
   EXPECT_TRUE(file_resource);
 }
@@ -665,7 +665,7 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest_EmptyParentResourceId) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> file_resource;
 
-  // Copy the file to a new file named "new name".
+  // Copy the file to a new file named "new title".
   {
     base::RunLoop run_loop;
     drive::CopyResourceRequest* request =
@@ -674,7 +674,7 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest_EmptyParentResourceId) {
             *url_generator_,
             "resource_id",
             std::string(),  // parent resource id.
-            "new name",
+            "new title",
             test_util::CreateQuitCallback(
                 &run_loop,
                 test_util::CreateCopyResultCallback(&error, &file_resource)));
@@ -688,7 +688,7 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest_EmptyParentResourceId) {
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
+  EXPECT_EQ("{\"title\":\"new title\"}", http_request_.content);
   EXPECT_TRUE(file_resource);
 }
 

@@ -107,15 +107,15 @@ class GDataWapiService : public DriveServiceInterface,
   virtual google_apis::CancelCallback CopyResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback CopyHostedDocument(
       const std::string& resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback RenameResource(
       const std::string& resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback TouchResource(
       const std::string& resource_id,
@@ -132,7 +132,7 @@ class GDataWapiService : public DriveServiceInterface,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
-      const std::string& directory_name,
+      const std::string& directory_title,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,

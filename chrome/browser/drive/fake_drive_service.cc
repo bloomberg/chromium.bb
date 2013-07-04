@@ -633,7 +633,7 @@ CancelCallback FakeDriveService::DownloadFile(
 CancelCallback FakeDriveService::CopyResource(
     const std::string& resource_id,
     const std::string& in_parent_resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -664,7 +664,7 @@ CancelCallback FakeDriveService::CopyResource(
         scoped_ptr<DictionaryValue> copied_entry(entry->DeepCopy());
         copied_entry->SetString("gd$resourceId.$t",
                                 resource_id + "_copied");
-        copied_entry->SetString("title.$t", new_name);
+        copied_entry->SetString("title.$t", new_title);
 
         // Reset parent directory.
         base::ListValue* links = NULL;
@@ -707,17 +707,17 @@ CancelCallback FakeDriveService::CopyResource(
 
 CancelCallback FakeDriveService::CopyHostedDocument(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return CopyResource(resource_id, std::string(), new_name, callback);
+  return CopyResource(resource_id, std::string(), new_title, callback);
 }
 
 CancelCallback FakeDriveService::RenameResource(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -730,7 +730,7 @@ CancelCallback FakeDriveService::RenameResource(
 
   base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (entry) {
-    entry->SetString("title.$t", new_name);
+    entry->SetString("title.$t", new_title);
     AddNewChangestampAndETag(entry);
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
@@ -868,7 +868,7 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
 
 CancelCallback FakeDriveService::AddNewDirectory(
     const std::string& parent_resource_id,
-    const std::string& directory_name,
+    const std::string& directory_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -887,7 +887,7 @@ CancelCallback FakeDriveService::AddNewDirectory(
   const base::DictionaryValue* new_entry = AddNewEntry(kContentType,
                                                        "",  // content_data
                                                        parent_resource_id,
-                                                       directory_name,
+                                                       directory_title,
                                                        false,  // shared_with_me
                                                        "folder");
   if (!new_entry) {

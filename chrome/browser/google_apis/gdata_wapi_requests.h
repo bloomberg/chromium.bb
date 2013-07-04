@@ -195,7 +195,7 @@ class CreateDirectoryRequest : public GetDataRequest {
                          const GDataWapiUrlGenerator& url_generator,
                          const GetDataCallback& callback,
                          const std::string& parent_resource_id,
-                         const std::string& directory_name);
+                         const std::string& directory_title);
   virtual ~CreateDirectoryRequest();
 
  protected:
@@ -208,7 +208,7 @@ class CreateDirectoryRequest : public GetDataRequest {
  private:
   const GDataWapiUrlGenerator url_generator_;
   const std::string parent_resource_id_;
-  const std::string directory_name_;
+  const std::string directory_title_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryRequest);
 };
@@ -225,7 +225,7 @@ class CopyHostedDocumentRequest : public GetDataRequest {
                             const GDataWapiUrlGenerator& url_generator,
                             const GetDataCallback& callback,
                             const std::string& resource_id,
-                            const std::string& new_name);
+                            const std::string& new_title);
   virtual ~CopyHostedDocumentRequest();
 
  protected:
@@ -238,7 +238,7 @@ class CopyHostedDocumentRequest : public GetDataRequest {
  private:
   const GDataWapiUrlGenerator url_generator_;
   const std::string resource_id_;
-  const std::string new_name_;
+  const std::string new_title_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyHostedDocumentRequest);
 };
@@ -253,7 +253,7 @@ class RenameResourceRequest : public EntryActionRequest {
                         const GDataWapiUrlGenerator& url_generator,
                         const EntryActionCallback& callback,
                         const std::string& resource_id,
-                        const std::string& new_name);
+                        const std::string& new_title);
   virtual ~RenameResourceRequest();
 
  protected:
@@ -267,7 +267,7 @@ class RenameResourceRequest : public EntryActionRequest {
  private:
   const GDataWapiUrlGenerator url_generator_;
   const std::string resource_id_;
-  const std::string new_name_;
+  const std::string new_title_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceRequest);
 };

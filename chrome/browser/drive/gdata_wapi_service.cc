@@ -369,7 +369,7 @@ CancelCallback GDataWapiService::DeleteResource(
 
 CancelCallback GDataWapiService::AddNewDirectory(
     const std::string& parent_resource_id,
-    const std::string& directory_name,
+    const std::string& directory_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -380,13 +380,13 @@ CancelCallback GDataWapiService::AddNewDirectory(
                                  base::Bind(&ParseResourceEntryAndRun,
                                             callback),
                                  parent_resource_id,
-                                 directory_name));
+                                 directory_title));
 }
 
 CancelCallback GDataWapiService::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -400,7 +400,7 @@ CancelCallback GDataWapiService::CopyResource(
 
 CancelCallback GDataWapiService::CopyHostedDocument(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -411,12 +411,12 @@ CancelCallback GDataWapiService::CopyHostedDocument(
                                     base::Bind(&ParseResourceEntryAndRun,
                                                callback),
                                     resource_id,
-                                    new_name));
+                                    new_title));
 }
 
 CancelCallback GDataWapiService::RenameResource(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -426,7 +426,7 @@ CancelCallback GDataWapiService::RenameResource(
                                 url_generator_,
                                 callback,
                                 resource_id,
-                                new_name));
+                                new_title));
 }
 
 CancelCallback GDataWapiService::TouchResource(

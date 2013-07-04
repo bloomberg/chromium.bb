@@ -194,16 +194,16 @@ CreateDirectoryRequest::CreateDirectoryRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const std::string& parent_resource_id,
-    const std::string& directory_name,
+    const std::string& directory_title,
     const FileResourceCallback& callback)
     : GetDataRequest(sender,
                      base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
-      directory_name_(directory_name) {
+      directory_title_(directory_title) {
   DCHECK(!callback.is_null());
   DCHECK(!parent_resource_id_.empty());
-  DCHECK(!directory_name_.empty());
+  DCHECK(!directory_title_.empty());
 }
 
 CreateDirectoryRequest::~CreateDirectoryRequest() {}
@@ -221,7 +221,7 @@ bool CreateDirectoryRequest::GetContentData(std::string* upload_content_type,
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
-  root.SetString("title", directory_name_);
+  root.SetString("title", directory_title_);
   {
     base::DictionaryValue* parent_value = new base::DictionaryValue;
     parent_value->SetString("id", parent_resource_id_);
@@ -244,12 +244,12 @@ RenameResourceRequest::RenameResourceRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const EntryActionCallback& callback)
     : EntryActionRequest(sender, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
-      new_name_(new_name) {
+      new_title_(new_title) {
   DCHECK(!callback.is_null());
 }
 
@@ -275,7 +275,7 @@ bool RenameResourceRequest::GetContentData(std::string* upload_content_type,
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
-  root.SetString("title", new_name_);
+  root.SetString("title", new_title_);
   base::JSONWriter::Write(&root, upload_content);
 
   DVLOG(1) << "RenameResource data: " << *upload_content_type << ", ["
@@ -342,14 +342,14 @@ CopyResourceRequest::CopyResourceRequest(
     const DriveApiUrlGenerator& url_generator,
     const std::string& resource_id,
     const std::string& parent_resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const FileResourceCallback& callback)
     : GetDataRequest(sender,
                      base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator),
       resource_id_(resource_id),
       parent_resource_id_(parent_resource_id),
-      new_name_(new_name) {
+      new_title_(new_title) {
   DCHECK(!callback.is_null());
 }
 
@@ -369,7 +369,7 @@ bool CopyResourceRequest::GetContentData(std::string* upload_content_type,
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
-  root.SetString("title", new_name_);
+  root.SetString("title", new_title_);
 
   if (!parent_resource_id_.empty()) {
     // Set the parent resource (destination directory) of the new resource.

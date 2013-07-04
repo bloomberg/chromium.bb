@@ -174,7 +174,7 @@ class DriveServiceInterface {
 
   // Makes a copy of a resource with |resource_id|.
   // The new resource will be put under a directory with |parent_resource_id|,
-  // and it'll be named |new_name|.
+  // and it'll be named |new_title|.
   // This request is supported only on DriveAPIService, because GData WAPI
   // doesn't support the function unfortunately.
   // Upon completion, invokes |callback| with results on the calling thread.
@@ -182,11 +182,11 @@ class DriveServiceInterface {
   virtual google_apis::CancelCallback CopyResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Makes a copy of a hosted document identified by its |resource_id|.
-  // The copy is named as the UTF-8 encoded |new_name| and is not added to any
+  // The copy is named as the UTF-8 encoded |new_title| and is not added to any
   // collection. Use AddResourceToDirectory() to add the copy to a collection
   // when needed. Upon completion, invokes |callback| with results on the
   // calling thread.
@@ -195,16 +195,16 @@ class DriveServiceInterface {
   // because we can use CopyResource instead.
   virtual google_apis::CancelCallback CopyHostedDocument(
       const std::string& resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Renames a document or collection identified by its |resource_id|
-  // to the UTF-8 encoded |new_name|. Upon completion,
+  // to the UTF-8 encoded |new_title|. Upon completion,
   // invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual google_apis::CancelCallback RenameResource(
       const std::string& resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::EntryActionCallback& callback) = 0;
 
   // Touches the resource with |resource_id|.
@@ -236,7 +236,7 @@ class DriveServiceInterface {
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) = 0;
 
-  // Adds new collection with |directory_name| under parent directory
+  // Adds new collection with |directory_title| under parent directory
   // identified with |parent_resource_id|. |parent_resource_id| can be the
   // value returned by GetRootResourceId to represent the root directory.
   // Upon completion, invokes |callback| and passes newly created entry on
@@ -246,7 +246,7 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
-      const std::string& directory_name,
+      const std::string& directory_title,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Downloads a file with |resourced_id|. The downloaded file will
