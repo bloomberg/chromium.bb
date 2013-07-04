@@ -23,6 +23,11 @@ TEST(DnsHostsTest, ParseHosts) {
       "\t fe00::0 ip6-localnet\r\n"
       "2048::2 example\n"
       "2048::1 company example # ignored for 'example' \n"
+      "127.0.0.1 cache1\n"
+      "127.0.0.1 cache2 # should reuse parsed IP\n"
+      "256.0.0.0 cache3 # bogus IP should not clear parsed IP cache\n"
+      "127.0.0.1 cache4 # should still be reused\n"
+      "127.0.0.2 cache5\n"
       "gibberish";
 
   const struct {
@@ -39,6 +44,10 @@ TEST(DnsHostsTest, ParseHosts) {
     { "ip6-localnet", ADDRESS_FAMILY_IPV6, "fe00::0" },
     { "company", ADDRESS_FAMILY_IPV6, "2048::1" },
     { "example", ADDRESS_FAMILY_IPV6, "2048::2" },
+    { "cache1", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+    { "cache2", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+    { "cache4", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+    { "cache5", ADDRESS_FAMILY_IPV4, "127.0.0.2" },
   };
 
   DnsHosts expected;

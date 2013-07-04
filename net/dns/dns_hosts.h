@@ -10,10 +10,37 @@
 #include <utility>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "net/base/address_family.h"
 #include "net/base/net_export.h"
 #include "net/base/net_util.h"  // can't forward-declare IPAddressNumber
+
+namespace net {
+  typedef std::pair<std::string, AddressFamily> DnsHostsKey;
+};
+
+namespace BASE_HASH_NAMESPACE {
+#if defined(COMPILER_GCC)
+
+template<>
+struct hash<net::DnsHostsKey> {
+  std::size_t operator()(const net::DnsHostsKey& key) const {
+    hash<base::StringPiece> string_piece_hash;
+    return string_piece_hash(key.first) + key.second;
+  }
+};
+
+#elif defined(COMPILER_MSVC)
+
+inline size_t hash_value(const net::DnsHostsKey& key) {
+  return hash_value(key.first) + key.second;
+}
+
+#endif  // COMPILER
+
+}  // namespace BASE_HASH_NAMESPACE
 
 namespace net {
 
@@ -27,8 +54,13 @@ namespace net {
 // 127.0.0.1 localhost
 // 10.0.0.1 localhost
 // The expected resolution of localhost is 127.0.0.1.
-typedef std::pair<std::string, AddressFamily> DnsHostsKey;
+#if !defined(OS_ANDROID)
+typedef base::hash_map<DnsHostsKey, IPAddressNumber> DnsHosts;
+#else
+// Android's hash_map doesn't support ==, so fall back to map.  (Chromium on
+// Android doesn't use the built-in DNS resolver anyway, so it's irrelevant.)
 typedef std::map<DnsHostsKey, IPAddressNumber> DnsHosts;
+#endif
 
 // Parses |contents| (as read from /etc/hosts or equivalent) and stores results
 // in |dns_hosts|. Invalid lines are ignored (as in most implementations).
