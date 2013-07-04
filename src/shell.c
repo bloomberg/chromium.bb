@@ -1294,6 +1294,9 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
+end_busy_cursor(struct shell_surface *shsurf, struct weston_pointer *pointer);
+
+static void
 busy_cursor_grab_focus(struct weston_pointer_grab *base)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
@@ -1305,10 +1308,8 @@ busy_cursor_grab_focus(struct weston_pointer_grab *base)
 						 pointer->x, pointer->y,
 						 &sx, &sy);
 
-	if (!grab->shsurf || grab->shsurf->surface != surface) {
-		shell_grab_end(grab);
-		free(grab);
-	}
+	if (!grab->shsurf || grab->shsurf->surface != surface)
+		end_busy_cursor(grab->shsurf, pointer);
 }
 
 static void
