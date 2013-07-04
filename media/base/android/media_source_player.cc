@@ -450,20 +450,29 @@ void MediaSourcePlayer::StartInternal() {
 void MediaSourcePlayer::DemuxerReady(
     const MediaPlayerHostMsg_DemuxerReady_Params& params) {
   duration_ = base::TimeDelta::FromMilliseconds(params.duration_ms);
-  width_ = params.video_size.width();
-  height_ = params.video_size.height();
+  clock_.SetDuration(duration_);
+
+  audio_codec_ = params.audio_codec;
   num_channels_ = params.audio_channels;
   sampling_rate_ = params.audio_sampling_rate;
-  audio_codec_ = params.audio_codec;
-  video_codec_ = params.video_codec;
-  audio_extra_data_ = params.audio_extra_data;
   is_audio_encrypted_ = params.is_audio_encrypted;
+  audio_extra_data_ = params.audio_extra_data;
+  if (HasAudio()) {
+    DCHECK_GT(num_channels_, 0);
+    audio_timestamp_helper_.reset(new AudioTimestampHelper(
+        kBytesPerAudioOutputSample * num_channels_, sampling_rate_));
+    audio_timestamp_helper_->SetBaseTimestamp(GetCurrentTime());
+  } else {
+    audio_timestamp_helper_.reset();
+  }
+
+  video_codec_ = params.video_codec;
+  width_ = params.video_size.width();
+  height_ = params.video_size.height();
   is_video_encrypted_ = params.is_video_encrypted;
-  clock_.SetDuration(duration_);
-  audio_timestamp_helper_.reset(new AudioTimestampHelper(
-      kBytesPerAudioOutputSample * num_channels_, sampling_rate_));
-  audio_timestamp_helper_->SetBaseTimestamp(GetCurrentTime());
+
   OnMediaMetadataChanged(duration_, width_, height_, true);
+
   if (pending_event_ & CONFIG_CHANGE_EVENT_PENDING) {
     if (reconfig_audio_decoder_)
       ConfigureAudioDecoderJob();

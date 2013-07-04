@@ -238,6 +238,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   VideoCodec video_codec_;
   int num_channels_;
   int sampling_rate_;
+  // TODO(xhwang/qinmin): Add |video_extra_data_|.
   std::vector<uint8> audio_extra_data_;
   bool audio_finished_;
   bool video_finished_;
