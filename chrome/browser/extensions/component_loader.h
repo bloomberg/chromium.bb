@@ -115,8 +115,12 @@ class ComponentLoader {
   void AddFileManagerExtension();
   void AddImageLoaderExtension();
 
+  void AddWithName(int manifest_resource_id,
+                   const base::FilePath& root_directory,
+                   const std::string& name);
   void AddChromeApp();
   void AddKeyboardApp();
+  void AddWebStoreApp();
 
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);

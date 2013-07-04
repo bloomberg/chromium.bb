@@ -15620,6 +15620,26 @@ Do you accept?
       Revoke
     </message>
 
+    <!-- WebStore name experiment names -->
+    <message name="IDS_WEBSTORE_NAME_STORE" desc="Name for the WebStore app in the app launcher.">
+      Store
+    </message>
+    <message name="IDS_WEBSTORE_NAME_WEBSTORE" desc="Name for the WebStore app in the app launcher.">
+      WebStore
+    </message>
+    <message name="IDS_WEBSTORE_NAME_GET_APPS" desc="Name for the WebStore app in the app launcher.">
+      Get Apps
+    </message>
+    <message name="IDS_WEBSTORE_NAME_ADD_APPS" desc="Name for the WebStore app in the app launcher.">
+      Add Apps
+    </message>
+    <message name="IDS_WEBSTORE_NAME_MORE_APPS" desc="Name for the WebStore app in the app launcher.">
+      More Apps
+    </message>
+    <message name="IDS_WEBSTORE_NAME_APP_STORE" desc="Name for the WebStore app in the app launcher.">
+      App Store
+    </message>
+
     </messages>
 
     <structures fallback_to_english="true">
