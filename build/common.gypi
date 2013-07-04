@@ -353,12 +353,6 @@
       # Enables autofill dialog and associated features; disabled by default.
       'enable_autofill_dialog%' : 0,
 
-      # Uses spring wallpaper resources on Spring.
-      'use_spring_wallpaper%': 0,
-
-      # Uses OEM-specific wallpaper resources on Chrome OS.
-      'use_oem_wallpaper%': 0,
-
       # Enables support for background apps.
       'enable_background%': 1,
 
@@ -802,8 +796,6 @@
     'enable_session_service%': '<(enable_session_service)',
     'enable_themes%': '<(enable_themes)',
     'enable_autofill_dialog%': '<(enable_autofill_dialog)',
-    'use_spring_wallpaper%': '<(use_spring_wallpaper)',
-    'use_oem_wallpaper%': '<(use_oem_wallpaper)',
     'enable_background%': '<(enable_background)',
     'linux_use_gold_binary%': '<(linux_use_gold_binary)',
     'linux_use_gold_flags%': '<(linux_use_gold_flags)',
@@ -1567,12 +1559,6 @@
       }],
       ['enable_themes==1', {
         'grit_defines': ['-D', 'enable_themes'],
-      }],
-      ['use_spring_wallpaper==1', {
-        'grit_defines': ['-D', 'use_spring_wallpaper'],
-      }],
-      ['use_oem_wallpaper==1', {
-        'grit_defines': ['-D', 'use_oem_wallpaper'],
       }],
       ['enable_app_list==1', {
         'grit_defines': ['-D', 'enable_app_list'],

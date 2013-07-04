@@ -13,18 +13,8 @@
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_LARGE" file="google_wallpapers/large/2-landscape7.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_SMALL" file="google_wallpapers/small/2-landscape7.jpg" type="BINDATA" />
-        <if expr="not pp_ifdef('use_oem_wallpaper') and not pp_ifdef('use_spring_wallpaper')">
-          <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE" file="google_wallpapers/large/2-landscape8.jpg" type="BINDATA" />
-          <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL" file="google_wallpapers/small/2-landscape8.jpg" type="BINDATA" />
-        </if>
-        <if expr="pp_ifdef('use_oem_wallpaper') and not pp_ifdef('use_spring_wallpaper')">
-          <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE" file="google_wallpapers/large/oem1.jpg" type="BINDATA" />
-          <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL" file="google_wallpapers/small/oem1.jpg" type="BINDATA" />
-        </if>
-        <if expr="not pp_ifdef('use_oem_wallpaper') and pp_ifdef('use_spring_wallpaper')">
-          <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE" file="google_wallpapers/large/spring.jpg" type="BINDATA" />
-          <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL" file="google_wallpapers/small/spring.jpg" type="BINDATA" />
-        </if>
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE" file="google_wallpapers/large/2-landscape8.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL" file="google_wallpapers/small/2-landscape8.jpg" type="BINDATA" />
       </if>
       <!-- Wallpapers (gradients) used by Ash. -->
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE" file="wallpapers/large/5-gradient5.jpg" type="BINDATA" />
