@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/test/base/testing_profile.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -25,6 +24,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -164,9 +164,18 @@ class GaiaAuthFetcherTest : public testing::Test {
   GURL merge_session_source_;
   GURL uberauth_token_source_;
   GURL oauth_login_gurl_;
-  TestingProfile profile_;
+
  protected:
+  net::TestURLRequestContextGetter* GetRequestContext() {
+    if (!request_context_getter_) {
+      request_context_getter_ = new net::TestURLRequestContextGetter(
+          message_loop_.message_loop_proxy());
+    }
+    return request_context_getter_;
+  }
+
   base::MessageLoop message_loop_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 };
 
 class MockGaiaConsumer : public GaiaAuthConsumer {
@@ -232,8 +241,7 @@ TEST_F(GaiaAuthFetcherTest, LoginNetFailure) {
   EXPECT_CALL(consumer, OnClientLoginFailure(expected_error))
       .Times(1);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
 
   MockFetcher mock_fetcher(
       client_login_source_, status, 0, net::ResponseCookies(), std::string(),
@@ -252,8 +260,7 @@ TEST_F(GaiaAuthFetcherTest, TokenNetFailure) {
   EXPECT_CALL(consumer, OnIssueAuthTokenFailure(_, expected_error))
       .Times(1);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
 
   MockFetcher mock_fetcher(
       issue_auth_token_source_, status, 0, cookies_, std::string(),
@@ -273,8 +280,7 @@ TEST_F(GaiaAuthFetcherTest, LoginDenied) {
   EXPECT_CALL(consumer, OnClientLoginFailure(expected_error))
       .Times(1);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
 
   MockFetcher mock_fetcher(
       client_login_source_, status, net::HTTP_FORBIDDEN, cookies_, data,
@@ -321,8 +327,7 @@ TEST_F(GaiaAuthFetcherTest, OnlineLogin) {
   EXPECT_CALL(consumer, OnClientLoginSuccess(result))
       .Times(1);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
       client_login_source_, status, net::HTTP_OK, cookies_, data,
@@ -335,8 +340,7 @@ TEST_F(GaiaAuthFetcherTest, WorkingIssueAuthToken) {
   EXPECT_CALL(consumer, OnIssueAuthTokenSuccess(_, "token"))
       .Times(1);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
       issue_auth_token_source_, status, net::HTTP_OK, cookies_, "token",
@@ -367,8 +371,7 @@ TEST_F(GaiaAuthFetcherTest, TwoFactorLogin) {
   EXPECT_CALL(consumer, OnClientLoginFailure(error))
       .Times(1);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
       client_login_source_, status, net::HTTP_FORBIDDEN, cookies_, response,
@@ -474,8 +477,7 @@ TEST_F(GaiaAuthFetcherTest, FullLogin) {
 
   MockURLFetcherFactory<MockFetcher> factory;
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartClientLogin("username",
                         "password",
                         "service",
@@ -492,8 +494,7 @@ TEST_F(GaiaAuthFetcherTest, FullLoginFailure) {
   MockURLFetcherFactory<MockFetcher> factory;
   factory.set_success(false);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartClientLogin("username",
                         "password",
                         "service",
@@ -509,8 +510,7 @@ TEST_F(GaiaAuthFetcherTest, ClientFetchPending) {
 
   net::TestURLFetcherFactory factory;
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartClientLogin("username",
                         "password",
                         "service",
@@ -534,8 +534,7 @@ TEST_F(GaiaAuthFetcherTest, FullTokenSuccess) {
       .Times(1);
 
   net::TestURLFetcherFactory factory;
-  GaiaAuthFetcher auth(&consumer, std::string(),
-                       profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartIssueAuthToken("sid", "lsid", "service");
 
   EXPECT_TRUE(auth.HasPendingFetch());
@@ -555,8 +554,7 @@ TEST_F(GaiaAuthFetcherTest, FullTokenFailure) {
 
   net::TestURLFetcherFactory factory;
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartIssueAuthToken("sid", "lsid", "service");
 
   EXPECT_TRUE(auth.HasPendingFetch());
@@ -578,8 +576,7 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
       GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600))).Times(1);
 
   net::TestURLFetcherFactory factory;
-  GaiaAuthFetcher auth(&consumer, std::string(),
-                       profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartLsoForOAuthLoginTokenExchange("lso_token");
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_TRUE(NULL != fetcher);
@@ -611,8 +608,7 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
 TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies) {
   MockGaiaConsumer consumer;
   net::TestURLFetcherFactory factory;
-  GaiaAuthFetcher auth(&consumer, std::string(),
-                       profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartCookieForOAuthLoginTokenExchange("0");
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_TRUE(NULL != fetcher);
@@ -625,8 +621,7 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenClientLoginToOAuth2Failure) {
       .Times(1);
 
   net::TestURLFetcherFactory factory;
-  GaiaAuthFetcher auth(&consumer, std::string(),
-                       profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartLsoForOAuthLoginTokenExchange("lso_token");
 
   net::ResponseCookies cookies;
@@ -649,8 +644,7 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenOAuth2TokenPairFailure) {
       .Times(1);
 
   net::TestURLFetcherFactory factory;
-  GaiaAuthFetcher auth(&consumer, std::string(),
-                       profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartLsoForOAuthLoginTokenExchange("lso_token");
 
   net::ResponseCookies cookies;
@@ -685,8 +679,7 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccess) {
 
   net::TestURLFetcherFactory factory;
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartMergeSession("myubertoken");
 
   EXPECT_TRUE(auth.HasPendingFetch());
@@ -706,8 +699,7 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccessRedirect) {
 
   net::TestURLFetcherFactory factory;
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartMergeSession("myubertoken");
 
   // Make sure the fetcher created has the expected flags.  Set its url()
@@ -736,8 +728,7 @@ TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
 
   net::TestURLFetcherFactory factory;
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   auth.StartTokenFetchForUberAuthExchange("myAccessToken");
 
   EXPECT_TRUE(auth.HasPendingFetch());
@@ -804,8 +795,7 @@ TEST_F(GaiaAuthFetcherTest, StartOAuthLogin) {
   EXPECT_CALL(consumer, OnClientLoginSuccess(result))
       .Times(1);
 
-  GaiaAuthFetcher auth(&consumer, std::string(),
-      profile_.GetRequestContext());
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
       oauth_login_gurl_, status, net::HTTP_OK, cookies_, data,

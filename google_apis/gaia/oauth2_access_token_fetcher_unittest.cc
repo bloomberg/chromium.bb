@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -22,6 +21,7 @@
 #include "net/url_request/url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,10 +85,12 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
  public:
   OAuth2AccessTokenFetcherTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
-      fetcher_(&consumer_, profile_.GetRequestContext()) {
+      request_context_getter_(new net::TestURLRequestContextGetter(
+          message_loop_.message_loop_proxy())),
+      fetcher_(&consumer_, request_context_getter_) {
   }
 
-  virtual ~OAuth2AccessTokenFetcherTest() { }
+  virtual ~OAuth2AccessTokenFetcherTest() {}
 
   virtual TestURLFetcher* SetupGetAccessToken(
       bool fetch_succeeds, int response_code, const std::string& body) {
@@ -114,7 +116,7 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   MockUrlFetcherFactory factory_;
   MockOAuth2AccessTokenConsumer consumer_;
-  TestingProfile profile_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   OAuth2AccessTokenFetcher fetcher_;
 };
 

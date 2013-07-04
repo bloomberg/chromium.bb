@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chrome/test/base/testing_profile.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -23,6 +23,7 @@
 #include "net/url_request/url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -144,13 +145,13 @@ class OAuth2ApiCallFlowTest : public testing::Test {
   void CreateFlow(const std::string& refresh_token,
                   const std::string& access_token,
                   const std::vector<std::string>& scopes) {
+    scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
+        new net::TestURLRequestContextGetter(
+            message_loop_.message_loop_proxy());
     flow_.reset(new MockApiCallFlow(
-        profile_.GetRequestContext(),
-        refresh_token,
-        access_token,
-        scopes));
-    access_token_fetcher_.reset(new MockAccessTokenFetcher(
-        flow_.get(), profile_.GetRequestContext()));
+        request_context_getter, refresh_token, access_token, scopes));
+    access_token_fetcher_.reset(
+        new MockAccessTokenFetcher(flow_.get(), request_context_getter));
   }
 
   TestURLFetcher* SetupApiCall(bool succeeds, net::HttpStatusCode status) {
@@ -168,7 +169,7 @@ class OAuth2ApiCallFlowTest : public testing::Test {
   MockUrlFetcherFactory factory_;
   scoped_ptr<MockApiCallFlow> flow_;
   scoped_ptr<MockAccessTokenFetcher> access_token_fetcher_;
-  TestingProfile profile_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(OAuth2ApiCallFlowTest, FirstApiCallSucceeds) {
