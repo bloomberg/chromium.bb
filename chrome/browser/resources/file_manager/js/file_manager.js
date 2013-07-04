@@ -1087,6 +1087,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.driveBuyMoreStorageCommand_ =
         this.dialogDom_.querySelector('#drive-buy-more-space');
 
+    this.newFolderCommand_ =
+        this.dialogDom_.querySelector('command#newfolder');
+
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
@@ -2413,6 +2416,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.closeOnUnmount_ = false;
     }
 
+    this.newFolderCommand_.canExecuteChange();
+
     this.updateUnformattedDriveStatus_();
     this.updateTitle_();
     this.updateGearMenu_();
@@ -2640,6 +2645,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.grid_.endBatchUpdates();
     }
 
+    this.newFolderCommand_.canExecuteChange();
+
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
     this.scanInProgress_ = true;
@@ -2671,6 +2678,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       console.error('Scan-completed event recieved. But scan is not started.');
       return;
     }
+
+    this.newFolderCommand_.canExecuteChange();
 
     this.hideSpinnerLater_();
     this.refreshCurrentDirectoryMetadata_();
@@ -2735,6 +2744,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       console.error('Scan-cancelled event recieved. But scan is not started.');
       return;
     }
+
+    this.newFolderCommand_.canExecuteChange();
 
     this.hideSpinnerLater_();
     if (this.scanCompletedTimer_) {
