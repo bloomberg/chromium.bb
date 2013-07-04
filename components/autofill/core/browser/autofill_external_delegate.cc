@@ -169,8 +169,11 @@ void AutofillExternalDelegate::OnPopupShown(
 
 void AutofillExternalDelegate::OnPopupHidden(
     content::KeyboardListener* listener) {
-  if (registered_keyboard_listener_with_ == web_contents_->GetRenderViewHost())
+  if ((!web_contents_->IsBeingDestroyed()) &&
+      (registered_keyboard_listener_with_ ==
+          web_contents_->GetRenderViewHost())) {
     web_contents_->GetRenderViewHost()->RemoveKeyboardListener(listener);
+  }
 
   registered_keyboard_listener_with_ = NULL;
 }

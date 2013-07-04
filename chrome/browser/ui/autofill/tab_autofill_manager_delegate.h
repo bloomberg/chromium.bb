@@ -80,6 +80,8 @@ class TabAutofillManagerDelegate
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   // Exposed for testing.
   AutofillDialogControllerImpl* GetDialogControllerForTesting() {

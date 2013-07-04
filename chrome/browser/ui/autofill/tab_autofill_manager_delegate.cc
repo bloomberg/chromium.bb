@@ -38,7 +38,11 @@ TabAutofillManagerDelegate::TabAutofillManagerDelegate(
 }
 
 TabAutofillManagerDelegate::~TabAutofillManagerDelegate() {
-  HideAutofillPopup();
+  // NOTE: It is too late to clean up the autofill popup; that cleanup process
+  // requires that the WebContents instance still be valid and it is not at
+  // this point (in particular, the WebContentsImpl destructor has already
+  // finished running and we are now in the base class destructor).
+  DCHECK(!popup_controller_);
 }
 
 PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {
@@ -203,6 +207,11 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
   }
 
   HideAutocheckoutBubble();
+}
+
+void TabAutofillManagerDelegate::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  HideAutofillPopup();
 }
 
 }  // namespace autofill
