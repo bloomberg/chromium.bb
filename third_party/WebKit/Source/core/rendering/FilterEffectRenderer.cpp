@@ -112,7 +112,12 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
 {
     m_hasCustomShaderFilter = false;
     m_hasFilterThatMovesPixels = operations.hasFilterThatMovesPixels();
-    
+
+    // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the same zoom as the unzoomed reference filters.
+    const RenderStyle* style = renderer->style();
+    float zoom = style ? style->effectiveZoom() : 1.0f;
+    float invZoom = 1.0f / zoom;
+
     RefPtr<FilterEffect> previousEffect = m_sourceGraphic;
     for (size_t i = 0; i < operations.operations().size(); ++i) {
         RefPtr<FilterEffect> effect;
@@ -244,15 +249,15 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         }
         case FilterOperation::BLUR: {
             BlurFilterOperation* blurOperation = static_cast<BlurFilterOperation*>(filterOperation);
-            float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0);
+            float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0) * invZoom;
             effect = FEGaussianBlur::create(this, stdDeviation, stdDeviation);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
             DropShadowFilterOperation* dropShadowOperation = static_cast<DropShadowFilterOperation*>(filterOperation);
-            float stdDeviation = dropShadowOperation->stdDeviation();
-            float x = dropShadowOperation->x();
-            float y = dropShadowOperation->y();
+            float stdDeviation = dropShadowOperation->stdDeviation() * invZoom;
+            float x = dropShadowOperation->x() * invZoom;
+            float y = dropShadowOperation->y() * invZoom;
             effect = FEDropShadow::create(this, stdDeviation, stdDeviation, x, y, dropShadowOperation->color(), 1);
             break;
         }
