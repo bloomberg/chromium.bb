@@ -13,6 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -36,6 +38,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_util.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
@@ -948,7 +951,7 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return current_surface_.get() || current_software_frame_.IsValid() ||
+  return window_->layer()->has_external_content() ||
          !!host_->GetBackingStore(false);
 }
 
@@ -1165,49 +1168,19 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
-  if (!current_surface_.get())
+  if (!window_->layer()->has_external_content()) {
+    callback.Run(false, SkBitmap());
     return;
+  }
 
   const gfx::Size& dst_size_in_pixel = ConvertViewSizeToPixel(this, dst_size);
-  SkBitmap output;
-  output.setConfig(SkBitmap::kARGB_8888_Config,
-                   dst_size_in_pixel.width(), dst_size_in_pixel.height());
-  if (!output.allocPixels())
-    return;
-  output.setIsOpaque(true);
-
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
-    return;
-
-  unsigned char* addr = static_cast<unsigned char*>(output.getPixels());
-  scoped_callback_runner.Release();
-  // Wrap the callback with an internal handler so that we can inject our
-  // own completion handlers (where we can try to free the frontbuffer).
-  base::Callback<void(bool)> wrapper_callback = base::Bind(
-      &RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished,
-      output,
-      callback);
-
-  // Convert |src_subrect| from the views coordinate (upper-left origin) into
-  // the OpenGL coordinate (lower-left origin).
-  gfx::Rect src_subrect_in_gl = src_subrect;
-  src_subrect_in_gl.set_y(GetViewBounds().height() - src_subrect.bottom());
-
-  gfx::Rect src_subrect_in_pixel =
-      ConvertRectToPixel(current_surface_->device_scale_factor(),
-                         src_subrect_in_gl);
-  gl_helper->CropScaleReadbackAndCleanTexture(
-      current_surface_->PrepareTexture(),
-      current_surface_->size(),
-      src_subrect_in_pixel,
-      dst_size_in_pixel,
-      addr,
-      wrapper_callback);
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateRequest(base::Bind(
+          &RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult,
+          dst_size_in_pixel,
+          callback));
+  request->set_area(src_subrect);
+  window_->layer()->RequestCopyOfOutput(request.Pass());
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
@@ -1765,11 +1738,107 @@ void RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor(
     scoped_refptr<ui::Texture>) {
 }
 
-void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished(
-    const SkBitmap& bitmap,
+// static
+void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
+    const gfx::Size& dst_size_in_pixel,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  if (result->IsEmpty() || result->size().IsEmpty()) {
+    callback.Run(false, SkBitmap());
+    return;
+  }
+
+  if (result->HasTexture()) {
+    PrepareTextureCopyOutputResult(dst_size_in_pixel, callback, result.Pass());
+    return;
+  }
+
+  DCHECK(result->HasBitmap());
+  PrepareBitmapCopyOutputResult(dst_size_in_pixel, callback, result.Pass());
+}
+
+static void CopyFromCompositingSurfaceFinished(
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    scoped_ptr<SkBitmap> bitmap,
+    scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
-  callback.Run(result, bitmap);
+  bitmap_pixels_lock.reset();
+  callback.Run(result, *bitmap);
+}
+
+// static
+void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
+    const gfx::Size& dst_size_in_pixel,
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
+
+  DCHECK(result->HasTexture());
+  if (!result->HasTexture())
+    return;
+
+  scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                    dst_size_in_pixel.width(), dst_size_in_pixel.height());
+  if (!bitmap->allocPixels())
+    return;
+  bitmap->setIsOpaque(true);
+
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  GLHelper* gl_helper = factory->GetGLHelper();
+  if (!gl_helper)
+    return;
+
+  scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
+      new SkAutoLockPixels(*bitmap));
+  uint8* pixels = static_cast<uint8*>(bitmap->getPixels());
+
+  scoped_ptr<cc::TextureMailbox> texture_mailbox = result->TakeTexture();
+  DCHECK(texture_mailbox->IsTexture());
+  if (!texture_mailbox->IsTexture())
+    return;
+
+  scoped_callback_runner.Release();
+
+  gl_helper->CropScaleReadbackAndCleanMailbox(
+      texture_mailbox->name(),
+      texture_mailbox->sync_point(),
+      result->size(),
+      gfx::Rect(result->size()),
+      dst_size_in_pixel,
+      pixels,
+      base::Bind(&CopyFromCompositingSurfaceFinished,
+                 callback,
+                 base::Passed(&bitmap),
+                 base::Passed(&bitmap_pixels_lock)));
+}
+
+// static
+void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
+    const gfx::Size& dst_size_in_pixel,
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  DCHECK(result->HasBitmap());
+
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
+  if (!result->HasBitmap())
+    return;
+
+  scoped_ptr<SkBitmap> source = result->TakeBitmap();
+  DCHECK(source);
+  if (!source)
+    return;
+
+  scoped_callback_runner.Release();
+
+  SkBitmap bitmap = skia::ImageOperations::Resize(
+      *source,
+      skia::ImageOperations::RESIZE_BEST,
+      dst_size_in_pixel.width(),
+      dst_size_in_pixel.height());
+  callback.Run(true, bitmap);
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {

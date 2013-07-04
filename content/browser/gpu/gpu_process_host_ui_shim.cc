@@ -336,6 +336,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
   // View must send ACK message after next composite.
   view->AcceleratedSurfaceBuffersSwapped(params, host_id_);
+  view->DidReceiveRendererFrame();
 }
 
 void GpuProcessHostUIShim::OnFrameDrawn(const ui::LatencyInfo& latency_info) {
@@ -368,6 +369,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 
   // View must send ACK message after next composite.
   view->AcceleratedSurfacePostSubBuffer(params, host_id_);
+  view->DidReceiveRendererFrame();
 }
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend(int32 surface_id) {

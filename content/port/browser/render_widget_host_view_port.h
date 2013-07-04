@@ -295,6 +295,13 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params) = 0;
 
+  // Return a value that is incremented each time the renderer swaps a new frame
+  // to the view.
+  virtual uint32 RendererFrameNumber() = 0;
+  // Called each time the RenderWidgetHost receives a new frame for display from
+  // the renderer.
+  virtual void DidReceiveRendererFrame() = 0;
+
 #if defined(OS_MACOSX)
   // Called just before GetBackingStore blocks for an updated frame.
   virtual void AboutToWaitForBackingStoreMsg() = 0;

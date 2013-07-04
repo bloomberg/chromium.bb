@@ -505,6 +505,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   void ComputeTouchLatency(const ui::LatencyInfo& latency_info);
   void FrameSwapped(const ui::LatencyInfo& latency_info);
+  void DidReceiveRendererFrame();
 
   // Returns the ID that uniquely describes this component to the latency
   // subsystem.
@@ -638,8 +639,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnSetTooltipText(const string16& tooltip_text,
                         WebKit::WebTextDirection text_direction_hint);
   void OnPaintAtSizeAck(int tag, const gfx::Size& size);
+#if defined(OS_MACOSX)
   void OnCompositorSurfaceBuffersSwapped(
       const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
+#endif
   bool OnSwapCompositorFrame(const IPC::Message& message);
   void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                       gfx::Vector2dF current_fling_velocity);

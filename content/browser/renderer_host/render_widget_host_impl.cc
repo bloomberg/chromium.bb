@@ -449,8 +449,10 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnPaintAtSizeAck)
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                         OnCompositorSurfaceBuffersSwapped)
+#endif
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 msg_is_ok = OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidOverscroll, OnOverscrolled)
@@ -1766,6 +1768,7 @@ void RenderWidgetHostImpl::OnPaintAtSizeAck(int tag, const gfx::Size& size) {
       Details<std::pair<int, gfx::Size> >(&details));
 }
 
+#if defined(OS_MACOSX)
 void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
       const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer_host",
@@ -1787,7 +1790,9 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   gpu_params.latency_info = params.latency_info;
   view_->AcceleratedSurfaceBuffersSwapped(gpu_params,
                                           params.gpu_process_host_id);
+  view_->DidReceiveRendererFrame();
 }
+#endif  // OS_MACOSX
 
 bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     const IPC::Message& message) {
@@ -1799,6 +1804,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
 
   if (view_) {
     view_->OnSwapCompositorFrame(frame.Pass());
+    view_->DidReceiveRendererFrame();
   } else {
     cc::CompositorFrameAck ack;
     if (frame->gl_frame_data) {
@@ -1958,6 +1964,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
     view_being_painted_ = true;
     view_->DidUpdateBackingStore(params.scroll_rect, params.scroll_delta,
                                  params.copy_rects, params.latency_info);
+    view_->DidReceiveRendererFrame();
     view_being_painted_ = false;
   }
 
@@ -2661,6 +2668,10 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuBenchmarking))
     Send(new ViewMsg_SetBrowserRenderingStats(routing_id_, rendering_stats_));
+}
+
+void RenderWidgetHostImpl::DidReceiveRendererFrame() {
+  view_->DidReceiveRendererFrame();
 }
 
 // static

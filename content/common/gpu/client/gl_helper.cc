@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "cc/resources/sync_point_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -541,6 +542,20 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
       GLHelper::SCALER_QUALITY_FAST);
 }
 
+void GLHelper::CropScaleReadbackAndCleanMailbox(
+    const gpu::Mailbox& src_mailbox,
+    uint32 sync_point,
+    const gfx::Size& src_size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    unsigned char* out,
+    const base::Callback<void(bool)>& callback) {
+  WebGLId mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_point);
+  CropScaleReadbackAndCleanTexture(
+      mailbox_texture, src_size, src_subrect, dst_size, out, callback);
+  context_->deleteTexture(mailbox_texture);
+}
+
 void GLHelper::ReadbackTextureSync(WebKit::WebGLId texture,
                                    const gfx::Rect& src_rect,
                                    unsigned char* out) {
@@ -642,6 +657,19 @@ WebKit::WebGLId GLHelper::CreateTexture() {
   context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  return texture;
+}
+
+WebKit::WebGLId GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
+                                                  uint32 sync_point) {
+  if (mailbox.IsZero())
+    return 0;
+  if (sync_point)
+    context_->waitSyncPoint(sync_point);
+  WebKit::WebGLId texture = CreateTexture();
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
+                                                             texture);
+  context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   return texture;
 }
 

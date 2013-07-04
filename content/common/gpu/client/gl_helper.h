@@ -17,6 +17,10 @@ class Rect;
 class Size;
 }
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace media {
 class VideoFrame;
 };
@@ -225,6 +229,24 @@ class CONTENT_EXPORT GLHelper {
       unsigned char* out,
       const base::Callback<void(bool)>& callback);
 
+  // Copies the block of pixels specified with |src_subrect| from |src_mailbox|,
+  // scales it to |dst_size|, and writes it into |out|.
+  // |src_size| is the size of |src_mailbox|. The result is of format GL_BGRA
+  // and is potentially flipped vertically to make it a correct image
+  // representation.  |callback| is invoked with the copy result when the copy
+  // operation has completed.
+  // Note that the texture bound to src_mailbox will have the min/mag filter set
+  // to GL_LINEAR and wrap_s/t set to CLAMP_TO_EDGE in this call. src_mailbox is
+  // assumed to be GL_TEXTURE_2D.
+  void CropScaleReadbackAndCleanMailbox(
+      const gpu::Mailbox& src_mailbox,
+      uint32 sync_point,
+      const gfx::Size& src_size,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      unsigned char* out,
+      const base::Callback<void(bool)>& callback);
+
   // Copies the texture data out of |texture| into |out|.  |size| is the
   // size of the texture.  No post processing is applied to the pixels.  The
   // texture is assumed to have a format of GL_RGBA with a pixel type of
@@ -264,6 +286,11 @@ class CONTENT_EXPORT GLHelper {
 
   // Simply creates a texture.
   WebKit::WebGLId CreateTexture();
+
+  // Creates a texture and consumes a mailbox into it. Returns 0 on failure.
+  // Note the mailbox is assumed to be GL_TEXTURE_2D.
+  WebKit::WebGLId ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
+                                          uint32 sync_point);
 
   // Resizes the texture's size to |size|.
   void ResizeTexture(WebKit::WebGLId texture, const gfx::Size& size);

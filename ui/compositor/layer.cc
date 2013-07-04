@@ -15,6 +15,7 @@
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
@@ -623,6 +624,10 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     children_[i]->OnDeviceScaleFactorChanged(device_scale_factor);
   if (layer_mask_)
     layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor);
+}
+
+void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
+  cc_layer_->RequestCopyOfOutput(request.Pass());
 }
 
 void Layer::PaintContents(SkCanvas* sk_canvas,

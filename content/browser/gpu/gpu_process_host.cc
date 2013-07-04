@@ -141,6 +141,7 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
   if (interval != base::TimeDelta())
     RenderWidgetHostImpl::From(rwh)->UpdateVSyncParameters(timebase, interval);
   RenderWidgetHostImpl::From(rwh)->FrameSwapped(latency_info);
+  RenderWidgetHostImpl::From(rwh)->DidReceiveRendererFrame();
 }
 
 void AcceleratedSurfaceBuffersSwappedCompleted(

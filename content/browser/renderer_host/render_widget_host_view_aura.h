@@ -40,6 +40,7 @@ class WindowTracker;
 }
 
 namespace cc {
+class CopyOutputResult;
 class DelegatedFrameData;
 }
 
@@ -433,12 +434,20 @@ class RenderWidgetHostViewAura
   // after it was released as the frontbuffer.
   void SetSurfaceNotInUseByCompositor(scoped_refptr<ui::Texture>);
 
-  // Called after async thumbnailer task completes.  Used to call
-  // AdjustSurfaceProtection.
-  static void CopyFromCompositingSurfaceFinished(
-      const SkBitmap& bitmap,
+  // Called after async thumbnailer task completes.  Scales and crops the result
+  // of the copy.
+  static void CopyFromCompositingSurfaceHasResult(
+      const gfx::Size& dst_size_in_pixel,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      bool result);
+      scoped_ptr<cc::CopyOutputResult> result);
+  static void PrepareTextureCopyOutputResult(
+      const gfx::Size& dst_size_in_pixel,
+      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      scoped_ptr<cc::CopyOutputResult> result);
+  static void PrepareBitmapCopyOutputResult(
+      const gfx::Size& dst_size_in_pixel,
+      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      scoped_ptr<cc::CopyOutputResult> result);
 
   ui::Compositor* GetCompositor();
 

@@ -79,6 +79,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE {}
   virtual void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                               gfx::Vector2dF current_fling_velocity) OVERRIDE;
+  virtual uint32 RendererFrameNumber() OVERRIDE;
+  virtual void DidReceiveRendererFrame() OVERRIDE;
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
@@ -147,6 +149,8 @@ protected:
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   gfx::Rect current_display_area_;
+
+  uint32 renderer_frame_number_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };

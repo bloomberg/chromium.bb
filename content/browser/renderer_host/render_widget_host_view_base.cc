@@ -356,7 +356,8 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       showing_context_menu_(false),
       selection_text_offset_(0),
       selection_range_(ui::Range::InvalidRange()),
-      current_device_scale_factor_(0) {
+      current_device_scale_factor_(0),
+      renderer_frame_number_(0) {
 }
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
@@ -519,6 +520,14 @@ void RenderWidgetHostViewBase::EndFrameSubscription() {
 void RenderWidgetHostViewBase::OnOverscrolled(
     gfx::Vector2dF accumulated_overscroll,
     gfx::Vector2dF current_fling_velocity) {
+}
+
+uint32 RenderWidgetHostViewBase::RendererFrameNumber() {
+  return renderer_frame_number_;
+}
+
+void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
+  ++renderer_frame_number_;
 }
 
 }  // namespace content
