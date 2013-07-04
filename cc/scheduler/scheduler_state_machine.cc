@@ -343,12 +343,6 @@ void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
 }
 
 bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
-  // If we have a pending tree, need to keep getting notifications until
-  // the tree is ready to be swapped.
-  // TODO(brianderson): This should be moved to ProactiveBeginFrameNeeded...
-  if (has_pending_tree_)
-    return true;
-
   // If we can't draw, don't tick until we are notified that we can draw again.
   if (!can_draw_)
     return false;
@@ -368,9 +362,10 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
   if (!visible_ || output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
     return false;
 
-  // We should proactively request a BeginFrame if a commit is pending.
+  // We should proactively request a BeginFrame if a commit or a tree activation
+  // is pending.
   return (needs_commit_ || needs_forced_commit_ ||
-      commit_state_ != COMMIT_STATE_IDLE);
+          commit_state_ != COMMIT_STATE_IDLE || has_pending_tree_);
 }
 
 void SchedulerStateMachine::DidEnterBeginFrame(const BeginFrameArgs& args) {
