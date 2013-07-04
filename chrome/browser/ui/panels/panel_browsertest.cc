@@ -947,13 +947,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
   panel->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
-#else
-#define MAYBE_ActivatePanelOrTabbedWindow ActivatePanelOrTabbedWindow
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivatePanelOrTabbedWindow) {
+  if (!WmSupportWindowActivation()) {
+    LOG(WARNING) << "Skipping test due to WM problems.";
+    return;
+  }
+
   Panel* panel1 = CreatePanel("Panel1");
   Panel* panel2 = CreatePanel("Panel2");
 
@@ -983,12 +982,17 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
 }
 
 // TODO(jianli): To be enabled for other platforms.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_ActivateDeactivateBasic ActivateDeactivateBasic
 #else
 #define MAYBE_ActivateDeactivateBasic DISABLED_ActivateDeactivateBasic
 #endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
+  if (!WmSupportWindowActivation()) {
+    LOG(WARNING) << "Skipping test due to WM problems.";
+    return;
+  }
+
   // Create an active panel.
   Panel* panel = CreatePanel("PanelTest");
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1000,19 +1004,23 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   // Deactivate the panel.
   panel->Deactivate();
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+
+  // On GTK there is no way to deactivate a window. So the Deactivate() call
+  // above does not actually deactivate the window, but simply lowers it.
+#if !defined(OS_LINUX)
   EXPECT_TRUE(native_panel_testing->VerifyActiveState(false));
+#endif
 
   // This test does not reactivate the panel because the panel might not be
   // reactivated programmatically once it is deactivated.
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
-#else
-#define MAYBE_ActivateDeactivateMultiple ActivateDeactivateMultiple
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivateDeactivateMultiple) {
+  if (!WmSupportWindowActivation()) {
+    LOG(WARNING) << "Skipping test due to WM problems.";
+    return;
+  }
+
   BrowserWindow* tabbed_window = browser()->window();
 
   // Create 4 panels in the following screen layout:

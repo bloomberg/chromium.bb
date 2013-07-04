@@ -1165,8 +1165,7 @@ bool GtkNativePanelTesting::VerifyDrawingAttention() const {
 }
 
 bool GtkNativePanelTesting::VerifyActiveState(bool is_active) {
-  // TODO(jianli): to be implemented. http://crbug.com/102737
-  return false;
+  return gtk_window_is_active(panel_gtk_->GetNativePanelWindow()) == is_active;
 }
 
 bool GtkNativePanelTesting::VerifyAppIcon() const {
