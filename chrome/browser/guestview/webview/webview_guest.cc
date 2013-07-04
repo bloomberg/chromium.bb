@@ -92,6 +92,11 @@ void WebViewGuest::AddMessageToConsole(int32 level,
       new GuestView::Event(webview::kEventConsoleMessage, args.Pass()));
 }
 
+void WebViewGuest::Close() {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  DispatchEvent(new GuestView::Event(webview::kEventClose, args.Pass()));
+}
+
 void WebViewGuest::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {

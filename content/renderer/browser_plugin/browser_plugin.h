@@ -329,7 +329,6 @@ class CONTENT_EXPORT BrowserPlugin :
                    const BrowserPluginMsg_Attach_ACK_Params& ack_params);
   void OnBuffersSwapped(int instance_id,
                         const BrowserPluginMsg_BuffersSwapped_Params& params);
-  void OnClose(int instance_id);
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnGuestContentWindowReady(int instance_id,
                                  int content_window_routing_id);

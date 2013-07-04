@@ -41,7 +41,6 @@ const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
 
 // Events.
-const char kEventClose[] = "close";
 const char kEventExit[] = "exit";
 const char kEventLoadAbort[] = "loadabort";
 const char kEventLoadStart[] = "loadstart";

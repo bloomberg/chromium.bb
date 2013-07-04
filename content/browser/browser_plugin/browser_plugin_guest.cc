@@ -561,7 +561,10 @@ void BrowserPluginGuest::CanDownload(
 }
 
 void BrowserPluginGuest::CloseContents(WebContents* source) {
-  SendMessageToEmbedder(new BrowserPluginMsg_Close(instance_id_));
+  if (!delegate_)
+    return;
+
+  delegate_->Close();
 }
 
 bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {

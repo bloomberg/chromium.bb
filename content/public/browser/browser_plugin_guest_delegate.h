@@ -20,6 +20,10 @@ class BrowserPluginGuestDelegate {
                                    const string16& message,
                                    int32 line_no,
                                    const string16& source_id) {}
+
+  // Request the delegate to close this guest, and do whatever cleanup it needs
+  // to do.
+  virtual void Close() {}
 };
 
 }  // namespace content

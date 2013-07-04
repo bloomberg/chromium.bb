@@ -44,6 +44,7 @@ class WebViewGuest : public GuestView,
                                    const string16& message,
                                    int32 line_no,
                                    const string16& source_id) OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,

@@ -317,11 +317,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_Attach_ACK,
                      int /* instance_id */,
                      BrowserPluginMsg_Attach_ACK_Params /* params */)
 
-// When the guest's window requests to close, the embedder is informed through
-// the BrowserPluginMsg_Close message.
-IPC_MESSAGE_CONTROL1(BrowserPluginMsg_Close,
-                     int /* instance_id */)
-
 // Once the swapped out guest RenderView has been created in the embedder render
 // process, the browser process informs the embedder of its routing ID.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,

@@ -42,7 +42,6 @@ extern const char kAttributePartition[];
 extern const char kAttributeSrc[];
 
 // Events.
-extern const char kEventClose[];
 extern const char kEventExit[];
 extern const char kEventLoadAbort[];
 extern const char kEventLoadStart[];

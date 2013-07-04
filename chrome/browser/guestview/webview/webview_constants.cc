@@ -7,6 +7,7 @@
 namespace webview {
 
 // Events.
+const char kEventClose[] = "webview.onClose";
 const char kEventConsoleMessage[] = "webview.onConsoleMessage";
 const char kEventContentLoad[] = "webview.onContentLoad";
 const char kEventLoadCommit[] = "webview.onLoadCommit";

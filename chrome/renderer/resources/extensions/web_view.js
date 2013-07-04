@@ -24,7 +24,6 @@ var WEB_VIEW_API_METHODS = [
 ];
 
 var WEB_VIEW_EVENTS = {
-  'close': [],
   'exit' : ['processId', 'reason'],
   'loadabort' : ['url', 'isTopLevel', 'reason'],
   'responsive' : ['processId'],
@@ -37,6 +36,7 @@ var createEvent = function(name) {
   return new eventBindings.Event(name, undefined, eventOpts);
 };
 
+var closeEvent = createEvent('webview.onClose');
 var consoleMessageEvent = createEvent('webview.onConsoleMessage');
 var contentLoadEvent = createEvent('webview.onContentLoad');
 var loadCommitEvent = createEvent('webview.onLoadCommit');
@@ -45,6 +45,10 @@ var loadStartEvent = createEvent('webview.onLoadStart');
 var loadStopEvent = createEvent('webview.onLoadStop');
 
 var WEB_VIEW_EXT_EVENTS = {
+  'close': {
+    evt: closeEvent,
+    fields: []
+  },
   'consolemessage': {
     evt: consoleMessageEvent,
     fields: ['level', 'message', 'line', 'sourceId']

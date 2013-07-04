@@ -158,7 +158,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_Attach_ACK, OnAttachACK)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped, OnBuffersSwapped)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(message))
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
@@ -476,10 +475,6 @@ void BrowserPlugin::OnBuffersSwapped(
                                         params.route_id,
                                         params.host_id,
                                         GetDeviceScaleFactor());
-}
-
-void BrowserPlugin::OnClose(int guest_instance_id) {
-  TriggerEvent(browser_plugin::kEventClose, NULL);
 }
 
 void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
@@ -1245,7 +1240,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_AdvanceFocus::ID:
     case BrowserPluginMsg_Attach_ACK::ID:
     case BrowserPluginMsg_BuffersSwapped::ID:
-    case BrowserPluginMsg_Close::ID:
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_GuestContentWindowReady::ID:
     case BrowserPluginMsg_GuestGone::ID:
