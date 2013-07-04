@@ -3599,6 +3599,7 @@
         ],
         'webcore_test_support_idl_files': [
           'testing/Internals.idl',
+          'testing/InternalProfilers.idl',
           'testing/InternalSettings.idl',
           'testing/MallocStatistics.idl',
           'testing/TypeConversions.idl',
@@ -3612,6 +3613,8 @@
             'testing/InspectorFrontendClientLocal.h',
             'testing/Internals.cpp',
             'testing/Internals.h',
+            'testing/InternalProfilers.cpp',
+            'testing/InternalProfilers.h',
             'testing/InternalSettings.cpp',
             'testing/InternalSettings.h',
             'testing/MallocStatistics.h',

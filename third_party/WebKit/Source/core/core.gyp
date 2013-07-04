@@ -1108,6 +1108,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8TypeConversions.h',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8Internals.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8Internals.h',
+        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalProfilers.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalProfilers.h',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalSettings.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettings.h',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalSettingsGenerated.cpp',

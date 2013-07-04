@@ -29,6 +29,7 @@
 
 #include "HTMLNames.h"
 #include "InspectorFrontendClientLocal.h"
+#include "InternalProfilers.h"
 #include "InternalRuntimeFlags.h"
 #include "InternalSettings.h"
 #include "MallocStatistics.h"
@@ -226,6 +227,13 @@ InternalSettings* Internals::settings() const
 InternalRuntimeFlags* Internals::runtimeFlags() const
 {
     return m_runtimeFlags.get();
+}
+
+InternalProfilers* Internals::profilers()
+{
+    if (!m_profilers)
+        m_profilers = InternalProfilers::create();
+    return m_profilers.get();
 }
 
 unsigned Internals::workerThreadCount() const

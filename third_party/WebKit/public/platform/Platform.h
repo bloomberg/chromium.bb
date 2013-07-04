@@ -285,6 +285,14 @@ public:
     // discardable.
     virtual WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) { return 0; }
 
+    // A dumb wrapper for tcmalloc's HeapProfilerStart();
+    virtual void startHeapProfiling(const WebString& /*prefix*/) { }
+    // A dumb wrapper for tcmalloc's HeapProfilerStop();
+    virtual void stopHeapProfiling() { }
+    // A dumb wrapper for tcmalloc's HeapProfilerDump()
+    virtual void dumpHeapProfing(const WebString& /*reason*/) { }
+    // A dumb wrapper for tcmalloc's GetHeapProfile()
+    virtual WebString getHeapProfile() { return WebString(); }
 
     // Message Ports -------------------------------------------------------
 
