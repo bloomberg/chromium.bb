@@ -1728,7 +1728,7 @@ class Settings(object):
     It enables support for "included" .isolated files. They are processed in
     strict order but fetched asynchronously from the cache. This is important so
     that a file in an included .isolated file that is overridden by an embedding
-    .isolated file is not fetched neededlessly. The includes are fetched in one
+    .isolated file is not fetched needlessly. The includes are fetched in one
     pass and the files are fetched as soon as all the ones on the left-side
     of the tree were fetched.
 
@@ -1741,35 +1741,22 @@ class Settings(object):
     in 'includes' is important.
     """
     self.root = IsolatedFile(root_isolated_hash)
-    cache.retrieve(Remote.HIGH, root_isolated_hash, UNKNOWN_FILE_SIZE)
-    pending = {root_isolated_hash: self.root}
-    # Keeps the list of retrieved items to refuse recursive includes.
-    retrieved = [root_isolated_hash]
 
-    def update_self(node):
-      node.fetch_files(cache, self.files)
-      # Grabs properties.
-      if not self.command and node.data.get('command'):
-        self.command = node.data['command']
-      if self.read_only is None and node.data.get('read_only') is not None:
-        self.read_only = node.data['read_only']
-      if (self.relative_cwd is None and
-          node.data.get('relative_cwd') is not None):
-        self.relative_cwd = node.data['relative_cwd']
+    # Isolated files being retrieved now: hash -> IsolatedFile instance.
+    pending = {}
+    # Set of hashes of already retrieved items to refuse recursive includes.
+    seen = set()
 
-    def traverse_tree(node):
-      if node.can_fetch:
-        if not node.files_fetched:
-          update_self(node)
-        will_break = False
-        for i in node.children:
-          if not i.can_fetch:
-            if will_break:
-              break
-            # Automatically mark the first one as fetcheable.
-            i.can_fetch = True
-            will_break = True
-          traverse_tree(i)
+    def retrieve(isolated_file):
+      h = isolated_file.obj_hash
+      if h in seen:
+        raise ConfigError('IsolatedFile %s is retrieved recursively' % h)
+      assert h not in pending
+      seen.add(h)
+      pending[h] = isolated_file
+      cache.retrieve(Remote.HIGH, h, UNKNOWN_FILE_SIZE)
+
+    retrieve(self.root)
 
     while pending:
       item_hash = cache.wait_for(pending)
@@ -1780,19 +1767,42 @@ class Settings(object):
         item.can_fetch = True
 
       for new_child in item.children:
-        h = new_child.obj_hash
-        if h in retrieved:
-          raise ConfigError('IsolatedFile %s is retrieved recursively' % h)
-        pending[h] = new_child
-        cache.retrieve(Remote.HIGH, h, UNKNOWN_FILE_SIZE)
+        retrieve(new_child)
 
       # Traverse the whole tree to see if files can now be fetched.
-      traverse_tree(self.root)
+      self._traverse_tree(cache, self.root)
+
     def check(n):
       return all(check(x) for x in n.children) and n.files_fetched
     assert check(self.root)
+
     self.relative_cwd = self.relative_cwd or ''
     self.read_only = self.read_only or False
+
+  def _traverse_tree(self, cache, node):
+    if node.can_fetch:
+      if not node.files_fetched:
+        self._update_self(cache, node)
+      will_break = False
+      for i in node.children:
+        if not i.can_fetch:
+          if will_break:
+            break
+          # Automatically mark the first one as fetcheable.
+          i.can_fetch = True
+          will_break = True
+        self._traverse_tree(cache, i)
+
+  def _update_self(self, cache, node):
+    node.fetch_files(cache, self.files)
+    # Grabs properties.
+    if not self.command and node.data.get('command'):
+      self.command = node.data['command']
+    if self.read_only is None and node.data.get('read_only') is not None:
+      self.read_only = node.data['read_only']
+    if (self.relative_cwd is None and
+        node.data.get('relative_cwd') is not None):
+      self.relative_cwd = node.data['relative_cwd']
 
 
 def create_directories(base_directory, files):
