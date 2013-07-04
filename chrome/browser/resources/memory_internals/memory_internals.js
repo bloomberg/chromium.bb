@@ -69,8 +69,7 @@ var MainView = (function() {
             break;
           case 'process-memory-v8':
             if (process['v8_alloc'] !== undefined) {
-              value = 'Used : ' + process['v8_used'] + '<br>' +
-                  'Allocated : ' + process['v8_alloc'];
+              value = process['v8_used'] + '<br>/ ' + process['v8_alloc'];
             }
             break;
           }

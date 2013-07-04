@@ -155,8 +155,9 @@ void MemoryInternalsProxy::OnV8MemoryUpdate(const base::ProcessId pid,
     int id;
     if (!process->GetInteger("pid", &id) || id != static_cast<int>(pid))
       continue;
-    process->SetInteger("v8_alloc", v8_allocated);
-    process->SetInteger("v8_used", v8_used);
+    // Convert units from Bytes to KiB.
+    process->SetInteger("v8_alloc", v8_allocated / 1024);
+    process->SetInteger("v8_used", v8_used / 1024);
     break;
   }
 

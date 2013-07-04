@@ -36,7 +36,7 @@
 
 #snapshot-view .process-memory {
   border-left: 1px solid rgb(181, 198, 222);
-  width: 16em;
+  width: 13em;
 }
 
 #snapshot-view .process-memory-private {
@@ -47,7 +47,7 @@
 
 #snapshot-view .process-memory-v8 {
   text-align: right;
-  width: 10em;
+  width: 7em;
 }
 
 #snapshot-view #process-template {
