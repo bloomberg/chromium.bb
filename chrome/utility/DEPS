@@ -2,6 +2,7 @@ include_rules = [
   # For out of process profile import. This code needs to be factored out to
   # chrome/common.
   "+chrome/browser/importer",
+  "+chrome/common/local_discovery",  
   "+content/public/child",
   "+content/public/utility",
   "+webkit/glue",

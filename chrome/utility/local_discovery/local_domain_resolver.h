@@ -9,8 +9,8 @@
 #include "net/base/net_util.h"
 #include "net/dns/mdns_client.h"
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_LOCAL_DOMAIN_RESOLVER_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_LOCAL_DOMAIN_RESOLVER_H_
+#ifndef CHROME_UTILITY_LOCAL_DISCOVERY_LOCAL_DOMAIN_RESOLVER_H_
+#define CHROME_UTILITY_LOCAL_DISCOVERY_LOCAL_DOMAIN_RESOLVER_H_
 
 namespace local_discovery {
 
@@ -53,4 +53,4 @@ class LocalDomainResolver {
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_LOCAL_DOMAIN_RESOLVER_H_
+#endif  // CHROME_UTILITY_LOCAL_DISCOVERY_LOCAL_DOMAIN_RESOLVER_H_

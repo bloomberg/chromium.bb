@@ -290,6 +290,7 @@
             '../content/content.gyp:content_utility',
             '../skia/skia.gyp:skia',
             '../third_party/libxml/libxml.gyp:libxml',
+            'common',
           ],
           'sources': [
             'utility/chrome_content_utility_client.cc',
@@ -324,6 +325,14 @@
               'sources!': [
                 'utility/profile_import_handler.cc',
               ],
+            }],
+            ['enable_mdns == 1', {
+              'sources': [
+                'utility/local_discovery/local_domain_resolver.cc',
+                'utility/local_discovery/local_domain_resolver.h',
+                'utility/local_discovery/service_discovery_client_impl.cc',
+                'utility/local_discovery/service_discovery_client_impl.h',
+              ]
             }],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

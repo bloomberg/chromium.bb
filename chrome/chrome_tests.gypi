@@ -3387,9 +3387,9 @@
           'type': 'executable',
           'dependencies': [
             '../net/net.gyp:net',
-            'browser',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
+            'utility',
           ],
           'sources': [
             'tools/service_discovery_sniffer/service_discovery_sniffer.h',

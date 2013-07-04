@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "chrome/browser/local_discovery/local_domain_resolver.h"
+#include "chrome/utility/local_discovery/local_domain_resolver.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/record_rdata.h"

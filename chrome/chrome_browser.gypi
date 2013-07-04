@@ -1790,12 +1790,6 @@
         'browser/service/service_process_control.cc',
         'browser/service/service_process_control_mac.mm',
         'browser/service/service_process_control.h',
-        'browser/local_discovery/local_domain_resolver.cc',
-        'browser/local_discovery/local_domain_resolver.h',
-        'browser/local_discovery/service_discovery_client.cc',
-        'browser/local_discovery/service_discovery_client.h',
-        'browser/local_discovery/service_discovery_client_impl.cc',
-        'browser/local_discovery/service_discovery_client_impl.h',
         'browser/sessions/base_session_service.cc',
         'browser/sessions/base_session_service.h',
         'browser/sessions/persistent_tab_restore_service.cc',
@@ -3171,16 +3165,6 @@
             'browser/media/webrtc_logging_handler_host.cc',
             'browser/media/webrtc_logging_handler_host.h',
           ]
-        }],
-        ['enable_mdns != 1', {
-            'sources!': [
-              'browser/local_discovery/local_domain_resolver.cc',
-              'browser/local_discovery/local_domain_resolver.h',
-              'browser/local_discovery/service_discovery_client.cc',
-              'browser/local_discovery/service_discovery_client.h',
-              'browser/local_discovery/service_discovery_client_impl.cc',
-              'browser/local_discovery/service_discovery_client_impl.h',
-            ]
         }],
       ],
       'target_conditions': [

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_discovery/local_domain_resolver.h"
+#include "chrome/utility/local_discovery/local_domain_resolver.h"
 #include "net/dns/mdns_client_impl.h"
 #include "net/dns/mock_mdns_socket_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"

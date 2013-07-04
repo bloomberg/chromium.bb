@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_
+#ifndef CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_
+#define CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_
 
 #include <map>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/local_discovery/service_discovery_client.h"
+#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/dns/mdns_client.h"
 
 namespace local_discovery {
@@ -201,4 +201,4 @@ class ServiceResolverImpl
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_
+#endif  // CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_

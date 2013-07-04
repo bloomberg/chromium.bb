@@ -557,6 +557,12 @@
             'common/crash_keys.h',
           ],
         }],
+        ['enable_mdns == 1', {
+            'sources': [
+              'common/local_discovery/service_discovery_client.cc',
+              'common/local_discovery/service_discovery_client.h',
+            ]
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
