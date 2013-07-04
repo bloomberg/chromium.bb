@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 
+#include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
@@ -26,7 +27,8 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
                             const std::string& resource_id,
                             ResourceEntry* entry,
                             base::FilePath* drive_file_path,
-                            base::FilePath* cache_file_path) {
+                            base::FilePath* cache_file_path,
+                            bool* content_is_same) {
   FileError error = metadata->GetResourceEntryById(resource_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
@@ -38,9 +40,17 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
   if (drive_file_path->empty())
     return FILE_ERROR_NOT_FOUND;
 
-  return cache->GetFile(resource_id,
-                        entry->file_specific_info().md5(),
-                        cache_file_path);
+  error = cache->GetFile(
+      resource_id, entry->file_specific_info().md5(), cache_file_path);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  const std::string& md5 = util::GetMd5Digest(*cache_file_path);
+  *content_is_same = (md5 == entry->file_specific_info().md5());
+  if (*content_is_same)
+    cache->ClearDirty(resource_id, md5);
+
+  return FILE_ERROR_OK;
 }
 
 // Updates locally stored information about the specified file.
@@ -68,6 +78,16 @@ FileError UpdateFileLocalState(
 
 }  // namespace
 
+struct UpdateOperation::LocalState {
+  LocalState() : content_is_same(false) {
+  }
+
+  ResourceEntry entry;
+  base::FilePath drive_file_path;
+  base::FilePath cache_file_path;
+  bool content_is_same;
+};
+
 UpdateOperation::UpdateOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
@@ -94,9 +114,7 @@ void UpdateOperation::UpdateFileByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  ResourceEntry* entry = new ResourceEntry;
-  base::FilePath* drive_file_path = new base::FilePath;
-  base::FilePath* cache_file_path = new base::FilePath;
+  LocalState* local_state = new LocalState;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -104,38 +122,35 @@ void UpdateOperation::UpdateFileByResourceId(
                  metadata_,
                  cache_,
                  resource_id,
-                 entry,
-                 drive_file_path,
-                 cache_file_path),
+                 &local_state->entry,
+                 &local_state->drive_file_path,
+                 &local_state->cache_file_path,
+                 &local_state->content_is_same),
       base::Bind(&UpdateOperation::UpdateFileAfterGetLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  context,
                  callback,
-                 base::Owned(entry),
-                 base::Owned(drive_file_path),
-                 base::Owned(cache_file_path)));
+                 base::Owned(local_state)));
 }
 
 void UpdateOperation::UpdateFileAfterGetLocalState(
     const ClientContext& context,
     const FileOperationCallback& callback,
-    const ResourceEntry* entry,
-    const base::FilePath* drive_file_path,
-    const base::FilePath* cache_file_path,
+    const LocalState* local_state,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != FILE_ERROR_OK) {
+  if (error != FILE_ERROR_OK || local_state->content_is_same) {
     callback.Run(error);
     return;
   }
 
   scheduler_->UploadExistingFile(
-      entry->resource_id(),
-      *drive_file_path,
-      *cache_file_path,
-      entry->file_specific_info().content_mime_type(),
+      local_state->entry.resource_id(),
+      local_state->drive_file_path,
+      local_state->cache_file_path,
+      local_state->entry.file_specific_info().content_mime_type(),
       "",  // etag
       context,
       base::Bind(&UpdateOperation::UpdateFileAfterUpload,

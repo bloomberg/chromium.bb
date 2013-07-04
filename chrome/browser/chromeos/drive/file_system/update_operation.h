@@ -58,11 +58,11 @@ class UpdateOperation {
                               const FileOperationCallback& callback);
 
  private:
+  struct LocalState;
+
   void UpdateFileAfterGetLocalState(const ClientContext& context,
                                     const FileOperationCallback& callback,
-                                    const ResourceEntry* entry,
-                                    const base::FilePath* drive_file_path,
-                                    const base::FilePath* cache_file_path,
+                                    const LocalState* local_state,
                                     FileError error);
 
   void UpdateFileAfterUpload(
