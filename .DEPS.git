@@ -80,7 +80,7 @@ deps = {
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@d36d2606fc7c9d719190676740b4d7b0cc53942f',
     'src/third_party/mesa/src':
-        Var('git_url') + '/chromium/deps/mesa.git@9511fddfee83830f3c0479b5dde791e87cecd9bd',
+        Var('git_url') + '/chromium/deps/mesa.git@99703ab948d16a83979d70d595e48cc5a0f06880',
     'src/third_party/openmax_dl':
         Var('git_url') + '/external/webrtc/deps/third_party/openmax.git@6b2bf4b577035e2be7e5b096a7148171e5ffadd2',
     'src/third_party/opus/src':
