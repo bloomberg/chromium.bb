@@ -123,7 +123,7 @@ class SCMWrapper(object):
   This is the abstraction layer to bind to different SCM.
   """
   nag_timer = 30
-  nag_max = 6
+  nag_max = 30
 
   def __init__(self, url=None, root_dir=None, relpath=None):
     self.url = url
