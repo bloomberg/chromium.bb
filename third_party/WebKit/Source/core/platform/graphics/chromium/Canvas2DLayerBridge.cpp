@@ -219,9 +219,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outM
     m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, 0);
     // Because we are changing the texture binding without going through skia,
     // we must dirty the context.
-    // TODO(piman): expose finer granularity reset. We only really want to
-    // 'dirty' the current texture binding.
-    m_context->grContext()->resetContext();
+    m_context->grContext()->resetContext(kTextureBinding_GrGLBackendState);
 
     *outMailbox = mailboxInfo->m_mailbox;
     return true;
