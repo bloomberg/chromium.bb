@@ -34,7 +34,8 @@ void JavaBridgeDispatcher::EnsureChannelIsSetUp() {
       channel_handle, ChildProcess::current()->io_message_loop_proxy());
 
   // All objects received from the Browser process belong to us.
-  channel_->SetDefaultNPObjectOwner(owner_id_.get());
+  if (channel_.get())
+    channel_->SetDefaultNPObjectOwner(owner_id_.get());
 }
 
 JavaBridgeDispatcher::~JavaBridgeDispatcher() {
