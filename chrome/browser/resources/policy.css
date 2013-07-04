@@ -22,6 +22,10 @@ body.uber-frame header {
   max-width: none;
 }
 
+html[dir='rtl'] body.uber-frame header {
+  right: 23px;
+}
+
 body.uber-frame section {
   max-width: none;
 }
