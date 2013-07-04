@@ -13,6 +13,7 @@
 namespace aura {
 class RootWindow;
 }
+struct GritResourceMap;
 
 namespace keyboard {
 
@@ -25,6 +26,11 @@ KEYBOARD_EXPORT bool IsKeyboardEnabled();
 // special circumstances (i.e. VKEY_RETURN, VKEY_BACK).
 KEYBOARD_EXPORT bool InsertText(const base::string16& text,
                                 aura::RootWindow* root_window);
+
+// Get the list of keyboard resources.  |size| is populated with the number of
+// resources in the returned array.
+KEYBOARD_EXPORT const GritResourceMap* GetKeyboardExtensionResources(
+    size_t* size);
 
 }  // namespace keyboard
 
