@@ -59,6 +59,9 @@ protected:
         const FloatSize&, const FloatPoint&, CompositeOperator,
         const FloatRect&, BlendMode) OVERRIDE;
 
+    void drawPatternWithoutCache(GraphicsContext*, const FloatRect&, const FloatSize&,
+        const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode);
+
     void invalidateCacheTimerFired(DeferrableOneShotTimer<GeneratorGeneratedImage>*);
 
     GeneratorGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)

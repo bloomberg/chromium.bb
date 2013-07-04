@@ -30,6 +30,8 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 
+#define SKIA_MAX_PATTERN_SIZE 32767
+
 namespace WebCore {
 
 void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
@@ -45,13 +47,74 @@ void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect
     destContext->fillRect(FloatRect(FloatPoint(), m_size));
 }
 
+void GeneratorGeneratedImage::drawPatternWithoutCache(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
+{
+    int firstColumn = static_cast<int>(floorf((((destRect.x() - phase.x()) / scale.width()) - srcRect.x()) / srcRect.width()));
+    int firstRow = static_cast<int>(floorf((((destRect.y() - phase.y()) / scale.height())  - srcRect.y()) / srcRect.height()));
+    for (int i = firstColumn; ; ++i) {
+        float dstX = (srcRect.x() + i * srcRect.width()) * scale.width() + phase.x();
+        // assert that first column encroaches left edge of dstRect.
+        ASSERT(i > firstColumn || dstX <= destRect.x());
+        ASSERT(i == firstColumn || dstX > destRect.x());
+
+        if (dstX >= destRect.maxX())
+            break;
+        float dstMaxX = dstX + srcRect.width() * scale.width();
+        if (dstX < destRect.x())
+            dstX = destRect.x();
+        if (dstMaxX > destRect.maxX())
+            dstMaxX = destRect.maxX();
+        if (dstX >= dstMaxX)
+            continue;
+
+        FloatRect visibleSrcRect;
+        FloatRect tileDstRect;
+        tileDstRect.setX(dstX);
+        tileDstRect.setWidth(dstMaxX - dstX);
+        visibleSrcRect.setX((tileDstRect.x() - phase.x()) / scale.width() - i * srcRect.width());
+        visibleSrcRect.setWidth(tileDstRect.width() / scale.width());
+
+        for (int j = firstRow; ; j++) {
+            float dstY = (srcRect.y() + j * srcRect.height()) * scale.height() + phase.y();
+            // assert that first row encroaches top edge of dstRect.
+            ASSERT(j > firstRow || dstY <= destRect.y());
+            ASSERT(j == firstRow || dstY > destRect.y());
+
+            if (dstY >= destRect.maxY())
+                break;
+            float dstMaxY = dstY + srcRect.height() * scale.height();
+            if (dstY < destRect.y())
+                dstY = destRect.y();
+            if (dstMaxY > destRect.maxY())
+                dstMaxY = destRect.maxY();
+            if (dstY >= dstMaxY)
+                continue;
+
+            tileDstRect.setY(dstY);
+            tileDstRect.setHeight(dstMaxY - dstY);
+            visibleSrcRect.setY((tileDstRect.y() - phase.y()) / scale.height() - j * srcRect.height());
+            visibleSrcRect.setHeight(tileDstRect.height() / scale.height());
+            draw(destContext, tileDstRect, visibleSrcRect, compositeOp, blendMode);
+        }
+    }
+}
+
 void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode)
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
 {
     // Allow the generator to provide visually-equivalent tiling parameters for better performance.
     IntSize adjustedSize = m_size;
     FloatRect adjustedSrcRect = srcRect;
+
     m_gradient->adjustParametersForTiledDrawing(adjustedSize, adjustedSrcRect);
+
+    if (adjustedSize.width() > SKIA_MAX_PATTERN_SIZE || adjustedSize.height() > SKIA_MAX_PATTERN_SIZE) {
+        // Workaround to fix crbug.com/241486
+        // SkBitmapProcShader is unable to handle cached tiles >= 32k pixels high or wide.
+        drawPatternWithoutCache(destContext, srcRect, scale, phase, compositeOp, destRect, blendMode);
+        return;
+    }
 
     // Factor in the destination context's scale to generate at the best resolution.
     // FIXME: No need to get the full CTM here, we just need the scale.
