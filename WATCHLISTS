@@ -488,6 +488,11 @@
     'tools_emacs': {
       'filepath': 'tools/emacs/',
     },
+    'tracing': {
+      'filepath': 'base/debug/trace_event.*'\
+                  '|content/browser/tracing/'\
+                  '|components/tracing/'
+    },
     'ui_compositor': {
       'filepath': 'ui/compositor/layer\.|'\
                   'ui/compositor/layer_unittest|'\
@@ -711,6 +716,7 @@
                            'nona+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org',
                     'dhollowa+watch@chromium.org'],
+    'tracing': ['dsinclair+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
