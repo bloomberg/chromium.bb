@@ -382,26 +382,30 @@ void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
   audio_stream_ = demuxer_->GetStream(DemuxerStream::AUDIO);
   video_stream_ = demuxer_->GetStream(DemuxerStream::VIDEO);
 
-  if (audio_stream_ && audio_stream_->audio_decoder_config().is_encrypted()) {
+  if (audio_stream_ && audio_stream_->audio_decoder_config().is_encrypted() &&
+      !set_decryptor_ready_cb_.is_null()) {
     InitAudioDecryptingDemuxerStream();
     // InitVideoDecryptingDemuxerStream() will be called in
     // OnAudioDecryptingDemuxerStreamInitDone().
     return;
   }
 
-  if (video_stream_ && video_stream_->video_decoder_config().is_encrypted()) {
+  if (video_stream_ && video_stream_->video_decoder_config().is_encrypted() &&
+      !set_decryptor_ready_cb_.is_null()) {
     InitVideoDecryptingDemuxerStream();
     return;
   }
 
   // Notify demuxer ready when both streams are not encrypted.
   is_demuxer_ready_ = true;
-  DCHECK(CanNotifyDemuxerReady());
-  NotifyDemuxerReady();
+  if (CanNotifyDemuxerReady())
+    NotifyDemuxerReady();
 }
 
 void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
   DVLOG(1) << "InitAudioDecryptingDemuxerStream()";
+  DCHECK(!set_decryptor_ready_cb_.is_null());
+
   audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
       base::MessageLoopProxy::current(), set_decryptor_ready_cb_));
   audio_decrypting_demuxer_stream_->Initialize(
@@ -412,6 +416,8 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
 
 void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
   DVLOG(1) << "InitVideoDecryptingDemuxerStream()";
+  DCHECK(!set_decryptor_ready_cb_.is_null());
+
   video_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
       base::MessageLoopProxy::current(), set_decryptor_ready_cb_));
   video_decrypting_demuxer_stream_->Initialize(

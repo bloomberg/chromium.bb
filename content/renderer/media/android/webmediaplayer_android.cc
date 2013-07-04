@@ -141,6 +141,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   }
 
   if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
+    // TODO(xhwang): Report an error when there is encrypted stream but EME is
+    // not enabled. Currently the player just doesn't start and waits for ever.
     decryptor_.reset(new ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
         client,
