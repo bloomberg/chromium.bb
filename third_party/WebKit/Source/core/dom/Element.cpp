@@ -2819,6 +2819,20 @@ void Element::didRemoveAttribute(const QualifiedName& name)
     dispatchSubtreeModifiedEvent();
 }
 
+void Element::didMoveToNewDocument(Document* oldDocument)
+{
+    Node::didMoveToNewDocument(oldDocument);
+
+    // If the documents differ by quirks mode then they differ by case sensitivity
+    // for class and id names so we need to go through the attribute change logic
+    // to pick up the new casing in the ElementData.
+    if (oldDocument->inQuirksMode() != document()->inQuirksMode()) {
+        if (hasID())
+            setIdAttribute(getIdAttribute());
+        if (hasClass())
+            setAttribute(HTMLNames::classAttr, getClassAttribute());
+    }
+}
 
 void Element::updateNamedItemRegistration(const AtomicString& oldName, const AtomicString& newName)
 {
@@ -2985,14 +2999,22 @@ void Element::cloneAttributesFromElement(const Element& other)
     if (!oldName.isNull() || !newName.isNull())
         updateName(oldName, newName);
 
+    // Quirks mode makes class and id not case sensitive. We can't share the ElementData
+    // if the idForStyleResolution and the className need different casing.
+    bool ownerDocumentsHaveDifferentCaseSensitivity = false;
+    if (other.hasClass() || other.hasID())
+        ownerDocumentsHaveDifferentCaseSensitivity = other.document()->inQuirksMode() != document()->inQuirksMode();
+
     // If 'other' has a mutable ElementData, convert it to an immutable one so we can share it between both elements.
-    // We can only do this if there is no CSSOM wrapper for other's inline style, and there are no presentation attributes.
+    // We can only do this if there is no CSSOM wrapper for other's inline style, and there are no presentation attributes,
+    // and sharing the data won't result in different case sensitivity of class or id.
     if (other.m_elementData->isUnique()
+        && !ownerDocumentsHaveDifferentCaseSensitivity
         && !other.m_elementData->presentationAttributeStyle()
         && (!other.m_elementData->inlineStyle() || !other.m_elementData->inlineStyle()->hasCSSOMWrapper()))
         const_cast<Element&>(other).m_elementData = static_cast<const UniqueElementData*>(other.m_elementData.get())->makeShareableCopy();
 
-    if (!other.m_elementData->isUnique())
+    if (!other.m_elementData->isUnique() && !ownerDocumentsHaveDifferentCaseSensitivity)
         m_elementData = other.m_elementData;
     else
         m_elementData = other.m_elementData->makeUniqueCopy();
