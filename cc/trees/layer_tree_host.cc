@@ -288,6 +288,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree = host_impl->active_tree();
   }
 
+  sync_tree->set_source_frame_number(commit_number());
+
   if (needs_full_tree_sync_)
     sync_tree->SetRootLayer(TreeSynchronizer::SynchronizeTrees(
         root_layer(), sync_tree->DetachLayerTree(), sync_tree));
@@ -307,7 +309,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->set_hud_layer(NULL);
   }
 
-  sync_tree->set_source_frame_number(commit_number());
   sync_tree->set_background_color(background_color_);
   sync_tree->set_has_transparent_background(has_transparent_background_);
 
