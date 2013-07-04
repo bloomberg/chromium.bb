@@ -4,7 +4,10 @@
  * found in the LICENSE file.
  */
 
-
+/*
+ * This file is based on the file "newlib/libc/include/sys/unistd.h"
+ * from newlib.
+ */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_UNISTD_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_UNISTD_H_
@@ -88,7 +91,7 @@ char    _EXFUN(*getlogin, (void ));
 int _EXFUN(getlogin_r, (char *name, size_t namesize) );
 #endif
 char _EXFUN(*getpass, (const char *__prompt));
-size_t  _EXFUN(getpagesize, (void));
+int     _EXFUN(getpagesize, (void));
 #if defined(__CYGWIN__)
 int    _EXFUN(getpeereid, (int, uid_t *, gid_t *));
 #endif
