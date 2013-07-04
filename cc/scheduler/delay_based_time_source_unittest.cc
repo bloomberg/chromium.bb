@@ -88,7 +88,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyOnRequestedTime) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
@@ -109,7 +109,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
@@ -122,7 +122,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime) {
 }
 
 // At 60Hz, when the tick returns at exactly 2*interval after the requested next
-// time, make sure a 16ms next delay is posted.
+// time, make sure a 0ms next delay is posted.
 TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
@@ -131,7 +131,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
@@ -139,7 +139,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime) {
   timer->SetNow(timer->Now() + 2 * Interval());
   task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
+  EXPECT_EQ(0, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 // At 60Hz, when the tick returns at 2*interval and a bit after the requested
@@ -152,7 +152,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterTwiceRequestedTime) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
@@ -174,7 +174,7 @@ TEST(DelayBasedTimeSource, NextDelaySaneWhenHalfAfterRequestedTime) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
@@ -196,7 +196,7 @@ TEST(DelayBasedTimeSource, SaneHandlingOfJitteryTimebase) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
@@ -227,7 +227,7 @@ TEST(DelayBasedTimeSource, HandlesSignificantTimebaseChangesImmediately) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
@@ -271,7 +271,7 @@ TEST(DelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately) {
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  // Run the first task, as that activates the timer and picks up a timebase.
+  // Run the first tick.
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
