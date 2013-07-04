@@ -18,10 +18,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
-#include "chrome/browser/sync_file_system/file_metadata.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -342,16 +342,16 @@ void AppendMetadataDeletionToBatch(const MetadataMap& metadata_map,
     batch->Delete(OriginAndPathToMetadataKey(origin, itr->first));
 }
 
-FileType DriveTypeToFileMetadataType(DriveMetadata_ResourceType drive_type) {
+std::string DriveTypeToString(DriveMetadata_ResourceType drive_type) {
   switch (drive_type) {
     case DriveMetadata_ResourceType_RESOURCE_TYPE_FILE:
-      return TYPE_FILE;
+      return "file";
     case DriveMetadata_ResourceType_RESOURCE_TYPE_FOLDER:
-      return TYPE_FOLDER;
+      return "folder";
   }
 
   NOTREACHED();
-  return TYPE_FILE;
+  return "unknown";
 }
 
 }  // namespace
@@ -768,31 +768,36 @@ bool DriveMetadataStore::GetOriginByOriginRootDirectoryId(
   return true;
 }
 
-void DriveMetadataStore::GetFileMetadataMap(
-    const GURL& origin,
-    FileMetadataMap* output_map) {
+scoped_ptr<base::ListValue> DriveMetadataStore::DumpFiles(const GURL& origin) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!origin.is_empty());
-  DCHECK(output_map);
 
-  MetadataMap::const_iterator origin_itr = metadata_map_.find(origin);
-  if (origin_itr == metadata_map_.end())
-    return;
+  scoped_ptr<base::ListValue> files(new base::ListValue);
 
-  for (PathToMetadata::const_iterator itr = origin_itr->second.begin();
-       itr != origin_itr->second.end();
+  MetadataMap::const_iterator found = metadata_map_.find(origin);
+  if (found == metadata_map_.end())
+    return make_scoped_ptr(new base::ListValue);
+
+  for (PathToMetadata::const_iterator itr = found->second.begin();
+       itr != found->second.end();
        ++itr) {
     // Convert Drive specific metadata to Common File metadata object.
-    const std::string title = itr->first.BaseName().AsUTF8Unsafe();
     const DriveMetadata& metadata = itr->second;
-    const FileType type = DriveTypeToFileMetadataType(metadata.type());
-    std::ostringstream details;
-    details << "resource_id=" << metadata.resource_id() << ", "
-            << "md5_checksum=" << metadata.md5_checksum() << ", "
-            << "to_be_fetched=" << metadata.to_be_fetched();
-    FileMetadata file_metadata(title, type, details.str());
-    (*output_map)[itr->first] = file_metadata;
+
+    base::DictionaryValue* file = new DictionaryValue;
+    file->SetString("path", itr->first.AsUTF8Unsafe());
+    file->SetString("title", itr->first.BaseName().AsUTF8Unsafe());
+    file->SetString("type", DriveTypeToString(metadata.type()));
+
+    base::DictionaryValue* details = new DictionaryValue;
+    details->SetString("resource_id", metadata.resource_id());
+    details->SetString("md5", metadata.md5_checksum());
+    details->SetString("dirty", metadata.to_be_fetched() ? "true" : "false");
+
+    file->Set("details", details);
+    files->Append(file);
   }
+
+  return files.Pass();
 }
 
 }  // namespace sync_file_system

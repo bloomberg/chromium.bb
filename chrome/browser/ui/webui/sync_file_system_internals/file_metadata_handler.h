@@ -31,12 +31,8 @@ class FileMetadataHandler : public content::WebUIMessageHandler {
  private:
   void GetExtensions(const base::ListValue* args);
 
-  typedef sync_file_system::RemoteFileSyncService::FileMetadataMap
-      FileMetadataMap;
   void GetFileMetadata(const base::ListValue* args);
-  void DidGetFileMetadata(
-      FileMetadataMap* metadata_map,
-      sync_file_system::SyncStatusCode status);
+  void DidGetFileMetadata(const base::ListValue* files);
 
   Profile* profile_;
   base::WeakPtrFactory<FileMetadataHandler> weak_factory_;

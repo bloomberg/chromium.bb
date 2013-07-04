@@ -21,6 +21,7 @@
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 namespace base {
+class ListValue;
 class SequencedTaskRunner;
 }
 
@@ -148,8 +149,7 @@ class DriveMetadataStore
                                         GURL* origin);
 
   // Returns all file metadata for the given origin.
-  typedef std::map<base::FilePath, FileMetadata> FileMetadataMap;
-  void GetFileMetadataMap(const GURL& origin, FileMetadataMap* output_map);
+  scoped_ptr<base::ListValue> DumpFiles(const GURL& origin);
 
  private:
   friend class DriveMetadataStoreTest;

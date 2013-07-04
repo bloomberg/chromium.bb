@@ -14,10 +14,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
+#include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
-#include "chrome/browser/sync_file_system/file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -611,19 +611,21 @@ void DriveMetadataStoreTest::GetFileMetadataMap_Body() {
 
   // Check that DriveMetadata objects get mapped back to generalized
   // FileMetadata objects.
-  DriveMetadataStore::FileMetadataMap metadata_map;
-  metadata_store()->GetFileMetadataMap(origin, &metadata_map);
-  ASSERT_EQ(2U, metadata_map.size());
+  scoped_ptr<base::ListValue> files = metadata_store()->DumpFiles(origin);
+  ASSERT_EQ(2u, files->GetSize());
 
-  FileMetadata metadata_0 = metadata_map[file_path];
-  EXPECT_EQ("file_0", metadata_0.title);
-  EXPECT_EQ(TYPE_FILE, metadata_0.type);
-  EXPECT_TRUE(!metadata_0.service_specific_metadata.empty());
+  base::DictionaryValue* file = NULL;
+  std::string str;
 
-  FileMetadata metadata_1 = metadata_map[folder_path];
-  EXPECT_EQ("folder_0", metadata_1.title);
-  EXPECT_EQ(TYPE_FOLDER, metadata_1.type);
-  EXPECT_TRUE(!metadata_1.service_specific_metadata.empty());
+  ASSERT_TRUE(files->GetDictionary(0, &file));
+  EXPECT_TRUE(file->GetString("title", &str) && str == "file_0");
+  EXPECT_TRUE(file->GetString("type", &str) && str == "file");
+  EXPECT_TRUE(file->HasKey("details"));
+
+  ASSERT_TRUE(files->GetDictionary(1, &file));
+  EXPECT_TRUE(file->GetString("title", &str) && str == "folder_0");
+  EXPECT_TRUE(file->GetString("type", &str) && str == "folder");
+  EXPECT_TRUE(file->HasKey("details"));
 }
 
 TEST_F(DriveMetadataStoreTest, Initialization) {

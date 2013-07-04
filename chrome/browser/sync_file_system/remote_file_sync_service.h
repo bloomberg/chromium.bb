@@ -10,11 +10,14 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
-#include "chrome/browser/sync_file_system/file_metadata.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 
 class GURL;
+
+namespace base {
+class ListValue;
+}
 
 namespace sync_file_system {
 
@@ -145,10 +148,8 @@ class RemoteFileSyncService {
   typedef std::map<GURL, std::string> OriginStatusMap;
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) = 0;
 
-  // Returns file metadata for one origin.
-  typedef std::map<base::FilePath, FileMetadata> FileMetadataMap;
-  virtual void GetFileMetadataMap(const GURL& origin,
-                                  FileMetadataMap* metadata_map) = 0;
+  // Returns file metadata for |origin|.
+  virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) = 0;
 
   // Enables or disables the background sync.
   // Setting this to false should disable the synchronization (and make

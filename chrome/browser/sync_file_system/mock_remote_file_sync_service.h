@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/mock_local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
@@ -51,14 +52,13 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                      RemoteServiceState());
   MOCK_METHOD1(GetOriginStatusMap,
                void(RemoteFileSyncService::OriginStatusMap* status_map));
-  MOCK_METHOD2(GetFileMetadataMap,
-               void(const GURL& origin,
-                    RemoteFileSyncService::FileMetadataMap* metadata_map));
   MOCK_METHOD1(SetSyncEnabled, void(bool));
   MOCK_METHOD1(SetConflictResolutionPolicy,
                SyncStatusCode(ConflictResolutionPolicy));
   MOCK_CONST_METHOD0(GetConflictResolutionPolicy,
                      ConflictResolutionPolicy());
+
+  virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
 
   // Send notifications to the observers.
   // Can be used in the mock implementation.

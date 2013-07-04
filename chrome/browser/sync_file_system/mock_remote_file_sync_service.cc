@@ -50,6 +50,11 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
 }
 
+scoped_ptr<base::ListValue> MockRemoteFileSyncService::DumpFiles(
+    const GURL& origin) {
+  return scoped_ptr<base::ListValue>();
+}
+
 void MockRemoteFileSyncService::NotifyRemoteChangeQueueUpdated(
     int64 pending_changes) {
   FOR_EACH_OBSERVER(Observer, service_observers_,
