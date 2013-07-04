@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -445,6 +446,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
 }
 
 void SigninScreenHandler::Show(bool oobe_ui) {
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "ShowLoginWebUI", this);
   CHECK(delegate_);
   oobe_ui_ = oobe_ui;
   if (!page_is_ready()) {
@@ -1434,6 +1436,7 @@ void SigninScreenHandler::HandleOpenProxySettings() {
 }
 
 void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
+  TRACE_EVENT_ASYNC_END0("ui", "ShowLoginWebUI", this);
   LOG(INFO) << "Login WebUI >> LoginVisible, source: " << source << ", "
             << "webui_visible_: " << webui_visible_;
   if (!webui_visible_) {

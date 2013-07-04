@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -989,6 +990,7 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
                                           bool update_wallpaper,
                                           const UserImage& wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT_ASYNC_END0("ui", "LoadAndDecodeWallpaper", this);
 
   // If decoded wallpaper is empty, we are probably failed to decode the file.
   // Use default wallpaper in this case.
@@ -1082,6 +1084,7 @@ void WallpaperManager::StartLoad(const std::string& email,
                                  bool update_wallpaper,
                                  const base::FilePath& wallpaper_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "LoadAndDecodeWallpaper", this);
 
   // All wallpaper related operation should run on the same thread. So we pass
   // |sequence_token_| here.

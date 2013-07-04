@@ -111,6 +111,7 @@ namespace {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SetupSandbox(const CommandLine& parsed_command_line) {
+  TRACE_EVENT0("startup", "SetupSandbox");
   // TODO(evanm): move this into SandboxWrapper; I'm just trying to move this
   // code en masse out of chrome_main for now.
   const char* sandbox_binary = NULL;
@@ -317,7 +318,7 @@ void BrowserMainLoop::Init() {
 // BrowserMainLoop stages ==================================================
 
 void BrowserMainLoop::EarlyInitialization() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::EarlyInitialization")
+  TRACE_EVENT0("startup", "BrowserMainLoop::EarlyInitialization");
 #if defined(USE_X11)
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
       parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
