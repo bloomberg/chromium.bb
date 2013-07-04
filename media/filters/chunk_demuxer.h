@@ -155,11 +155,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   // SourceState callbacks.
   void OnSourceInitDone(bool success, base::TimeDelta duration);
-  bool OnNewConfigs(bool has_audio, bool has_video,
-                    const AudioDecoderConfig& audio_config,
-                    const VideoDecoderConfig& video_config);
-  bool OnAudioBuffers(const StreamParser::BufferQueue& buffers);
-  bool OnVideoBuffers(const StreamParser::BufferQueue& buffers);
+
+  // Creates a DemuxerStream for the specified |type|.
+  // Returns a new ChunkDemuxerStream instance if a stream of this type
+  // has not been created before. Returns NULL otherwise.
+  ChunkDemuxerStream* CreateDemuxerStream(DemuxerStream::Type type);
+
   bool OnTextBuffers(TextTrack* text_track,
                      const StreamParser::BufferQueue& buffers);
   void OnNewMediaSegment(const std::string& source_id,
@@ -176,11 +177,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Returns true if |source_id| is valid, false otherwise.
   bool IsValidId(const std::string& source_id) const;
 
-  // Increases |duration_| if the newly appended |buffers| exceed the current
-  // |duration_|. The |duration_| is set to the end buffered timestamp of
-  // |stream|.
+  // Increases |duration_| if |last_appended_buffer_timestamp| exceeds the
+  // current  |duration_|. The |duration_| is set to the end buffered timestamp
+  // of |stream|.
   void IncreaseDurationIfNecessary(
-      const StreamParser::BufferQueue& buffers,
+      base::TimeDelta last_appended_buffer_timestamp,
       ChunkDemuxerStream* stream);
 
   // Decreases |duration_| if the buffered region is less than |duration_| when
