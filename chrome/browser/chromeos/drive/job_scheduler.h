@@ -111,18 +111,18 @@ class JobScheduler
   void CopyResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a CopyHostedDocument operation to the queue.
   void CopyHostedDocument(
       const std::string& resource_id,
-      const std::string& new_name,
+      const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a RenameResource operation to the queue.
   void RenameResource(const std::string& resource_id,
-                      const std::string& new_name,
+                      const std::string& new_title,
                       const google_apis::EntryActionCallback& callback);
 
   // Adds a TouchResource operation to the queue.
@@ -144,7 +144,7 @@ class JobScheduler
 
   // Adds a AddNewDirectory operation to the queue.
   void AddNewDirectory(const std::string& parent_resource_id,
-                       const std::string& directory_name,
+                       const std::string& directory_title,
                        const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a DownloadFile operation to the queue.

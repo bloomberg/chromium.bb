@@ -167,15 +167,13 @@ void CreateDirectoryOperation::CreateDirectoryRecursively(
   std::vector<base::FilePath::StringType> components;
   relative_file_path.GetComponents(&components);
   DCHECK(!components.empty());
-  // TODO(hidehiko): Rename this variable to "title" with other variable names.
-  // crbug.com/242794.
-  base::FilePath name(components[0]);
+  base::FilePath title(components[0]);
   base::FilePath remaining_path;
-  name.AppendRelativePath(relative_file_path, &remaining_path);
+  title.AppendRelativePath(relative_file_path, &remaining_path);
 
   scheduler_->AddNewDirectory(
       parent_resource_id,
-      name.AsUTF8Unsafe(),
+      title.AsUTF8Unsafe(),
       base::Bind(&CreateDirectoryOperation
                      ::CreateDirectoryRecursivelyAfterAddNewDirectory,
                  weak_ptr_factory_.GetWeakPtr(), remaining_path, callback));

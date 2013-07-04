@@ -385,7 +385,7 @@ void JobScheduler::DeleteResource(
 void JobScheduler::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -396,7 +396,7 @@ void JobScheduler::CopyResource(
       base::Unretained(drive_service_),
       resource_id,
       parent_resource_id,
-      new_name,
+      new_title,
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
@@ -407,7 +407,7 @@ void JobScheduler::CopyResource(
 
 void JobScheduler::CopyHostedDocument(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -417,7 +417,7 @@ void JobScheduler::CopyHostedDocument(
       &DriveServiceInterface::CopyHostedDocument,
       base::Unretained(drive_service_),
       resource_id,
-      new_name,
+      new_title,
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
@@ -428,7 +428,7 @@ void JobScheduler::CopyHostedDocument(
 
 void JobScheduler::RenameResource(
     const std::string& resource_id,
-    const std::string& new_name,
+    const std::string& new_title,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -438,7 +438,7 @@ void JobScheduler::RenameResource(
       &DriveServiceInterface::RenameResource,
       base::Unretained(drive_service_),
       resource_id,
-      new_name,
+      new_title,
       base::Bind(&JobScheduler::OnEntryActionJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
@@ -513,7 +513,7 @@ void JobScheduler::RemoveResourceFromDirectory(
 
 void JobScheduler::AddNewDirectory(
     const std::string& parent_resource_id,
-    const std::string& directory_name,
+    const std::string& directory_title,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -522,7 +522,7 @@ void JobScheduler::AddNewDirectory(
       &DriveServiceInterface::AddNewDirectory,
       base::Unretained(drive_service_),
       parent_resource_id,
-      directory_name,
+      directory_title,
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,

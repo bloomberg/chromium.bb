@@ -544,14 +544,14 @@ FileError ResourceMetadata::MoveEntryToDirectory(
 
 FileError ResourceMetadata::RenameEntry(
     const base::FilePath& file_path,
-    const std::string& new_name,
+    const std::string& new_title,
     base::FilePath* out_file_path) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!file_path.empty());
-  DCHECK(!new_name.empty());
+  DCHECK(!new_title.empty());
   DCHECK(out_file_path);
 
-  DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_name;
+  DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_title;
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
@@ -560,10 +560,10 @@ FileError ResourceMetadata::RenameEntry(
   if (!FindEntryByPathSync(file_path, &entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (base::FilePath::FromUTF8Unsafe(new_name) == file_path.BaseName())
+  if (base::FilePath::FromUTF8Unsafe(new_title) == file_path.BaseName())
     return FILE_ERROR_EXISTS;
 
-  entry.set_title(new_name);
+  entry.set_title(new_title);
 
   FileError error = RefreshEntry(entry);
   if (error == FILE_ERROR_OK)

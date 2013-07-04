@@ -325,7 +325,7 @@ TEST_F(JobSchedulerTest, CopyResource) {
   scheduler_->CopyResource(
       "file:2_file_resource_id",  // resource ID
       "folder:1_folder_resource_id",  // parent resource ID
-      "New Document",  // new name
+      "New Document",  // new title
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -341,7 +341,7 @@ TEST_F(JobSchedulerTest, CopyHostedDocument) {
 
   scheduler_->CopyHostedDocument(
       "document:5_document_resource_id",  // resource ID
-      "New Document",  // new name
+      "New Document",  // new title
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -356,7 +356,7 @@ TEST_F(JobSchedulerTest, RenameResource) {
 
   scheduler_->RenameResource(
       "file:2_file_resource_id",
-      "New Name",
+      "New Title",
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
@@ -725,7 +725,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   expected_types.insert(TYPE_RENAME_RESOURCE);
   scheduler_->RenameResource(
       "file:2_file_resource_id",
-      "New Name",
+      "New Title",
       google_apis::test_util::CreateCopyResultCallback(&error));
   expected_types.insert(TYPE_DOWNLOAD_FILE);
   scheduler_->DownloadFile(

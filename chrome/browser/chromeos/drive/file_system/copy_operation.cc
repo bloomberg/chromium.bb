@@ -328,17 +328,17 @@ void CopyOperation::CopyAfterGetResourceEntryPair(
 
   // If Drive API v2 is enabled, we can copy resources on server side.
   if (util::IsDriveV2ApiEnabled()) {
-    base::FilePath new_name = dest_file_path.BaseName();
+    base::FilePath new_title = dest_file_path.BaseName();
     if (src_file_proto->file_specific_info().is_hosted_document()) {
       // Drop the document extension, which should not be in the title.
       // TODO(yoshiki): Remove this code with crbug.com/223304.
-      new_name = new_name.RemoveExtension();
+      new_title = new_title.RemoveExtension();
     }
 
     scheduler_->CopyResource(
         src_file_proto->resource_id(),
         dest_parent_proto->resource_id(),
-        new_name.value(),
+        new_title.value(),
         base::Bind(&CopyOperation::OnCopyResourceCompleted,
                    weak_ptr_factory_.GetWeakPtr(), callback));
     return;

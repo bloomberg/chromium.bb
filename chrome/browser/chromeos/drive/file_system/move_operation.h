@@ -13,7 +13,7 @@
 
 namespace base {
 class FilePath;
-}  // namespace base;
+}  // namespace base
 
 namespace drive {
 
@@ -86,7 +86,7 @@ class MoveOperation {
 
   // Called in Rename() to reflect the rename on the local metadata.
   void RenameLocally(const base::FilePath& src_path,
-                     const base::FilePath& new_name,
+                     const std::string& new_title,
                      const FileMoveCallback& callback,
                      google_apis::GDataErrorCode status);
 
