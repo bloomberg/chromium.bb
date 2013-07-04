@@ -11,10 +11,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider_delegate.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
-#include "chrome/browser/chromeos/fileapi/remote_file_stream_writer.h"
-#include "chrome/browser/chromeos/fileapi/remote_file_system_operation.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -46,6 +46,7 @@ bool CrosMountPointProvider::CanHandleURL(const fileapi::FileSystemURL& url) {
 }
 
 CrosMountPointProvider::CrosMountPointProvider(
+    CrosMountPointProviderDelegate* drive_delegate,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<fileapi::ExternalMountPoints> mount_points,
     fileapi::ExternalMountPoints* system_mount_points)
@@ -53,6 +54,7 @@ CrosMountPointProvider::CrosMountPointProvider(
       file_access_permissions_(new FileAccessPermissions()),
       local_file_util_(new fileapi::AsyncFileUtilAdapter(
           new fileapi::IsolatedFileUtil())),
+      drive_delegate_(drive_delegate),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {
 }
@@ -211,6 +213,9 @@ fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil(
 
 fileapi::AsyncFileUtil* CrosMountPointProvider::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
+  if (type == fileapi::kFileSystemTypeDrive)
+    return drive_delegate_->GetAsyncFileUtil(type);
+
   DCHECK(type == fileapi::kFileSystemTypeNativeLocal ||
          type == fileapi::kFileSystemTypeRestrictedNativeLocal);
   return local_file_util_.get();
@@ -235,15 +240,8 @@ fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
     return NULL;
   }
 
-  if (url.type() == fileapi::kFileSystemTypeDrive) {
-    fileapi::RemoteFileSystemProxyInterface* remote_proxy =
-        GetRemoteProxy(url.filesystem_id());
-    if (!remote_proxy) {
-      *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-      return NULL;
-    }
-    return new RemoteFileSystemOperation(remote_proxy);
-  }
+  if (url.type() == fileapi::kFileSystemTypeDrive)
+    return drive_delegate_->CreateFileSystemOperation(url, context, error_code);
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal ||
          url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal);
@@ -266,13 +264,8 @@ CrosMountPointProvider::CreateFileStreamReader(
     return scoped_ptr<webkit_blob::FileStreamReader>();
 
   if (url.type() == fileapi::kFileSystemTypeDrive) {
-    fileapi::RemoteFileSystemProxyInterface* remote_proxy =
-        GetRemoteProxy(url.filesystem_id());
-    if (!remote_proxy)
-      return scoped_ptr<webkit_blob::FileStreamReader>();
-    return remote_proxy->CreateFileStreamReader(
-        context->task_runners()->file_task_runner(),
-        url, offset, expected_modification_time);
+    return drive_delegate_->CreateFileStreamReader(
+        url, offset, expected_modification_time, context);
   }
 
   return scoped_ptr<webkit_blob::FileStreamReader>(
@@ -290,16 +283,8 @@ CrosMountPointProvider::CreateFileStreamWriter(
   if (!IsAccessAllowed(url))
     return scoped_ptr<fileapi::FileStreamWriter>();
 
-  if (url.type() == fileapi::kFileSystemTypeDrive) {
-    fileapi::RemoteFileSystemProxyInterface* remote_proxy =
-        GetRemoteProxy(url.filesystem_id());
-    if (!remote_proxy)
-      return scoped_ptr<fileapi::FileStreamWriter>();
-    return scoped_ptr<fileapi::FileStreamWriter>(
-        new RemoteFileStreamWriter(
-            remote_proxy, url, offset,
-            context->task_runners()->file_task_runner()));
-  }
+  if (url.type() == fileapi::kFileSystemTypeDrive)
+    return drive_delegate_->CreateFileStreamWriter(url, offset, context);
 
   if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal)
     return scoped_ptr<fileapi::FileStreamWriter>();
@@ -315,15 +300,6 @@ bool CrosMountPointProvider::GetVirtualPath(
     base::FilePath* virtual_path) {
   return mount_points_->GetVirtualPath(filesystem_path, virtual_path) ||
          system_mount_points_->GetVirtualPath(filesystem_path, virtual_path);
-}
-
-fileapi::RemoteFileSystemProxyInterface* CrosMountPointProvider::GetRemoteProxy(
-    const std::string& mount_name) const {
-  fileapi::RemoteFileSystemProxyInterface* proxy =
-      mount_points_->GetRemoteFileSystemProxy(mount_name);
-  if (proxy)
-    return proxy;
-  return system_mount_points_->GetRemoteFileSystemProxy(mount_name);
 }
 
 base::FilePath CrosMountPointProvider::GetFileSystemRootPath(

@@ -28,6 +28,10 @@ class RemoteFileSystemOperation
       public base::SupportsWeakPtr<RemoteFileSystemOperation> {
  public:
   typedef fileapi::FileWriterDelegate FileWriterDelegate;
+
+  explicit RemoteFileSystemOperation(
+      scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy);
+
   virtual ~RemoteFileSystemOperation();
 
   // FileSystemOperation overrides.
@@ -77,11 +81,6 @@ class RemoteFileSystemOperation
       const SnapshotFileCallback& callback) OVERRIDE;
 
  private:
-  friend class CrosMountPointProvider;
-
-  RemoteFileSystemOperation(
-      scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy);
-
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
   bool SetPendingOperationType(OperationType type);

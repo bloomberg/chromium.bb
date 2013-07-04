@@ -39,6 +39,7 @@ TEST(CrosMountPointProviderTest, DefaultMountPoints) {
   scoped_refptr<fileapi::ExternalMountPoints> mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
   chromeos::CrosMountPointProvider provider(
+      NULL,  // drive_delegate
       storage_policy,
       mount_points.get(),
       fileapi::ExternalMountPoints::GetSystemInstance());
@@ -69,6 +70,7 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
       fileapi::ExternalMountPoints::CreateRefCounted());
 
   chromeos::CrosMountPointProvider provider(
+      NULL,  // drive_delegate
       storage_policy,
       mount_points.get(),
       system_mount_points.get());
@@ -110,6 +112,7 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
   chromeos::CrosMountPointProvider provider(
+      NULL,  // drive_delegate
       storage_policy,
       mount_points.get(),
       system_mount_points.get());
@@ -204,7 +207,9 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
       fileapi::ExternalMountPoints::CreateRefCounted());
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
-  chromeos::CrosMountPointProvider provider(storage_policy,
+  chromeos::CrosMountPointProvider provider(
+      NULL,  // drive_delegate
+      storage_policy,
       mount_points.get(),
       system_mount_points.get());
 

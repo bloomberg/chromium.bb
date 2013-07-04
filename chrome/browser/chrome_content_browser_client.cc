@@ -148,6 +148,7 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/drive/mount_point_provider_delegate.h"
 #include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -2316,6 +2317,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemMountPointProviders(
   DCHECK(external_mount_points);
   chromeos::CrosMountPointProvider* cros_mount_provider =
       new chromeos::CrosMountPointProvider(
+          new drive::MountPointProviderDelegate(external_mount_points),
           special_storage_policy,
           external_mount_points,
           fileapi::ExternalMountPoints::GetSystemInstance());

@@ -29,6 +29,7 @@ class IsolatedContext;
 
 namespace chromeos {
 
+class CrosMountPointProviderDelegate;
 class FileAccessPermissions;
 
 // CrosMountPointProvider is a Chrome OS specific implementation of
@@ -71,7 +72,9 @@ class CrosMountPointProvider
   // CrosMountPointProvider will take an ownership of a |mount_points|
   // reference. On the other hand, |system_mount_points| will be kept as a raw
   // pointer and it should outlive CrosMountPointProvider instance.
+  // The ownership of |drive_delegate| is also taken.
   CrosMountPointProvider(
+      CrosMountPointProviderDelegate* drive_delegate,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<fileapi::ExternalMountPoints> mount_points,
       fileapi::ExternalMountPoints* system_mount_points);
@@ -131,13 +134,14 @@ class CrosMountPointProvider
                               base::FilePath* virtual_path) OVERRIDE;
 
  private:
-  fileapi::RemoteFileSystemProxyInterface* GetRemoteProxy(
-      const std::string& mount_name) const;
   base::FilePath GetFileSystemRootPath(const fileapi::FileSystemURL& url) const;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<FileAccessPermissions> file_access_permissions_;
   scoped_ptr<fileapi::AsyncFileUtilAdapter> local_file_util_;
+
+  // The Delegate instance for the drive file system related operation.
+  scoped_ptr<CrosMountPointProviderDelegate> drive_delegate_;
 
   // Mount points specific to the owning context (i.e. per-profile mount
   // points).
