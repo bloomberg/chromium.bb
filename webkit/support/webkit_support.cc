@@ -37,6 +37,7 @@
 #include "third_party/WebKit/public/web/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/url_util.h"
 #if defined(TOOLKIT_GTK)
@@ -267,6 +268,10 @@ void SetUpTestEnvironmentForUnitTests() {
   // If DRT needs these flags, specify them in the following kFixedArguments.
   const char* kFixedArguments[] = {"DumpRenderTree"};
   CommandLine::Init(arraysize(kFixedArguments), kFixedArguments);
+
+  WebKit::WebRuntimeFeatures::enableStableFeatures(true);
+  WebKit::WebRuntimeFeatures::enableExperimentalFeatures(true);
+  WebKit::WebRuntimeFeatures::enableTestOnlyFeatures(true);
 
   // Explicitly initialize the GURL library before spawning any threads.
   // Otherwise crash may happend when different threads try to create a GURL
