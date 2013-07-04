@@ -56,6 +56,17 @@ public class ApiCompatibilityUtils {
     }
 
     /**
+     * @see android.view.ViewGroup.MarginLayoutParams#setMarginStart(int)
+     */
+    public static void setMarginStart(MarginLayoutParams layoutParams, int start) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            layoutParams.setMarginStart(start);
+        } else {
+            layoutParams.leftMargin = start;
+        }
+    }
+
+    /**
      * @see android.view.ViewGroup.MarginLayoutParams#getMarginStart()
      */
     public static int getMarginStart(MarginLayoutParams layoutParams) {
