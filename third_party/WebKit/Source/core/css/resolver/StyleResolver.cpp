@@ -818,15 +818,6 @@ RenderStyle* StyleResolver::locateSharedStyle()
     // Ids stop style sharing if they show up in the stylesheets.
     if (state.styledElement()->hasID() && m_features.idsInRules.contains(state.styledElement()->idForStyleResolution().impl()))
         return 0;
-    // Active and hovered elements always make a chain towards the document node
-    // and no siblings or cousins will have the same state.
-    if (state.styledElement()->hovered())
-        return 0;
-    if (state.styledElement()->active())
-        return 0;
-    // There is always only one focused element.
-    if (state.styledElement()->focused())
-        return 0;
     if (parentElementPreventsSharing(state.element()->parentElement()))
         return 0;
     if (state.styledElement()->hasScopedHTMLStyleChild())
