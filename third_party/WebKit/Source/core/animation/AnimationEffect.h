@@ -48,7 +48,7 @@ public:
     class CompositableValue : public RefCounted<CompositableValue> {
     public:
         virtual ~CompositableValue() { }
-        virtual AnimatableValue composite(const AnimatableValue&) const = 0;
+        virtual PassRefPtr<AnimatableValue> composite(const AnimatableValue*) const = 0;
     };
 
     virtual ~AnimationEffect() { }

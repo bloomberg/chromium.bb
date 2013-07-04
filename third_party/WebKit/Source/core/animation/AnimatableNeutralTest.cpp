@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,60 +29,38 @@
  */
 
 #include "config.h"
-#include "core/animation/AnimatableValue.h"
-
 #include "core/animation/AnimatableNeutral.h"
+
 #include "core/animation/AnimatableUnknown.h"
+#include "core/css/CSSArrayFunctionValue.h"
 
-#include <algorithm>
+#include <gtest/gtest.h>
 
-namespace WebCore {
+using namespace WebCore;
 
-PassRefPtr<AnimatableValue> AnimatableValue::create(CSSValue* value)
+namespace {
+
+TEST(AnimatableNeutral, Create)
 {
-    // FIXME: Handle animatable CSSValue types before falling back to the unknown CSSValue case.
-    return AnimatableUnknown::create(value);
+    EXPECT_TRUE(AnimatableValue::neutralValue());
 }
 
-const AnimatableValue* AnimatableValue::neutralValue()
+TEST(AnimatableNeutral, Interpolate)
 {
-    static AnimatableNeutral* neutralSentinelValue = AnimatableNeutral::create().leakRef();
-    return neutralSentinelValue;
+    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0).get()->isNeutral());
+    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0.4).get()->isNeutral());
+    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0.5).get()->isNeutral());
+    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0.6).get()->isNeutral());
+    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 1).get()->isNeutral());
 }
 
-PassRefPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)
+TEST(AnimatableNeutral, Add)
 {
-    ASSERT(left);
-    ASSERT(right);
+    RefPtr<CSSValue> cssValue = CSSArrayFunctionValue::create();
+    RefPtr<AnimatableValue> animatableUnknown = AnimatableUnknown::create(cssValue);
 
-    if (left->isNeutral()) {
-        if (right->isNeutral())
-            return takeConstRef(left);
-        left = right->identityValue();
-    } else if (right->isNeutral()) {
-        right = left->identityValue();
-    }
-
-    if (fraction && fraction != 1 && left->isInterpolableWith(right))
-        return left->interpolateTo(right, fraction);
-
-    return defaultInterpolateTo(left, right, fraction);
+    EXPECT_EQ(cssValue, AnimatableValue::add(animatableUnknown.get(), AnimatableValue::neutralValue())->toCSSValue());
+    EXPECT_EQ(cssValue, AnimatableValue::add(AnimatableValue::neutralValue(), animatableUnknown.get())->toCSSValue());
 }
 
-PassRefPtr<AnimatableValue> AnimatableValue::add(const AnimatableValue* left, const AnimatableValue* right)
-{
-    ASSERT(left);
-    ASSERT(right);
-
-    if (left->isNeutral())
-        return takeConstRef(right);
-    if (right->isNeutral())
-        return takeConstRef(left);
-
-    if (left->isAdditiveWith(right))
-        return left->addWith(right);
-
-    return defaultAddWith(left, right);
 }
-
-} // namespace WebCore

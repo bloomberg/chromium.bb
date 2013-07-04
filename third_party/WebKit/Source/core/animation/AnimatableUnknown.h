@@ -28,61 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef AnimatableUnknown_h
+#define AnimatableUnknown_h
+
 #include "core/animation/AnimatableValue.h"
-
-#include "core/animation/AnimatableNeutral.h"
-#include "core/animation/AnimatableUnknown.h"
-
-#include <algorithm>
 
 namespace WebCore {
 
-PassRefPtr<AnimatableValue> AnimatableValue::create(CSSValue* value)
-{
-    // FIXME: Handle animatable CSSValue types before falling back to the unknown CSSValue case.
-    return AnimatableUnknown::create(value);
-}
+class AnimatableUnknown : public AnimatableValue {
+public:
+    virtual ~AnimatableUnknown() { }
 
-const AnimatableValue* AnimatableValue::neutralValue()
-{
-    static AnimatableNeutral* neutralSentinelValue = AnimatableNeutral::create().leakRef();
-    return neutralSentinelValue;
-}
+    static PassRefPtr<AnimatableUnknown> create(PassRefPtr<CSSValue> value) { return adoptRef(new AnimatableUnknown(value)); }
 
-PassRefPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)
-{
-    ASSERT(left);
-    ASSERT(right);
+    virtual PassRefPtr<CSSValue> toCSSValue() const OVERRIDE { return m_value; }
 
-    if (left->isNeutral()) {
-        if (right->isNeutral())
-            return takeConstRef(left);
-        left = right->identityValue();
-    } else if (right->isNeutral()) {
-        right = left->identityValue();
+    virtual const AnimatableValue* identityValue() const OVERRIDE { return this; }
+
+protected:
+    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE { return defaultInterpolateTo(this, value, fraction); }
+
+    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue* value) const OVERRIDE { return defaultAddWith(this, value); }
+
+private:
+    explicit AnimatableUnknown(PassRefPtr<CSSValue> value)
+        : AnimatableValue(TypeUnknown)
+        , m_value(value)
+    {
+        ASSERT(m_value);
     }
 
-    if (fraction && fraction != 1 && left->isInterpolableWith(right))
-        return left->interpolateTo(right, fraction);
-
-    return defaultInterpolateTo(left, right, fraction);
-}
-
-PassRefPtr<AnimatableValue> AnimatableValue::add(const AnimatableValue* left, const AnimatableValue* right)
-{
-    ASSERT(left);
-    ASSERT(right);
-
-    if (left->isNeutral())
-        return takeConstRef(right);
-    if (right->isNeutral())
-        return takeConstRef(left);
-
-    if (left->isAdditiveWith(right))
-        return left->addWith(right);
-
-    return defaultAddWith(left, right);
-}
+    RefPtr<CSSValue> m_value;
+};
 
 } // namespace WebCore
+
+#endif // AnimatableUnknown_h
