@@ -147,7 +147,7 @@ const CGFloat kButtonStripPadding = 20;
       app_list::kPagerHoverColor :
       app_list::kPagerNormalColor;
 
-  [gfx::SkColorToCalibratedNSColor(backgroundColor) set];
+  [gfx::SkColorToSRGBNSColor(backgroundColor) set];
   NSRectFill(frame);
 
   if (![[self target] conformsToProtocol:@protocol(AppListPagerDelegate)])
@@ -157,7 +157,7 @@ const CGFloat kButtonStripPadding = 20;
   if (selectedRatio == 0.0)
     return;
 
-  [gfx::SkColorToCalibratedNSColor(app_list::kPagerSelectedColor) set];
+  [gfx::SkColorToSRGBNSColor(app_list::kPagerSelectedColor) set];
   if (selectedRatio < 0)
     frame.origin.x += frame.size.width + frame.size.width * selectedRatio;
   frame.size.width *= fabs(selectedRatio);

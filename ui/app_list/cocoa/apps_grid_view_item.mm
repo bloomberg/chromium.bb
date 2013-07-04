@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -69,7 +70,8 @@ NSMenu* ItemModelObserverBridge::GetContextMenu() {
 }
 
 void ItemModelObserverBridge::ItemIconChanged() {
-  [[parent_ button] setImage:gfx::NSImageFromImageSkia(model_->icon())];
+  [[parent_ button] setImage:gfx::NSImageFromImageSkiaWithColorSpace(
+      model_->icon(), base::mac::GetSRGBColorSpace())];
 }
 
 void ItemModelObserverBridge::ItemTitleChanged() {
@@ -136,7 +138,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   if (!selected_)
     return;
 
-  [gfx::SkColorToCalibratedNSColor(app_list::kSelectedColor) set];
+  [gfx::SkColorToSRGBNSColor(app_list::kSelectedColor) set];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 }
 
@@ -206,8 +208,8 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
     NSFontAttributeName : ui::ResourceBundle::GetSharedInstance().GetFont(
         app_list::kItemTextFontStyle).GetNativeFont(),
     NSForegroundColorAttributeName : [self isSelected] ?
-        gfx::SkColorToCalibratedNSColor(app_list::kGridTitleHoverColor) :
-        gfx::SkColorToCalibratedNSColor(app_list::kGridTitleColor)
+        gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor) :
+        gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor)
   };
   base::scoped_nsobject<NSAttributedString> attributedTitle(
       [[NSAttributedString alloc] initWithString:newTitle
@@ -223,7 +225,8 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 
   NSButton* button = [self button];
   [self setButtonTitle:base::SysUTF8ToNSString(itemModel->title())];
-  [button setImage:gfx::NSImageFromImageSkia(itemModel->icon())];
+  [button setImage:gfx::NSImageFromImageSkiaWithColorSpace(
+      itemModel->icon(), base::mac::GetSRGBColorSpace())];
   [[button cell] setHasShadow:itemModel->has_shadow()];
   observerBridge_.reset(new app_list::ItemModelObserverBridge(self, itemModel));
 

@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/apps_search_box_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
@@ -90,8 +91,8 @@ void SearchBoxModelObserverBridge::SetSearchText(const base::string16& text) {
 }
 
 void SearchBoxModelObserverBridge::IconChanged() {
-  [[parent_ searchImageView]
-      setImage:gfx::NSImageFromImageSkia(GetModel()->icon())];
+  [[parent_ searchImageView] setImage:gfx::NSImageFromImageSkiaWithColorSpace(
+      GetModel()->icon(), base::mac::GetSRGBColorSpace())];
 }
 
 void SearchBoxModelObserverBridge::HintTextChanged() {

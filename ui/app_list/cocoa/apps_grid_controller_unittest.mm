@@ -269,15 +269,15 @@ TEST_F(AppsGridControllerTest, SelectionChangesTextColor) {
   model()->PopulateApps(2);
   [apps_grid_controller_ selectItemAtIndex:0];
   EXPECT_NSEQ(ButtonTitleColorAt(0),
-              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleHoverColor));
+              gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor));
   EXPECT_NSEQ(ButtonTitleColorAt(1),
-              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleColor));
+              gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor));
 
   [apps_grid_controller_ selectItemAtIndex:1];
   EXPECT_NSEQ(ButtonTitleColorAt(0),
-              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleColor));
+              gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor));
   EXPECT_NSEQ(ButtonTitleColorAt(1),
-              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleHoverColor));
+              gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor));
 }
 
 // Tests basic keyboard navigation on the first page.

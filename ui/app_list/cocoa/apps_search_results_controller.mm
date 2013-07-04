@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/apps_search_results_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
@@ -122,7 +123,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
   [tableView_ setRowHeight:kPreferredRowHeight];
   [tableView_ setGridStyleMask:NSTableViewSolidHorizontalGridLineMask];
   [tableView_ setGridColor:
-      gfx::SkColorToCalibratedNSColor(app_list::kResultBorderColor)];
+      gfx::SkColorToSRGBNSColor(app_list::kResultBorderColor)];
   [tableView_ setBackgroundColor:[NSColor clearColor]];
   [tableView_ setAction:@selector(tableViewClicked:)];
   [tableView_ setDelegate:self];
@@ -292,8 +293,10 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
   if ((self = [super init])) {
     attributedStringValue_.reset(
         [[self createResultsAttributedStringWithModel:result] retain]);
-    if (!result->icon().isNull())
-      resultIcon_.reset([gfx::NSImageFromImageSkia(result->icon()) retain]);
+    if (!result->icon().isNull()) {
+      resultIcon_.reset([gfx::NSImageFromImageSkiaWithColorSpace(
+          result->icon(), base::mac::GetSRGBColorSpace()) retain]);
+    }
   }
   return self;
 }
@@ -306,7 +309,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
   [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
   NSDictionary* defaultAttributes = @{
       NSForegroundColorAttributeName:
-          gfx::SkColorToCalibratedNSColor(app_list::kResultDefaultTextColor),
+          gfx::SkColorToSRGBNSColor(app_list::kResultDefaultTextColor),
       NSParagraphStyleAttributeName: paragraphStyle
   };
 
@@ -333,13 +336,13 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 
     if (it->styles & app_list::SearchResult::Tag::DIM) {
       NSColor* dimmedColor =
-          gfx::SkColorToCalibratedNSColor(app_list::kResultDimmedTextColor);
+          gfx::SkColorToSRGBNSColor(app_list::kResultDimmedTextColor);
       [text addAttribute:NSForegroundColorAttributeName
                    value:dimmedColor
                    range:it->range.ToNSRange()];
     } else if (it->styles & app_list::SearchResult::Tag::URL) {
       NSColor* urlColor =
-          gfx::SkColorToCalibratedNSColor(app_list::kResultURLTextColor);
+          gfx::SkColorToSRGBNSColor(app_list::kResultURLTextColor);
       [text addAttribute:NSForegroundColorAttributeName
                    value:urlColor
                    range:it->range.ToNSRange()];
@@ -388,9 +391,9 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
                inView:(NSView*)controlView {
   if ([self backgroundStyle] != kBackgroundNormal) {
     if ([self backgroundStyle] == kBackgroundSelected)
-      [gfx::SkColorToCalibratedNSColor(app_list::kSelectedColor) set];
+      [gfx::SkColorToSRGBNSColor(app_list::kSelectedColor) set];
     else
-      [gfx::SkColorToCalibratedNSColor(app_list::kHighlightedColor) set];
+      [gfx::SkColorToSRGBNSColor(app_list::kHighlightedColor) set];
 
     // Extend up by one pixel to draw over cell border.
     NSRect backgroundRect = cellFrame;
