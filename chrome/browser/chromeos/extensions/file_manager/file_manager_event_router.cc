@@ -50,19 +50,6 @@ namespace {
 const char kPathChanged[] = "changed";
 const char kPathWatchError[] = "error";
 
-DictionaryValue* DiskToDictionaryValue(
-    const DiskMountManager::Disk* disk) {
-  DictionaryValue* result = new DictionaryValue();
-  result->SetString("mountPath", disk->mount_path());
-  result->SetString("devicePath", disk->device_path());
-  result->SetString("label", disk->device_label());
-  result->SetString("deviceType",
-                    DiskMountManager::DeviceTypeToString(disk->device_type()));
-  result->SetInteger("totalSizeKB", disk->total_size_in_bytes() / 1024);
-  result->SetBoolean("readOnly", disk->is_read_only());
-  return result;
-}
-
 // Used as a callback for FileSystem::MarkCacheFileAsUnmounted().
 void OnMarkAsUnmounted(drive::FileError error) {
   // Do nothing.
