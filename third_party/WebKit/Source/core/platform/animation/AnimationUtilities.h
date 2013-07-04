@@ -34,12 +34,12 @@ namespace WebCore {
 
 inline int blend(int from, int to, double progress)
 {  
-    return static_cast<int>(lround(static_cast<double>(from) + static_cast<double>(to - from) * progress));
+    return lround(from + (to - from) * progress);
 }
 
 inline unsigned blend(unsigned from, unsigned to, double progress)
 {
-    return static_cast<unsigned>(lround(to > from ? static_cast<double>(from) + static_cast<double>(to - from) * progress : static_cast<double>(from) - static_cast<double>(from - to) * progress));
+    return lround(to > from ? from + (to - from) * progress : from - (from - to) * progress);
 }
 
 inline double blend(double from, double to, double progress)
@@ -59,8 +59,7 @@ inline LayoutUnit blend(LayoutUnit from, LayoutUnit to, double progress)
 
 inline IntPoint blend(const IntPoint& from, const IntPoint& to, double progress)
 {
-    return IntPoint(blend(from.x(), to.x(), progress),
-                    blend(from.y(), to.y(), progress));
+    return IntPoint(blend(from.x(), to.x(), progress), blend(from.y(), to.y(), progress));
 }
 
 // Calculates the accuracy for evaluating a timing function for an animation with the specified duration.
