@@ -526,8 +526,14 @@ def ValidateRegularInstruction(instruction, bitness):
          'adc', 'bsf', 'bsr', 'lzcnt',
          'btc', 'btr', 'bts', 'bt',
          'cmp',
-         'cmc',
         ]):
+      return Condition(), Condition()
+
+    elif name in [
+        'cmc',
+        'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
+        'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
+        ]:
       return Condition(), Condition()
 
     elif re.match(r'mov[sz][bwl][lqw]$', name):  # MOVSX, MOVSXD, MOVZX
@@ -624,7 +630,11 @@ def ValidateRegularInstruction(instruction, bitness):
             instruction)
       write_ops = ops
 
-    elif _InstructionNameIn(name, ['cmc']):
+    elif name in [
+        'cmc',
+        'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
+        'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
+        ]:
       assert len(ops) == 0
       write_ops = []
 
