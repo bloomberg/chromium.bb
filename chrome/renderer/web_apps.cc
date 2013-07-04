@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "chrome/common/json_schema/json_schema_validator.h"
 #include "chrome/common/web_application_info.h"
-#include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -28,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;

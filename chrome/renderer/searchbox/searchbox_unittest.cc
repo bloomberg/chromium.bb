@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/instant_types.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace internal {
 

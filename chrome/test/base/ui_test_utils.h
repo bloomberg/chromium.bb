@@ -20,11 +20,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 class AppModalDialog;
 class BookmarkModel;

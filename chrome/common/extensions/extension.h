@@ -28,9 +28,9 @@
 #include "extensions/common/install_warning.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 class ExtensionAction;
 class SkBitmap;

@@ -10,13 +10,13 @@
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/service_process.h"
-#include "googleurl/src/gurl.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::Time;
 using base::TimeDelta;

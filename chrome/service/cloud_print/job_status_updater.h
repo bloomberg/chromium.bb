@@ -12,8 +12,8 @@
 #include "base/threading/thread.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/print_system.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 namespace cloud_print {
 

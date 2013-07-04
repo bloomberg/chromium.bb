@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "base/bind.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -28,13 +28,13 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/view_type.h"
-#include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/gurl.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebFrame;

@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Used to send UMA data about missing plugins to UMA histogram server. Method
 // ReportPluginMissing should be called whenever plugin that is not available or

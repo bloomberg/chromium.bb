@@ -4,8 +4,8 @@
 
 #include "chrome/test/automation/window_proxy.h"
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 #include "chrome/common/automation_constants.h"
@@ -13,8 +13,8 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 bool WindowProxy::GetViewBounds(int view_id, gfx::Rect* bounds,
                                 bool screen_coordinates) {

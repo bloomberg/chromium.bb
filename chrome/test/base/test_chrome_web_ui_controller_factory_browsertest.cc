@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
-#include "content/public/browser/web_ui_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "googleurl/src/gurl.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using content::WebContents;
 using content::WebUI;

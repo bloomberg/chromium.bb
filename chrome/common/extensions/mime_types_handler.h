@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/manifest_handler.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class URLPattern;
 

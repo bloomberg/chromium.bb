@@ -4,8 +4,8 @@
 
 // Multiply-included message file, so no include guard.
 
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/gurl.h"
 
 #define IPC_MESSAGE_START SafeBrowsingMsgStart
 

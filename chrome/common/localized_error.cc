@@ -15,7 +15,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
-#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -23,6 +22,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
+#include "url/gurl.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)

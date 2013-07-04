@@ -4,7 +4,7 @@
 
 #include "chrome/common/url_constants.h"
 
-#include "googleurl/src/url_util.h"
+#include "url/url_util.h"
 
 namespace chrome {
 

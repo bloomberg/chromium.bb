@@ -16,11 +16,11 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

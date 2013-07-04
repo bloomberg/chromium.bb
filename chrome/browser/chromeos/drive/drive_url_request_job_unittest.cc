@@ -20,11 +20,11 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace drive {
 namespace {

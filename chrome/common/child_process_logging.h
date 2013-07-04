@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/debug/crash_logging.h"
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class CommandLine;
 

@@ -8,9 +8,9 @@
 #include <vector>
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using ::testing::ElementsAre;
 

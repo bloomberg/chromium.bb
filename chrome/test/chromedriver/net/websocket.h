@@ -11,10 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/websockets/websocket_frame_parser.h"
+#include "url/gurl.h"
 
 namespace net {
 class DrainableIOBuffer;

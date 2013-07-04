@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
-#include "googleurl/src/url_canon.h"
+#include "url/url_canon.h"
 
 namespace {
 

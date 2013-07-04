@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // A single tuple of (protocol, url, title) that indicates how URLs of the
 // given protocol should be rewritten to be handled.

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;

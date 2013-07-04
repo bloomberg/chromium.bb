@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 // Structure used when installing a web page as an app.
 struct WebApplicationInfo {

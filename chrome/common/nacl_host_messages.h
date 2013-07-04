@@ -12,10 +12,10 @@
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/nacl_types.h"
 #include "content/public/common/common_param_traits.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "url/gurl.h"
 
 #define IPC_MESSAGE_START NaClHostMsgStart
 

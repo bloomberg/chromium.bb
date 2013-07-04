@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace cloud_print {
 

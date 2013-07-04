@@ -22,10 +22,10 @@
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
-#include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
 #include "grit/extensions_api_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

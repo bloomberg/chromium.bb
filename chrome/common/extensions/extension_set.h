@@ -12,8 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "url/gurl.h"
 
 class ExtensionURLInfo {
  public:

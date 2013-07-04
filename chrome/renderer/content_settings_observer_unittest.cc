@@ -7,9 +7,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "url/gurl.h"
 
 using WebKit::WebSecurityOrigin;
 

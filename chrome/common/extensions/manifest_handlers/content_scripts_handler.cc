@@ -19,9 +19,9 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

@@ -25,8 +25,8 @@
 #include "base/process.h"
 #include "base/time/time.h"
 #include "chrome/test/automation/proxy_launcher.h"
-#include "googleurl/src/gurl.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 class AutomationProxy;
 class BrowserProxy;

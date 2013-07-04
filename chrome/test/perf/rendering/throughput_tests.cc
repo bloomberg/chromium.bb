@@ -30,7 +30,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/config/gpu_test_config.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -39,6 +38,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_switches.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

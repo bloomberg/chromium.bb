@@ -16,13 +16,13 @@
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "printing/backend/print_backend.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace cloud_print {
 

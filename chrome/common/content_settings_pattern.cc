@@ -13,11 +13,11 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_util.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
 
 namespace {
 

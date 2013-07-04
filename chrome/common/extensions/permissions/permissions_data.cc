@@ -26,7 +26,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;

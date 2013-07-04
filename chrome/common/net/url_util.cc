@@ -6,10 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "url/gurl.h"
 
 namespace chrome_common_net {
 

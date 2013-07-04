@@ -12,10 +12,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/itunes_xml_utils.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
+#include "url/url_util.h"
 
 namespace itunes {
 

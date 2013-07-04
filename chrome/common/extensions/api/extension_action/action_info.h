@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;

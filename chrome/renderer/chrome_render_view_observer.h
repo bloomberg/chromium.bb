@@ -15,8 +15,8 @@
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
+#include "url/gurl.h"
 
 class ChromeRenderProcessObserver;
 class ContentSettingsObserver;

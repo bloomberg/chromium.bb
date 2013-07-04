@@ -15,8 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/config/gpu_info.h"
+#include "url/gurl.h"
 
 namespace child_process_logging {
 

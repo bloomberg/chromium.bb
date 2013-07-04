@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace chrome_common_net {
 

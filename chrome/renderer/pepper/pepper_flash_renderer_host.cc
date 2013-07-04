@@ -9,7 +9,6 @@
 #include "chrome/renderer/pepper/ppb_pdf_impl.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
@@ -28,6 +27,7 @@
 #include "third_party/skia/include/core/SkTemplates.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 

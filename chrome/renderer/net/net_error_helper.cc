@@ -6,14 +6,13 @@
 
 #include "base/values.h"
 #include "chrome/common/localized_error.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/net/net_error_info.h"
+#include "chrome/common/render_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
@@ -22,6 +21,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "url/gurl.h"
 
 using chrome_common_net::DnsProbeResult;
 using content::RenderThread;

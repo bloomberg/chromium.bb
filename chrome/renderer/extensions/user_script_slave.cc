@@ -25,7 +25,6 @@
 #include "chrome/renderer/isolated_world_ids.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -36,6 +35,7 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;

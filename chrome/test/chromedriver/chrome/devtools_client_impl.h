@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;

@@ -15,7 +15,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
-#include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -25,6 +24,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 #include "v8/include/v8.h"
 
 namespace {

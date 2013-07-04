@@ -14,15 +14,15 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "net/cert/cert_status_flags.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/url_request/url_request_status.h"
-#include "ui/gfx/rect.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 IPC_ENUM_TRAITS(AutomationMsg_NavigationResponseValues)
 IPC_ENUM_TRAITS(content::PageType)

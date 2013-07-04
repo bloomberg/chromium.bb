@@ -17,13 +17,13 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/extension_resource.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/mime_sniffer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "url/gurl.h"
 
 using extension_test_util::LoadManifest;
 using extension_test_util::LoadManifestStrict;

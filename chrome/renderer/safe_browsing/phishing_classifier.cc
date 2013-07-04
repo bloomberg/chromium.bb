@@ -23,13 +23,13 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "content/public/renderer/render_view.h"
 #include "crypto/sha2.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/gurl.h"
 
 namespace safe_browsing {
 

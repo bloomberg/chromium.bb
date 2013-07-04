@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace extension_urls {
   // Returns the URL prefix for the extension/apps gallery. Can be set via the

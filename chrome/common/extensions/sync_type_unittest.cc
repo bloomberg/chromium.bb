@@ -8,8 +8,8 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/sync_helper.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;

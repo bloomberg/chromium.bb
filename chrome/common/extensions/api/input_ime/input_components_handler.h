@@ -11,7 +11,7 @@
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handler.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

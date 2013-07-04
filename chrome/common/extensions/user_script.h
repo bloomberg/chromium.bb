@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Pickle;
 class PickleIterator;

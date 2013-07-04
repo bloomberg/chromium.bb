@@ -35,11 +35,11 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/url_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/url_util.h"
 
 #if defined(OS_WIN)
 #include "grit/generated_resources.h"

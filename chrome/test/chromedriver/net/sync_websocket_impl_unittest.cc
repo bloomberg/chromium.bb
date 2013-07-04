@@ -15,8 +15,8 @@
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/test_http_server.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 

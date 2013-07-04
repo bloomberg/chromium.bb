@@ -23,8 +23,8 @@
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/view_type.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/gurl.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
 

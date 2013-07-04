@@ -21,8 +21,8 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "url/gurl.h"
 
 using base::TimeDelta;
 

@@ -26,7 +26,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -35,6 +34,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_switches.h"
+#include "url/gurl.h"
 
 namespace {
 

@@ -13,10 +13,10 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 using extensions::URLPatternSet;
 

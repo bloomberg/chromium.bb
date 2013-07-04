@@ -9,9 +9,9 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 SyncWebSocketImpl::SyncWebSocketImpl(
     net::URLRequestContextGetter* context_getter)

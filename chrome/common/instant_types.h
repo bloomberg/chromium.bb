@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/common/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // ID used by Instant code to refer to objects (e.g. Autocomplete results, Most
 // Visited items) that the Instant page needs access to.

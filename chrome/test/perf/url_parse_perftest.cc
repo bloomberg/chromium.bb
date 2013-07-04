@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/perftimer.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_canon_stdstring.h"
-#include "googleurl/src/url_parse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
+#include "url/url_canon_stdstring.h"
+#include "url/url_parse.h"
 
 // TODO(darin): chrome code should not depend on WebCore innards
 #if 0

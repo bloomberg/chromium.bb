@@ -22,10 +22,10 @@
 #include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 

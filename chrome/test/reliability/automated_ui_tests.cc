@@ -36,8 +36,8 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/reliability/automated_ui_tests.h"
 #include "chrome/test/ui/ui_test.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "url/gurl.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/view.h"

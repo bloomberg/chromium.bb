@@ -15,7 +15,7 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 TabProxy::TabProxy(AutomationMessageSender* sender,
                    AutomationHandleTracker* tracker,

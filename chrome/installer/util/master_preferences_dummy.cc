@@ -14,7 +14,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace installer {
 

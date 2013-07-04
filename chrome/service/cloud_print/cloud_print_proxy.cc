@@ -18,7 +18,7 @@
 #include "chrome/service/service_process_prefs.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/google_api_keys.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace {
 

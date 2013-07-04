@@ -51,9 +51,9 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ui/gl/gl_implementation.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

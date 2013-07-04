@@ -15,13 +15,13 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "content/public/renderer/render_view.h"
-#include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 namespace {
 

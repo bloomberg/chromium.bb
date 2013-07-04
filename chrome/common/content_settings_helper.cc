@@ -7,7 +7,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content_settings_helper {
 

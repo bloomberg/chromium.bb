@@ -16,12 +16,12 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_fake_resources_test.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
+#include "url/gurl.h"
 
 using ::testing::_;
 using ::testing::InSequence;

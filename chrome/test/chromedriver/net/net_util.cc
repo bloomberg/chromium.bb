@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -18,6 +17,7 @@
 #include "net/socket/tcp_server_socket.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace {
 

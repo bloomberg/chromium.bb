@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {

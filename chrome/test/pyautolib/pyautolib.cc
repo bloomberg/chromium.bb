@@ -17,7 +17,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // PyUITestSuiteBase
 PyUITestSuiteBase::PyUITestSuiteBase(int argc, char** argv)

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/service/cloud_print/print_system.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace cloud_print {
 

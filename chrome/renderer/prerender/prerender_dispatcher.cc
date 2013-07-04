@@ -10,10 +10,10 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebPrerenderingSupport.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "url/gurl.h"
 
 namespace prerender {
 

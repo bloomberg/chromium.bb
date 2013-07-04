@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
-#include "googleurl/src/gurl.h"
 #include "jni/TestShellTab_jni.h"
 #include "ui/android/window_android.h"
+#include "url/gurl.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;

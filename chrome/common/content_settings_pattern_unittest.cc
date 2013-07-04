@@ -4,8 +4,8 @@
 
 #include "chrome/common/content_settings_pattern.h"
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 

@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace prerender {
 

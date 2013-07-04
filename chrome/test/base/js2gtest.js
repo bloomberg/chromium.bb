@@ -96,7 +96,7 @@ if (testType === 'unit') {
   testF = 'IN_PROC_BROWSER_TEST_F';
   addSetPreloadInfo = true;
 }
-print('#include "googleurl/src/gurl.h"');
+print('#include "url/gurl.h"');
 print('#include "testing/gtest/include/gtest/gtest.h"');
 print();
 

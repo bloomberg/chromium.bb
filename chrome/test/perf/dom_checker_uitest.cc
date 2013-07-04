@@ -17,8 +17,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "url/gurl.h"
 
 namespace {
 

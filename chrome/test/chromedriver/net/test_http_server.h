@@ -13,8 +13,8 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/server/http_server.h"
+#include "url/gurl.h"
 
 namespace base {
 class WaitableEvent;
