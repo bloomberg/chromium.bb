@@ -1803,7 +1803,8 @@ TEST_F(GLES2FormatTest, ReadPixels) {
       static_cast<uint32>(17),
       static_cast<uint32>(18),
       static_cast<uint32>(19),
-      static_cast<uint32>(20));
+      static_cast<uint32>(20),
+      static_cast<GLboolean>(21));
   EXPECT_EQ(static_cast<uint32>(cmds::ReadPixels::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -1817,6 +1818,7 @@ TEST_F(GLES2FormatTest, ReadPixels) {
   EXPECT_EQ(static_cast<uint32>(18), cmd.pixels_shm_offset);
   EXPECT_EQ(static_cast<uint32>(19), cmd.result_shm_id);
   EXPECT_EQ(static_cast<uint32>(20), cmd.result_shm_offset);
+  EXPECT_EQ(static_cast<GLboolean>(21), cmd.async);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }
