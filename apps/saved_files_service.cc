@@ -262,7 +262,7 @@ const SavedFileEntry* SavedFilesService::GetFileEntry(
 void SavedFilesService::ClearQueueIfNoRetainPermission(
     const Extension* extension) {
   if (!extension->GetActivePermissions()->HasAPIPermission(
-          APIPermission::kFileSystemRetainFiles)) {
+          APIPermission::kFileSystemRetainEntries)) {
     ClearQueue(extension);
   }
 }

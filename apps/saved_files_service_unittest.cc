@@ -48,7 +48,7 @@ class SavedFilesServiceUnitTest : public testing::Test {
         "    }"
         "  },"
         "  \"permissions\": ["
-        "    {\"fileSystem\": [\"retainFiles\"]}"
+        "    {\"fileSystem\": [\"retainEntries\"]}"
         "  ]"
         "}"));
     service_ = SavedFilesService::Get(env_.profile());
@@ -133,7 +133,7 @@ TEST_F(SavedFilesServiceUnitTest, RetainTwoFilesTest) {
   EXPECT_FALSE(service_->GetFileEntry(extension_->id(), "another id"));
 
   // ClearQueueIfNoRetainPermission should be a no-op because the app has the
-  // fileSystem.retainFiles permission.
+  // fileSystem.retainEntries permission.
   service_->ClearQueueIfNoRetainPermission(extension_);
   TRACE_CALL(CheckEntrySequenceNumber(1, 3));
   TRACE_CALL(CheckEntrySequenceNumber(2, 2));
@@ -148,7 +148,7 @@ TEST_F(SavedFilesServiceUnitTest, RetainTwoFilesTest) {
   EXPECT_FALSE(service_->IsRegistered(extension_->id(), GenerateId(3)));
 }
 
-TEST_F(SavedFilesServiceUnitTest, NoRetainFilesPermissionTest) {
+TEST_F(SavedFilesServiceUnitTest, NoRetainEntriesPermissionTest) {
   extension_ = env_.MakeExtension(*base::test::ParseJson(
       "{\"app\": {\"background\": {\"scripts\": [\"background.js\"]}},"
       "\"permissions\": [\"fileSystem\"]}"));
@@ -161,7 +161,7 @@ TEST_F(SavedFilesServiceUnitTest, NoRetainFilesPermissionTest) {
   EXPECT_FALSE(service_->GetFileEntry(extension_->id(), "another id"));
 
   // ClearQueueIfNoRetainPermission should clear the queue, since the app does
-  // not have the "retainFiles" permission.
+  // not have the "retainEntries" permission.
   service_->ClearQueueIfNoRetainPermission(extension_);
   std::vector<SavedFileEntry> entries =
       service_->GetAllFileEntries(extension_->id());

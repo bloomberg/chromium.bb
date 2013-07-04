@@ -92,7 +92,7 @@ class SavedFilesService : public BrowserContextKeyedService,
       const std::string& extension_id);
 
   // Clears all retained files if the app does not have the
-  // fileSystem.retainFiles permission.
+  // fileSystem.retainEntries permission.
   void ClearQueueIfNoRetainPermission(const extensions::Extension* extension);
 
   // Clears all retained files.

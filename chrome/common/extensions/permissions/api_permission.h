@@ -76,7 +76,7 @@ class APIPermission {
     kFileBrowserHandlerInternal,
     kFileBrowserPrivate,
     kFileSystem,
-    kFileSystemRetainFiles,
+    kFileSystemRetainEntries,
     kFileSystemWrite,
     kFontSettings,
     kFullscreen,
