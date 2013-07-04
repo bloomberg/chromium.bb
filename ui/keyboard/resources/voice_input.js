@@ -26,7 +26,7 @@ VoiceInput.prototype = {
   },
 
   /**
-   * Speech recognition started. Change mic key's icon.
+   * Speech recognition started. Change microphone key's icon.
    */
   onStartHandler: function() {
     this.recognizing_ = true;
@@ -59,7 +59,7 @@ VoiceInput.prototype = {
   },
 
   /**
-   * Speech recognition ended. Reset mic key's icon.
+   * Speech recognition ended. Reset microphone key's icon.
    */
   onEndHandler: function() {
     if (this.keyboard_.classList.contains('audio'))

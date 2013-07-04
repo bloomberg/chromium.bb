@@ -32,9 +32,10 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   source->AddResourcePath("elements/kb-keyset.html",
                           IDR_KEYBOARD_ELEMENTS_KEYSET);
   source->AddResourcePath("elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW);
-  source->AddResourcePath("images/mic.svg", IDR_KEYBOARD_IMAGES_MIC);
-  source->AddResourcePath("images/mic-green.svg",
-                          IDR_KEYBOARD_IMAGES_MIC_GREEN);
+  source->AddResourcePath("images/microphone.svg",
+                          IDR_KEYBOARD_IMAGES_MICROPHONE);
+  source->AddResourcePath("images/microphone-green.svg",
+                          IDR_KEYBOARD_IMAGES_MICROPHONE_GREEN);
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("polymer.min.js", IDR_KEYBOARD_POLYMER);
   source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);

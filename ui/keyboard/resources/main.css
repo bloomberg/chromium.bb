@@ -59,7 +59,7 @@ kb-key.dark {
   -webkit-box-flex: 2.1 !important;
 }
 
-.mic {
+.microphone {
   -webkit-box-flex: 1.5 !important;
 }
 
@@ -102,12 +102,12 @@ kb-key.dark {
   font-size: 70%;
 }
 
-.mic {
-  background-image: url('images/mic.svg');
+.microphone {
+  background-image: url('images/microphone.svg');
 }
 
-.audio .mic {
-  background-image: url('images/mic-green.svg');
+.audio .microphone {
+  background-image: url('images/microphone-green.svg');
 }
 
 .hide {

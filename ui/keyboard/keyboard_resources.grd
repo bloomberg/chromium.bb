@@ -25,8 +25,8 @@
       <include name="IDR_KEYBOARD_ELEMENTS_KEYSET" file="resources/elements/kb-keyset.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_ROW" file="resources/elements/kb-row.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_KEYBOARD" file="resources/images/keyboard.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_MIC" file="resources/images/mic.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_MIC_GREEN" file="resources/images/mic-green.svg" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_MICROPHONE" file="resources/images/microphone.svg" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_MICROPHONE_GREEN" file="resources/images/microphone-green.svg" type="BINDATA" />
       <!-- Don't flatten html file here. Otherwise, webui keyboard will not load the correct css file. -->
       <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_KEYSETS" file="resources/keysets.html" type="BINDATA" />
