@@ -46,6 +46,12 @@ void ProfileOAuth2TokenService::Initialize(Profile* profile) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
                  token_service_source);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
+                 token_service_source);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
+                 token_service_source);
   SigninManagerFactory::GetForProfile(profile_)->signin_global_error()->
       AddProvider(this);
 }
@@ -84,19 +90,49 @@ void ProfileOAuth2TokenService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TOKENS_CLEARED ||
-         type == chrome::NOTIFICATION_TOKEN_AVAILABLE);
-  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    TokenService::TokenAvailableDetails* tok_details =
-        content::Details<TokenService::TokenAvailableDetails>(details).ptr();
-    if (tok_details->service() != GaiaConstants::kGaiaOAuth2LoginRefreshToken)
-      return;
+  switch (type) {
+    case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
+      TokenService::TokenAvailableDetails* tok_details =
+          content::Details<TokenService::TokenAvailableDetails>(details).ptr();
+      if (tok_details->service() ==
+          GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+        ClearCache();
+        UpdateAuthError(GoogleServiceAuthError::AuthErrorNone());
+        FireRefreshTokenAvailable(
+            SigninManagerFactory::GetForProfile(profile_)->
+                GetAuthenticatedUsername());
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_TOKEN_REQUEST_FAILED: {
+      TokenService::TokenRequestFailedDetails* tok_details =
+          content::Details<TokenService::TokenRequestFailedDetails>(details)
+              .ptr();
+      if (tok_details->service() == GaiaConstants::kLSOService ||
+          tok_details->service() ==
+              GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+        ClearCache();
+        UpdateAuthError(tok_details->error());
+        FireRefreshTokenRevoked(
+            SigninManagerFactory::GetForProfile(profile_)->
+                GetAuthenticatedUsername(),
+            tok_details->error());
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_TOKENS_CLEARED: {
+      ClearCache();
+      UpdateAuthError(GoogleServiceAuthError::AuthErrorNone());
+      FireRefreshTokensCleared();
+      break;
+    }
+    case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED:
+      FireRefreshTokensLoaded();
+      break;
+    default:
+      NOTREACHED() << "Invalid notification type=" << type;
+      break;
   }
-  // The GaiaConstants::kGaiaOAuth2LoginRefreshToken token is used to create
-  // OAuth2 access tokens. If this token either changes or is cleared, any
-  // available tokens must be invalidated.
-  ClearCache();
-  UpdateAuthError(GoogleServiceAuthError::AuthErrorNone());
 }
 
 GoogleServiceAuthError ProfileOAuth2TokenService::GetAuthStatus() const {

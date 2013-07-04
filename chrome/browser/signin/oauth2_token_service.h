@@ -13,7 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace base {
 class Time;
@@ -72,11 +74,39 @@ class OAuth2TokenService {
                                    const GoogleServiceAuthError& error) = 0;
   };
 
+  // Classes that want to listen for token availability should implement this
+  // interface and register with the AddObserver() call.
+  // TODO(rogerta): may get rid of |error| argument for OnRefreshTokenRevoked()
+  // once we stop supporting ClientLogin.  Need to evaluate if its still useful.
+  class Observer {
+   public:
+    // Called whenever a new login-scoped refresh token is available for
+    // account |account_id|. Once available, access tokens can be retrieved for
+    // this account.  This is called during initial startup for each token
+    // loaded.
+    virtual void OnRefreshTokenAvailable(const std::string& account_id) {}
+    // Called whenever the login-scoped refresh token becomes unavailable for
+    // account |account_id|.
+    virtual void OnRefreshTokenRevoked(const std::string& account_id,
+                                       const GoogleServiceAuthError& error) {}
+    // Called after all refresh tokens are loaded during OAuth2TokenService
+    // startup.
+    virtual void OnRefreshTokensLoaded() {}
+    // Called after all refresh tokens are removed from OAuth2TokenService.
+    virtual void OnRefreshTokensCleared() {}
+   protected:
+    virtual ~Observer() {}
+  };
+
   // A set of scopes in OAuth2 authentication.
   typedef std::set<std::string> ScopeSet;
 
   explicit OAuth2TokenService(net::URLRequestContextGetter* getter);
   virtual ~OAuth2TokenService();
+
+  // Add or remove observers of this token service.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Checks in the cache for a valid access token, and if not found starts
   // a request for an OAuth2 access token using the OAuth2 refresh token
@@ -150,6 +180,13 @@ class OAuth2TokenService {
   // Clears the internal token cache.
   void ClearCache();
 
+  // Called by subclasses to notify observers.
+  void FireRefreshTokenAvailable(const std::string& account_id);
+  void FireRefreshTokenRevoked(const std::string& account_id,
+                               const GoogleServiceAuthError& error);
+  void FireRefreshTokensLoaded();
+  void FireRefreshTokensCleared();
+
  private:
   // Class that fetches an OAuth2 access token for a given set of scopes and
   // OAuth2 refresh token.
@@ -191,6 +228,11 @@ class OAuth2TokenService {
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
   std::map<FetchParameters, Fetcher*> pending_fetchers_;
+
+  // List of observers to notify when token availiability changes.
+  // Makes sure list is empty on destruction.
+  ObserverList<Observer, true> observer_list_;
+
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;
 

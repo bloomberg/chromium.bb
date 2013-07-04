@@ -15,9 +15,15 @@
 
 using content::BrowserThread;
 
-class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness {
+class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
+                                      public OAuth2TokenService::Observer {
  public:
-  ProfileOAuth2TokenServiceTest() {}
+  ProfileOAuth2TokenServiceTest()
+      : token_available_count_(0),
+        token_revoked_count_(0),
+        tokens_loaded_count_(0),
+        tokens_cleared_count_(0) {
+  }
 
   virtual void SetUp() OVERRIDE {
     TokenServiceTestHarness::SetUp();
@@ -27,10 +33,76 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness {
     profile_->CreateRequestContext();
     oauth2_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
         profile_.get());
+
+    oauth2_service_->AddObserver(this);
   }
 
   virtual void TearDown() OVERRIDE {
+    oauth2_service_->RemoveObserver(this);
     TokenServiceTestHarness::TearDown();
+  }
+
+  // OAuth2TokenService::Observer implementation.
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE {
+    ++token_available_count_;
+  }
+  virtual void OnRefreshTokenRevoked(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) OVERRIDE {
+    ++token_revoked_count_;
+  }
+  virtual void OnRefreshTokensLoaded() OVERRIDE {
+    ++tokens_loaded_count_;
+  }
+  virtual void OnRefreshTokensCleared() OVERRIDE {
+    ++tokens_cleared_count_;
+  }
+
+  void ResetObserverCounts() {
+    token_available_count_ = 0;
+    token_revoked_count_ = 0;
+    tokens_loaded_count_ = 0;
+    tokens_cleared_count_ = 0;
+  }
+
+  void ExpectNoNotifications() {
+    EXPECT_EQ(0, token_available_count_);
+    EXPECT_EQ(0, token_revoked_count_);
+    EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
+    ResetObserverCounts();
+  }
+
+  void ExpectOneTokenAvailableNotification() {
+    EXPECT_EQ(1, token_available_count_);
+    EXPECT_EQ(0, token_revoked_count_);
+    EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
+    ResetObserverCounts();
+  }
+
+  void ExpectOneTokenRevokedNotification() {
+    EXPECT_EQ(0, token_available_count_);
+    EXPECT_EQ(1, token_revoked_count_);
+    EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
+    ResetObserverCounts();
+  }
+
+  void ExpectOneTokensLoadedNotification() {
+    EXPECT_EQ(0, token_available_count_);
+    EXPECT_EQ(0, token_revoked_count_);
+    EXPECT_EQ(1, tokens_loaded_count_);
+    EXPECT_EQ(0, tokens_cleared_count_);
+    ResetObserverCounts();
+  }
+
+  void ExpectOneTokensClearedNotification() {
+    EXPECT_EQ(0, token_available_count_);
+    EXPECT_EQ(0, token_revoked_count_);
+    EXPECT_EQ(0, tokens_loaded_count_);
+    EXPECT_EQ(1, tokens_cleared_count_);
+    ResetObserverCounts();
   }
 
  protected:
@@ -38,7 +110,61 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness {
   net::TestURLFetcherFactory factory_;
   ProfileOAuth2TokenService* oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
+  int token_available_count_;
+  int token_revoked_count_;
+  int tokens_loaded_count_;
+  int tokens_cleared_count_;
 };
+
+TEST_F(ProfileOAuth2TokenServiceTest, Notifications) {
+  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
+  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                  "refreshToken");
+  ExpectOneTokenAvailableNotification();
+
+  service_->EraseTokensFromDB();
+  service_->ResetCredentialsInMemory();
+  ExpectOneTokensClearedNotification();
+}
+
+// Until the TokenService class is removed, problems fetching the LSO token
+// should translate to problems fetching the oauth2 refresh token.
+TEST_F(ProfileOAuth2TokenServiceTest, LsoNotification) {
+  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
+
+  // Get a valid token.
+  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                  "refreshToken");
+  ExpectOneTokenAvailableNotification();
+
+  service_->OnIssueAuthTokenFailure(
+      GaiaConstants::kLSOService,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  ExpectOneTokenRevokedNotification();
+}
+
+// Until the TokenService class is removed, finish token loading in TokenService
+// should translate to finish token loading in ProfileOAuth2TokenService.
+TEST_F(ProfileOAuth2TokenServiceTest, TokensLoaded) {
+  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
+  service_->LoadTokensFromDB();
+  WaitForDBLoadCompletion();
+  ExpectOneTokensLoadedNotification();
+}
+
+TEST_F(ProfileOAuth2TokenServiceTest, UnknownNotificationsAreNoops) {
+  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
+  service_->IssueAuthTokenForTest("foo", "toto");
+  ExpectNoNotifications();
+
+  // Get a valid token.
+  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                  "refreshToken");
+  ExpectOneTokenAvailableNotification();
+
+  service_->IssueAuthTokenForTest("bar", "baz");
+  ExpectNoNotifications();
+}
 
 TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
@@ -46,6 +172,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   scope_list.insert("scope");
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "refreshToken");
+  ExpectOneTokenAvailableNotification();
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       scope_list, &consumer_));
   message_loop_.RunUntilIdle();
@@ -61,10 +188,14 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   // Signs out and signs in
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "");
+  ExpectOneTokenAvailableNotification();
   service_->EraseTokensFromDB();
+  ExpectOneTokensClearedNotification();
+
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "refreshToken");
+  ExpectOneTokenAvailableNotification();
 
   request = oauth2_service_->StartRequest(scope_list, &consumer_);
   message_loop_.RunUntilIdle();
@@ -86,11 +217,13 @@ TEST_F(ProfileOAuth2TokenServiceTest, StaleRefreshTokensNotCached) {
 
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "T1");
+  ExpectOneTokenAvailableNotification();
   EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service_, "T1"));
   EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(service_, "T2"));
 
   service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "T2");
+  ExpectOneTokenAvailableNotification();
   EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service_, "T2"));
   EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(NULL, "T2"));
 }

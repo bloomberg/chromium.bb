@@ -64,6 +64,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   explicit ProfileOAuth2TokenService(net::URLRequestContextGetter* getter);
   virtual ~ProfileOAuth2TokenService();
 
+  // OAuth2TokenService overrides.
   virtual std::string GetRefreshToken() OVERRIDE;
 
   // Updates the internal cache of the result from the most-recently-completed

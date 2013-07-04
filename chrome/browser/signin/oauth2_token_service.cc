@@ -294,6 +294,14 @@ OAuth2TokenService::~OAuth2TokenService() {
       pending_fetchers_.begin(), pending_fetchers_.end());
 }
 
+void OAuth2TokenService::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void OAuth2TokenService::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 bool OAuth2TokenService::RefreshTokenIsAvailable() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return !GetRefreshToken().empty();
@@ -455,6 +463,27 @@ void OAuth2TokenService::UpdateAuthError(const GoogleServiceAuthError& error) {
 void OAuth2TokenService::ClearCache() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   token_cache_.clear();
+}
+
+void OAuth2TokenService::FireRefreshTokenAvailable(
+    const std::string& account_id) {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnRefreshTokenAvailable(account_id));
+}
+
+void OAuth2TokenService::FireRefreshTokenRevoked(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnRefreshTokenRevoked(account_id, error));
+}
+
+void OAuth2TokenService::FireRefreshTokensLoaded() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnRefreshTokensLoaded());
+}
+
+void OAuth2TokenService::FireRefreshTokensCleared() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnRefreshTokensCleared());
 }
 
 int OAuth2TokenService::cache_size_for_testing() const {
