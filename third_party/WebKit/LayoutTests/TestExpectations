@@ -142,7 +142,7 @@ webkit.org/b/72530 [ Debug ] fast/frames/sandboxed-iframe-navigation-targetlink.
 
 webkit.org/b/85106 tables/mozilla/other/slashlogo.html [ Slow ]
 
-crbug.com/128057 [ Linux Mac Debug ] http/tests/websocket/tests/hybi/workers/worker-reload.html [ Slow ]
+crbug.com/128057 [ Debug ] http/tests/websocket/tests/hybi/workers/worker-reload.html [ Slow ]
 
 webkit.org/b/108876 [ Linux Win ] media/track/track-cues-cuechange.html [ Slow ]
 webkit.org/b/108876 [ Linux Win ] media/track/track-cues-enter-exit.html [ Slow ]
