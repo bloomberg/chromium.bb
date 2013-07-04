@@ -21,6 +21,10 @@ struct ImportedFaviconUsage;
 class ExternalProcessImporterHost;
 
 namespace importer {
+#if defined(OS_WIN)
+struct ImporterIE7PasswordInfo;
+#endif
+struct ImporterURlRow;
 struct URLKeywordInfo;
 }
 
@@ -38,7 +42,7 @@ class InProcessImporterBridge : public ImporterBridge {
 
 #if defined(OS_WIN)
   virtual void AddIE7PasswordInfo(
-      const IE7PasswordInfo& password_info) OVERRIDE;
+      const importer::ImporterIE7PasswordInfo& password_info) OVERRIDE;
 #endif
 
   virtual void SetFavicons(

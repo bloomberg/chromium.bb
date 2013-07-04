@@ -6,11 +6,13 @@
 #define CHROME_COMMON_IMPORTER_IMPORTER_DATA_TYPES_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/common/importer/importer_type.h"
 #include "url/gurl.h"
 
@@ -50,6 +52,21 @@ struct URLKeywordInfo {
   string16 keyword;
   string16 display_name;
 };
+
+#if defined(OS_WIN)
+// Contains the information read from the IE7/IE8 Storage2 key in the registry.
+struct ImporterIE7PasswordInfo {
+  // Hash of the url.
+  std::wstring url_hash;
+
+  // Encrypted data containing the username, password and some more
+  // undocumented fields.
+  std::vector<unsigned char> encrypted_data;
+
+  // When the login was imported.
+  base::Time date_created;
+};
+#endif
 
 }  // namespace importer
 

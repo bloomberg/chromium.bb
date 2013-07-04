@@ -69,13 +69,13 @@ void ExternalProcessImporterBridge::AddBookmarks(
 }
 
 void ExternalProcessImporterBridge::AddHomePage(const GURL& home_page) {
-  NOTIMPLEMENTED();
+  Send(new ProfileImportProcessHostMsg_NotifyHomePageImportReady(home_page));
 }
 
 #if defined(OS_WIN)
 void ExternalProcessImporterBridge::AddIE7PasswordInfo(
-    const IE7PasswordInfo& password_info) {
-  NOTIMPLEMENTED();
+    const importer::ImporterIE7PasswordInfo& password_info) {
+  Send(new ProfileImportProcessHostMsg_NotifyIE7PasswordInfo(password_info));
 }
 #endif
 

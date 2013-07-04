@@ -17,11 +17,14 @@
 #include "chrome/common/importer/importer_url_row.h"
 
 class GURL;
-struct IE7PasswordInfo;
 struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;
 
 namespace importer {
+#if defined(OS_WIN)
+struct ImporterIE7PasswordInfo;
+#endif
+struct ImporterURlRow;
 struct URLKeywordInfo;
 }
 
@@ -40,7 +43,8 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual void AddHomePage(const GURL& home_page) = 0;
 
 #if defined(OS_WIN)
-  virtual void AddIE7PasswordInfo(const IE7PasswordInfo& password_info) = 0;
+  virtual void AddIE7PasswordInfo(
+      const importer::ImporterIE7PasswordInfo& password_info) = 0;
 #endif
 
   virtual void SetFavicons(

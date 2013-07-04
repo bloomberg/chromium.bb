@@ -29,6 +29,9 @@ class UtilityProcessHost;
 }
 
 namespace importer {
+#if defined(OS_WIN)
+struct ImporterIE7PasswordInfo;
+#endif
 struct URLKeywordInfo;
 }
 
@@ -75,6 +78,10 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
       bool unique_on_host_and_path);
   void OnFirefoxSearchEngineDataReceived(
       const std::vector<std::string> search_engine_data);
+#if defined(OS_WIN)
+  void OnIE7PasswordReceived(
+        const importer::ImporterIE7PasswordInfo& importer_password_info);
+#endif
 
  protected:
   virtual ~ExternalProcessImporterClient();

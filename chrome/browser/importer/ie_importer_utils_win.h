@@ -13,6 +13,14 @@ namespace importer {
 // Overridable by tests via IEImporterTestRegistryOverrider.
 base::string16 GetIEFavoritesOrderKey();
 
-}
+// Returns the key to be used in HKCU to look for IE7 passwords.
+// Overridable by tests via IEImporterTestRegistryOverrider.
+base::string16 GetIE7PasswordsKey();
+
+// Returns the key to be used in HKCU to look for IE settings.
+// Overridable by tests via IEImporterTestRegistryOverrider.
+base::string16 GetIESettingsKey();
+
+}  // namespace importer
 
 #endif  // CHROME_BROWSER_IMPORTER_IE_IMPORTER_UTILS_WIN_H_

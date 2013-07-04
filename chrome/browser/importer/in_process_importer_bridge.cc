@@ -165,10 +165,16 @@ void InProcessImporterBridge::AddHomePage(const GURL& home_page) {
 
 #if defined(OS_WIN)
 void InProcessImporterBridge::AddIE7PasswordInfo(
-    const IE7PasswordInfo& password_info) {
+    const importer::ImporterIE7PasswordInfo& password_info) {
+  IE7PasswordInfo ie7_password_info;
+  ie7_password_info.url_hash = password_info.url_hash;
+  ie7_password_info.encrypted_data = password_info.encrypted_data;
+  ie7_password_info.date_created = password_info.date_created;
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddIE7PasswordInfo, writer_, password_info));
+      base::Bind(&ProfileWriter::AddIE7PasswordInfo, writer_,
+                 ie7_password_info));
 }
 #endif  // OS_WIN
 

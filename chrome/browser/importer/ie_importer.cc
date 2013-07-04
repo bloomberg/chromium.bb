@@ -39,7 +39,6 @@
 #include "chrome/common/importer/importer_url_row.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "components/webdata/encryptor/ie7_password.h"
 #include "content/public/common/password_form.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,12 +47,8 @@
 namespace {
 
 // Registry key paths from which we import IE settings.
-const char16 kStorage2Path[] =
-  L"Software\\Microsoft\\Internet Explorer\\IntelliForms\\Storage2";
 const char16 kSearchScopePath[] =
   L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
-const char16 kIESettingsMain[] =
-  L"Software\\Microsoft\\Internet Explorer\\Main";
 const char16 kIEVersionKey[] =
   L"Software\\Microsoft\\Internet Explorer";
 const char16 kIEToolbarKey[] =
@@ -421,8 +416,11 @@ void IEImporter::StartImport(const importer::SourceProfile& source_profile,
 
   bridge_->NotifyStarted();
 
-  if ((items & importer::HOME_PAGE) && !cancelled())
+  if ((items & importer::HOME_PAGE) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::HOME_PAGE);
     ImportHomepage();  // Doesn't have a UI item.
+    bridge_->NotifyItemEnded(importer::HOME_PAGE);
+  }
   // The order here is important!
   if ((items & importer::HISTORY) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::HISTORY);
@@ -649,15 +647,11 @@ void IEImporter::ImportPasswordsIE6() {
 }
 
 void IEImporter::ImportPasswordsIE7() {
-  if (!source_path_.empty()) {
-    // We have been called from the unit tests. Don't import real passwords.
-    return;
-  }
-
-  base::win::RegKey key(HKEY_CURRENT_USER, kStorage2Path, KEY_READ);
+  base::string16 key_path(importer::GetIE7PasswordsKey());
+  base::win::RegKey key(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ);
   base::win::RegistryValueIterator reg_iterator(HKEY_CURRENT_USER,
-                                                kStorage2Path);
-  IE7PasswordInfo password_info;
+                                                key_path.c_str());
+  importer::ImporterIE7PasswordInfo password_info;
   while (reg_iterator.Valid() && !cancelled()) {
     // Get the size of the encrypted data.
     DWORD value_len = 0;
@@ -737,7 +731,9 @@ void IEImporter::ImportHomepage() {
   const wchar_t* kIEHomepage = L"Start Page";
   const wchar_t* kIEDefaultHomepage = L"Default_Page_URL";
 
-  base::win::RegKey key(HKEY_CURRENT_USER, kIESettingsMain, KEY_READ);
+  base::string16 key_path(importer::GetIESettingsKey());
+
+  base::win::RegKey key(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ);
   string16 homepage_url;
   if (key.ReadValue(kIEHomepage, &homepage_url) != ERROR_SUCCESS ||
       homepage_url.empty())
@@ -748,14 +744,13 @@ void IEImporter::ImportHomepage() {
     return;
 
   // Check to see if this is the default website and skip import.
-  base::win::RegKey keyDefault(HKEY_LOCAL_MACHINE, kIESettingsMain, KEY_READ);
+  base::win::RegKey keyDefault(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_READ);
   string16 default_homepage_url;
   LONG result = keyDefault.ReadValue(kIEDefaultHomepage, &default_homepage_url);
   if (result == ERROR_SUCCESS && !default_homepage_url.empty()) {
     if (homepage.spec() == GURL(default_homepage_url).spec())
       return;
   }
-
   bridge_->AddHomePage(homepage);
 }
 

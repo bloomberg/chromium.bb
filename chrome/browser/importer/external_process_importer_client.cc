@@ -102,6 +102,10 @@ bool ExternalProcessImporterClient::OnMessageReceived(
                         OnKeywordsImportReady)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData,
                         OnFirefoxSearchEngineDataReceived)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyIE7PasswordInfo,
+                        OnIE7PasswordReceived)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -241,6 +245,15 @@ void ExternalProcessImporterClient::OnFirefoxSearchEngineDataReceived(
     return;
   bridge_->SetFirefoxSearchEnginesXMLData(search_engine_data);
 }
+
+#if defined(OS_WIN)
+void ExternalProcessImporterClient::OnIE7PasswordReceived(
+    const importer::ImporterIE7PasswordInfo& importer_password_info) {
+  if (cancelled_)
+    return;
+  bridge_->AddIE7PasswordInfo(importer_password_info);
+}
+#endif
 
 ExternalProcessImporterClient::~ExternalProcessImporterClient() {}
 

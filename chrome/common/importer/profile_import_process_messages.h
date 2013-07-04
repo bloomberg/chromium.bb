@@ -219,6 +219,36 @@ struct ParamTraits<importer::URLKeywordInfo> {
   }
 };  // ParamTraits<importer::URLKeywordInfo>
 
+#if defined(OS_WIN)
+// Traits for importer::ImporterIE7PasswordInfo
+template <>
+struct ParamTraits<importer::ImporterIE7PasswordInfo> {
+  typedef importer::ImporterIE7PasswordInfo param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.url_hash);
+    WriteParam(m, p.encrypted_data);
+    WriteParam(m, p.date_created);
+  }
+
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->url_hash) &&
+        ReadParam(m, iter, &p->encrypted_data) &&
+        ReadParam(m, iter, &p->date_created);
+  }
+
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
+    LogParam(p.url_hash, l);
+    l->append(", ");
+    LogParam(p.encrypted_data, l);
+    l->append(", ");
+    LogParam(p.date_created, l);
+    l->append(")");
+  }
+};  // ParamTraits<importer::ImporterIE7PasswordInfo>
+#endif
+
 }  // namespace IPC
 
 #endif  // CHROME_COMMON_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
@@ -291,3 +321,7 @@ IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyKeywordsReady,
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData,
                      std::vector<std::string>) // search_engine_data
 
+#if defined(OS_WIN)
+IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyIE7PasswordInfo,
+                     importer::ImporterIE7PasswordInfo) // password_info
+#endif

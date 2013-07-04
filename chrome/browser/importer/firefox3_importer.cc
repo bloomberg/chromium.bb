@@ -96,8 +96,11 @@ void Firefox3Importer::StartImport(
 
   // The order here is important!
   bridge_->NotifyStarted();
-  if ((items & importer::HOME_PAGE) && !cancelled())
+  if ((items & importer::HOME_PAGE) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::HOME_PAGE);
     ImportHomepage();  // Doesn't have a UI item.
+    bridge_->NotifyItemEnded(importer::HOME_PAGE);
+  }
 
   // Note history should be imported before bookmarks because bookmark import
   // will also import favicons and we store favicon for a URL only if the URL
