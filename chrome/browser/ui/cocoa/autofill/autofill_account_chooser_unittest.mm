@@ -8,10 +8,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/models/simple_menu_model.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 

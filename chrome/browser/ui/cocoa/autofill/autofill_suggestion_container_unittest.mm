@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_suggestion_container.h"
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 

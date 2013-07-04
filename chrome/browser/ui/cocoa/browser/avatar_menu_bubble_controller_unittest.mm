@@ -12,10 +12,10 @@
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest_mac.h"
+#import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 
 class AvatarMenuBubbleControllerTest : public CocoaTest {

@@ -105,6 +105,8 @@
         'base/cocoa/controls/hover_image_menu_button.mm',
         'base/cocoa/controls/hover_image_menu_button_cell.h',
         'base/cocoa/controls/hover_image_menu_button_cell.mm',
+        'base/cocoa/controls/hyperlink_button_cell.h',
+        'base/cocoa/controls/hyperlink_button_cell.mm',
         'base/cocoa/events_mac.mm',
         'base/cocoa/find_pasteboard.h',
         'base/cocoa/find_pasteboard.mm',

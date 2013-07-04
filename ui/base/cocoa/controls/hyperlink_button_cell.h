@@ -1,9 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_BASE_COCOA_CONTROLS_HYPERLINK_BUTTON_CELL_H_
+#define UI_BASE_COCOA_CONTROLS_HYPERLINK_BUTTON_CELL_H_
+
 #import <Cocoa/Cocoa.h>
+
 #include "base/mac/scoped_nsobject.h"
+#include "ui/base/ui_export.h"
 
 // A HyperlinkButtonCell is used to create an NSButton that looks and acts
 // like a hyperlink. The default styling is to look like blue, underlined text
@@ -15,6 +20,10 @@
 //  3. In the Identity panel of the inspector, set the custom class to this.
 //  4. In the Attributes panel, change the Bezel to Square.
 //  5. In the Size panel, set the Height to 16.
+//
+// Use this if all of your text is a link. If you need text that contains
+// embedded links but also regular text, use HyperlinkTextView.
+UI_EXPORT
 @interface HyperlinkButtonCell : NSButtonCell {
   base::scoped_nsobject<NSColor> textColor_;
   BOOL shouldUnderline_;
@@ -35,3 +44,5 @@
 @interface HyperlinkButtonCell (ExposedForTesting)
 - (NSDictionary*)linkAttributes;
 @end
+
+#endif  // UI_BASE_COCOA_CONTROLS_HYPERLINK_BUTTON_CELL_H_

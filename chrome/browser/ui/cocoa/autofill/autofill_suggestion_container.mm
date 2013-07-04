@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {

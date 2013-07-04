@@ -1,15 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
+
+namespace ui {
+
+namespace {
 
 class HyperlinkButtonCellTest : public CocoaTest {
  public:
@@ -109,3 +114,7 @@ TEST_F(HyperlinkButtonCellTest, UnderlineOnHover) {
   [cell_ mouseExited:nil];
   EXPECT_FALSE(HasUnderlineAttribute([cell_ linkAttributes]));
 }
+
+}  // namespace
+
+}  // namespace ui
