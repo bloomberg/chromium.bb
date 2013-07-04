@@ -96,25 +96,27 @@ void DeleteChannel(IPC::Channel* channel) {
   delete channel;
 }
 
-// Translates Pepper's read/write open flags into NaCl's ones. The other open
-// flags are discarded. If neither of the read/write flags is specified, just
-// returns NACL_ABI_O_RDONLY as a safe fallback.
+// Translates Pepper's read/write open flags into the NaCl equivalents.
+// Since the host has already opened the file, flags such as O_CREAT, O_TRUNC,
+// and O_EXCL don't make sense, so we filter those out. If no read or write
+// flags are set, the function returns NACL_ABI_O_RDONLY as a safe fallback.
 int TranslatePepperFileReadWriteOpenFlags(int32_t pp_open_flags) {
-  int nacl_open_flag;
-  if ((pp_open_flags & (PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE)) ==
-      (PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE)) {
+  bool read = (pp_open_flags & PP_FILEOPENFLAG_READ) != 0;
+  bool write = (pp_open_flags & PP_FILEOPENFLAG_WRITE) != 0;
+  bool append = (pp_open_flags & PP_FILEOPENFLAG_APPEND) != 0;
+
+  int nacl_open_flag = NACL_ABI_O_RDONLY;  // NACL_ABI_O_RDONLY == 0.
+  if (read && (write || append)) {
     nacl_open_flag = NACL_ABI_O_RDWR;
-  } else if (pp_open_flags & PP_FILEOPENFLAG_READ) {
-    nacl_open_flag = NACL_ABI_O_RDONLY;
-  } else if (pp_open_flags & PP_FILEOPENFLAG_WRITE) {
+  } else if (write || append) {
     nacl_open_flag = NACL_ABI_O_WRONLY;
-  } else {
-    DLOG(WARNING) << "PP_FILEOPENFLAG_READ and/or PP_FILEOPENFLAG_WRITE "
-                  << "should be specified.";
-    // NACL_ABI_O_RDONLY == 0, so make this ambiguous case readonly as a safe
-    // fallback.
-    nacl_open_flag = NACL_ABI_O_RDONLY;
+  } else if (!read) {
+    DLOG(WARNING) << "One of PP_FILEOPENFLAG_READ, PP_FILEOPENFLAG_WRITE, "
+                  << "or PP_FILEOPENFLAG_APPEND should be set.";
   }
+  if (append)
+    nacl_open_flag |= NACL_ABI_O_APPEND;
+
   return nacl_open_flag;
 }
 

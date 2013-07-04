@@ -315,12 +315,21 @@ TEST_F(NaClIPCAdapterTest, TranslatePepperFileReadWriteOpenFlags) {
       TranslatePepperFileReadWriteOpenFlagsForTesting(PP_FILEOPENFLAG_READ));
   EXPECT_EQ(NACL_ABI_O_WRONLY,
       TranslatePepperFileReadWriteOpenFlagsForTesting(PP_FILEOPENFLAG_WRITE));
+  EXPECT_EQ(NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_APPEND));
   EXPECT_EQ(NACL_ABI_O_RDWR,
       TranslatePepperFileReadWriteOpenFlagsForTesting(
           PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE));
+  EXPECT_EQ(NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_APPEND));
+  EXPECT_EQ(NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_APPEND));
 
-  // The flags other than PP_FILEOPENFLAG_READ and PP_FILEOPENFLAG_WRITE are
-  // discared.
+  // Flags other than PP_FILEOPENFLAG_READ, PP_FILEOPENFLAG_WRITE, and
+  // PP_FILEOPENFLAG_APPEND are discarded.
   EXPECT_EQ(NACL_ABI_O_WRONLY,
       TranslatePepperFileReadWriteOpenFlagsForTesting(
           PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE));
@@ -331,10 +340,14 @@ TEST_F(NaClIPCAdapterTest, TranslatePepperFileReadWriteOpenFlags) {
       TranslatePepperFileReadWriteOpenFlagsForTesting(
           PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_EXCLUSIVE));
 
-  // If neither of PP_FILEOPENFLAG_READ and PP_FILEOPENFLAG_WRITE is set, falls
-  // back NACL_ABI_O_READONLY
+  // If none of PP_FILEOPENFLAG_READ, PP_FILEOPENFLAG_WRITE, and
+  // PP_FILEOPENFLAG_APPEND are set, the result should fall back to
+  // NACL_ABI_O_READONLY.
   EXPECT_EQ(NACL_ABI_O_RDONLY,
-      TranslatePepperFileReadWriteOpenFlagsForTesting(PP_FILEOPENFLAG_CREATE));
+      TranslatePepperFileReadWriteOpenFlagsForTesting(0));
+  EXPECT_EQ(NACL_ABI_O_RDONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_CREATE));
   EXPECT_EQ(NACL_ABI_O_RDONLY,
       TranslatePepperFileReadWriteOpenFlagsForTesting(
           PP_FILEOPENFLAG_TRUNCATE));
