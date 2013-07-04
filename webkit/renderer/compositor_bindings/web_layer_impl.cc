@@ -356,9 +356,13 @@ WebKit::WebLayerPositionConstraint WebLayerImpl::positionConstraint() const {
 
 void WebLayerImpl::setScrollClient(
     WebKit::WebLayerScrollClient* scroll_client) {
-  layer_->set_did_scroll_callback(
-      base::Bind(&WebKit::WebLayerScrollClient::didScroll,
-                 base::Unretained(scroll_client)));
+  if (scroll_client) {
+    layer_->set_did_scroll_callback(
+        base::Bind(&WebKit::WebLayerScrollClient::didScroll,
+                   base::Unretained(scroll_client)));
+  } else {
+    layer_->set_did_scroll_callback(base::Closure());
+  }
 }
 
 bool WebLayerImpl::isOrphan() const { return !layer_->layer_tree_host(); }
