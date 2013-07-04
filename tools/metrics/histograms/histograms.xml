@@ -3296,7 +3296,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="HistoryPage.OtherSessionsMenu" enum="NtpOtherSessionsType">
+<histogram name="HistoryPage.OtherDevicesMenu" enum="NtpOtherSessionsType">
   <summary>
     Histogram for usage of the section in the history page that allows the user
     to access tabs from other devices.
