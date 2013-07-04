@@ -9,10 +9,10 @@
 
 #include "base/base_paths.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -27,7 +27,6 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_update/google_update_idl.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/shell.h"
@@ -69,14 +68,12 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
                              SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_FLAG_NO_UI);
     return false;
   } else {
-    base::LaunchOptions launch_options;
-    launch_options.wait = true;
     CommandLine setup_path(exe_path);
     setup_path.AppendArguments(cl, false);
 
-    DWORD exit_code = 0;
-    if (!base::LaunchProcess(setup_path, launch_options, &ph) ||
-        !::GetExitCodeProcess(ph, &exit_code)) {
+    int exit_code = 0;
+    if (!base::LaunchProcess(setup_path, base::LaunchOptions(), &ph) ||
+        !base::WaitForExitCode(ph, &exit_code)) {
       return false;
     }
 
@@ -126,14 +123,9 @@ bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
 // true if successful.
 bool WriteEULAtoTempFile(base::FilePath* eula_path) {
   std::string terms = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
-  if (terms.empty())
-    return false;
-  FILE *file = file_util::CreateAndOpenTemporaryFile(eula_path);
-  if (!file)
-    return false;
-  bool good = fwrite(terms.data(), terms.size(), 1, file) == 1;
-  fclose(file);
-  return good;
+  return (!terms.empty() &&
+          file_util::CreateTemporaryFile(eula_path) &&
+          file_util::WriteFile(*eula_path, terms.data(), terms.size()) != -1);
 }
 
 // Creates the sentinel indicating that the EULA was required and has been
