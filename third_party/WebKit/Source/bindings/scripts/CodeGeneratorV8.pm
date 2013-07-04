@@ -1332,7 +1332,7 @@ sub GenerateNormalAttrGetter
 
     AssertNotSequenceType($attrType);
     my $getterStringUsesImp = $interfaceName ne "SVGNumber";
-    my $nativeType = GetNativeTypeFromAttributeOrParameter($attribute, -1);
+    my $nativeType = GetNativeType($attribute->type, $attribute->extendedAttributes, "");
     my $svgNativeType = GetSVGTypeNeedingTearOff($interfaceName);
 
     my $conditionalString = GenerateConditionalString($attribute);
@@ -1824,25 +1824,14 @@ END
         }
     }
 
-    my $nativeType = GetNativeTypeFromAttributeOrParameter($attribute, 0);
+    my $nativeType = GetNativeType($attribute->type, $attribute->extendedAttributes, "parameter");
     if ($attribute->type eq "EventListener") {
         if ($interface->name eq "Window") {
             $code .= "    if (!imp->document())\n";
             $code .= "        return;\n";
         }
     } else {
-        my $value = JSValueToNative($attribute->type, $attribute->extendedAttributes, "value", "info.GetIsolate()");
-        my $arrayType = GetArrayType($nativeType);
-
-        if ($nativeType =~ /^V8StringResource/) {
-            $code .= "    " . ConvertToV8StringResource($attribute, $nativeType, "v", $value) . "\n";
-        } elsif ($arrayType) {
-            $code .= "    Vector<$arrayType> v = $value;\n";
-        } elsif ($attribute->extendedAttributes->{"EnforceRange"}) {
-            $code .= "    V8TRYCATCH_WITH_TYPECHECK_VOID($nativeType, v, $value, info.GetIsolate());\n";
-        } else {
-            $code .= "    V8TRYCATCH_VOID($nativeType, v, $value);\n";
-        }
+        $code .= JSValueToNativeStatement($attribute->type, $attribute->extendedAttributes, "value", "v", "    ", "info.GetIsolate()");
     }
 
     if (IsEnumType($attrType)) {
@@ -2333,7 +2322,7 @@ sub GenerateParametersCheck
     my %replacements = ();
 
     foreach my $parameter (@{$function->parameters}) {
-        my $nativeType = GetNativeTypeFromAttributeOrParameter($parameter, $paramIndex);
+        my $nativeType = GetNativeType($parameter->type, $parameter->extendedAttributes, "parameter");
 
         # Optional arguments without [Default=...] should generate an early call with fewer arguments.
         # Optional arguments with [Optional=...] should not generate the early call.
@@ -2408,8 +2397,8 @@ sub GenerateParametersCheck
             }
         } elsif ($nativeType =~ /^V8StringResource/) {
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
-            my $value = JSValueToNative($parameter->type, $parameter->extendedAttributes, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
-            $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value) . "\n";
+            my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]";
+            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $parameterName, "    ", "args.GetIsolate()");
             if (IsEnumType($parameter->type)) {
                 my @enumValues = ValidEnumValues($parameter->type);
                 my @validEqualities = ();
@@ -2441,12 +2430,8 @@ sub GenerateParametersCheck
                 }
             }
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
-            my $value = JSValueToNative($parameter->type, $parameter->extendedAttributes, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
-            if ($parameter->extendedAttributes->{"EnforceRange"}) {
-                $parameterCheckString .= "    V8TRYCATCH_WITH_TYPECHECK_VOID($nativeType, $parameterName, $value, args.GetIsolate());\n";
-            } else {
-                $parameterCheckString .= "    V8TRYCATCH_VOID($nativeType, $parameterName, $value);\n";
-            }
+            my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]";
+            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $parameterName, "    ", "args.GetIsolate()");
             if ($nativeType eq 'Dictionary') {
                 $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
                 $parameterCheckString .= "        throwTypeError(\"Not an object.\", args.GetIsolate());\n";
@@ -3344,7 +3329,7 @@ sub GenerateImplementationIndexedPropertySetter
     my $code = "static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= GenerateNativeValueDefinition($indexedSetterFunction, $indexedSetterFunction->parameters->[1], "value", "propertyValue", "info.GetIsolate()");
+    $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, "value", "propertyValue", "    ", "info.GetIsolate()");
 
     my $extraArguments = "";
     if ($raisesExceptions) {
@@ -3636,34 +3621,6 @@ sub GenerateImplementationNamedPropertyGetter
     $implementation{nameSpaceInternal}->add($code);
 }
 
-sub GenerateNativeValueDefinition
-{
-    my $function = shift;
-    my $parameter = shift;
-    my $jsValue = shift;
-    my $nativeValueName = shift;
-    my $getIsolate = shift;
-
-    my $treatNullAs = $parameter->extendedAttributes->{"TreatNullAs"} || "";
-    my $treatUndefinedAs = $parameter->extendedAttributes->{"TreatUndefinedAs"} || "";
-    my $code = "";
-    my $nativeType = GetNativeType($parameter->type, 1);
-    my $nativeValue = JSValueToNative($parameter->type, $function->extendedAttributes, $jsValue, $getIsolate);
-    if ($parameter->type eq "DOMString") {
-        my $nullCheck = "";
-        if ($treatNullAs eq "NullString") {
-            $nullCheck = "WithUndefinedOrNullCheck";
-            if ($treatUndefinedAs eq "NullString") {
-                $nullCheck = "WithNullCheck";
-            }
-        }
-        $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<${nullCheck}>, ${nativeValueName}, ${jsValue});\n";
-    } else {
-        $code .= "    V8TRYCATCH_VOID(${nativeType}, ${nativeValueName}, ${nativeValue});\n";
-    }
-    return $code;
-}
-
 sub GenerateImplementationNamedPropertySetter
 {
     my $interface = shift;
@@ -3687,8 +3644,8 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "        return;\n";
     }
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= GenerateNativeValueDefinition($namedSetterFunction, $namedSetterFunction->parameters->[0], "name", "propertyName", "info.GetIsolate()");
-    $code .= GenerateNativeValueDefinition($namedSetterFunction, $namedSetterFunction->parameters->[1], "value", "propertyValue", "info.GetIsolate()");
+    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, "name", "propertyName", "    ", "info.GetIsolate()");
+    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, "value", "propertyValue", "    ", "info.GetIsolate()");
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionCode ec = 0;\n";
@@ -4876,7 +4833,7 @@ sub GenerateFunctionCallString
     my $implClassName = GetImplName($interface);
     my $name = GetImplName($function);
     my $returnType = $function->type;
-    my $nativeReturnType = GetNativeType($returnType, 0);
+    my $nativeReturnType = GetNativeType($returnType, {}, "");
     my $code = "";
 
     my $isSVGTearOffType = (IsSVGTypeNeedingTearOff($returnType) and not $interfaceName =~ /List$/);
@@ -5004,39 +4961,10 @@ sub GenerateFunctionCallString
     return $code;
 }
 
-sub GetNativeTypeFromAttributeOrParameter
-{
-    my $attributeOrParameter = shift;
-    my $parameterIndex = shift;
-
-    my $type = $attributeOrParameter->type;
-
-    if ($type eq "unsigned long" and $attributeOrParameter->extendedAttributes->{"IsIndex"}) {
-        # Special-case index arguments because we need to check that they aren't < 0.
-        return "int";
-    }
-
-    $type = GetNativeType($type, $parameterIndex >= 0 ? 1 : 0);
-
-    if ($parameterIndex >= 0 && $type eq "V8StringResource") {
-        # FIXME: This implements [TreatNullAs=NullString] and [TreatUndefinedAs=NullString],
-        # but the Web IDL spec requires [TreatNullAs=EmptyString] and [TreatUndefinedAs=EmptyString].
-        my $mode = "";
-        if (($attributeOrParameter->extendedAttributes->{"TreatNullAs"} and $attributeOrParameter->extendedAttributes->{"TreatNullAs"} eq "NullString") and ($attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} and $attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} eq "NullString")) {
-            $mode = "WithUndefinedOrNullCheck";
-        } elsif (($attributeOrParameter->extendedAttributes->{"TreatNullAs"} and $attributeOrParameter->extendedAttributes->{"TreatNullAs"} eq "NullString") or $attributeOrParameter->extendedAttributes->{"Reflect"}) {
-            $mode = "WithNullCheck";
-        }
-        # FIXME: Add the case for 'elsif ($attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} and $attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} eq "NullString"))'.
-        $type .= "<$mode>";
-    }
-
-    return $type;
-}
-
 sub GetNativeType
 {
     my $type = shift;
+    my $extendedAttributes = shift;
     my $isParameter = shift;
 
     my $svgNativeType = GetSVGTypeNeedingTearOff($type);
@@ -5051,12 +4979,30 @@ sub GetNativeType
     return "float" if $type eq "float";
     return "double" if $type eq "double";
     return "int" if $type eq "long" or $type eq "int" or $type eq "short" or $type eq "byte";
-    return "unsigned" if $type eq "unsigned long" or $type eq "unsigned int" or $type eq "unsigned short" or $type eq "octet";
+    if ($type eq "unsigned long" or $type eq "unsigned int" or $type eq "unsigned short" or $type eq "octet") {
+        if ($extendedAttributes->{"IsIndex"}) {
+            # Special-case index arguments because we need to check that they aren't < 0.
+            return "int";
+        }
+        return "unsigned";
+    }
     return "long long" if $type eq "long long";
     return "unsigned long long" if $type eq "unsigned long long";
     return "bool" if $type eq "boolean";
 
-    return "V8StringResource" if ($type eq "DOMString" or IsEnumType($type)) and $isParameter;
+    if (($type eq "DOMString" || IsEnumType($type)) and $isParameter) {
+        # FIXME: This implements [TreatNullAs=NullString] and [TreatUndefinedAs=NullString],
+        # but the Web IDL spec requires [TreatNullAs=EmptyString] and [TreatUndefinedAs=EmptyString].
+        my $mode = "";
+        if (($extendedAttributes->{"TreatNullAs"} and $extendedAttributes->{"TreatNullAs"} eq "NullString") and ($extendedAttributes->{"TreatUndefinedAs"} and $extendedAttributes->{"TreatUndefinedAs"} eq "NullString")) {
+            $mode = "WithUndefinedOrNullCheck";
+        } elsif (($extendedAttributes->{"TreatNullAs"} and $extendedAttributes->{"TreatNullAs"} eq "NullString") or $extendedAttributes->{"Reflect"}) {
+            $mode = "WithNullCheck";
+        }
+        # FIXME: Add the case for 'elsif ($attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} and $attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} eq "NullString"))'.
+        return "V8StringResource<$mode>";
+    }
+
     return "String" if $type eq "DOMString" or IsEnumType($type);
 
     return "Range::CompareHow" if $type eq "CompareHow";
@@ -5100,8 +5046,40 @@ sub GetNativeTypeForCallbacks
     return "PassRefPtr<SerializedScriptValue>" if $type eq "SerializedScriptValue";
 
     # Callbacks use raw pointers, so pass isParameter = 1
-    return GetNativeType($type, 1);
+    return GetNativeType($type, {}, "parameter");
 }
+
+sub JSValueToNativeStatement
+{
+    my $type = shift;
+    my $extendedAttributes = shift;
+    my $jsValue = shift;
+    my $variableName = shift;
+    my $indent = shift;
+    my $getIsolate = shift;
+
+    my $nativeType = GetNativeType($type, $extendedAttributes, "parameter");
+    if ($type eq "unsigned long" and $extendedAttributes->{"IsIndex"}) {
+        # Special-case index arguments because we need to check that they aren't < 0.
+        $nativeType = "int";
+    }
+    my $native_value = JSValueToNative($type, $extendedAttributes, $jsValue, $getIsolate);
+    my $code = "";
+    if ($type eq "DOMString" || IsEnumType($type)) {
+        die "Wrong native type passed: $nativeType" unless $nativeType =~ /^V8StringResource/;
+        if ($type eq "DOMString" or IsEnumType($type)) {
+            $code .= $indent . "V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID($nativeType, $variableName, $native_value);\n"
+        } else {
+            $code .= $indent . "$nativeType $variableName($native_value, true);\n";
+        }
+    } elsif ($extendedAttributes->{"EnforceRange"}) {
+        $code .= $indent . "V8TRYCATCH_WITH_TYPECHECK_VOID($nativeType, $variableName, $native_value, $getIsolate);\n";
+    } else {
+        $code .= $indent . "V8TRYCATCH_VOID($nativeType, $variableName, $native_value);\n";
+    }
+    return $code;
+}
+
 
 sub JSValueToNative
 {
