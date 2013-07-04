@@ -17,6 +17,7 @@ RenderSurface::RenderSurface(Layer* owning_layer)
       target_surface_transforms_are_animating_(false),
       screen_space_transforms_are_animating_(false),
       is_clipped_(false),
+      contributes_to_drawn_surface_(false),
       nearest_ancestor_that_moves_pixels_(NULL) {}
 
 RenderSurface::~RenderSurface() {}

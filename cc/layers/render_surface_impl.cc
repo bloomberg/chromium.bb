@@ -33,6 +33,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
       target_surface_transforms_are_animating_(false),
       screen_space_transforms_are_animating_(false),
       is_clipped_(false),
+      contributes_to_drawn_surface_(false),
       nearest_ancestor_that_moves_pixels_(NULL),
       target_render_surface_layer_index_history_(0),
       current_layer_index_history_(0) {

@@ -556,4 +556,38 @@ void LayerTreeImpl::WillModifyTilePriorities() {
   layer_tree_host_impl_->SetNeedsManageTiles();
 }
 
+void LayerTreeImpl::AddLayerWithCopyOutputRequest(LayerImpl* layer) {
+  // Only the active tree needs to know about layers with copy requests, as
+  // they are aborted if not serviced during draw.
+  DCHECK(IsActiveTree());
+
+  DCHECK(std::find(layers_with_copy_output_request_.begin(),
+                   layers_with_copy_output_request_.end(),
+                   layer) == layers_with_copy_output_request_.end());
+  layers_with_copy_output_request_.push_back(layer);
+}
+
+void LayerTreeImpl::RemoveLayerWithCopyOutputRequest(LayerImpl* layer) {
+  // Only the active tree needs to know about layers with copy requests, as
+  // they are aborted if not serviced during draw.
+  DCHECK(IsActiveTree());
+
+  std::vector<LayerImpl*>::iterator it = std::find(
+      layers_with_copy_output_request_.begin(),
+      layers_with_copy_output_request_.end(),
+      layer);
+  DCHECK(it != layers_with_copy_output_request_.end());
+  if (it != layers_with_copy_output_request_.end())
+    layers_with_copy_output_request_.erase(it);
+}
+
+const std::vector<LayerImpl*> LayerTreeImpl::LayersWithCopyOutputRequest()
+    const {
+  // Only the active tree needs to know about layers with copy requests, as
+  // they are aborted if not serviced during draw.
+  DCHECK(IsActiveTree());
+
+  return layers_with_copy_output_request_;
+}
+
 }  // namespace cc

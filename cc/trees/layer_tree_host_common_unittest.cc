@@ -13,6 +13,8 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -8142,6 +8144,196 @@ TEST(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   ASSERT_EQ(1u, render_surface_layer_list.size());
   ASSERT_EQ(1u, root->render_surface()->layer_list().size());
   EXPECT_EQ(1, root->render_surface()->layer_list()[0]->id());
+}
+
+void EmptyCopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+
+TEST(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  host_impl.CreatePendingTree();
+  const gfx::Transform identity_matrix;
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  root->SetIsDrawable(true);
+
+  scoped_refptr<Layer> copy_grand_parent = Layer::Create();
+  SetLayerPropertiesForTesting(copy_grand_parent.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               false);
+  copy_grand_parent->SetIsDrawable(true);
+
+  scoped_refptr<Layer> copy_parent = Layer::Create();
+  SetLayerPropertiesForTesting(copy_parent.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               false);
+  copy_parent->SetIsDrawable(true);
+  copy_parent->SetForceRenderSurface(true);
+
+  scoped_refptr<Layer> copy_layer = Layer::Create();
+  SetLayerPropertiesForTesting(copy_layer.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(20, 20),
+                               false);
+  copy_layer->SetIsDrawable(true);
+
+  scoped_refptr<Layer> copy_child = Layer::Create();
+  SetLayerPropertiesForTesting(copy_child.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(20, 20),
+                               false);
+  copy_child->SetIsDrawable(true);
+
+  copy_layer->AddChild(copy_child);
+  copy_parent->AddChild(copy_layer);
+  copy_grand_parent->AddChild(copy_parent);
+  root->AddChild(copy_grand_parent);
+
+  // Hide the copy_grand_parent and its subtree. But make a copy request in that
+  // hidden subtree on copy_layer.
+  copy_grand_parent->SetHideLayerAndSubtree(true);
+  copy_layer->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
+      base::Bind(&EmptyCopyOutputCallback)));
+  EXPECT_TRUE(copy_layer->HasCopyRequest());
+
+  LayerList render_surface_layer_list;
+  int dummy_max_texture_size = 512;
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               gfx::Transform(),
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+
+  // We should have three render surfaces, one for the root, one for the parent
+  // since it owns a surface, and one for the copy_layer.
+  ASSERT_EQ(3u, render_surface_layer_list.size());
+  EXPECT_EQ(root->id(), render_surface_layer_list[0]->id());
+  EXPECT_EQ(copy_parent->id(), render_surface_layer_list[1]->id());
+  EXPECT_EQ(copy_layer->id(), render_surface_layer_list[2]->id());
+
+  // The root render surface should have 2 contributing layers. The
+  // copy_grand_parent is hidden, but the copy_parent will appear since
+  // something in its subtree needs to be drawn for a copy request.
+  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
+  EXPECT_EQ(root->id(), root->render_surface()->layer_list()[0]->id());
+  EXPECT_EQ(copy_parent->id(), root->render_surface()->layer_list()[1]->id());
+
+  // Nothing actually drawns into the copy parent, so only the copy_layer will
+  // appear in its list, since it needs to be drawn for the copy request.
+  ASSERT_EQ(1u, copy_parent->render_surface()->layer_list().size());
+  EXPECT_EQ(copy_layer->id(),
+            copy_parent->render_surface()->layer_list()[0]->id());
+
+  // The copy_layer's render surface should have two contributing layers.
+  ASSERT_EQ(2u, copy_layer->render_surface()->layer_list().size());
+  EXPECT_EQ(copy_layer->id(),
+            copy_layer->render_surface()->layer_list()[0]->id());
+  EXPECT_EQ(copy_child->id(),
+            copy_layer->render_surface()->layer_list()[1]->id());
+}
+
+TEST(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  host_impl.CreatePendingTree();
+  const gfx::Transform identity_matrix;
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               false);
+  root->SetIsDrawable(true);
+
+  scoped_refptr<Layer> copy_parent = Layer::Create();
+  SetLayerPropertiesForTesting(copy_parent.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(),
+                               false);
+  copy_parent->SetIsDrawable(true);
+  copy_parent->SetMasksToBounds(true);
+
+  scoped_refptr<Layer> copy_layer = Layer::Create();
+  SetLayerPropertiesForTesting(copy_layer.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               false);
+  copy_layer->SetIsDrawable(true);
+
+  scoped_refptr<Layer> copy_child = Layer::Create();
+  SetLayerPropertiesForTesting(copy_child.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(20, 20),
+                               false);
+  copy_child->SetIsDrawable(true);
+
+  copy_layer->AddChild(copy_child);
+  copy_parent->AddChild(copy_layer);
+  root->AddChild(copy_parent);
+
+  copy_layer->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
+      base::Bind(&EmptyCopyOutputCallback)));
+  EXPECT_TRUE(copy_layer->HasCopyRequest());
+
+  LayerList render_surface_layer_list;
+  int dummy_max_texture_size = 512;
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               gfx::Transform(),
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+
+  // We should have one render surface, as the others are clipped out.
+  ASSERT_EQ(1u, render_surface_layer_list.size());
+  EXPECT_EQ(root->id(), render_surface_layer_list[0]->id());
+
+  // The root render surface should only have 1 contributing layer, since the
+  // other layers are empty/clipped away.
+  ASSERT_EQ(1u, root->render_surface()->layer_list().size());
+  EXPECT_EQ(root->id(), root->render_surface()->layer_list()[0]->id());
 }
 
 }  // namespace

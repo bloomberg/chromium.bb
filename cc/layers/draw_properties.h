@@ -28,7 +28,8 @@ struct CC_EXPORT DrawProperties {
         contents_scale_y(1.f),
         num_descendants_that_draw_content(0),
         descendants_can_clip_selves(false),
-        can_draw_directly_to_backbuffer(false) {}
+        can_draw_directly_to_backbuffer(false),
+        layer_or_descendant_has_copy_request(false) {}
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -92,6 +93,10 @@ struct CC_EXPORT DrawProperties {
   bool descendants_can_clip_selves;
 
   bool can_draw_directly_to_backbuffer;
+
+  // If true, the layer or some layer in its sub-tree has a CopyOutputRequest
+  // present on it.
+  bool layer_or_descendant_has_copy_request;
 };
 
 }  // namespace cc

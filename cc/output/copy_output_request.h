@@ -58,10 +58,12 @@ class CC_EXPORT CopyOutputRequest {
   bool has_area() const { return has_area_; }
   gfx::Rect area() const { return area_; }
 
-  void SendResult(scoped_ptr<CopyOutputResult> result);
+  void SendEmptyResult();
   void SendBitmapResult(scoped_ptr<SkBitmap> bitmap);
   void SendTextureResult(gfx::Size size,
                          scoped_ptr<TextureMailbox> texture_mailbox);
+
+  void SendResult(scoped_ptr<CopyOutputResult> result);
 
   bool Equals(const CopyOutputRequest& other) const {
     return result_callback_.Equals(other.result_callback_) &&

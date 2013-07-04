@@ -2788,6 +2788,236 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAsyncReadbackLayerDestroyed);
 
+class LayerTreeHostTestAsyncReadbackInHiddenSubtree : public LayerTreeHostTest {
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    root_ = FakeContentLayer::Create(&client_);
+    root_->SetBounds(gfx::Size(20, 20));
+
+    grand_parent_layer_ = FakeContentLayer::Create(&client_);
+    grand_parent_layer_->SetBounds(gfx::Size(15, 15));
+    root_->AddChild(grand_parent_layer_);
+
+    // parent_layer_ owns a render surface.
+    parent_layer_ = FakeContentLayer::Create(&client_);
+    parent_layer_->SetBounds(gfx::Size(15, 15));
+    parent_layer_->SetForceRenderSurface(true);
+    grand_parent_layer_->AddChild(parent_layer_);
+
+    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_->SetBounds(gfx::Size(10, 10));
+    parent_layer_->AddChild(copy_layer_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void AddCopyRequest(Layer* layer) {
+    layer->RequestCopyOfOutput(
+        CopyOutputRequest::CreateBitmapRequest(base::Bind(
+            &LayerTreeHostTestAsyncReadbackInHiddenSubtree::CopyOutputCallback,
+            base::Unretained(this))));
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    callback_count_ = 0;
+    PostSetNeedsCommitToMainThread();
+
+    AddCopyRequest(copy_layer_.get());
+  }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_EQ(copy_layer_->bounds().ToString(), result->size().ToString());
+    ++callback_count_;
+
+    switch (callback_count_) {
+      case 1:
+        // Hide the copy request layer.
+        grand_parent_layer_->SetHideLayerAndSubtree(false);
+        parent_layer_->SetHideLayerAndSubtree(false);
+        copy_layer_->SetHideLayerAndSubtree(true);
+        AddCopyRequest(copy_layer_.get());
+        break;
+      case 2:
+        // Hide the copy request layer's parent only.
+        grand_parent_layer_->SetHideLayerAndSubtree(false);
+        parent_layer_->SetHideLayerAndSubtree(true);
+        copy_layer_->SetHideLayerAndSubtree(false);
+        AddCopyRequest(copy_layer_.get());
+        break;
+      case 3:
+        // Hide the copy request layer's grand parent only.
+        grand_parent_layer_->SetHideLayerAndSubtree(true);
+        parent_layer_->SetHideLayerAndSubtree(false);
+        copy_layer_->SetHideLayerAndSubtree(false);
+        AddCopyRequest(copy_layer_.get());
+        break;
+      case 4:
+        // Hide the copy request layer's parent and grandparent.
+        grand_parent_layer_->SetHideLayerAndSubtree(true);
+        parent_layer_->SetHideLayerAndSubtree(true);
+        copy_layer_->SetHideLayerAndSubtree(false);
+        AddCopyRequest(copy_layer_.get());
+        break;
+      case 5:
+        // Hide the copy request layer as well as its parent and grandparent.
+        grand_parent_layer_->SetHideLayerAndSubtree(true);
+        parent_layer_->SetHideLayerAndSubtree(true);
+        copy_layer_->SetHideLayerAndSubtree(true);
+        AddCopyRequest(copy_layer_.get());
+        break;
+      case 6:
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  int callback_count_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_;
+  scoped_refptr<FakeContentLayer> grand_parent_layer_;
+  scoped_refptr<FakeContentLayer> parent_layer_;
+  scoped_refptr<FakeContentLayer> copy_layer_;
+};
+
+// No output to copy for delegated renderers.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestAsyncReadbackInHiddenSubtree);
+
+class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
+    : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->cache_render_pass_contents = true;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    root_ = FakeContentLayer::Create(&client_);
+    root_->SetBounds(gfx::Size(20, 20));
+
+    grand_parent_layer_ = FakeContentLayer::Create(&client_);
+    grand_parent_layer_->SetBounds(gfx::Size(15, 15));
+    grand_parent_layer_->SetHideLayerAndSubtree(true);
+    root_->AddChild(grand_parent_layer_);
+
+    // parent_layer_ owns a render surface.
+    parent_layer_ = FakeContentLayer::Create(&client_);
+    parent_layer_->SetBounds(gfx::Size(15, 15));
+    parent_layer_->SetForceRenderSurface(true);
+    grand_parent_layer_->AddChild(parent_layer_);
+
+    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_->SetBounds(gfx::Size(10, 10));
+    parent_layer_->AddChild(copy_layer_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    did_draw_ = false;
+    PostSetNeedsCommitToMainThread();
+
+    copy_layer_->RequestCopyOfOutput(
+        CopyOutputRequest::CreateBitmapRequest(base::Bind(
+            &LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest::
+                CopyOutputCallback,
+            base::Unretained(this))));
+  }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_EQ(copy_layer_->bounds().ToString(), result->size().ToString());
+    EndTest();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    Renderer* renderer = host_impl->renderer();
+
+    LayerImpl* root = host_impl->active_tree()->root_layer();
+    LayerImpl* grand_parent = root->children()[0];
+    LayerImpl* parent = grand_parent->children()[0];
+    LayerImpl* copy_layer = parent->children()[0];
+
+    // |parent| owns a surface, but it was hidden and not part of the copy
+    // request so it should not allocate any resource.
+    EXPECT_FALSE(renderer->HaveCachedResourcesForRenderPassId(
+        parent->render_surface()->RenderPassId()));
+
+    // |copy_layer| should have been rendered to a texture since it was needed
+    // for a copy request.
+    EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(
+        copy_layer->render_surface()->RenderPassId()));
+
+    did_draw_ = true;
+  }
+
+  virtual void AfterTest() OVERRIDE { EXPECT_TRUE(did_draw_); }
+
+  FakeContentLayerClient client_;
+  bool did_draw_;
+  scoped_refptr<FakeContentLayer> root_;
+  scoped_refptr<FakeContentLayer> grand_parent_layer_;
+  scoped_refptr<FakeContentLayer> parent_layer_;
+  scoped_refptr<FakeContentLayer> copy_layer_;
+};
+
+// No output to copy for delegated renderers.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+      LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest);
+
+class LayerTreeHostTestAsyncReadbackClippedOut : public LayerTreeHostTest {
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    root_ = FakeContentLayer::Create(&client_);
+    root_->SetBounds(gfx::Size(20, 20));
+
+    parent_layer_ = FakeContentLayer::Create(&client_);
+    parent_layer_->SetBounds(gfx::Size(15, 15));
+    parent_layer_->SetMasksToBounds(true);
+    root_->AddChild(parent_layer_);
+
+    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_->SetPosition(gfx::Point(15, 15));
+    copy_layer_->SetBounds(gfx::Size(10, 10));
+    parent_layer_->AddChild(copy_layer_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+
+    copy_layer_->RequestCopyOfOutput(
+        CopyOutputRequest::CreateBitmapRequest(base::Bind(
+            &LayerTreeHostTestAsyncReadbackClippedOut::CopyOutputCallback,
+            base::Unretained(this))));
+  }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    // We should still get a callback with no output if the copy requested layer
+    // was completely clipped away.
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_EQ(gfx::Size().ToString(), result->size().ToString());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_;
+  scoped_refptr<FakeContentLayer> parent_layer_;
+  scoped_refptr<FakeContentLayer> copy_layer_;
+};
+
+// No output to copy for delegated renderers.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestAsyncReadbackClippedOut);
+
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
  public:
   virtual void BeginTest() OVERRIDE {

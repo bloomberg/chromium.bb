@@ -104,6 +104,17 @@ class CC_EXPORT RenderSurfaceImpl {
   void SetClipRect(gfx::Rect clip_rect);
   gfx::Rect clip_rect() const { return clip_rect_; }
 
+  // When false, the RenderSurface does not contribute to another target
+  // RenderSurface that is being drawn for the current frame. It could still be
+  // drawn to as a target, but its output will not be a part of any other
+  // surface.
+  bool contributes_to_drawn_surface() const {
+    return contributes_to_drawn_surface_;
+  }
+  void set_contributes_to_drawn_surface(bool contributes_to_drawn_surface) {
+    contributes_to_drawn_surface_ = contributes_to_drawn_surface;
+  }
+
   bool ContentsChanged() const;
 
   void SetContentRect(gfx::Rect content_rect);
@@ -146,6 +157,7 @@ class CC_EXPORT RenderSurfaceImpl {
   bool screen_space_transforms_are_animating_;
 
   bool is_clipped_;
+  bool contributes_to_drawn_surface_;
 
   // Uses the space of the surface's target surface.
   gfx::Rect clip_rect_;

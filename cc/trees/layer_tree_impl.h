@@ -190,6 +190,10 @@ class CC_EXPORT LayerTreeImpl {
 
   void WillModifyTilePriorities();
 
+  void AddLayerWithCopyOutputRequest(LayerImpl* layer);
+  void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
+  const std::vector<LayerImpl*> LayersWithCopyOutputRequest() const;
+
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
@@ -215,6 +219,8 @@ class CC_EXPORT LayerTreeImpl {
 
   typedef base::hash_map<int, LayerImpl*> LayerIdMap;
   LayerIdMap layer_id_map_;
+
+  std::vector<LayerImpl*> layers_with_copy_output_request_;
 
   // Persisted state for non-impl-side-painting.
   int scrolling_layer_id_from_previous_tree_;

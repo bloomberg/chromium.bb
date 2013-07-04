@@ -86,6 +86,17 @@ class CC_EXPORT RenderSurface {
   gfx::Rect clip_rect() const { return clip_rect_; }
   void SetClipRect(gfx::Rect clip_rect) { clip_rect_ = clip_rect; }
 
+  // When false, the RenderSurface does not contribute to another target
+  // RenderSurface that is being drawn for the current frame. It could still be
+  // drawn to as a target, but its output will not be a part of any other
+  // surface.
+  bool contributes_to_drawn_surface() const {
+    return contributes_to_drawn_surface_;
+  }
+  void set_contributes_to_drawn_surface(bool contributes_to_drawn_surface) {
+    contributes_to_drawn_surface_ = contributes_to_drawn_surface;
+  }
+
   LayerList& layer_list() { return layer_list_; }
   // A no-op since DelegatedRendererLayers on the main thread don't have any
   // RenderPasses so they can't contribute to a surface.
@@ -117,6 +128,7 @@ class CC_EXPORT RenderSurface {
   bool screen_space_transforms_are_animating_;
 
   bool is_clipped_;
+  bool contributes_to_drawn_surface_;
 
   // Uses the space of the surface's target surface.
   gfx::Rect clip_rect_;

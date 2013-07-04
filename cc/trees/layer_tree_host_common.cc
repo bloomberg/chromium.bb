@@ -195,8 +195,10 @@ static inline bool TransformToScreenIsKnown(Layer* layer) {
 }
 
 template <typename LayerType>
-static bool LayerShouldBeSkipped(LayerType* layer) {
+static bool LayerShouldBeSkipped(LayerType* layer,
+                                 bool layer_is_visible) {
   // Layers can be skipped if any of these conditions are met.
+  //   - is not visible due to it or one of its ancestors being hidden.
   //   - does not draw content.
   //   - is transparent
   //   - has empty bounds
@@ -210,6 +212,9 @@ static bool LayerShouldBeSkipped(LayerType* layer) {
   // Note, if the layer should not have been drawn due to being fully
   // transparent, we would have skipped the entire subtree and never made it
   // into this function, so it is safe to omit this check here.
+
+  if (!layer_is_visible)
+    return true;
 
   if (!layer->DrawsContent() || layer->bounds().IsEmpty())
     return true;
@@ -231,9 +236,15 @@ static bool LayerShouldBeSkipped(LayerType* layer) {
   return false;
 }
 
-static inline bool SubtreeShouldBeSkipped(LayerImpl* layer) {
-  // The embedder can request to hide the entire layer's subtree.
-  if (layer->hide_layer_and_subtree())
+static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
+                                          bool layer_is_visible) {
+  // When we need to do a readback/copy of a layer's output, we can not skip
+  // it or any of its ancestors.
+  if (layer->draw_properties().layer_or_descendant_has_copy_request)
+    return false;
+
+  // If the layer is not visible, then skip it and its subtree.
+  if (!layer_is_visible)
     return true;
 
   // If layer is on the pending tree and opacity is being animated then
@@ -248,9 +259,15 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer) {
   return !layer->opacity();
 }
 
-static inline bool SubtreeShouldBeSkipped(Layer* layer) {
-  // The embedder can request to hide the entire layer's subtree.
-  if (layer->hide_layer_and_subtree())
+static inline bool SubtreeShouldBeSkipped(Layer* layer,
+                                          bool layer_is_visible) {
+  // When we need to do a readback/copy of a layer's output, we can not skip
+  // it or any of its ancestors.
+  if (layer->draw_properties().layer_or_descendant_has_copy_request)
+    return false;
+
+  // If the layer is not visible, then skip it and its subtree.
+  if (!layer_is_visible)
     return true;
 
   // If the opacity is being animated then the opacity on the main thread is
@@ -751,45 +768,62 @@ static inline void RemoveSurfaceForEarlyExit(
   layer_to_remove->ClearRenderSurface();
 }
 
+struct PreCalculateMetaInformationRecursiveData {
+  bool layer_or_descendent_has_copy_request;
+
+  PreCalculateMetaInformationRecursiveData()
+      : layer_or_descendent_has_copy_request(false) {}
+};
+
 // Recursively walks the layer tree to compute any information that is needed
 // before doing the main recursion.
 template <typename LayerType>
-static void PreCalculateMetaInformation(LayerType* layer) {
-  if (layer->HasDelegatedContent()) {
-    // Layers with delegated content need to be treated as if they have as many
-    // children as the number of layers they own delegated quads for. Since we
-    // don't know this number right now, we choose one that acts like infinity
-    // for our purposes.
-    layer->draw_properties().num_descendants_that_draw_content = 1000;
-    layer->draw_properties().descendants_can_clip_selves = false;
-    return;
-  }
-
+static void PreCalculateMetaInformation(
+    LayerType* layer,
+    PreCalculateMetaInformationRecursiveData* recursive_data) {
+  bool has_delegated_content = layer->HasDelegatedContent();
   int num_descendants_that_draw_content = 0;
   bool descendants_can_clip_selves = true;
-  bool sublayer_transform_prevents_clip =
-      !layer->sublayer_transform().IsPositiveScaleOrTranslation();
+
+  if (has_delegated_content) {
+    // Layers with delegated content need to be treated as if they have as
+    // many children as the number of layers they own delegated quads for.
+    // Since we don't know this number right now, we choose one that acts like
+    // infinity for our purposes.
+    num_descendants_that_draw_content = 1000;
+    descendants_can_clip_selves = false;
+  }
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     LayerType* child_layer =
         LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
-    PreCalculateMetaInformation<LayerType>(child_layer);
+    PreCalculateMetaInformation<LayerType>(child_layer, recursive_data);
 
-    num_descendants_that_draw_content += child_layer->DrawsContent() ? 1 : 0;
-    num_descendants_that_draw_content +=
-        child_layer->draw_properties().num_descendants_that_draw_content;
+    if (!has_delegated_content) {
+      bool sublayer_transform_prevents_clip =
+          !layer->sublayer_transform().IsPositiveScaleOrTranslation();
 
-    if ((child_layer->DrawsContent() && !child_layer->CanClipSelf()) ||
-        !child_layer->draw_properties().descendants_can_clip_selves ||
-        sublayer_transform_prevents_clip ||
-        !child_layer->transform().IsPositiveScaleOrTranslation())
-      descendants_can_clip_selves = false;
+      num_descendants_that_draw_content += child_layer->DrawsContent() ? 1 : 0;
+      num_descendants_that_draw_content +=
+          child_layer->draw_properties().num_descendants_that_draw_content;
+
+      if ((child_layer->DrawsContent() && !child_layer->CanClipSelf()) ||
+          !child_layer->draw_properties().descendants_can_clip_selves ||
+          sublayer_transform_prevents_clip ||
+          !child_layer->transform().IsPositiveScaleOrTranslation())
+        descendants_can_clip_selves = false;
+    }
   }
+
+  if (layer->HasCopyRequest())
+    recursive_data->layer_or_descendent_has_copy_request = true;
 
   layer->draw_properties().num_descendants_that_draw_content =
       num_descendants_that_draw_content;
   layer->draw_properties().descendants_can_clip_selves =
       descendants_can_clip_selves;
+  layer->draw_properties().layer_or_descendant_has_copy_request =
+      recursive_data->layer_or_descendent_has_copy_request;
 }
 
 static void RoundTranslationComponents(gfx::Transform* transform) {
@@ -822,6 +856,7 @@ static void CalculateDrawPropertiesInternal(
     bool in_subtree_of_page_scale_application_layer,
     bool subtree_can_use_lcd_text,
     bool subtree_can_adjust_raster_scales,
+    bool subtree_is_visible_from_ancestor,
     gfx::Rect* drawable_content_rect_of_subtree) {
   // This function computes the new matrix transformations recursively for this
   // layer and all its descendants. It also computes the appropriate render
@@ -953,8 +988,16 @@ static void CalculateDrawPropertiesInternal(
   // this subtree should be considered empty.
   *drawable_content_rect_of_subtree = gfx::Rect();
 
+  // Layers with a copy request are always visible, as well as un-hiding their
+  // subtree. Otherise, layers that are marked as hidden will hide themselves
+  // and their subtree.
+  bool layer_is_visible =
+      subtree_is_visible_from_ancestor && !layer->hide_layer_and_subtree();
+  if (layer->HasCopyRequest())
+    layer_is_visible = true;
+
   // The root layer cannot skip CalcDrawProperties.
-  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer))
+  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_visible))
     return;
 
   // As this function proceeds, these are the properties for the current
@@ -1129,6 +1172,10 @@ static void CalculateDrawPropertiesInternal(
       // layer can't directly support non-identity transforms.  It should just
       // forward top-level transforms to the rest of the tree.
       sublayer_matrix = combined_transform;
+
+      // The root surface does not contribute to any other surface, it has no
+      // target.
+      layer->render_surface()->set_contributes_to_drawn_surface(false);
     } else {
       // The owning layer's draw transform has a scale from content to layer
       // space which we do not want; so here we use the combined_transform
@@ -1155,6 +1202,9 @@ static void CalculateDrawPropertiesInternal(
       DCHECK(sublayer_matrix.IsIdentity());
       sublayer_matrix.Scale(render_surface_sublayer_scale.x(),
                             render_surface_sublayer_scale.y());
+
+      layer->render_surface()->set_contributes_to_drawn_surface(
+          subtree_is_visible_from_ancestor && layer_is_visible);
     }
 
     // The opacity value is moved from the layer to its surface, so that the
@@ -1326,7 +1376,7 @@ static void CalculateDrawPropertiesInternal(
   // and should be included in the sorting process.
   size_t sorting_start_index = descendants.size();
 
-  if (!LayerShouldBeSkipped(layer))
+  if (!LayerShouldBeSkipped(layer, layer_is_visible))
     descendants.push_back(layer);
 
   gfx::Transform next_scroll_compensation_matrix =
@@ -1365,6 +1415,7 @@ static void CalculateDrawPropertiesInternal(
         in_subtree_of_page_scale_application_layer,
         subtree_can_use_lcd_text,
         subtree_can_adjust_raster_scales,
+        layer_is_visible,
         &drawable_content_rect_of_child_subtree);
     if (!drawable_content_rect_of_child_subtree.IsEmpty()) {
       accumulated_drawable_content_rect_of_children.Union(
@@ -1552,11 +1603,14 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   bool subtree_should_be_clipped = true;
   gfx::Rect device_viewport_rect(device_viewport_size);
   bool in_subtree_of_page_scale_application_layer = false;
+  bool subtree_is_visible = true;
 
   // This function should have received a root layer.
   DCHECK(IsRootLayer(root_layer));
 
-  PreCalculateMetaInformation<Layer>(root_layer);
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformation<Layer>(root_layer, &recursive_data);
+
   CalculateDrawPropertiesInternal<Layer, LayerList, RenderSurface>(
       root_layer,
       scaled_device_transform,
@@ -1577,6 +1631,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       in_subtree_of_page_scale_application_layer,
       can_use_lcd_text,
       can_adjust_raster_scales,
+      subtree_is_visible,
       &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.
@@ -1609,11 +1664,14 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   bool subtree_should_be_clipped = true;
   gfx::Rect device_viewport_rect(device_viewport_size);
   bool in_subtree_of_page_scale_application_layer = false;
+  bool subtree_is_visible = true;
 
   // This function should have received a root layer.
   DCHECK(IsRootLayer(root_layer));
 
-  PreCalculateMetaInformation<LayerImpl>(root_layer);
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformation<LayerImpl>(root_layer, &recursive_data);
+
   CalculateDrawPropertiesInternal<LayerImpl,
                                   LayerImplList,
                                   RenderSurfaceImpl>(
@@ -1636,6 +1694,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       in_subtree_of_page_scale_application_layer,
       can_use_lcd_text,
       can_adjust_raster_scales,
+      subtree_is_visible,
       &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.

@@ -32,6 +32,10 @@ void CopyOutputRequest::SendResult(scoped_ptr<CopyOutputResult> result) {
   base::ResetAndReturn(&result_callback_).Run(result.Pass());
 }
 
+void CopyOutputRequest::SendEmptyResult() {
+  SendResult(CopyOutputResult::CreateEmptyResult().Pass());
+}
+
 void CopyOutputRequest::SendBitmapResult(scoped_ptr<SkBitmap> bitmap) {
   SendResult(CopyOutputResult::CreateBitmapResult(bitmap.Pass()).Pass());
 }

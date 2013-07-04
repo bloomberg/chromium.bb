@@ -30,6 +30,7 @@
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/delegating_renderer.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/software_renderer.h"
@@ -563,6 +564,9 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;
+    // A copy request should cause damage, so we should not have any copy
+    // requests in this case.
+    DCHECK_EQ(0u, active_tree_->LayersWithCopyOutputRequest().size());
     return true;
   }
 
@@ -577,7 +581,14 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
        --surface_index) {
     LayerImpl* render_surface_layer =
         (*frame->render_surface_layer_list)[surface_index];
-    render_surface_layer->render_surface()->AppendRenderPasses(frame);
+    RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
+
+    bool should_draw_into_render_pass =
+        render_surface_layer->parent() == NULL ||
+        render_surface->contributes_to_drawn_surface() ||
+        render_surface_layer->HasCopyRequest();
+    if (should_draw_into_render_pass)
+      render_surface_layer->render_surface()->AppendRenderPasses(frame);
   }
 
   bool record_metrics_for_frame =
@@ -633,7 +644,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     bool prevent_occlusion = it.target_render_surface_layer()->HasCopyRequest();
     occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
-    AppendQuadsData append_quads_data(target_render_pass->id);
+    AppendQuadsData append_quads_data(target_render_pass_id);
 
     if (it.represents_target_render_surface()) {
       if (it->HasCopyRequest()) {
@@ -641,7 +652,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         it->TakeCopyRequestsAndTransformToTarget(
             &target_render_pass->copy_requests);
       }
-    } else if (it.represents_contributing_render_surface()) {
+    } else if (it.represents_contributing_render_surface() &&
+               it->render_surface()->contributes_to_drawn_surface()) {
       RenderPass::Id contributing_render_pass_id =
           it->render_surface()->RenderPassId();
       RenderPass* contributing_render_pass =
@@ -750,6 +762,16 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
   RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
                      frame);
+
+  // Any copy requests left in the tree are not going to get serviced, and
+  // should be aborted.
+  ScopedPtrVector<CopyOutputRequest> requests_to_abort;
+  while (!active_tree_->LayersWithCopyOutputRequest().empty()) {
+    LayerImpl* layer = active_tree_->LayersWithCopyOutputRequest().back();
+    layer->TakeCopyRequestsAndTransformToTarget(&requests_to_abort);
+  }
+  for (size_t i = 0; i < requests_to_abort.size(); ++i)
+    requests_to_abort[i]->SendEmptyResult();
 
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());

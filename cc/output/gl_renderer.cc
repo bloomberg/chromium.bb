@@ -22,7 +22,6 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/geometry_binding.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/output/output_surface.h"
@@ -2156,7 +2155,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
     GLC(context_, context_->genMailboxCHROMIUM(mailbox.name));
     if (mailbox.IsZero()) {
       context_->deleteTexture(texture_id);
-      request->SendResult(CopyOutputResult::CreateEmptyResult());
+      request->SendEmptyResult();
       return;
     }
 
