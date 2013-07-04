@@ -65,8 +65,14 @@ function test()
         urls = urls.filter(filter);
 
         InspectorTest.addResult("UISourceCodes:");
-        for (var i = 0; i < urls.length; ++i)
+        var lastURL;
+        for (var i = 0; i < urls.length; ++i) {
+            // Hack around the problem with scripts surviving between tests.
+            if (urls[i] === lastURL && !lastURL.endsWith(".html"))
+                continue;
             InspectorTest.addResult("    " + urls[i]);
+            lastURL = urls[i];
+        }
         InspectorTest.completeDebuggerTest();
     }
 }

@@ -31,13 +31,15 @@ function extension_testGetAllResources(nextTest)
 {
     function callback(resources)
     {
+        // For some reason scripts from tests previously run in the same test shell sometimes appear, so we need to filter them out.
+        var resourceURLsWhiteList = ["abe.png", "audits-style1.css", "extensions-resources.html", "extensions-test.js", "inspector-test.js", "test-script.js"];
         function filter(resource)
         {
-            // For some reason scripts from tests previously run in the same test shell sometimes appear, so we need to filter them out.
-            const resourceURLsWhiteList = ["abe.png", "audits-style1.css", "extensions-resources.html", "extensions-test.js", "inspector-test.js", "test-script.js"];
             for (var i = 0; i < resourceURLsWhiteList.length; ++i) {
-                if (resource.url.indexOf(resourceURLsWhiteList[i]) !== -1)
-                  return true;
+                if (resource.url.indexOf(resourceURLsWhiteList[i]) !== -1) {
+                    resourceURLsWhiteList.splice(i, 1);
+                    return true;
+                }
             }
             return false;
         }
