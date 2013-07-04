@@ -12,14 +12,13 @@ import android.view.View;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -293,22 +292,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         assertScrollOnMainSync(testContainerView, maxScrollXPix, maxScrollYPix);
     }
 
-    private void dragViewBy(AwTestContainerView testContainerView, int dxPix, int dyPix,
-            int steps) {
-        int gestureStart[] = new int[2];
-        testContainerView.getLocationOnScreen(gestureStart);
-        int gestureEnd[] = new int[] { gestureStart[0] - dxPix, gestureStart[1] - dyPix };
-
-        TestTouchUtils.drag(this, gestureStart[0], gestureEnd[0], gestureStart[1], gestureEnd[1],
-                steps);
-    }
-
-    /*
-     * http://crbug.com/256774
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-    */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testTouchScrollCanBeAlteredByUi() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -339,7 +324,10 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         final CallbackHelper onScrollToCallbackHelper =
             testContainerView.getOnScrollToCallbackHelper();
         final int scrollToCallCount = onScrollToCallbackHelper.getCallCount();
-        dragViewBy(testContainerView, targetScrollXPix, targetScrollYPix, dragSteps);
+        AwTestTouchUtils.dragCompleteView(testContainerView,
+                0, -targetScrollXPix, // these need to be negative as we're scrolling down.
+                0, -targetScrollYPix,
+                dragSteps);
 
         for (int i = 1; i <= dragSteps; ++i) {
             onScrollToCallbackHelper.waitForCallback(scrollToCallCount, i);
