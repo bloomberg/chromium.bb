@@ -10,8 +10,11 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/signin_delegate.h"
+#include "ui/app_list/signin_delegate_observer.h"
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
+#import "ui/app_list/cocoa/signin_view_controller.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -72,8 +75,36 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
 
 - (void)loadAndSetView;
 - (void)revealSearchResults:(BOOL)show;
+- (void)onSigninStatusChanged;
+- (app_list::SigninDelegate*)signinDelegate;
 
 @end
+
+namespace app_list {
+
+class SigninDelegateObserverBridge : public SigninDelegateObserver {
+ public:
+  SigninDelegateObserverBridge(AppListViewController* parent)
+      : parent_(parent) {
+    [parent_ signinDelegate]->AddObserver(this);
+  }
+
+  virtual ~SigninDelegateObserverBridge() {
+    [parent_ signinDelegate]->RemoveObserver(this);
+  }
+
+ private:
+  // SigninDelegateObserver override:
+  virtual void OnSigninSuccess() OVERRIDE {
+    [parent_ onSigninStatusChanged];
+  }
+
+  AppListViewController* parent_;  // Weak. Owns us.
+
+  DISALLOW_COPY_AND_ASSIGN(SigninDelegateObserverBridge);
+};
+
+}  // namespace app_list
 
 @implementation AppListViewController
 
@@ -106,6 +137,10 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
   return pagerControl_;
 }
 
+- (NSView*)backgroundView {
+  return backgroundView_;
+}
+
 - (app_list::AppListViewDelegate*)delegate {
   return delegate_.get();
 }
@@ -114,6 +149,7 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
       withTestModel:(scoped_ptr<app_list::AppListModel>)newModel {
   if (delegate_) {
     // First clean up, in reverse order.
+    signin_observer_bridge_.reset();
     [appsSearchResultsController_ setDelegate:nil];
     [appsSearchBoxController_ setDelegate:nil];
   }
@@ -123,6 +159,7 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
     [appsGridController_ setModel:newModel.Pass()];
   [appsSearchBoxController_ setDelegate:self];
   [appsSearchResultsController_ setDelegate:self];
+  [self onSigninStatusChanged];
 }
 
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate {
@@ -141,7 +178,7 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
           [AppsGridController scrollerPadding]);
 
   contentsView_.reset([[FlippedView alloc] initWithFrame:contentsRect]);
-  base::scoped_nsobject<BackgroundView> backgroundView(
+  backgroundView_.reset(
       [[BackgroundView alloc] initWithFrame:
               NSMakeRect(0, 0, NSMaxX(contentsRect), NSMaxY(contentsRect))]);
   appsSearchBoxController_.reset(
@@ -150,13 +187,16 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
   appsSearchResultsController_.reset(
       [[AppsSearchResultsController alloc] initWithAppsSearchResultsFrameSize:
           [contentsView_ bounds].size]);
+  base::scoped_nsobject<NSView> containerView(
+      [[NSView alloc] initWithFrame:[backgroundView_ frame]]);
 
   [contentsView_ addSubview:[appsGridController_ view]];
   [contentsView_ addSubview:pagerControl_];
-  [backgroundView addSubview:contentsView_];
-  [backgroundView addSubview:[appsSearchResultsController_ view]];
-  [backgroundView addSubview:[appsSearchBoxController_ view]];
-  [self setView:backgroundView];
+  [backgroundView_ addSubview:contentsView_];
+  [backgroundView_ addSubview:[appsSearchResultsController_ view]];
+  [backgroundView_ addSubview:[appsSearchBoxController_ view]];
+  [containerView addSubview:backgroundView_];
+  [self setView:containerView];
 }
 
 - (void)revealSearchResults:(BOOL)show {
@@ -275,6 +315,31 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
     delegate_->OpenSearchResult(result, 0 /* event flags */);
 
   [appsSearchBoxController_ clearSearch];
+}
+
+- (void)onSigninStatusChanged {
+  app_list::SigninDelegate* signinDelegate = [self signinDelegate];
+  BOOL needsSignin = signinDelegate && signinDelegate->NeedSignin();
+  if (!needsSignin) {
+    [[signinViewController_ view] removeFromSuperview];
+    signin_observer_bridge_.reset();
+    signinViewController_.reset();
+    [backgroundView_ setHidden:NO];
+    return;
+  }
+
+  [backgroundView_ setHidden:YES];
+  signinViewController_.reset(
+      [[SigninViewController alloc] initWithFrame:[backgroundView_ frame]
+                                     cornerRadius:kBubbleCornerRadius
+                                         delegate:signinDelegate]);
+  signin_observer_bridge_.reset(
+      new app_list::SigninDelegateObserverBridge(self));
+  [[self view] addSubview:[signinViewController_ view]];
+}
+
+- (app_list::SigninDelegate*)signinDelegate {
+  return delegate_ ? delegate_->GetSigninDelegate() : NULL;
 }
 
 @end

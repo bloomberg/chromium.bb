@@ -14,13 +14,14 @@ namespace test {
 AppListTestViewDelegate::AppListTestViewDelegate()
     : activate_count_(0),
       dismiss_count_(0),
-      last_activated_(NULL) {
+      last_activated_(NULL),
+      test_signin_delegate_(NULL) {
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
 
 SigninDelegate* AppListTestViewDelegate::GetSigninDelegate() {
-  return NULL;
+  return test_signin_delegate_;
 }
 
 void AppListTestViewDelegate::GetShortcutPathForApp(

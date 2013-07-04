@@ -21,6 +21,9 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   int activate_count() { return activate_count_; }
   int dismiss_count() { return dismiss_count_; }
   AppListItemModel* last_activated() { return last_activated_; }
+  void set_test_signin_delegate(SigninDelegate* signin_delegate) {
+    test_signin_delegate_ = signin_delegate;
+  }
 
   // AppListViewDelegate overrides:
   virtual void SetModel(AppListModel* model) OVERRIDE {}
@@ -51,6 +54,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   int activate_count_;
   int dismiss_count_;
   AppListItemModel* last_activated_;
+  SigninDelegate* test_signin_delegate_;  // Weak. Owned by test.
 };
 
 }  // namespace test

@@ -17,10 +17,12 @@
 namespace app_list {
 class AppListViewDelegate;
 class AppListModel;
+class SigninDelegateObserverBridge;
 }
 
 @class AppListPagerView;
 @class AppsGridController;
+@class SigninViewController;
 
 // Controller for the top-level view of the app list UI. It creates and hosts an
 // AppsGridController (displaying an AppListModel), pager control to navigate
@@ -35,22 +37,29 @@ APP_LIST_EXPORT
   base::scoped_nsobject<AppsSearchBoxController> appsSearchBoxController_;
   base::scoped_nsobject<AppsSearchResultsController>
       appsSearchResultsController_;
+  base::scoped_nsobject<SigninViewController> signinViewController_;
+
+  // Subview for drawing the background. Hidden when the signin view is visible.
+  base::scoped_nsobject<NSView> backgroundView_;
+
+  // Subview of |backgroundView_| that slides out when search results are shown.
   base::scoped_nsobject<NSView> contentsView_;
+
   scoped_ptr<app_list::AppListViewDelegate> delegate_;
+  scoped_ptr<app_list::SigninDelegateObserverBridge> signin_observer_bridge_;
   BOOL showingSearchResults_;
 }
 
-- (AppsGridController*)appsGridController;
-
-- (NSSegmentedControl*)pagerControl;
-
 - (app_list::AppListViewDelegate*)delegate;
-
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate;
 
 @end
 
 @interface AppListViewController (TestingAPI)
+
+- (AppsGridController*)appsGridController;
+- (NSSegmentedControl*)pagerControl;
+- (NSView*)backgroundView;
 
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate
       withTestModel:(scoped_ptr<app_list::AppListModel>)newModel;

@@ -17,7 +17,6 @@ class AppListModel;
 
 namespace test {
 
-class AppListTestViewDelegate;
 class AppListTestModel;
 
 class AppsGridControllerTestHelper : public ui::CocoaTest {

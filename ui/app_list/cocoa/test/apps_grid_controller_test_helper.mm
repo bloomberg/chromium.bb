@@ -10,7 +10,6 @@
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
 #include "ui/app_list/test/app_list_test_model.h"
-#include "ui/app_list/test/app_list_test_view_delegate.h"
 #import "ui/base/test/cocoa_test_event_utils.h"
 
 namespace app_list {

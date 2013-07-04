@@ -7,13 +7,15 @@
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/test/apps_grid_controller_test_helper.h"
+#include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 
 namespace app_list {
 namespace test {
 
-class AppListViewControllerTest : public AppsGridControllerTestHelper {
+class AppListViewControllerTest : public AppsGridControllerTestHelper,
+                                  public SigninDelegate {
  public:
   AppListViewControllerTest() {}
 
@@ -31,9 +33,31 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
   }
 
   virtual void ResetModel(scoped_ptr<AppListModel> new_model) OVERRIDE {
-    scoped_ptr<AppListViewDelegate> delegate_(new AppListTestViewDelegate);
-    [app_list_view_controller_ setDelegate:delegate_.Pass()
-                             withTestModel:new_model.Pass()];
+    scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
+    delegate->set_test_signin_delegate(this);
+    [app_list_view_controller_
+          setDelegate:delegate.PassAs<AppListViewDelegate>()
+        withTestModel:new_model.Pass()];
+  }
+
+  // SigninDelegate overrides:
+  virtual bool NeedSignin() OVERRIDE { return false; }
+  virtual void ShowSignin() OVERRIDE {}
+  virtual void OpenLearnMore() OVERRIDE {}
+  virtual void OpenSettings() OVERRIDE {}
+
+  virtual base::string16 GetSigninHeading() OVERRIDE {
+    return base::string16();
+  }
+  virtual base::string16 GetSigninText() OVERRIDE { return base::string16(); }
+  virtual base::string16 GetSigninButtonText() OVERRIDE {
+    return base::string16();
+  }
+  virtual base::string16 GetLearnMoreLinkText() OVERRIDE {
+    return base::string16();
+  }
+  virtual base::string16 GetSettingsLinkText() OVERRIDE {
+    return base::string16();
   }
 
  protected:
@@ -41,6 +65,22 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListViewControllerTest);
+};
+
+// Helper class allowing NeedSignin() to return true during SetUp(), to test an
+// initial state where signin is required, and the regular view starts hidden.
+class AppListViewControllerSigninTest : public AppListViewControllerTest {
+ public:
+  AppListViewControllerSigninTest() : needs_signin_(true) {}
+
+  // SigninDelegate override:
+  virtual bool NeedSignin() OVERRIDE { return needs_signin_; }
+
+ protected:
+  bool needs_signin_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListViewControllerSigninTest);
 };
 
 TEST_VIEW(AppListViewControllerTest, [app_list_view_controller_ view]);
@@ -86,6 +126,25 @@ TEST_F(AppListViewControllerTest, PagerChangingPage) {
   EXPECT_EQ(0, [pager selectedSegment]);
   EXPECT_EQ(1, [pager segmentCount]);
   EXPECT_EQ(1.0, [apps_grid_controller_ visiblePortionOfPage:0]);
+}
+
+// Test the view when the user is already signed in.
+TEST_F(AppListViewControllerTest, SignedIn) {
+  // There should be just 1, visible subview when signed in.
+  EXPECT_EQ(1u, [[[app_list_view_controller_ view] subviews] count]);
+  EXPECT_FALSE([[app_list_view_controller_ backgroundView] isHidden]);
+}
+
+// Test the view when signin is required.
+TEST_F(AppListViewControllerSigninTest, NeedsSignin) {
+  EXPECT_EQ(2u, [[[app_list_view_controller_ view] subviews] count]);
+  EXPECT_TRUE([[app_list_view_controller_ backgroundView] isHidden]);
+
+  // Simulate signing in, should enter the SignedIn state.
+  needs_signin_ = false;
+  NotifySigninSuccess();
+  EXPECT_EQ(1u, [[[app_list_view_controller_ view] subviews] count]);
+  EXPECT_FALSE([[app_list_view_controller_ backgroundView] isHidden]);
 }
 
 }  // namespace test
