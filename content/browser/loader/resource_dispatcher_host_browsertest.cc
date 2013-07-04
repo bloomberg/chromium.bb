@@ -191,9 +191,15 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // Test for bug #1159553 -- A synchronous xhr (whose content-type is
 // downloadable) would trigger download and hang the renderer process,
 // if executed while navigating to a new page.
-// If this flakes, use http://crbug.com/56264.
+// Disabled on Mac: see http://crbug.com/56264
+#if defined(OS_MACOSX)
+#define MAYBE_SyncXMLHttpRequest_DuringUnload \
+  DISABLED_SyncXMLHttpRequest_DuringUnload
+#else
+#define MAYBE_SyncXMLHttpRequest_DuringUnload SyncXMLHttpRequest_DuringUnload
+#endif
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       SyncXMLHttpRequest_DuringUnload) {
+                       MAYBE_SyncXMLHttpRequest_DuringUnload) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   BrowserContext::GetDownloadManager(
       shell()->web_contents()->GetBrowserContext())->AddObserver(this);
