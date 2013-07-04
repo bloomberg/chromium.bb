@@ -45,10 +45,6 @@ void DeviceChangeHandler::TouchpadExists(bool exists) {
       prefs->GetBoolean(prefs::kEnableTouchpadThreeFingerClick);
   system::touchpad_settings::SetThreeFingerClick(three_finger_click);
 
-  const bool three_finger_swipe =
-      prefs->GetBoolean(prefs::kEnableTouchpadThreeFingerSwipe);
-  system::touchpad_settings::SetThreeFingerSwipe(three_finger_swipe);
-
   const int sensitivity = prefs->GetInteger(prefs::kTouchpadSensitivity);
   system::touchpad_settings::SetSensitivity(sensitivity);
 

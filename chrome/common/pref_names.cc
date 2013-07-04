@@ -556,10 +556,6 @@ const char kTapDraggingEnabled[] = "settings.touchpad.enable_tap_dragging";
 const char kEnableTouchpadThreeFingerClick[] =
     "settings.touchpad.enable_three_finger_click";
 
-// A boolean pref set to true if touchpad three-finger swipe is enabled.
-const char kEnableTouchpadThreeFingerSwipe[] =
-    "settings.touchpad.enable_three_finger_swipe";
-
 // A boolean pref set to true if touchpad natural scrolling is enabled.
 const char kNaturalScroll[] = "settings.touchpad.natural_scroll";
 

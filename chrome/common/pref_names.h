@@ -204,7 +204,6 @@ extern const char kAudioVolumePercent[];
 extern const char kTapToClickEnabled[];
 extern const char kTapDraggingEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];
-extern const char kEnableTouchpadThreeFingerSwipe[];
 extern const char kNaturalScroll[];
 extern const char kPrimaryMouseButtonRight[];
 extern const char kMouseSensitivity[];

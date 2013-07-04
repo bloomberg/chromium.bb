@@ -113,7 +113,6 @@ class Preferences : public PrefServiceSyncableObserver {
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember tap_dragging_enabled_;
   BooleanPrefMember three_finger_click_enabled_;
-  BooleanPrefMember three_finger_swipe_enabled_;
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember a11y_spoken_feedback_enabled_;

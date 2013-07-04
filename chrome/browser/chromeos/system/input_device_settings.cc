@@ -132,11 +132,6 @@ void SetThreeFingerClick(bool enabled) {
   SetTPControl("t5r2_three_finger_click", enabled);
 }
 
-void SetThreeFingerSwipe(bool enabled) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  SetTPControl("three_finger_swipe", enabled);
-}
-
 void SetTapDragging(bool enabled) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   SetTPControl("tap_dragging", enabled);

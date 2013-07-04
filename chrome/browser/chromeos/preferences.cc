@@ -44,6 +44,10 @@ namespace chromeos {
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
+// TODO(achuith): Remove deprecated pref in M31. crbug.com/223480.
+static const char kEnableTouchpadThreeFingerSwipe[] =
+    "settings.touchpad.enable_three_finger_swipe";
+
 Preferences::Preferences()
     : prefs_(NULL),
       input_method_manager_(input_method::InputMethodManager::Get()) {
@@ -91,10 +95,6 @@ void Preferences::RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kEnableTouchpadThreeFingerClick,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEnableTouchpadThreeFingerSwipe,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
@@ -406,6 +406,12 @@ void Preferences::RegisterUserPrefs(
       prefs::kTermsOfServiceURL,
       "",
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  // TODO(achuith): Remove deprecated pref in M31. crbug.com/223480.
+  registry->RegisterBooleanPref(
+      kEnableTouchpadThreeFingerSwipe,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
@@ -417,8 +423,6 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, callback);
   tap_dragging_enabled_.Init(prefs::kTapDraggingEnabled, prefs, callback);
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
-      prefs, callback);
-  three_finger_swipe_enabled_.Init(prefs::kEnableTouchpadThreeFingerSwipe,
       prefs, callback);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
   a11y_spoken_feedback_enabled_.Init(prefs::kSpokenFeedbackEnabled,
@@ -539,6 +543,9 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kPowerPresentationScreenDimDelayFactor, prefs, callback);
   power_user_activity_screen_dim_delay_factor_.Init(
       prefs::kPowerUserActivityScreenDimDelayFactor, prefs, callback);
+
+  // TODO(achuith): Remove deprecated pref in M31. crbug.com/223480.
+  prefs->ClearPref(kEnableTouchpadThreeFingerSwipe);
 }
 
 void Preferences::Init(PrefServiceSyncable* prefs) {
@@ -601,14 +608,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Changed", enabled);
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Started", enabled);
-  }
-  if (!pref_name || *pref_name == prefs::kEnableTouchpadThreeFingerSwipe) {
-    const bool enabled = three_finger_swipe_enabled_.GetValue();
-    system::touchpad_settings::SetThreeFingerSwipe(enabled);
-    if (pref_name)
-      UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerSwipe.Changed", enabled);
-    else
-      UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerSwipe.Started", enabled);
   }
   if (!pref_name || *pref_name == prefs::kNaturalScroll) {
     // Force natural scroll default if we've sync'd and if the cmd line arg is

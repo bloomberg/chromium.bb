@@ -31,9 +31,6 @@ void SetTapToClick(bool enabled);
 // Switch for three-finger click.
 void SetThreeFingerClick(bool enabled);
 
-// Switch for three-finger swipe.
-void SetThreeFingerSwipe(bool enabled);
-
 // Turns tap-dragging on/off.
 void SetTapDragging(bool enabled);
 

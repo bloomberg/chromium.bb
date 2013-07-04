@@ -12027,13 +12027,15 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Touchpad.ThreeFingerSwipe.Changed" enum="BooleanEnabled">
-  <summary>
-    Tracks touchpad ThreeFingerSwipe setting changes by the user.
-  </summary>
+  <obsolete>
+    Deprecated as of 7/2013.
+  </obsolete>
 </histogram>
 
 <histogram name="Touchpad.ThreeFingerSwipe.Started" enum="BooleanEnabled">
-  <summary>Tracks touchpad ThreeFingerSwipe setting on startup.</summary>
+  <obsolete>
+    Deprecated as of 7/2013.
+  </obsolete>
 </histogram>
 
 <histogram name="Translate.AlwaysTranslateLang">

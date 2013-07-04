@@ -49,7 +49,6 @@ CHROMEOS_EXPORT extern const char kEnableScreensaverExtensions[];
 CHROMEOS_EXPORT extern const char kEnableStaticIPConfig[];
 CHROMEOS_EXPORT extern const char kEnableStubInteractive[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
-CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerSwipe[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentInitialModulus[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentModulusLimit[];
 CHROMEOS_EXPORT extern const char kFileManagerShowCheckboxes[];

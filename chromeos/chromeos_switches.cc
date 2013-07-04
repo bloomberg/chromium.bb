@@ -99,10 +99,6 @@ const char kEnableStubInteractive[] = "enable-stub-interactive";
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";
 
-// Enables touchpad three-finger swipe.
-const char kEnableTouchpadThreeFingerSwipe[]
-    = "enable-touchpad-three-finger-swipe";
-
 // Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
 // than the kiosk app mode.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
