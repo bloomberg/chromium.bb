@@ -94,7 +94,7 @@ xwayland_test_SOURCES = xwayland-test.c	$(weston_test_client_src)
 xwayland_test_LDADD = $(weston_test_client_libs) $(XWAYLAND_TEST_LIBS)
 
 if ENABLE_XWAYLAND_TEST
-xwayland_test = xwayland_test
+xwayland_test = xwayland-test
 endif
 
 matrix_test_SOURCES =				\
