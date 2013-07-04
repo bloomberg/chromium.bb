@@ -132,8 +132,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
                      const std::string& source_format,
                      const std::string& mount_label,
                      MountType type,
-                     const MountCallback& callback,
-                     const ErrorCallback& error_callback) OVERRIDE {
+                     const base::Closure& callback,
+                     const base::Closure& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kMount);
     dbus::MessageWriter writer(&method_call);
@@ -183,7 +183,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
+      const base::Closure& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kEnumerateAutoMountableDevices);
     proxy_->CallMethod(
@@ -198,7 +198,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   virtual void FormatDevice(const std::string& device_path,
                             const std::string& filesystem,
                             const FormatDeviceCallback& callback,
-                            const ErrorCallback& error_callback) OVERRIDE {
+                            const base::Closure& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kFormatDevice);
     dbus::MessageWriter writer(&method_call);
@@ -215,7 +215,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
+      const base::Closure& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kGetDeviceProperties);
     dbus::MessageWriter writer(&method_call);
@@ -274,8 +274,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   };
 
   // Handles the result of Mount and calls |callback| or |error_callback|.
-  void OnMount(const MountCallback& callback,
-               const ErrorCallback& error_callback,
+  void OnMount(const base::Closure& callback,
+               const base::Closure& error_callback,
                dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -299,7 +299,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // |error_callback|.
   void OnEnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const ErrorCallback& error_callback,
+      const base::Closure& error_callback,
       dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -318,7 +318,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles the result of FormatDevice and calls |callback| or
   // |error_callback|.
   void OnFormatDevice(const FormatDeviceCallback& callback,
-                      const ErrorCallback& error_callback,
+                      const base::Closure& error_callback,
                       dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -338,7 +338,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // |error_callback|.
   void OnGetDeviceProperties(const std::string& device_path,
                              const GetDevicePropertiesCallback& callback,
-                             const ErrorCallback& error_callback,
+                             const base::Closure& error_callback,
                              dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -409,8 +409,8 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
                      const std::string& source_format,
                      const std::string& mount_label,
                      MountType type,
-                     const MountCallback& callback,
-                     const ErrorCallback& error_callback) OVERRIDE {
+                     const base::Closure& callback,
+                     const base::Closure& error_callback) OVERRIDE {
     // This stub implementation only accepts archive mount requests.
     if (type != MOUNT_TYPE_ARCHIVE) {
       FinishMount(MOUNT_ERROR_INTERNAL, source_path, type, std::string(),
@@ -465,7 +465,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
+      const base::Closure& error_callback) OVERRIDE {
     std::vector<std::string> device_paths;
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(callback, device_paths));
@@ -474,14 +474,14 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   virtual void FormatDevice(const std::string& device_path,
                             const std::string& filesystem,
                             const FormatDeviceCallback& callback,
-                            const ErrorCallback& error_callback) OVERRIDE {
+                            const base::Closure& error_callback) OVERRIDE {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
   }
 
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
+      const base::Closure& error_callback) OVERRIDE {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
   }
 
@@ -526,7 +526,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   // Part of Mount() implementation.
   void ContinueMount(const std::string& source_path,
                      MountType type,
-                     const MountCallback& callback,
+                     const base::Closure& callback,
                      const base::FilePath& mounted_path,
                      MountError mount_error) {
     if (mount_error != MOUNT_ERROR_NONE) {
@@ -544,7 +544,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
                    const std::string& source_path,
                    MountType type,
                    const std::string& mounted_path,
-                   const MountCallback& callback) {
+                   const base::Closure& callback) {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
     if (!mount_completed_handler_.is_null()) {
       base::MessageLoopProxy::current()->PostTask(

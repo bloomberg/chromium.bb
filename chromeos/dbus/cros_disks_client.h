@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
@@ -192,12 +192,6 @@ class DiskInfo {
 // by callbacks.
 class CHROMEOS_EXPORT CrosDisksClient {
  public:
-  // A callback to be called when DBus method call fails.
-  typedef base::Callback<void()> ErrorCallback;
-
-  // A callback to handle the result of Mount.
-  typedef base::Callback<void()> MountCallback;
-
   // A callback to handle the result of EnumerateAutoMountableDevices.
   // The argument is the enumerated device paths.
   typedef base::Callback<void(const std::vector<std::string>& device_paths)
@@ -245,8 +239,8 @@ class CHROMEOS_EXPORT CrosDisksClient {
                      const std::string& source_format,
                      const std::string& mount_label,
                      MountType type,
-                     const MountCallback& callback,
-                     const ErrorCallback& error_callback) = 0;
+                     const base::Closure& callback,
+                     const base::Closure& error_callback) = 0;
 
   // Calls Unmount method.  |callback| is called after the method call succeeds,
   // otherwise, |error_callback| is called.
@@ -259,20 +253,20 @@ class CHROMEOS_EXPORT CrosDisksClient {
   // method call succeeds, otherwise, |error_callback| is called.
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const ErrorCallback& error_callback) = 0;
+      const base::Closure& error_callback) = 0;
 
   // Calls FormatDevice method.  |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   virtual void FormatDevice(const std::string& device_path,
                             const std::string& filesystem,
                             const FormatDeviceCallback& callback,
-                            const ErrorCallback& error_callback) = 0;
+                            const base::Closure& error_callback) = 0;
 
   // Calls GetDeviceProperties method.  |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
   virtual void GetDeviceProperties(const std::string& device_path,
                                    const GetDevicePropertiesCallback& callback,
-                                   const ErrorCallback& error_callback) = 0;
+                                   const base::Closure& error_callback) = 0;
 
   // Registers given callback for events.
   // |mount_event_handler| is called when mount event signal is received.

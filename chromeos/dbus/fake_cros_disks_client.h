@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
 namespace chromeos {
@@ -23,23 +24,23 @@ class FakeCrosDisksClient : public CrosDisksClient {
                      const std::string& source_format,
                      const std::string& mount_label,
                      MountType type,
-                     const MountCallback& callback,
-                     const ErrorCallback& error_callback) OVERRIDE;
+                     const base::Closure& callback,
+                     const base::Closure& error_callback) OVERRIDE;
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
                        const base::Closure& callback,
                        const base::Closure& error_callback) OVERRIDE;
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const base::Closure& error_callback) OVERRIDE;
   virtual void FormatDevice(const std::string& device_path,
                             const std::string& filesystem,
                             const FormatDeviceCallback& callback,
-                            const ErrorCallback& error_callback) OVERRIDE;
+                            const base::Closure& error_callback) OVERRIDE;
   virtual void GetDeviceProperties(
       const std::string& device_path,
       const GetDevicePropertiesCallback& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+      const base::Closure& error_callback) OVERRIDE;
   virtual void SetUpConnections(
       const MountEventHandler& mount_event_handler,
       const MountCompletedHandler& mount_completed_handler) OVERRIDE;

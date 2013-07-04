@@ -22,8 +22,8 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
                                 const std::string& source_format,
                                 const std::string& mount_label,
                                 MountType type,
-                                const MountCallback& callback,
-                                const ErrorCallback& error_callback) {
+                                const base::Closure& callback,
+                                const base::Closure& error_callback) {
 }
 
 void FakeCrosDisksClient::Unmount(const std::string& device_path,
@@ -44,13 +44,13 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
 
 void FakeCrosDisksClient::EnumerateAutoMountableDevices(
     const EnumerateAutoMountableDevicesCallback& callback,
-    const ErrorCallback& error_callback) {
+    const base::Closure& error_callback) {
 }
 
 void FakeCrosDisksClient::FormatDevice(const std::string& device_path,
                                        const std::string& filesystem,
                                        const FormatDeviceCallback& callback,
-                                       const ErrorCallback& error_callback) {
+                                       const base::Closure& error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
 
@@ -68,7 +68,7 @@ void FakeCrosDisksClient::FormatDevice(const std::string& device_path,
 void FakeCrosDisksClient::GetDeviceProperties(
     const std::string& device_path,
     const GetDevicePropertiesCallback& callback,
-    const ErrorCallback& error_callback) {
+    const base::Closure& error_callback) {
 }
 
 void FakeCrosDisksClient::SetUpConnections(
