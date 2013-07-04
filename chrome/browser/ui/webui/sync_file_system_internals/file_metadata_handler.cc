@@ -74,16 +74,10 @@ void FileMetadataHandler::GetFileMetadata(
       extension_id);
 
   // Get all metadata for the one specific origin.
-  FileMetadataMap* metadata_map = new FileMetadataMap;
-  size_t* num_results = new size_t(0);
   SyncFileSystemServiceFactory::GetForProfile(profile_)->GetFileMetadataMap(
       origin,
-      metadata_map,
-      num_results,
       base::Bind(&FileMetadataHandler::DidGetFileMetadata,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(metadata_map),
-                 base::Owned(num_results)));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileMetadataHandler::GetExtensions(const base::ListValue* args) {
@@ -98,13 +92,12 @@ void FileMetadataHandler::GetExtensions(const base::ListValue* args) {
 // files for one origin.
 void FileMetadataHandler::DidGetFileMetadata(
     FileMetadataMap* metadata_map,
-    size_t* num_results,
     sync_file_system::SyncStatusCode status) {
-  DCHECK(metadata_map);
-  DCHECK(num_results);
-
   // Flatten map hierarchy in initial version.
   base::ListValue list;
+  if (!metadata_map)
+    web_ui()->CallJavascriptFunction("FileMetadata.onGetFileMetadata", list);
+
   RemoteFileSyncService::FileMetadataMap::const_iterator file_path_itr;
   for (file_path_itr = metadata_map->begin();
        file_path_itr != metadata_map->end();

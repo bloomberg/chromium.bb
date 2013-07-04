@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
@@ -100,33 +101,25 @@ void DidHandleOriginForExtensionEnabledEvent(
 }
 
 // Gets called repeatedly until every SyncFileStatus has been mapped.
-void DidGetFileSyncStatus(
-    const SyncStatusCallback& callback,
-    FileMetadata* metadata,
-    size_t expected_results,
+void DidGetFileSyncStatusForDump(
+    RemoteFileSyncService::FileMetadataMap* metadata_map,
     size_t* num_results,
+    const SyncFileSystemService::GetFileMetadataCallback& callback,
+    FileMetadata* metadata,
     SyncStatusCode sync_status_code,
     SyncFileStatus sync_file_status) {
+  DCHECK(metadata_map);
   DCHECK(metadata);
   DCHECK(num_results);
 
-  // TODO(calvinlo): Unfortunately the sync_status_code will only be OK if
-  // the app that matches the url.origin() is actually running. Otherwise
-  // the FileSystemContext isn't loaded into the map in
-  // LocalFileSyncService::HasPendingLocalChanges() and the contains key check
-  // fails. This causes SYNC_FILE_ERROR_INVALID_URL to be returned.
-  // With this check in, the SyncFileStatus will therefore show nothing (for
-  // SYNC_FILE_STATUS_UNKNOWN) for syncFS apps which aren't running.
-  metadata->sync_status = (sync_status_code == SYNC_STATUS_OK) ?
-      sync_file_status : SYNC_FILE_STATUS_UNKNOWN;
+  metadata->sync_status = sync_file_status;
 
   // Once all results have been received, run the callback to signal end.
-  DCHECK_LE(*num_results, expected_results);
-  (*num_results)++;
-  if (*num_results < expected_results)
+  DCHECK_LE(*num_results, metadata_map->size());
+  if (++*num_results < metadata_map->size())
     return;
 
-  callback.Run(SYNC_STATUS_OK);
+  callback.Run(metadata_map, SYNC_STATUS_OK);
 }
 
 }  // namespace
@@ -181,31 +174,17 @@ void SyncFileSystemService::GetExtensionStatusMap(
 
 void SyncFileSystemService::GetFileMetadataMap(
     const GURL& origin,
-    RemoteFileSyncService::FileMetadataMap* metadata_map,
-    size_t* num_results,
-    const SyncStatusCallback& callback) {
-  DCHECK(metadata_map);
+    const GetFileMetadataCallback& callback) {
   DCHECK(!origin.is_empty());
-  DCHECK(num_results);
-  remote_file_service_->GetFileMetadataMap(origin, metadata_map);
 
-  // Figure out how many results have to be waited on before callback.
-  size_t expected_results = metadata_map->size();
-
-  // After all metadata loaded, sync status can be added to each entry.
-  RemoteFileSyncService::FileMetadataMap::iterator file_path_itr;
-  for (file_path_itr = metadata_map->begin();
-       file_path_itr != metadata_map->end();
-       ++file_path_itr) {
-    const base::FilePath& file_path = file_path_itr->first;
-    const FileSystemURL url = CreateSyncableFileSystemURL(origin, file_path);
-    FileMetadata& metadata = file_path_itr->second;
-    GetFileSyncStatus(url, base::Bind(&DidGetFileSyncStatus,
-                                      callback,
-                                      &metadata,
-                                      expected_results,
-                                      num_results));
-  }
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetStoragePartitionForSite(profile_, origin);
+  fileapi::FileSystemContext* file_system_context =
+      storage_partition->GetFileSystemContext();
+  local_file_service_->MaybeInitializeFileSystemContext(
+      origin, file_system_context,
+      base::Bind(&SyncFileSystemService::DidInitializeFileSystemForDump,
+                 AsWeakPtr(), origin, callback));
 }
 
 void SyncFileSystemService::GetFileSyncStatus(
@@ -328,6 +307,39 @@ void SyncFileSystemService::DidRegisterOrigin(
   DVLOG(1) << "DidRegisterOrigin: " << app_origin.spec() << " " << status;
 
   callback.Run(status);
+}
+
+void SyncFileSystemService::DidInitializeFileSystemForDump(
+    const GURL& origin,
+    const GetFileMetadataCallback& callback,
+    SyncStatusCode status) {
+  DCHECK(!origin.is_empty());
+
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(NULL, status);
+    return;
+  }
+
+  RemoteFileSyncService::FileMetadataMap* metadata_map =
+      new RemoteFileSyncService::FileMetadataMap;
+  remote_file_service_->GetFileMetadataMap(origin, metadata_map);
+
+  base::Callback<void(FileMetadata* metadata,
+                      SyncStatusCode sync_status,
+                      SyncFileStatus sync_file_status)> completion_callback =
+      base::Bind(&DidGetFileSyncStatusForDump, base::Owned(metadata_map),
+                 base::Owned(new size_t(0)), callback);
+
+  // After all metadata loaded, sync status can be added to each entry.
+  for (RemoteFileSyncService::FileMetadataMap::iterator file_path_itr =
+           metadata_map->begin();
+       file_path_itr != metadata_map->end();
+       ++file_path_itr) {
+    const base::FilePath& file_path = file_path_itr->first;
+    const FileSystemURL url = CreateSyncableFileSystemURL(origin, file_path);
+    FileMetadata& metadata = file_path_itr->second;
+    GetFileSyncStatus(url, base::Bind(completion_callback, &metadata));
+  }
 }
 
 void SyncFileSystemService::SetSyncEnabledForTesting(bool enabled) {

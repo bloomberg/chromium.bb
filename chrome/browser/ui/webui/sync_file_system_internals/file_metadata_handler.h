@@ -36,7 +36,6 @@ class FileMetadataHandler : public content::WebUIMessageHandler {
   void GetFileMetadata(const base::ListValue* args);
   void DidGetFileMetadata(
       FileMetadataMap* metadata_map,
-      size_t* num_results,
       sync_file_system::SyncStatusCode status);
 
   Profile* profile_;

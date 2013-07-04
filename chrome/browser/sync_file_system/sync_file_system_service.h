@@ -45,6 +45,11 @@ class SyncFileSystemService
       public content::NotificationObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
  public:
+  typedef base::Callback<
+      void(RemoteFileSyncService::FileMetadataMap* metadata_map,
+           SyncStatusCode status)>
+      GetFileMetadataCallback;
+
   // BrowserContextKeyedService overrides.
   virtual void Shutdown() OVERRIDE;
 
@@ -55,11 +60,8 @@ class SyncFileSystemService
 
   SyncServiceState GetSyncServiceState();
   void GetExtensionStatusMap(std::map<GURL, std::string>* status_map);
-  void GetFileMetadataMap(
-      const GURL& origin,
-      RemoteFileSyncService::FileMetadataMap* metadata_map,
-      size_t* num_results,
-      const SyncStatusCallback& callback);
+  void GetFileMetadataMap(const GURL& origin,
+                          const GetFileMetadataCallback& callback);
 
   // Returns the file |url|'s sync status.
   void GetFileSyncStatus(
@@ -90,6 +92,11 @@ class SyncFileSystemService
   void DidRegisterOrigin(const GURL& app_origin,
                          const SyncStatusCallback& callback,
                          SyncStatusCode status);
+
+  void DidInitializeFileSystemForDump(
+      const GURL& app_origin,
+      const GetFileMetadataCallback& callback,
+      SyncStatusCode status);
 
   // Overrides sync_enabled_ setting. This should be called only by tests.
   void SetSyncEnabledForTesting(bool enabled);
