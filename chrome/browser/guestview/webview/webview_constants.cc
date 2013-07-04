@@ -27,7 +27,7 @@ const char kInternalEntryCount[] = "entryCount";
 const char kInternalProcessId[] = "processId";
 
 // Parameters/properties on events.
-extern const char kNewURL[];
-extern const char kOldURL[];
+const char kNewURL[] = "newUrl";
+const char kOldURL[] = "oldUrl";
 
 }  // namespace webview

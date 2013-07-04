@@ -30,8 +30,8 @@ extern const char kInternalEntryCount[];
 extern const char kInternalProcessId[];
 
 // Parameters/properties on events.
-const char kNewURL[] = "newUrl";
-const char kOldURL[] = "oldUrl";
+extern const char kNewURL[];
+extern const char kOldURL[];
 
 }  // namespace webview
 
