@@ -20,3 +20,6 @@ Local changes:
  * Removed examples/, documentation and build related files, keeping only
    the contents of src/ less mux/ which is unused.
  * Merged COPYING/PATENTS to LICENSE
+Cherry-picks:
+  f626fe2 Detect canvas and image size mismatch in decoder.
+  f5fbdee demux: stricter image bounds check
