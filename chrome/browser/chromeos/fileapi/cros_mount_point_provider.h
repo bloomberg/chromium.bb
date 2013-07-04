@@ -67,7 +67,6 @@ class CrosMountPointProvider
     : public fileapi::ExternalFileSystemMountPointProvider {
  public:
   using fileapi::FileSystemMountPointProvider::OpenFileSystemCallback;
-  using fileapi::FileSystemMountPointProvider::DeleteFileSystemCallback;
 
   // CrosMountPointProvider will take an ownership of a |mount_points|
   // reference. On the other hand, |system_mount_points| will be kept as a raw
@@ -116,11 +115,6 @@ class CrosMountPointProvider
       int64 offset,
       fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
-  virtual void DeleteFileSystem(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      fileapi::FileSystemContext* context,
-      const DeleteFileSystemCallback& callback) OVERRIDE;
 
   // fileapi::ExternalFileSystemMountPointProvider overrides.
   virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url)

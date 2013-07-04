@@ -105,11 +105,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
       int64 offset,
       FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
-  virtual void DeleteFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      FileSystemContext* context,
-      const DeleteFileSystemCallback& callback) OVERRIDE;
 
   // Returns an origin enumerator of this provider.
   // This method can only be called on the file thread.

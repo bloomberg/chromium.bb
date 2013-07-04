@@ -119,15 +119,6 @@ fileapi::FileSystemQuotaUtil* CrosMountPointProvider::GetQuotaUtil() {
   return NULL;
 }
 
-void CrosMountPointProvider::DeleteFileSystem(
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    fileapi::FileSystemContext* context,
-    const DeleteFileSystemCallback& callback) {
-  NOTREACHED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-}
-
 bool CrosMountPointProvider::IsAccessAllowed(
     const fileapi::FileSystemURL& url) const {
   if (!url.is_valid())

@@ -46,8 +46,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemMountPointProvider {
   // Callback for OpenFileSystem.
   typedef base::Callback<void(base::PlatformFileError error)>
       OpenFileSystemCallback;
-  typedef base::Callback<void(base::PlatformFileError error)>
-      DeleteFileSystemCallback;
   virtual ~FileSystemMountPointProvider() {}
 
   // Returns true if this mount point provider can handle |type|.
@@ -117,13 +115,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemMountPointProvider {
   // Returns the specialized FileSystemQuotaUtil for this mount point.
   // This could return NULL if this mount point does not support quota.
   virtual FileSystemQuotaUtil* GetQuotaUtil() = 0;
-
-  // Deletes the filesystem for the given |origin_url| and |type|.
-  virtual void DeleteFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      FileSystemContext* context,
-      const DeleteFileSystemCallback& callback) = 0;
 };
 
 // An interface to control external file system access permissions.

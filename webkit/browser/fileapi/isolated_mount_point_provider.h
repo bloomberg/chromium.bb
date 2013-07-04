@@ -43,11 +43,6 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       int64 offset,
       FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
-  virtual void DeleteFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      FileSystemContext* context,
-      const DeleteFileSystemCallback& callback) OVERRIDE;
 
  private:
   scoped_ptr<AsyncFileUtilAdapter> isolated_file_util_;

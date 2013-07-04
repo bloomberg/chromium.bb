@@ -175,17 +175,6 @@ FileSystemQuotaUtil* TestMountPointProvider::GetQuotaUtil() {
   return quota_util_.get();
 }
 
-void TestMountPointProvider::DeleteFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
-    FileSystemContext* context,
-    const DeleteFileSystemCallback& callback) {
-  // This won't be called unless we add test code that opens a test
-  // filesystem by OpenFileSystem.
-  NOTREACHED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-}
-
 const UpdateObserverList* TestMountPointProvider::GetUpdateObservers(
     FileSystemType type) const {
   return &update_observers_;

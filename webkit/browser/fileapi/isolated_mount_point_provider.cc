@@ -138,13 +138,4 @@ FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {
   return NULL;
 }
 
-void IsolatedMountPointProvider::DeleteFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
-    FileSystemContext* context,
-    const DeleteFileSystemCallback& callback) {
-  NOTREACHED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-}
-
 }  // namespace fileapi

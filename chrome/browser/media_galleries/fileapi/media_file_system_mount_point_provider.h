@@ -67,11 +67,6 @@ class MediaFileSystemMountPointProvider
       int64 offset,
       fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
-  virtual void DeleteFileSystem(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      fileapi::FileSystemContext* context,
-      const DeleteFileSystemCallback& callback) OVERRIDE;
 
  private:
   // Store the profile path. We need this to create temporary snapshot files.

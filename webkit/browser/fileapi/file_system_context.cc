@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task_runner_util.h"
 #include "url/gurl.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
@@ -297,8 +298,22 @@ void FileSystemContext::DeleteFileSystem(
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
     return;
   }
+  if (!mount_point_provider->GetQuotaUtil()) {
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
 
-  mount_point_provider->DeleteFileSystem(origin_url, type, this, callback);
+  base::PostTaskAndReplyWithResult(
+      task_runners()->file_task_runner(),
+      FROM_HERE,
+      // It is safe to pass Unretained(quota_util) since context owns it.
+      base::Bind(&FileSystemQuotaUtil::DeleteOriginDataOnFileThread,
+                 base::Unretained(mount_point_provider->GetQuotaUtil()),
+                 make_scoped_refptr(this),
+                 base::Unretained(quota_manager_proxy()),
+                 origin_url,
+                 type),
+      callback);
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

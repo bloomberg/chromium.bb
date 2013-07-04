@@ -334,24 +334,6 @@ FileSystemQuotaUtil* SandboxMountPointProvider::GetQuotaUtil() {
   return this;
 }
 
-void SandboxMountPointProvider::DeleteFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
-    FileSystemContext* context,
-    const DeleteFileSystemCallback& callback) {
-  base::PostTaskAndReplyWithResult(
-      context->task_runners()->file_task_runner(),
-      FROM_HERE,
-      // It is safe to pass Unretained(this) since context owns it.
-      base::Bind(&SandboxMountPointProvider::DeleteOriginDataOnFileThread,
-                 base::Unretained(this),
-                 make_scoped_refptr(context),
-                 base::Unretained(context->quota_manager_proxy()),
-                 origin_url,
-                 type),
-      callback);
-}
-
 SandboxMountPointProvider::OriginEnumerator*
 SandboxMountPointProvider::CreateOriginEnumerator() {
   return new ObfuscatedOriginEnumerator(sandbox_sync_file_util());

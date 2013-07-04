@@ -208,13 +208,4 @@ MediaFileSystemMountPointProvider::GetQuotaUtil() {
   return NULL;
 }
 
-void MediaFileSystemMountPointProvider::DeleteFileSystem(
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    FileSystemContext* context,
-    const DeleteFileSystemCallback& callback) {
-  NOTREACHED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-}
-
 }  // namespace chrome
