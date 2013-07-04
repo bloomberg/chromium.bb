@@ -2042,8 +2042,9 @@ translateString ()
 	  }
 	case CTO_JoinNum:
 	case CTO_JoinableWord:
-	  while ((src < srcmax)
-		 && checkAttr (currentInput[src], CTC_Space, 0))
+	  while (src < srcmax
+		 && checkAttr (currentInput[src], CTC_Space, 0) && 
+		 currentInput[src] != ENDSEGMENT)
 	    src++;
 	  break;
 	default:
