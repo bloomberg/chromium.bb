@@ -75,7 +75,7 @@ _deps_builders = {
 
 _ports_without_builders = [
     # FIXME: Move to _exact_matches.
-    "chromium-android",
+    "android",
 ]
 
 

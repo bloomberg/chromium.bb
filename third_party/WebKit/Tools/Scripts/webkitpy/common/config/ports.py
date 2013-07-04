@@ -62,7 +62,7 @@ class DeprecatedPort(object):
     def port(port_name):
         ports = {
             "chromium": ChromiumPort,
-            "chromium-android": ChromiumAndroidPort,
+            "chromium-android": AndroidPort,
             "chromium-xvfb": ChromiumXVFBPort,
         }
         return ports.get(port_name, ChromiumPort)()
@@ -107,7 +107,7 @@ class ChromiumPort(DeprecatedPort):
         return self.script_shell_command("run-chromium-webkit-unit-tests")
 
 
-class ChromiumAndroidPort(ChromiumPort):
+class AndroidPort(ChromiumPort):
     port_flag_name = "chromium-android"
 
 

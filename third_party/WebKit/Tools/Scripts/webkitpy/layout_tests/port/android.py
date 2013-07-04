@@ -356,8 +356,8 @@ class AndroidDevices(object):
         return int(re.findall('level: (\d+)', battery_status)[0])
 
 
-class ChromiumAndroidPort(chromium.ChromiumPort):
-    port_name = 'chromium-android'
+class AndroidPort(chromium.ChromiumPort):
+    port_name = 'android'
 
     # Avoid initializing the adb path [worker count]+1 times by storing it as a static member.
     _adb_path = None
@@ -367,7 +367,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
     FALLBACK_PATHS = { 'android': [ 'chromium-android' ] + linux.LinuxPort.latest_platform_fallback_path() }
 
     def __init__(self, host, port_name, **kwargs):
-        super(ChromiumAndroidPort, self).__init__(host, port_name, **kwargs)
+        super(AndroidPort, self).__init__(host, port_name, **kwargs)
 
         self._operating_system = 'android'
         self._version = 'icecreamsandwich'
@@ -432,7 +432,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         return self._host_port.check_wdiff(logging)
 
     def check_build(self, needs_http):
-        result = super(ChromiumAndroidPort, self).check_build(needs_http)
+        result = super(AndroidPort, self).check_build(needs_http)
         result = self._check_file_exists(self.path_to_md5sum(), 'md5sum utility') and result
         result = self._check_file_exists(self.path_to_md5sum_host(), 'md5sum host utility') and result
         result = self._check_file_exists(self.path_to_forwarder(), 'forwarder utility') and result
@@ -466,7 +466,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
             additional_dirs = {}
         additional_dirs[PERF_TEST_PATH_PREFIX] = self.perf_tests_dir()
         additional_dirs[LAYOUT_TEST_PATH_PREFIX] = self.layout_tests_dir()
-        super(ChromiumAndroidPort, self).start_http_server(additional_dirs, number_of_servers)
+        super(AndroidPort, self).start_http_server(additional_dirs, number_of_servers)
 
     def create_driver(self, worker_number, no_timeout=False):
         return ChromiumAndroidDriver(self, worker_number, pixel_tests=self.get_option('pixel_tests'),

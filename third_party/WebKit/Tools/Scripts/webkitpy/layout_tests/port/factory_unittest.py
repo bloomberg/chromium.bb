@@ -31,7 +31,7 @@ import unittest2 as unittest
 from webkitpy.tool.mocktool import MockOptions
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
-from webkitpy.layout_tests.port import chromium_android
+from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import mac
 from webkitpy.layout_tests.port import win
@@ -63,8 +63,8 @@ class FactoryTest(unittest.TestCase):
         self.assert_port(port_name='chromium', os_name='linux', os_version='lucid',
                          cls=linux.LinuxPort)
 
-    def test_chromium_android(self):
-        self.assert_port(port_name='chromium-android', cls=chromium_android.ChromiumAndroidPort)
+    def test_android(self):
+        self.assert_port(port_name='android', cls=android.AndroidPort)
         # NOTE: We can't check for port_name=chromium here, as this will append the host's
         # operating system, whereas host!=target for Android.
 

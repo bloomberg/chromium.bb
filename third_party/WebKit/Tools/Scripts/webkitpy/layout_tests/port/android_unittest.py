@@ -36,7 +36,7 @@ from webkitpy.common.system import executive_mock
 from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
-from webkitpy.layout_tests.port import chromium_android
+from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import chromium_port_testcase
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import driver_unittest
@@ -90,22 +90,22 @@ class MockAndroidDebugBridge:
 
 class AndroidCommandsTest(unittest.TestCase):
     def setUp(self):
-        chromium_android.AndroidCommands._adb_command_path = None
-        chromium_android.AndroidCommands._adb_command_path_options = ['adb']
+        android.AndroidCommands._adb_command_path = None
+        android.AndroidCommands._adb_command_path_options = ['adb']
 
     def make_executive(self, device_count):
         self._mock_executive = MockAndroidDebugBridge(device_count)
         return MockExecutive2(run_command_fn=self._mock_executive.run_command)
 
     def make_android_commands(self, device_count, serial):
-        return chromium_android.AndroidCommands(self.make_executive(device_count), serial)
+        return android.AndroidCommands(self.make_executive(device_count), serial)
 
     # The "adb" binary with the latest version should be used.
     def serial_test_adb_command_path(self):
         executive = self.make_executive(0)
 
-        chromium_android.AndroidCommands.set_adb_command_path_options(['path1', 'path2', 'path3'])
-        self.assertEqual('path2', chromium_android.AndroidCommands.adb_command_path(executive))
+        android.AndroidCommands.set_adb_command_path_options(['path1', 'path2', 'path3'])
+        self.assertEqual('path2', android.AndroidCommands.adb_command_path(executive))
 
     # The used adb command should include the device's serial number, and get_serial() should reflect this.
     def test_adb_command_and_get_serial(self):
@@ -135,12 +135,12 @@ class AndroidCommandsTest(unittest.TestCase):
         self.assertEquals('adb -s 123456789ABCDEF0 pull bar foo', self._mock_executive.last_command())
 
 
-class ChromiumAndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
-    port_name = 'chromium-android'
-    port_maker = chromium_android.ChromiumAndroidPort
+class AndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
+    port_name = 'android'
+    port_maker = android.AndroidPort
 
     def make_port(self, **kwargs):
-        port = super(ChromiumAndroidPortTest, self).make_port(**kwargs)
+        port = super(AndroidPortTest, self).make_port(**kwargs)
         port._mock_adb = MockAndroidDebugBridge(kwargs.get('device_count', 1))
         port._executive = MockExecutive2(run_command_fn=port._mock_adb.run_command)
         return port
@@ -172,10 +172,10 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
         self._mock_adb = MockAndroidDebugBridge(1)
         self._mock_executive = MockExecutive2(run_command_fn=self._mock_adb.run_command)
 
-        android_commands = chromium_android.AndroidCommands(self._mock_executive, '123456789ABCDEF0')
-        self._port = chromium_android.ChromiumAndroidPort(MockSystemHost(executive=self._mock_executive), 'chromium-android')
-        self._driver = chromium_android.ChromiumAndroidDriver(self._port, worker_number=0,
-            pixel_tests=True, driver_details=chromium_android.ContentShellDriverDetails(), android_devices=self._port._devices)
+        android_commands = android.AndroidCommands(self._mock_executive, '123456789ABCDEF0')
+        self._port = android.AndroidPort(MockSystemHost(executive=self._mock_executive), 'android')
+        self._driver = android.ChromiumAndroidDriver(self._port, worker_number=0,
+            pixel_tests=True, driver_details=android.ContentShellDriverDetails(), android_devices=self._port._devices)
 
     # The cmd_line() method in the Android port is used for starting a shell, not the test runner.
     def test_cmd_line(self):
@@ -195,11 +195,11 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
         mock_adb = MockAndroidDebugBridge(2)
         mock_executive = MockExecutive2(run_command_fn=mock_adb.run_command)
 
-        port = chromium_android.ChromiumAndroidPort(MockSystemHost(executive=mock_executive), 'chromium-android')
-        driver0 = chromium_android.ChromiumAndroidDriver(port, worker_number=0, pixel_tests=True,
-            driver_details=chromium_android.ContentShellDriverDetails(), android_devices=port._devices)
-        driver1 = chromium_android.ChromiumAndroidDriver(port, worker_number=1, pixel_tests=True,
-            driver_details=chromium_android.ContentShellDriverDetails(), android_devices=port._devices)
+        port = android.AndroidPort(MockSystemHost(executive=mock_executive), 'android')
+        driver0 = android.ChromiumAndroidDriver(port, worker_number=0, pixel_tests=True,
+            driver_details=android.ContentShellDriverDetails(), android_devices=port._devices)
+        driver1 = android.ChromiumAndroidDriver(port, worker_number=1, pixel_tests=True,
+            driver_details=android.ContentShellDriverDetails(), android_devices=port._devices)
 
         self.assertEqual(['adb', '-s', '123456789ABCDEF0', 'shell'], driver0.cmd_line(True, []))
         self.assertEqual(['adb', '-s', '123456789ABCDEF1', 'shell'], driver1.cmd_line(True, ['anything']))
@@ -211,10 +211,10 @@ class ChromiumAndroidTwoPortsTest(unittest.TestCase):
         mock_adb = MockAndroidDebugBridge(2)
         mock_executive = MockExecutive2(run_command_fn=mock_adb.run_command)
 
-        port0 = chromium_android.ChromiumAndroidPort(MockSystemHost(executive=mock_executive),
-            'chromium-android', options=MockOptions(additional_drt_flag=['--foo=bar']))
-        port1 = chromium_android.ChromiumAndroidPort(MockSystemHost(executive=mock_executive),
-            'chromium-android', options=MockOptions(driver_name='content_shell'))
+        port0 = android.AndroidPort(MockSystemHost(executive=mock_executive),
+            'android', options=MockOptions(additional_drt_flag=['--foo=bar']))
+        port1 = android.AndroidPort(MockSystemHost(executive=mock_executive),
+            'android', options=MockOptions(driver_name='content_shell'))
 
         self.assertEqual(1, port0.driver_cmd_line().count('--foo=bar'))
         self.assertEqual(0, port1.driver_cmd_line().count('--create-stdin-fifo'))

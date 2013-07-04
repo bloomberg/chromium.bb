@@ -33,7 +33,7 @@ from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.tool.mocktool import MockOptions
 
-import chromium_android
+import android
 import linux
 import mac
 import win
@@ -98,10 +98,10 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
             self.default_configuration_called = True
             return 'default'
 
-    class TestAndroidPort(chromium_android.ChromiumAndroidPort):
+    class TestAndroidPort(android.AndroidPort):
         def __init__(self, options=None):
             options = options or MockOptions()
-            chromium_android.ChromiumAndroidPort.__init__(self, MockSystemHost(os_name='android', os_version='icecreamsandwich'), 'chromium-android', options=options)
+            android.AndroidPort.__init__(self, MockSystemHost(os_name='android', os_version='icecreamsandwich'), 'android', options=options)
 
         def default_configuration(self):
             self.default_configuration_called = True

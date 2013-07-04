@@ -72,7 +72,7 @@ def _builder_options(builder_name):
 
 class PortFactory(object):
     PORT_CLASSES = (
-        'chromium_android.ChromiumAndroidPort',
+        'android.AndroidPort',
         'linux.LinuxPort',
         'mac.MacPort',
         'win.WinPort',
@@ -99,20 +99,10 @@ class PortFactory(object):
         appropriate port on this platform."""
         port_name = port_name or self._default_port(options)
 
-        # FIXME(dpranke): We special-case '--platform chromium' so that it can co-exist
-        # with '--platform mac' and '--platform linux' properly (we
-        # can't look at the port_name prefix in this case).
+        # FIXME(steveblock): There's no longer any need to pass '--platform
+        # chromium' on the command line so we can remove this logic.
         if port_name == 'chromium':
-            # FIXME(steveblock): This hack will go away once all ports have
-            # been renamed to remove the 'chromium-' part.
-            if self._host.platform.os_name == 'win':
-                port_name = 'win'
-            elif self._host.platform.os_name == 'linux':
-                port_name = 'linux'
-            elif self._host.platform.os_name == 'mac':
-                port_name = 'mac'
-            else:
-                port_name = 'chromium-' + self._host.platform.os_name
+            port_name = self._host.platform.os_name
 
         for port_class in self.PORT_CLASSES:
             module_name, class_name = port_class.rsplit('.', 1)
