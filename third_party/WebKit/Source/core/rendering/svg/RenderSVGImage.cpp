@@ -57,7 +57,7 @@ RenderSVGImage::~RenderSVGImage()
 
 bool RenderSVGImage::updateImageViewport()
 {
-    SVGImageElement* image = static_cast<SVGImageElement*>(node());
+    SVGImageElement* image = toSVGImageElement(node());
     FloatRect oldBoundaries = m_objectBoundingBox;
     bool updatedViewport = false;
 
@@ -97,7 +97,7 @@ void RenderSVGImage::layout()
 
     bool transformOrBoundariesUpdate = m_needsTransformUpdate || m_needsBoundariesUpdate;
     if (m_needsTransformUpdate) {
-        m_localTransform = static_cast<SVGImageElement*>(node())->animatedLocalTransform();
+        m_localTransform = toSVGImageElement(node())->animatedLocalTransform();
         m_needsTransformUpdate = false;
     }
 
@@ -162,7 +162,7 @@ void RenderSVGImage::paintForeground(PaintInfo& paintInfo)
     FloatRect destRect = m_objectBoundingBox;
     FloatRect srcRect(0, 0, image->width(), image->height());
 
-    SVGImageElement* imageElement = static_cast<SVGImageElement*>(node());
+    SVGImageElement* imageElement = toSVGImageElement(node());
     imageElement->preserveAspectRatio().transformRect(destRect, srcRect);
 
     bool useLowQualityScaling = false;

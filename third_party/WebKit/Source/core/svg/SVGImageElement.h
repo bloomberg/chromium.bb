@@ -21,6 +21,7 @@
 #ifndef SVGImageElement_h
 #define SVGImageElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
@@ -74,6 +75,12 @@ private:
 
     SVGImageLoader m_imageLoader;
 };
+
+inline SVGImageElement* toSVGImageElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::imageTag));
+    return static_cast<SVGImageElement*>(node);
+}
 
 } // namespace WebCore
 
