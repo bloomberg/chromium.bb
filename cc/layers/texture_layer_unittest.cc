@@ -465,6 +465,14 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
     EXPECT_TRUE(host_impl_.InitializeRenderer(CreateFakeOutputSurface()));
   }
 
+  bool WillDraw(TextureLayerImpl* layer, DrawMode mode) {
+    bool will_draw = layer->WillDraw(
+        mode, host_impl_.active_tree()->resource_provider());
+    if (will_draw)
+      layer->DidDraw(host_impl_.active_tree()->resource_provider());
+    return will_draw;
+  }
+
   CommonMailboxObjects test_data_;
   FakeLayerTreeHostClient fake_client_;
 };
@@ -472,23 +480,35 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
 // Test conditions for results of TextureLayerImpl::WillDraw under
 // different configurations of different mailbox, texture_id, and draw_mode.
 TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release(test_data_.mailbox_name1_,
+                      test_data_.sync_point1_,
+                      false))
+      .Times(AnyNumber());
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release2(test_data_.shared_memory_.get(), 0, false))
+      .Times(AnyNumber());
   // Hardware mode.
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
     impl_layer->SetTextureMailbox(test_data_.mailbox1_);
-    impl_layer->DidBecomeActive();
-    EXPECT_TRUE(impl_layer->WillDraw(
-        DRAW_MODE_HARDWARE, host_impl_.active_tree()->resource_provider()));
-    impl_layer->DidDraw(host_impl_.active_tree()->resource_provider());
+    EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
-    impl_layer->SetTextureMailbox(test_data_.mailbox1_);
-    EXPECT_FALSE(impl_layer->WillDraw(
-        DRAW_MODE_HARDWARE, host_impl_.active_tree()->resource_provider()));
+    impl_layer->SetTextureMailbox(TextureMailbox());
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
+  }
+
+  {
+    // Software resource.
+    scoped_ptr<TextureLayerImpl> impl_layer =
+        TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
+    impl_layer->SetTextureMailbox(test_data_.mailbox3_);
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
   {
@@ -497,17 +517,53 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     unsigned texture =
         host_impl_.output_surface()->context3d()->createTexture();
     impl_layer->set_texture_id(texture);
-    EXPECT_TRUE(impl_layer->WillDraw(
-        DRAW_MODE_HARDWARE, host_impl_.active_tree()->resource_provider()));
-    impl_layer->DidDraw(host_impl_.active_tree()->resource_provider());
+    EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
     impl_layer->set_texture_id(0);
-    EXPECT_FALSE(impl_layer->WillDraw(
-        DRAW_MODE_HARDWARE, host_impl_.active_tree()->resource_provider()));
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
+  }
+
+  // Software mode.
+  {
+    scoped_ptr<TextureLayerImpl> impl_layer =
+        TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
+    impl_layer->SetTextureMailbox(test_data_.mailbox1_);
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
+  }
+
+  {
+    scoped_ptr<TextureLayerImpl> impl_layer =
+        TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
+    impl_layer->SetTextureMailbox(TextureMailbox());
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
+  }
+
+  {
+    // Software resource.
+    scoped_ptr<TextureLayerImpl> impl_layer =
+        TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
+    impl_layer->SetTextureMailbox(test_data_.mailbox3_);
+    EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
+  }
+
+  {
+    scoped_ptr<TextureLayerImpl> impl_layer =
+        TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
+    unsigned texture =
+        host_impl_.output_surface()->context3d()->createTexture();
+    impl_layer->set_texture_id(texture);
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
+  }
+
+  {
+    scoped_ptr<TextureLayerImpl> impl_layer =
+        TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
+    impl_layer->set_texture_id(0);
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
 
   // Resourceless software mode.
@@ -515,10 +571,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, true);
     impl_layer->SetTextureMailbox(test_data_.mailbox1_);
-    impl_layer->DidBecomeActive();
-    EXPECT_FALSE(
-        impl_layer->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE,
-                             host_impl_.active_tree()->resource_provider()));
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_RESOURCELESS_SOFTWARE));
   }
 
   {
@@ -527,9 +580,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     unsigned texture =
         host_impl_.output_surface()->context3d()->createTexture();
     impl_layer->set_texture_id(texture);
-    EXPECT_FALSE(
-        impl_layer->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE,
-                             host_impl_.active_tree()->resource_provider()));
+    EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_RESOURCELESS_SOFTWARE));
   }
 }
 

@@ -34,8 +34,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
 
   virtual void DidLoseOutputSurface() OVERRIDE;
 
-  virtual void DidBecomeActive() OVERRIDE;
-
   unsigned texture_id() const { return texture_id_; }
   void set_texture_id(unsigned id) { texture_id_ = id; }
   void set_premultiplied_alpha(bool premultiplied_alpha) {

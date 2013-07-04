@@ -67,12 +67,30 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
-  if (!uses_mailbox_ && texture_id_) {
+  if (uses_mailbox_) {
+    if (own_mailbox_) {
+      DCHECK(!external_texture_resource_);
+      if ((draw_mode == DRAW_MODE_HARDWARE && texture_mailbox_.IsTexture()) ||
+          (draw_mode == DRAW_MODE_SOFTWARE &&
+           texture_mailbox_.IsSharedMemory())) {
+        // TODO(piman): for shm mailboxes in HW mode, we could upload into a
+        // resource here.
+        external_texture_resource_ =
+            resource_provider->CreateResourceFromTextureMailbox(
+                texture_mailbox_);
+        DCHECK(external_texture_resource_);
+      }
+      if (external_texture_resource_)
+        own_mailbox_ = false;
+    }
+  } else if (texture_id_) {
     DCHECK(!external_texture_resource_);
-    external_texture_resource_ =
-        resource_provider->CreateResourceFromExternalTexture(
-            GL_TEXTURE_2D,
-            texture_id_);
+    if (draw_mode == DRAW_MODE_HARDWARE) {
+      external_texture_resource_ =
+          resource_provider->CreateResourceFromExternalTexture(
+              GL_TEXTURE_2D,
+              texture_id_);
+    }
   }
   return external_texture_resource_ &&
          LayerImpl::WillDraw(draw_mode, resource_provider);
@@ -134,18 +152,6 @@ const char* TextureLayerImpl::LayerTypeAsString() const {
 
 bool TextureLayerImpl::CanClipSelf() const {
   return true;
-}
-
-void TextureLayerImpl::DidBecomeActive() {
-  if (!own_mailbox_)
-    return;
-  DCHECK(!external_texture_resource_);
-  ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
-  if (texture_mailbox_.IsValid()) {
-    external_texture_resource_ =
-        resource_provider->CreateResourceFromTextureMailbox(texture_mailbox_);
-  }
-  own_mailbox_ = false;
 }
 
 void TextureLayerImpl::FreeTextureMailbox() {
