@@ -328,8 +328,6 @@ static TranslationTableOpcode indicOpcode;
 static const TranslationTableRule *indicRule;
 static int dontContract = 0;
 
-static int doCompbrl ();
-
 static int
 hyphenate (const widechar * word, int wordSize, char *hyphens)
 {
@@ -1622,7 +1620,7 @@ static int
 doCompbrl ()
 {
 /*Handle strings containing substrings defined by the compbrl opcode*/
-  int stringEnd;
+  int stringStart, stringEnd;
   if (checkAttr (currentInput[src], CTC_Space, 0))
     return 1;
   if (destword)
@@ -1635,10 +1633,17 @@ doCompbrl ()
       src = 0;
       dest = 0;
     }
-  for (stringEnd = src; stringEnd < srcmax; stringEnd++)
-    if (checkAttr (currentInput[stringEnd], CTC_Space, 0))
+  for (stringStart = src; stringStart >= 0; stringStart--)
+    if (checkAttr 
+    (currentInput[stringStart], CTC_Space, 0))
       break;
-  return (doCompTrans (src, stringEnd));
+  if (stringStart > 0)
+    stringStart++;
+  for (stringEnd = src; stringEnd < srcmax; stringEnd++)
+    if (checkAttr 
+    (currentInput[stringEnd], CTC_Space, 0))
+      break;
+  return (doCompTrans (stringStart, stringEnd));
 }
 
 static int
