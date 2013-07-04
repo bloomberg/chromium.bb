@@ -2388,6 +2388,7 @@
         'remoting_base',
         'remoting_jingle_glue',
         'remoting_protocol',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
       ],
       'sources': [
         'client/audio_decode_scheduler.cc',
@@ -2735,19 +2736,19 @@
           # valgrind and test errors.
           #
           # Javascript unittests are disabled on Windows because they add a
-	  # dependency on 'common_constants' which (only on Windows) requires
-	  # additional dependencies:
+          # dependency on 'common_constants' which (only on Windows) requires
+          # additional dependencies:
           #   '../content/content.gyp:content_common',
           #   'installer_util',
-	  # These targets are defined in .gypi files that would need to be
-	  # included here:
+          # These targets are defined in .gypi files that would need to be
+          # included here:
           #   '../chrome/chrome_common.gypi',
           #   '../chrome/chrome_installer.gypi',
           #   '../chrome/chrome_installer_util.gypi',
-	  # But we can't do that because ninja will complain about multiple
-	  # target definitions.
-	  # TODO(garykac): Move installer_util into a proper .gyp file so that
-	  # it can be included in multiple .gyp files.
+          # But we can't do that because ninja will complain about multiple
+          # target definitions.
+          # TODO(garykac): Move installer_util into a proper .gyp file so that
+          # it can be included in multiple .gyp files.
           'includes': [
             '../chrome/js_unittest_rules.gypi',
           ],

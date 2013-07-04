@@ -10,13 +10,13 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "ppapi/cpp/image_data.h"
 #include "remoting/base/util.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_decoder_verbatim.h"
 #include "remoting/codec/video_decoder_vp8.h"
 #include "remoting/client/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using base::Passed;
 using remoting::protocol::ChannelConfig;
@@ -123,10 +123,10 @@ void RectangleUpdateDecoder::DoPaint() {
     return;
 
   // Draw the invalidated region to the buffer.
-  pp::ImageData* buffer = buffers_.front();
+  webrtc::DesktopFrame* buffer = buffers_.front();
   SkRegion output_region;
   decoder_->RenderFrame(view_size_, clip_area_,
-                        reinterpret_cast<uint8*>(buffer->data()),
+                        buffer->data(),
                         buffer->stride(),
                         &output_region);
 
@@ -154,7 +154,7 @@ void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
     done.Run();
 }
 
-void RectangleUpdateDecoder::DrawBuffer(pp::ImageData* buffer) {
+void RectangleUpdateDecoder::DrawBuffer(webrtc::DesktopFrame* buffer) {
   if (!decode_task_runner_->BelongsToCurrentThread()) {
     decode_task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::DrawBuffer,
@@ -206,11 +206,10 @@ void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
 
     // Return buffers that are smaller than needed to the consumer for
     // reuse/reallocation.
-    std::list<pp::ImageData*>::iterator i = buffers_.begin();
+    std::list<webrtc::DesktopFrame*>::iterator i = buffers_.begin();
     while (i != buffers_.end()) {
-      pp::Size buffer_size = (*i)->size();
-      if (buffer_size.width() < clip_area_.width() ||
-          buffer_size.height() < clip_area_.height()) {
+      if ((*i)->size().width() < clip_area_.width() ||
+          (*i)->size().height() < clip_area_.height()) {
         consumer_->ReturnBuffer(*i);
         i = buffers_.erase(i);
       } else {

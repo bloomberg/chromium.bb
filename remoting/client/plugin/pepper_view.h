@@ -20,6 +20,10 @@ namespace base {
 class Time;
 }  // namespace base
 
+namespace webrtc {
+class DesktopFrame;
+}  // namespace webrtc
+
 namespace remoting {
 
 class ChromotingInstance;
@@ -39,9 +43,9 @@ class PepperView : public FrameConsumer,
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const SkISize& view_size,
                            const SkIRect& clip_area,
-                           pp::ImageData* buffer,
+                           webrtc::DesktopFrame* buffer,
                            const SkRegion& region) OVERRIDE;
-  virtual void ReturnBuffer(pp::ImageData* buffer) OVERRIDE;
+  virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
   virtual void SetSourceSize(const SkISize& source_size,
                              const SkIPoint& dpi) OVERRIDE;
 
@@ -63,10 +67,10 @@ class PepperView : public FrameConsumer,
  private:
   // Allocates a new frame buffer to supply to the FrameProducer to render into.
   // Returns NULL if the maximum number of buffers has already been allocated.
-  pp::ImageData* AllocateBuffer();
+  webrtc::DesktopFrame* AllocateBuffer();
 
   // Frees a frame buffer previously allocated by AllocateBuffer.
-  void FreeBuffer(pp::ImageData* buffer);
+  void FreeBuffer(webrtc::DesktopFrame* buffer);
 
   // Allocates buffers and passes them to the FrameProducer to render into until
   // the maximum number of buffers are in-flight.
@@ -77,12 +81,14 @@ class PepperView : public FrameConsumer,
   // FrameProducer is supplied the missed parts of |region|.  The FrameProducer
   // will be supplied a new buffer when FlushBuffer() completes.
   void FlushBuffer(const SkIRect& clip_area,
-                   pp::ImageData* buffer,
+                   webrtc::DesktopFrame* buffer,
                    const SkRegion& region);
 
   // Handles completion of FlushBuffer(), triggering a new buffer to be
   // returned to FrameProducer for rendering.
-  void OnFlushDone(base::Time paint_start, pp::ImageData* buffer, int result);
+  void OnFlushDone(base::Time paint_start,
+                   webrtc::DesktopFrame* buffer,
+                   int result);
 
   // Reference to the creating plugin instance. Needed for interacting with
   // pepper.  Marking explicitly as const since it must be initialized at
@@ -97,10 +103,10 @@ class PepperView : public FrameConsumer,
   FrameProducer* producer_;
 
   // List of allocated image buffers.
-  std::list<pp::ImageData*> buffers_;
+  std::list<webrtc::DesktopFrame*> buffers_;
 
   // Queued buffer to paint, with clip area and dirty region in device pixels.
-  pp::ImageData* merge_buffer_;
+  webrtc::DesktopFrame* merge_buffer_;
   SkIRect merge_clip_area_;
   SkRegion merge_region_;
 

@@ -23,8 +23,36 @@
 #include "remoting/client/frame_producer.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using base::Passed;
+
+namespace {
+
+// DesktopFrame that wraps a supplied pp::ImageData
+class PepperDesktopFrame : public webrtc::DesktopFrame {
+ public:
+  // Wraps the supplied ImageData.
+  explicit PepperDesktopFrame(const pp::ImageData& buffer);
+
+  // Access to underlying pepper representation.
+  const pp::ImageData& buffer() const {
+    return buffer_;
+  }
+
+ private:
+  pp::ImageData buffer_;
+};
+
+PepperDesktopFrame::PepperDesktopFrame(const pp::ImageData& buffer)
+  : DesktopFrame(webrtc::DesktopSize(buffer.size().width(),
+                                     buffer.size().height()),
+                 buffer.stride(),
+                 reinterpret_cast<uint8_t*>(buffer.data()),
+                 NULL),
+    buffer_(buffer) {}
+
+}  // namespace
 
 namespace remoting {
 
@@ -139,7 +167,7 @@ void PepperView::SetView(const pp::View& view) {
 
 void PepperView::ApplyBuffer(const SkISize& view_size,
                              const SkIRect& clip_area,
-                             pp::ImageData* buffer,
+                             webrtc::DesktopFrame* buffer,
                              const SkRegion& region) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
 
@@ -160,7 +188,7 @@ void PepperView::ApplyBuffer(const SkISize& view_size,
   }
 }
 
-void PepperView::ReturnBuffer(pp::ImageData* buffer) {
+void PepperView::ReturnBuffer(webrtc::DesktopFrame* buffer) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
 
   // Reuse the buffer if it is large enough, otherwise drop it on the floor
@@ -188,28 +216,30 @@ void PepperView::SetSourceSize(const SkISize& source_size,
   instance_->SetDesktopSize(source_size, source_dpi);
 }
 
-pp::ImageData* PepperView::AllocateBuffer() {
+webrtc::DesktopFrame* PepperView::AllocateBuffer() {
   if (buffers_.size() >= kMaxPendingBuffersCount)
     return NULL;
 
-  pp::Size pp_size = pp::Size(clip_area_.width(), clip_area_.height());
-  if (pp_size.IsEmpty())
+  if (clip_area_.width()==0 || clip_area_.height()==0)
     return NULL;
 
   // Create an image buffer of the required size, but don't zero it.
-  pp::ImageData* buffer =  new pp::ImageData(
-      instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp_size, false);
-  if (buffer->is_null()) {
+  pp::ImageData buffer_data(instance_,
+                    PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                    pp::Size(clip_area_.width(),
+                             clip_area_.height()),
+                    false);
+  if (buffer_data.is_null()) {
     LOG(WARNING) << "Not enough memory for frame buffers.";
-    delete buffer;
     return NULL;
   }
 
+  webrtc::DesktopFrame* buffer = new PepperDesktopFrame(buffer_data);
   buffers_.push_back(buffer);
   return buffer;
 }
 
-void PepperView::FreeBuffer(pp::ImageData* buffer) {
+void PepperView::FreeBuffer(webrtc::DesktopFrame* buffer) {
   DCHECK(std::find(buffers_.begin(), buffers_.end(), buffer) != buffers_.end());
 
   buffers_.remove(buffer);
@@ -217,7 +247,7 @@ void PepperView::FreeBuffer(pp::ImageData* buffer) {
 }
 
 void PepperView::InitiateDrawing() {
-  pp::ImageData* buffer = AllocateBuffer();
+  webrtc::DesktopFrame* buffer = AllocateBuffer();
   while (buffer) {
     producer_->DrawBuffer(buffer);
     buffer = AllocateBuffer();
@@ -225,7 +255,7 @@ void PepperView::InitiateDrawing() {
 }
 
 void PepperView::FlushBuffer(const SkIRect& clip_area,
-                             pp::ImageData* buffer,
+                             webrtc::DesktopFrame* buffer,
                              const SkRegion& region) {
   // Defer drawing if the flush is already in progress.
   if (flush_pending_) {
@@ -257,7 +287,7 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
     // Pepper Graphics 2D has a strange and badly documented API that the
     // point here is the offset from the source rect. Why?
     graphics2d_.PaintImageData(
-        *buffer,
+        static_cast<PepperDesktopFrame*>(buffer)->buffer(),
         pp::Point(clip_area.left(), clip_area.top()),
         pp::Rect(rect.left(), rect.top(), rect.width(), rect.height()));
   }
@@ -286,7 +316,7 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
 }
 
 void PepperView::OnFlushDone(base::Time paint_start,
-                             pp::ImageData* buffer,
+                             webrtc::DesktopFrame* buffer,
                              int result) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
   DCHECK(flush_pending_);

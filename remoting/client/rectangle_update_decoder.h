@@ -20,10 +20,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace pp {
-class ImageData;
-}  // namespace pp
-
 namespace remoting {
 
 class ChromotingStats;
@@ -55,7 +51,7 @@ class RectangleUpdateDecoder
 
   // FrameProducer implementation.  These methods may be called before we are
   // Initialize()d, or we know the source screen size.
-  virtual void DrawBuffer(pp::ImageData* buffer) OVERRIDE;
+  virtual void DrawBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& region) OVERRIDE;
   virtual void RequestReturnBuffers(const base::Closure& done) OVERRIDE;
   virtual void SetOutputSizeAndClip(const SkISize& view_size,
@@ -106,7 +102,7 @@ class RectangleUpdateDecoder
   SkIRect clip_area_;
 
   // The drawing buffers supplied by the frame consumer.
-  std::list<pp::ImageData*> buffers_;
+  std::list<webrtc::DesktopFrame*> buffers_;
 
   // Flag used to coalesce runs of SchedulePaint()s into a single DoPaint().
   bool paint_scheduled_;

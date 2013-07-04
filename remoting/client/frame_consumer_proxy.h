@@ -31,9 +31,9 @@ class FrameConsumerProxy
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const SkISize& view_size,
                            const SkIRect& clip_area,
-                           pp::ImageData* buffer,
+                           webrtc::DesktopFrame* buffer,
                            const SkRegion& region) OVERRIDE;
-  virtual void ReturnBuffer(pp::ImageData* buffer) OVERRIDE;
+  virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
   virtual void SetSourceSize(const SkISize& source_size,
                              const SkIPoint& dpi) OVERRIDE;
 

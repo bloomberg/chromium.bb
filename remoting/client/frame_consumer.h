@@ -9,9 +9,9 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSize.h"
 
-namespace pp {
-class ImageData;
-} // namespace pp
+namespace webrtc {
+class DesktopFrame;
+}  // namespace webrtc
 
 namespace remoting {
 
@@ -27,13 +27,13 @@ class FrameConsumer {
   // the frame.
   virtual void ApplyBuffer(const SkISize& view_size,
                            const SkIRect& clip_area,
-                           pp::ImageData* buffer,
+                           webrtc::DesktopFrame* buffer,
                            const SkRegion& region) = 0;
 
   // Accepts a buffer that couldn't be used for drawing for any reason (shutdown
   // is in progress, the view area has changed, etc.). The accepted buffer can
   // be freed or reused for another drawing operation.
-  virtual void ReturnBuffer(pp::ImageData* buffer) = 0;
+  virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) = 0;
 
   // Set the dimension of the entire host screen.
   virtual void SetSourceSize(const SkISize& source_size,

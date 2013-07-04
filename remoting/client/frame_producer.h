@@ -10,9 +10,9 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSize.h"
 
-namespace pp {
-class ImageData;
-} // namespace pp
+namespace webrtc {
+class DesktopFrame;
+}  // namespace webrtc
 
 namespace remoting {
 
@@ -26,7 +26,7 @@ class FrameProducer {
   // be returned via the FrameConsumer::ReturnBuffer() call.
   //
   // The passed buffer must be large enough to hold the whole clipping area.
-  virtual void DrawBuffer(pp::ImageData* buffer) = 0;
+  virtual void DrawBuffer(webrtc::DesktopFrame* buffer) = 0;
 
   // Requests repainting of the specified |region| of the frame as soon as
   // possible. |region| is specified in output coordinates relative to

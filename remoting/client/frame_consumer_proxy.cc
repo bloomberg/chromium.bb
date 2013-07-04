@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "ppapi/cpp/image_data.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
 
@@ -18,7 +18,7 @@ FrameConsumerProxy::FrameConsumerProxy(
 
 void FrameConsumerProxy::ApplyBuffer(const SkISize& view_size,
                                      const SkIRect& clip_area,
-                                     pp::ImageData* buffer,
+                                     webrtc::DesktopFrame* buffer,
                                      const SkRegion& region) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(
@@ -31,7 +31,7 @@ void FrameConsumerProxy::ApplyBuffer(const SkISize& view_size,
     frame_consumer_->ApplyBuffer(view_size, clip_area, buffer, region);
 }
 
-void FrameConsumerProxy::ReturnBuffer(pp::ImageData* buffer) {
+void FrameConsumerProxy::ReturnBuffer(webrtc::DesktopFrame* buffer) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(
         &FrameConsumerProxy::ReturnBuffer, this, buffer));
