@@ -245,8 +245,24 @@ public class AwContents {
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
             final String url = navigationParams.url;
+            final int transitionType = navigationParams.pageTransitionType;
+            final boolean isLoadUrl =
+                    (transitionType & PageTransitionTypes.PAGE_TRANSITION_FROM_API) != 0;
+            final boolean isBackForward =
+                    (transitionType & PageTransitionTypes.PAGE_TRANSITION_FORWARD_BACK) != 0;
+            final boolean isReload =
+                    (transitionType & PageTransitionTypes.PAGE_TRANSITION_CORE_MASK) ==
+                    PageTransitionTypes.PAGE_TRANSITION_RELOAD;
+            final boolean isRedirect = navigationParams.isRedirect;
+
             boolean ignoreNavigation = false;
-            if (mLastLoadUrlAddress != null && mLastLoadUrlAddress.equals(url)) {
+
+            // Any navigation from loadUrl, goBack/Forward, or reload, are considered application
+            // initiated and hence will not yield a shouldOverrideUrlLoading() callback.
+            // TODO(joth): Using PageTransitionTypes should be sufficient to determine all app
+            // initiated navigations, and so mLastLoadUrlAddress should be removed.
+            if ((isLoadUrl && !isRedirect) || isBackForward || isReload ||
+                    mLastLoadUrlAddress != null && mLastLoadUrlAddress.equals(url)) {
                 // Support the case where the user clicks on a link that takes them back to the
                 // same page.
                 mLastLoadUrlAddress = null;
@@ -681,6 +697,8 @@ public class AwContents {
             params.getTransitionType() == PageTransitionTypes.PAGE_TRANSITION_LINK) {
             params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
         }
+        params.setTransitionType(
+                params.getTransitionType() | PageTransitionTypes.PAGE_TRANSITION_FROM_API);
 
         // For WebView, always use the user agent override, which is set
         // every time the user agent in AwSettings is modified.

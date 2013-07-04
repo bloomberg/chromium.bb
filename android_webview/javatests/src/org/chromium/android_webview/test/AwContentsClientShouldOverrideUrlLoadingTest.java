@@ -16,6 +16,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.NavigationHistory;
+import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -28,6 +29,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests for the WebViewClient.shouldOverrideUrlLoading() method.
@@ -782,5 +784,33 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String redirectUrl = addPageToTestServer(mWebServer, "/js_delayed_replace.html",
                 getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Replace", 100));
         doTestCalledOnRedirect(mWebServer, redirectUrl, redirectTargetUrl);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
+    public void testDoubleNavigateDoesNotSuppressInitialNavigate() throws Throwable {
+        final String jsUrl = "javascript:try{console.log('processed js loadUrl');}catch(e){};";
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
+
+        // Do a double navigagtion, the second being an effective no-op, in quick succession (i.e.
+        // without yielding the main thread inbetween).
+        int currentCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                awContents.loadUrl(LoadUrlParams.createLoadDataParams(
+                        getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false));
+                awContents.loadUrl(new LoadUrlParams(jsUrl));
+            }
+        });
+        contentsClient.getOnPageFinishedHelper().waitForCallback(currentCallCount, 1,
+                WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+        assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
     }
 }
