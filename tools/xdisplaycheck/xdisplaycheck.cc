@@ -34,29 +34,43 @@ void Sleep(int duration_ms) {
     sleep_time = remaining;
 }
 
+class XScopedDisplay {
+ public:
+  XScopedDisplay() : display_(NULL) {}
+  ~XScopedDisplay() {
+    if (display_) XCloseDisplay(display_);
+  }
+
+  void set(Display* display) { display_ = display; }
+  Display* display() { return display_; }
+
+ private:
+  Display* display_;
+};
+
 int main(int argc, char* argv[]) {
-  Display* display = NULL;
+  XScopedDisplay scoped_display;
   if (argv[1] && strcmp(argv[1], "--noserver") == 0) {
-    display = XOpenDisplay(NULL);
-    if (display) {
+    scoped_display.set(XOpenDisplay(NULL));
+    if (scoped_display.display()) {
       fprintf(stderr, "Found unexpected connectable display %s\n",
               XDisplayName(NULL));
     }
     // Return success when we got an unexpected display so that the code
     // without the --noserver is the same, but slow, rather than inverted.
-    return !display;
+    return !scoped_display.display();
   }
 
   int kNumTries = 78;  // 78*77/2 * 10 = 30s of waiting
   int tries;
   for (tries = 0; tries < kNumTries; ++tries) {
-    display = XOpenDisplay(NULL);
-    if (display)
+    scoped_display.set(XOpenDisplay(NULL));
+    if (scoped_display.display())
       break;
     Sleep(10 * tries);
   }
 
-  if (!display) {
+  if (!scoped_display.display()) {
     fprintf(stderr, "Failed to connect to %s\n", XDisplayName(NULL));
     return -1;
   }
@@ -66,14 +80,15 @@ int main(int argc, char* argv[]) {
 #if defined(USE_AURA)
   // Check for XInput2
   int opcode, event, err;
-  if (!XQueryExtension(display, "XInputExtension", &opcode, &event, &err)) {
+  if (!XQueryExtension(scoped_display.display(), "XInputExtension", &opcode,
+                       &event, &err)) {
     fprintf(stderr,
         "Failed to get XInputExtension on %s.\n", XDisplayName(NULL));
     return -1;
   }
 
   int major = 2, minor = 0;
-  if (XIQueryVersion(display, &major, &minor) == BadRequest) {
+  if (XIQueryVersion(scoped_display.display(), &major, &minor) == BadRequest) {
     fprintf(stderr,
         "Server does not have XInput2 on %s.\n", XDisplayName(NULL));
     return -1;
@@ -81,13 +96,13 @@ int main(int argc, char* argv[]) {
 
   // Ask for the list of devices. This can cause some Xvfb to crash.
   int count = 0;
-  XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
+  XIDeviceInfo* devices =
+      XIQueryDevice(scoped_display.display(), XIAllDevices, &count);
   if (devices)
     XIFreeDeviceInfo(devices);
 
   fprintf(stderr,
       "XInput2 verified initially sane on %s.\n", XDisplayName(NULL));
 #endif
-
   return 0;
 }
