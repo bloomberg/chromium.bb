@@ -954,6 +954,7 @@
         'browser/media_galleries/media_galleries_dialog_controller_unittest.cc',
         'browser/media_galleries/media_galleries_preferences_unittest.cc',
         'browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc',
+        'browser/metrics/compression_utils_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_log_serializer_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
