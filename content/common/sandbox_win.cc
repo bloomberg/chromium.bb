@@ -9,6 +9,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/profiler.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/hash.h"
@@ -526,7 +527,11 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
 #ifndef OFFICIAL_BUILD
   BOOL is_in_job = FALSE;
   CHECK(::IsProcessInJob(::GetCurrentProcess(), NULL, &is_in_job));
-  if (!is_in_job && !g_iat_patch_duplicate_handle.is_patched()) {
+  // In a Syzygy-profiled binary, instrumented for import profiling, this
+  // patch will end in infinite recursion on the attempted delegation to the
+  // original function.
+  if (!base::debug::IsBinaryInstrumented() &&
+      !is_in_job && !g_iat_patch_duplicate_handle.is_patched()) {
     HMODULE module = NULL;
     wchar_t module_name[MAX_PATH];
     CHECK(::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
