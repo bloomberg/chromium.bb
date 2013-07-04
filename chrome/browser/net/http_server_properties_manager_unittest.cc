@@ -160,9 +160,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   server_pref_dict->SetInteger("pipeline_capability", net::PIPELINE_CAPABLE);
 
   // Set the server preference for www.google.com:80.
-  base::DictionaryValue* http_server_properties_dict =
-      new base::DictionaryValue;
-  http_server_properties_dict->SetWithoutPathExpansion(
+  base::DictionaryValue* servers_dict = new base::DictionaryValue;
+  servers_dict->SetWithoutPathExpansion(
       "www.google.com:80", server_pref_dict);
 
   // Set the preference for mail.google.com server.
@@ -183,8 +182,13 @@ TEST_F(HttpServerPropertiesManagerTest,
   server_pref_dict1->SetInteger("pipeline_capability", net::PIPELINE_INCAPABLE);
 
   // Set the server preference for mail.google.com:80.
-  http_server_properties_dict->SetWithoutPathExpansion(
+  servers_dict->SetWithoutPathExpansion(
       "mail.google.com:80", server_pref_dict1);
+
+  base::DictionaryValue* http_server_properties_dict =
+      new base::DictionaryValue;
+  HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
+  http_server_properties_dict->SetWithoutPathExpansion("servers", servers_dict);
 
   // Set the same value for kHttpServerProperties multiple times.
   pref_service_.SetManagedPref(prefs::kHttpServerProperties,

@@ -69,6 +69,10 @@ class HttpServerPropertiesManager
   // Register |prefs| for properties managed here.
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Helper function for unit tests to set the version in the dictionary.
+  static void SetVersion(base::DictionaryValue* http_server_properties_dict,
+                         int version_number);
+
   // Deletes all data. Works asynchronously, but if a |completion| callback is
   // provided, it will be fired on the UI thread when everything is done.
   void Clear(const base::Closure& completion);
