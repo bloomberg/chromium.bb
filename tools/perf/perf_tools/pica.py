@@ -12,6 +12,9 @@ class Pica(page_measurement.PageMeasurement):
   def CreatePageSet(self, _, options):
     return page_set.PageSet.FromDict({
         'archive_data_file': '../data/pica.json',
+        # Pica requires non-deterministic Date and Math.random calls
+        # See http://crbug.com/255641
+        'make_javascript_deterministic': False,
         'pages': [
           {
             'url': 'http://www.polymer-project.org/' +
@@ -19,11 +22,6 @@ class Pica(page_measurement.PageMeasurement):
           }
         ]
       }, os.path.abspath(__file__))
-
-  def CustomizeBrowserOptions(self, options):
-    # Pica requires non-deterministic Date and Math.random calls
-    # See http://crbug.com/255641
-    options.wpr_make_javascript_deterministic = False
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """

@@ -14,15 +14,13 @@ class RobohornetPro(page_measurement.PageMeasurement):
   def CreatePageSet(self, _, options):
     return page_set.PageSet.FromDict({
         'archive_data_file': '../data/robohornetpro.json',
+        # Measurement require use of real Date.now() for measurement.
+        'make_javascript_deterministic': False,
         'pages': [
           { 'url':
             'http://ie.microsoft.com/testdrive/performance/robohornetpro/' }
           ]
         }, os.path.abspath(__file__))
-
-  def CustomizeBrowserOptions(self, options):
-    # Measurement require use of real Date.now() for measurement.
-    options.wpr_make_javascript_deterministic = False
 
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('ToggleRoboHornet()')
