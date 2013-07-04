@@ -142,35 +142,45 @@ MD5SUM_DEVICE_FILE_NAME = 'md5sum_bin'
 MD5SUM_HOST_FILE_NAME = 'md5sum_bin_host'
 MD5SUM_DEVICE_PATH = '/data/local/tmp/' + MD5SUM_DEVICE_FILE_NAME
 
-# Shared pieces of information for the two supported test runners.
-class SharedDriverDetails(object):
+
+# Information required when running layout tests using content_shell as the test runner.
+class ContentShellDriverDetails():
     def device_cache_directory(self):
         return self.device_directory() + 'cache/'
+
     def device_fonts_directory(self):
         return self.device_directory() + 'fonts/'
+
     def device_forwarder_path(self):
         return self.device_directory() + 'forwarder'
+
     def device_fifo_directory(self):
         return '/data/data/' + self.package_name() + '/files/'
 
-# Information required when running layout tests using content_shell as the test runner.
-class ContentShellDriverDetails(SharedDriverDetails):
     def apk_name(self):
         return 'apks/ContentShell.apk'
+
     def package_name(self):
         return 'org.chromium.content_shell_apk'
+
     def activity_name(self):
         return self.package_name() + '/.ContentShellActivity'
+
     def library_name(self):
         return 'libcontent_shell_content_view.so'
+
     def additional_resources(self):
         return ['content_resources.pak', 'shell_resources.pak']
+
     def command_line_file(self):
         return '/data/local/tmp/content-shell-command-line'
+
     def additional_command_line_flags(self):
         return ['--dump-render-tree', '--encode-binary']
+
     def device_directory(self):
         return DEVICE_SOURCE_ROOT_DIR + 'content_shell/'
+
 
 # The AndroidCommands class encapsulates commands to communicate with an attached device.
 class AndroidCommands(object):

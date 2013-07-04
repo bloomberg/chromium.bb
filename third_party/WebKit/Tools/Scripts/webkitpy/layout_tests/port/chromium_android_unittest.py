@@ -42,6 +42,7 @@ from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import driver_unittest
 from webkitpy.tool.mocktool import MockOptions
 
+
 # Any "adb" commands will be interpret by this class instead of executing actual
 # commansd on the file system, which we don't want to do.
 class MockAndroidDebugBridge:
@@ -83,7 +84,7 @@ class MockAndroidDebugBridge:
                    '123456789ABCDEF3', '123456789ABCDEF4', '123456789ABCDEF5']
         output = 'List of devices attached\n'
         for serial in serials[:self._device_count]:
-          output += '%s\tdevice\n' % serial
+            output += '%s\tdevice\n' % serial
         return output
 
 
@@ -202,21 +203,6 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
 
         self.assertEqual(['adb', '-s', '123456789ABCDEF0', 'shell'], driver0.cmd_line(True, []))
         self.assertEqual(['adb', '-s', '123456789ABCDEF1', 'shell'], driver1.cmd_line(True, ['anything']))
-
-
-class ChromiumAndroidTwoPortsTest(unittest.TestCase):
-    # Test that the driver's command line indeed goes through to the driver.
-    def test_options_with_two_ports(self):
-        mock_adb = MockAndroidDebugBridge(2)
-        mock_executive = MockExecutive2(run_command_fn=mock_adb.run_command)
-
-        port0 = chromium_android.ChromiumAndroidPort(MockSystemHost(executive=mock_executive),
-            'chromium-android', options=MockOptions(additional_drt_flag=['--foo=bar']))
-        port1 = chromium_android.ChromiumAndroidPort(MockSystemHost(executive=mock_executive),
-            'chromium-android', options=MockOptions(driver_name='content_shell'))
-
-        self.assertEqual(1, port0.driver_cmd_line().count('--foo=bar'))
-        self.assertEqual(0, port1.driver_cmd_line().count('--create-stdin-fifo'))
 
 
 class ChromiumAndroidTwoPortsTest(unittest.TestCase):
