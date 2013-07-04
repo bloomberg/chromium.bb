@@ -79,6 +79,7 @@ class WebstoreResult : public ChromeSearchResult,
 
   AppListControllerDelegate* controller_;
   extensions::InstallTracker* install_tracker_;  // Not owned.
+  bool launch_after_install_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreResult);
 };

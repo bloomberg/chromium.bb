@@ -36,7 +36,8 @@ WebstoreResult::WebstoreResult(Profile* profile,
       icon_url_(icon_url),
       weak_factory_(this),
       controller_(controller),
-      install_tracker_(NULL) {
+      install_tracker_(NULL),
+      launch_after_install_(false) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
   set_relevance(0.0);  // What is the right value to use?
 
@@ -72,6 +73,7 @@ void WebstoreResult::Open(int event_flags) {
     return;
   }
 
+  launch_after_install_ = true;
   StartInstall();
 }
 
@@ -184,6 +186,11 @@ void WebstoreResult::OnExtensionInstalled(
 
   SetIsInstalling(false);
   UpdateActions();
+
+  if (launch_after_install_) {
+    launch_after_install_ = false;
+    Open(ui::EF_NONE);
+  }
 }
 
 void WebstoreResult::OnExtensionUninstalled(
