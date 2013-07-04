@@ -17,6 +17,9 @@
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
+#include "chrome/browser/storage_monitor/removable_storage_observer.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/extensions/api/experimental_system_info_storage.h"
 #include "ui/gfx/display_observer.h"
 
@@ -27,9 +30,9 @@
 
 namespace extensions {
 
+using api::experimental_system_info_storage::StorageFreeSpaceChangeInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::StorageUnitType;
-using api::experimental_system_info_storage::StorageChangeInfo;
 using content::BrowserThread;
 
 namespace {
@@ -49,8 +52,9 @@ bool IsAvailableCapacityChangedEvent(const std::string& event_name) {
 
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
-class SystemInfoEventRouter
-    : public gfx::DisplayObserver, public StorageInfoObserver {
+class SystemInfoEventRouter : public gfx::DisplayObserver,
+                              public StorageFreeSpaceObserver,
+                              public chrome::RemovableStorageObserver {
  public:
   static SystemInfoEventRouter* GetInstance();
 
@@ -65,21 +69,24 @@ class SystemInfoEventRouter
   static bool IsSystemInfoEvent(const std::string& event_name);
 
  private:
-  // StorageInfoObserver:
-  virtual void OnStorageFreeSpaceChanged(const std::string& id,
-                                         double new_value,
-                                         double old_value) OVERRIDE;
-  virtual void OnStorageAttached(
-      const std::string& id,
-      api::experimental_system_info_storage::StorageUnitType type,
-      double capacity,
-      double available_capacity) OVERRIDE;
-  virtual void OnStorageDetached(const std::string& id) OVERRIDE;
+  // StorageFreeSpaceObserver:
+  virtual void OnFreeSpaceChanged(const std::string& id,
+                                  double new_value,
+                                  double old_value) OVERRIDE;
 
   // gfx::DisplayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+
+  // chrome::RemovableStorageObserver implementation.
+  virtual void OnRemovableStorageAttached(
+      const chrome::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const chrome::StorageInfo& info) OVERRIDE;
+
+  void DispatchStorageAttachedEvent(const chrome::StorageInfo& info,
+                                    int64 avail_bytes);
 
   // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.
@@ -110,10 +117,14 @@ SystemInfoEventRouter* SystemInfoEventRouter::GetInstance() {
 
 SystemInfoEventRouter::SystemInfoEventRouter() {
   StorageInfoProvider::Get()->AddObserver(this);
+  chrome::StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 SystemInfoEventRouter::~SystemInfoEventRouter() {
   StorageInfoProvider::Get()->RemoveObserver(this);
+  if (chrome::StorageMonitor* storage_monitor =
+          chrome::StorageMonitor::GetInstance())
+    storage_monitor->RemoveObserver(this);
 }
 
 void SystemInfoEventRouter::StartWatchingStorages(
@@ -198,10 +209,10 @@ bool SystemInfoEventRouter::IsSystemInfoEvent(const std::string& event_name) {
 }
 
 // Called on UI thread since the observer is added from UI thread.
-void SystemInfoEventRouter::OnStorageFreeSpaceChanged(
-    const std::string& id, double new_value, double old_value) {
-  StorageChangeInfo info;
-  info.id = id;
+void SystemInfoEventRouter::OnFreeSpaceChanged(
+    const std::string& transient_id, double new_value, double old_value) {
+  StorageFreeSpaceChangeInfo info;
+  info.id = transient_id;
   info.available_capacity = static_cast<double>(new_value);
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -210,25 +221,41 @@ void SystemInfoEventRouter::OnStorageFreeSpaceChanged(
   DispatchEvent(event_names::kOnStorageAvailableCapacityChanged, args.Pass());
 }
 
-void SystemInfoEventRouter::OnStorageAttached(const std::string& id,
-                                              StorageUnitType type,
-                                              double capacity,
-                                              double available_capacity) {
-  StorageUnitInfo info;
-  info.id = id;
-  info.type = type;
-  info.capacity = capacity;
-  info.available_capacity = available_capacity;
+void SystemInfoEventRouter::OnRemovableStorageAttached(
+    const chrome::StorageInfo& info) {
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE,
+      base::Bind(&StorageInfoProvider::GetStorageFreeSpaceFromTransientId,
+                 StorageInfoProvider::Get(),
+                 StorageInfoProvider::Get()->GetTransientIdForDeviceId(
+                     info.device_id())),
+      base::Bind(&SystemInfoEventRouter::DispatchStorageAttachedEvent,
+                 // Since SystemInfoEventRouter is a global lazy instance, this
+                 // pointer will be alive when the reply comes back.
+                 base::Unretained(this),
+                 info));
+}
+
+void SystemInfoEventRouter::DispatchStorageAttachedEvent(
+    const chrome::StorageInfo& info, int64 avail_bytes) {
+  StorageUnitInfo unit;
+  systeminfo::BuildStorageUnitInfo(info, &unit);
+
+  unit.available_capacity =
+      avail_bytes > 0 ? static_cast<double>(avail_bytes) : 0;
 
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(info.ToValue().release());
-
+  args->Append(unit.ToValue().release());
   DispatchEvent(event_names::kOnStorageAttached, args.Pass());
 }
 
-void SystemInfoEventRouter::OnStorageDetached(const std::string& id) {
+void SystemInfoEventRouter::OnRemovableStorageDetached(
+    const chrome::StorageInfo& info) {
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(new base::StringValue(id));
+  args->Append(new base::StringValue(StorageInfoProvider::Get()->
+                   GetTransientIdForDeviceId(info.device_id())));
 
   DispatchEvent(event_names::kOnStorageDetached, args.Pass());
 }

@@ -8,11 +8,11 @@ chrome.systemInfo = chrome.experimental.systemInfo;
 
 // Testing data should be the same as that in system_info_storage_apitest.cc
 var testData = [
-  { id: "0xbeaf", type: "unknown", capacity: 4098,
+  { id:"transient:0004", name: "0xbeaf", type: "unknown", capacity: 4098,
     availableCapacity: 1000, step: 0 },
-  { id: "/home", type: "fixed", capacity: 4098,
+  { id:"transient:002", name: "/home", type: "fixed", capacity: 4098,
     availableCapacity: 1000, step: 10 },
-  { id: "/data", type: "fixed", capacity: 10000,
+  { id:"transient:003", name: "/data", type: "fixed", capacity: 10000,
     availableCapacity: 1000, step: 4097 }
 ];
 
@@ -22,6 +22,7 @@ chrome.test.runTests([
       chrome.test.assertTrue(units.length == 3);
       for (var i = 0; i < units.length; ++i) {
         chrome.test.assertEq(testData[i].id, units[i].id);
+        chrome.test.assertEq(testData[i].name, units[i].name);
         chrome.test.assertEq(testData[i].type, units[i].type);
         chrome.test.assertEq(testData[i].capacity, units[i].capacity);
         chrome.test.assertEq(testData[i].availableCapacity,

@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
+#include "chrome/browser/extensions/api/system_info_storage/test_storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
@@ -13,6 +14,8 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+
+namespace {
 
 using chrome::StorageMonitor;
 using chrome::test::TestStorageMonitor;
@@ -23,72 +26,24 @@ using extensions::StorageInfo;
 using extensions::systeminfo::kStorageTypeFixed;
 using extensions::systeminfo::kStorageTypeRemovable;
 using extensions::systeminfo::kStorageTypeUnknown;
+using extensions::TestStorageUnitInfo;
+using extensions::TestStorageInfoProvider;
 
-struct TestUnitInfo {
-  std::string id;
-  std::string type;
-  double capacity;
-  double available_capacity;
-  // The change step of free space.
-  int change_step;
+struct TestStorageUnitInfo kTestingData[] = {
+  {"dcim:device:0004", "transient:0004", "0xbeaf", kStorageTypeUnknown,
+    4098, 1000, 0},
+  {"path:device:002", "transient:002", "/home", kStorageTypeFixed,
+    4098, 1000, 10},
+  {"path:device:003", "transient:003", "/data", kStorageTypeFixed,
+    10000, 1000, 4097}
 };
 
-struct TestUnitInfo kTestingData[] = {
-  {"0xbeaf", kStorageTypeUnknown, 4098, 1000, 0},
-  {"/home", kStorageTypeFixed, 4098, 1000, 10},
-  {"/data", kStorageTypeFixed, 10000, 1000, 4097}
+struct TestStorageUnitInfo kRemovableStorageData[] = {
+  {"dcim:device:0004", "transient:0004", "/media/usb1",
+    kStorageTypeRemovable, 4098, 1000, 1}
 };
 
-struct TestUnitInfo kRemovableStorageData[] = {
-  {"/media/usb1", kStorageTypeRemovable, 4098, 1000, 1}
-};
-
-const char kRemovableStorageDeviceName[] = "deviceName";
-const char kRemovableStorageDeviceId[] = "dcim:device:0001";
-const base::FilePath::CharType kRemovableStorageLocation[] =
-    FILE_PATH_LITERAL("/media/usb1");
-const size_t kTestingIntervalMS = 10;
-
-class TestStorageInfoProvider : public StorageInfoProvider {
- public:
-  TestStorageInfoProvider(struct TestUnitInfo testing_data[], size_t n)
-      : testing_data_(testing_data, testing_data + n) {
-    SetWatchingIntervalForTesting(kTestingIntervalMS);
-  }
-
- private:
-  virtual ~TestStorageInfoProvider() {}
-
-  virtual bool QueryInfo(StorageInfo* info) OVERRIDE {
-    info->clear();
-
-    for (size_t i = 0; i < testing_data_.size(); i++) {
-      linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
-      QueryUnitInfo(testing_data_[i].id, unit.get());
-      info->push_back(unit);
-    }
-    return true;
-  }
-
-  virtual bool QueryUnitInfo(const std::string& id,
-                             StorageUnitInfo* info) OVERRIDE {
-    for (size_t i = 0; i < testing_data_.size(); i++) {
-      if (testing_data_[i].id == id) {
-        info->id = testing_data_[i].id;
-        info->type = ParseStorageUnitType(testing_data_[i].type);
-        info->capacity = testing_data_[i].capacity;
-        info->available_capacity = testing_data_[i].available_capacity;
-        // Increase the available capacity with a fixed change step.
-        testing_data_[i].available_capacity += testing_data_[i].change_step;
-        return true;
-      }
-    }
-    return false;
-  }
-
- private:
-  std::vector<struct TestUnitInfo> testing_data_;
-};
+}  // namespace
 
 class SystemInfoStorageApiTest: public ExtensionApiTest {
  public:
@@ -105,15 +60,18 @@ class SystemInfoStorageApiTest: public ExtensionApiTest {
     message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
   }
 
-  void ProcessAttach(const std::string& device_id,
-                     const string16& name,
-                     const base::FilePath::StringType& location) {
-    chrome::StorageInfo info(device_id, name, location,
-                             string16(), string16(), string16(), 0);
-    StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
+  void AttachRemovableStorage(const std::string& device_id) {
+    size_t len = arraysize(kRemovableStorageData);
+    for (size_t i = 0; i < len; ++i) {
+      if (kRemovableStorageData[i].device_id != device_id)
+        continue;
+
+      StorageMonitor::GetInstance()->receiver()->ProcessAttach(
+          TestStorageInfoProvider::BuildStorageInfo(kRemovableStorageData[i]));
+    }
   }
 
-  void ProcessDetach(const std::string& id) {
+  void DetachRemovableStorage(const std::string& id) {
     StorageMonitor::GetInstance()->receiver()->ProcessDetach(id);
   }
 
@@ -146,12 +104,10 @@ IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, StorageAttachment) {
 
   // Simulate triggering onAttached event.
   ASSERT_TRUE(attach_listener.WaitUntilSatisfied());
-  ProcessAttach(kRemovableStorageDeviceId,
-                ASCIIToUTF16(kRemovableStorageDeviceName),
-                kRemovableStorageLocation);
+  AttachRemovableStorage(kRemovableStorageData[0].device_id);
   // Simulate triggering onDetached event.
   ASSERT_TRUE(detach_listener.WaitUntilSatisfied());
-  ProcessDetach(kRemovableStorageDeviceId);
+  DetachRemovableStorage(kRemovableStorageData[0].device_id);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

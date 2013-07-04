@@ -8,7 +8,8 @@ chrome.systemInfo = chrome.experimental.systemInfo;
 
 // Testing data should be the same as that in system_info_storage_apitest.cc
 var testData = {
-  id: "/media/usb1",
+  id: "transient:0004",
+  name: "/media/usb1",
   type: "removable",
   capacity: 4098
 };
@@ -19,6 +20,7 @@ chrome.test.runTests([
       chrome.systemInfo.storage.onAttached,
       function listener(info) {
         chrome.test.assertEq(testData.id, info.id);
+        chrome.test.assertEq(testData.name, info.name);
         chrome.test.assertEq(testData.type, info.type);
         chrome.test.assertEq(testData.capacity, info.capacity);
       }
