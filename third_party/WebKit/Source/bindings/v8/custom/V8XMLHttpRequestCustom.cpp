@@ -31,6 +31,7 @@
 #include "config.h"
 #include "V8XMLHttpRequest.h"
 
+#include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
 #include "V8Blob.h"
 #include "V8Document.h"

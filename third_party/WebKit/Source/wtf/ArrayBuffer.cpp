@@ -51,9 +51,6 @@ bool ArrayBuffer::transfer(ArrayBufferContents& result, Vector<RefPtr<ArrayBuffe
         current->neuter();
         neuteredViews.append(current);
     }
-
-    m_isNeutered = true;
-
     return true;
 }
 
