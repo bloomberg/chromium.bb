@@ -77,6 +77,7 @@ private:
     WebPDemuxState m_demuxState;
     bool m_haveAlreadyParsedThisData;
     bool m_haveReadAnimationParameters;
+    bool m_hasProfile;
     int m_repetitionCount;
     int m_decodedHeight;
 

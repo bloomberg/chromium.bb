@@ -62,6 +62,7 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
     , m_demuxState(WEBP_DEMUX_PARSING_HEADER)
     , m_haveAlreadyParsedThisData(false)
     , m_haveReadAnimationParameters(false)
+    , m_hasProfile(false)
     , m_repetitionCount(cAnimationLoopOnce)
     , m_decodedHeight(0)
 {
@@ -78,6 +79,7 @@ void WEBPImageDecoder::clear()
     if (m_transform)
         qcms_transform_release(m_transform);
     m_transform = 0;
+    m_haveReadProfile = false;
 #endif
     WebPDemuxDelete(m_demux);
     m_demux = 0;
@@ -166,7 +168,7 @@ void WEBPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
 
     ImageDecoder::setData(data, allDataReceived);
 
-    if (m_demuxState != WEBP_DEMUX_DONE)
+    if (m_demuxState != WEBP_DEMUX_DONE || (m_hasProfile && !m_haveReadProfile))
         m_haveAlreadyParsedThisData = false;
 }
 
@@ -215,6 +217,7 @@ bool WEBPImageDecoder::updateDemuxer()
     if (!ImageDecoder::isSizeAvailable()) {
         m_formatFlags = WebPDemuxGetI(m_demux, WEBP_FF_FORMAT_FLAGS);
         hasAnimation = (m_formatFlags & ANIMATION_FLAG);
+        m_hasProfile = (m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile();
         if (hasAnimation && !RuntimeEnabledFeatures::animatedWebPEnabled())
             return setFailed();
         if (!setSize(WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_WIDTH), WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_HEIGHT)))
@@ -393,7 +396,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     const int top = frameRect.y();
 
 #if USE(QCMSLIB)
-    if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile()) {
+    if (m_hasProfile) {
         if (!m_haveReadProfile) {
             readColorProfile();
             m_haveReadProfile = true;
@@ -505,7 +508,7 @@ bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool on
         if (!m_premultiplyAlpha)
             mode = outputMode(false);
 #if USE(QCMSLIB)
-        if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
+        if (m_hasProfile)
             mode = MODE_RGBA; // Decode to RGBA for input to libqcms.
 #endif
         WebPInitDecBuffer(&m_decoderBuffer);
