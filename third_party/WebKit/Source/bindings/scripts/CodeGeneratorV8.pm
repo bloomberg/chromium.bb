@@ -4590,12 +4590,12 @@ END
             my $code = "    virtual " . GetNativeTypeForCallbacks($function->type) . " " . $function->name . "(";
 
             my @args = ();
+            if (ExtendedAttributeContains($function->extendedAttributes->{"CallWith"}, "ThisValue")) {
+                push(@args, GetNativeType("any") . " thisValue");
+            }
             my @params = @{$function->parameters};
             foreach my $param (@params) {
                 push(@args, GetNativeTypeForCallbacks($param->type) . " " . $param->name);
-            }
-            if (ExtendedAttributeContains($function->extendedAttributes->{"CallWith"}, "ThisValue")) {
-                push(@args, GetNativeType("any") . " thisValue");
             }
             $code .= join(", ", @args);
             $code .= ");\n";
@@ -4659,6 +4659,9 @@ END
             my $callWithThisValue = ExtendedAttributeContains($function->extendedAttributes->{"CallWith"}, "ThisValue");
 
             my @args = ();
+            if ($callWithThisValue) {
+                push(@args, GetNativeTypeForCallbacks("any") . " thisValue");
+            }
             foreach my $param (@params) {
                 my $paramName = $param->name;
                 my $type = $param->type;
@@ -4674,9 +4677,6 @@ END
 
                 push(@args, GetNativeTypeForCallbacks($type) . " " . $paramName);
             }
-            if ($callWithThisValue) {
-                push(@args, GetNativeTypeForCallbacks("any") . " thisValue");
-            }
             $code .= join(", ", @args);
 
             $code .= ")\n";
@@ -4690,17 +4690,6 @@ END
             $code .= "        return true;\n\n";
             $code .= "    v8::Context::Scope scope(v8Context);\n\n";
 
-            @args = ();
-            foreach my $param (@params) {
-                my $paramName = $param->name;
-                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "v8::Handle<v8::Object>()", "isolate", "") . "\n";
-                $code .= "    if (${paramName}Handle.IsEmpty()) {\n";
-                $code .= "        if (!isScriptControllerTerminating())\n";
-                $code .= "            CRASH();\n";
-                $code .= "        return true;\n";
-                $code .= "    }\n";
-                push(@args, "        ${paramName}Handle");
-            }
             my $thisObjectHandle = "";
             if ($callWithThisValue) {
                 $code .= "    v8::Handle<v8::Value> thisHandle = thisValue.v8Value();\n";
@@ -4711,6 +4700,17 @@ END
                 $code .= "    }\n";
                 $code .= "    ASSERT(thisHandle->isObject());\n";
                 $thisObjectHandle = "v8::Handle<v8::Object>::Cast(thisHandle), ";
+            }
+            @args = ();
+            foreach my $param (@params) {
+                my $paramName = $param->name;
+                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "v8::Handle<v8::Object>()", "isolate", "") . "\n";
+                $code .= "    if (${paramName}Handle.IsEmpty()) {\n";
+                $code .= "        if (!isScriptControllerTerminating())\n";
+                $code .= "            CRASH();\n";
+                $code .= "        return true;\n";
+                $code .= "    }\n";
+                push(@args, "        ${paramName}Handle");
             }
 
             if (scalar(@args) > 0) {

@@ -218,7 +218,7 @@ bool V8TestCallback::callbackWithSequence(Vector<RefPtr<TestObj> > sequenceParam
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext());
 }
 
-bool V8TestCallback::callbackWithThisArg(int param, ScriptValue thisValue)
+bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
 {
     if (!canInvokeCallback())
         return true;
@@ -232,12 +232,6 @@ bool V8TestCallback::callbackWithThisArg(int param, ScriptValue thisValue)
 
     v8::Context::Scope scope(v8Context);
 
-    v8::Handle<v8::Value> paramHandle = v8::Integer::New(param, isolate);
-    if (paramHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return true;
-    }
     v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
     if (thisHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
@@ -245,6 +239,12 @@ bool V8TestCallback::callbackWithThisArg(int param, ScriptValue thisValue)
         return true;
     }
     ASSERT(thisHandle->isObject());
+    v8::Handle<v8::Value> paramHandle = v8::Integer::New(param, isolate);
+    if (paramHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return true;
+    }
 
     v8::Handle<v8::Value> argv[] = {
         paramHandle
