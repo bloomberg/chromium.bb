@@ -206,7 +206,6 @@
             'html/ValidityState.idl',
             'html/VoidCallback.idl',
             'html/canvas/ANGLEInstancedArrays.idl',
-            'html/canvas/ArrayBuffer.idl',
             'html/canvas/ArrayBufferView.idl',
             'html/canvas/CanvasGradient.idl',
             'html/canvas/CanvasPattern.idl',

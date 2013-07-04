@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebArrayBuffer.h"
 
-#include "V8ArrayBuffer.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/PassOwnPtr.h"
 

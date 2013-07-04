@@ -31,13 +31,12 @@
 #ifndef V8ArrayBufferViewCustom_h
 #define V8ArrayBufferViewCustom_h
 
-#include "core/dom/ExceptionCode.h"
-#include "wtf/ArrayBuffer.h"
-
-#include "V8ArrayBuffer.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "core/dom/ExceptionCode.h"
+
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 
