@@ -31,7 +31,7 @@
 #ifndef CustomElementCallbackDispatcher_h
 #define CustomElementCallbackDispatcher_h
 
-#include "core/dom/CustomElementCallback.h"
+#include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/Element.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -55,7 +55,7 @@ public:
         }
     };
 
-    void enqueueReadyCallback(CustomElementCallback*, Element*);
+    void enqueueReadyCallback(CustomElementLifecycleCallbacks*, Element*);
 
     // Returns true if more work may have to be performed at the
     // checkpoint by this or other workers (for example, this work
@@ -69,12 +69,12 @@ private:
 
     class ReadyInvocation {
     public:
-        ReadyInvocation(PassRefPtr<CustomElementCallback>, PassRefPtr<Element>);
+        ReadyInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
         virtual ~ReadyInvocation() { }
-        void invoke() { m_callback->ready(m_element.get()); }
+        void invoke() { m_callbacks->ready(m_element.get()); }
 
     private:
-        RefPtr<CustomElementCallback> m_callback;
+        RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
         RefPtr<Element> m_element;
     };
 

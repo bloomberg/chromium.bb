@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8CustomElementCallback_h
-#define V8CustomElementCallback_h
+#ifndef V8CustomElementLifecycleCallbacks_h
+#define V8CustomElementLifecycleCallbacks_h
 
 #include "bindings/v8/ActiveDOMCallback.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"
-#include "core/dom/CustomElementCallback.h"
+#include "core/dom/CustomElementLifecycleCallbacks.h"
 #include <v8.h>
 
 namespace WebCore {
@@ -42,14 +42,14 @@ namespace WebCore {
 class Element;
 class ScriptExecutionContext;
 
-class V8CustomElementCallback : public CustomElementCallback, ActiveDOMCallback {
+class V8CustomElementLifecycleCallbacks : public CustomElementLifecycleCallbacks, ActiveDOMCallback {
 public:
-    static PassRefPtr<V8CustomElementCallback> create(ScriptExecutionContext*, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> ready);
+    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ScriptExecutionContext*, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> ready);
 
-    virtual ~V8CustomElementCallback() { }
+    virtual ~V8CustomElementLifecycleCallbacks() { }
 
 private:
-    V8CustomElementCallback(ScriptExecutionContext*, v8::Handle<v8::Function> ready);
+    V8CustomElementLifecycleCallbacks(ScriptExecutionContext*, v8::Handle<v8::Function> ready);
 
     virtual void ready(Element*) OVERRIDE;
 
@@ -59,4 +59,4 @@ private:
 
 }
 
-#endif // CustomElementCallback_h
+#endif // V8CustomElementLifecycleCallbacks_h

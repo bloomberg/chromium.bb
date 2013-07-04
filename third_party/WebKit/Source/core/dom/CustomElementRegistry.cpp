@@ -113,7 +113,7 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
         return;
     }
 
-    RefPtr<CustomElementCallback> lifecycleCallbacks = constructorBuilder->createCallback(document());
+    RefPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks(document());
 
     // Consulting the constructor builder could execute script and
     // kill the document.
@@ -226,13 +226,13 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element, const AtomicS
         // extension element will be unresolved in perpetuity.
         didCreateUnresolvedElement(CustomElementDefinition::TypeExtension, type, element);
     } else {
-        CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callback(), element);
+        CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callbacks(), element);
     }
 }
 
 void CustomElementRegistry::didCreateCustomTagElement(CustomElementDefinition* definition, Element* element)
 {
-    CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callback(), element);
+    CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callbacks(), element);
 }
 
 void CustomElementRegistry::didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind kind, const AtomicString& type, Element* element)

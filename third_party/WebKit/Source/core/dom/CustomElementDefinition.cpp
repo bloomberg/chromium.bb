@@ -34,15 +34,15 @@
 
 namespace WebCore {
 
-PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback> callback)
+PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
 {
-    return adoptRef(new CustomElementDefinition(type, name, namespaceURI, callback));
+    return adoptRef(new CustomElementDefinition(type, name, namespaceURI, callbacks));
 }
 
-CustomElementDefinition::CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback> callback)
+CustomElementDefinition::CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
     : m_type(type)
     , m_tag(QualifiedName(nullAtom, name, namespaceURI))
-    , m_callback(callback)
+    , m_callbacks(callbacks)
 {
 }
 

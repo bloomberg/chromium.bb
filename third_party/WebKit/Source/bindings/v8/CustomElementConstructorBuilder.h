@@ -32,7 +32,7 @@
 #define CustomElementConstructorBuilder_h
 
 #include "bindings/v8/ScriptValue.h"
-#include "core/dom/CustomElementCallback.h"
+#include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -67,7 +67,7 @@ public:
     bool isFeatureAllowed() const;
     bool validateOptions();
     bool findTagName(const AtomicString& customElementType, QualifiedName& tagName) const;
-    PassRefPtr<CustomElementCallback> createCallback(Document*);
+    PassRefPtr<CustomElementLifecycleCallbacks> createCallbacks(Document*);
     bool createConstructor(Document*, CustomElementDefinition*);
     bool didRegisterDefinition(CustomElementDefinition*, const HashSet<Element*>& upgradeCandidates) const;
 

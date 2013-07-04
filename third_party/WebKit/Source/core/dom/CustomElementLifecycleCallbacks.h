@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallback_h
-#define CustomElementCallback_h
+#ifndef CustomElementLifecycleCallbacks_h
+#define CustomElementLifecycleCallbacks_h
 
 #include "wtf/RefCounted.h"
 
@@ -37,9 +37,9 @@ namespace WebCore {
 
 class Element;
 
-class CustomElementCallback : public RefCounted<CustomElementCallback> {
+class CustomElementLifecycleCallbacks : public RefCounted<CustomElementLifecycleCallbacks> {
 public:
-    virtual ~CustomElementCallback() { }
+    virtual ~CustomElementLifecycleCallbacks() { }
 
     bool hasReady() const { return m_which == Ready; }
     virtual void ready(Element*) = 0;
@@ -50,7 +50,7 @@ protected:
         Ready
     };
 
-    CustomElementCallback(CallbackType which) : m_which(which) { }
+    CustomElementLifecycleCallbacks(CallbackType which) : m_which(which) { }
 
 private:
     CallbackType m_which;
@@ -58,4 +58,4 @@ private:
 
 }
 
-#endif // CustomElementCallback_h
+#endif // CustomElementLifecycleCallbacks_h

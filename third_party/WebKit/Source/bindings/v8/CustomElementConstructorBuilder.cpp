@@ -40,7 +40,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8CustomElementCallback.h"
+#include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
@@ -140,7 +140,7 @@ bool CustomElementConstructorBuilder::findTagName(const AtomicString& customElem
     return false;
 }
 
-PassRefPtr<CustomElementCallback> CustomElementConstructorBuilder::createCallback(Document* document)
+PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::createCallbacks(Document* document)
 {
     ASSERT(!m_prototype.IsEmpty());
 
@@ -156,7 +156,7 @@ PassRefPtr<CustomElementCallback> CustomElementConstructorBuilder::createCallbac
     if (!readyValue.IsEmpty() && readyValue->IsFunction())
         readyFunction = v8::Handle<v8::Function>::Cast(readyValue);
 
-    return V8CustomElementCallback::create(document, m_prototype, readyFunction);
+    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, readyFunction);
 }
 
 bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition)

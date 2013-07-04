@@ -31,7 +31,7 @@
 #include "config.h"
 #include "CustomElementCallbackDispatcher.h"
 
-#include "CustomElementCallback.h"
+#include "CustomElementLifecycleCallbacks.h"
 
 namespace WebCore {
 
@@ -41,8 +41,8 @@ CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
     return instance;
 }
 
-CustomElementCallbackDispatcher::ReadyInvocation::ReadyInvocation(PassRefPtr<CustomElementCallback> callback, PassRefPtr<Element> element)
-    : m_callback(callback)
+CustomElementCallbackDispatcher::ReadyInvocation::ReadyInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+    : m_callbacks(callbacks)
     , m_element(element)
 {
 }
@@ -63,12 +63,12 @@ bool CustomElementCallbackDispatcher::dispatch()
     return true;
 }
 
-void CustomElementCallbackDispatcher::enqueueReadyCallback(CustomElementCallback* callback, Element* element)
+void CustomElementCallbackDispatcher::enqueueReadyCallback(CustomElementLifecycleCallbacks* callbacks, Element* element)
 {
-    if (!callback->hasReady())
+    if (!callbacks->hasReady())
         return;
 
-    m_invocations.append(ReadyInvocation(callback, element));
+    m_invocations.append(ReadyInvocation(callbacks, element));
 }
 
 } // namespace WebCore

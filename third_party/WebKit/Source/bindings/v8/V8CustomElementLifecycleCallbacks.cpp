@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/v8/V8CustomElementCallback.h"
+#include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
 
 #include "V8Element.h"
 #include "bindings/v8/ScriptController.h"
@@ -40,11 +40,11 @@
 
 namespace WebCore {
 
-PassRefPtr<V8CustomElementCallback> V8CustomElementCallback::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> ready)
+PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> ready)
 {
     if (!ready.IsEmpty())
         owner->SetHiddenValue(V8HiddenPropertyName::customElementReady(), ready);
-    return adoptRef(new V8CustomElementCallback(scriptExecutionContext, ready));
+    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, ready));
 }
 
 static void weakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, ScopedPersistent<v8::Function>* handle)
@@ -52,8 +52,8 @@ static void weakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, ScopedPers
     handle->clear();
 }
 
-V8CustomElementCallback::V8CustomElementCallback(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Function> ready)
-    : CustomElementCallback(ready.IsEmpty() ? None : Ready)
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Function> ready)
+    : CustomElementLifecycleCallbacks(ready.IsEmpty() ? None : Ready)
     , ActiveDOMCallback(scriptExecutionContext)
     , m_world(DOMWrapperWorld::current())
     , m_ready(ready)
@@ -62,7 +62,7 @@ V8CustomElementCallback::V8CustomElementCallback(ScriptExecutionContext* scriptE
         m_ready.makeWeak(&m_ready, weakCallback);
 }
 
-void V8CustomElementCallback::ready(Element* element)
+void V8CustomElementLifecycleCallbacks::ready(Element* element)
 {
     if (!canInvokeCallback())
         return;
