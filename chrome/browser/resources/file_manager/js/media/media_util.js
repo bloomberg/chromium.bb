@@ -74,7 +74,8 @@ ThumbnailLoader.AUTO_FILL_THRESHOLD = 0.3;
 ThumbnailLoader.FillMode = {
   FILL: 0,  // Fill whole box. Image may be cropped.
   FIT: 1,   // Keep aspect ratio, do not crop.
-  AUTO: 2   // Try to fill, but if incompatible aspect ratio, then fit.
+  OVER_FILL: 2,  // Fill whole box with possible stretching.
+  AUTO: 3   // Try to fill, but if incompatible aspect ratio, then fit.
 };
 
 /**
@@ -341,6 +342,7 @@ ThumbnailLoader.centerImage_ = function(box, img, fillMode, rotate) {
   var fill;
   switch (fillMode) {
     case ThumbnailLoader.FillMode.FILL:
+    case ThumbnailLoader.FillMode.OVER_FILL:
       fill = true;
       break;
     case ThumbnailLoader.FillMode.FIT:
@@ -368,7 +370,8 @@ ThumbnailLoader.centerImage_ = function(box, img, fillMode, rotate) {
         Math.max(fitScaleX, fitScaleY) :
         Math.min(fitScaleX, fitScaleY);
 
-    scale = Math.min(scale, 1);  // Never overscale.
+    if (fillMode != ThumbnailLoader.FillMode.OVER_FILL)
+        scale = Math.min(scale, 1);  // Never overscale.
 
     fractionX = imageWidth * scale / boxWidth;
     fractionY = imageHeight * scale / boxHeight;

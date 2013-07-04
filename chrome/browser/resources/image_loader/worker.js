@@ -90,9 +90,6 @@ Worker.prototype.remove = function(requestId) {
   var newIndex = this.pendingRequests_.indexOf(request);
   if (newIndex != -1)
     this.newRequests_.splice(newIndex, 1);
-  var cacheCheckIndex = this.cacheCheckRequests_.indexOf(request);
-  if (cacheCheckIndex != -1)
-    this.cacheCheckRequests_.splice(cacheCheckIndex, 1);
   var pendingIndex = this.pendingRequests_.indexOf(request);
   if (pendingIndex != -1)
     this.pendingRequests_.splice(pendingIndex, 1);

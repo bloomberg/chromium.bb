@@ -404,7 +404,9 @@ Mosaic.prototype.onMouseEvent_ = function(event) {
  * @private
  */
 Mosaic.prototype.onScroll_ = function() {
-  this.loadVisibleTiles_();
+  requestAnimationFrame(function() {
+    this.loadVisibleTiles_();
+  }.bind(this));
 };
 
 /**
@@ -485,7 +487,9 @@ Mosaic.prototype.onContentChange_ = function(event) {
 
   this.layoutModel_.invalidateFromTile_(index);
   this.tiles_[index].init(event.metadata, function() {
+        this.tiles_[index].unload();
         this.tiles_[index].load(
+            Mosaic.Tile.LoadMode.HIGH_DPI,
             this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY));
       }.bind(this));
 };
@@ -529,8 +533,8 @@ Mosaic.prototype.show = function() {
     // Make the selection visible.
     // If the mosaic is not animated it will start fading in now.
     this.setAttribute('visible', 'normal');
+    this.loadVisibleTiles_();
   }.bind(this), duration);
-
 };
 
 /**
@@ -538,6 +542,15 @@ Mosaic.prototype.show = function() {
  */
 Mosaic.prototype.hide = function() {
   this.removeAttribute('visible');
+};
+
+/**
+ * Checks if the mosaic view is visible.
+ * @return {boolean} True if visible, false otherwise.
+ * @private
+ */
+Mosaic.prototype.isVisible_ = function() {
+  return this.hasAttribute('visible');
 };
 
 /**
@@ -576,20 +589,22 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
     var tile = this.tiles_[index];
     var imageRect = tile.getImageRect();
     // Unload a thumbnail.
-    if (imageRect && !imageRect.intersects(renderableRect)) {
+    if (imageRect && !imageRect.intersects(renderableRect))
       tile.unload();
-    }
   }
 
   // Load the visible tiles first.
   var allVisibleLoaded = true;
+  // Show high-dpi only when the mosaic view is visible.
+  var loadMode = this.isVisible_() ? Mosaic.Tile.LoadMode.HIGH_DPI :
+      Mosaic.Tile.LoadMode.LOW_DPI;
   for (var index = 0; index < this.tiles_.length; index++) {
     var tile = this.tiles_[index];
     var imageRect = tile.getImageRect();
     // Load a thumbnail.
-    if (!tile.isLoading() && !tile.isLoaded() && imageRect &&
+    if (!tile.isLoading(loadMode) && !tile.isLoaded(loadMode) && imageRect &&
         imageRect.intersects(visibleRect)) {
-      tile.load(function() {});
+      tile.load(loadMode, function() {});
       allVisibleLoaded = false;
     }
   }
@@ -602,7 +617,7 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
       // Load a thumbnail.
       if (!tile.isLoading() && !tile.isLoaded() && imageRect &&
           imageRect.intersects(renderableRect)) {
-        tile.load(function() {});
+        tile.load(Mosaic.Tile.LoadMode.LOW_DPI, function() {});
       }
     }
   }
@@ -1626,6 +1641,15 @@ Mosaic.Tile.decorate = function(self, container, item) {
 };
 
 /**
+ * Load mode for the tile's image.
+ * @enum {number}
+ */
+Mosaic.Tile.LoadMode = {
+  LOW_DPI: 0,
+  HIGH_DPI: 1
+};
+
+/**
 * Inherit from HTMLDivElement.
 */
 Mosaic.Tile.prototype.__proto__ = HTMLDivElement.prototype;
@@ -1676,17 +1700,47 @@ Mosaic.Tile.prototype.isInitialized = function() {
 };
 
 /**
- * @return {boolean} True if the tile is loaded.
+ * Checks whether the image of specified (or better resolution) has been loaded.
+ *
+ * @param {Mosaic.Tile.LoadMode=} opt_loadMode Loading mode, default: LOW_DPI.
+ * @return {boolean} True if the tile is loaded with the specified dpi or
+ *     better.
  */
-Mosaic.Tile.prototype.isLoaded = function() {
-  return this.imageLoaded_;
+Mosaic.Tile.prototype.isLoaded = function(opt_loadMode) {
+  var loadMode = opt_loadMode || Mosaic.Tile.LoadMode.LOW_DPI;
+  switch (loadMode) {
+    case Mosaic.Tile.LoadMode.LOW_DPI:
+      if (this.imagePreloaded_ || this.imageLoaded_)
+        return true;
+      break;
+    case Mosaic.Tile.LoadMode.HIGH_DPI:
+      if (this.imageLoaded_)
+        return true;
+      break;
+  }
+  return false;
 };
 
 /**
- * @return {boolean} True if the tile is being loaded.
+ * Checks whether the image of specified (or better resolution) is being loaded.
+ *
+ * @param {Mosaic.Tile.LoadMode=} opt_loadMode Loading mode, default: LOW_DPI.
+ * @return {boolean} True if the tile is being loaded with the specified dpi or
+ *     better.
  */
-Mosaic.Tile.prototype.isLoading = function() {
-  return this.imageLoading_;
+Mosaic.Tile.prototype.isLoading = function(opt_loadMode) {
+  var loadMode = opt_loadMode || Mosaic.Tile.LoadMode.LOW_DPI;
+  switch (loadMode) {
+    case Mosaic.Tile.LoadMode.LOW_DPI:
+      if (this.imagePreloading_ || this.imageLoading_)
+        return true;
+      break;
+    case Mosaic.Tile.LoadMode.HIGH_DPI:
+      if (this.imageLoading_)
+        return true;
+      break;
+  }
+  return false;
 };
 
 /**
@@ -1696,6 +1750,8 @@ Mosaic.Tile.prototype.markUnloaded = function() {
   this.maxContentHeight_ = 0;
   if (this.thumbnailLoader_) {
     this.thumbnailLoader_.cancel();
+    this.imagePreloaded_ = false;
+    this.imagePreloading_ = false;
     this.imageLoaded_ = false;
     this.imageLoading_ = false;
   }
@@ -1713,18 +1769,31 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   this.left_ = null;  // Mark as not laid out.
 
   // Set higher priority for the selected elements to load them first.
-  var priority = this.getAttribute('selected') ? 1 : 2;
+  var priority = this.getAttribute('selected') ? 2 : 3;
 
   // Use embedded thumbnails on Drive, since they have higher resolution.
+  var hidpiEmbedded = FileType.isOnDrive(this.getItem().getUrl());
   this.thumbnailLoader_ = new ThumbnailLoader(
       this.getItem().getUrl(),
       ThumbnailLoader.LoaderType.CANVAS,
       metadata,
       undefined,  // Media type.
-      FileType.isOnDrive(this.getItem().getUrl()) ?
-          ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-          ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+      hidpiEmbedded ? ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+                      ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
       priority);
+
+  // If no hidpi embedde thumbnail available, then use the low resolution
+  // for preloading.
+  if (!hidpiEmbedded) {
+    this.thumbnailPreloader_ = new ThumbnailLoader(
+        this.getItem().getUrl(),
+        ThumbnailLoader.LoaderType.CANVAS,
+        metadata,
+        undefined,  // Media type.
+        ThumbnailLoader.UseEmbedded.USE_EMBEDDED,
+        2);  // Preloaders have always higher priotity, so the preload images
+             // are loaded as soon as possible.
+  }
 
   var setDimensions = function(width, height) {
     if (width > height) {
@@ -1758,21 +1827,72 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
 /**
  * Loads an image into the tile.
  *
+ * The mode argument is a hint. Use low-dpi for faster response, and high-dpi
+ * for better output, but possibly affecting performance.
+ *
+ * If the mode is high-dpi, then a the high-dpi image is loaded, but also
+ * low-dpi image is loaded for preloading (if available).
+ * For the low-dpi mode, only low-dpi image is loaded. If not available, then
+ * the high-dpi image is loaded as a fallback.
+ *
+ * @param {Mosaic.Tile.LoadMode} loadMode Loading mode.
  * @param {function(boolean)} onImageLoaded Callback when image is loaded.
  *     The argument is true for success, false for failure.
  */
-Mosaic.Tile.prototype.load = function(onImageLoaded) {
-  this.imageLoaded_ = false;
-  this.imageLoading_ = true;
-  this.thumbnailLoader_.loadDetachedImage(function(success) {
+Mosaic.Tile.prototype.load = function(loadMode, onImageLoaded) {
+  // Attaches the image to the tile and finalizes loading process for the
+  // specified loader.
+  var finalizeLoader = function(mode, success, loader) {
     if (success && this.wrapper_) {
-      this.thumbnailLoader_.attachImage(this.wrapper_,
-                                        ThumbnailLoader.FillMode.FILL);
+      // Show the fade-in animation only when previously there was no image
+      // attached in this tile.
+      if (!this.imageLoaded_ && !this.imagePreloaded_)
+        this.wrapper_.classList.add('animated');
+      else
+        this.wrapper_.classList.remove('animated');
+      loader.attachImage(this.wrapper_, ThumbnailLoader.FillMode.OVER_FILL);
     }
     onImageLoaded(success);
-    this.imageLoaded_ = true;
-    this.imageLoading_ = false;
-  }.bind(this));
+    switch (mode) {
+      case Mosaic.Tile.LoadMode.LOW_DPI:
+        this.imagePreloading_ = false;
+        this.imagePreloaded_ = true;
+        break;
+      case Mosaic.Tile.LoadMode.HIGH_DPI:
+        this.imageLoading_ = false;
+        this.imageLoaded_ = true;
+        break;
+    }
+  }.bind(this);
+
+  // Always load the low-dpi image first if it is available for the fastest
+  // feedback.
+  if (!this.imagePreloading_ && this.thumbnailPreloader_) {
+    this.imagePreloading_ = true;
+    this.thumbnailPreloader_.loadDetachedImage(function(success) {
+      // Hi-dpi loaded first, ignore this call then.
+      if (this.imageLoaded_)
+        return;
+      finalizeLoader(Mosaic.Tile.LoadMode.LOW_DPI,
+                     success,
+                     this.thumbnailPreloader_);
+    }.bind(this));
+  }
+
+  // Load the high-dpi image only when it is requested, or the low-dpi is not
+  // available.
+  if (!this.imageLoading_ &&
+      (loadMode == Mosaic.Tile.LoadMode.HIGH_DPI || !this.imagePreloading_)) {
+    this.imageLoading_ = true;
+    this.thumbnailLoader_.loadDetachedImage(function(success) {
+      // Cancel preloading, since the hi-dpi image is ready.
+      if (this.thumbnailPreloader_)
+        this.thumbnailPreloader_.cancel();
+      finalizeLoader(Mosaic.Tile.LoadMode.HIGH_DPI,
+                     success,
+                     this.thumbnailLoader_);
+    }.bind(this));
+  }
 };
 
 /**
@@ -1780,7 +1900,11 @@ Mosaic.Tile.prototype.load = function(onImageLoaded) {
  */
 Mosaic.Tile.prototype.unload = function() {
   this.thumbnailLoader_.cancel();
+  if (this.thumbnailPreloader_)
+    this.thumbnailPreloader_.cancel();
+  this.imagePreloaded_ = false;
   this.imageLoaded_ = false;
+  this.imagePreloading_ = false;
   this.imageLoading_ = false;
   this.wrapper_.innerText = '';
 };
