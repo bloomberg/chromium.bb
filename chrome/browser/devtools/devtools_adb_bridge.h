@@ -25,6 +25,9 @@ class Profile;
 // The format used for constructing DevTools server socket names.
 extern const char kDevToolsChannelNameFormat[];
 
+typedef base::Callback<void(int, const std::string&)> CommandCallback;
+typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
+
 class DevToolsAdbBridge {
  public:
   typedef base::Callback<void(int result,
@@ -69,6 +72,46 @@ class DevToolsAdbBridge {
 
   typedef std::vector<scoped_refptr<RemotePage> > RemotePages;
   typedef base::Callback<void(int, RemotePages*)> PagesCallback;
+
+  class AndroidDevice : public base::RefCounted<AndroidDevice> {
+   public:
+    explicit AndroidDevice(const std::string& serial);
+
+    virtual void RunCommand(const std::string& command,
+                            const CommandCallback& callback) = 0;
+    virtual void OpenSocket(const std::string& socket_name,
+                            const SocketCallback& callback) = 0;
+    virtual void HttpQuery(const std::string& la_name,
+                           const std::string& request,
+                           const CommandCallback& callback);
+    virtual void HttpQuery(const std::string& la_name,
+                           const std::string& request,
+                           const SocketCallback& callback);
+
+    std::string serial() { return serial_; }
+
+    std::string model() { return model_; }
+    void set_model(const std::string& model) { model_ = model; }
+
+   protected:
+    friend class base::RefCounted<AndroidDevice>;
+    virtual ~AndroidDevice();
+
+   private:
+    void OnHttpSocketOpened(const std::string& request,
+                            const CommandCallback& callback,
+                            int result,
+                            net::StreamSocket* socket);
+    void OnHttpSocketOpened2(const std::string& request,
+                             const SocketCallback& callback,
+                             int result,
+                             net::StreamSocket* socket);
+
+    std::string serial_;
+    std::string model_;
+
+    DISALLOW_COPY_AND_ASSIGN(AndroidDevice);
+  };
 
   explicit DevToolsAdbBridge(Profile* profile);
   ~DevToolsAdbBridge();

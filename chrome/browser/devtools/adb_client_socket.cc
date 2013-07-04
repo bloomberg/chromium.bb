@@ -21,7 +21,6 @@ const int kBufferSize = 16 * 1024;
 const int kResponseBufferSize = 16;
 const char kOkayResponse[] = "OKAY";
 const char kHostTransportCommand[] = "host:transport:%s";
-const char kLocalAbstractCommand[] = "localabstract:%s";
 const char kLocalhost[] = "127.0.0.1";
 
 typedef base::Callback<void(int, const std::string&)> CommandCallback;
@@ -69,9 +68,9 @@ class AdbTransportSocket : public AdbClientSocket {
   void SendLocalAbstract(int result, const std::string& response) {
     if (!CheckNetResultOrDie(result))
       return;
-    SendCommand(base::StringPrintf(kLocalAbstractCommand, socket_name_.c_str()),
-        true, base::Bind(&AdbTransportSocket::OnSocketAvailable,
-                         base::Unretained(this)));
+    SendCommand(socket_name_, true,
+                base::Bind(&AdbTransportSocket::OnSocketAvailable,
+                           base::Unretained(this)));
   }
 
   void OnSocketAvailable(int result, const std::string& response) {
@@ -96,52 +95,33 @@ class AdbTransportSocket : public AdbClientSocket {
 
 class HttpOverAdbSocket {
  public:
-  HttpOverAdbSocket(int port,
-                    const std::string& serial,
-                    const std::string& socket_name,
+  HttpOverAdbSocket(net::StreamSocket* socket,
                     const std::string& request,
                     const CommandCallback& callback)
-    : request_(request),
+    : socket_(socket),
       command_callback_(callback),
       body_pos_(0) {
-    Connect(port, serial, socket_name);
+    SendRequest(request);
   }
 
-  HttpOverAdbSocket(int port,
-                    const std::string& serial,
-                    const std::string& socket_name,
+  HttpOverAdbSocket(net::StreamSocket* socket,
                     const std::string& request,
                     const SocketCallback& callback)
-    : request_(request),
+    : socket_(socket),
       socket_callback_(callback),
       body_pos_(0) {
-    Connect(port, serial, socket_name);
+    SendRequest(request);
   }
 
  private:
   ~HttpOverAdbSocket() {
   }
 
-  void Connect(int port,
-               const std::string& serial,
-               const std::string& socket_name) {
-    AdbClientSocket::TransportQuery(
-        port, serial, socket_name,
-        base::Bind(&HttpOverAdbSocket::OnSocketAvailable,
-                   base::Unretained(this)));
-  }
-
-  void OnSocketAvailable(int result,
-                         net::StreamSocket* socket) {
-    if (!CheckNetResultOrDie(result))
-      return;
-
-    socket_.reset(socket);
-
+  void SendRequest(const std::string& request) {
     scoped_refptr<net::StringIOBuffer> request_buffer =
-        new net::StringIOBuffer(request_);
+        new net::StringIOBuffer(request);
 
-    result = socket_->Write(
+    int result = socket_->Write(
         request_buffer.get(),
         request_buffer->size(),
         base::Bind(&HttpOverAdbSocket::ReadResponse, base::Unretained(this)));
@@ -152,7 +132,6 @@ class HttpOverAdbSocket {
   void ReadResponse(int result) {
     if (!CheckNetResultOrDie(result))
       return;
-
     scoped_refptr<net::IOBuffer> response_buffer =
         new net::IOBuffer(kBufferSize);
 
@@ -231,7 +210,6 @@ class HttpOverAdbSocket {
   }
 
   scoped_ptr<net::StreamSocket> socket_;
-  std::string request_;
   std::string response_;
   CommandCallback command_callback_;
   SocketCallback socket_callback_;
@@ -337,23 +315,17 @@ void AdbClientSocket::TransportQuery(int port,
 }
 
 // static
-void AdbClientSocket::HttpQuery(int port,
-                                const std::string& serial,
-                                const std::string& socket_name,
+void AdbClientSocket::HttpQuery(net::StreamSocket* socket,
                                 const std::string& request_path,
                                 const CommandCallback& callback) {
-  new HttpOverAdbSocket(port, serial, socket_name, request_path,
-      callback);
+  new HttpOverAdbSocket(socket, request_path, callback);
 }
 
 // static
-void AdbClientSocket::HttpQuery(int port,
-                                const std::string& serial,
-                                const std::string& socket_name,
+void AdbClientSocket::HttpQuery(net::StreamSocket* socket,
                                 const std::string& request_path,
                                 const SocketCallback& callback) {
-  new HttpOverAdbSocket(port, serial, socket_name, request_path,
-      callback);
+  new HttpOverAdbSocket(socket, request_path, callback);
 }
 
 AdbClientSocket::AdbClientSocket(int port)

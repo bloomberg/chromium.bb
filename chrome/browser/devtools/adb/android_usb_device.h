@@ -60,10 +60,12 @@ typedef base::Callback<void(int, AdbMessage*)> AdbCallback;
 
 class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
  public:
-  static void Enumerate(
-      Profile* profile,
-      std::vector<scoped_refptr<AndroidUsbDevice> >* devices);
+  typedef std::vector<scoped_refptr<AndroidUsbDevice> > Devices;
+
+  static void Enumerate(Profile* profile, Devices* devices);
+
   AndroidUsbDevice(scoped_refptr<UsbDevice> device,
+                   const std::string& serial,
                    int inbound_address,
                    int outbound_address,
                    int zero_mask);
@@ -75,11 +77,11 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
             uint32 arg1,
             const std::string& body);
 
+  std::string serial() { return serial_; }
+
  private:
   friend class base::RefCountedThreadSafe<AndroidUsbDevice>;
   virtual ~AndroidUsbDevice();
-
-  void InterfaceClaimed(bool success);
 
   void Queue(scoped_refptr<AdbMessage> message);
   void ProcessOutgoing();
@@ -87,7 +89,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                            scoped_refptr<net::IOBuffer> buffer,
                            size_t result);
 
-  void ReadHeader();
+  void ReadHeader(bool initial);
   void ParseHeader(UsbTransferStatus status,
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t result);
@@ -110,6 +112,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   // Device info
   scoped_refptr<UsbDevice> usb_device_;
+  std::string serial_;
   int inbound_address_;
   int outbound_address_;
   int zero_mask_;

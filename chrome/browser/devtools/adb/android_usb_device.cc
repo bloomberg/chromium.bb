@@ -40,13 +40,78 @@ static const char kRSAPublicKey[] =
     "fsnvjaMwK2MU7uYfRBPuvLyK5QESWBpArNDd6ULl8Y+NU6kwNOVDc87OASCVEM1gw2IMi2mo2"
     "WO5ywp0UWRiGZCkK+wOFQIDAQAB";
 
-static bool CheckUsbInterface(
+static std::string ReadSerialNumSync(libusb_device_handle* handle) {
+  libusb_device* device = libusb_get_device(handle);
+  libusb_device_descriptor descriptor;
+  if (libusb_get_device_descriptor(device, &descriptor) != LIBUSB_SUCCESS)
+    return std::string();
+
+  if (!descriptor.iSerialNumber)
+    return std::string();
+
+  uint16 languages[128] = {0};
+  memset(languages, 0, sizeof(languages));
+
+  int res = libusb_control_transfer(
+      handle,
+      LIBUSB_ENDPOINT_IN |  LIBUSB_REQUEST_TYPE_STANDARD |
+          LIBUSB_RECIPIENT_DEVICE,
+      LIBUSB_REQUEST_GET_DESCRIPTOR, LIBUSB_DT_STRING << 8, 0,
+      reinterpret_cast<uint8*>(languages), sizeof(languages), 0);
+
+  if (res <= 0) {
+    LOG(ERROR) << "Failed to get languages count";
+    return std::string();
+  }
+
+  int language_count = (res - 2) / 2;
+  uint16 buffer[128] = {0};
+  for (int i = 1; i <= language_count; ++i) {
+    memset(buffer, 0, sizeof(buffer));
+
+    res = libusb_control_transfer(
+        handle,
+        LIBUSB_ENDPOINT_IN |  LIBUSB_REQUEST_TYPE_STANDARD |
+            LIBUSB_RECIPIENT_DEVICE,
+        LIBUSB_REQUEST_GET_DESCRIPTOR,
+        (LIBUSB_DT_STRING << 8) | descriptor.iSerialNumber,
+        languages[i], reinterpret_cast<uint8*>(buffer), sizeof(buffer), 0);
+
+    if (res > 0) {
+        res /= 2;
+        char serial[256] = {0};
+        int j;
+        for (j = 1; j < res; ++j)
+          serial[j - 1] = buffer[j];
+        serial[j - 1] = '\0';
+        return std::string(serial, j);
+    }
+  }
+  return std::string();
+}
+
+static void InterfaceClaimed(scoped_refptr<UsbDevice> usb_device,
+                             int inbound_address,
+                             int outbound_address,
+                             int zero_mask,
+                             AndroidUsbDevice::Devices* devices,
+                             bool success) {
+  if (!success)
+    return;
+
+  std::string serial = ReadSerialNumSync(usb_device->handle());
+  scoped_refptr<AndroidUsbDevice> device =
+      new AndroidUsbDevice(usb_device, serial, inbound_address,
+                           outbound_address, zero_mask);
+  devices->push_back(device);
+}
+
+static void ClaimInterface(
+    scoped_refptr<UsbDevice> usb_device,
     const UsbInterface* interface,
-    int* inbound_address,
-    int* outbound_address,
-    int* zero_mask) {
+    AndroidUsbDevice::Devices* devices) {
   if (interface->GetNumAltSettings() == 0)
-    return false;
+    return;
 
   scoped_refptr<const UsbInterfaceDescriptor> idesc =
       interface->GetAltSetting(0).get();
@@ -55,8 +120,12 @@ static bool CheckUsbInterface(
       idesc->GetInterfaceSubclass() != kAdbSubclass ||
       idesc->GetInterfaceProtocol() != kAdbProtocol ||
       idesc->GetNumEndpoints() != 2) {
-    return false;
+    return;
   }
+
+  int inbound_address = 0;
+  int outbound_address = 0;
+  int zero_mask = 0;
 
   for (size_t i = 0; i < idesc->GetNumEndpoints(); ++i) {
     scoped_refptr<const UsbEndpointDescriptor> edesc =
@@ -64,15 +133,18 @@ static bool CheckUsbInterface(
     if (edesc->GetTransferType() != USB_TRANSFER_BULK)
       continue;
     if (edesc->GetDirection() == USB_DIRECTION_INBOUND)
-      *inbound_address = edesc->GetAddress();
+      inbound_address = edesc->GetAddress();
     else
-      *outbound_address = edesc->GetAddress();
-    *zero_mask = edesc->GetMaximumPacketSize() - 1;
+      outbound_address = edesc->GetAddress();
+    zero_mask = edesc->GetMaximumPacketSize() - 1;
   }
 
   if (inbound_address == 0 || outbound_address == 0)
-    return false;
-  return true;
+    return;
+
+  usb_device->ClaimInterface(1, base::Bind(&InterfaceClaimed, usb_device,
+                                           inbound_address, outbound_address,
+                                           zero_mask, devices));
 }
 
 static uint32 Checksum(const std::string& data) {
@@ -129,9 +201,7 @@ AdbMessage::~AdbMessage() {
 }
 
 // static
-void AndroidUsbDevice::Enumerate(
-    Profile* profile,
-    std::vector<scoped_refptr<AndroidUsbDevice> >* devices) {
+void AndroidUsbDevice::Enumerate(Profile* profile, Devices* devices) {
   UsbService* service =
       UsbServiceFactory::GetInstance()->GetForProfile(profile);
 
@@ -144,35 +214,28 @@ void AndroidUsbDevice::Enumerate(
     // Enumerate device interfaces.
     scoped_refptr<UsbConfigDescriptor> config = new UsbConfigDescriptor();
     usb_device->ListInterfaces(config.get(), base::Bind(&BoolNoop));
-    for (size_t i = 0; i < config->GetNumInterfaces(); ++i) {
-      scoped_refptr<const UsbInterface> interface = config->GetInterface(i);
-
-      int inbound_address = 0;
-      int outbound_address = 0;
-      int zero_mask = 0;
-      if (CheckUsbInterface(interface, &inbound_address, &outbound_address,
-                            &zero_mask)) {
-        devices->push_back(new AndroidUsbDevice(usb_device, inbound_address,
-                                                outbound_address, zero_mask));
-      }
-    }
+    for (size_t i = 0; i < config->GetNumInterfaces(); ++i)
+      ClaimInterface(usb_device, config->GetInterface(i), devices);
   }
 }
 
 AndroidUsbDevice::AndroidUsbDevice(scoped_refptr<UsbDevice> usb_device,
+                                   const std::string& serial,
                                    int inbound_address,
                                    int outbound_address,
                                    int zero_mask)
     : message_loop_(NULL),
       usb_device_(usb_device),
+      serial_(serial),
       inbound_address_(inbound_address),
       outbound_address_(outbound_address),
       zero_mask_(zero_mask),
       is_connected_(false),
       last_socket_id_(256) {
   message_loop_ = base::MessageLoop::current();
-  usb_device_->ClaimInterface(1, base::Bind(&AndroidUsbDevice::InterfaceClaimed,
-                                            this));
+  Queue(new AdbMessage(AdbMessage::kCommandCNXN, kVersion, kMaxPayload,
+                       kHostConnectMessage));
+  ReadHeader(true);
 }
 
 net::StreamSocket* AndroidUsbDevice::CreateSocket(const std::string& command) {
@@ -198,14 +261,6 @@ void AndroidUsbDevice::Send(uint32 command,
 AndroidUsbDevice::~AndroidUsbDevice() {
   usb_device_->ReleaseInterface(1, base::Bind(&BoolNoop));
   usb_device_->Close(base::Bind(&Noop));
-}
-
-void AndroidUsbDevice::InterfaceClaimed(bool success) {
-  if (!success)
-    return;
-  Queue(new AdbMessage(AdbMessage::kCommandCNXN, kVersion, kMaxPayload,
-                       kHostConnectMessage));
-  ReadHeader();
 }
 
 void AndroidUsbDevice::Queue(scoped_refptr<AdbMessage> message) {
@@ -264,8 +319,8 @@ void AndroidUsbDevice::OutgoingMessageSent(UsbTransferStatus status,
                                      this));
 }
 
-void AndroidUsbDevice::ReadHeader() {
-  if (HasOneRef())
+void AndroidUsbDevice::ReadHeader(bool initial) {
+  if (!initial && HasOneRef())
     return;  // Stop polling.
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kHeaderSize);
   usb_device_->BulkTransfer(USB_DIRECTION_INBOUND, inbound_address_,
@@ -278,7 +333,8 @@ void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
                                    size_t result) {
   if (status == USB_TRANSFER_TIMEOUT) {
     message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&AndroidUsbDevice::ReadHeader, this));
+                            base::Bind(&AndroidUsbDevice::ReadHeader, this,
+                                       false));
     return;
   }
 
@@ -395,7 +451,7 @@ void AndroidUsbDevice::HandleIncoming(scoped_refptr<AdbMessage> message) {
     default:
       break;
   }
-  ReadHeader();
+  ReadHeader(false);
 }
 
 void AndroidUsbDevice::SocketDeleted(uint32 socket_id) {
