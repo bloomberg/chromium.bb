@@ -44,6 +44,7 @@
     { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image" },
     { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=filled_path&back=gradient" },
     { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15" },
+    { "url": "file:///tough_canvas_cases/canvas-animation-no-clear.html" },
     { "url": "file:///../../../chrome/test/data/perf/canvas_bench/single_image.html" },
     { "url": "file:///../../../chrome/test/data/perf/canvas_bench/many_images.html" }
   ]
