@@ -41,9 +41,9 @@ class MacPort(chromium.ChromiumPort):
     SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'mountainlion')
     port_name = 'mac'
 
-    FALLBACK_PATHS = { 'mountainlion': [ 'chromium-mac' ]}
-    FALLBACK_PATHS['lion'] = ['chromium-mac-lion'] + FALLBACK_PATHS['mountainlion']
-    FALLBACK_PATHS['snowleopard'] = ['chromium-mac-snowleopard'] + FALLBACK_PATHS['lion']
+    FALLBACK_PATHS = { 'mountainlion': [ 'mac' ]}
+    FALLBACK_PATHS['lion'] = ['mac-lion'] + FALLBACK_PATHS['mountainlion']
+    FALLBACK_PATHS['snowleopard'] = ['mac-snowleopard'] + FALLBACK_PATHS['lion']
 
     DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
 

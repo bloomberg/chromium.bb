@@ -59,13 +59,13 @@ class MacPortTest(chromium_port_testcase.ChromiumPortTestCase):
 
     def test_baseline_path(self):
         port = self.make_port(port_name='mac-snowleopard')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac-snowleopard'))
+        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('mac-snowleopard'))
 
         port = self.make_port(port_name='mac-lion')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac-lion'))
+        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('mac-lion'))
 
         port = self.make_port(port_name='mac-mountainlion')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac'))
+        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('mac'))
 
     def test_operating_system(self):
         self.assertEqual('mac', self.make_port().operating_system())
