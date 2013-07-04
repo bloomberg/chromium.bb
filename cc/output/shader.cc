@@ -193,8 +193,8 @@ std::string VertexShaderPosTexYUVStretch::GetShaderString() const {
     attribute vec4 a_position;
     attribute TexCoordPrecision vec2 a_texCoord;
     uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 texScale;
     varying TexCoordPrecision vec2 v_texCoord;
+    uniform TexCoordPrecision vec2 texScale;
     void main() {
         gl_Position = matrix * a_position;
         v_texCoord = a_texCoord * texScale;
@@ -335,6 +335,7 @@ std::string VertexShaderQuad::GetShaderString() const {
 // being missing if we don't add dummy variables.
 // http://crbug.com/240602
   return VERTEX_SHADER(
+    attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
     uniform mat4 matrix;
     uniform TexCoordPrecision vec2 quad[4];
@@ -342,18 +343,21 @@ std::string VertexShaderQuad::GetShaderString() const {
     varying TexCoordPrecision vec2 dummy_varying;
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, 0.0, 1.0);
+      gl_Position = matrix * vec4(
+          pos.x, pos.y, a_position.z, a_position.w);
       dummy_varying = dummy_uniform;
     }
   );  // NOLINT(whitespace/parens)
 #else
   return VERTEX_SHADER(
+    attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
     uniform mat4 matrix;
     uniform TexCoordPrecision vec2 quad[4];
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, 0.0, 1.0);
+      gl_Position = matrix * vec4(
+          pos.x, pos.y, a_position.z, a_position.w);
     }
   );  // NOLINT(whitespace/parens)
 #endif
@@ -398,6 +402,7 @@ void VertexShaderQuadAA::Init(WebGraphicsContext3D* context,
 
 std::string VertexShaderQuadAA::GetShaderString() const {
   return VERTEX_SHADER(
+    attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
     uniform mat4 matrix;
     uniform vec4 viewport;
@@ -407,7 +412,8 @@ std::string VertexShaderQuadAA::GetShaderString() const {
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, 0.0, 1.0);
+      gl_Position = matrix * vec4(
+          pos.x, pos.y, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
       edge_dist[0] = vec4(dot(edge[0], screen_pos),
@@ -465,6 +471,7 @@ void VertexShaderQuadTexTransformAA::Init(WebGraphicsContext3D* context,
 
 std::string VertexShaderQuadTexTransformAA::GetShaderString() const {
   return VERTEX_SHADER(
+    attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
     uniform mat4 matrix;
     uniform vec4 viewport;
@@ -476,7 +483,8 @@ std::string VertexShaderQuadTexTransformAA::GetShaderString() const {
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, 0.0, 1.0);
+      gl_Position = matrix * vec4(
+          pos.x, pos.y, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
       edge_dist[0] = vec4(dot(edge[0], screen_pos),
@@ -526,6 +534,7 @@ void VertexShaderTile::Init(WebGraphicsContext3D* context,
 
 std::string VertexShaderTile::GetShaderString() const {
   return VERTEX_SHADER(
+    attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
     uniform mat4 matrix;
     uniform TexCoordPrecision vec2 quad[4];
@@ -533,7 +542,8 @@ std::string VertexShaderTile::GetShaderString() const {
     varying TexCoordPrecision vec2 v_texCoord;
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, 0.0, 1.0);
+      gl_Position = matrix * vec4(
+          pos.x, pos.y, a_position.z, a_position.w);
       v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
     }
   );  // NOLINT(whitespace/parens)
@@ -582,6 +592,7 @@ void VertexShaderTileAA::Init(WebGraphicsContext3D* context,
 
 std::string VertexShaderTileAA::GetShaderString() const {
   return VERTEX_SHADER(
+    attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
     uniform mat4 matrix;
     uniform vec4 viewport;
@@ -593,7 +604,8 @@ std::string VertexShaderTileAA::GetShaderString() const {
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, 0.0, 1.0);
+      gl_Position = matrix * vec4(
+          pos.x, pos.y, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
       edge_dist[0] = vec4(dot(edge[0], screen_pos),
