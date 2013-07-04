@@ -107,6 +107,10 @@ def _ValidateTlsInstruction(instruction):
   raise DoNotMatchError(instruction)
 
 
+# What can follow 'j' in conditional jumps 'je', 'jno', etc.
+_CONDITION_SUFFIX_RE = r'(a(e?)|b(e?)|g(e?)|l(e?)|(n?)e|(n?)o|(n?)p|(n?)s)'
+
+
 def _AnyRegisterRE(group_name='register'):
   # TODO(shcherbina): explicitly list all kinds of registers we care to
   # distinguish for validation purposes.
@@ -525,14 +529,20 @@ def ValidateRegularInstruction(instruction, bitness):
          'cmc',
         ]):
       return Condition(), Condition()
+
     elif re.match(r'mov[sz][bwl][lqw]$', name):  # MOVSX, MOVSXD, MOVZX
       return Condition(), Condition()
+
     elif name == 'bswap':
       if ops[0] not in REGS32:
         raise SandboxingError(
             'bswap is only allowed with 32-bit operands',
             instruction)
       return Condition(), Condition()
+
+    elif re.match(r'cmov%s$' % _CONDITION_SUFFIX_RE, name):
+      return Condition(), Condition()
+
     else:
       raise DoNotMatchError(instruction)
 
@@ -549,23 +559,28 @@ def ValidateRegularInstruction(instruction, bitness):
       assert len(ops) == 2
       zero_extending = True
       write_ops = [ops[1]]
+
     elif re.match(r'mov[sz][bwl][lqw]$', name):  # MOVSX, MOVSXD, MOVZX
       assert len(ops) == 2
       zero_extending = True
       write_ops = [ops[1]]
+
     elif _InstructionNameIn(name, ['xchg', 'xadd']):
       assert len(ops) == 2
       zero_extending = True
       write_ops = ops
+
     elif _InstructionNameIn(name, ['inc', 'dec', 'neg', 'not']):
       assert len(ops) == 1
       zero_extending = True
       write_ops = ops
+
     elif name == 'lea':
       assert len(ops) == 2
       write_ops = [ops[1]]
       touches_memory = False
       zero_extending = True
+
     elif _InstructionNameIn(
         name,
         ['adc', 'bsf', 'bsr', 'lzcnt']):
@@ -577,6 +592,7 @@ def ValidateRegularInstruction(instruction, bitness):
       # Same applies to 32-bit version.
       assert len(ops) == 2
       write_ops = [ops[1]]
+
     elif _InstructionNameIn(name, ['btc', 'btr', 'bts', 'bt']):
       assert len(ops) == 2
       # bt* accept arbitrarily large bit offset when second
@@ -595,9 +611,11 @@ def ValidateRegularInstruction(instruction, bitness):
         write_ops = []
       else:
         write_ops = [ops[1]]
+
     elif _InstructionNameIn(name, ['cmp']):
       assert len(ops) == 2
       write_ops = []
+
     elif name == 'bswap':
       assert len(ops) == 1
       if ops[0] not in REGS32 + REGS64:
@@ -605,9 +623,15 @@ def ValidateRegularInstruction(instruction, bitness):
             'bswap is only allowed with 32-bit and 64-bit operands',
             instruction)
       write_ops = ops
+
     elif _InstructionNameIn(name, ['cmc']):
       assert len(ops) == 0
       write_ops = []
+
+    elif re.match(r'cmov%s$' % _CONDITION_SUFFIX_RE, name):
+      assert len(ops) == 2
+      write_ops = [ops[1]]
+
     else:
       raise DoNotMatchError(instruction)
 
@@ -626,9 +650,7 @@ def ValidateRegularInstruction(instruction, bitness):
 def ValidateDirectJump(instruction):
   cond_jumps_re = re.compile(
       r'(data16 )?'
-      r'(ja(e?)|jb(e?)|jg(e?)|jl(e?)|'
-      r'j(n?)e|j(n?)o|j(n?)p|j(n?)s)'
-      r' %s$' % _HexRE('destination'))
+      r'j%s %s$' % (_CONDITION_SUFFIX_RE, _HexRE('destination')))
   m = cond_jumps_re.match(instruction.disasm)
   if m is not None:
     # Unfortunately we can't rely on presence of 'data16' prefix in disassembly,
