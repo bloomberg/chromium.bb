@@ -7,8 +7,7 @@
 <div id="description"></div>
 <div id="console"></div>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
+window.jsTestIsAsync = true;
 
 description('Test Promise.');
 
@@ -29,7 +28,24 @@ shouldThrow('new Promise()', '"TypeError: Promise constructor takes a function a
 shouldThrow('new Promise(37)', '"TypeError: Promise constructor takes a function argument"');
 
 shouldNotThrow('promise = new Promise(function() { throw Error("foo"); })');
-// FIXME: We can't test if the promise is rejected now, but should test it in the future.
+promise.then(undefined, function(result) {
+  window.result = result;
+  shouldBeEqualToString('result.message', 'foo');
+});
+
+new Promise(function(resolver) {
+  resolver.fulfill("hello");
+  throw Error("foo");
+}).then(function(result) {
+  window.result = result;
+  testPassed('fulfilled');
+  shouldBeEqualToString('result', 'hello');
+  finishJSTest();
+}, function(result) {
+  window.result = result;
+  testFailed('rejected');
+  finishJSTest();
+});
 
 </script>
 <script src="resources/js-test-post.js"></script>

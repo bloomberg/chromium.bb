@@ -119,7 +119,44 @@ v8::Handle<v8::Value> postTask(v8::Handle<v8::Function> callback, v8::Handle<v8:
     return v8::Undefined(isolate);
 }
 
-// This function must have the resolver as the first argument when called
+void wrapperCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    ASSERT(!args.Data().IsEmpty());
+    v8::Local<v8::Object> environment = args.Data().As<v8::Object>();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
+    if (args.Length() > 0)
+        result = args[0];
+
+    v8::Local<v8::Object> promise = environment->GetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentPromiseIndex).As<v8::Object>();
+    v8::Local<v8::Object> resolver = environment->GetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentPromiseResolverIndex).As<v8::Object>();
+    v8::Local<v8::Function> callback = environment->GetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentCallbackIndex).As<v8::Function>();
+
+    v8::Local<v8::Value> argv[] = {
+        result,
+    };
+    v8::TryCatch trycatch;
+    result = V8ScriptRunner::callFunction(callback, getScriptExecutionContext(), promise, WTF_ARRAY_LENGTH(argv), argv);
+    if (result.IsEmpty()) {
+        V8PromiseCustom::rejectResolver(resolver, trycatch.Exception(), V8PromiseCustom::Synchronous, isolate);
+        return;
+    }
+    V8PromiseCustom::resolveResolver(resolver, result, V8PromiseCustom::Synchronous, isolate);
+}
+
+v8::Local<v8::Object> wrapperCallbackEnvironment(v8::Handle<v8::Object> promise, v8::Handle<v8::Object> resolver, v8::Handle<v8::Function> callback)
+{
+    // FIXME: v8::ObjectTemplate::New should be cached.
+    v8::Local<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
+    objectTemplate->SetInternalFieldCount(V8PromiseCustom::WrapperCallbackEnvironmentFieldCount);
+    v8::Local<v8::Object> environment = objectTemplate->NewInstance();
+    environment->SetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentPromiseIndex, promise);
+    environment->SetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentPromiseResolverIndex, resolver);
+    environment->SetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentCallbackIndex, callback);
+    return environment;
+}
+
+// This function must have the resolver as the first argument when called.
 // See promiseCallback.
 void promiseFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -133,7 +170,7 @@ void promiseFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8PromiseCustom::fulfillResolver(resolver, result, V8PromiseCustom::Synchronous, args.GetIsolate());
 }
 
-// This function must be bound with the resolver as the first argument.
+// This function must have the resolver as the first argument when called.
 // See promiseCallback.
 void promiseResolveCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -147,7 +184,7 @@ void promiseResolveCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8PromiseCustom::resolveResolver(resolver, result, V8PromiseCustom::Synchronous, args.GetIsolate());
 }
 
-// This function must be bound with the resolver as the first argument.
+// This function must have the resolver as the first argument when called.
 // See promiseCallback.
 void promiseRejectCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -187,6 +224,7 @@ v8::Local<v8::Function> promiseCallback(v8::Handle<v8::Object> resolver, V8Promi
     // We should not depend on the global context that user can change, such as accessing a property, calling a method or so.
     v8::Local<v8::String> script = v8String("(function(f, v1) { return function(v2) { return f(v1, v2); }; })", isolate);
     v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(script, isolate);
+    ASSERT(!value.IsEmpty());
 
     v8::Local<v8::Value> argv[] = {
         callback,
@@ -233,6 +271,58 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
     }
     v8SetReturnValue(args, promise);
     return;
+}
+
+void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Function> fulfillWrapper, rejectWrapper;
+    v8::Local<v8::Object> promise, resolver;
+    V8PromiseCustom::createPromise(args.Holder(), &promise, &resolver, isolate);
+    if (args.Length() > 0 && !args[0]->IsUndefined()) {
+        if (!args[0]->IsFunction()) {
+            v8SetReturnValue(args, throwTypeError("fulfillCallback must be a function or undefined", isolate));
+            return;
+        }
+        v8::Local<v8::Object> environment = wrapperCallbackEnvironment(promise, resolver, args[0].As<v8::Function>());
+        fulfillWrapper = v8::FunctionTemplate::New(wrapperCallback, environment)->GetFunction();
+    } else {
+        fulfillWrapper = promiseCallback(resolver, V8PromiseCustom::FulfillAlgorithm, isolate);
+    }
+    if (args.Length() > 1 && !args[1]->IsUndefined()) {
+        if (!args[1]->IsFunction()) {
+            v8SetReturnValue(args, throwTypeError("rejectCallback must be a function or undefined", isolate));
+            return;
+        }
+        v8::Local<v8::Object> environment = wrapperCallbackEnvironment(promise, resolver, args[1].As<v8::Function>());
+        rejectWrapper = v8::FunctionTemplate::New(wrapperCallback, environment)->GetFunction();
+    } else {
+        rejectWrapper = promiseCallback(resolver, V8PromiseCustom::RejectAlgorithm, isolate);
+    }
+    V8PromiseCustom::append(args.Holder(), fulfillWrapper, rejectWrapper, isolate);
+    v8SetReturnValue(args, promise);
+}
+
+void V8Promise::catchMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Function> fulfillWrapper, rejectWrapper;
+    v8::Local<v8::Object> promise, resolver;
+    V8PromiseCustom::createPromise(args.Holder(), &promise, &resolver, isolate);
+
+    if (args.Length() > 0 && !args[0]->IsUndefined()) {
+        if (!args[0]->IsFunction()) {
+            v8SetReturnValue(args, throwTypeError("rejectCallback must be a function or undefined", isolate));
+            return;
+        }
+        v8::Local<v8::Object> environment = wrapperCallbackEnvironment(promise, resolver, args[0].As<v8::Function>());
+        rejectWrapper = v8::FunctionTemplate::New(wrapperCallback, environment)->GetFunction();
+    } else {
+        rejectWrapper = promiseCallback(resolver, V8PromiseCustom::RejectAlgorithm, isolate);
+    }
+    fulfillWrapper = promiseCallback(resolver, V8PromiseCustom::FulfillAlgorithm, isolate);
+    V8PromiseCustom::append(args.Holder(), fulfillWrapper, rejectWrapper, isolate);
+    v8SetReturnValue(args, promise);
 }
 
 //

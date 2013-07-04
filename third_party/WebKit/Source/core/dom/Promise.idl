@@ -32,4 +32,6 @@
    CustomConstructor(any init),
    EnabledAtRuntime=promise
 ] interface Promise {
+   [Custom] Promise then(optional any fulfillCallback, optional any rejectCallback);
+   [Custom] Promise catch(optional any rejectCallback);
 };

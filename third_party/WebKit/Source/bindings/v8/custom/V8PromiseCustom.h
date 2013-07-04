@@ -39,6 +39,13 @@ public:
         InternalFieldCount, // This entry must always be at the bottom.
     };
 
+    enum WrapperCallbackEnvironmentFieldIndex {
+        WrapperCallbackEnvironmentPromiseIndex,
+        WrapperCallbackEnvironmentPromiseResolverIndex,
+        WrapperCallbackEnvironmentCallbackIndex,
+        WrapperCallbackEnvironmentFieldCount, // This entry must always be at the bottom.
+    };
+
     enum PromiseAlgorithm {
         FulfillAlgorithm,
         ResolveAlgorithm,
