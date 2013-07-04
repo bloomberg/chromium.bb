@@ -189,8 +189,14 @@ namespace WebCore {
                 g = fixPointUnsignedMultiply(g, alphaMult);
                 b = fixPointUnsignedMultiply(b, alphaMult);
             }
+
             // Call the "NoCheck" version since we may deliberately pass non-premultiplied
             // values, and we don't want an assert.
+            *dest = SkPackARGB32NoCheck(a, r, g, b);
+        }
+
+        inline void setRGBARaw(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
+        {
             *dest = SkPackARGB32NoCheck(a, r, g, b);
         }
 

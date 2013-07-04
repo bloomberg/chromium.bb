@@ -643,7 +643,7 @@ template <J_COLOR_SPACE colorSpace> void setPixel(ImageFrame& buffer, ImageFrame
 
     switch (colorSpace) {
     case JCS_RGB:
-        buffer.setRGBA(pixel, jsample[0], jsample[1], jsample[2], 0xFF);
+        buffer.setRGBARaw(pixel, jsample[0], jsample[1], jsample[2], 255);
         break;
     case JCS_CMYK:
         // Source is 'Inverted CMYK', output is RGB.
@@ -656,7 +656,7 @@ template <J_COLOR_SPACE colorSpace> void setPixel(ImageFrame& buffer, ImageFrame
         // From CMY (0..1) to RGB (0..1):
         // R = 1 - C => 1 - (1 - iC*iK) => iC*iK  [G and B similar]
         unsigned k = jsample[3];
-        buffer.setRGBA(pixel, jsample[0] * k / 255, jsample[1] * k / 255, jsample[2] * k / 255, 0xFF);
+        buffer.setRGBARaw(pixel, jsample[0] * k / 255, jsample[1] * k / 255, jsample[2] * k / 255, 255);
         break;
     }
 }
