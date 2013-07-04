@@ -39,11 +39,11 @@ TEST_F(SafeBuiltinsUnittest, TestStaticFunction) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
       "var assert = requireNative('assert');\n"
-      "Object.getOwnPropertyNames = function() {throw new Error()};\n"
+      "Object.keys = function() {throw new Error()};\n"
       "var obj = {a: 10};\n"
-      "var propertyNames = $Object.getOwnPropertyNames(obj);\n"
-      "assert.AssertTrue(propertyNames.length == 1);\n"
-      "assert.AssertTrue(propertyNames[0] == 'a');\n"
+      "var keys = $Object.keys(obj);\n"
+      "assert.AssertTrue(keys.length == 1);\n"
+      "assert.AssertTrue(keys[0] == 'a');\n"
   );
   module_system_->Require("test");
 }
