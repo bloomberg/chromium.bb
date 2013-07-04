@@ -47,6 +47,7 @@ race:_M_is_leaked
 
 # http://crbug.com/189177
 race:thread_manager
+race:v8::Locker::Initialize
 
 # http://crbug.com/223352
 race:uprv_malloc_46
@@ -81,3 +82,6 @@ race:webrtc::EventPosix::StartTimer
 
 # http://crbug.com/246974
 race:content::GpuWatchdogThread::CheckArmed
+
+# http://crbug.com/257396
+race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
