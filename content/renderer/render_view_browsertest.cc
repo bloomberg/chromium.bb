@@ -417,30 +417,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   new_view->Release();
 }
 
-TEST_F(RenderViewImplTest, ChromeNativeSchemeCommitsSynchronously) {
-  LoadHTML("<div>Page A</div>");
-  int initial_page_id = view()->GetPageId();
-
-  // Issue a navigation to a chrome-native page.
-  ViewMsg_Navigate_Params nav_params;
-  nav_params.url = GURL("chrome-native://testpage");
-  nav_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  nav_params.transition = PAGE_TRANSITION_TYPED;
-  nav_params.current_history_list_length = 1;
-  nav_params.current_history_list_offset = 0;
-  nav_params.pending_history_list_offset = 1;
-  nav_params.page_id = -1;
-  view()->OnNavigate(nav_params);
-
-  // Ensure the chrome-native:// navigate commits synchronously.
-  EXPECT_NE(initial_page_id, view()->GetPageId());
-
-  ProcessPendingMessages();
-  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_UpdateState::ID);
-  EXPECT_TRUE(msg);
-}
-
 // Ensure the RenderViewImpl sends an ACK to a SwapOut request, even if it is
 // already swapped out.  http://crbug.com/93427.
 TEST_F(RenderViewImplTest, SendSwapOutACK) {

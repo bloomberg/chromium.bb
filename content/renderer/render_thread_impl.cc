@@ -731,19 +731,6 @@ void RenderThreadImpl::RegisterSchemes() {
   WebString swappedout_scheme(ASCIIToUTF16(chrome::kSwappedOutScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(swappedout_scheme);
   WebSecurityPolicy::registerURLSchemeAsEmptyDocument(swappedout_scheme);
-
-  // chrome-native: is a scheme used for placeholder navigations that allow
-  // UIs to be drawn with platform native widgets instead of HTML.  These pages
-  // should not be accessible, and should also be treated as empty documents
-  // that can commit synchronously.  No code should be runnable in these pages,
-  // so it should not need to access anything nor should it allow javascript
-  // URLs since it should never be visible to the user.
-  WebString native_scheme(ASCIIToUTF16(chrome::kChromeNativeScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsEmptyDocument(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
-      native_scheme);
 }
 
 void RenderThreadImpl::RecordUserMetrics(const std::string& action) {

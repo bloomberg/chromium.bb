@@ -234,6 +234,25 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
   TestInterstitialPage* interstitial_page_;
 };
 
+class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
+ public:
+  WebContentsImplTestBrowserClient()
+      : assign_site_for_url_(false) {}
+
+  virtual ~WebContentsImplTestBrowserClient() {}
+
+  virtual bool ShouldAssignSiteForURL(const GURL& url) OVERRIDE {
+    return assign_site_for_url_;
+  }
+
+  void set_assign_site_for_url(bool assign) {
+    assign_site_for_url_ = assign;
+  }
+
+ private:
+  bool assign_site_for_url_;
+};
+
 class WebContentsImplTest : public RenderViewHostImplTestHarness {
  public:
   virtual void SetUp() {
@@ -578,7 +597,10 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   EXPECT_EQ(instance2a, instance2b);
 }
 
-TEST_F(WebContentsImplTest, NavigateFromChromeNativeKeepsSiteInstance) {
+TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
+  WebContentsImplTestBrowserClient browser_client;
+  SetBrowserClientForTesting(&browser_client);
+
   contents()->transition_cross_site = true;
   TestRenderViewHost* orig_rvh = test_rvh();
   int orig_rvh_delete_count = 0;
@@ -586,8 +608,9 @@ TEST_F(WebContentsImplTest, NavigateFromChromeNativeKeepsSiteInstance) {
   SiteInstanceImpl* orig_instance =
       static_cast<SiteInstanceImpl*>(contents()->GetSiteInstance());
 
-  // Navigate to a chrome-native URL.
-  const GURL native_url("chrome-native://nativestuffandthings");
+  browser_client.set_assign_site_for_url(false);
+  // Navigate to an URL that will not assign a new SiteInstance.
+  const GURL native_url("non-site-url://stuffandthings");
   controller().LoadURL(
       native_url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, 1, native_url, PAGE_TRANSITION_TYPED);
@@ -600,6 +623,7 @@ TEST_F(WebContentsImplTest, NavigateFromChromeNativeKeepsSiteInstance) {
   EXPECT_EQ(GURL(), contents()->GetSiteInstance()->GetSiteURL());
   EXPECT_FALSE(orig_instance->HasSite());
 
+  browser_client.set_assign_site_for_url(true);
   // Navigate to new site (should keep same site instance).
   const GURL url("http://www.google.com");
   controller().LoadURL(

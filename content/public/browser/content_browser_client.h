@@ -262,6 +262,10 @@ class CONTENT_EXPORT ContentBrowserClient {
                                               const GURL& current_url,
                                               const GURL& new_url);
 
+  // Returns true if the passed in URL should be assigned as the site of the
+  // current SiteInstance, if it does not yet have a site.
+  virtual bool ShouldAssignSiteForURL(const GURL& url);
+
   // See CharacterEncoding's comment.
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name);

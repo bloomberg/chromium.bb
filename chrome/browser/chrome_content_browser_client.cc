@@ -1253,6 +1253,10 @@ bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(
       ExtensionURLInfo(current_url), ExtensionURLInfo(new_url), false);
 }
 
+bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
+  return !url.SchemeIs(chrome::kChromeNativeScheme);
+}
+
 std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);

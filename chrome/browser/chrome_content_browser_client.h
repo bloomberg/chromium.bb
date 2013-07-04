@@ -109,6 +109,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::ResourceContext* resource_context,
       const GURL& current_url,
       const GURL& new_url) OVERRIDE;
+  virtual bool ShouldAssignSiteForURL(const GURL& url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,

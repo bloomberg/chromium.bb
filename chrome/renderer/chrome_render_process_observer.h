@@ -51,6 +51,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
  private:
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void WebKitInitialized() OVERRIDE;
 
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetExtensionActivityLogEnabled(bool extension_activity_log_enabled);

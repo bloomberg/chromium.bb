@@ -2677,11 +2677,14 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
 }
 
 bool WebContentsImpl::ShouldAssignSiteForURL(const GURL& url) {
-  // Neither about:blank nor the chrome-native: scheme should "use up" a new
-  // SiteInstance.  In both cases, the SiteInstance can still be used for a
-  // normal web site.
-  return !url.SchemeIs(chrome::kChromeNativeScheme) &&
-      url != GURL(kAboutBlankURL);
+  // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
+  // still be used for a normal web site.
+  if (url == GURL(kAboutBlankURL))
+    return false;
+
+  // The embedder will then have the opportunity to determine if the URL
+  // should "use up" the SiteInstance.
+  return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
 void WebContentsImpl::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {

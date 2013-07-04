@@ -19,6 +19,7 @@
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/extension_localization_peer.h"
@@ -46,6 +48,7 @@
 #include "third_party/WebKit/public/web/WebFontCache.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -57,6 +60,8 @@ using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
 using WebKit::WebFontCache;
 using WebKit::WebRuntimeFeatures;
+using WebKit::WebSecurityPolicy;
+using WebKit::WebString;
 using content::RenderThread;
 
 namespace {
@@ -331,6 +336,21 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ChromeRenderProcessObserver::WebKitInitialized() {
+  // chrome-native: is a scheme used for placeholder navigations that allow
+  // UIs to be drawn with platform native widgets instead of HTML.  These pages
+  // should not be accessible, and should also be treated as empty documents
+  // that can commit synchronously.  No code should be runnable in these pages,
+  // so it should not need to access anything nor should it allow javascript
+  // URLs since it should never be visible to the user.
+  WebString native_scheme(ASCIIToUTF16(chrome::kChromeNativeScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
+  WebSecurityPolicy::registerURLSchemeAsEmptyDocument(native_scheme);
+  WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
+  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
+      native_scheme);
 }
 
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(
