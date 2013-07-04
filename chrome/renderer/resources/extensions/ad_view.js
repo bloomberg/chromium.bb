@@ -69,8 +69,6 @@ var AD_VIEW_API_METHODS = [
  * List of events to blindly forward from the browser plugin to the <adview>.
  */
 var AD_VIEW_EVENTS = {
-  'loadabort' : ['url', 'isTopLevel', 'reason'],
-  'loadcommit' : ['url', 'isTopLevel'],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
 };
 
@@ -79,7 +77,19 @@ var createEvent = function(name) {
   return new eventBindings.Event(name, undefined, eventOpts);
 };
 
+var AdviewLoadAbortEvent = createEvent('adview.onLoadAbort');
 var AdviewLoadCommitEvent = createEvent('adview.onLoadCommit');
+
+var AD_VIEW_EXT_EVENTS = {
+  'loadabort': {
+    evt: AdviewLoadAbortEvent,
+    fields: ['url', 'isTopLevel', 'reason']
+  },
+  'loadcommit': {
+    evt: AdviewLoadCommitEvent,
+    fields: ['url', 'isTopLevel']
+  }
+};
 
 /**
  * List of supported ad-networks.
@@ -439,25 +449,37 @@ AdView.prototype.handleSrcMutation = function(mutation) {
  * @private
  */
 AdView.prototype.setupAdviewNodeEvents_ = function() {
-  var adviewNode = this.adviewNode_;
-  // TODO(fsamuel): Generalize this further as we add more events.
-  var onAttached = function(e) {
+  var self = this;
+  this.browserPluginNode_.addEventListener('-internal-attached', function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    AdviewLoadCommitEvent.addListener(function(event) {
-      var adviewEvent = new Event('loadcommit', {bubbles: true});
-      var attribs = AD_VIEW_EVENTS['loadcommit'];
-      $Array.forEach(attribs, function(attribName) {
-        adviewEvent[attribName] = event[attribName];
-      });
-      adviewNode.dispatchEvent(adviewEvent);
-    }, {instanceId: detail.windowId});
-  };
-  this.browserPluginNode_.addEventListener('-internal-attached', onAttached);
+    self.instanceId_ = detail.windowId;
+    for (var eventName in AD_VIEW_EXT_EVENTS) {
+      self.setupExtEvent_(eventName, AD_VIEW_EXT_EVENTS[eventName]);
+    }
+  });
 
   for (var eventName in AD_VIEW_EVENTS) {
     this.setupEvent_(eventName, AD_VIEW_EVENTS[eventName]);
   }
 }
+
+/**
+ * @private
+ */
+AdView.prototype.setupExtEvent_ = function(eventName, eventInfo) {
+  var self = this;
+  var adviewNode = this.adviewNode_;
+  eventInfo.evt.addListener(function(event) {
+    var adviewEvent = new Event(eventName, {bubbles: true});
+    $Array.forEach(eventInfo.fields, function(field) {
+      adviewEvent[field] = event[field];
+    });
+    if (eventInfo.customHandler) {
+      eventInfo.customHandler(self, event);
+    }
+    adviewNode.dispatchEvent(adviewEvent);
+  }, {instanceId: self.instanceId_});
+};
 
 /**
  * @private

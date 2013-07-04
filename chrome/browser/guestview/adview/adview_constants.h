@@ -10,6 +10,7 @@
 namespace adview {
 
 // Events.
+extern const char kEventLoadAbort[];
 extern const char kEventLoadCommit[];
 
 }  // namespace adview

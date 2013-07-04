@@ -7,6 +7,7 @@
 namespace adview {
 
 // Events.
+const char kEventLoadAbort[] = "adview.onLoadAbort";
 const char kEventLoadCommit[] = "adview.onLoadCommit";
 
 }  // namespace adview

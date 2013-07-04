@@ -11,6 +11,7 @@ namespace guestview {
 
 // Parameters/properties on events.
 extern const char kIsTopLevel[];
+extern const char kReason[];
 extern const char kUrl[];
 
 // Attributes.

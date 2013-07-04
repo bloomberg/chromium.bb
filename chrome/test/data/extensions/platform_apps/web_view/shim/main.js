@@ -9,6 +9,7 @@ embedder.windowOpenGuestURL = '';
 embedder.noReferrerGuestURL = '';
 embedder.redirectGuestURL = '';
 embedder.redirectGuestURLDest = '';
+embedder.closeSocketURL = '';
 embedder.tests = {};
 
 embedder.setUp_ = function(config) {
@@ -20,6 +21,7 @@ embedder.setUp_ = function(config) {
   embedder.redirectGuestURL = embedder.baseGuestURL + '/server-redirect';
   embedder.redirectGuestURLDest = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/guest_redirect.html';
+  embedder.closeSocketURL = embedder.baseGuestURL + '/close-socket';
 };
 
 window.runTest = function(testName) {
@@ -543,6 +545,45 @@ function testLoadStartLoadRedirect() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the loadabort event fires as expected and with the
+// appropriate fields when an empty response is returned.
+function testLoadAbortEmptyResponse() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_EMPTY_RESPONSE', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', embedder.closeSocketURL);
+  document.body.appendChild(webview);
+}
+
+// This test verifies that the loadabort event fires as expected when an illegal
+// chrome URL is provided.
+function testLoadAbortIllegalChromeURL() {
+  var webview = document.createElement('webview');
+  var onFirstLoadStop = function(e) {
+    webview.removeEventListener('loadstop', onFirstLoadStop);
+    webview.setAttribute('src', 'chrome://newtab');
+  };
+  webview.addEventListener('loadstop', onFirstLoadStop);
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'about:blank');
+  document.body.appendChild(webview);
+}
+
+function testLoadAbortIllegalFileURL() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'file://foo');
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testSize': testSize,
   'testAPIMethodExistence': testAPIMethodExistence,
@@ -563,7 +604,10 @@ embedder.test.testList = {
   'testContentLoadEvent': testContentLoadEvent,
   'testWebRequestAPI': testWebRequestAPI,
   'testGetProcessId': testGetProcessId,
-  'testLoadStartLoadRedirect': testLoadStartLoadRedirect
+  'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
+  'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,
+  'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
+  'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL
 };
 
 onload = function() {

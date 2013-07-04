@@ -4,9 +4,11 @@
 
 #include "chrome/browser/guestview/adview/adview_guest.h"
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/guestview/adview/adview_constants.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/net_errors.h"
 
 using content::WebContents;
 
@@ -49,4 +51,22 @@ void AdViewGuest::DidCommitProvisionalLoadForFrame(
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   DispatchEvent(new GuestView::Event(adview::kEventLoadCommit, args.Pass()));
+}
+
+void AdViewGuest::DidFailProvisionalLoad(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description,
+    content::RenderViewHost* render_view_host) {
+  // Translate the |error_code| into an error string.
+  std::string error_type;
+  RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
+
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
+  args->SetString(guestview::kUrl, validated_url.spec());
+  args->SetString(guestview::kReason, error_type);
+  DispatchEvent(new GuestView::Event(adview::kEventLoadAbort, args.Pass()));
 }

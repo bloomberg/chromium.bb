@@ -323,16 +323,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,
                      int /* instance_id */,
                      int /* source_routing_id */)
 
-// If the guest fails to commit a page load then it will inform the
-// embedder through the BrowserPluginMsg_LoadAbort. A description
-// of the error will be stored in |type|.  The list of known error
-// types can be found in net/base/net_error_list.h.
-IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadAbort,
-                     int /* instance_id */,
-                     GURL /* url */,
-                     bool /* is_top_level */,
-                     std::string /* type */)
-
 // When the guest commits a navigation, the browser process informs
 // the embedder through the BrowserPluginMsg_LoadCommit message.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_LoadCommit,

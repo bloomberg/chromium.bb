@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/net_errors.h"
 
 using content::WebContents;
 
@@ -149,6 +150,24 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   args->SetInteger(webview::kInternalProcessId,
       web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
+}
+
+void WebViewGuest::DidFailProvisionalLoad(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description,
+    content::RenderViewHost* render_view_host) {
+  // Translate the |error_code| into an error string.
+  std::string error_type;
+  RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
+
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
+  args->SetString(guestview::kUrl, validated_url.spec());
+  args->SetString(guestview::kReason, error_type);
+  DispatchEvent(new GuestView::Event(webview::kEventLoadAbort, args.Pass()));
 }
 
 void WebViewGuest::DidStartProvisionalLoadForFrame(

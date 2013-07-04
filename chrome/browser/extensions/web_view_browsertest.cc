@@ -30,9 +30,17 @@ using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
 
 namespace {
+  const char kEmptyResponsePath[] = "/close-socket";
   const char kRedirectResponsePath[] = "/server-redirect";
   const char kRedirectResponseFullPath[] =
       "/extensions/platform_apps/web_view/shim/guest_redirect.html";
+
+  class EmptyHttpResponse : public net::test_server::HttpResponse {
+  public:
+    virtual std::string ToResponseString() const OVERRIDE {
+      return std::string();
+    }
+  };
 }  // namespace
 
 // This class intercepts media access request from the embedder. The request
@@ -376,6 +384,18 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return http_response.PassAs<net::test_server::HttpResponse>();
   }
 
+  // Handles |request| by serving an empty response.
+  static scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
+      const std::string& path,
+      const net::test_server::HttpRequest& request) {
+    if (StartsWithASCII(path, request.relative_url, true)) {
+      return scoped_ptr<net::test_server::HttpResponse>(
+          new EmptyHttpResponse);
+    }
+
+    return scoped_ptr<net::test_server::HttpResponse>();
+  }
+
   void TestHelper(const std::string& test_name,
                   const std::string& test_passed_msg,
                   const std::string& test_failed_msg,
@@ -389,6 +409,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         base::Bind(&WebViewTest::RedirectResponseHandler,
                    kRedirectResponsePath,
                    embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&WebViewTest::EmptyResponseHandler, kEmptyResponsePath));
 
     content::WebContents* embedder_web_contents =
         GetFirstShellWindowWebContents();
@@ -589,6 +612,27 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadStartLoadRedirect) {
   TestHelper("testLoadStartLoadRedirect",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortEmptyResponse) {
+  TestHelper("testLoadAbortEmptyResponse",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalChromeURL) {
+  TestHelper("testLoadAbortIllegalChromeURL",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalFileURL) {
+  TestHelper("testLoadAbortIllegalFileURL",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
              "web_view/shim");

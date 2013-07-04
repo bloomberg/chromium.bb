@@ -25,7 +25,6 @@ var WEB_VIEW_API_METHODS = [
 
 var WEB_VIEW_EVENTS = {
   'exit' : ['processId', 'reason'],
-  'loadabort' : ['url', 'isTopLevel', 'reason'],
   'responsive' : ['processId'],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
   'unresponsive' : ['processId']
@@ -39,6 +38,7 @@ var createEvent = function(name) {
 var closeEvent = createEvent('webview.onClose');
 var consoleMessageEvent = createEvent('webview.onConsoleMessage');
 var contentLoadEvent = createEvent('webview.onContentLoad');
+var loadAbortEvent = createEvent('webview.onLoadAbort');
 var loadCommitEvent = createEvent('webview.onLoadCommit');
 var loadRedirectEvent = createEvent('webview.onLoadRedirect');
 var loadStartEvent = createEvent('webview.onLoadStart');
@@ -56,6 +56,10 @@ var WEB_VIEW_EXT_EVENTS = {
   'contentload': {
     evt: contentLoadEvent,
     fields: []
+  },
+  'loadabort': {
+    evt: loadAbortEvent,
+    fields: ['url', 'isTopLevel', 'reason']
   },
   'loadcommit': {
     customHandler: function(webview, event) {
@@ -344,7 +348,6 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
  */
 WebView.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
-  var webviewNode = this.webviewNode_;
   this.browserPluginNode_.addEventListener('-internal-attached', function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     self.instanceId_ = detail.windowId;

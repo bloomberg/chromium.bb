@@ -335,10 +335,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnGuestGone(int instance_id, int process_id, int status);
   void OnGuestResponsive(int instance_id, int process_id);
   void OnGuestUnresponsive(int instance_id, int process_id);
-  void OnLoadAbort(int instance_id,
-                   const GURL& url,
-                   bool is_top_level,
-                   const std::string& type);
   void OnLoadCommit(int instance_id,
                     const BrowserPluginMsg_LoadCommit_Params& params);
   // Requests permission from the embedder.

@@ -4,23 +4,6 @@ function sizeChanged(evt) {
   document.title = "AutoSize(" + data.newWidth + ", " + data.newHeight + ")";
 }
 
-function loadAbort(evt) {
-  document.title = JSON.parse(evt.detail).reason;
-}
-function loadStart(evt) {
-  document.title = JSON.parse(evt.detail).url;
-}
-
-var redirectOldUrl;
-var redirectNewUrl;
-function loadRedirect(event) {
-  document.title = "redirected";
-  var detail = JSON.parse(event.detail);
-  if (detail.isTopLevel) {
-    redirectOldUrl = detail.oldUrl;
-    redirectNewUrl = detail.newUrl;
-  }
-}
 function SetSrc(src) {
   var plugin = document.getElementById('plugin');
   plugin.src = src;
@@ -72,9 +55,6 @@ function receiveMessage(event) {
   }
 }
   var plugin = document.getElementById('plugin');
-  plugin.addEventListener('-internal-loadstart', loadStart);
-  plugin.addEventListener('-internal-loadabort', loadAbort);
-  plugin.addEventListener('-internal-loadredirect', loadRedirect);
   window.addEventListener('message', receiveMessage, false);
   plugin.addEventListener('-internal-sizechanged', sizeChanged);
 </script>

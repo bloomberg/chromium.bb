@@ -148,13 +148,6 @@ class CONTENT_EXPORT BrowserPluginGuest
                        const NotificationDetails& details) OVERRIDE;
 
   // WebContentsObserver implementation.
-  virtual void DidFailProvisionalLoad(
-      int64 frame_id,
-      bool is_main_frame,
-      const GURL& validated_url,
-      int error_code,
-      const string16& error_description,
-      RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

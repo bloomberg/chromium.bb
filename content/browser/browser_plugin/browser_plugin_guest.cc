@@ -42,7 +42,6 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
-#include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -747,24 +746,6 @@ bool BrowserPluginGuest::UnlockMouseIfNecessary(
 
   embedder_web_contents()->GotResponseToLockMouseRequest(false);
   return true;
-}
-
-void BrowserPluginGuest::DidFailProvisionalLoad(
-    int64 frame_id,
-    bool is_main_frame,
-    const GURL& validated_url,
-    int error_code,
-    const string16& error_description,
-    RenderViewHost* render_view_host) {
-  // Translate the |error_code| into an error string.
-  std::string error_type;
-  RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
-  // Inform the embedder of the loadAbort.
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadAbort(instance_id(),
-                                     validated_url,
-                                     is_main_frame,
-                                     error_type));
 }
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {

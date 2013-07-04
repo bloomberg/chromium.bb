@@ -165,7 +165,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestResponsive, OnGuestResponsive)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
@@ -539,17 +538,6 @@ void BrowserPlugin::OnGuestUnresponsive(int guest_instance_id, int process_id) {
   std::map<std::string, base::Value*> props;
   props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
   TriggerEvent(browser_plugin::kEventUnresponsive, &props);
-}
-
-void BrowserPlugin::OnLoadAbort(int guest_instance_id,
-                                const GURL& url,
-                                bool is_top_level,
-                                const std::string& type) {
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kURL] = new base::StringValue(url.spec());
-  props[browser_plugin::kIsTopLevel] = new base::FundamentalValue(is_top_level);
-  props[browser_plugin::kReason] = new base::StringValue(type);
-  TriggerEvent(browser_plugin::kEventLoadAbort, &props);
 }
 
 void BrowserPlugin::OnLoadCommit(
@@ -1245,7 +1233,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_GuestGone::ID:
     case BrowserPluginMsg_GuestResponsive::ID:
     case BrowserPluginMsg_GuestUnresponsive::ID:
-    case BrowserPluginMsg_LoadAbort::ID:
     case BrowserPluginMsg_LoadCommit::ID:
     case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
