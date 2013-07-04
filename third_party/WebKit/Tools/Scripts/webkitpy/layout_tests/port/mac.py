@@ -37,9 +37,9 @@ from webkitpy.layout_tests.port import chromium
 _log = logging.getLogger(__name__)
 
 
-class ChromiumMacPort(chromium.ChromiumPort):
+class MacPort(chromium.ChromiumPort):
     SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'mountainlion')
-    port_name = 'chromium-mac'
+    port_name = 'mac'
 
     FALLBACK_PATHS = { 'mountainlion': [ 'chromium-mac' ]}
     FALLBACK_PATHS['lion'] = ['chromium-mac-lion'] + FALLBACK_PATHS['mountainlion']
@@ -51,13 +51,13 @@ class ChromiumMacPort(chromium.ChromiumPort):
 
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
-        if port_name.endswith('-mac'):
+        if port_name.endswith('mac'):
             return port_name + '-' + host.platform.os_version
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
         chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
-        self._version = port_name[port_name.index('chromium-mac-') + len('chromium-mac-'):]
+        self._version = port_name[port_name.index('mac-') + len('mac-'):]
         assert self._version in self.SUPPORTED_VERSIONS
 
     def _modules_to_search_for_symbols(self):

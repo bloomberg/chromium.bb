@@ -788,7 +788,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         if sys.platform == 'darwin':
             port_name = 'linux-x86'
         else:
-            port_name = 'chromium-mac-lion'
+            port_name = 'mac-lion'
         out = StringIO.StringIO()
         err = StringIO.StringIO()
         self.assertEqual(run_webkit_tests.main(['--platform', port_name, 'fast/harness/results.html'], out, err), -1)
@@ -896,11 +896,11 @@ class PortTest(unittest.TestCase):
     def assert_mock_port_works(self, port_name, args=[]):
         self.assertTrue(passing_run(args + ['--platform', 'mock-' + port_name, 'fast/harness/results.html'], tests_included=True, host=Host()))
 
-    def disabled_test_chromium_mac_lion(self):
-        self.assert_mock_port_works('chromium-mac-lion')
+    def disabled_test_mac_lion(self):
+        self.assert_mock_port_works('mac-lion')
 
-    def disabled_test_chromium_mac_lion_in_test_shell_mode(self):
-        self.assert_mock_port_works('chromium-mac-lion', args=['--additional-drt-flag=--test-shell'])
+    def disabled_test_mac_lion_in_test_shell_mode(self):
+        self.assert_mock_port_works('mac-lion', args=['--additional-drt-flag=--test-shell'])
 
     def disabled_test_qt_linux(self):
         self.assert_mock_port_works('qt-linux')

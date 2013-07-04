@@ -53,11 +53,11 @@ _exact_matches = {
     "WebKit Linux": {"port_name": "linux-x86_64", "is_debug": False},
     "WebKit Linux 32": {"port_name": "linux-x86", "is_debug": False},
     "WebKit Linux (dbg)": {"port_name": "linux-x86_64", "is_debug": True},
-    "WebKit Mac10.6": {"port_name": "chromium-mac-snowleopard", "is_debug": False},
-    "WebKit Mac10.6 (dbg)": {"port_name": "chromium-mac-snowleopard", "is_debug": True},
-    "WebKit Mac10.7": {"port_name": "chromium-mac-lion", "is_debug": False},
-    "WebKit Mac10.7 (dbg)": {"port_name": "chromium-mac-lion", "is_debug": True},
-    "WebKit Mac10.8": {"port_name": "chromium-mac-mountainlion", "is_debug": False},
+    "WebKit Mac10.6": {"port_name": "mac-snowleopard", "is_debug": False},
+    "WebKit Mac10.6 (dbg)": {"port_name": "mac-snowleopard", "is_debug": True},
+    "WebKit Mac10.7": {"port_name": "mac-lion", "is_debug": False},
+    "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion", "is_debug": True},
+    "WebKit Mac10.8": {"port_name": "mac-mountainlion", "is_debug": False},
 }
 
 
@@ -67,9 +67,9 @@ _deps_builders = {
     "linux-x86_64": "WebKit Linux (deps)",
     "win-xp": "WebKit XP (deps)",
     "win-win7": "WebKit XP (deps)",
-    "chromium-mac-snowleopard": "WebKit Mac10.6 (deps)",
-    "chromium-mac-lion": "WebKit Mac10.6 (deps)",
-    "chromium-mac-mountainlion": "WebKit Mac10.6 (deps)",
+    "mac-snowleopard": "WebKit Mac10.6 (deps)",
+    "mac-lion": "WebKit Mac10.6 (deps)",
+    "mac-mountainlion": "WebKit Mac10.6 (deps)",
 }
 
 

@@ -73,7 +73,7 @@ class Port(object):
     """Abstract class for Port-specific hooks for the layout_test package."""
 
     # Subclasses override this. This should indicate the basic implementation
-    # part of the port name, e.g., 'chromium-mac', 'win', 'gtk'; there is probably (?)
+    # part of the port name, e.g., 'mac', 'win', 'gtk'; there is probably (?)
     # one unique value per class.
 
     # FIXME: We should probably rename this to something like 'implementation_name'.
