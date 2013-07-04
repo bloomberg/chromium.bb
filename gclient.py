@@ -1097,7 +1097,7 @@ solutions = [
           '(as it returned an empty response). Check your config.' %
           dep.safesync_url)
     scm = gclient_scm.CreateSCM(dep.url, dep.root.root_dir, dep.name)
-    safe_rev = scm.GetUsableRev(rev=rev, options=self._options)
+    safe_rev = scm.GetUsableRev(rev, self._options)
     if self._options.verbose:
       print('Using safesync_url revision: %s.\n' % safe_rev)
     self._options.revisions.append('%s@%s' % (dep.name, safe_rev))
