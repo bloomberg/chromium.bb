@@ -8,7 +8,6 @@
 Keeps a local cache.
 """
 
-import collections
 import cookielib
 import ctypes
 import hashlib
@@ -1395,136 +1394,6 @@ class NoCache(object):
     return os.path.join(self.target_directory, item)
 
 
-class LRUDict(object):
-  """Dictionary that can evict least recently used items.
-
-  Implemented as a wrapper around OrderedDict object. An OrderedDict stores
-  (key, value) pairs in order they are inserted and can effectively pop oldest
-  items.
-  """
-
-  def __init__(self):
-    # Ordered key -> value mapping, newest items at the bottom.
-    # Also exposed as part of public interface. For external user it's just
-    # a collection of keys.
-    self.keys = collections.OrderedDict()
-    # True if was modified after loading.
-    self.dirty = True
-
-  @staticmethod
-  def load(state_file):
-    """Loads previously saved state and returns LRUDict in that state.
-
-    Returns new empty LRUDict if state file is missing or corrupted.
-    """
-    lru = LRUDict()
-    if not os.path.isfile(state_file):
-      return lru
-
-    try:
-      state = json.load(open(state_file, 'r'))
-    except (IOError, ValueError), e:
-      # Too bad. The file will be overwritten and the cache cleared.
-      logging.error(
-          'Broken state file %s, ignoring.\n%s' % (state_file, e))
-      return lru
-
-    if not isinstance(state, list):
-      logging.error(
-          'Broken state file %s, should be json list, ignoring' % (state_file,))
-      return lru
-
-    # Items are stored oldest to newest. Put them back in the same order.
-    for pair in state:
-      if not isinstance(pair, (list, tuple)) or len(pair) != 2:
-        logging.error(
-           'Broken state file %s, expecting pairs, '
-           'ignoring %s.\n' % (state_file, pair))
-        continue
-      lru.add(pair[0], pair[1])
-
-    # Check for duplicate keys.
-    if len(lru.keys) != len(state):
-      logging.warning('Cache state is corrupted, found duplicate keys')
-      return lru
-
-    # Now state from the file corresponds to state in the memory.
-    lru.dirty = False
-    return lru
-
-  def save(self, state_file):
-    """Saves cache state to a file if it was modified."""
-    if not self.dirty:
-      return False
-
-    with open(state_file, 'wb') as f:
-      json.dump(self.keys.items(), f, separators=(',',':'))
-
-    self.dirty = False
-    return True
-
-  def add(self, key, value):
-    """Adds or replaces a |value| for |key|, marks it as most recently used."""
-    self.keys.pop(key, None)
-    self.keys[key] = value
-    self.dirty = True
-
-  def batch_insert_oldest(self, items):
-    """Prepends list of |items| to the dict, marks them as least recently used.
-
-    |items| is a list of (key, value) pairs to add.
-
-    It's a very slow operation that completely rebuilds the dictionary.
-    """
-    new_keys = collections.OrderedDict()
-
-    # Insert |items| first, so they became oldest.
-    for key, value in items:
-      new_keys[key] = value
-
-    # Insert the rest, be careful not to override keys from |items|.
-    for key, value in self.keys.iteritems():
-      if key not in new_keys:
-        new_keys[key] = value
-
-    self.keys = new_keys
-    self.dirty = True
-
-  def get(self, key, default=None):
-    """Returns value for |key| or |default| if not found."""
-    return self.keys.get(key, default)
-
-  def touch(self, key):
-    """Marks |key| as most recently used.
-
-    Raises KeyError if |key| is not in the dict.
-    """
-    self.keys[key] = self.keys.pop(key)
-    self.dirty = True
-
-  def pop(self, key):
-    """Removes item from the dict, returns its value.
-
-    Raises KeyError if |key| is not in the dict.
-    """
-    value = self.keys.pop(key)
-    self.dirty = True
-    return value
-
-  def pop_oldest(self):
-    """Removes oldest item from the dict and returns it as tuple (key, value).
-
-    Raises KeyError if dict is empty.
-    """
-    pair = self.keys.popitem(last=False)
-    self.dirty = True
-    return pair
-
-  def itervalues(self):
-    """Iterator over stored values in arbitrary order."""
-    return self.keys.itervalues()
-
-
 class Cache(object):
   """Stateful LRU cache.
 
@@ -1543,7 +1412,13 @@ class Cache(object):
     self.remote = remote
     self.policies = policies
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
-    self.lru = None
+    # The tuple(file, size) are kept as an array in a LRU style. E.g.
+    # self.state[0] is the oldest item.
+    self.state = []
+    self._state_need_to_be_saved = False
+    # A lookup map to speed up searching.
+    self._lookup = {}
+    self._lookup_is_stale = True
 
     # Items currently being fetched. Keep it local to reduce lock contention.
     self._pending_queue = set()
@@ -1556,13 +1431,30 @@ class Cache(object):
     with Profiler('Setup'):
       if not os.path.isdir(self.cache_dir):
         os.makedirs(self.cache_dir)
-
-      # Load state of the cache.
-      self.lru = LRUDict.load(self.state_file)
+      if os.path.isfile(self.state_file):
+        try:
+          self.state = json.load(open(self.state_file, 'r'))
+        except (IOError, ValueError), e:
+          # Too bad. The file will be overwritten and the cache cleared.
+          logging.error(
+              'Broken state file %s, ignoring.\n%s' % (self.STATE_FILE, e))
+          self._state_need_to_be_saved = True
+        if (not isinstance(self.state, list) or
+            not all(
+              isinstance(i, (list, tuple)) and len(i) == 2
+              for i in self.state)):
+          # Discard.
+          self._state_need_to_be_saved = True
+          self.state = []
 
       # Ensure that all files listed in the state still exist and add new ones.
-      previous = set(self.lru.keys)
-      unknown = []
+      previous = set(filename for filename, _ in self.state)
+      if len(previous) != len(self.state):
+        logging.warning('Cache state is corrupted, found duplicate files')
+        self._state_need_to_be_saved = True
+        self.state = []
+
+      added = 0
       for filename in os.listdir(self.cache_dir):
         if filename == self.STATE_FILE:
           continue
@@ -1574,20 +1466,24 @@ class Cache(object):
           logging.warning('Removing unknown file %s from cache', filename)
           os.remove(self.path(filename))
           continue
-        # File that's not referenced in 'state.json'.
-        logging.warning('Adding unknown file %s to cache', filename)
-        unknown.append(filename)
+        # Insert as the oldest file. It will be deleted eventually if not
+        # accessed.
+        self._add(filename, False)
+        logging.warning('Add unknown file %s to cache', filename)
+        added += 1
 
-      if unknown:
-        # Add as oldest files. They will be deleted eventually if not accessed.
-        self._add_oldest_list(unknown)
-        logging.warning('Added back %d unknown files', len(unknown))
-
+      if added:
+        logging.warning('Added back %d unknown files', added)
       if previous:
-        # Filter out entries that were not found.
         logging.warning('Removed %d lost files', len(previous))
-        for filename in previous:
-          self.lru.pop(filename)
+        # Set explicitly in case self._add() wasn't called.
+        self._state_need_to_be_saved = True
+        # Filter out entries that were not found while keeping the previous
+        # order.
+        self.state = [
+          (filename, size) for filename, size in self.state
+          if filename not in previous
+        ]
       self.trim()
 
   def __enter__(self):
@@ -1601,29 +1497,40 @@ class Cache(object):
         '%5d (%8dkb) added', len(self._added), sum(self._added) / 1024)
     logging.info(
         '%5d (%8dkb) current',
-        len(self.lru.keys),
-        sum(self.lru.itervalues()) / 1024)
+        len(self.state),
+        sum(i[1] for i in self.state) / 1024)
     logging.info(
         '%5d (%8dkb) removed', len(self._removed), sum(self._removed) / 1024)
     logging.info('       %8dkb free', self._free_disk / 1024)
 
+  def remove_file_at_index(self, index):
+    """Removes the file at the given index."""
+    try:
+      self._state_need_to_be_saved = True
+      filename, size = self.state.pop(index)
+      # If the lookup was already stale, its possible the filename was not
+      # present yet.
+      self._lookup_is_stale = True
+      self._lookup.pop(filename, None)
+      self._removed.append(size)
+      os.remove(self.path(filename))
+    except OSError as e:
+      logging.error('Error attempting to delete a file\n%s' % e)
+
   def remove_lru_file(self):
-    """Removes the last recently used file and returns its size."""
-    item, size = self.lru.pop_oldest()
-    self._delete_file(item, size)
-    return size
+    """Removes the last recently used file."""
+    self.remove_file_at_index(0)
 
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
     # Ensure maximum cache size.
-    if self.policies.max_cache_size:
-      total_size = sum(self.lru.itervalues())
-      while total_size > self.policies.max_cache_size:
-        total_size -= self.remove_lru_file()
+    if self.policies.max_cache_size and self.state:
+      while sum(i[1] for i in self.state) > self.policies.max_cache_size:
+        self.remove_lru_file()
 
     # Ensure maximum number of items in the cache.
-    if self.policies.max_items and len(self.lru.keys) > self.policies.max_items:
-      for _ in xrange(len(self.lru.keys) - self.policies.max_items):
+    if self.policies.max_items and self.state:
+      while len(self.state) > self.policies.max_items:
         self.remove_lru_file()
 
     # Ensure enough free space.
@@ -1631,13 +1538,13 @@ class Cache(object):
     trimmed_due_to_space = False
     while (
         self.policies.min_free_space and
-        self.lru.keys and
+        self.state and
         self._free_disk < self.policies.min_free_space):
       trimmed_due_to_space = True
       self.remove_lru_file()
       self._free_disk = get_free_space(self.cache_dir)
     if trimmed_due_to_space:
-      total = sum(self.lru.itervalues())
+      total = sum(i[1] for i in self.state)
       logging.warning(
           'Trimmed due to not enough free disk space: %.1fkb free, %.1fkb '
           'cache (%.1f%% of its maximum capacity)',
@@ -1651,23 +1558,26 @@ class Cache(object):
     """Retrieves a file from the remote, if not already cached, and adds it to
     the cache.
 
-    If the file is in the cache, verify that the file is valid (i.e. it is
+    If the file is in the cache, verifiy that the file is valid (i.e. it is
     the correct size), retrieving it again if it isn't.
     """
     assert not '/' in item
     path = self.path(item)
-    found = False
+    self._update_lookup()
+    index = self._lookup.get(item)
 
-    if item in self.lru.keys:
+    if index is not None:
       if not valid_file(self.path(item), size):
-        self.lru.pop(item)
-        self._delete_file(item, size)
+        self.remove_file_at_index(index)
+        index = None
       else:
+        assert index < len(self.state)
         # Was already in cache. Update it's LRU value by putting it at the end.
-        self.lru.touch(item)
-        found = True
+        self._state_need_to_be_saved = True
+        self._lookup_is_stale = True
+        self.state.append(self.state.pop(index))
 
-    if not found:
+    if index is None:
       if item in self._pending_queue:
         # Already pending. The same object could be referenced multiple times.
         return
@@ -1683,9 +1593,10 @@ class Cache(object):
 
   def add(self, filepath, obj):
     """Forcibly adds a file to the cache."""
-    if obj not in self.lru.keys:
+    self._update_lookup()
+    if not obj in self._lookup:
       link_file(self.path(obj), filepath, HARDLINK)
-      self._add(obj)
+      self._add(obj, True)
 
   def path(self, item):
     """Returns the path to one item."""
@@ -1693,7 +1604,9 @@ class Cache(object):
 
   def save(self):
     """Saves the LRU ordering."""
-    self.lru.save(self.state_file)
+    if self._state_need_to_be_saved:
+      json.dump(self.state, open(self.state_file, 'wb'), separators=(',',':'))
+      self._state_need_to_be_saved = False
 
   def wait_for(self, items):
     """Starts a loop that waits for at least one of |items| to be retrieved.
@@ -1701,8 +1614,9 @@ class Cache(object):
     Returns the first item retrieved.
     """
     # Flush items already present.
+    self._update_lookup()
     for item in items:
-      if item in self.lru.keys:
+      if item in self._lookup:
         return item
 
     assert all(i in self._pending_queue for i in items), (
@@ -1715,32 +1629,31 @@ class Cache(object):
     while self._pending_queue:
       item = self.remote.get_one_result()
       self._pending_queue.remove(item)
-      self._add(item)
+      self._add(item, True)
       if item in items:
         return item
 
-  def _add(self, item):
-    """Adds an item into LRU cache marking it as a newest one."""
+  def _add(self, item, at_end):
+    """Adds an item in the internal state.
+
+    If |at_end| is False, self._lookup becomes inconsistent and
+    self._update_lookup() must be called.
+    """
     size = os.stat(self.path(item)).st_size
     self._added.append(size)
-    self.lru.add(item, size)
+    self._state_need_to_be_saved = True
+    if at_end:
+      self.state.append((item, size))
+      self._lookup[item] = len(self.state) - 1
+    else:
+      self._lookup_is_stale = True
+      self.state.insert(0, (item, size))
 
-  def _add_oldest_list(self, items):
-    """Adds a bunch of items into LRU cache marking them as oldest ones."""
-    pairs = []
-    for item in items:
-      size = os.stat(self.path(item)).st_size
-      self._added.append(size)
-      pairs.append((item, size))
-    self.lru.batch_insert_oldest(pairs)
-
-  def _delete_file(self, item, size):
-    """Deletes cache file from the file system."""
-    self._removed.append(size)
-    try:
-      os.remove(self.path(item))
-    except OSError as e:
-      logging.error('Error attempting to delete a file\n%s' % e)
+  def _update_lookup(self):
+    if self._lookup_is_stale:
+      self._lookup = dict(
+          (filename, index) for index, (filename, _) in enumerate(self.state))
+      self._lookup_is_stale = False
 
 
 class IsolatedFile(object):
