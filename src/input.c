@@ -46,13 +46,12 @@ static void unbind_resource(struct wl_resource *resource)
 void
 weston_seat_repick(struct weston_seat *seat)
 {
-	const struct weston_pointer_grab_interface *interface;
+	const struct weston_pointer *pointer = seat->pointer;
 
-	if (seat->pointer == NULL)
+	if (pointer == NULL)
 		return;
 
-	interface = seat->pointer->grab->interface;
-	interface->focus(seat->pointer->grab);
+	pointer->grab->interface->focus(seat->pointer->grab);
 }
 
 static void
@@ -531,22 +530,16 @@ WL_EXPORT void
 weston_pointer_start_grab(struct weston_pointer *pointer,
 			  struct weston_pointer_grab *grab)
 {
-	const struct weston_pointer_grab_interface *interface;
-
 	pointer->grab = grab;
-	interface = pointer->grab->interface;
 	grab->pointer = pointer;
-	interface->focus(pointer->grab);
+	pointer->grab->interface->focus(pointer->grab);
 }
 
 WL_EXPORT void
 weston_pointer_end_grab(struct weston_pointer *pointer)
 {
-	const struct weston_pointer_grab_interface *interface;
-
 	pointer->grab = &pointer->default_grab;
-	interface = pointer->grab->interface;
-	interface->focus(pointer->grab);
+	pointer->grab->interface->focus(pointer->grab);
 }
 
 WL_EXPORT void
@@ -637,7 +630,6 @@ WL_EXPORT void
 notify_motion(struct weston_seat *seat,
 	      uint32_t time, wl_fixed_t dx, wl_fixed_t dy)
 {
-	const struct weston_pointer_grab_interface *interface;
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_pointer *pointer = seat->pointer;
 
@@ -645,16 +637,14 @@ notify_motion(struct weston_seat *seat,
 
 	move_pointer(seat, pointer->x + dx, pointer->y + dy);
 
-	interface = pointer->grab->interface;
-	interface->focus(pointer->grab);
-	interface->motion(pointer->grab, time);
+	pointer->grab->interface->focus(pointer->grab);
+	pointer->grab->interface->motion(pointer->grab, time);
 }
 
 WL_EXPORT void
 notify_motion_absolute(struct weston_seat *seat,
 		       uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
-	const struct weston_pointer_grab_interface *interface;
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_pointer *pointer = seat->pointer;
 
@@ -662,9 +652,8 @@ notify_motion_absolute(struct weston_seat *seat,
 
 	move_pointer(seat, x, y);
 
-	interface = pointer->grab->interface;
-	interface->focus(pointer->grab);
-	interface->motion(pointer->grab, time);
+	pointer->grab->interface->focus(pointer->grab);
+	pointer->grab->interface->motion(pointer->grab, time);
 }
 
 WL_EXPORT void
