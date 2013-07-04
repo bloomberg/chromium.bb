@@ -43,9 +43,7 @@ class DeleteTraceLogForTesting {
 // Not supported in split-dll build. http://crbug.com/237249
 #if !defined(CHROME_SPLIT_DLL)
 // The thread buckets for the sampling profiler.
-BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state0;
-BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state1;
-BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state2;
+BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state[3];
 #endif
 
 namespace base {
@@ -948,15 +946,15 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     if (options & ENABLE_SAMPLING) {
       sampling_thread_.reset(new TraceSamplingThread);
       sampling_thread_->RegisterSampleBucket(
-          &g_trace_state0,
+          &g_trace_state[0],
           "bucket0",
           Bind(&TraceSamplingThread::DefaultSampleCallback));
       sampling_thread_->RegisterSampleBucket(
-          &g_trace_state1,
+          &g_trace_state[1],
           "bucket1",
           Bind(&TraceSamplingThread::DefaultSampleCallback));
       sampling_thread_->RegisterSampleBucket(
-          &g_trace_state2,
+          &g_trace_state[2],
           "bucket2",
           Bind(&TraceSamplingThread::DefaultSampleCallback));
       if (!PlatformThread::Create(

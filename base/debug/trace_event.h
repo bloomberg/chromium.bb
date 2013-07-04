@@ -299,10 +299,34 @@
 // want the inconsistency/expense of storing two pointers.
 // |thread_bucket| is [0..2] and is used to statically isolate samples in one
 // thread from others.
-#define TRACE_EVENT_SAMPLE_STATE(thread_bucket, category, name)                \
-  TRACE_EVENT_API_ATOMIC_STORE(                                                \
-      TRACE_EVENT_API_THREAD_BUCKET(thread_bucket),                            \
-      reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(category "\0" name));
+#define TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET( \
+    bucket_number, category, name)                 \
+        trace_event_internal::                     \
+        TraceEventSamplingStateScope<bucket_number>::Set(category "\0" name)
+
+// Returns a current sampling state of the given bucket.
+#define TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(bucket_number) \
+    trace_event_internal::TraceEventSamplingStateScope<bucket_number>::Current()
+
+// Creates a scope of a sampling state of the given bucket.
+//
+// {  // The sampling state is set within this scope.
+//    TRACE_EVENT_SAMPLING_STATE_SCOPE_FOR_BUCKET(0, "category", "name");
+//    ...;
+// }
+#define TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(                   \
+    bucket_number, category, name)                                      \
+    trace_event_internal::TraceEventSamplingStateScope<bucket_number>   \
+        traceEventSamplingScope(category "\0" name);
+
+// Syntactic sugars for the sampling tracing in the main thread.
+#define TRACE_EVENT_SCOPED_SAMPLING_STATE(category, name) \
+    TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(0, category, name)
+#define TRACE_EVENT_GET_SAMPLING_STATE() \
+    TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(0)
+#define TRACE_EVENT_SET_SAMPLING_STATE(category, name) \
+    TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(0, category, name)
+
 
 // Records a single BEGIN event called "name" immediately, with 0, 1 or 2
 // associated arguments. If the category is not enabled, then this
@@ -755,14 +779,15 @@
 // Defines visibility for classes in trace_event.h
 #define TRACE_EVENT_API_CLASS_EXPORT BASE_EXPORT
 
-// Not supported in split-dll build. http://crbug.com/237249
+// Not supported in split-dll build. http://crbug.com/256965
 #if !defined(CHROME_SPLIT_DLL)
 // The thread buckets for the sampling profiler.
-TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state0;
-TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state1;
-TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state2;
+TRACE_EVENT_API_CLASS_EXPORT extern \
+    TRACE_EVENT_API_ATOMIC_WORD g_trace_state[3];
+
 #define TRACE_EVENT_API_THREAD_BUCKET(thread_bucket)                           \
-  g_trace_state##thread_bucket
+    g_trace_state[thread_bucket]
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1438,6 +1463,45 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTrace {
 // when debugging.
 #define TRACE_EVENT_BINARY_EFFICIENT0(category_group, name) \
     INTERNAL_TRACE_EVENT_BINARY_EFFICIENT_ADD_SCOPED(category_group, name)
+
+// TraceEventSamplingStateScope records the current sampling state
+// and sets a new sampling state. When the scope exists, it restores
+// the sampling state having recorded.
+template<size_t BucketNumber>
+class TraceEventSamplingStateScope {
+ public:
+  TraceEventSamplingStateScope(const char* category_and_name) {
+    previous_state_ = TraceEventSamplingStateScope<BucketNumber>::Current();
+    TraceEventSamplingStateScope<BucketNumber>::Set(category_and_name);
+  }
+
+  ~TraceEventSamplingStateScope() {
+    TraceEventSamplingStateScope<BucketNumber>::Set(previous_state_);
+  }
+
+  static inline const char* Current() {
+// Not supported in split-dll build. http://crbug.com/256965
+#if !defined(CHROME_SPLIT_DLL)
+    return reinterpret_cast<const char*>(TRACE_EVENT_API_ATOMIC_LOAD(
+      g_trace_state[BucketNumber]));
+#else
+    return NULL;
+#endif
+  }
+
+  static inline void Set(const char* category_and_name) {
+// Not supported in split-dll build. http://crbug.com/256965
+#if !defined(CHROME_SPLIT_DLL)
+    TRACE_EVENT_API_ATOMIC_STORE(
+      g_trace_state[BucketNumber],
+      reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(
+        const_cast<char*>(category_and_name)));
+#endif
+  }
+
+ private:
+  const char* previous_state_;
+};
 
 }  // namespace trace_event_internal
 

@@ -1788,7 +1788,7 @@ TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
                 "record-continuously,enable-sampling"));
 }
 
-// Not supported in split dll build. http://crbug.com/237249
+// Not supported in split dll build. http://crbug.com/256965
 #if !defined(CHROME_SPLIT_DLL)
 TEST_F(TraceEventTestFixture, TraceSampling) {
   ManualTestSetUp();
@@ -1802,9 +1802,9 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
   WaitableEvent* sampled = new WaitableEvent(false, false);
   TraceLog::GetInstance()->InstallWaitableEventForSamplingTesting(sampled);
 
-  TRACE_EVENT_SAMPLE_STATE(1, "cc", "Stuff");
+  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "cc", "Stuff");
   sampled->Wait();
-  TRACE_EVENT_SAMPLE_STATE(1, "cc", "Things");
+  TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "cc", "Things");
   sampled->Wait();
 
   EndTraceAndFlush();
@@ -1812,6 +1812,46 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
   // Make sure we hit at least once.
   EXPECT_TRUE(FindNamePhase("Stuff", "P"));
   EXPECT_TRUE(FindNamePhase("Things", "P"));
+}
+
+TEST_F(TraceEventTestFixture, TraceSamplingScope) {
+  ManualTestSetUp();
+
+  event_watch_notification_ = 0;
+  TraceLog::GetInstance()->SetEnabled(
+    CategoryFilter("*"),
+    TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
+                      TraceLog::ENABLE_SAMPLING));
+
+  WaitableEvent* sampled = new WaitableEvent(false, false);
+  TraceLog::GetInstance()->InstallWaitableEventForSamplingTesting(sampled);
+
+  TRACE_EVENT_SCOPED_SAMPLING_STATE("AAA", "name");
+  sampled->Wait();
+  {
+    EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "AAA");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("BBB", "name");
+    sampled->Wait();
+    EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "BBB");
+  }
+  sampled->Wait();
+  {
+    EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "AAA");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("CCC", "name");
+    sampled->Wait();
+    EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "CCC");
+  }
+  sampled->Wait();
+  {
+    EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "AAA");
+    TRACE_EVENT_SET_SAMPLING_STATE("DDD", "name");
+    sampled->Wait();
+    EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "DDD");
+  }
+  sampled->Wait();
+  EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "DDD");
+
+  EndTraceAndFlush();
 }
 #endif  // !CHROME_SPLIT_DLL
 

@@ -1099,6 +1099,7 @@ void RenderWidget::DoDeferredUpdateAndSendInputAck() {
 
 void RenderWidget::DoDeferredUpdate() {
   TRACE_EVENT0("renderer", "RenderWidget::DoDeferredUpdate");
+  TRACE_EVENT_SCOPED_SAMPLING_STATE("Chrome", "Paint");
 
   if (!webwidget_)
     return;
