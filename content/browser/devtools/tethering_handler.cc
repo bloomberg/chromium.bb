@@ -191,7 +191,6 @@ class TetheringHandler::BoundSocket {
       return false;
 
     net::IPEndPoint end_point(ip_number, port);
-    socket_->AllowAddressReuse();
     int result = socket_->Listen(end_point, kListenBacklog);
     if (result < 0)
       return false;
@@ -254,8 +253,8 @@ TetheringHandler::TetheringHandler(DevToolsHttpHandlerDelegate* delegate)
 }
 
 TetheringHandler::~TetheringHandler() {
-   STLDeleteContainerPairSecondPointers(bound_sockets_.begin(),
-                                        bound_sockets_.end());
+  STLDeleteContainerPairSecondPointers(bound_sockets_.begin(),
+                                       bound_sockets_.end());
 }
 
 void TetheringHandler::Accepted(int port, const std::string& name) {

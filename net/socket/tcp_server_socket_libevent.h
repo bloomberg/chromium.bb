@@ -26,7 +26,6 @@ class NET_EXPORT_PRIVATE TCPServerSocketLibevent :
   virtual ~TCPServerSocketLibevent();
 
   // net::ServerSocket implementation.
-  virtual void AllowAddressReuse() OVERRIDE;
   virtual int Listen(const net::IPEndPoint& address, int backlog) OVERRIDE;
   virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
   virtual int Accept(scoped_ptr<StreamSocket>* socket,
@@ -47,8 +46,6 @@ class NET_EXPORT_PRIVATE TCPServerSocketLibevent :
 
   scoped_ptr<StreamSocket>* accept_socket_;
   CompletionCallback accept_callback_;
-
-  bool reuse_address_;
 
   BoundNetLog net_log_;
 };

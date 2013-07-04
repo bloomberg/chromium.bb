@@ -45,10 +45,6 @@ class FakeServerSocket : public net::ServerSocket {
     }
   }
 
-  // net::ServerSocket implementation.
-  virtual void AllowAddressReuse() OVERRIDE {
-  }
-
   virtual int Listen(const net::IPEndPoint& address, int backlog) OVERRIDE {
     local_address_ = address;
     listening_ = true;
@@ -113,7 +109,7 @@ class P2PSocketHostTcpServerTest : public testing::Test {
   }
 
   MockIPCSender sender_;
-  FakeServerSocket* socket_; // Owned by |socket_host_|.
+  FakeServerSocket* socket_;  // Owned by |socket_host_|.
   scoped_ptr<P2PSocketHostTcpServer> socket_host_;
 };
 

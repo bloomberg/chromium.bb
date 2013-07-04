@@ -24,11 +24,11 @@
 
 namespace {
 
-static const int kBindRetries = 10;
-static const int kPortStart = 1024;
-static const int kPortEnd = 65535;
+const int kBindRetries = 10;
+const int kPortStart = 1024;
+const int kPortEnd = 65535;
 
-}  // namespace net
+}  // namespace
 
 namespace net {
 
@@ -198,6 +198,7 @@ void UDPSocketWin::Close() {
   UMA_HISTOGRAM_TIMES("Net.UDPSocketWinClose",
                       base::TimeTicks::Now() - start_time);
   socket_ = INVALID_SOCKET;
+  addr_family_ = 0;
 
   core_->Detach();
   core_ = NULL;
@@ -216,7 +217,7 @@ int UDPSocketWin::GetPeerAddress(IPEndPoint* address) const {
       return MapSystemError(WSAGetLastError());
     scoped_ptr<IPEndPoint> address(new IPEndPoint());
     if (!address->FromSockAddr(storage.addr, storage.addr_len))
-      return ERR_FAILED;
+      return ERR_ADDRESS_INVALID;
     remote_address_.reset(address.release());
   }
 
@@ -237,7 +238,7 @@ int UDPSocketWin::GetLocalAddress(IPEndPoint* address) const {
       return MapSystemError(WSAGetLastError());
     scoped_ptr<IPEndPoint> address(new IPEndPoint());
     if (!address->FromSockAddr(storage.addr, storage.addr_len))
-      return ERR_FAILED;
+      return ERR_ADDRESS_INVALID;
     local_address_.reset(address.release());
   }
 
@@ -326,16 +327,22 @@ int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
     rv = RandomBind(address);
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
-  if (rv < 0)
+  if (rv < 0) {
+    Close();
     return rv;
+  }
 
   SockaddrStorage storage;
   if (!address.ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_FAILED;
+    return ERR_ADDRESS_INVALID;
 
   rv = connect(socket_, storage.addr, storage.addr_len);
-  if (rv < 0)
-    return MapSystemError(WSAGetLastError());
+  if (rv < 0) {
+    // Close() may change the last error. Map it beforehand.
+    int result = MapSystemError(WSAGetLastError());
+    Close();
+    return result;
+  }
 
   remote_address_.reset(new IPEndPoint(address));
   return rv;
@@ -347,11 +354,15 @@ int UDPSocketWin::Bind(const IPEndPoint& address) {
   if (rv < 0)
     return rv;
   rv = SetSocketOptions();
-  if (rv < 0)
+  if (rv < 0) {
+    Close();
     return rv;
+  }
   rv = DoBind(address);
-  if (rv < 0)
+  if (rv < 0) {
+    Close();
     return rv;
+  }
   local_address_.reset();
   return rv;
 }
@@ -424,7 +435,7 @@ void UDPSocketWin::DidCompleteRead() {
   // Convert address.
   if (recv_from_address_ && result >= 0) {
     if (!ReceiveAddressToIPEndpoint(recv_from_address_))
-      result = ERR_FAILED;
+      result = ERR_ADDRESS_INVALID;
   }
   LogRead(result, core_->read_iobuffer_->data());
   core_->read_iobuffer_ = NULL;

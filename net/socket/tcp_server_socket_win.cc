@@ -21,7 +21,6 @@ TCPServerSocketWin::TCPServerSocketWin(net::NetLog* net_log,
     : socket_(INVALID_SOCKET),
       socket_event_(WSA_INVALID_EVENT),
       accept_socket_(NULL),
-      reuse_address_(false),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
@@ -31,14 +30,6 @@ TCPServerSocketWin::TCPServerSocketWin(net::NetLog* net_log,
 TCPServerSocketWin::~TCPServerSocketWin() {
   Close();
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
-}
-
-void TCPServerSocketWin::AllowAddressReuse() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(socket_, INVALID_SOCKET);
-  DCHECK_EQ(socket_event_, WSA_INVALID_EVENT);
-
-  reuse_address_ = true;
 }
 
 int TCPServerSocketWin::Listen(const IPEndPoint& address, int backlog) {
@@ -66,12 +57,16 @@ int TCPServerSocketWin::Listen(const IPEndPoint& address, int backlog) {
   }
 
   int result = SetSocketOptions();
-  if (result != OK)
+  if (result != OK) {
+    Close();
     return result;
+  }
 
   SockaddrStorage storage;
-  if (!address.ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_INVALID_ARGUMENT;
+  if (!address.ToSockAddr(storage.addr, &storage.addr_len)) {
+    Close();
+    return ERR_ADDRESS_INVALID;
+  }
 
   result = bind(socket_, storage.addr, storage.addr_len);
   if (result < 0) {
@@ -129,14 +124,28 @@ int TCPServerSocketWin::Accept(
 }
 
 int TCPServerSocketWin::SetSocketOptions() {
+  // On Windows, a bound end point can be hijacked by another process by
+  // setting SO_REUSEADDR. Therefore a Windows-only option SO_EXCLUSIVEADDRUSE
+  // was introduced in Windows NT 4.0 SP4. If the socket that is bound to the
+  // end point has SO_EXCLUSIVEADDRUSE enabled, it is not possible for another
+  // socket to forcibly bind to the end point until the end point is unbound.
+  // It is recommend that all server applications must use SO_EXCLUSIVEADDRUSE.
+  // MSDN: http://goo.gl/M6fjQ.
+  //
+  // Unlike on *nix, on Windows a TCP server socket can always bind to an end
+  // point in TIME_WAIT state without setting SO_REUSEADDR, therefore it is not
+  // needed here.
+  //
+  // SO_EXCLUSIVEADDRUSE will prevent a TCP client socket from binding to an end
+  // point in TIME_WAIT status. It does not have this effect for a TCP server
+  // socket.
+
   BOOL true_value = 1;
-  if (reuse_address_) {
-    int rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
-                        reinterpret_cast<const char*>(&true_value),
-                        sizeof(true_value));
-    if (rv < 0)
-      return MapSystemError(errno);
-  }
+  int rv = setsockopt(socket_, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+                      reinterpret_cast<const char*>(&true_value),
+                      sizeof(true_value));
+  if (rv < 0)
+    return MapSystemError(errno);
   return OK;
 }
 

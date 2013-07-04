@@ -184,7 +184,6 @@ int TCPSocket::Listen(const std::string& address, int port, int backlog,
   if (!server_socket_.get()) {
     server_socket_.reset(new net::TCPServerSocket(NULL,
                                                   net::NetLog::Source()));
-    server_socket_->AllowAddressReuse();
   }
   int result = server_socket_->Listen(*bind_address, backlog);
   if (result)

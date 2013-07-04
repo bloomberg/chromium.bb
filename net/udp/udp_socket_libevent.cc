@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -21,17 +22,14 @@
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/udp/udp_net_log_parameters.h"
-#if defined(OS_POSIX)
-#include <netinet/in.h>
-#endif
 
 namespace {
 
-static const int kBindRetries = 10;
-static const int kPortStart = 1024;
-static const int kPortEnd = 65535;
+const int kBindRetries = 10;
+const int kPortStart = 1024;
+const int kPortEnd = 65535;
 
-}  // namespace net
+}  // namespace
 
 namespace net {
 
@@ -88,6 +86,7 @@ void UDPSocketLibevent::Close() {
     PLOG(ERROR) << "close";
 
   socket_ = kInvalidSocket;
+  addr_family_ = 0;
 }
 
 int UDPSocketLibevent::GetPeerAddress(IPEndPoint* address) const {
@@ -235,16 +234,24 @@ int UDPSocketLibevent::InternalConnect(const IPEndPoint& address) {
     rv = RandomBind(address);
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
-  if (rv < 0)
+  if (rv < 0) {
+    Close();
     return rv;
+  }
 
   SockaddrStorage storage;
-  if (!address.ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_FAILED;
+  if (!address.ToSockAddr(storage.addr, &storage.addr_len)) {
+    Close();
+    return ERR_ADDRESS_INVALID;
+  }
 
   rv = HANDLE_EINTR(connect(socket_, storage.addr, storage.addr_len));
-  if (rv < 0)
-    return MapSystemError(errno);
+  if (rv < 0) {
+    // Close() may change the current errno. Map errno beforehand.
+    int result = MapSystemError(errno);
+    Close();
+    return result;
+  }
 
   remote_address_.reset(new IPEndPoint(address));
   return rv;
@@ -256,12 +263,17 @@ int UDPSocketLibevent::Bind(const IPEndPoint& address) {
   int rv = CreateSocket(address);
   if (rv < 0)
     return rv;
+
   rv = SetSocketOptions();
-  if (rv < 0)
+  if (rv < 0) {
+    Close();
     return rv;
+  }
   rv = DoBind(address);
-  if (rv < 0)
+  if (rv < 0) {
+    Close();
     return rv;
+  }
   local_address_.reset();
   return rv;
 }

@@ -35,7 +35,6 @@ TCPServerSocketLibevent::TCPServerSocketLibevent(
     const net::NetLog::Source& source)
     : socket_(kInvalidSocket),
       accept_socket_(NULL),
-      reuse_address_(false),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
@@ -45,13 +44,6 @@ TCPServerSocketLibevent::~TCPServerSocketLibevent() {
   if (socket_ != kInvalidSocket)
     Close();
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
-}
-
-void TCPServerSocketLibevent::AllowAddressReuse() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(socket_, kInvalidSocket);
-
-  reuse_address_ = true;
 }
 
 int TCPServerSocketLibevent::Listen(const IPEndPoint& address, int backlog) {
@@ -72,12 +64,16 @@ int TCPServerSocketLibevent::Listen(const IPEndPoint& address, int backlog) {
   }
 
   int result = SetSocketOptions();
-  if (result != OK)
+  if (result != OK) {
+    Close();
     return result;
+  }
 
   SockaddrStorage storage;
-  if (!address.ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_INVALID_ARGUMENT;
+  if (!address.ToSockAddr(storage.addr, &storage.addr_len)) {
+    Close();
+    return ERR_ADDRESS_INVALID;
+  }
 
   result = bind(socket_, storage.addr, storage.addr_len);
   if (result < 0) {
@@ -138,13 +134,24 @@ int TCPServerSocketLibevent::Accept(
 }
 
 int TCPServerSocketLibevent::SetSocketOptions() {
+  // SO_REUSEADDR is useful for server sockets to bind to a recently unbound
+  // port. When a socket is closed, the end point changes its state to TIME_WAIT
+  // and wait for 2 MSL (maximum segment lifetime) to ensure the remote peer
+  // acknowledges its closure. For server sockets, it is usually safe to
+  // bind to a TIME_WAIT end point immediately, which is a widely adopted
+  // behavior.
+  //
+  // Note that on *nix, SO_REUSEADDR does not enable the TCP socket to bind to
+  // an end point that is already bound by another socket. To do that one must
+  // set SO_REUSEPORT instead. This option is not provided on Linux prior
+  // to 3.9.
+  //
+  // SO_REUSEPORT is provided in MacOS X and iOS.
   int true_value = 1;
-  if (reuse_address_) {
-    int rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &true_value,
-                        sizeof(true_value));
-    if (rv < 0)
-      return MapSystemError(errno);
-  }
+  int rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &true_value,
+                      sizeof(true_value));
+  if (rv < 0)
+    return MapSystemError(errno);
   return OK;
 }
 
