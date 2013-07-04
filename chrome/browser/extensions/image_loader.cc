@@ -4,9 +4,13 @@
 
 #include "chrome/browser/extensions/image_loader.h"
 
+#include <map>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -23,7 +27,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(USE_AURA)
-#include "grit/keyboard_resources.h"
+#include "ui/keyboard/keyboard_util.h"
 #endif
 
 using content::BrowserThread;
@@ -94,6 +98,23 @@ void LoadImageOnBlockingPool(const ImageLoader::ImageRepresentation& image_info,
   gfx::PNGCodec::Decode(data, file_contents.length(), bitmap);
 }
 
+// Add the resources from |entries| (there are |size| of them) to
+// |path_to_resource_id| after normalizing separators.
+void AddComponentResourceEntries(
+    std::map<base::FilePath, int>* path_to_resource_id,
+    const GritResourceMap* entries,
+    size_t size) {
+  for (size_t i = 0; i < size; ++i) {
+    base::FilePath resource_path = base::FilePath().AppendASCII(
+        entries[i].name);
+    resource_path = resource_path.NormalizePathSeparators();
+
+    DCHECK(path_to_resource_id->find(resource_path) ==
+        path_to_resource_id->end());
+    (*path_to_resource_id)[resource_path] = entries[i].value;
+  }
+}
+
 }  // namespace
 
 namespace extensions {
@@ -156,6 +177,11 @@ ImageLoader* ImageLoader::Get(Profile* profile) {
   return ImageLoaderFactory::GetForProfile(profile);
 }
 
+// A map from a resource path to the resource ID.  Used only by
+// IsComponentExtensionResource below.
+static base::LazyInstance<std::map<base::FilePath, int> > path_to_resource_id =
+    LAZY_INSTANCE_INITIALIZER;
+
 // static
 bool ImageLoader::IsComponentExtensionResource(
     const base::FilePath& extension_path,
@@ -172,30 +198,27 @@ bool ImageLoader::IsComponentExtensionResource(
     {"settings_app/settings_app_icon_32.png", IDR_SETTINGS_APP_ICON_32},
     {"settings_app/settings_app_icon_48.png", IDR_SETTINGS_APP_ICON_48},
 #endif
-#if defined(USE_AURA)
-    {"keyboard/api_adapter.js", IDR_KEYBOARD_API_ADAPTER_JS},
-    {"keyboard/constants.js", IDR_KEYBOARD_CONSTANTS_JS},
-    {"keyboard/elements/kb-accent-container.html",
-        IDR_KEYBOARD_ELEMENTS_ACCENT_CONTAINER},
-    {"keyboard/elements/kb-accent-key.html", IDR_KEYBOARD_ELEMENTS_ACCENT_KEY},
-    {"keyboard/elements/kb-accent-set.html", IDR_KEYBOARD_ELEMENTS_ACCENT_SET},
-    {"keyboard/elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY},
-    {"keyboard/elements/kb-keyboard.html", IDR_KEYBOARD_ELEMENTS_KEYBOARD},
-    {"keyboard/elements/kb-keyset.html", IDR_KEYBOARD_ELEMENTS_KEYSET},
-    {"keyboard/elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW},
-    {"keyboard/images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD},
-    {"keyboard/images/mic.svg", IDR_KEYBOARD_IMAGES_MIC},
-    {"keyboard/images/mic-green.svg", IDR_KEYBOARD_IMAGES_MIC_GREEN},
-    {"keyboard/index.html", IDR_KEYBOARD_INDEX},
-    {"keyboard/keysets.html", IDR_KEYBOARD_KEYSETS},
-    {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
-    {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
-    {"keyboard/polymer.min.js", IDR_KEYBOARD_POLYMER},
-    {"keyboard/voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS},
-#endif
   };
-  static const size_t kExtraComponentExtensionResourcesSize =
-      arraysize(kExtraComponentExtensionResources);
+
+  if (path_to_resource_id.Get().empty()) {
+    AddComponentResourceEntries(
+        path_to_resource_id.Pointer(),
+        kComponentExtensionResources,
+        kComponentExtensionResourcesSize);
+    AddComponentResourceEntries(
+        path_to_resource_id.Pointer(),
+        kExtraComponentExtensionResources,
+        arraysize(kExtraComponentExtensionResources));
+#if defined(USE_AURA)
+    if (keyboard::IsKeyboardEnabled()) {
+      size_t size;
+      const GritResourceMap* keyboard_resources =
+          keyboard::GetKeyboardExtensionResources(&size);
+      AddComponentResourceEntries(
+          path_to_resource_id.Pointer(), keyboard_resources, size);
+    }
+#endif
+  }
 
   base::FilePath directory_path = extension_path;
   base::FilePath resources_dir;
@@ -207,30 +230,12 @@ bool ImageLoader::IsComponentExtensionResource(
   relative_path = relative_path.Append(resource_path);
   relative_path = relative_path.NormalizePathSeparators();
 
-  // TODO(tc): Make a map of base::FilePath -> resource ids so we don't have to
-  // covert to FilePaths all the time.  This will be more useful as we add
-  // more resources.
-  for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
-    base::FilePath resource_path =
-        base::FilePath().AppendASCII(kComponentExtensionResources[i].name);
-    resource_path = resource_path.NormalizePathSeparators();
+  std::map<base::FilePath, int>::const_iterator entry =
+      path_to_resource_id.Get().find(relative_path);
+  if (entry != path_to_resource_id.Get().end())
+    *resource_id = entry->second;
 
-    if (relative_path == resource_path) {
-      *resource_id = kComponentExtensionResources[i].value;
-      return true;
-    }
-  }
-  for (size_t i = 0; i < kExtraComponentExtensionResourcesSize; ++i) {
-    base::FilePath resource_path =
-        base::FilePath().AppendASCII(kExtraComponentExtensionResources[i].name);
-    resource_path = resource_path.NormalizePathSeparators();
-
-    if (relative_path == resource_path) {
-      *resource_id = kExtraComponentExtensionResources[i].value;
-      return true;
-    }
-  }
-  return false;
+  return entry != path_to_resource_id.Get().end();
 }
 
 void ImageLoader::LoadImageAsync(
