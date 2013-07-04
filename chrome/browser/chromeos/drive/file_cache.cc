@@ -496,7 +496,7 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
   FileCacheEntry cache_entry;
-  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
+  if (!GetCacheEntry(resource_id, md5, &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
@@ -508,17 +508,16 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
     return FILE_ERROR_OK;
 
   // Get the current path of the file in cache.
-  base::FilePath source_path = GetCacheFilePath(resource_id, md5,
+  base::FilePath source_path = GetCacheFilePath(resource_id, cache_entry.md5(),
                                                 CACHED_FILE_FROM_SERVER);
   // Determine destination path.
   base::FilePath cache_file_path = GetCacheFilePath(
-      resource_id, md5, CACHED_FILE_LOCALLY_MODIFIED);
+      resource_id, cache_entry.md5(), CACHED_FILE_LOCALLY_MODIFIED);
 
   if (!MoveFile(source_path, cache_file_path))
     return FILE_ERROR_FAILED;
 
   // Now that file operations have completed, update metadata.
-  cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(true);
   storage_->PutCacheEntry(resource_id, cache_entry);
   return FILE_ERROR_OK;
