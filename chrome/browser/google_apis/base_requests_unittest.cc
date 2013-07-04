@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -50,7 +50,7 @@ class BaseRequestsTest : public testing::Test {
     sender_->Initialize();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> sender_;
 };

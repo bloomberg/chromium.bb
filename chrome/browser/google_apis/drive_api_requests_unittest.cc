@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -16,8 +17,6 @@
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -49,17 +48,14 @@ const char kTestDownloadPathPrefix[] = "/download/";
 class DriveApiRequestsTest : public testing::Test {
  public:
   DriveApiRequestsTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        test_server_(content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO)) {
+      : test_server_(message_loop_.message_loop_proxy()) {
   }
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
 
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO));
+        message_loop_.message_loop_proxy());
 
     request_sender_.reset(new RequestSender(profile_.get(),
                                             request_context_getter_.get(),
@@ -100,7 +96,7 @@ class DriveApiRequestsTest : public testing::Test {
     content_length_ = 0;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> request_sender_;

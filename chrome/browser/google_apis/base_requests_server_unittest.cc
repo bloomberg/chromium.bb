@@ -7,14 +7,13 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -33,17 +32,14 @@ const char kTestUserAgent[] = "test-user-agent";
 class BaseRequestsServerTest : public testing::Test {
  protected:
   BaseRequestsServerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        test_server_(content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO)) {
+      : test_server_(message_loop_.message_loop_proxy()) {
   }
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
 
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO));
+        message_loop_.message_loop_proxy());
 
     request_sender_.reset(new RequestSender(profile_.get(),
                                             request_context_getter_.get(),
@@ -64,7 +60,7 @@ class BaseRequestsServerTest : public testing::Test {
     return profile_->GetPath().Append(file_name);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> request_sender_;
