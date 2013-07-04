@@ -518,6 +518,63 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(new_browser->window()->IsMaximized());
 }
 
+// Drags from browser to separate window and releases mouse.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DetachToOwnWindowFromMaximizedWindow) {
+  if (!TabDragController::ShouldDetachIntoNewBrowser()) {
+    VLOG(1)
+        << "Skipping DetachToOwnWindowFromMaximizedWindow on this platform.";
+    return;
+  }
+
+  // Maximize the initial browser window.
+  browser()->window()->Maximize();
+  ASSERT_TRUE(browser()->window()->IsMaximized());
+
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Move to the first tab and drag it enough so that it detaches.
+  gfx::Point tab_0_center(
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+                  tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+                  base::Bind(&DetachToOwnWindowStep2, this)));
+  if (input_source() == INPUT_SOURCE_MOUSE) {
+    ASSERT_TRUE(ReleaseMouseAsync());
+    QuitWhenNotDragging();
+  }
+
+  // Should no longer be dragging.
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+
+  // There should now be another browser.
+  ASSERT_EQ(2u, native_browser_list->size());
+  Browser* new_browser = native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+  TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
+  ASSERT_FALSE(tab_strip2->IsDragSessionActive());
+
+  EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  // The bounds of the initial window should not have changed.
+  EXPECT_TRUE(browser()->window()->IsMaximized());
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
+  EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
+  // After this both windows should still be managable.
+  EXPECT_TRUE(IsWindowPositionManaged(browser()->window()->GetNativeWindow()));
+  EXPECT_TRUE(IsWindowPositionManaged(
+      new_browser->window()->GetNativeWindow()));
+
+  // The new window should not be maximized.
+  EXPECT_FALSE(new_browser->window()->IsMaximized());
+}
+
 // Deletes a tab being dragged before the user moved enough to start a drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DeleteBeforeStartedDragging) {
@@ -1079,9 +1136,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_TRUE(GetTrackedByWorkspace(browser()));
   EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
 
-  // Both windows should be maximized
+  // The source window should be maximized, but the new window should now
+  // be restored.
   EXPECT_TRUE(browser()->window()->IsMaximized());
-  EXPECT_TRUE(new_browser->window()->IsMaximized());
+  EXPECT_FALSE(new_browser->window()->IsMaximized());
 }
 
 // Subclass of DetachToBrowserInSeparateDisplayTabDragControllerTest that

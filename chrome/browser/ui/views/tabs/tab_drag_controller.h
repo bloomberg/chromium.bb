@@ -113,6 +113,10 @@ class TabDragController : public content::WebContentsDelegate,
   // Returns true if there is a drag underway.
   static bool IsActive();
 
+  // Used to determine whether the tab drag controller detaches dragged tabs
+  // into new browser windows while the drag is in process.
+  static bool ShouldDetachIntoNewBrowser();
+
   // Sets the move behavior. Has no effect if started_drag() is true.
   void SetMoveBehavior(MoveBehavior behavior);
   MoveBehavior move_behavior() const { return move_behavior_; }

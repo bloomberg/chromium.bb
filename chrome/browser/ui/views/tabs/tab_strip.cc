@@ -2505,8 +2505,18 @@ int TabStrip::GenerateIdealBoundsForMiniTabs(int* first_non_mini_index) {
   return next_x;
 }
 
-int TabStrip::new_tab_button_width() const {
+// static
+int TabStrip::new_tab_button_width() {
   return newtab_button_asset_width() + newtab_button_h_offset();
+}
+
+// static
+int TabStrip::button_v_offset() {
+  return newtab_button_v_offset();
+}
+
+int TabStrip::tab_area_width() const {
+  return width() - new_tab_button_width();
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
