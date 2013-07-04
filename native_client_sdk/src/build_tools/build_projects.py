@@ -37,7 +37,6 @@ VALID_TOOLCHAINS = ['newlib', 'glibc', 'pnacl', 'win', 'linux', 'mac']
 verbose = False
 
 
-
 def CopyFilesFromTo(filelist, srcdir, dstdir):
   for filename in filelist:
     srcpath = os.path.join(srcdir, filename)
@@ -150,9 +149,9 @@ def UpdateProjects(pepperdir, project_tree, toolchains,
                                        targets)
 
 
-def BuildProjectsBranch(pepperdir, branch, deps, clean, config):
+def BuildProjectsBranch(pepperdir, branch, deps, clean, config, args=None):
   make_dir = os.path.join(pepperdir, branch)
-  print "\n\nMake: " + make_dir
+  print "\nMake: " + make_dir
 
   if getos.GetPlatform() == 'win':
     # We need to modify the environment to build host on Windows.
@@ -173,7 +172,7 @@ def BuildProjectsBranch(pepperdir, branch, deps, clean, config):
   else:
     jobs = str(multiprocessing.cpu_count())
 
-  make_cmd = [make, '-j', jobs, 'TOOLCHAIN=all']
+  make_cmd = [make, '-j', jobs]
 
   make_cmd.append('CONFIG='+config)
   if not deps:
@@ -181,6 +180,11 @@ def BuildProjectsBranch(pepperdir, branch, deps, clean, config):
 
   if verbose:
     make_cmd.append('V=1')
+
+  if args:
+    make_cmd += args
+  else:
+    make_cmd.append('TOOLCHAIN=all')
 
   buildbot_common.Run(make_cmd, cwd=make_dir, env=env)
   if clean:
@@ -260,7 +264,10 @@ def main(args):
     filters['NAME'] = options.project
     print 'Filter by name: ' + str(options.project)
 
-  project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+  try:
+    project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+  except parse_dsc.ValidationError as e:
+    buildbot_common.ErrorExit(str(e))
   parse_dsc.PrintProjectTree(project_tree)
 
   UpdateHelpers(pepperdir, clobber=options.clobber)

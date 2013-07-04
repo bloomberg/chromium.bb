@@ -96,7 +96,11 @@ var common = (function () {
    * This event listener is registered in attachDefaultListeners above.
    */
   function handleCrash(event) {
-    updateStatus('CRASHED')
+    if (common.naclModule.exitStatus == -1) {
+      updateStatus('CRASHED')
+    } else {
+      updateStatus('EXITED [' + common.naclModule.exitStatus + ']')
+    }
     if (typeof window.handleCrash !== 'undefined') {
       window.handleCrash(common.naclModule.lastError);
     }
@@ -109,7 +113,7 @@ var common = (function () {
    */
   function moduleDidLoad() {
     common.naclModule = document.getElementById('nacl_module');
-    updateStatus('SUCCESS');
+    updateStatus('RUNNING');
 
     if (typeof window.moduleDidLoad !== 'undefined') {
       window.moduleDidLoad();

@@ -343,7 +343,7 @@ void MountHttpNodeTest::TearDown() {
   delete mnt_;
 }
 
-TEST_F(MountHttpNodeTest, OpenAndCloseNoCache) {
+TEST_F(MountHttpNodeTest, DISABLED_OpenAndCloseNoCache) {
   StringMap_t smap;
   smap["cache_content"] = "false";
   SetMountArgs(StringMap_t());
@@ -387,7 +387,7 @@ TEST_F(MountHttpNodeTest, GetStat) {
   EXPECT_EQ(42, stat.st_size);
 }
 
-TEST_F(MountHttpNodeTest, Access) {
+TEST_F(MountHttpNodeTest, DISABLED_Access) {
   StringMap_t smap;
   smap["cache_content"] = "false";
   SetMountArgs(StringMap_t());
@@ -397,7 +397,7 @@ TEST_F(MountHttpNodeTest, Access) {
   ASSERT_EQ(0, mnt_->Access(Path(path_), R_OK));
 }
 
-TEST_F(MountHttpNodeTest, AccessWrite) {
+TEST_F(MountHttpNodeTest, DISABLED_AccessWrite) {
   StringMap_t smap;
   smap["cache_content"] = "false";
   SetMountArgs(StringMap_t());
@@ -452,7 +452,7 @@ TEST_F(MountHttpNodeTest, ReadCached) {
   EXPECT_EQ(42, result_size);
 }
 
-TEST_F(MountHttpNodeTest, ReadCachedNoContentLength) {
+TEST_F(MountHttpNodeTest, DISABLED_ReadCachedNoContentLength) {
   size_t result_size = 0;
   int result_bytes = 0;
 

@@ -255,7 +255,8 @@ TEST(MountTest, DevZero) {
   EXPECT_EQ(0, memcmp(&buffer[0], &zero_buffer[0], kBufferLength));
 }
 
-TEST(MountTest, DevUrandom) {
+// Disabled due to intermittent failures on linux: http://crbug.com/257257
+TEST(MountTest, DISABLED_DevUrandom) {
   MountDevMock* mnt = new MountDevMock();
   ScopedMountNode dev_urandom;
   int result_bytes = 0;

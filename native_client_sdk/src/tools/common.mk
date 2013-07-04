@@ -27,8 +27,8 @@ TOP_MAKE := $(word 1,$(MAKEFILE_LIST))
 #
 # Figure out which OS we are running on.
 #
-GETOS = python $(NACL_SDK_ROOT)/tools/getos.py
-FIXDEPS = python $(NACL_SDK_ROOT)/tools/fix_deps.py
+GETOS := python $(NACL_SDK_ROOT)/tools/getos.py
+FIXDEPS := python $(NACL_SDK_ROOT)/tools/fix_deps.py
 OSNAME := $(shell $(GETOS))
 
 
@@ -212,7 +212,11 @@ install:
 
 
 OUTBASE ?= .
+ifdef SEL_LDR
+OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/sel_ldr_$(CONFIG)
+else
 OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/$(CONFIG)
+endif
 STAMPDIR ?= $(OUTDIR)
 LIBDIR ?= $(NACL_SDK_ROOT)/lib
 
@@ -284,6 +288,10 @@ ifeq ($(CONFIG),Release)
 POSIX_FLAGS ?= -g -O2 -pthread -MMD
 else
 POSIX_FLAGS ?= -g -O0 -pthread -MMD -DNACL_SDK_DEBUG
+endif
+
+ifdef SEL_LDR
+POSIX_FLAGS += -DSEL_LDR=1
 endif
 
 NACL_CFLAGS ?= -Wno-long-long -Werror
@@ -420,6 +428,22 @@ PPAPI_DEBUG = $(abspath $(OSNAME)/Debug/$(TARGET)$(HOST_EXT));application/x-ppap
 PPAPI_RELEASE = $(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-ppapi-release
 
 
+SYSARCH := $(shell $(GETOS) --nacl-arch)
+SEL_LDR_PATH := python $(NACL_SDK_ROOT)/tools/sel_ldr.py
+
+ifdef SEL_LDR
+run: all
+ifndef NACL_ARCH
+	$(error Cannot run in sel_ldr unless \$NACL_ARCH is set)
+endif
+	$(SEL_LDR_PATH) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+
+debug: all
+ifndef NACL_ARCH
+	$(error Cannot run in sel_ldr unless \$NACL_ARCH is set)
+endif
+	$(SEL_LDR_PATH) -d $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+else
 PAGE ?= index.html
 PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 
@@ -434,7 +458,6 @@ run_package: check_for_chrome all
 	$(CHROME_PATH) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
 
 
-SYSARCH = $(shell $(GETOS) --nacl-arch)
 GDB_ARGS += -D $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/$(SYSARCH)-nacl-gdb
 GDB_ARGS += -D $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe
 
@@ -445,6 +468,7 @@ debug: check_for_chrome all $(PAGE)
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
 	    --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
+endif
 
 
 # uppercase aliases (for backward compatibility)

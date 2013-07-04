@@ -1,5 +1,6 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
+  'SEL_LDR': True,
 
   # Need to add ../../examples for common.js
   'SEARCH': ['.', '../../examples'],

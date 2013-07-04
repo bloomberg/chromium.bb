@@ -668,9 +668,10 @@ def BuildStepUpdateUserProjects(pepperdir, toolchains,
 
 
 def BuildStepMakeAll(pepperdir, directory, step_name,
-                     deps=True, clean=False, config='Debug'):
+                     deps=True, clean=False, config='Debug', args=None):
   buildbot_common.BuildStep(step_name)
-  build_projects.BuildProjectsBranch(pepperdir, directory, clean, deps, config)
+  build_projects.BuildProjectsBranch(pepperdir, directory, clean,
+                                     deps, config, args)
 
 
 def BuildStepBuildLibraries(pepperdir, directory):

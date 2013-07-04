@@ -22,6 +22,7 @@ TEST_MODULES = [
     'oshelpers_test',
     'parse_dsc_test',
     'sdktools_test',
+    'sel_ldr_test',
     'sdktools_commands_test',
     'sdktools_config_test',
     'update_nacl_manifest_test',

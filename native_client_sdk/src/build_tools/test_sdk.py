@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Script for a testing an existing SDK.
+
+This script is normally run immediately after build_sdk.py.
+"""
 
 import optparse
 import os
@@ -25,14 +29,14 @@ sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
 
-def BuildStepBuildExamples(pepperdir):
+def StepBuildExamples(pepperdir):
   for config in ('Debug', 'Release'):
     build_sdk.BuildStepMakeAll(pepperdir, 'examples',
                                'Build Examples (%s)' % config,
                                deps=False, config=config)
 
 
-def BuildStepCopyTests(pepperdir, toolchains, build_experimental):
+def StepCopyTests(pepperdir, toolchains, build_experimental):
   buildbot_common.BuildStep('Copy Tests')
 
   # Update test libraries and test apps
@@ -48,18 +52,55 @@ def BuildStepCopyTests(pepperdir, toolchains, build_experimental):
                                 toolchains=toolchains)
 
 
-def BuildStepBuildTests(pepperdir):
+def StepBuildTests(pepperdir):
   for config in ('Debug', 'Release'):
     build_sdk.BuildStepMakeAll(pepperdir, 'testlibs',
-                               'Build Test Libraries (%s)' % config,
-                               config=config)
+                                   'Build Test Libraries (%s)' % config,
+                                   config=config)
     build_sdk.BuildStepMakeAll(pepperdir, 'tests',
-                               'Build Tests (%s)' % config,
-                               deps=False, config=config)
+                                   'Build Tests (%s)' % config,
+                                   deps=False, config=config)
+
+
+def RunSelLdrTests(pepperdir):
+  filters = {
+    'SEL_LDR': True
+  }
+
+  tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+
+  def RunTest(test, toolchain, arch, config):
+    args = ['TOOLCHAIN=%s' % toolchain, 'NACL_ARCH=%s' % arch]
+    args += ['SEL_LDR=1', 'run']
+    build_projects.BuildProjectsBranch(pepperdir, test, clean=False,
+                                       deps=False, config=config,
+                                       args=args)
+
+  if getos.GetPlatform() == 'win':
+    # On win32 we only support running on the system
+    # arch
+    archs = (getos.GetSystemArch('win'),)
+  elif getos.GetPlatform() == 'mac':
+    # We only ship 32-bit version of sel_ldr on mac.
+    archs = ('x86_32',)
+  else:
+    # On linux we can run both 32 and 64-bit
+    archs = ('x86_64', 'x86_32')
+
+  for root, projects in tree.iteritems():
+    for project in projects:
+      title = 'sel_ldr tests: %s' % os.path.basename(project['NAME'])
+      location = os.path.join(root, project['NAME'])
+      buildbot_common.BuildStep(title)
+      for toolchain in ('newlib', 'glibc'):
+        for arch in archs:
+          for config in ('Debug', 'Release'):
+            RunTest(location, toolchain, arch, config)
 
 
 def main(args):
-  parser = optparse.OptionParser()
+  usage = '%prog [<options>] [<phase...>]'
+  parser = optparse.OptionParser(description=__doc__, usage=usage)
   parser.add_option('--experimental', help='build experimental tests',
                     action='store_true')
   parser.add_option('--verbose', help='Verbose output', action='store_true')
@@ -79,9 +120,30 @@ def main(args):
   if options.verbose:
     build_projects.verbose = True
 
-  BuildStepBuildExamples(pepperdir)
-  BuildStepCopyTests(pepperdir, toolchains, options.experimental)
-  BuildStepBuildTests(pepperdir)
+  phases = [
+    ('build_examples', StepBuildExamples, pepperdir),
+    ('copy_tests', StepCopyTests, pepperdir, toolchains, options.experimental),
+    ('build_tests', StepBuildTests, pepperdir),
+    ('sel_ldr_tests', RunSelLdrTests, pepperdir)
+  ]
+
+  if args:
+    phase_names = [p[0] for p in phases]
+    for arg in args:
+      if arg not in phase_names:
+        msg = 'Invalid argument: %s\n' % arg
+        msg += 'Possible arguments:\n'
+        for name in phase_names:
+          msg += '   %s\n' % name
+        parser.error(msg.strip())
+
+  for phase in phases:
+    phase_name = phase[0]
+    if args and phase_name not in args:
+      continue
+    phase_func = phase[1]
+    phase_args = phase[2:]
+    phase_func(*phase_args)
 
   return 0
 

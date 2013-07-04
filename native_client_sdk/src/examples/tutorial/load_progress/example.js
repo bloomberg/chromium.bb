@@ -64,7 +64,7 @@ function moduleLoadAbort() {
 // When the NaCl module has loaded indicate success.
 function moduleDidLoad() {
   common.logMessage('load\n');
-  common.updateStatus('SUCCESS');
+  common.updateStatus('LOADED');
 }
 
 // Handler that gets called when the NaCl module loading has completed.

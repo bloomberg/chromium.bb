@@ -1095,5 +1095,6 @@ tools/oshelpers.py
 tools/oshelpers.pyc
 tools/quote.py
 tools/run.py
+tools/sel_ldr.py
 tools/sel_ldr_x86_32${EXE_EXT}
 [linux,win]tools/sel_ldr_x86_64${EXE_EXT}

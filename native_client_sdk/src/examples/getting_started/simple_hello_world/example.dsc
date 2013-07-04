@@ -1,5 +1,6 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'SEL_LDR': True,
   'TARGETS': [
     {
       'NAME' : 'simple_hello_world',
