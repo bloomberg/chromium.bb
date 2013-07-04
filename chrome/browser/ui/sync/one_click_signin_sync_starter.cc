@@ -313,7 +313,6 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
 void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
     StartSyncMode response) {
   if (response == UNDO_SYNC) {
-    CancelSigninAndDelete();
     // If this was not an interstitial signin, (i.e. it was a SAML signin)
     // then the browser page is now blank and should redirect to the NTP.
     if (source_ != SyncPromoUI::SOURCE_UNKNOWN) {
@@ -324,6 +323,7 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
       params.window_action = chrome::NavigateParams::SHOW_WINDOW;
       chrome::Navigate(&params);
     }
+    CancelSigninAndDelete();  // This statement frees this object.
   } else {
     // If the user clicked the "Advanced" link in the confirmation dialog, then
     // override the current start_mode_ to bring up the advanced sync settings.
