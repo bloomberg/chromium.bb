@@ -6,6 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -195,13 +196,22 @@ TEST(ProcMapsTest, ReadProcMaps) {
   uintptr_t address = reinterpret_cast<uintptr_t>(&proc_maps);
   bool found_exe = false;
   bool found_stack = false;
+  bool found_address = false;
   for (size_t i = 0; i < regions.size(); ++i) {
     if (regions[i].path == exe_path.value()) {
+      // It's OK to find the executable mapped multiple times as there'll be
+      // multiple sections (e.g., text, data).
       found_exe = true;
     }
 
-    if (address >= regions[i].start && address < regions[i].end) {
-      EXPECT_EQ("[stack]", regions[i].path);
+    if (regions[i].path == "[stack]") {
+      // Only check if |address| lies within the real stack when not running
+      // Valgrind, otherwise |address| will be on a stack that Valgrind creates.
+      if (!RunningOnValgrind()) {
+        EXPECT_GE(address, regions[i].start);
+        EXPECT_LT(address, regions[i].end);
+      }
+
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::READ);
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::WRITE);
       EXPECT_FALSE(regions[i].permissions & MappedMemoryRegion::EXECUTE);
@@ -209,10 +219,16 @@ TEST(ProcMapsTest, ReadProcMaps) {
       EXPECT_FALSE(found_stack) << "Found duplicate stacks";
       found_stack = true;
     }
+
+    if (address >= regions[i].start && address < regions[i].end) {
+      EXPECT_FALSE(found_address) << "Found same address in multiple regions";
+      found_address = true;
+    }
   }
 
   EXPECT_TRUE(found_exe);
   EXPECT_TRUE(found_stack);
+  EXPECT_TRUE(found_address);
 }
 
 TEST(ProcMapsTest, MissingFields) {
