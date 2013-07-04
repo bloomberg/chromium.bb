@@ -27,6 +27,22 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
+namespace {
+
+void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
+                           Profile* profile,
+                           Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    callback.Run(profile);
+    return;
+  }
+
+  // This should never get an error since it only loads existing profiles.
+  DCHECK_EQ(Profile::CREATE_STATUS_CREATED, status);
+}
+
+}  // namespace
+
 namespace apps {
 
 typedef extensions::ShellWindowRegistry::ShellWindowList ShellWindowList;
@@ -45,7 +61,23 @@ Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
     const base::FilePath& path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath full_path = profile_manager->user_data_dir().Append(path);
-  return profile_manager->GetProfile(full_path);
+  Profile* profile = profile_manager->GetProfileByPath(full_path);
+  if (!profile)
+    return NULL;
+
+  // Use IsValidProfile to check if the profile has been created.
+  return profile_manager->IsValidProfile(profile) ? profile : NULL;
+}
+
+void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
+    const base::FilePath& path,
+    base::Callback<void(Profile*)> callback) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
+  profile_manager->CreateProfileAsync(
+      full_path,
+      base::Bind(&ProfileLoadedCallback, callback),
+      string16(), string16(), false);
 }
 
 ShellWindowList ExtensionAppShimHandler::Delegate::GetWindows(
@@ -90,7 +122,8 @@ void ExtensionAppShimHandler::Delegate::MaybeTerminate() {
 
 ExtensionAppShimHandler::ExtensionAppShimHandler()
     : delegate_(new Delegate),
-      browser_opened_ever_(false) {
+      browser_opened_ever_(false),
+      weak_factory_(this) {
   // This is instantiated in BrowserProcessImpl::PreMainMessageLoopRun with
   // AppShimHostManager. Since PROFILE_CREATED is not fired until
   // ProfileManager::GetLastUsedProfile/GetLastOpenedProfiles, this should catch
@@ -107,8 +140,11 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
 
 ExtensionAppShimHandler::~ExtensionAppShimHandler() {}
 
-bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
+void ExtensionAppShimHandler::OnShimLaunch(Host* host,
                                            AppShimLaunchType launch_type) {
+  const std::string& app_id = host->GetAppId();
+  DCHECK(extensions::Extension::IdIsValid(app_id));
+
   const base::FilePath& profile_path = host->GetProfilePath();
   DCHECK(!profile_path.empty());
 
@@ -117,32 +153,52 @@ bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
     // TODO(jackhou): Add some UI for this case and remove the LOG.
     LOG(ERROR) << "Requested directory is not a known profile '"
                << profile_path.value() << "'.";
-    return false;
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
+    return;
   }
 
   Profile* profile = delegate_->ProfileForPath(profile_path);
 
-  const std::string& app_id = host->GetAppId();
-  if (!extensions::Extension::IdIsValid(app_id)) {
-    LOG(ERROR) << "Bad app ID from app shim launch message.";
-    return false;
+  if (profile) {
+    OnProfileLoaded(host, launch_type, profile);
+    return;
   }
 
+  // If the profile is not loaded, this must have been a launch by the shim.
+  // Load the profile asynchronously, the host will be registered in
+  // OnProfileLoaded.
+  DCHECK_EQ(APP_SHIM_LAUNCH_NORMAL, launch_type);
+  delegate_->LoadProfileAsync(
+      profile_path,
+      base::Bind(&ExtensionAppShimHandler::OnProfileLoaded,
+                 weak_factory_.GetWeakPtr(),
+                 host, launch_type));
+
+  // Return now. OnAppLaunchComplete will be called when the app is activated.
+}
+
+void ExtensionAppShimHandler::OnProfileLoaded(Host* host,
+                                              AppShimLaunchType launch_type,
+                                              Profile* profile) {
+  const std::string& app_id = host->GetAppId();
   // TODO(jackhou): Add some UI for this case and remove the LOG.
   const extensions::Extension* extension =
       delegate_->GetAppExtension(profile, app_id);
   if (!extension) {
     LOG(ERROR) << "Attempted to launch nonexistent app with id '"
                << app_id << "'.";
-    return false;
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND);
+    return;
   }
 
-  // If the shim was launched in response to a window appearing, but the window
-  // is closed by the time the shim process launched, return false to close the
-  // shim.
-  if (launch_type == APP_SHIM_LAUNCH_REGISTER_ONLY &&
-      delegate_->GetWindows(profile, app_id).empty()) {
-    return false;
+  // The first host to claim this (profile, app_id) becomes the main host.
+  // For any others, focus or relaunch the app.
+  if (!hosts_.insert(make_pair(make_pair(profile, app_id), host)).second) {
+    OnShimFocus(host,
+                launch_type == APP_SHIM_LAUNCH_NORMAL ?
+                    APP_SHIM_FOCUS_REOPEN : APP_SHIM_FOCUS_NORMAL);
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_DUPLICATE_HOST);
+    return;
   }
 
   // TODO(jeremya): Handle the case that launching the app fails. Probably we
@@ -151,17 +207,6 @@ bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
   // life within a certain window.
   if (launch_type == APP_SHIM_LAUNCH_NORMAL)
     delegate_->LaunchApp(profile, extension);
-
-  // The first host to claim this (profile, app_id) becomes the main host.
-  // For any others, focus or relaunch the app and return false.
-  if (!hosts_.insert(make_pair(make_pair(profile, app_id), host)).second) {
-    OnShimFocus(host,
-                launch_type == APP_SHIM_LAUNCH_NORMAL ?
-                    APP_SHIM_FOCUS_REOPEN : APP_SHIM_FOCUS_NORMAL);
-    return false;
-  }
-
-  return true;
 }
 
 void ExtensionAppShimHandler::OnShimClose(Host* host) {
@@ -300,8 +345,11 @@ void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
   if (!extension)
     return;
 
-  if (hosts_.count(make_pair(profile, app_id)))
+  HostMap::iterator it = hosts_.find(make_pair(profile, app_id));
+  if (it != hosts_.end()) {
+    it->second->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
     return;
+  }
 
   delegate_->LaunchShim(profile, extension);
 }

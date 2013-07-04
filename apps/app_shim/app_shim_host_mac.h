@@ -63,6 +63,7 @@ class AppShimHost : public IPC::Listener,
   void OnQuit();
 
   // apps::AppShimHandler::Host overrides:
+  virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result) OVERRIDE;
   virtual void OnAppClosed() OVERRIDE;
   virtual base::FilePath GetProfilePath() const OVERRIDE;
   virtual std::string GetAppId() const OVERRIDE;
@@ -73,6 +74,7 @@ class AppShimHost : public IPC::Listener,
   scoped_ptr<IPC::ChannelProxy> channel_;
   std::string app_id_;
   base::FilePath profile_path_;
+  bool initial_launch_finished_;
 };
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MAC_H_

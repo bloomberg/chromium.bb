@@ -20,6 +20,8 @@ class AppShimHandler {
  public:
   class Host {
    public:
+    // Invoked when the app is successfully launched.
+    virtual void OnAppLaunchComplete(AppShimLaunchResult result) = 0;
     // Invoked when the app is closed in the browser process.
     virtual void OnAppClosed() = 0;
 
@@ -48,10 +50,9 @@ class AppShimHandler {
   static void SetDefaultHandler(AppShimHandler* handler);
 
   // Invoked by the shim host when the shim process is launched. The handler
-  // must return true if successful, or false to indicate back to the shim
-  // process that it should close. |launch_now| indicates whether to launch the
-  // associated app.
-  virtual bool OnShimLaunch(Host* host, AppShimLaunchType launch_type) = 0;
+  // must call OnAppLaunchComplete to inform the shim of the result.
+  // |launch_now| indicates whether to launch the associated app.
+  virtual void OnShimLaunch(Host* host, AppShimLaunchType launch_type) = 0;
 
   // Invoked by the shim host when the connection to the shim process is closed.
   virtual void OnShimClose(Host* host) = 0;

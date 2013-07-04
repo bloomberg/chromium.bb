@@ -17,6 +17,19 @@ enum AppShimLaunchType {
   APP_SHIM_LAUNCH_NUM_TYPES
 };
 
+enum AppShimLaunchResult {
+  // App launched successfully.
+  APP_SHIM_LAUNCH_SUCCESS = 0,
+  // There is already a host registered for this app.
+  APP_SHIM_LAUNCH_DUPLICATE_HOST,
+  // The profile was not found.
+  APP_SHIM_LAUNCH_PROFILE_NOT_FOUND,
+  // The app was not found.
+  APP_SHIM_LAUNCH_APP_NOT_FOUND,
+  // Counter and end marker.
+  APP_SHIM_LAUNCH_NUM_RESULTS
+};
+
 enum AppShimFocusType {
   // Just focus the app.
   APP_SHIM_FOCUS_NORMAL = 0,

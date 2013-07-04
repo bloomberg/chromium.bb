@@ -79,7 +79,7 @@ class AppShimController : public IPC::Listener {
 
   // If Chrome failed to launch the app, |success| will be false and the app
   // shim process should die.
-  void OnLaunchAppDone(bool success);
+  void OnLaunchAppDone(apps::AppShimLaunchResult result);
 
 
   // Terminates the app shim process.
@@ -141,8 +141,8 @@ void AppShimController::OnChannelError() {
   Close();
 }
 
-void AppShimController::OnLaunchAppDone(bool success) {
-  if (!success) {
+void AppShimController::OnLaunchAppDone(apps::AppShimLaunchResult result) {
+  if (result != apps::APP_SHIM_LAUNCH_SUCCESS) {
     Close();
     return;
   }
@@ -384,6 +384,8 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   } else {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     command_line.AppendSwitch(switches::kSilentLaunch);
+    command_line.AppendSwitchPath(switches::kProfileDirectory,
+                                  info->profile_dir);
     bool success =
         base::mac::OpenApplicationWithPath(info->chrome_outer_bundle_path,
                                            command_line,

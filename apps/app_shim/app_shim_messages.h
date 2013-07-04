@@ -15,13 +15,15 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimLaunchType,
                           apps::APP_SHIM_LAUNCH_NUM_TYPES - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimLaunchResult,
+                          apps::APP_SHIM_LAUNCH_NUM_RESULTS - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimFocusType,
                           apps::APP_SHIM_FOCUS_NUM_TYPES - 1)
 
 // Signals that a previous LaunchApp message has been processed, and lets the
 // app shim process know whether it was registered successfully.
 IPC_MESSAGE_CONTROL1(AppShimMsg_LaunchApp_Done,
-                     bool /* succeeded */)
+                     apps::AppShimLaunchResult /* launch result */)
 
 // Signals to the main Chrome process that a shim has started indicating the
 // profile and app_id that the shim should be associated with and whether to

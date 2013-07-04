@@ -11,6 +11,7 @@
 #include "apps/app_lifetime_monitor.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -43,6 +44,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
     virtual bool ProfileExistsForPath(const base::FilePath& path);
     virtual Profile* ProfileForPath(const base::FilePath& path);
+    virtual void LoadProfileAsync(const base::FilePath& path,
+                                  base::Callback<void(Profile*)> callback);
 
     virtual extensions::ShellWindowRegistry::ShellWindowList GetWindows(
         Profile* profile, const std::string& extension_id);
@@ -61,7 +64,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual ~ExtensionAppShimHandler();
 
   // AppShimHandler overrides:
-  virtual bool OnShimLaunch(Host* host, AppShimLaunchType launch_type) OVERRIDE;
+  virtual void OnShimLaunch(Host* host, AppShimLaunchType launch_type) OVERRIDE;
   virtual void OnShimClose(Host* host) OVERRIDE;
   virtual void OnShimFocus(Host* host, AppShimFocusType focus_type) OVERRIDE;
   virtual void OnShimSetHidden(Host* host, bool hidden) OVERRIDE;
@@ -91,6 +94,12 @@ class ExtensionAppShimHandler : public AppShimHandler,
   content::NotificationRegistrar& registrar() { return registrar_; }
 
  private:
+  // This is passed to Delegate::LoadProfileAsync for shim-initiated launches
+  // where the profile was not yet loaded.
+  void OnProfileLoaded(Host* host,
+                       AppShimLaunchType launch_type,
+                       Profile* profile);
+
   scoped_ptr<Delegate> delegate_;
 
   HostMap hosts_;
@@ -98,6 +107,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
   content::NotificationRegistrar registrar_;
 
   bool browser_opened_ever_;
+
+  base::WeakPtrFactory<ExtensionAppShimHandler> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandler);
 };
 
 }  // namespace apps

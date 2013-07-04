@@ -28,6 +28,9 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
 
   MOCK_METHOD1(ProfileExistsForPath, bool(const base::FilePath&));
   MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath&));
+  MOCK_METHOD2(LoadProfileAsync,
+               void(const base::FilePath&,
+                    base::Callback<void(Profile*)>));
 
   MOCK_METHOD2(GetWindows, ShellWindowList(Profile*, const std::string&));
 
@@ -36,6 +39,23 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   MOCK_METHOD2(LaunchShim, void(Profile*, const Extension*));
 
   MOCK_METHOD0(MaybeTerminate, void());
+
+  void CaptureLoadProfileCallback(
+      const base::FilePath& path,
+      base::Callback<void(Profile*)> callback) {
+    callbacks_[path] = callback;
+  }
+
+  bool RunLoadProfileCallback(
+      const base::FilePath& path,
+      Profile* profile) {
+    callbacks_[path].Run(profile);
+    return callbacks_.erase(path);
+  }
+
+ private:
+  std::map<base::FilePath,
+           base::Callback<void(Profile*)> > callbacks_;
 };
 
 class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
@@ -75,6 +95,8 @@ class FakeHost : public apps::AppShimHandler::Host {
         app_id_(app_id),
         handler_(handler),
         close_count_(0) {}
+
+  MOCK_METHOD1(OnAppLaunchComplete, void(AppShimLaunchResult));
 
   virtual void OnAppClosed() OVERRIDE {
     handler_->OnShimClose(this);
@@ -163,30 +185,41 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandlerTest);
 };
 
-TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
-  const AppShimLaunchType normal_launch = APP_SHIM_LAUNCH_NORMAL;
+TEST_F(ExtensionAppShimHandlerTest, LaunchFailure) {
+  // Bad profile path.
+  EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_a_))
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND));
+  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL);
 
-  // If launch fails, the host is not added to the map.
+  // App not found.
   EXPECT_CALL(*delegate_, GetAppExtension(&profile_a_, kTestAppIdA))
       .WillOnce(Return(static_cast<const Extension*>(NULL)))
       .WillRepeatedly(Return(extension_a_.get()));
-  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_, normal_launch));
-  EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND));
+  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL);
+}
+
+TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
+  const AppShimLaunchType normal_launch = APP_SHIM_LAUNCH_NORMAL;
 
   // Normal startup.
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, normal_launch));
+  handler_->OnShimLaunch(&host_aa_, normal_launch);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_, normal_launch));
+  handler_->OnShimLaunch(&host_ab_, normal_launch);
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
 
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_bb_, normal_launch));
+  handler_->OnShimLaunch(&host_bb_, normal_launch);
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
 
   // Starting and closing a second host just focuses the app.
   EXPECT_CALL(*handler_, OnShimFocus(&host_aa_duplicate_,
                                      APP_SHIM_FOCUS_REOPEN));
-  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_duplicate_, normal_launch));
+  EXPECT_CALL(host_aa_duplicate_,
+              OnAppLaunchComplete(APP_SHIM_LAUNCH_DUPLICATE_HOST));
+  handler_->OnShimLaunch(&host_aa_duplicate_, normal_launch);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
   handler_->OnShimClose(&host_aa_duplicate_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -201,16 +234,20 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
 }
 
 TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
+  // When the app activates, if there is no shim, start one.
   EXPECT_CALL(*delegate_, LaunchShim(&profile_a_, extension_a_.get()));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
 
-  // Launch the shim, adding an entry in the map.
+  // Normal shim launch adds an entry in the map.
   // App should not be launched here.
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()))
       .Times(0);
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_,
-                                         APP_SHIM_LAUNCH_REGISTER_ONLY));
+  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
+
+  // Activation when there is a registered shim finishes launch with success.
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
+  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
 
   // Closing all windows does not quit the shim.
   handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
@@ -247,10 +284,10 @@ TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
   const AppShimLaunchType register_only = APP_SHIM_LAUNCH_REGISTER_ONLY;
 
   // Launch shims, adding entries in the map.
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, register_only));
+  handler_->OnShimLaunch(&host_aa_, register_only);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_, register_only));
+  handler_->OnShimLaunch(&host_ab_, register_only);
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
 
   // The following quits should not terminate.
@@ -274,23 +311,27 @@ TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {
   // For an APP_SHIM_LAUNCH_REGISTER_ONLY, don't launch the app.
   EXPECT_CALL(*delegate_, LaunchApp(_, _))
       .Times(0);
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_,
-                                          APP_SHIM_LAUNCH_REGISTER_ONLY));
+  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Close the shim, removing the entry in the map.
   handler_->OnShimClose(&host_aa_);
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
+}
 
-  // Don't register if there are no windows open for the app. This can happen if
-  // the app shim was launched in response to an app being activated, but the
-  // app was deactivated before the shim is registered.
-  ShellWindowList shell_window_list;
-  EXPECT_CALL(*delegate_, GetWindows(&profile_a_, kTestAppIdA))
-      .WillRepeatedly(Return(shell_window_list));
-  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_,
-                                          APP_SHIM_LAUNCH_REGISTER_ONLY));
+TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
+  // If the profile is not loaded when an OnShimLaunch arrives, return false
+  // and load the profile asynchronously. Launch the app when the profile is
+  // ready.
+  EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
+      .WillOnce(Return(static_cast<Profile*>(NULL)))
+      .WillRepeatedly(Return(&profile_a_));
+  EXPECT_CALL(*delegate_, LoadProfileAsync(profile_path_a_, _))
+      .WillOnce(Invoke(delegate_, &MockDelegate::CaptureLoadProfileCallback));
+  handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL);
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
+  delegate_->RunLoadProfileCallback(profile_path_a_, &profile_a_);
+  EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
 }
 
 }  // namespace apps
