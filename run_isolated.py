@@ -75,6 +75,11 @@ RUN_TEST_CASES_LOG = os.path.join(BASE_DIR, 'run_test_cases.log')
 # the program is still running.
 DELAY_BETWEEN_UPDATES_IN_SECS = 30
 
+# Maximum expected delay (in seconds) between successive file fetches
+# in run_tha_test. If it takes longer than that, a deadlock might be happening
+# and all stack frames for all threads are dumped to log.
+DEADLOCK_TIMEOUT = 5 * 60
+
 # The name of the key to store the count of url attempts.
 COUNT_KEY = 'UrlOpenAttempt'
 
@@ -1080,6 +1085,128 @@ class Profiler(object):
                  self.name, time_taken)
 
 
+class DeadlockDetector(object):
+  """Context manager that can detect deadlocks.
+
+  It will dump stack frames of all running threads if its 'ping' method isn't
+  called in time.
+
+  Usage:
+    with DeadlockDetector(timeout=60) as detector:
+      for item in some_work():
+        ...
+        detector.ping()
+        ...
+
+  Arguments:
+    timeout - maximum allowed time between calls to 'ping'.
+  """
+
+  def __init__(self, timeout):
+    self.timeout = timeout
+    self._last_ping = None
+    self._stop_flag = False
+    self._stop_cv = threading.Condition()
+    self._thread = None
+
+  def __enter__(self):
+    """Starts internal watcher thread."""
+    assert self._thread is None
+    self._last_ping = time.time()
+    self._thread = threading.Thread(name='deadlock-watcher', target=self._run)
+    self._thread.daemon = True
+    self._thread.start()
+    return self
+
+  def __exit__(self, *_args):
+    """Stops internal watcher thread."""
+    assert self._thread is not None
+    self._stop_cv.acquire()
+    try:
+      self._stop_flag = True
+      self._stop_cv.notify()
+    finally:
+      self._stop_cv.release()
+    self._thread.join()
+    self._thread = None
+    self._stop_flag = False
+
+  def ping(self):
+    """Notify detector that main thread is still running.
+
+    Should be called periodically to inform the detector that everything is
+    running as it should.
+    """
+    self._stop_cv.acquire()
+    self._last_ping = time.time()
+    self._stop_cv.release()
+
+  def _run(self):
+    """Loop that watches for pings and dumps threads state if ping is late."""
+    while True:
+      self._stop_cv.acquire()
+      try:
+        # This thread is closing?
+        if self._stop_flag:
+          return
+
+        # Wait until the moment we need to dump stack traces.
+        # Most probably some other thread will call 'ping' to move deadline
+        # further in time. We don't bother to wake up after each 'ping', only
+        # right before initial expected deadline. After waking up we recalculate
+        # the new deadline (since _last_ping might have changed) and dump
+        # threads only if it's still exceeded.
+        deadline = self._last_ping + self.timeout
+        time_to_wait = deadline - time.time()
+        if time_to_wait > 0:
+          self._stop_cv.wait(time_to_wait)
+        new_deadline = self._last_ping + self.timeout
+
+        # Do we still want to dump stacks frames?
+        if not self._stop_flag and time.time() >= new_deadline:
+          self._dump_threads(time.time() - self._last_ping)
+          self._last_ping = time.time()
+      finally:
+        self._stop_cv.release()
+
+  def _dump_threads(self, timeout):
+    """Dumps stack frames of all running threads."""
+    all_threads = threading.enumerate()
+    current_thread_id = threading.current_thread().ident
+
+    # Collect tracebacks: thread name -> traceback string.
+    tracebacks = {}
+
+    # pylint: disable=W0212
+    for thread_id, frame in sys._current_frames().iteritems():
+      # Don't dump deadlock detector's own thread, it's boring.
+      if thread_id == current_thread_id:
+        continue
+
+      # Try to get more informative symbolic thread name.
+      name = 'untitled'
+      for thread in all_threads:
+        if thread.ident == thread_id:
+          name = thread.name
+          break
+      name += ' #%d' % (thread_id,)
+      tracebacks[name] = ''.join(traceback.format_stack(frame))
+
+    # Print tracebacks, sorting them by thread name. That way a thread pool's
+    # threads will be printed as one group.
+    self._print('=============== Potential deadlock detected ===============')
+    self._print('No pings in last %d sec.' % (timeout,))
+    self._print('Dumping stack frames for all threads:')
+    for name in sorted(tracebacks):
+      self._print('Traceback for \'%s\':\n%s' % (name, tracebacks[name]))
+    self._print('===========================================================')
+
+  @staticmethod
+  def _print(msg):
+    """Writes message to log."""
+    logging.warning('%s', msg.rstrip())
+
+
 class Remote(object):
   """Priority based worker queue to fetch or upload files from a
   content-address server. Any function may be given as the fetcher/upload,
@@ -1103,7 +1230,7 @@ class Remote(object):
     self._do_item = self.get_file_handler(destination_root)
     # Contains tuple(priority, obj).
     self._done = Queue.PriorityQueue()
-    self._pool = ThreadPool(self.INITIAL_WORKERS, self.MAX_WORKERS, 0, 'upload')
+    self._pool = ThreadPool(self.INITIAL_WORKERS, self.MAX_WORKERS, 0, 'remote')
 
   def join(self):
     """Blocks until the queue is empty."""
@@ -1824,22 +1951,25 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
         # Now block on the remaining files to be downloaded and mapped.
         logging.info('Retrieving remaining files')
         last_update = time.time()
-        while remaining:
-          obj = cache.wait_for(remaining)
-          for filepath, properties in remaining.pop(obj):
-            outfile = os.path.join(outdir, filepath)
-            link_file(outfile, cache.path(obj), HARDLINK)
-            if 'm' in properties:
-              # It's not set on Windows.
-              os.chmod(outfile, properties['m'])
+        with DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+          while remaining:
+            detector.ping()
+            obj = cache.wait_for(remaining)
+            for filepath, properties in remaining.pop(obj):
+              outfile = os.path.join(outdir, filepath)
+              link_file(outfile, cache.path(obj), HARDLINK)
+              if 'm' in properties:
+                # It's not set on Windows.
+                os.chmod(outfile, properties['m'])
 
-          if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
-            msg = '%d files remaining...' % len(remaining)
-            print msg
-            logging.info(msg)
-            last_update = time.time()
+            if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
+              msg = '%d files remaining...' % len(remaining)
+              print msg
+              logging.info(msg)
+              last_update = time.time()
 
       if settings.read_only:
+        logging.info('Making files read only')
         make_writable(outdir, True)
       logging.info('Running %s, cwd=%s' % (cmd, cwd))
 
