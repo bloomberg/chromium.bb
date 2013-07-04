@@ -167,9 +167,7 @@ SkColor DebugColors::EvictedTileCheckerboardColor() {
 SkColor DebugColors::PaintRectBorderColor() {
   return SkColorSetARGB(255, 255, 0, 0);
 }
-int DebugColors::PaintRectBorderWidth(const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::PaintRectBorderWidth() { return 2; }
 SkColor DebugColors::PaintRectFillColor() {
   return SkColorSetARGB(30, 255, 0, 0);
 }
@@ -178,10 +176,7 @@ SkColor DebugColors::PaintRectFillColor() {
 SkColor DebugColors::PropertyChangedRectBorderColor() {
   return SkColorSetARGB(255, 0, 0, 255);
 }
-int DebugColors::PropertyChangedRectBorderWidth(
-    const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::PropertyChangedRectBorderWidth() { return 2; }
 SkColor DebugColors::PropertyChangedRectFillColor() {
   return SkColorSetARGB(30, 0, 0, 255);
 }
@@ -190,9 +185,7 @@ SkColor DebugColors::PropertyChangedRectFillColor() {
 SkColor DebugColors::SurfaceDamageRectBorderColor() {
   return SkColorSetARGB(255, 200, 100, 0);
 }
-int DebugColors::SurfaceDamageRectBorderWidth(const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::SurfaceDamageRectBorderWidth() { return 2; }
 SkColor DebugColors::SurfaceDamageRectFillColor() {
   return SkColorSetARGB(30, 200, 100, 0);
 }
@@ -201,10 +194,7 @@ SkColor DebugColors::SurfaceDamageRectFillColor() {
 SkColor DebugColors::ScreenSpaceLayerRectBorderColor() {
   return SkColorSetARGB(255, 100, 200, 0);
 }
-int DebugColors::ScreenSpaceLayerRectBorderWidth(
-    const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::ScreenSpaceLayerRectBorderWidth() { return 2; }
 SkColor DebugColors::ScreenSpaceLayerRectFillColor() {
   return SkColorSetARGB(30, 100, 200, 0);
 }
@@ -213,10 +203,7 @@ SkColor DebugColors::ScreenSpaceLayerRectFillColor() {
 SkColor DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor() {
   return SkColorSetARGB(255, 100, 0, 200);
 }
-int DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(
-    const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth() { return 2; }
 SkColor DebugColors::ScreenSpaceSurfaceReplicaRectFillColor() {
   return SkColorSetARGB(10, 100, 0, 200);
 }
@@ -225,9 +212,7 @@ SkColor DebugColors::ScreenSpaceSurfaceReplicaRectFillColor() {
 SkColor DebugColors::OccludingRectBorderColor() {
   return SkColorSetARGB(255, 245, 136, 255);
 }
-int DebugColors::OccludingRectBorderWidth(const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::OccludingRectBorderWidth() { return 2; }
 SkColor DebugColors::OccludingRectFillColor() {
   return SkColorSetARGB(10, 245, 136, 255);
 }
@@ -236,9 +221,7 @@ SkColor DebugColors::OccludingRectFillColor() {
 SkColor DebugColors::NonOccludingRectBorderColor() {
   return SkColorSetARGB(255, 200, 0, 100);
 }
-int DebugColors::NonOccludingRectBorderWidth(const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::NonOccludingRectBorderWidth() { return 2; }
 SkColor DebugColors::NonOccludingRectFillColor() {
   return SkColorSetARGB(10, 200, 0, 100);
 }
@@ -247,10 +230,7 @@ SkColor DebugColors::NonOccludingRectFillColor() {
 SkColor DebugColors::TouchEventHandlerRectBorderColor() {
   return SkColorSetARGB(255, 239, 229, 60);
 }
-int DebugColors::TouchEventHandlerRectBorderWidth(
-    const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::TouchEventHandlerRectBorderWidth() { return 2; }
 SkColor DebugColors::TouchEventHandlerRectFillColor() {
   return SkColorSetARGB(30, 239, 229, 60);
 }
@@ -259,10 +239,7 @@ SkColor DebugColors::TouchEventHandlerRectFillColor() {
 SkColor DebugColors::WheelEventHandlerRectBorderColor() {
   return SkColorSetARGB(255, 189, 209, 57);
 }
-int DebugColors::WheelEventHandlerRectBorderWidth(
-    const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::WheelEventHandlerRectBorderWidth() { return 2; }
 SkColor DebugColors::WheelEventHandlerRectFillColor() {
   return SkColorSetARGB(30, 189, 209, 57);
 }
@@ -271,10 +248,7 @@ SkColor DebugColors::WheelEventHandlerRectFillColor() {
 SkColor DebugColors::NonFastScrollableRectBorderColor() {
   return SkColorSetARGB(255, 238, 163, 59);
 }
-int DebugColors::NonFastScrollableRectBorderWidth(
-    const LayerTreeImpl* tree_impl) {
-  return Scale(2, tree_impl);
-}
+int DebugColors::NonFastScrollableRectBorderWidth() { return 2; }
 SkColor DebugColors::NonFastScrollableRectFillColor() {
   return SkColorSetARGB(30, 238, 163, 59);
 }

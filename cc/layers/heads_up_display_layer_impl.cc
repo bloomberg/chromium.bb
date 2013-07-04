@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/debug_rect_history.h"
@@ -17,7 +16,6 @@
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/memory_history.h"
-#include "cc/resources/tile_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -89,18 +87,15 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
   if (!hud_resource_)
     hud_resource_ = ScopedResource::create(resource_provider);
 
-  // TODO(danakj): Scale the HUD by device scale to make it more friendly under
-  // high DPI.
-
   // TODO(danakj): The HUD could swap between two textures instead of creating a
   // texture every frame in ubercompositor.
-  if (hud_resource_->size() != bounds() ||
+  if (hud_resource_->size() != content_bounds() ||
       resource_provider->InUseByConsumer(hud_resource_->id()))
     hud_resource_->Free();
 
   if (!hud_resource_->id()) {
     hud_resource_->Allocate(
-        bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
+        content_bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
   }
 
   return LayerImpl::WillDraw(draw_mode, resource_provider);
@@ -114,7 +109,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
 
-  gfx::Rect quad_rect(bounds());
+  gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
   bool premultiplied_alpha = true;
   gfx::PointF uv_top_left(0.f, 0.f);
@@ -145,27 +140,32 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   else
     canvas_size.set(0, 0);
 
-  if (canvas_size.fWidth != bounds().width() ||
-      canvas_size.fHeight != bounds().height() || !hud_canvas_) {
+  if (canvas_size.width() != content_bounds().width() ||
+      canvas_size.width() != content_bounds().height() || !hud_canvas_) {
     bool opaque = false;
-    hud_canvas_ = make_scoped_ptr(
-        skia::CreateBitmapCanvas(bounds().width(), bounds().height(), opaque));
+    hud_canvas_ = make_scoped_ptr(skia::CreateBitmapCanvas(
+        content_bounds().width(), content_bounds().height(), opaque));
   }
 
   UpdateHudContents();
 
   hud_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
+  hud_canvas_->save();
+  hud_canvas_->scale(contents_scale_x(), contents_scale_y());
+
   DrawHudContents(hud_canvas_.get());
+
+  hud_canvas_->restore();
 
   const SkBitmap* bitmap = &hud_canvas_->getDevice()->accessBitmap(false);
   SkAutoLockPixels locker(*bitmap);
 
-  gfx::Rect layer_rect(bounds());
+  gfx::Rect content_rect(content_bounds());
   DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
   resource_provider->SetPixels(hud_resource_->id(),
                                static_cast<const uint8_t*>(bitmap->getPixels()),
-                               layer_rect,
-                               layer_rect,
+                               content_rect,
+                               content_rect,
                                gfx::Vector2d());
 }
 
@@ -222,11 +222,11 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) const {
 
   SkRect area = SkRect::MakeEmpty();
   if (debug_state.continuous_painting) {
-    // Don't show the FPS display when continuous painting is enabled, because
-    // it would show misleading numbers.
     area = DrawPaintTimeDisplay(
         canvas, layer_tree_impl()->paint_time_counter(), 0, 0);
   } else if (debug_state.show_fps_counter) {
+    // Don't show the FPS display when continuous painting is enabled, because
+    // it would show misleading numbers.
     area =
         DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
   }
@@ -579,11 +579,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     SkCanvas* canvas,
     DebugRectHistory* debug_rect_history) const {
   const std::vector<DebugRect>& debug_rects = debug_rect_history->debug_rects();
-  float rect_scale = 1.f / layer_tree_impl()->device_scale_factor();
   SkPaint paint = CreatePaint();
-
-  canvas->save();
-  canvas->scale(rect_scale, rect_scale);
 
   for (size_t i = 0; i < debug_rects.size(); ++i) {
     SkColor stroke_color = 0;
@@ -595,69 +591,62 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
       case PAINT_RECT_TYPE:
         stroke_color = DebugColors::PaintRectBorderColor();
         fill_color = DebugColors::PaintRectFillColor();
-        stroke_width = DebugColors::PaintRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::PaintRectBorderWidth();
         break;
       case PROPERTY_CHANGED_RECT_TYPE:
         stroke_color = DebugColors::PropertyChangedRectBorderColor();
         fill_color = DebugColors::PropertyChangedRectFillColor();
-        stroke_width =
-            DebugColors::PropertyChangedRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::PropertyChangedRectBorderWidth();
         break;
       case SURFACE_DAMAGE_RECT_TYPE:
         stroke_color = DebugColors::SurfaceDamageRectBorderColor();
         fill_color = DebugColors::SurfaceDamageRectFillColor();
-        stroke_width =
-            DebugColors::SurfaceDamageRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::SurfaceDamageRectBorderWidth();
         break;
       case REPLICA_SCREEN_SPACE_RECT_TYPE:
         stroke_color = DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor();
         fill_color = DebugColors::ScreenSpaceSurfaceReplicaRectFillColor();
-        stroke_width = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(
-            layer_tree_impl());
+        stroke_width = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth();
         break;
       case SCREEN_SPACE_RECT_TYPE:
         stroke_color = DebugColors::ScreenSpaceLayerRectBorderColor();
         fill_color = DebugColors::ScreenSpaceLayerRectFillColor();
-        stroke_width =
-            DebugColors::ScreenSpaceLayerRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::ScreenSpaceLayerRectBorderWidth();
         break;
       case OCCLUDING_RECT_TYPE:
         stroke_color = DebugColors::OccludingRectBorderColor();
         fill_color = DebugColors::OccludingRectFillColor();
-        stroke_width = DebugColors::OccludingRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::OccludingRectBorderWidth();
         break;
       case NONOCCLUDING_RECT_TYPE:
         stroke_color = DebugColors::NonOccludingRectBorderColor();
         fill_color = DebugColors::NonOccludingRectFillColor();
-        stroke_width =
-            DebugColors::NonOccludingRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::NonOccludingRectBorderWidth();
         break;
       case TOUCH_EVENT_HANDLER_RECT_TYPE:
         stroke_color = DebugColors::TouchEventHandlerRectBorderColor();
         fill_color = DebugColors::TouchEventHandlerRectFillColor();
-        stroke_width =
-            DebugColors::TouchEventHandlerRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::TouchEventHandlerRectBorderWidth();
         label_text = "touch event listener";
         break;
       case WHEEL_EVENT_HANDLER_RECT_TYPE:
         stroke_color = DebugColors::WheelEventHandlerRectBorderColor();
         fill_color = DebugColors::WheelEventHandlerRectFillColor();
-        stroke_width =
-            DebugColors::WheelEventHandlerRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::WheelEventHandlerRectBorderWidth();
         label_text = "mousewheel event listener";
         break;
       case NON_FAST_SCROLLABLE_RECT_TYPE:
         stroke_color = DebugColors::NonFastScrollableRectBorderColor();
         fill_color = DebugColors::NonFastScrollableRectFillColor();
-        stroke_width =
-            DebugColors::NonFastScrollableRectBorderWidth(layer_tree_impl());
+        stroke_width = DebugColors::NonFastScrollableRectBorderWidth();
         label_text = "repaints on scroll";
         break;
     }
 
-    const gfx::RectF& rect = debug_rects[i].rect;
-    SkRect sk_rect =
-        SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
+    gfx::RectF debug_layer_rect = gfx::ScaleRect(debug_rects[i].rect,
+                                                 1.0 / contents_scale_x(),
+                                                 1.0 / contents_scale_y());
+    SkRect sk_rect = RectFToSkRect(debug_layer_rect);
     paint.setColor(fill_color);
     paint.setStyle(SkPaint::kFill_Style);
     canvas->drawRect(sk_rect, paint);
@@ -670,13 +659,10 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     if (label_text.length()) {
       const int kFontHeight = 12;
       const int kPadding = 3;
-      const float device_scale_factor =
-          layer_tree_impl()->device_scale_factor();
 
       canvas->save();
       canvas->clipRect(sk_rect);
       canvas->translate(sk_rect.x(), sk_rect.y());
-      canvas->scale(device_scale_factor, device_scale_factor);
 
       SkPaint label_paint = CreatePaint();
       label_paint.setTextSize(kFontHeight);
@@ -700,8 +686,6 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
       canvas->restore();
     }
   }
-
-  canvas->restore();
 }
 
 const char* HeadsUpDisplayLayerImpl::LayerTypeAsString() const {
