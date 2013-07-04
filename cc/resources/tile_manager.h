@@ -17,7 +17,6 @@
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
-#include "cc/resources/tile_priority.h"
 
 namespace cc {
 class ResourceProvider;
@@ -141,7 +140,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   void FreeUnusedResourcesForTile(Tile* tile);
   RasterWorkerPool::Task CreateImageDecodeTask(
       Tile* tile, skia::LazyPixelRef* pixel_ref);
-  RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
   RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   void DidFinishTileInitialization(Tile* tile);
   void DidTileTreeBinChange(Tile* tile,

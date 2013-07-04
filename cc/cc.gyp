@@ -275,6 +275,8 @@
       'resources/prioritized_resource_manager.h',
       'resources/priority_calculator.cc',
       'resources/priority_calculator.h',
+      'resources/raster_mode.cc',
+      'resources/raster_mode.h',
       'resources/raster_worker_pool.cc',
       'resources/raster_worker_pool.h',
       'resources/resource.cc',

@@ -9,15 +9,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "cc/resources/managed_tile_state.h"
-#include "cc/resources/picture_pile_impl.h"
-#include "cc/resources/tile_manager.h"
+#include "cc/resources/raster_mode.h"
 #include "cc/resources/tile_priority.h"
-#include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
 
+class PicturePileImpl;
 class Tile;
 
 class CC_EXPORT Tile : public base::RefCounted<Tile> {

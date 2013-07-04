@@ -21,25 +21,6 @@ namespace {
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
 
-scoped_ptr<base::Value> RasterModeAsValue(RasterMode raster_mode) {
-  switch (raster_mode) {
-    case HIGH_QUALITY_NO_LCD_RASTER_MODE:
-      return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("HIGH_QUALITY_NO_LCD_RASTER_MODE"));
-    case HIGH_QUALITY_RASTER_MODE:
-      return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("HIGH_QUALITY_RASTER_MODE"));
-    case LOW_QUALITY_RASTER_MODE:
-      return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("LOW_QUALITY_RASTER_MODE"));
-    case NUM_RASTER_MODES:
-    default:
-      NOTREACHED() << "Unrecognized RasterMode value " << raster_mode;
-      return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("<unknown RasterMode value>"));
-  }
-}
-
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
   // SkDrawFilter interface.
@@ -59,7 +40,11 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                            gfx::Rect content_rect,
                            float contents_scale,
                            RasterMode raster_mode,
-                           const RasterTaskMetadata& metadata,
+                           bool is_tile_in_pending_tree_now_bin,
+                           TileResolution tile_resolution,
+                           int layer_id,
+                           const void* tile_id,
+                           int source_frame_number,
                            RenderingStatsInstrumentation* rendering_stats,
                            const RasterWorkerPool::RasterTask::Reply& reply,
                            TaskVector* dependencies)
@@ -68,15 +53,19 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         content_rect_(content_rect),
         contents_scale_(contents_scale),
         raster_mode_(raster_mode),
-        metadata_(metadata),
+        is_tile_in_pending_tree_now_bin_(is_tile_in_pending_tree_now_bin),
+        tile_resolution_(tile_resolution),
+        layer_id_(layer_id),
+        tile_id_(tile_id),
+        source_frame_number_(source_frame_number),
         rendering_stats_(rendering_stats),
         reply_(reply) {}
 
   void RunAnalysisOnThread(unsigned thread_index) {
     TRACE_EVENT1("cc",
                  "RasterWorkerPoolTaskImpl::RunAnalysisOnThread",
-                 "metadata",
-                 TracedValue::FromValue(metadata_.AsValue().release()));
+                 "data",
+                 TracedValue::FromValue(DataAsValue().release()));
 
     DCHECK(picture_pile_.get());
     DCHECK(rendering_stats_);
@@ -104,13 +93,13 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     TRACE_EVENT2(
         "cc",
         "RasterWorkerPoolTaskImpl::RunRasterOnThread",
-        "metadata",
-        TracedValue::FromValue(metadata_.AsValue().release()),
+        "data",
+        TracedValue::FromValue(DataAsValue().release()),
         "raster_mode",
         TracedValue::FromValue(RasterModeAsValue(raster_mode_).release()));
 
     devtools_instrumentation::ScopedLayerTask raster_task(
-        devtools_instrumentation::kRasterTask, metadata_.layer_id);
+        devtools_instrumentation::kRasterTask, layer_id_);
 
     DCHECK(picture_pile_.get());
     DCHECK(device);
@@ -148,7 +137,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
           raster_stats.total_rasterize_time,
           raster_stats.best_rasterize_time,
           raster_stats.total_pixels_rasterized,
-          metadata_.is_tile_in_pending_tree_now_bin);
+          is_tile_in_pending_tree_now_bin_);
 
       HISTOGRAM_CUSTOM_COUNTS(
           "Renderer4.PictureRasterTimeUS",
@@ -177,12 +166,27 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   virtual ~RasterWorkerPoolTaskImpl() {}
 
  private:
+  scoped_ptr<base::Value> DataAsValue() const {
+    scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+    res->Set("tile_id", TracedValue::CreateIDRef(tile_id_).release());
+    res->SetBoolean("is_tile_in_pending_tree_now_bin",
+                    is_tile_in_pending_tree_now_bin_);
+    res->Set("resolution", TileResolutionAsValue(tile_resolution_).release());
+    res->SetInteger("source_frame_number", source_frame_number_);
+    res->SetInteger("layer_id", layer_id_);
+    return res.PassAs<base::Value>();
+  }
+
   PicturePileImpl::Analysis analysis_;
   scoped_refptr<PicturePileImpl> picture_pile_;
   gfx::Rect content_rect_;
   float contents_scale_;
   RasterMode raster_mode_;
-  RasterTaskMetadata metadata_;
+  bool is_tile_in_pending_tree_now_bin_;
+  TileResolution tile_resolution_;
+  int layer_id_;
+  const void* tile_id_;
+  int source_frame_number_;
   RenderingStatsInstrumentation* rendering_stats_;
   const RasterWorkerPool::RasterTask::Reply reply_;
 
@@ -307,16 +311,6 @@ bool RasterWorkerPoolTask::HasCompleted() const {
 
 }  // namespace internal
 
-scoped_ptr<base::Value> RasterTaskMetadata::AsValue() const {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->Set("tile_id", TracedValue::CreateIDRef(tile_id).release());
-  res->SetBoolean("is_tile_in_pending_tree_now_bin",
-                  is_tile_in_pending_tree_now_bin);
-  res->Set("resolution", TileResolutionAsValue(tile_resolution).release());
-  res->SetInteger("source_frame_number", source_frame_number);
-  return res.PassAs<base::Value>();
-}
-
 RasterWorkerPool::Task::Set::Set() {
 }
 
@@ -378,19 +372,28 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     gfx::Rect content_rect,
     float contents_scale,
     RasterMode raster_mode,
-    const RasterTaskMetadata& metadata,
+    bool is_tile_in_pending_tree_now_bin,
+    TileResolution tile_resolution,
+    int layer_id,
+    const void* tile_id,
+    int source_frame_number,
     RenderingStatsInstrumentation* rendering_stats,
     const RasterTask::Reply& reply,
     Task::Set* dependencies) {
-  return RasterTask(new RasterWorkerPoolTaskImpl(resource,
-                                                 picture_pile,
-                                                 content_rect,
-                                                 contents_scale,
-                                                 raster_mode,
-                                                 metadata,
-                                                 rendering_stats,
-                                                 reply,
-                                                 &dependencies->tasks_));
+  return RasterTask(
+      new RasterWorkerPoolTaskImpl(resource,
+                                   picture_pile,
+                                   content_rect,
+                                   contents_scale,
+                                   raster_mode,
+                                   is_tile_in_pending_tree_now_bin,
+                                   tile_resolution,
+                                   layer_id,
+                                   tile_id,
+                                   source_frame_number,
+                                   rendering_stats,
+                                   reply,
+                                   &dependencies->tasks_));
 }
 
 // static
