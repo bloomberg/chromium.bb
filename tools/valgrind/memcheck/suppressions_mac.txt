@@ -2550,3 +2550,23 @@
    fun:_ZNK19TConcreteFontScaler19GetGlyphIdealBoundsEt
    fun:FPFontGetGlyphIdealBounds
 }
+{
+   bug_257276
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:ripr_Path
+   fun:ripc_DrawPath
+   fun:CGContextDrawPath
+   fun:CGContextStrokePath
+   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:inContext:from:to:at:thickness:lineOrigin:breakForDescenders:flipped:]
+   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:type:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
+   fun:-[NSLayoutManager(NSTextViewSupport) drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
+   fun:-[NSLayoutManager(NSTextViewSupport) _lineGlyphRange:type:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
+   fun:-[NSLayoutManager(NSTextViewSupport) underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
+   fun:-[NSLayoutManager(NSPrivate) _drawGlyphsForGlyphRange:atPoint:parameters:]
+   fun:-[NSLayoutManager(NSTextViewSupport) drawGlyphsForGlyphRange:atPoint:]
+   fun:-[NSStringDrawingTextStorage drawTextContainer:withRect:graphicsContext:baselineMode:scrollable:padding:]
+   fun:_NSStringDrawingCore
+   fun:-[NSString(NSExtendedStringDrawing) drawWithRect:options:attributes:]
+   fun:-[HyperlinkButtonCell drawTitle:withFrame:inView:]
+}
