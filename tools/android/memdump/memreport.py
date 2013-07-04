@@ -13,12 +13,14 @@ from sets import Set
 _ENTRIES = [
     ('Total', '.* r... .*'),
     ('Read-only', '.* r--. .*'),
-    ('Read-write', '.* rw-. .*'),
+    ('Read-write', '.* rw.. .*'),
     ('Executable', '.* ..x. .*'),
-    ('File read-write', '.* rw.. .* /.*'),
+    ('Anonymous total', '.* .... .* .*other=[0-9]+ ($|.*chromium:.*)'),
     ('Anonymous read-write', '.* rw.. .* .*other=[0-9]+ ($|.*chromium:.*)'),
-    ('File executable', '.* ..x. .* /.*'),
     ('Anonymous executable (JIT\'ed code)', '.* ..x. .* shared_other=[0-9]+ $'),
+    ('File total', '.* .... .* /.*'),
+    ('File read-write', '.* rw.. .* /.*'),
+    ('File executable', '.* ..x. .* /.*'),
     ('chromium mmap', '.* r... .*chromium:.*'),
     ('chromium TransferBuffer', '.* r... .*chromium:.*CreateTransferBuffer.*'),
     ('Galaxy Nexus GL driver', '.* r... .*pvrsrvkm.*'),
@@ -51,15 +53,17 @@ def _CollectMemoryStats(memdump, region_filters):
         matched_regions.add(region_filter)
         if not region_filter in mem_usage_for_regions:
           mem_usage_for_regions[region_filter] = {
+              'private_unevictable': 0,
               'private': 0,
               'shared_app': 0.0,
+              'shared_other_unevictable': 0,
               'shared_other': 0,
           }
     for matched_region in matched_regions:
       mem_usage = mem_usage_for_regions[matched_region]
       for key in mem_usage:
         for token in line.split(' '):
-          if key in token:
+          if (key + '=') in token:
             field = token.split('=')[1]
             if key != 'shared_app':
               mem_usage[key] += int(field)
@@ -80,24 +84,33 @@ def _DumpCSV(processes_stats):
   i = 0
   for process in processes_stats:
     i += 1
-    print ',Process ' + str(i) + ',private,shared_app,shared_other,'
+    print (',Process ' + str(i) + ',private,private_unevictable,shared_app,' +
+           'shared_other,shared_other_unevictable,')
     for (k, v) in _ENTRIES:
       if not v in process:
-        print ',' + k + ',0,0,0,'
+        print ',' + k + ',0,0,0,0,'
         continue
       if not v in total_map:
-        total_map[v] = 0
-      total_map[v] += process[v]['private'] + process[v]['shared_app']
-      print ',' + k + ',' + _ConvertMemoryField(process[v]['private']) + ',' + (
-          _ConvertMemoryField(process[v]['shared_app']) + ',' + (
-          _ConvertMemoryField(process[v]['shared_other'])) + ',')
+        total_map[v] = {'resident':0, 'unevictable':0}
+      total_map[v]['resident'] += (process[v]['private'] +
+                                   process[v]['shared_app'])
+      total_map[v]['unevictable'] += process[v]['private_unevictable']
+      print (
+          ',' + k + ',' +
+          _ConvertMemoryField(process[v]['private']) + ',' +
+          _ConvertMemoryField(process[v]['private_unevictable']) + ',' +
+          _ConvertMemoryField(process[v]['shared_app']) + ',' +
+          _ConvertMemoryField(process[v]['shared_other']) + ',' +
+          _ConvertMemoryField(process[v]['shared_other_unevictable']) + ','
+          )
     print ''
 
   for (k, v) in _ENTRIES:
     if not v in total_map:
-      print ',' + k + ',0,0'
+      print ',' + k + ',0,0,'
       continue
-    print ',' + k + ',' + _ConvertMemoryField(total_map[v]) + ','
+    print (',' + k + ',' + _ConvertMemoryField(total_map[v]['resident']) + ',' +
+           _ConvertMemoryField(total_map[v]['unevictable']) + ',')
   print ''
 
 

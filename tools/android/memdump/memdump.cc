@@ -11,6 +11,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,10 +37,11 @@ struct PageMapEntry {
   uint present : 1;
 };
 
-// Describes a virtual page.
+// Describes a memory page.
 struct PageInfo {
-  int64 page_frame_number : 55;  // Physical page id, also known as PFN.
-  int64 times_mapped : 9 + 32;
+  int64 page_frame_number; // Physical page id, also known as PFN.
+  int64 flags;
+  int32 times_mapped;
 };
 
 struct MemoryMap {
@@ -48,7 +50,9 @@ struct MemoryMap {
   uint start_address;
   uint end_address;
   int private_count;
+  int unevictable_private_count;
   int other_shared_count;
+  int unevictable_other_shared_count;
   // app_shared_counts[i] contains the number of pages mapped in i+2 processes
   // (only among the processes that are being analyzed).
   std::vector<int> app_shared_counts;
@@ -59,6 +63,20 @@ struct ProcessMemory {
   pid_t pid;
   std::vector<MemoryMap> memory_maps;
 };
+
+bool PageIsUnevictable(const PageInfo& page_info) {
+  // These constants are taken from kernel-page-flags.h.
+  const int KPF_DIRTY = 4; // Note that only file-mapped pages can be DIRTY.
+  const int KPF_ANON = 12; // Anonymous pages are dirty per definition.
+  const int KPF_UNEVICTABLE = 18;
+  const int KPF_MLOCKED = 33;
+
+  return (page_info.flags & ((1ll << KPF_DIRTY) |
+                             (1ll << KPF_ANON) |
+                             (1ll << KPF_UNEVICTABLE) |
+                             (1ll << KPF_MLOCKED))) ?
+                             true : false;
+}
 
 // Number of times a physical page is mapped in a process.
 typedef base::hash_map<uint64, int> PFNMap;
@@ -169,16 +187,29 @@ bool GetPagesForMemoryMap(int pagemap_fd,
   return true;
 }
 
-bool SetTimesMapped(int pagecount_fd, std::vector<PageInfo>* pages) {
+// Fills |committed_pages| with mapping count and flags information gathered
+// looking-up /proc/kpagecount and /proc/kpageflags.
+bool SetPagesInfo(int pagecount_fd,
+                  int pageflags_fd,
+                  std::vector<PageInfo>* pages) {
   for (std::vector<PageInfo>::iterator it = pages->begin();
        it != pages->end(); ++it) {
     PageInfo* const page_info = &*it;
+
     int64 times_mapped;
     if (!ReadFromFileAtOffset(
             pagecount_fd, page_info->page_frame_number, &times_mapped)) {
       return false;
     }
-    page_info->times_mapped = times_mapped;
+    DCHECK(times_mapped <= std::numeric_limits<int32_t>::max());
+    page_info->times_mapped = static_cast<int32>(times_mapped);
+
+    int64 page_flags;
+    if (!ReadFromFileAtOffset(
+            pageflags_fd, page_info->page_frame_number, &page_flags)) {
+      return false;
+    }
+    page_info->flags = page_flags;
   }
   return true;
 }
@@ -230,6 +261,8 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
         const PageInfo& page_info = *it;
         if (page_info.times_mapped == 1) {
           ++memory_map->private_count;
+          if (PageIsUnevictable(page_info))
+            ++memory_map->unevictable_private_count;
           continue;
         }
         const uint64 page_frame_number = page_info.page_frame_number;
@@ -264,9 +297,14 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
           } else {
             // The physical page is mapped multiple times in the same process.
             ++memory_map->private_count;
+            if (PageIsUnevictable(page_info))
+              ++memory_map->unevictable_private_count;
           }
         } else {
           ++memory_map->other_shared_count;
+          if (PageIsUnevictable(page_info))
+            ++memory_map->unevictable_other_shared_count;
+
         }
       }
     }
@@ -300,11 +338,15 @@ void DumpProcessesMemoryMaps(
       app_shared_buf.clear();
       AppendAppSharedField(memory_map.app_shared_counts, &app_shared_buf);
       base::SStringPrintf(
-          &buf, "%x-%x %s private=%d shared_app=%s shared_other=%d %s\n",
+          &buf,
+          "%x-%x %s private_unevictable=%d private=%d shared_app=%s "
+          "shared_other_unevictable=%d shared_other=%d %s\n",
           memory_map.start_address,
           memory_map.end_address, memory_map.flags.c_str(),
+          memory_map.unevictable_private_count * PAGE_SIZE,
           memory_map.private_count * PAGE_SIZE,
           app_shared_buf.c_str(),
+          memory_map.unevictable_other_shared_count * PAGE_SIZE,
           memory_map.other_shared_count * PAGE_SIZE,
           memory_map.name.c_str());
       std::cout << buf;
@@ -346,6 +388,7 @@ void DumpProcessesMemoryMapsInShortFormat(
 }
 
 bool CollectProcessMemoryInformation(int page_count_fd,
+                                     int page_flags_fd,
                                      ProcessMemory* process_memory) {
   const pid_t pid = process_memory->pid;
   int pagemap_fd = open(
@@ -362,7 +405,7 @@ bool CollectProcessMemoryInformation(int page_count_fd,
        it != process_maps->end(); ++it) {
     std::vector<PageInfo>* const committed_pages = &it->committed_pages;
     GetPagesForMemoryMap(pagemap_fd, *it, committed_pages);
-    SetTimesMapped(page_count_fd, committed_pages);
+    SetPagesInfo(page_count_fd, page_flags_fd, committed_pages);
   }
   return true;
 }
@@ -402,10 +445,19 @@ int main(int argc, char** argv) {
   {
     int page_count_fd = open("/proc/kpagecount", O_RDONLY);
     if (page_count_fd < 0) {
-      PLOG(ERROR) << "open";
+      PLOG(ERROR) << "open /proc/kpagecount";
       return EXIT_FAILURE;
     }
+
+    int page_flags_fd = open("/proc/kpageflags", O_RDONLY);
+    if (page_flags_fd < 0) {
+      PLOG(ERROR) << "open /proc/kpageflags";
+      return EXIT_FAILURE;
+    }
+
     file_util::ScopedFD page_count_fd_closer(&page_count_fd);
+    file_util::ScopedFD page_flags_fd_closer(&page_flags_fd);
+
     base::ScopedClosureRunner auto_resume_processes(
         base::Bind(&KillAll, pids, SIGCONT));
     KillAll(pids, SIGSTOP);
@@ -414,10 +466,13 @@ int main(int argc, char** argv) {
       ProcessMemory* const process_memory =
           &processes_memory[it - pids.begin()];
       process_memory->pid = *it;
-      if (!CollectProcessMemoryInformation(page_count_fd, process_memory))
+      if (!CollectProcessMemoryInformation(page_count_fd,
+                                           page_flags_fd,
+                                           process_memory))
         return EXIT_FAILURE;
     }
   }
+
   ClassifyPages(&processes_memory);
   if (short_output)
     DumpProcessesMemoryMapsInShortFormat(processes_memory);
