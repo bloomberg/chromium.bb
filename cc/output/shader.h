@@ -262,7 +262,7 @@ class VertexShaderVideoTransform {
  public:
   VertexShaderVideoTransform();
 
-  bool Init(WebKit::WebGraphicsContext3D* context,
+  void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
             bool using_bind_uniform,
             int* base_uniform_index);
@@ -390,7 +390,7 @@ class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
   FragmentShaderOESImageExternal();
 
   std::string GetShaderString(TexCoordPrecision precision) const;
-  bool Init(WebKit::WebGraphicsContext3D* context,
+  void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
             bool using_bind_uniform,
             int* base_uniform_index);

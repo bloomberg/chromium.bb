@@ -24,23 +24,18 @@ namespace {
 
 static void GetProgramUniformLocations(WebGraphicsContext3D* context,
                                        unsigned program,
-                                       const char** shader_uniforms,
                                        size_t count,
-                                       size_t max_locations,
+                                       const char** uniforms,
                                        int* locations,
                                        bool using_bind_uniform,
                                        int* base_uniform_index) {
-  for (size_t uniform_index = 0; uniform_index < count; uniform_index ++) {
-    DCHECK(uniform_index < max_locations);
-
+  for (size_t i = 0; i < count; i++) {
     if (using_bind_uniform) {
-      locations[uniform_index] = (*base_uniform_index)++;
-      context->bindUniformLocationCHROMIUM(program,
-                                           locations[uniform_index],
-                                           shader_uniforms[uniform_index]);
+      locations[i] = (*base_uniform_index)++;
+      context->bindUniformLocationCHROMIUM(program, locations[i], uniforms[i]);
     } else {
-      locations[uniform_index] =
-          context->getUniformLocation(program, shader_uniforms[uniform_index]);
+      locations[i] = context->getUniformLocation(program, uniforms[i]);
+      DCHECK_NE(locations[i], -1);
     }
   }
 }
@@ -128,22 +123,19 @@ void VertexShaderPosTex::Init(WebGraphicsContext3D* context,
                               unsigned program,
                               bool using_bind_uniform,
                               int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
       "matrix",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
-  DCHECK_NE(matrix_location_, -1);
 }
 
 std::string VertexShaderPosTex::GetShaderString() const {
@@ -167,24 +159,21 @@ void VertexShaderPosTexYUVStretch::Init(WebGraphicsContext3D* context,
                                         unsigned program,
                                         bool using_bind_uniform,
                                         int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "texScale",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   tex_scale_location_ = locations[1];
-  DCHECK(matrix_location_ != -1 && tex_scale_location_ != -1);
 }
 
 std::string VertexShaderPosTexYUVStretch::GetShaderString() const {
@@ -209,22 +198,19 @@ void VertexShaderPos::Init(WebGraphicsContext3D* context,
                            unsigned program,
                            bool using_bind_uniform,
                            int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
       "matrix",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
-  DCHECK_NE(matrix_location_, -1);
 }
 
 std::string VertexShaderPos::GetShaderString() const {
@@ -246,27 +232,23 @@ void VertexShaderPosTexTransform::Init(WebGraphicsContext3D* context,
                                        unsigned program,
                                        bool using_bind_uniform,
                                        int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "texTransform",
     "opacity",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   tex_transform_location_ = locations[1];
   vertex_opacity_location_ = locations[2];
-  DCHECK(matrix_location_ != -1 && tex_transform_location_ != -1 &&
-         vertex_opacity_location_ != -1);
 }
 
 std::string VertexShaderPosTexTransform::GetShaderString() const {
@@ -280,9 +262,9 @@ std::string VertexShaderPosTexTransform::GetShaderString() const {
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
     void main() {
-      gl_Position = matrix[int(a_index * 0.25)] * a_position;  // NOLINT
-      TexCoordPrecision vec4 texTrans =
-          texTransform[int(a_index * 0.25)];  // NOLINT
+      int quad_index = int(a_index * 0.25);  // NOLINT
+      gl_Position = matrix[quad_index] * a_position;
+      TexCoordPrecision vec4 texTrans = texTransform[quad_index];
       v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
       v_alpha = opacity[int(a_index)]; // NOLINT
     }
@@ -308,25 +290,21 @@ void VertexShaderQuad::Init(WebGraphicsContext3D* context,
                             unsigned program,
                             bool using_bind_uniform,
                             int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "quad",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   quad_location_ = locations[1];
-  DCHECK_NE(matrix_location_, -1);
-  DCHECK_NE(quad_location_, -1);
 }
 
 std::string VertexShaderQuad::GetShaderString() const {
@@ -343,8 +321,7 @@ std::string VertexShaderQuad::GetShaderString() const {
     varying TexCoordPrecision vec2 dummy_varying;
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
       dummy_varying = dummy_uniform;
     }
   );  // NOLINT(whitespace/parens)
@@ -356,8 +333,7 @@ std::string VertexShaderQuad::GetShaderString() const {
     uniform TexCoordPrecision vec2 quad[4];
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
     }
   );  // NOLINT(whitespace/parens)
 #endif
@@ -373,31 +349,25 @@ void VertexShaderQuadAA::Init(WebGraphicsContext3D* context,
                             unsigned program,
                             bool using_bind_uniform,
                             int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "viewport",
     "quad",
     "edge",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   viewport_location_ = locations[1];
   quad_location_ = locations[2];
   edge_location_ = locations[3];
-  DCHECK_NE(matrix_location_, -1);
-  DCHECK_NE(viewport_location_, -1);
-  DCHECK_NE(quad_location_, -1);
-  DCHECK_NE(edge_location_, -1);
 }
 
 std::string VertexShaderQuadAA::GetShaderString() const {
@@ -412,8 +382,7 @@ std::string VertexShaderQuadAA::GetShaderString() const {
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
       edge_dist[0] = vec4(dot(edge[0], screen_pos),
@@ -439,34 +408,27 @@ void VertexShaderQuadTexTransformAA::Init(WebGraphicsContext3D* context,
                                         unsigned program,
                                         bool using_bind_uniform,
                                         int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "viewport",
     "quad",
     "edge",
     "texTrans",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   viewport_location_ = locations[1];
   quad_location_ = locations[2];
   edge_location_ = locations[3];
   tex_transform_location_ = locations[4];
-  DCHECK_NE(matrix_location_, -1);
-  DCHECK_NE(viewport_location_, -1);
-  DCHECK_NE(quad_location_, -1);
-  DCHECK_NE(edge_location_, -1);
-  DCHECK_NE(tex_transform_location_, -1);
 }
 
 std::string VertexShaderQuadTexTransformAA::GetShaderString() const {
@@ -483,8 +445,7 @@ std::string VertexShaderQuadTexTransformAA::GetShaderString() const {
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
       edge_dist[0] = vec4(dot(edge[0], screen_pos),
@@ -509,27 +470,23 @@ void VertexShaderTile::Init(WebGraphicsContext3D* context,
                             unsigned program,
                             bool using_bind_uniform,
                             int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "quad",
     "vertexTexTransform",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   quad_location_ = locations[1];
   vertex_tex_transform_location_ = locations[2];
-  DCHECK(matrix_location_ != -1 && quad_location_ != -1 &&
-         vertex_tex_transform_location_ != -1);
 }
 
 std::string VertexShaderTile::GetShaderString() const {
@@ -542,8 +499,7 @@ std::string VertexShaderTile::GetShaderString() const {
     varying TexCoordPrecision vec2 v_texCoord;
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
       v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
     }
   );  // NOLINT(whitespace/parens)
@@ -560,34 +516,27 @@ void VertexShaderTileAA::Init(WebGraphicsContext3D* context,
                               unsigned program,
                               bool using_bind_uniform,
                               int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "viewport",
     "quad",
     "edge",
     "vertexTexTransform",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   viewport_location_ = locations[1];
   quad_location_ = locations[2];
   edge_location_ = locations[3];
   vertex_tex_transform_location_ = locations[4];
-  DCHECK_NE(matrix_location_, -1);
-  DCHECK_NE(viewport_location_, -1);
-  DCHECK_NE(quad_location_, -1);
-  DCHECK_NE(edge_location_, -1);
-  DCHECK_NE(vertex_tex_transform_location_, -1);
 }
 
 std::string VertexShaderTileAA::GetShaderString() const {
@@ -604,8 +553,7 @@ std::string VertexShaderTileAA::GetShaderString() const {
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(
-          pos.x, pos.y, a_position.z, a_position.w);
+      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
       edge_dist[0] = vec4(dot(edge[0], screen_pos),
@@ -625,28 +573,25 @@ VertexShaderVideoTransform::VertexShaderVideoTransform()
     : matrix_location_(-1),
       tex_matrix_location_(-1) {}
 
-bool VertexShaderVideoTransform::Init(WebGraphicsContext3D* context,
+void VertexShaderVideoTransform::Init(WebGraphicsContext3D* context,
                                       unsigned program,
                                       bool using_bind_uniform,
                                       int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "matrix",
     "texMatrix",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   matrix_location_ = locations[0];
   tex_matrix_location_ = locations[1];
-  return matrix_location_ != -1 && tex_matrix_location_ != -1;
 }
 
 std::string VertexShaderVideoTransform::GetShaderString() const {
@@ -672,24 +617,21 @@ void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
                                    unsigned program,
                                    bool using_bind_uniform,
                                    int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "alpha",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
-  DCHECK(sampler_location_ != -1 && alpha_location_ != -1);
 }
 
 FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
@@ -702,29 +644,25 @@ void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
                                               unsigned program,
                                               bool using_bind_uniform,
                                               int* base_uniform_index) {
-    static const char* shader_uniforms[] = {
-        "s_texture",
-        "alpha",
-        "colorMatrix",
-        "colorOffset",
-    };
-    int locations[arraysize(shader_uniforms)];
+  static const char* uniforms[] = {
+    "s_texture",
+    "alpha",
+    "colorMatrix",
+    "colorOffset",
+  };
+  int locations[arraysize(uniforms)];
 
-    GetProgramUniformLocations(context,
-                               program,
-                               shader_uniforms,
-                               arraysize(shader_uniforms),
-                               arraysize(locations),
-                               locations,
-                               using_bind_uniform,
-                               base_uniform_index);
-
-    sampler_location_ = locations[0];
-    alpha_location_ = locations[1];
-    color_matrix_location_ = locations[2];
-    color_offset_location_ = locations[3];
-    DCHECK(sampler_location_ != -1 && alpha_location_ != -1 &&
-        color_matrix_location_ != -1 && color_offset_location_ != -1);
+  GetProgramUniformLocations(context,
+                             program,
+                             arraysize(uniforms),
+                             uniforms,
+                             locations,
+                             using_bind_uniform,
+                             base_uniform_index);
+  sampler_location_ = locations[0];
+  alpha_location_ = locations[1];
+  color_matrix_location_ = locations[2];
+  color_offset_location_ = locations[3];
 }
 
 FragmentTexOpaqueBinding::FragmentTexOpaqueBinding()
@@ -734,47 +672,41 @@ void FragmentTexOpaqueBinding::Init(WebGraphicsContext3D* context,
                                     unsigned program,
                                     bool using_bind_uniform,
                                     int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
-  DCHECK_NE(sampler_location_, -1);
 }
 
 FragmentShaderOESImageExternal::FragmentShaderOESImageExternal()
     : sampler_location_(-1) {}
 
-bool FragmentShaderOESImageExternal::Init(WebGraphicsContext3D* context,
+void FragmentShaderOESImageExternal::Init(WebGraphicsContext3D* context,
                                           unsigned program,
                                           bool using_bind_uniform,
                                           int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
-  return sampler_location_ != -1;
 }
 
 std::string FragmentShaderOESImageExternal::GetShaderString(
@@ -932,25 +864,21 @@ void FragmentShaderRGBATexAlphaAA::Init(WebGraphicsContext3D* context,
                                         unsigned program,
                                         bool using_bind_uniform,
                                         int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "alpha",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
-  DCHECK_NE(sampler_location_, -1);
-  DCHECK_NE(alpha_location_, -1);
 }
 
 std::string FragmentShaderRGBATexAlphaAA::GetShaderString(
@@ -981,27 +909,23 @@ void FragmentTexClampAlphaAABinding::Init(WebGraphicsContext3D* context,
                                           unsigned program,
                                           bool using_bind_uniform,
                                           int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "alpha",
     "fragmentTexTransform",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
   fragment_tex_transform_location_ = locations[2];
-  DCHECK(sampler_location_ != -1 && alpha_location_ != -1 &&
-         fragment_tex_transform_location_ != -1);
 }
 
 std::string FragmentShaderRGBATexClampAlphaAA::GetShaderString(
@@ -1061,31 +985,27 @@ void FragmentShaderRGBATexAlphaMask::Init(WebGraphicsContext3D* context,
                                           unsigned program,
                                           bool using_bind_uniform,
                                           int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "s_mask",
     "alpha",
     "maskTexCoordScale",
     "maskTexCoordOffset",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
   alpha_location_ = locations[2];
   mask_tex_coord_scale_location_ = locations[3];
   mask_tex_coord_offset_location_ = locations[4];
-  DCHECK(sampler_location_ != -1 && mask_sampler_location_ != -1 &&
-         alpha_location_ != -1);
 }
 
 std::string FragmentShaderRGBATexAlphaMask::GetShaderString(
@@ -1120,34 +1040,27 @@ void FragmentShaderRGBATexAlphaMaskAA::Init(WebGraphicsContext3D* context,
                                             unsigned program,
                                             bool using_bind_uniform,
                                             int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "s_mask",
     "alpha",
     "maskTexCoordScale",
     "maskTexCoordOffset",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
   alpha_location_ = locations[2];
   mask_tex_coord_scale_location_ = locations[3];
   mask_tex_coord_offset_location_ = locations[4];
-  DCHECK_NE(sampler_location_, -1);
-  DCHECK_NE(mask_sampler_location_, -1);
-  DCHECK_NE(alpha_location_, -1);
-  DCHECK_NE(mask_tex_coord_scale_location_, -1);
-  DCHECK_NE(mask_tex_coord_offset_location_, -1);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
@@ -1190,7 +1103,7 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
     unsigned program,
     bool using_bind_uniform,
     int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "s_mask",
     "alpha",
@@ -1199,17 +1112,15 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
     "colorMatrix",
     "colorOffset",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
   alpha_location_ = locations[2];
@@ -1217,13 +1128,6 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
   mask_tex_coord_offset_location_ = locations[4];
   color_matrix_location_ = locations[5];
   color_offset_location_ = locations[6];
-  DCHECK_NE(sampler_location_, -1);
-  DCHECK_NE(mask_sampler_location_, -1);
-  DCHECK_NE(alpha_location_, -1);
-  DCHECK_NE(mask_tex_coord_offset_location_, -1);
-  DCHECK_NE(alpha_location_, -1);
-  DCHECK_NE(color_matrix_location_, -1);
-  DCHECK_NE(color_offset_location_, -1);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
@@ -1271,31 +1175,25 @@ void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
       unsigned program,
       bool using_bind_uniform,
       int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "alpha",
     "colorMatrix",
     "colorOffset",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
   color_matrix_location_ = locations[2];
   color_offset_location_ = locations[3];
-  DCHECK_NE(sampler_location_, -1);
-  DCHECK_NE(alpha_location_, -1);
-  DCHECK_NE(color_matrix_location_, -1);
-  DCHECK_NE(color_offset_location_, -1);
 }
 
 std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString(
@@ -1336,7 +1234,7 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
     unsigned program,
     bool using_bind_uniform,
     int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "s_texture",
     "s_mask",
     "alpha",
@@ -1345,17 +1243,15 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
     "colorMatrix",
     "colorOffset",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
   alpha_location_ = locations[2];
@@ -1363,9 +1259,6 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
   mask_tex_coord_offset_location_ = locations[4];
   color_matrix_location_ = locations[5];
   color_offset_location_ = locations[6];
-  DCHECK(sampler_location_ != -1 && mask_sampler_location_ != -1 &&
-      alpha_location_ != -1 && color_matrix_location_ != -1 &&
-      color_offset_location_ != -1);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString(
@@ -1408,7 +1301,7 @@ void FragmentShaderYUVVideo::Init(WebGraphicsContext3D* context,
                                   unsigned program,
                                   bool using_bind_uniform,
                                   int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "y_texture",
     "u_texture",
     "v_texture",
@@ -1416,27 +1309,21 @@ void FragmentShaderYUVVideo::Init(WebGraphicsContext3D* context,
     "yuv_matrix",
     "yuv_adj",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   y_texture_location_ = locations[0];
   u_texture_location_ = locations[1];
   v_texture_location_ = locations[2];
   alpha_location_ = locations[3];
   yuv_matrix_location_ = locations[4];
   yuv_adj_location_ = locations[5];
-
-  DCHECK(y_texture_location_ != -1 && u_texture_location_ != -1 &&
-         v_texture_location_ != -1 && alpha_location_ != -1 &&
-         yuv_matrix_location_ != -1 && yuv_adj_location_ != -1);
 }
 
 std::string FragmentShaderYUVVideo::GetShaderString(
@@ -1476,7 +1363,7 @@ void FragmentShaderYUVAVideo::Init(WebGraphicsContext3D* context,
                                    unsigned program,
                                    bool using_bind_uniform,
                                    int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
       "y_texture",
       "u_texture",
       "v_texture",
@@ -1485,17 +1372,15 @@ void FragmentShaderYUVAVideo::Init(WebGraphicsContext3D* context,
       "cc_matrix",
       "yuv_adj",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   y_texture_location_ = locations[0];
   u_texture_location_ = locations[1];
   v_texture_location_ = locations[2];
@@ -1503,11 +1388,6 @@ void FragmentShaderYUVAVideo::Init(WebGraphicsContext3D* context,
   alpha_location_ = locations[4];
   yuv_matrix_location_ = locations[5];
   yuv_adj_location_ = locations[6];
-
-  DCHECK(y_texture_location_ != -1 && u_texture_location_ != -1 &&
-         v_texture_location_ != -1 && a_texture_location_ != -1 &&
-         alpha_location_ != -1 && yuv_matrix_location_ != -1 &&
-         yuv_adj_location_ != -1);
 }
 
 std::string FragmentShaderYUVAVideo::GetShaderString(
@@ -1542,22 +1422,19 @@ void FragmentShaderColor::Init(WebGraphicsContext3D* context,
                                unsigned program,
                                bool using_bind_uniform,
                                int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "color",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   color_location_ = locations[0];
-  DCHECK_NE(color_location_, -1);
 }
 
 std::string FragmentShaderColor::GetShaderString(
@@ -1578,22 +1455,19 @@ void FragmentShaderColorAA::Init(WebGraphicsContext3D* context,
                                  unsigned program,
                                  bool using_bind_uniform,
                                  int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "color",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   color_location_ = locations[0];
-  DCHECK_NE(color_location_, -1);
 }
 
 std::string FragmentShaderColorAA::GetShaderString(
@@ -1621,29 +1495,25 @@ void FragmentShaderCheckerboard::Init(WebGraphicsContext3D* context,
                                       unsigned program,
                                       bool using_bind_uniform,
                                       int* base_uniform_index) {
-  static const char* shader_uniforms[] = {
+  static const char* uniforms[] = {
     "alpha",
     "texTransform",
     "frequency",
     "color",
   };
-  int locations[arraysize(shader_uniforms)];
+  int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             shader_uniforms,
-                             arraysize(shader_uniforms),
-                             arraysize(locations),
+                             arraysize(uniforms),
+                             uniforms,
                              locations,
                              using_bind_uniform,
                              base_uniform_index);
-
   alpha_location_ = locations[0];
   tex_transform_location_ = locations[1];
   frequency_location_ = locations[2];
   color_location_ = locations[3];
-  DCHECK(alpha_location_ != -1 && tex_transform_location_ != -1 &&
-         frequency_location_ != -1 && color_location_ != -1);
 }
 
 std::string FragmentShaderCheckerboard::GetShaderString(
