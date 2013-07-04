@@ -89,6 +89,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void setShowPaintRects(bool show);
   virtual void setShowDebugBorders(bool show);
   virtual void setContinuousPaintingEnabled(bool enabled);
+  virtual void setShowScrollBottleneckRects(bool show);
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginFrame() OVERRIDE;

@@ -499,6 +499,14 @@ void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
+void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
+  debug_state.show_touch_event_handler_rects = show;
+  debug_state.show_wheel_event_handler_rects = show;
+  debug_state.show_non_fast_scrollable_rects = show;
+  layer_tree_host_->SetDebugState(debug_state);
+}
+
 void RenderWidgetCompositor::WillBeginFrame() {
   widget_->InstrumentWillBeginFrame();
   widget_->willBeginCompositorFrame();
