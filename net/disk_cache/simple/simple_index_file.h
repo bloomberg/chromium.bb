@@ -91,14 +91,15 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
  private:
   friend class WrappedSimpleIndexFile;
 
-  // Using the mtime of the file and its mtime, detects if the index file is
-  // stale.
-  static bool IsIndexFileStale(const base::FilePath& index_filename);
+  // Synchronous (IO performing) implementation of LoadIndexEntries.
+  static void SyncLoadIndexEntries(
+      const base::FilePath& index_file_path,
+      scoped_refptr<base::SingleThreadTaskRunner> response_thread,
+      const SimpleIndexFile::IndexCompletionCallback& completion_callback);
 
-  // Load the index file from disk, deserializing it and returning the
-  // corresponding EntrySet in a scoped_ptr<>, if successful.
-  // Uppon failure, the scoped_ptr<> will contain NULL.
-  static scoped_ptr<SimpleIndex::EntrySet> LoadFromDisk(
+  // Load the index file from disk returning an EntrySet. Upon failure, returns
+  // NULL.
+  static scoped_ptr<SimpleIndex::EntrySet> SyncLoadFromDisk(
       const base::FilePath& index_filename);
 
   // Returns a scoped_ptr for a newly allocated Pickle containing the serialized
@@ -107,17 +108,18 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
       const SimpleIndexFile::IndexMetadata& index_metadata,
       const SimpleIndex::EntrySet& entries);
 
-  static void LoadIndexEntriesInternal(
-      const base::FilePath& index_file_path,
-      scoped_refptr<base::SingleThreadTaskRunner> response_thread,
-      const SimpleIndexFile::IndexCompletionCallback& completion_callback);
-
-  // Deserialize() is separate from LoadFromDisk() for easier testing.
+  // Given the contents of an index file |data| of length |data_len|, returns
+  // the corresponding EntrySet. Returns NULL on error.
   static scoped_ptr<SimpleIndex::EntrySet> Deserialize(const char* data,
                                                        int data_len);
 
-  static scoped_ptr<SimpleIndex::EntrySet> RestoreFromDisk(
+  // Scan the index directory for entries, returning an EntrySet of all entries
+  // found.
+  static scoped_ptr<SimpleIndex::EntrySet> SyncRestoreFromDisk(
       const base::FilePath& index_file_path);
+
+  // Determines if an index file is stale relative to the cache directory.
+  static bool IsIndexFileStale(const base::FilePath& index_filename);
 
   struct PickleHeader : public Pickle::Header {
     uint32 crc;

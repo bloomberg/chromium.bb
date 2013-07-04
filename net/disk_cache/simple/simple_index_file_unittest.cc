@@ -58,7 +58,6 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
   using SimpleIndexFile::Deserialize;
   using SimpleIndexFile::IsIndexFileStale;
   using SimpleIndexFile::kIndexFileName;
-  using SimpleIndexFile::LoadFromDisk;
   using SimpleIndexFile::Serialize;
 
   explicit WrappedSimpleIndexFile(const base::FilePath& index_file_directory)
