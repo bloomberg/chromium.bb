@@ -68,7 +68,6 @@ DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   DictionaryValue* item = new DictionaryValue;
   item->SetString("name", network->name());
   item->SetString("device_path", network->device_path());
-  item->SetString("ip_address", network->ip_address());
   item->SetString("status", network->GetStateString());
   return item;
 }
@@ -529,9 +528,6 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
 
   return_value->SetBoolean("offline_mode",
                            net::NetworkChangeNotifier::IsOffline());
-
-  // IP address.
-  return_value->SetString("ip_address", network_library->IPAddress());
 
   // Currently connected networks.
   if (network_library->ethernet_network())

@@ -4547,19 +4547,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'ethernet_networks':
             { u'/service/ethernet_abcd':
                 { u'device_path': u'/device/abcdeth',
-                  u'ip_address': u'11.22.33.44',
                   u'name': u'',
                   u'service_path':
                   u'/profile/default/ethernet_abcd',
                   u'status': u'Connected'}
               u'network_type': pyautolib.TYPE_ETHERNET },
-        u'ip_address': u'11.22.33.44',
         u'remembered_wifi':
             { u'/service/wifi_abcd_1234_managed_none':
                 { u'device_path': u'',
                   u'encrypted': False,
                   u'encryption': u'',
-                  u'ip_address': '',
                   u'name': u'WifiNetworkName1',
                   u'status': u'Unknown',
                   u'strength': 0},
@@ -4572,14 +4569,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                 { u'device_path': u'/device/abcdwifi',
                   u'encrypted': False,
                   u'encryption': u'',
-                  u'ip_address': u'123.123.123.123',
                   u'name': u'WifiNetworkName1',
                   u'status': u'Connected',
                   u'strength': 76},
               u'/service/wifi_abcd_1234_managed_802_1x':
                   { u'encrypted': True,
                     u'encryption': u'8021X',
-                    u'ip_address': u'',
                     u'name': u'WifiNetworkName2',
                     u'status': u'Idle',
                     u'strength': 79}
