@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h"
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
@@ -90,6 +91,8 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
       AcceleratedPresenter::GetForWindow(NULL);
   any_window->SetNewTargetWindow(hwnd);
   aura::RemoteRootWindowHostWin::Instance()->Connected(this);
+  ash::Shell::GetInstance()->CreateLauncher();
+  ash::Shell::GetInstance()->ShowLauncher();
   // Tell the rest of Chrome that Ash is running.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_ASH_SESSION_STARTED,
