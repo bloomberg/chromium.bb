@@ -140,7 +140,7 @@
       }]
     },
     {
-      'target_name': 'bindings_derived_sources',
+      'target_name': 'bindings_sources',
       'type': 'none',
       'hard_dependency': 1,
       'dependencies': [
@@ -151,23 +151,6 @@
         '<@(idl_files)',
         '<@(webcore_test_support_idl_files)',
       ],
-      'actions': [{
-        'action_name': 'derived_sources_all_in_one',
-        'inputs': [
-          '../core/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-        ],
-        'outputs': [
-          '<@(derived_sources_aggregate_files)',
-        ],
-        'action': [
-          'python',
-          '../core/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-          '--',
-          '<@(derived_sources_aggregate_files)',
-        ],
-      }],
       'rules': [{
         'rule_name': 'binding',
         'extension': 'idl',
@@ -180,10 +163,6 @@
           'scripts/IDLAttributes.txt',
           '../core/scripts/preprocessor.pm',
           '<!@pymod_do_main(supplemental_idl_files <@(idl_files))',
-          '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
-          '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
-          '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
-          '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
         ],
         'outputs': [
           # FIXME:  The .cpp file should be in webkit/bindings once
@@ -208,6 +187,10 @@
         # the unfortunate fact that GYP strips duplicate arguments
         # from lists.  When we have a better GYP way to suppress that
         # behavior, change the output location.
+        #
+        # sanitize-win-build-log.sed uses a regex which matches this command
+        # line (Perl script + .idl file being processed).
+        # Update that regex if command line changes (other than changing flags)
         'action': [
           '<(perl_exe)',
           '-w',
@@ -229,11 +212,37 @@
           '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
           '--additionalIdlFiles',
           '<(webcore_test_support_idl_files)',
-          '<(RULE_INPUT_PATH)',
           '<@(preprocessor)',
           '<@(write_file_only_if_changed)',
+          '<(RULE_INPUT_PATH)',
         ],
         'message': 'Generating binding from <(RULE_INPUT_PATH)',
+      }],
+    },
+    {
+      'target_name': 'bindings_derived_sources',
+      'type': 'none',
+      'hard_dependency': 1,
+      'dependencies': [
+        'supplemental_dependencies',
+        'bindings_sources',
+      ],
+      'actions': [{
+        'action_name': 'derived_sources_all_in_one',
+        'inputs': [
+          '../core/scripts/action_derivedsourcesallinone.py',
+        ],
+        'outputs': [
+          '<@(derived_sources_aggregate_files)',
+        ],
+        'action': [
+          'python',
+          '../core/scripts/action_derivedsourcesallinone.py',
+          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+          '--',
+          '<@(derived_sources_aggregate_files)',
+        ],
+        'message': 'Generating bindings derived sources',
       }],
     },
   ],
