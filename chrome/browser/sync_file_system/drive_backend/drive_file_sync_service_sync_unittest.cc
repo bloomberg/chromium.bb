@@ -422,6 +422,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   scoped_ptr<DriveFileSyncService> remote_sync_service_;
   scoped_ptr<LocalFileSyncService> local_sync_service_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncServiceSyncTest);
 };
 

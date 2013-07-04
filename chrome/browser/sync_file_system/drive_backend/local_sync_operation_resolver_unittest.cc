@@ -88,6 +88,7 @@ class LocalSyncOperationResolverTest : public testing::Test {
   typedef LocalSyncOperationResolver Resolver;
   typedef std::vector<SyncOperationType> ExpectedTypes;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(LocalSyncOperationResolverTest);
 };
 

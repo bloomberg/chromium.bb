@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef  CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_SYNC_OPERATION_RESOLVER_H_
-#define  CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_SYNC_OPERATION_RESOLVER_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_SYNC_OPERATION_RESOLVER_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_SYNC_OPERATION_RESOLVER_H_
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/sync_file_system/sync_operation_type.h"

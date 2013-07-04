@@ -97,6 +97,7 @@ class RemoteSyncOperationResolverTest : public testing::Test {
   typedef RemoteSyncOperationResolver Resolver;
   typedef std::vector<SyncOperationType> ExpectedTypes;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(RemoteSyncOperationResolverTest);
 };
 

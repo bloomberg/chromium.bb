@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_UTIL_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_UTIL_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_FILE_SYNC_UTIL_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_FILE_SYNC_UTIL_H_
 
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
@@ -39,4 +39,4 @@ class ScopedDisableDriveAPI {
 
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_UTIL_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_FILE_SYNC_UTIL_H_

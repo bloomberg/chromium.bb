@@ -136,8 +136,8 @@ void VerifyFileDeletion(const tracked_objects::Location& from_here,
 
 class FakeDriveServiceWrapper : public FakeDriveService {
  public:
-  FakeDriveServiceWrapper() : make_directory_conflict_(false) {};
-  virtual ~FakeDriveServiceWrapper() {};
+  FakeDriveServiceWrapper() : make_directory_conflict_(false) {}
+  virtual ~FakeDriveServiceWrapper() {}
 
   // DriveServiceInterface overrides.
   virtual google_apis::CancelCallback AddNewDirectory(

@@ -164,7 +164,7 @@ GDataErrorCode FakeDriveServiceHelper::RemoveResource(
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   fake_drive_service_->DeleteResource(
       file_id,
-      std::string(), // etag
+      std::string(),  // etag
       base::Bind(&GDataErrorResultCallback, &error));
   FlushMessageLoop();
   return error;
