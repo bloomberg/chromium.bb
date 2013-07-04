@@ -1180,7 +1180,6 @@ webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 
 # These test will require baselines
-crbug.com/231504 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
 crbug.com/231504 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
 
 # This test is consistently leaking state into the next test.
@@ -1579,14 +1578,14 @@ crbug.com/231914 fast/forms/state-restore-broken-state.html [ Failure ]
 crbug.com/231917 fast/parser/external-entities-in-xslt.xml [ Failure ]
 crbug.com/231918 fast/regions/css-regions-disabled.html [ Failure ]
 crbug.com/231922 [ Linux Mac ] fast/workers/storage/test-authorizer-sync.html [ Failure ]
-crbug.com/231922 [ Linux Mac ] fast/workers/storage/test-authorizer.html [ Failure ]
-crbug.com/231922 [ Linux Mac ] storage/websql/test-authorizer.html [ Failure ]
+crbug.com/231922 [ Mac ] fast/workers/storage/test-authorizer.html [ Failure ]
+crbug.com/231922 [ Mac ] storage/websql/test-authorizer.html [ Failure ]
 crbug.com/231926 http/tests/loading/progress-finished-callback.html [ Failure ]
 crbug.com/231927 http/tests/misc/createElementNamespace1.xml [ Failure ]
 crbug.com/231929 http/tests/navigation/no-referrer-target-blank.html [ Failure ]
 crbug.com/231931 http/tests/security/local-user-CSS-from-remote.html [ Failure ]
 crbug.com/231932 http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure ]
-crbug.com/231940 [ Linux Mac ] storage/websql/sql-error-codes.html [ Failure ]
+crbug.com/231940 [ Mac ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/231942 svg/dom/fuzz-path-parser.html [ Failure ]
 crbug.com/231859 [ Win Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/231950 editing/pasteboard/drag-and-drop-objectimage-contenteditable.html [ Timeout ]
@@ -1837,6 +1836,6 @@ crbug.com/256226 [ Win7 Mac Linux Debug ] webmidi/requestmidiaccess.html [ Crash
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Pass Failure ]
 
-Bug(cbiesinger) [ Win Mac ] fast/forms/button-default-title.html [ Failure ]
+Bug(cbiesinger) [ Win ] fast/forms/button-default-title.html [ Failure ]
 
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
