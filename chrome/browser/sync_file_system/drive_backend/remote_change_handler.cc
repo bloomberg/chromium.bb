@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/remote_change_handler.h"
+#include "chrome/browser/sync_file_system/drive_backend/remote_change_handler.h"
 
 #include "base/logging.h"
 #include "webkit/common/fileapi/file_system_util.h"

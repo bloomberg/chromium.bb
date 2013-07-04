@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
 
 #include <utility>
 
@@ -18,9 +18,9 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
-#include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/mock_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
@@ -48,9 +48,10 @@
 using ::testing::StrictMock;
 using ::testing::_;
 
-using ::drive::DriveServiceInterface;
-using ::drive::DriveUploaderInterface;
-using ::drive::FakeDriveService;
+using drive::DriveServiceInterface;
+using drive::DriveUploader;
+using drive::DriveUploaderInterface;
+using drive::FakeDriveService;
 
 using extensions::Extension;
 using extensions::DictionaryBuilder;
@@ -198,7 +199,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     RegisterSyncableFileSystem();
 
     fake_drive_service_ = new FakeDriveService;
-    DriveUploaderInterface* drive_uploader = new ::drive::DriveUploader(
+    DriveUploaderInterface* drive_uploader = new DriveUploader(
         fake_drive_service_, base::MessageLoopProxy::current().get());
 
     fake_drive_helper_.reset(new FakeDriveServiceHelper(

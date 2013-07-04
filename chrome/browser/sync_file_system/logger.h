@@ -30,7 +30,7 @@ void Log(logging::LogSeverity level,
 
 // Returns the log history.
 // This function can be called from any thread.
-std::vector< ::drive::EventLogger::Event> GetLogHistory();
+std::vector<drive::EventLogger::Event> GetLogHistory();
 
 }  // namespace util
 }  // namespace sync_file_system

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
 
 #include <algorithm>
 #include <string>
@@ -22,13 +22,12 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_sync_delegate.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_sync_delegate.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
-#include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/logger.h"
-#include "chrome/browser/sync_file_system/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -86,8 +85,8 @@ DriveFileSyncService::~DriveFileSyncService() {
   if (api_util_)
     api_util_->RemoveObserver(this);
 
-  ::drive::DriveNotificationManager* drive_notification_manager =
-      ::drive::DriveNotificationManagerFactory::GetForProfile(profile_);
+  drive::DriveNotificationManager* drive_notification_manager =
+      drive::DriveNotificationManagerFactory::GetForProfile(profile_);
   if (drive_notification_manager)
     drive_notification_manager->RemoveObserver(this);
 }
@@ -403,8 +402,8 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   callback.Run(status);
   may_have_unfetched_changes_ = true;
 
-  ::drive::DriveNotificationManager* drive_notification_manager =
-      ::drive::DriveNotificationManagerFactory::GetForProfile(profile_);
+  drive::DriveNotificationManager* drive_notification_manager =
+      drive::DriveNotificationManagerFactory::GetForProfile(profile_);
   if (drive_notification_manager)
     drive_notification_manager->AddObserver(this);
 }
@@ -1203,7 +1202,7 @@ bool DriveFileSyncService::GetOriginForEntry(
       continue;
 
     std::string resource_id(
-        ::drive::util::ExtractResourceIdFromUrl((*itr)->href()));
+        drive::util::ExtractResourceIdFromUrl((*itr)->href()));
     if (resource_id.empty())
       continue;
 

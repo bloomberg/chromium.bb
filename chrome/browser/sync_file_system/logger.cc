@@ -36,7 +36,7 @@ const char* LogSeverityToString(logging::LogSeverity level) {
 }  // namespace
 
 void ClearLog() {
-  g_logger.Pointer()->SetHistorySize(::drive::kDefaultHistorySize);
+  g_logger.Pointer()->SetHistorySize(drive::kDefaultHistorySize);
 }
 
 void Log(logging::LogSeverity severity,

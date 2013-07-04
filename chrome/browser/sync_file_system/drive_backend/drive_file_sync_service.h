@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,10 @@
 #include "chrome/browser/drive/drive_notification_observer.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util_interface.h"
-#include "chrome/browser/sync_file_system/drive_metadata_store.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
+#include "chrome/browser/sync_file_system/drive_backend/local_sync_operation_resolver.h"
+#include "chrome/browser/sync_file_system/drive_backend/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
-#include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
-#include "chrome/browser/sync_file_system/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
@@ -59,7 +59,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
                              public SyncTaskManager::Client,
                              public base::NonThreadSafe,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
-                             public ::drive::DriveNotificationObserver {
+                             public drive::DriveNotificationObserver {
  public:
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
@@ -128,7 +128,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void OnAuthenticated() OVERRIDE;
   virtual void OnNetworkConnected() OVERRIDE;
 
-  // ::drive::DriveNotificationObserver implementation.
+  // drive::DriveNotificationObserver implementation.
   virtual void OnNotificationReceived() OVERRIDE;
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 

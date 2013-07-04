@@ -5,9 +5,9 @@
 #include "chrome/browser/sync_file_system/drive_backend/remote_sync_delegate.h"
 
 #include "base/file_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/remote_sync_operation_resolver.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
-#include "chrome/browser/sync_file_system/remote_sync_operation_resolver.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 

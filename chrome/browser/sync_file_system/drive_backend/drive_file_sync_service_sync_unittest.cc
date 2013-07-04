@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
 
 #include <algorithm>
 
@@ -15,9 +15,9 @@
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
-#include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/test/base/testing_profile.h"
@@ -90,14 +90,14 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     RegisterSyncableFileSystem();
     local_sync_service_.reset(new LocalFileSyncService(&profile_));
 
-    fake_drive_service_ = new ::drive::FakeDriveService();
+    fake_drive_service_ = new drive::FakeDriveService();
     fake_drive_service_->Initialize(&profile_);
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
         "sync_file_system/account_metadata.json"));
     ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json"));
 
-    drive_uploader_ = new ::drive::DriveUploader(
+    drive_uploader_ = new drive::DriveUploader(
         fake_drive_service_, base::MessageLoopProxy::current().get());
 
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
@@ -118,8 +118,8 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
     scoped_ptr<APIUtil> api_util(APIUtil::CreateForTesting(
         &profile_,
-        scoped_ptr< ::drive::DriveServiceInterface>(fake_drive_service_),
-        scoped_ptr< ::drive::DriveUploaderInterface>(drive_uploader_)));
+        scoped_ptr<drive::DriveServiceInterface>(fake_drive_service_),
+        scoped_ptr<drive::DriveUploaderInterface>(drive_uploader_)));
 
     remote_sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,
@@ -414,8 +414,8 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   TestingProfile profile_;
 
-  ::drive::FakeDriveService* fake_drive_service_;
-  ::drive::DriveUploader* drive_uploader_;
+  drive::FakeDriveService* fake_drive_service_;
+  drive::DriveUploader* drive_uploader_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
   std::map<GURL, CannedSyncableFileSystem*> file_systems_;
 

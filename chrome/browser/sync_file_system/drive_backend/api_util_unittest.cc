@@ -14,7 +14,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
