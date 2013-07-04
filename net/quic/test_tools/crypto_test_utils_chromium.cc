@@ -4,7 +4,6 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/test_data_directory.h"
@@ -39,7 +38,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
 // static
 ProofVerifier* CryptoTestUtils::ProofVerifierForTesting() {
   TestProofVerifierChromium* proof_verifier = new TestProofVerifierChromium(
-      CertVerifier::CreateDefault(), "quic_proof_verify.crt");
+      CertVerifier::CreateDefault(), "quic_root.crt");
   return proof_verifier;
 }
 

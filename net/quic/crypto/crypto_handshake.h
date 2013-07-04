@@ -268,6 +268,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // (Note: this does not check the chain or signature.)
     void SetProofValid();
 
+    // If the server config or the proof has changed then it needs to be
+    // revalidated. Helper function to keep server_config_valid_ and
+    // generation_counter_ in sync.
+    void SetProofInvalid();
+
     const std::string& server_config() const;
     const std::string& source_address_token() const;
     const std::vector<std::string>& certs() const;
@@ -287,9 +292,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool server_config_valid_;          // True if |server_config_| is correctly
                                         // signed and |certs_| has been
                                         // validated.
-    uint64 generation_counter_;         // Generation counter associated with
-                                        // the |server_config_|, |certs_| and
-                                        // |server_config_sig_| combination.
+    // Generation counter associated with the |server_config_|, |certs_| and
+    // |server_config_sig_| combination. It is incremented whenever we set
+    // server_config_valid_ to false.
+    uint64 generation_counter_;
 
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;

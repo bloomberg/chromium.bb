@@ -48,14 +48,19 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
     STATE_SEND_CHLO,
     STATE_RECV_REJ,
     STATE_VERIFY_PROOF,
-    STATE_VERIFY_PROOF_COMPLETED,
+    STATE_VERIFY_PROOF_COMPLETE,
     STATE_RECV_SHLO,
   };
 
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
-  // |in| is NULL for the first call.
+  // |in| is NULL for the first call. OnVerifyProofComplete passes the |result|
+  // it has received from VerifyProof call (from all other places |result| is
+  // set to OK).
   void DoHandshakeLoop(const CryptoHandshakeMessage* in, int result);
 
+  // OnVerifyProofComplete is passed as the callback method to VerifyProof.
+  // ProofVerifier calls this method with the result of proof verification when
+  // verification is performed asynchronously.
   void OnVerifyProofComplete(int result);
 
   base::WeakPtrFactory<QuicCryptoClientStream> weak_factory_;

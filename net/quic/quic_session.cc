@@ -264,7 +264,7 @@ ProofVerifier* QuicSession::proof_verifier() const {
   return proof_verifier_.get();
 }
 
-void QuicSession::SetProofVerifier(ProofVerifier* verifier) {
+void QuicSession::set_proof_verifier(ProofVerifier* verifier) {
   proof_verifier_.reset(verifier);
 }
 

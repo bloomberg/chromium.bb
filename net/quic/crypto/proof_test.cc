@@ -13,10 +13,6 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using std::string;
 using std::vector;
 
@@ -264,7 +260,9 @@ TEST(Proof, VerifyRSAKnownAnswerTest) {
 
 // A known answer test that allows us to test ProofVerifier without a working
 // ProofSource.
-// TODO(rtenneti): Enable VerifyECDSAKnownAnswerTest on win_rel and XP.
+// TODO(rtenneti): Enable VerifyECDSAKnownAnswerTest on Windows. Disabled this
+// test because X509Certificate::GetPublicKeyInfo is not returning the correct
+// type for ECDSA certificates.
 #if defined(OS_WIN)
 #define MAYBE_VerifyECDSAKnownAnswerTest DISABLED_VerifyECDSAKnownAnswerTest
 #else

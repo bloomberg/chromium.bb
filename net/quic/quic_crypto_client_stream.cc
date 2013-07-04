@@ -71,7 +71,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     next_state_ = STATE_IDLE;
     switch (state) {
       case STATE_SEND_CHLO: {
-        // Send the subsequent client hello in plaintext.
+        DCHECK_EQ(OK, result);
+        // Send the client hello in plaintext.
         session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_NONE);
         if (num_client_hellos_ > kMaxClientHellos) {
           CloseConnection(QUIC_CRYPTO_TOO_MANY_REJECTS);
@@ -153,7 +154,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             cached->SetProofValid();
           } else if (!cached->signature().empty()) {
             next_state_ = STATE_VERIFY_PROOF;
-            continue;
+            break;
           }
         }
         next_state_ = STATE_SEND_CHLO;
@@ -161,7 +162,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       case STATE_VERIFY_PROOF: {
         ProofVerifier* verifier = session()->proof_verifier();
         DCHECK(verifier);
-        next_state_ = STATE_VERIFY_PROOF_COMPLETED;
+        next_state_ = STATE_VERIFY_PROOF_COMPLETE;
         generation_counter_ = cached->generation_counter();
         result = verifier->VerifyProof(
             server_hostname_,
@@ -177,24 +178,21 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         break;
       }
-      case STATE_VERIFY_PROOF_COMPLETED: {
+      case STATE_VERIFY_PROOF_COMPLETE:
         if (result != OK) {
             CloseConnectionWithDetails(
                 QUIC_PROOF_INVALID, "Proof invalid: " + error_details_);
             return;
         }
-        ProofVerifier* verifier = session()->proof_verifier();
-        DCHECK(verifier);
         // Check if generation_counter has changed between STATE_VERIFY_PROOF
-        // and STATE_VERIFY_PROOF_COMPLETED state changes.
+        // and STATE_VERIFY_PROOF_COMPLETE state changes.
         if (generation_counter_ != cached->generation_counter()) {
           next_state_ = STATE_VERIFY_PROOF;
-          continue;
+        } else {
+          cached->SetProofValid();
+          next_state_ = STATE_SEND_CHLO;
         }
-        cached->SetProofValid();
-        next_state_ = STATE_SEND_CHLO;
         break;
-      }
       case STATE_RECV_SHLO: {
         // We sent a CHLO that we expected to be accepted and now we're hoping
         // for a SHLO from the server to confirm that.
@@ -265,7 +263,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 }
 
 void QuicCryptoClientStream::OnVerifyProofComplete(int result) {
-  DCHECK_EQ(STATE_VERIFY_PROOF_COMPLETED, next_state_);
+  DCHECK_EQ(STATE_VERIFY_PROOF_COMPLETE, next_state_);
   DVLOG(1) << "VerifyProof completed: " << result;
   DoHandshakeLoop(NULL, result);
 }

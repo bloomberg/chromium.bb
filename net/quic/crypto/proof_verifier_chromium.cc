@@ -40,10 +40,6 @@ ProofVerifierChromium::ProofVerifierChromium(CertVerifier* cert_verifier,
 
 ProofVerifierChromium::~ProofVerifierChromium() {
   verifier_.reset();
-
-  // Reset object state.
-  callback_.Reset();
-  cert_verify_result_.Reset();
 }
 
 int ProofVerifierChromium::VerifyProof(const string& hostname,
@@ -75,8 +71,6 @@ int ProofVerifierChromium::VerifyProof(const string& hostname,
   }
   cert_ = X509Certificate::CreateFromDERCertChain(cert_pieces);
   if (!cert_.get()) {
-    cert_verify_result_.Reset();
-    cert_verify_result_.cert_status = CERT_STATUS_INVALID;
     *error_details = "Failed to create certificate chain";
     DLOG(WARNING) << *error_details;
     return ERR_FAILED;
@@ -149,7 +143,7 @@ int ProofVerifierChromium::DoVerifyCertComplete(int result) {
 
   if (result <= ERR_FAILED) {
     *error_details_ = StringPrintf("Failed to verify certificate chain: %s",
-                                  ErrorToString(result));
+                                   ErrorToString(result));
     DLOG(WARNING) << *error_details_;
     result = ERR_FAILED;
   }

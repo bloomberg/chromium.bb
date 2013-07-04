@@ -20,18 +20,15 @@
 
 namespace net {
 
-class BoundNetLog;
 class CertVerifier;
-class CertVerifyResult;
 class SingleRequestCertVerifier;
-class X509Certificate;
 
 // ProofVerifierChromium implements the QUIC ProofVerifier interface.
 // TODO(rtenneti): Add support for multiple requests for one ProofVerifier.
 class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
  public:
-  explicit ProofVerifierChromium(CertVerifier* cert_verifier,
-                                 const BoundNetLog& net_log);
+  ProofVerifierChromium(CertVerifier* cert_verifier,
+                        const BoundNetLog& net_log);
   virtual ~ProofVerifierChromium();
 
   // ProofVerifier interface
@@ -73,9 +70,6 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
 
   // X509Certificate from a chain of DER encoded certificates.
   scoped_refptr<X509Certificate> cert_;
-
-  // |generation_counter| passed to VerifyProof call.
-  uint64 generation_counter_;
 
   State next_state_;
 

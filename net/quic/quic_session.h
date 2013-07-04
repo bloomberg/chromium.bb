@@ -107,11 +107,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   virtual ProofVerifier* proof_verifier() const;
 
-  // SetProofVerifier takes ownership of a |ProofVerifier| that clients are
+  // set_proof_verifier takes ownership of a |ProofVerifier| that clients are
   // free to use in order to verify certificate chains from servers. If a
   // ProofVerifier is set then the client will request a certificate chain from
   // the server.
-  virtual void SetProofVerifier(ProofVerifier* verifier);
+  virtual void set_proof_verifier(ProofVerifier* verifier);
 
   // Returns mutable config for this session. Returned config is owned
   // by QuicSession.

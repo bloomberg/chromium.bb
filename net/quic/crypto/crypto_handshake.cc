@@ -430,8 +430,7 @@ QuicErrorCode QuicCryptoClientConfig::CachedState::SetServerConfig(
 
   if (!matches_existing) {
     server_config_ = server_config.as_string();
-    server_config_valid_ = false;
-    ++generation_counter_;
+    SetProofInvalid();
     scfg_.reset(new_scfg_storage.release());
   }
   return QUIC_NO_ERROR;
@@ -440,8 +439,7 @@ QuicErrorCode QuicCryptoClientConfig::CachedState::SetServerConfig(
 void QuicCryptoClientConfig::CachedState::InvalidateServerConfig() {
   server_config_.clear();
   scfg_.reset();
-  server_config_valid_ = false;
-  ++generation_counter_;
+  SetProofInvalid();
 }
 
 void QuicCryptoClientConfig::CachedState::SetProof(const vector<string>& certs,
@@ -463,14 +461,18 @@ void QuicCryptoClientConfig::CachedState::SetProof(const vector<string>& certs,
   }
 
   // If the proof has changed then it needs to be revalidated.
-  server_config_valid_ = false;
-  ++generation_counter_;
+  SetProofInvalid();
   certs_ = certs;
   server_config_sig_ = signature.as_string();
 }
 
 void QuicCryptoClientConfig::CachedState::SetProofValid() {
   server_config_valid_ = true;
+}
+
+void QuicCryptoClientConfig::CachedState::SetProofInvalid() {
+  server_config_valid_ = false;
+  ++generation_counter_;
 }
 
 const string& QuicCryptoClientConfig::CachedState::server_config() const {
