@@ -283,6 +283,17 @@ void MediaPlayerManagerImpl::OnMediaConfigRequest(int player_id) {
   Send(new MediaPlayerMsg_MediaConfigRequest(routing_id(), player_id));
 }
 
+void MediaPlayerManagerImpl::OnProtectedSurfaceRequested(int player_id) {
+  if (fullscreen_player_id_ == player_id)
+    return;
+  if (fullscreen_player_id_ != -1) {
+    // TODO(qinmin): Determine the correct error code we should report to WMPA.
+    OnError(player_id, MediaPlayerAndroid::MEDIA_ERROR_DECODE);
+    return;
+  }
+  OnEnterFullscreen(player_id);
+}
+
 void MediaPlayerManagerImpl::OnKeyAdded(int media_keys_id,
                                         const std::string& session_id) {
   Send(new MediaKeysMsg_KeyAdded(routing_id(), media_keys_id, session_id));

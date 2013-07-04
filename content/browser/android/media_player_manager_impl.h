@@ -80,6 +80,7 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
   virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
                                   unsigned seek_request_id) OVERRIDE;
   virtual void OnMediaConfigRequest(int player_id) OVERRIDE;
+  virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE;
   virtual void OnKeyAdded(int media_keys_id,
                           const std::string& session_id) OVERRIDE;
   virtual void OnKeyError(int media_keys_id,

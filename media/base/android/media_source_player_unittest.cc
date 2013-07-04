@@ -58,6 +58,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual media::MediaDrmBridge* GetDrmBridge(int media_keys_id) OVERRIDE {
     return NULL;
   }
+  virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE {}
   virtual void OnKeyAdded(int key_id,
                           const std::string& session_id) OVERRIDE {}
   virtual void OnKeyError(int key_id,

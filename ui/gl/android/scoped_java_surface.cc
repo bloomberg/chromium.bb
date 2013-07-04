@@ -28,7 +28,8 @@ ScopedJavaSurface::ScopedJavaSurface() {
 
 ScopedJavaSurface::ScopedJavaSurface(
     const base::android::JavaRef<jobject>& surface)
-    : auto_release_(true) {
+    : auto_release_(true),
+      is_protected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   RegisterNativesIfNeeded(env);
   DCHECK(env->IsInstanceOf(surface.obj(), g_Surface_clazz));
@@ -36,7 +37,9 @@ ScopedJavaSurface::ScopedJavaSurface(
 }
 
 ScopedJavaSurface::ScopedJavaSurface(
-    const SurfaceTextureBridge* surface_texture) {
+    const SurfaceTextureBridge* surface_texture)
+    : auto_release_(true),
+      is_protected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   RegisterNativesIfNeeded(env);
   ScopedJavaLocalRef<jobject> tmp(JNI_Surface::Java_Surface_Constructor(
@@ -61,17 +64,14 @@ ScopedJavaSurface::~ScopedJavaSurface() {
   }
 }
 
-void ScopedJavaSurface::SetAutoRelease(bool auto_release) {
-  auto_release_ = auto_release;
-}
-
 void ScopedJavaSurface::MoveFrom(ScopedJavaSurface& other) {
   JNIEnv* env = base::android::AttachCurrentThread();
   j_surface_.Reset(env, other.j_surface_.Release());
   auto_release_ = other.auto_release_;
+  is_protected_ = other.is_protected_;
 }
 
-bool ScopedJavaSurface::IsSurfaceEmpty() {
+bool ScopedJavaSurface::IsEmpty() const {
   return j_surface_.is_null();
 }
 
@@ -81,7 +81,8 @@ ScopedJavaSurface ScopedJavaSurface::AcquireExternalSurface(jobject surface) {
   ScopedJavaLocalRef<jobject> surface_ref;
   surface_ref.Reset(env, surface);
   gfx::ScopedJavaSurface scoped_surface(surface_ref);
-  scoped_surface.SetAutoRelease(false);
+  scoped_surface.auto_release_ = false;
+  scoped_surface.is_protected_ = true;
   return scoped_surface;
 }
 

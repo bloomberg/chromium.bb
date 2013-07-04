@@ -114,6 +114,9 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Get the MediaDrmBridge object for the given media key Id.
   virtual media::MediaDrmBridge* GetDrmBridge(int media_keys_id) = 0;
 
+  // Called by the player to get a hardware protected surface.
+  virtual void OnProtectedSurfaceRequested(int player_id) = 0;
+
   // TODO(xhwang): The following three methods needs to be decoupled from
   // MediaPlayerManager to support the W3C Working Draft version of the EME
   // spec.

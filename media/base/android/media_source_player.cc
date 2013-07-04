@@ -320,6 +320,11 @@ MediaSourcePlayer::~MediaSourcePlayer() {
 }
 
 void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+  // Ignore non-empty surface that is unprotected if |is_video_encrypted_| is
+  // true.
+  if (is_video_encrypted_ && !surface.IsEmpty() && !surface.is_protected())
+    return;
+
   surface_ =  surface.Pass();
   pending_event_ |= SURFACE_CHANGE_EVENT_PENDING;
   if (pending_event_ & SEEK_EVENT_PENDING) {
@@ -344,6 +349,9 @@ bool MediaSourcePlayer::Seekable() {
 
 void MediaSourcePlayer::Start() {
   playing_ = true;
+
+  if (is_video_encrypted_)
+    manager()->OnProtectedSurfaceRequested(player_id());
 
   StartInternal();
 }
@@ -773,7 +781,7 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
 }
 
 void MediaSourcePlayer::ConfigureVideoDecoderJob() {
-  if (!HasVideo() || surface_.IsSurfaceEmpty()) {
+  if (!HasVideo() || surface_.IsEmpty()) {
     video_decoder_job_.reset();
     return;
   }

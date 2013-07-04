@@ -133,7 +133,7 @@ void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
 
 void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   if (j_media_player_.is_null()) {
-    if (surface.IsSurfaceEmpty())
+    if (surface.IsEmpty())
       return;
     Prepare();
   }
