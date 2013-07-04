@@ -132,7 +132,6 @@
           ],
           'dependencies': [
             'base_jni_headers',
-            'symbolize',
             '../third_party/ashmem/ashmem.gyp:ashmem',
           ],
           'include_dirs': [
@@ -143,9 +142,6 @@
               '-llog',
             ],
           },
-          'defines': [
-            'USE_SYMBOLIZE',
-          ],
           'sources!': [
             'debug/stack_trace_posix.cc',
           ],
@@ -668,7 +664,7 @@
         'module_dir': 'base'
       },
       'conditions': [
-        ['use_glib==1 or (OS == "android" and _toolset == "target")', {
+        ['use_glib==1', {
           'defines': [
             'USE_SYMBOLIZE',
           ],
@@ -683,10 +679,6 @@
                 '../testing/android/native_test.gyp:native_test_native_code',
               ],
             }],
-          ],
-          'sources!': [
-            # Broken on Android, and already disabled there.
-            'debug/stack_trace_unittest.cc',
           ],
         }],
         ['OS == "ios" and _toolset != "host"', {

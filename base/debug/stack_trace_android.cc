@@ -4,17 +4,11 @@
 
 #include "base/debug/stack_trace.h"
 
-#include <signal.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <android/log.h>
 #include <unwind.h>  // TODO(dmikurube): Remove.  See http://crbug.com/236855.
 
-#include "base/logging.h"
-
-#ifdef __MIPSEL__
-// SIGSTKFLT is not defined for MIPS.
-#define SIGSTKFLT SIGSEGV
-#endif
+#include "base/debug/proc_maps_linux.h"
+#include "base/strings/stringprintf.h"
 
 // TODO(dmikurube): Remove when Bionic's get_backtrace() gets popular.
 // See http://crbug.com/236855.
@@ -93,32 +87,51 @@ StackTrace::StackTrace() {
   // TODO(dmikurube): Symbolize in Chrome.
 }
 
-// Sends fake SIGSTKFLT signals to let the Android linker and debuggerd dump
-// stack. See inlined comments and Android bionic/linker/debugger.c and
-// system/core/debuggerd/debuggerd.c for details.
 void StackTrace::PrintBacktrace() const {
-  // Get the current handler of SIGSTKFLT for later use.
-  sighandler_t sig_handler = signal(SIGSTKFLT, SIG_DFL);
-  signal(SIGSTKFLT, sig_handler);
-
-  // The Android linker will handle this signal and send a stack dumping request
-  // to debuggerd which will ptrace_attach this process. Before returning from
-  // the signal handler, the linker sets the signal handler to SIG_IGN.
-  kill(gettid(), SIGSTKFLT);
-
-  // Because debuggerd will wait for the process to be stopped by the actual
-  // signal in crashing scenarios, signal is sent again to met the expectation.
-  // Debuggerd will dump stack into the system log and /data/tombstones/ files.
-  // NOTE: If this process runs in the interactive shell, it will be put
-  // in the background. To resume it in the foreground, use 'fg' command.
-  kill(gettid(), SIGSTKFLT);
-
-  // Restore the signal handler so that this method can work the next time.
-  signal(SIGSTKFLT, sig_handler);
+  std::string backtrace = ToString();
+  __android_log_write(ANDROID_LOG_ERROR, "chromium", backtrace.c_str());
 }
 
+// NOTE: Native libraries in APKs are stripped before installing. Print out the
+// relocatable address and library names so host computers can use tools to
+// symbolize and demangle (e.g., addr2line, c++filt).
 void StackTrace::OutputToStream(std::ostream* os) const {
-  NOTIMPLEMENTED();
+  std::string proc_maps;
+  std::vector<MappedMemoryRegion> regions;
+  if (!ReadProcMaps(&proc_maps)) {
+    __android_log_write(
+        ANDROID_LOG_ERROR, "chromium", "Failed to read /proc/self/maps");
+  } else if (!ParseProcMaps(proc_maps, &regions)) {
+    __android_log_write(
+        ANDROID_LOG_ERROR, "chromium", "Failed to parse /proc/self/maps");
+  }
+
+  for (size_t i = 0; i < count_; ++i) {
+    // Subtract one as return address of function may be in the next
+    // function when a function is annotated as noreturn.
+    uintptr_t address = reinterpret_cast<uintptr_t>(trace_[i]) - 1;
+
+    std::vector<MappedMemoryRegion>::iterator iter = regions.begin();
+    while (iter != regions.end()) {
+      if (address >= iter->start && address < iter->end &&
+          !iter->path.empty()) {
+        break;
+      }
+      ++iter;
+    }
+
+    *os << base::StringPrintf("#%02d 0x%08x ", i, address);
+
+    if (iter != regions.end()) {
+      uintptr_t rel_pc = address - iter->start + iter->offset;
+      const char* path = iter->path.c_str();
+      *os << base::StringPrintf("%s+0x%08x", path, rel_pc);
+    } else {
+      *os << "<unknown>";
+    }
+
+    *os << "\n";
+  }
 }
 
 }  // namespace debug
