@@ -551,6 +551,16 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 	weston_wm_window_schedule_repaint(window);
 }
 
+static int
+our_resource(struct weston_wm *wm, uint32_t id)
+{
+	const xcb_setup_t *setup;
+
+	setup = xcb_get_setup(wm->conn);
+
+	return (id & ~setup->resource_id_mask) == setup->resource_id_base;
+}
+
 static void
 weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
@@ -559,14 +569,15 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	struct weston_wm_window *window;
 	int x, y;
 
-	window = hash_table_lookup(wm->window_hash, configure_notify->window);
-
-	wm_log("XCB_CONFIGURE_NOTIFY (%s window %d) %d,%d @ %dx%d\n",
-	       configure_notify->window == window->id ? "client" : "frame",
+	wm_log("XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d\n",
 	       configure_notify->window,
 	       configure_notify->x, configure_notify->y,
 	       configure_notify->width, configure_notify->height);
 
+	if (our_resource(wm, configure_notify->window))
+		return;
+
+	window = hash_table_lookup(wm->window_hash, configure_notify->window);
 	/* resize falls here */
 	if (configure_notify->window != window->id)
 		return;
@@ -669,16 +680,6 @@ weston_wm_window_transform(struct wl_listener *listener, void *data)
 
 	old_sx = sx;
 	old_sy = sy;
-}
-
-static int
-our_resource(struct weston_wm *wm, uint32_t id)
-{
-	const xcb_setup_t *setup;
-
-	setup = xcb_get_setup(wm->conn);
-
-	return (id & ~setup->resource_id_mask) == setup->resource_id_base;
 }
 
 #define ICCCM_WITHDRAWN_STATE	0
