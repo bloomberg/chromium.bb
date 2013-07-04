@@ -34,7 +34,6 @@
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/QualifiedName.h"
-#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -69,7 +68,7 @@ public:
     bool findTagName(const AtomicString& customElementType, QualifiedName& tagName) const;
     PassRefPtr<CustomElementLifecycleCallbacks> createCallbacks(Document*);
     bool createConstructor(Document*, CustomElementDefinition*);
-    bool didRegisterDefinition(CustomElementDefinition*, const HashSet<Element*>& upgradeCandidates) const;
+    bool didRegisterDefinition(CustomElementDefinition*) const;
 
     // This method collects a return value for the bindings. It is
     // safe to call this method even if the builder failed; it will

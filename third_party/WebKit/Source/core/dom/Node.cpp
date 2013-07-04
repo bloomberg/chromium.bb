@@ -2729,6 +2729,13 @@ void Node::setIsCustomElement()
     setFlag(IsCustomElement);
 }
 
+void Node::setIsUpgradedCustomElement()
+{
+    ASSERT(isCustomElement());
+    setFlag(IsUpgradedCustomElement);
+    setNeedsStyleRecalc(); // :unresolved has changed
+}
+
 } // namespace WebCore
 
 #ifndef NDEBUG

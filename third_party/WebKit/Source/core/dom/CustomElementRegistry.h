@@ -58,7 +58,6 @@ public:
 
     void registerElement(CustomElementConstructorBuilder*, const AtomicString& name, ExceptionCode&);
 
-    bool isUnresolved(Element*) const;
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
 
     PassRefPtr<Element> createCustomTagElement(const QualifiedName& localName);

@@ -66,7 +66,7 @@ void CustomElementCallbackDispatcher::enqueueCreatedCallback(CustomElementLifecy
     if (!callbacks->hasCreated())
         return;
 
-    m_invocations.append(CreatedInvocation(callbacks, element));
+    m_invocations.prepend(CreatedInvocation(callbacks, element));
 }
 
 } // namespace WebCore

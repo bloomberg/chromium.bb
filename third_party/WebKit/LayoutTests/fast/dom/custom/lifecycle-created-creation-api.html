@@ -53,7 +53,7 @@ shouldBe("window.callbacksCalled", "[]");
 importedBar = document.importNode(foreignBar);
 shouldBeTrue("importedBar.callbacksCalled");
 shouldBeTrue("importedBar.firstChild.callbacksCalled");
-shouldBe("window.callbacksCalled", "['DIV', 'X-FOO']");
+shouldBe("window.callbacksCalled", "['X-FOO', 'DIV']");
 
 window.callbacksCalled = [];
 var toBeReplaced = document.createElement("div");

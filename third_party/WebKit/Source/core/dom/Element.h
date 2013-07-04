@@ -481,7 +481,7 @@ public:
     void setIsInCanvasSubtree(bool);
     bool isInCanvasSubtree() const;
 
-    bool isUnresolvedCustomElement();
+    bool isUnresolvedCustomElement() { return isCustomElement() && !isUpgradedCustomElement(); }
 
     void setIsInsideRegion(bool);
     bool isInsideRegion() const;

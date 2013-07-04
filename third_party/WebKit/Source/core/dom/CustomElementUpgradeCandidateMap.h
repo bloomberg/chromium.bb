@@ -49,18 +49,17 @@ public:
     typedef HashSet<Element*> ElementSet;
 
     void add(CustomElementDefinition::CustomElementKind, const AtomicString& type, Element*);
-    bool contains(Element*) const;
     void remove(Element*);
-    ElementSet takeUpgradeCandidatesFor(CustomElementDefinition*);
+    Vector<Element*> takeUpgradeCandidatesFor(CustomElementDefinition*);
 
 private:
     typedef std::pair<CustomElementDefinition::CustomElementKind, AtomicString> RequiredDefinition;
-    typedef HashMap<Element*, RequiredDefinition> UnresolvedElementMap;
+    typedef HashMap<Element*, RequiredDefinition> UpgradeCandidateMap;
     typedef HashMap<AtomicString, ElementSet> UnresolvedDefinitionMap;
 
     bool matches(CustomElementDefinition*, Element*);
 
-    UnresolvedElementMap m_unresolvedElements;
+    UpgradeCandidateMap m_upgradeCandidates;
     UnresolvedDefinitionMap m_unresolvedDefinitions;
 };
 

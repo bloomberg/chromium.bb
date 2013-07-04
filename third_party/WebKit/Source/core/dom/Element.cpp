@@ -2327,11 +2327,6 @@ bool Element::isInCanvasSubtree() const
     return hasRareData() && elementRareData()->isInCanvasSubtree();
 }
 
-bool Element::isUnresolvedCustomElement()
-{
-    return isCustomElement() && document()->registry()->isUnresolved(this);
-}
-
 void Element::setIsInsideRegion(bool value)
 {
     if (value == isInsideRegion())

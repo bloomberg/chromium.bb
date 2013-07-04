@@ -222,7 +222,7 @@ bool CustomElementConstructorBuilder::prototypeIsValid() const
     return true;
 }
 
-bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinition* definition, const HashSet<Element*>& upgradeCandidates) const
+bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinition* definition) const
 {
     ASSERT(!m_constructor.IsEmpty());
 
@@ -233,17 +233,6 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
     // Bindings retrieve the prototype when needed from per-context data.
     v8::Persistent<v8::Object> persistentPrototype(m_context->GetIsolate(), m_prototype);
     perContextData->customElementPrototypes()->add(definition->type(), UnsafePersistent<v8::Object>(persistentPrototype));
-
-    // Upgrade any wrappers alcreated created for this definition
-    for (HashSet<Element*>::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
-        v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(*it);
-        if (wrapper.IsEmpty()) {
-            // The wrapper will be created with the right prototype when
-            // retrieved; we don't need to eagerly create the wrapper.
-            continue;
-        }
-        wrapper->SetPrototype(m_prototype);
-    }
 
     return true;
 }

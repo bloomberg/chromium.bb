@@ -23,12 +23,12 @@ document.register("x-baz", { prototype: Object.create(HTMLElement.prototype, { c
 // Testing element siblings
 window.callbacksCalled = [];
 container.innerHTML = "<x-foo id='a'></x-foo><div id='b' is='x-bar'></div><x-baz id='c'></x-baz>";
-shouldBe("window.callbacksCalled", "['a', 'b', 'c']");
+shouldBe("window.callbacksCalled", "['c', 'b', 'a']");
 
 // Testing nested elements
 window.callbacksCalled = [];
 container.innerHTML = "<x-foo id='a'><div id='b' is='x-bar'><x-baz id='c'></x-baz></div></x-foo>";
-shouldBe("window.callbacksCalled", "['a', 'b', 'c']");
+shouldBe("window.callbacksCalled", "['c', 'b', 'a']");
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

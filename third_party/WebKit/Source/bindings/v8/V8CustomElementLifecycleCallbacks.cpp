@@ -32,6 +32,8 @@
 #include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
 
 #include "V8Element.h"
+#include "bindings/v8/CustomElementHelpers.h"
+#include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
@@ -40,26 +42,31 @@
 
 namespace WebCore {
 
-PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> created)
+PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created)
 {
+    // A given object can only be used as a Custom Element prototype once, see isCustomElementInterfacePrototypeObject
+    ASSERT(prototype->GetHiddenValue(V8HiddenPropertyName::customElementCreated()).IsEmpty());
     if (!created.IsEmpty())
-        owner->SetHiddenValue(V8HiddenPropertyName::customElementCreated(), created);
-    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, created));
+        prototype->SetHiddenValue(V8HiddenPropertyName::customElementCreated(), created);
+    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, prototype, created));
 }
 
-static void weakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, ScopedPersistent<v8::Function>* handle)
+template <typename T>
+static void weakCallback(v8::Isolate*, v8::Persistent<T>*, ScopedPersistent<T>* handle)
 {
     handle->clear();
 }
 
-V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Function> created)
-    : CustomElementLifecycleCallbacks(created.IsEmpty() ? None : Created)
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created)
+    : CustomElementLifecycleCallbacks(Created)
     , ActiveDOMCallback(scriptExecutionContext)
     , m_world(DOMWrapperWorld::current())
+    , m_prototype(prototype)
     , m_created(created)
 {
+    m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);
     if (!m_created.isEmpty())
-        m_created.makeWeak(&m_created, weakCallback);
+        m_created.makeWeak(&m_created, weakCallback<v8::Function>);
 }
 
 void V8CustomElementLifecycleCallbacks::created(Element* element)
@@ -67,8 +74,9 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     if (!canInvokeCallback())
         return;
 
-    v8::HandleScope handleScope;
+    element->setIsUpgradedCustomElement();
 
+    v8::HandleScope handleScope;
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;
@@ -76,19 +84,25 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     v8::Context::Scope scope(context);
     v8::Isolate* isolate = context->GetIsolate();
 
+    v8::Handle<v8::Object> receiver = DOMDataStore::current(isolate)->get(element);
+    if (!receiver.IsEmpty()) {
+        // Swizzle the prototype of the existing wrapper. We don't need to
+        // worry about non-existent wrappers; they will get the right
+        // prototype when wrapped.
+        v8::Handle<v8::Object> prototype = m_prototype.newLocal(isolate);
+        if (prototype.IsEmpty())
+            return;
+        receiver->SetPrototype(prototype);
+    }
+
     v8::Handle<v8::Function> callback = m_created.newLocal(isolate);
     if (callback.IsEmpty())
         return;
 
-    v8::Handle<v8::Value> elementHandle = toV8(element, context->Global(), isolate);
-    if (elementHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return;
-    }
+    if (receiver.IsEmpty())
+        receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
 
-    ASSERT(elementHandle->IsObject());
-    v8::Handle<v8::Object> receiver = v8::Handle<v8::Object>::Cast(elementHandle);
+    ASSERT(!receiver.IsEmpty());
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
@@ -96,4 +110,3 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 }
 
 } // namespace WebCore
-

@@ -31,4 +31,43 @@ test(function () {
     var element = new ctor();
     assert_equals(createdInvocations, 1, 'the created callback retrieved at registration must be invoked');
 }, 'transfer created callback');
+
+t = async_test('__proto__, :unresolved and created callback timing');
+t.step(function () {
+    var createdInvocations = 0;
+    function created() {
+        createdInvocations++;
+
+        if (this.id != 'v')
+            return;
+
+        t.step(function () {
+            var t = div.querySelector('#t');
+            var u = div.querySelector('#u');
+            var w = div.querySelector('#w');
+
+            assert_equals(div.querySelector('x-c:not(:unresolved)'), this, 'the :unresolved pseudoclass should cease to apply when the created callback is invoked');
+            assert_array_equals(div.querySelectorAll(':unresolved'), [t, u], 'the :unresolved pseudoclass should be processed in order');
+
+            assert_false(t instanceof C, 'prototype upgrade should happen in order (#t)');
+            assert_false(u instanceof B, 'prototype upgrade should happen in order (#u)');
+        }, this);
+    }
+
+    var protoB = Object.create(HTMLElement.prototype);
+    var B = document.register('x-b', {prototype: protoB});
+
+    var protoC = Object.create(HTMLElement.prototype);
+    protoC.createdCallback = created;
+    var C = document.register('x-c', {prototype: protoC});
+
+    var div = document.createElement('div');
+    div.innerHTML = '<x-c id="t"></x-c>' +
+                    '<x-b id="u"></x-b>' +
+                    '<x-c id="v"></x-c>' +
+                    '<x-b id="w"></x-b>';
+    assert_equals(createdInvocations, 2, 'the created callback should have been invoked once for each x-c element');
+    assert_true(div.querySelector('#t') instanceof C, '#t\'s prototype should have ultimately been upgraded');
+    t.done();
+});
 </script>

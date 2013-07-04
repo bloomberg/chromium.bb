@@ -17,10 +17,10 @@ var selection = window.getSelection();
 selection.selectAllChildren(container);
 document.execCommand("Copy");
 
-shouldBe("window.callbacksCalled", "['X-FOO', 'DIV']");
+shouldBe("window.callbacksCalled", "['DIV', 'X-FOO']");
 selection.collapseToEnd();
 document.execCommand("Paste");
-shouldBe("window.callbacksCalled", "['X-FOO', 'DIV', 'X-FOO', 'DIV']");
+shouldBe("window.callbacksCalled", "['DIV', 'X-FOO', 'DIV', 'X-FOO']");
 
 container.style.display = "none";
 </script>

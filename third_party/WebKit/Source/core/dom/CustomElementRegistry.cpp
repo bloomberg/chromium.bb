@@ -40,6 +40,7 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
 #include "core/svg/SVGElement.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -131,23 +132,17 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
 
     m_definitions.add(definition->type(), definition);
 
-    // Upgrade elements that were waiting for this definition.
-    CustomElementUpgradeCandidateMap::ElementSet upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
-    if (!constructorBuilder->didRegisterDefinition(definition.get(), upgradeCandidates)) {
+    if (!constructorBuilder->didRegisterDefinition(definition.get())) {
         ec = NOT_SUPPORTED_ERR;
         return;
     }
 
-    for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
-        (*it)->setNeedsStyleRecalc(); // :unresolved has changed
+    // Upgrade elements that were waiting for this definition.
+    const Vector<Element*>& upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
 
+    for (Vector<Element*>::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(lifecycleCallbacks.get(), *it);
     }
-}
-
-bool CustomElementRegistry::isUnresolved(Element* element) const
-{
-    return m_candidates.contains(element);
 }
 
 PassRefPtr<CustomElementDefinition> CustomElementRegistry::findFor(Element* element) const

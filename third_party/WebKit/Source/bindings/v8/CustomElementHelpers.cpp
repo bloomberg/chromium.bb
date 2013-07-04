@@ -64,7 +64,7 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
 
     CustomElementRegistry* registry = impl->document()->registry();
     RefPtr<CustomElementDefinition> definition = registry->findFor(impl.get());
-    if (!definition)
+    if (!impl->isUpgradedCustomElement() || !definition)
         return createUpgradeCandidateWrapper(impl, creationContext, isolate, createTypeExtensionUpgradeCandidateWrapper);
 
     V8PerContextData* perContextData = V8PerContextData::from(context);

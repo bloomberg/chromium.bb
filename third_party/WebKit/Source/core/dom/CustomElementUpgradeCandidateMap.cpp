@@ -36,7 +36,7 @@ namespace WebCore {
 
 void CustomElementUpgradeCandidateMap::add(CustomElementDefinition::CustomElementKind kind, const AtomicString& type, Element* element)
 {
-    m_unresolvedElements.add(element, RequiredDefinition(kind, type));
+    m_upgradeCandidates.add(element, RequiredDefinition(kind, type));
 
     UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(type);
     if (it == m_unresolvedDefinitions.end())
@@ -44,36 +44,31 @@ void CustomElementUpgradeCandidateMap::add(CustomElementDefinition::CustomElemen
     it->value.add(element);
 }
 
-bool CustomElementUpgradeCandidateMap::contains(Element* element) const
-{
-    return m_unresolvedElements.contains(element);
-}
-
 void CustomElementUpgradeCandidateMap::remove(Element* element)
 {
-    UnresolvedElementMap::iterator it = m_unresolvedElements.find(element);
-    if (it == m_unresolvedElements.end())
+    UpgradeCandidateMap::iterator it = m_upgradeCandidates.find(element);
+    if (it == m_upgradeCandidates.end())
         return;
 
     const AtomicString& type = it->value.second;
     m_unresolvedDefinitions.get(type).remove(element);
-    m_unresolvedElements.remove(it);
+    m_upgradeCandidates.remove(it);
 }
 
-CustomElementUpgradeCandidateMap::ElementSet CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(CustomElementDefinition* definition)
+Vector<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(CustomElementDefinition* definition)
 {
     UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(definition->type());
     if (it == m_unresolvedDefinitions.end())
-        return ElementSet();
+        return Vector<Element*>();
 
     const ElementSet& candidatesForThisType = it->value;
-    ElementSet matchingCandidates;
+    Vector<Element*> matchingCandidates;
 
     // Filter the set based on whether the definition matches
     for (ElementSet::const_iterator candidate = candidatesForThisType.begin(); candidate != candidatesForThisType.end(); ++candidate) {
         if (matches(definition, *candidate)) {
-            matchingCandidates.add(*candidate);
-            m_unresolvedElements.remove(*candidate);
+            matchingCandidates.append(*candidate);
+            m_upgradeCandidates.remove(*candidate);
         }
     }
 
@@ -83,8 +78,8 @@ CustomElementUpgradeCandidateMap::ElementSet CustomElementUpgradeCandidateMap::t
 
 bool CustomElementUpgradeCandidateMap::matches(CustomElementDefinition* definition, Element* element)
 {
-    ASSERT(m_unresolvedElements.contains(element));
-    const RequiredDefinition& requirement = m_unresolvedElements.get(element);
+    ASSERT(m_upgradeCandidates.contains(element));
+    const RequiredDefinition& requirement = m_upgradeCandidates.get(element);
     return definition->kind() == requirement.first && definition->type() == requirement.second && definition->namespaceURI() == element->namespaceURI() && definition->name() == element->localName();
 }
 

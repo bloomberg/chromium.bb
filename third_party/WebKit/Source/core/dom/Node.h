@@ -254,6 +254,8 @@ public:
 
     bool isCustomElement() const { return getFlag(IsCustomElement); }
     void setIsCustomElement();
+    bool isUpgradedCustomElement() const { return getFlag(IsUpgradedCustomElement); }
+    void setIsUpgradedCustomElement();
 
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
@@ -748,10 +750,12 @@ private:
 
         NotifyRendererWithIdenticalStyles = 1 << 28,
 
+        IsUpgradedCustomElement = 1 << 29,
+
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 3 bits remaining
+    // 2 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 
