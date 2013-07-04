@@ -821,17 +821,14 @@ void Node::derefEventTarget()
     deref();
 }
 
-void Node::setNeedsStyleRecalc(StyleChangeType changeType)
+void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource source)
 {
     ASSERT(changeType != NoStyleChange);
     if (!attached()) // changed compared to what?
         return;
 
-    // FIXME: Switch all callers to use setNeedsLayerUpdate and get rid of SyntheticStyleChange.
-    if (changeType == SyntheticStyleChange) {
-        setNeedsLayerUpdate();
-        return;
-    }
+    if (source == StyleChangeFromRenderer)
+        setFlag(NotifyRendererWithIdenticalStyles);
 
     StyleChangeType existingChangeType = styleChangeType();
     if (changeType > existingChangeType)
@@ -839,12 +836,6 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType)
 
     if (existingChangeType == NoStyleChange)
         markAncestorsWithChildNeedsStyleRecalc();
-}
-
-void Node::setNeedsLayerUpdate()
-{
-    setFlag(NeedsLayerUpdate);
-    setNeedsStyleRecalc(InlineStyleChange);
 }
 
 void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
@@ -859,7 +850,7 @@ void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
         attach();
         return;
     }
-    setStyleChange(FullStyleChange);
+    setStyleChange(SubtreeStyleChange);
     markAncestorsWithChildNeedsStyleRecalc();
     if (shouldSetAttached == DoNotSetAttached)
         return;

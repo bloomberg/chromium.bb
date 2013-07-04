@@ -288,10 +288,9 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
         return;
 
     // If anyone of the layers is null we need to switch between hardware
-    // and software compositing. This is done by triggering a style recalc
-    // on the container element.
+    // and software compositing.
     if (!m_webLayer || !layer)
-        m_element->setNeedsStyleRecalc(WebCore::SyntheticStyleChange);
+        m_element->scheduleLayerUpdate();
     if (m_webLayer)
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
     if (layer)

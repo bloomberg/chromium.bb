@@ -106,7 +106,7 @@ void RenderLayerFilterInfo::setRenderer(PassRefPtr<FilterEffectRenderer> rendere
 void RenderLayerFilterInfo::notifyFinished(CachedResource*)
 {
     RenderObject* renderer = m_layer->renderer();
-    renderer->node()->setNeedsStyleRecalc(SyntheticStyleChange);
+    toElement(renderer->node())->scheduleLayerUpdate();
     renderer->repaint();
 }
 
@@ -154,7 +154,7 @@ void RenderLayerFilterInfo::removeReferenceFilterClients()
 void RenderLayerFilterInfo::notifyCustomFilterProgramLoaded(CustomFilterProgram*)
 {
     RenderObject* renderer = m_layer->renderer();
-    renderer->node()->setNeedsStyleRecalc(SyntheticStyleChange);
+    toElement(renderer->node())->scheduleLayerUpdate();
     renderer->repaint();
 }
 

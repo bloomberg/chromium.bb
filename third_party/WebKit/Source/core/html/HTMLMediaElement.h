@@ -376,7 +376,7 @@ private:
 
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE;
 
-    virtual void scheduleLayerUpdate() OVERRIDE;
+    virtual void mediaPlayerScheduleLayerUpdate() OVERRIDE;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);

@@ -175,7 +175,7 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
             ASSERT(node());
             if (node()) {
                 m_needsToSetSizeForAltText = true;
-                node()->setNeedsStyleRecalc(SyntheticStyleChange);
+                node()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
             }
             return;
         }

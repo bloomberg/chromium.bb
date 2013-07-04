@@ -6344,7 +6344,7 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
 
 void RenderLayer::filterNeedsRepaint()
 {
-    renderer()->node()->setNeedsStyleRecalc(SyntheticStyleChange);
+    toElement(renderer()->node())->scheduleLayerUpdate();
     if (renderer()->view())
         renderer()->repaint();
 }

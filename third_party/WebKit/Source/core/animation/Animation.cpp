@@ -61,7 +61,7 @@ void Animation::applyEffects(bool previouslyActiveOrInEffect)
         m_isInTargetActiveAnimationsList = true;
     }
     m_compositableValues = m_effect->sample(currentIteration(), timeFraction());
-    m_target->setNeedsStyleRecalc(SyntheticStyleChange);
+    m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 }
 
 void Animation::clearEffects()

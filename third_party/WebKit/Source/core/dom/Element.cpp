@@ -907,14 +907,14 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     document()->incDOMTreeVersion();
 
     StyleResolver* styleResolver = document()->styleResolverIfExists();
-    bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
+    bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < SubtreeStyleChange;
     bool shouldInvalidateStyle = false;
 
     if (isStyledElement() && name == styleAttr) {
         styleAttributeChanged(newValue, reason);
     } else if (isStyledElement() && isPresentationAttribute(name)) {
         elementData()->m_presentationAttributeStyleIsDirty = true;
-        setNeedsStyleRecalc(InlineStyleChange);
+        setNeedsStyleRecalc(LocalStyleChange);
     }
 
     if (isIdAttributeName(name)) {
@@ -1023,7 +1023,7 @@ static bool checkSelectorForClassChange(const SpaceSplitString& oldClasses, cons
 void Element::classAttributeChanged(const AtomicString& newClassString)
 {
     StyleResolver* styleResolver = document()->styleResolverIfExists();
-    bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
+    bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < SubtreeStyleChange;
     bool shouldInvalidateStyle = false;
 
     if (classStringHasClassName(newClassString)) {
@@ -1493,7 +1493,7 @@ void Element::recalcStyle(StyleChange change)
         InspectorInstrumentation::didRecalculateStyleForElement(this);
 
         if (RenderObject* renderer = this->renderer()) {
-            if (localChange != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || needsLayerUpdate())
+            if (localChange != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles())
                 renderer->setAnimatableStyle(newStyle.get());
             else if (needsStyleRecalc()) {
                 // Although no change occurred, we use the new style so that the cousin style sharing code won't get
@@ -1510,7 +1510,7 @@ void Element::recalcStyle(StyleChange change)
             change = Force;
         }
 
-        if (styleChangeType() == FullStyleChange)
+        if (styleChangeType() == SubtreeStyleChange)
             change = Force;
         else if (change != Force)
             change = localChange;
@@ -1541,7 +1541,7 @@ void Element::recalcStyle(StyleChange change)
         if (!n->isElementNode())
             continue;
         Element* element = toElement(n);
-        bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == FullStyleChange;
+        bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
         if ((forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling))
             element->setNeedsStyleRecalc();
         if (shouldRecalcStyle(change, element)) {
@@ -2568,7 +2568,7 @@ bool Element::containsFullScreenElement() const
 void Element::setContainsFullScreenElement(bool flag)
 {
     ensureElementRareData()->setContainsFullScreenElement(flag);
-    setNeedsStyleRecalc(SyntheticStyleChange);
+    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 static Element* parentCrossingFrameBoundaries(Element* element)
@@ -2865,7 +2865,9 @@ PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType ty
 
 static void scheduleLayerUpdateCallback(Node* node)
 {
-    node->setNeedsLayerUpdate();
+    // Notify the renderer even is the styles are identical since it may need to
+    // create or destroy a RenderLayer.
+    node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 }
 
 void Element::scheduleLayerUpdate()
@@ -2873,7 +2875,7 @@ void Element::scheduleLayerUpdate()
     if (postAttachCallbacksAreSuspended())
         queuePostAttachCallback(scheduleLayerUpdateCallback, this);
     else
-        setNeedsLayerUpdate();
+        scheduleLayerUpdateCallback(this);
 }
 
 HTMLCollection* Element::cachedHTMLCollection(CollectionType type)
@@ -3196,14 +3198,14 @@ void Element::styleAttributeChanged(const AtomicString& newStyleString, Attribut
 
     elementData()->m_styleAttributeIsDirty = false;
 
-    setNeedsStyleRecalc(InlineStyleChange);
+    setNeedsStyleRecalc(LocalStyleChange);
     InspectorInstrumentation::didInvalidateStyleAttr(document(), this);
 }
 
 void Element::inlineStyleChanged()
 {
     ASSERT(isStyledElement());
-    setNeedsStyleRecalc(InlineStyleChange);
+    setNeedsStyleRecalc(LocalStyleChange);
     ASSERT(elementData());
     elementData()->m_styleAttributeIsDirty = true;
     InspectorInstrumentation::didInvalidateStyleAttr(document(), this);

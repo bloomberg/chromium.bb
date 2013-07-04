@@ -97,7 +97,7 @@ void HTMLDialogElement::reposition()
         m_top += (visibleHeight - box->height()) / 2;
     m_topIsValid = true;
 
-    setNeedsStyleRecalc(InlineStyleChange);
+    setNeedsStyleRecalc(LocalStyleChange);
 }
 
 void HTMLDialogElement::show()

@@ -436,7 +436,7 @@ void ContentDistributor::setNeedsStyleRecalcIfDistributedTo(InsertionPoint* inse
 {
     for (NodeInsertionPointMap::iterator i = m_nodeToInsertionPoint.begin(); i != m_nodeToInsertionPoint.end(); ++i) {
         if (i->value == insertionPoint)
-            const_cast<Node*>(i->key)->setNeedsStyleRecalc(InlineStyleChange);
+            const_cast<Node*>(i->key)->setNeedsStyleRecalc(LocalStyleChange);
     }
 }
 

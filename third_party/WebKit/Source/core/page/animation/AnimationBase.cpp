@@ -62,7 +62,7 @@ AnimationBase::AnimationBase(const CSSAnimationData* transition, RenderObject* r
 void AnimationBase::setNeedsStyleRecalc(Node* node)
 {
     if (node)
-        node->setNeedsStyleRecalc(SyntheticStyleChange);
+        node->setNeedsStyleRecalc(LocalStyleChange);
 }
 
 double AnimationBase::duration() const

@@ -98,7 +98,7 @@ double AnimationControllerPrivate::updateAnimations(SetChanged callSetChanged/* 
             if (!timeToNextService) {
                 if (callSetChanged == CallSetChanged) {
                     Node* node = it->key->node();
-                    node->setNeedsStyleRecalc(SyntheticStyleChange);
+                    node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
                     calledSetChanged = true;
                 }
                 else
@@ -176,7 +176,7 @@ void AnimationControllerPrivate::fireEventsAndUpdateStyle()
     // call setChanged on all the elements
     Vector<RefPtr<Node> >::const_iterator nodeChangesToDispatchEnd = m_nodeChangesToDispatch.end();
     for (Vector<RefPtr<Node> >::const_iterator it = m_nodeChangesToDispatch.begin(); it != nodeChangesToDispatchEnd; ++it)
-        (*it)->setNeedsStyleRecalc(SyntheticStyleChange);
+        (*it)->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 
     m_nodeChangesToDispatch.clear();
 
@@ -307,7 +307,7 @@ void AnimationControllerPrivate::pauseAnimationsForTesting(double t)
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         it->value->pauseAnimationsForTesting(t);
-        it->key->node()->setNeedsStyleRecalc(SyntheticStyleChange);
+        it->key->node()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
     }
 }
 
@@ -456,7 +456,7 @@ void AnimationController::cancelAnimations(RenderObject* renderer)
 
     if (m_data->clear(renderer)) {
         if (Node* node = renderer->node())
-            node->setNeedsStyleRecalc(SyntheticStyleChange);
+            node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
     }
 }
 

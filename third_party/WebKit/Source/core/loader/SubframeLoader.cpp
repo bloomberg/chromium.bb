@@ -347,7 +347,7 @@ bool SubframeLoader::loadPlugin(HTMLPlugInImageElement* pluginElement, const KUR
 
     renderer->setWidget(widget);
     m_containsPlugins = true;
-    pluginElement->setNeedsStyleRecalc(SyntheticStyleChange);
+    pluginElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
     return true;
 }
 

@@ -89,11 +89,15 @@ const int nodeStyleChangeShift = 15;
 
 enum StyleChangeType {
     NoStyleChange = 0,
-    InlineStyleChange = 1 << nodeStyleChangeShift,
-    FullStyleChange = 2 << nodeStyleChangeShift,
+    LocalStyleChange = 1 << nodeStyleChangeShift,
+    SubtreeStyleChange = 2 << nodeStyleChangeShift,
+};
 
-    // FIXME: SyntheticStyleChange is deprecated, instead you should use setNeedsLayerUpdate().
-    SyntheticStyleChange = 3 << nodeStyleChangeShift,
+// If the style change is from the renderer then we'll call setStyle on the
+// renderer even if the style computed from CSS is identical.
+enum StyleChangeSource {
+    StyleChangeFromCSS,
+    StyleChangeFromRenderer
 };
 
 class NodeRareDataBase {
@@ -373,15 +377,14 @@ public:
     void setChildNeedsStyleRecalc() { setFlag(ChildNeedsStyleRecalcFlag); }
     void clearChildNeedsStyleRecalc() { clearFlag(ChildNeedsStyleRecalcFlag); }
 
-    void setNeedsStyleRecalc(StyleChangeType changeType = FullStyleChange);
+    void setNeedsStyleRecalc(StyleChangeType = SubtreeStyleChange, StyleChangeSource = StyleChangeFromCSS);
     void clearNeedsStyleRecalc()
     {
         m_nodeFlags &= ~StyleChangeMask;
-        clearFlag(NeedsLayerUpdate);
+        clearFlag(NotifyRendererWithIdenticalStyles);
     }
 
-    void setNeedsLayerUpdate();
-    bool needsLayerUpdate() const { return getFlag(NeedsLayerUpdate); }
+    bool shouldNotifyRendererWithIdenticalStyles() const { return getFlag(NotifyRendererWithIdenticalStyles); }
 
     void setIsLink(bool f) { setFlag(f, IsLinkFlag); }
     void setIsLink() { setFlag(IsLinkFlag); }
@@ -743,7 +746,7 @@ private:
         IsInShadowTreeFlag = 1 << 26,
         IsCustomElement = 1 << 27,
 
-        NeedsLayerUpdate = 1 << 28,
+        NotifyRendererWithIdenticalStyles = 1 << 28,
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };

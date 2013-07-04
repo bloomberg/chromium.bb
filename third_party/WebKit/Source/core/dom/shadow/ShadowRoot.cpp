@@ -158,10 +158,10 @@ void ShadowRoot::recalcStyle(StyleChange change)
         return;
     }
 
-    // When we're set to lazyAttach we'll have a FullStyleChange and we'll need
+    // When we're set to lazyAttach we'll have a SubtreeStyleChange and we'll need
     // to promote the change to a Force for all our descendants so they get a
     // recalc and will attach.
-    if (styleChangeType() == FullStyleChange)
+    if (styleChangeType() == SubtreeStyleChange)
         change = Force;
 
     for (Node* child = firstChild(); child; child = child->nextSibling()) {

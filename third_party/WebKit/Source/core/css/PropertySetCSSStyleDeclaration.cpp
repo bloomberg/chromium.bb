@@ -390,7 +390,7 @@ void InlineCSSStyleDeclaration::didMutate(MutationType type)
     if (!m_parentElement)
         return;
 
-    m_parentElement->setNeedsStyleRecalc(InlineStyleChange);
+    m_parentElement->setNeedsStyleRecalc(LocalStyleChange);
     m_parentElement->invalidateStyleAttribute();
     StyleAttributeMutationScope(this).didInvalidateStyleAttr();
 }

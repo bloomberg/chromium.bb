@@ -186,7 +186,7 @@ void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
 
     // If either of the layers is null we need to enable or disable compositing. This is done by triggering a style recalc.
     if (!m_videoLayer || !layer)
-        m_client->scheduleLayerUpdate();
+        m_client->mediaPlayerScheduleLayerUpdate();
 
     if (m_videoLayer)
         GraphicsLayer::unregisterContentsLayer(m_videoLayer);

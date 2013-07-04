@@ -3937,9 +3937,9 @@ void HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture()
     m_restrictions = NoRestrictions;
 }
 
-void HTMLMediaElement::scheduleLayerUpdate()
+void HTMLMediaElement::mediaPlayerScheduleLayerUpdate()
 {
-    setNeedsLayerUpdate();
+    scheduleLayerUpdate();
 }
 
 void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

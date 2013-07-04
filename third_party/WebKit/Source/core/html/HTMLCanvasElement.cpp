@@ -162,7 +162,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (!m_context) {
             m_context = CanvasRenderingContext2D::create(this, RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ? static_cast<Canvas2DContextAttributes*>(attrs) : 0, document()->inQuirksMode());
             if (m_context)
-                setNeedsLayerUpdate();
+                scheduleLayerUpdate();
         }
         return m_context.get();
     }
@@ -184,7 +184,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             if (!m_context) {
                 m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
                 if (m_context)
-                    setNeedsLayerUpdate();
+                    scheduleLayerUpdate();
             }
             return m_context.get();
         }
@@ -507,7 +507,7 @@ void HTMLCanvasElement::createImageBuffer()
 
     // Recalculate compositing requirements if acceleration state changed.
     if (m_context && m_context->is2d())
-        setNeedsLayerUpdate();
+        scheduleLayerUpdate();
 }
 
 GraphicsContext* HTMLCanvasElement::drawingContext() const
