@@ -16,7 +16,7 @@ if (fork()) {
 
     var n = 0;
     var proto = Object.create(HTMLElement.prototype);
-    proto.readyCallback = function () {
+    proto.createdCallback = function () {
         if (++n == 2)
             destroyContext();
     };

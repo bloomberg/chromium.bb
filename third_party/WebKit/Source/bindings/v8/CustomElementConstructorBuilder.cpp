@@ -150,13 +150,13 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
     exceptionCatcher.SetVerbose(true);
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Handle<v8::Value> readyValue = m_prototype->Get(v8String("readyCallback", isolate));
+    v8::Handle<v8::Value> createdValue = m_prototype->Get(v8String("createdCallback", isolate));
 
-    v8::Handle<v8::Function> readyFunction;
-    if (!readyValue.IsEmpty() && readyValue->IsFunction())
-        readyFunction = v8::Handle<v8::Function>::Cast(readyValue);
+    v8::Handle<v8::Function> createdFunction;
+    if (!createdValue.IsEmpty() && createdValue->IsFunction())
+        createdFunction = v8::Handle<v8::Function>::Cast(createdValue);
 
-    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, readyFunction);
+    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, createdFunction);
 }
 
 bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition)
@@ -210,7 +210,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 bool CustomElementConstructorBuilder::prototypeIsValid() const
 {
     if (m_prototype->InternalFieldCount() || !m_prototype->GetHiddenValue(V8HiddenPropertyName::isCustomElementInterfacePrototypeObject()).IsEmpty()) {
-        // Already an interface prototype object.
+        // Alcreated an interface prototype object.
         return false;
     }
 
@@ -234,7 +234,7 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
     v8::Persistent<v8::Object> persistentPrototype(m_context->GetIsolate(), m_prototype);
     perContextData->customElementPrototypes()->add(definition->type(), UnsafePersistent<v8::Object>(persistentPrototype));
 
-    // Upgrade any wrappers already created for this definition
+    // Upgrade any wrappers alcreated created for this definition
     for (HashSet<Element*>::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(*it);
         if (wrapper.IsEmpty()) {

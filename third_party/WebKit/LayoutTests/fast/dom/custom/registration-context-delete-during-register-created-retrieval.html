@@ -5,14 +5,14 @@
 <script>
 if (fork()) {
     // The controlling parent frame
-    description('Tests destroying a context during registration at the point when the ready callback is retrieved.');
+    description('Tests destroying a context during registration at the point when the created callback is retrieved.');
     jsTestIsAsync = true;
     successfullyParsed = true;
 } else {
     // The child frame
 
     var proto = Object.create(HTMLElement.prototype, {
-        readyCallback: {
+        createdCallback: {
             get: function () {
                 destroyContext();
                 return function () { }

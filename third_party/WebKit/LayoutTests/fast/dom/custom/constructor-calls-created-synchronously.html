@@ -2,11 +2,11 @@
 <script src="../../js/resources/js-test-pre.js"></script>
 <div id="container"></div>
 <script>
-description('Tests that custom element constructors run the readyCallback synchronously.');
+description('Tests that custom element constructors run the createdCallback synchronously.');
 
 var proto = Object.create(HTMLElement.prototype);
 var ncallbacks = 0;
-proto.readyCallback = function () {
+proto.createdCallback = function () {
   ncallbacks++;
 };
 var A = document.register('x-a', {prototype: proto});

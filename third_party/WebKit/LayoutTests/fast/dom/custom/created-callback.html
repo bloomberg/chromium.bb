@@ -4,31 +4,31 @@
 <body>
 <script>
 test(function () {
-    var readyInvocations = 0;
-    function ready() {
-        readyInvocations++;
+    var createdInvocations = 0;
+    function created() {
+        createdInvocations++;
     }
 
     var getterInvocations = 0;
     function getter() {
         getterInvocations++;
-        return ready;
+        return created;
     }
 
     function failer() {
-        assert_unreached('the ready callback must not be retrieved after registration');
+        assert_unreached('the created callback must not be retrieved after registration');
     }
 
     var proto = Object.create(HTMLElement.prototype, {
-      readyCallback: {
+      createdCallback: {
         get: getter
       }
     });
     var ctor = document.register('x-a', {prototype: proto});
-    assert_equals(getterInvocations, 1, 'the ready callback must have been retrieved');
+    assert_equals(getterInvocations, 1, 'the created callback must have been retrieved');
 
-    proto.readyCallback = failer;
+    proto.createdCallback = failer;
     var element = new ctor();
-    assert_equals(readyInvocations, 1, 'the ready callback retrieved at registration must be invoked');
-}, 'transfer ready callback');
+    assert_equals(createdInvocations, 1, 'the created callback retrieved at registration must be invoked');
+}, 'transfer created callback');
 </script>

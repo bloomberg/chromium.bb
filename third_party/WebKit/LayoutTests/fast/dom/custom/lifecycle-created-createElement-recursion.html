@@ -5,7 +5,7 @@
 </head>
 <body>
 <script>
-document.register("x-foo", { prototype: Object.create(HTMLElement.prototype, { readyCallback: { value: function () { this.innerHTML = "<x-foo>Hello</x-foo>"; } } }) });
+document.register("x-foo", { prototype: Object.create(HTMLElement.prototype, { createdCallback: { value: function () { this.innerHTML = "<x-foo>Hello</x-foo>"; } } }) });
 if (window.testRunner)
     testRunner.dumpAsText();
 document.createElement("x-foo");

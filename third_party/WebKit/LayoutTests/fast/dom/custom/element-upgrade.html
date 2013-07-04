@@ -11,7 +11,7 @@ description('Tests the element upgrade algorithm.');
 
 // Scenario A: Custom tag; upgrade candidate is not in the document;
 // upgrade candidate did not have a JavaScript wrapper at upgrade
-// time; custom element does not have a ready callback.
+// time; custom element does not have a created callback.
 var host = document.createElement('div');
 host.innerHTML = '<x-a></x-a>';  // Using innerHTML avoids wrapping x-a
 var A = document.register('x-a', {prototype: Object.create(HTMLElement.prototype)});
@@ -19,11 +19,11 @@ shouldBeTrue('host.firstChild instanceof A');
 
 // Scenario B: Type extension; upgrade candidate is in the document;
 // upgrade candidate did have a JavaScript wrapper at upgrade time;
-// custom element has a ready callback.
+// custom element has a created callback.
 var element = document.createElement('span', 'x-b');
 var proto = Object.create(HTMLSpanElement.prototype);
 var callCount = 0;
-proto.readyCallback = function () {
+proto.createdCallback = function () {
   callCount++;
 };
 var B = document.register('x-b', {prototype: proto});

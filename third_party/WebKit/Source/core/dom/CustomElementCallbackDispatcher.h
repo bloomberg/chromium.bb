@@ -55,7 +55,7 @@ public:
         }
     };
 
-    void enqueueReadyCallback(CustomElementLifecycleCallbacks*, Element*);
+    void enqueueCreatedCallback(CustomElementLifecycleCallbacks*, Element*);
 
     // Returns true if more work may have to be performed at the
     // checkpoint by this or other workers (for example, this work
@@ -67,18 +67,18 @@ private:
 
     bool hasQueuedCallbacks() { return !m_invocations.isEmpty(); }
 
-    class ReadyInvocation {
+    class CreatedInvocation {
     public:
-        ReadyInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-        virtual ~ReadyInvocation() { }
-        void invoke() { m_callbacks->ready(m_element.get()); }
+        CreatedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+        virtual ~CreatedInvocation() { }
+        void invoke() { m_callbacks->created(m_element.get()); }
 
     private:
         RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
         RefPtr<Element> m_element;
     };
 
-    Vector<ReadyInvocation> m_invocations;
+    Vector<CreatedInvocation> m_invocations;
 };
 
 }

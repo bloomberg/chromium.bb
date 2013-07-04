@@ -2,7 +2,7 @@
 <html>
 <head>
 <script>
-proto = Object.create(HTMLElement.prototype, { readyCallback: { value: function() { this.innerHTML = "Hello"; } } });
+proto = Object.create(HTMLElement.prototype, { createdCallback: { value: function() { this.innerHTML = "Hello"; } } });
 document.register("x-foo", { prototype: proto });
 </script>
 </head>

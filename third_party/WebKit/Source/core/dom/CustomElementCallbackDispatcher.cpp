@@ -29,9 +29,7 @@
  */
 
 #include "config.h"
-#include "CustomElementCallbackDispatcher.h"
-
-#include "CustomElementLifecycleCallbacks.h"
+#include "core/dom/CustomElementCallbackDispatcher.h"
 
 namespace WebCore {
 
@@ -41,7 +39,7 @@ CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
     return instance;
 }
 
-CustomElementCallbackDispatcher::ReadyInvocation::ReadyInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+CustomElementCallbackDispatcher::CreatedInvocation::CreatedInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
     : m_callbacks(callbacks)
     , m_element(element)
 {
@@ -53,22 +51,22 @@ bool CustomElementCallbackDispatcher::dispatch()
         return false;
 
     do  {
-        Vector<ReadyInvocation> invocations;
+        Vector<CreatedInvocation> invocations;
         m_invocations.swap(invocations);
 
-        for (Vector<ReadyInvocation>::iterator it = invocations.begin(); it != invocations.end(); ++it)
+        for (Vector<CreatedInvocation>::iterator it = invocations.begin(); it != invocations.end(); ++it)
             it->invoke();
     } while (!m_invocations.isEmpty());
 
     return true;
 }
 
-void CustomElementCallbackDispatcher::enqueueReadyCallback(CustomElementLifecycleCallbacks* callbacks, Element* element)
+void CustomElementCallbackDispatcher::enqueueCreatedCallback(CustomElementLifecycleCallbacks* callbacks, Element* element)
 {
-    if (!callbacks->hasReady())
+    if (!callbacks->hasCreated())
         return;
 
-    m_invocations.append(ReadyInvocation(callbacks, element));
+    m_invocations.append(CreatedInvocation(callbacks, element));
 }
 
 } // namespace WebCore

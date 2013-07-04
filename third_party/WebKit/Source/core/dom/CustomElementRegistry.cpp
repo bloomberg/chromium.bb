@@ -141,7 +141,7 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
     for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         (*it)->setNeedsStyleRecalc(); // :unresolved has changed
 
-        CustomElementCallbackDispatcher::instance().enqueueReadyCallback(lifecycleCallbacks.get(), *it);
+        CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(lifecycleCallbacks.get(), *it);
     }
 }
 
@@ -226,13 +226,13 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element, const AtomicS
         // extension element will be unresolved in perpetuity.
         didCreateUnresolvedElement(CustomElementDefinition::TypeExtension, type, element);
     } else {
-        CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callbacks(), element);
+        CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
     }
 }
 
 void CustomElementRegistry::didCreateCustomTagElement(CustomElementDefinition* definition, Element* element)
 {
-    CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callbacks(), element);
+    CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
 }
 
 void CustomElementRegistry::didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind kind, const AtomicString& type, Element* element)

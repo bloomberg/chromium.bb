@@ -44,17 +44,17 @@ class ScriptExecutionContext;
 
 class V8CustomElementLifecycleCallbacks : public CustomElementLifecycleCallbacks, ActiveDOMCallback {
 public:
-    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ScriptExecutionContext*, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> ready);
+    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ScriptExecutionContext*, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> created);
 
     virtual ~V8CustomElementLifecycleCallbacks() { }
 
 private:
-    V8CustomElementLifecycleCallbacks(ScriptExecutionContext*, v8::Handle<v8::Function> ready);
+    V8CustomElementLifecycleCallbacks(ScriptExecutionContext*, v8::Handle<v8::Function> created);
 
-    virtual void ready(Element*) OVERRIDE;
+    virtual void created(Element*) OVERRIDE;
 
     RefPtr<DOMWrapperWorld> m_world;
-    ScopedPersistent<v8::Function> m_ready;
+    ScopedPersistent<v8::Function> m_created;
 };
 
 }

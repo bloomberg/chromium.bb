@@ -41,13 +41,13 @@ class CustomElementLifecycleCallbacks : public RefCounted<CustomElementLifecycle
 public:
     virtual ~CustomElementLifecycleCallbacks() { }
 
-    bool hasReady() const { return m_which == Ready; }
-    virtual void ready(Element*) = 0;
+    bool hasCreated() const { return m_which == Created; }
+    virtual void created(Element*) = 0;
 
 protected:
     enum CallbackType {
         None,
-        Ready
+        Created
     };
 
     CustomElementLifecycleCallbacks(CallbackType which) : m_which(which) { }

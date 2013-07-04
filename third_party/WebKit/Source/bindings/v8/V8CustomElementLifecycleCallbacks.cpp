@@ -40,11 +40,11 @@
 
 namespace WebCore {
 
-PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> ready)
+PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> created)
 {
-    if (!ready.IsEmpty())
-        owner->SetHiddenValue(V8HiddenPropertyName::customElementReady(), ready);
-    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, ready));
+    if (!created.IsEmpty())
+        owner->SetHiddenValue(V8HiddenPropertyName::customElementCreated(), created);
+    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, created));
 }
 
 static void weakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, ScopedPersistent<v8::Function>* handle)
@@ -52,17 +52,17 @@ static void weakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, ScopedPers
     handle->clear();
 }
 
-V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Function> ready)
-    : CustomElementLifecycleCallbacks(ready.IsEmpty() ? None : Ready)
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Function> created)
+    : CustomElementLifecycleCallbacks(created.IsEmpty() ? None : Created)
     , ActiveDOMCallback(scriptExecutionContext)
     , m_world(DOMWrapperWorld::current())
-    , m_ready(ready)
+    , m_created(created)
 {
-    if (!m_ready.isEmpty())
-        m_ready.makeWeak(&m_ready, weakCallback);
+    if (!m_created.isEmpty())
+        m_created.makeWeak(&m_created, weakCallback);
 }
 
-void V8CustomElementLifecycleCallbacks::ready(Element* element)
+void V8CustomElementLifecycleCallbacks::created(Element* element)
 {
     if (!canInvokeCallback())
         return;
@@ -76,7 +76,7 @@ void V8CustomElementLifecycleCallbacks::ready(Element* element)
     v8::Context::Scope scope(context);
     v8::Isolate* isolate = context->GetIsolate();
 
-    v8::Handle<v8::Function> callback = m_ready.newLocal(isolate);
+    v8::Handle<v8::Function> callback = m_created.newLocal(isolate);
     if (callback.IsEmpty())
         return;
 

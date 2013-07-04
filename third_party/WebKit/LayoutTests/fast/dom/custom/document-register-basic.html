@@ -32,9 +32,9 @@ shouldBeTrue("fooConstructor.prototype.thisIsPrototype");
 shouldThrow("document.register('x-foo', createRegisterParameters())", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
 shouldThrow("document.register('X-FOO', createRegisterParameters())", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
 
-// Bad prototype: prototype is already a built-in interface prototype object
+// Bad prototype: prototype is alcreated a built-in interface prototype object
 shouldThrow("document.register('x-bad-a', HTMLElement)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-// Bad prototype: prototype is already a Custom Element interface prototype object
+// Bad prototype: prototype is alcreated a Custom Element interface prototype object
 shouldThrow("document.register('x-bad-b', fooConstructor)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
 // Bad prototype: 'constructor' is not configurable
 var proto = Object.create(HTMLElement.prototype, {
