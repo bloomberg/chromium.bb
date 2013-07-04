@@ -1913,7 +1913,7 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/plugins/webkit_plugins.gyp:test_mock_plugin_list',
-            '../webkit/support/webkit_support.gyp:webkit_resources',
+            '../webkit/webkit_resources.gyp:webkit_temp_resources',
           ],
           # TODO(scr): Use this in browser_tests too.
           'includes': [

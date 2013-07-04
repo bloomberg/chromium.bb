@@ -892,8 +892,8 @@
                 '<(DEPTH)/net/net.gyp:net_resources',
                 '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
                 '<(DEPTH)/third_party/isimpledom/isimpledom.gyp:isimpledom',
-                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
-                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
+                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
               ],
               'configurations': {
                 'Debug_Base': {

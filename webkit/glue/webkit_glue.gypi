@@ -11,51 +11,6 @@
   },
   'targets': [
     {
-      'target_name': 'webkit_resources',
-      'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
-      },
-      'actions': [
-        {
-          'action_name': 'webkit_resources',
-          'variables': {
-            'grit_grd_file': 'resources/webkit_resources.grd',
-          },
-          'includes': [ '../../build/grit_action.gypi' ],
-        },
-        {
-          'action_name': 'webkit_chromium_resources',
-          'variables': {
-            'grit_grd_file': '../../third_party/WebKit/Source/WebKit/chromium/WebKit.grd',
-          },
-          'includes': [ '../../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../../build/grit_target.gypi' ],
-      'direct_dependent_settings': {
-        'include_dirs': [ '<(grit_out_dir)' ],
-      },
-    },
-    {
-      'target_name': 'webkit_strings',
-      'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
-      },
-      'actions': [
-        {
-          'action_name': 'webkit_strings',
-          'variables': {
-            'grit_grd_file': 'webkit_strings.grd',
-          },
-          'includes': [ '../../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../../build/grit_target.gypi' ],
-    },
-
-    {
       'target_name': 'glue_child',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -258,12 +213,12 @@
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/storage_browser.gyp:webkit_storage_browser',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
         'glue_common',
         'plugins',
         'webkit_common',
         'webkit_media',
-        'webkit_resources',
-        'webkit_strings',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -328,6 +283,29 @@
             }],
           ],
         }],
+      ],
+    },
+
+# TODO(jamesr): These temporary targets exist only for DumpRenderTree.gyp in the blink repo.
+    {
+      'target_name': 'webkit_resources',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
+      ],
+      'export_dependent_settings': [
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
+      ],
+    },
+
+    {
+      'target_name': 'webkit_strings',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
+      ],
+      'export_dependent_settings': [
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
       ],
     },
   ],

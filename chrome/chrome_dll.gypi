@@ -111,7 +111,7 @@
                 '../net/net.gyp:net_resources',
                 '../third_party/cld/cld.gyp:cld',
                 '../ui/views/views.gyp:views',
-                '../webkit/support/webkit_support.gyp:webkit_resources',
+                '../webkit/webkit_resources.gyp:webkit_temp_resources',
               ],
               'sources': [
                 'app/chrome_command_ids.h',

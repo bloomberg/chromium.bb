@@ -2407,7 +2407,7 @@
             '../webkit/storage_common.gyp:webkit_storage_common',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:webkit_common',
-            '../webkit/support/webkit_support.gyp:webkit_resources',
+            '../webkit/webkit_resources.gyp:webkit_temp_resources',
           ],
           'defines': [
             '<@(nacl_defines)',
