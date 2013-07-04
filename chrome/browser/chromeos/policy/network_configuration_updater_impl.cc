@@ -94,7 +94,7 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
 
   base::ListValue network_configs;
   base::ListValue certificates;
-  ParseAndValidateOncForImport(
+  chromeos::onc::ParseAndValidateOncForImport(
       onc_blob, onc_source, "", &network_configs, &certificates);
 
   chromeos::CertificateHandler::CertsByGUID imported_server_and_ca_certs;
