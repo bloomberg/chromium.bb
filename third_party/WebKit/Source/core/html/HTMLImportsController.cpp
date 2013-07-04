@@ -34,6 +34,8 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/loader/CrossOriginAccessControl.h"
+#include "core/loader/DocumentWriter.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedScript.h"
 #include "weborigin/SecurityOrigin.h"
@@ -68,7 +70,6 @@ void LinkImport::process()
     if (!m_owner)
         return;
 
-    // FIXME(morrita): Should take care of sub-imports whose document doesn't have frame.
     if (!m_owner->document()->frame() && !m_owner->document()->imports())
         return;
 
@@ -89,7 +90,8 @@ void LinkImport::process()
     }
 
     CachedResourceRequest request = builder.build(true);
-    CachedResourceHandle<CachedScript> resource = controller->cachedResourceLoader()->requestScript(request);
+    request.setPotentiallyCrossOriginEnabled(controller->securityOrigin(), DoNotAllowStoredCredentials);
+    CachedResourceHandle<CachedRawResource> resource = controller->cachedResourceLoader()->requestRawResource(request);
     if (!resource)
         return;
 
@@ -125,6 +127,17 @@ HTMLImportLoader::~HTMLImportLoader()
         m_resource->removeClient(this);
 }
 
+void HTMLImportLoader::responseReceived(CachedResource*, const ResourceResponse& response)
+{
+    setState(startParsing(response));
+}
+
+void HTMLImportLoader::dataReceived(CachedResource*, const char* data, int length)
+{
+    RefPtr<DocumentWriter> protectingWriter(m_writer);
+    m_writer->addData(data, length);
+}
+
 void HTMLImportLoader::notifyFinished(CachedResource*)
 {
     setState(finish());
@@ -134,32 +147,51 @@ void HTMLImportLoader::setState(State state)
 {
     if (m_state == state)
         return;
+
     m_state = state;
 
-    if ((m_state == StateReady  || m_state == StateError) && m_controller)
+    if (m_state == StateReady || m_state == StateError)
+        dispose();
+}
+
+void HTMLImportLoader::dispose()
+{
+    if (m_writer) {
+        m_writer->end();
+        m_writer.clear();
+    }
+
+    if (m_resource) {
+        m_resource->removeClient(this);
+        m_resource = 0;
+    }
+
+
+    if (m_controller)
         m_controller->didLoad();
+}
+
+HTMLImportLoader::State HTMLImportLoader::startParsing(const ResourceResponse& response)
+{
+    // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
+    if (!m_controller->cachedResourceLoader()->canAccess(m_resource.get()))
+        return StateError;
+
+    m_importedDocument = HTMLDocument::create(0, response.url());
+    m_importedDocument->setImports(m_controller);
+    m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), response.textEncodingName());
+
+    return StateLoading;
 }
 
 HTMLImportLoader::State HTMLImportLoader::finish()
 {
     if (!m_controller)
         return StateError;
-
-    if (m_resource->loadFailedOrCanceled())
+    // The writer instance indicates that a part of the document can be already loaded.
+    // We don't take such a case as an error because the partially-loaded document has been visible from script at this point.
+    if (m_resource->loadFailedOrCanceled() && !m_writer)
         return StateError;
-
-    String error;
-    if (!m_controller->securityOrigin()->canRequest(m_resource->response().url())
-        && !m_resource->passesAccessControlCheck(m_controller->securityOrigin(), error)) {
-        m_controller->showSecurityErrorMessage("Import from origin '" + SecurityOrigin::create(m_resource->response().url())->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + error);
-        return StateError;
-    }
-
-    // FIXME(morrita): This should be done in incremental way.
-    m_importedDocument = HTMLDocument::create(0, m_resource->response().url());
-    m_importedDocument->setImports(m_controller);
-    m_importedDocument->setContent(m_resource->script());
-
     return StateReady;
 }
 

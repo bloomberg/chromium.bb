@@ -32,7 +32,7 @@
 #define HTMLImportsController_h
 
 #include "core/html/LinkResource.h"
-#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,6 +43,7 @@ namespace WebCore {
 class CachedResourceLoader;
 class HTMLImportLoader;
 class HTMLImportsController;
+class DocumentWriter;
 
 //
 // A LinkResource subclasss used for @rel=import.
@@ -68,7 +69,7 @@ private:
 };
 
 
-class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public CachedResourceClient {
+class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public CachedRawResourceClient {
 public:
     enum State {
         StateLoading,
@@ -88,17 +89,22 @@ public:
 private:
     HTMLImportLoader(HTMLImportsController*, const KURL&, const CachedResourceHandle<CachedScript>&);
 
-    // CachedResourceClient
+    // CachedRawResourceClient
+    virtual void responseReceived(CachedResource*, const ResourceResponse&) OVERRIDE;
+    virtual void dataReceived(CachedResource*, const char* data, int length) OVERRIDE;
     virtual void notifyFinished(CachedResource*) OVERRIDE;
 
+    State startParsing(const ResourceResponse&);
     State finish();
     void setState(State);
+    void dispose();
 
     HTMLImportsController* m_controller;
     State m_state;
     KURL m_url;
-    CachedResourceHandle<CachedScript> m_resource;
+    CachedResourceHandle<CachedRawResource> m_resource;
     RefPtr<Document> m_importedDocument;
+    RefPtr<DocumentWriter> m_writer;
 };
 
 

@@ -430,6 +430,7 @@ bool CachedResourceLoader::canAccess(CachedResource* resource)
     String error;
     switch (resource->type()) {
     case CachedResource::Script:
+    case CachedResource::RawResource:
         if (resource->options().requestOriginPolicy == PotentiallyCrossOriginEnabled
             && !m_document->securityOrigin()->canRequest(resource->response().url())
             && !resource->passesAccessControlCheck(m_document->securityOrigin(), error)) {

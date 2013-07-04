@@ -58,8 +58,10 @@ DocumentWriter::DocumentWriter(Document* document, const String& mimeType, const
     // document.open).
     , m_parser(m_document->implicitOpen())
 {
-    if (FrameView* view = m_document->frame()->view())
-        view->setContentsSize(IntSize());
+    if (m_document->frame()) {
+        if (FrameView* view = m_document->frame()->view())
+            view->setContentsSize(IntSize());
+    }
 }
 
 DocumentWriter::~DocumentWriter()

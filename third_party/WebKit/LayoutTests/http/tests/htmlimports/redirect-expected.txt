@@ -1,0 +1,10 @@
+CONSOLE MESSAGE: Script from origin 'http://localhost:8000' has been blocked from loading by Cross-Origin Resource Sharing policy: Origin http://127.0.0.1:8000 is not allowed by Access-Control-Allow-Origin.
+CONSOLE MESSAGE: Script from origin 'http://localhost:8000' has been blocked from loading by Cross-Origin Resource Sharing policy: Origin http://127.0.0.1:8000 is not allowed by Access-Control-Allow-Origin.
+
+PASS Accessing to a same origin import 
+PASS Accessing to CORS-enabed origin import 
+PASS Blocking access to a cross origin import 
+PASS Accessing to a same origin import including same domain redirect 
+PASS Accessing to a CORS origin import including same domain redirect 
+PASS Blocking access to a cross origin iamport including same domain redirect 
+
