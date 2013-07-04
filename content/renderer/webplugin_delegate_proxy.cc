@@ -253,9 +253,9 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   if (channel_host_.get()) {
     Send(new PluginMsg_DestroyInstance(instance_id_));
 
-    // Must remove the route after sending the destroy message, since
-    // RemoveRoute can lead to all the outstanding NPObjects being told the
-    // channel went away if this was the last instance.
+    // Must remove the route after sending the destroy message, rather than
+    // before, since RemoveRoute can lead to all the outstanding NPObjects
+    // being told the channel went away if this was the last instance.
     channel_host_->RemoveRoute(instance_id_);
 
     // Remove the mapping between our instance-Id and NPP identifiers, used by
@@ -270,17 +270,6 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     // released, the plugin will give us a new FD, and we'll assert when trying
     // to associate it with the channel name.
     channel_host_ = NULL;
-  }
-
-  if (window_script_object_.get()) {
-    // Release the window script object, if the plugin didn't already.
-    // If we don't do this then it will linger until the last plugin instance is
-    // destroyed.  In the meantime, though, the frame that it refers to may have
-    // been destroyed by WebKit, at which point WebKit will forcibly deallocate
-    // the window script object.  The window script object stub is unique to the
-    // plugin instance, so this won't affect other instances.
-    // TODO(wez): Remove this hack.
-    window_script_object_->DeleteSoon();
   }
 
   plugin_ = NULL;
@@ -979,8 +968,7 @@ void WebPluginDelegateProxy::OnGetWindowScriptNPObject(
 
   // The stub will delete itself when the proxy tells it that it's released, or
   // otherwise when the channel is closed.
-  window_script_object_ = (new NPObjectStub(
-      npobject, channel_host_.get(), route_id, 0, page_url_))->AsWeakPtr();
+  new NPObjectStub(npobject, channel_host_.get(), route_id, 0, page_url_);
   *success = true;
 }
 
