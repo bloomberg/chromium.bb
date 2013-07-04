@@ -29,3 +29,6 @@ Modifications made:
 
 - Added typedefs for EGLNative*Type in eglplatform.h, guarded by an
   __APPLE__ define
+
+- Added an #include for <assert.h> at the top of
+  src/gallium/auxiliary/util/u_debug.h

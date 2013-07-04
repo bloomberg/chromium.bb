@@ -51,9 +51,6 @@
             'defines': [
               '__GLIBC__',
             ],
-            'cflags': [
-              '-include assert.h',
-            ],
           }],
           ['OS=="linux"', {
             'defines': [
