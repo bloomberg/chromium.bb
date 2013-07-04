@@ -253,7 +253,7 @@ deps = {
     "/trunk/deps/cdm@181763",
 
   "src/third_party/mesa/src":
-    "/trunk/deps/third_party/mesa@210108",
+    "/trunk/deps/third_party/mesa@210110",
 }
 
 

@@ -50,6 +50,7 @@
           ['OS=="android"', {
             'defines': [
               '__GLIBC__',
+              '_GNU_SOURCE',
             ],
           }],
           ['OS=="linux"', {

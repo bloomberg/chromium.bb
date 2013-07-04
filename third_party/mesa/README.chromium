@@ -30,5 +30,8 @@ Modifications made:
 - Added typedefs for EGLNative*Type in eglplatform.h, guarded by an
   __APPLE__ define
 
+- Modified glsl_strtod in src/glsl/strtod.c to use strtod instead of
+  strtod_l on Android
+
 - Added an #include for <assert.h> at the top of
   src/gallium/auxiliary/util/u_debug.h
