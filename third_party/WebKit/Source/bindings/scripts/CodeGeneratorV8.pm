@@ -3351,9 +3351,6 @@ sub GenerateImplementationIndexedPropertySetter
         $code .= "    ExceptionCode ec = 0;\n";
         $extraArguments = ", ec";
     }
-    my $passNativeValue = "propertyValue";
-    $passNativeValue .= ".release()" if (IsRefPtrType($type));
-
     my @conditions = ();
     my @statements = ();
     if ($treatNullAs && $treatNullAs ne "NullString") {
@@ -3365,7 +3362,7 @@ sub GenerateImplementationIndexedPropertySetter
         push @statements, "collection->${treatUndefinedAs}(index$extraArguments);";
     }
     push @conditions, "";
-    push @statements, "collection->${methodName}(index, $passNativeValue$extraArguments);";
+    push @statements, "collection->${methodName}(index, propertyValue$extraArguments);";
     $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
 
     $code .= "    if (!result)\n";
@@ -3650,7 +3647,7 @@ sub GenerateNativeValueDefinition
     my $treatNullAs = $parameter->extendedAttributes->{"TreatNullAs"} || "";
     my $treatUndefinedAs = $parameter->extendedAttributes->{"TreatUndefinedAs"} || "";
     my $code = "";
-    my $nativeType = GetNativeType($parameter->type);
+    my $nativeType = GetNativeType($parameter->type, 1);
     my $nativeValue = JSValueToNative($parameter->type, $function->extendedAttributes, $jsValue, $getIsolate);
     if ($parameter->type eq "DOMString") {
         my $nullCheck = "";
@@ -3662,7 +3659,7 @@ sub GenerateNativeValueDefinition
         }
         $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<${nullCheck}>, ${nativeValueName}, ${jsValue});\n";
     } else {
-        $code .= "    ${nativeType} ${nativeValueName} = ${nativeValue};\n";
+        $code .= "    V8TRYCATCH_VOID(${nativeType}, ${nativeValueName}, ${nativeValue});\n";
     }
     return $code;
 }
