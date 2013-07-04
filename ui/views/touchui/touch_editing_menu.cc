@@ -24,10 +24,11 @@ namespace {
 const int kMenuCommands[] = {IDS_APP_CUT,
                              IDS_APP_COPY,
                              IDS_APP_PASTE};
-const int kSpacingBetweenButtons = 0;
+const int kSpacingBetweenButtons = 2;
 const int kButtonSeparatorColor = SkColorSetARGB(13, 0, 0, 0);
-const int kMenuButtonHeight = 40;
-const int kMenuButtonWidth = 65;
+const int kMenuButtonHeight = 38;
+const int kMenuButtonWidth = 63;
+const int kMenuMargin = 1;
 const SkColor kMenuButtonColorNormal = SkColorSetARGB(102, 255, 255, 255);
 const SkColor kMenuButtonColorHover = SkColorSetARGB(13, 0, 0, 0);
 
@@ -68,7 +69,7 @@ TouchEditingMenuView::TouchEditingMenuView(
   set_anchor_rect(anchor_rect);
   set_shadow(views::BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
-  set_margins(gfx::Insets());
+  set_margins(gfx::Insets(kMenuMargin, kMenuMargin, kMenuMargin, kMenuMargin));
   set_use_focusless(true);
   set_adjust_if_offscreen(true);
 
@@ -76,7 +77,6 @@ TouchEditingMenuView::TouchEditingMenuView(
       kSpacingBetweenButtons));
   CreateButtons();
   views::BubbleDelegateView::CreateBubble(this);
-  GetBubbleFrameView()->set_background(NULL);
   GetWidget()->Show();
 }
 
@@ -110,10 +110,9 @@ void TouchEditingMenuView::OnPaint(gfx::Canvas* canvas) {
   BubbleDelegateView::OnPaint(canvas);
 
   // Draw separator bars.
-  int x = 0;
   for (int i = 0; i < child_count() - 1; ++i) {
     View* child = child_at(i);
-    x += child->width();
+    int x = child->bounds().right() + kSpacingBetweenButtons / 2;
     canvas->FillRect(gfx::Rect(x, 0, 1, child->height()),
         kButtonSeparatorColor);
   }
