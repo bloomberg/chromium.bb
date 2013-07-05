@@ -200,6 +200,11 @@ bool ThemeService::HasCustomImage(int id) const {
   if (theme_pack_.get())
     return theme_pack_->HasCustomImage(id);
 
+  if (IsManagedUser() &&
+      (id == IDR_THEME_FRAME || id == IDR_THEME_FRAME_INACTIVE ||
+       id == IDR_THEME_TAB_BACKGROUND || id == IDR_THEME_TAB_BACKGROUND_V))
+    return true;
+
   return false;
 }
 
