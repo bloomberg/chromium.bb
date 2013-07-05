@@ -129,7 +129,7 @@ Widget::InitParams::InitParams(Type type)
     : type(type),
       delegate(NULL),
       child(type == TYPE_CONTROL),
-      opacity((type == TYPE_WINDOW &&
+      opacity(((type == TYPE_WINDOW || type == TYPE_PANEL) &&
                ViewsDelegate::views_delegate &&
                ViewsDelegate::views_delegate->UseTransparentWindows()) ?
               TRANSLUCENT_WINDOW : INFER_OPACITY),
