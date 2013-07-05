@@ -5492,10 +5492,9 @@ sub WriteData
     my $object = shift;
     my $interface = shift;
     my $outputDirectory = shift;
-    my $outputHeadersDirectory = shift;
 
     my $name = $interface->name;
-    my $headerFileName = "$outputHeadersDirectory/V8$name.h";
+    my $headerFileName = "$outputDirectory/V8$name.h";
     my $implFileName = "$outputDirectory/V8$name.cpp";
 
     my @includes = ();

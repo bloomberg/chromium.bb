@@ -469,7 +469,7 @@ def generate_instrumenting_agents(used_agents):
     return header_lines, cpp_lines
 
 
-def generate(input_path, output_h_dir, output_cpp_dir):
+def generate(input_path, output_dir):
     fin = open(input_path, "r")
     files = load_model_from_idl(fin.read())
     fin.close()
@@ -480,7 +480,7 @@ def generate(input_path, output_h_dir, output_cpp_dir):
     for f in files:
         cpp_includes.append(include_header(f.header_name))
 
-        fout = open(output_h_dir + "/" + f.header_name + ".h", "w")
+        fout = open(output_dir + "/" + f.header_name + ".h", "w")
         fout.write(f.generate(cpp_lines, used_agents))
         fout.close()
 
@@ -491,11 +491,11 @@ def generate(input_path, output_h_dir, output_cpp_dir):
 
     instrumenting_agents_header, instrumenting_agents_cpp = generate_instrumenting_agents(used_agents)
 
-    fout = open(output_h_dir + "/" + "InstrumentingAgentsInl.h", "w")
+    fout = open(output_dir + "/" + "InstrumentingAgentsInl.h", "w")
     fout.write(instrumenting_agents_header)
     fout.close()
 
-    fout = open(output_cpp_dir + "/InspectorInstrumentationImpl.cpp", "w")
+    fout = open(output_dir + "/InspectorInstrumentationImpl.cpp", "w")
     fout.write(template_cpp.substitute(None,
                                        includes="\n".join(cpp_includes),
                                        extra_definitions=instrumenting_agents_cpp,
@@ -504,25 +504,21 @@ def generate(input_path, output_h_dir, output_cpp_dir):
 
 
 cmdline_parser = optparse.OptionParser()
-cmdline_parser.add_option("--output_h_dir")
-cmdline_parser.add_option("--output_cpp_dir")
+cmdline_parser.add_option("--output_dir")
 
 try:
     arg_options, arg_values = cmdline_parser.parse_args()
     if (len(arg_values) != 1):
         raise Exception("Exactly one plain argument expected (found %s)" % len(arg_values))
     input_path = arg_values[0]
-    output_header_dirpath = arg_options.output_h_dir
-    output_cpp_dirpath = arg_options.output_cpp_dir
-    if not output_header_dirpath:
-        raise Exception("Output .h directory must be specified")
-    if not output_cpp_dirpath:
-        raise Exception("Output .cpp directory must be specified")
+    output_dirpath = arg_options.output_dir
+    if not output_dirpath:
+        raise Exception("Output directory must be specified")
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
     sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
-    sys.stderr.write("Usage: <script> InspectorInstrumentation.idl --output_h_dir <output_header_dir> --output_cpp_dir <output_cpp_dir>\n")
+    sys.stderr.write("Usage: <script> --output_dir <output_dir> InspectorInstrumentation.idl\n")
     exit(1)
 
-generate(input_path, output_header_dirpath, output_cpp_dirpath)
+generate(input_path, output_dirpath)

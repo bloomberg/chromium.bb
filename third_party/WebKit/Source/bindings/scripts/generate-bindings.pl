@@ -42,7 +42,6 @@ use IDLSerializer;
 
 my @idlDirectories;
 my $outputDirectory;
-my $outputHeadersDirectory;
 my $defines;
 my $filename;
 my $preprocessor;
@@ -54,7 +53,6 @@ my $writeFileOnlyIfChanged;
 
 GetOptions('include=s@' => \@idlDirectories,
            'outputDir=s' => \$outputDirectory,
-           'outputHeadersDir=s' => \$outputHeadersDirectory,
            'defines=s' => \$defines,
            'filename=s' => \$filename,
            'preprocessor=s' => \$preprocessor,
@@ -70,9 +68,6 @@ die('Must specify input file.') unless defined($targetIdlFile);
 die('Must specify output directory.') unless defined($outputDirectory);
 $defines = "" unless defined($defines);
 
-if (!$outputHeadersDirectory) {
-    $outputHeadersDirectory = $outputDirectory;
-}
 $targetIdlFile = Cwd::realpath($targetIdlFile);
 if ($verbose) {
     print "$targetIdlFile\n";
@@ -114,7 +109,7 @@ if ($supplementalDependencyFile) {
 
     if (!$idlFound) {
         # We generate empty .h and .cpp files just to tell build scripts that .h and .cpp files are created.
-        generateEmptyHeaderAndCpp($targetInterfaceName, $outputHeadersDirectory, $outputDirectory);
+        generateEmptyHeaderAndCpp($targetInterfaceName, $outputDirectory);
         exit 0;
     }
 }
@@ -195,12 +190,12 @@ my $interfaces = $targetDocument->interfaces;
 foreach my $interface (@$interfaces) {
     print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;
     $codeGenerator->GenerateInterface($interface);
-    $codeGenerator->WriteData($interface, $outputDirectory, $outputHeadersDirectory);
+    $codeGenerator->WriteData($interface, $outputDirectory);
 }
 
 sub generateEmptyHeaderAndCpp
 {
-    my ($targetInterfaceName, $outputHeadersDirectory, $outputDirectory) = @_;
+    my ($targetInterfaceName, $outputDirectory) = @_;
 
     my $headerName = "V8${targetInterfaceName}.h";
     my $cppName = "V8${targetInterfaceName}.cpp";
@@ -211,7 +206,7 @@ sub generateEmptyHeaderAndCpp
     $cppName at every build. This file must not be tried to compile.
 */
 ";
-    open FH, "> ${outputHeadersDirectory}/${headerName}" or die "Cannot open $headerName\n";
+    open FH, "> ${outputDirectory}/${headerName}" or die "Cannot open $headerName\n";
     print FH $contents;
     close FH;
 

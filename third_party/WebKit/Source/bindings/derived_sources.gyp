@@ -179,9 +179,7 @@
           '<@(generated_global_constructors_idl_files)',
         ],
         'outputs': [
-          # FIXME:  The .cpp file should be in webkit/bindings once
-          # we coax GYP into supporting it (see 'action' below).
-          '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8<(RULE_INPUT_ROOT).cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8<(RULE_INPUT_ROOT).cpp',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8<(RULE_INPUT_ROOT).h',
         ],
         'variables': {
@@ -196,12 +194,6 @@
           'extra_blink_generator_include_dirs%': [],
         },
         'msvs_cygwin_shell': 0,
-        # FIXME:  Note that we put the .cpp files in webcore/bindings
-        # but the .h files in webkit/bindings.  This is to work around
-        # the unfortunate fact that GYP strips duplicate arguments
-        # from lists.  When we have a better GYP way to suppress that
-        # behavior, change the output location.
-        #
         # sanitize-win-build-log.sed uses a regex which matches this command
         # line (Perl script + .idl file being processed).
         # Update that regex if command line changes (other than changing flags)
@@ -212,10 +204,8 @@
           '-I../core/scripts',
           '-I../../../JSON/out/lib/perl5',
           'scripts/generate-bindings.pl',
-          '--outputHeadersDir',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
           '--outputDir',
-          '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
           '--idlAttributesFile',
           'scripts/IDLAttributes.txt',
           '--defines',

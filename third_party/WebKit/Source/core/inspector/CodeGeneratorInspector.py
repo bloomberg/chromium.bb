@@ -62,25 +62,21 @@ TYPES_WITH_OPEN_FIELD_LIST_SET = frozenset(["Timeline.TimelineEvent",
 EXACTLY_INT_SUPPORTED = False
 
 cmdline_parser = optparse.OptionParser()
-cmdline_parser.add_option("--output_h_dir")
-cmdline_parser.add_option("--output_cpp_dir")
+cmdline_parser.add_option("--output_dir")
 
 try:
     arg_options, arg_values = cmdline_parser.parse_args()
     if (len(arg_values) != 1):
         raise Exception("Exactly one plain argument expected (found %s)" % len(arg_values))
     input_json_filename = arg_values[0]
-    output_header_dirname = arg_options.output_h_dir
-    output_cpp_dirname = arg_options.output_cpp_dir
-    if not output_header_dirname:
-        raise Exception("Output .h directory must be specified")
-    if not output_cpp_dirname:
-        raise Exception("Output .cpp directory must be specified")
+    output_dirname = arg_options.output_dir
+    if not output_dirname:
+        raise Exception("Output directory must be specified")
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
     sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
-    sys.stderr.write("Usage: <script> protocol.json --output_h_dir <output_header_dir> --output_cpp_dir <output_cpp_dir>\n")
+    sys.stderr.write("Usage: <script> --output_dir <output_dir> protocol.json\n")
     exit(1)
 
 
@@ -2291,14 +2287,14 @@ def output_file(file_name):
 
 Generator.go()
 
-backend_h_file = output_file(output_header_dirname + "/InspectorBackendDispatcher.h")
-backend_cpp_file = output_file(output_cpp_dirname + "/InspectorBackendDispatcher.cpp")
+backend_h_file = output_file(output_dirname + "/InspectorBackendDispatcher.h")
+backend_cpp_file = output_file(output_dirname + "/InspectorBackendDispatcher.cpp")
 
-frontend_h_file = output_file(output_header_dirname + "/InspectorFrontend.h")
-frontend_cpp_file = output_file(output_cpp_dirname + "/InspectorFrontend.cpp")
+frontend_h_file = output_file(output_dirname + "/InspectorFrontend.h")
+frontend_cpp_file = output_file(output_dirname + "/InspectorFrontend.cpp")
 
-typebuilder_h_file = output_file(output_header_dirname + "/InspectorTypeBuilder.h")
-typebuilder_cpp_file = output_file(output_cpp_dirname + "/InspectorTypeBuilder.cpp")
+typebuilder_h_file = output_file(output_dirname + "/InspectorTypeBuilder.h")
+typebuilder_cpp_file = output_file(output_dirname + "/InspectorTypeBuilder.cpp")
 
 
 backend_h_file.write(Templates.backend_h.substitute(None,

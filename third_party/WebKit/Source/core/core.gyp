@@ -81,11 +81,11 @@
             '../devtools/protocol.json',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendDispatcher.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendDispatcher.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendDispatcher.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorFrontend.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorFrontend.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorFrontend.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorTypeBuilder.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorTypeBuilder.h',
           ],
           'variables': {
@@ -96,8 +96,7 @@
             'python',
             'inspector/CodeGeneratorInspector.py',
             '../devtools/protocol.json',
-            '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
+            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
           'message': 'Generating Inspector protocol backend sources from protocol.json',
           'msvs_cygwin_shell': 1,
@@ -124,14 +123,13 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverridesInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InstrumentingAgentsInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorInstrumentationImpl.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationImpl.cpp',
           ],
           'action': [
             'python',
             'inspector/CodeGeneratorInstrumentation.py',
             'inspector/InspectorInstrumentation.idl',
-            '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
+            '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
           'message': 'Generating Inspector instrumentation code from InspectorInstrumentation.idl',
           'msvs_cygwin_shell': 1,
@@ -236,10 +234,6 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'include_dirs': [
-        # FIXME:  Remove <(SHARED_INTERMEDIATE_DIR)/webcore when we
-        # can entice gyp into letting us put both the .cpp and .h
-        # files in the same output directory.
-        '<(SHARED_INTERMEDIATE_DIR)/webcore',
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         '<@(webcore_include_dirs)',
@@ -301,9 +295,9 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/XPathGrammar.cpp',
 
         # Additional .cpp files from the inspector_protocol_sources list.
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorFrontend.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendDispatcher.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorFrontend.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendDispatcher.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorTypeBuilder.cpp',
 
         # Additional .cpp files from the inspector_instrumentation_sources list.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorCanvasInstrumentationInl.h',
@@ -312,7 +306,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverridesInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InstrumentingAgentsInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorInstrumentationImpl.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationImpl.cpp',
 
         # Additional .cpp files for SVG.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
@@ -1105,19 +1099,19 @@
       ],
       'sources': [
         '<@(webcore_test_support_files)',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8MallocStatistics.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8MallocStatistics.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8MallocStatistics.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8TypeConversions.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8TypeConversions.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8TypeConversions.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8Internals.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8Internals.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8Internals.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalProfilers.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalProfilers.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalProfilers.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalSettings.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettings.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettings.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalSettingsGenerated.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettingsGenerated.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettingsGenerated.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8InternalRuntimeFlags.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalRuntimeFlags.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalRuntimeFlags.h',
       ],
       'sources/': [
