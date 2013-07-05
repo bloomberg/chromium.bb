@@ -57,6 +57,9 @@ struct desktop {
 	struct window *grab_window;
 	struct widget *grab_widget;
 
+	struct weston_config *config;
+	int locking;
+
 	enum cursor_type grab_cursor;
 
 	int painted;
@@ -76,6 +79,7 @@ struct panel {
 	struct wl_list launcher_list;
 	struct panel_clock *clock;
 	int painted;
+	uint32_t color;
 };
 
 struct background {
@@ -83,6 +87,10 @@ struct background {
 	struct window *window;
 	struct widget *widget;
 	int painted;
+
+	char *image;
+	int type;
+	uint32_t color;
 };
 
 struct output {
@@ -120,35 +128,8 @@ struct unlock_dialog {
 	struct desktop *desktop;
 };
 
-static char *key_background_image = DATADIR "/weston/pattern.png";
-static char *key_background_type = "tile";
-static uint32_t key_panel_color = 0xaa000000;
-static uint32_t key_background_color = 0xff002244;
-static char *key_launcher_icon;
-static char *key_launcher_path;
-static void launcher_section_done(void *data);
-static int key_locking = 1;
-
-static const struct config_key shell_config_keys[] = {
-	{ "background-image", CONFIG_KEY_STRING, &key_background_image },
-	{ "background-type", CONFIG_KEY_STRING, &key_background_type },
-	{ "panel-color", CONFIG_KEY_UNSIGNED_INTEGER, &key_panel_color },
-	{ "background-color", CONFIG_KEY_UNSIGNED_INTEGER, &key_background_color },
-	{ "locking", CONFIG_KEY_BOOLEAN, &key_locking },
-};
-
-static const struct config_key launcher_config_keys[] = {
-	{ "icon", CONFIG_KEY_STRING, &key_launcher_icon },
-	{ "path", CONFIG_KEY_STRING, &key_launcher_path },
-};
-
-static const struct config_section config_sections[] = {
-	{ "shell",
-	  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
-	{ "launcher",
-	  launcher_config_keys, ARRAY_LENGTH(launcher_config_keys),
-	  launcher_section_done }
-};
+static void
+panel_add_launchers(struct panel *panel, struct desktop *desktop);
 
 static void
 sigchild_handler(int s)
@@ -292,7 +273,7 @@ panel_redraw_handler(struct widget *widget, void *data)
 
 	cr = widget_cairo_create(panel->widget);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	set_hex_color(cr, key_panel_color);
+	set_hex_color(cr, panel->color);
 	cairo_paint(cr);
 
 	cairo_destroy(cr);
@@ -526,15 +507,16 @@ panel_destroy(struct panel *panel)
 }
 
 static struct panel *
-panel_create(struct display *display)
+panel_create(struct desktop *desktop)
 {
 	struct panel *panel;
+	struct weston_config_section *s;
 
 	panel = malloc(sizeof *panel);
 	memset(panel, 0, sizeof *panel);
 
 	panel->base.configure = panel_configure;
-	panel->window = window_create_custom(display);
+	panel->window = window_create_custom(desktop->display);
 	panel->widget = window_add_widget(panel->window, panel);
 	wl_list_init(&panel->launcher_list);
 
@@ -546,6 +528,12 @@ panel_create(struct display *display)
 	widget_set_button_handler(panel->widget, panel_button_handler);
 	
 	panel_add_clock(panel);
+
+	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
+	weston_config_section_get_uint(s, "panel-color",
+				       &panel->color, 0xaa000000);
+
+	panel_add_launchers(panel, desktop);
 
 	return panel;
 }
@@ -676,7 +664,6 @@ background_draw(struct widget *widget, void *data)
 	double sx, sy, s;
 	double tx, ty;
 	struct rectangle allocation;
-	int type = -1;
 	struct display *display;
 	struct wl_region *opaque;
 
@@ -689,20 +676,10 @@ background_draw(struct widget *widget, void *data)
 
 	widget_get_allocation(widget, &allocation);
 	image = NULL;
-	if (key_background_image)
-		image = load_cairo_surface(key_background_image);
+	if (background->image)
+		image = load_cairo_surface(background->image);
 
-	if (strcmp(key_background_type, "scale") == 0)
-		type = BACKGROUND_SCALE;
-	else if (strcmp(key_background_type, "scale-crop") == 0)
-		type = BACKGROUND_SCALE_CROP;
-	else if (strcmp(key_background_type, "tile") == 0)
-		type = BACKGROUND_TILE;
-	else
-		fprintf(stderr, "invalid background-type: %s\n",
-			key_background_type);
-
-	if (image && type != -1) {
+	if (image && background->type != -1) {
 		im_w = cairo_image_surface_get_width(image);
 		im_h = cairo_image_surface_get_height(image);
 		sx = im_w / allocation.width;
@@ -710,7 +687,7 @@ background_draw(struct widget *widget, void *data)
 
 		pattern = cairo_pattern_create_for_surface(image);
 
-		switch (type) {
+		switch (background->type) {
 		case BACKGROUND_SCALE:
 			cairo_matrix_init_scale(&matrix, sx, sy);
 			cairo_pattern_set_matrix(pattern, &matrix);
@@ -733,7 +710,7 @@ background_draw(struct widget *widget, void *data)
 		cairo_pattern_destroy (pattern);
 		cairo_surface_destroy(image);
 	} else {
-		set_hex_color(cr, key_background_color);
+		set_hex_color(cr, background->color);
 	}
 
 	cairo_paint(cr);
@@ -931,7 +908,7 @@ desktop_shell_prepare_lock_surface(void *data,
 {
 	struct desktop *desktop = data;
 
-	if (!key_locking) {
+	if (!desktop->locking) {
 		desktop_shell_unlock(desktop->shell);
 		return;
 	}
@@ -1001,6 +978,7 @@ background_destroy(struct background *background)
 	widget_destroy(background->widget);
 	window_destroy(background->window);
 
+	free(background->image);
 	free(background);
 }
 
@@ -1008,6 +986,8 @@ static struct background *
 background_create(struct desktop *desktop)
 {
 	struct background *background;
+	struct weston_config_section *s;
+	char *type;
 
 	background = malloc(sizeof *background);
 	memset(background, 0, sizeof *background);
@@ -1017,6 +997,29 @@ background_create(struct desktop *desktop)
 	background->widget = window_add_widget(background->window, background);
 	window_set_user_data(background->window, background);
 	widget_set_redraw_handler(background->widget, background_draw);
+
+	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
+	weston_config_section_get_string(s, "background-image",
+					 &background->image,
+					 DATADIR "/weston/pattern.png");
+	weston_config_section_get_uint(s, "background-color",
+				       &background->color, 0xff002244);
+
+	weston_config_section_get_string(s, "background-type",
+					 &type, "tile");
+	if (strcmp(type, "scale") == 0) {
+		background->type = BACKGROUND_SCALE;
+	} else if (strcmp(type, "scale-crop") == 0) {
+		background->type = BACKGROUND_SCALE_CROP;
+	} else if (strcmp(type, "tile") == 0) {
+		background->type = BACKGROUND_TILE;
+	} else {
+		background->type = -1;
+		fprintf(stderr, "invalid background-type: %s\n",
+			type);
+	}
+
+	free(type);
 
 	return background;
 }
@@ -1165,36 +1168,41 @@ global_handler(struct display *display, uint32_t id,
 }
 
 static void
-launcher_section_done(void *data)
+panel_add_launchers(struct panel *panel, struct desktop *desktop)
 {
-	struct desktop *desktop = data;
-	struct output *output;
+	struct weston_config_section *s;
+	char *icon, *path;
+	const char *name;
+	int count;
 
-	if (key_launcher_icon == NULL || key_launcher_path == NULL) {
-		fprintf(stderr, "invalid launcher section\n");
-		return;
+	count = 0;
+	s = NULL;
+	while (weston_config_next_section(desktop->config, &s, &name)) {
+		if (strcmp(name, "launcher") != 0)
+			continue;
+
+		weston_config_section_get_string(s, "icon", &icon, NULL);
+		weston_config_section_get_string(s, "path", &path, NULL);
+
+		if (icon != NULL && path != NULL) {
+			panel_add_launcher(panel, icon, path);
+		} else {
+			fprintf(stderr, "invalid launcher section\n");
+			continue;
+		}
+
+		free(icon);
+		free(path);
+
+		count++;
 	}
 
-	wl_list_for_each(output, &desktop->outputs, link) {
-		panel_add_launcher(output->panel,
-				   key_launcher_icon, key_launcher_path);
-	}
-
-	free(key_launcher_icon);
-	key_launcher_icon = NULL;
-	free(key_launcher_path);
-	key_launcher_path = NULL;
-}
-
-static void
-add_default_launcher(struct desktop *desktop)
-{
-	struct output *output;
-
-	wl_list_for_each(output, &desktop->outputs, link)
-		panel_add_launcher(output->panel,
+	if (count == 0) {
+		/* add default launcher */
+		panel_add_launcher(panel,
 				   DATADIR "/weston/terminal.png",
 				   BINDIR "/weston-terminal");
+	}
 }
 
 int main(int argc, char *argv[])
@@ -1202,10 +1210,17 @@ int main(int argc, char *argv[])
 	struct desktop desktop = { 0 };
 	int config_fd;
 	struct output *output;
-	int ret;
+	struct weston_config_section *s;
 
 	desktop.unlock_task.run = unlock_dialog_finish;
 	wl_list_init(&desktop.outputs);
+
+	config_fd = open_config_file("weston.ini");
+	desktop.config = weston_config_parse(config_fd);
+	close(config_fd);
+
+	s = weston_config_get_section(desktop.config, "shell", NULL, NULL);
+	weston_config_section_get_bool(s, "locking", &desktop.locking, 1);
 
 	desktop.display = display_create(&argc, argv);
 	if (desktop.display == NULL) {
@@ -1219,7 +1234,7 @@ int main(int argc, char *argv[])
 	wl_list_for_each(output, &desktop.outputs, link) {
 		struct wl_surface *surface;
 
-		output->panel = panel_create(desktop.display);
+		output->panel = panel_create(&desktop);
 		surface = window_get_wl_surface(output->panel->window);
 		desktop_shell_set_panel(desktop.shell,
 					output->output, surface);
@@ -1231,14 +1246,6 @@ int main(int argc, char *argv[])
 	}
 
 	grab_surface_create(&desktop);
-
-	config_fd = open_config_file("weston.ini");
-	ret = parse_config_file(config_fd,
-				config_sections, ARRAY_LENGTH(config_sections),
-				&desktop);
-	close(config_fd);
-	if (ret < 0)
-		add_default_launcher(&desktop);
 
 	signal(SIGCHLD, sigchild_handler);
 
