@@ -86,16 +86,7 @@ QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
 
 const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
     const BalsaHeaders& request_headers) const {
-  string key = GetKey(request_headers);
-  StringPiece url(key);
-  // Removing the leading https:// or http://.
-  if (StringPieceUtils::StartsWithIgnoreCase(url, "https://")) {
-    url.remove_prefix(8);
-  } else if (StringPieceUtils::StartsWithIgnoreCase(url, "http://")) {
-    url.remove_prefix(7);
-  }
-
-  ResponseMap::const_iterator it = responses_.find(url.as_string());
+  ResponseMap::const_iterator it = responses_.find(GetKey(request_headers));
   if (it == responses_.end()) {
     return NULL;
   }
@@ -117,9 +108,14 @@ void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,
 
 void QuicInMemoryCache::ResetForTests() {
   STLDeleteValues(&responses_);
+  Initialize();
 }
 
 QuicInMemoryCache::QuicInMemoryCache() {
+  Initialize();
+}
+
+void QuicInMemoryCache::Initialize() {
   // If there's no defined cache dir, we have no initialization to do.
   if (FLAGS_quic_in_memory_cache_dir.empty()) {
     LOG(WARNING) << "No cache directory found. Skipping initialization.";
@@ -207,8 +203,16 @@ QuicInMemoryCache::~QuicInMemoryCache() {
 }
 
 string QuicInMemoryCache::GetKey(const BalsaHeaders& request_headers) const {
-  return request_headers.GetHeader("host").as_string() +
-      request_headers.request_uri().as_string();
+  StringPiece uri = request_headers.request_uri();
+  StringPiece host;
+  if (uri[0] == '/') {
+    host = request_headers.GetHeader("host");
+  } else if (StringPieceUtils::StartsWithIgnoreCase(uri, "https://")) {
+    uri.remove_prefix(8);
+  } else if (StringPieceUtils::StartsWithIgnoreCase(uri, "http://")) {
+    uri.remove_prefix(7);
+  }
+  return host.as_string() + uri.as_string();
 }
 
 }  // namespace tools

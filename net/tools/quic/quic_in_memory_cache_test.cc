@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_in_memory_cache.h"
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/quic/quic_in_memory_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::IntToString;
+using base::StringPiece;
 
 namespace net {
 namespace tools {
 namespace test {
-namespace {
 
 class QuicInMemoryCacheTest : public ::testing::Test {
  protected:
@@ -32,7 +37,63 @@ class QuicInMemoryCacheTest : public ::testing::Test {
     headers->SetRequestFirstlineFromStringPieces("GET", path, "HTTP/1.1");
     headers->ReplaceOrAppendHeader("host", host);
   }
+
+  virtual void SetUp() {
+    QuicInMemoryCache::GetInstance()->ResetForTests();
+  }
+
+  // This method was copied from end_to_end_test.cc in this directory.
+  void AddToCache(const StringPiece& method,
+                  const StringPiece& path,
+                  const StringPiece& version,
+                  const StringPiece& response_code,
+                  const StringPiece& response_detail,
+                  const StringPiece& body) {
+    BalsaHeaders request_headers, response_headers;
+    request_headers.SetRequestFirstlineFromStringPieces(method,
+                                                        path,
+                                                        version);
+    response_headers.SetRequestFirstlineFromStringPieces(version,
+                                                         response_code,
+                                                         response_detail);
+    response_headers.AppendHeader("content-length",
+                                  base::IntToString(body.length()));
+
+    // Check if response already exists and matches.
+    QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+    const QuicInMemoryCache::Response* cached_response =
+        cache->GetResponse(request_headers);
+    if (cached_response != NULL) {
+      std::string cached_response_headers_str, response_headers_str;
+      cached_response->headers().DumpToString(&cached_response_headers_str);
+      response_headers.DumpToString(&response_headers_str);
+      CHECK_EQ(cached_response_headers_str, response_headers_str);
+      CHECK_EQ(cached_response->body(), body);
+      return;
+    }
+    cache->AddResponse(request_headers, response_headers, body);
+  }
 };
+
+TEST_F(QuicInMemoryCacheTest, AddResponseGetResponse) {
+  std::string response_body("hello response");
+  AddToCache("GET", "https://www.google.com/bar",
+             "HTTP/1.1", "200", "OK", response_body);
+  net::BalsaHeaders request_headers;
+  CreateRequest("www.google.com", "/bar", &request_headers);
+  QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+  const QuicInMemoryCache::Response* response =
+      cache->GetResponse(request_headers);
+  ASSERT_TRUE(response);
+  EXPECT_EQ("200", response->headers().response_code());
+  EXPECT_EQ(response_body.size(), response->body().length());
+
+  CreateRequest("", "https://www.google.com/bar", &request_headers);
+  response = cache->GetResponse(request_headers);
+  ASSERT_TRUE(response);
+  EXPECT_EQ("200", response->headers().response_code());
+  EXPECT_EQ(response_body.size(), response->body().length());
+}
 
 TEST_F(QuicInMemoryCacheTest, ReadsCacheDir) {
   net::BalsaHeaders request_headers;
@@ -50,7 +111,7 @@ TEST_F(QuicInMemoryCacheTest, ReadsCacheDir) {
 
 TEST_F(QuicInMemoryCacheTest, ReadsCacheDirHttp) {
   net::BalsaHeaders request_headers;
-  CreateRequest("http://quic.test.url", "/index.html", &request_headers);
+  CreateRequest("", "http://quic.test.url/index.html", &request_headers);
 
   const QuicInMemoryCache::Response* response =
       QuicInMemoryCache::GetInstance()->GetResponse(request_headers);
@@ -71,7 +132,6 @@ TEST_F(QuicInMemoryCacheTest, GetResponseNoMatch) {
   ASSERT_FALSE(response);
 }
 
-}  // namespace
 }  // namespace test
 }  // namespace tools
 }  // namespace net

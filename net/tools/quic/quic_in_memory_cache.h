@@ -73,6 +73,7 @@ class QuicInMemoryCache {
   friend struct DefaultSingletonTraits<QuicInMemoryCache>;
   ~QuicInMemoryCache();
 
+  void Initialize();
   std::string GetKey(const BalsaHeaders& response_headers) const;
 
   // Cached responses.
