@@ -262,8 +262,8 @@ crbug.com/246107 [ Release ] fast/events/selectionchange-iframe.html [ Timeout ]
 
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]
 
-webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Pass Timeout ]
-webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Pass Timeout ]
+webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Failure Pass Timeout ]
+webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Failure Pass Timeout ]
 
 # Unskip after implementing DRT support for setDefersLoading and goBack.
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
