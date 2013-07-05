@@ -22,7 +22,7 @@ race:pcache1AllocPage
 race:tracked_objects::ThreadData::ShutdownSingleThreadedCleanup
 
 # http://crbug.com/115540
-race:content::BrowserThread::GetCurrentThreadIdentifier
+race:*GetCurrentThreadIdentifier
 
 # http://crbug.com/120808
 race:base/threading/watchdog.cc
@@ -85,3 +85,6 @@ race:content::GpuWatchdogThread::CheckArmed
 
 # http://crbug.com/257396
 race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
+
+# http://crbug.com/257543
+race:*GetObjectFromEntryAddress
