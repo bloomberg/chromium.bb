@@ -388,6 +388,7 @@ void FullscreenController::webkitWillEnterFullScreenForElement(Element* element)
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
+    // FIXME: Why do we need to do this syncronously?
     document()->recalcStyle(Node::Force);
 }
 

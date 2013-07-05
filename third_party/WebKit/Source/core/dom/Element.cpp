@@ -1247,6 +1247,9 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     // by the time we reach updateId
     ContainerNode::insertedInto(insertionPoint);
 
+    // FIXME: This check isn't Shadow DOM aware. It's also not clear how a removed subtree
+    // could ever still containsFullScreenElement() since the full screen element should
+    // have stopped being full screen as soon as it was removed.
     if (containsFullScreenElement() && parentElement() && !parentElement()->containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
@@ -2562,21 +2565,31 @@ bool Element::containsFullScreenElement() const
 
 void Element::setContainsFullScreenElement(bool flag)
 {
+    if (containsFullScreenElement() == flag)
+        return;
     ensureElementRareData()->setContainsFullScreenElement(flag);
-    setNeedsStyleRecalc(SubtreeStyleChange);
+    // The pseudo classes :-webkit-full-screen-document and :-webkit-full-screen-ancestor mean we need
+    // to recalc style for the whole document to match things like ":-webkit-full-screen-ancestor div"
+    // where the div is not an ancestor of the full screen element.
+    if (!document()->hasPendingForcedStyleRecalc())
+        document()->scheduleForcedStyleRecalc();
 }
 
 static Element* parentCrossingFrameBoundaries(Element* element)
 {
     ASSERT(element);
+    // FIXME: This isn't Shadow DOM aware, if the full screen element is inside Shadow DOM
+    // its ancestors won't get marked as containing a full screen element.
     return element->parentElement() ? element->parentElement() : element->document()->ownerElement();
 }
 
 void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool flag)
 {
-    Element* element = this;
-    while ((element = parentCrossingFrameBoundaries(element)))
+    for (Element* element = parentCrossingFrameBoundaries(this); element; element = parentCrossingFrameBoundaries(element)) {
+        if (element->containsFullScreenElement() == flag)
+            break;
         element->setContainsFullScreenElement(flag);
+    }
 }
 
 bool Element::isInTopLayer() const
