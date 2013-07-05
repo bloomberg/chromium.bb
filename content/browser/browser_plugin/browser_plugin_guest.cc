@@ -854,12 +854,6 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     PageTransition transition_type,
     RenderViewHost* render_view_host) {
-  // Inform its embedder of the updated URL.
-  BrowserPluginMsg_LoadCommit_Params params;
-  params.url = url;
-  params.is_top_level = is_main_frame;
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadCommit(instance_id(), params));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 

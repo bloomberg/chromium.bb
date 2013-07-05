@@ -66,6 +66,9 @@ var WEB_VIEW_EXT_EVENTS = {
       webview.currentEntryIndex_ = event.currentEntryIndex;
       webview.entryCount_ = event.entryCount;
       webview.processId_ = event.processId;
+      if (event.isTopLevel) {
+        webview.browserPluginNode_.setAttribute('src', event.url);
+      }
     },
     evt: loadCommitEvent,
     fields: ['url', 'isTopLevel']

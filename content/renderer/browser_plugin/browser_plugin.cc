@@ -165,7 +165,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestResponsive, OnGuestResponsive)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
@@ -540,16 +539,6 @@ void BrowserPlugin::OnGuestUnresponsive(int guest_instance_id, int process_id) {
   TriggerEvent(browser_plugin::kEventUnresponsive, &props);
 }
 
-void BrowserPlugin::OnLoadCommit(
-    int guest_instance_id,
-    const BrowserPluginMsg_LoadCommit_Params& params) {
-  // If the guest has just committed a new navigation then it is no longer
-  // crashed.
-  guest_crashed_ = false;
-  if (params.is_top_level)
-    UpdateDOMAttribute(browser_plugin::kAttributeSrc, params.url.spec());
-}
-
 void BrowserPlugin::OnRequestPermission(
     int guest_instance_id,
     BrowserPluginPermissionType permission_type,
@@ -611,6 +600,9 @@ void BrowserPlugin::AddPermissionRequestToMap(int request_id,
 void BrowserPlugin::OnUpdateRect(
     int guest_instance_id,
     const BrowserPluginMsg_UpdateRect_Params& params) {
+  // If the guest has updated pixels then it is no longer crashed.
+  guest_crashed_ = false;
+
   bool use_new_damage_buffer = !backing_store_;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
@@ -1233,7 +1225,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_GuestGone::ID:
     case BrowserPluginMsg_GuestResponsive::ID:
     case BrowserPluginMsg_GuestUnresponsive::ID:
-    case BrowserPluginMsg_LoadCommit::ID:
     case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:

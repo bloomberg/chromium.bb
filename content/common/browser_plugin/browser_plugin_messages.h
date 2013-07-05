@@ -88,13 +88,6 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_BuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int, host_id)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
-  // The current URL of the guest.
-  IPC_STRUCT_MEMBER(GURL, url)
-  // Indicates whether the navigation was on the top-level frame.
-  IPC_STRUCT_MEMBER(bool, is_top_level)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
   // The sequence number of the damage buffer used by the browser process.
   IPC_STRUCT_MEMBER(uint32, damage_buffer_sequence_id)
@@ -322,12 +315,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_Attach_ACK,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,
                      int /* instance_id */,
                      int /* source_routing_id */)
-
-// When the guest commits a navigation, the browser process informs
-// the embedder through the BrowserPluginMsg_LoadCommit message.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_LoadCommit,
-                     int /* instance_id */,
-                     BrowserPluginMsg_LoadCommit_Params)
 
 // When the guest crashes, the browser process informs the embedder through this
 // message.

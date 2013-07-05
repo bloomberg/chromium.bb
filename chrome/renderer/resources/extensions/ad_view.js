@@ -86,6 +86,11 @@ var AD_VIEW_EXT_EVENTS = {
     fields: ['url', 'isTopLevel', 'reason']
   },
   'loadcommit': {
+    customHandler: function(adview, event) {
+      if (event.isTopLevel) {
+        adview.browserPluginNode_.setAttribute('src', event.url);
+      }
+    },
     evt: AdviewLoadCommitEvent,
     fields: ['url', 'isTopLevel']
   }

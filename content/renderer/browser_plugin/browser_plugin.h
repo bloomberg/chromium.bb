@@ -26,7 +26,6 @@ struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct BrowserPluginMsg_Attach_ACK_Params;
 struct BrowserPluginMsg_BuffersSwapped_Params;
-struct BrowserPluginMsg_LoadCommit_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 
 namespace content {
@@ -335,8 +334,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnGuestGone(int instance_id, int process_id, int status);
   void OnGuestResponsive(int instance_id, int process_id);
   void OnGuestUnresponsive(int instance_id, int process_id);
-  void OnLoadCommit(int instance_id,
-                    const BrowserPluginMsg_LoadCommit_Params& params);
   // Requests permission from the embedder.
   void OnRequestPermission(int instance_id,
                            BrowserPluginPermissionType permission_type,
