@@ -222,6 +222,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   // Size in bytes of all stream frame fields without the payload.
   static size_t GetMinStreamFrameSize();
+  // Size in bytes of all stream frame fields without the payload.
+  static size_t GetMinStreamFrameSize(QuicStreamId stream_id,
+                                      QuicStreamOffset offset,
+                                      bool last_frame);
   // Size in bytes of all ack frame fields without the missing packets.
   static size_t GetMinAckFrameSize();
   // Size in bytes of all reset stream frame without the error details.
@@ -234,6 +238,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // The maximum number of nacks which can be transmitted in a single ack packet
   // without exceeding kMaxPacketSize.
   static size_t GetMaxUnackedPackets(QuicPacketHeader header);
+  // Size in bytes required to serialize the stream id.
+  static size_t GetStreamIdSize(QuicStreamId stream_id);
+  // Size in bytes required to serialize the stream offset.
+  static size_t GetStreamOffsetSize(QuicStreamOffset offset);
   // Size in bytes required for a serialized version negotiation packet
   size_t GetVersionNegotiationPacketSize(size_t number_versions);
 
@@ -367,7 +375,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicPacketSequenceNumber packet_sequence_number) const;
 
   // Computes the wire size in bytes of the payload of |frame|.
-  size_t ComputeFrameLength(const QuicFrame& frame);
+  size_t ComputeFrameLength(const QuicFrame& frame, bool last_frame);
 
   static bool AppendPacketSequenceNumber(
       QuicSequenceNumberLength sequence_number_length,

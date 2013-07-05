@@ -23,6 +23,7 @@ class CryptoServerTest : public ::testing::Test {
         config_(QuicCryptoServerConfig::TESTING, rand_),
         addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
               ip_ : IPAddressNumber(), 1) {
+    config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
   }
 
   virtual void SetUp() {
@@ -34,6 +35,38 @@ class CryptoServerTest : public ::testing::Test {
     CHECK(msg->GetStringPiece(kORBT, &orbit));
     CHECK_EQ(sizeof(orbit_), orbit.size());
     memcpy(orbit_, orbit.data(), orbit.size());
+
+    char public_value[32];
+    memset(public_value, 42, sizeof(public_value));
+
+    const string nonce_str = GenerateNonce();
+    nonce_hex_ = "#" + base::HexEncode(nonce_str.data(), nonce_str.size());
+    pub_hex_ = "#" + base::HexEncode(public_value, sizeof(public_value));
+
+    CryptoHandshakeMessage client_hello = CryptoTestUtils::Message(
+        "CHLO",
+        "AEAD", "AESG",
+        "KEXS", "C255",
+        "PUBS", pub_hex_.c_str(),
+        "NONC", nonce_hex_.c_str(),
+        "$padding", static_cast<int>(kClientHelloMinimumSize),
+        NULL);
+    ShouldSucceed(client_hello);
+    // The message should be rejected because the source-address token is
+    // missing.
+    ASSERT_EQ(kREJ, out_.tag());
+
+    StringPiece srct;
+    ASSERT_TRUE(out_.GetStringPiece(kSourceAddressTokenTag, &srct));
+    srct_hex_ = "#" + base::HexEncode(srct.data(), srct.size());
+
+    StringPiece scfg;
+    ASSERT_TRUE(out_.GetStringPiece(kSCFG, &scfg));
+    server_config_.reset(CryptoFramer::ParseMessage(scfg));
+
+    StringPiece scid;
+    ASSERT_TRUE(server_config_->GetStringPiece(kSCID, &scid));
+    scid_hex_ = "#" + base::HexEncode(scid.data(), scid.size());
   }
 
   void ShouldSucceed(const CryptoHandshakeMessage& message) {
@@ -91,6 +124,11 @@ class CryptoServerTest : public ::testing::Test {
   IPAddressNumber ip_;
   IPEndPoint addr_;
   uint8 orbit_[kOrbitSize];
+
+  // These strings contain hex escaped values from the server suitable for
+  // passing to |InchoateClientHello| when constructing client hello messages.
+  string nonce_hex_, pub_hex_, srct_hex_, scid_hex_;
+  scoped_ptr<CryptoHandshakeMessage> server_config_;
 };
 
 TEST_F(CryptoServerTest, BadSNI) {
@@ -109,6 +147,29 @@ TEST_F(CryptoServerTest, BadSNI) {
         "SNI", kBadSNIs[i],
         NULL));
   }
+}
+
+// TODO(rtenneti): Enable the DefaultCert test after implementing ProofSource.
+TEST_F(CryptoServerTest, DISABLED_DefaultCert) {
+  // Check that the server replies with a default certificate when no SNI is
+  // specified.
+  ShouldSucceed(InchoateClientHello(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      "PDMD", "X509",
+      NULL));
+
+  StringPiece cert, proof;
+  EXPECT_TRUE(out_.GetStringPiece(kCertificateTag, &cert));
+  EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
+  EXPECT_NE(0u, cert.size());
+  EXPECT_NE(0u, proof.size());
 }
 
 TEST_F(CryptoServerTest, TooSmall) {
@@ -152,48 +213,14 @@ TEST_F(CryptoServerTest, BadClientNonce) {
 
 TEST_F(CryptoServerTest, ReplayProtection) {
   // This tests that disabling replay protection works.
-
-  char public_value[32];
-  memset(public_value, 42, sizeof(public_value));
-
-  const string nonce_str = GenerateNonce();
-  const string nonce("#" + base::HexEncode(nonce_str.data(),
-                                           nonce_str.size()));
-  const string pub("#" + base::HexEncode(public_value, sizeof(public_value)));
-
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
       "CHLO",
       "AEAD", "AESG",
       "KEXS", "C255",
-      "PUBS", pub.c_str(),
-      "NONC", nonce.c_str(),
-      "$padding", static_cast<int>(kClientHelloMinimumSize),
-      NULL);
-  ShouldSucceed(msg);
-  // The message should be rejected because the source-address token is missing.
-  ASSERT_EQ(kREJ, out_.tag());
-
-  StringPiece srct;
-  ASSERT_TRUE(out_.GetStringPiece(kSourceAddressTokenTag, &srct));
-  const string srct_hex = "#" + base::HexEncode(srct.data(), srct.size());
-
-  StringPiece scfg;
-  ASSERT_TRUE(out_.GetStringPiece(kSCFG, &scfg));
-  scoped_ptr<CryptoHandshakeMessage> server_config(
-      CryptoFramer::ParseMessage(scfg));
-
-  StringPiece scid;
-  ASSERT_TRUE(server_config->GetStringPiece(kSCID, &scid));
-  const string scid_hex("#" + base::HexEncode(scid.data(), scid.size()));
-
-  msg = CryptoTestUtils::Message(
-      "CHLO",
-      "AEAD", "AESG",
-      "KEXS", "C255",
-      "SCID", scid_hex.c_str(),
-      "#004b5453", srct_hex.c_str(),
-      "PUBS", pub.c_str(),
-      "NONC", nonce.c_str(),
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       NULL);
   ShouldSucceed(msg);

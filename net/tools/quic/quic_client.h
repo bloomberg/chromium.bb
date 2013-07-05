@@ -23,6 +23,9 @@
 #include "net/tools/quic/quic_reliable_client_stream.h"
 
 namespace net {
+
+class ProofVerifier;
+
 namespace tools {
 
 namespace test {
@@ -118,6 +121,13 @@ class QuicClient : public EpollCallbackInterface {
   // This should only be set before the initial Connect()
   void set_server_hostname(const string& hostname) {
     server_hostname_ = hostname;
+  }
+
+  // SetProofVerifier sets the ProofVerifier that will be used to verify the
+  // server's certificate and takes ownership of |verifier|.
+  void SetProofVerifier(ProofVerifier* verifier) {
+    // TODO(rtenneti): We should set ProofVerifier in QuicClientSession.
+    crypto_config_.SetProofVerifier(verifier);
   }
 
  private:

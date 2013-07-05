@@ -87,6 +87,16 @@ size_t QuicFramer::GetMinStreamFrameSize() {
 }
 
 // static
+size_t QuicFramer::GetMinStreamFrameSize(QuicStreamId stream_id,
+                                         QuicStreamOffset offset,
+                                         bool last_frame) {
+  // TODO(ianswett): Remove kQuicStreamFinSize for the next STREAM framing.
+  return kQuicFrameTypeSize + GetStreamIdSize(stream_id) +
+      GetStreamOffsetSize(offset) + kQuicStreamFinSize +
+      kQuicStreamPayloadLengthSize;
+}
+
+// static
 size_t QuicFramer::GetMinAckFrameSize() {
   return kQuicFrameTypeSize + kQuicEntropyHashSize +
       PACKET_6BYTE_SEQUENCE_NUMBER + kQuicEntropyHashSize +
@@ -122,6 +132,16 @@ size_t QuicFramer::GetMaxUnackedPackets(QuicPacketHeader header) {
           GetMinAckFrameSize() - 16) / PACKET_6BYTE_SEQUENCE_NUMBER;
 }
 
+// static
+size_t QuicFramer::GetStreamIdSize(QuicStreamId stream_id) {
+  return 4;
+}
+
+// static
+size_t QuicFramer::GetStreamOffsetSize(QuicStreamOffset offset) {
+  return 8;
+}
+
 bool QuicFramer::IsSupportedVersion(QuicTag version) {
   return version == kQuicVersion1;
 }
@@ -137,7 +157,8 @@ size_t QuicFramer::GetSerializedFrameLength(
     // PADDING implies end of packet.
     return free_bytes;
   }
-  size_t frame_len = ComputeFrameLength(frame);
+  // See if it fits as the non-last frame.
+  size_t frame_len = ComputeFrameLength(frame, false);
   if (frame_len > free_bytes) {
     // Only truncate the first frame in a packet, so if subsequent ones go
     // over, stop including more frames.
@@ -194,6 +215,7 @@ SerializedPacket QuicFramer::ConstructFrameDataPacket(
 
   for (size_t i = 0; i < frames.size(); ++i) {
     const QuicFrame& frame = frames[i];
+
     if (!writer.WriteUInt8(frame.type)) {
       return kNoPacket;
     }
@@ -203,7 +225,8 @@ SerializedPacket QuicFramer::ConstructFrameDataPacket(
         writer.WritePadding();
         break;
       case STREAM_FRAME:
-        if (!AppendStreamFramePayload(*frame.stream_frame, &writer)) {
+        if (!AppendStreamFramePayload(
+                *frame.stream_frame, &writer)) {
           return kNoPacket;
         }
         break;
@@ -1328,10 +1351,13 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
   return true;
 }
 
-size_t QuicFramer::ComputeFrameLength(const QuicFrame& frame) {
+size_t QuicFramer::ComputeFrameLength(const QuicFrame& frame, bool last_frame) {
   switch (frame.type) {
     case STREAM_FRAME:
-      return GetMinStreamFrameSize() + frame.stream_frame->data.size();
+      return GetMinStreamFrameSize(frame.stream_frame->stream_id,
+                                   frame.stream_frame->offset,
+                                   last_frame) +
+          frame.stream_frame->data.size();
     case ACK_FRAME: {
       const QuicAckFrame& ack = *frame.ack_frame;
       return GetMinAckFrameSize() + PACKET_6BYTE_SEQUENCE_NUMBER *

@@ -14,6 +14,9 @@
 #include "net/tools/quic/quic_client.h"
 
 namespace net {
+
+class ProofVerifier;
+
 namespace tools {
 
 namespace test {
@@ -32,6 +35,11 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
                  const QuicConfig& config);
 
   virtual ~QuicTestClient();
+
+  // ExpectCertificates controls whether the server is expected to provide
+  // certificates. The certificates, if any, are not verified, but the common
+  // name is recorded and available with |cert_common_name()|.
+  void ExpectCertificates(bool on);
 
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.  Returns 0 if the request failed and no bytes were written.
@@ -74,6 +82,10 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
 
   QuicClient* client() { return &client_; }
 
+  // cert_common_name returns the common name value of the server's certificate,
+  // or the empty string if no certificate was presented.
+  const string& cert_common_name() const;
+
   const string& response_body() {return response_;}
   bool connected() const;
 
@@ -102,6 +114,9 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // If true, the client will always reconnect if necessary before creating a
   // stream.
   bool auto_reconnect_;
+  // proof_verifier_ points to a RecordingProofVerifier that is owned by
+  // client_.
+  ProofVerifier* proof_verifier_;
 };
 
 }  // namespace test

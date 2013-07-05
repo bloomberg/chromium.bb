@@ -124,29 +124,55 @@ enum QuicSequenceNumberLength {
   PACKET_6BYTE_SEQUENCE_NUMBER = 6
 };
 
+// The public flags are specified in one byte.
 enum QuicPacketPublicFlags {
   PACKET_PUBLIC_FLAGS_NONE = 0,
-  PACKET_PUBLIC_FLAGS_VERSION = 1 << 0,  // Packet header contains version info.
-  PACKET_PUBLIC_FLAGS_RST = 1 << 1,  // Packet is a public reset packet.
-  // Packet header guid length in bytes.
+
+  // Bit 0: Does the packet header contains version info?
+  PACKET_PUBLIC_FLAGS_VERSION = 1 << 0,
+
+  // Bit 1: Is this packet a public reset packet?
+  PACKET_PUBLIC_FLAGS_RST = 1 << 1,
+
+  // Bits 2 and 3 specify the length of the GUID as follows:
+  // ----00--: 0 bytes
+  // ----01--: 1 byte
+  // ----10--: 4 bytes
+  // ----11--: 8 bytes
   PACKET_PUBLIC_FLAGS_0BYTE_GUID = 0,
   PACKET_PUBLIC_FLAGS_1BYTE_GUID = 1 << 2,
   PACKET_PUBLIC_FLAGS_4BYTE_GUID = 1 << 3,
   PACKET_PUBLIC_FLAGS_8BYTE_GUID = 1 << 3 | 1 << 2,
-  // Packet sequence number length in bytes.
+
+  // Bits 4 and 5 describe the packet sequence number length as follows:
+  // --00----: 1 byte
+  // --01----: 2 bytes
+  // --10----: 4 bytes
+  // --11----: 6 bytes
   PACKET_PUBLIC_FLAGS_1BYTE_SEQUENCE = 0,
   PACKET_PUBLIC_FLAGS_2BYTE_SEQUENCE = 1 << 4,
   PACKET_PUBLIC_FLAGS_4BYTE_SEQUENCE = 1 << 5,
   PACKET_PUBLIC_FLAGS_6BYTE_SEQUENCE = 1 << 5 | 1 << 4,
-  PACKET_PUBLIC_FLAGS_MAX = (1 << 6) - 1  // All bits set.
+
+  // All bits set (bits 6 and 7 are not currently used): 00111111
+  PACKET_PUBLIC_FLAGS_MAX = (1 << 6) - 1
 };
 
+// The private flags are specified in one byte.
 enum QuicPacketPrivateFlags {
   PACKET_PRIVATE_FLAGS_NONE = 0,
+
+  // Bit 0: Does this packet contain an entropy bit?
   PACKET_PRIVATE_FLAGS_ENTROPY = 1 << 0,
-  PACKET_PRIVATE_FLAGS_FEC_GROUP = 1 << 1,  // Payload is part of an FEC group.
-  PACKET_PRIVATE_FLAGS_FEC = 1 << 2,  // Payload is FEC as opposed to frames.
-  PACKET_PRIVATE_FLAGS_MAX = (1 << 3) - 1  // All bits set.
+
+  // Bit 1: Payload is part of an FEC group?
+  PACKET_PRIVATE_FLAGS_FEC_GROUP = 1 << 1,
+
+  // Bit 2: Payload is FEC as opposed to frames?
+  PACKET_PRIVATE_FLAGS_FEC = 1 << 2,
+
+  // All bits set (bits 3-7 are not currently used): 00000111
+  PACKET_PRIVATE_FLAGS_MAX = (1 << 3) - 1
 };
 
 // Size in bytes of the data or fec packet header.
@@ -463,7 +489,7 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
 };
 
 // Defines for all types of congestion feedback that will be negotiated in QUIC,
-// kTCP MUST be supported by all QUIC implementations to guarentee 100%
+// kTCP MUST be supported by all QUIC implementations to guarantee 100%
 // compatibility.
 enum CongestionFeedbackType {
   kTCP,  // Used to mimic TCP.

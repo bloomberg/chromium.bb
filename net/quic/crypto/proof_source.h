@@ -25,6 +25,8 @@ class NET_EXPORT_PRIVATE ProofSource {
   // The signature uses SHA-256 as the hash function and PSS padding when the
   // key is RSA.
   //
+  // The signature uses SHA-256 as the hash function when the key is ECDSA.
+  //
   // |out_certs| is a pointer to a pointer, not a pointer to an array.
   //
   // The number of certificate chains is expected to be small and fixed thus
@@ -35,6 +37,9 @@ class NET_EXPORT_PRIVATE ProofSource {
   // somewhat static. However, since they aren't bounded, the ProofSource may
   // wish to evicit entries from that cache, thus the caller takes ownership of
   // |*out_signature|.
+  //
+  // |hostname| may be empty to signify that a default certificate should be
+  // used.
   //
   // This function may be called concurrently.
   virtual bool GetProof(const std::string& hostname,

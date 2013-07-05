@@ -35,10 +35,11 @@ void CompareQuicDataWithHexError(const std::string& description,
                                  QuicData* actual,
                                  QuicData* expected);
 
-// Returns the length of the QuicPacket that will be created if it contains
-// a stream frame that has |payload| bytes.
+// Returns the length of a QuicPacket that is capable of holding either a
+// stream frame or a minimal ack frame.  Sets |*payload_length| to the number
+// of bytes of stream data that will fit in such a packet.
 size_t GetPacketLengthForOneStream(
-    bool include_version, InFecGroup is_in_fec_group, size_t payload);
+    bool include_version, InFecGroup is_in_fec_group, size_t* payload_length);
 
 string SerializeUncompressedHeaders(const SpdyHeaderBlock& headers);
 

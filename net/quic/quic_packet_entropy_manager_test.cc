@@ -51,14 +51,12 @@ TEST_F(QuicPacketEntropyManagerTest, ReceivedPacketEntropyHash) {
 
 TEST_F(QuicPacketEntropyManagerTest, EntropyHashBelowLeastObserved) {
   EXPECT_EQ(0, entropy_manager_.ReceivedEntropyHash(0));
-  EXPECT_EQ(0, entropy_manager_.ReceivedEntropyHash(9));
   entropy_manager_.RecordReceivedPacketEntropyHash(4, 5);
   EXPECT_EQ(0, entropy_manager_.ReceivedEntropyHash(3));
 };
 
-TEST_F(QuicPacketEntropyManagerTest, EntropyHashAboveLargesObserved) {
+TEST_F(QuicPacketEntropyManagerTest, EntropyHashAboveLargestObserved) {
   EXPECT_EQ(0, entropy_manager_.ReceivedEntropyHash(0));
-  EXPECT_EQ(0, entropy_manager_.ReceivedEntropyHash(9));
   entropy_manager_.RecordReceivedPacketEntropyHash(4, 5);
   EXPECT_EQ(0, entropy_manager_.ReceivedEntropyHash(3));
 };
@@ -86,6 +84,13 @@ TEST_F(QuicPacketEntropyManagerTest, RecalculateReceivedEntropyHash) {
     entropy_hash ^= entropies[i].second;
   }
   entropy_manager_.RecalculateReceivedEntropyHash(4, 100);
+  EXPECT_EQ(entropy_hash, entropy_manager_.ReceivedEntropyHash(6));
+
+  // Ensure it doesn't change with an old received sequence number or entropy.
+  entropy_manager_.RecordReceivedPacketEntropyHash(1, 50);
+  EXPECT_EQ(entropy_hash, entropy_manager_.ReceivedEntropyHash(6));
+
+  entropy_manager_.RecalculateReceivedEntropyHash(1, 50);
   EXPECT_EQ(entropy_hash, entropy_manager_.ReceivedEntropyHash(6));
 }
 

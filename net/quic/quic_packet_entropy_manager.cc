@@ -9,6 +9,7 @@
 
 using std::make_pair;
 using std::max;
+using std::min;
 
 namespace net {
 
@@ -19,12 +20,23 @@ QuicPacketEntropyManager::QuicPacketEntropyManager()
 
 QuicPacketEntropyManager::~QuicPacketEntropyManager() {}
 
+QuicPacketSequenceNumber
+QuicPacketEntropyManager::LargestReceivedSequenceNumber() const {
+  if (received_packets_entropy_.empty()) {
+    return 0;
+  }
+  return received_packets_entropy_.rbegin()->first;
+}
+
 void QuicPacketEntropyManager::RecordReceivedPacketEntropyHash(
     QuicPacketSequenceNumber sequence_number,
     QuicPacketEntropyHash entropy_hash) {
-  largest_received_sequence_number_ =
-      max<QuicPacketSequenceNumber>(largest_received_sequence_number_,
-                                    sequence_number);
+  if (sequence_number < largest_received_sequence_number_) {
+    DLOG(INFO) << "Ignoring received packet entropy for sequence_number:"
+               << sequence_number << " less than largest_peer_sequence_number:"
+               << largest_received_sequence_number_;
+    return;
+  }
   received_packets_entropy_.insert(make_pair(sequence_number, entropy_hash));
   received_packets_entropy_hash_ ^= entropy_hash;
   DVLOG(2) << "setting cumulative received entropy hash to: "
@@ -50,7 +62,9 @@ void QuicPacketEntropyManager::RecordSentPacketEntropyHash(
 
 QuicPacketEntropyHash QuicPacketEntropyManager::ReceivedEntropyHash(
     QuicPacketSequenceNumber sequence_number) const {
-  if (sequence_number == largest_received_sequence_number_) {
+  DCHECK_LE(sequence_number, LargestReceivedSequenceNumber());
+  DCHECK_GE(sequence_number, largest_received_sequence_number_);
+  if (sequence_number == LargestReceivedSequenceNumber()) {
     return received_packets_entropy_hash_;
   }
 
@@ -59,7 +73,7 @@ QuicPacketEntropyHash QuicPacketEntropyManager::ReceivedEntropyHash(
   // When this map is empty we should only query entropy for
   // |largest_received_sequence_number_|.
   LOG_IF(WARNING, it != received_packets_entropy_.end())
-      << "largest_received: " << largest_received_sequence_number_
+      << "largest_received: " << LargestReceivedSequenceNumber()
       << " sequence_number: " << sequence_number;
 
   // TODO(satyamshekhar): Make this O(1).
@@ -83,15 +97,30 @@ QuicPacketEntropyHash QuicPacketEntropyManager::SentEntropyHash(
 }
 
 void QuicPacketEntropyManager::RecalculateReceivedEntropyHash(
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketSequenceNumber peer_least_unacked,
     QuicPacketEntropyHash entropy_hash) {
+  DLOG_IF(WARNING, peer_least_unacked > LargestReceivedSequenceNumber())
+      << "Prematurely updating the entropy manager before registering the "
+      << "entropy of the containing packet creates a temporary inconsistency.";
+  if (peer_least_unacked < largest_received_sequence_number_) {
+    DLOG(INFO) << "Ignoring received peer_least_unacked:" << peer_least_unacked
+               << " less than largest_peer_sequence_number:"
+               << largest_received_sequence_number_;
+    return;
+  }
+  largest_received_sequence_number_ = peer_least_unacked;
   received_packets_entropy_hash_ = entropy_hash;
   ReceivedEntropyMap::iterator it =
-      received_packets_entropy_.lower_bound(sequence_number);
+      received_packets_entropy_.lower_bound(peer_least_unacked);
   // TODO(satyamshekhar): Make this O(1).
   for (; it != received_packets_entropy_.end(); ++it) {
     received_packets_entropy_hash_ ^= it->second;
   }
+  // Discard entropies before least unacked.
+  received_packets_entropy_.erase(
+      received_packets_entropy_.begin(),
+      received_packets_entropy_.lower_bound(
+          min(peer_least_unacked, LargestReceivedSequenceNumber())));
 }
 
 bool QuicPacketEntropyManager::IsValidEntropy(
@@ -131,15 +160,6 @@ void QuicPacketEntropyManager::ClearSentEntropyBefore(
   }
   DVLOG(2) << "Cleared entropy before: "
            << sent_packets_entropy_.begin()->first;
-}
-
-void QuicPacketEntropyManager::ClearReceivedEntropyBefore(
-    QuicPacketSequenceNumber sequence_number) {
-  // This might clear the received_packets_entropy_ map if the current packet
-  // is peer_least_packet_awaiting_ack_ and it doesn't have entropy flag set.
-  received_packets_entropy_.erase(
-      received_packets_entropy_.begin(),
-      received_packets_entropy_.lower_bound(sequence_number));
 }
 
 }  // namespace net

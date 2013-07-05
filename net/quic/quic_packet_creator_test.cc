@@ -224,14 +224,17 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
     creator_.StopSendingVersion();
   }
   // A string larger than fits into a frame.
+  size_t payload_length;
   creator_.options()->max_packet_length = GetPacketLengthForOneStream(
       QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-      NOT_IN_FEC_GROUP, 4);
+      NOT_IN_FEC_GROUP, &payload_length);
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, "testTooLong", 0u, true,
-                                               &frame);
-  EXPECT_EQ(4u, consumed);
-  CheckStreamFrame(frame, 1u, "test", 0u, false);
+  const string too_long_payload(payload_length * 2, 'a');
+  size_t consumed = creator_.CreateStreamFrame(
+      1u, too_long_payload, 0u, true, &frame);
+  EXPECT_EQ(payload_length, consumed);
+  const string payload(payload_length, 'a');
+  CheckStreamFrame(frame, 1u, payload, 0u, false);
   delete frame.stream_frame;
 }
 

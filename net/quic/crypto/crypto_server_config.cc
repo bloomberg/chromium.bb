@@ -674,7 +674,7 @@ void QuicCryptoServerConfig::BuildRejection(
   const QuicTag* their_proof_demands;
   size_t num_their_proof_demands;
 
-  if (proof_source_.get() != NULL && !info.sni.empty() &&
+  if (proof_source_.get() != NULL &&
       client_hello.GetTaglist(kPDMD, &their_proof_demands,
                               &num_their_proof_demands) ==
           QUIC_NO_ERROR) {

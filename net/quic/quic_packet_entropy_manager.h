@@ -43,11 +43,13 @@ class NET_EXPORT_PRIVATE QuicPacketEntropyManager :
   QuicPacketEntropyHash SentEntropyHash(
       QuicPacketSequenceNumber sequence_number) const;
 
-  // Recalculate the received entropy hash since we had some missing packets
-  // which the sender won't retransmit again and has sent us the |entropy_hash|
-  // for packets up to, but not including, |sequence_number|.
+  QuicPacketSequenceNumber LargestReceivedSequenceNumber() const;
+
+  // Recalculate the received entropy hash and clears old packet entropies,
+  // now that the sender sent us the |entropy_hash| for packets up to,
+  // but not including, |peer_least_unacked|.
   void RecalculateReceivedEntropyHash(
-      QuicPacketSequenceNumber sequence_number,
+      QuicPacketSequenceNumber peer_least_unacked,
       QuicPacketEntropyHash entropy_hash);
 
   // Returns true if |entropy_hash| matches the expected sent entropy hash
@@ -59,10 +61,6 @@ class NET_EXPORT_PRIVATE QuicPacketEntropyManager :
   // Removes not required entries from |sent_packets_entropy_| before
   // |sequence_number|.
   void ClearSentEntropyBefore(QuicPacketSequenceNumber sequence_number);
-
-  // Removes not required entries from |received_packets_entropy_| before
-  // |sequence_number|.
-  void ClearReceivedEntropyBefore(QuicPacketSequenceNumber sequence_number);
 
   QuicPacketEntropyHash sent_packets_entropy_hash() const {
     return sent_packets_entropy_hash_;
@@ -79,11 +77,6 @@ class NET_EXPORT_PRIVATE QuicPacketEntropyManager :
   typedef std::map<QuicPacketSequenceNumber,
                    QuicPacketEntropyHash> ReceivedEntropyMap;
 
-  // TODO(satyamshekhar): Can be optimized using an interval set like data
-  // structure.
-  // Set of received sequence numbers that had the received entropy flag set.
-  ReceivedEntropyMap received_packets_entropy_;
-
   // Linked hash map from sequence numbers to the sent entropy hash up to the
   // sequence number in the key.
   SentEntropyMap sent_packets_entropy_;
@@ -91,9 +84,19 @@ class NET_EXPORT_PRIVATE QuicPacketEntropyManager :
   // Cumulative hash of entropy of all sent packets.
   QuicPacketEntropyHash sent_packets_entropy_hash_;
 
+  // TODO(satyamshekhar): Can be optimized using an interval set like data
+  // structure.
+  // Map of received sequence numbers to their corresponding entropy.
+  // Every received packet has an entry, and packets without the entropy bit set
+  // have an entropy value of 0.
+  // TODO(ianswett): When the entropy flag is off, the entropy should not be 0.
+  ReceivedEntropyMap received_packets_entropy_;
+
   // Cumulative hash of entropy of all received packets.
   QuicPacketEntropyHash received_packets_entropy_hash_;
 
+  // The largest sequence number cleared by RecalculateReceivedEntropyHash.
+  // Received entropy cannot be calculated for numbers less than it.
   QuicPacketSequenceNumber largest_received_sequence_number_;
 };
 

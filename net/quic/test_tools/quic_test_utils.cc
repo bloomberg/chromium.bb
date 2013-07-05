@@ -382,21 +382,25 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, QuicTag tag) {
 }
 
 size_t GetPacketLengthForOneStream(
-    bool include_version, InFecGroup is_in_fec_group, size_t payload) {
-  // TODO(wtc): the hardcoded use of NullEncrypter here seems wrong.
-  size_t packet_length = NullEncrypter().GetCiphertextSize(payload) +
+    bool include_version, InFecGroup is_in_fec_group, size_t* payload_length) {
+  *payload_length = 1;
+  const size_t stream_length =
+      NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          1, PACKET_8BYTE_GUID, include_version,
+          PACKET_8BYTE_GUID, include_version,
           PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
-
-  size_t ack_length = NullEncrypter().GetCiphertextSize(
+  const size_t ack_length = NullEncrypter().GetCiphertextSize(
       QuicFramer::GetMinAckFrameSize()) +
       GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version,
                           PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
-  // Make sure that if we change the size of the packet length for one stream
-  // or the ack frame; that all our test are configured correctly.
-  DCHECK_GE(packet_length, ack_length);
-  return packet_length;
+  if (stream_length < ack_length) {
+    *payload_length = 1 + ack_length - stream_length;
+  }
+
+  return NullEncrypter().GetCiphertextSize(*payload_length) +
+      QuicPacketCreator::StreamFramePacketOverhead(
+          PACKET_8BYTE_GUID, include_version,
+          PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
 }
 
 QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(

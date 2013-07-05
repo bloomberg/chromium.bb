@@ -83,14 +83,14 @@ bool QuicPacketCreator::HasRoomForStreamFrame() const {
 
 // static
 size_t QuicPacketCreator::StreamFramePacketOverhead(
-    int num_frames,
     QuicGuidLength guid_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length,
     InFecGroup is_in_fec_group) {
   return GetPacketHeaderSize(guid_length, include_version,
                              sequence_number_length, is_in_fec_group) +
-      QuicFramer::GetMinStreamFrameSize() * num_frames;
+      // Assumes this is a stream with a single lone packet.
+      QuicFramer::GetMinStreamFrameSize(1, 0, true);
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
@@ -100,7 +100,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             QuicFrame* frame) {
   DCHECK_GT(options_.max_packet_length,
             StreamFramePacketOverhead(
-                1, PACKET_8BYTE_GUID, kIncludeVersion,
+                PACKET_8BYTE_GUID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
   DCHECK(HasRoomForStreamFrame());
 
@@ -108,8 +108,19 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   size_t bytes_consumed = 0;
 
   if (data.size() != 0) {
-    size_t max_data_len = free_bytes - QuicFramer::GetMinStreamFrameSize();
-    bytes_consumed = min<size_t>(max_data_len, data.size());
+    size_t min_last_stream_frame_size =
+        QuicFramer::GetMinStreamFrameSize(id, offset, true);
+    // Comparing against the last stream frame size including the length
+    // guarantees that all the bytes will fit.  Otherwise there is a
+    // discontinuity where the packet goes one byte over due to the length data.
+    if (data.size() > free_bytes - min_last_stream_frame_size -
+        kQuicStreamPayloadLengthSize) {
+      // Its the last frame, put as much data as possible in.
+      bytes_consumed =
+          min<size_t>(free_bytes - min_last_stream_frame_size, data.size());
+    } else {
+      bytes_consumed = data.size();
+    }
 
     bool set_fin = fin && bytes_consumed == data.size();  // Last frame.
     StringPiece data_frame(data.data(), bytes_consumed);

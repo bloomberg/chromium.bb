@@ -99,7 +99,7 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
 
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
-          1, PACKET_8BYTE_GUID, !kIncludeVersion,
+          PACKET_8BYTE_GUID, !kIncludeVersion,
           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
   // TODO(rch): figure out how to get StrEq working here.
   //EXPECT_CALL(*session_, WriteData(kStreamId, StrEq(kData1), _, _)).WillOnce(
@@ -167,7 +167,7 @@ TEST_F(ReliableQuicStreamTest, WriteData) {
   EXPECT_TRUE(write_blocked_list_->IsEmpty());
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
-          1, PACKET_8BYTE_GUID, !kIncludeVersion,
+          PACKET_8BYTE_GUID, !kIncludeVersion,
           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
   // TODO(rch): figure out how to get StrEq working here.
   //EXPECT_CALL(*session_, WriteData(_, StrEq(kData1), _, _)).WillOnce(

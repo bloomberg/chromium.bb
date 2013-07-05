@@ -97,7 +97,6 @@ QuicConnection::QuicConnection(QuicGuid guid,
       time_largest_observed_(QuicTime::Zero()),
       congestion_manager_(clock_, kTCP),
       version_negotiation_state_(START_NEGOTIATION),
-      quic_version_(kQuicVersion1),
       max_packets_per_retransmission_alarm_(kMaxPacketsPerRetransmissionAlarm),
       is_server_(is_server),
       connected_(true),
@@ -142,8 +141,8 @@ bool QuicConnection::SelectMutualVersion(
   }
 
   // Right now we only support kQuicVersion1 so it's okay not to
-  // update the framer and quic_version_. When start supporting more
-  // versions please update both.
+  // update the framer version. When we start supporting more
+  // versions please update.
   return true;
 }
 
@@ -175,7 +174,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicTag received_version) {
     CloseConnection(QUIC_INTERNAL_ERROR, false);
     return false;
   }
-  DCHECK_NE(quic_version_, received_version);
+  DCHECK_NE(version(), received_version);
 
   if (debug_visitor_) {
     debug_visitor_->OnProtocolVersionMismatch(received_version);
@@ -207,8 +206,8 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicTag received_version) {
   }
 
   // Right now we only support kQuicVersion1 so it's okay not to
-  // update the framer and quic_version_. When start supporting more
-  // versions please update both.
+  // update the framer version. When we start supporting more
+  // versions please update.
   version_negotiation_state_ = NEGOTIATED_VERSION;
   // TODO(satyamshekhar): Store the sequence number of this packet and close the
   // connection if we ever received a packet with incorrect version and whose
@@ -235,7 +234,7 @@ void QuicConnection::OnVersionNegotiationPacket(
   }
 
   if (std::find(packet.versions.begin(),
-                packet.versions.end(), quic_version_) !=
+                packet.versions.end(), version()) !=
       packet.versions.end()) {
     DLOG(WARNING) << ENDPOINT << "The server already supports our version. "
                   << "It should have accepted our connection.";
@@ -302,7 +301,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
         return false;
       } else {
         DCHECK_EQ(1u, header.public_header.versions.size());
-        DCHECK_EQ(header.public_header.versions[0], quic_version_);
+        DCHECK_EQ(header.public_header.versions[0], version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
       }
     } else {
@@ -585,10 +584,6 @@ void QuicConnection::UpdatePacketInformationSentByPeer(
           incoming_ack.sent_info.entropy_hash);
     }
     peer_least_packet_awaiting_ack_ = incoming_ack.sent_info.least_unacked;
-    // TODO(satyamshekhar): We get this iterator O(logN) in
-    // RecalculateReceivedEntropyHash also.
-    entropy_manager_.ClearReceivedEntropyBefore(
-        peer_least_packet_awaiting_ack_);
   }
   DCHECK(outgoing_ack_.received_info.missing_packets.empty() ||
          *outgoing_ack_.received_info.missing_packets.begin() >=

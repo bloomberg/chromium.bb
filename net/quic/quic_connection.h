@@ -275,7 +275,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // can be handled, false otherwise.
   bool ProcessValidatedPacket();
 
-  QuicTag version() const { return quic_version_; }
+  // The version of the protocol this connection is using.
+  QuicTag version() const { return framer_.version(); }
 
   // From QuicFramerVisitorInterface
   virtual void OnError(QuicFramer* framer) OVERRIDE;
@@ -683,9 +684,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // The state of connection in version negotiation finite state machine.
   QuicVersionNegotiationState version_negotiation_state_;
-
-  // The version of the protocol this connection is using.
-  QuicTag quic_version_;
 
   size_t max_packets_per_retransmission_alarm_;
 

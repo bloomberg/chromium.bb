@@ -69,9 +69,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Makes the framer not serialize the protocol version in sent packets.
   void StopSendingVersion();
 
-  // The overhead the framing will add for a packet with num_frames frames.
+  // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(
-      int num_frames,
       QuicGuidLength guid_length,
       bool include_version,
       QuicSequenceNumberLength sequence_number_length,

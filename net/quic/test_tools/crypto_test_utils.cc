@@ -8,6 +8,7 @@
 #include "net/quic/crypto/common_cert_set.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_server_config.h"
+#include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
@@ -499,6 +500,11 @@ CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
   CHECK(parsed.get());
 
   return *parsed;
+}
+
+// static
+ProofSource* CryptoTestUtils::ProofSourceForTesting() {
+  return new ProofSourceChromium();
 }
 
 }  // namespace test

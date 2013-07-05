@@ -969,31 +969,36 @@ TEST_F(QuicConnectionTest, BasicSending) {
 }
 
 TEST_F(QuicConnectionTest, FECSending) {
-  // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
+  size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, IN_FEC_GROUP, 4);
+      GetPacketLengthForOneStream(
+          kIncludeVersion, IN_FEC_GROUP, &payload_length);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
   // Send 4 data packets and 2 FEC packets.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(6);
-  connection_.SendStreamData(1, "foodfoodfoodfood", 0, !kFin);
+  // TODO(ianswett): The first stream frame will consume 2 fewer bytes.
+  const string payload(payload_length * 4, 'a');
+  connection_.SendStreamData(1, payload, 0, !kFin);
   // Expect the FEC group to be closed after SendStreamData.
   EXPECT_FALSE(creator_.ShouldSendFec(true));
 }
 
 TEST_F(QuicConnectionTest, FECQueueing) {
-  // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
+  size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, IN_FEC_GROUP, 4);
+      GetPacketLengthForOneStream(
+          kIncludeVersion, IN_FEC_GROUP, &payload_length);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   helper_->set_blocked(true);
-  connection_.SendStreamData(1, "food", 0, !kFin);
+  const string payload(payload_length, 'a');
+  connection_.SendStreamData(1, payload, 0, !kFin);
   EXPECT_FALSE(creator_.ShouldSendFec(true));
   // Expect the first data packet and the fec packet to be queued.
   EXPECT_EQ(2u, connection_.NumQueuedPackets());
@@ -1905,30 +1910,35 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenOnCanWrite) {
 }
 
 TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
-  // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
+  size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, NOT_IN_FEC_GROUP, 4);
+      GetPacketLengthForOneStream(
+          kIncludeVersion, NOT_IN_FEC_GROUP, &payload_length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_,
               TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
                   testing::Return(QuicTime::Delta::FromMicroseconds(10)));
-  EXPECT_EQ(0u, connection_.SendStreamData(
-      1, "EnoughDataToQueue", 0, !kFin).bytes_consumed);
+  const string payload(payload_length, 'a');
+  EXPECT_EQ(0u,
+            connection_.SendStreamData(1, payload, 0, !kFin).bytes_consumed);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
 }
 
 TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
-  // Limit to 4 bytes per packet.
   // All packets carry version info till version is negotiated.
+  size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, NOT_IN_FEC_GROUP, 4);
+      GetPacketLengthForOneStream(
+          kIncludeVersion, NOT_IN_FEC_GROUP, &payload_length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(7);
-  EXPECT_EQ(27u, connection_.SendStreamData(
-                1, "EnoughDataToQueueStreamData", 0, !kFin).bytes_consumed);
+  // TODO(ianswett): The first stream frame will consume 2 fewer bytes.
+  const string payload(payload_length * 7, 'a');
+  EXPECT_EQ(payload.size(),
+            connection_.SendStreamData(1, payload, 0, !kFin).bytes_consumed);
 }
 
 TEST_F(QuicConnectionTest, NoAckForClose) {

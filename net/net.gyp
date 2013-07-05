@@ -758,6 +758,8 @@
         'quic/crypto/p256_key_exchange_nss.cc',
         'quic/crypto/p256_key_exchange_openssl.cc',
         'quic/crypto/proof_source.h',
+        'quic/crypto/proof_source_chromium.cc',
+        'quic/crypto/proof_source_chromium.h',
         'quic/crypto/proof_verifier_chromium.cc',
         'quic/crypto/proof_verifier_chromium.h',
         'quic/crypto/quic_decrypter.cc',

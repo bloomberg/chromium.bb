@@ -5,11 +5,57 @@
 #include "net/tools/quic/test_tools/quic_test_client.h"
 
 #include "googleurl/src/gurl.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
+#include "net/cert/x509_certificate.h"
+#include "net/quic/crypto/proof_verifier.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 
 using std::string;
+using std::vector;
 using base::StringPiece;
+
+namespace {
+
+// RecordingProofVerifier accepts any certificate chain and records the common
+// name of the leaf.
+class RecordingProofVerifier : public net::ProofVerifier {
+ public:
+  // ProofVerifier interface.
+  virtual int VerifyProof(const string& hostname,
+                          const string& server_config,
+                          const vector<string>& certs,
+                          const string& signature,
+                          string* error_details,
+                          const net::CompletionCallback& callback) OVERRIDE {
+    common_name_.clear();
+    if (certs.empty()) {
+      return false;
+    }
+
+    // Convert certs to X509Certificate.
+    vector<StringPiece> cert_pieces(certs.size());
+    for (unsigned i = 0; i < certs.size(); i++) {
+      cert_pieces[i] = StringPiece(certs[i]);
+    }
+    scoped_refptr<net::X509Certificate> cert =
+        net::X509Certificate::CreateFromDERCertChain(cert_pieces);
+    if (!cert.get()) {
+      return net::ERR_FAILED;
+    }
+
+    common_name_ = cert->subject().GetDisplayName();
+    return net::OK;
+  }
+
+  const string& common_name() const { return common_name_; }
+
+ private:
+  string common_name_;
+};
+
+}  // anonymous namespace
 
 namespace net {
 namespace tools {
@@ -48,6 +94,8 @@ QuicTestClient::QuicTestClient(IPEndPoint address,
     : client_(address, hostname) {
   Initialize(address, hostname);
   secure_ = secure;
+  // TODO(alyssar, agl) uncomment here and below when default certs are allowed.
+  // ExpectCertificates(secure_);
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
@@ -64,14 +112,26 @@ void QuicTestClient::Initialize(IPEndPoint address, const string& hostname) {
   connection_error_ = QUIC_NO_ERROR;
   bytes_read_ = 0;
   bytes_written_= 0;
-  never_connected_ =true;
+  never_connected_ = true;
   secure_ = true;
   auto_reconnect_ = false;
+  proof_verifier_ = NULL;
+  // ExpectCertificates(secure_);
 }
 
 QuicTestClient::~QuicTestClient() {
   if (stream_) {
     stream_->set_visitor(NULL);
+  }
+}
+
+void QuicTestClient::ExpectCertificates(bool on) {
+  if (on) {
+    proof_verifier_ = new RecordingProofVerifier;
+    client_.SetProofVerifier(proof_verifier_);
+  } else {
+    proof_verifier_ = NULL;
+    client_.SetProofVerifier(NULL);
   }
 }
 
@@ -141,6 +201,11 @@ QuicReliableClientStream* QuicTestClient::GetOrCreateStream() {
     }
   }
   return stream_;
+}
+
+const string& QuicTestClient::cert_common_name() const {
+  return reinterpret_cast<RecordingProofVerifier*>(proof_verifier_)
+      ->common_name();
 }
 
 bool QuicTestClient::connected() const {
