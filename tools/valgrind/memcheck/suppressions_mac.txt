@@ -2570,3 +2570,14 @@
    fun:-[NSString(NSExtendedStringDrawing) drawWithRect:options:attributes:]
    fun:-[HyperlinkButtonCell drawTitle:withFrame:inView:]
 }
+{
+   bug_257501
+   Memcheck:Uninitialized
+   fun:rangematch
+   fun:fnmatch1
+   fun:fnmatch1
+   fun:fnmatch$UNIX2003
+   fun:_ZN4base14FileEnumerator4NextEv
+   fun:_ZN10disk_cache15SimpleIndexFile19SyncRestoreFromDiskERKN4base8FilePathE
+   fun:_ZN10disk_cache15SimpleIndexFile20SyncLoadIndexEntriesERKN4base8FilePathE13scoped_refptrINS1_22SingleThreadTaskRunnerEERKNS1_8CallbackIFv10scoped_ptrIN9__gnu_cxx8hash_mapIyNS_13EntryMetadataENSA_4hashIyEESt8equal_toIyESaISC_EEENS1_14DefaultDeleterISI_EEEbEEE
+}
