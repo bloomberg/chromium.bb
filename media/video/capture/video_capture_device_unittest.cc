@@ -15,6 +15,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "media/video/capture/win/video_capture_device_mf_win.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -127,7 +128,15 @@ class VideoCaptureDeviceTest : public testing::Test {
 };
 
 TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
+#if defined(OS_WIN)
+  VideoCaptureDevice::Name::CaptureApiType api_type =
+      VideoCaptureDeviceMFWin::PlatformSupported()
+          ? VideoCaptureDevice::Name::MEDIA_FOUNDATION
+          : VideoCaptureDevice::Name::DIRECT_SHOW;
+  VideoCaptureDevice::Name device_name("jibberish", "jibberish", api_type);
+#else
   VideoCaptureDevice::Name device_name("jibberish", "jibberish");
+#endif
   VideoCaptureDevice* device = VideoCaptureDevice::Create(device_name);
   EXPECT_TRUE(device == NULL);
 }
@@ -144,7 +153,7 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   ASSERT_FALSE(device.get() == NULL);
 
   // Get info about the new resolution.
-  EXPECT_CALL(*frame_observer_, OnFrameInfo(640, 480, 30, _))
+  EXPECT_CALL(*frame_observer_, OnFrameInfo(640, 480, _, _))
       .Times(1);
 
   EXPECT_CALL(*frame_observer_, OnErr())
