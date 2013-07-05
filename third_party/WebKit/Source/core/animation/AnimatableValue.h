@@ -46,7 +46,6 @@ public:
 
     static const AnimatableValue* neutralValue();
     virtual bool isNeutral() const { return false; }
-    virtual const AnimatableValue* identityValue() const = 0;
 
     static PassRefPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
     // For noncommutative values read add(A, B) to mean the value A with B composed onto it.

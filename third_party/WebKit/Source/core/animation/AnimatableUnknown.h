@@ -39,16 +39,23 @@ class AnimatableUnknown : public AnimatableValue {
 public:
     virtual ~AnimatableUnknown() { }
 
-    static PassRefPtr<AnimatableUnknown> create(PassRefPtr<CSSValue> value) { return adoptRef(new AnimatableUnknown(value)); }
+    static PassRefPtr<AnimatableUnknown> create(PassRefPtr<CSSValue> value)
+    {
+        return adoptRef(new AnimatableUnknown(value));
+    }
 
     virtual PassRefPtr<CSSValue> toCSSValue() const OVERRIDE { return m_value; }
 
-    virtual const AnimatableValue* identityValue() const OVERRIDE { return this; }
-
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE { return defaultInterpolateTo(this, value, fraction); }
+    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
+    {
+        return defaultInterpolateTo(this, value, fraction);
+    }
 
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue* value) const OVERRIDE { return defaultAddWith(this, value); }
+    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue* value) const OVERRIDE
+    {
+        return defaultAddWith(this, value);
+    }
 
 private:
     explicit AnimatableUnknown(PassRefPtr<CSSValue> value)

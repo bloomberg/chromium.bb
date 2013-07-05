@@ -46,19 +46,14 @@ public:
     }
 
     virtual bool isNeutral() const OVERRIDE { return true; }
-    virtual const AnimatableValue* identityValue() const OVERRIDE
-    {
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
 
 protected:
     static PassRefPtr<AnimatableNeutral> create() { return adoptRef(new AnimatableNeutral()); }
 
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
     {
-        ASSERT(isInterpolableWith(value));
-        return takeConstRef(this);
+        ASSERT_NOT_REACHED();
+        return 0;
     }
 
     virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue* value) const OVERRIDE { return defaultAddWith(this, value); }

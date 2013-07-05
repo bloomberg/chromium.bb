@@ -54,14 +54,8 @@ PassRefPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* 
 {
     ASSERT(left);
     ASSERT(right);
-
-    if (left->isNeutral()) {
-        if (right->isNeutral())
-            return takeConstRef(left);
-        left = right->identityValue();
-    } else if (right->isNeutral()) {
-        right = left->identityValue();
-    }
+    ASSERT(!left->isNeutral());
+    ASSERT(!right->isNeutral());
 
     if (fraction && fraction != 1 && left->isInterpolableWith(right))
         return left->interpolateTo(right, fraction);

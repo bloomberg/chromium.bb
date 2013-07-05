@@ -45,15 +45,6 @@ TEST(AnimatableNeutral, Create)
     EXPECT_TRUE(AnimatableValue::neutralValue());
 }
 
-TEST(AnimatableNeutral, Interpolate)
-{
-    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0).get()->isNeutral());
-    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0.4).get()->isNeutral());
-    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0.5).get()->isNeutral());
-    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 0.6).get()->isNeutral());
-    EXPECT_TRUE(AnimatableValue::interpolate(AnimatableValue::neutralValue(), AnimatableValue::neutralValue(), 1).get()->isNeutral());
-}
-
 TEST(AnimatableNeutral, Add)
 {
     RefPtr<CSSValue> cssValue = CSSArrayFunctionValue::create();

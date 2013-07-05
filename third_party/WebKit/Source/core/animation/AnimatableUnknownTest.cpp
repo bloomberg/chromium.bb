@@ -70,18 +70,6 @@ TEST_F(AnimatableUnknownTest, ToCSSValue)
 
 TEST_F(AnimatableUnknownTest, Interpolate)
 {
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(animatableUnknown.get(), AnimatableValue::neutralValue(), 0)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(animatableUnknown.get(), AnimatableValue::neutralValue(), 0.4)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(animatableUnknown.get(), AnimatableValue::neutralValue(), 0.5)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(animatableUnknown.get(), AnimatableValue::neutralValue(), 0.6)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(animatableUnknown.get(), AnimatableValue::neutralValue(), 1)->toCSSValue());
-
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(AnimatableValue::neutralValue(), animatableUnknown.get(), 0)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(AnimatableValue::neutralValue(), animatableUnknown.get(), 0.4)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(AnimatableValue::neutralValue(), animatableUnknown.get(), 0.5)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(AnimatableValue::neutralValue(), animatableUnknown.get(), 0.6)->toCSSValue());
-    EXPECT_EQ(cssValue, AnimatableValue::interpolate(AnimatableValue::neutralValue(), animatableUnknown.get(), 1)->toCSSValue());
-
     EXPECT_EQ(cssValue, AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0)->toCSSValue());
     EXPECT_EQ(cssValue, AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0.4)->toCSSValue());
     EXPECT_EQ(otherCSSValue, AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0.5)->toCSSValue());
