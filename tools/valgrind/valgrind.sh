@@ -31,7 +31,7 @@ setup_memcheck() {
   # Prompt to attach gdb when there was an error detected.
   DEFAULT_TOOL_FLAGS=("--db-command=$GDB -nw %f %p" "--db-attach=yes" \
                       # Keep the registers in gdb in sync with the code.
-                      "--vex-iropt-precise-memory-exns=yes" \
+                      "--vex-iropt-register-updates=allregs-at-mem-access" \
                       # Overwrite newly allocated or freed objects
                       # with 0x41 to catch inproper use.
                       "--malloc-fill=41" "--free-fill=41" \
@@ -118,6 +118,7 @@ G_DEBUG=fatal_warnings \
 GTEST_DEATH_TEST_USE_FORK=1 \
 $RUN_COMMAND \
   --trace-children=yes \
+  --leak-check=yes \
   --suppressions="$SUPPRESSIONS" \
   "${DEFAULT_TOOL_FLAGS[@]}" \
   "$@"
