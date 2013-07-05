@@ -128,7 +128,7 @@ class Forwarder(object):
     (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
         [self._host_forwarder_path] + redirection_command)
     if exit_code != 0:
-      raise Exception('%s exited with %d:\n%s' % (
+      logging.error('%s exited with %d:\n%s' % (
           self._host_forwarder_path, exit_code, '\n'.join(output)))
     host_port = self._device_to_host_port_map[device_port]
     del self._device_to_host_port_map[device_port]
