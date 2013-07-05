@@ -514,4 +514,12 @@ TEST(CharacterComposerTest, HexadecimalSequenceAndDeadKey) {
   EXPECT_EQ(string16(1, 0x00DA), character_composer.composed_character());
 }
 
+TEST(CharacterComposerTest, BlacklistedKeyeventsTest) {
+  CharacterComposer character_composer;
+  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_dead_acute, 0, 0));
+  EXPECT_FALSE(character_composer.FilterKeyPress(GDK_KEY_s, 0, 0));
+  ASSERT_EQ(1U, character_composer.composed_character().size());
+  EXPECT_EQ(GDK_KEY_apostrophe, character_composer.composed_character().at(0));
+}
+
 }  // namespace ui

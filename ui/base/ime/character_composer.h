@@ -32,8 +32,10 @@ class UI_EXPORT CharacterComposer {
   // composed after this method returns true.
   // preedit_string() returns non empty string when there is a preedit string
   // after this method returns true.
-  // Return values of composed_character() and preedit_string() are empty after
-  // this method returns false.
+  // Return values of preedit_string() is empty after this method returns false.
+  // composed_character() may have some characters which are consumed in this
+  // composing session.
+  //
   //
   // TODO(nona): Actually a X KeySym is passed to |keyval|, so we should use
   // XK_* rather than GDK_KEY_*.

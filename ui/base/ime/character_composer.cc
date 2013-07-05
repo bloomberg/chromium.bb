@@ -28,6 +28,21 @@
 
 namespace {
 
+// A black list for not composing dead keys. Once the key combination is listed
+// below, the dead key won't work even when this is listed in
+// gtkimcontextsimpleseqs.h. This only supports two keyevent sequenses.
+// TODO(nona): Remove this hack.
+const struct BlackListedDeadKey {
+  uint32 first_key;  // target first key event.
+  uint32 second_key;  // target second key event.
+  uint32 output_char;  // the character to be inserted if the filter is matched.
+  bool consume;  // true if the original key event will be consumed.
+} kBlackListedDeadKeys[] = {
+  { GDK_KEY_dead_acute, GDK_KEY_s, GDK_KEY_apostrophe, false },
+  { GDK_KEY_dead_acute, GDK_KEY_t, GDK_KEY_apostrophe, false },
+  { GDK_KEY_dead_acute, GDK_KEY_dead_acute, GDK_KEY_apostrophe, true },
+};
+
 typedef std::vector<unsigned int> ComposeBufferType;
 
 // An iterator class to apply std::lower_bound for composition table.
@@ -432,6 +447,17 @@ bool CharacterComposer::FilterKeyPressSequenceMode(unsigned int keyval,
                                                    int flags) {
   DCHECK(composition_mode_ == KEY_SEQUENCE_MODE);
   compose_buffer_.push_back(keyval);
+
+  if (compose_buffer_.size() == 2U) {
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kBlackListedDeadKeys); ++i) {
+      if (compose_buffer_[0] == kBlackListedDeadKeys[i].first_key &&
+          compose_buffer_[1] == kBlackListedDeadKeys[i].second_key ) {
+        Reset();
+        composed_character_.push_back(kBlackListedDeadKeys[i].output_char);
+        return kBlackListedDeadKeys[i].consume;
+      }
+    }
+  }
 
   // Check compose table.
   uint32 composed_character_utf32 = 0;

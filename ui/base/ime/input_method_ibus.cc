@@ -855,11 +855,11 @@ bool InputMethodIBus::IsContextReady() {
 bool InputMethodIBus::ExecuteCharacterComposer(uint32 ibus_keyval,
                                                uint32 ibus_keycode,
                                                uint32 ibus_state) {
-  if (!character_composer_.FilterKeyPress(ibus_keyval,
-                                          ibus_keycode,
-                                          EventFlagsFromXState(ibus_state))) {
-    return false;
-  }
+  bool consumed = character_composer_.FilterKeyPress(
+      ibus_keyval,
+      ibus_keycode,
+      EventFlagsFromXState(ibus_state));
+
   suppress_next_result_ = false;
   chromeos::IBusText preedit;
   preedit.set_text(
@@ -873,7 +873,7 @@ bool InputMethodIBus::ExecuteCharacterComposer(uint32 ibus_keyval,
     ibus_text.set_text(commit_text);
     CommitText(ibus_text);
   }
-  return true;
+  return consumed;
 }
 
 void InputMethodIBus::OnConnected() {
