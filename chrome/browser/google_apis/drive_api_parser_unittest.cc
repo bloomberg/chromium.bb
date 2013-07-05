@@ -13,9 +13,6 @@
 
 namespace google_apis {
 
-// TODO(nhiroki): Make it possible to run these tests on any platforms after
-// moving json files to out of 'chromeos' directory (http://crbug.com/149788).
-#if defined(OS_CHROMEOS)
 // Test about resource parsing.
 TEST(DriveAPIParserTest, AboutResourceParser) {
   std::string error;
@@ -423,6 +420,5 @@ TEST(DriveAPIParserTest, HasKind) {
   EXPECT_FALSE(FileList::HasFileListKind(*change_list_json));
   EXPECT_TRUE(FileList::HasFileListKind(*file_list_json));
 }
-#endif  // OS_CHROMEOS
 
 }  // namespace google_apis
