@@ -66,6 +66,8 @@ struct SimilarLanguageCode {
 const SimilarLanguageCode kSimilarLanguageCodes[] = {
   {"bs", 1},
   {"hr", 1},
+  {"hi", 2},
+  {"ne", 2},
 };
 
 // Checks |kSimilarLanguageCodes| and returns group code.

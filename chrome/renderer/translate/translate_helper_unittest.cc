@@ -65,6 +65,8 @@ TEST_F(TranslateHelperTest, SimilarLanguageCode) {
   EXPECT_FALSE(TranslateHelper::IsSameOrSimilarLanguages("en", "ja"));
   EXPECT_TRUE(TranslateHelper::IsSameOrSimilarLanguages("bs", "hr"));
   EXPECT_TRUE(TranslateHelper::IsSameOrSimilarLanguages("sr-ME", "sr"));
+  EXPECT_TRUE(TranslateHelper::IsSameOrSimilarLanguages("ne", "hi"));
+  EXPECT_FALSE(TranslateHelper::IsSameOrSimilarLanguages("bs", "hi"));
 }
 
 // Tests that well-known languages which often have wrong server configuration
