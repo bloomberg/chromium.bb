@@ -77,9 +77,9 @@ static void methodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void methodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestMediaQueryListListenerV8Internal::methodMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 } // namespace TestMediaQueryListListenerV8Internal

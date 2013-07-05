@@ -104,9 +104,9 @@ static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 static void excitingFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestActiveDOMObjectV8Internal::excitingFunctionMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -124,9 +124,9 @@ static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestActiveDOMObjectV8Internal::postMessageMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void postMessageAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

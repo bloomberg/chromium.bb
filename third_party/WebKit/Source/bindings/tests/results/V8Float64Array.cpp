@@ -84,9 +84,9 @@ static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void fooMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     Float64ArrayV8Internal::fooMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -96,9 +96,9 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     Float64ArrayV8Internal::setMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -108,16 +108,16 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
     V8Float64Array::indexedPropertyGetterCustom(index, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
     V8Float64Array::indexedPropertySetterCustom(index, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 } // namespace Float64ArrayV8Internal
