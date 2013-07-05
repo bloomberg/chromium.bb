@@ -105,7 +105,9 @@ void HttpServerPropertiesManager::SetVersion(
     int version_number) {
   if (version_number < 0)
     version_number =  kVersionNumber;
-  http_server_properties_dict->SetInteger("version", version_number);
+  DCHECK_LE(version_number, kVersionNumber);
+  if (version_number <= kVersionNumber)
+    http_server_properties_dict->SetInteger("version", version_number);
 }
 
 // This is required for conformance with the HttpServerProperties interface.
@@ -283,6 +285,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
     return;
   }
 
+  // TODO(rtenneti): Mark entries with an LRU sequence number (date of access?),
+  // and then truncate down deleting old stuff.
   if (version != kVersionNumber && servers_dict->size() > 300) {
     DVLOG(1) << "Size is too large. Clearing all properties.";
     return;
