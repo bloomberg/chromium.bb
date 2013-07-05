@@ -75,7 +75,8 @@ void ShillDeviceClientStub::SetProperty(const dbus::ObjectPath& device_path,
                                         const base::Closure& callback,
                                         const ErrorCallback& error_callback){
   base::DictionaryValue* device_properties = NULL;
-  if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
+  if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
+                                                       &device_properties)) {
     std::string error_name("org.chromium.flimflam.Error.Failure");
     std::string error_message("Failed");
     if (!error_callback.is_null()) {
@@ -86,7 +87,7 @@ void ShillDeviceClientStub::SetProperty(const dbus::ObjectPath& device_path,
     }
     return;
   }
-  device_properties->Set(name, value.DeepCopy());
+  device_properties->SetWithoutPathExpansion(name, value.DeepCopy());
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ShillDeviceClientStub::NotifyObserversPropertyChanged,
@@ -101,11 +102,12 @@ void ShillDeviceClientStub::ClearProperty(
     const std::string& name,
     const VoidDBusMethodCallback& callback){
   base::DictionaryValue* device_properties = NULL;
-  if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
+  if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
+                                                       &device_properties)) {
     PostVoidCallback(callback, DBUS_METHOD_CALL_FAILURE);
     return;
   }
-  device_properties->Remove(name, NULL);
+  device_properties->RemoveWithoutPathExpansion(name, NULL);
   PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
 }
 
@@ -310,7 +312,7 @@ base::DictionaryValue* ShillDeviceClientStub::GetDeviceProperties(
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(
       device_path, &properties)) {
     properties = new base::DictionaryValue;
-    stub_devices_.Set(device_path, properties);
+    stub_devices_.SetWithoutPathExpansion(device_path, properties);
   }
   return properties;
 }
