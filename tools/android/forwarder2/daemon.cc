@@ -141,7 +141,7 @@ scoped_ptr<Socket> ConnectToUnixDomainSocket(
     char buf[kBufferSize];
     DCHECK(expected_welcome_message.length() + 1 <= sizeof(buf));
     memset(buf, 0, sizeof(buf));
-    if (socket->Read(buf, sizeof(buf)) < 0) {
+    if (socket->Read(buf, expected_welcome_message.length() + 1) < 0) {
       perror("read");
       continue;
     }
