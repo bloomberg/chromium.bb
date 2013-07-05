@@ -2498,6 +2498,10 @@ weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y)
 	pixman_region32_init(&plane->clip);
 	plane->x = x;
 	plane->y = y;
+
+	/* Init the link so that the call to wl_list_remove() when releasing
+	 * the plane without ever stacking doesn't lead to a crash */
+	wl_list_init(&plane->link);
 }
 
 WL_EXPORT void
@@ -2505,6 +2509,8 @@ weston_plane_release(struct weston_plane *plane)
 {
 	pixman_region32_fini(&plane->damage);
 	pixman_region32_fini(&plane->clip);
+
+	wl_list_remove(&plane->link);
 }
 
 WL_EXPORT void
