@@ -503,8 +503,8 @@ void SimpleBackendImpl::OnEntryOpenedFromKey(
     int error_code) {
   int final_code = error_code;
   if (final_code == net::OK) {
-    if (key.compare(simple_entry->key()) != 0) {
-      // TODO(clamy): Add an histogram to record key mismatches.
+    bool key_matches = key.compare(simple_entry->key()) == 0;
+    if (!key_matches) {
       DLOG(WARNING) << "Key mismatch on open.";
       simple_entry->Doom();
       simple_entry->Close();
@@ -512,6 +512,7 @@ void SimpleBackendImpl::OnEntryOpenedFromKey(
     } else {
       DCHECK_EQ(simple_entry->entry_hash(), simple_util::GetEntryHashKey(key));
     }
+    UMA_HISTOGRAM_BOOLEAN("SimpleCache.KeyMatchedOnOpen", key_matches);
   }
   CallCompletionCallback(callback, final_code);
 }

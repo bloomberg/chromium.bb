@@ -11656,6 +11656,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.KeyMatchedOnOpen" enum="BooleanMatched">
+  <summary>
+    For each call to OpenEntry, whether the key on disk matched the request key.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
   <summary>
@@ -18561,7 +18567,7 @@ other types of suffix sets.
   <int value="3" label="Bad Magic Number"/>
   <int value="4" label="Bad Version"/>
   <int value="5" label="Can't Read Key"/>
-  <int value="6" label="Key Mismatch"/>
+  <int value="6" label="Key Mismatch (obsolete)"/>
   <int value="7" label="Hash Mismatch"/>
 </enum>
 
