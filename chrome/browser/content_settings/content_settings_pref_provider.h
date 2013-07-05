@@ -32,7 +32,7 @@ namespace content_settings {
 // preference.
 class PrefProvider : public ObservableProvider {
  public:
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   PrefProvider(PrefService* prefs, bool incognito);
   virtual ~PrefProvider();

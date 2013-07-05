@@ -115,7 +115,7 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
 
-void MediaCaptureDevicesDispatcher::RegisterUserPrefs(
+void MediaCaptureDevicesDispatcher::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
       prefs::kDefaultAudioCaptureDevice,

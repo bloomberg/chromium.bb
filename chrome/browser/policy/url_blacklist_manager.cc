@@ -391,7 +391,7 @@ bool URLBlacklistManager::IsRequestBlocked(
 }
 
 // static
-void URLBlacklistManager::RegisterUserPrefs(
+void URLBlacklistManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kUrlBlacklist,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

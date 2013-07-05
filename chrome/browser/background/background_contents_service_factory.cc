@@ -42,7 +42,7 @@ BackgroundContentsServiceFactory::BuildServiceInstanceFor(
                                        CommandLine::ForCurrentProcess());
 }
 
-void BackgroundContentsServiceFactory::RegisterUserPrefs(
+void BackgroundContentsServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterDictionaryPref(
       prefs::kRegisteredBackgroundContents,

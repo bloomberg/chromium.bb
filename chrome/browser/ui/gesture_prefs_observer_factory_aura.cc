@@ -452,7 +452,7 @@ void GesturePrefsObserverFactoryAura::RegisterWorkspaceCyclerPrefs(
 #endif  // USE_ASH
 }
 
-void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
+void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient0,

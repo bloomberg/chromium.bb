@@ -43,6 +43,9 @@ class RecommendationRestorerTest : public testing::Test {
   // testing::Test:
   virtual void SetUp() OVERRIDE;
 
+  void RegisterUserProfilePrefs();
+  void RegisterLoginProfilePrefs();
+
   void SetRecommendedValues();
   void SetUserSettings();
 
@@ -91,12 +94,19 @@ RecommendationRestorerTest::RecommendationRestorerTest()
       runner_handler_(runner_),
       prefs_owner_(prefs_),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
-  chrome::RegisterUserPrefs(prefs_->registry());
 }
 
 void RecommendationRestorerTest::SetUp() {
   testing::Test::SetUp();
   ASSERT_TRUE(profile_manager_.SetUp());
+}
+
+void RecommendationRestorerTest::RegisterUserProfilePrefs() {
+  chrome::RegisterUserProfilePrefs(prefs_->registry());
+}
+
+void RecommendationRestorerTest::RegisterLoginProfilePrefs() {
+  chrome::RegisterLoginProfilePrefs(prefs_->registry());
 }
 
 void RecommendationRestorerTest::SetRecommendedValues() {
@@ -218,6 +228,7 @@ TEST_F(RecommendationRestorerTest, CreateForUserProfile) {
   // it does not start listening for any notifications, does not clear user
   // settings on initialization and does not start a timer that will clear user
   // settings eventually.
+  RegisterUserProfilePrefs();
   SetRecommendedValues();
   SetUserSettings();
 
@@ -232,6 +243,7 @@ TEST_F(RecommendationRestorerTest, NoRecommendations) {
   // RecommendationRestorer is created for the login profile, it does not clear
   // user settings on initialization and does not start a timer that will clear
   // user settings eventually.
+  RegisterLoginProfilePrefs();
   SetUserSettings();
 
   CreateLoginProfile();
@@ -243,6 +255,7 @@ TEST_F(RecommendationRestorerTest, RestoreOnStartup) {
   // Verifies that when recommended values have been set and a
   // RecommendationRestorer is created for the login profile, it clears user
   // settings on initialization.
+  RegisterLoginProfilePrefs();
   SetRecommendedValues();
   SetUserSettings();
 
@@ -254,6 +267,7 @@ TEST_F(RecommendationRestorerTest, RestoreOnStartup) {
 TEST_F(RecommendationRestorerTest, RestoreOnRecommendationChangeOnLoginScreen) {
   // Verifies that if recommended values change while the login screen is being
   // shown, a timer is started that will clear user settings eventually.
+  RegisterLoginProfilePrefs();
   SetUserSettings();
 
   CreateLoginProfile();
@@ -305,6 +319,7 @@ TEST_F(RecommendationRestorerTest, RestoreOnRecommendationChangeOnLoginScreen) {
 TEST_F(RecommendationRestorerTest, RestoreOnRecommendationChangeInUserSession) {
   // Verifies that if recommended values change while a user session is in
   // progress, user settings are cleared immediately.
+  RegisterLoginProfilePrefs();
   SetUserSettings();
 
   CreateLoginProfile();
@@ -348,6 +363,7 @@ TEST_F(RecommendationRestorerTest, DoNothingOnUserChange) {
   // Verifies that if no recommended values have been set and user settings
   // change, the user settings are not cleared immediately and no timer is
   // started that will clear the user settings eventually.
+  RegisterLoginProfilePrefs();
   CreateLoginProfile();
 
   prefs_->SetBoolean(prefs::kLargeCursorEnabled, true);
@@ -383,6 +399,7 @@ TEST_F(RecommendationRestorerTest, RestoreOnUserChange) {
   // Verifies that if recommended values have been set and user settings change
   // while the login screen is being shown, a timer is started that will clear
   // the user settings eventually.
+  RegisterLoginProfilePrefs();
   SetRecommendedValues();
 
   CreateLoginProfile();
@@ -436,6 +453,7 @@ TEST_F(RecommendationRestorerTest, RestoreOnSessionStart) {
   // changed and a session is then started, the user settings are cleared
   // immediately and the timer that would have cleared them eventually on the
   // login screen is stopped.
+  RegisterLoginProfilePrefs();
   SetRecommendedValues();
 
   CreateLoginProfile();
@@ -450,6 +468,7 @@ TEST_F(RecommendationRestorerTest, DoNothingOnSessionStart) {
   // Verifies that if recommended values have not been set, user settings have
   // changed and a session is then started, the user settings are not cleared
   // immediately.
+  RegisterLoginProfilePrefs();
   CreateLoginProfile();
   SetUserSettings();
 
@@ -460,6 +479,8 @@ TEST_F(RecommendationRestorerTest, DoNothingOnSessionStart) {
 
 TEST_F(RecommendationRestorerTest, UserActivityResetsTimer) {
   // Verifies that user activity resets the timer which clears user settings.
+  RegisterLoginProfilePrefs();
+
   recommended_prefs_->SetBoolean(prefs::kLargeCursorEnabled, false);
 
   CreateLoginProfile();

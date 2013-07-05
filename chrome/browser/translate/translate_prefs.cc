@@ -285,7 +285,7 @@ bool TranslatePrefs::ShouldAutoTranslate(PrefService* user_prefs,
 }
 
 // static
-void TranslatePrefs::RegisterUserPrefs(
+void TranslatePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(kPrefTranslateLanguageBlacklist,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

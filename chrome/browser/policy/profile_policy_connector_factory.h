@@ -73,7 +73,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
       content::BrowserContext* context) OVERRIDE;
   virtual void BrowserContextDestroyed(
       content::BrowserContext* context) OVERRIDE;
-  virtual void RegisterUserPrefs(
+  virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual void SetEmptyTestingFactory(
       content::BrowserContext* context) OVERRIDE;

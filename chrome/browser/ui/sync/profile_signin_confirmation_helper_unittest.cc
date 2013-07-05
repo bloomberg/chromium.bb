@@ -131,7 +131,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
         new TestingPrefStore(),
         new user_prefs::PrefRegistrySyncable(),
         new PrefNotifierImpl());
-    chrome::RegisterUserPrefs(pref_service->registry());
+    chrome::RegisterUserProfilePrefs(pref_service->registry());
     builder.SetPrefService(make_scoped_ptr<PrefServiceSyncable>(pref_service));
     profile_ = builder.Build();
 

@@ -197,7 +197,7 @@ bool NotificationPermissionInfoBarDelegate::Cancel() {
 // DesktopNotificationService -------------------------------------------------
 
 // static
-void DesktopNotificationService::RegisterUserPrefs(
+void DesktopNotificationService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

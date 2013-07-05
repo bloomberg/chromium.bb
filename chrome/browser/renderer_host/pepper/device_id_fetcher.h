@@ -40,7 +40,7 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
   bool Start(const IDCallback& callback);
 
   // Called to register the |kEnableDRM| and |kDRMSalt| preferences.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* prefs);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
   // Return the path where the legacy device ID is stored (for ChromeOS only).
   static base::FilePath GetLegacyDeviceIDPath(

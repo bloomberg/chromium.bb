@@ -47,7 +47,7 @@ class InvalidatorStorageTest : public testing::Test {
         kAutofillId_(kChromeSyncSourceId, "AUTOFILL") {}
 
   virtual void SetUp() {
-    InvalidatorStorage::RegisterUserPrefs(pref_service_.registry());
+    InvalidatorStorage::RegisterProfilePrefs(pref_service_.registry());
   }
 
  protected:

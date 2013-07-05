@@ -34,7 +34,7 @@ class OAuth2LoginManager : public OAuthLoginManager,
   explicit OAuth2LoginManager(OAuthLoginManager::Delegate* delegate);
   virtual ~OAuth2LoginManager();
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // OAuthLoginManager overrides.
   virtual void RestoreSession(

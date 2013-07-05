@@ -252,7 +252,7 @@ bool ChromeToMobileService::UpdateAndGetCommandState(Browser* browser) {
 }
 
 // static
-void ChromeToMobileService::RegisterUserPrefs(
+void ChromeToMobileService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kChromeToMobileDeviceList,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

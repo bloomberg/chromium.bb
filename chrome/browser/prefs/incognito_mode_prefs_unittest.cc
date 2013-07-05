@@ -11,7 +11,7 @@
 class IncognitoModePrefsTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    IncognitoModePrefs::RegisterUserPrefs(prefs_.registry());
+    IncognitoModePrefs::RegisterProfilePrefs(prefs_.registry());
   }
 
   TestingPrefServiceSyncable prefs_;

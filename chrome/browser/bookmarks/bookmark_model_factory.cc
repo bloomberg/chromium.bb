@@ -49,7 +49,7 @@ BrowserContextKeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   return bookmark_model;
 }
 
-void BookmarkModelFactory::RegisterUserPrefs(
+void BookmarkModelFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Don't sync this, as otherwise, due to a limitation in sync, it
   // will cause a deadlock (see http://crbug.com/97955).  If we truly

@@ -108,7 +108,7 @@ void ProfilePolicyConnectorFactory::BrowserContextDestroyed(
   BrowserContextKeyedBaseFactory::BrowserContextDestroyed(context);
 }
 
-void ProfilePolicyConnectorFactory::RegisterUserPrefs(
+void ProfilePolicyConnectorFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(

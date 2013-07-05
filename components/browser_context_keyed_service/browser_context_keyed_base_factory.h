@@ -64,7 +64,8 @@ BrowserContextKeyedBaseFactory
   // Register any user preferences on this service. This is called during
   // CreateBrowserContextService() since preferences are registered on a per
   // BrowserContext basis.
-  virtual void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {}
+  virtual void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) {}
 
   // By default, we create instances of a service lazily and wait until
   // GetForBrowserContext() is called on our subclass. Some services need to be

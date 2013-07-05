@@ -39,7 +39,7 @@ void InitCountryCode(const std::string& country_code);
 
 #endif
 
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Returns the current version of the prepopulate data, so callers can know when
 // they need to re-merge. If the prepopulate data comes from the preferences

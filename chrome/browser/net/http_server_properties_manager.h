@@ -67,7 +67,7 @@ class HttpServerPropertiesManager
   void ShutdownOnUIThread();
 
   // Register |prefs| for properties managed here.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Helper function for unit tests to set the version in the dictionary.
   static void SetVersion(base::DictionaryValue* http_server_properties_dict,

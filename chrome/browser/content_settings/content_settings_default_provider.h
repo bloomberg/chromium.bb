@@ -28,7 +28,7 @@ namespace content_settings {
 // default values.
 class DefaultProvider : public ObservableProvider {
  public:
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   DefaultProvider(PrefService* prefs,
                   bool incognito);

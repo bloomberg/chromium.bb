@@ -140,14 +140,14 @@ TEST_F(PrefProviderTest, Incognito) {
       new user_prefs::PrefRegistrySyncable);
   PrefServiceSyncable* regular_prefs = builder.CreateSyncable(registry.get());
 
-  chrome::RegisterUserPrefs(registry.get());
+  chrome::RegisterUserProfilePrefs(registry.get());
 
   builder.WithUserPrefs(otr_user_prefs);
   scoped_refptr<user_prefs::PrefRegistrySyncable> otr_registry(
       new user_prefs::PrefRegistrySyncable);
   PrefServiceSyncable* otr_prefs = builder.CreateSyncable(otr_registry.get());
 
-  chrome::RegisterUserPrefs(otr_registry.get());
+  chrome::RegisterUserProfilePrefs(otr_registry.get());
 
   TestingProfile::Builder profile_builder;
   profile_builder.SetPrefService(make_scoped_ptr(regular_prefs));
@@ -420,7 +420,7 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
 // http://crosbug.com/17760
 TEST_F(PrefProviderTest, Deadlock) {
   TestingPrefServiceSyncable prefs;
-  PrefProvider::RegisterUserPrefs(prefs.registry());
+  PrefProvider::RegisterProfilePrefs(prefs.registry());
 
   // Chain of events: a preference changes, |PrefProvider| notices it, and reads
   // and writes the preference. When the preference is written, a notification

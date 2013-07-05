@@ -36,9 +36,9 @@ MediaGalleriesPreferencesFactory::BuildServiceInstanceFor(
   return new chrome::MediaGalleriesPreferences(static_cast<Profile*>(profile));
 }
 
-void MediaGalleriesPreferencesFactory::RegisterUserPrefs(
+void MediaGalleriesPreferencesFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  chrome::MediaGalleriesPreferences::RegisterUserPrefs(prefs);
+  chrome::MediaGalleriesPreferences::RegisterProfilePrefs(prefs);
 }
 
 content::BrowserContext*

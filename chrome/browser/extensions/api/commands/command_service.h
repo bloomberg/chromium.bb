@@ -46,7 +46,7 @@ class CommandService : public ProfileKeyedAPI,
   };
 
   // Register prefs for keybinding.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Constructs a CommandService object for the given profile.
   explicit CommandService(Profile* profile);

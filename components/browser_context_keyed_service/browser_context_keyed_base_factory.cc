@@ -58,7 +58,7 @@ void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContext(
   // TestingBrowserContexts throw a wrench into the mix, in that some tests will
   // swap out the PrefService after we've registered user prefs on the original
   // PrefService. Test code that does this is responsible for either manually
-  // invoking RegisterUserPrefs() on the appropriate
+  // invoking RegisterProfilePrefs() on the appropriate
   // BrowserContextKeyedServiceFactory associated with the prefs they need,
   // or they can use SetTestingFactory() and create a service (since service
   // creation with a factory method causes registration to happen at service
@@ -77,7 +77,7 @@ void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContext(
     user_prefs::PrefRegistrySyncable* registry =
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs->DeprecatedGetPrefRegistry());
-    RegisterUserPrefs(registry);
+    RegisterProfilePrefs(registry);
     registered_preferences_.insert(context);
   }
 }

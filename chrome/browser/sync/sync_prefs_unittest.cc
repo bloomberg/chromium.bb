@@ -24,7 +24,7 @@ using ::testing::StrictMock;
 class SyncPrefsTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    SyncPrefs::RegisterUserPrefs(pref_service_.registry());
+    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   }
 
   TestingPrefServiceSyncable pref_service_;

@@ -117,7 +117,7 @@ const PrefsForManagedContentSettingsMapEntry
 namespace content_settings {
 
 // static
-void PolicyProvider::RegisterUserPrefs(
+void PolicyProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kManagedAutoSelectCertificateForUrls,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

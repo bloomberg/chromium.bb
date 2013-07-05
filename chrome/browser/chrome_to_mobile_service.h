@@ -101,7 +101,7 @@ class ChromeToMobileService : public BrowserContextKeyedService,
   static bool UpdateAndGetCommandState(Browser* browser);
 
   // Register the user prefs associated with this service.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   explicit ChromeToMobileService(Profile* profile);
   virtual ~ChromeToMobileService();

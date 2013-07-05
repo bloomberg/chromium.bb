@@ -73,7 +73,7 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers a new managed user with the server. |info| contains necessary
   // information like the display name of the  the user. |callback| is called

@@ -59,7 +59,7 @@ UserPolicySigninServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
-void UserPolicySigninServiceFactory::RegisterUserPrefs(
+void UserPolicySigninServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterBooleanPref(
       prefs::kDisableCloudPolicyOnSignin,

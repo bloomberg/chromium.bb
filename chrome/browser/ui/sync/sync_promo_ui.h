@@ -54,7 +54,7 @@ class SyncPromoUI {
   static void SetUserSkippedSyncPromo(Profile* profile);
 
   // Registers the preferences the Sync Promo UI needs.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Gets the sync landing page URL.
   static std::string GetSyncLandingURL(const char* option, int value);

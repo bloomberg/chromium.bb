@@ -1873,7 +1873,7 @@ void TabsCaptureVisibleTabFunction::SendResultFromBitmap(
   SendResponse(true);
 }
 
-void TabsCaptureVisibleTabFunction::RegisterUserPrefs(
+void TabsCaptureVisibleTabFunction::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kDisableScreenshots,

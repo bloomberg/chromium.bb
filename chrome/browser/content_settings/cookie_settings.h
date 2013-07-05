@@ -99,7 +99,7 @@ class CookieSettings : public RefcountedBrowserContextKeyedService {
       bool setting_cookie,
       content_settings::SettingSource* source) const;
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   class Factory : public RefcountedBrowserContextKeyedServiceFactory {
    public:
@@ -117,7 +117,7 @@ class CookieSettings : public RefcountedBrowserContextKeyedService {
     virtual ~Factory();
 
     // |BrowserContextKeyedBaseFactory| methods:
-    virtual void RegisterUserPrefs(
+    virtual void RegisterProfilePrefs(
         user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
     virtual content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const OVERRIDE;

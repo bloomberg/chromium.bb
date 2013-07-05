@@ -462,7 +462,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // found.
   base::Time GetInstallTime(const std::string& extension_id) const;
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   bool extensions_disabled() { return extensions_disabled_; }
 

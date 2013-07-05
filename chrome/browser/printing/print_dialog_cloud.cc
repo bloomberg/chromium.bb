@@ -689,7 +689,7 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
 
 namespace print_dialog_cloud {
 
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kCloudPrintDialogWidth,
       kDefaultWidth,

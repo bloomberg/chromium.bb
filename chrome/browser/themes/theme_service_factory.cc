@@ -66,7 +66,7 @@ BrowserContextKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
   return provider;
 }
 
-void ThemeServiceFactory::RegisterUserPrefs(
+void ThemeServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   bool default_uses_system_theme = false;

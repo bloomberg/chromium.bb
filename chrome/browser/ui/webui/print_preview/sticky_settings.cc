@@ -59,7 +59,7 @@ void StickySettings::RestoreFromPrefs(PrefService* prefs) {
   }
 }
 
-void StickySettings::RegisterUserPrefs(
+void StickySettings::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
       prefs::kPrintPreviewStickySettings,

@@ -707,7 +707,7 @@ void ProtocolHandlerRegistry::Shutdown() {
 }
 
 // static
-void ProtocolHandlerRegistry::RegisterUserPrefs(
+void ProtocolHandlerRegistry::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kRegisteredProtocolHandlers,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

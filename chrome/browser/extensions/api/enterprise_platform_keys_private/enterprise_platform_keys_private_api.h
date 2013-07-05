@@ -169,7 +169,7 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
       chromeos::attestation::AttestationFlow* attestation_flow,
       policy::EnterpriseInstallAttributes* install_attributes);
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
   virtual bool RunImpl() OVERRIDE;

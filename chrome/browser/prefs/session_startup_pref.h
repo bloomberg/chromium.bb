@@ -44,7 +44,7 @@ struct SessionStartupPref {
   static const int kPrefValueURLs = 4;
   static const int kPrefValueNewTab = 5;
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the default value for |type|.
   static Type GetDefaultStartupType();

@@ -138,7 +138,7 @@ void HostContentSettingsMap::RegisterExtensionService(
 #endif
 
 // static
-void HostContentSettingsMap::RegisterUserPrefs(
+void HostContentSettingsMap::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kContentSettingsWindowLastTabIndex,
@@ -154,9 +154,9 @@ void HostContentSettingsMap::RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
-  content_settings::DefaultProvider::RegisterUserPrefs(registry);
-  content_settings::PrefProvider::RegisterUserPrefs(registry);
-  content_settings::PolicyProvider::RegisterUserPrefs(registry);
+  content_settings::DefaultProvider::RegisterProfilePrefs(registry);
+  content_settings::PrefProvider::RegisterProfilePrefs(registry);
+  content_settings::PolicyProvider::RegisterProfilePrefs(registry);
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(

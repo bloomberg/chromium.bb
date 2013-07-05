@@ -46,7 +46,7 @@ class PasswordGenerationManager
       public content::WebContentsUserData<PasswordGenerationManager> {
  public:
   static void CreateForWebContents(content::WebContents* contents);
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   virtual ~PasswordGenerationManager();
 
  protected:

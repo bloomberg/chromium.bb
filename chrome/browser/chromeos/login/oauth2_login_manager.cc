@@ -39,7 +39,7 @@ OAuth2LoginManager::OAuth2LoginManager(OAuthLoginManager::Delegate* delegate)
 OAuth2LoginManager::~OAuth2LoginManager() {
 }
 
-void OAuth2LoginManager::RegisterUserPrefs(
+void OAuth2LoginManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
       kOAuth1Token, "", user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

@@ -39,7 +39,7 @@ class UserPolicySigninServiceFactory
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
 
   // Register the preferences related to cloud-based user policy.
-  virtual void RegisterUserPrefs(
+  virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
  private:

@@ -87,7 +87,7 @@ void ProxyConfigServiceImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void ProxyConfigServiceImpl::RegisterUserPrefs(
+void ProxyConfigServiceImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kUseSharedProxies,

@@ -53,7 +53,7 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   };
 
   // Register profile-specific prefs of notifications.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* prefs);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
   DesktopNotificationService(Profile* profile,
                              NotificationUIManager* ui_manager);

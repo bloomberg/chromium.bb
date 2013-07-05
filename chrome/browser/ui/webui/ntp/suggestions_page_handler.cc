@@ -192,7 +192,7 @@ std::string SuggestionsHandler::GetDictionaryKeyForURL(const std::string& url) {
 }
 
 // static
-void SuggestionsHandler::RegisterUserPrefs(
+void SuggestionsHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(georgey) add user preferences (such as own blacklist) as needed.
 }

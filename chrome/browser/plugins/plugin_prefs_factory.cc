@@ -51,7 +51,7 @@ PluginPrefsFactory::BuildServiceInstanceFor(
   return plugin_prefs;
 }
 
-void PluginPrefsFactory::RegisterUserPrefs(
+void PluginPrefsFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   base::FilePath internal_dir;
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);

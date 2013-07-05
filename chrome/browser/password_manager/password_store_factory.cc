@@ -195,7 +195,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   return ps;
 }
 
-void PasswordStoreFactory::RegisterUserPrefs(
+void PasswordStoreFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_CHROMEOS) && defined(USE_X11)
   registry->RegisterIntegerPref(
@@ -205,7 +205,7 @@ void PasswordStoreFactory::RegisterUserPrefs(
 
   // Notice that the preprocessor conditions above are exactly those that will
   // result in using PasswordStoreX in CreatePasswordStore() below.
-  PasswordStoreX::RegisterUserPrefs(registry);
+  PasswordStoreX::RegisterProfilePrefs(registry);
 #endif
 }
 

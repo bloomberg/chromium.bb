@@ -170,7 +170,7 @@ void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {
 }
 
 // static
-void NewTabPageHandler::RegisterUserPrefs(
+void NewTabPageHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(estade): should be syncable.
   registry->RegisterIntegerPref(

@@ -61,7 +61,7 @@ class NetworkProfileBubble {
   static void SetNotificationShown(bool shown);
 
   // Register the pref that controls whether the bubble should be shown anymore.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Helper function wrapping the UMA_HISTOGRAM_ENUMERATION macro.
   static void RecordUmaEvent(MetricNetworkedProfileCheck event);

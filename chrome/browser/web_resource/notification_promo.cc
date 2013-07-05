@@ -316,7 +316,7 @@ void NotificationPromo::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void NotificationPromo::RegisterUserPrefs(
+void NotificationPromo::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(dbeam): Registered only for migration. Remove in M28 when
   // we're reasonably sure all prefs are gone.

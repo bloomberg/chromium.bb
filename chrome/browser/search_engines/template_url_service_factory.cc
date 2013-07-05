@@ -47,7 +47,7 @@ BrowserContextKeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
   return BuildInstanceFor(static_cast<Profile*>(profile));
 }
 
-void TemplateURLServiceFactory::RegisterUserPrefs(
+void TemplateURLServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kSyncedDefaultSearchProviderGUID,
                                std::string(),

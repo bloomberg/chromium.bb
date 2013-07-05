@@ -123,7 +123,7 @@ class PrefProxyConfigTrackerImpl {
   // Registers the proxy preferences. These are actually registered
   // the same way in local state and in user prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Creates a proxy configuration from proxy-related preferences of
   // |pref_service|. Configuration is stored in |config|, return value indicates

@@ -28,7 +28,7 @@ class PolicyProvider : public ObservableProvider {
  public:
   explicit PolicyProvider(PrefService* prefs);
   virtual ~PolicyProvider();
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // ProviderInterface implementations.
   virtual RuleIterator* GetRuleIterator(

@@ -73,7 +73,7 @@ ChromeGeolocationPermissionContextFactory::BuildServiceInstanceFor(
   return new Service(static_cast<Profile*>(profile));
 }
 
-void ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(
+void ChromeGeolocationPermissionContextFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
   registry->RegisterBooleanPref(

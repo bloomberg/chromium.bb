@@ -20,7 +20,7 @@ class PrefRegistrySyncable;
 class ChromeVersionService {
  public:
   // Register the user pref we use.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Sets the version string in the pref for the current profile.
   static void SetVersion(PrefService* prefs, const std::string& version);

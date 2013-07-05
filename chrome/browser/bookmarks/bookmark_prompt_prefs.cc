@@ -33,7 +33,7 @@ bool BookmarkPromptPrefs::IsBookmarkPromptEnabled() const {
 }
 
 // static
-void BookmarkPromptPrefs::RegisterUserPrefs(
+void BookmarkPromptPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // We always register preferences without checking FieldTrial, because
   // we may not receive field trial list from the server yet.

@@ -89,7 +89,7 @@ ManagedUserRegistrationService::~ManagedUserRegistrationService() {
 }
 
 // static
-void ManagedUserRegistrationService::RegisterUserPrefs(
+void ManagedUserRegistrationService::RegisterProfilePrefs(
     PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kManagedUsers,
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);

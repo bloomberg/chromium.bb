@@ -92,7 +92,7 @@ void HttpServerPropertiesManager::ShutdownOnUIThread() {
 }
 
 // static
-void HttpServerPropertiesManager::RegisterUserPrefs(
+void HttpServerPropertiesManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterDictionaryPref(
       prefs::kHttpServerProperties,

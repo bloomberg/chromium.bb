@@ -60,7 +60,7 @@ class ExtensionWebUI : public content::WebUIController {
                                           const base::Value* override);
 
   // Called from BrowserPrefs
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Get the favicon for the extension by getting an icon from the manifest.
   // Note. |callback| is always run asynchronously.

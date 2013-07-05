@@ -76,7 +76,7 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
                              const std::string& languages);
 
 // Register user preferences for Bookmarks Bar.
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Returns the parent for newly created folders/bookmarks. If |selection| has
 // one element and it is a folder, |selection[0]| is returned, otherwise

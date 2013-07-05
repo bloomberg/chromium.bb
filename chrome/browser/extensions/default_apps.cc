@@ -50,7 +50,7 @@ bool IsLocaleSupported() {
 
 namespace default_apps {
 
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kDefaultAppsInstallState,
       kUnknown,

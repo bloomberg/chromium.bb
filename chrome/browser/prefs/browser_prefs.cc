@@ -279,67 +279,68 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 }
 
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+// Register prefs applicable to all profiles.
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   TRACE_EVENT0("browser", "chrome::RegisterUserPrefs");
   // User prefs. Please keep this list alphabetized.
-  AlternateErrorPageTabObserver::RegisterUserPrefs(registry);
-  apps::RegisterUserPrefs(registry);
-  autofill::AutofillDialogControllerImpl::RegisterUserPrefs(registry);
-  autofill::AutofillManager::RegisterUserPrefs(registry);
-  BookmarkPromptPrefs::RegisterUserPrefs(registry);
-  bookmark_utils::RegisterUserPrefs(registry);
-  browser_sync::SyncPrefs::RegisterUserPrefs(registry);
+  AlternateErrorPageTabObserver::RegisterProfilePrefs(registry);
+  apps::RegisterProfilePrefs(registry);
+  autofill::AutofillDialogControllerImpl::RegisterProfilePrefs(registry);
+  autofill::AutofillManager::RegisterProfilePrefs(registry);
+  BookmarkPromptPrefs::RegisterProfilePrefs(registry);
+  bookmark_utils::RegisterProfilePrefs(registry);
+  browser_sync::SyncPrefs::RegisterProfilePrefs(registry);
   chrome::RegisterInstantUserPrefs(registry);
-  ChromeContentBrowserClient::RegisterUserPrefs(registry);
-  ChromeVersionService::RegisterUserPrefs(registry);
-  chrome_browser_net::HttpServerPropertiesManager::RegisterUserPrefs(
+  ChromeContentBrowserClient::RegisterProfilePrefs(registry);
+  ChromeVersionService::RegisterProfilePrefs(registry);
+  chrome_browser_net::HttpServerPropertiesManager::RegisterProfilePrefs(
       registry);
-  chrome_browser_net::Predictor::RegisterUserPrefs(registry);
-  DownloadPrefs::RegisterUserPrefs(registry);
-  extensions::ExtensionPrefs::RegisterUserPrefs(registry);
-  ExtensionWebUI::RegisterUserPrefs(registry);
-  first_run::RegisterUserPrefs(registry);
-  HostContentSettingsMap::RegisterUserPrefs(registry);
-  IncognitoModePrefs::RegisterUserPrefs(registry);
-  InstantUI::RegisterUserPrefs(registry);
-  MediaCaptureDevicesDispatcher::RegisterUserPrefs(registry);
-  MediaStreamDevicesController::RegisterUserPrefs(registry);
-  NetPrefObserver::RegisterUserPrefs(registry);
-  NewTabUI::RegisterUserPrefs(registry);
-  PasswordGenerationManager::RegisterUserPrefs(registry);
-  PasswordManager::RegisterUserPrefs(registry);
-  PrefProxyConfigTrackerImpl::RegisterUserPrefs(registry);
-  PrefsTabHelper::RegisterUserPrefs(registry);
-  Profile::RegisterUserPrefs(registry);
-  ProfileImpl::RegisterUserPrefs(registry);
-  PromoResourceService::RegisterUserPrefs(registry);
-  ProtocolHandlerRegistry::RegisterUserPrefs(registry);
+  chrome_browser_net::Predictor::RegisterProfilePrefs(registry);
+  DownloadPrefs::RegisterProfilePrefs(registry);
+  extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
+  ExtensionWebUI::RegisterProfilePrefs(registry);
+  first_run::RegisterProfilePrefs(registry);
+  HostContentSettingsMap::RegisterProfilePrefs(registry);
+  IncognitoModePrefs::RegisterProfilePrefs(registry);
+  InstantUI::RegisterProfilePrefs(registry);
+  MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
+  MediaStreamDevicesController::RegisterProfilePrefs(registry);
+  NetPrefObserver::RegisterProfilePrefs(registry);
+  NewTabUI::RegisterProfilePrefs(registry);
+  PasswordGenerationManager::RegisterProfilePrefs(registry);
+  PasswordManager::RegisterProfilePrefs(registry);
+  PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
+  PrefsTabHelper::RegisterProfilePrefs(registry);
+  Profile::RegisterProfilePrefs(registry);
+  ProfileImpl::RegisterProfilePrefs(registry);
+  PromoResourceService::RegisterProfilePrefs(registry);
+  ProtocolHandlerRegistry::RegisterProfilePrefs(registry);
   RegisterBrowserUserPrefs(registry);
-  SessionStartupPref::RegisterUserPrefs(registry);
-  TemplateURLPrepopulateData::RegisterUserPrefs(registry);
-  TranslatePrefs::RegisterUserPrefs(registry);
+  SessionStartupPref::RegisterProfilePrefs(registry);
+  TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
+  TranslatePrefs::RegisterProfilePrefs(registry);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::URLBlacklistManager::RegisterUserPrefs(registry);
+  policy::URLBlacklistManager::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService::RegisterUserPrefs(registry);
-  ManagedUserRegistrationService::RegisterUserPrefs(registry);
+  ManagedUserService::RegisterProfilePrefs(registry);
+  ManagedUserRegistrationService::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)
-  DesktopNotificationService::RegisterUserPrefs(registry);
+  DesktopNotificationService::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)
   RegisterInvertBubbleUserPrefs(registry);
 #elif defined(TOOLKIT_GTK)
-  BrowserWindowGtk::RegisterUserPrefs(registry);
+  BrowserWindowGtk::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_ANDROID)
-  PromoHandler::RegisterUserPrefs(registry);
+  PromoHandler::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(USE_ASH)
@@ -347,37 +348,37 @@ void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if !defined(OS_ANDROID)
-  extensions::TabsCaptureVisibleTabFunction::RegisterUserPrefs(registry);
-  ChromeToMobileService::RegisterUserPrefs(registry);
-  DeviceIDFetcher::RegisterUserPrefs(registry);
-  DevToolsWindow::RegisterUserPrefs(registry);
-  extensions::CommandService::RegisterUserPrefs(registry);
-  ExtensionSettingsHandler::RegisterUserPrefs(registry);
-  PepperFlashSettingsManager::RegisterUserPrefs(registry);
-  PinnedTabCodec::RegisterUserPrefs(registry);
-  PluginsUI::RegisterUserPrefs(registry);
-  CloudPrintURL::RegisterUserPrefs(registry);
-  print_dialog_cloud::RegisterUserPrefs(registry);
-  printing::StickySettings::RegisterUserPrefs(registry);
+  extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
+  ChromeToMobileService::RegisterProfilePrefs(registry);
+  DeviceIDFetcher::RegisterProfilePrefs(registry);
+  DevToolsWindow::RegisterProfilePrefs(registry);
+  extensions::CommandService::RegisterProfilePrefs(registry);
+  ExtensionSettingsHandler::RegisterProfilePrefs(registry);
+  PepperFlashSettingsManager::RegisterProfilePrefs(registry);
+  PinnedTabCodec::RegisterProfilePrefs(registry);
+  PluginsUI::RegisterProfilePrefs(registry);
+  CloudPrintURL::RegisterProfilePrefs(registry);
+  print_dialog_cloud::RegisterProfilePrefs(registry);
+  printing::StickySettings::RegisterProfilePrefs(registry);
   RegisterAutolaunchUserPrefs(registry);
-  SyncPromoUI::RegisterUserPrefs(registry);
+  SyncPromoUI::RegisterProfilePrefs(registry);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  default_apps::RegisterUserPrefs(registry);
+  default_apps::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_CHROMEOS)
-  chromeos::OAuth2LoginManager::RegisterUserPrefs(registry);
-  chromeos::Preferences::RegisterUserPrefs(registry);
-  chromeos::ProxyConfigServiceImpl::RegisterUserPrefs(registry);
+  chromeos::OAuth2LoginManager::RegisterProfilePrefs(registry);
+  chromeos::Preferences::RegisterProfilePrefs(registry);
+  chromeos::ProxyConfigServiceImpl::RegisterProfilePrefs(registry);
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
-      RegisterUserPrefs(registry);
-  FlagsUI::RegisterUserPrefs(registry);
+      RegisterProfilePrefs(registry);
+  FlagsUI::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_WIN)
-  NetworkProfileBubble::RegisterUserPrefs(registry);
+  NetworkProfileBubble::RegisterProfilePrefs(registry);
 #endif
 
   // Prefs registered only for migration (clearing or moving to a new
@@ -387,6 +388,16 @@ void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       new DictionaryValue(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
+
+void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  RegisterProfilePrefs(registry);
+}
+
+#if defined(OS_CHROMEOS)
+void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  RegisterProfilePrefs(registry);
+}
+#endif
 
 void MigrateUserPrefs(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();

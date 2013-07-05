@@ -72,7 +72,7 @@ namespace content_settings {
 //
 
 // static
-void PrefProvider::RegisterUserPrefs(
+void PrefProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kContentSettingsVersion,

@@ -827,7 +827,7 @@ bool MediaGalleriesPreferences::APIHasBeenUsed(Profile* profile) {
 }
 
 // static
-void MediaGalleriesPreferences::RegisterUserPrefs(
+void MediaGalleriesPreferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

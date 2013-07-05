@@ -33,7 +33,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   ForeignSessionHandler();
   virtual ~ForeignSessionHandler() {}
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void OpenForeignSessionTab(content::WebUI* web_ui,
                                     const std::string& session_string_value,

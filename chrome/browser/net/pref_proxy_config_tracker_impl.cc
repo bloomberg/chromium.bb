@@ -203,7 +203,7 @@ void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void PrefProxyConfigTrackerImpl::RegisterUserPrefs(
+void PrefProxyConfigTrackerImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* pref_service) {
   DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
   pref_service->RegisterDictionaryPref(

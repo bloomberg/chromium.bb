@@ -164,7 +164,7 @@ bool ManagedUserService::ProfileIsManaged(Profile* profile) {
 }
 
 // static
-void ManagedUserService::RegisterUserPrefs(
+void ManagedUserService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
       prefs::kManagedModeManualHosts,

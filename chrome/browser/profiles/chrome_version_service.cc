@@ -11,7 +11,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 
 // static
-void ChromeVersionService::RegisterUserPrefs(
+void ChromeVersionService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
       prefs::kProfileCreatedByVersion,

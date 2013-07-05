@@ -1681,7 +1681,7 @@ bool ExtensionPrefs::NeedsStorageGarbageCollection() {
 }
 
 // static
-void ExtensionPrefs::RegisterUserPrefs(
+void ExtensionPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
       kExtensionsPref, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

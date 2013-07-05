@@ -464,7 +464,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
   scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry.get()));
-  chrome::RegisterUserPrefs(registry.get());
+  chrome::RegisterUserProfilePrefs(registry.get());
   profile_builder.SetPrefService(prefs.Pass());
   profile_builder.SetPath(params.profile_path);
   profile_ = profile_builder.Build();

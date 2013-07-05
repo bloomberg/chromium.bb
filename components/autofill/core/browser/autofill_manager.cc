@@ -211,7 +211,7 @@ AutofillManager::AutofillManager(
 AutofillManager::~AutofillManager() {}
 
 // static
-void AutofillManager::RegisterUserPrefs(
+void AutofillManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kAutofillEnabled,

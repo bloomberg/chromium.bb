@@ -126,7 +126,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
 }
 
 // static
-void ExtensionSettingsHandler::RegisterUserPrefs(
+void ExtensionSettingsHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kExtensionsUIDeveloperMode,

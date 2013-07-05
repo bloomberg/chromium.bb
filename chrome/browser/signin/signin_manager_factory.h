@@ -41,7 +41,7 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
 
   // Implementation of BrowserContextKeyedServiceFactory (public so tests
   // can call it).
-  virtual void RegisterUserPrefs(
+  virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
   // Registers the browser-global prefs used by SigninManager.

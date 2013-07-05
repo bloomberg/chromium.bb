@@ -57,7 +57,7 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // Register UseShardProxies preference.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
   friend class UIProxyConfigService;

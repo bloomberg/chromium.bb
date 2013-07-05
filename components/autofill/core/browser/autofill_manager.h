@@ -76,7 +76,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   };
 
   // Registers our Enable/Disable Autofill pref.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   AutofillManager(AutofillDriver* driver,
                   autofill::AutofillManagerDelegate* delegate,

@@ -491,7 +491,8 @@ base::RefCountedMemory* PluginsUI::GetFaviconResourceBytes(
 }
 
 // static
-void PluginsUI::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+void PluginsUI::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kPluginsShowDetails,
       false,

@@ -181,7 +181,7 @@ std::string DevToolsWindow::GetDevToolsWindowPlacementPrefKey() {
 }
 
 // static
-void DevToolsWindow::RegisterUserPrefs(
+void DevToolsWindow::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kDevToolsOpenDocked,

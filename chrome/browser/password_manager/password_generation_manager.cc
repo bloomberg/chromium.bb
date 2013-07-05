@@ -47,7 +47,7 @@ void PasswordGenerationManager::CreateForWebContents(
 }
 
 // static
-void PasswordGenerationManager::RegisterUserPrefs(
+void PasswordGenerationManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kPasswordGenerationEnabled,

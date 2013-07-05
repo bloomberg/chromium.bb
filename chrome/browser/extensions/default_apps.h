@@ -34,7 +34,7 @@ enum InstallState {
 
 // Register preference properties used by default apps to maintain
 // install state.
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // A specialization of the ExternalProviderImpl that conditionally installs apps
 // from the chrome::DIR_DEFAULT_APPS location based on a preference in the

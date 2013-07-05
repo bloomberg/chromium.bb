@@ -45,8 +45,8 @@ SyncPrefs::~SyncPrefs() {
 }
 
 // static
-void SyncPrefs::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(joi): Remove |prefs| parameter.
+void SyncPrefs::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kSyncHasSetupCompleted,
       false,

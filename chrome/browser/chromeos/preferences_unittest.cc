@@ -56,8 +56,8 @@ class MyMockInputMethodManager : public input_method::MockInputMethodManager {
 
 TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   TestingPrefServiceSyncable prefs;
-  Preferences::RegisterUserPrefs(prefs.registry());
-  DownloadPrefs::RegisterUserPrefs(prefs.registry());
+  Preferences::RegisterProfilePrefs(prefs.registry());
+  DownloadPrefs::RegisterProfilePrefs(prefs.registry());
   // kSelectFileLastDirectory is registered for Profile. Here we register it for
   // testing.
   prefs.registry()->RegisterStringPref(

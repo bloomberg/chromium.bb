@@ -28,7 +28,7 @@ const char kTestPageURL[] =
     "http://www.google.com/landing/cloudprint/enable.html?print=true";
 
 // static
-void CloudPrintURL::RegisterUserPrefs(
+void CloudPrintURL::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
       prefs::kCloudPrintServiceURL,

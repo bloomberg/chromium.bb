@@ -491,7 +491,7 @@ void PrefsTabHelper::InitIncognitoUserPrefStore(
 }
 
 // static
-void PrefsTabHelper::RegisterUserPrefs(
+void PrefsTabHelper::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   WebPreferences pref_defaults;
   registry->RegisterBooleanPref(

@@ -63,7 +63,7 @@ bool DeviceIDFetcher::Start(const IDCallback& callback) {
 }
 
 // static
-void DeviceIDFetcher::RegisterUserPrefs(
+void DeviceIDFetcher::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   // TODO(wad): Once UI is connected, a final default can be set. At that point
   // change this pref from UNSYNCABLE to SYNCABLE.

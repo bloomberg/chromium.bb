@@ -190,7 +190,7 @@ class TabsDetectLanguageFunction : public AsyncExtensionFunction,
 };
 class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction {
  public:
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
   typedef api::tabs::CaptureVisibleTab::Params::Options::Format ImageFormat;

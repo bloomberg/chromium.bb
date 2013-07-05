@@ -35,7 +35,7 @@ class IncognitoModePrefs {
   };
 
   // Register incognito related preferences.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns kIncognitoModeAvailability preference value stored
   // in the given pref service.

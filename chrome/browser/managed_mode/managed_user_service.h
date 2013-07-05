@@ -63,7 +63,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   // ManagedUserService (which could lead to cyclic dependencies).
   static bool ProfileIsManaged(Profile* profile);
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns true if managed users are enabled by either Finch or the command
   // line flag.

@@ -33,7 +33,7 @@ class FlagsUI : public content::WebUIController {
       ui::ScaleFactor scale_factor);
   static void RegisterPrefs(PrefRegistrySimple* registry);
 #if defined(OS_CHROMEOS)
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #endif
 
  private:

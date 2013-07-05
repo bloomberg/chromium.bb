@@ -23,7 +23,7 @@ class AboutSigninInternalsFactory : public BrowserContextKeyedServiceFactory {
   static AboutSigninInternalsFactory* GetInstance();
 
   // Implementation of BrowserContextKeyedServiceFactory.
-  virtual void RegisterUserPrefs(
+  virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
 
  private:

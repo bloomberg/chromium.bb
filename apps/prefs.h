@@ -17,7 +17,7 @@ namespace apps {
 void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Register per-profile preferences for the apps system.
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace apps
 

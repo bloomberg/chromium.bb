@@ -66,7 +66,7 @@ class PepperFlashSettingsManager {
   static bool IsPepperFlashInUse(PluginPrefs* plugin_prefs,
                                  webkit::WebPluginInfo* plugin_info);
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Requests to deauthorize content licenses.
   // Client::OnDeauthorizeContentLicensesCompleted() will be called when the

@@ -33,7 +33,7 @@ class MediaStreamDevicesController {
   // and the code cleaner.  crbug.com/244389.
 
   // Registers the prefs backing the audio and video policies.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Public method to be called before creating the MediaStreamInfoBarDelegate.
   // This function will check the content settings exceptions and take the

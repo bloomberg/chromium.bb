@@ -37,7 +37,7 @@ AboutSigninInternalsFactory* AboutSigninInternalsFactory::GetInstance() {
   return Singleton<AboutSigninInternalsFactory>::get();
 }
 
-void AboutSigninInternalsFactory::RegisterUserPrefs(
+void AboutSigninInternalsFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   // SigninManager information for about:signin-internals.
   for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {

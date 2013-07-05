@@ -145,7 +145,7 @@ ManagedUserRegistrationServiceTest::ManagedUserRegistrationServiceTest()
       sync_data_id_(0),
       received_callback_(false),
       error_(GoogleServiceAuthError::NUM_STATES) {
-  ManagedUserRegistrationService::RegisterUserPrefs(prefs_.registry());
+  ManagedUserRegistrationService::RegisterProfilePrefs(prefs_.registry());
   scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher(
       new MockManagedUserRefreshTokenFetcher);
   service_.reset(

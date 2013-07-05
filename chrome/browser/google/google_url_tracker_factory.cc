@@ -42,7 +42,7 @@ BrowserContextKeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
                               GoogleURLTracker::NORMAL_MODE);
 }
 
-void GoogleURLTrackerFactory::RegisterUserPrefs(
+void GoogleURLTrackerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterStringPref(
       prefs::kLastKnownGoogleURL,

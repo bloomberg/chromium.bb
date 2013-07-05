@@ -114,7 +114,7 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
 }
 
 // static
-void SyncPromoUI::RegisterUserPrefs(
+void SyncPromoUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kSyncPromoStartupCount,

@@ -95,7 +95,7 @@ MediaStreamDevicesController::~MediaStreamDevicesController() {
 }
 
 // static
-void MediaStreamDevicesController::RegisterUserPrefs(
+void MediaStreamDevicesController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kVideoCaptureAllowed,
                              true,

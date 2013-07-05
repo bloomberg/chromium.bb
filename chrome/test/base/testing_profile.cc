@@ -560,7 +560,7 @@ void TestingProfile::CreateTestingPrefService() {
   testing_prefs_ = new TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
   user_prefs::UserPrefs::Set(this, prefs_.get());
-  chrome::RegisterUserPrefs(testing_prefs_->registry());
+  chrome::RegisterUserProfilePrefs(testing_prefs_->registry());
 }
 
 void TestingProfile::CreateProfilePolicyConnector() {

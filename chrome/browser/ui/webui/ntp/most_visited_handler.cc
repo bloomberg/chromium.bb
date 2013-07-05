@@ -330,7 +330,7 @@ void MostVisitedHandler::RemovePageValuesMatchingOpenTabs() {
 }
 
 // static
-void MostVisitedHandler::RegisterUserPrefs(
+void MostVisitedHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
       prefs::kNtpMostVisitedURLsBlacklist,

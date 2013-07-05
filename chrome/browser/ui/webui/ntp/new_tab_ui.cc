@@ -228,15 +228,16 @@ void NewTabUI::OnShowBookmarkBarChanged() {
 }
 
 // static
-void NewTabUI::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+void NewTabUI::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_ANDROID)
-  AppLauncherHandler::RegisterUserPrefs(registry);
-  NewTabPageHandler::RegisterUserPrefs(registry);
+  AppLauncherHandler::RegisterProfilePrefs(registry);
+  NewTabPageHandler::RegisterProfilePrefs(registry);
   if (NewTabUI::IsDiscoveryInNTPEnabled())
-    SuggestionsHandler::RegisterUserPrefs(registry);
+    SuggestionsHandler::RegisterProfilePrefs(registry);
 #endif
-  MostVisitedHandler::RegisterUserPrefs(registry);
-  browser_sync::ForeignSessionHandler::RegisterUserPrefs(registry);
+  MostVisitedHandler::RegisterProfilePrefs(registry);
+  browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
 }
 
 // static

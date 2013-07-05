@@ -70,7 +70,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void Preferences::RegisterUserPrefs(
+void Preferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.

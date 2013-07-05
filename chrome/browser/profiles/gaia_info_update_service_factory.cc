@@ -39,7 +39,7 @@ GAIAInfoUpdateServiceFactory::BuildServiceInstanceFor(
   return new GAIAInfoUpdateService(profile);
 }
 
-void GAIAInfoUpdateServiceFactory::RegisterUserPrefs(
+void GAIAInfoUpdateServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterInt64Pref(prefs::kProfileGAIAInfoUpdateTime,
                            0,

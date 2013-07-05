@@ -57,7 +57,7 @@ Profile::Delegate::~Delegate() {
 const char Profile::kProfileKey[] = "__PROFILE__";
 
 // static
-void Profile::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kSearchSuggestEnabled,
       true,

@@ -66,7 +66,7 @@ CookieSettings::Factory::Factory()
 
 CookieSettings::Factory::~Factory() {}
 
-void CookieSettings::Factory::RegisterUserPrefs(
+void CookieSettings::Factory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kBlockThirdPartyCookies,

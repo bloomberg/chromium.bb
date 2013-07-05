@@ -66,7 +66,7 @@ ChromeSpeechRecognitionPreferences::Factory::BuildServiceInstanceFor(
       static_cast<Profile*>(profile));
 }
 
-void ChromeSpeechRecognitionPreferences::Factory::RegisterUserPrefs(
+void ChromeSpeechRecognitionPreferences::Factory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(
       prefs::kSpeechRecognitionFilterProfanities,

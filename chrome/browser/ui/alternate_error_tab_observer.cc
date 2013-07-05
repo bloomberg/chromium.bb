@@ -41,7 +41,7 @@ AlternateErrorPageTabObserver::~AlternateErrorPageTabObserver() {
 }
 
 // static
-void AlternateErrorPageTabObserver::RegisterUserPrefs(
+void AlternateErrorPageTabObserver::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled,
                              true,

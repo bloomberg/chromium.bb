@@ -18,7 +18,7 @@ class SessionStartupPrefTest : public testing::Test {
  public:
   virtual void SetUp() {
     pref_service_.reset(new TestingPrefServiceSyncable);
-    SessionStartupPref::RegisterUserPrefs(registry());
+    SessionStartupPref::RegisterProfilePrefs(registry());
     registry()->RegisterBooleanPref(
         prefs::kHomePageIsNewTabPage,
         true,

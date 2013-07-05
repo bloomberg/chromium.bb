@@ -86,7 +86,7 @@ class AutofillDriverImplBrowserTest
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents_ != NULL);
     Observe(web_contents_);
-    AutofillManager::RegisterUserPrefs(manager_delegate_.GetPrefRegistry());
+    AutofillManager::RegisterProfilePrefs(manager_delegate_.GetPrefRegistry());
 
     autofill_driver_.reset(new TestAutofillDriverImpl(web_contents_,
                                                       &manager_delegate_));

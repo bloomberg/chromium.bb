@@ -424,7 +424,7 @@ base::WeakPtr<AutofillDialogControllerImpl>
 }
 
 // static
-void AutofillDialogControllerImpl::RegisterUserPrefs(
+void AutofillDialogControllerImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       ::prefs::kAutofillDialogShowCount,

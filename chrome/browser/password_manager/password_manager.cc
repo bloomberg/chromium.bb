@@ -63,7 +63,7 @@ void ReportMetrics(bool password_manager_enabled) {
 }  // namespace
 
 // static
-void PasswordManager::RegisterUserPrefs(
+void PasswordManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kPasswordManagerEnabled,

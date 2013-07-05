@@ -105,9 +105,9 @@ BrowserContextKeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
 #endif
 }
 
-void InvalidationServiceFactory::RegisterUserPrefs(
+void InvalidationServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  InvalidatorStorage::RegisterUserPrefs(registry);
+  InvalidatorStorage::RegisterProfilePrefs(registry);
 }
 
 }  // namespace invalidation

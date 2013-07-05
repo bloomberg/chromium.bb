@@ -367,7 +367,7 @@ EPKPChallengeUserKey::EPKPChallengeUserKey(
 EPKPChallengeUserKey::~EPKPChallengeUserKey() {
 }
 
-void EPKPChallengeUserKey::RegisterUserPrefs(
+void EPKPChallengeUserKey::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kAttestationEnabled,

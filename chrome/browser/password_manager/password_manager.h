@@ -35,7 +35,7 @@ class PasswordManager : public LoginModel,
                         public content::WebContentsObserver,
                         public content::WebContentsUserData<PasswordManager> {
  public:
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,

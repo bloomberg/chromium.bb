@@ -85,7 +85,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback);
 
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   void Show();
   void Hide();

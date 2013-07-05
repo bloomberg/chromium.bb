@@ -116,7 +116,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   void OnLearnMore(const base::ListValue* args);
 
   // Register app launcher preferences.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Records the given type of app launch for UMA.
   static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket,

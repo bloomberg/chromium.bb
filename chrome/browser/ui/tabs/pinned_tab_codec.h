@@ -30,7 +30,7 @@ class PrefRegistrySyncable;
 class PinnedTabCodec {
  public:
   // Registers the preference used by this class.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Resets the preferences state.
   static void WritePinnedTabs(Profile* profile);

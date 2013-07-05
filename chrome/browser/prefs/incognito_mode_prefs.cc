@@ -54,7 +54,7 @@ void IncognitoModePrefs::SetAvailability(PrefService* prefs,
 }
 
 // static
-void IncognitoModePrefs::RegisterUserPrefs(
+void IncognitoModePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kIncognitoModeAvailability,

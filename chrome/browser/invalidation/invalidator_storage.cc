@@ -95,7 +95,7 @@ DictionaryValue* ObjectIdAndStateToValue(
 namespace invalidation {
 
 // static
-void InvalidatorStorage::RegisterUserPrefs(
+void InvalidatorStorage::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kInvalidatorMaxInvalidationVersions,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

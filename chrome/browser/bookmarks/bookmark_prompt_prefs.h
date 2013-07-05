@@ -34,7 +34,7 @@ class BookmarkPromptPrefs {
   bool IsBookmarkPromptEnabled() const;
 
   // Registers user preferences used by bookmark prompt feature.
-  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   PrefService* prefs_;  // Weak.

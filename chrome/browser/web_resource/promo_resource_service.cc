@@ -68,7 +68,7 @@ void PromoResourceService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void PromoResourceService::RegisterUserPrefs(
+void PromoResourceService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(dbeam): This is registered only for migration; remove in M28
   // when all prefs have been cleared.  http://crbug.com/168887
@@ -76,7 +76,7 @@ void PromoResourceService::RegisterUserPrefs(
       prefs::kNtpPromoResourceCacheUpdate,
       "0",
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  NotificationPromo::RegisterUserPrefs(registry);
+  NotificationPromo::RegisterProfilePrefs(registry);
 }
 
 // static

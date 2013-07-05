@@ -29,7 +29,7 @@ class PrefRegistrySyncable;
 
 namespace print_dialog_cloud {
 
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Creates a print dialog to print a file on disk.
 // Called on the FILE or UI thread. Even though this may start up a modal

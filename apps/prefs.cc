@@ -33,7 +33,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kShowAppLauncherPromo, true);
 }
 
-void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Indicates whether app shortcuts have been created.
   registry->RegisterBooleanPref(
       prefs::kShortcutsHaveBeenCreated, false,
