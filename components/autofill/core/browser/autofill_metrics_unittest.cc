@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
+#include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -270,6 +271,7 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestPersonalDataManager> personal_data_;
+  scoped_ptr<AutofillExternalDelegate> external_delegate_;
 };
 
 AutofillMetricsTest::~AutofillMetricsTest() {
@@ -298,6 +300,12 @@ void AutofillMetricsTest::SetUp() {
       autofill_driver_.get(),
       TabAutofillManagerDelegate::FromWebContents(web_contents()),
       personal_data_.get()));
+
+  external_delegate_.reset(new AutofillExternalDelegate(
+      web_contents(),
+      autofill_manager_.get(),
+      autofill_driver_.get()));
+  autofill_manager_->SetExternalDelegate(external_delegate_.get());
 }
 
 void AutofillMetricsTest::TearDown() {

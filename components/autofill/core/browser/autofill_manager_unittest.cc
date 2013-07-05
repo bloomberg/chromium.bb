@@ -649,6 +649,92 @@ class TestAutofillManager : public AutofillManager {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
+class TestAutofillExternalDelegate : public AutofillExternalDelegate {
+ public:
+  explicit TestAutofillExternalDelegate(content::WebContents* web_contents,
+                                        AutofillManager* autofill_manager,
+                                        AutofillDriver* autofill_driver)
+      : AutofillExternalDelegate(web_contents, autofill_manager,
+                                 autofill_driver),
+        on_query_seen_(false),
+        on_suggestions_returned_seen_(false) {}
+  virtual ~TestAutofillExternalDelegate() {}
+
+  virtual void OnQuery(int query_id,
+                       const FormData& form,
+                       const FormFieldData& field,
+                       const gfx::RectF& bounds,
+                       bool display_warning) OVERRIDE {
+    on_query_seen_ = true;
+    on_suggestions_returned_seen_ = false;
+  }
+
+  virtual void OnSuggestionsReturned(
+      int query_id,
+      const std::vector<base::string16>& autofill_values,
+      const std::vector<base::string16>& autofill_labels,
+      const std::vector<base::string16>& autofill_icons,
+      const std::vector<int>& autofill_unique_ids) OVERRIDE {
+    on_suggestions_returned_seen_ = true;
+
+    query_id_ = query_id;
+    autofill_values_ = autofill_values;
+    autofill_labels_ = autofill_labels;
+    autofill_icons_ = autofill_icons;
+    autofill_unique_ids_ = autofill_unique_ids;
+  }
+
+  void CheckSuggestions(int expected_page_id,
+                        size_t expected_num_suggestions,
+                        const base::string16 expected_values[],
+                        const base::string16 expected_labels[],
+                        const base::string16 expected_icons[],
+                        const int expected_unique_ids[]) {
+    // Ensure that these results are from the most recent query.
+    EXPECT_TRUE(on_suggestions_returned_seen_);
+
+    EXPECT_EQ(expected_page_id, query_id_);
+    ASSERT_EQ(expected_num_suggestions, autofill_values_.size());
+    ASSERT_EQ(expected_num_suggestions, autofill_labels_.size());
+    ASSERT_EQ(expected_num_suggestions, autofill_icons_.size());
+    ASSERT_EQ(expected_num_suggestions, autofill_unique_ids_.size());
+    for (size_t i = 0; i < expected_num_suggestions; ++i) {
+      SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
+      EXPECT_EQ(expected_values[i], autofill_values_[i]);
+      EXPECT_EQ(expected_labels[i], autofill_labels_[i]);
+      EXPECT_EQ(expected_icons[i], autofill_icons_[i]);
+      EXPECT_EQ(expected_unique_ids[i], autofill_unique_ids_[i]);
+    }
+  }
+
+  bool on_query_seen() const {
+    return on_query_seen_;
+  }
+
+  bool on_suggestions_returned_seen() const {
+    return on_suggestions_returned_seen_;
+  }
+
+ private:
+  // Records if OnQuery has been called yet.
+  bool on_query_seen_;
+
+  // Records if OnSuggestionsReturned has been called after the most recent
+  // call to OnQuery.
+  bool on_suggestions_returned_seen_;
+
+  // The query id of the most recent Autofill query.
+  int query_id_;
+
+  // The results returned by the most recent Autofill query.
+  std::vector<base::string16> autofill_values_;
+  std::vector<base::string16> autofill_labels_;
+  std::vector<base::string16> autofill_icons_;
+  std::vector<int> autofill_unique_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
+};
+
 }  // namespace
 
 class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
@@ -670,6 +756,12 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
         autofill_driver_.get(),
         autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
         &personal_data_));
+
+    external_delegate_.reset(new TestAutofillExternalDelegate(
+        web_contents(),
+        autofill_manager_.get(),
+        autofill_driver_.get()));
+    autofill_manager_->SetExternalDelegate(external_delegate_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -759,34 +851,6 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     return autofill_manager_->PackGUIDs(cc_guid, profile_guid);
   }
 
-  bool GetAutofillSuggestionsMessage(int* page_id,
-                                     std::vector<base::string16>* values,
-                                     std::vector<base::string16>* labels,
-                                     std::vector<base::string16>* icons,
-                                     std::vector<int>* unique_ids) {
-    const uint32 kMsgID = AutofillMsg_SuggestionsReturned::ID;
-    const IPC::Message* message =
-        process()->sink().GetFirstMessageMatching(kMsgID);
-    if (!message)
-      return false;
-
-    AutofillParam autofill_param;
-    AutofillMsg_SuggestionsReturned::Read(message, &autofill_param);
-    if (page_id)
-      *page_id = autofill_param.a;
-    if (values)
-      *values = autofill_param.b;
-    if (labels)
-      *labels = autofill_param.c;
-    if (icons)
-      *icons = autofill_param.d;
-    if (unique_ids)
-      *unique_ids = autofill_param.e;
-
-    autofill_manager_->autocomplete_history_manager_->CancelPendingQuery();
-    process()->sink().ClearMessages();
-    return true;
-  }
 
   bool HasSeenAutofillGetAllFormsMessage() {
     const uint32 kMsgID = AutofillMsg_GetAllForms::ID;
@@ -798,6 +862,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   scoped_ptr<MockAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
+  scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
   TestPersonalDataManager personal_data_;
 
   // Used when we want an off the record profile. This will store the original
@@ -859,15 +924,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsEmptyValue) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  GetAutofillSuggestionsMessage(
-      &page_id, &values, &labels, &icons, &unique_ids);
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
@@ -880,9 +937,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsEmptyValue) {
   };
   base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that in the case of Autocheckout, forms seen are in order supplied.
@@ -975,22 +1032,14 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMatchCharacter) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {ASCIIToUTF16("Elvis")};
   base::string16 expected_labels[] = {ASCIIToUTF16("3734 Elvis Presley Blvd.")};
   base::string16 expected_icons[] = {base::string16()};
   int expected_unique_ids[] = {1};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return no suggestions when the form has no relevant fields.
@@ -1017,7 +1066,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsUnknownFields) {
   FormsSeen(forms);
 
   GetAutofillSuggestions(form, field);
-  EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test that we cull duplicate profile suggestions.
@@ -1042,15 +1091,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsWithDuplicates) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
@@ -1061,9 +1102,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsWithDuplicates) {
   };
   base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return no suggestions when autofill is disabled.
@@ -1079,7 +1120,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsAutofillDisabledByUser) {
 
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
-  EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test that we return a warning explaining that autofill suggestions are
@@ -1099,15 +1140,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED)
   };
@@ -1115,9 +1148,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   base::string16 expected_icons[] = {base::string16()};
   int expected_unique_ids[] =
       {WebKit::WebAutofillClient::MenuItemIDWarningMessage};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 
   // Now add some Autocomplete suggestions. We should return the autocomplete
   // suggestions and the warning; these will be culled by the renderer.
@@ -1129,9 +1162,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   suggestions.push_back(ASCIIToUTF16("Jason"));
   AutocompleteSuggestionsReturned(suggestions);
 
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
   base::string16 expected_values2[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED),
     ASCIIToUTF16("Jay"),
@@ -1142,14 +1172,14 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   base::string16 expected_icons2[] = { base::string16(), base::string16(),
                                        base::string16()};
   int expected_unique_ids2[] = {-1, 0, 0};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kPageID2, arraysize(expected_values2), expected_values2,
-                    expected_labels2, expected_icons2, expected_unique_ids2);
+  external_delegate_->CheckSuggestions(
+      kPageID2, arraysize(expected_values2), expected_values2,
+      expected_labels2, expected_icons2, expected_unique_ids2);
 
   // Now clear the test profiles and try again -- we shouldn't return a warning.
   personal_data_.ClearAutofillProfiles();
   GetAutofillSuggestions(form, field);
-  EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test that we return all credit card profile suggestions when all form fields
@@ -1168,15 +1198,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765")
@@ -1191,9 +1213,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
     autofill_manager_->GetPackedCreditCardID(4),
     autofill_manager_->GetPackedCreditCardID(5)
   };
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return only matching credit card profile suggestions when the
@@ -1213,22 +1235,14 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {ASCIIToUTF16("************3456")};
   base::string16 expected_labels[] = {ASCIIToUTF16("*3456")};
   base::string16 expected_icons[] = {ASCIIToUTF16(kVisaCard)};
   int expected_unique_ids[] = {autofill_manager_->GetPackedCreditCardID(4)};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return credit card profile suggestions when the selected form
@@ -1247,15 +1261,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis Presley"),
     ASCIIToUTF16("Buddy Holly")
@@ -1270,9 +1276,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
     autofill_manager_->GetPackedCreditCardID(4),
     autofill_manager_->GetPackedCreditCardID(5)
   };
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return a warning explaining that credit card profile suggestions
@@ -1291,24 +1297,16 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION)
   };
   base::string16 expected_labels[] = {base::string16()};
   base::string16 expected_icons[] = {base::string16()};
   int expected_unique_ids[] = {-1};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 
   // Now add some Autocomplete suggestions. We should show the autocomplete
   // suggestions and the warning.
@@ -1320,8 +1318,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   suggestions.push_back(ASCIIToUTF16("Jason"));
   AutocompleteSuggestionsReturned(suggestions);
 
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
   base::string16 expected_values2[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
     ASCIIToUTF16("Jay"),
@@ -1332,14 +1328,14 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   base::string16 expected_icons2[] = { base::string16(), base::string16(),
                                        base::string16() };
   int expected_unique_ids2[] = {-1, 0, 0};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kPageID2, arraysize(expected_values2), expected_values2,
-                    expected_labels2, expected_icons2, expected_unique_ids2);
+  external_delegate_->CheckSuggestions(
+      kPageID2, arraysize(expected_values2), expected_values2,
+      expected_labels2, expected_icons2, expected_unique_ids2);
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
-  EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test that we return all credit card suggestions in the case that two cards
@@ -1367,15 +1363,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765"),
@@ -1396,9 +1384,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
     autofill_manager_->GetPackedCreditCardID(5),
     autofill_manager_->GetPackedCreditCardID(7)
   };
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return profile and credit card suggestions for combined forms.
@@ -1417,15 +1405,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right address suggestions to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right address suggestions to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
@@ -1436,9 +1416,9 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   };
   base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 
   const int kPageID2 = 2;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
@@ -1448,11 +1428,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the credit card suggestions to the renderer.
-  page_id = 0;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the credit card suggestions to the external delegate.
   base::string16 expected_values2[] = {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765")
@@ -1467,9 +1443,9 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
     autofill_manager_->GetPackedCreditCardID(4),
     autofill_manager_->GetPackedCreditCardID(5)
   };
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kPageID2, arraysize(expected_values2), expected_values2,
-                    expected_labels2, expected_icons2, expected_unique_ids2);
+  external_delegate_->CheckSuggestions(
+      kPageID2, arraysize(expected_values2), expected_values2,
+      expected_labels2, expected_icons2, expected_unique_ids2);
 }
 
 // Test that for non-https forms with both address and credit card fields, we
@@ -1491,15 +1467,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right address suggestions to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right suggestions to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
@@ -1510,9 +1478,9 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   };
   base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
@@ -1522,24 +1490,21 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values2[] = {
     l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION)
   };
   base::string16 expected_labels2[] = {base::string16()};
   base::string16 expected_icons2[] = {base::string16()};
   int expected_unique_ids2[] = {-1};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kPageID2, arraysize(expected_values2), expected_values2,
-                    expected_labels2, expected_icons2, expected_unique_ids2);
+  external_delegate_->CheckSuggestions(
+      kPageID2, arraysize(expected_values2), expected_values2,
+      expected_labels2, expected_icons2, expected_unique_ids2);
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
-  EXPECT_FALSE(GetAutofillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test that we correctly combine autofill and autocomplete suggestions.
@@ -1562,15 +1527,7 @@ TEST_F(AutofillManagerTest, GetCombinedAutofillAndAutocompleteSuggestions) {
   suggestions.push_back(ASCIIToUTF16("Jason"));
   AutocompleteSuggestionsReturned(suggestions);
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles"),
@@ -1586,9 +1543,9 @@ TEST_F(AutofillManagerTest, GetCombinedAutofillAndAutocompleteSuggestions) {
   base::string16 expected_icons[] = { base::string16(), base::string16(),
                                       base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2, 0, 0};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we return autocomplete-like suggestions when trying to autofill
@@ -1609,14 +1566,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Elvis"),
     ASCIIToUTF16("Charles")
@@ -1624,9 +1574,9 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   base::string16 expected_labels[] = {base::string16(), base::string16()};
   base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {1, 2};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that nothing breaks when there are autocomplete suggestions but no
@@ -1650,15 +1600,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   suggestions.push_back(ASCIIToUTF16("two"));
   AutocompleteSuggestionsReturned(suggestions);
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("one"),
     ASCIIToUTF16("two")
@@ -1666,9 +1608,9 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   base::string16 expected_labels[] = {base::string16(), base::string16()};
   base::string16 expected_icons[] = {base::string16(), base::string16()};
   int expected_unique_ids[] = {0, 0};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we do not return duplicate values drawn from multiple profiles when
@@ -1696,22 +1638,14 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = { ASCIIToUTF16("Elvis") };
   base::string16 expected_labels[] = { base::string16() };
   base::string16 expected_icons[] = { base::string16() };
   int expected_unique_ids[] = { 1 };
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that a non-default value is suggested for multi-valued profile, on an
@@ -1746,14 +1680,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
     // Trigger the |Send|.
     AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-    // Test that we sent the right message to the renderer.
-    int page_id = 0;
-    std::vector<base::string16> values;
-    std::vector<base::string16> labels;
-    std::vector<base::string16> icons;
-    std::vector<int> unique_ids;
-    EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels,
-                                              &icons, &unique_ids));
+    // Test that we sent the right values to the external delegate.
     base::string16 expected_values[] = {
       ASCIIToUTF16("Elvis"),
       ASCIIToUTF16("Elena")
@@ -1764,10 +1691,9 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
     };
     base::string16 expected_icons[] = { base::string16(), base::string16() };
     int expected_unique_ids[] = { 1, 2 };
-    ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                      kDefaultPageID, arraysize(expected_values),
-                      expected_values, expected_labels, expected_icons,
-                      expected_unique_ids);
+    external_delegate_->CheckSuggestions(
+        kDefaultPageID, arraysize(expected_values), expected_values,
+        expected_labels, expected_icons, expected_unique_ids);
   }
 
   {
@@ -1781,23 +1707,14 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
     // Trigger the |Send|.
     AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-    // Test that we sent the right message to the renderer.
-    int page_id = 0;
-    std::vector<base::string16> values;
-    std::vector<base::string16> labels;
-    std::vector<base::string16> icons;
-    std::vector<int> unique_ids;
-    EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels,
-                                              &icons, &unique_ids));
-
+    // Test that we sent the right values to the external delegate.
     base::string16 expected_values[] = { ASCIIToUTF16("Elena") };
     base::string16 expected_labels[] = { ASCIIToUTF16("me@x.com") };
     base::string16 expected_icons[] = { base::string16() };
     int expected_unique_ids[] = { 2 };
-    ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                      kDefaultPageID, arraysize(expected_values),
-                      expected_values, expected_labels, expected_icons,
-                      expected_unique_ids);
+    external_delegate_->CheckSuggestions(
+        kDefaultPageID, arraysize(expected_values), expected_values,
+        expected_labels, expected_icons, expected_unique_ids);
   }
 }
 
@@ -1830,15 +1747,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
   // Trigger the |Send|.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("Travis"),
     ASCIIToUTF16("Cynthia"),
@@ -1849,9 +1758,9 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
   base::string16 expected_icons[] = { base::string16(), base::string16(),
                                       base::string16() };
   int expected_unique_ids[] = { 1, 2, 3 };
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
@@ -1877,15 +1786,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
   // This triggers the combined message send.
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  GetAutofillSuggestionsMessage(
-      &page_id, &values, &labels, &icons, &unique_ids);
-
+  // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {
     ASCIIToUTF16("12345678901"),
     ASCIIToUTF16("23456789012"),
@@ -1901,9 +1802,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
   base::string16 expected_icons[] = { base::string16(), base::string16(),
                                       base::string16()};
   int expected_unique_ids[] = {1, 2, 3};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we correctly fill an address form.
@@ -2716,6 +2617,7 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
       &delegate,
       NULL));
   autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
   FormData form;
@@ -2733,14 +2635,6 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
   suggestions.push_back(ASCIIToUTF16("Jason"));
   AutocompleteSuggestionsReturned(suggestions);
 
-  int page_id = 0;
-  std::vector<base::string16> values;
-  std::vector<base::string16> labels;
-  std::vector<base::string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
-
   base::string16 expected_values[] = {
     ASCIIToUTF16("Jay"),
     ASCIIToUTF16("Jason")
@@ -2748,9 +2642,9 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
   base::string16 expected_labels[] = { base::string16(), base::string16()};
   base::string16 expected_icons[] = { base::string16(), base::string16()};
   int expected_unique_ids[] = {0, 0};
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, arraysize(expected_values), expected_values,
+      expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we are able to save form data when forms are submitted and we only
@@ -3263,25 +3157,6 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
-class MockAutofillExternalDelegate : public AutofillExternalDelegate {
- public:
-  explicit MockAutofillExternalDelegate(content::WebContents* web_contents,
-                                        AutofillManager* autofill_manager,
-                                        AutofillDriver* autofill_driver)
-      : AutofillExternalDelegate(web_contents, autofill_manager,
-                                 autofill_driver) {}
-  virtual ~MockAutofillExternalDelegate() {}
-
-  MOCK_METHOD5(OnQuery, void(int query_id,
-                             const FormData& form,
-                             const FormFieldData& field,
-                             const gfx::RectF& bounds,
-                             bool display_warning));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
-};
-
 }  // namespace
 
 // Test that Autocheckout bubble is offered when server specifies field types.
@@ -3345,12 +3220,6 @@ TEST_F(AutofillManagerTest, TestAutocheckoutBubbleNotShown) {
 
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
-  MockAutofillExternalDelegate external_delegate(web_contents(),
-                                                 autofill_manager_.get(),
-                                                 autofill_driver_.get());
-  EXPECT_CALL(external_delegate, OnQuery(_, _, _, _, _));
-  autofill_manager_->SetExternalDelegate(&external_delegate);
-
   FormData form;
   test::CreateTestAddressFormData(&form);
   std::vector<FormData> forms(1, form);
@@ -3358,7 +3227,7 @@ TEST_F(AutofillManagerTest, TestExternalDelegate) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);  // should call the delegate's OnQuery()
 
-  autofill_manager_->SetExternalDelegate(NULL);
+  EXPECT_TRUE(external_delegate_->on_query_seen());
 }
 
 // Test that in the case of Autocheckout, forms seen are in order supplied.

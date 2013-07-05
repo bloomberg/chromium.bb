@@ -107,11 +107,6 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void didAssociateFormControls(
       const WebKit::WebVector<WebKit::WebNode>& nodes) OVERRIDE;
 
-  void OnSuggestionsReturned(int query_id,
-                             const std::vector<base::string16>& values,
-                             const std::vector<base::string16>& labels,
-                             const std::vector<base::string16>& icons,
-                             const std::vector<int>& unique_ids);
   void OnFormDataFilled(int query_id, const FormData& form);
   void OnFieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms);

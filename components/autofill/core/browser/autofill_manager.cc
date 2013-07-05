@@ -410,13 +410,11 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   std::vector<base::string16> icons;
   std::vector<int> unique_ids;
 
-  if (external_delegate_) {
-    external_delegate_->OnQuery(query_id,
-                                form,
-                                field,
-                                bounding_box,
-                                display_warning);
-  }
+  external_delegate_->OnQuery(query_id,
+                              form,
+                              field,
+                              bounding_box,
+                              display_warning);
 
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
@@ -668,8 +666,7 @@ void AutofillManager::SetTestDelegate(
 void AutofillManager::OnAddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data) {
-  if (external_delegate_)
-    external_delegate_->AddPasswordFormMapping(form, fill_data);
+  external_delegate_->AddPasswordFormMapping(form, fill_data);
 }
 
 void AutofillManager::OnShowPasswordSuggestions(
@@ -677,12 +674,10 @@ void AutofillManager::OnShowPasswordSuggestions(
     const gfx::RectF& bounds,
     const std::vector<base::string16>& suggestions,
     const std::vector<base::string16>& realms) {
-  if (external_delegate_) {
-    external_delegate_->OnShowPasswordSuggestions(suggestions,
-                                                  realms,
-                                                  field,
-                                                  bounds);
-  }
+  external_delegate_->OnShowPasswordSuggestions(suggestions,
+                                                realms,
+                                                field,
+                                                bounds);
 }
 
 void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
@@ -694,12 +689,11 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
       unique_ids.size() != values.size()) {
     return;
   }
-  if (external_delegate_) {
-    external_delegate_->SetCurrentDataListValues(values,
-                                                 labels,
-                                                 icons,
-                                                 unique_ids);
-  }
+
+  external_delegate_->SetCurrentDataListValues(values,
+                                               labels,
+                                               icons,
+                                               unique_ids);
 }
 
 void AutofillManager::OnRequestAutocomplete(
@@ -775,8 +769,7 @@ void AutofillManager::OnLoadedServerPredictions(
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {
-  if (external_delegate_)
-    external_delegate_->DidEndTextFieldEditing();
+  external_delegate_->DidEndTextFieldEditing();
 }
 
 void AutofillManager::OnClickFailed(autofill::AutocheckoutStatus status) {
@@ -887,9 +880,7 @@ void AutofillManager::Reset() {
   user_did_edit_autofilled_field_ = false;
   forms_loaded_timestamp_ = TimeTicks();
   initial_interaction_timestamp_ = TimeTicks();
-
-  if (external_delegate_)
-    external_delegate_->Reset();
+  external_delegate_->Reset();
 }
 
 AutofillManager::AutofillManager(AutofillDriver* driver,
