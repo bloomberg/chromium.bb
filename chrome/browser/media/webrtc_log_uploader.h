@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -27,8 +28,9 @@ typedef struct z_stream_s z_stream;
 class WebRtcLogURLRequestContextGetter;
 
 // WebRtcLogUploader uploads WebRTC logs, keeps count of how many logs have
-// been started and denies further logs if a limit is reached. There must only
-// be one object of this type.
+// been started and denies further logs if a limit is reached. It also adds
+// the timestamp and report ID of the uploded log to a text file. There must
+// only be one object of this type.
 class WebRtcLogUploader : public net::URLFetcherDelegate {
  public:
   WebRtcLogUploader();
@@ -60,6 +62,9 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebRtcLogUploaderTest,
+                           AddUploadedLogInfoToUploadListFile);
+
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
   void SetupMultipart(std::string* post_data, uint8* log_buffer,
@@ -73,7 +78,22 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   void ResizeForNextOutput(std::string* post_data, z_stream* stream);
   void DecreaseLogCount();
 
+  // Append information (time and report ID) about this uploaded log to a log
+  // list file, limited to |kLogListLimitLines| entries. This list is used for
+  // viewing the uploaded logs under chrome://webrtc-logs, see
+  // WebRtcLogUploadList. The list has the format
+  // time,id
+  // time,id
+  // etc.
+  // where each line represents an uploaded log and "time" is Unix time.
+  void AddUploadedLogInfoToUploadListFile(const std::string& report_id);
+
+  void SetUploadPathForTesting(const base::FilePath& path) {
+    upload_list_path_ = path;
+  }
+
   int log_count_;
+  base::FilePath upload_list_path_;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
   // on the FILE thread.

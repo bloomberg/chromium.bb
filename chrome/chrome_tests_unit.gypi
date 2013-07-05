@@ -948,6 +948,7 @@
         'browser/managed_mode/managed_user_registration_service_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',
         'browser/managed_mode/managed_user_refresh_token_fetcher_unittest.cc',
+        'browser/media/webrtc_log_uploader_unittest.cc',
         'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
         'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',
         'browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm',
@@ -2119,6 +2120,7 @@
         }],
         ['enable_webrtc==0', {
           'sources!': [
+            'browser/media/webrtc_log_uploader_unittest.cc',
             'renderer/media/chrome_webrtc_log_message_delegate_unittest.cc',
           ],
         }],

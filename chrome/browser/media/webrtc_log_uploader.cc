@@ -4,9 +4,17 @@
 
 #include "chrome/browser/media/webrtc_log_uploader.h"
 
+#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/shared_memory.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "chrome/browser/media/webrtc_log_upload_list.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/partial_circular_buffer.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,6 +32,7 @@ namespace {
 
 const int kLogCountLimit = 5;
 const uint32 kIntermediateCompressionBufferBytes = 256 * 1024;  // 256 KB
+const int kLogListLimitLines = 50;
 
 const char kUploadURL[] = "https://clients2.google.com/cr/report";
 const char kUploadContentType[] = "multipart/form-data";
@@ -35,13 +44,20 @@ const char kMultipartBoundary[] =
 WebRtcLogUploader::WebRtcLogUploader()
     : log_count_(0),
       post_data_(NULL) {
+  base::FilePath log_dir_path;
+  PathService::Get(chrome::DIR_USER_DATA, &log_dir_path);
+  upload_list_path_ =
+      log_dir_path.AppendASCII(WebRtcLogUploadList::kWebRtcLogListFilename);
 }
 
-WebRtcLogUploader::~WebRtcLogUploader() {
-}
+WebRtcLogUploader::~WebRtcLogUploader() {}
 
 void WebRtcLogUploader::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  int response_code = source->GetResponseCode();
+  std::string report_id;
+  if (response_code == 200 && source->GetResponseAsString(&report_id))
+    AddUploadedLogInfoToUploadListFile(report_id);
 }
 
 void WebRtcLogUploader::OnURLFetchUploadProgress(
@@ -204,4 +220,35 @@ void WebRtcLogUploader::ResizeForNextOutput(std::string* post_data,
 void WebRtcLogUploader::DecreaseLogCount() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   --log_count_;
+}
+
+void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
+    const std::string& report_id) {
+  std::string contents;
+  bool read_ok = file_util::ReadFileToString(upload_list_path_, &contents);
+  DPCHECK(read_ok);
+
+  // Limit the number of log entries to |kLogListLimitLines| - 1, to make room
+  // for the new entry. Each line including the last ends with a '\n', so hit
+  // n will be before line n-1 (from the back).
+  int lf_count = 0;
+  int i = contents.size() - 1;
+  for (; i >= 0 && lf_count < kLogListLimitLines; --i) {
+    if (contents[i] == '\n')
+      ++lf_count;
+  }
+  if (lf_count >= kLogListLimitLines) {
+    // + 1 to compensate for the for loop decrease before the conditional
+    // check and + 1 to get the length.
+    contents.erase(0, i + 2);
+  }
+
+  // Write the Unix time and report ID to the log list file.
+  base::Time time_now = base::Time::Now();
+  contents += base::DoubleToString(time_now.ToDoubleT()) +
+              "," + report_id + '\n';
+
+  int written = file_util::WriteFile(upload_list_path_, &contents[0],
+                                     contents.size());
+  DPCHECK(written == static_cast<int>(contents.size()));
 }
