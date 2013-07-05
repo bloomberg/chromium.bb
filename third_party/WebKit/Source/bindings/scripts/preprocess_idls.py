@@ -42,7 +42,7 @@ def parse_options():
     parser.add_option('--workerglobalscope-constructors-file', help='output file')
     parser.add_option('--sharedworkerglobalscope-constructors-file', help='output file')
     parser.add_option('--dedicatedworkerglobalscope-constructors-file', help='output file')
-    parser.add_option('--write-file-only-if-changed', type='int')
+    parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
     options, args = parser.parse_args()
     if options.event_names_file is None:
         parser.error('Must specify an output file using --event-names-file.')
@@ -70,6 +70,16 @@ def get_file_contents(idl_filename):
     with open(idl_filename) as idl_file:
         lines = idl_file.readlines()
     return ''.join(lines)
+
+
+def write_file(new_lines, destination_filename, only_if_changed):
+    if only_if_changed and os.path.isfile(destination_filename):
+        with open(destination_filename) as destination_file:
+            old_lines = destination_file.readlines()
+        if old_lines == new_lines:
+            return
+    with open(destination_filename, 'w') as destination_file:
+        destination_file.write(''.join(new_lines))
 
 
 def get_partial_interface_name_from_idl(file_contents):
@@ -149,32 +159,35 @@ def generate_constructor_attribute_list(interface_name, extended_attributes):
     return attributes_list
 
 
-def generate_event_names_file(destination_filename, event_names):
+def generate_event_names_file(destination_filename, event_names, only_if_changed=False):
     source_dir, _ = os.path.split(os.getcwd())
-    with open(destination_filename, 'w') as destination_file:
-        destination_file.write('namespace="Event"\n\n')
-        for filename in event_names:
-            attributes = []
-            extended_attributes = event_names[filename]
-            for key in ('ImplementedAs', 'Conditional', 'EnabledAtRuntime'):
-                suffix = ''
-                if key == 'EnabledAtRuntime':
-                    suffix = 'Enabled'
-                if key in extended_attributes:
-                    attributes.append('%s=%s%s' % (key, extended_attributes[key], suffix))
-            refined_filename, _ = os.path.splitext(os.path.relpath(filename, source_dir))
-            destination_file.write('%s %s\n' % (refined_filename, ', '.join(attributes)))
+    lines = []
+    lines.append('namespace="Event"\n')
+    lines.append('\n')
+    for filename in event_names:
+        attributes = []
+        extended_attributes = event_names[filename]
+        for key in ('ImplementedAs', 'Conditional', 'EnabledAtRuntime'):
+            suffix = ''
+            if key == 'EnabledAtRuntime':
+                suffix = 'Enabled'
+            if key in extended_attributes:
+                attributes.append('%s=%s%s' % (key, extended_attributes[key], suffix))
+        refined_filename, _ = os.path.splitext(os.path.relpath(filename, source_dir))
+        lines.append('%s %s\n' % (refined_filename, ', '.join(attributes)))
+    write_file(lines, destination_filename, only_if_changed)
 
 
-def generate_global_constructors_partial_interface(interface_name, destination_filename, constructor_attributes_list):
-    with open(destination_filename, 'w') as destination_file:
-        destination_file.write('partial interface %s {\n' % interface_name)
-        for constructor_attribute in constructor_attributes_list:
-            destination_file.write('    %s;\n' % constructor_attribute)
-        destination_file.write('};\n')
+def generate_global_constructors_partial_interface(interface_name, destination_filename, constructor_attributes_list, only_if_changed=False):
+    lines = []
+    lines.append('partial interface %s {\n' % interface_name)
+    for constructor_attribute in constructor_attributes_list:
+        lines.append('    %s;\n' % constructor_attribute)
+    lines.append('};\n')
+    write_file(lines, destination_filename, only_if_changed)
 
 
-def parse_idl_files(idl_files, window_constructors_filename, workerglobalscope_constructors_filename, sharedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructors_filename, event_names_file):
+def parse_idl_files(idl_files, window_constructors_filename, workerglobalscope_constructors_filename, sharedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructors_filename, event_names_file, only_if_changed=False):
     interface_name_to_idl_file = {}
     idl_file_to_interface_name = {}
     supplemental_dependencies = {}
@@ -244,20 +257,20 @@ def parse_idl_files(idl_files, window_constructors_filename, workerglobalscope_c
             parent = parent_interface[parent]
         if parent == 'Event':
             event_names[interface_to_file[interface]] = interface_extended_attribute[interface]
-    generate_event_names_file(event_names_file, event_names)
+    generate_event_names_file(event_names_file, event_names, only_if_changed=only_if_changed)
 
     # Generate Global constructors
     if 'Window' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list)
+        generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list, only_if_changed=only_if_changed)
         supplemental_dependencies[window_constructors_filename] = ['Window']
     if 'WorkerGlobalScope' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("WorkerGlobalScope", workerglobalscope_constructors_filename, workerglobalscope_constructor_attributes_list)
+        generate_global_constructors_partial_interface("WorkerGlobalScope", workerglobalscope_constructors_filename, workerglobalscope_constructor_attributes_list, only_if_changed=only_if_changed)
         supplemental_dependencies[workerglobalscope_constructors_filename] = ['WorkerGlobalScope']
     if 'SharedWorkerGlobalScope' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("SharedWorkerGlobalScope", sharedworkerglobalscope_constructors_filename, sharedworkerglobalscope_constructor_attributes_list)
+        generate_global_constructors_partial_interface("SharedWorkerGlobalScope", sharedworkerglobalscope_constructors_filename, sharedworkerglobalscope_constructor_attributes_list, only_if_changed=only_if_changed)
         supplemental_dependencies[sharedworkerglobalscope_constructors_filename] = ['SharedWorkerGlobalScope']
     if 'DedicatedWorkerGlobalScope' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("DedicatedWorkerGlobalScope", dedicatedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructor_attributes_list)
+        generate_global_constructors_partial_interface("DedicatedWorkerGlobalScope", dedicatedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructor_attributes_list, only_if_changed=only_if_changed)
         supplemental_dependencies[dedicatedworkerglobalscope_constructors_filename] = ['DedicatedWorkerGlobalScope']
 
     # Resolve partial interfaces dependencies
@@ -289,16 +302,10 @@ def write_dependency_file(filename, supplementals, only_if_changed=False):
     An IDL that supplements another IDL (e.g. P.idl) does not have its own
     lines in the dependency file.
     """
-    new_lines = []
+    lines = []
     for idl_file, supplemental_files in sorted(supplementals.iteritems()):
-        new_lines.append('%s %s\n' % (idl_file, ' '.join(supplemental_files)))
-    if only_if_changed and os.path.isfile(filename):
-        with open(filename) as out_file:
-            old_lines = out_file.readlines()
-        if old_lines == new_lines:
-            return
-    with open(filename, 'w') as out_file:
-        out_file.write(''.join(new_lines))
+        lines.append('%s %s\n' % (idl_file, ' '.join(supplemental_files)))
+    write_file(lines, filename, only_if_changed)
 
 
 def main():
@@ -307,7 +314,7 @@ def main():
     with open(options.idl_files_list) as idl_files_list_file:
         for line in idl_files_list_file:
             idl_files.append(string.rstrip(line, '\n'))
-    resolved_supplementals = parse_idl_files(idl_files, options.window_constructors_file, options.workerglobalscope_constructors_file, options.sharedworkerglobalscope_constructors_file, options.dedicatedworkerglobalscope_constructors_file, options.event_names_file)
+    resolved_supplementals = parse_idl_files(idl_files, options.window_constructors_file, options.workerglobalscope_constructors_file, options.sharedworkerglobalscope_constructors_file, options.dedicatedworkerglobalscope_constructors_file, options.event_names_file, only_if_changed=options.write_file_only_if_changed)
     write_dependency_file(options.supplemental_dependency_file, resolved_supplementals, only_if_changed=options.write_file_only_if_changed)
 
 
