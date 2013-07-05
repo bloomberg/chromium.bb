@@ -724,7 +724,7 @@ void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
         entry.record->setObject("data", entry.data);
         entry.record->setArray("children", entry.children);
         entry.record->setNumber("endTime", timestamp());
-        size_t usedHeapSizeDelta = getUsedHeapSize() - entry.usedHeapSizeAtStart;
+        ptrdiff_t usedHeapSizeDelta = getUsedHeapSize() - entry.usedHeapSizeAtStart;
         if (usedHeapSizeDelta)
             entry.record->setNumber("usedHeapSizeDelta", usedHeapSizeDelta);
         addRecordToTimeline(entry.record);
