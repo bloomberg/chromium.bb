@@ -503,6 +503,9 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
           profile(), id_, parsed_manifest_.Pass()));
   approval->use_app_installed_bubble = use_app_installed_bubble_;
   approval->enable_launcher = enable_launcher_;
+  // If we are enabling the launcher, we should not show the app list in order
+  // to train the user to open it themselves at least once.
+  approval->skip_post_install_ui = enable_launcher_;
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
   g_pending_approvals.Get().PushApproval(approval.Pass());
 
@@ -582,8 +585,9 @@ void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
     LOG(ERROR) << "Error installing app launcher";
   std::string id = approval_->extension_id;
   if (apps::IsAppLauncherEnabled()) {
-    // Show the app list so it receives install progress notifications.
-    if (approval_->manifest->is_app())
+    // Show the app list to show download is progressing. Don't show the app
+    // list on first app install so users can be trained to open it themselves.
+    if (approval_->manifest->is_app() && !approval_->enable_launcher)
       AppListService::Get()->ShowAppList(profile());
   }
 
