@@ -1753,8 +1753,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       Browser* browser =
           chrome::FindBrowserWithWebContents(source_web_contents_);
       chrome::ShowWebsiteSettings(browser, source_web_contents_,
-                                  nav_entry->GetURL(), nav_entry->GetSSL(),
-                                  true);
+                                  nav_entry->GetURL(), nav_entry->GetSSL());
       break;
     }
 
@@ -1795,8 +1794,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       Browser* browser = chrome::FindBrowserWithWebContents(
           source_web_contents_);
       chrome::ShowWebsiteSettings(browser, source_web_contents_,
-                                  params_.frame_url, params_.security_info,
-                                  false);
+                                  params_.frame_url, params_.security_info);
       break;
     }
 

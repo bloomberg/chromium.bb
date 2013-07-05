@@ -272,8 +272,7 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowWebsiteSettings(Profile* profile,
                                    content::WebContents* web_contents,
                                    const GURL& url,
-                                   const content::SSLStatus& ssl,
-                                   bool show_history) = 0;
+                                   const content::SSLStatus& ssl) = 0;
 
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;

@@ -1206,8 +1206,7 @@ void BrowserView::WebContentsFocused(WebContents* contents) {
 void BrowserView::ShowWebsiteSettings(Profile* profile,
                                       content::WebContents* web_contents,
                                       const GURL& url,
-                                      const content::SSLStatus& ssl,
-                                      bool show_history) {
+                                      const content::SSLStatus& ssl) {
   WebsiteSettingsPopupView::ShowPopup(
       GetLocationBarView()->location_icon_view(), profile,
       web_contents, url, ssl, browser_.get());

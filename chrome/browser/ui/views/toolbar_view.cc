@@ -360,9 +360,8 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
 
 void ToolbarView::ShowWebsiteSettings(content::WebContents* web_contents,
                                       const GURL& url,
-                                      const content::SSLStatus& ssl,
-                                      bool show_history) {
-  chrome::ShowWebsiteSettings(browser_, web_contents, url, ssl, show_history);
+                                      const content::SSLStatus& ssl) {
+  chrome::ShowWebsiteSettings(browser_, web_contents, url, ssl);
 }
 
 views::Widget* ToolbarView::CreateViewsBubble(

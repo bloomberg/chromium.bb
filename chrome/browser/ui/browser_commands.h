@@ -104,8 +104,7 @@ void ShowFindBar(Browser* browser);
 void ShowWebsiteSettings(Browser* browser,
                          content::WebContents* web_contents,
                          const GURL& url,
-                         const content::SSLStatus& ssl,
-                         bool show_history);
+                         const content::SSLStatus& ssl);
 void ShowChromeToMobileBubble(Browser* browser);
 void Print(Browser* browser);
 bool CanPrint(const Browser* browser);

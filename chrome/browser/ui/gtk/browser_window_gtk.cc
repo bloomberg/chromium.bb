@@ -1028,8 +1028,7 @@ void BrowserWindowGtk::ShowWebsiteSettings(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const content::SSLStatus& ssl,
-    bool show_history) {
+    const content::SSLStatus& ssl) {
   WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile,
                                 web_contents, url, ssl);
 }

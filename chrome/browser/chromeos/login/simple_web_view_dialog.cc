@@ -299,8 +299,7 @@ SimpleWebViewDialog::GetContentSettingBubbleModelDelegate() {
 void SimpleWebViewDialog::ShowWebsiteSettings(
     content::WebContents* web_contents,
     const GURL& url,
-    const content::SSLStatus& ssl,
-    bool show_history) {
+    const content::SSLStatus& ssl) {
   NOTIMPLEMENTED();
   // TODO (ygorshenin@,markusheintz@): implement this
 }

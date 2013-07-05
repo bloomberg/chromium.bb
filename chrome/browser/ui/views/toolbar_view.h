@@ -103,8 +103,7 @@ class ToolbarView : public views::AccessiblePaneView,
       GetContentSettingBubbleModelDelegate() OVERRIDE;
   virtual void ShowWebsiteSettings(content::WebContents* web_contents,
                                    const GURL& url,
-                                   const content::SSLStatus& ssl,
-                                   bool show_history) OVERRIDE;
+                                   const content::SSLStatus& ssl) OVERRIDE;
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
 
   // Overridden from CommandObserver:

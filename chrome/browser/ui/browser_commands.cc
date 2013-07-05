@@ -704,13 +704,12 @@ void ShowFindBar(Browser* browser) {
 void ShowWebsiteSettings(Browser* browser,
                          content::WebContents* web_contents,
                          const GURL& url,
-                         const SSLStatus& ssl,
-                         bool show_history) {
+                         const SSLStatus& ssl) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
 
   browser->window()->ShowWebsiteSettings(
-      profile, web_contents, url, ssl, show_history);
+      profile, web_contents, url, ssl);
 }
 
 void ShowChromeToMobileBubble(Browser* browser) {

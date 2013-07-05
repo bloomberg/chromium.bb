@@ -89,8 +89,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
   GetContentSettingBubbleModelDelegate() OVERRIDE;
   virtual void ShowWebsiteSettings(content::WebContents* web_contents,
                                    const GURL& url,
-                                   const content::SSLStatus& ssl,
-                                   bool show_history) OVERRIDE;
+                                   const content::SSLStatus& ssl) OVERRIDE;
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
 
   // Implements ToolbarModelDelegate:
@@ -139,6 +138,6 @@ class SimpleWebViewDialog : public views::ButtonListener,
   DISALLOW_COPY_AND_ASSIGN(SimpleWebViewDialog);
 };
 
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SIMPLE_WEB_VIEW_DIALOG_H_

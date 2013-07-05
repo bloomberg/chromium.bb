@@ -41,5 +41,5 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
   }
 
   location_bar_->delegate()->ShowWebsiteSettings(
-      tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
+      tab, nav_entry->GetURL(), nav_entry->GetSSL());
 }
