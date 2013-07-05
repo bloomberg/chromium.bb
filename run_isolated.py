@@ -194,7 +194,7 @@ def os_link(source, link_name):
 
 def readable_copy(outfile, infile):
   """Makes a copy of the file that is readable by everyone."""
-  shutil.copy(infile, outfile)
+  shutil.copy2(infile, outfile)
   read_enabled_mode = (os.stat(outfile).st_mode | stat.S_IRUSR |
                        stat.S_IRGRP | stat.S_IROTH)
   os.chmod(outfile, read_enabled_mode)
