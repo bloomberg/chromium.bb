@@ -2314,12 +2314,12 @@ WebString WebViewImpl::inputModeOfFocusedElement()
     if (node->hasTagName(HTMLNames::inputTag)) {
         const HTMLInputElement* input = toHTMLInputElement(node);
         if (input->supportsInputModeAttribute())
-            return input->fastGetAttribute(HTMLNames::inputmodeAttr);
+            return input->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
         return WebString();
     }
     if (isHTMLTextAreaElement(node)) {
         const HTMLTextAreaElement* textarea = toHTMLTextAreaElement(node);
-        return textarea->fastGetAttribute(HTMLNames::inputmodeAttr);
+        return textarea->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
     }
 
     return WebString();

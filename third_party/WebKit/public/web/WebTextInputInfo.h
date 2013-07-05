@@ -52,6 +52,7 @@ struct WebTextInputInfo {
     int compositionEnd;
 
     // The inputmode attribute value of the currently focused input field.
+    // This string is lower-case.
     WebString inputMode;
 
     WEBKIT_EXPORT bool equals(const WebTextInputInfo&) const;
