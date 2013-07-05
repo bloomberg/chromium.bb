@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/common/ssl_status.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace autofill {
 

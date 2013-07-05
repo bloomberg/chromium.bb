@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/md5.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace visitedlink {
 

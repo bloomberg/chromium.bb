@@ -27,12 +27,12 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
-#include "googleurl/src/gurl.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 using content::RenderViewHost;
 using content::SSLStatus;

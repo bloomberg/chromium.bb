@@ -27,10 +27,10 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/encryptor/encryptor.h"
-#include "googleurl/src/gurl.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 using base::Time;
 

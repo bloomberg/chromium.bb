@@ -44,7 +44,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "grit/component_strings.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -53,6 +52,7 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 using content::WebContents;
 using testing::_;

@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "content/public/renderer/render_view_observer.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebTextFieldDecoratorClient.h"
+#include "url/gurl.h"
 
 namespace WebKit {
 class WebCString;

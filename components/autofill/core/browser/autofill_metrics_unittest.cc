@@ -26,10 +26,10 @@
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "components/webdata/common/web_data_results.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

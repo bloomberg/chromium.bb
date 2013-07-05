@@ -12,11 +12,11 @@
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/browser_context.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace {
 

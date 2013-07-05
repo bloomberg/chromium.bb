@@ -13,8 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_file_util.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::TimeDelta;
 

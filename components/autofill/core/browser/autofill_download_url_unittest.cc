@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/autofill_download_url.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using testing::StartsWith;
 

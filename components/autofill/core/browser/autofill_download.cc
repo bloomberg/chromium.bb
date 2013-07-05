@@ -20,11 +20,11 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
+#include "url/gurl.h"
 
 using content::BrowserContext;
 
