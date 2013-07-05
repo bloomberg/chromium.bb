@@ -95,9 +95,9 @@ void WEBPImageDecoder::clearDecoder()
 
 bool WEBPImageDecoder::isSizeAvailable()
 {
-    if (!ImageDecoder::isSizeAvailable()) {
+    if (!ImageDecoder::isSizeAvailable())
         updateDemuxer();
-    }
+
     return ImageDecoder::isSizeAvailable();
 }
 
@@ -105,6 +105,7 @@ size_t WEBPImageDecoder::frameCount()
 {
     if (!updateDemuxer())
         return 0;
+
     return m_frameBufferCache.size();
 }
 
