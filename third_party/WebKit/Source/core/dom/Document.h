@@ -1053,7 +1053,7 @@ public:
 
     DocumentTimeline* timeline() { return m_timeline.get(); }
 
-    void addToTopLayer(Element*);
+    void addToTopLayer(Element*, const Element* before = 0);
     void removeFromTopLayer(Element*);
     const Vector<RefPtr<Element> >& topLayerElements() const { return m_topLayerElements; }
     Element* activeModalDialog() const { return !m_topLayerElements.isEmpty() ? m_topLayerElements.last().get() : 0; }

@@ -186,6 +186,7 @@ private:
 
     RefPtr<PseudoElement> m_generatedBefore;
     RefPtr<PseudoElement> m_generatedAfter;
+    RefPtr<PseudoElement> m_backdrop;
 
     ElementRareData(RenderObject*);
     void releasePseudoElement(PseudoElement*);
@@ -226,6 +227,7 @@ inline ElementRareData::~ElementRareData()
     ASSERT(!m_shadow);
     ASSERT(!m_generatedBefore);
     ASSERT(!m_generatedAfter);
+    ASSERT(!m_backdrop);
 }
 
 inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> element)
@@ -239,6 +241,10 @@ inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<Pseu
         releasePseudoElement(m_generatedAfter.get());
         m_generatedAfter = element;
         break;
+    case BACKDROP:
+        releasePseudoElement(m_backdrop.get());
+        m_backdrop = element;
+        break;
     default:
         ASSERT_NOT_REACHED();
     }
@@ -251,6 +257,8 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
         return m_generatedBefore.get();
     case AFTER:
         return m_generatedAfter.get();
+    case BACKDROP:
+        return m_backdrop.get();
     default:
         return 0;
     }
@@ -267,6 +275,7 @@ inline void ElementRareData::releasePseudoElement(PseudoElement* element)
     ASSERT(!element->nextSibling());
     ASSERT(!element->previousSibling());
 
+    element->document()->removeFromTopLayer(element);
     element->setParentOrShadowHostNode(0);
 }
 

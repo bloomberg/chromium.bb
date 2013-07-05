@@ -161,6 +161,8 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
         return BEFORE;
     case PseudoAfter:
         return AFTER;
+    case PseudoBackdrop:
+        return BACKDROP;
     case PseudoScrollbar:
         return SCROLLBAR;
     case PseudoScrollbarButton:
@@ -262,6 +264,7 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
     DEFINE_STATIC_LOCAL(AtomicString, any, ("-webkit-any(", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, anyLink, ("-webkit-any-link", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, autofill, ("-webkit-autofill", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, backdrop, ("backdrop", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, before, ("before", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, checked, ("checked", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, defaultString, ("default", AtomicString::ConstructFromLiteral));
@@ -342,6 +345,7 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
         nameToPseudoType->set(anyLink.impl(), CSSSelector::PseudoAnyLink);
         nameToPseudoType->set(any.impl(), CSSSelector::PseudoAny);
         nameToPseudoType->set(autofill.impl(), CSSSelector::PseudoAutofill);
+        nameToPseudoType->set(backdrop.impl(), CSSSelector::PseudoBackdrop);
         nameToPseudoType->set(before.impl(), CSSSelector::PseudoBefore);
         nameToPseudoType->set(checked.impl(), CSSSelector::PseudoChecked);
         nameToPseudoType->set(defaultString.impl(), CSSSelector::PseudoDefault);
@@ -453,6 +457,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoFirstLetter:
     case PseudoFirstLine:
         compat = true;
+    case PseudoBackdrop:
     case PseudoDistributed:
     case PseudoResizer:
     case PseudoScrollbar:

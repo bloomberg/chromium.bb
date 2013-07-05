@@ -495,6 +495,7 @@ String RenderTheme::extraDefaultStyleSheet()
     if (RuntimeEnabledFeatures::dialogElementEnabled()) {
         runtimeCSS.appendLiteral("dialog:not([open]) { display: none; }");
         runtimeCSS.appendLiteral("dialog { position: absolute; left: 0; right: 0; margin: auto; border: solid; padding: 1em; background: white; color: black;}");
+        runtimeCSS.appendLiteral("dialog::backdrop { background: rgba(0,0,0,0.1); }");
     }
 
     return runtimeCSS.toString();

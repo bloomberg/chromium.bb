@@ -38,6 +38,12 @@ public:
     {
     }
 
+    // The spec disallows inheritance for ::backdrop.
+    bool allowsInheritance(const RenderStyle* parentStyle) const
+    {
+        return parentStyle && pseudoId != BACKDROP;
+    }
+
     PseudoId pseudoId;
     ScrollbarPart scrollbarPart;
     RenderScrollbar* scrollbar;

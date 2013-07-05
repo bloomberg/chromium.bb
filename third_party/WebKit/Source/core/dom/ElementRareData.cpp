@@ -43,7 +43,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     RegionOversetState regionOversetState;
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointers[9];
+    void* pointers[10];
 };
 
 COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);

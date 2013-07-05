@@ -81,10 +81,13 @@ void PseudoElement::attach(const AttachContext& context)
     Element::attach(context);
 
     RenderObject* renderer = this->renderer();
-    if (!renderer || !renderer->style()->regionThread().isEmpty())
+    if (!renderer)
         return;
-
     RenderStyle* style = renderer->style();
+    if (!style->regionThread().isEmpty())
+        return;
+    if (style->styleType() != BEFORE && style->styleType() != AFTER)
+        return;
     ASSERT(style->contentData());
 
     for (const ContentData* content = style->contentData(); content; content = content->next()) {

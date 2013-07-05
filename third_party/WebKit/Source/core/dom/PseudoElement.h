@@ -67,7 +67,7 @@ const QualifiedName& pseudoElementTagName();
 
 inline bool pseudoElementRendererIsNeeded(const RenderStyle* style)
 {
-    return style && style->display() != NONE && (style->contentData() || !style->regionThread().isEmpty());
+    return style && style->display() != NONE && (style->styleType() == BACKDROP || style->contentData() || !style->regionThread().isEmpty());
 }
 
 } // namespace

@@ -121,6 +121,7 @@ namespace WebCore {
             PseudoTarget,
             PseudoBefore,
             PseudoAfter,
+            PseudoBackdrop,
             PseudoLang,
             PseudoNot,
             PseudoResizer,

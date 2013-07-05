@@ -1264,7 +1264,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     state.initForStyleResolve(document(), e, parentStyle);
 
-    if (m_state.parentStyle()) {
+    if (pseudoStyleRequest.allowsInheritance(m_state.parentStyle())) {
         state.setStyle(RenderStyle::create());
         state.style()->inheritFrom(m_state.parentStyle());
     } else {
@@ -1438,11 +1438,18 @@ static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool s
 // CSS requires text-decoration to be reset at each DOM element for tables,
 // inline blocks, inline tables, run-ins, shadow DOM crossings, floating elements,
 // and absolute or relatively positioned elements.
-static bool doesNotInheritTextDecoration(RenderStyle* style, Element* e)
+static bool doesNotInheritTextDecoration(const RenderStyle* style, const Element* e)
 {
     return style->display() == TABLE || style->display() == INLINE_TABLE || style->display() == RUN_IN
         || style->display() == INLINE_BLOCK || style->display() == INLINE_BOX || isAtShadowBoundary(e)
         || style->isFloating() || style->hasOutOfFlowPosition();
+}
+
+// FIXME: This helper is only needed because pseudoStyleForElement passes a null
+// element to adjustRenderStyle, so we can't just use element->isInTopLayer().
+static bool isInTopLayer(const Element* element, const RenderStyle* style)
+{
+    return (element && element->isInTopLayer()) || (style && style->styleType() == BACKDROP);
 }
 
 static bool isDisplayFlexibleBox(EDisplay display)
@@ -1513,7 +1520,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
             style->setDisplay(BLOCK);
 
         // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
-        if (e && e->isInTopLayer() && (style->position() == StaticPosition || style->position() == RelativePosition))
+        if (isInTopLayer(e, style) && (style->position() == StaticPosition || style->position() == RelativePosition))
             style->setPosition(AbsolutePosition);
 
         // Absolute/fixed positioned elements, floating elements and the document element need block-like outside display.
@@ -1569,7 +1576,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->hasBlendMode()
         || style->position() == StickyPosition
         || (style->position() == FixedPosition && e && e->document()->page() && e->document()->page()->settings()->fixedPositionCreatesStackingContext())
-        || (e && e->isInTopLayer())
+        || isInTopLayer(e, style)
         ))
         style->setZIndex(0);
 

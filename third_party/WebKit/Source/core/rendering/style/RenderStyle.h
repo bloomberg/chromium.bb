@@ -241,7 +241,7 @@ protected:
         unsigned _page_break_inside : 2; // EPageBreak
 
         unsigned _styleType : 6; // PseudoId
-        unsigned _pseudoBits : 7;
+        unsigned _pseudoBits : 8;
         unsigned explicitInheritance : 1; // Explicitly inherits a non-inherited property
         unsigned unique : 1; // Style can not be shared.
         unsigned emptyState : 1;
@@ -262,7 +262,7 @@ protected:
         unsigned _affectedByDrag : 1;
         unsigned _isLink : 1;
         // If you add more style bits here, you will also need to update RenderStyle::copyNonInheritedFrom()
-        // 59 bits
+        // 60 bits
     } noninherited_flags;
 
 // !END SYNC!

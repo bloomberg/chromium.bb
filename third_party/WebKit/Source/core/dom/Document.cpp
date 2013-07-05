@@ -4666,12 +4666,19 @@ void Document::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObjec
     dispatchWindowEvent(PopStateEvent::create(stateObject, domWindow() ? domWindow()->history() : 0));
 }
 
-void Document::addToTopLayer(Element* element)
+void Document::addToTopLayer(Element* element, const Element* before)
 {
     if (element->isInTopLayer())
         return;
+
     ASSERT(!m_topLayerElements.contains(element));
-    m_topLayerElements.append(element);
+    ASSERT(!before || m_topLayerElements.contains(before));
+    if (before) {
+        size_t beforePosition = m_topLayerElements.find(before);
+        m_topLayerElements.insert(beforePosition, element);
+    } else {
+        m_topLayerElements.append(element);
+    }
     element->setIsInTopLayer(true);
 }
 

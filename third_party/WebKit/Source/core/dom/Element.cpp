@@ -205,6 +205,7 @@ Element::~Element()
         ElementRareData* data = elementRareData();
         data->setPseudoElement(BEFORE, 0);
         data->setPseudoElement(AFTER, 0);
+        data->setPseudoElement(BACKDROP, 0);
         data->clearShadow();
     }
 
@@ -1295,7 +1296,10 @@ void Element::removedFrom(ContainerNode* insertionPoint)
     if (Element* after = pseudoElement(AFTER))
         after->removedFrom(insertionPoint);
 
+    if (Element* backdrop = pseudoElement(BACKDROP))
+        backdrop->removedFrom(insertionPoint);
     document()->removeFromTopLayer(this);
+
     if (containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 
@@ -1353,6 +1357,7 @@ void Element::attach(const AttachContext& context)
     ContainerNode::attach(context);
 
     createPseudoElementIfNeeded(AFTER);
+    createPseudoElementIfNeeded(BACKDROP);
 
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
@@ -1385,6 +1390,7 @@ void Element::detach(const AttachContext& context)
         ElementRareData* data = elementRareData();
         data->setPseudoElement(BEFORE, 0);
         data->setPseudoElement(AFTER, 0);
+        data->setPseudoElement(BACKDROP, 0);
         data->setIsInCanvasSubtree(false);
         data->resetComputedStyle();
         data->resetDynamicRestyleObservations();
@@ -2421,7 +2427,10 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleChange change)
 
 void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 {
-    if (!document()->styleSheetCollection()->usesBeforeAfterRules())
+    if ((pseudoId == BEFORE || pseudoId == AFTER) && !document()->styleSheetCollection()->usesBeforeAfterRules())
+        return;
+
+    if (pseudoId == BACKDROP && !isInTopLayer())
         return;
 
     if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
@@ -2432,7 +2441,10 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 
     ASSERT(!isPseudoElement());
     RefPtr<PseudoElement> element = PseudoElement::create(this, pseudoId);
+    if (pseudoId == BACKDROP)
+        document()->addToTopLayer(element.get(), this);
     element->attach();
+
     ensureElementRareData()->setPseudoElement(pseudoId, element.release());
 }
 
