@@ -148,26 +148,40 @@ void DeleteMediaType(AM_MEDIA_TYPE* mt) {
 
 // static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
+  Names::iterator it;
+
   if (VideoCaptureDeviceMFWin::PlatformSupported()) {
     VideoCaptureDeviceMFWin::GetDeviceNames(device_names);
-  } else {
-    VideoCaptureDeviceWin::GetDeviceNames(device_names);
   }
+  // Retrieve the devices with DirectShow (DS) interface. They might (partially)
+  // overlap with the MediaFoundation (MF), so the list has to be consolidated.
+  Names temp_names;
+  VideoCaptureDeviceWin::GetDeviceNames(&temp_names);
+
+  // Merge the DS devices into the MF device list, and next remove
+  // the duplicates, giving priority to the MF "versions".
+  device_names->merge(temp_names);
+  device_names->unique();
 }
 
 // static
 VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
   VideoCaptureDevice* ret = NULL;
-  if (VideoCaptureDeviceMFWin::PlatformSupported()) {
+  if (device_name.capture_api_type() == Name::MEDIA_FOUNDATION) {
+    DCHECK(VideoCaptureDeviceMFWin::PlatformSupported());
     scoped_ptr<VideoCaptureDeviceMFWin> device(
         new VideoCaptureDeviceMFWin(device_name));
+    DVLOG(1) << " MediaFoundation Device: " << device_name.name();
     if (device->Init())
       ret = device.release();
-  } else {
+  } else if (device_name.capture_api_type() == Name::DIRECT_SHOW) {
     scoped_ptr<VideoCaptureDeviceWin> device(
         new VideoCaptureDeviceWin(device_name));
+    DVLOG(1) << " DirectShow Device: " << device_name.name();
     if (device->Init())
       ret = device.release();
+  } else{
+    NOTREACHED() << " Couldn't recognize VideoCaptureDevice type";
   }
 
   return ret;
@@ -236,7 +250,7 @@ void VideoCaptureDeviceWin::GetDeviceNames(Names* device_names) {
           id = base::SysWideToUTF8(V_BSTR(&name));
         }
 
-        device_names->push_back(Name(device_name, id));
+        device_names->push_back(Name(device_name, id, Name::DIRECT_SHOW));
       }
     }
     moniker.Release();
@@ -575,10 +589,14 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
         capability.color = VideoCaptureCapability::kYUY2;
       } else if (media_type->subtype == MEDIASUBTYPE_MJPG) {
         capability.color = VideoCaptureCapability::kMJPEG;
+      } else if (media_type->subtype == MEDIASUBTYPE_UYVY) {
+        capability.color = VideoCaptureCapability::kUYVY;
+      } else if (media_type->subtype == MEDIASUBTYPE_ARGB32) {
+        capability.color = VideoCaptureCapability::kARGB;
       } else {
         WCHAR guid_str[128];
         StringFromGUID2(media_type->subtype, guid_str, arraysize(guid_str));
-        DVLOG(2) << "Device support unknown media type " << guid_str;
+        DVLOG(2) << "Device supports (also) an unknown media type " << guid_str;
         continue;
       }
       capabilities_.Add(capability);
@@ -596,5 +614,4 @@ void VideoCaptureDeviceWin::SetErrorState(const char* reason) {
   state_ = kError;
   observer_->OnError();
 }
-
 }  // namespace media

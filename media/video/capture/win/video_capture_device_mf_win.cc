@@ -268,7 +268,8 @@ void VideoCaptureDeviceMFWin::GetDeviceNames(Names* device_names) {
             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &id,
             &id_size))) {
       std::wstring name_w(name, name_size), id_w(id, id_size);
-      Name device(base::SysWideToUTF8(name_w), base::SysWideToUTF8(id_w));
+      Name device(base::SysWideToUTF8(name_w), base::SysWideToUTF8(id_w),
+          Name::MEDIA_FOUNDATION);
       device_names->push_back(device);
     } else {
       DLOG(WARNING) << "GetAllocatedString failed: " << std::hex << hr;

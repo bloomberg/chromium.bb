@@ -127,7 +127,12 @@ class VideoCaptureDeviceTest : public testing::Test {
 };
 
 TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
+#if defined(OS_WIN)
+  VideoCaptureDevice::Name device_name("jibberish", "jibberish",
+      VideoCaptureDevice::Name::MEDIA_FOUNDATION);
+#else
   VideoCaptureDevice::Name device_name("jibberish", "jibberish");
+#endif
   VideoCaptureDevice* device = VideoCaptureDevice::Create(device_name);
   EXPECT_TRUE(device == NULL);
 }
@@ -144,7 +149,7 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   ASSERT_FALSE(device.get() == NULL);
 
   // Get info about the new resolution.
-  EXPECT_CALL(*frame_observer_, OnFrameInfo(640, 480, 30, _))
+  EXPECT_CALL(*frame_observer_, OnFrameInfo(640, 480, _, _))
       .Times(1);
 
   EXPECT_CALL(*frame_observer_, OnErr())
@@ -254,7 +259,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   EXPECT_CALL(*frame_observer_, OnErr())
       .Times(0);
   // Get info about the new resolution.
-  EXPECT_CALL(*frame_observer_, OnFrameInfo(640, 480, 30, _));
+  EXPECT_CALL(*frame_observer_, OnFrameInfo(640, 480, 15, _));
 
   device->Allocate(640, 480, 30, frame_observer_.get());
 
