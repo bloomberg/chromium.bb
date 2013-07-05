@@ -375,8 +375,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 //
 // <compressed data (zip)>
 // ------**--yradnuoBgoLtrapitluMklaTelgooG--**------
+
+// Fails on all platforms. http://crbug.com/257606
+// When enabling, it should be prefixed MANUAL_.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       MANUAL_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
+                       DISABLED_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
   EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Tell the uploader to save the multipart to a buffer instead of uploading.
