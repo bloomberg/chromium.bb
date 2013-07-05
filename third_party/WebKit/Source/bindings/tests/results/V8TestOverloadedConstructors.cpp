@@ -22,7 +22,6 @@
 #include "V8TestOverloadedConstructors.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
 #include "V8Blob.h"
 #include "bindings/v8/ScriptController.h"
@@ -30,6 +29,7 @@
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -67,7 +67,7 @@ template <typename T> void V8_USE(T) { }
 
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    V8TRYCATCH_VOID(ArrayBuffer*, arrayBuffer, V8ArrayBuffer::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    V8TRYCATCH_VOID(ArrayBuffer*, arrayBuffer, args[0]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(args[0])) : 0);
 
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(arrayBuffer);
     v8::Handle<v8::Object> wrapper = args.Holder();
