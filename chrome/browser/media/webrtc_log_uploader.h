@@ -53,6 +53,12 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
                  const std::string& app_session_id,
                  const std::string& app_url);
 
+  // For testing purposes. If called, the multipart will not be uploaded, but
+  // written to |post_data_| instead.
+  void OverrideUploadWithBufferForTesting(std::string* post_data) {
+    post_data_ = post_data;
+  }
+
  private:
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
@@ -68,6 +74,10 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   void DecreaseLogCount();
 
   int log_count_;
+
+  // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
+  // on the FILE thread.
+  std::string* post_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLogUploader);
 };

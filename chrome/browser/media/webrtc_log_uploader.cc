@@ -33,7 +33,8 @@ const char kMultipartBoundary[] =
 }  // namespace
 
 WebRtcLogUploader::WebRtcLogUploader()
-    : log_count_(0) {
+    : log_count_(0),
+      post_data_(NULL) {
 }
 
 WebRtcLogUploader::~WebRtcLogUploader() {
@@ -68,6 +69,14 @@ void WebRtcLogUploader::UploadLog(net::URLRequestContextGetter* request_context,
   std::string post_data;
   SetupMultipart(&post_data, reinterpret_cast<uint8*>(shared_memory->memory()),
                  length, app_session_id, app_url);
+
+  // If a test has set the test string pointer, write to it and skip uploading.
+  // This will be removed when the browser test for this feature is fully done
+  // according to the test plan. See http://crbug.com/257329.
+  if (post_data_) {
+    *post_data_ = post_data;
+    return;
+  }
 
   std::string content_type = kUploadContentType;
   content_type.append("; boundary=");
