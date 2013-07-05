@@ -1275,7 +1275,9 @@ bool RenderBox::computeBackgroundIsKnownToBeObscured()
     // Table and root background painting is special.
     if (isTable() || isRoot())
         return false;
-
+    // FIXME: box-shadow is painted while background painting.
+    if (style()->boxShadow())
+        return false;
     LayoutRect backgroundRect = backgroundPaintedExtent();
     return foregroundIsKnownToBeOpaqueInRect(backgroundRect, backgroundObscurationTestMaxDepth);
 }
