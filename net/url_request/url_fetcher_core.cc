@@ -358,14 +358,15 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
   *out_response_path = file_writer_->file_path();
 
   if (take_ownership) {
-    // Intentionally calling file_writer_ method directly without posting the
-    // task to network_task_runner_.
+    // Intentionally calling a file_writer_ method directly without posting
+    // the task to network_task_runner_.
     //
-    // This is for correctly handling the case when DisownFile() is soon
-    // followed by Stop(). We have to make sure that DisownFile takes effect
-    // before Stop is executed and thus file_writer_ is deleted.
-    // This should be thread-safe since file_writer_->DisownFile itself does no
-    // file operation, it just flips the state to be referred in destruction.
+    // This is for correctly handling the case when file_writer_->DisownFile()
+    // is soon followed by URLFetcherCore::Stop(). We have to make sure that
+    // DisownFile takes effect before Stop deletes file_writer_.
+    //
+    // This direct call should be thread-safe, since DisownFile itself does no
+    // file operation. It just flips the state to be referred in destruction.
     file_writer_->DisownFile();
   }
   return true;
