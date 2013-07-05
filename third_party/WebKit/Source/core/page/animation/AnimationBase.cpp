@@ -576,7 +576,11 @@ double AnimationBase::getElapsedTime() const
     if (m_startTime <= 0)
         return 0;
 
-    return beginAnimationUpdateTime() - m_startTime;
+    double elapsedTime = beginAnimationUpdateTime() - m_startTime;
+    // It's possible for the start time to be ahead of the last update time
+    // if the compositor has just sent notification for the start of an
+    // accelerated animation.
+    return max(elapsedTime, 0.0);
 }
 
 } // namespace WebCore
