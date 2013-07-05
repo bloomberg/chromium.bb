@@ -35,30 +35,21 @@ var createEvent = function(name) {
   return new eventBindings.Event(name, undefined, eventOpts);
 };
 
-var closeEvent = createEvent('webview.onClose');
-var consoleMessageEvent = createEvent('webview.onConsoleMessage');
-var contentLoadEvent = createEvent('webview.onContentLoad');
-var loadAbortEvent = createEvent('webview.onLoadAbort');
-var loadCommitEvent = createEvent('webview.onLoadCommit');
-var loadRedirectEvent = createEvent('webview.onLoadRedirect');
-var loadStartEvent = createEvent('webview.onLoadStart');
-var loadStopEvent = createEvent('webview.onLoadStop');
-
 var WEB_VIEW_EXT_EVENTS = {
   'close': {
-    evt: closeEvent,
+    evt: createEvent('webview.onClose'),
     fields: []
   },
   'consolemessage': {
-    evt: consoleMessageEvent,
+    evt: createEvent('webview.onConsoleMessage'),
     fields: ['level', 'message', 'line', 'sourceId']
   },
   'contentload': {
-    evt: contentLoadEvent,
+    evt: createEvent('webview.onContentLoad'),
     fields: []
   },
   'loadabort': {
-    evt: loadAbortEvent,
+    evt: createEvent('webview.onLoadAbort'),
     fields: ['url', 'isTopLevel', 'reason']
   },
   'loadcommit': {
@@ -70,23 +61,22 @@ var WEB_VIEW_EXT_EVENTS = {
         webview.browserPluginNode_.setAttribute('src', event.url);
       }
     },
-    evt: loadCommitEvent,
+    evt: createEvent('webview.onLoadCommit'),
     fields: ['url', 'isTopLevel']
   },
   'loadredirect': {
-    evt: loadRedirectEvent,
+    evt: createEvent('webview.onLoadRedirect'),
     fields: ['isTopLevel', 'oldUrl', 'newUrl']
   },
   'loadstart': {
-    evt: loadStartEvent,
+    evt: createEvent('webview.onLoadStart'),
     fields: ['url', 'isTopLevel']
   },
   'loadstop': {
-    evt: loadStopEvent,
+    evt: createEvent('webview.onLoadStop'),
     fields: []
   }
 };
-
 
 // The <webview> tags we wish to watch for (watchForTag) does not belong to the
 // current scope's "document" reference. We need to wait until the document
