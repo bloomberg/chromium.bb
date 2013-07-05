@@ -155,9 +155,6 @@ void RenderLayerBacking::updateDebugIndicators(bool showBorder, bool showRepaint
         m_foregroundLayer->setShowRepaintCounter(showRepaintCounter);
     }
     
-    if (m_contentsContainmentLayer)
-        m_contentsContainmentLayer->setShowDebugBorder(showBorder);
-    
     if (m_backgroundLayer) {
         m_backgroundLayer->setShowDebugBorder(showBorder);
         m_backgroundLayer->setShowRepaintCounter(showRepaintCounter);
@@ -214,7 +211,6 @@ void RenderLayerBacking::destroyGraphicsLayers()
         m_graphicsLayer->removeFromParent();
 
     m_ancestorClippingLayer = nullptr;
-    m_contentsContainmentLayer = nullptr;
     m_graphicsLayer = nullptr;
     m_foregroundLayer = nullptr;
     m_backgroundLayer = nullptr;
@@ -240,11 +236,7 @@ void RenderLayerBacking::updateTransform(const RenderStyle* style)
         makeMatrixRenderable(t, compositor()->canRender3DTransforms());
     }
     
-    if (m_contentsContainmentLayer) {
-        m_contentsContainmentLayer->setTransform(t);
-        m_graphicsLayer->setTransform(TransformationMatrix());
-    } else
-        m_graphicsLayer->setTransform(t);
+    m_graphicsLayer->setTransform(t);
 }
 
 void RenderLayerBacking::updateFilters(const RenderStyle* style)
@@ -274,7 +266,12 @@ void RenderLayerBacking::updateContentsOpaque()
 {
     // For non-root layers, background is always painted by the primary graphics layer.
     ASSERT(m_isMainFrameRenderViewLayer || !m_backgroundLayer);
-    m_graphicsLayer->setContentsOpaque(m_owningLayer->backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
+    if (m_backgroundLayer) {
+        m_graphicsLayer->setContentsOpaque(false);
+        m_backgroundLayer->setContentsOpaque(m_owningLayer->backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
+    } else {
+        m_graphicsLayer->setContentsOpaque(m_owningLayer->backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
+    }
 }
 
 static bool hasNonZeroTransformOrigin(const RenderObject* renderer)
@@ -440,8 +437,7 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
         m_graphicsLayer->setReplicatedByLayer(0);
 
     updateBackgroundColor(isSimpleContainerCompositingLayer());
-    updateRootLayerConfiguration();
-    
+
     if (isDirectlyCompositedImage())
         updateImageContents();
 
@@ -561,14 +557,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
 
     FloatSize contentsSize = relativeCompositingBounds.size();
     
-    if (m_contentsContainmentLayer) {
-        m_contentsContainmentLayer->setPreserves3D(preserves3D);
-        m_contentsContainmentLayer->setPosition(FloatPoint(relativeCompositingBounds.location() - graphicsLayerParentLocation));
-        // Use the same size as m_graphicsLayer so transforms behave correctly.
-        m_contentsContainmentLayer->setSize(contentsSize);
-        graphicsLayerParentLocation = relativeCompositingBounds.location();
-    }
-
     m_graphicsLayer->setPosition(FloatPoint(relativeCompositingBounds.location() - graphicsLayerParentLocation));
     m_graphicsLayer->setOffsetFromRenderer(toIntSize(localCompositingBounds.location()));
     
@@ -612,10 +600,7 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         FloatPoint3D anchor(relativeCompositingBounds.width()  != 0.0f ? ((layerBounds.x() - relativeCompositingBounds.x()) + transformOrigin.x()) / relativeCompositingBounds.width()  : 0.5f,
                             relativeCompositingBounds.height() != 0.0f ? ((layerBounds.y() - relativeCompositingBounds.y()) + transformOrigin.y()) / relativeCompositingBounds.height() : 0.5f,
                             transformOrigin.z());
-        if (m_contentsContainmentLayer)
-            m_contentsContainmentLayer->setAnchorPoint(anchor);
-        else
-            m_graphicsLayer->setAnchorPoint(anchor);
+        m_graphicsLayer->setAnchorPoint(anchor);
 
         RenderStyle* style = renderer()->style();
         GraphicsLayer* clipLayer = clippingLayer();
@@ -636,8 +621,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         }
     } else {
         m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
-        if (m_contentsContainmentLayer)
-            m_contentsContainmentLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
     }
 
     if (m_foregroundLayer) {
@@ -664,7 +647,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         FloatSize backgroundSize = contentsSize;
         if (backgroundLayerPaintsFixedRootBackground()) {
             FrameView* frameView = toRenderView(renderer())->frameView();
-            backgroundPosition = IntPoint(frameView->scrollOffsetForFixedPosition());
             backgroundSize = frameView->visibleContentRect().size();
         }
         m_backgroundLayer->setPosition(backgroundPosition);
@@ -762,19 +744,9 @@ void RenderLayerBacking::updateInternalHierarchy()
     if (m_ancestorClippingLayer)
         m_ancestorClippingLayer->removeAllChildren();
     
-    if (m_contentsContainmentLayer) {
-        m_contentsContainmentLayer->removeAllChildren();
-        if (m_ancestorClippingLayer)
-            m_ancestorClippingLayer->addChild(m_contentsContainmentLayer.get());
-    }
-    
-    if (m_backgroundLayer)
-        m_contentsContainmentLayer->addChild(m_backgroundLayer.get());
-
     m_graphicsLayer->removeFromParent();
-    if (m_contentsContainmentLayer)
-        m_contentsContainmentLayer->addChild(m_graphicsLayer.get());
-    else if (m_ancestorClippingLayer)
+
+    if (m_ancestorClippingLayer)
         m_ancestorClippingLayer->addChild(m_graphicsLayer.get());
 
     if (m_childContainmentLayer) {
@@ -865,7 +837,9 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
     }
     
     if (needsDescendantClip) {
-        if (!m_childContainmentLayer) {
+        // We don't need a child containment layer if we're the main frame render view
+        // layer. It's redundant as the frame clip above us will handle this clipping.
+        if (!m_childContainmentLayer && !m_isMainFrameRenderViewLayer) {
             m_childContainmentLayer = createGraphicsLayer("Child clipping Layer", CompositingReasonLayerForClip);
             m_childContainmentLayer->setMasksToBounds(true);
             layersChanged = true;
@@ -1018,30 +992,26 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
             m_backgroundLayer->setDrawsContent(true);
             m_backgroundLayer->setAnchorPoint(FloatPoint3D());
             m_backgroundLayer->setPaintingPhase(GraphicsLayerPaintBackground);
-            layerChanged = true;
-        }
-        
-        if (!m_contentsContainmentLayer) {
-            String layerName;
-#ifndef NDEBUG
-            layerName = m_owningLayer->debugName() + " (contents containment)";
+#if !OS(ANDROID)
+            m_backgroundLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
+            m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(false);
 #endif
-            m_contentsContainmentLayer = createGraphicsLayer(layerName, CompositingReasonLayerForBackground);
             layerChanged = true;
         }
     } else {
         if (m_backgroundLayer) {
             m_backgroundLayer->removeFromParent();
             m_backgroundLayer = nullptr;
-            layerChanged = true;
-        }
-        if (m_contentsContainmentLayer) {
-            m_contentsContainmentLayer->removeFromParent();
-            m_contentsContainmentLayer = nullptr;
+#if !OS(ANDROID)
+            m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
+#endif
             layerChanged = true;
         }
     }
-    
+
+    if (layerChanged && !m_owningLayer->renderer()->documentBeingDestroyed())
+        compositor()->rootFixedBackgroundsChanged();
+
     return layerChanged;
 }
 
@@ -1179,10 +1149,6 @@ void RenderLayerBacking::updateBackgroundColor(bool isSimpleContainer)
         m_graphicsLayer->setContentsToSolidColor(Color());
         m_graphicsLayer->setBackgroundColor(backgroundColor);
     }
-}
-
-void RenderLayerBacking::updateRootLayerConfiguration()
-{
 }
 
 static bool supportsDirectBoxDecorationsComposition(const RenderObject* renderer)
@@ -1512,9 +1478,6 @@ GraphicsLayer* RenderLayerBacking::childForSuperlayers() const
     if (m_ancestorClippingLayer)
         return m_ancestorClippingLayer.get();
 
-    if (m_contentsContainmentLayer)
-        return m_contentsContainmentLayer.get();
-    
     return m_graphicsLayer.get();
 }
 
@@ -1619,12 +1582,14 @@ void RenderLayerBacking::paintIntoLayer(const GraphicsLayer* graphicsLayer, Grap
 
     if (graphicsLayer == m_backgroundLayer)
         paintFlags |= (RenderLayer::PaintLayerPaintingRootBackgroundOnly | RenderLayer::PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
-    else if (m_backgroundLayer)
+    else if (compositor()->fixedRootBackgroundLayer())
         paintFlags |= RenderLayer::PaintLayerPaintingSkipRootBackground;
     
     // FIXME: GraphicsLayers need a way to split for RenderRegions.
     RenderLayer::LayerPaintingInfo paintingInfo(m_owningLayer, paintDirtyRect, paintBehavior, LayoutSize());
     m_owningLayer->paintLayerContents(context, paintingInfo, paintFlags);
+
+    ASSERT(graphicsLayer != m_backgroundLayer || paintFlags & RenderLayer::PaintLayerPaintingRootBackgroundOnly);
 
     if (m_owningLayer->containsDirtyOverlayScrollbars())
         m_owningLayer->paintLayerContents(context, paintingInfo, paintFlags | RenderLayer::PaintLayerPaintingOverlayScrollbars);
@@ -1696,8 +1661,7 @@ void RenderLayerBacking::didCommitChangesForLayer(const GraphicsLayer* layer) co
 
 bool RenderLayerBacking::getCurrentTransform(const GraphicsLayer* graphicsLayer, TransformationMatrix& transform) const
 {
-    GraphicsLayer* transformedLayer = m_contentsContainmentLayer.get() ? m_contentsContainmentLayer.get() : m_graphicsLayer.get();
-    if (graphicsLayer != transformedLayer)
+    if (graphicsLayer != m_graphicsLayer.get())
         return false;
 
     if (m_owningLayer->hasTransform()) {
@@ -1927,7 +1891,7 @@ double RenderLayerBacking::backingStoreMemoryEstimate() const
 {
     double backingMemory;
     
-    // m_ancestorClippingLayer, m_contentsContainmentLayer and m_childContainmentLayer are just used for masking or containment, so have no backing.
+    // m_ancestorClippingLayer and m_childContainmentLayer are just used for masking or containment, so have no backing.
     backingMemory = m_graphicsLayer->backingStoreMemoryEstimate();
     if (m_foregroundLayer)
         backingMemory += m_foregroundLayer->backingStoreMemoryEstimate();
@@ -1956,7 +1920,6 @@ void RenderLayerBacking::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) c
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
     info.addWeakPointer(m_owningLayer);
     info.addMember(m_ancestorClippingLayer, "ancestorClippingLayer");
-    info.addMember(m_contentsContainmentLayer, "contentsContainmentLayer");
     info.addMember(m_graphicsLayer, "graphicsLayer");
     info.addMember(m_foregroundLayer, "foregroundLayer");
     info.addMember(m_backgroundLayer, "backgroundLayer");

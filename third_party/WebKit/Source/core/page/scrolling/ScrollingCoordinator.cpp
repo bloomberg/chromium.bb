@@ -158,7 +158,6 @@ void ScrollingCoordinator::updateLayerPositionConstraint(RenderLayer* layer)
 
     // Avoid unnecessary commits
     clearPositionConstraintExceptForLayer(backing->ancestorClippingLayer(), mainLayer);
-    clearPositionConstraintExceptForLayer(backing->contentsContainmentLayer(), mainLayer);
     clearPositionConstraintExceptForLayer(backing->graphicsLayer(), mainLayer);
 
     if (WebLayer* scrollableLayer = scrollingWebLayerForGraphicsLayer(mainLayer))

@@ -1107,7 +1107,8 @@ webkit.org/b/95136 fast/css/sticky/sticky-left-percentage.html [ ImageOnlyFailur
 webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-lr.html [ ImageOnlyFailure ]
 webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-rl.html [ ImageOnlyFailure ]
 
-Bug(vollick) [ Mac ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
+Bug(vollick) compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
 
 # Does not yet support new web notifications TestRunner API
 webkit.org/b/95506 http/tests/notifications [ Skip ]

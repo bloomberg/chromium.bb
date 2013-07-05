@@ -1185,9 +1185,6 @@ void RenderLayerCompositor::frameViewDidScroll()
     }
 
     m_scrollLayer->setPosition(FloatPoint(-scrollPosition.x(), -scrollPosition.y()));
-
-    if (GraphicsLayer* fixedBackgroundLayer = fixedRootBackgroundLayer())
-        fixedBackgroundLayer->setPosition(IntPoint(frameView->scrollOffsetForFixedPosition()));
 }
 
 void RenderLayerCompositor::frameViewDidLayout()
@@ -1196,7 +1193,24 @@ void RenderLayerCompositor::frameViewDidLayout()
 
 void RenderLayerCompositor::rootFixedBackgroundsChanged()
 {
-    // FIXME: Implement when root fixed background layer is implemented.
+    if (!supportsFixedRootBackgroundCompositing())
+        return;
+
+    // To avoid having to make the fixed root background layer fixed positioned to
+    // stay put, we position it in the layer tree as follows:
+    //
+    // + Overflow controls host
+    //   + Frame clip
+    //     + (Fixed root background) <-- Here.
+    //     + Frame scroll
+    //       + Root content layer
+    //   + Scrollbars
+    //
+    // That is, it needs to be the first child of the frame clip, the sibling of
+    // the frame scroll layer. The compositor does not own the background layer, it
+    // just positions it (like the foreground layer).
+    if (GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer())
+        m_clipLayer->addChildBelow(backgroundLayer, m_scrollLayer.get());
 }
 
 void RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
@@ -2096,7 +2110,11 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
 
 bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
 {
-    return false;  // FIXME: Return true if this is supported when implemented.
+    if (Settings* settings = m_renderView->document()->settings()) {
+        if (settings->acceleratedCompositingForFixedRootBackgroundEnabled())
+            return true;
+    }
+    return false;
 }
 
 bool RenderLayerCompositor::needsFixedRootBackgroundLayer(const RenderLayer* layer) const
