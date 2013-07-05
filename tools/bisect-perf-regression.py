@@ -399,8 +399,7 @@ class AndroidBuilder(Builder):
 
     build_success = False
     if opts.build_preference == 'ninja':
-      build_success = BuildWithNinja(threads, targets,
-          opts.output_buildbot_annotations)
+      build_success = BuildWithNinja(threads, targets)
     else:
       assert False, 'No build system defined.'
 
