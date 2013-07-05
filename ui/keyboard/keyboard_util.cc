@@ -84,7 +84,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
     {"keyboard/images/microphone-green.svg",
         IDR_KEYBOARD_IMAGES_MICROPHONE_GREEN},
     {"keyboard/index.html", IDR_KEYBOARD_INDEX},
-    {"keyboard/keysets.html", IDR_KEYBOARD_KEYSETS},
+    {"keyboard/layouts/qwerty.html", IDR_KEYBOARD_QWERTY},
     {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
     {"keyboard/manifest.json", IDR_KEYBOARD_MANIFEST},
     {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
