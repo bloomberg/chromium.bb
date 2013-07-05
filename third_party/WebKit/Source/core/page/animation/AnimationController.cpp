@@ -35,6 +35,7 @@
 #include "core/dom/TransitionEvent.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/page/animation/AnimationBase.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
 #include "core/page/animation/CSSPropertyAnimation.h"
@@ -44,7 +45,6 @@
 
 namespace WebCore {
 
-static const double cAnimationTimerDelay = 0.025;
 static const double cBeginAnimationUpdateTimeNotSet = -1;
 
 AnimationControllerPrivate::AnimationControllerPrivate(Frame* frame)
@@ -83,69 +83,88 @@ bool AnimationControllerPrivate::clear(RenderObject* renderer)
     return animation->suspended();
 }
 
-double AnimationControllerPrivate::updateAnimations(SetChanged callSetChanged/* = DoNotCallSetChanged*/)
+void AnimationControllerPrivate::updateAnimations(double& timeToNextService, double& timeToNextEvent, SetNeedsStyleRecalc callSetNeedsStyleRecalc/* = DoNotCallSetNeedsStyleRecalc*/)
 {
-    double timeToNextService = -1;
-    bool calledSetChanged = false;
+    double minTimeToNextService = -1;
+    double minTimeToNextEvent = -1;
+    bool updateStyleNeeded = false;
 
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         CompositeAnimation* compAnim = it->value.get();
         if (!compAnim->suspended() && compAnim->hasAnimations()) {
             double t = compAnim->timeToNextService();
-            if (t != -1 && (t < timeToNextService || timeToNextService == -1))
-                timeToNextService = t;
-            if (!timeToNextService) {
-                if (callSetChanged == CallSetChanged) {
+            if (t != -1 && (t < minTimeToNextService || minTimeToNextService == -1))
+                minTimeToNextService = t;
+            double nextEvent = compAnim->timeToNextEvent();
+            if (nextEvent != -1 && (nextEvent < minTimeToNextEvent || minTimeToNextEvent == -1))
+                minTimeToNextEvent = nextEvent;
+            if (callSetNeedsStyleRecalc == CallSetNeedsStyleRecalc) {
+                if (!t) {
                     Node* node = it->key->node();
                     node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
-                    calledSetChanged = true;
+                    updateStyleNeeded = true;
                 }
-                else
-                    break;
+            } else if (!minTimeToNextService && !minTimeToNextEvent) {
+                // Found the minimum values and do not need to mark for style recalc.
+                break;
             }
         }
     }
 
-    if (calledSetChanged)
+    if (updateStyleNeeded)
         m_frame->document()->updateStyleIfNeeded();
 
-    return timeToNextService;
+    timeToNextService = minTimeToNextService;
+    timeToNextEvent = minTimeToNextEvent;
 }
 
-void AnimationControllerPrivate::updateAnimationTimerForRenderer(RenderObject* renderer)
+void AnimationControllerPrivate::scheduleServiceForRenderer(RenderObject* renderer)
 {
-    double timeToNextService = 0;
+    double timeToNextService = -1;
+    double timeToNextEvent = -1;
 
     RefPtr<CompositeAnimation> compAnim = m_compositeAnimations.get(renderer);
-    if (!compAnim->suspended() && compAnim->hasAnimations())
+    if (!compAnim->suspended() && compAnim->hasAnimations()) {
         timeToNextService = compAnim->timeToNextService();
+        timeToNextEvent = compAnim->timeToNextEvent();
+    }
 
-    if (m_animationTimer.isActive() && (m_animationTimer.repeatInterval() || m_animationTimer.nextFireInterval() <= timeToNextService))
-        return;
-
-    m_animationTimer.startOneShot(timeToNextService);
+    if (timeToNextService >= 0)
+        scheduleService(timeToNextService, timeToNextEvent);
 }
 
-void AnimationControllerPrivate::updateAnimationTimer(SetChanged callSetChanged/* = DoNotCallSetChanged*/)
+void AnimationControllerPrivate::scheduleService()
 {
-    double timeToNextService = updateAnimations(callSetChanged);
+    double timeToNextService = -1;
+    double timeToNextEvent = -1;
+    updateAnimations(timeToNextService, timeToNextEvent, DoNotCallSetNeedsStyleRecalc);
+    scheduleService(timeToNextService, timeToNextEvent);
+}
 
-    // If we want service immediately, we start a repeating timer to reduce the overhead of starting
-    if (!timeToNextService) {
-        if (!m_animationTimer.isActive() || m_animationTimer.repeatInterval() == 0)
-            m_animationTimer.startRepeating(cAnimationTimerDelay);
+void AnimationControllerPrivate::scheduleService(double timeToNextService, double timeToNextEvent)
+{
+    bool visible = m_frame->page()->visibilityState() == WebCore::PageVisibilityStateVisible;
+
+    if (!visible)
+        timeToNextService = timeToNextEvent;
+
+    if (visible && !timeToNextService) {
+        m_frame->document()->view()->scheduleAnimation();
+        if (m_animationTimer.isActive())
+            m_animationTimer.stop();
         return;
     }
 
-    // If we don't need service, we want to make sure the timer is no longer running
     if (timeToNextService < 0) {
         if (m_animationTimer.isActive())
             m_animationTimer.stop();
         return;
     }
 
-    // Otherwise, we want to start a one-shot timer so we get here again
+    if (m_animationTimer.isActive() && m_animationTimer.nextFireInterval() <= timeToNextService)
+        return;
+
     m_animationTimer.startOneShot(timeToNextService);
 }
 
@@ -211,12 +230,16 @@ void AnimationControllerPrivate::addNodeChangeToDispatch(PassRefPtr<Node> node)
     startUpdateStyleIfNeededDispatcher();
 }
 
-void AnimationControllerPrivate::animationFrameCallbackFired()
+void AnimationControllerPrivate::serviceAnimations()
 {
-    double timeToNextService = updateAnimations(CallSetChanged);
+    double timeToNextService = -1;
+    double timeToNextEvent = -1;
+    updateAnimations(timeToNextService, timeToNextEvent, CallSetNeedsStyleRecalc);
+    scheduleService(timeToNextService, timeToNextEvent);
 
-    if (timeToNextService >= 0)
-        m_frame->document()->view()->scheduleAnimation();
+    // Fire events right away, to avoid a flash of unanimated style after an animation completes, and before
+    // the 'end' event fires.
+    fireEventsAndUpdateStyle();
 }
 
 void AnimationControllerPrivate::animationTimerFired(Timer<AnimationControllerPrivate>*)
@@ -224,14 +247,7 @@ void AnimationControllerPrivate::animationTimerFired(Timer<AnimationControllerPr
     // Make sure animationUpdateTime is updated, so that it is current even if no
     // styleChange has happened (e.g. accelerated animations)
     setBeginAnimationUpdateTime(cBeginAnimationUpdateTimeNotSet);
-
-    // When the timer fires, all we do is call setChanged on all DOM nodes with running animations and then do an immediate
-    // updateStyleIfNeeded.  It will then call back to us with new information.
-    updateAnimationTimer(CallSetChanged);
-
-    // Fire events right away, to avoid a flash of unanimated style after an animation completes, and before
-    // the 'end' event fires.
-    fireEventsAndUpdateStyle();
+    serviceAnimations();
 }
 
 bool AnimationControllerPrivate::isRunningAnimationOnRenderer(RenderObject* renderer, CSSPropertyID property, bool isRunningNow) const
@@ -283,7 +299,7 @@ void AnimationControllerPrivate::suspendAnimationsForDocument(Document* document
         }
     }
     
-    updateAnimationTimer();
+    scheduleService();
 }
 
 void AnimationControllerPrivate::resumeAnimationsForDocument(Document* document)
@@ -299,7 +315,7 @@ void AnimationControllerPrivate::resumeAnimationsForDocument(Document* document)
         }
     }
     
-    updateAnimationTimer();
+    scheduleService();
 }
 
 void AnimationControllerPrivate::pauseAnimationsForTesting(double t)
@@ -486,9 +502,7 @@ PassRefPtr<RenderStyle> AnimationController::updateAnimations(RenderObject* rend
     RefPtr<RenderStyle> blendedStyle = rendererAnimations->animate(renderer, oldStyle, newStyle);
 
     if (renderer->parent() || newStyle->animations() || (oldStyle && oldStyle->animations())) {
-        m_data->updateAnimationTimerForRenderer(renderer);
-        if (FrameView* view = renderer->document()->view())
-            view->scheduleAnimation();
+        m_data->scheduleServiceForRenderer(renderer);
     }
 
     if (blendedStyle != newStyle) {
@@ -543,7 +557,7 @@ void AnimationController::resumeAnimations()
 
 void AnimationController::serviceAnimations()
 {
-    m_data->animationFrameCallbackFired();
+    m_data->serviceAnimations();
 }
 
 void AnimationController::suspendAnimationsForDocument(Document* document)

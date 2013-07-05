@@ -355,6 +355,45 @@ double CompositeAnimation::timeToNextService() const
     return minT;
 }
 
+double CompositeAnimation::timeToNextEvent() const
+{
+    // Returns the time at which next service to trigger events is required. -1 means no service is required. 0 means
+    // service is required now, and > 0 means service is required that many seconds in the future.
+    double minT = -1;
+
+    if (!m_transitions.isEmpty()) {
+        CSSPropertyTransitionsMap::const_iterator transitionsEnd = m_transitions.end();
+        for (CSSPropertyTransitionsMap::const_iterator it = m_transitions.begin(); it != transitionsEnd; ++it) {
+            ImplicitAnimation* transition = it->value.get();
+            double t = -1;
+            bool isLooping;
+            if (transition)
+                transition->getTimeToNextEvent(t, isLooping);
+            if (t < minT || minT == -1)
+                minT = t;
+            if (!minT)
+                return 0;
+        }
+    }
+    if (!m_keyframeAnimations.isEmpty()) {
+        m_keyframeAnimations.checkConsistency();
+        AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
+        for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
+            KeyframeAnimation* animation = it->value.get();
+            double t = -1;
+            bool isLooping;
+            if (animation)
+                animation->getTimeToNextEvent(t, isLooping);
+            if (t < minT || minT == -1)
+                minT = t;
+            if (!minT)
+                return 0;
+        }
+    }
+
+    return minT;
+}
+
 PassRefPtr<KeyframeAnimation> CompositeAnimation::getAnimationForProperty(CSSPropertyID property) const
 {
     RefPtr<KeyframeAnimation> retval;
