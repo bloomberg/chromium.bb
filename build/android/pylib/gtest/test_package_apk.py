@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Defines TestPackageApk to help run APK-based native tests."""
 
 import logging
 import os
@@ -97,7 +96,7 @@ class TestPackageApk(TestPackage):
       self._StartActivity()
       # Wait for native test to complete.
       p = self._WatchFifo(timeout=30 * self.tool.GetTimeoutScale())
-      p.expect('<<ScopedMainEntryLogger')
+      p.expect("<<ScopedMainEntryLogger")
       p.close()
     finally:
       self.tool.CleanUpEnvironment()
@@ -106,8 +105,8 @@ class TestPackageApk(TestPackage):
     ret = self._ParseGTestListTests(content)
     return ret
 
-  def CreateTestRunnerScript(self, test_filter, test_arguments):
-    self._CreateTestRunnerScript('--gtest_filter=%s %s' % (test_filter,
+  def CreateTestRunnerScript(self, gtest_filter, test_arguments):
+    self._CreateTestRunnerScript('--gtest_filter=%s %s' % (gtest_filter,
                                                            test_arguments))
 
   def RunTestsAndListResults(self):

@@ -4,12 +4,16 @@
 
 """Parses options for the instrumentation tests."""
 
+#TODO(craigdh): pylib/utils/ should not depend on pylib/.
+from pylib import constants
+
+import optparse
 import os
+import sys
+
+_SDK_OUT_DIR = os.path.join(constants.DIR_SOURCE_ROOT, 'out')
 
 
-# TODO(gkanwar): Some downstream scripts current rely on these functions
-# existing. This dependency should be removed, and this file deleted, in the
-# future.
 def AddBuildTypeOption(option_parser):
   """Decorates OptionParser with build type option."""
   default_build_type = 'Debug'
@@ -18,11 +22,36 @@ def AddBuildTypeOption(option_parser):
   option_parser.add_option('--debug', action='store_const', const='Debug',
                            dest='build_type', default=default_build_type,
                            help='If set, run test suites under out/Debug. '
-                           'Default is env var BUILDTYPE or Debug')
+                                'Default is env var BUILDTYPE or Debug')
   option_parser.add_option('--release', action='store_const', const='Release',
                            dest='build_type',
                            help='If set, run test suites under out/Release. '
-                           'Default is env var BUILDTYPE or Debug.')
+                                'Default is env var BUILDTYPE or Debug.')
+
+
+def AddInstallAPKOption(option_parser):
+  """Decorates OptionParser with apk option used to install the APK."""
+  AddBuildTypeOption(option_parser)
+  option_parser.add_option('--apk',
+                           help=('The name of the apk containing the '
+                                 ' application (with the .apk extension).'))
+  option_parser.add_option('--apk_package',
+                           help=('The package name used by the apk containing '
+                                 'the application.'))
+  option_parser.add_option('--keep_data',
+                           action='store_true',
+                           default=False,
+                           help=('Keep the package data when installing '
+                                 'the application.'))
+
+
+def ValidateInstallAPKOption(option_parser, options):
+  if not options.apk:
+    option_parser.error('--apk is mandatory.')
+  if not os.path.exists(options.apk):
+    options.apk = os.path.join(constants.DIR_SOURCE_ROOT,
+                               'out', options.build_type,
+                               'apks', options.apk)
 
 
 def AddTestRunnerOptions(option_parser, default_timeout=60):
@@ -62,7 +91,206 @@ def AddTestRunnerOptions(option_parser, default_timeout=60):
                                  'Chrome for Android flakiness dashboard.'))
   option_parser.add_option('--skip-deps-push', dest='push_deps',
                            action='store_false', default=True,
-                           help='Do not push dependencies to the device. '
-                           'Use this at own risk for speeding up test '
-                           'execution on local machine.')
+                           help='Do not push data dependencies to the device. '
+                                'Use this at own risk for speeding up test '
+                                'execution on local machine.')
   AddBuildTypeOption(option_parser)
+
+
+def AddGTestOptions(option_parser):
+  """Decorates OptionParser with GTest tests options."""
+
+  AddTestRunnerOptions(option_parser, default_timeout=0)
+  option_parser.add_option('-s', '--suite', dest='test_suite',
+                           help='Executable name of the test suite to run '
+                           '(use -s help to list them).')
+  option_parser.add_option('--out-directory', dest='out_directory',
+                           help='Path to the out/ directory, irrespective of '
+                           'the build type. Only for non-Chromium uses.')
+  option_parser.add_option('-d', '--device', dest='test_device',
+                           help='Target device for the test suite to run on.')
+  option_parser.add_option('-f', '--gtest_filter', dest='gtest_filter',
+                           help='gtest filter.')
+  #TODO(craigdh): Replace _ with - in arguments for consistency.
+  option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
+                           help='Additional arguments to pass to the test.')
+  option_parser.add_option('-e', '--emulator', dest='use_emulator',
+                           action='store_true',
+                           help='Run tests in a new instance of emulator.')
+  option_parser.add_option('-n', '--emulator_count',
+                           type='int', default=1,
+                           help='Number of emulators to launch for running the '
+                           'tests.')
+  option_parser.add_option('-x', '--xvfb', dest='use_xvfb',
+                           action='store_true',
+                           help='Use Xvfb around tests (ignored if not Linux).')
+  option_parser.add_option('--webkit', action='store_true',
+                           help='Run the tests from a WebKit checkout.')
+  option_parser.add_option('--exit_code', action='store_true',
+                           help='If set, the exit code will be total number '
+                           'of failures.')
+  option_parser.add_option('--exe', action='store_true',
+                           help='If set, use the exe test runner instead of '
+                           'the APK.')
+  option_parser.add_option('--abi', default='armeabi-v7a',
+                           help='Platform of emulators to launch.')
+
+
+def AddCommonInstrumentationOptions(option_parser):
+  """Decorates OptionParser with base instrumentation tests options."""
+
+  AddTestRunnerOptions(option_parser)
+  option_parser.add_option('-f', '--test_filter',
+                           help='Test filter (if not fully qualified, '
+                           'will run all matches).')
+  option_parser.add_option(
+      '-A', '--annotation', dest='annotation_str',
+      help=('Comma-separated list of annotations. Run only tests with any of '
+            'the given annotations. An annotation can be either a key or a '
+            'key-values pair. A test that has no annotation is considered '
+            '"SmallTest".'))
+  option_parser.add_option(
+      '-E', '--exclude-annotation', dest='exclude_annotation_str',
+      help=('Comma-separated list of annotations. Exclude tests with these '
+            'annotations.'))
+  option_parser.add_option('-j', '--java_only', action='store_true',
+                           help='Run only the Java tests.')
+  option_parser.add_option('-p', '--python_only', action='store_true',
+                           help='Run only the Python tests.')
+  option_parser.add_option('--screenshot', dest='screenshot_failures',
+                           action='store_true',
+                           help='Capture screenshots of test failures')
+  option_parser.add_option('--save-perf-json', action='store_true',
+                           help='Saves the JSON file for each UI Perf test.')
+  option_parser.add_option('--shard_retries', type=int, default=1,
+                           help=('Number of times to retry each failure when '
+                                 'sharding.'))
+  option_parser.add_option('--official-build', help='Run official build tests.')
+  option_parser.add_option('--device',
+                           help='Serial number of device we should use.')
+  option_parser.add_option('--python_test_root',
+                           help='Root of the python-driven tests.')
+  option_parser.add_option('--keep_test_server_ports',
+                           action='store_true',
+                           help='Indicates the test server ports must be '
+                                'kept. When this is run via a sharder '
+                                'the test server ports should be kept and '
+                                'should not be reset.')
+  option_parser.add_option('--buildbot-step-failure',
+                           action='store_true',
+                           help=('If present, will set the buildbot status '
+                                 'as STEP_FAILURE, otherwise as STEP_WARNINGS '
+                                 'when test(s) fail.'))
+  option_parser.add_option('--disable_assertions', action='store_true',
+                           help='Run with java assertions disabled.')
+  option_parser.add_option('--test_data', action='append', default=[],
+                           help=('Each instance defines a directory of test '
+                                 'data that should be copied to the target(s) '
+                                 'before running the tests. The argument '
+                                 'should be of the form <target>:<source>, '
+                                 '<target> is relative to the device data'
+                                 'directory, and <source> is relative to the '
+                                 'chromium build directory.'))
+
+
+def AddInstrumentationOptions(option_parser):
+  """Decorates OptionParser with instrumentation tests options."""
+
+  AddCommonInstrumentationOptions(option_parser)
+  option_parser.add_option('-w', '--wait_debugger', dest='wait_for_debugger',
+                           action='store_true', help='Wait for debugger.')
+  option_parser.add_option('-I', dest='install_apk',
+                           help='Install APK.', action='store_true')
+  option_parser.add_option(
+      '--test-apk', dest='test_apk',
+      help=('The name of the apk containing the tests (without the .apk '
+            'extension; e.g. "ContentShellTest"). Alternatively, this can '
+            'be a full path to the apk.'))
+
+
+def AddUIAutomatorOptions(option_parser):
+  """Decorates OptionParser with uiautomator tests options."""
+
+  AddCommonInstrumentationOptions(option_parser)
+  option_parser.add_option(
+      '--package-name',
+      help=('The package name used by the apk containing the application.'))
+  option_parser.add_option(
+      '--test-jar', dest='test_jar',
+      help=('The name of the dexed jar containing the tests (without the '
+            '.dex.jar extension). Alternatively, this can be a full path to '
+            'the jar.'))
+
+
+def ValidateCommonInstrumentationOptions(option_parser, options, args):
+  """Validate common options/arguments and populate options with defaults."""
+  if len(args) > 1:
+    option_parser.print_help(sys.stderr)
+    option_parser.error('Unknown arguments: %s' % args[1:])
+
+  if options.java_only and options.python_only:
+    option_parser.error('Options java_only (-j) and python_only (-p) '
+                        'are mutually exclusive.')
+  options.run_java_tests = True
+  options.run_python_tests = True
+  if options.java_only:
+    options.run_python_tests = False
+  elif options.python_only:
+    options.run_java_tests = False
+
+  if options.annotation_str:
+    options.annotations = options.annotation_str.split(',')
+  elif options.test_filter:
+    options.annotations = []
+  else:
+    options.annotations = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest']
+
+  if options.exclude_annotation_str:
+    options.exclude_annotations = options.exclude_annotation_str.split(',')
+  else:
+    options.exclude_annotations = []
+
+
+def ValidateInstrumentationOptions(option_parser, options, args):
+  """Validate options/arguments and populate options with defaults."""
+  ValidateCommonInstrumentationOptions(option_parser, options, args)
+
+  if not options.test_apk:
+    option_parser.error('--test-apk must be specified.')
+
+  if os.path.exists(options.test_apk):
+    # The APK is fully qualified, assume the JAR lives along side.
+    options.test_apk_path = options.test_apk
+    options.test_apk_jar_path = (os.path.splitext(options.test_apk_path)[0] +
+                                 '.jar')
+  else:
+    options.test_apk_path = os.path.join(_SDK_OUT_DIR,
+                                         options.build_type,
+                                         constants.SDK_BUILD_APKS_DIR,
+                                         '%s.apk' % options.test_apk)
+    options.test_apk_jar_path = os.path.join(
+        _SDK_OUT_DIR, options.build_type, constants.SDK_BUILD_TEST_JAVALIB_DIR,
+        '%s.jar' %  options.test_apk)
+
+
+def ValidateUIAutomatorOptions(option_parser, options, args):
+  """Validate uiautomator options/arguments."""
+  ValidateCommonInstrumentationOptions(option_parser, options, args)
+
+  if not options.package_name:
+    option_parser.error('--package-name must be specified.')
+
+  if not options.test_jar:
+    option_parser.error('--test-jar must be specified.')
+
+  if os.path.exists(options.test_jar):
+    # The dexed JAR is fully qualified, assume the info JAR lives along side.
+    options.uiautomator_jar = options.test_jar
+  else:
+    options.uiautomator_jar = os.path.join(
+        _SDK_OUT_DIR, options.build_type, constants.SDK_BUILD_JAVALIB_DIR,
+        '%s.dex.jar' % options.test_jar)
+  options.uiautomator_info_jar = (
+      options.uiautomator_jar[:options.uiautomator_jar.find('.dex.jar')] +
+      '_java.jar')
+

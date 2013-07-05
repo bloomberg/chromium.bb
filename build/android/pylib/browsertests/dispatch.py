@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Dispatches content_browsertests."""
-
 import logging
 import os
 import sys
@@ -19,12 +17,10 @@ from pylib.utils import report_results
 
 sys.path.insert(0,
                 os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib'))
+
 from common import unittest_util
 
-
 def Dispatch(options):
-  """Dispatches all content_browsertests."""
-
   attached_devices = []
   if options.test_device:
     attached_devices = [options.test_device]
@@ -65,9 +61,9 @@ def Dispatch(options):
   # Get tests and split them up based on the number of devices.
   all_enabled = gtest_dispatch.GetAllEnabledTests(RunnerFactory,
                                                   attached_devices)
-  if options.test_filter:
+  if options.gtest_filter:
     all_tests = unittest_util.FilterTestNames(all_enabled,
-                                              options.test_filter)
+                                              options.gtest_filter)
   else:
     all_tests = _FilterTests(all_enabled)
 
@@ -88,22 +84,17 @@ def Dispatch(options):
       flakiness_server=options.flakiness_dashboard_server)
   report_results.PrintAnnotation(test_results)
 
-  return len(test_results.GetNotPass())
-
-
 def _FilterTests(all_enabled_tests):
   """Filters out tests and fixtures starting with PRE_ and MANUAL_."""
   return [t for t in all_enabled_tests if _ShouldRunOnBot(t)]
 
-
 def _ShouldRunOnBot(test):
   fixture, case = test.split('.', 1)
-  if _StartsWith(fixture, case, 'PRE_'):
+  if _StartsWith(fixture, case, "PRE_"):
     return False
-  if _StartsWith(fixture, case, 'MANUAL_'):
+  if _StartsWith(fixture, case, "MANUAL_"):
     return False
   return True
-
 
 def _StartsWith(a, b, prefix):
   return a.startswith(prefix) or b.startswith(prefix)

@@ -4,8 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Utility script to install APKs from the command line quickly."""
-
 import multiprocessing
 import optparse
 import os
@@ -15,32 +13,6 @@ from pylib import android_commands
 from pylib import constants
 from pylib.utils import apk_helper
 from pylib.utils import test_options_parser
-
-
-def AddInstallAPKOption(option_parser):
-  """Adds apk option used to install the APK to the OptionParser."""
-  test_options_parser.AddBuildTypeOption(option_parser)
-  option_parser.add_option('--apk',
-                           help=('The name of the apk containing the '
-                                 ' application (with the .apk extension).'))
-  option_parser.add_option('--apk_package',
-                           help=('The package name used by the apk containing '
-                                 'the application.'))
-  option_parser.add_option('--keep_data',
-                           action='store_true',
-                           default=False,
-                           help=('Keep the package data when installing '
-                                 'the application.'))
-
-
-def ValidateInstallAPKOption(option_parser, options):
-  """Validates the apk option and potentially qualifies the path."""
-  if not options.apk:
-    option_parser.error('--apk is mandatory.')
-  if not os.path.exists(options.apk):
-    options.apk = os.path.join(constants.DIR_SOURCE_ROOT,
-                               'out', options.build_type,
-                               'apks', options.apk)
 
 
 def _InstallApk(args):
@@ -53,9 +25,9 @@ def _InstallApk(args):
 
 def main(argv):
   parser = optparse.OptionParser()
-  AddInstallAPKOption(parser)
+  test_options_parser.AddInstallAPKOption(parser)
   options, args = parser.parse_args(argv)
-  ValidateInstallAPKOption(parser, options)
+  test_options_parser.ValidateInstallAPKOption(parser, options)
   if len(args) > 1:
     raise Exception('Error: Unknown argument:', args[1:])
 

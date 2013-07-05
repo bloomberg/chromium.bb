@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Defines TestPackageExecutable to help run stand-alone executables."""
 
 import logging
 import os
@@ -90,11 +89,11 @@ class TestPackageExecutable(TestPackage):
          self.test_suite_basename))
     return self._ParseGTestListTests(all_tests)
 
-  def CreateTestRunnerScript(self, test_filter, test_arguments):
+  def CreateTestRunnerScript(self, gtest_filter, test_arguments):
     """Creates a test runner script and pushes to the device.
 
     Args:
-      test_filter: A test_filter flag.
+      gtest_filter: A gtest_filter flag.
       test_arguments: Additional arguments to pass to the test binary.
     """
     tool_wrapper = self.tool.GetTestWrapper()
@@ -109,13 +108,13 @@ class TestPackageExecutable(TestPackage):
                           self._AddNativeCoverageExports(),
                           tool_wrapper, constants.TEST_EXECUTABLE_DIR,
                           self.test_suite_basename,
-                          test_filter, test_arguments,
+                          gtest_filter, test_arguments,
                           TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE))
     sh_script_file.flush()
     cmd_helper.RunCmd(['chmod', '+x', sh_script_file.name])
     self.adb.PushIfNeeded(
-        sh_script_file.name,
-        constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh')
+            sh_script_file.name,
+            constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh')
     logging.info('Conents of the test runner script: ')
     for line in open(sh_script_file.name).readlines():
       logging.info('  ' + line.rstrip())
