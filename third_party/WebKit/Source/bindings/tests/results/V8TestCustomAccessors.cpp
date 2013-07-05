@@ -76,65 +76,65 @@ static void anotherFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& arg
 
 static void anotherFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMMethod");
     TestCustomAccessorsV8Internal::anotherFunctionMethod(args);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMIndexedProperty");
     V8TestCustomAccessors::indexedPropertyGetterCustom(index, info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMIndexedProperty");
     V8TestCustomAccessors::indexedPropertySetterCustom(index, value, info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMIndexedProperty");
     V8TestCustomAccessors::indexedPropertyDeleterCustom(index, info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyGetterCustom(name, info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMNamedProperty");
     V8TestCustomAccessors::namedPropertySetterCustom(name, value, info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyDeleterCustom(name, info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyEnumeratorCustom(info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink\0DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyQueryCustom(name, info);
-    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8\0Execution");
 }
 
 } // namespace TestCustomAccessorsV8Internal
@@ -171,7 +171,7 @@ v8::Handle<v8::FunctionTemplate> V8TestCustomAccessors::GetTemplate(v8::Isolate*
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
-    TraceEvent::SamplingState0Scope("Blink\0Blink-BuildDOMTemplate");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
         ConfigureV8TestCustomAccessorsTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);

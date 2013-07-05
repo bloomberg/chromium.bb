@@ -350,14 +350,14 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 {
     TRACE_EVENT_BEGIN0("v8", "minorGC");
     if (isMainThread()) {
-        TraceEvent::SamplingState0Scope("Blink\0Blink-MinorGC");
+        TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "MinorGC");
         v8::HandleScope scope;
         MinorGCWrapperVisitor visitor(isolate);
         v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
         visitor.notifyFinished();
 
-        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TraceEvent::SamplingState0Scope::current());
-        TraceEvent::SamplingState0Scope::forceCurrent("Blink\0Blink-MinorGC");
+        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
+        TRACE_EVENT_SET_SAMPLING_STATE("Blink", "MinorGC");
     }
 }
 
@@ -367,14 +367,14 @@ void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isol
     v8::HandleScope scope;
     TRACE_EVENT_BEGIN0("v8", "majorGC");
     if (isMainThread()) {
-        TraceEvent::SamplingState0Scope("Blink\0Blink-MajorGC");
+        TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "MajorGC");
         MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
         v8::V8::VisitHandlesWithClassIds(&visitor);
         visitor.notifyFinished();
         V8PerIsolateData::from(isolate)->stringCache()->clearOnGC();
 
-        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TraceEvent::SamplingState0Scope::current());
-        TraceEvent::SamplingState0Scope::forceCurrent("V8\0V8-MajorGC");
+        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
+        TRACE_EVENT_SET_SAMPLING_STATE("V8", "MajorGC");
     } else {
         MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
         v8::V8::VisitHandlesWithClassIds(&visitor);
@@ -405,7 +405,7 @@ void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
 {
     TRACE_EVENT_END0("v8", "minorGC");
     if (isMainThread())
-        TraceEvent::SamplingState0Scope::forceCurrent(V8PerIsolateData::from(isolate)->previousSamplingState());
+        TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
 }
 
 void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
@@ -420,7 +420,7 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
 
     TRACE_EVENT_END0("v8", "majorGC");
     if (isMainThread())
-        TraceEvent::SamplingState0Scope::forceCurrent(V8PerIsolateData::from(isolate)->previousSamplingState());
+        TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
 }
 
 void V8GCController::checkMemoryUsage()

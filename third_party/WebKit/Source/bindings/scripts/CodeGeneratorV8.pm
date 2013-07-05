@@ -1721,7 +1721,7 @@ sub GenerateNormalAttrSetterCallback
     $code .= "static void ${attrName}AttrSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
     if (!$attrExt->{"PerWorldBindings"}) {
-        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMMethod\");\n";
+        $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMMethod\");\n";
     }
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
@@ -1734,7 +1734,7 @@ sub GenerateNormalAttrSetterCallback
         $code .= "    ${implClassName}V8Internal::${attrName}AttrSetter${forMainWorldSuffix}(name, value, info);\n";
     }
     if (!$attrExt->{"PerWorldBindings"}) {
-        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+        $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     }
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2091,7 +2091,7 @@ static void ${name}MethodCallback${forMainWorldSuffix}(const v8::FunctionCallbac
 {
 END
     if (!$function->extendedAttributes->{"PerWorldBindings"}) {
-        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMMethod\");\n";
+        $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMMethod\");\n";
     }
     $code .= GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
@@ -2104,7 +2104,7 @@ END
         $code .= "    ${implClassName}V8Internal::${name}Method${forMainWorldSuffix}(args);\n";
     }
     if (!$function->extendedAttributes->{"PerWorldBindings"}) {
-        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+        $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     }
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2610,7 +2610,7 @@ sub GenerateConstructorCallback
     my $code = "";
     $code .= "void ${v8ClassName}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)\n";
     $code .= "{\n";
-    $code .= "    TraceEvent::SamplingState0Scope(\"Blink\\0Blink-DOMConstructor\");\n";
+    $code .= "    TRACE_EVENT_SCOPED_SAMPLING_STATE(\"Blink\", \"DOMConstructor\");\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
     $code .= GenerateConstructorHeader();
@@ -2832,7 +2832,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isol
     if (!cachedTemplate.IsEmpty())
         return v8::Local<v8::FunctionTemplate>::New(isolate, cachedTemplate);
 
-    TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink\", \"BuildDOMTemplate");
     v8::HandleScope scope(isolate);
     v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(${v8ClassName}ConstructorCallback);
 
@@ -3263,13 +3263,13 @@ sub GenerateImplementationIndexedPropertyGetterCallback
 
     my $code = "static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMIndexedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMIndexedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::indexedPropertyGetterCustom(index, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertyGetter(index, info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3283,13 +3283,13 @@ sub GenerateImplementationIndexedPropertySetterCallback
 
     my $code = "static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMIndexedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMIndexedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::indexedPropertySetterCustom(index, value, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertySetter(index, value, info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3303,13 +3303,13 @@ sub GenerateImplementationIndexedPropertyDeleterCallback
 
     my $code = "static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMIndexedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMIndexedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::indexedPropertyDeleterCustom(index, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertyDeleter(index, info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3442,13 +3442,13 @@ sub GenerateImplementationNamedPropertyGetterCallback
 
     my $code = "static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyGetterCustom(name, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyGetter(name, info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3462,13 +3462,13 @@ sub GenerateImplementationNamedPropertySetterCallback
 
     my $code = "static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertySetterCustom(name, value, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertySetter(name, value, info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3482,13 +3482,13 @@ sub GenerateImplementationNamedPropertyDeleterCallback
 
     my $code = "static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyDeleterCustom(name, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyDeleter(name, info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3502,13 +3502,13 @@ sub GenerateImplementationNamedPropertyEnumeratorCallback
 
     my $code = "static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyEnumeratorCustom(info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyEnumerator(info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3522,13 +3522,13 @@ sub GenerateImplementationNamedPropertyQueryCallback
 
     my $code = "static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)\n";
     $code .= "{\n";
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyQueryCustom(name, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyQuery(name, info);\n";
     }
-    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -4327,7 +4327,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}::GetTemplate(v8::Isolate* isolat
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
-    TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
         Configure${v8ClassName}Template(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
@@ -4453,7 +4453,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
     if (currentWorldType == MainWorld) {
         static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForMainWorld;
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
-            TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
@@ -4463,7 +4463,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
     } else {
         static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForNonMainWorld;
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
-            TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);

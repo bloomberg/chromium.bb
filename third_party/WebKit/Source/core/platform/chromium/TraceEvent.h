@@ -427,15 +427,45 @@
         category, name, id, TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
-// Updates a global state with 'name'. The sampling thread will read
-// the value periodically. STATE0 is for the main thread.
-// STATE1 and STATE2 will be preserved for other threads.
-#define TRACE_EVENT_SAMPLING_STATE0(name) \
-    INTERNAL_TRACE_EVENT_SAMPLING_STATE(name, 0)
-#define TRACE_EVENT_SAMPLING_STATE1(name) \
-    INTERNAL_TRACE_EVENT_SAMPLING_STATE(name, 1)
-#define TRACE_EVENT_SAMPLING_STATE2(name) \
-    INTERNAL_TRACE_EVENT_SAMPLING_STATE(name, 2)
+// Creates a scope of a sampling state with the given category and name (both must
+// be constant strings). These states are intended for a sampling profiler.
+// Implementation note: we store category and name together because we don't
+// want the inconsistency/expense of storing two pointers.
+// |thread_bucket| is [0..2] and is used to statically isolate samples in one
+// thread from others.
+//
+// {  // The sampling state is set within this scope.
+//    TRACE_EVENT_SAMPLING_STATE_SCOPE_FOR_BUCKET(0, "category", "name");
+//    ...;
+// }
+#define TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(bucket_number, category, name) \
+    TraceEvent::SamplingStateScope<bucket_number> traceEventSamplingScope(category "\0" name);
+
+// Returns a current sampling state of the given bucket.
+// The format of the returned string is "category\0name".
+#define TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(bucket_number) \
+    TraceEvent::SamplingStateScope<bucket_number>::current()
+
+// Sets a current sampling state of the given bucket.
+// |category| and |name| have to be constant strings.
+#define TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(bucket_number, category, name) \
+    TraceEvent::SamplingStateScope<bucket_number>::set(category "\0" name)
+
+// Sets a current sampling state of the given bucket.
+// |categoryAndName| doesn't need to be a constant string.
+// The format of the string is "category\0name".
+#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(bucket_number, categoryAndName) \
+    TraceEvent::SamplingStateScope<bucket_number>::set(categoryAndName)
+
+// Syntactic sugars for the sampling tracing in the main thread.
+#define TRACE_EVENT_SCOPED_SAMPLING_STATE(category, name) \
+    TRACE_EVENT_SCOPED_SAMPLING_STATE_FOR_BUCKET(0, category, name)
+#define TRACE_EVENT_GET_SAMPLING_STATE() \
+    TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(0)
+#define TRACE_EVENT_SET_SAMPLING_STATE(category, name) \
+    TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(0, category, name)
+#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(categoryAndName) \
+    TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(0, categoryAndName)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation specific tracing API definitions.
@@ -534,15 +564,6 @@
                 ##__VA_ARGS__); \
         } \
     } while (0)
-
-// Implementation detail: internal macro to update a global state for
-// the sampling profiler.
-// FIXME: The current implementation uses only one global variable,
-// and thus cannot trace states of multiple threads.
-#define INTERNAL_TRACE_EVENT_SAMPLING_STATE(name, threadBucket) \
-    do { \
-        *WebCore::traceSamplingState##threadBucket = reinterpret_cast<long>(name); \
-    } while (0);
 
 // Notes regarding the following definitions:
 // New values can be added and propagated to third party libraries, but existing
@@ -793,32 +814,36 @@ private:
     Data m_data;
 };
 
-class SamplingState0Scope {
+// TraceEventSamplingStateScope records the current sampling state
+// and sets a new sampling state. When the scope exists, it restores
+// the sampling state having recorded.
+template<size_t BucketNumber>
+class SamplingStateScope {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    SamplingState0Scope(const char* name)
+    SamplingStateScope(const char* categoryAndName)
     {
-        m_previousState0 = *WebCore::traceSamplingState0;
-        *WebCore::traceSamplingState0 = reinterpret_cast<long>(const_cast<char*>(name));
+        m_previousState = SamplingStateScope<BucketNumber>::current();
+        SamplingStateScope<BucketNumber>::set(categoryAndName);
     }
 
-    ~SamplingState0Scope()
+    ~SamplingStateScope()
     {
-        *WebCore::traceSamplingState0 = m_previousState0;
+        SamplingStateScope<BucketNumber>::set(m_previousState);
     }
 
+    // FIXME: Make load/store to traceSamplingState[] thread-safe and atomic.
     static inline const char* current()
     {
-        return reinterpret_cast<const char*>(*WebCore::traceSamplingState0);
+        return reinterpret_cast<const char*>(*WebCore::traceSamplingState[BucketNumber]);
     }
-
-    static inline void forceCurrent(const char* name)
+    static inline void set(const char* categoryAndName)
     {
-        *WebCore::traceSamplingState0 = reinterpret_cast<long>(const_cast<char*>(name));
+        *WebCore::traceSamplingState[BucketNumber] = reinterpret_cast<long>(const_cast<char*>(categoryAndName));
     }
 
 private:
-    long m_previousState0;
+    const char* m_previousState;
 };
 
 } // namespace TraceEvent

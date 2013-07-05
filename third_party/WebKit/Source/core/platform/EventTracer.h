@@ -34,9 +34,7 @@
 namespace WebCore {
 
 // FIXME: Make these global variables thread-safe. Make a value update atomic.
-extern long* traceSamplingState0;
-extern long* traceSamplingState1;
-extern long* traceSamplingState2;
+extern long* traceSamplingState[3];
 
 class EventTracer {
 public:

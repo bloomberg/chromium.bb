@@ -102,12 +102,12 @@ void ThreadTimers::updateSharedTimer()
 
 void ThreadTimers::sharedTimerFired()
 {
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-Internal");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "Internal");
 
     // Redirect to non-static method.
     threadGlobalData().threadTimers().sharedTimerFiredInternal();
 
-    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-Sleeping");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "Sleeping");
 }
 
 void ThreadTimers::sharedTimerFiredInternal()
