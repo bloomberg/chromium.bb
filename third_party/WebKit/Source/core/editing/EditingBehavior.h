@@ -41,7 +41,7 @@ public:
     // content on Mac.
     bool shouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom() const
     {
-        return m_type != EditingWindowsBehavior && m_type != EditingAndroidBehavior;
+        return m_type != EditingWindowsBehavior && m_type != EditingAndroidBehavior && m_type != EditingUnixBehavior;
     }
 
     // On Windows, selections should always be considered as directional, regardless if it is

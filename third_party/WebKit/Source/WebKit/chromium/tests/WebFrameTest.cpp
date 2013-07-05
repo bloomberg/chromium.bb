@@ -2587,7 +2587,7 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     EXPECT_EQ(64, renderer->positionForPoint(WebCore::LayoutPoint(1000, 1000)).deepEquivalent().computeOffsetInContainerNode());
 }
 
-#if OS(ANDROID)
+#if !OS(DARWIN)
 TEST_F(WebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
 {
     WebFrameImpl* frame;
