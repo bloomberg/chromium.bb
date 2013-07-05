@@ -159,10 +159,8 @@ PassRefPtr<CustomElementDefinition> CustomElementRegistry::findFor(Element* elem
             return definition->isTypeExtension() ? 0 : definition.release();
     }
 
-    // FIXME: Casually consulting the "is" attribute is dangerous if
-    // it could have changed since element creation.
-    const AtomicString& isValue = element->getAttribute(HTMLNames::isAttr);
-    if (RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(isValue, element->namespaceURI()))
+    const AtomicString& elementType = m_elementTypeMap.get(element);
+    if (RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(elementType, element->namespaceURI()))
         return definition->isTypeExtension() && definition->name() == element->localName() ? definition.release() : 0;
 
     return 0;
@@ -215,6 +213,7 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element, const AtomicS
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
     element->setIsCustomElement();
+    m_elementTypeMap.add(element, type);
     RefPtr<CustomElementDefinition> definition = findFor(element);
     if (!definition || !definition->isTypeExtension()) {
         // If a definition for a custom tag was available, this type
@@ -239,6 +238,7 @@ void CustomElementRegistry::customElementWasDestroyed(Element* element)
 {
     ASSERT(element->isCustomElement());
     m_candidates.remove(element);
+    m_elementTypeMap.remove(element);
 }
 
 inline Document* CustomElementRegistry::document() const

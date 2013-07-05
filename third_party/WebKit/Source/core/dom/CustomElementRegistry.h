@@ -71,6 +71,7 @@ public:
 
 private:
     typedef HashMap<AtomicString, RefPtr<CustomElementDefinition> > DefinitionMap;
+    typedef HashMap<Element*, AtomicString> ElementTypeMap;
     static bool isValidName(const AtomicString&);
 
     PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
@@ -79,6 +80,8 @@ private:
     void didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind, const AtomicString& type, Element*);
 
     DefinitionMap m_definitions;
+    // Only contains type extensions.
+    ElementTypeMap m_elementTypeMap;
     CustomElementUpgradeCandidateMap m_candidates;
 };
 
