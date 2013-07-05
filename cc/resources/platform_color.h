@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -26,8 +25,7 @@ class PlatformColor {
   }
 
   // Returns the most efficient texture format for this platform.
-  static GLenum BestTextureFormat(WebKit::WebGraphicsContext3D* context,
-                                  bool supports_bgra8888) {
+  static GLenum BestTextureFormat(bool supports_bgra8888) {
     GLenum texture_format = GL_RGBA;
     switch (Format()) {
       case SOURCE_FORMAT_RGBA8:

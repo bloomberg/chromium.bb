@@ -26,9 +26,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/size.h"
 
-namespace WebKit {
-class WebGraphicsContext3D;
-}
+namespace WebKit { class WebGraphicsContext3D; }
 
 namespace gfx {
 class Rect;

@@ -698,8 +698,7 @@ bool ResourceProvider::Initialize(int highp_threshold_min) {
       TextureUploader::Create(context3d, use_map_sub, use_shallow_flush_);
   GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE,
                                         &max_texture_size_));
-  best_texture_format_ =
-      PlatformColor::BestTextureFormat(context3d, use_bgra);
+  best_texture_format_ = PlatformColor::BestTextureFormat(use_bgra);
 
   return true;
 }

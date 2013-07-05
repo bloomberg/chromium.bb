@@ -9,7 +9,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/renderer.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 

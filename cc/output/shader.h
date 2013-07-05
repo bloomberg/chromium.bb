@@ -16,9 +16,7 @@ class Point;
 class Size;
 }
 
-namespace WebKit {
-class WebGraphicsContext3D;
-}
+namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
 

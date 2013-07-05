@@ -12,9 +12,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace Webkit {
-class WebGraphicsContext3D;
-}
+namespace Webkit { class WebGraphicsContext3D; }
 
 namespace cc {
 class FakeContextProvider;
