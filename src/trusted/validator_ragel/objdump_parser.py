@@ -55,7 +55,9 @@ def CanonicalizeInstruction(insn):
   # Canonicalize whitespaces.
   disasm = ' '.join(insn.disasm.split())
 
-  # Find and remove "rex" or "rex.WRXB" prefix from line
+  # Find and remove "rex" or "rex.WRXB" prefix from line.
+  # Note that when objdump line consists entirely of rex prefix,
+  # it won't be removed (because there would be no space at the end)
   rex_prefix = re.compile(r'(rex([.]W?R?X?B?)? )')
   disasm = re.sub(rex_prefix, '', disasm, count=1)
 

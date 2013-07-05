@@ -182,15 +182,29 @@ def _ParseInstruction(instruction):
   # Strip comment.
   disasm, _, _ = instruction.disasm.partition('#')
   elems = disasm.split()
+
+  if elems == []:
+    raise SandboxingError(
+        'disasm is empty', instruction)
+
   prefixes = []
-  while elems[0] in ['lock', 'rep', 'repz', 'repnz']:
+  while elems != [] and elems[0] in [
+      'lock', 'rep', 'repz', 'repnz', 'data16', 'addr16', 'addr32']:
     prefixes.append(elems.pop(0))
+
+  if elems == []:
+    raise SandboxingError(
+        'dangling legacy prefixes', instruction)
+
+  name = elems[0]
+
+  if re.match(r'rex([.]W?R?X?B?)?$', name):
+    raise SandboxingError('dangling rex prefix', instruction)
 
   # There could be branching expectation information in instruction names:
   #    jo,pt      <addr>
   #    jge,pn     <addr>
   name_re = r'[a-z]\w*(,p[nt])?$'
-  name = elems[0]
   assert re.match(name_re, name), name
 
   if len(elems) == 1:
@@ -469,8 +483,8 @@ def ValidateRegularInstruction(instruction, bitness):
   """
   assert bitness in [32, 64]
 
-  if instruction.disasm.startswith('.byte '):
-    raise DoNotMatchError(instruction)
+  if instruction.disasm.startswith('.byte ') or '(bad)' in instruction.disasm:
+    raise SandboxingError('objdump failed to decode', instruction)
 
   try:
     _ValidateNop(instruction)
@@ -478,7 +492,7 @@ def ValidateRegularInstruction(instruction, bitness):
   except DoNotMatchError:
     pass
 
-  # Report error on duplicate prefixes (note that they are allowed in nops),.
+  # Report error on duplicate prefixes (note that they are allowed in nops).
   _GetLegacyPrefixes(instruction)
 
   try:
@@ -506,8 +520,10 @@ def ValidateRegularInstruction(instruction, bitness):
     except DoNotMatchError:
       pass
 
-  _, name, ops = _ParseInstruction(instruction)
+  prefixes, name, ops = _ParseInstruction(instruction)
   # TODO(shcherbina): prohibit excessive prefixes.
+  if 'addr16' in prefixes or 'addr32' in prefixes:
+    raise SandboxingError('addr prefixes are not allowed', instruction)
 
   for op in ops:
     m = re.match(_MemoryRE() + r'$', op)

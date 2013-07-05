@@ -7,6 +7,8 @@
 @rdfa_output:
   2: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: unrecognized instruction 'ret'
 ----------------------------------------------------------------------
 @hex:
   01 c0
@@ -21,6 +23,11 @@
 @rdfa_output:
   2: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: ('dangling legacy prefixes', Instruction(0x2: 66  data16))
+  3: ('dangling legacy prefixes', Instruction(0x3: 66  data16))
+  4: ('dangling legacy prefixes', Instruction(0x4: 66  data16))
+  5: ('dangling legacy prefixes', Instruction(0x5: 66  data16))
 ----------------------------------------------------------------------
 @hex:
   8d 74 26 00
@@ -35,3 +42,8 @@
 @rdfa_output:
   4: [0] unrecognized instruction
   return code: 1
+@spec:
+  4: ('dangling legacy prefixes', Instruction(0x4: 66  data16))
+  5: ('dangling legacy prefixes', Instruction(0x5: 66  data16))
+  6: ('dangling legacy prefixes', Instruction(0x6: 66  data16))
+  7: ('dangling legacy prefixes', Instruction(0x7: 66  data16))

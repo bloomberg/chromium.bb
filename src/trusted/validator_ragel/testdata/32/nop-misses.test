@@ -36,7 +36,7 @@
   return code: 1
 @spec:
   0: unrecognized instruction 'nopw -0x1(%ebx)'
-  5: unrecognized instruction '.byte 0xff'
+  5: ('objdump failed to decode', Instruction(0x5: ff  .byte 0xff))
 ----------------------------------------------------------------------
 @hex:
   # This is an example of a different, correct, nop case.
@@ -70,7 +70,7 @@
   return code: 1
 @spec:
   0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 66 66 2e 0f 1f 83 ff ff ff ff  nopw %cs:-0x1(%ebx)))
-  d: unrecognized instruction '.byte 0xff'
+  d: ('objdump failed to decode', Instruction(0xd: ff  .byte 0xff))
 ----------------------------------------------------------------------
 @hex:
   # This is the list of all nops, just to see if they validate.
