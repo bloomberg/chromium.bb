@@ -1043,9 +1043,6 @@ webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-area.html [ Image
 # Requires setUseDeferredFrameLoading() API from LayoutTestController.
 webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Skip ]
 
-# Started flaky crashing on Linux around r152400, and on Win near r152459.
-crbug.com/249706 [ Win Linux Release ] fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.html [ Crash Pass ]
-
 webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Failure Pass ]
 
 # The test has its own notion of timeouts that manifest timeouts as FAIL.
@@ -1608,7 +1605,6 @@ crbug.com/243300 [ Debug ] fast/frames/frame-name-reset.html [ Crash ]
 crbug.com/243300 [ Debug ] http/tests/security/popup-allowed-by-sandbox-when-allowed.html [ Crash ]
 crbug.com/168853 [ Debug ] fast/loader/stateobjects/replacestate-in-onunload.html [ Crash ]
 crbug.com/243302 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Pass Crash ]
-crbug.com/243303 fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Failure Pass ]
 crbug.com/243353 [ Linux Win ] animations/dynamic-stylesheet-loading.html [ Failure Pass ]
 crbug.com/243353 animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 [ Win Linux ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
