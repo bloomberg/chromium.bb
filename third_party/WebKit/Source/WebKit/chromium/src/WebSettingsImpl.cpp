@@ -453,10 +453,14 @@ void WebSettingsImpl::setAcceleratedCompositingForVideoEnabled(bool enabled)
     m_settings->setAcceleratedCompositingForVideoEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(
-    bool enabled)
+void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForOverflowScrollEnabled(enabled);
+}
+
+void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(bool enabled)
+{
+    m_settings->setAcceleratedCompositingForFixedRootBackgroundEnabled(enabled);
 }
 
 void WebSettingsImpl::setAcceleratedCompositingForPluginsEnabled(bool enabled)

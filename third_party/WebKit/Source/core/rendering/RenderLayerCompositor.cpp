@@ -49,6 +49,7 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderApplet.h"
@@ -1212,8 +1213,13 @@ String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
         return String();
 
     // We skip dumping the scroll and clip layers to keep layerTreeAsText output
-    // similar between platforms.
-    String layerTreeText = m_rootContentLayer->layerTreeAsText(flags);
+    // similar between platforms (unless we explicitly request dumping from the
+    // root.
+    GraphicsLayer* rootLayer = m_rootContentLayer.get();
+    if (flags & LayerTreeIncludesRootLayer)
+        rootLayer = rootGraphicsLayer();
+
+    String layerTreeText = rootLayer->layerTreeAsText(flags);
 
     // The true root layer is not included in the dump, so if we want to report
     // its repaint rects, they must be included here.

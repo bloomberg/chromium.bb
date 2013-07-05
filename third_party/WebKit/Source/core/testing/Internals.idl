@@ -168,6 +168,7 @@
     // The values of these constants must be kept in sync with the values of LayerTreeAsTextBehaviorFlags in GraphicsLayerClient.h.
     const unsigned short LAYER_TREE_INCLUDES_REPAINT_RECTS = 2;
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
+    const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
     [RaisesException] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 

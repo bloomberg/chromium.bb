@@ -69,6 +69,7 @@ acceleratedCompositingForFiltersEnabled initial=false
 acceleratedCompositingForFixedPositionEnabled initial=false
 acceleratedCompositingForOverflowScrollEnabled initial=false
 acceleratedCompositingForTransitionEnabled initial=false
+acceleratedCompositingForFixedRootBackgroundEnabled initial=false
 
 # Works only in conjunction with forceCompositingMode.
 acceleratedCompositingForScrollableFramesEnabled initial=false
