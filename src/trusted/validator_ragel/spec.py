@@ -542,6 +542,7 @@ def ValidateRegularInstruction(instruction, bitness):
          'adc', 'bsf', 'bsr', 'lzcnt',
          'btc', 'btr', 'bts', 'bt',
          'cmp',
+         'imul', 'mul', 'div', 'idiv',
         ]):
       return Condition(), Condition()
 
@@ -652,6 +653,22 @@ def ValidateRegularInstruction(instruction, bitness):
         'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
         ]:
       assert len(ops) == 0
+      write_ops = []
+
+    elif _InstructionNameIn(name, ['imul']):
+      if len(ops) == 1:
+        write_ops = []
+      elif len(ops) == 2:
+        zero_extending = True
+        write_ops = [ops[1]]
+      elif len(ops) == 3:
+        zero_extending = True
+        write_ops = [ops[2]]
+      else:
+        assert False
+
+    elif _InstructionNameIn(name, ['mul', 'div', 'idiv']):
+      assert len(ops) == 1
       write_ops = []
 
     elif re.match(r'cmov%s$' % _CONDITION_SUFFIX_RE, name):
