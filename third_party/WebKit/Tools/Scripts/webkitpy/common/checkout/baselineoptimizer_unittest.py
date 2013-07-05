@@ -112,10 +112,10 @@ class BaselineOptimizerTest(unittest.TestCase):
     def test_no_common_directory(self):
         self._assertOptimization({
             'LayoutTests/platform/mac': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
-            'LayoutTests/platform/chromium-android': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
+            'LayoutTests/platform/chromium': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
         }, {
             'LayoutTests/platform/mac': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
-            'LayoutTests/platform/chromium-android': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
+            'LayoutTests/platform/chromium': '462d03b9c025db1b0392d7453310dbee5f9a9e74',
         })
 
     def test_local_optimization(self):

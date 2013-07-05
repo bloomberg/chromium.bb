@@ -364,7 +364,7 @@ class AndroidPort(chromium.ChromiumPort):
 
     SUPPORTED_VERSIONS = ('android')
 
-    FALLBACK_PATHS = { 'android': [ 'chromium-android' ] + linux.LinuxPort.latest_platform_fallback_path() }
+    FALLBACK_PATHS = { 'android': [ 'android' ] + linux.LinuxPort.latest_platform_fallback_path() }
 
     def __init__(self, host, port_name, **kwargs):
         super(AndroidPort, self).__init__(host, port_name, **kwargs)
