@@ -69,59 +69,60 @@ class InputImeEventRouter {
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
 };
 
-class SetCompositionFunction : public SyncExtensionFunction {
+class InputImeSetCompositionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setComposition",
                              INPUT_IME_SETCOMPOSITION)
 
  protected:
-  virtual ~SetCompositionFunction() {}
+  virtual ~InputImeSetCompositionFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ClearCompositionFunction : public SyncExtensionFunction {
+class InputImeClearCompositionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.clearComposition",
                              INPUT_IME_CLEARCOMPOSITION)
 
  protected:
-  virtual ~ClearCompositionFunction() {}
+  virtual ~InputImeClearCompositionFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CommitTextFunction : public SyncExtensionFunction {
+class InputImeCommitTextFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.commitText", INPUT_IME_COMMITTEXT)
 
  protected:
-  virtual ~CommitTextFunction() {}
+  virtual ~InputImeCommitTextFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SetCandidateWindowPropertiesFunction : public SyncExtensionFunction {
+class InputImeSetCandidateWindowPropertiesFunction
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCandidateWindowProperties",
                              INPUT_IME_SETCANDIDATEWINDOWPROPERTIES)
 
  protected:
-  virtual ~SetCandidateWindowPropertiesFunction() {}
+  virtual ~InputImeSetCandidateWindowPropertiesFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SetCandidatesFunction : public SyncExtensionFunction {
+class InputImeSetCandidatesFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCandidates", INPUT_IME_SETCANDIDATES)
 
  protected:
-  virtual ~SetCandidatesFunction() {}
+  virtual ~InputImeSetCandidatesFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -132,59 +133,59 @@ class SetCandidatesFunction : public SyncExtensionFunction {
       std::vector<chromeos::InputMethodEngine::Candidate>* output);
 };
 
-class SetCursorPositionFunction : public SyncExtensionFunction {
+class InputImeSetCursorPositionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCursorPosition",
                              INPUT_IME_SETCURSORPOSITION)
 
  protected:
-  virtual ~SetCursorPositionFunction() {}
+  virtual ~InputImeSetCursorPositionFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SetMenuItemsFunction : public SyncExtensionFunction {
+class InputImeSetMenuItemsFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setMenuItems", INPUT_IME_SETMENUITEMS)
 
  protected:
-  virtual ~SetMenuItemsFunction() {}
+  virtual ~InputImeSetMenuItemsFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class UpdateMenuItemsFunction : public SyncExtensionFunction {
+class InputImeUpdateMenuItemsFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.updateMenuItems",
                              INPUT_IME_UPDATEMENUITEMS)
 
  protected:
-  virtual ~UpdateMenuItemsFunction() {}
+  virtual ~InputImeUpdateMenuItemsFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DeleteSurroundingTextFunction : public SyncExtensionFunction {
+class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.deleteSurroundingText",
                              INPUT_IME_DELETESURROUNDINGTEXT)
  protected:
-  virtual ~DeleteSurroundingTextFunction() {}
+  virtual ~InputImeDeleteSurroundingTextFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class KeyEventHandled : public AsyncExtensionFunction {
+class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.keyEventHandled",
                              INPUT_IME_KEYEVENTHANDLED)
 
  protected:
-  virtual ~KeyEventHandled() {}
+  virtual ~InputImeKeyEventHandledFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

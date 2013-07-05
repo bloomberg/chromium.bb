@@ -67,6 +67,7 @@
           'identity.idl',
           'identity_private.idl',
           'idle.json',
+          'input_ime.json',
           'management.json',
           'manifest_types.json',
           'media_galleries.idl',

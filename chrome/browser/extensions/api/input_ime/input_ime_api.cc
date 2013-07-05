@@ -498,7 +498,7 @@ InputImeEventRouter::InputImeEventRouter()
 
 InputImeEventRouter::~InputImeEventRouter() {}
 
-bool SetCompositionFunction::RunImpl() {
+bool InputImeSetCompositionFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -573,7 +573,7 @@ bool SetCompositionFunction::RunImpl() {
   return true;
 }
 
-bool ClearCompositionFunction::RunImpl() {
+bool InputImeClearCompositionFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -596,7 +596,7 @@ bool ClearCompositionFunction::RunImpl() {
   return true;
 }
 
-bool CommitTextFunction::RunImpl() {
+bool InputImeCommitTextFunction::RunImpl() {
   // TODO(zork): Support committing when not active.
   chromeos::InputMethodEngine* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
@@ -622,7 +622,7 @@ bool CommitTextFunction::RunImpl() {
   return true;
 }
 
-bool SetCandidateWindowPropertiesFunction::RunImpl() {
+bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
   base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
@@ -706,7 +706,7 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
 }
 
 #if defined(OS_CHROMEOS)
-bool SetCandidatesFunction::ReadCandidates(
+bool InputImeSetCandidatesFunction::ReadCandidates(
     base::ListValue* candidates,
     std::vector<chromeos::InputMethodEngine::Candidate>* output) {
   for (size_t i = 0; i < candidates->GetSize(); ++i) {
@@ -764,7 +764,7 @@ bool SetCandidatesFunction::ReadCandidates(
   return true;
 }
 
-bool SetCandidatesFunction::RunImpl() {
+bool InputImeSetCandidatesFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -798,7 +798,7 @@ bool SetCandidatesFunction::RunImpl() {
   return true;
 }
 
-bool SetCursorPositionFunction::RunImpl() {
+bool InputImeSetCursorPositionFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -824,7 +824,7 @@ bool SetCursorPositionFunction::RunImpl() {
   return true;
 }
 
-bool SetMenuItemsFunction::RunImpl() {
+bool InputImeSetMenuItemsFunction::RunImpl() {
   base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
@@ -850,7 +850,7 @@ bool SetMenuItemsFunction::RunImpl() {
   return true;
 }
 
-bool UpdateMenuItemsFunction::RunImpl() {
+bool InputImeUpdateMenuItemsFunction::RunImpl() {
   base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
@@ -876,7 +876,7 @@ bool UpdateMenuItemsFunction::RunImpl() {
   return true;
 }
 
-bool DeleteSurroundingTextFunction::RunImpl() {
+bool InputImeDeleteSurroundingTextFunction::RunImpl() {
   base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
@@ -902,7 +902,7 @@ bool DeleteSurroundingTextFunction::RunImpl() {
   return true;
 }
 
-bool KeyEventHandled::RunImpl() {
+bool InputImeKeyEventHandledFunction::RunImpl() {
   std::string request_id_str;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &request_id_str));
 
@@ -922,19 +922,6 @@ InputImeAPI::InputImeAPI(Profile* profile)
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
-
-  ExtensionFunctionRegistry* registry =
-      ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<SetCompositionFunction>();
-  registry->RegisterFunction<ClearCompositionFunction>();
-  registry->RegisterFunction<CommitTextFunction>();
-  registry->RegisterFunction<SetCandidateWindowPropertiesFunction>();
-  registry->RegisterFunction<SetCandidatesFunction>();
-  registry->RegisterFunction<SetCursorPositionFunction>();
-  registry->RegisterFunction<SetMenuItemsFunction>();
-  registry->RegisterFunction<UpdateMenuItemsFunction>();
-  registry->RegisterFunction<DeleteSurroundingTextFunction>();
-  registry->RegisterFunction<KeyEventHandled>();
 }
 
 InputImeAPI::~InputImeAPI() {

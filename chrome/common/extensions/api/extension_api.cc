@@ -253,7 +253,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);
   RegisterSchemaResource("fileBrowserPrivate",
       IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE);
-  RegisterSchemaResource("input.ime", IDR_EXTENSION_API_JSON_INPUT_IME);
   RegisterSchemaResource("inputMethodPrivate",
       IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE);
   RegisterSchemaResource("pageAction", IDR_EXTENSION_API_JSON_PAGEACTION);
