@@ -606,6 +606,23 @@
             '<@(_inputs)',
           ],
         },
+        {
+          'action_name': 'MakeTokenMatcher',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../core/scripts/make_token_matcher.py',
+            '../core/css/CSSParser-in.cpp',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSParser.cpp',
+          ],
+          'action': [
+            'python',
+            '../core/scripts/make_token_matcher.py',
+            '../core/css/CSSParser-in.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSParser.cpp',
+          ],
+        },
       ],
       'rules': [
         {

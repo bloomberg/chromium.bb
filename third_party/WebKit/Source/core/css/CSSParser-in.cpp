@@ -7809,227 +7809,103 @@ public:
         } else
             characters = name.characters16();
 
-        switch (nameLength) {
-        case 5:
-            // Valid name: skew(.
-            if (((characters[0] == 's') || (characters[0] == 'S'))
-                & ((characters[1] == 'k') || (characters[1] == 'K'))
-                & ((characters[2] == 'e') || (characters[2] == 'E'))
-                & ((characters[3] == 'w') || (characters[3] == 'W'))
-                & (characters[4] == '(')) {
+        SWITCH(characters, nameLength) {
+            CASE("skew(") {
                 m_unit = CSSParser::FAngle;
                 m_type = CSSTransformValue::SkewTransformOperation;
                 m_allowSingleArgument = true;
                 m_argCount = 3;
             }
-            break;
-        case 6:
-            // Valid names: skewx(, skewy(, scale(.
-            if ((characters[1] == 'c') || (characters[1] == 'C')) {
-                if (((characters[0] == 's') || (characters[0] == 'S'))
-                    & ((characters[2] == 'a') || (characters[2] == 'A'))
-                    & ((characters[3] == 'l') || (characters[3] == 'L'))
-                    & ((characters[4] == 'e') || (characters[4] == 'E'))
-                    & (characters[5] == '(')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::ScaleTransformOperation;
-                    m_allowSingleArgument = true;
-                    m_argCount = 3;
-                }
-            } else if (((characters[0] == 's') || (characters[0] == 'S'))
-                       & ((characters[1] == 'k') || (characters[1] == 'K'))
-                       & ((characters[2] == 'e') || (characters[2] == 'E'))
-                       & ((characters[3] == 'w') || (characters[3] == 'W'))
-                       & (characters[5] == '(')) {
-                if ((characters[4] == 'x') || (characters[4] == 'X')) {
-                    m_unit = CSSParser::FAngle;
-                    m_type = CSSTransformValue::SkewXTransformOperation;
-                } else if ((characters[4] == 'y') || (characters[4] == 'Y')) {
-                    m_unit = CSSParser::FAngle;
-                    m_type = CSSTransformValue::SkewYTransformOperation;
-                }
+            CASE("scale(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::ScaleTransformOperation;
+                m_allowSingleArgument = true;
+                m_argCount = 3;
             }
-            break;
-        case 7:
-            // Valid names: matrix(, rotate(, scalex(, scaley(, scalez(.
-            if ((characters[0] == 'm') || (characters[0] == 'M')) {
-                if (((characters[1] == 'a') || (characters[1] == 'A'))
-                    & ((characters[2] == 't') || (characters[2] == 'T'))
-                    & ((characters[3] == 'r') || (characters[3] == 'R'))
-                    & ((characters[4] == 'i') || (characters[4] == 'I'))
-                    & ((characters[5] == 'x') || (characters[5] == 'X'))
-                    & (characters[6] == '(')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::MatrixTransformOperation;
-                    m_argCount = 11;
-                }
-            } else if ((characters[0] == 'r') || (characters[0] == 'R')) {
-                if (((characters[1] == 'o') || (characters[1] == 'O'))
-                    & ((characters[2] == 't') || (characters[2] == 'T'))
-                    & ((characters[3] == 'a') || (characters[3] == 'A'))
-                    & ((characters[4] == 't') || (characters[4] == 'T'))
-                    & ((characters[5] == 'e') || (characters[5] == 'E'))
-                    & (characters[6] == '(')) {
-                    m_unit = CSSParser::FAngle;
-                    m_type = CSSTransformValue::RotateTransformOperation;
-                }
-            } else if (((characters[0] == 's') || (characters[0] == 'S'))
-                       & ((characters[1] == 'c') || (characters[1] == 'C'))
-                       & ((characters[2] == 'a') || (characters[2] == 'A'))
-                       & ((characters[3] == 'l') || (characters[3] == 'L'))
-                       & ((characters[4] == 'e') || (characters[4] == 'E'))
-                       & (characters[6] == '(')) {
-                if ((characters[5] == 'x') || (characters[5] == 'X')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::ScaleXTransformOperation;
-                } else if ((characters[5] == 'y') || (characters[5] == 'Y')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::ScaleYTransformOperation;
-                } else if ((characters[5] == 'z') || (characters[5] == 'Z')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::ScaleZTransformOperation;
-                }
+            CASE("skewx(") {
+                m_unit = CSSParser::FAngle;
+                m_type = CSSTransformValue::SkewXTransformOperation;
             }
-            break;
-        case 8:
-            // Valid names: rotatex(, rotatey(, rotatez(, scale3d(.
-            if ((characters[0] == 's') || (characters[0] == 'S')) {
-                if (((characters[1] == 'c') || (characters[1] == 'C'))
-                    & ((characters[2] == 'a') || (characters[2] == 'A'))
-                    & ((characters[3] == 'l') || (characters[3] == 'L'))
-                    & ((characters[4] == 'e') || (characters[4] == 'E'))
-                    & (characters[5] == '3')
-                    & ((characters[6] == 'd') || (characters[6] == 'D'))
-                    & (characters[7] == '(')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::Scale3DTransformOperation;
-                    m_argCount = 5;
-                }
-            } else if (((characters[0] == 'r') || (characters[0] == 'R'))
-                       & ((characters[1] == 'o') || (characters[1] == 'O'))
-                       & ((characters[2] == 't') || (characters[2] == 'T'))
-                       & ((characters[3] == 'a') || (characters[3] == 'A'))
-                       & ((characters[4] == 't') || (characters[4] == 'T'))
-                       & ((characters[5] == 'e') || (characters[5] == 'E'))
-                       & (characters[7] == '(')) {
-                if ((characters[6] == 'x') || (characters[6] == 'X')) {
-                    m_unit = CSSParser::FAngle;
-                    m_type = CSSTransformValue::RotateXTransformOperation;
-                } else if ((characters[6] == 'y') || (characters[6] == 'Y')) {
-                    m_unit = CSSParser::FAngle;
-                    m_type = CSSTransformValue::RotateYTransformOperation;
-                } else if ((characters[6] == 'z') || (characters[6] == 'Z')) {
-                    m_unit = CSSParser::FAngle;
-                    m_type = CSSTransformValue::RotateZTransformOperation;
-                }
+            CASE("skewy(") {
+                m_unit = CSSParser::FAngle;
+                m_type = CSSTransformValue::SkewYTransformOperation;
             }
-            break;
-        case 9:
-            // Valid names: matrix3d(, rotate3d(.
-            if ((characters[0] == 'm') || (characters[0] == 'M')) {
-                if (((characters[1] == 'a') || (characters[1] == 'A'))
-                    & ((characters[2] == 't') || (characters[2] == 'T'))
-                    & ((characters[3] == 'r') || (characters[3] == 'R'))
-                    & ((characters[4] == 'i') || (characters[4] == 'I'))
-                    & ((characters[5] == 'x') || (characters[5] == 'X'))
-                    & (characters[6] == '3')
-                    & ((characters[7] == 'd') || (characters[7] == 'D'))
-                    & (characters[8] == '(')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::Matrix3DTransformOperation;
-                    m_argCount = 31;
-                }
-            } else if (((characters[0] == 'r') || (characters[0] == 'R'))
-                       & ((characters[1] == 'o') || (characters[1] == 'O'))
-                       & ((characters[2] == 't') || (characters[2] == 'T'))
-                       & ((characters[3] == 'a') || (characters[3] == 'A'))
-                       & ((characters[4] == 't') || (characters[4] == 'T'))
-                       & ((characters[5] == 'e') || (characters[5] == 'E'))
-                       & (characters[6] == '3')
-                       & ((characters[7] == 'd') || (characters[7] == 'D'))
-                       & (characters[8] == '(')) {
+            CASE("matrix(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::MatrixTransformOperation;
+                m_argCount = 11;
+            }
+            CASE("rotate(") {
+                m_unit = CSSParser::FAngle;
+                m_type = CSSTransformValue::RotateTransformOperation;
+            }
+            CASE("scalex(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::ScaleXTransformOperation;
+            }
+            CASE("scaley(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::ScaleYTransformOperation;
+            }
+            CASE("scalez(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::ScaleZTransformOperation;
+            }
+            CASE("scale3d(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::Scale3DTransformOperation;
+                m_argCount = 5;
+            }
+            CASE("rotatex(") {
+                m_unit = CSSParser::FAngle;
+                m_type = CSSTransformValue::RotateXTransformOperation;
+            }
+            CASE("rotatey(") {
+                m_unit = CSSParser::FAngle;
+                m_type = CSSTransformValue::RotateYTransformOperation;
+            }
+            CASE("rotatez(") {
+                m_unit = CSSParser::FAngle;
+                m_type = CSSTransformValue::RotateZTransformOperation;
+            }
+            CASE("matrix3d(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::Matrix3DTransformOperation;
+                m_argCount = 31;
+            }
+            CASE("rotate3d(") {
                 m_unit = CSSParser::FNumber;
                 m_type = CSSTransformValue::Rotate3DTransformOperation;
                 m_argCount = 7;
             }
-            break;
-        case 10:
-            // Valid name: translate(.
-            if (((characters[0] == 't') || (characters[0] == 'T'))
-                & ((characters[1] == 'r') || (characters[1] == 'R'))
-                & ((characters[2] == 'a') || (characters[2] == 'A'))
-                & ((characters[3] == 'n') || (characters[3] == 'N'))
-                & ((characters[4] == 's') || (characters[4] == 'S'))
-                & ((characters[5] == 'l') || (characters[5] == 'L'))
-                & ((characters[6] == 'a') || (characters[6] == 'A'))
-                & ((characters[7] == 't') || (characters[7] == 'T'))
-                & ((characters[8] == 'e') || (characters[8] == 'E'))
-                & (characters[9] == '(')) {
+            CASE("translate(") {
                 m_unit = CSSParser::FLength | CSSParser::FPercent;
                 m_type = CSSTransformValue::TranslateTransformOperation;
                 m_allowSingleArgument = true;
                 m_argCount = 3;
             }
-            break;
-        case 11:
-            // Valid names: translatex(, translatey(, translatez(.
-            if (((characters[0] == 't') || (characters[0] == 'T'))
-                & ((characters[1] == 'r') || (characters[1] == 'R'))
-                & ((characters[2] == 'a') || (characters[2] == 'A'))
-                & ((characters[3] == 'n') || (characters[3] == 'N'))
-                & ((characters[4] == 's') || (characters[4] == 'S'))
-                & ((characters[5] == 'l') || (characters[5] == 'L'))
-                & ((characters[6] == 'a') || (characters[6] == 'A'))
-                & ((characters[7] == 't') || (characters[7] == 'T'))
-                & ((characters[8] == 'e') || (characters[8] == 'E'))
-                & (characters[10] == '(')) {
-                if ((characters[9] == 'x') || (characters[9] == 'X')) {
-                    m_unit = CSSParser::FLength | CSSParser::FPercent;
-                    m_type = CSSTransformValue::TranslateXTransformOperation;
-                } else if ((characters[9] == 'y') || (characters[9] == 'Y')) {
-                    m_unit = CSSParser::FLength | CSSParser::FPercent;
-                    m_type = CSSTransformValue::TranslateYTransformOperation;
-                } else if ((characters[9] == 'z') || (characters[9] == 'Z')) {
-                    m_unit = CSSParser::FLength | CSSParser::FPercent;
-                    m_type = CSSTransformValue::TranslateZTransformOperation;
-                }
+            CASE("translatex(") {
+                m_unit = CSSParser::FLength | CSSParser::FPercent;
+                m_type = CSSTransformValue::TranslateXTransformOperation;
             }
-            break;
-        case 12:
-            // Valid names: perspective(, translate3d(.
-            if ((characters[0] == 'p') || (characters[0] == 'P')) {
-                if (((characters[1] == 'e') || (characters[1] == 'E'))
-                    & ((characters[2] == 'r') || (characters[2] == 'R'))
-                    & ((characters[3] == 's') || (characters[3] == 'S'))
-                    & ((characters[4] == 'p') || (characters[4] == 'P'))
-                    & ((characters[5] == 'e') || (characters[5] == 'E'))
-                    & ((characters[6] == 'c') || (characters[6] == 'C'))
-                    & ((characters[7] == 't') || (characters[7] == 'T'))
-                    & ((characters[8] == 'i') || (characters[8] == 'I'))
-                    & ((characters[9] == 'v') || (characters[9] == 'V'))
-                    & ((characters[10] == 'e') || (characters[10] == 'E'))
-                    & (characters[11] == '(')) {
-                    m_unit = CSSParser::FNumber;
-                    m_type = CSSTransformValue::PerspectiveTransformOperation;
-                }
-            } else if (((characters[0] == 't') || (characters[0] == 'T'))
-                       & ((characters[1] == 'r') || (characters[1] == 'R'))
-                       & ((characters[2] == 'a') || (characters[2] == 'A'))
-                       & ((characters[3] == 'n') || (characters[3] == 'N'))
-                       & ((characters[4] == 's') || (characters[4] == 'S'))
-                       & ((characters[5] == 'l') || (characters[5] == 'L'))
-                       & ((characters[6] == 'a') || (characters[6] == 'A'))
-                       & ((characters[7] == 't') || (characters[7] == 'T'))
-                       & ((characters[8] == 'e') || (characters[8] == 'E'))
-                       & (characters[9] == '3')
-                       & ((characters[10] == 'd') || (characters[10] == 'D'))
-                       & (characters[11] == '(')) {
+            CASE("translatey(") {
+                m_unit = CSSParser::FLength | CSSParser::FPercent;
+                m_type = CSSTransformValue::TranslateYTransformOperation;
+            }
+            CASE("translatez(") {
+                m_unit = CSSParser::FLength | CSSParser::FPercent;
+                m_type = CSSTransformValue::TranslateZTransformOperation;
+            }
+            CASE("perspective(") {
+                m_unit = CSSParser::FNumber;
+                m_type = CSSTransformValue::PerspectiveTransformOperation;
+            }
+            CASE("translate3d(") {
                 m_unit = CSSParser::FLength | CSSParser::FPercent;
                 m_type = CSSTransformValue::Translate3DTransformOperation;
                 m_argCount = 5;
             }
-            break;
-        } // end switch ()
+        }
     }
 
     CSSTransformValue::TransformOperationType type() const { return m_type; }
@@ -9912,63 +9788,46 @@ inline bool CSSParser::detectFunctionTypeToken(int length)
 {
     ASSERT(length > 0);
     CharacterType* name = tokenStart<CharacterType>();
-
-    switch (length) {
-    case 3:
-        if (isASCIIAlphaCaselessEqual(name[0], 'n') && isASCIIAlphaCaselessEqual(name[1], 'o') && isASCIIAlphaCaselessEqual(name[2], 't')) {
+    SWITCH(name, length) {
+        CASE("not") {
             m_token = NOTFUNCTION;
             return true;
         }
-        if (isASCIIAlphaCaselessEqual(name[0], 'u') && isASCIIAlphaCaselessEqual(name[1], 'r') && isASCIIAlphaCaselessEqual(name[2], 'l')) {
+        CASE("url") {
             m_token = URI;
             return true;
         }
-        if (isASCIIAlphaCaselessEqual(name[0], 'c') && isASCIIAlphaCaselessEqual(name[1], 'u') && isASCIIAlphaCaselessEqual(name[2], 'e')) {
+        CASE("cue") {
             m_token = CUEFUNCTION;
             return true;
         }
-        if (RuntimeEnabledFeatures::cssVariablesEnabled() && isASCIIAlphaCaselessEqual(name[0], 'v') && isASCIIAlphaCaselessEqual(name[1], 'a') && isASCIIAlphaCaselessEqual(name[2], 'r')) {
+        CASE("var") {
+            if (!RuntimeEnabledFeatures::cssVariablesEnabled())
+                return false;
             m_token = VARFUNCTION;
             return true;
         }
-        return false;
-
-    case 4:
-        if (isEqualToCSSIdentifier(name, "calc")) {
+        CASE("calc") {
             m_token = CALCFUNCTION;
             return true;
         }
-        return false;
-
-    case 9:
-        if (isEqualToCSSIdentifier(name, "nth-child")) {
+        CASE("nth-child") {
             m_parsingMode = NthChildMode;
             return true;
         }
-        return false;
-
-    case 11:
-        if (isEqualToCSSIdentifier(name, "nth-of-type")) {
+        CASE("nth-of-type") {
             m_parsingMode = NthChildMode;
             return true;
         }
-        return false;
-
-    case 14:
-        if (isEqualToCSSIdentifier(name, "nth-last-child")) {
+        CASE("nth-last-child") {
             m_parsingMode = NthChildMode;
             return true;
         }
-        return false;
-
-    case 16:
-        if (isEqualToCSSIdentifier(name, "nth-last-of-type")) {
+        CASE("nth-last-of-type") {
             m_parsingMode = NthChildMode;
             return true;
         }
-        return false;
     }
-
     return false;
 }
 
@@ -9978,15 +9837,16 @@ inline void CSSParser::detectMediaQueryToken(int length)
     ASSERT(m_parsingMode == MediaQueryMode);
     CharacterType* name = tokenStart<CharacterType>();
 
-    if (length == 3) {
-        if (isASCIIAlphaCaselessEqual(name[0], 'a') && isASCIIAlphaCaselessEqual(name[1], 'n') && isASCIIAlphaCaselessEqual(name[2], 'd'))
+    SWITCH(name, length) {
+        CASE("and") {
             m_token = MEDIA_AND;
-        else if (isASCIIAlphaCaselessEqual(name[0], 'n') && isASCIIAlphaCaselessEqual(name[1], 'o') && isASCIIAlphaCaselessEqual(name[2], 't'))
+        }
+        CASE("not") {
             m_token = MEDIA_NOT;
-    } else if (length == 4) {
-        if (isASCIIAlphaCaselessEqual(name[0], 'o') && isASCIIAlphaCaselessEqual(name[1], 'n')
-                && isASCIIAlphaCaselessEqual(name[2], 'l') && isASCIIAlphaCaselessEqual(name[3], 'y'))
+        }
+        CASE("only") {
             m_token = MEDIA_ONLY;
+        }
     }
 }
 
@@ -9995,123 +9855,91 @@ inline void CSSParser::detectNumberToken(CharacterType* type, int length)
 {
     ASSERT(length > 0);
 
-    switch (toASCIILowerUnchecked(type[0])) {
-    case 'c':
-        if (length == 2 && isASCIIAlphaCaselessEqual(type[1], 'm'))
+    SWITCH(type, length) {
+        CASE("cm") {
             m_token = CMS;
-        else if (length == 2 && isASCIIAlphaCaselessEqual(type[1], 'h'))
+        }
+        CASE("ch") {
             m_token = CHS;
-        return;
-
-    case 'd':
-        if (length == 3 && isASCIIAlphaCaselessEqual(type[1], 'e') && isASCIIAlphaCaselessEqual(type[2], 'g'))
+        }
+        CASE("deg") {
             m_token = DEGS;
-        else if (length > 2 && isASCIIAlphaCaselessEqual(type[1], 'p')) {
-            if (length == 4) {
+        }
+        CASE("dppx") {
                 // There is a discussion about the name of this unit on www-style.
                 // Keep this compile time guard in place until that is resolved.
                 // http://lists.w3.org/Archives/Public/www-style/2012May/0915.html
-                if (isASCIIAlphaCaselessEqual(type[2], 'p') && isASCIIAlphaCaselessEqual(type[3], 'x'))
-                    m_token = DPPX;
-                else if (isASCIIAlphaCaselessEqual(type[2], 'c') && isASCIIAlphaCaselessEqual(type[3], 'm'))
-                    m_token = DPCM;
-            } else if (length == 3 && isASCIIAlphaCaselessEqual(type[2], 'i'))
-                    m_token = DPI;
+            m_token = DPPX;
         }
-        return;
-
-    case 'e':
-        if (length == 2) {
-            if (isASCIIAlphaCaselessEqual(type[1], 'm'))
-                m_token = EMS;
-            else if (isASCIIAlphaCaselessEqual(type[1], 'x'))
-                m_token = EXS;
+        CASE("dpcm") {
+            m_token = DPCM;
         }
-        return;
-
-    case 'f':
-        if (length == 2 && isASCIIAlphaCaselessEqual(type[1], 'r'))
+        CASE("dpi") {
+            m_token = DPI;
+        }
+        CASE("em") {
+            m_token = EMS;
+        }
+        CASE("ex") {
+            m_token = EXS;
+        }
+        CASE("fr") {
             m_token = FR;
-        return;
-    case 'g':
-        if (length == 4 && isASCIIAlphaCaselessEqual(type[1], 'r')
-                && isASCIIAlphaCaselessEqual(type[2], 'a') && isASCIIAlphaCaselessEqual(type[3], 'd'))
+        }
+        CASE("grad") {
             m_token = GRADS;
-        return;
-
-    case 'h':
-        if (length == 2 && isASCIIAlphaCaselessEqual(type[1], 'z'))
+        }
+        CASE("hz") {
             m_token = HERTZ;
-        return;
-
-    case 'i':
-        if (length == 2 && isASCIIAlphaCaselessEqual(type[1], 'n'))
+        }
+        CASE("in") {
             m_token = INS;
-        return;
-
-    case 'k':
-        if (length == 3 && isASCIIAlphaCaselessEqual(type[1], 'h') && isASCIIAlphaCaselessEqual(type[2], 'z'))
+        }
+        CASE("khz") {
             m_token = KHERTZ;
-        return;
-
-    case 'm':
-        if (length == 2) {
-            if (isASCIIAlphaCaselessEqual(type[1], 'm'))
-                m_token = MMS;
-            else if (isASCIIAlphaCaselessEqual(type[1], 's'))
-                m_token = MSECS;
         }
-        return;
-
-    case 'p':
-        if (length == 2) {
-            if (isASCIIAlphaCaselessEqual(type[1], 'x'))
-                m_token = PXS;
-            else if (isASCIIAlphaCaselessEqual(type[1], 't'))
-                m_token = PTS;
-            else if (isASCIIAlphaCaselessEqual(type[1], 'c'))
-                m_token = PCS;
+        CASE("mm") {
+            m_token = MMS;
         }
-        return;
-
-    case 'r':
-        if (length == 3) {
-            if (isASCIIAlphaCaselessEqual(type[1], 'a') && isASCIIAlphaCaselessEqual(type[2], 'd'))
-                m_token = RADS;
-            else if (isASCIIAlphaCaselessEqual(type[1], 'e') && isASCIIAlphaCaselessEqual(type[2], 'm'))
-                m_token = REMS;
+        CASE("ms") {
+            m_token = MSECS;
         }
-        return;
-
-    case 's':
-        if (length == 1)
+        CASE("px") {
+            m_token = PXS;
+        }
+        CASE("pt") {
+            m_token = PTS;
+        }
+        CASE("pc") {
+            m_token = PCS;
+        }
+        CASE("rad") {
+            m_token = RADS;
+        }
+        CASE("rem") {
+            m_token = REMS;
+        }
+        CASE("s") {
             m_token = SECS;
-        return;
-
-    case 't':
-        if (length == 4 && isASCIIAlphaCaselessEqual(type[1], 'u')
-                && isASCIIAlphaCaselessEqual(type[2], 'r') && isASCIIAlphaCaselessEqual(type[3], 'n'))
-            m_token = TURNS;
-        return;
-    case 'v':
-        if (length == 2) {
-            if (isASCIIAlphaCaselessEqual(type[1], 'w'))
-                m_token = VW;
-            else if (isASCIIAlphaCaselessEqual(type[1], 'h'))
-                m_token = VH;
-        } else if (length == 4 && isASCIIAlphaCaselessEqual(type[1], 'm')) {
-            if (isASCIIAlphaCaselessEqual(type[2], 'i') && isASCIIAlphaCaselessEqual(type[3], 'n'))
-                m_token = VMIN;
-            else if (isASCIIAlphaCaselessEqual(type[2], 'a') && isASCIIAlphaCaselessEqual(type[3], 'x'))
-                m_token = VMAX;
         }
-        return;
-
-    default:
-        if (type[0] == '_' && length == 5 && type[1] == '_' && isASCIIAlphaCaselessEqual(type[2], 'q')
-                && isASCIIAlphaCaselessEqual(type[3], 'e') && isASCIIAlphaCaselessEqual(type[4], 'm'))
+        CASE("turn") {
+            m_token = TURNS;
+        }
+        CASE("vw") {
+            m_token = VW;
+        }
+        CASE("vh") {
+            m_token = VH;
+        }
+        CASE("vmin") {
+            m_token = VMIN;
+        }
+        CASE("vmax") {
+            m_token = VMAX;
+        }
+        CASE("__qem") {
             m_token = QEMS;
-        return;
+        }
     }
 }
 
@@ -10120,17 +9948,30 @@ inline void CSSParser::detectDashToken(int length)
 {
     CharacterType* name = tokenStart<CharacterType>();
 
-    if (length == 11) {
-        if (isASCIIAlphaCaselessEqual(name[10], 'y') && isEqualToCSSIdentifier(name + 1, "webkit-an"))
+    // Ignore leading dash.
+    ++name;
+    --length;
+
+    SWITCH(name, length) {
+        CASE("webkit-any") {
             m_token = ANYFUNCTION;
-        else if (isASCIIAlphaCaselessEqual(name[10], 'n') && isEqualToCSSIdentifier(name + 1, "webkit-mi"))
+        }
+        CASE("webkit-min") {
             m_token = MINFUNCTION;
-        else if (isASCIIAlphaCaselessEqual(name[10], 'x') && isEqualToCSSIdentifier(name + 1, "webkit-ma"))
+        }
+        CASE("webkit-max") {
             m_token = MAXFUNCTION;
-    } else if (length == 12 && isEqualToCSSIdentifier(name + 1, "webkit-calc"))
-        m_token = CALCFUNCTION;
-    else if (length == 19 && isEqualToCSSIdentifier(name + 1, "webkit-distributed"))
-        m_token = DISTRIBUTEDFUNCTION;
+        }
+        CASE("webkit-var") {
+            m_token = VARFUNCTION;
+        }
+        CASE("webkit-calc") {
+            m_token = CALCFUNCTION;
+        }
+        CASE("webkit-distributed") {
+            m_token = DISTRIBUTEDFUNCTION;
+        }
+    }
 }
 
 template <typename CharacterType>
@@ -10360,14 +10201,16 @@ inline void CSSParser::detectSupportsToken(int length)
     ASSERT(m_parsingMode == SupportsMode);
     CharacterType* name = tokenStart<CharacterType>();
 
-    if (length == 2) {
-        if (isASCIIAlphaCaselessEqual(name[0], 'o') && isASCIIAlphaCaselessEqual(name[1], 'r'))
+    SWITCH(name, length) {
+        CASE("or") {
             m_token = SUPPORTS_OR;
-    } else if (length == 3) {
-        if (isASCIIAlphaCaselessEqual(name[0], 'a') && isASCIIAlphaCaselessEqual(name[1], 'n') && isASCIIAlphaCaselessEqual(name[2], 'd'))
+        }
+        CASE("and") {
             m_token = SUPPORTS_AND;
-        else if (isASCIIAlphaCaselessEqual(name[0], 'n') && isASCIIAlphaCaselessEqual(name[1], 'o') && isASCIIAlphaCaselessEqual(name[2], 't'))
+        }
+        CASE("not") {
             m_token = SUPPORTS_NOT;
+        }
     }
 }
 

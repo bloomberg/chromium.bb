@@ -293,6 +293,9 @@
         # Generated from RuntimeEnabledFeatures.in
         '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.cpp',
 
+        # Generated from CSSParser-in.cpp
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSParser.cpp',
+
         # Additional .cpp files from the make_derived_sources rules.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/XPathGrammar.cpp',

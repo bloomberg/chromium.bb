@@ -611,7 +611,6 @@
             'css/CSSOMUtils.h',
             'css/CSSPageRule.cpp',
             'css/CSSPageRule.h',
-            'css/CSSParser.cpp',
             'css/CSSParser.h',
             'css/CSSParserMode.h',
             'css/CSSParserValues.cpp',
