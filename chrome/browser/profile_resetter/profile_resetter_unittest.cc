@@ -172,9 +172,9 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
             wildcard_setting);
       }
       if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) &&
-          HostContentSettingsMap::IsValueAllowedForType(
+          HostContentSettingsMap::IsSettingAllowedForType(
               test_util_.profile()->GetPrefs(),
-              Value::CreateIntegerValue(site_setting),
+              site_setting,
               content_type)) {
         host_content_settings_map->SetContentSetting(
             pattern,

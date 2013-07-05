@@ -7407,10 +7407,3 @@
    fun:_ZN7content12_GLOBAL__N_134ClearQuotaManagedOriginsOnIOThreadERK13scoped_refptrIN5quota12QuotaManagerEERKSt3setI4GURLSt4lessIS8_ESaIS8_EENS2_11StorageTypeE
    fun:_ZN7content12_GLOBAL__N_121ClearOriginOnIOThreadEjRK4GURLRK13scoped_refptrIN3net23URLRequestContextGetterEERKS4_IN5quota12QuotaManagerEE
 }
-{
-   bug_257069
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base5Value18CreateIntegerValueEi
-   fun:_ZN12_GLOBAL__N_145ProfileResetterTest_ResetContentSettings_Test8TestBodyEv
-}
