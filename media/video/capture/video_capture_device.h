@@ -15,7 +15,6 @@
 #include <list>
 #include <string>
 
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/video/capture/video_capture_types.h"
@@ -37,20 +36,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
     Name() {}
     Name(const std::string& name, const std::string& id)
         : device_name_(name), unique_id_(id) {}
-
-#if defined(OS_WIN)
-    // Windows targets Capture Api type: it can only be set on construction.
-    enum CaptureApiType {
-      MEDIA_FOUNDATION,
-      DIRECT_SHOW,
-      API_TYPE_UNKNOWN
-    };
-
-    Name(const std::string& name,
-         const std::string& id,
-         const CaptureApiType api_type)
-        : device_name_(name), unique_id_(id), capture_api_class_(api_type) {}
-#endif  // if defined(OS_WIN)
     ~Name() {}
 
     // Friendly name of a device
@@ -70,33 +55,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
       return unique_id_ < other.id();
     }
 
-#if defined(OS_WIN)
-    CaptureApiType capture_api_type() const {
-      return capture_api_class_.capture_api_type();
-    }
-#endif  // if defined(OS_WIN)
-
    private:
     std::string device_name_;
     std::string unique_id_;
-#if defined(OS_WIN)
-    // This class wraps the CaptureApiType, so it has a by default value if not
-    // inititalized, and I (mcasas) do a DCHECK on reading its value.
-    class CaptureApiClass{
-     public:
-      CaptureApiClass():  capture_api_type_(API_TYPE_UNKNOWN) {}
-      CaptureApiClass(const CaptureApiType api_type)
-          :  capture_api_type_(api_type) {}
-      CaptureApiType capture_api_type() const {
-        DCHECK_NE(capture_api_type_,  API_TYPE_UNKNOWN);
-        return capture_api_type_;
-      }
-     private:
-      CaptureApiType capture_api_type_;
-    };
-
-    CaptureApiClass capture_api_class_;
-#endif  // if defined(OS_WIN)
     // Allow generated copy constructor and assignment.
   };
 
