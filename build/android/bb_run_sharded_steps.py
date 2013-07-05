@@ -58,7 +58,6 @@ import sys
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
-from pylib import forwarder
 from pylib import ports
 
 
@@ -165,7 +164,6 @@ def _PrintAllStepsOutput(steps):
 
 def _KillPendingServers():
   for retry in range(5):
-    forwarder.Forwarder.KillHost()
     for server in ['lighttpd', 'web-page-replay']:
       pids = cmd_helper.GetCmdOutput(['pgrep', '-f', server])
       pids = [pid.strip() for pid in pids.split('\n') if pid.strip()]

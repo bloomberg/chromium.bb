@@ -40,7 +40,6 @@ class Forwarder(object):
     """
     assert build_type in ('Release', 'Debug')
     self._adb = adb
-    self._device_to_host_port_map = dict()
     self._host_to_device_port_map = dict()
     self._device_initialized = False
     self._host_adb_control_port = 0
@@ -90,7 +89,6 @@ class Forwarder(object):
                           'expected "device_port:host_port"') % output)
         device_port = int(tokens[0])
         host_port = int(tokens[1])
-        self._device_to_host_port_map[device_port] = host_port
         self._host_to_device_port_map[host_port] = device_port
         logging.info('Forwarding device port: %d to host port: %d.',
                      device_port, host_port)
@@ -117,35 +115,24 @@ class Forwarder(object):
       device_port: A previously forwarded port (through Run()).
     """
     with self._lock:
-      self._UnmapDevicePortInternalLocked(device_port)
-
-  def _UnmapDevicePortInternalLocked(self, device_port):
-    if not device_port in self._device_to_host_port_map:
-      return
-    redirection_command = [
-        '--serial-id=' + self._adb.Adb().GetSerialNumber(), '--unmap',
-        str(device_port)]
-    (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
-        [self._host_forwarder_path] + redirection_command)
-    if exit_code != 0:
-      logging.error('%s exited with %d:\n%s' % (
-          self._host_forwarder_path, exit_code, '\n'.join(output)))
-    host_port = self._device_to_host_port_map[device_port]
-    del self._device_to_host_port_map[device_port]
-    del self._host_to_device_port_map[host_port]
+      redirection_command = [
+          '--serial-id=' + self._adb.Adb().GetSerialNumber(), '--unmap',
+          str(device_port)]
+      (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
+          [self._host_forwarder_path] + redirection_command)
+      if exit_code != 0:
+        logging.error('%s exited with %d:\n%s' % (
+            self._host_forwarder_path, exit_code, '\n'.join(output)))
 
   @staticmethod
-  def KillHost(build_type='Debug'):
+  def KillHost(build_type):
     """Kills the forwarder process running on the host.
 
     Args:
-      build_type: 'Release' or 'Debug' (default='Debug')
+      build_type: 'Release' or 'Debug'
     """
     logging.info('Killing host_forwarder.')
     host_forwarder_path = _MakeBinaryPath(build_type, 'host_forwarder')
-    if not os.path.exists(host_forwarder_path):
-      host_forwarder_path = _MakeBinaryPath(
-          'Release' if build_type == 'Debug' else 'Debug', 'host_forwarder')
     assert os.path.exists(host_forwarder_path), 'Please build forwarder2'
     (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
         [host_forwarder_path, '--kill-server'])
@@ -186,8 +173,8 @@ class Forwarder(object):
     with self._lock:
       return self._host_to_device_port_map.get(host_port)
 
+  # Deprecated.
   def Close(self):
-    """Releases the previously forwarded ports."""
-    with self._lock:
-      for device_port in self._device_to_host_port_map.copy():
-        self._UnmapDevicePortInternalLocked(device_port)
+    """Terminates the forwarder process."""
+    # TODO(pliard): Remove references in client code.
+    pass
