@@ -1779,6 +1779,9 @@ crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout 
 
 Bug(dpranke) [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failure ]
 
+crbug.com/169254 [ Mac Linux ] css3/images/cross-fade-background-size.html [ ImageOnlyFailure ]
+crbug.com/169254 fast/borders/border-image-repeat-round.html [ Missing ]
+
 # Just in case they fail
 Bug(schenney) fast/text/line-break-after-empty-inline-hebrew.html [ Pass Failure ]
 Bug(schenney) fast/text/line-break-after-inline-latin1.html [ Pass Failure ]
