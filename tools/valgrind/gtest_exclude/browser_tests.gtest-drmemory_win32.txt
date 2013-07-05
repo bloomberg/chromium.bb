@@ -22,6 +22,7 @@ E*
 F*
 G*
 # H*: ~35  tests
+H*
 # DrM-i#1052-c#53
 HistoryWebUITest.*
 # I*: ~10  tests
