@@ -27,27 +27,6 @@ var base = base || {};
 
 (function(){
 
-// Safari 5.1 lacks Function.prototype.bind.
-if (!('bind' in Function.prototype)) {
-    Function.prototype.bind = function(thisObject) {
-        var method = this;
-        var boundArguments = [];
-        for (var i = 1; i < arguments.length; ++i) {
-            boundArguments.push(arguments[i]);
-        }
-        return function() {
-            var actualParameters = [];
-            for (var i = 0; i < boundArguments.length; ++i) {
-                actualParameters.push(boundArguments[i]);
-            }
-            for (var i = 0; i < arguments.length; ++i) {
-                actualParameters.push(arguments[i]);
-            }
-            return method.apply(thisObject, actualParameters);
-        }
-    }
-}
-
 base.asInteger = function(stringOrInteger)
 {
     if (typeof stringOrInteger == 'string')
