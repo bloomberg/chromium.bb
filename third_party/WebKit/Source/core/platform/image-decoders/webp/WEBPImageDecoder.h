@@ -65,6 +65,7 @@ private:
     void readColorProfile();
 
     bool m_haveReadProfile;
+    bool m_hasProfile;
     qcms_transform* m_transform;
 #endif
 
