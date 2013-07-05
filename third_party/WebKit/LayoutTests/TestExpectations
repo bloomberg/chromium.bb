@@ -4,7 +4,7 @@
 # SLOW BUT PASSING
 # -----------------------------------------------------------------
 
-crbug.com/237000 [ Win Linux ] virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
+crbug.com/237000 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
 webkit.org/b/82097 [ Debug ] editing/selection/move-by-word-visually-crash-test-5.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/css/large-list-of-rules-crash.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/dom/shadow/tree-scope-crash.html [ Slow ]
