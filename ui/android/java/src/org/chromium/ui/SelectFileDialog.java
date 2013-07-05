@@ -89,19 +89,19 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
             // chooser above.
             if (shouldShowImageTypes()) {
                 extraIntents.add(camera);
-                getContentIntent.setType("image/*");
+                getContentIntent.setType(ALL_IMAGE_TYPES);
             } else if (shouldShowVideoTypes()) {
                 extraIntents.add(camcorder);
-                getContentIntent.setType("video/*");
+                getContentIntent.setType(ALL_VIDEO_TYPES);
             } else if (shouldShowAudioTypes()) {
                 extraIntents.add(soundRecorder);
-                getContentIntent.setType("audio/*");
+                getContentIntent.setType(ALL_AUDIO_TYPES);
             }
         }
 
         if (extraIntents.isEmpty()) {
             // We couldn't resolve an accept type, so fallback to a generic chooser.
-            getContentIntent.setType("*/*");
+            getContentIntent.setType(ANY_TYPES);
             extraIntents.add(camera);
             extraIntents.add(camcorder);
             extraIntents.add(soundRecorder);
