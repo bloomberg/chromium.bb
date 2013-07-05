@@ -55,11 +55,34 @@ BASE_EXPORT bool IsBinaryInstrumented();
 typedef uintptr_t (*ReturnAddressLocationResolver)(
     uintptr_t return_addr_location);
 
-// If this binary is instrumented and the instrumentation supplies a return
-// address resolution function, finds and returns the address resolution
-// function. Otherwise returns NULL.
-BASE_EXPORT ReturnAddressLocationResolver
-    GetProfilerReturnAddrResolutionFunc();
+// This type declaration must match V8's FunctionEntryHook.
+typedef void (*DynamicFunctionEntryHook)(uintptr_t function,
+                                         uintptr_t return_addr_location);
+
+// The functions below here are to support profiling V8-generated code.
+// V8 has provisions for generating a call to an entry hook for newly generated
+// JIT code, and it can push symbol information on code generation and advise
+// when the garbage collector moves code. The functions declarations below here
+// make glue between V8's facilities and a profiler.
+
+// This type declaration must match V8's FunctionEntryHook.
+typedef void (*DynamicFunctionEntryHook)(uintptr_t function,
+                                         uintptr_t return_addr_location);
+
+typedef void (*AddDynamicSymbol)(const void* address,
+                                 size_t length,
+                                 const char* name,
+                                 size_t name_len);
+typedef void (*MoveDynamicSymbol)(const void* address, const void* new_address);
+
+
+// If this binary is instrumented and the instrumentation supplies a function
+// for each of those purposes, find and return the function in question.
+// Otherwise returns NULL.
+BASE_EXPORT ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc();
+BASE_EXPORT DynamicFunctionEntryHook GetProfilerDynamicFunctionEntryHookFunc();
+BASE_EXPORT AddDynamicSymbol GetProfilerAddDynamicSymbolFunc();
+BASE_EXPORT MoveDynamicSymbol GetProfilerMoveDynamicSymbolFunc();
 
 }  // namespace debug
 }  // namespace base

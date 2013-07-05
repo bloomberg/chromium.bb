@@ -82,6 +82,18 @@ ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc() {
   return NULL;
 }
 
+DynamicFunctionEntryHook GetProfilerDynamicFunctionEntryHookFunc() {
+  return NULL;
+}
+
+AddDynamicSymbol GetProfilerAddDynamicSymbolFunc() {
+  return NULL;
+}
+
+MoveDynamicSymbol GetProfilerMoveDynamicSymbolFunc() {
+  return NULL;
+}
+
 #else  // defined(OS_WIN)
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
@@ -118,11 +130,24 @@ bool IsBinaryInstrumented() {
   return state == INSTRUMENTED_IMAGE;
 }
 
+namespace {
+
+struct FunctionSearchContext {
+  const char* name;
+  FARPROC function;
+};
+
 // Callback function to PEImage::EnumImportChunks.
-static bool FindResolutionFunctionInImports(
+bool FindResolutionFunctionInImports(
     const base::win::PEImage &image, const char* module_name,
     PIMAGE_THUNK_DATA unused_name_table, PIMAGE_THUNK_DATA import_address_table,
     PVOID cookie) {
+  FunctionSearchContext* context =
+      reinterpret_cast<FunctionSearchContext*>(cookie);
+
+  DCHECK_NE(static_cast<FunctionSearchContext*>(NULL), context);
+  DCHECK_EQ(static_cast<FARPROC>(NULL), context->function);
+
   // Our import address table contains pointers to the functions we import
   // at this point. Let's retrieve the first such function and use it to
   // find the module this import was resolved to by the loader.
@@ -139,18 +164,10 @@ static bool FindResolutionFunctionInImports(
   }
 
   // See whether this module exports the function we're looking for.
-  ReturnAddressLocationResolver exported_func =
-      reinterpret_cast<ReturnAddressLocationResolver>(
-          ::GetProcAddress(module, "ResolveReturnAddressLocation"));
-
+  FARPROC exported_func = ::GetProcAddress(module, context->name);
   if (exported_func != NULL) {
-    ReturnAddressLocationResolver* resolver_func =
-        reinterpret_cast<ReturnAddressLocationResolver*>(cookie);
-    DCHECK(resolver_func != NULL);
-    DCHECK(*resolver_func == NULL);
-
     // We found it, return the function and terminate the enumeration.
-    *resolver_func = exported_func;
+    context->function = exported_func;
     return false;
   }
 
@@ -158,17 +175,40 @@ static bool FindResolutionFunctionInImports(
   return true;
 }
 
-ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc() {
+template <typename FunctionType>
+FunctionType FindFunctionInImports(const char* function_name) {
   if (!IsBinaryInstrumented())
     return NULL;
 
   HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
   base::win::PEImage image(this_module);
 
-  ReturnAddressLocationResolver resolver_func = NULL;
-  image.EnumImportChunks(FindResolutionFunctionInImports, &resolver_func);
+  FunctionSearchContext ctx = { function_name, NULL };
+  image.EnumImportChunks(FindResolutionFunctionInImports, &ctx);
 
-  return resolver_func;
+  return reinterpret_cast<FunctionType>(ctx.function);
+}
+
+}  // namespace
+
+ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc() {
+  return FindFunctionInImports<ReturnAddressLocationResolver>(
+      "ResolveReturnAddressLocation");
+}
+
+DynamicFunctionEntryHook GetProfilerDynamicFunctionEntryHookFunc() {
+  return FindFunctionInImports<DynamicFunctionEntryHook>(
+      "OnDynamicFunctionEntry");
+}
+
+AddDynamicSymbol GetProfilerAddDynamicSymbolFunc() {
+  return FindFunctionInImports<AddDynamicSymbol>(
+      "AddDynamicSymbol");
+}
+
+MoveDynamicSymbol GetProfilerMoveDynamicSymbolFunc() {
+  return FindFunctionInImports<MoveDynamicSymbol>(
+      "MoveDynamicSymbol");
 }
 
 #endif  // defined(OS_WIN)
