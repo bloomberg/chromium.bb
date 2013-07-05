@@ -198,6 +198,7 @@
     sequence<DOMString> consoleMessageArgumentCounts(Document document);
     Window openDummyInspectorFrontend(DOMString url);
     void closeDummyInspectorFrontend();
+    unsigned long[] setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
     [RaisesException] void setInspectorResourcesDataSizeLimits(long maximumResourcesContentSize, long maximumSingleResourceContentSize);
 
     DOMString counterValue(Element element);

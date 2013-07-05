@@ -1,0 +1,81 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script>
+var oldCapacities;
+
+function overrideLimits()
+{
+    if (!window.internals) {
+        console.log("This test can not be run as window.internals is not available.");
+        return;
+    }
+    internals.setInspectorResourcesDataSizeLimits(300, 100);
+    oldCapacities = internals.setMemoryCacheCapacities(0, 100, 100);
+}
+
+function restoreLimits()
+{
+    if (!window.internals)
+        return;
+    resetInspectorResourcesData();
+    internals.setMemoryCacheCapacities(oldCapacities[0], oldCapacities[1], oldCapacities[2]);
+}
+
+var scriptElement;
+function loadScript()
+{
+    scriptElement = document.createElement("script");
+    scriptElement.src = "resources/long_script.js";
+    document.head.appendChild(scriptElement);
+}
+
+function unloadScript()
+{
+    scriptElement.parentElement.removeChild(scriptElement);
+}
+
+function test()
+{
+    InspectorTest.evaluateInPage("overrideLimits()", step2);
+
+    function step2()
+    {
+        InspectorTest.hardReloadPage(step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.evaluateInPage("loadScript()", step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.evaluateInPage("unloadScript()", step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.showScriptSource("long_script.js", step6);
+    }
+
+    function step6(sourceFrame)
+    {
+        InspectorTest.addResult("Dumping loaded script content: \n" + sourceFrame._textEditor.text());
+        InspectorTest.evaluateInPage("restoreLimits()", step7);
+    }
+
+    function step7()
+    {
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+    <p> Tests long script content is correctly shown in source panel after page reload.</p>
+</body>
+</html>
+
