@@ -31,10 +31,12 @@
 #ifndef CustomElementCallbackDispatcher_h
 #define CustomElementCallbackDispatcher_h
 
+#include "core/dom/CustomElementCallbackQueue.h"
 #include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/Element.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -44,18 +46,27 @@ class CustomElementCallbackDispatcher {
 public:
     static CustomElementCallbackDispatcher& instance();
 
+    // This is stack allocated in many DOM callbacks. Make it cheap.
     class CallbackDeliveryScope {
     public:
-        CallbackDeliveryScope() { }
+        CallbackDeliveryScope()
+            : m_savedElementQueueStart(s_elementQueueStart)
+        {
+            s_elementQueueStart = s_elementQueueEnd;
+        }
+
         ~CallbackDeliveryScope()
         {
-            CustomElementCallbackDispatcher& dispatcher = CustomElementCallbackDispatcher::instance();
-            if (dispatcher.hasQueuedCallbacks())
-                dispatcher.dispatch();
+            if (s_elementQueueStart != s_elementQueueEnd)
+                processElementQueueAndPop();
+            s_elementQueueStart = m_savedElementQueueStart;
         }
+
+    private:
+        size_t m_savedElementQueueStart;
     };
 
-    void enqueueCreatedCallback(CustomElementLifecycleCallbacks*, Element*);
+    void enqueueCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
 
     // Returns true if more work may have to be performed at the
     // checkpoint by this or other workers (for example, this work
@@ -63,22 +74,41 @@ public:
     bool dispatch();
 
 private:
-    explicit CustomElementCallbackDispatcher() { }
+    CustomElementCallbackDispatcher()
+    {
+        // Add a null element as a sentinel. This makes it possible to
+        // identify elements queued when there is no
+        // CallbackDeliveryScope active. Also, if the processing stack
+        // is popped when empty, this sentinel will cause a null deref
+        // crash.
+        CustomElementCallbackQueue* sentinel = 0;
+        m_flattenedProcessingStack.append(sentinel);
+        ASSERT(s_elementQueueEnd == m_flattenedProcessingStack.size());
+    }
 
-    bool hasQueuedCallbacks() { return !m_invocations.isEmpty(); }
+    // The start of the element queue on the top of the processing
+    // stack. An offset into instance().m_flattenedProcessingStack.
+    static size_t s_elementQueueStart;
 
-    class CreatedInvocation {
-    public:
-        CreatedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-        virtual ~CreatedInvocation() { }
-        void invoke() { m_callbacks->created(m_element.get()); }
+    // The end of the element queue on the top of the processing
+    // stack. A cache of instance().m_flattenedProcessingStack.size().
+    static size_t s_elementQueueEnd;
 
-    private:
-        RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
-        RefPtr<Element> m_element;
-    };
+    static bool inCallbackDeliveryScope() { return s_elementQueueStart; }
 
-    Vector<CreatedInvocation> m_invocations;
+    typedef int ElementQueue;
+    static ElementQueue currentElementQueue() { return ElementQueue(s_elementQueueStart); }
+
+    static void processElementQueueAndPop();
+    void processElementQueueAndPop(size_t start, size_t end);
+
+    // The processing stack, flattened. Element queues lower in the
+    // stack appear toward the head of the vector. The first element
+    // is a null sentinel value.
+    Vector<CustomElementCallbackQueue*> m_flattenedProcessingStack;
+
+    typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
+    ElementCallbackQueueMap m_elementCallbackQueueMap;
 };
 
 }

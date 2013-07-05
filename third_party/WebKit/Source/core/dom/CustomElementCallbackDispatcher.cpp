@@ -31,7 +31,14 @@
 #include "config.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
 
+#include "wtf/MainThread.h"
+
 namespace WebCore {
+
+size_t CustomElementCallbackDispatcher::s_elementQueueStart = 0;
+
+// The base of the stack has a null sentinel value.
+size_t CustomElementCallbackDispatcher::s_elementQueueEnd = 1;
 
 CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
 {
@@ -39,34 +46,74 @@ CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
     return instance;
 }
 
-CustomElementCallbackDispatcher::CreatedInvocation::CreatedInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-    : m_callbacks(callbacks)
-    , m_element(element)
+void CustomElementCallbackDispatcher::enqueueCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
+    Element* key = element.get();
+    ElementCallbackQueueMap::AddResult result = m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(callbacks, element));
+    ASSERT(result.isNewEntry); // creation callbacks are always scheduled first
+
+    CustomElementCallbackQueue* queue = result.iterator->value.get();
+    queue->setOwner(currentElementQueue());
+    queue->append(CustomElementLifecycleCallbacks::Created);
+
+    // The created callback is unique in being prepended to the front
+    // of the element queue
+    m_flattenedProcessingStack.insert(inCallbackDeliveryScope() ? s_elementQueueStart : /* skip null sentinel */ 1, queue);
+    s_elementQueueEnd++;
 }
 
+// Dispatches callbacks at microtask checkpoint.
 bool CustomElementCallbackDispatcher::dispatch()
 {
-    if (m_invocations.isEmpty())
-        return false;
+    ASSERT(isMainThread());
+    ASSERT(!inCallbackDeliveryScope());
+    size_t start = 1; // skip null sentinel
+    size_t end = s_elementQueueEnd;
 
-    do  {
-        Vector<CreatedInvocation> invocations;
-        m_invocations.swap(invocations);
+    for (size_t i = start; i < end; i++) {
+        m_flattenedProcessingStack[i]->processInElementQueue(currentElementQueue());
 
-        for (Vector<CreatedInvocation>::iterator it = invocations.begin(); it != invocations.end(); ++it)
-            it->invoke();
-    } while (!m_invocations.isEmpty());
+        // new callbacks as a result of recursion must be scheduled in
+        // a CallbackDeliveryScope which restore this queue on completion
+        ASSERT(!s_elementQueueStart);
+        ASSERT(s_elementQueueEnd == end);
+    }
 
-    return true;
+    s_elementQueueEnd = 1;
+    m_flattenedProcessingStack.resize(s_elementQueueEnd);
+    m_elementCallbackQueueMap.clear();
+
+    bool didWork = start < end;
+    return didWork;
 }
 
-void CustomElementCallbackDispatcher::enqueueCreatedCallback(CustomElementLifecycleCallbacks* callbacks, Element* element)
+// Dispatches callbacks when popping the processing stack.
+void CustomElementCallbackDispatcher::processElementQueueAndPop()
 {
-    if (!callbacks->hasCreated())
-        return;
+    instance().processElementQueueAndPop(s_elementQueueStart, s_elementQueueEnd);
+}
 
-    m_invocations.prepend(CreatedInvocation(callbacks, element));
+void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, size_t end)
+{
+    ASSERT(isMainThread());
+
+    for (size_t i = start; i < end; i++) {
+        m_flattenedProcessingStack[i]->processInElementQueue(currentElementQueue());
+
+        // process() may run script which grows and shrinks the
+        // processing stack above this entry, but the processing stack
+        // should always drop back to having this entry at the
+        // top-of-stack on exit
+        ASSERT(start == s_elementQueueStart);
+        ASSERT(end == s_elementQueueEnd);
+    }
+
+    // Pop the element queue from the processing stack
+    m_flattenedProcessingStack.resize(start);
+    s_elementQueueEnd = start;
+
+    if (start == /* allow sentinel */ 1)
+        m_elementCallbackQueueMap.clear();
 }
 
 } // namespace WebCore

@@ -44,12 +44,12 @@ public:
     bool hasCreated() const { return m_which == Created; }
     virtual void created(Element*) = 0;
 
-protected:
     enum CallbackType {
         None,
         Created
     };
 
+protected:
     CustomElementLifecycleCallbacks(CallbackType which) : m_which(which) { }
 
 private:

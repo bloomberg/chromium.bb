@@ -1721,6 +1721,8 @@
             'dom/CrossThreadTask.h',
             'dom/CustomElementCallbackDispatcher.cpp',
             'dom/CustomElementCallbackDispatcher.h',
+            'dom/CustomElementCallbackQueue.cpp',
+            'dom/CustomElementCallbackQueue.h',
             'dom/CustomElementDefinition.cpp',
             'dom/CustomElementDefinition.h',
             'dom/CustomElementLifecycleCallbacks.h',
