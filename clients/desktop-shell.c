@@ -1134,6 +1134,22 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void
+output_init(struct output *output, struct desktop *desktop)
+{
+	struct wl_surface *surface;
+
+	output->panel = panel_create(desktop);
+	surface = window_get_wl_surface(output->panel->window);
+	desktop_shell_set_panel(desktop->shell,
+				output->output, surface);
+
+	output->background = background_create(desktop);
+	surface = window_get_wl_surface(output->background->window);
+	desktop_shell_set_background(desktop->shell,
+				     output->output, surface);
+}
+
+static void
 create_output(struct desktop *desktop, uint32_t id)
 {
 	struct output *output;
@@ -1148,6 +1164,11 @@ create_output(struct desktop *desktop, uint32_t id)
 	wl_output_add_listener(output->output, &output_listener, output);
 
 	wl_list_insert(&desktop->outputs, &output->link);
+
+	/* On start up we may process an output global before the shell global
+	 * in which case we can't create the panel and background just yet */
+	if (desktop->shell)
+		output_init(output, desktop);
 }
 
 static void
@@ -1231,19 +1252,11 @@ int main(int argc, char *argv[])
 	display_set_user_data(desktop.display, &desktop);
 	display_set_global_handler(desktop.display, global_handler);
 
-	wl_list_for_each(output, &desktop.outputs, link) {
-		struct wl_surface *surface;
-
-		output->panel = panel_create(&desktop);
-		surface = window_get_wl_surface(output->panel->window);
-		desktop_shell_set_panel(desktop.shell,
-					output->output, surface);
-
-		output->background = background_create(&desktop);
-		surface = window_get_wl_surface(output->background->window);
-		desktop_shell_set_background(desktop.shell,
-					     output->output, surface);
-	}
+	/* Create panel and background for outputs processed before the shell
+	 * global interface was processed */
+	wl_list_for_each(output, &desktop.outputs, link)
+		if (!output->panel)
+			output_init(output, &desktop);
 
 	grab_surface_create(&desktop);
 
