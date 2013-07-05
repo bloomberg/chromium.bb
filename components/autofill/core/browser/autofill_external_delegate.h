@@ -28,6 +28,7 @@ class WebContents;
 
 namespace autofill {
 
+class AutofillDriver;
 class AutofillManager;
 
 // TODO(csharp): A lot of the logic in this class is copied from autofillagent.
@@ -38,10 +39,11 @@ class AutofillManager;
 class AutofillExternalDelegate
     : public AutofillPopupDelegate {
  public:
-  // Creates an AutofillExternalDelegate for the specified contents; the second
-  // argument is an AutofillManager managing Autofill for that WebContents.
+  // Creates an AutofillExternalDelegate for the specified contents,
+  // AutofillManager, and AutofillDriver.
   AutofillExternalDelegate(content::WebContents* web_contents,
-                           AutofillManager* autofill_manager);
+                           AutofillManager* autofill_manager,
+                           AutofillDriver* autofill_driver);
   virtual ~AutofillExternalDelegate();
 
   // AutofillPopupDelegate implementation.
@@ -138,6 +140,10 @@ class AutofillExternalDelegate
   // The web_contents associated with this delegate.
   content::WebContents* web_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
+
+  // Provides driver-level context to the shared code of the component. Must
+  // outlive this object.
+  AutofillDriver* autofill_driver_;  // weak
 
   // Password Autofill manager, handles all password-related Autofilling.
   PasswordAutofillManager password_autofill_manager_;

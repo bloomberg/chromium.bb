@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "content/public/browser/render_view_host.h"
@@ -25,9 +26,11 @@ namespace autofill {
 
 AutofillExternalDelegate::AutofillExternalDelegate(
     content::WebContents* web_contents,
-    AutofillManager* autofill_manager)
+    AutofillManager* autofill_manager,
+    AutofillDriver* autofill_driver)
     : web_contents_(web_contents),
       autofill_manager_(autofill_manager),
+      autofill_driver_(autofill_driver),
       password_autofill_manager_(web_contents),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
@@ -257,16 +260,12 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
   if (unique_id == WebAutofillClient::MenuItemIDWarningMessage)
     return;
 
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
+  AutofillDriver::RendererFormDataAction renderer_action = is_preview ?
+      AutofillDriver::FORM_DATA_ACTION_PREVIEW :
+      AutofillDriver::FORM_DATA_ACTION_FILL;
 
-  if (is_preview) {
-    host->Send(new AutofillMsg_SetAutofillActionPreview(
-        host->GetRoutingID()));
-  } else {
-    host->Send(new AutofillMsg_SetAutofillActionFill(
-        host->GetRoutingID()));
-  }
-
+  DCHECK(autofill_driver_->RendererIsAvailable());
+  autofill_driver_->SetRendererActionOnFormDataReception(renderer_action);
   // Fill the values for the whole form.
   autofill_manager_->OnFillAutofillFormData(autofill_query_id_,
                                             autofill_query_form_,

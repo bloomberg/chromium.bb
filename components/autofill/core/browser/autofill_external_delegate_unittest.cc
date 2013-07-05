@@ -34,11 +34,26 @@ const int kQueryId = 5;
 // A constant value to use as an Autofill profile ID.
 const int kAutofillProfileId = 1;
 
+class MockAutofillDriver : public TestAutofillDriver {
+ public:
+  explicit MockAutofillDriver(content::WebContents* web_contents)
+      : TestAutofillDriver(web_contents) {}
+
+  // Mock methods to enable testability.
+  MOCK_METHOD1(SetRendererActionOnFormDataReception,
+               void(RendererFormDataAction action));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
+};
+
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   MockAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manger)
-      : AutofillExternalDelegate(web_contents, autofill_manger) {}
+                               AutofillManager* autofill_manger,
+                               AutofillDriver* autofill_driver)
+      : AutofillExternalDelegate(web_contents, autofill_manger,
+                                 autofill_driver) {}
 
   ~MockAutofillExternalDelegate() {}
 
@@ -95,14 +110,14 @@ class AutofillExternalDelegateUnitTest
  protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-    autofill_driver_.reset(new TestAutofillDriver(web_contents()));
+    autofill_driver_.reset(new MockAutofillDriver(web_contents()));
     autofill_manager_.reset(
         new MockAutofillManager(autofill_driver_.get(),
                                 &manager_delegate_));
     external_delegate_.reset(
         new testing::NiceMock<MockAutofillExternalDelegate>(
             web_contents(),
-            autofill_manager_.get()));
+            autofill_manager_.get(), autofill_driver_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -128,7 +143,7 @@ class AutofillExternalDelegateUnitTest
   }
 
   MockAutofillManagerDelegate manager_delegate_;
-  scoped_ptr<AutofillDriver> autofill_driver_;
+  scoped_ptr<MockAutofillDriver> autofill_driver_;
   scoped_ptr<MockAutofillManager> autofill_manager_;
   scoped_ptr<testing::NiceMock<MockAutofillExternalDelegate> >
       external_delegate_;
@@ -162,6 +177,9 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
 
   // Called by DidAutofillSuggestions, add expectation to remove warning.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
+
+  EXPECT_CALL(*autofill_driver_, SetRendererActionOnFormDataReception(
+      AutofillDriver::FORM_DATA_ACTION_FILL));
 
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
 
@@ -289,12 +307,16 @@ TEST_F(AutofillExternalDelegateUnitTest, NoAutofillWarningsWithoutSuggestions) {
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to preview the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
+  EXPECT_CALL(*autofill_driver_,
+              SetRendererActionOnFormDataReception(_)).Times(0);
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
   external_delegate_->DidSelectSuggestion(-1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
+  EXPECT_CALL(*autofill_driver_,
+              SetRendererActionOnFormDataReception(_)).Times(0);
   external_delegate_->DidAcceptSuggestion(base::string16(), -1);
 }
 
@@ -311,6 +333,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
       WebAutofillClient::MenuItemIDPasswordEntry);
 
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
+  EXPECT_CALL(*autofill_driver_, SetRendererActionOnFormDataReception(
+      AutofillDriver::FORM_DATA_ACTION_PREVIEW));
   external_delegate_->DidSelectSuggestion(1);
 }
 

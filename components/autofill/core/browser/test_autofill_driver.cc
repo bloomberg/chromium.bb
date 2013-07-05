@@ -19,6 +19,10 @@ bool TestAutofillDriver::RendererIsAvailable() {
   return true;
 }
 
+void TestAutofillDriver::SetRendererActionOnFormDataReception(
+    RendererFormDataAction action) {
+}
+
 void TestAutofillDriver::SendFormDataToRenderer(int query_id,
                                                 const FormData& form_data) {
 }

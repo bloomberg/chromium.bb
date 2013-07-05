@@ -67,7 +67,8 @@ AutofillDriverImpl::AutofillDriverImpl(
       autofill_manager_(new AutofillManager(
           this, delegate, app_locale, enable_download_manager)) {
   SetAutofillExternalDelegate(scoped_ptr<AutofillExternalDelegate>(
-      new AutofillExternalDelegate(web_contents, autofill_manager_.get())));
+      new AutofillExternalDelegate(web_contents, autofill_manager_.get(),
+                                   this)));
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
@@ -87,6 +88,23 @@ content::WebContents* AutofillDriverImpl::GetWebContents() {
 
 bool AutofillDriverImpl::RendererIsAvailable() {
   return (web_contents()->GetRenderViewHost() != NULL);
+}
+
+void AutofillDriverImpl::SetRendererActionOnFormDataReception(
+    RendererFormDataAction action) {
+  if (!RendererIsAvailable())
+    return;
+
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  switch(action) {
+    case FORM_DATA_ACTION_PREVIEW:
+      host->Send(new AutofillMsg_SetAutofillActionPreview(
+          host->GetRoutingID()));
+      return;
+    case FORM_DATA_ACTION_FILL:
+      host->Send(new AutofillMsg_SetAutofillActionFill(host->GetRoutingID()));
+      return;
+  }
 }
 
 void AutofillDriverImpl::SendFormDataToRenderer(int query_id,

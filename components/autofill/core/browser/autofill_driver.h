@@ -22,6 +22,14 @@ class FormStructure;
 // implementation must be provided by the driver.
 class AutofillDriver {
  public:
+   // The possible actions that the renderer can take on receiving form data.
+  enum RendererFormDataAction {
+    // The renderer should fill the form data.
+    FORM_DATA_ACTION_FILL,
+    // The renderer should preview the form data.
+    FORM_DATA_ACTION_PREVIEW
+  };
+
   virtual ~AutofillDriver() {}
 
   // TODO(blundell): Remove this method once shared code no longer needs to
@@ -30,6 +38,11 @@ class AutofillDriver {
 
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;
+
+  // Informs the renderer what action to take with the next form data that it
+  // receives. Must be called before each call to |SendFormDataToRenderer|.
+  virtual void SetRendererActionOnFormDataReception(
+      RendererFormDataAction action) = 0;
 
   // Forwards |data| to the renderer. |query_id| is the id of the renderer's
   // original request for the data. This method is a no-op if the renderer is

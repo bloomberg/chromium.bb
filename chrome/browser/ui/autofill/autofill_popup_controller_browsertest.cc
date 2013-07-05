@@ -24,8 +24,10 @@ namespace {
 class TestAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   TestAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager)
-      : AutofillExternalDelegate(web_contents, autofill_manager),
+                               AutofillManager* autofill_manager,
+                               AutofillDriver* autofill_driver)
+      : AutofillExternalDelegate(web_contents, autofill_manager,
+                                 autofill_driver),
         popup_hidden_(true) {}
   virtual ~TestAutofillExternalDelegate() {}
 
@@ -75,11 +77,13 @@ class AutofillPopupControllerBrowserTest
     ASSERT_TRUE(web_contents_ != NULL);
     Observe(web_contents_);
 
+    AutofillDriverImpl* driver =
+        AutofillDriverImpl::FromWebContents(web_contents_);
     autofill_external_delegate_.reset(
        new TestAutofillExternalDelegate(
            web_contents_,
-           AutofillDriverImpl::FromWebContents(
-               web_contents_)->autofill_manager()));
+           driver->autofill_manager(),
+           driver));
   }
 
   // Normally the WebContents will automatically delete the delegate, but here

@@ -208,8 +208,10 @@ namespace {
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   MockAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager)
-      : AutofillExternalDelegate(web_contents, autofill_manager) {}
+                               AutofillManager* autofill_manager,
+                               AutofillDriver* autofill_driver)
+      : AutofillExternalDelegate(web_contents, autofill_manager,
+                                 autofill_driver) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD5(OnSuggestionsReturned,
@@ -249,7 +251,8 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
       AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
 
   MockAutofillExternalDelegate external_delegate(web_contents(),
-                                                 autofill_manager.get());
+                                                 autofill_manager.get(),
+                                                 autofill_driver_.get());
   autocomplete_history_manager.SetExternalDelegate(&external_delegate);
 
   // Should trigger a call to OnSuggestionsReturned, verified by the mock.

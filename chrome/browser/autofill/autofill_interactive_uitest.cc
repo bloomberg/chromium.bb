@@ -167,8 +167,10 @@ class WindowedPersonalDataManagerObserver
 class TestAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   TestAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager)
-      : AutofillExternalDelegate(web_contents, autofill_manager),
+                               AutofillManager* autofill_manager,
+                               AutofillDriver* autofill_driver)
+      : AutofillExternalDelegate(web_contents, autofill_manager,
+                                 autofill_driver),
         keyboard_listener_(NULL) {
   }
   virtual ~TestAutofillExternalDelegate() {}
@@ -211,7 +213,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         AutofillDriverImpl::FromWebContents(web_contents);
     AutofillManager* autofill_manager = autofill_driver->autofill_manager();
     scoped_ptr<AutofillExternalDelegate> external_delegate(
-        new TestAutofillExternalDelegate(web_contents, autofill_manager));
+        new TestAutofillExternalDelegate(web_contents, autofill_manager,
+                                         autofill_driver));
     autofill_driver->SetAutofillExternalDelegate(external_delegate.Pass());
     autofill_manager->SetTestDelegate(&test_delegate_);
   }

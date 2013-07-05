@@ -3266,8 +3266,10 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   explicit MockAutofillExternalDelegate(content::WebContents* web_contents,
-                                        AutofillManager* autofill_manager)
-      : AutofillExternalDelegate(web_contents, autofill_manager) {}
+                                        AutofillManager* autofill_manager,
+                                        AutofillDriver* autofill_driver)
+      : AutofillExternalDelegate(web_contents, autofill_manager,
+                                 autofill_driver) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD5(OnQuery, void(int query_id,
@@ -3344,7 +3346,8 @@ TEST_F(AutofillManagerTest, TestAutocheckoutBubbleNotShown) {
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
   MockAutofillExternalDelegate external_delegate(web_contents(),
-                                                 autofill_manager_.get());
+                                                 autofill_manager_.get(),
+                                                 autofill_driver_.get());
   EXPECT_CALL(external_delegate, OnQuery(_, _, _, _, _));
   autofill_manager_->SetExternalDelegate(&external_delegate);
 
