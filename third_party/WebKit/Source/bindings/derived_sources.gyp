@@ -43,6 +43,12 @@
       '<@(modules_idl_files)',
       '<@(svg_idl_files)',
     ],
+    'generated_global_constructors_idl_files': [
+         '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
+    ],
 
     'conditions': [
       ['OS=="win" and buildtype=="Official"', {
@@ -110,10 +116,7 @@
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-         '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
+         '<@(generated_global_constructors_idl_files)',
          '<(SHARED_INTERMEDIATE_DIR)/EventNames.in',
        ],
        'msvs_cygwin_shell': 0,
@@ -142,6 +145,8 @@
     {
       'target_name': 'bindings_sources',
       'type': 'none',
+      # The 'binding' rule generates .h files, so mark as hard_dependency, per:
+      # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
       'hard_dependency': 1,
       'dependencies': [
         'supplemental_dependencies',
@@ -160,9 +165,18 @@
           'scripts/CodeGeneratorV8.pm',
           'scripts/IDLParser.pm',
           'scripts/IDLSerializer.pm',
-          'scripts/IDLAttributes.txt',
           '../core/scripts/preprocessor.pm',
+          'scripts/IDLAttributes.txt',
+          # FIXME: If the dependency structure changes, we rebuild all files,
+          # since we're not computing dependencies file-by-file in the build.
+          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
+          # FIXME: Similarly, if any partial interface changes, rebuild
+          # everything, since every IDL potentially depends on them, because
+          # we're not computing dependencies file-by-file.
           '<!@pymod_do_main(supplemental_idl_files <@(idl_files))',
+          # Generated IDLs are all partial interfaces, hence everything
+          # potentially depends on them.
+          '<@(generated_global_constructors_idl_files)',
         ],
         'outputs': [
           # FIXME:  The .cpp file should be in webkit/bindings once
@@ -222,7 +236,6 @@
     {
       'target_name': 'bindings_derived_sources',
       'type': 'none',
-      'hard_dependency': 1,
       'dependencies': [
         'supplemental_dependencies',
         'bindings_sources',
@@ -231,6 +244,7 @@
         'action_name': 'derived_sources_all_in_one',
         'inputs': [
           '../core/scripts/action_derivedsourcesallinone.py',
+          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
         ],
         'outputs': [
           '<@(derived_sources_aggregate_files)',
