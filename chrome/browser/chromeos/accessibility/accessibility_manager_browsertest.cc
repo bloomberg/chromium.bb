@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -29,6 +30,10 @@ namespace chromeos {
 namespace {
 
 const char kTestUserName[] = "owner@invalid.domain";
+
+// Test user name for locally managed user. The domain part must be matched
+// with UserManager::kLocallyManagedUserDomain.
+const char kTestLocallyManagedUserName[] = "test@locally-managed.localhost";
 
 class MockAccessibilityObserver : public content::NotificationObserver {
  public:
@@ -120,16 +125,28 @@ PrefService* GetPrefs() {
   return GetProfile()->GetPrefs();
 }
 
-void SetLargeCursorEnabledToPref(bool enabled) {
+void SetLargeCursorEnabledPref(bool enabled) {
   GetPrefs()->SetBoolean(prefs::kLargeCursorEnabled, enabled);
 }
 
-void SetHighContrastEnabledToPref(bool enabled) {
+void SetHighContrastEnabledPref(bool enabled) {
   GetPrefs()->SetBoolean(prefs::kHighContrastEnabled, enabled);
 }
 
-void SetSpokenFeedbackEnabledToPref(bool enabled) {
+void SetSpokenFeedbackEnabledPref(bool enabled) {
   GetPrefs()->SetBoolean(prefs::kSpokenFeedbackEnabled, enabled);
+}
+
+bool GetLargeCursorEnabledFromPref() {
+  return GetPrefs()->GetBoolean(prefs::kLargeCursorEnabled);
+}
+
+bool GetHighContrastEnabledFromPref() {
+  return GetPrefs()->GetBoolean(prefs::kHighContrastEnabled);
+}
+
+bool GetSpokenFeedbackEnabledFromPref() {
+  return GetPrefs()->GetBoolean(prefs::kSpokenFeedbackEnabled);
 }
 
 }  // anonymouse namespace
@@ -146,6 +163,9 @@ class AccessibilityManagerTest : public CrosInProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    // Sets the login-screen profile.
+    AccessibilityManager::Get()->
+        SetProfileForTest(ProfileHelper::GetSigninProfile());
   }
 
   content::NotificationRegistrar registrar_;
@@ -200,12 +220,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   EXPECT_FALSE(IsHighContrastEnabled());
 
   // Sets the pref as true to enable the large cursor.
-  SetLargeCursorEnabledToPref(true);
+  SetLargeCursorEnabledPref(true);
   // Confirms that the large cursor is enabled.
   EXPECT_TRUE(IsLargeCursorEnabled());
 
   // Sets the pref as true to enable the spoken feedback.
-  SetSpokenFeedbackEnabledToPref(true);
+  SetSpokenFeedbackEnabledPref(true);
   // Confirms that the spoken feedback is enabled.
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
@@ -214,13 +234,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Confirms that the high contrast mode is enabled.
   EXPECT_TRUE(IsHighContrastEnabled());
 
-  SetLargeCursorEnabledToPref(false);
+  SetLargeCursorEnabledPref(false);
   EXPECT_FALSE(IsLargeCursorEnabled());
 
-  SetSpokenFeedbackEnabledToPref(false);
+  SetSpokenFeedbackEnabledPref(false);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
-  SetHighContrastEnabledToPref(false);
+  SetHighContrastEnabledPref(false);
   EXPECT_FALSE(IsHighContrastEnabled());
 }
 
@@ -229,15 +249,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
 
   // Sets the pref to enable large cursor before login.
-  SetLargeCursorEnabledToPref(true);
+  SetLargeCursorEnabledPref(true);
   EXPECT_FALSE(IsLargeCursorEnabled());
 
   // Sets the pref to enable spoken feedback before login.
-  SetSpokenFeedbackEnabledToPref(true);
+  SetSpokenFeedbackEnabledPref(true);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   // Sets the pref to enable high contrast before login.
-  SetHighContrastEnabledToPref(true);
+  SetHighContrastEnabledPref(true);
   EXPECT_FALSE(IsHighContrastEnabled());
 
   // Logs in.
@@ -303,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_FALSE(observer.observed());
   observer.reset();
 
-  SetSpokenFeedbackEnabledToPref(true);
+  SetSpokenFeedbackEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
@@ -311,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
   observer.reset();
-  SetSpokenFeedbackEnabledToPref(false);
+  SetSpokenFeedbackEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
@@ -319,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   observer.reset();
-  SetHighContrastEnabledToPref(true);
+  SetHighContrastEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
@@ -327,12 +347,65 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(IsHighContrastEnabled());
 
   observer.reset();
-  SetHighContrastEnabledToPref(false);
+  SetHighContrastEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
             chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_FALSE(IsHighContrastEnabled());
+}
+
+class AccessibilityManagerUserTypeTest
+    : public AccessibilityManagerTest,
+      public ::testing::WithParamInterface<const char*> {
+ protected:
+  AccessibilityManagerUserTypeTest() {}
+  virtual ~AccessibilityManagerUserTypeTest() {}
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityManagerUserTypeTest);
+};
+
+// TODO(yoshiki): Enable a test for retail mode.
+INSTANTIATE_TEST_CASE_P(
+    UserTypeInstantiation,
+    AccessibilityManagerUserTypeTest,
+    ::testing::Values(kTestUserName,
+                      UserManager::kGuestUserName,
+                      //UserManager::kRetailModeUserName,
+                      kTestLocallyManagedUserName));
+
+IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
+                       EnableOnLoginScreenAndLogin) {
+  // Enables large cursor.
+  SetLargeCursorEnabled(true);
+  EXPECT_TRUE(IsLargeCursorEnabled());
+  // Enables spoken feedback.
+  SetSpokenFeedbackEnabled(true);
+  EXPECT_TRUE(IsSpokenFeedbackEnabled());
+  // Enables high contrast.
+  SetHighContrastEnabled(true);
+  EXPECT_TRUE(IsHighContrastEnabled());
+
+  // Logs in.
+  const char* user_name = GetParam();
+  UserManager::Get()->UserLoggedIn(user_name, user_name, true);
+
+  // Confirms that the features are still enabled just after login.
+  EXPECT_TRUE(IsLargeCursorEnabled());
+  EXPECT_TRUE(IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(IsHighContrastEnabled());
+
+  UserManager::Get()->SessionStarted();
+
+  // Confirms that the features keep enabled after session starts.
+  EXPECT_TRUE(IsLargeCursorEnabled());
+  EXPECT_TRUE(IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(IsHighContrastEnabled());
+
+  // Confirms that the prefs have been copied to the user's profile.
+  EXPECT_TRUE(GetLargeCursorEnabledFromPref());
+  EXPECT_TRUE(GetSpokenFeedbackEnabledFromPref());
+  EXPECT_TRUE(GetHighContrastEnabledFromPref());
 }
 
 }  // namespace chromeos

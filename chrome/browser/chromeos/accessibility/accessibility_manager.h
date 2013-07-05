@@ -43,6 +43,23 @@ class AccessibilityManager : public content::NotificationObserver {
   // Returns the existing instance. If there is no instance, returns NULL.
   static AccessibilityManager* Get();
 
+  // On a user's first login into a device, any a11y features enabled/disabled
+  // by the user on the login screen are enabled/disabled in the user's profile.
+  // This class watches for profile changes and copies settings into the user's
+  // profile when it detects a login with a newly created profile.
+  class PrefHandler {
+   public:
+    explicit PrefHandler(const char* pref_path);
+    virtual ~PrefHandler();
+
+    // Should be called from AccessibilityManager::SetProfile().
+    void HandleProfileChanged(Profile* previous_profile,
+                              Profile* current_profile);
+
+   private:
+    const char* pref_path_;
+  };
+
   // Enables or disables the large cursor.
   void EnableLargeCursor(bool enabled);
   // Returns true if the large cursor is enabled, or false if not.
@@ -103,6 +120,10 @@ class AccessibilityManager : public content::NotificationObserver {
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
+
+  PrefHandler large_cursor_pref_handler_;
+  PrefHandler spoken_feedback_pref_handler_;
+  PrefHandler high_contrast_pref_handler_;
 
   bool large_cursor_enabled_;
   bool sticky_keys_enabled_;

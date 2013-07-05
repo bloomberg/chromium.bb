@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
+#include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -32,6 +33,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -139,6 +141,45 @@ AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// AccessibilityManager::PrefHandler
+
+AccessibilityManager::PrefHandler::PrefHandler(const char* pref_path)
+    : pref_path_(pref_path) {}
+
+AccessibilityManager::PrefHandler::~PrefHandler() {}
+
+void AccessibilityManager::PrefHandler::HandleProfileChanged(
+    Profile* previous_profile, Profile* current_profile) {
+  // Returns if the current profile is null.
+  if (!current_profile)
+    return;
+
+  // If the user set a pref value on the login screen and is now starting a
+  // session with a new profile, copy the pref value to the profile.
+  if ((previous_profile &&
+       ProfileHelper::IsSigninProfile(previous_profile) &&
+       current_profile->IsNewProfile() &&
+       !ProfileHelper::IsSigninProfile(current_profile)) ||
+      // Special case for Guest mode:
+      // Guest mode launches a guest-mode browser process before session starts,
+      // so the previous profile is null.
+      (!previous_profile &&
+       current_profile->IsGuestSession())) {
+    // Returns if the pref has not been set by the user.
+    const PrefService::Preference* pref = ProfileHelper::GetSigninProfile()->
+        GetPrefs()->FindPreference(pref_path_);
+    if (!pref || !pref->IsUserControlled())
+      return;
+
+    // Copy the pref value from the signin screen.
+    const base::Value* value_on_login = pref->GetValue();
+    PrefService* user_prefs = current_profile->GetPrefs();
+    user_prefs->Set(pref_path_, *value_on_login);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // AccessibilityManager
 
 // static
@@ -161,6 +202,9 @@ AccessibilityManager* AccessibilityManager::Get() {
 
 AccessibilityManager::AccessibilityManager()
     : profile_(NULL),
+      large_cursor_pref_handler_(prefs::kLargeCursorEnabled),
+      spoken_feedback_pref_handler_(prefs::kSpokenFeedbackEnabled),
+      high_contrast_pref_handler_(prefs::kHighContrastEnabled),
       large_cursor_enabled_(false),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
@@ -442,6 +486,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   local_state_pref_change_registrar_.reset();
 
   if (profile) {
+    // TODO(yoshiki): Move following code to PrefHandler.
     pref_change_registrar_.reset(new PrefChangeRegistrar);
     pref_change_registrar_->Init(profile->GetPrefs());
     pref_change_registrar_->Add(
@@ -473,6 +518,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
             &AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
             base::Unretained(this)));
   }
+
+  large_cursor_pref_handler_.HandleProfileChanged(profile_, profile);
+  spoken_feedback_pref_handler_.HandleProfileChanged(profile_, profile);
+  high_contrast_pref_handler_.HandleProfileChanged(profile_, profile);
 
   profile_ = profile;
   UpdateLargeCursorFromPref();

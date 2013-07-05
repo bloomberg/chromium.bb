@@ -37,10 +37,14 @@ static MagnificationManager* g_magnification_manager = NULL;
 class MagnificationManagerImpl : public MagnificationManager,
                                  public content::NotificationObserver {
  public:
-  MagnificationManagerImpl() : first_time_update_(true),
-                               profile_(NULL),
-                               type_(ash::kDefaultMagnifierType),
-                               enabled_(false) {
+  MagnificationManagerImpl()
+      : first_time_update_(true),
+        profile_(NULL),
+        magnifier_enabled_pref_handler_(prefs::kScreenMagnifierEnabled),
+        magnifier_type_pref_handler_(prefs::kScreenMagnifierType),
+        magnifier_scale_pref_handler_(prefs::kScreenMagnifierScale),
+        type_(ash::kDefaultMagnifierType),
+        enabled_(false) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
@@ -106,6 +110,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     pref_change_registrar_.reset();
 
     if (profile) {
+      // TODO(yoshiki): Move following code to PrefHandler.
       pref_change_registrar_.reset(new PrefChangeRegistrar);
       pref_change_registrar_->Init(profile->GetPrefs());
       pref_change_registrar_->Add(
@@ -117,6 +122,10 @@ class MagnificationManagerImpl : public MagnificationManager,
           base::Bind(&MagnificationManagerImpl::UpdateMagnifierFromPrefs,
                      base::Unretained(this)));
     }
+
+    magnifier_enabled_pref_handler_.HandleProfileChanged(profile_, profile);
+    magnifier_type_pref_handler_.HandleProfileChanged(profile_, profile);
+    magnifier_scale_pref_handler_.HandleProfileChanged(profile_, profile);
 
     profile_ = profile;
     UpdateMagnifierFromPrefs();
@@ -213,6 +222,11 @@ class MagnificationManagerImpl : public MagnificationManager,
 
   bool first_time_update_;
   Profile* profile_;
+
+  AccessibilityManager::PrefHandler magnifier_enabled_pref_handler_;
+  AccessibilityManager::PrefHandler magnifier_type_pref_handler_;
+  AccessibilityManager::PrefHandler magnifier_scale_pref_handler_;
+
   ash::MagnifierType type_;
   bool enabled_;
   content::NotificationRegistrar registrar_;
