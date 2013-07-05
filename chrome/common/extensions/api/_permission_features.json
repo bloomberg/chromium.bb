@@ -324,11 +324,6 @@
       "location": "component"
     }
   ],
-  "managedModePrivate": {
-    "channel": "dev",
-    "extension_types": ["extension", "packaged_app"],
-    "location": "component"
-  },
   "management": [
     {
       "channel": "stable",

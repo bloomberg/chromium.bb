@@ -88,7 +88,6 @@ class APIPermission {
     kInput,
     kInputMethodPrivate,
     kLocation,
-    kManagedModePrivate,
     kManagement,
     kMediaGalleries,
     kMediaGalleriesPrivate,

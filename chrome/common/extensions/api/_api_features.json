@@ -295,10 +295,6 @@
     "dependencies": ["permission:location"],
     "contexts": ["blessed_extension"]
   },
-  "managedModePrivate": {
-    "dependencies": ["permission:managedModePrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "management": {
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"]

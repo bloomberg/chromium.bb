@@ -75,10 +75,6 @@ PrefMappingEntry kPrefMapping[] = {
     prefs::kEnableHyperlinkAuditing,
     APIPermission::kPrivacy
   },
-  { "managedModeEnabled",
-    prefs::kInManagedMode,
-    APIPermission::kManagedModePrivate
-  },
   { "networkPredictionEnabled",
     prefs::kNetworkPredictionEnabled,
     APIPermission::kPrivacy

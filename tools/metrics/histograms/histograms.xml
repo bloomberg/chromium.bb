@@ -14715,7 +14715,7 @@ other types of suffix sets.
   <int value="189" label="FILESYSTEM_GETDISPLAYPATH"/>
   <int value="190" label="FILEBROWSERPRIVATE_FORMATDEVICE"/>
   <int value="191" label="BOOKMARKS_GET"/>
-  <int value="192" label="MANAGEDMODEPRIVATE_GET"/>
+  <int value="192" label="DELETED_MANAGEDMODEPRIVATE_GET"/>
   <int value="193" label="ALARMS_CLEAR"/>
   <int value="194" label="SYNCFILESYSTEM_GETFILESYNCSTATUS"/>
   <int value="195" label="SOCKET_GETINFO"/>
@@ -14729,7 +14729,7 @@ other types of suffix sets.
   <int value="203" label="DEVELOPERPRIVATE_RELOAD"/>
   <int value="204" label="FILEBROWSERPRIVATE_GETMOUNTPOINTS"/>
   <int value="205" label="APP_RUNTIME_POSTINTENTRESPONSE"/>
-  <int value="206" label="MANAGEDMODEPRIVATE_SETPOLICY"/>
+  <int value="206" label="DELETED_MANAGEDMODEPRIVATE_SETPOLICY"/>
   <int value="207" label="WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3"/>
   <int value="208" label="WALLPAPERPRIVATE_SETWALLPAPER"/>
   <int value="209" label="USB_CONTROLTRANSFER"/>
@@ -14756,7 +14756,7 @@ other types of suffix sets.
   <int value="230" label="METRICSPRIVATE_RECORDPERCENTAGE"/>
   <int value="231" label="TYPES_CHROMESETTING_GET"/>
   <int value="232" label="WINDOWS_GETLASTFOCUSED"/>
-  <int value="233" label="MANAGEDMODEPRIVATE_GETPOLICY"/>
+  <int value="233" label="DELETED_MANAGEDMODEPRIVATE_GETPOLICY"/>
   <int value="234" label="STORAGE_CLEAR"/>
   <int value="235" label="STORAGE_GETBYTESINUSE"/>
   <int value="236" label="TABS_QUERY"/>
@@ -14863,7 +14863,7 @@ other types of suffix sets.
   <int value="337" label="SERIAL_READ"/>
   <int value="338" label="APP_CURRENTWINDOWINTERNAL_MAXIMIZE"/>
   <int value="339" label="EXPERIMENTAL_DISCOVERY_CLEARALLSUGGESTIONS"/>
-  <int value="340" label="MANAGEDMODEPRIVATE_ENTER"/>
+  <int value="340" label="DELETED_MANAGEDMODEPRIVATE_ENTER"/>
   <int value="341" label="FILEBROWSERPRIVATE_TRANSFERFILE"/>
   <int value="342" label="BROWSERACTION_SETPOPUP"/>
   <int value="343" label="TABS_GETSELECTED"/>
@@ -14948,7 +14948,7 @@ other types of suffix sets.
   <int value="422" label="DEVELOPERPRIVATE_RESTART"/>
   <int value="423" label="DEVELOPERPRIVATE_ALLOWINCOGNITO"/>
   <int value="424" label="INPUT_IME_DELETESURROUNDINGTEXT"/>
-  <int value="425" label="FILEBROWSERPRIVATE_OPENNEWWINDOW"/>
+  <int value="425" label="DELETED_FILEBROWSERPRIVATE_OPENNEWWINDOW"/>
   <int value="426" label="CLOUDPRINTPRIVATE_GETCLIENTID"/>
   <int value="427" label="ECHOPRIVATE_GETUSERCONSENT"/>
   <int value="428" label="SYNCFILESYSTEM_SETCONFLICTRESOLUTIONPOLICY"/>
@@ -15022,6 +15022,7 @@ other types of suffix sets.
   <int value="495" label="METRICSPRIVATE_GETFIELDTRIAL"/>
   <int value="496" label="FILEBROWSERPRIVATE_ZOOM"/>
   <int value="497" label="WEBVIEW_GO"/>
+  <int value="498" label="WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
