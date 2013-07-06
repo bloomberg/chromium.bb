@@ -63,6 +63,7 @@ table_files = \
 	en-gb-comp8.ctb \
 	en-gb-g1.utb \
 	en-GB-g2.ctb \
+	en-ueb-chardefs.uti \
 	en-ueb-g1.ctb \
 	en-ueb-g2.ctb \
 	en-us-brf.dis \
