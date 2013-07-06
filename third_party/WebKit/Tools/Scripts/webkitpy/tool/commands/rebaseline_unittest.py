@@ -78,8 +78,7 @@ class TestRebaselineTest(_BaseTestCase):
 
     def setUp(self):
         super(TestRebaselineTest, self).setUp()
-        self.options = MockOptions(builder="WebKit Mac10.7", test="userscripts/another-test.html", suffixes="txt",
-                                   move_overwritten_baselines_to=None, results_directory=None)
+        self.options = MockOptions(builder="WebKit Mac10.7", test="userscripts/another-test.html", suffixes="txt", results_directory=None)
 
     def test_baseline_directory(self):
         command = self.command
@@ -108,7 +107,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
 """)
 
     def test_rebaseline_test(self):
-        self.command._rebaseline_test("WebKit Linux", "userscripts/another-test.html", None, "txt", self.WEB_PREFIX)
+        self.command._rebaseline_test("WebKit Linux", "userscripts/another-test.html", "txt", self.WEB_PREFIX)
         self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
 
     def test_rebaseline_test_with_results_directory(self):
@@ -130,41 +129,9 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self.command._scm_changes = {'add': [], 'delete': []}
         self.tool._scm.exists = lambda x: False
 
-        self.command._rebaseline_test("WebKit Linux", "userscripts/another-test.html", None, "txt", None)
+        self.command._rebaseline_test("WebKit Linux", "userscripts/another-test.html", "txt", None)
 
         self.assertDictEqual(self.command._scm_changes, {'add': ['/mock-checkout/LayoutTests/platform/linux/userscripts/another-test-expected.txt'], 'delete': []})
-
-    def test_rebaseline_and_copy_test(self):
-        self._write("userscripts/another-test-expected.txt", "generic result")
-
-        self.command._rebaseline_test("WebKit Mac10.7", "userscripts/another-test.html", ["mac-snowleopard"], "txt", None)
-
-        self.assertMultiLineEqual(self._read('platform/mac-lion/userscripts/another-test-expected.txt'), self.MOCK_WEB_RESULT)
-        self.assertMultiLineEqual(self._read('platform/mac-snowleopard/userscripts/another-test-expected.txt'), 'generic result')
-
-    def test_rebaseline_and_copy_test_no_existing_result(self):
-        self.command._rebaseline_test("WebKit Mac10.7", "userscripts/another-test.html", ["mac-snowleopard"], "txt", None)
-
-        self.assertMultiLineEqual(self._read('platform/mac-lion/userscripts/another-test-expected.txt'), self.MOCK_WEB_RESULT)
-        self.assertFalse(self.tool.filesystem.exists(self._expand('platform/mac-snowleopard/userscripts/another-test-expected.txt')))
-
-    def test_rebaseline_and_copy_test_with_lion_result(self):
-        self._write("platform/mac-lion/userscripts/another-test-expected.txt", "original lion result")
-
-        self.command._rebaseline_test("WebKit Mac10.7", "userscripts/another-test.html", ["mac-snowleopard"], "txt", self.WEB_PREFIX)
-
-        self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
-        self.assertMultiLineEqual(self._read("platform/mac-snowleopard/userscripts/another-test-expected.txt"), "original lion result")
-        self.assertMultiLineEqual(self._read("platform/mac-lion/userscripts/another-test-expected.txt"), self.MOCK_WEB_RESULT)
-
-    def test_rebaseline_and_copy_no_overwrite_test(self):
-        self._write("platform/mac-lion/userscripts/another-test-expected.txt", "original lion result")
-        self._write("platform/mac-snowleopard/userscripts/another-test-expected.txt", "original snowleopard result")
-
-        self.command._rebaseline_test("WebKit Mac10.7", "userscripts/another-test.html", ["mac-snowleopard"], "txt", None)
-
-        self.assertMultiLineEqual(self._read("platform/mac-snowleopard/userscripts/another-test-expected.txt"), "original snowleopard result")
-        self.assertMultiLineEqual(self._read("platform/mac-lion/userscripts/another-test-expected.txt"), self.MOCK_WEB_RESULT)
 
     def test_rebaseline_test_internal_with_copying_overwritten_baseline_first(self):
         self.tool.executive = MockExecutive2()
@@ -182,8 +149,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             }
 
             options = MockOptions(optimize=True, builder="MOCK SnowLeopard", suffixes="txt",
-                move_overwritten_baselines_to=None, verbose=True, test="failures/expected/image.html",
-                results_directory=None)
+                verbose=True, test="failures/expected/image.html", results_directory=None)
 
             oc.capture_output()
             self.command.execute(options, [], self.tool)
@@ -211,8 +177,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             }
 
             options = MockOptions(optimize=True, builder="MOCK Win7", suffixes="txt",
-                move_overwritten_baselines_to=None, verbose=True, test="failures/expected/image.html",
-                results_directory=None)
+                verbose=True, test="failures/expected/image.html", results_directory=None)
 
             oc.capture_output()
             self.command.execute(options, [], self.tool)
@@ -241,8 +206,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             }
 
             options = MockOptions(optimize=True, builder="MOCK Win7", suffixes="txt",
-                move_overwritten_baselines_to=None, verbose=True, test="failures/expected/image.html",
-                results_directory=None)
+                verbose=True, test="failures/expected/image.html", results_directory=None)
 
             oc.capture_output()
             self.command.execute(options, [], self.tool)
@@ -271,8 +235,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             }
 
             options = MockOptions(optimize=True, builder="MOCK Win7", suffixes="txt",
-                move_overwritten_baselines_to=None, verbose=True, test="failures/expected/image.html",
-                results_directory=None)
+                verbose=True, test="failures/expected/image.html", results_directory=None)
 
             oc.capture_output()
             self.command.execute(options, [], self.tool)
@@ -293,9 +256,8 @@ class TestRebaselineJson(_BaseTestCase):
         self.tool.executive = MockExecutive2()
         self.old_exact_matches = builders._exact_matches
         builders._exact_matches = {
-            "MOCK builder": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier"]),
-                             "move_overwritten_baselines_to": ["test-mac-leopard"]},
-            "MOCK builder (Debug)": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier", "debug"])},
+            "MOCK builder": {"port_name": "test-mac-snowleopard"},
+            "MOCK builder (Debug)": {"port_name": "test-mac-snowleopard"},
         }
 
     def tearDown(self):
@@ -303,7 +265,7 @@ class TestRebaselineJson(_BaseTestCase):
         super(TestRebaselineJson, self).tearDown()
 
     def test_rebaseline_all(self):
-        options = MockOptions(optimize=True, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        options = MockOptions(optimize=True, verbose=True, results_directory=None)
         self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder": ["txt", "png"]}})
 
@@ -313,7 +275,7 @@ class TestRebaselineJson(_BaseTestCase):
              ['echo', '--verbose', 'optimize-baselines', '--suffixes', 'txt,png', 'user-scripts/another-test.html']])
 
     def test_rebaseline_debug(self):
-        options = MockOptions(optimize=True, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        options = MockOptions(optimize=True, verbose=True, results_directory=None)
         self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder (Debug)": ["txt", "png"]}})
 
@@ -322,18 +284,8 @@ class TestRebaselineJson(_BaseTestCase):
             [[['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK builder (Debug)', '--test', 'user-scripts/another-test.html', '--verbose']],
              ['echo', '--verbose', 'optimize-baselines', '--suffixes', 'txt,png', 'user-scripts/another-test.html']])
 
-    def test_move_overwritten(self):
-        options = MockOptions(optimize=True, verbose=True, move_overwritten_baselines=True, results_directory=None)
-        self._write("user-scripts/another-test.html", "Dummy test contents")
-        self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder": ["txt", "png"]}})
-
-        # Note that we have one run_in_parallel() call followed by a run_command()
-        self.assertEqual(self.tool.executive.calls,
-            [[['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK builder', '--test', 'user-scripts/another-test.html', '--move-overwritten-baselines-to', 'test-mac-leopard', '--verbose']],
-             ['echo', '--verbose', 'optimize-baselines', '--suffixes', 'txt,png', 'user-scripts/another-test.html']])
-
     def test_no_optimize(self):
-        options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        options = MockOptions(optimize=False, verbose=True, results_directory=None)
         self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder (Debug)": ["txt", "png"]}})
 
@@ -342,7 +294,7 @@ class TestRebaselineJson(_BaseTestCase):
             [[['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK builder (Debug)', '--test', 'user-scripts/another-test.html', '--verbose']]])
 
     def test_results_directory(self):
-        options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory='/tmp')
+        options = MockOptions(optimize=False, verbose=True, results_directory='/tmp')
         self._write("user-scripts/another-test.html", "Dummy test contents")
         self.command._rebaseline(options,  {"user-scripts/another-test.html": {"MOCK builder": ["txt", "png"]}})
 
@@ -369,7 +321,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         self.tool.executive.run_command = mock_run_command
 
     def test_rebaseline_updates_expectations_file(self):
-        options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        options = MockOptions(optimize=False, verbose=True, results_directory=None)
 
         self._write(self.lion_expectations_path, "Bug(x) [ Mac ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
         self._write("userscripts/another-test.html", "Dummy test contents")
@@ -380,7 +332,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         self.assertMultiLineEqual(new_expectations, "Bug(x) [ MountainLion SnowLeopard ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
 
     def test_rebaseline_updates_expectations_file_all_platforms(self):
-        options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory=None)
+        options = MockOptions(optimize=False, verbose=True, results_directory=None)
 
         self._write(self.lion_expectations_path, "Bug(x) userscripts/another-test.html [ ImageOnlyFailure ]\n")
         self._write("userscripts/another-test.html", "Dummy test contents")
@@ -408,7 +360,7 @@ class TestRebaseline(_BaseTestCase):
             builders._exact_matches = {
                 "MOCK builder": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
             }
-            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), ['mock/path/to/test.html'], self.tool)
+            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True), ['mock/path/to/test.html'], self.tool)
         finally:
             builders._exact_matches = old_exact_matches
 
@@ -427,7 +379,7 @@ class TestRebaseline(_BaseTestCase):
             builders._exact_matches = {
                 "MOCK builder": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
             }
-            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), ['userscripts'], self.tool)
+            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True), ['userscripts'], self.tool)
         finally:
             builders._exact_matches = old_exact_matches
 
@@ -442,8 +394,7 @@ class TestRebaselineExpectations(_BaseTestCase):
 
     def setUp(self):
         super(TestRebaselineExpectations, self).setUp()
-        self.options = MockOptions(optimize=False, builders=None, suffixes=['txt'], verbose=False, platform=None,
-                                   move_overwritten_baselines=False, results_directory=None)
+        self.options = MockOptions(optimize=False, builders=None, suffixes=['txt'], verbose=False, platform=None, results_directory=None)
 
     def test_rebaseline_expectations(self):
         self._zero_out_test_expectations()

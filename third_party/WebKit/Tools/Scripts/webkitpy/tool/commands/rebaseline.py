@@ -177,15 +177,11 @@ class RebaselineTest(AbstractRebaseliningCommand):
     def _file_name_for_expected_result(self, test_name, suffix):
         return "%s-expected.%s" % (self._test_root(test_name), suffix)
 
-    def _rebaseline_test(self, builder_name, test_name, move_overwritten_baselines_to, suffix, results_url):
+    def _rebaseline_test(self, builder_name, test_name, suffix, results_url):
         baseline_directory = self._baseline_directory(builder_name)
 
         source_baseline = "%s/%s" % (results_url, self._file_name_for_actual_result(test_name, suffix))
         target_baseline = self._tool.filesystem.join(baseline_directory, self._file_name_for_expected_result(test_name, suffix))
-
-        # FIXME: This concept is outdated now that we always move baselines in _save_baseline.
-        if move_overwritten_baselines_to:
-            self._copy_existing_baseline(move_overwritten_baselines_to, test_name, suffix)
 
         _log.debug("Retrieving %s." % source_baseline)
         self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True), target_baseline, baseline_directory, test_name, suffix)
@@ -203,7 +199,7 @@ class RebaselineTest(AbstractRebaseliningCommand):
         self._baseline_suffix_list = options.suffixes.split(',')
 
         for suffix in self._baseline_suffix_list:
-            self._rebaseline_test(options.builder, options.test, options.move_overwritten_baselines_to, suffix, results_url)
+            self._rebaseline_test(options.builder, options.test, suffix, results_url)
         self._scm_changes['remove-lines'].append({'builder': options.builder, 'test': options.test})
 
     def execute(self, options, args, tool):
@@ -323,10 +319,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 for builder in self._builders_to_fetch_from(test_prefix_list[test_prefix]):
                     suffixes = ','.join(test_prefix_list[test_prefix][builder])
                     cmd_line = [path_to_webkit_patch, 'rebaseline-test-internal', '--suffixes', suffixes, '--builder', builder, '--test', test]
-                    if options.move_overwritten_baselines:
-                        move_overwritten_baselines_to = builders.move_overwritten_baselines_to(builder)
-                        for platform in move_overwritten_baselines_to:
-                            cmd_line.extend(['--move-overwritten-baselines-to', platform])
                     if options.results_directory:
                         cmd_line.extend(['--results-directory', options.results_directory])
                     if options.verbose:
