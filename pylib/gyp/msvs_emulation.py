@@ -402,16 +402,23 @@ class MsvsSettings(object):
     lib('AdditionalOptions')
     return libflags
 
-  def _GetDefFileAsLdflags(self, spec, ldflags, gyp_to_build_path):
-    """.def files get implicitly converted to a ModuleDefinitionFile for the
-    linker in the VS generator. Emulate that behaviour here."""
-    def_file = ''
+  def GetDefFile(self, gyp_to_build_path):
+    """Returns the .def file from sources, if any.  Otherwise returns None."""
+    spec = self.spec
     if spec['type'] in ('shared_library', 'loadable_module', 'executable'):
       def_files = [s for s in spec.get('sources', []) if s.endswith('.def')]
       if len(def_files) == 1:
-        ldflags.append('/DEF:"%s"' % gyp_to_build_path(def_files[0]))
+        return gyp_to_build_path(def_files[0])
       elif len(def_files) > 1:
         raise Exception("Multiple .def files")
+    return None
+
+  def _GetDefFileAsLdflags(self, ldflags, gyp_to_build_path):
+    """.def files get implicitly converted to a ModuleDefinitionFile for the
+    linker in the VS generator. Emulate that behaviour here."""
+    def_file = self.GetDefFile(gyp_to_build_path)
+    if def_file:
+      ldflags.append('/DEF:"%s"' % def_file)
 
   def GetLdflags(self, config, gyp_to_build_path, expand_special,
                  manifest_base_name, is_executable):
@@ -421,7 +428,7 @@ class MsvsSettings(object):
     ldflags = []
     ld = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLinkerTool', append=ldflags)
-    self._GetDefFileAsLdflags(self.spec, ldflags, gyp_to_build_path)
+    self._GetDefFileAsLdflags(ldflags, gyp_to_build_path)
     ld('GenerateDebugInformation', map={'true': '/DEBUG'})
     ld('TargetMachine', map={'1': 'X86', '17': 'X64'}, prefix='/MACHINE:')
     ldflags.extend(self._GetAdditionalLibraryDirectories(

@@ -942,6 +942,9 @@ class NinjaWriter:
       command_suffix = _GetWinLinkRuleNameSuffix(
           self.msvs_settings.IsEmbedManifest(config_name),
           self.msvs_settings.IsLinkIncremental(config_name))
+      def_file = self.msvs_settings.GetDefFile(self.GypPathToNinja)
+      if def_file:
+        implicit_deps.add(def_file)
     else:
       ldflags = config.get('ldflags', [])
       if is_executable and len(solibs):
