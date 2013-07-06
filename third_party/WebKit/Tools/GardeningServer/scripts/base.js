@@ -27,24 +27,12 @@ var base = base || {};
 
 (function(){
 
-base.asInteger = function(stringOrInteger)
-{
-    if (typeof stringOrInteger == 'string')
-        return parseInt(stringOrInteger);
-    return stringOrInteger;
-};
-
 base.endsWith = function(string, suffix)
 {
     if (suffix.length > string.length)
         return false;
     var expectedIndex = string.length - suffix.length;
     return string.lastIndexOf(suffix) == expectedIndex;
-};
-
-base.repeatString = function(string, count)
-{
-    return new Array(count + 1).join(string);
 };
 
 base.joinPath = function(parent, child)
@@ -198,58 +186,6 @@ base.callInParallel = function(functionList, callback)
             requestTracker.requestComplete();
         });
     });
-};
-
-base.callInSequence = function(func, argumentList, callback)
-{
-    var nextIndex = 0;
-
-    function callNext()
-    {
-        if (nextIndex >= argumentList.length) {
-            callback();
-            return;
-        }
-
-        func(argumentList[nextIndex++], callNext);
-    }
-
-    callNext();
-};
-
-base.CallbackIterator = function(callback, listOfArgumentArrays)
-{
-    this._callback = callback;
-    this._nextIndex = 0;
-    this._listOfArgumentArrays = listOfArgumentArrays;
-};
-
-base.CallbackIterator.prototype.hasNext = function()
-{
-    return this._nextIndex < this._listOfArgumentArrays.length;
-};
-
-base.CallbackIterator.prototype.hasPrevious = function()
-{
-    return this._nextIndex - 2 >= 0;
-};
-
-base.CallbackIterator.prototype.callNext = function()
-{
-    if (!this.hasNext())
-        return;
-    var args = this._listOfArgumentArrays[this._nextIndex];
-    this._nextIndex++;
-    this._callback.apply(null, args);
-};
-
-base.CallbackIterator.prototype.callPrevious = function()
-{
-    if (!this.hasPrevious())
-        return;
-    var args = this._listOfArgumentArrays[this._nextIndex - 2];
-    this._nextIndex--;
-    this._callback.apply(null, args);
 };
 
 base.AsynchronousCache = function(fetch)

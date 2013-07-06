@@ -27,22 +27,6 @@
 
 module("base");
 
-test("bind", 3, function() {
-    function func(a, b) {
-        equals(this.prop, 5);
-        equals(a, "banana");
-        deepEqual(b, [2, 3, 4]);
-    }
-
-    var thisObject = {
-        "prop": 5
-    };
-
-    var bound = func.bind(thisObject, "banana");
-    bound([2, 3, 4]);
-});
-
-
 test("joinPath", 1, function() {
     var value = base.joinPath("path/to", "test.html");
     equals(value, "path/to/test.html");
@@ -122,20 +106,6 @@ test("callInParallel", 4, function() {
     })
 });
 
-test("callInSequence", 7, function() {
-    var expectedArg = 42;
-    var expectCompletionCallback = true;
-
-    base.callInSequence(function(arg, callback) {
-        ok(arg < 45);
-        equals(arg, expectedArg++);
-        callback();
-    }, [42, 43, 44], function() {
-        ok(expectCompletionCallback);
-        expectCompletionCallback = false;
-    })
-});
-
 test("RequestTracker", 5, function() {
     var ready = false;
     var tracker = new base.RequestTracker(1, function() {
@@ -163,38 +133,6 @@ test("RequestTracker", 5, function() {
     tracker.requestComplete();
     // Should not barf.
     ok(true);
-});
-
-test("CallbackIterator", 22, function() {
-    var expected = 0;
-    var iterator = new base.CallbackIterator(function(a, b) {
-        equals(a, 'ArgA' + expected);
-        equals(b, 'ArgB' + expected);
-        ++expected;
-    }, [
-        ['ArgA0', 'ArgB0'],
-        ['ArgA1', 'ArgB1'],
-        ['ArgA2', 'ArgB2'],
-    ]);
-    ok(iterator.hasNext())
-    ok(!iterator.hasPrevious())
-    iterator.callNext();
-    ok(iterator.hasNext())
-    ok(!iterator.hasPrevious())
-    iterator.callNext();
-    ok(iterator.hasNext())
-    ok(iterator.hasPrevious())
-    iterator.callNext();
-    ok(!iterator.hasNext())
-    ok(iterator.hasPrevious())
-    expected = 1;
-    iterator.callPrevious();
-    ok(iterator.hasNext())
-    ok(iterator.hasPrevious())
-    expected = 0;
-    iterator.callPrevious();
-    ok(iterator.hasNext())
-    ok(!iterator.hasPrevious())
 });
 
 test("filterDictionary", 3, function() {
