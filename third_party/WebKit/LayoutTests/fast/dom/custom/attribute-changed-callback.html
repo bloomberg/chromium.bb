@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<body>
+<script>
+test(function () {
+    var attributeChangedInvocations = 0;
+    function attributeChanged(_, _, _) {
+        attributeChangedInvocations++;
+    }
+
+    var getterInvocations = 0;
+    function getter() {
+        getterInvocations++;
+        return attributeChanged;
+    }
+
+    function failer() {
+        assert_unreached('the attribute changed callback must not be retrieved after registration');
+    }
+
+    var proto = Object.create(HTMLElement.prototype, {
+      attributeChangedCallback: {
+        get: getter
+      }
+    });
+    var ctor = document.register('x-a', {prototype: proto});
+    assert_equals(getterInvocations, 1, 'the attribute changed callback must have been retrieved');
+
+    proto.attributeChangedCallback = failer;
+    var element = new ctor();
+    element.setAttribute('a', 'b');
+    assert_equals(attributeChangedInvocations, 1, 'the attribute changed callback retrieved at registration must be invoked');
+}, 'transfer attribute changed callback');
+
+test(function () {
+    var invocations = [];
+    function created() {
+        invocations.push('created');
+    }
+    function attributeChanged(name, oldValue, newValue) {
+        invocations.push(name + ': ' + oldValue + ' => ' + newValue);
+    }
+
+    var proto = Object.create(HTMLElement.prototype);
+    proto.createdCallback = created;
+    proto.attributeChangedCallback = attributeChanged;
+    var B = document.register('x-b', {prototype: proto});
+
+    var b = new B();
+    b.id = 'x';
+    assert_array_equals(invocations, ['created', 'id: null => x'], 'setting a reflected attribute should invoke the attributeChanged callback');
+
+    invocations = [];
+    b.removeAttribute('id');
+    assert_array_equals(invocations, ['id: x => null'], 'removing an attribute should invoke the attributeChangedCallback');
+
+    invocations = [];
+    b.setAttribute('data-x', 'y');
+    assert_array_equals(invocations, ['data-x: null => y'], 'setAttribute should invoke the attributeChangedCallback');
+
+    invocations = [];
+    b.classList.toggle('z');
+    assert_array_equals(invocations, ['class: null => z'], 'changing the class attribute through classList should invoke the attributeChangedCallback');
+}, 'add, change and remove an attribute');
+</script>

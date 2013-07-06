@@ -50,6 +50,7 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
@@ -528,6 +529,7 @@ static void reflectedStringAttrAttrSetter(v8::Local<v8::String> name, v8::Local<
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(WebCore::HTMLNames::reflectedstringattrAttr, v);
     return;
 }
@@ -535,6 +537,7 @@ static void reflectedStringAttrAttrSetter(v8::Local<v8::String> name, v8::Local<
 static void reflectedStringAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedStringAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -555,6 +558,7 @@ static void reflectedIntegralAttrAttrSetter(v8::Local<v8::String> name, v8::Loca
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setIntegralAttribute(WebCore::HTMLNames::reflectedintegralattrAttr, v);
     return;
 }
@@ -562,6 +566,7 @@ static void reflectedIntegralAttrAttrSetter(v8::Local<v8::String> name, v8::Loca
 static void reflectedIntegralAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedIntegralAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -582,6 +587,7 @@ static void reflectedUnsignedIntegralAttrAttrSetter(v8::Local<v8::String> name, 
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(unsigned, v, toUInt32(value));
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setUnsignedIntegralAttribute(WebCore::HTMLNames::reflectedunsignedintegralattrAttr, v);
     return;
 }
@@ -589,6 +595,7 @@ static void reflectedUnsignedIntegralAttrAttrSetter(v8::Local<v8::String> name, 
 static void reflectedUnsignedIntegralAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedUnsignedIntegralAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -609,6 +616,7 @@ static void reflectedBooleanAttrAttrSetter(v8::Local<v8::String> name, v8::Local
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(bool, v, value->BooleanValue());
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setBooleanAttribute(WebCore::HTMLNames::reflectedbooleanattrAttr, v);
     return;
 }
@@ -616,6 +624,7 @@ static void reflectedBooleanAttrAttrSetter(v8::Local<v8::String> name, v8::Local
 static void reflectedBooleanAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedBooleanAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -636,6 +645,7 @@ static void reflectedURLAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8:
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(WebCore::HTMLNames::reflectedurlattrAttr, v);
     return;
 }
@@ -643,6 +653,7 @@ static void reflectedURLAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8:
 static void reflectedURLAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedURLAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -663,6 +674,7 @@ static void reflectedStringAttrAttrSetter(v8::Local<v8::String> name, v8::Local<
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(WebCore::HTMLNames::customContentStringAttrAttr, v);
     return;
 }
@@ -670,6 +682,7 @@ static void reflectedStringAttrAttrSetter(v8::Local<v8::String> name, v8::Local<
 static void reflectedStringAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedStringAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -690,6 +703,7 @@ static void reflectedCustomIntegralAttrAttrSetter(v8::Local<v8::String> name, v8
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setIntegralAttribute(WebCore::HTMLNames::customContentIntegralAttrAttr, v);
     return;
 }
@@ -697,6 +711,7 @@ static void reflectedCustomIntegralAttrAttrSetter(v8::Local<v8::String> name, v8
 static void reflectedCustomIntegralAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedCustomIntegralAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -717,6 +732,7 @@ static void reflectedCustomBooleanAttrAttrSetter(v8::Local<v8::String> name, v8:
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(bool, v, value->BooleanValue());
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setBooleanAttribute(WebCore::HTMLNames::customContentBooleanAttrAttr, v);
     return;
 }
@@ -724,6 +740,7 @@ static void reflectedCustomBooleanAttrAttrSetter(v8::Local<v8::String> name, v8:
 static void reflectedCustomBooleanAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedCustomBooleanAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -744,6 +761,7 @@ static void reflectedCustomURLAttrAttrSetter(v8::Local<v8::String> name, v8::Loc
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(WebCore::HTMLNames::customContentURLAttrAttr, v);
     return;
 }
@@ -751,6 +769,7 @@ static void reflectedCustomURLAttrAttrSetter(v8::Local<v8::String> name, v8::Loc
 static void reflectedCustomURLAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedCustomURLAttrAttrSetter(name, value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }

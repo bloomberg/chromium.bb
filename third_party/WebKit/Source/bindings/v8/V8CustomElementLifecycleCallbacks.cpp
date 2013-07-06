@@ -42,13 +42,15 @@
 
 namespace WebCore {
 
-PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created)
+PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attributeChanged)
 {
     // A given object can only be used as a Custom Element prototype once, see isCustomElementInterfacePrototypeObject
-    ASSERT(prototype->GetHiddenValue(V8HiddenPropertyName::customElementCreated()).IsEmpty());
+    ASSERT(prototype->GetHiddenValue(V8HiddenPropertyName::customElementCreated()).IsEmpty() && prototype->GetHiddenValue(V8HiddenPropertyName::customElementAttributeChanged()).IsEmpty());
     if (!created.IsEmpty())
         prototype->SetHiddenValue(V8HiddenPropertyName::customElementCreated(), created);
-    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, prototype, created));
+    if (!attributeChanged.IsEmpty())
+        prototype->SetHiddenValue(V8HiddenPropertyName::customElementAttributeChanged(), attributeChanged);
+    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, prototype, created, attributeChanged));
 }
 
 template <typename T>
@@ -57,16 +59,19 @@ static void weakCallback(v8::Isolate*, v8::Persistent<T>*, ScopedPersistent<T>* 
     handle->clear();
 }
 
-V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created)
-    : CustomElementLifecycleCallbacks(Created)
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attributeChanged)
+    : CustomElementLifecycleCallbacks(CallbackType(Created | (attributeChanged.IsEmpty() ? None : AttributeChanged)))
     , ActiveDOMCallback(scriptExecutionContext)
     , m_world(DOMWrapperWorld::current())
     , m_prototype(prototype)
     , m_created(created)
+    , m_attributeChanged(attributeChanged)
 {
     m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);
     if (!m_created.isEmpty())
         m_created.makeWeak(&m_created, weakCallback<v8::Function>);
+    if (!m_attributeChanged.isEmpty())
+        m_attributeChanged.makeWeak(&m_attributeChanged, weakCallback<v8::Function>);
 }
 
 void V8CustomElementLifecycleCallbacks::created(Element* element)
@@ -107,6 +112,37 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, 0, 0);
+}
+
+void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (!canInvokeCallback())
+        return;
+
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
+    if (context.IsEmpty())
+        return;
+
+    v8::Context::Scope scope(context);
+    v8::Isolate* isolate = context->GetIsolate();
+
+    v8::Handle<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
+    ASSERT(!receiver.IsEmpty());
+
+    v8::Handle<v8::Function> callback = m_attributeChanged.newLocal(isolate);
+    if (callback.IsEmpty())
+        return;
+
+    v8::Handle<v8::Value> argv[] = {
+        v8String(name, isolate),
+        oldValue.isNull() ? v8::Handle<v8::Value>(v8::Null()) : v8::Handle<v8::Value>(v8String(oldValue, isolate)),
+        newValue.isNull() ? v8::Handle<v8::Value>(v8::Null()) : v8::Handle<v8::Value>(v8String(newValue, isolate))
+    };
+
+    v8::TryCatch exceptionCatcher;
+    exceptionCatcher.SetVerbose(true);
+    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, sizeof(argv) / sizeof(v8::Handle<v8::Value>), argv);
 }
 
 } // namespace WebCore

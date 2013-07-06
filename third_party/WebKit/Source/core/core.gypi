@@ -1720,6 +1720,8 @@
             'dom/CrossThreadTask.h',
             'dom/CustomElementCallbackDispatcher.cpp',
             'dom/CustomElementCallbackDispatcher.h',
+            'dom/CustomElementCallbackInvocation.cpp',
+            'dom/CustomElementCallbackInvocation.h',
             'dom/CustomElementCallbackQueue.cpp',
             'dom/CustomElementCallbackQueue.h',
             'dom/CustomElementDefinition.cpp',

@@ -78,6 +78,7 @@ public:
 private:
     bool hasValidPrototypeChainFor(V8PerContextData*, WrapperTypeInfo*) const;
     bool prototypeIsValid() const;
+    v8::Handle<v8::Function> retrieveCallback(v8::Isolate*, const char* name);
 
     v8::Handle<v8::Context> m_context;
     const Dictionary* m_options;

@@ -29,40 +29,56 @@
  */
 
 #include "config.h"
-#include "core/dom/CustomElementCallbackQueue.h"
+#include "core/dom/CustomElementCallbackInvocation.h"
 
-#include "core/dom/Element.h"
+#include "core/dom/CustomElementLifecycleCallbacks.h"
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+class AttributeChangedInvocation : public CustomElementCallbackInvocation {
+public:
+    AttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+
+private:
+    virtual void dispatch(CustomElementLifecycleCallbacks*, Element*) OVERRIDE;
+
+    AtomicString m_name;
+    AtomicString m_oldValue;
+    AtomicString m_newValue;
+};
+
+class CreatedInvocation : public CustomElementCallbackInvocation {
+public:
+    CreatedInvocation() { }
+private:
+    virtual void dispatch(CustomElementLifecycleCallbacks*, Element*) OVERRIDE;
+};
+
+PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createCreatedInvocation()
 {
-    return adoptPtr(new CustomElementCallbackQueue(callbacks, element));
+    return adoptPtr(new CreatedInvocation());
 }
 
-CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-    : m_callbacks(callbacks)
-    , m_element(element)
-    , m_owner(-1)
-    , m_index(0)
+PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createAttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    return adoptPtr(new AttributeChangedInvocation(name, oldValue, newValue));
+}
+
+AttributeChangedInvocation::AttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+    : m_name(name)
+    , m_oldValue(oldValue)
+    , m_newValue(newValue)
 {
 }
 
-void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
+void AttributeChangedInvocation::dispatch(CustomElementLifecycleCallbacks* callbacks, Element* element)
 {
-    for (; m_index < m_queue.size() && owner() == caller; m_index++) {
-        // dispatch() may cause recursion which steals this callback
-        // queue and reenters processInQueue. owner() == caller
-        // detects this recursion and cedes processing.
-        m_queue[m_index]->dispatch(m_callbacks.get(), m_element.get());
-    }
+    callbacks->attributeChanged(element, m_name, m_oldValue, m_newValue);
+}
 
-    if (owner() == caller && m_index == m_queue.size()) {
-        // This processInQueue exhausted the queue; shrink it.
-        m_index = 0;
-        m_queue.resize(0);
-        m_owner = -1;
-    }
+void CreatedInvocation::dispatch(CustomElementLifecycleCallbacks* callbacks, Element* element)
+{
+    callbacks->created(element);
 }
 
 } // namespace WebCore

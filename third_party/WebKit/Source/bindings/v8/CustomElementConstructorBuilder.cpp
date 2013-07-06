@@ -150,13 +150,18 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
     exceptionCatcher.SetVerbose(true);
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Handle<v8::Value> createdValue = m_prototype->Get(v8String("createdCallback", isolate));
+    v8::Handle<v8::Function> created = retrieveCallback(isolate, "createdCallback");
+    v8::Handle<v8::Function> attributeChanged = retrieveCallback(isolate, "attributeChangedCallback");
 
-    v8::Handle<v8::Function> createdFunction;
-    if (!createdValue.IsEmpty() && createdValue->IsFunction())
-        createdFunction = v8::Handle<v8::Function>::Cast(createdValue);
+    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, created, attributeChanged);
+}
 
-    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, createdFunction);
+v8::Handle<v8::Function> CustomElementConstructorBuilder::retrieveCallback(v8::Isolate* isolate, const char* name)
+{
+    v8::Handle<v8::Value> value = m_prototype->Get(v8String(name, isolate));
+    if (value.IsEmpty() || !value->IsFunction())
+        return v8::Handle<v8::Function>();
+    return v8::Handle<v8::Function>::Cast(value);
 }
 
 bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition)

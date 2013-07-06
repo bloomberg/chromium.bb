@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
 
+#include "core/dom/CustomElementCallbackInvocation.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -46,27 +47,45 @@ CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
     return instance;
 }
 
+void CustomElementCallbackDispatcher::enqueueAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (!callbacks->hasAttributeChanged())
+        return;
+
+    CustomElementCallbackQueue* queue = ensureCallbackQueue(callbacks, element);
+    bool isInCurrentQueue = queue->owner() == currentElementQueue();
+    if (!isInCurrentQueue) {
+        queue->setOwner(currentElementQueue());
+        m_flattenedProcessingStack.append(queue);
+        s_elementQueueEnd++;
+    }
+
+    queue->append(CustomElementCallbackInvocation::createAttributeChangedInvocation(name, oldValue, newValue));
+}
+
 void CustomElementCallbackDispatcher::enqueueCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
-    Element* key = element.get();
-    ElementCallbackQueueMap::AddResult result = m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(callbacks, element));
-    ASSERT(result.isNewEntry); // creation callbacks are always scheduled first
+    if (!callbacks->hasCreated())
+        return;
 
-    CustomElementCallbackQueue* queue = result.iterator->value.get();
+    CustomElementCallbackQueue* queue = createCallbackQueue(callbacks, element);
     queue->setOwner(currentElementQueue());
-    queue->append(CustomElementLifecycleCallbacks::Created);
 
     // The created callback is unique in being prepended to the front
     // of the element queue
     m_flattenedProcessingStack.insert(inCallbackDeliveryScope() ? s_elementQueueStart : /* skip null sentinel */ 1, queue);
     s_elementQueueEnd++;
+
+    queue->append(CustomElementCallbackInvocation::createCreatedInvocation());
 }
 
 // Dispatches callbacks at microtask checkpoint.
 bool CustomElementCallbackDispatcher::dispatch()
 {
     ASSERT(isMainThread());
-    ASSERT(!inCallbackDeliveryScope());
+    if (inCallbackDeliveryScope())
+        return false;
+
     size_t start = 1; // skip null sentinel
     size_t end = s_elementQueueEnd;
 
@@ -114,6 +133,23 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
 
     if (start == /* allow sentinel */ 1)
         m_elementCallbackQueueMap.clear();
+}
+
+CustomElementCallbackQueue* CustomElementCallbackDispatcher::createCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+{
+    Element* key = element.get();
+    ElementCallbackQueueMap::AddResult result = m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(callbacks, element));
+    ASSERT(result.isNewEntry);
+    return result.iterator->value.get();
+}
+
+CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+{
+    Element* key = element.get();
+    ElementCallbackQueueMap::iterator it = m_elementCallbackQueueMap.find(key);
+    if (it == m_elementCallbackQueueMap.end())
+        it = m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(callbacks, element)).iterator;
+    return it->value.get();
 }
 
 } // namespace WebCore

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="testutils.js"></script>
+<body>
+<x-a></x-a>
+<script>
+if (fork()) {
+    // The controlling parent frame
+    description('Tests destroying a context during attributeChanged callback.');
+    jsTestIsAsync = true;
+    successfullyParsed = true;
+} else {
+    // The child frame
+
+    var proto = Object.create(HTMLElement.prototype);
+    proto.attributeChangedCallback = function () {
+        destroyContext();
+    };
+
+    var A = document.register('x-a', {prototype: proto});
+    var a = new A();
+    a.id = 'boom';
+    done();
+}
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

@@ -42,6 +42,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
+#include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/Document.h"
@@ -2803,6 +2804,11 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
     InspectorInstrumentation::willModifyDOMAttr(document(), this, oldValue, newValue);
+
+    if (isUpgradedCustomElement()) {
+        RefPtr<CustomElementDefinition> definition = document()->registry()->findFor(this);
+        CustomElementCallbackDispatcher::instance().enqueueAttributeChangedCallback(definition->callbacks(), this, name.localName(), oldValue, newValue);
+    }
 }
 
 void Element::didAddAttribute(const QualifiedName& name, const AtomicString& value)

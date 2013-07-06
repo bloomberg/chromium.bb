@@ -31,6 +31,7 @@
 #ifndef CustomElementCallbackQueue_h
 #define CustomElementCallbackQueue_h
 
+#include "core/dom/CustomElementCallbackInvocation.h"
 #include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -54,18 +55,16 @@ public:
         m_owner = newOwner;
     }
 
-    typedef CustomElementLifecycleCallbacks::CallbackType Invocation;
-    void append(const Invocation& invocation) { m_queue.append(invocation); }
+    void append(PassOwnPtr<CustomElementCallbackInvocation> invocation) { m_queue.append(invocation); }
 
     void processInElementQueue(ElementQueue);
 
 private:
     CustomElementCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    void dispatch(const Invocation&);
 
     RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
     RefPtr<Element> m_element;
-    Vector<Invocation> m_queue;
+    Vector<OwnPtr<CustomElementCallbackInvocation> > m_queue;
     ElementQueue m_owner;
     size_t m_index;
 };

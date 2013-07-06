@@ -28,41 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/CustomElementCallbackQueue.h"
+#ifndef CustomElementCallbackInvocation_h
+#define CustomElementCallbackInvocation_h
 
-#include "core/dom/Element.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-{
-    return adoptPtr(new CustomElementCallbackQueue(callbacks, element));
+class CustomElementLifecycleCallbacks;
+class Element;
+
+class CustomElementCallbackInvocation {
+    WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
+public:
+    static PassOwnPtr<CustomElementCallbackInvocation> createCreatedInvocation();
+    static PassOwnPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+
+    CustomElementCallbackInvocation() { }
+    virtual ~CustomElementCallbackInvocation() { }
+
+    virtual void dispatch(CustomElementLifecycleCallbacks*, Element*) = 0;
+};
+
 }
 
-CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-    : m_callbacks(callbacks)
-    , m_element(element)
-    , m_owner(-1)
-    , m_index(0)
-{
-}
-
-void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
-{
-    for (; m_index < m_queue.size() && owner() == caller; m_index++) {
-        // dispatch() may cause recursion which steals this callback
-        // queue and reenters processInQueue. owner() == caller
-        // detects this recursion and cedes processing.
-        m_queue[m_index]->dispatch(m_callbacks.get(), m_element.get());
-    }
-
-    if (owner() == caller && m_index == m_queue.size()) {
-        // This processInQueue exhausted the queue; shrink it.
-        m_index = 0;
-        m_queue.resize(0);
-        m_owner = -1;
-    }
-}
-
-} // namespace WebCore
+#endif // CustomElementCallbackInvocation_h

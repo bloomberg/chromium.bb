@@ -66,6 +66,7 @@ public:
         size_t m_savedElementQueueStart;
     };
 
+    void enqueueAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     void enqueueCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
 
     // Returns true if more work may have to be performed at the
@@ -101,6 +102,9 @@ private:
 
     static void processElementQueueAndPop();
     void processElementQueueAndPop(size_t start, size_t end);
+
+    CustomElementCallbackQueue* createCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
 
     // The processing stack, flattened. Element queues lower in the
     // stack appear toward the head of the vector. The first element

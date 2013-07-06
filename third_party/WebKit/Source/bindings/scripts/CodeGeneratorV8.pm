@@ -1649,6 +1649,7 @@ sub GenerateReplaceableAttrSetterCallback
     $code .= "{\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
+    $code .= GenerateCustomElementInvocationScopeIfNeeded($interface->extendedAttributes);
     if (HasActivityLogging("", $interface->extendedAttributes, "Setter")) {
          die "IDL error: ActivityLog attribute cannot exist on a ReplacableAttrSetterCallback";
     }
@@ -1692,11 +1693,7 @@ sub GenerateCustomElementInvocationScopeIfNeeded
     my $code = "";
     my $ext = shift;
 
-    if ($ext->{"DeliverCustomElementCallbacks"}) {
-        if ($ext->{"Reflect"}) {
-            die "IDL error: [Reflect] and [DeliverCustomElementCallbacks] cannot coexist yet";
-        }
-
+    if ($ext->{"DeliverCustomElementCallbacks"} or $ext->{"Reflect"}) {
         AddToImplIncludes("core/dom/CustomElementCallbackDispatcher.h");
         $code .= <<END;
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
@@ -1730,6 +1727,7 @@ sub GenerateNormalAttrSetterCallback
     if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Setter")) {
         $code .= GenerateActivityLogging("Setter", $interface, "${attrName}");
     }
+    $code .= GenerateCustomElementInvocationScopeIfNeeded($attrExt);
     if (HasCustomSetter($attrExt)) {
         $code .= "    ${v8ClassName}::${attrName}AttrSetterCustom(name, value, info);\n";
     } else {

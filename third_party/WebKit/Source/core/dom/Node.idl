@@ -74,7 +74,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString       baseURI;
 
              // FIXME: the spec says this can also raise on retrieval.
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString       textContent;
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, DeliverCustomElementCallbacks] attribute DOMString       textContent;
 
     boolean            isSameNode([Default=Undefined] optional Node other);
     boolean            isEqualNode([Default=Undefined] optional Node other);

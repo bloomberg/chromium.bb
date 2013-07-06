@@ -32,6 +32,7 @@
 #define CustomElementLifecycleCallbacks_h
 
 #include "wtf/RefCounted.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
@@ -41,12 +42,16 @@ class CustomElementLifecycleCallbacks : public RefCounted<CustomElementLifecycle
 public:
     virtual ~CustomElementLifecycleCallbacks() { }
 
-    bool hasCreated() const { return m_which == Created; }
+    bool hasCreated() const { return m_which & Created; }
     virtual void created(Element*) = 0;
 
+    bool hasAttributeChanged() const { return m_which & AttributeChanged; }
+    virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
+
     enum CallbackType {
-        None,
-        Created
+        None             = 0,
+        Created          = 1 << 0,
+        AttributeChanged = 1 << 1
     };
 
 protected:

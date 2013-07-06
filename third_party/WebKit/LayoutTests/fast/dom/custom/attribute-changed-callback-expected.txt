@@ -1,0 +1,4 @@
+
+PASS transfer attribute changed callback 
+PASS add, change and remove an attribute 
+

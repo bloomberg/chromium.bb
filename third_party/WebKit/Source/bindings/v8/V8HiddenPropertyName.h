@@ -39,6 +39,7 @@ namespace WebCore {
     V(adaptorFunctionPeer) \
     V(attributeListener) \
     V(callback) \
+    V(customElementAttributeChanged) \
     V(customElementCreated) \
     V(detail) \
     V(document) \
