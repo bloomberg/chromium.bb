@@ -946,8 +946,8 @@ text_entry_draw_cursor(struct text_entry *entry, cairo_t *cr)
 				    &cursor_pos, NULL);
 
 	cairo_set_line_width(cr, 1.0);
-	cairo_move_to(cr, PANGO_PIXELS(cursor_pos.x), PANGO_PIXELS(extents.height) + 2);
-	cairo_line_to(cr, PANGO_PIXELS(cursor_pos.x), - 2);
+	cairo_move_to(cr, PANGO_PIXELS(cursor_pos.x), PANGO_PIXELS(cursor_pos.y));
+	cairo_line_to(cr, PANGO_PIXELS(cursor_pos.x), PANGO_PIXELS(cursor_pos.y) + PANGO_PIXELS(cursor_pos.height));
 	cairo_stroke(cr);
 }
 
