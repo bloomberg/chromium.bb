@@ -45,7 +45,7 @@ endcomp 456-156
 # literary forms of the decimal digits
 include litdigits6Dots.uti
 
-# Letters are defined in chardefs-ueb.cti
+# Letters are defined in en-ueb-chardefs.uti
 
 # punctuation
 prepunc ( 5-126
