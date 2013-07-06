@@ -1155,11 +1155,13 @@ key_handler(struct window *window,
 				widget_schedule_redraw(entry->widget);
 			}
 			break;
+		case XKB_KEY_Escape:
+			break;
 		default:
 			if (xkb_keysym_to_utf8(sym, text, sizeof(text)) <= 0)
 				break;
 
-			text_entry_commit_and_reset(entry);
+ 			text_entry_commit_and_reset(entry);
 
 			text_entry_insert_at_cursor(entry, text, 0, 0);
 			break;
