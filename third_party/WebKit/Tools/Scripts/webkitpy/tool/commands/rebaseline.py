@@ -489,11 +489,11 @@ class Rebaseline(AbstractParallelRebaselineCommand):
     def _builder_with_name(self, name):
         return self._tool.buildbot_for_builder_name(name).builder_with_name(name)
 
-    def _tests_to_update(self, builder):
-        failing_tests = builder.latest_layout_test_results().tests_matching_failure_types([test_failures.FailureTextMismatch])
-        return self._tool.user.prompt_with_list("Which test(s) to rebaseline for %s:" % builder.name(), failing_tests, can_choose_multiple=True)
-
     def execute(self, options, args, tool):
+        if not args:
+            _log.error("Must list tests to rebaseline.")
+            return
+
         options.results_directory = None
         if options.builders:
             builders_to_check = []
@@ -506,8 +506,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
         suffixes_to_update = options.suffixes.split(",")
 
         for builder in builders_to_check:
-            tests = args or self._tests_to_update(builder)
-            for test in tests:
+            for test in args:
                 if test not in test_prefix_list:
                     test_prefix_list[test] = {}
                 test_prefix_list[test][builder.name()] = suffixes_to_update

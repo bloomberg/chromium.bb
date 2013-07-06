@@ -38,36 +38,6 @@ from webkitpy.tool.commands.queries import *
 from webkitpy.tool.mocktool import MockTool, MockOptions
 
 
-class MockTestPort1(object):
-    def skips_layout_test(self, test_name):
-        return test_name in ["media/foo/bar.html", "foo"]
-
-
-class MockTestPort2(object):
-    def skips_layout_test(self, test_name):
-        return test_name == "media/foo/bar.html"
-
-
-class MockPortFactory(object):
-    def __init__(self):
-        self._all_ports = {
-            "test_port1": MockTestPort1(),
-            "test_port2": MockTestPort2(),
-        }
-
-    def all_port_names(self, options=None):
-        return self._all_ports.keys()
-
-    def get(self, port_name):
-        return self._all_ports.get(port_name)
-
-
-class QueryCommandsTest(CommandsTest):
-    def test_tree_status(self):
-        expected_stdout = "ok   : Builder1\nok   : Builder2\n"
-        self.assert_execute_outputs(TreeStatus(), None, expected_stdout)
-
-
 class PrintExpectationsTest(unittest.TestCase):
     def run_test(self, tests, expected_stdout, platform='test-win-xp', **args):
         options = MockOptions(all=False, csv=False, full=False, platform=platform,

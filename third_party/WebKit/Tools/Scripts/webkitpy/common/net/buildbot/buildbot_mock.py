@@ -61,29 +61,6 @@ class MockBuilder(object):
             self._name, username, comments))
 
 
-class MockFailureMap(object):
-    def __init__(self, buildbot):
-        self._buildbot = buildbot
-
-    def is_empty(self):
-        return False
-
-    def filter_out_old_failures(self, is_old_revision):
-        pass
-
-    def failing_revisions(self):
-        return [29837]
-
-    def builders_failing_for(self, revision):
-        return [self._buildbot.builder_with_name("Builder1")]
-
-    def tests_failing_for(self, revision):
-        return ["mock-test-1"]
-
-    def failing_tests(self):
-        return set(["mock-test-1"])
-
-
 class MockBuildBot(object):
     def __init__(self):
         self._mock_builder1_status = {
@@ -108,6 +85,3 @@ class MockBuildBot(object):
 
     def light_tree_on_fire(self):
         self._mock_builder2_status["is_green"] = False
-
-    def failure_map(self):
-        return MockFailureMap(self)

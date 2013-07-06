@@ -396,13 +396,8 @@ class TestRebaseline(_BaseTestCase):
 
     command_constructor = Rebaseline  # AKA webkit-patch rebaseline
 
-    def test_tests_to_update(self):
-        build = Mock()
-        OutputCapture().assert_outputs(self, self.command._tests_to_update, [build])
-
     def test_rebaseline(self):
         self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK builder')]
-        self.command._tests_to_update = lambda builder: ['mock/path/to/test.html']
 
         self._write("mock/path/to/test.html", "Dummy test contents")
 
@@ -413,7 +408,7 @@ class TestRebaseline(_BaseTestCase):
             builders._exact_matches = {
                 "MOCK builder": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
             }
-            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), ['mock/path/to/test.html'], self.tool)
         finally:
             builders._exact_matches = old_exact_matches
 
@@ -423,7 +418,6 @@ class TestRebaseline(_BaseTestCase):
 
     def test_rebaseline_directory(self):
         self.command._builders_to_pull_from = lambda: [MockBuilder('MOCK builder')]
-        self.command._tests_to_update = lambda builder: ['userscripts']
 
         self._write("userscripts/first-test.html", "test data")
         self._write("userscripts/second-test.html", "test data")
@@ -433,7 +427,7 @@ class TestRebaseline(_BaseTestCase):
             builders._exact_matches = {
                 "MOCK builder": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
             }
-            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=False, builders=None, suffixes="txt,png", verbose=True, move_overwritten_baselines=False), ['userscripts'], self.tool)
         finally:
             builders._exact_matches = old_exact_matches
 
