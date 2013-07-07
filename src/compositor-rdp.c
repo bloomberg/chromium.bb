@@ -915,7 +915,7 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	RdpPeerContext *peerCtx;
 	char seat_name[32];
 
-	client->context_size = sizeof(RdpPeerContext);
+	client->ContextSize = sizeof(RdpPeerContext);
 	client->ContextNew = (psPeerContextNew)rdp_peer_context_new;
 	client->ContextFree = (psPeerContextFree)rdp_peer_context_free;
 	freerdp_peer_context_new(client);
