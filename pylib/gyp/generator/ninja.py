@@ -789,14 +789,11 @@ class NinjaWriter:
 
     pch_commands = precompiled_header.GetPchBuildCommands()
     if self.flavor == 'mac':
-      self.WriteVariableList('cflags_pch_c',
-                             [precompiled_header.GetInclude('c')])
-      self.WriteVariableList('cflags_pch_cc',
-                             [precompiled_header.GetInclude('cc')])
-      self.WriteVariableList('cflags_pch_objc',
-                             [precompiled_header.GetInclude('m')])
-      self.WriteVariableList('cflags_pch_objcc',
-                             [precompiled_header.GetInclude('mm')])
+      # Most targets use no precompiled headers, so only write these if needed.
+      for ext, var in [('c', 'cflags_pch_c'), ('cc', 'cflags_pch_cc'),
+                       ('m', 'cflags_pch_objc'), ('mm', 'cflags_pch_objcc')]:
+        include = precompiled_header.GetInclude(ext)
+        if include: self.ninja.variable(var, include)
 
     self.WriteVariableList('cflags', map(self.ExpandSpecial, cflags))
     self.WriteVariableList('cflags_c', map(self.ExpandSpecial, cflags_c))
@@ -1001,8 +998,9 @@ class NinjaWriter:
       if postbuild:
         variables.append(('postbuilds', postbuild))
       if self.xcode_settings:
-        variables.append(('libtool_flags',
-                          self.xcode_settings.GetLibtoolflags(config_name)))
+        libtool_flags = self.xcode_settings.GetLibtoolflags(config_name)
+        if libtool_flags:
+          variables.append(('libtool_flags', libtool_flags))
       if (self.flavor not in ('mac', 'openbsd', 'win') and not
           self.is_standalone_static_library):
         self.ninja.build(self.target.binary, 'alink_thin', link_deps,
