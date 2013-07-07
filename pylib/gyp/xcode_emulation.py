@@ -888,7 +888,7 @@ def GetMacBundleResources(product_dir, xcode_settings, resources):
 
 def GetMacInfoPlist(product_dir, xcode_settings, gyp_path_to_build_path):
   """Returns (info_plist, dest_plist, defines, extra_env), where:
-  * |info_plist| is the sourc plist path, relative to the
+  * |info_plist| is the source plist path, relative to the
     build directory,
   * |dest_plist| is the destination plist path, relative to the
     build directory,

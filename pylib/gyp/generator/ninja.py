@@ -293,7 +293,7 @@ class NinjaWriter:
         expanded = os.path.normpath(expanded)
       return expanded
     if '$|' in path:
-      path =  self.ExpandSpecial(path)
+      path = self.ExpandSpecial(path)
     assert '$' not in path, path
     return os.path.normpath(os.path.join(self.build_to_base, path))
 
@@ -689,8 +689,9 @@ class NinjaWriter:
   def WriteMacBundleResources(self, resources, bundle_depends):
     """Writes ninja edges for 'mac_bundle_resources'."""
     for output, res in gyp.xcode_emulation.GetMacBundleResources(
-        self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
+        generator_default_variables['PRODUCT_DIR'],
         self.xcode_settings, map(self.GypPathToNinja, resources)):
+      output = self.ExpandSpecial(output)
       self.ninja.build(output, 'mac_tool', res,
                        variables=[('mactool_cmd', 'copy-bundle-resource')])
       bundle_depends.append(output)
@@ -698,10 +699,11 @@ class NinjaWriter:
   def WriteMacInfoPlist(self, bundle_depends):
     """Write build rules for bundle Info.plist files."""
     info_plist, out, defines, extra_env = gyp.xcode_emulation.GetMacInfoPlist(
-        self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
+        generator_default_variables['PRODUCT_DIR'],
         self.xcode_settings, self.GypPathToNinja)
     if not info_plist:
       return
+    out = self.ExpandSpecial(out)
     if defines:
       # Create an intermediate file to store preprocessed results.
       intermediate_plist = self.GypPathToUniqueOutput(
@@ -1106,14 +1108,16 @@ class NinjaWriter:
   def ComputeMacBundleOutput(self):
     """Return the 'output' (full output path) to a bundle output directory."""
     assert self.is_mac_bundle
-    path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
-    return os.path.join(path, self.xcode_settings.GetWrapperName())
+    path = generator_default_variables['PRODUCT_DIR']
+    return self.ExpandSpecial(
+        os.path.join(path, self.xcode_settings.GetWrapperName()))
 
   def ComputeMacBundleBinaryOutput(self):
     """Return the 'output' (full output path) to the binary in a bundle."""
     assert self.is_mac_bundle
-    path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
-    return os.path.join(path, self.xcode_settings.GetExecutablePath())
+    path = generator_default_variables['PRODUCT_DIR']
+    return self.ExpandSpecial(
+        os.path.join(path, self.xcode_settings.GetExecutablePath()))
 
   def ComputeOutputFileName(self, spec, type=None):
     """Compute the filename of the final output for the current target."""
