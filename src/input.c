@@ -1181,7 +1181,7 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 	wl_resource_set_implementation(cr, &pointer_interface, seat->pointer,
 				       unbind_resource);
 
-	if (seat->pointer->focus &&
+	if (seat->pointer->focus && seat->pointer->focus->resource &&
 	    wl_resource_get_client(seat->pointer->focus->resource) == client) {
 		struct weston_surface *surface;
 		wl_fixed_t sx, sy;
