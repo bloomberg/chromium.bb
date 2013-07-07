@@ -197,6 +197,7 @@ AC_ARG_ENABLE([rdp-compositor], [  --enable-rdp-compositor],,
 AM_CONDITIONAL([ENABLE_RDP_COMPOSITOR],
                [test x$enable_rdp_compositor = xyes])
 if test x$enable_rdp_compositor = xyes; then
+  AC_DEFINE([BUILD_RDP_COMPOSITOR], [1], [Build the RDP compositor])
   PKG_CHECK_MODULES(RDP_COMPOSITOR, [freerdp >= 1.1.0])
 fi
 

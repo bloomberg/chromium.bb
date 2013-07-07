@@ -3222,6 +3222,21 @@ usage(int error_code)
 		"\n");
 #endif
 
+#if defined(BUILD_RDP_COMPOSITOR)
+    fprintf(stderr,
+       "Options for rdp-backend.so:\n\n"
+       "  --width=WIDTH\t\tWidth of desktop\n"
+       "  --height=HEIGHT\tHeight of desktop\n"
+       "  --extra-modes=MODES\t\n"
+       "  --env-socket=SOCKET\tUse that socket as peer connection\n"
+       "  --address=ADDR\tThe address to bind\n"
+       "  --port=PORT\tThe port to listen on\n"
+       "  --rdp4-key=FILE\tThe file containing the key for RDP4 encryption\n"
+       "  --rdp-tls-cert=FILE\tThe file containing the certificate for TLS encryption\n"
+       "  --rdp-tls-key=FILE\tThe file containing the private key for TLS encryption\n"
+       "\n");
+#endif
+
 	exit(error_code);
 }
 
