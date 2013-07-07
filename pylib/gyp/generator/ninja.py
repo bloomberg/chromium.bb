@@ -1871,7 +1871,6 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       obj += '.' + toolset
     output_file = os.path.join(obj, base_path, name + '.ninja')
 
-    abs_build_dir = os.path.abspath(toplevel_build)
     writer = NinjaWriter(qualified_target, target_outputs, base_path, build_dir,
                          OpenOutput(os.path.join(toplevel_build, output_file)),
                          flavor, toplevel_dir=options.toplevel_dir)
