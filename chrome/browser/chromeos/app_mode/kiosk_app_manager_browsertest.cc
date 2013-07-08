@@ -198,14 +198,16 @@ class KioskAppManagerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
-  // Add a couple of apps.
-  manager()->AddApp("app_1");
-  manager()->AddApp("app_2");
-  EXPECT_EQ("app_1,app_2", GetAppIds());
+  // Add a couple of apps. Use "fake_app_x" that do not have data on the test
+  // server to avoid pending data loads that could be lingering on tear down and
+  // cause DCHECK failure in utility_process_host_impl.cc.
+  manager()->AddApp("fake_app_1");
+  manager()->AddApp("fake_app_2");
+  EXPECT_EQ("fake_app_1,fake_app_2", GetAppIds());
 
   // Set an auto launch app.
-  manager()->SetAutoLaunchApp("app_1");
-  EXPECT_EQ("app_1", manager()->GetAutoLaunchApp());
+  manager()->SetAutoLaunchApp("fake_app_1");
+  EXPECT_EQ("fake_app_1", manager()->GetAutoLaunchApp());
 
   // Clear the auto launch app.
   manager()->SetAutoLaunchApp("");
@@ -213,8 +215,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
 
   // Set another auto launch app.
-  manager()->SetAutoLaunchApp("app_2");
-  EXPECT_EQ("app_2", manager()->GetAutoLaunchApp());
+  manager()->SetAutoLaunchApp("fake_app_2");
+  EXPECT_EQ("fake_app_2", manager()->GetAutoLaunchApp());
 
   // Check auto launch permissions.
   EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
@@ -222,20 +224,18 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   EXPECT_TRUE(manager()->IsAutoLaunchEnabled());
 
   // Remove the auto launch app.
-  manager()->RemoveApp("app_2");
-  EXPECT_EQ("app_1", GetAppIds());
+  manager()->RemoveApp("fake_app_2");
+  EXPECT_EQ("fake_app_1", GetAppIds());
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
 
   // Set a none exist app as auto launch.
-  TestKioskAppManagerObserver observer(manager());
   manager()->SetAutoLaunchApp("none_exist_app");
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
   EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
 
-  // Add an exist app again.
-  observer.Reset();
-  manager()->AddApp("app_1");
-  EXPECT_EQ("app_1", GetAppIds());
+  // Add an existing app again.
+  manager()->AddApp("fake_app_1");
+  EXPECT_EQ("fake_app_1", GetAppIds());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, LoadCached) {
