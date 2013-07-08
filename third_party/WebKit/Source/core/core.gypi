@@ -3704,6 +3704,7 @@
             'platform/image-decoders/webp/WEBPImageDecoderTest.cpp',
             'platform/text/DateTimeFormatTest.cpp',
             'tests/HeapGraphSerializerTest.cpp',
+            'tests/HTMLDimension.cpp',
             'tests/LayoutUnit.cpp',
             'tests/LinkRelAttribute.cpp',
         ],
