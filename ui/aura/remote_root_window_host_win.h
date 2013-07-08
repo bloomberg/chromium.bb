@@ -41,35 +41,44 @@ typedef base::Callback<void(const base::FilePath&, int, void*)>
 typedef base::Callback<void(const base::FilePath&, int, void*)>
     SelectFolderCompletion;
 
-// Handles the open file operation for Metro Chrome Ash. The callback passed in
-// is invoked when we receive the opened file name from the metro viewer.
+typedef base::Callback<void(void*)> FileSelectionCanceled;
+
+// Handles the open file operation for Metro Chrome Ash. The on_success
+// callback passed in is invoked when we receive the opened file name from
+// the metro viewer. The on failure callback is invoked on failure.
 AURA_EXPORT void HandleOpenFile(const base::string16& title,
                                 const base::FilePath& default_path,
                                 const base::string16& filter,
-                                const OpenFileCompletion& callback);
+                                const OpenFileCompletion& on_success,
+                                const FileSelectionCanceled& on_failure);
 
-// Handles the open multiple file operation for Metro Chrome Ash. The callback
-// passed in is invoked when we receive the opened file names from the metro
-// viewer.
+// Handles the open multiple file operation for Metro Chrome Ash. The
+// on_success callback passed in is invoked when we receive the opened file
+// names from the metro viewer. The on failure callback is invoked on failure.
 AURA_EXPORT void HandleOpenMultipleFiles(
     const base::string16& title,
     const base::FilePath& default_path,
     const base::string16& filter,
-    const OpenMultipleFilesCompletion& callback);
+    const OpenMultipleFilesCompletion& on_success,
+    const FileSelectionCanceled& on_failure);
 
-// Handles the save file operation for Metro Chrome Ash. The callback passed in
-// is invoked when we receive the saved file name from the metro viewer.
+// Handles the save file operation for Metro Chrome Ash. The on_success
+// callback passed in is invoked when we receive the saved file name from
+// the metro viewer. The on failure callback is invoked on failure.
 AURA_EXPORT void HandleSaveFile(const base::string16& title,
                                 const base::FilePath& default_path,
                                 const base::string16& filter,
                                 int filter_index,
                                 const base::string16& default_extension,
-                                const SaveFileCompletion& callback);
+                                const SaveFileCompletion& on_success,
+                                const FileSelectionCanceled& on_failure);
 
-// Handles the select folder for Metro Chrome Ash. The callback passed in
-// is invoked when we receive the folder name from the metro viewer.
+// Handles the select folder for Metro Chrome Ash. The on_success
+// callback passed in is invoked when we receive the folder name from the
+// metro viewer. The on failure callback is invoked on failure.
 AURA_EXPORT void HandleSelectFolder(const base::string16& title,
-                                    const SelectFolderCompletion& callback);
+                                    const SelectFolderCompletion& on_success,
+                                    const FileSelectionCanceled& on_failure);
 
 // RootWindowHost implementaton that receives events from a different
 // process. In the case of Windows this is the Windows 8 (aka Metro)
@@ -91,22 +100,26 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   void HandleOpenFile(const base::string16& title,
                       const base::FilePath& default_path,
                       const base::string16& filter,
-                      const OpenFileCompletion& callback);
+                      const OpenFileCompletion& on_success,
+                      const FileSelectionCanceled& on_failure);
 
   void HandleOpenMultipleFiles(const base::string16& title,
                                const base::FilePath& default_path,
                                const base::string16& filter,
-                               const OpenMultipleFilesCompletion& callback);
+                               const OpenMultipleFilesCompletion& on_success,
+                               const FileSelectionCanceled& on_failure);
 
   void HandleSaveFile(const base::string16& title,
                       const base::FilePath& default_path,
                       const base::string16& filter,
                       int filter_index,
                       const base::string16& default_extension,
-                      const SaveFileCompletion& callback);
+                      const SaveFileCompletion& on_success,
+                      const FileSelectionCanceled& on_failure);
 
   void HandleSelectFolder(const base::string16& title,
-                          const SelectFolderCompletion& callback);
+                          const SelectFolderCompletion& on_success,
+                          const FileSelectionCanceled& on_failure);
 
  private:
   explicit RemoteRootWindowHostWin(const gfx::Rect& bounds);
@@ -196,6 +209,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   OpenMultipleFilesCompletion multi_file_open_completion_callback_;
   SaveFileCompletion file_saveas_completion_callback_;
   SelectFolderCompletion select_folder_completion_callback_;
+  FileSelectionCanceled failure_callback_;
 
   // Set to true if we need to ignore mouse messages until the SetCursorPos
   // operation is acked by the viewer.

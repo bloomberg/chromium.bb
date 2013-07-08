@@ -557,6 +557,8 @@ void SelectFileDialogImpl::SelectFileImpl(
           file_type_index,
           default_extension,
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
+                     base::Unretained(listener_)),
+          base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
                      base::Unretained(listener_)));
       return;
     } else if (type == SELECT_OPEN_FILE) {
@@ -565,6 +567,8 @@ void SelectFileDialogImpl::SelectFileImpl(
           default_path,
           GetFilterForFileTypes(*file_types),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
+                     base::Unretained(listener_)),
+          base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
                      base::Unretained(listener_)));
       return;
     } else if (type == SELECT_OPEN_MULTI_FILE) {
@@ -573,12 +577,16 @@ void SelectFileDialogImpl::SelectFileImpl(
           default_path,
           GetFilterForFileTypes(*file_types),
           base::Bind(&ui::SelectFileDialog::Listener::MultiFilesSelected,
+                     base::Unretained(listener_)),
+          base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
                      base::Unretained(listener_)));
       return;
     } else if (type == SELECT_FOLDER) {
       aura::HandleSelectFolder(
           UTF16ToWide(title),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
+                     base::Unretained(listener_)),
+          base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
                      base::Unretained(listener_)));
       return;
     }

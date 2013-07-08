@@ -56,24 +56,28 @@ void SetVirtualKeyStates(uint32 flags) {
 void HandleOpenFile(const base::string16& title,
                     const base::FilePath& default_path,
                     const base::string16& filter,
-                    const OpenFileCompletion& callback) {
+                    const OpenFileCompletion& on_success,
+                    const FileSelectionCanceled& on_failure) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleOpenFile(title,
                                                             default_path,
                                                             filter,
-                                                            callback);
+                                                            on_success,
+                                                            on_failure);
 }
 
 void HandleOpenMultipleFiles(const base::string16& title,
                              const base::FilePath& default_path,
                              const base::string16& filter,
-                             const OpenMultipleFilesCompletion& callback) {
+                             const OpenMultipleFilesCompletion& on_success,
+                             const FileSelectionCanceled& on_failure) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleOpenMultipleFiles(
       title,
       default_path,
       filter,
-      callback);
+      on_success,
+      on_failure);
 }
 
 void HandleSaveFile(const base::string16& title,
@@ -81,21 +85,25 @@ void HandleSaveFile(const base::string16& title,
                     const base::string16& filter,
                     int filter_index,
                     const base::string16& default_extension,
-                    const SaveFileCompletion& callback) {
+                    const SaveFileCompletion& on_success,
+                    const FileSelectionCanceled& on_failure) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleSaveFile(title,
                                                             default_path,
                                                             filter,
                                                             filter_index,
                                                             default_extension,
-                                                            callback);
+                                                            on_success,
+                                                            on_failure);
 }
 
 void HandleSelectFolder(const base::string16& title,
-                        const SelectFolderCompletion& callback) {
+                        const SelectFolderCompletion& on_success,
+                        const FileSelectionCanceled& on_failure) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleSelectFolder(title,
-                                                                callback);
+                                                                on_success,
+                                                                on_failure);
 }
 
 RemoteRootWindowHostWin* g_instance = NULL;
@@ -169,13 +177,17 @@ void RemoteRootWindowHostWin::HandleOpenFile(
     const base::string16& title,
     const base::FilePath& default_path,
     const base::string16& filter,
-    const OpenFileCompletion& callback) {
+    const OpenFileCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
   if (!host_)
     return;
 
   // Can only have one of these operations in flight.
   DCHECK(file_open_completion_callback_.is_null());
-  file_open_completion_callback_ = callback;
+  DCHECK(failure_callback_.is_null());
+
+  file_open_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
 
   host_->Send(new MetroViewerHostMsg_DisplayFileOpen(title,
                                                      filter,
@@ -187,13 +199,16 @@ void RemoteRootWindowHostWin::HandleOpenMultipleFiles(
     const base::string16& title,
     const base::FilePath& default_path,
     const base::string16& filter,
-    const OpenMultipleFilesCompletion& callback) {
+    const OpenMultipleFilesCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
   if (!host_)
     return;
 
   // Can only have one of these operations in flight.
   DCHECK(multi_file_open_completion_callback_.is_null());
-  multi_file_open_completion_callback_ = callback;
+  DCHECK(failure_callback_.is_null());
+  multi_file_open_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
 
   host_->Send(new MetroViewerHostMsg_DisplayFileOpen(title,
                                                      filter,
@@ -207,7 +222,8 @@ void RemoteRootWindowHostWin::HandleSaveFile(
     const base::string16& filter,
     int filter_index,
     const base::string16& default_extension,
-    const SaveFileCompletion& callback) {
+    const SaveFileCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
   if (!host_)
     return;
 
@@ -219,20 +235,25 @@ void RemoteRootWindowHostWin::HandleSaveFile(
 
   // Can only have one of these operations in flight.
   DCHECK(file_saveas_completion_callback_.is_null());
-  file_saveas_completion_callback_ = callback;
+  DCHECK(failure_callback_.is_null());
+  file_saveas_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
 
   host_->Send(new MetroViewerHostMsg_DisplayFileSaveAs(params));
 }
 
 void RemoteRootWindowHostWin::HandleSelectFolder(
     const base::string16& title,
-    const SelectFolderCompletion& callback) {
+    const SelectFolderCompletion& on_success,
+    const FileSelectionCanceled& on_failure) {
   if (!host_)
     return;
 
   // Can only have one of these operations in flight.
   DCHECK(select_folder_completion_callback_.is_null());
-  select_folder_completion_callback_ = callback;
+  DCHECK(failure_callback_.is_null());
+  select_folder_completion_callback_ = on_success;
+  failure_callback_ = on_failure;
 
   host_->Send(new MetroViewerHostMsg_DisplaySelectFolder(title));
 }
@@ -458,38 +479,45 @@ void RemoteRootWindowHostWin::OnTouchMoved(int32 x,
 void RemoteRootWindowHostWin::OnFileSaveAsDone(bool success,
                                                const base::FilePath& filename,
                                                int filter_index) {
-  if (success) {
+  if (success)
     file_saveas_completion_callback_.Run(filename, filter_index, NULL);
-  }
+  else
+    failure_callback_.Run(NULL);
   file_saveas_completion_callback_.Reset();
+  failure_callback_.Reset();
 }
 
 
 void RemoteRootWindowHostWin::OnFileOpenDone(bool success,
                                              const base::FilePath& filename) {
-  if (success) {
-    file_open_completion_callback_.Run(
-        base::FilePath(filename), 0, NULL);
-  }
+  if (success)
+    file_open_completion_callback_.Run(base::FilePath(filename), 0, NULL);
+  else
+    failure_callback_.Run(NULL);
   file_open_completion_callback_.Reset();
+  failure_callback_.Reset();
 }
 
 void RemoteRootWindowHostWin::OnMultiFileOpenDone(
     bool success,
     const std::vector<base::FilePath>& files) {
-  if (success) {
+  if (success)
     multi_file_open_completion_callback_.Run(files, NULL);
-  }
+  else
+    failure_callback_.Run(NULL);
   multi_file_open_completion_callback_.Reset();
+  failure_callback_.Reset();
 }
 
 void RemoteRootWindowHostWin::OnSelectFolderDone(
     bool success,
     const base::FilePath& folder) {
-  if (success) {
+  if (success)
     select_folder_completion_callback_.Run(base::FilePath(folder), 0, NULL);
-  }
+  else
+    failure_callback_.Run(NULL);
   select_folder_completion_callback_.Reset();
+  failure_callback_.Reset();
 }
 
 void RemoteRootWindowHostWin::OnWindowActivated(bool active) {
