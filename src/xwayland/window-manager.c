@@ -1870,18 +1870,28 @@ send_configure(struct weston_surface *surface,
 	struct weston_wm_window *window = get_wm_window(surface);
 	struct weston_wm *wm = window->wm;
 	struct theme *t = window->wm->theme;
+	int vborder, hborder;
 
 	if (window->fullscreen) {
-		window->width = width;
-		window->height = height;
+		hborder = 0;
+		vborder = 0;
 	} else if (window->decorate) {
-		window->width = width - 2 * (t->margin + t->width);
-		window->height = height - 2 * t->margin -
-			t->titlebar_height - t->width;
+		hborder = 2 * (t->margin + t->width);
+		vborder = 2 * t->margin + t->titlebar_height + t->width;
 	} else {
-		window->width = width - 2 * t->margin;
-		window->height = height - 2 * t->margin;
+		hborder = 2 * t->margin;
+		vborder = 2 * t->margin;
 	}
+
+	if (width > hborder)
+		window->width = width - hborder;
+	else
+		window->width = 1;
+
+	if (height > vborder)
+		window->height = height - vborder;
+	else
+		window->height = 1;
 
 	if (window->configure_source)
 		return;
