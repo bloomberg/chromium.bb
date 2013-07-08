@@ -39,13 +39,11 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
-
 class Algorithm : public ScriptWrappable, public RefCounted<Algorithm> {
 public:
-    static PassRefPtr<Algorithm> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new Algorithm(algorithm)); }
+    static PassRefPtr<Algorithm> create(const WebKit::WebCryptoAlgorithm&);
 
-    const String& name();
+    String name();
 
     WebKit::WebCryptoAlgorithmParamsType type() const { return m_algorithm.paramsType(); }
 
@@ -53,7 +51,6 @@ protected:
     explicit Algorithm(const WebKit::WebCryptoAlgorithm&);
 
     const WebKit::WebCryptoAlgorithm m_algorithm;
-    String m_name;
 };
 
 } // namespace WebCore

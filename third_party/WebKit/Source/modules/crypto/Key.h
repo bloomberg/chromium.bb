@@ -28,24 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerCrypto_h
-#define WorkerCrypto_h
+#ifndef Key_h
+#define Key_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "public/platform/WebCryptoKey.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class WorkerCrypto : public ScriptWrappable, public RefCounted<WorkerCrypto> {
-public:
-    static PassRefPtr<WorkerCrypto> create() { return adoptRef(new WorkerCrypto()); }
+class Algorithm;
 
-private:
-    WorkerCrypto();
+class Key : public ScriptWrappable, public RefCounted<Key> {
+public:
+    static PassRefPtr<Key> create(const WebKit::WebCryptoKey& key) { return adoptRef(new Key(key)); }
+
+    String type() const;
+    bool extractable() const;
+    Algorithm* algorithm();
+    Vector<String> keyUsage() const;
+
+protected:
+    explicit Key(const WebKit::WebCryptoKey&);
+
+    const WebKit::WebCryptoKey m_key;
+    RefPtr<Algorithm> m_algorithm;
 };
 
-}
+} // namespace WebCore
 
 #endif

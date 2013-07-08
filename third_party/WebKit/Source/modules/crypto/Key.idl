@@ -28,24 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerCrypto_h
-#define WorkerCrypto_h
-
-#include "bindings/v8/ScriptWrappable.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-
-namespace WebCore {
-
-class WorkerCrypto : public ScriptWrappable, public RefCounted<WorkerCrypto> {
-public:
-    static PassRefPtr<WorkerCrypto> create() { return adoptRef(new WorkerCrypto()); }
-
-private:
-    WorkerCrypto();
+enum KeyType {
+    "secret",
+    "public",
+    "private"
 };
 
-}
+enum KeyUsage {
+    "encrypt",
+    "decrypt",
+    "sign",
+    "verify",
+    "derive",
+    "wrap",
+    "unwrap"
+};
 
-#endif
+[
+    NoInterfaceObject,
+] interface Key {
+    readonly attribute KeyType type;
+    readonly attribute boolean extractable;
+    readonly attribute Algorithm algorithm;
+    readonly attribute KeyUsage[] keyUsage;
+};

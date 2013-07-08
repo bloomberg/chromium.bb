@@ -31,7 +31,24 @@
 #include "config.h"
 #include "modules/crypto/Algorithm.h"
 
+#include "modules/crypto/AesCbcParams.h"
+#include "modules/crypto/AesKeyGenParams.h"
+
 namespace WebCore {
+
+PassRefPtr<Algorithm> Algorithm::create(const WebKit::WebCryptoAlgorithm& algorithm)
+{
+    switch (algorithm.paramsType()) {
+    case WebKit::WebCryptoAlgorithmParamsTypeNone:
+        return adoptRef(new Algorithm(algorithm));
+    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
+        return AesCbcParams::create(algorithm);
+    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+        return AesKeyGenParams::create(algorithm);
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
 
 Algorithm::Algorithm(const WebKit::WebCryptoAlgorithm& algorithm)
     : m_algorithm(algorithm)
@@ -39,11 +56,9 @@ Algorithm::Algorithm(const WebKit::WebCryptoAlgorithm& algorithm)
     ScriptWrappable::init(this);
 }
 
-const String& Algorithm::name()
+String Algorithm::name()
 {
-    if (m_name.isNull())
-        m_name = m_algorithm.algorithmName();
-    return m_name;
+    return ASCIILiteral(m_algorithm.algorithmName());
 }
 
 } // namespace WebCore

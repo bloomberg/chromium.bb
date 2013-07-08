@@ -31,29 +31,9 @@
 #include "config.h"
 #include "modules/crypto/CryptoOperation.h"
 
-#include "modules/crypto/AesCbcParams.h"
-#include "modules/crypto/AesKeyGenParams.h"
 #include "modules/crypto/Algorithm.h"
 
 namespace WebCore {
-
-namespace {
-
-PassRefPtr<Algorithm> createAlgorithm(const WebKit::WebCryptoAlgorithm& algorithm)
-{
-    switch (algorithm.paramsType()) {
-    case WebKit::WebCryptoAlgorithmParamsTypeNone:
-        return Algorithm::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
-        return AesCbcParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
-        return AesKeyGenParams::create(algorithm);
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-} // namespace
 
 CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm)
     : m_algorithm(algorithm)
@@ -64,7 +44,7 @@ CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm)
 Algorithm* CryptoOperation::algorithm()
 {
     if (!m_algorithmNode)
-        m_algorithmNode = createAlgorithm(m_algorithm);
+        m_algorithmNode = Algorithm::create(m_algorithm);
     return m_algorithmNode.get();
 }
 
