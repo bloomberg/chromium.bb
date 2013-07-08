@@ -579,15 +579,13 @@ def ExpandXcodeVariables(string, expansions):
   return string
 
 
+_xcode_define_re = re.compile(r'([\\\"\' ])')
 def EscapeXcodeDefine(s):
   """We must escape the defines that we give to XCode so that it knows not to
      split on spaces and to respect backslash and quote literals. However, we
      must not quote the define, or Xcode will incorrectly intepret variables
      especially $(inherited)."""
-  s = s.replace('\\', '\\\\')
-  s = s.replace('"', '\\"')
-  s = s.replace(' ', '\\ ')
-  return s
+  return re.sub(_xcode_define_re, r'\\\1', s)
 
 
 def PerformBuild(data, configurations, params):
