@@ -787,12 +787,14 @@ def TryChange(argv,
       for checkout in checkouts:
         raw_diff = checkout.GenerateDiff()
         if not raw_diff:
-          logging.error('Empty or non-existant diff, exiting.')
-          return 1
+          continue
         diff = raw_diff.splitlines(True)
         path_diff = gclient_utils.PathDifference(root, checkout.checkout_root)
         # Munge it.
         diffs.extend(GetMungedDiff(path_diff, diff)[0])
+      if not diffs:
+        logging.error('Empty or non-existant diff, exiting.')
+        return 1
       options.diff = ''.join(diffs)
 
     if not options.name:
