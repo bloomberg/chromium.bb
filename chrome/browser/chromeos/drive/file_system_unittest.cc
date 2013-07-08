@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -79,6 +80,8 @@ class FileSystemTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
+    pref_service_.reset(new TestingPrefServiceSimple);
+    test_util::RegisterDrivePrefs(pref_service_->registry());
 
     fake_network_change_notifier_.reset(
         new test_util::FakeNetworkChangeNotifier);
@@ -91,7 +94,7 @@ class FileSystemTest : public testing::Test {
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
-    scheduler_.reset(new JobScheduler(profile_.get(),
+    scheduler_.reset(new JobScheduler(pref_service_.get(),
                                       fake_drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
 
@@ -125,7 +128,7 @@ class FileSystemTest : public testing::Test {
         metadata_storage_.get(), base::MessageLoopProxy::current()));
 
     file_system_.reset(new FileSystem(
-        profile_.get(),
+        pref_service_.get(),
         cache_.get(),
         fake_drive_service_.get(),
         scheduler_.get(),
@@ -294,6 +297,9 @@ class FileSystemTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
+  // We don't use TestingProfile::GetPrefs() in favor of having less
+  // dependencies to Profile in general.
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
 

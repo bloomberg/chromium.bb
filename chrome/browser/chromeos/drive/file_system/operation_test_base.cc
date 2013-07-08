@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 
+#include "base/prefs/testing_pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace drive {
@@ -48,7 +48,9 @@ void OperationTestBase::SetUp() {
   blocking_task_runner_ =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-  profile_.reset(new TestingProfile);
+  pref_service_.reset(new TestingPrefServiceSimple);
+  test_util::RegisterDrivePrefs(pref_service_->registry());
+
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
   fake_drive_service_.reset(new FakeDriveService);
@@ -58,7 +60,9 @@ void OperationTestBase::SetUp() {
       "gdata/account_metadata.json");
 
   scheduler_.reset(new JobScheduler(
-      profile_.get(), fake_drive_service_.get(), blocking_task_runner_.get()));
+      pref_service_.get(),
+      fake_drive_service_.get(),
+      blocking_task_runner_.get()));
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       temp_dir_.path(), blocking_task_runner_.get()));

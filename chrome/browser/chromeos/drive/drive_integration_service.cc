@@ -170,7 +170,9 @@ DriveIntegrationService::DriveIntegrationService(
         GetDriveUserAgent()));
   }
   scheduler_.reset(new JobScheduler(
-      profile_, drive_service_.get(), blocking_task_runner_.get()));
+      profile_->GetPrefs(),
+      drive_service_.get(),
+      blocking_task_runner_.get()));
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       cache_root_directory_.Append(util::kMetadataDirectory),
       blocking_task_runner_.get()));
@@ -186,7 +188,7 @@ DriveIntegrationService::DriveIntegrationService(
 
   file_system_.reset(
       test_file_system ? test_file_system : new FileSystem(
-          profile_,
+          profile_->GetPrefs(),
           cache_.get(),
           drive_service_.get(),
           scheduler_.get(),

@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,7 +85,8 @@ class SyncClientTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    profile_.reset(new TestingProfile);
+    pref_service_.reset(new TestingPrefServiceSimple);
+    test_util::RegisterDrivePrefs(pref_service_->registry());
 
     fake_network_change_notifier_.reset(
         new test_util::FakeNetworkChangeNotifier);
@@ -95,7 +96,7 @@ class SyncClientTest : public testing::Test {
     drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
 
-    scheduler_.reset(new JobScheduler(profile_.get(),
+    scheduler_.reset(new JobScheduler(pref_service_.get(),
                                       drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
 
@@ -196,7 +197,7 @@ class SyncClientTest : public testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
   scoped_ptr<SyncClientTestDriveService> drive_service_;

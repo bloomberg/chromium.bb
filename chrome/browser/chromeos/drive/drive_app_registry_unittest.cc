@@ -5,11 +5,12 @@
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 
 #include "base/files/file_path.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,12 +19,13 @@ namespace drive {
 class DriveAppRegistryTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
+    pref_service_.reset(new TestingPrefServiceSimple);
+    test_util::RegisterDrivePrefs(pref_service_->registry());
 
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    scheduler_.reset(new JobScheduler(profile_.get(),
+    scheduler_.reset(new JobScheduler(pref_service_.get(),
                                       fake_drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
 
@@ -57,7 +59,7 @@ class DriveAppRegistryTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveAppRegistry> web_apps_registry_;

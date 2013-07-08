@@ -36,7 +36,6 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -72,14 +71,14 @@ void GetFileCallbackToFileOperationCallbackAdapter(
 }  // namespace
 
 FileSystem::FileSystem(
-    Profile* profile,
+    PrefService* pref_service,
     internal::FileCache* cache,
     DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     internal::ResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner,
     const base::FilePath& temporary_file_directory)
-    : profile_(profile),
+    : pref_service_(pref_service),
       cache_(cache),
       drive_service_(drive_service),
       scheduler_(scheduler),
@@ -168,8 +167,8 @@ void FileSystem::Initialize() {
                                               cache_,
                                               temporary_file_directory_));
 
-  PrefService* pref_service = profile_->GetPrefs();
-  hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
+  hide_hosted_docs_ =
+      pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles);
 
   InitializePreferenceObserver();
 }
@@ -900,9 +899,8 @@ void FileSystem::GetCacheEntryByResourceId(
 
 void FileSystem::OnDisableDriveHostedFilesChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrefService* pref_service = profile_->GetPrefs();
   SetHideHostedDocuments(
-      pref_service->GetBoolean(prefs::kDisableDriveHostedFiles));
+      pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles));
 }
 
 void FileSystem::SetHideHostedDocuments(bool hide) {
@@ -924,7 +922,7 @@ void FileSystem::InitializePreferenceObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   pref_registrar_.reset(new PrefChangeRegistrar());
-  pref_registrar_->Init(profile_->GetPrefs());
+  pref_registrar_->Init(pref_service_);
   pref_registrar_->Add(
       prefs::kDisableDriveHostedFiles,
       base::Bind(&FileSystem::OnDisableDriveHostedFilesChanged,

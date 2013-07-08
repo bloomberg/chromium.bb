@@ -17,7 +17,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class PrefChangeRegistrar;
-class Profile;
+class PrefService;
 
 namespace base {
 struct PlatformFileInfo;
@@ -62,7 +62,7 @@ class FileSystem : public FileSystemInterface,
                    public internal::ChangeListLoaderObserver,
                    public file_system::OperationObserver {
  public:
-  FileSystem(Profile* profile,
+  FileSystem(PrefService* pref_service,
              internal::FileCache* cache,
              DriveServiceInterface* drive_service,
              JobScheduler* scheduler,
@@ -335,8 +335,8 @@ class FileSystem : public FileSystemInterface,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
 
-  // The profile hosts the FileSystem via DriveIntegrationService.
-  Profile* profile_;
+  // Used to get Drive related preferences.
+  PrefService* pref_service_;
 
   // Sub components owned by DriveIntegrationService.
   internal::FileCache* cache_;

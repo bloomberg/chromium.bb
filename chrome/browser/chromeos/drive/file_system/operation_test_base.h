@@ -14,7 +14,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TestingProfile;
+class TestingPrefServiceSimple;
 
 namespace base {
 class SequencedTaskRunner;
@@ -98,7 +98,7 @@ class OperationTestBase : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   base::ScopedTempDir temp_dir_;
 
   LoggingObserver observer_;

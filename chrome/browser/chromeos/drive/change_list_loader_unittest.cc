@@ -6,6 +6,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +70,8 @@ class ChangeListLoaderTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    profile_.reset(new TestingProfile);
+    pref_service_.reset(new TestingPrefServiceSimple);
+    test_util::RegisterDrivePrefs(pref_service_->registry());
 
     drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(drive_service_->LoadResourceListForWapi(
@@ -78,7 +79,7 @@ class ChangeListLoaderTest : public testing::Test {
     ASSERT_TRUE(drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json"));
 
-    scheduler_.reset(new JobScheduler(profile_.get(),
+    scheduler_.reset(new JobScheduler(pref_service_.get(),
                                       drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
     metadata_storage_.reset(new ResourceMetadataStorage(
@@ -103,7 +104,7 @@ class ChangeListLoaderTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<FakeDriveService> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<ResourceMetadataStorage,

@@ -9,7 +9,10 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/common/pref_names.h"
 
 namespace drive {
 
@@ -121,6 +124,18 @@ bool PrepareTestCacheResources(
     }
   }
   return true;
+}
+
+void RegisterDrivePrefs(PrefRegistrySimple* pref_registry) {
+  pref_registry->RegisterBooleanPref(
+      prefs::kDisableDrive,
+      false);
+  pref_registry->RegisterBooleanPref(
+      prefs::kDisableDriveOverCellular,
+      true);
+  pref_registry->RegisterBooleanPref(
+      prefs::kDisableDriveHostedFiles,
+      false);
 }
 
 FakeNetworkChangeNotifier::FakeNetworkChangeNotifier()

@@ -15,6 +15,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 
+class PrefRegistrySimple;
+
 namespace net {
 class IOBuffer;
 }  // namespace net
@@ -81,6 +83,11 @@ int ReadAllData(Reader* reader, std::string* content) {
 bool PrepareTestCacheResources(
     internal::FileCache* cache,
     const std::vector<TestCacheResource>& resources);
+
+// Registers Drive related preferences in |pref_registry|. Drive related
+// preferences should be registered as TestingPrefServiceSimple will crash if
+// unregistered prefrence is referenced.
+void RegisterDrivePrefs(PrefRegistrySimple* pref_registry);
 
 // Fake NetworkChangeNotifier implementation.
 class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {

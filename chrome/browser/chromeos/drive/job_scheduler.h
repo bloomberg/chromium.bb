@@ -17,7 +17,7 @@
 #include "chrome/browser/drive/drive_uploader.h"
 #include "net/base/network_change_notifier.h"
 
-class Profile;
+class PrefService;
 
 namespace base {
 class SeqencedTaskRunner;
@@ -51,7 +51,7 @@ class JobScheduler
     : public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public JobListInterface {
  public:
-  JobScheduler(Profile* profile,
+  JobScheduler(PrefService* pref_service,
                DriveServiceInterface* drive_service,
                base::SequencedTaskRunner* blocking_task_runner);
   virtual ~JobScheduler();
@@ -347,7 +347,7 @@ class JobScheduler
   DriveServiceInterface* drive_service_;
   scoped_ptr<DriveUploaderInterface> uploader_;
 
-  Profile* profile_;
+  PrefService* pref_service_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

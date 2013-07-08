@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -142,14 +141,14 @@ struct JobScheduler::ResumeUploadParams {
 };
 
 JobScheduler::JobScheduler(
-    Profile* profile,
+    PrefService* pref_service,
     DriveServiceInterface* drive_service,
     base::SequencedTaskRunner* blocking_task_runner)
     : throttle_count_(0),
       disable_throttling_(false),
       drive_service_(drive_service),
       uploader_(new DriveUploader(drive_service, blocking_task_runner)),
-      profile_(profile),
+      pref_service_(pref_service),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -742,7 +741,7 @@ int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
   const int kNoJobShouldRun = -1;
 
   // Should stop if Drive was disabled while running the fetch loop.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDrive))
+  if (pref_service_->GetBoolean(prefs::kDisableDrive))
     return kNoJobShouldRun;
 
   // Should stop if the network is not online.
@@ -752,7 +751,7 @@ int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
   // For the file queue, if it is on cellular network, only user initiated
   // operations are allowed to start.
   if (queue_type == FILE_QUEUE &&
-      profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
+      pref_service_->GetBoolean(prefs::kDisableDriveOverCellular) &&
       net::NetworkChangeNotifier::IsConnectionCellular(
           net::NetworkChangeNotifier::GetConnectionType()))
     return USER_INITIATED;
