@@ -19,3 +19,5 @@
      e:	a0 44 33 22 11                               	mov    0x11223344,%al
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

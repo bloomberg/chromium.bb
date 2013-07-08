@@ -434,8 +434,6 @@ def _ProcessOperandWrites(instruction, write_operands, zero_extending=False):
   """
   postcondition = Condition()
   for op in write_operands:
-    # TODO(shcherbina): disallow writes to
-    #   cs, ds, es, fs, gs
     if op in ['%r15', '%r15d', '%r15w', '%r15b']:
       raise SandboxingError('changes to r15 are not allowed', instruction)
     if op in ['%bpl', '%bp', '%rbp']:
@@ -526,10 +524,15 @@ def ValidateRegularInstruction(instruction, bitness):
     raise SandboxingError('addr prefixes are not allowed', instruction)
 
   for op in ops:
+    if op in ['%cs', '%ds', '%es', '%ss', '%fs', '%gs']:
+      raise SandboxingError(
+          'access to segment registers is not allowed', instruction)
+
     m = re.match(_MemoryRE() + r'$', op)
     if m is not None and m.group('memory_segment') is not None:
       raise SandboxingError(
           'segments in memory references are not allowed', instruction)
+
 
   if bitness == 32:
     if _InstructionNameIn(
@@ -538,11 +541,12 @@ def ValidateRegularInstruction(instruction, bitness):
          'add', 'sub', 'and', 'or', 'xor',
          'xchg', 'xadd',
          'inc', 'dec', 'neg', 'not',
+         'pop',
          'lea',
          'adc', 'bsf', 'bsr', 'lzcnt',
          'btc', 'btr', 'bts', 'bt',
          'cmp',
-         'imul', 'mul', 'div', 'idiv',
+         'imul', 'mul', 'div', 'idiv', 'push',
         ]):
       return Condition(), Condition()
 
@@ -596,6 +600,10 @@ def ValidateRegularInstruction(instruction, bitness):
     elif _InstructionNameIn(name, ['inc', 'dec', 'neg', 'not']):
       assert len(ops) == 1
       zero_extending = True
+      write_ops = ops
+
+    elif _InstructionNameIn(name, ['pop']):
+      assert len(ops) == 1
       write_ops = ops
 
     elif name == 'lea':
@@ -667,7 +675,7 @@ def ValidateRegularInstruction(instruction, bitness):
       else:
         assert False
 
-    elif _InstructionNameIn(name, ['mul', 'div', 'idiv']):
+    elif _InstructionNameIn(name, ['mul', 'div', 'idiv', 'push']):
       assert len(ops) == 1
       write_ops = []
 

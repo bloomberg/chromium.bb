@@ -378,15 +378,10 @@
 ----------------------------------------------------------------------
 @hex:
   # Read-only access to special registers is allowed.
-  # push %rax
   50
-  # push %rbp
   55
-  # push %rsp
   54
-  # push %r15
   41 57
-  # mov %rsp, %rax
   48 89 e0
 @dis:
      0:	50                                           	push   %rax
@@ -396,42 +391,49 @@
      5:	48 89 e0                                     	mov    %rsp,%rax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
-  # Write access to special registers is not allowed.
-  # pop %rax
+  # Write access to regular registers is allowed.
   58
 @dis:
      0:	58                                           	pop    %rax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
-  # pop %rbp
+  # Write access to special registers is not allowed.
   5d
 @dis:
      0:	5d                                           	pop    %rbp
 @rdfa_output:
   0: [0] error - %bpl or %bp is changed
   return code: 1
+@spec:
+  0: ('changes to rbp are not allowed', Instruction(0x0: 5d  pop %rbp))
 ----------------------------------------------------------------------
 @hex:
-  # pop %rsp
   5c
 @dis:
      0:	5c                                           	pop    %rsp
 @rdfa_output:
   0: [0] error - %spl or %sp is changed
   return code: 1
+@spec:
+  0: ('changes to rsp are not allowed', Instruction(0x0: 5c  pop %rsp))
 ----------------------------------------------------------------------
 @hex:
-  # pop %r15
   41 5f
 @dis:
      0:	41 5f                                        	pop    %r15
 @rdfa_output:
   0: [0] error - %r15 is changed
   return code: 1
+@spec:
+  0: ('changes to r15 are not allowed', Instruction(0x0: 41 5f  pop %r15))
 ----------------------------------------------------------------------
 @hex:
   # Memory accesses.
@@ -736,19 +738,21 @@
 ----------------------------------------------------------------------
 @hex:
   # Segment register manipulations are forbidden
-  # mov %rax, %es
   48 8e c0
 @dis:
      0:	48 8e c0                                     	mov    %rax,%es
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('access to segment registers is not allowed', Instruction(0x0: 48 8e c0  mov %rax,%es))
 ----------------------------------------------------------------------
 @hex:
-  # mov %es, %rax
   48 8c c0
 @dis:
      0:	48 8c c0                                     	mov    %es,%rax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('access to segment registers is not allowed', Instruction(0x0: 48 8c c0  mov %es,%rax))

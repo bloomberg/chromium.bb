@@ -1,8 +1,0 @@
-@hex:
-  # Example of assigning a value to a segment register, which should be illegal.
-  8e 00
-@dis:
-     0:	8e 00                                        	mov    (%rax),%es
-@rdfa_output:
-  0: [0] unrecognized instruction
-  return code: 1
