@@ -101,6 +101,20 @@ public class AwContents {
         void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
 
         /**
+         * @see View#overScrollBy(int, int, int, int, int, int, int, int, boolean);
+         */
+        void overScrollBy(int deltaX, int deltaY,
+                int scrollX, int scrollY,
+                int scrollRangeX, int scrollRangeY,
+                int maxOverScrollX, int maxOverScrollY,
+                boolean isTouchEvent);
+
+        /**
+         * @see View#scrollTo(int, int)
+         */
+        void super_scrollTo(int scrollX, int scrollY);
+
+        /**
          * @see View#setMeasuredDimension(int, int)
          */
         void setMeasuredDimension(int measuredWidth, int measuredHeight);
@@ -309,11 +323,27 @@ public class AwContents {
     }
 
     //--------------------------------------------------------------------------------------------
+    // NOTE: This content size change notification comes from the compositor and reflects the size
+    // of the content on screen (but not neccessarily in the renderer main thread).
+    private class AwContentSizeChangeListener implements ContentViewCore.ContentSizeChangeListener {
+        @Override
+        public void onContentSizeChanged(int widthPix, int heightPix) {
+            mScrollOffsetManager.setContentSize(widthPix, heightPix);
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------
     private class AwScrollOffsetManagerDelegate implements AwScrollOffsetManager.Delegate {
         @Override
-        public boolean scrollContainerViewTo(int x, int y) {
-            mContainerView.scrollTo(x, y);
-            return (x == mContainerView.getScrollX() && y == mContainerView.getScrollY());
+        public void overScrollContainerViewBy(int deltaX, int deltaY, int scrollX, int scrollY,
+                int scrollRangeX, int scrollRangeY) {
+            mInternalAccessAdapter.overScrollBy(deltaX, deltaY, scrollX, scrollY,
+                    scrollRangeX, scrollRangeY, 0, 0, true);
+        }
+
+        @Override
+        public void scrollContainerViewTo(int x, int y) {
+            mInternalAccessAdapter.super_scrollTo(x, y);
         }
 
         @Override
@@ -474,6 +504,7 @@ public class AwContents {
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
         mContentsClient.installWebContentsObserver(mContentViewCore);
+        mContentViewCore.setContentSizeChangeListener(new AwContentSizeChangeListener());
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
    }
@@ -588,6 +619,8 @@ public class AwContents {
     public void onDraw(Canvas canvas) {
         if (mNativeAwContents == 0) return;
 
+        mScrollOffsetManager.syncScrollOffsetFromOnDraw();
+
         canvas.getClipBounds(mClipBoundsTemporary);
         if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
                     mContainerView.getScrollX(), mContainerView.getScrollY(),
@@ -613,9 +646,19 @@ public class AwContents {
 
     /**
      * Called by the embedder when the scroll offset of the containing view has changed.
+     * @see View#onScrollChanged(int,int)
      */
     public void onContainerViewScrollChanged(int l, int t, int oldl, int oldt) {
         mScrollOffsetManager.onContainerViewScrollChanged(l, t);
+    }
+
+    /**
+     * Called by the embedder when the containing view is to be scrolled or overscrolled.
+     * @see View#onOverScrolled(int,int,int,int)
+     */
+    public void onContainerViewOverScrolled(int scrollX, int scrollY, boolean clampedX,
+            boolean clampedY) {
+        mScrollOffsetManager.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
     }
 
     public Picture capturePicture() {
@@ -758,38 +801,38 @@ public class AwContents {
     }
 
     /**
-     * @see ContentViewCore#computeHorizontalScrollRange()
+     * @see View#computeHorizontalScrollRange()
      */
     public int computeHorizontalScrollRange() {
-        return mContentViewCore.computeHorizontalScrollRange();
+        return mScrollOffsetManager.computeHorizontalScrollRange();
     }
 
     /**
-     * @see ContentViewCore#computeHorizontalScrollOffset()
+     * @see View#computeHorizontalScrollOffset()
      */
     public int computeHorizontalScrollOffset() {
-        return mContentViewCore.computeHorizontalScrollOffset();
+        return mScrollOffsetManager.computeHorizontalScrollOffset();
     }
 
     /**
-     * @see ContentViewCore#computeVerticalScrollRange()
+     * @see View#computeVerticalScrollRange()
      */
     public int computeVerticalScrollRange() {
-        return mContentViewCore.computeVerticalScrollRange();
+        return mScrollOffsetManager.computeVerticalScrollRange();
     }
 
     /**
-     * @see ContentViewCore#computeVerticalScrollOffset()
+     * @see View#computeVerticalScrollOffset()
      */
     public int computeVerticalScrollOffset() {
-        return mContentViewCore.computeVerticalScrollOffset();
+        return mScrollOffsetManager.computeVerticalScrollOffset();
     }
 
     /**
-     * @see ContentViewCore#computeVerticalScrollExtent()
+     * @see View#computeVerticalScrollExtent()
      */
     public int computeVerticalScrollExtent() {
-        return mContentViewCore.computeVerticalScrollExtent();
+        return mScrollOffsetManager.computeVerticalScrollExtent();
     }
 
     /**
@@ -1214,6 +1257,7 @@ public class AwContents {
      */
     public void onSizeChanged(int w, int h, int ow, int oh) {
         if (mNativeAwContents == 0) return;
+        mScrollOffsetManager.setContainerViewSize(w, h);
         updatePhysicalBackingSizeIfNeeded();
         mContentViewCore.onSizeChanged(w, h, ow, oh);
         nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
@@ -1501,6 +1545,11 @@ public class AwContents {
     private void setAwAutofillManagerDelegate(AwAutofillManagerDelegate delegate) {
         mAwAutofillManagerDelegate = delegate;
         delegate.init(mContentViewCore, mDIPScale);
+    }
+
+    @CalledByNative
+    private void didOverscroll(int deltaX, int deltaY) {
+        mScrollOffsetManager.overscrollBy(deltaX, deltaY);
     }
 
     // -------------------------------------------------------------------------------------------

@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class AwTestBase
         extends ActivityInstrumentationTestCase2<AwTestRunnerActivity> {
-    protected final static int WAIT_TIMEOUT_SECONDS = 15;
-    private static final int CHECK_INTERVAL = 100;
+    protected static final int WAIT_TIMEOUT_SECONDS = 15;
+    protected static final int CHECK_INTERVAL = 100;
 
     public AwTestBase() {
         super(AwTestRunnerActivity.class);

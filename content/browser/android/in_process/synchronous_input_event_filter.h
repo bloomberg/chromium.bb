@@ -38,7 +38,7 @@ class SynchronousInputEventFilter : public InputHandlerManagerClient {
   virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
   virtual void DidOverscroll(int routing_id,
                              gfx::Vector2dF accumulated_overscroll,
-                             gfx::Vector2dF current_fling_velocity) OVERRIDE {}
+                             gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
  private:
   void SetBoundHandlerOnUIThread(const Handler& handler);

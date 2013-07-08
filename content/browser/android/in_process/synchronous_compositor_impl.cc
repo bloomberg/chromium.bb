@@ -194,6 +194,15 @@ void SynchronousCompositorImpl::SetInputHandler(
     input_handler_->SetRootLayerScrollOffsetDelegate(this);
 }
 
+void SynchronousCompositorImpl::DidOverscroll(
+    gfx::Vector2dF accumulated_overscroll,
+    gfx::Vector2dF current_fling_velocity) {
+  if (compositor_client_) {
+    compositor_client_->DidOverscroll(accumulated_overscroll,
+                                      current_fling_velocity);
+  }
+}
+
 void SynchronousCompositorImpl::SetContinuousInvalidate(bool enable) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)

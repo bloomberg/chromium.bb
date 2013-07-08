@@ -43,6 +43,9 @@ class BrowserViewRenderer {
     // Try to set the view's scroll offset to |new_value|.
     virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
 
+    // Handle overscroll.
+    virtual void DidOverscroll(gfx::Vector2d overscroll_delta) = 0;
+
    protected:
     virtual ~Client() {}
   };

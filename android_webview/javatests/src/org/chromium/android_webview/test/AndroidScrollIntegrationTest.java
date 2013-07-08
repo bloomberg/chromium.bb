@@ -19,6 +19,8 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,14 +29,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Integration tests for synchronous scrolling.
  */
 public class AndroidScrollIntegrationTest extends AwTestBase {
+    private static final int SCROLL_OFFSET_PROPAGATION_TIMEOUT_MS = 6 * 1000;
 
-    public static final int SCROLL_OFFSET_PROPAGATION_TIMEOUT_MS = 6 * 1000;
+    private static class OverScrollByCallbackHelper extends CallbackHelper {
+        int mDeltaX;
+        int mDeltaY;
+
+        public int getDeltaX() {
+            assert getCallCount() > 0;
+            return mDeltaX;
+        }
+
+        public int getDeltaY() {
+            assert getCallCount() > 0;
+            return mDeltaY;
+        }
+
+        public void notifyCalled(int deltaX, int deltaY) {
+            mDeltaX = deltaX;
+            mDeltaY = deltaY;
+            notifyCalled();
+        }
+    }
 
     private static class ScrollTestContainerView extends AwTestContainerView {
         private int mMaxScrollXPix = -1;
         private int mMaxScrollYPix = -1;
 
         private CallbackHelper mOnScrollToCallbackHelper = new CallbackHelper();
+        private OverScrollByCallbackHelper mOverScrollByCallbackHelper =
+            new OverScrollByCallbackHelper();
 
         public ScrollTestContainerView(Context context) {
             super(context);
@@ -44,12 +68,25 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             return mOnScrollToCallbackHelper;
         }
 
+        public OverScrollByCallbackHelper getOverScrollByCallbackHelper() {
+            return mOverScrollByCallbackHelper;
+        }
+
         public void setMaxScrollX(int maxScrollXPix) {
             mMaxScrollXPix = maxScrollXPix;
         }
 
         public void setMaxScrollY(int maxScrollYPix) {
             mMaxScrollYPix = maxScrollYPix;
+        }
+
+        @Override
+        protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY,
+                     int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY,
+                     boolean isTouchEvent) {
+            mOverScrollByCallbackHelper.notifyCalled(deltaX, deltaY);
+            return super.overScrollBy(deltaX, deltaY, scrollX, scrollY,
+                     scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
         }
 
         @Override
@@ -154,12 +191,29 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         });
     }
 
-    private void assertScrollInJs(AwContents awContents, TestAwContentsClient contentsClient,
-            int xCss, int yCss) throws Exception {
+    private void assertScrollInJs(final AwContents awContents,
+            final TestAwContentsClient contentsClient,
+            final int xCss, final int yCss) throws Exception {
         String x = executeJavaScriptAndWaitForResult(awContents, contentsClient, "window.scrollX");
         String y = executeJavaScriptAndWaitForResult(awContents, contentsClient, "window.scrollY");
-        assertEquals(Integer.toString(xCss), x);
-        assertEquals(Integer.toString(yCss), y);
+
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        String x = executeJavaScriptAndWaitForResult(awContents, contentsClient,
+                            "window.scrollX");
+                        String y = executeJavaScriptAndWaitForResult(awContents, contentsClient,
+                            "window.scrollY");
+                        return (Integer.toString(xCss).equals(x) &&
+                            Integer.toString(yCss).equals(y));
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        fail("Failed to get window.scroll(X/Y): " + t.toString());
+                        return false;
+                    }
+                }
+            }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
     }
 
     private void loadTestPageAndWaitForFirstFrame(final ScrollTestContainerView testContainerView,
@@ -177,10 +231,6 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             }
         });
 
-        // After page load the view's scroll offset will be reset back to (0, 0) at least once. We
-        // set the initial scroll offset to something different so we can observe that.
-        scrollToOnMainSync(testContainerView, 10, 10);
-
         loadDataSync(testContainerView.getAwContents(), contentsClient.getOnPageFinishedHelper(),
                 makeTestPage(onscrollObserverName, firstFrameObserverName), "text/html", false);
 
@@ -189,8 +239,6 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         // doesn't strictly guarantee that but there isn't a good alternative and this seems to
         // work fine.
         firstFrameObserver.waitForEvent(WAIT_TIMEOUT_SECONDS * 1000);
-        // This is just to double-check that the animation frame waiting code didn't exit too soon.
-        assertScrollOnMainSync(testContainerView, 0, 0);
     }
 
     @SmallTest
@@ -338,5 +386,64 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         assertScrollOnMainSync(testContainerView, maxScrollXPix, maxScrollYPix);
         assertScrollInJs(testContainerView.getAwContents(), contentsClient,
                 maxScrollXCss, maxScrollYCss);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOverScrollX() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+            (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        final OverScrollByCallbackHelper overScrollByCallbackHelper =
+            testContainerView.getOverScrollByCallbackHelper();
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        final int overScrollDeltaX = 30;
+        final int oneStep = 1;
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null);
+
+        // Scroll separately in different dimensions because of vertical/horizontal scroll
+        // snap.
+        final int overScrollCallCount = overScrollByCallbackHelper.getCallCount();
+        AwTestTouchUtils.dragCompleteView(testContainerView,
+                0, overScrollDeltaX,
+                0, 0,
+                oneStep);
+        overScrollByCallbackHelper.waitForCallback(overScrollCallCount);
+        // Unfortunately the gesture detector seems to 'eat' some number of pixels. For now
+        // checking that the value is < 0 (overscroll is reported as negative values) will have to
+        // do.
+        assertTrue(0 > overScrollByCallbackHelper.getDeltaX());
+        assertEquals(0, overScrollByCallbackHelper.getDeltaY());
+
+        assertScrollOnMainSync(testContainerView, 0, 0);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOverScrollY() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+            (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        final OverScrollByCallbackHelper overScrollByCallbackHelper =
+            testContainerView.getOverScrollByCallbackHelper();
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        final int overScrollDeltaY = 30;
+        final int oneStep = 1;
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null);
+
+        int overScrollCallCount = overScrollByCallbackHelper.getCallCount();
+        AwTestTouchUtils.dragCompleteView(testContainerView,
+                0, 0,
+                0, overScrollDeltaY,
+                oneStep);
+        overScrollByCallbackHelper.waitForCallback(overScrollCallCount);
+        assertEquals(0, overScrollByCallbackHelper.getDeltaX());
+        assertTrue(0 > overScrollByCallbackHelper.getDeltaY());
+
+        assertScrollOnMainSync(testContainerView, 0, 0);
     }
 }

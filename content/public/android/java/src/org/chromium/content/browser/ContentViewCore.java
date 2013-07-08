@@ -210,6 +210,18 @@ import java.util.Map;
         void updateZoomControls();
     }
 
+    /**
+     * An interface that allows the embedder to be notified when the content size changes.
+     * These notifications are consistent with respect to the UI thread (the size is the size of
+     * the contents currently displayed on screen).
+     */
+    public interface ContentSizeChangeListener {
+        /**
+         * Called when the content size changes.
+         */
+        void onContentSizeChanged(int widthPix, int heightPix);
+    }
+
     private VSyncManager.Provider mVSyncProvider;
     private VSyncManager.Listener mVSyncListener;
     private int mVSyncSubscriberCount;
@@ -315,6 +327,7 @@ import java.util.Map;
 
     private ContentViewGestureHandler mContentViewGestureHandler;
     private PinchGestureStateListener mPinchGestureStateListener;
+    private ContentSizeChangeListener mContentSizeChangeListener;
     private ZoomManager mZoomManager;
     private ZoomControlsDelegate mZoomControlsDelegate;
 
@@ -2144,6 +2157,10 @@ import java.util.Map;
         if (mNativeContentViewCore != 0) nativeShowImeIfNeeded(mNativeContentViewCore);
     }
 
+    public void setContentSizeChangeListener(ContentSizeChangeListener contentSizeChangeListener) {
+        mContentSizeChangeListener = contentSizeChangeListener;
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private void updateFrameInfo(
@@ -2198,6 +2215,12 @@ import java.util.Map;
                 viewportWidth, viewportHeight,
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
                 contentOffsetYPix);
+
+        if (contentSizeChanged && mContentSizeChangeListener != null) {
+            mContentSizeChangeListener.onContentSizeChanged(
+                    mRenderCoordinates.getContentWidthPixInt(),
+                    mRenderCoordinates.getContentHeightPixInt());
+        }
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
         if (needUpdateZoomControls) mZoomControlsDelegate.updateZoomControls();

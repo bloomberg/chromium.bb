@@ -701,6 +701,15 @@ void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
 }
 
 
+void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AwContents_didOverscroll(
+      env, obj.obj(), overscroll_delta.x(), overscroll_delta.y());
+}
+
 void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dipScale) {
   browser_view_renderer_->SetDipScale(dipScale);
 }

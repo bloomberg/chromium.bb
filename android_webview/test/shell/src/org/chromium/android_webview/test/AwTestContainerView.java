@@ -32,6 +32,7 @@ public class AwTestContainerView extends FrameLayout {
     public AwTestContainerView(Context context) {
         super(context);
         mInternalAccessDelegate = new InternalAccessAdapter();
+        setOverScrollMode(View.OVER_SCROLL_ALWAYS);
     }
 
     public void initialize(AwContents awContents) {
@@ -105,6 +106,11 @@ public class AwTestContainerView extends FrameLayout {
     }
 
     @Override
+    public void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+        mAwContents.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
+    }
+
+    @Override
     public void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
         if (mAwContents != null) {
@@ -168,6 +174,23 @@ public class AwTestContainerView extends FrameLayout {
         @Override
         public void super_onConfigurationChanged(Configuration newConfig) {
             AwTestContainerView.super.onConfigurationChanged(newConfig);
+        }
+
+        @Override
+        public void super_scrollTo(int scrollX, int scrollY) {
+            // We're intentionally not calling super.scrollTo here to make testing easier.
+            AwTestContainerView.this.scrollTo(scrollX, scrollY);
+        }
+
+        @Override
+        public void overScrollBy(int deltaX, int deltaY,
+                int scrollX, int scrollY,
+                int scrollRangeX, int scrollRangeY,
+                int maxOverScrollX, int maxOverScrollY,
+                boolean isTouchEvent) {
+            // We're intentionally not calling super.scrollTo here to make testing easier.
+            AwTestContainerView.this.overScrollBy(deltaX, deltaY, scrollX, scrollY,
+                     scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
         }
 
         @Override

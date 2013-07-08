@@ -64,4 +64,16 @@ void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {
     compositor->SetInputHandler(NULL);
 }
 
+void SynchronousInputEventFilter::DidOverscroll(
+    int routing_id,
+    gfx::Vector2dF accumulated_overscroll,
+    gfx::Vector2dF current_fling_velocity) {
+  // The SynchronusCompositorImpl can be NULL if the WebContents that it's
+  // bound to has already been deleted.
+  SynchronousCompositorImpl* compositor =
+      SynchronousCompositorImpl::FromRoutingID(routing_id);
+  if (compositor)
+    compositor->DidOverscroll(accumulated_overscroll, current_fling_velocity);
+}
+
 }  // namespace content

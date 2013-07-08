@@ -27,6 +27,8 @@ class SynchronousCompositorClient {
   // See LayerScrollOffsetDelegate for details.
   virtual void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value) = 0;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() = 0;
+  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                             gfx::Vector2dF current_fling_velocity) = 0;
 
   // When true, should periodically call
   // SynchronousCompositorOutputSurface::DemandDrawHw. Note that this value
