@@ -14,7 +14,11 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory_details.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_handler.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -168,7 +172,14 @@ void MemoryInternalsProxy::OnV8MemoryUpdate(const base::ProcessId pid,
 
 void MemoryInternalsProxy::RequestV8MemoryUpdate() {
   renderer_details_->Clear();
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  for (TabModelList::const_iterator iter = TabModelList::begin();
+       iter != TabModelList::end(); ++iter) {
+    TabModel* model = *iter;
+    for (int i = 0; i < model->GetTabCount(); ++i)
+      renderer_details_->AddWebContents(model->GetWebContentsAt(i));
+  }
+#else
   for (TabContentsIterator iter; !iter.done(); iter.Next())
     renderer_details_->AddWebContents(*iter);
 #endif
