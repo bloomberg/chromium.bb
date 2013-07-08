@@ -43,7 +43,6 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/text/TextCheckerClient.h"
-#include "modules/device_orientation/DeviceMotionClient.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/Forward.h"
 
@@ -369,13 +368,6 @@ class EmptyDeviceClient : public DeviceClient {
 public:
     virtual void startUpdating() OVERRIDE { }
     virtual void stopUpdating() OVERRIDE { }
-};
-
-class EmptyDeviceMotionClient : public DeviceMotionClient {
-public:
-    virtual void setController(DeviceMotionController*) OVERRIDE { }
-    virtual DeviceMotionData* lastMotion() const OVERRIDE { return 0; }
-    virtual void deviceMotionControllerDestroyed() OVERRIDE { }
 };
 
 class EmptyDeviceOrientationClient : public DeviceOrientationClient {

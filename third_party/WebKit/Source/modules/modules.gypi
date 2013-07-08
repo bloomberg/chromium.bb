@@ -222,7 +222,6 @@
       'crypto/WorkerGlobalScopeCrypto.h',
       'device_orientation/DeviceAcceleration.cpp',
       'device_orientation/DeviceAcceleration.h',
-      'device_orientation/DeviceMotionClient.h',
       'device_orientation/DeviceMotionController.cpp',
       'device_orientation/DeviceMotionController.h',
       'device_orientation/DeviceMotionData.cpp',
