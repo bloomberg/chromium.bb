@@ -698,13 +698,26 @@ cr.define('options', function() {
      * @private
      */
     updateSyncState_: function(syncData) {
-      if (!syncData.signinAllowed) {
+      if (!syncData.signinAllowed && !syncData.supervisedUser) {
         $('sync-section').hidden = true;
         return;
       }
 
       $('sync-section').hidden = false;
 
+      var subSection = $('sync-section').firstChild;
+      while (subSection) {
+        if (subSection.nodeType == Node.ELEMENT_NODE)
+          subSection.hidden = syncData.supervisedUser;
+        subSection = subSection.nextSibling;
+      }
+
+      if (syncData.supervisedUser) {
+        $('account-picture-wrapper').hidden = false;
+        $('sync-general').hidden = false;
+        $('sync-status').hidden = true;
+        return;
+      }
       // If the user gets signed out or if sync gets disabled while the advanced
       // sync settings dialog is visible, say, due to a dashboard clear, close
       // the dialog.

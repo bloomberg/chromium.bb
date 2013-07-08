@@ -1346,12 +1346,18 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
 scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
   scoped_ptr<DictionaryValue> sync_status(new DictionaryValue);
   Profile* profile = Profile::FromWebUI(web_ui());
+  if (ManagedUserService::ProfileIsManaged(profile)) {
+    sync_status->SetBoolean("supervisedUser", true);
+    sync_status->SetBoolean("signinAllowed", false);
+    return sync_status.Pass();
+  }
   if (profile->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos
     // because there is no SigninManager.
     sync_status->SetBoolean("signinAllowed", false);
     return sync_status.Pass();
   }
+  sync_status->SetBoolean("supervisedUser", false);
 
   bool signout_prohibited = false;
 #if !defined(OS_CHROMEOS)
