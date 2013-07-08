@@ -7,6 +7,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   e1 ff
@@ -15,6 +17,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: jump into a middle of instruction (0x1)
 ----------------------------------------------------------------------
 @hex:
   # But even if they were allowed, they should not accept branch prefixes.
@@ -24,3 +28,5 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('branch hints are not allowed with loop instruction', Instruction(0x0: 3e e1 00  loope,pt 0x3))

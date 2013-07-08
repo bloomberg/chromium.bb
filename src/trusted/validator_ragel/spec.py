@@ -707,9 +707,14 @@ def ValidateRegularInstruction(instruction, bitness):
 def ValidateDirectJump(instruction):
   cond_jumps_re = re.compile(
       r'(data16 )?'
-      r'j%s %s$' % (_CONDITION_SUFFIX_RE, _HexRE('destination')))
+      r'(?P<name>j%s|loop(n?)e)(?P<branch_hint>,p[nt])? %s$'
+      % (_CONDITION_SUFFIX_RE, _HexRE('destination')))
   m = cond_jumps_re.match(instruction.disasm)
   if m is not None:
+    if (m.group('name').startswith('loop') and
+        m.group('branch_hint') is not None):
+      raise SandboxingError(
+          'branch hints are not allowed with loop instruction', instruction)
     # Unfortunately we can't rely on presence of 'data16' prefix in disassembly,
     # because nacl-objdump prints it, but objdump we base our decoder on
     # does not.

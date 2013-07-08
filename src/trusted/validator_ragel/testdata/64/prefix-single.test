@@ -39,6 +39,8 @@
      3:	3e 74 00                                     	je,pt  0x6
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Forbidden prefixes.
