@@ -1368,17 +1368,21 @@ void FakeDriveService::GetResourceListInternal(
     int* load_counter,
     const GetResourceListCallback& callback) {
   if (offline_) {
-    scoped_ptr<ResourceList> null;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
                    GDATA_NO_CONNECTION,
-                   base::Passed(&null)));
+                   base::Passed(scoped_ptr<ResourceList>())));
     return;
   }
 
   scoped_ptr<ResourceList> resource_list =
       ResourceList::CreateFrom(*resource_list_value_);
+
+  // TODO(hashimoto): Drive API always provides largest changestamp. Remove this
+  // if-statement after API switch.
+  if (start_changestamp > 0 && start_offset == 0)
+    resource_list->set_largest_changestamp(largest_changestamp_);
 
   // Filter out entries per parameters like |directory_resource_id| and
   // |search_query|.
@@ -1476,9 +1480,7 @@ void FakeDriveService::GetResourceListInternal(
     *load_counter += 1;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback,
-                 HTTP_SUCCESS,
-                 base::Passed(&resource_list)));
+      base::Bind(callback, HTTP_SUCCESS, base::Passed(&resource_list)));
 }
 
 GURL FakeDriveService::GetNewUploadSessionUrl() {

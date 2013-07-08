@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
@@ -148,6 +149,84 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded) {
   EXPECT_EQ(previous_changestamp, metadata_->GetLargestChangestamp());
   EXPECT_EQ(previous_resource_list_load_count,
             drive_service_->resource_list_load_count());
+}
+
+TEST_F(ChangeListLoaderTest, CheckForUpdates) {
+  // CheckForUpdates() results in no-op before load.
+  FileError check_for_updates_error = FILE_ERROR_FAILED;
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(
+          &check_for_updates_error));
+  EXPECT_FALSE(change_list_loader_->IsRefreshing());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_FAILED,
+            check_for_updates_error);  // Callback was not run.
+  EXPECT_EQ(0, metadata_->GetLargestChangestamp());
+  EXPECT_EQ(0, drive_service_->resource_list_load_count());
+
+  // Start initial load.
+  FileError load_error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(),
+      google_apis::test_util::CreateCopyResultCallback(&load_error));
+  EXPECT_TRUE(change_list_loader_->IsRefreshing());
+
+  // CheckForUpdates() while loading.
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(
+          &check_for_updates_error));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(change_list_loader_->IsRefreshing());
+  EXPECT_EQ(FILE_ERROR_OK, load_error);
+  EXPECT_EQ(FILE_ERROR_OK, check_for_updates_error);
+  EXPECT_LT(0, metadata_->GetLargestChangestamp());
+  EXPECT_EQ(1, drive_service_->resource_list_load_count());
+
+  int64 previous_changestamp = metadata_->GetLargestChangestamp();
+  // CheckForUpdates() results in no update.
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(
+          &check_for_updates_error));
+  EXPECT_TRUE(change_list_loader_->IsRefreshing());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(change_list_loader_->IsRefreshing());
+  EXPECT_EQ(previous_changestamp, metadata_->GetLargestChangestamp());
+
+  // Add a file to the service.
+  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_FILE_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
+  drive_service_->AddNewFile(
+      "text/plain",
+      "content text",
+      drive_service_->GetRootResourceId(),
+      "New File",
+      false,  // shared_with_me
+      google_apis::test_util::CreateCopyResultCallback(&gdata_error,
+                                                       &gdata_entry));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_CREATED, gdata_error);
+  ASSERT_TRUE(gdata_entry);
+
+  // CheckForUpdates() results in update.
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(
+          &check_for_updates_error));
+  EXPECT_TRUE(change_list_loader_->IsRefreshing());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(change_list_loader_->IsRefreshing());
+  EXPECT_LT(previous_changestamp, metadata_->GetLargestChangestamp());
+  EXPECT_EQ(1, observer.load_from_server_complete_count());
+  EXPECT_EQ(1U, observer.changed_directories().count(
+      util::GetDriveMyDriveRootPath()));
+
+  // The new file is found in the local metadata.
+  base::FilePath new_file_path =
+      util::GetDriveMyDriveRootPath().AppendASCII(gdata_entry->title());
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(new_file_path, &entry));
 }
 
 }  // namespace internal

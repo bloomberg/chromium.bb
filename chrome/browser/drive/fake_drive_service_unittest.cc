@@ -369,6 +369,8 @@ TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
+  EXPECT_EQ(fake_service_.largest_changestamp(),
+            resource_list->largest_changestamp());
   // This should be empty as the latest changestamp was passed to
   // GetResourceList(), hence there should be no new entries.
   EXPECT_EQ(0U, resource_list->entries().size());
@@ -398,6 +400,8 @@ TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
+  EXPECT_EQ(fake_service_.largest_changestamp(),
+            resource_list->largest_changestamp());
   // The result should only contain the newly created directory.
   ASSERT_EQ(1U, resource_list->entries().size());
   EXPECT_EQ("new directory", resource_list->entries()[0]->title());
@@ -449,6 +453,8 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
+  EXPECT_EQ(fake_service_.largest_changestamp(),
+            resource_list->largest_changestamp());
   // The result should only contain the newly created directory.
   ASSERT_EQ(1U, resource_list->entries().size());
   const ResourceEntry& entry = *resource_list->entries()[0];
