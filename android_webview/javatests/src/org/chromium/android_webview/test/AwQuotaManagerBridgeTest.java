@@ -11,6 +11,7 @@ import android.webkit.ValueCallback;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
@@ -53,17 +54,9 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         super.tearDown();
     }
 
-    private AwQuotaManagerBridge getQuotaManagerBridge() throws Exception {
-        return runTestOnUiThreadAndGetResult(new Callable<AwQuotaManagerBridge>() {
-            @Override
-            public AwQuotaManagerBridge call() throws Exception {
-                return AwQuotaManagerBridge.getInstance();
-            }
-        });
-    }
-
     private void deleteAllData() throws Exception {
-        final AwQuotaManagerBridge bridge = getQuotaManagerBridge();
+        final AwQuotaManagerBridge bridge =
+                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(this);
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -73,50 +66,14 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
     }
 
     private void deleteOrigin(final String origin) throws Exception {
-        final AwQuotaManagerBridge bridge = getQuotaManagerBridge();
+        final AwQuotaManagerBridge bridge =
+                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(this);
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 bridge.deleteOrigin(origin);
             }
         });
-    }
-
-    private static class GetOriginsCallbackHelper extends CallbackHelper {
-        private AwQuotaManagerBridge.Origins mOrigins;
-
-        public void notifyCalled(AwQuotaManagerBridge.Origins origins) {
-            mOrigins = origins;
-            notifyCalled();
-        }
-
-        public AwQuotaManagerBridge.Origins getOrigins() {
-            assert getCallCount() > 0;
-            return mOrigins;
-        }
-    }
-
-    private AwQuotaManagerBridge.Origins getOrigins() throws Exception {
-        final GetOriginsCallbackHelper callbackHelper = new GetOriginsCallbackHelper();
-        final AwQuotaManagerBridge bridge = getQuotaManagerBridge();
-
-        int callCount = callbackHelper.getCallCount();
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                bridge.getOrigins(
-                    new ValueCallback<AwQuotaManagerBridge.Origins>() {
-                        @Override
-                        public void onReceiveValue(AwQuotaManagerBridge.Origins origins) {
-                            callbackHelper.notifyCalled(origins);
-                        }
-                    }
-                );
-            }
-        });
-        callbackHelper.waitForCallback(callCount);
-
-        return callbackHelper.getOrigins();
     }
 
     private static class LongValueCallbackHelper extends CallbackHelper {
@@ -135,7 +92,8 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
 
     private long getQuotaForOrigin(final String origin) throws Exception {
         final LongValueCallbackHelper callbackHelper = new LongValueCallbackHelper();
-        final AwQuotaManagerBridge bridge = getQuotaManagerBridge();
+        final AwQuotaManagerBridge bridge =
+                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(this);
 
         int callCount = callbackHelper.getCallCount();
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -158,7 +116,8 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
 
     private long getUsageForOrigin(final String origin) throws Exception {
         final LongValueCallbackHelper callbackHelper = new LongValueCallbackHelper();
-        final AwQuotaManagerBridge bridge = getQuotaManagerBridge();
+        final AwQuotaManagerBridge bridge =
+                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(this);
 
         int callCount = callbackHelper.getCallCount();
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -271,14 +230,15 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return getOrigins().mOrigins.length > 0;
+                    return AwQuotaManagerBridgeTestUtil.getOrigins(
+                                AwQuotaManagerBridgeTest.this).mOrigins.length > 0;
                 } catch (Exception e) {
                     return false;
                 }
             }
         });
 
-        AwQuotaManagerBridge.Origins origins = getOrigins();
+        AwQuotaManagerBridge.Origins origins = AwQuotaManagerBridgeTestUtil.getOrigins(this);
         assertEquals(origins.mOrigins.length, origins.mUsages.length);
         assertEquals(origins.mOrigins.length, origins.mQuotas.length);
 
