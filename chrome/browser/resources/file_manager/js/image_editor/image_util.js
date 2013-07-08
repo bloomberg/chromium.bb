@@ -494,11 +494,8 @@ ImageUtil.ImageLoader.prototype.load = function(
                            opt_metadata.modificationTime &&
                            opt_metadata.modificationTime.getTime();
 
-    this.taskId_ = util.loadImage(this.image_, url, {
-      cache: true,
-      timestamp: modificationTime,
-      priority: 1
-    });
+    // Load the image directly.
+    this.image_.src = url;
   }.bind(this);
 
   // Loads the image. If already loaded, then forces a reload.
@@ -584,8 +581,6 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
     this.image_.onerror = function() {};
     this.image_.src = '';
   }
-  if (this.taskId_)
-    util.cancelLoadImage(this.taskId_);
   this.generation_++;  // Silence the transform fetcher if it is in progress.
 };
 
