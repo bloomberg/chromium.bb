@@ -7,7 +7,7 @@ function createCallback(win) {
   // Unlike docked panels, detached is not alwaysOnTop.
   chrome.test.assertEq(false, win.alwaysOnTop);
   // Close the detached window to prevent the stacking.
-  chrome.windows.remove(win.id);
+  chrome.windows.remove(win.id, chrome.test.callbackPass());
 }
 
 chrome.test.runTests([
@@ -31,11 +31,14 @@ chrome.test.runTests([
       chrome.test.assertEq("panel", window.type);
       chrome.test.assertTrue(!window.incognito);
       chrome.test.assertEq(250, window.width);
-      chrome.test.assertEq(300, window.height);
+      chrome.test.assertEq(200, window.height);
     });
+    // Do not use the big size because the maximium panel sizes are based on a
+    // factor of the screen resolution. Some try bots might be configured with
+    // 800x600 resolution that causes the panel not to exceed 280x280.
     chrome.windows.create(
         { 'url': 'about:blank',
-          'type': 'detached_panel', 'width': 250, 'height': 300 },
+          'type': 'detached_panel', 'width': 250, 'height': 200 },
         chrome.test.callbackPass(createCallback));
   },
 
@@ -65,12 +68,15 @@ chrome.test.runTests([
       //chrome.test.assertEq(42, window.top);
       chrome.test.assertEq(24, window.left);
       chrome.test.assertEq(250, window.width);
-      chrome.test.assertEq(300, window.height);
+      chrome.test.assertEq(200, window.height);
     });
+    // Do not use the big size because the maximium panel sizes are based on a
+    // factor of the screen resolution and the try bot might be configured with
+    // 800x600 resolution.
     chrome.windows.create(
         { 'url': 'about:blank',
           'type': 'detached_panel', 'top': 42, 'left': 24,
-          'width': 250, 'height': 300 },
+          'width': 250, 'height': 200 },
         chrome.test.callbackPass(createCallback));
   }
 ]);
