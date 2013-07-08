@@ -5,7 +5,6 @@
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 
 #include "base/bind.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
@@ -14,22 +13,6 @@
 namespace chrome {
 
 namespace {
-
-bool IsMediaTaskRunnerThread() {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(
-          MediaFileSystemMountPointProvider::kMediaTaskRunnerName);
-  return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
-}
-
-scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(
-          MediaFileSystemMountPointProvider::kMediaTaskRunnerName);
-  return pool->GetSequencedTaskRunner(media_sequence_token);
-}
 
 void OnDeviceAsyncDelegateDestroyed(
     const base::FilePath::StringType& device_location) {
