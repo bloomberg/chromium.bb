@@ -542,8 +542,8 @@ module_init(struct weston_compositor *compositor,
 	wl_signal_add(&compositor->wake_signal, &shell->unlock_listener);
 
 	/* FIXME: This will make the object available to all clients. */
-	wl_display_add_global(compositor->wl_display, &tablet_shell_interface,
-			      shell, bind_tablet_shell);
+	wl_global_create(compositor->wl_display, &tablet_shell_interface, 1,
+			 shell, bind_tablet_shell);
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
 	shell->long_press_source =

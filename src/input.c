@@ -1531,9 +1531,8 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 	wl_list_init(&seat->drag_resource_list);
 	wl_signal_init(&seat->destroy_signal);
 
-	seat->global =
-		wl_display_add_global(ec->wl_display,
-				      &wl_seat_interface, seat, bind_seat);
+	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 2,
+					seat, bind_seat);
 
 	seat->compositor = ec;
 	seat->modifier_state = 0;
@@ -1569,7 +1568,7 @@ weston_seat_release(struct weston_seat *seat)
 
 	free (seat->seat_name);
 
-	wl_display_remove_global(seat->compositor->wl_display, seat->global);
+	wl_global_destroy(seat->global);
 
 	wl_signal_emit(&seat->destroy_signal, seat);
 }

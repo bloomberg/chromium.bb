@@ -69,7 +69,7 @@ text_cursor_position_notifier_destroy(struct wl_listener *listener, void *data)
 	struct text_cursor_position *text_cursor_position =
 		container_of(listener, struct text_cursor_position, destroy_listener);
 
-	wl_display_remove_global(text_cursor_position->ec->wl_display, text_cursor_position->global);
+	wl_global_destroy(text_cursor_position->global);
 	free(text_cursor_position);
 }
 
@@ -84,11 +84,14 @@ text_cursor_position_notifier_create(struct weston_compositor *ec)
 
 	text_cursor_position->ec = ec;
 
-	text_cursor_position->global = wl_display_add_global(ec->wl_display,
-						&text_cursor_position_interface,
-						text_cursor_position, bind_text_cursor_position);
+	text_cursor_position->global =
+		wl_global_create(ec->wl_display,
+				 &text_cursor_position_interface, 1,
+				 text_cursor_position,
+				 bind_text_cursor_position);
 
-	text_cursor_position->destroy_listener.notify = text_cursor_position_notifier_destroy;
+	text_cursor_position->destroy_listener.notify =
+		text_cursor_position_notifier_destroy;
 	wl_signal_add(&ec->destroy_signal, &text_cursor_position->destroy_listener);
 }
 

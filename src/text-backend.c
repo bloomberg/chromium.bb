@@ -398,8 +398,7 @@ text_input_manager_notifier_destroy(struct wl_listener *listener, void *data)
 	struct text_input_manager *text_input_manager =
 		container_of(listener, struct text_input_manager, destroy_listener);
 
-	wl_display_remove_global(text_input_manager->ec->wl_display,
-				 text_input_manager->text_input_manager_global);
+	wl_global_destroy(text_input_manager->text_input_manager_global);
 
 	free(text_input_manager);
 }
@@ -414,9 +413,9 @@ text_input_manager_create(struct weston_compositor *ec)
 	text_input_manager->ec = ec;
 
 	text_input_manager->text_input_manager_global =
-		wl_display_add_global(ec->wl_display,
-				      &wl_text_input_manager_interface,
-				      text_input_manager, bind_text_input_manager);
+		wl_global_create(ec->wl_display,
+				 &wl_text_input_manager_interface, 1,
+				 text_input_manager, bind_text_input_manager);
 
 	text_input_manager->destroy_listener.notify = text_input_manager_notifier_destroy;
 	wl_signal_add(&ec->destroy_signal, &text_input_manager->destroy_listener);
@@ -792,8 +791,7 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 	if (input_method->model)
 		deactivate_text_input(input_method->model, input_method);
 
-	wl_display_remove_global(input_method->seat->compositor->wl_display,
-				 input_method->input_method_global);
+	wl_global_destroy(input_method->input_method_global);
 
 	free(input_method);
 }
@@ -899,9 +897,8 @@ handle_seat_created(struct wl_listener *listener,
 	input_method->text_backend = text_backend;
 
 	input_method->input_method_global =
-		wl_display_add_global(ec->wl_display,
-				      &wl_input_method_interface,
-				      input_method, bind_input_method);
+		wl_global_create(ec->wl_display, &wl_input_method_interface, 1,
+				 input_method, bind_input_method);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
 	wl_signal_add(&seat->destroy_signal, &input_method->destroy_listener);

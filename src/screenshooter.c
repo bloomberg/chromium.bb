@@ -559,7 +559,7 @@ screenshooter_destroy(struct wl_listener *listener, void *data)
 	struct screenshooter *shooter =
 		container_of(listener, struct screenshooter, destroy_listener);
 
-	wl_display_remove_global(shooter->ec->wl_display, shooter->global);
+	wl_global_destroy(shooter->global);
 	free(shooter);
 }
 
@@ -575,9 +575,9 @@ screenshooter_create(struct weston_compositor *ec)
 	shooter->ec = ec;
 	shooter->client = NULL;
 
-	shooter->global = wl_display_add_global(ec->wl_display,
-						&screenshooter_interface,
-						shooter, bind_shooter);
+	shooter->global = wl_global_create(ec->wl_display,
+					   &screenshooter_interface, 1,
+					   shooter, bind_shooter);
 	weston_compositor_add_key_binding(ec, KEY_S, MODIFIER_SUPER,
 					  screenshooter_binding, shooter);
 	weston_compositor_add_key_binding(ec, KEY_R, MODIFIER_SUPER,

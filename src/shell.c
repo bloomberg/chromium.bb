@@ -4507,25 +4507,25 @@ module_init(struct weston_compositor *ec,
 	wl_list_init(&shell->workspaces.animation.link);
 	shell->workspaces.animation.frame = animate_workspace_change_frame;
 
-	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
+	if (wl_global_create(ec->wl_display, &wl_shell_interface, 1,
 				  shell, bind_shell) == NULL)
 		return -1;
 
-	if (wl_display_add_global(ec->wl_display,
-				  &desktop_shell_interface,
-				  shell, bind_desktop_shell) == NULL)
+	if (wl_global_create(ec->wl_display,
+			     &desktop_shell_interface, 2,
+			     shell, bind_desktop_shell) == NULL)
 		return -1;
 
-	if (wl_display_add_global(ec->wl_display, &screensaver_interface,
-				  shell, bind_screensaver) == NULL)
+	if (wl_global_create(ec->wl_display, &screensaver_interface, 1,
+			     shell, bind_screensaver) == NULL)
 		return -1;
 
-	if (wl_display_add_global(ec->wl_display, &wl_input_panel_interface,
+	if (wl_global_create(ec->wl_display, &wl_input_panel_interface, 1,
 				  shell, bind_input_panel) == NULL)
 		return -1;
 
-	if (wl_display_add_global(ec->wl_display, &workspace_manager_interface,
-				  shell, bind_workspace_manager) == NULL)
+	if (wl_global_create(ec->wl_display, &workspace_manager_interface, 1,
+			     shell, bind_workspace_manager) == NULL)
 		return -1;
 
 	shell->child.deathstamp = weston_compositor_get_time();

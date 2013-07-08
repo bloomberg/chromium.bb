@@ -620,9 +620,9 @@ wl_data_device_set_keyboard_focus(struct weston_seat *seat)
 WL_EXPORT int
 wl_data_device_manager_init(struct wl_display *display)
 {
-	if (wl_display_add_global(display,
-				  &wl_data_device_manager_interface,
-				  NULL, bind_manager) == NULL)
+	if (wl_global_create(display,
+			     &wl_data_device_manager_interface, 1,
+			     NULL, bind_manager) == NULL)
 		return -1;
 
 	return 0;

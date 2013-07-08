@@ -44,6 +44,8 @@
 
 #include "window.h"
 
+#define MIN(x,y) (((x) < (y)) ? (x) : (y))
+
 struct nested {
 	struct display *display;
 	struct window *window;
@@ -347,10 +349,10 @@ surface_frame(struct wl_client *client,
 		return;
 	}
 
-	callback->resource =
-		wl_client_add_object(client, &wl_callback_interface,
-				     NULL, id, callback);
-	wl_resource_set_destructor(callback->resource, destroy_frame_callback);
+	callback->resource = wl_resource_create(client,
+						&wl_callback_interface, 1, id);
+	wl_resource_set_implementation(callback->resource, NULL, callback,
+				       destroy_frame_callback);
 
 	wl_list_insert(nested->frame_callback_list.prev, &callback->link);
 }
@@ -423,9 +425,11 @@ compositor_create_surface(struct wl_client *client,
 	display_release_window_surface(nested->display, nested->window);
 
 	surface->resource =
-		wl_client_add_object(client, &wl_surface_interface,
-				     &surface_interface, id, surface);
-	wl_resource_set_destructor(surface->resource, destroy_surface);
+		wl_resource_create(client, &wl_surface_interface, 1, id);
+
+	wl_resource_set_implementation(surface->resource,
+				       &surface_interface, surface,
+				       destroy_surface);
 
 	wl_list_insert(nested->surface_list.prev, &surface->link);
 }
@@ -488,23 +492,27 @@ compositor_create_region(struct wl_client *client,
 	pixman_region32_init(&region->region);
 
 	region->resource =
-		wl_client_add_object(client, &wl_region_interface,
-				     &region_interface, id, region);
-	wl_resource_set_destructor(region->resource, destroy_region);
+		wl_resource_create(client, &wl_region_interface, 1, id);
+	wl_resource_set_implementation(region->resource, &region_interface,
+				       region, destroy_region);
 }
 
 static const struct wl_compositor_interface compositor_interface = {
 	compositor_create_surface,
 	compositor_create_region
 };
+
 static void
 compositor_bind(struct wl_client *client,
 		void *data, uint32_t version, uint32_t id)
 {
 	struct nested *nested = data;
+	struct wl_resource *resource;
 
-	wl_client_add_object(client, &wl_compositor_interface,
-			     &compositor_interface, id, nested);
+	resource = wl_resource_create(client, &wl_compositor_interface,
+				      MIN(version, 3), id);
+	wl_resource_set_implementation(resource, &compositor_interface,
+				       nested, NULL);
 }
 
 static int
@@ -523,9 +531,9 @@ nested_init_compositor(struct nested *nested)
 	display_watch_fd(nested->display, fd,
 			 EPOLLIN, &nested->child_task);
 
-	if (!wl_display_add_global(nested->child_display,
-				   &wl_compositor_interface,
-				   nested, compositor_bind))
+	if (!wl_global_create(nested->child_display,
+			      &wl_compositor_interface, 1,
+			      nested, compositor_bind))
 		return -1;
 
 	wl_display_init_shm(nested->child_display);

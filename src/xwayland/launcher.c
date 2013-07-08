@@ -376,7 +376,7 @@ module_init(struct weston_compositor *compositor,
 				     WL_EVENT_READABLE,
 				     weston_xserver_handle_event, wxs);
 
-	wl_display_add_global(display, &xserver_interface, wxs, bind_xserver);
+	wl_global_create(display, &xserver_interface, 1, wxs, bind_xserver);
 
 	wxs->destroy_listener.notify = weston_xserver_destroy;
 	wl_signal_add(&compositor->destroy_signal, &wxs->destroy_listener);

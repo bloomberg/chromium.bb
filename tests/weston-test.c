@@ -240,8 +240,8 @@ module_init(struct weston_compositor *ec,
 	test->compositor = ec;
 	weston_layer_init(&test->layer, &ec->cursor_layer.link);
 
-	if (wl_display_add_global(ec->wl_display, &wl_test_interface,
-				  test, bind_test) == NULL)
+	if (wl_global_create(ec->wl_display, &wl_test_interface, 1,
+			     test, bind_test) == NULL)
 		return -1;
 
 	loop = wl_display_get_event_loop(ec->wl_display);

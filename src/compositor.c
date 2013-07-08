@@ -2571,8 +2571,6 @@ bind_output(struct wl_client *client,
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
-	struct weston_compositor *c = output->compositor;
-
 	wl_signal_emit(&output->destroy_signal, output);
 
 	free(output->name);
@@ -2580,7 +2578,7 @@ weston_output_destroy(struct weston_output *output)
 	pixman_region32_fini(&output->previous_damage);
 	output->compositor->output_id_pool &= ~(1 << output->id);
 
-	wl_display_remove_global(c->wl_display, output->global);
+	wl_global_destroy(output->global);
 }
 
 static void
@@ -2748,8 +2746,8 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->compositor->output_id_pool |= 1 << output->id;
 
 	output->global =
-		wl_display_add_global(c->wl_display, &wl_output_interface,
-				      output, bind_output);
+		wl_global_create(c->wl_display, &wl_output_interface, 2,
+				 output, bind_output);
 	wl_signal_emit(&c->output_created_signal, output);
 }
 
@@ -2828,12 +2826,12 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	ec->output_id_pool = 0;
 
-	if (!wl_display_add_global(display, &wl_compositor_interface,
-				   ec, compositor_bind))
+	if (!wl_global_create(display, &wl_compositor_interface, 3,
+			      ec, compositor_bind))
 		return -1;
 
-	if (!wl_display_add_global(display, &wl_subcompositor_interface,
-				   ec, bind_subcompositor))
+	if (!wl_global_create(display, &wl_subcompositor_interface, 1,
+			      ec, bind_subcompositor))
 		return -1;
 
 	wl_list_init(&ec->surface_list);
