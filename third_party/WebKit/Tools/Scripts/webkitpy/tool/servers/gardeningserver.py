@@ -101,8 +101,6 @@ class GardeningHTTPRequestHandler(ReflectionHandler):
 
     def rebaselineall(self):
         command = ['rebaseline-json']
-        if self.server.options.move_overwritten_baselines:
-            command.append('--move-overwritten-baselines')
         if self.server.options.results_directory:
             command.extend(['--results-directory', self.server.options.results_directory])
         if not self.server.options.optimize:
