@@ -772,7 +772,6 @@ public:
 
     // Helper function to print GL errors to console.
     void printGLErrorToConsole(const String&);
-    void printGLWarningToConsole(const char* function, const char* reason);
 
     // Helper function to print warnings to console. Currently
     // used only to warn about use of obsolete functions.
@@ -850,6 +849,7 @@ public:
     // Wrapper for GraphicsContext3D::synthesizeGLError that sends a message
     // to the JavaScript console.
     void synthesizeGLError(GC3Denum, const char* functionName, const char* description, ConsoleDisplayPreference = DisplayInConsole);
+    void emitGLWarning(const char* function, const char* reason);
 
     String ensureNotNull(const String&) const;
 

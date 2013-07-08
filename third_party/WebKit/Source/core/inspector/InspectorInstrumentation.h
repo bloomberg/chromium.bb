@@ -172,9 +172,7 @@ inline InstrumentingAgents* instrumentingAgentsForScriptExecutionContext(ScriptE
 
 inline InstrumentingAgents* instrumentingAgentsForFrame(Frame* frame)
 {
-    if (frame)
-        return instrumentingAgentsForPage(frame->page());
-    return 0;
+    return frame ? instrumentingAgentsForPage(frame->page()) : 0;
 }
 
 inline InstrumentingAgents* instrumentingAgentsForDocument(Document* document)
@@ -190,7 +188,7 @@ inline InstrumentingAgents* instrumentingAgentsForDocument(Document* document)
 
 inline InstrumentingAgents* instrumentingAgentsForElement(Element* element)
 {
-    return instrumentingAgentsForDocument(element->document());
+    return element ? instrumentingAgentsForDocument(element->document()) : 0;
 }
 
 bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType);

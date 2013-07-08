@@ -66,6 +66,8 @@ static const char* const setTimerEventName = "setTimer";
 static const char* const clearTimerEventName = "clearTimer";
 static const char* const timerFiredEventName = "timerFired";
 static const char* const webglErrorFiredEventName = "webglErrorFired";
+static const char* const webglWarningFiredEventName = "webglWarningFired";
+static const char* const webglErrorNameProperty = "webglErrorName";
 
 namespace DOMDebuggerAgentState {
 static const char eventListenerBreakpoints[] = "eventListenerBreakpoints";
@@ -445,8 +447,22 @@ void InspectorDOMDebuggerAgent::didFireWebGLError(const String& errorName)
     RefPtr<JSONObject> eventData = preparePauseOnNativeEventData(false, webglErrorFiredEventName);
     if (!eventData)
         return;
-    eventData->setString("webglErrorName", errorName);
+    if (!errorName.isEmpty())
+        eventData->setString(webglErrorNameProperty, errorName);
     pauseOnNativeEventIfNeeded(eventData.release(), m_debuggerAgent->canBreakProgram());
+}
+
+void InspectorDOMDebuggerAgent::didFireWebGLWarning()
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, webglWarningFiredEventName), m_debuggerAgent->canBreakProgram());
+}
+
+void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message)
+{
+    if (message.findIgnoringCase("error") != WTF::notFound)
+        didFireWebGLError(String());
+    else
+        didFireWebGLWarning();
 }
 
 void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString*, const String& url)

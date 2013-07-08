@@ -86,6 +86,8 @@ public:
     void willFireAnimationFrame(Document*, int callbackId);
     void willHandleEvent(Event*);
     void didFireWebGLError(const String& errorName);
+    void didFireWebGLWarning();
+    void didFireWebGLErrorOrWarning(const String& message);
 
     void didProcessTask();
 
