@@ -140,8 +140,10 @@ void QuicConnectionHelper::UnregisterSendAlarmIfRegistered() {
 
 void QuicConnectionHelper::OnRetransmissionAlarm() {
   QuicTime when = connection_->OnRetransmissionTimeout();
-  if (!when.IsInitialized()) {
-    SetRetransmissionAlarm(clock_->Now().Subtract(when));
+  if (when.IsInitialized()) {
+    QuicTime now = clock_->Now();
+    DCHECK_LE(now.ToDebuggingValue(), when.ToDebuggingValue());
+    SetRetransmissionAlarm(when.Subtract(now));
   }
 }
 

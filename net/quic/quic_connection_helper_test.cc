@@ -322,6 +322,40 @@ TEST_F(QuicConnectionHelperTest, TestRetransmission) {
   EXPECT_TRUE(AtEof());
 }
 
+TEST_F(QuicConnectionHelperTest, TestMultipleRetransmission) {
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(1));
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(2));
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(3));
+  Initialize();
+
+  QuicTime::Delta kDefaultRetransmissionTime =
+      QuicTime::Delta::FromMilliseconds(500);
+  QuicTime start = clock_.ApproximateNow();
+
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(1, _));
+  // Send a packet.
+  connection_->SendStreamData(1, kData, 0, false);
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, IS_RETRANSMISSION));
+  // Since no ack was received, the retransmission alarm will fire and
+  // retransmit it.
+  runner_->RunNextTask();
+
+  EXPECT_EQ(kDefaultRetransmissionTime,
+            clock_.ApproximateNow().Subtract(start));
+
+  // Since no ack was received, the retransmission alarm will fire and
+  // retransmit it.
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 3, _, IS_RETRANSMISSION));
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(2, _));
+  runner_->RunNextTask();
+
+  EXPECT_EQ(kDefaultRetransmissionTime.Add(kDefaultRetransmissionTime),
+            clock_.ApproximateNow().Subtract(start));
+
+  EXPECT_TRUE(AtEof());
+}
+
 TEST_F(QuicConnectionHelperTest, InitialTimeout) {
   AddWrite(SYNCHRONOUS, ConstructClosePacket(1, 0));
   Initialize();
