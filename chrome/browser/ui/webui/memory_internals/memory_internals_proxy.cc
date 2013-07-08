@@ -148,6 +148,10 @@ void MemoryInternalsProxy::UpdateUIOnUIThread(const string16& update) {
 void MemoryInternalsProxy::OnV8MemoryUpdate(const base::ProcessId pid,
                                             const size_t v8_allocated,
                                             const size_t v8_used) {
+  // Do not update while no renderers are registered.
+  if (renderer_details_->IsClean())
+    return;
+
   base::ListValue* processes;
   if (!information_->GetList("processes", &processes))
     return;
