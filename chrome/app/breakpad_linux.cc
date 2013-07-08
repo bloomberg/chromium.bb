@@ -127,7 +127,7 @@ uint64_t kernel_timeval_to_ms(struct kernel_timeval *tv) {
 }
 
 // String buffer size to use to convert a uint64_t to string.
-size_t kUint64StringSize = 21;
+const size_t kUint64StringSize = 21;
 
 void SetProcessStartTime() {
   // Set the base process start time value.
@@ -191,6 +191,13 @@ char* my_strncat(char *dest, const char* src, size_t len) {
 }
 #endif
 
+size_t LengthWithoutTrailingSpaces(const char* str, size_t len) {
+  while (len > 0 && str[len - 1] == ' ') {
+    len--;
+  }
+  return len;
+}
+
 // Populates the passed in allocated strings and their sizes with the GUID,
 // crash url and distro of the crashing process.
 // The passed strings are expected to be at least kGuidSize, kMaxActiveURLSize
@@ -229,6 +236,9 @@ void SetClientIdFromCommandLine(const CommandLine& command_line) {
 }
 
 // MIME substrings.
+#if defined(OS_CHROMEOS)
+const char g_sep[] = ":";
+#endif
 const char g_rn[] = "\r\n";
 const char g_form_data_msg[] = "Content-Disposition: form-data; name=\"";
 const char g_quote_msg[] = "\"";
@@ -249,16 +259,16 @@ class MimeWriter {
   ~MimeWriter();
 
   // Append boundary.
-  void AddBoundary();
+  virtual void AddBoundary();
 
   // Append end of file boundary.
-  void AddEnd();
+  virtual void AddEnd();
 
   // Append key/value pair with specified sizes.
-  void AddPairData(const char* msg_type,
-                   size_t msg_type_size,
-                   const char* msg_data,
-                   size_t msg_data_size);
+  virtual void AddPairData(const char* msg_type,
+                           size_t msg_type_size,
+                           const char* msg_data,
+                           size_t msg_data_size);
 
   // Append key/value pair.
   void AddPairString(const char* msg_type,
@@ -269,17 +279,17 @@ class MimeWriter {
   // Append key/value pair, splitting value into chunks no larger than
   // |chunk_size|. |chunk_size| cannot be greater than |kMaxCrashChunkSize|.
   // The msg_type string will have a counter suffix to distinguish each chunk.
-  void AddPairDataInChunks(const char* msg_type,
-                           size_t msg_type_size,
-                           const char* msg_data,
-                           size_t msg_data_size,
-                           size_t chunk_size,
-                           bool strip_trailing_spaces);
+  virtual void AddPairDataInChunks(const char* msg_type,
+                                   size_t msg_type_size,
+                                   const char* msg_data,
+                                   size_t msg_data_size,
+                                   size_t chunk_size,
+                                   bool strip_trailing_spaces);
 
   // Add binary file contents to be uploaded with the specified filename.
-  void AddFileContents(const char* filename_msg,
-                       uint8_t* file_data,
-                       size_t file_size);
+  virtual void AddFileContents(const char* filename_msg,
+                               uint8_t* file_data,
+                               size_t file_size);
 
   // Flush any pending iovecs to the output file.
   void Flush() {
@@ -287,7 +297,7 @@ class MimeWriter {
     iov_index_ = 0;
   }
 
- private:
+ protected:
   void AddItem(const void* base, size_t size);
   // Minor performance trade-off for easier-to-maintain code.
   void AddString(const char* str) {
@@ -352,7 +362,7 @@ void MimeWriter::AddPairDataInChunks(const char* msg_type,
   size_t done = 0, msg_length = msg_data_size;
 
   while (msg_length) {
-    char num[16];
+    char num[kUint64StringSize];
     const unsigned num_len = my_uint_len(++i);
     my_uitos(num, i, num_len);
 
@@ -401,14 +411,125 @@ void MimeWriter::AddItem(const void* base, size_t size) {
 }
 
 void MimeWriter::AddItemWithoutTrailingSpaces(const void* base, size_t size) {
-  while (size > 0) {
-    const char* c = static_cast<const char*>(base) + size - 1;
-    if (*c != ' ')
-      break;
-    size--;
-  }
-  AddItem(base, size);
+  AddItem(base, LengthWithoutTrailingSpaces(static_cast<const char*>(base),
+                                            size));
 }
+
+#if defined(OS_CHROMEOS)
+// This subclass is used on Chromium OS to report crashes in a format easy for
+// the central crash reporting facility to understand.
+// Format is <name>:<data length in decimal>:<data>
+class CrashReporterWriter : public MimeWriter
+{
+ public:
+  explicit CrashReporterWriter(int fd);
+
+  virtual void AddBoundary() OVERRIDE;
+
+  virtual void AddEnd() OVERRIDE;
+
+  virtual void AddPairData(const char* msg_type,
+                           size_t msg_type_size,
+                          const char* msg_data,
+                           size_t msg_data_size) OVERRIDE;
+
+  virtual void AddPairDataInChunks(const char* msg_type,
+                                   size_t msg_type_size,
+                                   const char* msg_data,
+                                   size_t msg_data_size,
+                                   size_t chunk_size,
+                                   bool strip_trailing_spaces) OVERRIDE;
+
+  virtual void AddFileContents(const char* filename_msg,
+                               uint8_t* file_data,
+                               size_t file_size) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CrashReporterWriter);
+};
+
+
+CrashReporterWriter::CrashReporterWriter(int fd) : MimeWriter(fd, "") {}
+
+// No-ops.
+void CrashReporterWriter::AddBoundary() {}
+void CrashReporterWriter::AddEnd() {}
+
+void CrashReporterWriter::AddPairData(const char* msg_type,
+                                      size_t msg_type_size,
+                                      const char* msg_data,
+                                      size_t msg_data_size) {
+  char data[kUint64StringSize];
+  const unsigned data_len = my_uint_len(msg_data_size);
+  my_uitos(data, msg_data_size, data_len);
+
+  AddItem(msg_type, msg_type_size);
+  AddString(g_sep);
+  AddItem(data, data_len);
+  AddString(g_sep);
+  AddItem(msg_data, msg_data_size);
+  Flush();
+}
+
+void CrashReporterWriter::AddPairDataInChunks(const char* msg_type,
+                                              size_t msg_type_size,
+                                              const char* msg_data,
+                                              size_t msg_data_size,
+                                              size_t chunk_size,
+                                              bool strip_trailing_spaces) {
+  if (chunk_size > kMaxCrashChunkSize)
+    return;
+
+  unsigned i = 0;
+  size_t done = 0;
+  size_t msg_length = msg_data_size;
+
+  while (msg_length) {
+    char num[kUint64StringSize];
+    const unsigned num_len = my_uint_len(++i);
+    my_uitos(num, i, num_len);
+
+    size_t chunk_len = std::min(chunk_size, msg_length);
+
+    size_t write_len = chunk_len;
+    if (strip_trailing_spaces) {
+      // Take care of this here because we need to know the exact length of
+      // what is going to be written.
+      write_len = LengthWithoutTrailingSpaces(msg_data + done, write_len);
+    }
+
+    char data[kUint64StringSize];
+    const unsigned data_len = my_uint_len(write_len);
+    my_uitos(data, write_len, data_len);
+
+    AddItem(msg_type, msg_type_size);
+    AddItem(num, num_len);
+    AddString(g_sep);
+    AddItem(data, data_len);
+    AddString(g_sep);
+    AddItem(msg_data + done, write_len);
+    Flush();
+
+    done += chunk_len;
+    msg_length -= chunk_len;
+  }
+}
+
+void CrashReporterWriter::AddFileContents(const char* filename_msg,
+                                          uint8_t* file_data,
+                                          size_t file_size) {
+  char data[kUint64StringSize];
+  const unsigned data_len = my_uint_len(file_size);
+  my_uitos(data, file_size, data_len);
+
+  AddString(filename_msg);
+  AddString(g_sep);
+  AddItem(data, data_len);
+  AddString(g_sep);
+  AddItem(file_data, file_size);
+  Flush();
+}
+#endif
 
 void DumpProcess() {
   if (g_breakpad)
@@ -809,12 +930,129 @@ void LoadDataFromFile(google_breakpad::PageAllocator& allocator,
   LoadDataFromFD(allocator, *fd, true, file_data, size);
 }
 
+// Spawn the appropriate upload process for the current OS:
+// - generic Linux invokes wget.
+// - ChromeOS invokes crash_reporter.
+// |dumpfile| is the path to the dump data file.
+// |mime_boundary| is only used on Linux.
+// |exe_buf| is only used on CrOS and is the crashing process' name.
+void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
+                                  const char* dumpfile,
+                                  const char* mime_boundary,
+                                  const char* exe_buf,
+                                  google_breakpad::PageAllocator* allocator) {
+#if defined(OS_CHROMEOS)
+  // CrOS uses crash_reporter instead of wget to report crashes,
+  // it needs to know where the crash dump lives and the pid and uid of the
+  // crashing process.
+  static const char kCrashReporterBinary[] = "/sbin/crash_reporter";
+
+  char pid_buf[kUint64StringSize];
+  uint64_t pid_str_length = my_uint64_len(info.pid);
+  my_uint64tos(pid_buf, info.pid, pid_str_length);
+
+  char uid_buf[kUint64StringSize];
+  uid_t uid = geteuid();
+  uint64_t uid_str_length = my_uint64_len(uid);
+  my_uint64tos(uid_buf, uid, uid_str_length);
+  const char* args[] = {
+    kCrashReporterBinary,
+    "--chrome",
+    dumpfile,
+    "--pid",
+    pid_buf,
+    "--uid",
+    uid_buf,
+    "--exe",
+    exe_buf,
+    NULL,
+  };
+  static const char msg[] = "Cannot upload crash dump: cannot exec "
+                            "/sbin/crash_reporter\n";
+#else
+  // The --header argument to wget looks like:
+  //   --header=Content-Type: multipart/form-data; boundary=XYZ
+  // where the boundary has two fewer leading '-' chars
+  static const char header_msg[] =
+      "--header=Content-Type: multipart/form-data; boundary=";
+  char* const header = reinterpret_cast<char*>(allocator->Alloc(
+      sizeof(header_msg) - 1 + strlen(mime_boundary) - 2 + 1));
+  memcpy(header, header_msg, sizeof(header_msg) - 1);
+  memcpy(header + sizeof(header_msg) - 1, mime_boundary + 2,
+         strlen(mime_boundary) - 2);
+  // We grab the NUL byte from the end of |mime_boundary|.
+
+  // The --post-file argument to wget looks like:
+  //   --post-file=/tmp/...
+  static const char post_file_msg[] = "--post-file=";
+  char* const post_file = reinterpret_cast<char*>(allocator->Alloc(
+       sizeof(post_file_msg) - 1 + strlen(dumpfile) + 1));
+  memcpy(post_file, post_file_msg, sizeof(post_file_msg) - 1);
+  memcpy(post_file + sizeof(post_file_msg) - 1, dumpfile, strlen(dumpfile));
+
+  static const char kWgetBinary[] = "/usr/bin/wget";
+  const char* args[] = {
+    kWgetBinary,
+    header,
+    post_file,
+    kUploadURL,
+    "--timeout=10",  // Set a timeout so we don't hang forever.
+    "--tries=1",     // Don't retry if the upload fails.
+    "-O",  // output reply to fd 3
+    "/dev/fd/3",
+    NULL,
+  };
+  static const char msg[] = "Cannot upload crash dump: cannot exec "
+                            "/usr/bin/wget\n";
+#endif
+  execve(args[0], const_cast<char**>(args), environ);
+  WriteLog(msg, sizeof(msg) - 1);
+  sys__exit(1);
+}
+
+#if defined(OS_CHROMEOS)
+const char* GetCrashingProcessName(const BreakpadInfo& info,
+                                   google_breakpad::PageAllocator* allocator) {
+  // Symlink to process binary is at /proc/###/exe.
+  char linkpath[kUint64StringSize + sizeof("/proc/") + sizeof("/exe")] =
+    "/proc/";
+  uint64_t pid_value_len = my_uint64_len(info.pid);
+  my_uint64tos(linkpath + sizeof("/proc/") - 1, info.pid, pid_value_len);
+  my_strlcat(linkpath, "/exe", sizeof(linkpath));
+
+  const int kMaxSize = 4096;
+  char* link = reinterpret_cast<char*>(allocator->Alloc(kMaxSize));
+  if (link) {
+    ssize_t size = readlink(linkpath, link, kMaxSize);
+    if (size < kMaxSize && size > 0) {
+      // readlink(2) doesn't add a terminating NUL, so do it now.
+      link[size] = '\0';
+
+      const char* name = my_strrchr(link, '/');
+      if (name)
+        return name + 1;
+      return link;
+    }
+  }
+  // Either way too long, or a read error.
+  return "chrome-crash-unknown-process";
+}
+#endif
+
 void HandleCrashDump(const BreakpadInfo& info) {
   int dumpfd;
   bool keep_fd = false;
   size_t dump_size;
   uint8_t* dump_data;
   google_breakpad::PageAllocator allocator;
+  const char* exe_buf = NULL;
+
+#if defined(OS_CHROMEOS)
+  // Grab the crashing process' name now, when it should still be available.
+  // If we try to do this later in our grandchild the crashing process has
+  // already terminated.
+  exe_buf = GetCrashingProcessName(info, &allocator);
+#endif
 
   if (info.fd != -1) {
     // Dump is provided with an open FD.
@@ -998,7 +1236,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   <dump contents>
   //   \r\n BOUNDARY -- \r\n
 
+#if defined(OS_CHROMEOS)
+  CrashReporterWriter writer(temp_file_fd);
+#else
   MimeWriter writer(temp_file_fd, mime_boundary);
+#endif
   {
 #if defined(OS_ANDROID)
     static const char chrome_product_msg[] = "Chrome_Android";
@@ -1294,26 +1536,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   if (!info.upload)
     return;
 
-  // The --header argument to wget looks like:
-  //   --header=Content-Type: multipart/form-data; boundary=XYZ
-  // where the boundary has two fewer leading '-' chars
-  static const char header_msg[] =
-      "--header=Content-Type: multipart/form-data; boundary=";
-  char* const header = reinterpret_cast<char*>(allocator.Alloc(
-      sizeof(header_msg) - 1 + sizeof(mime_boundary) - 2));
-  memcpy(header, header_msg, sizeof(header_msg) - 1);
-  memcpy(header + sizeof(header_msg) - 1, mime_boundary + 2,
-         sizeof(mime_boundary) - 2);
-  // We grab the NUL byte from the end of |mime_boundary|.
-
-  // The --post-file argument to wget looks like:
-  //   --post-file=/tmp/...
-  static const char post_file_msg[] = "--post-file=";
-  char* const post_file = reinterpret_cast<char*>(allocator.Alloc(
-       sizeof(post_file_msg) - 1 + sizeof(temp_file)));
-  memcpy(post_file, post_file_msg, sizeof(post_file_msg) - 1);
-  memcpy(post_file + sizeof(post_file_msg) - 1, temp_file, sizeof(temp_file));
-
   const pid_t child = sys_fork();
   if (!child) {
     // Spawned helper process.
@@ -1346,41 +1568,25 @@ void HandleCrashDump(const BreakpadInfo& info) {
 
     IGNORE_RET(sys_setsid());
 
-    // Leave one end of a pipe in the wget process and watch for it getting
-    // closed by the wget process exiting.
+    // Leave one end of a pipe in the upload process and watch for it getting
+    // closed by the upload process exiting.
     int fds[2];
     if (sys_pipe(fds) >= 0) {
-      const pid_t wget_child = sys_fork();
-      if (!wget_child) {
-        // Wget process.
+      const pid_t upload_child = sys_fork();
+      if (!upload_child) {
+        // Upload process.
         IGNORE_RET(sys_close(fds[0]));
         IGNORE_RET(sys_dup2(fds[1], 3));
-        static const char kWgetBinary[] = "/usr/bin/wget";
-        const char* args[] = {
-          kWgetBinary,
-          header,
-          post_file,
-          kUploadURL,
-          "--timeout=10",  // Set a timeout so we don't hang forever.
-          "--tries=1",     // Don't retry if the upload fails.
-          "-O",  // output reply to fd 3
-          "/dev/fd/3",
-          NULL,
-        };
-
-        execve(kWgetBinary, const_cast<char**>(args), environ);
-        static const char msg[] = "Cannot upload crash dump: cannot exec "
-                                  "/usr/bin/wget\n";
-        WriteLog(msg, sizeof(msg) - 1);
-        sys__exit(1);
+        ExecUploadProcessOrTerminate(info, temp_file, mime_boundary, exe_buf,
+                                     &allocator);
       }
 
       // Helper process.
-      if (wget_child > 0) {
+      if (upload_child > 0) {
         IGNORE_RET(sys_close(fds[1]));
         char id_buf[17];  // Crash report IDs are expected to be 16 chars.
         ssize_t len = -1;
-        // Wget should finish in about 10 seconds. Add a few more 500 ms
+        // Upload should finish in about 10 seconds. Add a few more 500 ms
         // internals to account for process startup time.
         for (size_t wait_count = 0; wait_count < 24; ++wait_count) {
           struct kernel_pollfd poll_fd;
@@ -1425,9 +1631,9 @@ void HandleCrashDump(const BreakpadInfo& info) {
             }
           }
         }
-        if (sys_waitpid(wget_child, NULL, WNOHANG) == 0) {
-          // Wget process is still around, kill it.
-          sys_kill(wget_child, SIGKILL);
+        if (sys_waitpid(upload_child, NULL, WNOHANG) == 0) {
+          // Upload process is still around, kill it.
+          sys_kill(upload_child, SIGKILL);
         }
       }
     }
