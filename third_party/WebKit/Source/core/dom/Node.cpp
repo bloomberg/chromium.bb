@@ -458,7 +458,7 @@ String Node::nodeValue() const
     return String();
 }
 
-void Node::setNodeValue(const String& /*nodeValue*/, ExceptionCode& ec)
+void Node::setNodeValue(const String&)
 {
     // By default, setting nodeValue has no effect.
 }
@@ -1670,7 +1670,7 @@ void Node::setTextContent(const String& text, ExceptionCode& ec)
         case CDATA_SECTION_NODE:
         case COMMENT_NODE:
         case PROCESSING_INSTRUCTION_NODE:
-            setNodeValue(text, ec);
+            setNodeValue(text);
             return;
         case ELEMENT_NODE:
         case ATTRIBUTE_NODE:

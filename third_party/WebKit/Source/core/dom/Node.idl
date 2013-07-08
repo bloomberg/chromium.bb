@@ -41,7 +41,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        nodeName;
 
              // FIXME: the spec says this can also raise on retrieval.
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString        nodeValue;
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings] attribute DOMString        nodeValue;
 
     [PerWorldBindings] readonly attribute unsigned short   nodeType;
     [PerWorldBindings] readonly attribute Node             parentNode;

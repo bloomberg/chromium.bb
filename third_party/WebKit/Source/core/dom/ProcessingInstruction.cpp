@@ -90,7 +90,7 @@ String ProcessingInstruction::nodeValue() const
     return m_data;
 }
 
-void ProcessingInstruction::setNodeValue(const String& nodeValue, ExceptionCode& ec)
+void ProcessingInstruction::setNodeValue(const String& nodeValue)
 {
     setData(nodeValue);
 }

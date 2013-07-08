@@ -100,9 +100,8 @@ WebString WebNode::nodeValue() const
 
 bool WebNode::setNodeValue(const WebString& value)
 {
-    ExceptionCode exceptionCode = 0;
-    m_private->setNodeValue(value, exceptionCode);
-    return !exceptionCode;
+    m_private->setNodeValue(value);
+    return true;
 }
 
 WebDocument WebNode::document() const

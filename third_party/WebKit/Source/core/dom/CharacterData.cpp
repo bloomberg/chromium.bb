@@ -191,7 +191,7 @@ bool CharacterData::containsOnlyWhitespace() const
     return m_data.containsOnlyWhitespace();
 }
 
-void CharacterData::setNodeValue(const String& nodeValue, ExceptionCode&)
+void CharacterData::setNodeValue(const String& nodeValue)
 {
     setData(nodeValue);
 }

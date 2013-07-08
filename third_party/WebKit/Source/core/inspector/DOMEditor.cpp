@@ -325,22 +325,22 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionCode& ec)
+    virtual bool perform(ExceptionCode&)
     {
         m_oldValue = m_node->nodeValue();
-        return redo(ec);
+        return redo(IGNORE_EXCEPTION);
     }
 
-    virtual bool undo(ExceptionCode& ec)
+    virtual bool undo(ExceptionCode&)
     {
-        m_node->setNodeValue(m_oldValue, ec);
-        return !ec;
+        m_node->setNodeValue(m_oldValue);
+        return true;
     }
 
-    virtual bool redo(ExceptionCode& ec)
+    virtual bool redo(ExceptionCode&)
     {
-        m_node->setNodeValue(m_value, ec);
-        return !ec;
+        m_node->setNodeValue(m_value);
+        return true;
     }
 
 private:

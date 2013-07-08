@@ -184,7 +184,7 @@ public:
     bool hasLocalName(const AtomicString&) const;
     virtual String nodeName() const = 0;
     virtual String nodeValue() const;
-    virtual void setNodeValue(const String&, ExceptionCode&);
+    virtual void setNodeValue(const String&);
     virtual NodeType nodeType() const = 0;
     ContainerNode* parentNode() const;
     Element* parentElement() const;

@@ -135,9 +135,9 @@ void Attr::setValue(const AtomicString& value, ExceptionCode&)
         m_element->didModifyAttribute(qualifiedName(), value);
 }
 
-void Attr::setNodeValue(const String& v, ExceptionCode& ec)
+void Attr::setNodeValue(const String& v)
 {
-    setValue(v, ec);
+    setValue(v, IGNORE_EXCEPTION);
 }
 
 PassRefPtr<Node> Attr::cloneNode(bool /*deep*/)

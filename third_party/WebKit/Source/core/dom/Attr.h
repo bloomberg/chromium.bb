@@ -78,7 +78,7 @@ private:
     virtual void setPrefix(const AtomicString&, ExceptionCode&);
 
     virtual String nodeValue() const OVERRIDE { return value(); }
-    virtual void setNodeValue(const String&, ExceptionCode&);
+    virtual void setNodeValue(const String&);
     virtual PassRefPtr<Node> cloneNode(bool deep);
 
     virtual bool isAttributeNode() const { return true; }
