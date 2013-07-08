@@ -664,7 +664,7 @@ const char kEnableAcceleratedOverflowScroll[] =
     "enable-accelerated-overflow-scroll";
 
 // Disables accelerated compositing for overflow scroll.
-extern const char kDisableAcceleratedOverflowScroll[] =
+const char kDisableAcceleratedOverflowScroll[] =
     "disable-accelerated-overflow-scroll";
 
 // Enables accelerated compositing for scrollable frames for accelerated
@@ -869,5 +869,12 @@ const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
+
+// Enables/disables accelerated compositing for backgrounds of root layers with
+// background-attachment: fixed. Requires kForceCompositingMode.
+const char kDisableAcceleratedFixedRootBackground[] =
+    "disable-accelerated-fixed-root-background";
+const char kEnableAcceleratedFixedRootBackground[] =
+    "enable-accelerated-fixed-root-background";
 
 }  // namespace switches

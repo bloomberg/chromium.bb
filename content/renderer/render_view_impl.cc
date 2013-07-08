@@ -619,6 +619,18 @@ static bool ShouldUseTransitionCompositing(float device_scale_factor) {
   return false;
 }
 
+static bool ShouldUseAcceleratedFixedRootBackground(float device_scale_factor) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableAcceleratedFixedRootBackground))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableAcceleratedFixedRootBackground))
+    return true;
+
+  return DeviceScaleEnsuresTextQuality(device_scale_factor);
+}
+
 static FaviconURL::IconType ToFaviconType(WebKit::WebIconURL::Type type) {
   switch (type) {
     case WebKit::WebIconURL::TypeFavicon:
@@ -898,6 +910,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
       ShouldUseTransitionCompositing(device_scale_factor_));
+  webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(
+      ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
 
   webkit_glue::ApplyWebPreferences(webkit_preferences_, webview());
   webview()->initializeMainFrame(main_render_frame_.get());
@@ -6246,6 +6260,9 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
       ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
         ShouldUseTransitionCompositing(device_scale_factor_));
+    webview()->settings()->
+        setAcceleratedCompositingForFixedRootBackgroundEnabled(
+            ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();

@@ -6740,6 +6740,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_COMPOSITING_FOR_TRANSITION_DESCRIPTION" desc="Description for the flag to make RenderLayers with transitions become composited layers.">
         Enabling this option will make RenderLayers with a transition on opacity, transform, or filter have their own composited layer.
       </message>
+      <message name="IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_NAME" desc="Name of the 'Accelerated fixed root background' lab.">
+        Compositing for fixed root backgrounds.
+      </message>
+      <message name="IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_DESCRIPTION" desc="Description for the flag to all fixed root backgrounds to be put in separate, composited layers.">
+        If this option is enabled, and if the body is styled with background-attachment:fixed, the background will have its own compositied layer.
+      </message>
       <message name="IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME" desc="Name of the 'Enable deferred image decoding' lab.">
         Enable deferred image decoding.
       </message>

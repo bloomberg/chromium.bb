@@ -159,6 +159,14 @@ const Experiment::Choice kEnableCompositingForTransitionChoices[] = {
     switches::kDisableCompositingForTransition, ""},
 };
 
+const Experiment::Choice kEnableAcceleratedFixedRootBackgroundChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableAcceleratedFixedRootBackground, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableAcceleratedFixedRootBackground, ""},
+};
+
 const Experiment::Choice kGDIPresentChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_PRESENT_WITH_GDI_FIRST_SHOW,
@@ -496,6 +504,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_COMPOSITING_FOR_TRANSITION_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kEnableCompositingForTransitionChoices)
+  },
+  {
+    "enable-accelerated-fixed-root-background",
+    IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_NAME,
+    IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kEnableAcceleratedFixedRootBackgroundChoices)
   },
   // TODO(bbudge): When NaCl is on by default, remove this flag entry.
   {
