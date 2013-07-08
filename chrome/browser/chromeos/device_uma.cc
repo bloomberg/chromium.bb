@@ -98,7 +98,8 @@ void DeviceUMA::CheckTouchpadEvent(const base::NativeEvent& native_event) {
 void DeviceUMA::CheckIncomingEvent(const base::NativeEvent& event) {
   switch (event->type) {
     case GenericEvent: {
-      if (ui::IsTouchpadEvent(event))
+      if (ui::DeviceDataManager::GetInstance()->IsXIDeviceEvent(event) &&
+          ui::IsTouchpadEvent(event))
         CheckTouchpadEvent(event);
       break;
     }
