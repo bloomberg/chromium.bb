@@ -3115,6 +3115,7 @@ irt_variant_tests = [
     'tests/toolchain/arm/nacl.scons',
     'tests/unittests/shared/platform/nacl.scons',
     'tests/untrusted_check/nacl.scons',
+    'tests/unwind_restores_regs/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     # NOTE: The following tests are really IRT-only tests, but they
     # are in this category so that they can generate libraries (which
