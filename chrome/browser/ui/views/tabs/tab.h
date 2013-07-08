@@ -345,7 +345,6 @@ class Tab : public TabAudioIndicator::Delegate,
     gfx::ImageSkia* image_r;
     int l_width;
     int r_width;
-    int y_offset;
   };
   static TabImage tab_active_;
   static TabImage tab_inactive_;

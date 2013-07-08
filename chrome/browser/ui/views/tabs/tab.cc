@@ -1320,11 +1320,11 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
   // rectangle. And again, don't draw over the toolbar.
   background_canvas.TileImageInt(*tab_bg,
      offset + tab_image->l_width,
-     bg_offset_y + drop_shadow_height() + tab_image->y_offset,
+     bg_offset_y + drop_shadow_height(),
      tab_image->l_width,
-     drop_shadow_height() + tab_image->y_offset,
+     drop_shadow_height(),
      width() - tab_image->l_width - tab_image->r_width,
-     height() - drop_shadow_height() - kToolbarOverlap - tab_image->y_offset);
+     height() - drop_shadow_height() - kToolbarOverlap);
 
   canvas->DrawImageInt(
       gfx::ImageSkia(background_canvas.ExtractImageRep()), 0, 0);
@@ -1373,11 +1373,11 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   // by incrementing by GetDropShadowHeight(), since it's a simple rectangle.
   canvas->TileImageInt(*tab_background,
      offset + tab_image->l_width,
-     drop_shadow_height() + tab_image->y_offset,
+     drop_shadow_height(),
      tab_image->l_width,
-     drop_shadow_height() + tab_image->y_offset,
+     drop_shadow_height(),
      width() - tab_image->l_width - tab_image->r_width,
-     height() - drop_shadow_height() - tab_image->y_offset);
+     height() - drop_shadow_height());
 
   // Now draw the highlights/shadows around the tab edge.
   canvas->DrawImageInt(*tab_image->image_l, 0, 0);
