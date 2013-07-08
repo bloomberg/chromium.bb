@@ -169,7 +169,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   // change this, since it would break existing rich text editors.
   settings->setEditableLinkBehaviorNeverLive();
 
-  settings->setFontRenderingModeNormal();
   settings->setJavaEnabled(prefs.java_enabled);
 
   // By default, allow_universal_access_from_file_urls is set to false and thus
