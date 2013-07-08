@@ -1268,6 +1268,11 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (scope != treeScope())
         return InsertionDone;
 
+    if (isUpgradedCustomElement()) {
+        RefPtr<CustomElementDefinition> definition = document()->registry()->findFor(this);
+        CustomElementCallbackDispatcher::instance().enqueueEnteredDocumentCallback(definition->callbacks(), this);
+    }
+
     const AtomicString& idValue = getIdAttribute();
     if (!idValue.isNull())
         updateId(scope, nullAtom, idValue);
@@ -1323,8 +1328,17 @@ void Element::removedFrom(ContainerNode* insertionPoint)
     }
 
     ContainerNode::removedFrom(insertionPoint);
-    if (wasInDocument && hasPendingResources())
-        document()->accessSVGExtensions()->removeElementFromPendingResources(this);
+    if (wasInDocument) {
+        if (hasPendingResources())
+            document()->accessSVGExtensions()->removeElementFromPendingResources(this);
+
+        if (isUpgradedCustomElement()) {
+            if (CustomElementRegistry* registry = document()->registry()) {
+                RefPtr<CustomElementDefinition> definition = registry->findFor(this);
+                CustomElementCallbackDispatcher::instance().enqueueLeftDocumentCallback(definition->callbacks(), this);
+            }
+        }
+    }
 }
 
 void Element::createRendererIfNeeded(const AttachContext& context)

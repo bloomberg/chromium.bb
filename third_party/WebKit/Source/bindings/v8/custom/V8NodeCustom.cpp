@@ -129,6 +129,9 @@ void V8Node::appendChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     v8::Handle<v8::Object> holder = args.Holder();
     Node* imp = V8Node::toNative(holder);
+
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+
     ExceptionCode ec = 0;
     Node* newChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     bool success = imp->appendChild(newChild, ec, AttachLazily);

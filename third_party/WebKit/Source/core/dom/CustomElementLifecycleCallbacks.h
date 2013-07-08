@@ -42,16 +42,24 @@ class CustomElementLifecycleCallbacks : public RefCounted<CustomElementLifecycle
 public:
     virtual ~CustomElementLifecycleCallbacks() { }
 
-    bool hasCreated() const { return m_which & Created; }
+    bool hasCreatedCallback() const { return m_which & Created; }
     virtual void created(Element*) = 0;
 
-    bool hasAttributeChanged() const { return m_which & AttributeChanged; }
+    bool hasEnteredDocumentCallback() const { return m_which & EnteredDocument; }
+    virtual void enteredDocument(Element*) = 0;
+
+    bool hasLeftDocumentCallback() const { return m_which & LeftDocument; }
+    virtual void leftDocument(Element*) = 0;
+
+    bool hasAttributeChangedCallback() const { return m_which & AttributeChanged; }
     virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
     enum CallbackType {
         None             = 0,
         Created          = 1 << 0,
-        AttributeChanged = 1 << 1
+        EnteredDocument  = 1 << 1,
+        LeftDocument     = 1 << 2,
+        AttributeChanged = 1 << 3
     };
 
 protected:

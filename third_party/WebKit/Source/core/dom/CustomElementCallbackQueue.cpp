@@ -35,14 +35,13 @@
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+PassOwnPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtr<Element> element)
 {
-    return adoptPtr(new CustomElementCallbackQueue(callbacks, element));
+    return adoptPtr(new CustomElementCallbackQueue(element));
 }
 
-CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-    : m_callbacks(callbacks)
-    , m_element(element)
+CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<Element> element)
+    : m_element(element)
     , m_owner(-1)
     , m_index(0)
 {
@@ -50,11 +49,11 @@ CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<CustomElementL
 
 void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
 {
-    for (; m_index < m_queue.size() && owner() == caller; m_index++) {
+    while (m_index < m_queue.size() && owner() == caller) {
         // dispatch() may cause recursion which steals this callback
         // queue and reenters processInQueue. owner() == caller
         // detects this recursion and cedes processing.
-        m_queue[m_index]->dispatch(m_callbacks.get(), m_element.get());
+        m_queue[m_index++]->dispatch(m_element.get());
     }
 
     if (owner() == caller && m_index == m_queue.size()) {

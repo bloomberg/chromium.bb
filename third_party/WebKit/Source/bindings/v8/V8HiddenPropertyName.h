@@ -41,6 +41,8 @@ namespace WebCore {
     V(callback) \
     V(customElementAttributeChanged) \
     V(customElementCreated) \
+    V(customElementEnteredDocument) \
+    V(customElementLeftDocument) \
     V(detail) \
     V(document) \
     V(event) \

@@ -151,9 +151,11 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Handle<v8::Function> created = retrieveCallback(isolate, "createdCallback");
+    v8::Handle<v8::Function> enteredDocument = retrieveCallback(isolate, "enteredDocumentCallback");
+    v8::Handle<v8::Function> leftDocument = retrieveCallback(isolate, "leftDocumentCallback");
     v8::Handle<v8::Function> attributeChanged = retrieveCallback(isolate, "attributeChangedCallback");
 
-    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, created, attributeChanged);
+    return V8CustomElementLifecycleCallbacks::create(document, m_prototype, created, enteredDocument, leftDocument, attributeChanged);
 }
 
 v8::Handle<v8::Function> CustomElementConstructorBuilder::retrieveCallback(v8::Isolate* isolate, const char* name)

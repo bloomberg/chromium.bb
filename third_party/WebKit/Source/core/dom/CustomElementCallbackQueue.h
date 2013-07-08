@@ -32,7 +32,6 @@
 #define CustomElementCallbackQueue_h
 
 #include "core/dom/CustomElementCallbackInvocation.h"
-#include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -43,7 +42,7 @@ namespace WebCore {
 class CustomElementCallbackQueue {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
 public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
 
     typedef int ElementQueue;
     ElementQueue owner() { return m_owner; }
@@ -56,13 +55,11 @@ public:
     }
 
     void append(PassOwnPtr<CustomElementCallbackInvocation> invocation) { m_queue.append(invocation); }
-
     void processInElementQueue(ElementQueue);
 
 private:
-    CustomElementCallbackQueue(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    CustomElementCallbackQueue(PassRefPtr<Element>);
 
-    RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
     RefPtr<Element> m_element;
     Vector<OwnPtr<CustomElementCallbackInvocation> > m_queue;
     ElementQueue m_owner;

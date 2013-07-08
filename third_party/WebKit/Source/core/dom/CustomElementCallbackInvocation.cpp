@@ -31,54 +31,103 @@
 #include "config.h"
 #include "core/dom/CustomElementCallbackInvocation.h"
 
-#include "core/dom/CustomElementLifecycleCallbacks.h"
+#include "core/dom/CustomElementCallbackDispatcher.h"
 
 namespace WebCore {
 
-class AttributeChangedInvocation : public CustomElementCallbackInvocation {
+class CreatedInvocation : public CustomElementCallbackInvocation {
 public:
-    AttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    CreatedInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
+        : CustomElementCallbackInvocation(callbacks)
+    {
+    }
 
 private:
-    virtual void dispatch(CustomElementLifecycleCallbacks*, Element*) OVERRIDE;
+    virtual void dispatch(Element*) OVERRIDE;
+};
+
+void CreatedInvocation::dispatch(Element* element)
+{
+    if (element->inDocument())
+        CustomElementCallbackDispatcher::instance().enqueueEnteredDocumentCallback(callbacks(), element);
+    callbacks()->created(element);
+}
+
+class EnteredLeftDocumentInvocation : public CustomElementCallbackInvocation {
+public:
+    EnteredLeftDocumentInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType which);
+
+private:
+    virtual void dispatch(Element*) OVERRIDE;
+
+    CustomElementLifecycleCallbacks::CallbackType m_which;
+};
+
+EnteredLeftDocumentInvocation::EnteredLeftDocumentInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
+    : CustomElementCallbackInvocation(callbacks)
+    , m_which(which)
+{
+    ASSERT(m_which == CustomElementLifecycleCallbacks::EnteredDocument || m_which == CustomElementLifecycleCallbacks::LeftDocument);
+}
+
+void EnteredLeftDocumentInvocation::dispatch(Element* element)
+{
+    switch (m_which) {
+    case CustomElementLifecycleCallbacks::EnteredDocument:
+        callbacks()->enteredDocument(element);
+        break;
+    case CustomElementLifecycleCallbacks::LeftDocument:
+        callbacks()->leftDocument(element);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+}
+
+class AttributeChangedInvocation : public CustomElementCallbackInvocation {
+public:
+    AttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+
+private:
+    virtual void dispatch(Element*) OVERRIDE;
 
     AtomicString m_name;
     AtomicString m_oldValue;
     AtomicString m_newValue;
 };
 
-class CreatedInvocation : public CustomElementCallbackInvocation {
-public:
-    CreatedInvocation() { }
-private:
-    virtual void dispatch(CustomElementLifecycleCallbacks*, Element*) OVERRIDE;
-};
-
-PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createCreatedInvocation()
-{
-    return adoptPtr(new CreatedInvocation());
-}
-
-PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createAttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
-{
-    return adoptPtr(new AttributeChangedInvocation(name, oldValue, newValue));
-}
-
-AttributeChangedInvocation::AttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
-    : m_name(name)
+AttributeChangedInvocation::AttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+    : CustomElementCallbackInvocation(callbacks)
+    , m_name(name)
     , m_oldValue(oldValue)
     , m_newValue(newValue)
 {
 }
 
-void AttributeChangedInvocation::dispatch(CustomElementLifecycleCallbacks* callbacks, Element* element)
+void AttributeChangedInvocation::dispatch(Element* element)
 {
-    callbacks->attributeChanged(element, m_name, m_oldValue, m_newValue);
+    callbacks()->attributeChanged(element, m_name, m_oldValue, m_newValue);
 }
 
-void CreatedInvocation::dispatch(CustomElementLifecycleCallbacks* callbacks, Element* element)
+PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
 {
-    callbacks->created(element);
+    switch (which) {
+    case CustomElementLifecycleCallbacks::Created:
+        return adoptPtr(new CreatedInvocation(callbacks));
+
+    case CustomElementLifecycleCallbacks::EnteredDocument:
+    case CustomElementLifecycleCallbacks::LeftDocument:
+        return adoptPtr(new EnteredLeftDocumentInvocation(callbacks, which));
+
+    default:
+        ASSERT_NOT_REACHED();
+        return PassOwnPtr<CustomElementCallbackInvocation>();
+    }
+}
+
+PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createAttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    return adoptPtr(new AttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
 } // namespace WebCore

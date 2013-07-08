@@ -31,24 +31,35 @@
 #ifndef CustomElementCallbackInvocation_h
 #define CustomElementCallbackInvocation_h
 
+#include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class CustomElementLifecycleCallbacks;
 class Element;
 
 class CustomElementCallbackInvocation {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
 public:
-    static PassOwnPtr<CustomElementCallbackInvocation> createCreatedInvocation();
-    static PassOwnPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static PassOwnPtr<CustomElementCallbackInvocation> createInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
+    static PassOwnPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
-    CustomElementCallbackInvocation() { }
     virtual ~CustomElementCallbackInvocation() { }
+    virtual void dispatch(Element*) = 0;
 
-    virtual void dispatch(CustomElementLifecycleCallbacks*, Element*) = 0;
+protected:
+    CustomElementCallbackInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
+        : m_callbacks(callbacks)
+    {
+    }
+
+    CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
+
+private:
+    RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
 };
 
 }
