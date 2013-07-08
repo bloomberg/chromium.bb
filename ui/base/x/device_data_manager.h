@@ -136,11 +136,6 @@ class UI_EXPORT DeviceDataManager {
   // cached one (see the comment above last_seen_valuator_).
   bool GetEventData(const XEvent& xev, const DataType type, double* value);
 
-  // Check if the event is an XI input event in the strict sense
-  // (i.e. XIDeviceEvent). This rules out things like hierarchy changes,
-  /// device changes, property changes and so on.
-  bool IsXIDeviceEvent(const base::NativeEvent& native_event) const;
-
   // Check if the event comes from touchpad devices.
   bool IsTouchpadXInputEvent(const base::NativeEvent& native_event) const;
 
@@ -215,21 +210,11 @@ class UI_EXPORT DeviceDataManager {
   DeviceDataManager();
   ~DeviceDataManager();
 
-  // Initialize the XInput related system information.
-  bool InitializeXInputInternal();
-
   // Check if an XI event contains data of the specified type.
   bool HasEventData(const XIDeviceEvent* xiev, const DataType type) const;
 
   static const int kMaxDeviceNum = 128;
-  static const int kMaxXIEventType = XI_LASTEVENT + 1;
   bool natural_scroll_enabled_;
-
-  // Major opcode for the XInput extension. Used to identify XInput events.
-  int xi_opcode_;
-
-  // A quick lookup table for determining if the XI event is an XIDeviceEvent.
-  std::bitset<kMaxXIEventType> xi_device_event_types_;
 
   // A quick lookup table for determining if events from the pointer device
   // should be processed.
