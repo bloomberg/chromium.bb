@@ -437,6 +437,7 @@ struct weston_keyboard {
 struct weston_seat {
 	struct wl_list base_resource_list;
 
+	struct wl_global *global;
 	struct weston_pointer *pointer;
 	struct weston_keyboard *keyboard;
 	struct weston_touch *touch;

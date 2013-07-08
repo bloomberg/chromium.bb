@@ -1531,8 +1531,9 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 	wl_list_init(&seat->drag_resource_list);
 	wl_signal_init(&seat->destroy_signal);
 
-	wl_display_add_global(ec->wl_display, &wl_seat_interface, seat,
-			      bind_seat);
+	seat->global =
+		wl_display_add_global(ec->wl_display,
+				      &wl_seat_interface, seat, bind_seat);
 
 	seat->compositor = ec;
 	seat->modifier_state = 0;
@@ -1550,7 +1551,6 @@ WL_EXPORT void
 weston_seat_release(struct weston_seat *seat)
 {
 	wl_list_remove(&seat->link);
-	/* The global object is destroyed at wl_display_destroy() time. */
 
 #ifdef ENABLE_XKBCOMMON
 	if (seat->compositor->use_xkbcommon) {
@@ -1568,6 +1568,8 @@ weston_seat_release(struct weston_seat *seat)
 		weston_touch_destroy(seat->touch);
 
 	free (seat->seat_name);
+
+	wl_display_remove_global(seat->compositor->wl_display, seat->global);
 
 	wl_signal_emit(&seat->destroy_signal, seat);
 }
