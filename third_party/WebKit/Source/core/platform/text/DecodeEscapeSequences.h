@@ -51,7 +51,9 @@ struct Unicode16BitEscapeSequence {
         }
         return runEnd;
     }
-    static String decodeRun(const UChar* run, size_t runLength, const WTF::TextEncoding&)
+
+    template<typename CharType>
+    static String decodeRun(const CharType* run, size_t runLength, const WTF::TextEncoding&)
     {
         // Each %u-escape sequence represents a UTF-16 code unit.
         // See <http://www.w3.org/International/iri-edit/draft-duerst-iri.html#anchor29>.
@@ -96,14 +98,16 @@ struct URLEscapeSequence {
         }
         return runEnd;
     }
-    static String decodeRun(const UChar* run, size_t runLength, const WTF::TextEncoding& encoding)
+
+    template<typename CharType>
+    static String decodeRun(const CharType* run, size_t runLength, const WTF::TextEncoding& encoding)
     {
         // For URL escape sequences, we know that findEndOfRun() has given us a run where every %-sign introduces
         // a valid escape sequence, but there may be characters between the sequences.
         Vector<char, 512> buffer;
         buffer.resize(runLength); // Unescaping hex sequences only makes the length smaller.
         char* p = buffer.data();
-        const UChar* runEnd = run + runLength;
+        const CharType* runEnd = run + runLength;
         while (run < runEnd) {
             if (run[0] == '%') {
                 *p++ = (toASCIIHexValue(run[1]) << 4) | toASCIIHexValue(run[2]);
@@ -134,7 +138,10 @@ String decodeEscapeSequences(const String& string, const WTF::TextEncoding& enco
             continue;
         }
 
-        String decoded = EscapeSequence::decodeRun(string.bloatedCharacters() + encodedRunPosition, encodedRunEnd - encodedRunPosition, encoding);
+        String decoded = string.is8Bit() ?
+            EscapeSequence::decodeRun(string.characters8() + encodedRunPosition, encodedRunEnd - encodedRunPosition, encoding) :
+            EscapeSequence::decodeRun(string.characters16() + encodedRunPosition, encodedRunEnd - encodedRunPosition, encoding);
+
         if (decoded.isEmpty())
             continue;
 
