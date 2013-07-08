@@ -161,10 +161,9 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
          ++iter) {
       SkColor color;
       float width;
-      RasterMode raster_mode;
-      if (*iter && iter->IsReadyToDraw(&raster_mode)) {
+      if (*iter && iter->IsReadyToDraw()) {
         ManagedTileState::TileVersion::Mode mode =
-            iter->tile_version(raster_mode).mode();
+            iter->GetTileVersionForDrawing().mode();
         if (mode == ManagedTileState::TileVersion::SOLID_COLOR_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
           width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
@@ -207,8 +206,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
-    RasterMode raster_mode;
-    if (!*iter || !iter->IsReadyToDraw(&raster_mode)) {
+    if (!*iter || !iter->IsReadyToDraw()) {
       if (DrawCheckerboardForMissingTiles()) {
         // TODO(enne): Figure out how to show debug "invalidated checker" color
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
@@ -229,7 +227,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     }
 
     const ManagedTileState::TileVersion& tile_version =
-        iter->tile_version(raster_mode);
+        iter->GetTileVersionForDrawing();
     switch (tile_version.mode()) {
       case ManagedTileState::TileVersion::RESOURCE_MODE: {
         gfx::RectF texture_rect = iter.texture_rect();
@@ -630,19 +628,20 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
        iter;
        ++iter) {
     // Mask resource not ready yet.
-    RasterMode raster_mode;
-    if (!*iter || !iter->IsReadyToDraw(&raster_mode))
+    if (!*iter)
       return 0;
 
-    if (iter->tile_version(raster_mode).mode() !=
-            ManagedTileState::TileVersion::RESOURCE_MODE)
+    const ManagedTileState::TileVersion& tile_version =
+        iter->GetTileVersionForDrawing();
+    if (!tile_version.IsReadyToDraw() ||
+        tile_version.mode() != ManagedTileState::TileVersion::RESOURCE_MODE)
       return 0;
 
     // Masks only supported if they fit on exactly one tile.
     if (iter.geometry_rect() != content_rect)
       return 0;
 
-    return iter->tile_version(raster_mode).get_resource_id();
+    return tile_version.get_resource_id();
   }
   return 0;
 }
@@ -692,7 +691,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
                                                    rect);
          iter;
          ++iter) {
-      if (!*iter || !iter->IsReadyToDraw(NULL))
+      if (!*iter || !iter->IsReadyToDraw())
         continue;
 
       // This iteration is over the visible content rect which is potentially
@@ -883,7 +882,7 @@ void PictureLayerImpl::CalculateRasterContentsScale(
   *raster_contents_scale = ideal_contents_scale_;
 
   // Don't allow animating CSS scales to drop below 1.  This is needed because
-  // changes in raster source scale aren't handled.  See the TODO in
+  // changes in raster source scale aren't handled.  See the comment in
   // ShouldAdjustRasterScale.
   if (animating_transform_to_screen) {
     *raster_contents_scale = std::max(

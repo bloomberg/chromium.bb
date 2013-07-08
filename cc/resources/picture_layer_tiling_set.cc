@@ -240,7 +240,7 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
   // Loop until we find a valid place to stop.
   while (true) {
     while (tiling_iter_ &&
-           (!*tiling_iter_ || !tiling_iter_->IsReadyToDraw(NULL))) {
+           (!*tiling_iter_ || !tiling_iter_->IsReadyToDraw())) {
       missing_region_.Union(tiling_iter_.geometry_rect());
       ++tiling_iter_;
     }

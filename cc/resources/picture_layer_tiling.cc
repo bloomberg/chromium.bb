@@ -563,10 +563,7 @@ size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
   size_t amount = 0;
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     const Tile* tile = it->second.get();
-    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-      amount += tile->tile_version(
-          static_cast<RasterMode>(mode)).GPUMemoryUsageInBytes();
-    }
+    amount += tile->GPUMemoryUsageInBytes();
   }
   return amount;
 }

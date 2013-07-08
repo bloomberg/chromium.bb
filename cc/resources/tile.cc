@@ -49,4 +49,11 @@ scoped_ptr<base::Value> Tile::AsValue() const {
   return res.PassAs<base::Value>();
 }
 
+size_t Tile::GPUMemoryUsageInBytes() const {
+  size_t total_size = 0;
+  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode)
+    total_size += managed_state_.tile_versions[mode].GPUMemoryUsageInBytes();
+  return total_size;
+}
+
 }  // namespace cc

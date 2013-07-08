@@ -167,7 +167,7 @@ void RenderingStatsInstrumentation::IncrementDeferredImageCacheHitCount() {
   rendering_stats_.total_deferred_image_cache_hit_count++;
 }
 
-void RenderingStatsInstrumentation::AddTileAnalysisResult(
+void RenderingStatsInstrumentation::AddAnalysisResult(
     base::TimeDelta duration,
     bool is_solid_color) {
   if (!record_rendering_stats_)

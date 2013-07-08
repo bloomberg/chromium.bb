@@ -381,9 +381,10 @@ void TileManager::GetMemoryStats(
     const Tile* tile = *it;
     const ManagedTileState& mts = tile->managed_state();
 
-    RasterMode mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
-    if (tile->IsReadyToDraw(&mode) &&
-        !mts.tile_versions[mode].requires_resource())
+    const ManagedTileState::TileVersion& tile_version =
+        tile->GetTileVersionForDrawing();
+    if (tile_version.IsReadyToDraw() &&
+        !tile_version.requires_resource())
       continue;
 
     size_t tile_bytes = tile->bytes_consumed_if_allocated();
@@ -560,7 +561,7 @@ void TileManager::AssignGpuMemoryToTiles() {
     if (!tile_version.resource_)
       tiles_that_need_to_be_rasterized_.push_back(tile);
 
-    if (!tile->IsReadyToDraw(NULL) &&
+    if (!tile->IsReadyToDraw() &&
         tile->required_for_activation()) {
       AddRequiredTileForActivation(tile);
     }
@@ -695,10 +696,18 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 }
 
 void TileManager::FreeUnusedResourcesForTile(Tile* tile) {
-  RasterMode used_mode = HIGH_QUALITY_RASTER_MODE;
-  bool version_is_used = tile->IsReadyToDraw(&used_mode);
+  DCHECK(tile->IsReadyToDraw());
+  ManagedTileState& mts = tile->managed_state();
+  RasterMode used_mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
   for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-    if (!version_is_used || mode != used_mode)
+    if (mts.tile_versions[mode].IsReadyToDraw()) {
+      used_mode = static_cast<RasterMode>(mode);
+      break;
+    }
+  }
+
+  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+    if (mode != used_mode)
       FreeResourceForTile(tile, static_cast<RasterMode>(mode));
   }
 }
@@ -849,7 +858,6 @@ void TileManager::OnRasterTaskCompleted(
   }
 
   FreeUnusedResourcesForTile(tile.get());
-
   DidFinishTileInitialization(tile.get());
 }
 

@@ -55,7 +55,7 @@ class CC_EXPORT RenderingStatsInstrumentation {
 
   void IncrementDeferredImageCacheHitCount();
 
-  void AddTileAnalysisResult(base::TimeDelta duration, bool is_solid_color);
+  void AddAnalysisResult(base::TimeDelta duration, bool is_solid_color);
 
  protected:
   RenderingStatsInstrumentation();

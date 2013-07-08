@@ -413,18 +413,20 @@ TEST_F(TileManagerTest, NoTextDontReRasterAsNoLCD) {
   for (TileVector::iterator it = active_tree_tiles.begin();
        it != active_tree_tiles.end();
        ++it) {
+    ManagedTileState::TileVersion& tile_version =
+        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
+    tile_version.SetSolidColorForTesting(SkColorSetARGB(0, 0, 0, 0));
     (*it)->set_can_use_lcd_text(false);
-    (*it)->tile_version(HIGH_QUALITY_RASTER_MODE).SetSolidColorForTesting(
-        SkColorSetARGB(0, 0, 0, 0));
-    EXPECT_TRUE((*it)->IsReadyToDraw(NULL));
+    EXPECT_TRUE((*it)->IsReadyToDraw());
   }
   for (TileVector::iterator it = pending_tree_tiles.begin();
        it != pending_tree_tiles.end();
        ++it) {
+    ManagedTileState::TileVersion& tile_version =
+        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
+    tile_version.SetSolidColorForTesting(SkColorSetARGB(0, 0, 0, 0));
     (*it)->set_can_use_lcd_text(false);
-    (*it)->tile_version(HIGH_QUALITY_RASTER_MODE).SetSolidColorForTesting(
-        SkColorSetARGB(0, 0, 0, 0));
-    EXPECT_TRUE((*it)->IsReadyToDraw(NULL));
+    EXPECT_TRUE((*it)->IsReadyToDraw());
   }
 
   tile_manager()->ManageTiles();
@@ -448,22 +450,25 @@ TEST_F(TileManagerTest, TextReRasterAsNoLCD) {
   for (TileVector::iterator it = active_tree_tiles.begin();
        it != active_tree_tiles.end();
        ++it) {
+    ManagedTileState::TileVersion& tile_version =
+        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
+    tile_version.SetSolidColorForTesting(SkColorSetARGB(0, 0, 0, 0));
+    tile_version.SetHasTextForTesting(true);
     (*it)->set_can_use_lcd_text(false);
-    (*it)->tile_version(HIGH_QUALITY_RASTER_MODE).SetSolidColorForTesting(
-        SkColorSetARGB(0, 0, 0, 0));
-    (*it)->tile_version(HIGH_QUALITY_RASTER_MODE).SetHasTextForTesting(true);
 
-    EXPECT_TRUE((*it)->IsReadyToDraw(NULL));
+    EXPECT_TRUE((*it)->IsReadyToDraw());
   }
   for (TileVector::iterator it = pending_tree_tiles.begin();
        it != pending_tree_tiles.end();
        ++it) {
-    (*it)->set_can_use_lcd_text(false);
-    (*it)->tile_version(HIGH_QUALITY_RASTER_MODE).SetSolidColorForTesting(
+    ManagedTileState::TileVersion& tile_version =
+        (*it)->GetTileVersionForTesting(HIGH_QUALITY_RASTER_MODE);
+    tile_version.SetSolidColorForTesting(
         SkColorSetARGB(0, 0, 0, 0));
-    (*it)->tile_version(HIGH_QUALITY_RASTER_MODE).SetHasTextForTesting(true);
+    tile_version.SetHasTextForTesting(true);
+    (*it)->set_can_use_lcd_text(false);
 
-    EXPECT_TRUE((*it)->IsReadyToDraw(NULL));
+    EXPECT_TRUE((*it)->IsReadyToDraw());
   }
 
   tile_manager()->ManageTiles();

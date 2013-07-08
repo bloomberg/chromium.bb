@@ -70,23 +70,20 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  bool IsReadyToDraw(RasterMode* ready_mode) const {
+  bool IsReadyToDraw() const {
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-      if (managed_state_.tile_versions[mode].IsReadyToDraw()) {
-        if (ready_mode)
-          *ready_mode = static_cast<RasterMode>(mode);
+      if (managed_state_.tile_versions[mode].IsReadyToDraw())
         return true;
-      }
     }
     return false;
   }
 
-  const ManagedTileState::TileVersion& tile_version(RasterMode mode) const {
-    return managed_state_.tile_versions[mode];
-  }
-
-  ManagedTileState::TileVersion& tile_version(RasterMode mode) {
-    return managed_state_.tile_versions[mode];
+  const ManagedTileState::TileVersion& GetTileVersionForDrawing() const {
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      if (managed_state_.tile_versions[mode].IsReadyToDraw())
+        return managed_state_.tile_versions[mode];
+    }
+    return managed_state_.tile_versions[HIGH_QUALITY_RASTER_MODE];
   }
 
   gfx::Rect opaque_rect() const { return opaque_rect_; }
@@ -106,8 +103,13 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     picture_pile_ = pile;
   }
 
+  size_t GPUMemoryUsageInBytes() const;
+
   RasterMode GetRasterModeForTesting() const {
     return managed_state().raster_mode;
+  }
+  ManagedTileState::TileVersion& GetTileVersionForTesting(RasterMode mode) {
+    return managed_state_.tile_versions[mode];
   }
 
  private:
@@ -121,7 +123,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   inline size_t bytes_consumed_if_allocated() const {
     return 4 * tile_size_.width() * tile_size_.height();
   }
-
 
   // Normal private methods.
   friend class base::RefCounted<Tile>;

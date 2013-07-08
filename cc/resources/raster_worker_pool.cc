@@ -82,8 +82,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     // Record the solid color prediction.
     UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
                           analysis_.is_solid_color);
-    rendering_stats_->AddTileAnalysisResult(duration,
-                                            analysis_.is_solid_color);
+    rendering_stats_->AddAnalysisResult(duration, analysis_.is_solid_color);
 
     // Clear the flag if we're not using the estimator.
     analysis_.is_solid_color &= kUseColorEstimator;
