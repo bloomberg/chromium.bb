@@ -193,6 +193,9 @@ def FlagsForFile(filename):
                                                      filename)
   final_flags = flags + chrome_flags
 
+  # This causes libclang (3.3) to crash. Remove it until things are fixed.
+  final_flags.remove('-Wno-deprecated-register')
+
   return {
     'flags': final_flags,
     'do_cache': True
