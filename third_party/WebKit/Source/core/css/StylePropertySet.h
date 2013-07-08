@@ -25,6 +25,7 @@
 #include "core/css/CSSParserMode.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSProperty.h"
+#include "core/css/PropertySetCSSStyleDeclaration.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
@@ -37,7 +38,6 @@ class Element;
 class ImmutableStylePropertySet;
 class KURL;
 class MutableStylePropertySet;
-class PropertySetCSSStyleDeclaration;
 class StylePropertyShorthand;
 class StyleSheetContents;
 
@@ -106,7 +106,7 @@ public:
     String asText() const;
 
     bool isMutable() const { return m_isMutable; }
-    bool hasCSSOMWrapper() const { return m_ownsCSSOMWrapper; }
+    bool hasCSSOMWrapper() const;
 
     bool hasFailedOrCanceledSubresources() const;
 
@@ -122,22 +122,19 @@ public:
 protected:
     StylePropertySet(CSSParserMode cssParserMode)
         : m_cssParserMode(cssParserMode)
-        , m_ownsCSSOMWrapper(false)
         , m_isMutable(true)
         , m_arraySize(0)
     { }
 
     StylePropertySet(CSSParserMode cssParserMode, unsigned immutableArraySize)
         : m_cssParserMode(cssParserMode)
-        , m_ownsCSSOMWrapper(false)
         , m_isMutable(false)
         , m_arraySize(immutableArraySize)
     { }
 
     unsigned m_cssParserMode : 2;
-    mutable unsigned m_ownsCSSOMWrapper : 1;
     mutable unsigned m_isMutable : 1;
-    unsigned m_arraySize : 28;
+    unsigned m_arraySize : 29;
 
     friend class PropertySetCSSStyleDeclaration;
 };
@@ -174,12 +171,8 @@ inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() c
 
 class MutableStylePropertySet : public StylePropertySet {
 public:
-    ~MutableStylePropertySet();
-
     static PassRefPtr<MutableStylePropertySet> create(CSSParserMode = CSSQuirksMode);
     static PassRefPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
-
-    MutableStylePropertySet(const StylePropertySet&);
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
     PropertySetCSSStyleDeclaration* cssStyleDeclaration();
@@ -216,14 +209,15 @@ public:
     Vector<CSSProperty, 4> m_propertyVector;
 
 private:
-    MutableStylePropertySet(CSSParserMode cssParserMode)
-        : StylePropertySet(cssParserMode)
-    { }
-
+    explicit MutableStylePropertySet(CSSParserMode);
+    explicit MutableStylePropertySet(const StylePropertySet&);
     MutableStylePropertySet(const CSSProperty* properties, unsigned count);
 
     bool removeShorthandProperty(CSSPropertyID);
     CSSProperty* findCSSPropertyWithID(CSSPropertyID);
+    OwnPtr<PropertySetCSSStyleDeclaration> m_cssomWrapper;
+
+    friend class StylePropertySet;
 };
 
 inline StylePropertyMetadata StylePropertySet::PropertyReference::propertyMetadata() const
