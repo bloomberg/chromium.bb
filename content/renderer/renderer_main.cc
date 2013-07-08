@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "content/child/child_process.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -110,6 +111,9 @@ class MemoryObserver : public base::MessageLoop::TaskObserver {
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
+  base::debug::TraceLog::GetInstance()->SetProcessName("Renderer");
+  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+      kTraceEventRendererProcessSortIndex);
 
   const CommandLine& parsed_command_line = parameters.command_line;
 

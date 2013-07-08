@@ -776,6 +776,7 @@ TraceLog::TraceLog()
     : enable_count_(0),
       num_traces_recorded_(0),
       dispatching_to_observer_list_(false),
+      process_sort_index_(0),
       watch_category_(NULL),
       trace_options_(RECORD_UNTIL_FULL),
       sampling_thread_handle_(0),
@@ -1012,7 +1013,7 @@ void TraceLog::SetDisabled() {
     watch_event_name_ = "";
     for (int i = 0; i < g_category_index; i++)
       SetCategoryGroupEnabled(i, false);
-    AddThreadNameMetadataEvents();
+    AddMetadataEvents();
 
     dispatching_to_observer_list_ = true;
     observer_list = enabled_state_observer_list_;
@@ -1295,24 +1296,82 @@ void TraceLog::CancelWatchEvent() {
   watch_event_name_ = "";
 }
 
-void TraceLog::AddThreadNameMetadataEvents() {
+namespace {
+
+template <typename T>
+void AddMetadataEventToBuffer(
+    TraceBuffer* logged_events,
+    int thread_id,
+    const char* metadata_name, const char* arg_name,
+    const T& value) {
+  int num_args = 1;
+  unsigned char arg_type;
+  unsigned long long arg_value;
+  trace_event_internal::SetTraceValue(value, &arg_type, &arg_value);
+  logged_events->AddEvent(TraceEvent(
+      thread_id,
+      TimeTicks(), TRACE_EVENT_PHASE_METADATA,
+      &g_category_group_enabled[g_category_metadata],
+      metadata_name, trace_event_internal::kNoEventId,
+      num_args, &arg_name, &arg_type, &arg_value, NULL,
+      TRACE_EVENT_FLAG_NONE));
+}
+
+}
+
+void TraceLog::AddMetadataEvents() {
   lock_.AssertAcquired();
+
+  int current_thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  if (process_sort_index_ != 0) {
+    AddMetadataEventToBuffer(logged_events_.get(),
+                             current_thread_id,
+                             "process_sort_index", "sort_index",
+                             process_sort_index_);
+  }
+
+  if (process_name_.size()) {
+    AddMetadataEventToBuffer(logged_events_.get(),
+                             current_thread_id,
+                             "process_name", "name",
+                             process_name_);
+  }
+
+  if (process_labels_.size() > 0) {
+    std::vector<std::string> labels;
+    for(base::hash_map<int, std::string>::iterator it = process_labels_.begin();
+        it != process_labels_.end();
+        it++) {
+      labels.push_back(it->second);
+    }
+    AddMetadataEventToBuffer(logged_events_.get(),
+                             current_thread_id,
+                             "process_labels", "labels",
+                             JoinString(labels, ','));
+  }
+
+  // Thread sort indices.
+  for(hash_map<int, int>::iterator it = thread_sort_indices_.begin();
+      it != thread_sort_indices_.end();
+      it++) {
+    if (it->second == 0)
+      continue;
+    AddMetadataEventToBuffer(logged_events_.get(),
+                             it->first,
+                             "thread_sort_index", "sort_index",
+                             it->second);
+  }
+
+  // Thread names.
   for(hash_map<int, std::string>::iterator it = thread_names_.begin();
       it != thread_names_.end();
       it++) {
-    if (!it->second.empty()) {
-      int num_args = 1;
-      const char* arg_name = "name";
-      unsigned char arg_type;
-      unsigned long long arg_value;
-      trace_event_internal::SetTraceValue(it->second, &arg_type, &arg_value);
-      logged_events_->AddEvent(TraceEvent(it->first,
-          TimeTicks(), TRACE_EVENT_PHASE_METADATA,
-          &g_category_group_enabled[g_category_metadata],
-          "thread_name", trace_event_internal::kNoEventId,
-          num_args, &arg_name, &arg_type, &arg_value, NULL,
-          TRACE_EVENT_FLAG_NONE));
-    }
+    if (it->second.empty())
+      continue;
+    AddMetadataEventToBuffer(logged_events_.get(),
+                             it->first,
+                             "thread_name", "name",
+                             it->second);
   }
 }
 
@@ -1337,6 +1396,39 @@ void TraceLog::SetProcessID(int process_id) {
   unsigned long long fnv_prime = 1099511628211ull;
   unsigned long long pid = static_cast<unsigned long long>(process_id_);
   process_id_hash_ = (offset_basis ^ pid) * fnv_prime;
+}
+
+void TraceLog::SetProcessSortIndex(int sort_index) {
+  AutoLock lock(lock_);
+  process_sort_index_ = sort_index;
+}
+
+void TraceLog::SetProcessName(const std::string& process_name) {
+  AutoLock lock(lock_);
+  process_name_ = process_name;
+}
+
+void TraceLog::UpdateProcessLabel(
+    int label_id, const std::string& current_label) {
+  if(!current_label.length())
+    return RemoveProcessLabel(label_id);
+
+  AutoLock lock(lock_);
+  process_labels_[label_id] = current_label;
+}
+
+void TraceLog::RemoveProcessLabel(int label_id) {
+  base::hash_map<int, std::string>::iterator it = process_labels_.find(
+        label_id);
+  if (it == process_labels_.end())
+    return;
+
+  process_labels_.erase(it);
+}
+
+void TraceLog::SetThreadSortIndex(PlatformThreadId thread_id, int sort_index) {
+  AutoLock lock(lock_);
+  thread_sort_indices_[static_cast<int>(thread_id)] = sort_index;
 }
 
 void TraceLog::SetTimeOffset(TimeDelta offset) {

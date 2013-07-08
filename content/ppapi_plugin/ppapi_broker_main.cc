@@ -6,6 +6,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
+#include "content/common/content_constants_internal.h"
 #include "content/ppapi_plugin/ppapi_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -21,6 +22,9 @@ int PpapiBrokerMain(const MainFunctionParams& parameters) {
 
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
   base::PlatformThread::SetName("CrPPAPIBrokerMain");
+  base::debug::TraceLog::GetInstance()->SetProcessName("PPAPI Broker Process");
+  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+      kTraceEventPpapiBrokerProcessSortIndex);
 
   ChildProcess ppapi_broker_process;
   ppapi_broker_process.set_main_thread(

@@ -982,6 +982,8 @@ RenderViewImpl::~RenderViewImpl() {
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
 
+  base::debug::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
+
   // If file chooser is still waiting for answer, dispatch empty answer.
   while (!file_chooser_completions_.empty()) {
     if (file_chooser_completions_.front()->completion) {
@@ -1972,6 +1974,9 @@ void RenderViewImpl::UpdateTitle(WebFrame* frame,
   // Ignore all but top level navigations.
   if (frame->parent())
     return;
+
+  base::debug::TraceLog::GetInstance()->UpdateProcessLabel(
+      routing_id_, UTF16ToUTF8(title));
 
   string16 shortened_title = title.substr(0, kMaxTitleChars);
   Send(new ViewHostMsg_UpdateTitle(routing_id_, page_id_, shortened_title,

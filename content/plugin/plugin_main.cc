@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "content/child/child_process.h"
+#include "content/common/content_constants_internal.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -54,6 +55,9 @@ int PluginMain(const MainFunctionParams& parameters) {
 #endif
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrPluginMain");
+  base::debug::TraceLog::GetInstance()->SetProcessName("Plugin Process");
+  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+      kTraceEventPluginProcessSortIndex);
 
   base::PowerMonitor power_monitor;
   base::HighResolutionTimerManager high_resolution_timer_manager;

@@ -17,6 +17,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/sandbox_linux.h"
@@ -84,6 +85,9 @@ bool GpuProcessLogMessageHandler(int severity,
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
   TRACE_EVENT0("gpu", "GpuMain");
+  base::debug::TraceLog::GetInstance()->SetProcessName("GPU Process");
+  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+      kTraceEventGpuProcessSortIndex);
 
   const CommandLine& command_line = parameters.command_line;
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {

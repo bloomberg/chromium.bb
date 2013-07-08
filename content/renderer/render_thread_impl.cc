@@ -36,6 +36,7 @@
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/db_message_filter.h"
@@ -315,6 +316,10 @@ RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
 
 void RenderThreadImpl::Init() {
   TRACE_EVENT_BEGIN_ETW("RenderThreadImpl::Init", 0, "");
+
+  base::debug::TraceLog::GetInstance()->SetThreadSortIndex(
+      base::PlatformThread::CurrentId(),
+      kTraceEventRendererMainThreadSortIndex);
 
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
   v8::V8::SetCreateHistogramFunction(CreateHistogram);

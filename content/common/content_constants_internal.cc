@@ -8,4 +8,13 @@ namespace content {
 
 const int kHungRendererDelayMs = 30000;
 
+const int kTraceEventBrowserProcessSortIndex = -6;
+const int kTraceEventRendererProcessSortIndex = -5;
+const int kTraceEventPluginProcessSortIndex = -4;
+const int kTraceEventPpapiProcessSortIndex = -3;
+const int kTraceEventPpapiBrokerProcessSortIndex = -2;
+const int kTraceEventGpuProcessSortIndex = -1;
+
+const int kTraceEventRendererMainThreadSortIndex = -1;
+
 } // namespace content

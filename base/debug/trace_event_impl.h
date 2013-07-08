@@ -451,6 +451,24 @@ class BASE_EXPORT TraceLog {
 
   void SetProcessID(int process_id);
 
+  // Process sort indices, if set, override the order of a process will appear
+  // relative to other processes in the trace viewer. Processes are sorted first
+  // on their sort index, ascending, then by their name, and then tid.
+  void SetProcessSortIndex(int sort_index);
+
+  // Sets the name of the process.
+  void SetProcessName(const std::string& process_name);
+
+  // Processes can have labels in addition to their names. Use labels, for
+  // instance, to list out the web page titles that a process is handling.
+  void UpdateProcessLabel(int label_id, const std::string& current_label);
+  void RemoveProcessLabel(int label_id);
+
+  // Thread sort indices, if set, override the order of a thread will appear
+  // within its process in the trace viewer. Threads are sorted first on their
+  // sort index, ascending, then by their name, and then tid.
+  void SetThreadSortIndex(PlatformThreadId , int sort_index);
+
   // Allow setting an offset between the current TimeTicks time and the time
   // that should be reported.
   void SetTimeOffset(TimeDelta offset);
@@ -509,7 +527,7 @@ class BASE_EXPORT TraceLog {
   TraceLog();
   ~TraceLog();
   const unsigned char* GetCategoryGroupEnabledInternal(const char* name);
-  void AddThreadNameMetadataEvents();
+  void AddMetadataEvents();
 
 #if defined(OS_ANDROID)
   void SendToATrace(char phase,
@@ -538,6 +556,11 @@ class BASE_EXPORT TraceLog {
   EventCallback event_callback_;
   bool dispatching_to_observer_list_;
   std::vector<EnabledStateObserver*> enabled_state_observer_list_;
+
+  std::string process_name_;
+  base::hash_map<int, std::string> process_labels_;
+  int process_sort_index_;
+  base::hash_map<int, int> thread_sort_indices_;
 
   base::hash_map<int, std::string> thread_names_;
   base::hash_map<int, std::stack<TimeTicks> > thread_event_start_times_;
