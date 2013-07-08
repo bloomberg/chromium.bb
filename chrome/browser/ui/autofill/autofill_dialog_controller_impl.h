@@ -588,9 +588,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // The URL of the invoking site.
   GURL source_url_;
 
-  // The SSL info from the invoking site.
-  content::SSLStatus ssl_status_;
-
   // The callback via which we return the collected data and, if Online Wallet
   // was used, the Google transaction id.
   base::Callback<void(const FormStructure*, const std::string&)> callback_;

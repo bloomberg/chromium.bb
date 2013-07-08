@@ -18,21 +18,19 @@ FormData::FormData(const FormData& data)
       origin(data.origin),
       action(data.action),
       user_submitted(data.user_submitted),
-      fields(data.fields),
-      ssl_status(data.ssl_status) {
+      fields(data.fields) {
 }
 
 FormData::~FormData() {
 }
 
 bool FormData::operator==(const FormData& form) const {
-  return (name == form.name &&
-          StringToLowerASCII(method) == StringToLowerASCII(form.method) &&
-          origin == form.origin &&
-          action == form.action &&
-          user_submitted == form.user_submitted &&
-          fields == form.fields &&
-          ssl_status.Equals(form.ssl_status));
+  return name == form.name &&
+         StringToLowerASCII(method) == StringToLowerASCII(form.method) &&
+         origin == form.origin &&
+         action == form.action &&
+         user_submitted == form.user_submitted &&
+         fields == form.fields;
 }
 
 bool FormData::operator!=(const FormData& form) const {

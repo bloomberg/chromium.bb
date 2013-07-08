@@ -2183,9 +2183,7 @@ bool AutofillDialogControllerImpl::RequestingCreditCardInfo() const {
 }
 
 bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
-  return source_url_.SchemeIs(chrome::kHttpsScheme) &&
-         !net::IsCertStatusError(ssl_status_.cert_status) &&
-         !net::IsCertStatusMinorError(ssl_status_.cert_status);
+  return source_url_.SchemeIs(chrome::kHttpsScheme);
 }
 
 AutofillDialogControllerImpl::AutofillDialogControllerImpl(
@@ -2202,7 +2200,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       form_structure_(form_structure, std::string()),
       invoked_from_same_origin_(true),
       source_url_(source_url),
-      ssl_status_(form_structure.ssl_status),
       callback_(callback),
       account_chooser_model_(this, profile_->GetPrefs(), metric_logger_,
                              dialog_type),

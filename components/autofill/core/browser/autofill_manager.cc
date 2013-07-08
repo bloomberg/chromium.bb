@@ -842,10 +842,7 @@ void AutofillManager::OnMaybeShowAutocheckoutBubble(
   if (!HasServerSpecifiedFieldTypes(*cached_form))
     return;
 
-  autocheckout_manager_.MaybeShowAutocheckoutBubble(
-      form.origin,
-      form.ssl_status,
-      bounding_box);
+  autocheckout_manager_.MaybeShowAutocheckoutBubble(form.origin, bounding_box);
 }
 
 void AutofillManager::UploadFormData(const FormStructure& submitted_form) {

@@ -6,6 +6,5 @@ include_rules = [
   "!content/public/common/common_param_traits.h",
   "!content/public/common/common_param_traits_macros.h",
   "!content/public/common/password_form.h",
-  "!content/public/common/ssl_status.h",
   "!third_party/WebKit/public/web/WebFormElement.h",
 ]

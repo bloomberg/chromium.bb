@@ -439,13 +439,10 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_manager_delegate_->SetUserSuppliedData(
         FakeUserSubmittedFormStructure());
     GURL frame_url;
-    content::SSLStatus ssl_status;
     EXPECT_CALL(autocheckout_manager_->metric_logger(),
                 LogAutocheckoutBuyFlowMetric(
                     AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED)).Times(1);
-    autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url,
-                                                       ssl_status,
-                                                       true);
+    autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url, true);
     CheckFillFormsAndClickIpc();
     EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
     EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
@@ -540,15 +537,12 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
 
 TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {
   GURL frame_url;
-  content::SSLStatus ssl_status;
   gfx::RectF bounding_box;
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBubbleMetric(
                   AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
-  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
-                                                     ssl_status,
-                                                     bounding_box);
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 
   EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
@@ -609,16 +603,13 @@ TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingClickAfterFilling) {
 
 TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   GURL frame_url;
-  content::SSLStatus ssl_status;
   gfx::RectF bounding_box;
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBubbleMetric(
                   AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   // MaybeShowAutocheckoutBubble shows bubble if it has not been shown.
-  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
-                                                     ssl_status,
-                                                     bounding_box);
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
   EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   EXPECT_TRUE(autofill_manager_delegate_->autocheckout_bubble_shown());
@@ -629,9 +620,7 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
 
   // MaybeShowAutocheckoutBubble does nothing if the bubble was already shown
   // for the current page.
-  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
-                                                     ssl_status,
-                                                     bounding_box);
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
   EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   EXPECT_FALSE(autofill_manager_delegate_->autocheckout_bubble_shown());
@@ -796,16 +785,13 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
   autofill_manager_delegate_->SetUserSuppliedData(
       FakeUserSubmittedFormStructure());
   GURL frame_url;
-  content::SSLStatus ssl_status;
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBuyFlowMetric(
                   AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED)).Times(1);
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBuyFlowMetric(
                   AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
-  autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url,
-                                                     ssl_status,
-                                                     true);
+  autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url, true);
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());

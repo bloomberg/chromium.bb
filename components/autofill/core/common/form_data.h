@@ -9,7 +9,6 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "content/public/common/ssl_status.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -36,8 +35,6 @@ struct FormData {
   bool user_submitted;
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
-  // SSL status of the frame contatining the form.
-  content::SSLStatus ssl_status;
 };
 
 }  // namespace autofill

@@ -19,10 +19,6 @@
 
 class GURL;
 
-namespace content {
-struct SSLStatus;
-}
-
 namespace gfx {
 class RectF;
 }
@@ -69,10 +65,9 @@ class AutocheckoutManager {
 
   // Causes the Autocheckout bubble to be displayed if the user hasn't seen it
   // yet for the current page. |frame_url| is the page where Autocheckout is
-  // being initiated. |ssl_status| is the SSL status of the page. |bounding_box|
-  // is the bounding box of the input field in focus.
+  // being initiated. |bounding_box| is the bounding box of the input field in
+  // focus.
   virtual void MaybeShowAutocheckoutBubble(const GURL& frame_url,
-                                           const content::SSLStatus& ssl_status,
                                            const gfx::RectF& bounding_box);
 
   bool is_autocheckout_bubble_showing() const {
@@ -89,7 +84,6 @@ class AutocheckoutManager {
   // Show the requestAutocomplete dialog if |show_dialog| is true. Also, does
   // bookkeeping for whether or not the bubble is showing.
   virtual void MaybeShowAutocheckoutDialog(const GURL& frame_url,
-                                           const content::SSLStatus& ssl_status,
                                            bool show_dialog);
 
   // Callback called from AutofillDialogController on filling up the UI form.
@@ -101,11 +95,10 @@ class AutocheckoutManager {
 
  private:
   // Shows the Autocheckout bubble. Must be called on the UI thread. |frame_url|
-  // is the page where Autocheckout is being initiated. |ssl_status| is the SSL
-  // status of the page. |bounding_box| is the bounding box of the input field
-  // in focus. |cookies| is any Google Account cookies.
+  // is the page where Autocheckout is being initiated. |bounding_box| is the
+  // bounding box of the input field in focus. |cookies| is any Google Account
+  // cookies.
   void ShowAutocheckoutBubble(const GURL& frame_url,
-                              const content::SSLStatus& ssl_status,
                               const gfx::RectF& bounding_box,
                               const std::string& cookies);
 

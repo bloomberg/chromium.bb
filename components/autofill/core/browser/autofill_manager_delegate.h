@@ -15,7 +15,6 @@
 
 namespace content {
 struct PasswordForm;
-struct SSLStatus;
 }
 
 namespace gfx {

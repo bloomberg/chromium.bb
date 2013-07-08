@@ -24,8 +24,10 @@
 #include "components/autofill/core/common/web_element_descriptor.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/ssl_status.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/component_strings.h"
+#include "net/cert/cert_status_flags.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -311,9 +313,6 @@ void AutofillAgent::MaybeShowAutocheckoutBubble() {
   if (!FindFormAndFieldForInputElement(element_, &form, &field, REQUIRE_NONE))
     return;
 
-  form.ssl_status = render_view()->GetSSLStatusOfFrame(
-      element_.document().frame());
-
   Send(new AutofillHostMsg_MaybeShowAutocheckoutBubble(
       routing_id(),
       form,
@@ -326,8 +325,13 @@ void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
 
 void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
                                            const WebFormElement& form) {
+  GURL url(frame->document().url());
+  content::SSLStatus ssl_status = render_view()->GetSSLStatusOfFrame(frame);
   FormData form_data;
   if (!in_flight_request_form_.isNull() ||
+      (url.SchemeIs(chrome::kHttpsScheme) &&
+       (net::IsCertStatusError(ssl_status.cert_status) ||
+        net::IsCertStatusMinorError(ssl_status.cert_status))) ||
       !WebFormElementToFormData(form,
                                 WebFormControlElement(),
                                 REQUIRE_AUTOCOMPLETE,
@@ -344,13 +348,7 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
   HideAutofillUi();
 
   in_flight_request_form_ = form;
-  // Add SSL Status in the formdata to let browser process alert user
-  // appropriately using browser UI.
-  form_data.ssl_status = render_view()->GetSSLStatusOfFrame(frame);
-  Send(new AutofillHostMsg_RequestAutocomplete(
-      routing_id(),
-      form_data,
-      frame->document().url()));
+  Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data, url));
 }
 
 void AutofillAgent::setIgnoreTextChanges(bool ignore) {
@@ -841,10 +839,6 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
                                        data_list_icons,
                                        data_list_unique_ids));
 
-  // Add SSL Status in the formdata to let browser process alert user
-  // appropriately using browser UI.
-  form.ssl_status = render_view()->GetSSLStatusOfFrame(
-      element.document().frame());
   Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
                                                   autofill_query_id_,
                                                   form,
