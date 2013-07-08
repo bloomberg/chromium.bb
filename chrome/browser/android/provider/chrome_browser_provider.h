@@ -176,6 +176,8 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
 
   // Override BaseBookmarkModelObserver.
   virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
 
   // Override NotificationObserver.
   virtual void Observe(int type,
@@ -204,8 +206,7 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
   // Used to register/unregister notification observer.
   content::NotificationRegistrar notification_registrar_;
 
-  // Signaled if TemplateURLModel has been loaded.
-  base::WaitableEvent template_loaded_event_;
+  bool handling_extensive_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserProvider);
 };

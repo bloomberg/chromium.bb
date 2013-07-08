@@ -1154,7 +1154,7 @@ bool ChromeBrowserProvider::RegisterChromeBrowserProvider(JNIEnv* env) {
 
 ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
     : weak_java_provider_(env, obj),
-      template_loaded_event_(true, false) {
+      handling_extensive_changes_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
@@ -1172,14 +1172,9 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
       content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-      content::NotificationService::AllSources());
   TemplateURLService* template_service =
         TemplateURLServiceFactory::GetForProfile(profile_);
-  if (template_service->loaded())
-    template_loaded_event_.Signal();
-  else
+  if (!template_service->loaded())
     template_service->Load();
 }
 
@@ -1580,7 +1575,21 @@ ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetThumbnail(
 
 // ------------- Observer-related methods ------------- //
 
+void ChromeBrowserProvider::ExtensiveBookmarkChangesBeginning(
+    BookmarkModel* model) {
+  handling_extensive_changes_ = true;
+}
+
+void ChromeBrowserProvider::ExtensiveBookmarkChangesEnded(
+    BookmarkModel* model) {
+  handling_extensive_changes_ = false;
+  BookmarkModelChanged();
+}
+
 void ChromeBrowserProvider::BookmarkModelChanged() {
+  if (handling_extensive_changes_)
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
   if (obj.is_null())
@@ -1607,7 +1616,5 @@ void ChromeBrowserProvider::Observe(
     if (obj.is_null())
       return;
     Java_ChromeBrowserProvider_onSearchTermChanged(env, obj.obj());
-  } else if (type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED) {
-    template_loaded_event_.Signal();
   }
 }
