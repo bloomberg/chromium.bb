@@ -72,7 +72,6 @@ void MessageCenterTray::ShowPopupBubble() {
     return;
 
   if (popups_visible_) {
-    delegate_->UpdatePopups();
     NotifyMessageCenterTrayChanged();
     return;
   }
@@ -153,14 +152,11 @@ void MessageCenterTray::OnMessageCenterChanged() {
     if (message_center_->NotificationCount() == 0)
       HideMessageCenterBubble();
   }
-  if (popups_visible_) {
-    if (message_center_->HasPopupNotifications())
-      delegate_->UpdatePopups();
-    else
-      HidePopupBubble();
-  } else if (message_center_->HasPopupNotifications()) {
+
+  if (popups_visible_ && !message_center_->HasPopupNotifications())
+    HidePopupBubble();
+  else if (message_center_->HasPopupNotifications())
     ShowPopupBubble();
-  }
 
   NotifyMessageCenterTrayChanged();
 }

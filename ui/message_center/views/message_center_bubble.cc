@@ -78,10 +78,8 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
     views::TrayBubbleView::AnchorAlignment anchor_alignment) {
   views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
-  if (IsRichNotificationEnabled()) {
-    init_params.min_width += kMarginBetweenItems * 2;
-    init_params.max_width += kMarginBetweenItems * 2;
-  }
+  init_params.min_width += kMarginBetweenItems * 2;
+  init_params.max_width += kMarginBetweenItems * 2;
   init_params.max_height = max_height();
   init_params.can_activate = true;
   return init_params;

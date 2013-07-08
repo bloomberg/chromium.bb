@@ -57,11 +57,6 @@ void MessageCenterTrayBridge::HidePopups() {
   popup_collection_.reset();
 }
 
-void MessageCenterTrayBridge::UpdatePopups() {
-  // Nothing to do since the popup collection observes the MessageCenter
-  // directly.
-}
-
 bool MessageCenterTrayBridge::ShowMessageCenter() {
   if (tray_controller_)
     return false;

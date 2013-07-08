@@ -33,7 +33,6 @@ namespace message_center {
 class MessageBubbleBase;
 class MessageCenter;
 class MessageCenterBubble;
-class MessagePopupBubble;
 class MessagePopupCollection;
 }
 
@@ -104,7 +103,6 @@ class ASH_EXPORT WebNotificationTray
   virtual bool ShowMessageCenter() OVERRIDE;
   virtual void HideMessageCenter() OVERRIDE;
   virtual bool ShowPopups() OVERRIDE;
-  virtual void UpdatePopups() OVERRIDE;
   virtual void HidePopups() OVERRIDE;
   virtual bool ShowNotifierSettings() OVERRIDE;
 
@@ -138,18 +136,12 @@ class ASH_EXPORT WebNotificationTray
     return message_center_bubble_.get();
   }
 
-  internal::WebNotificationBubbleWrapper* popup_bubble() const {
-    return popup_bubble_.get();
-  }
-
   // Testing accessors.
   bool IsPopupVisible() const;
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
-  message_center::MessagePopupBubble* GetPopupBubbleForTest();
 
   scoped_ptr<message_center::MessageCenterTray> message_center_tray_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> message_center_bubble_;
-  scoped_ptr<internal::WebNotificationBubbleWrapper> popup_bubble_;
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
   scoped_ptr<views::MenuRunner> quiet_mode_menu_runner_;
   internal::WebNotificationButton* button_;

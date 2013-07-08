@@ -48,7 +48,6 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   virtual void HidePopups() OVERRIDE;
   virtual bool ShowMessageCenter() OVERRIDE;
   virtual void HideMessageCenter() OVERRIDE;
-  virtual void UpdatePopups() OVERRIDE;
   virtual void OnMessageCenterTrayChanged() OVERRIDE;
   virtual bool ShowNotifierSettings() OVERRIDE;
 

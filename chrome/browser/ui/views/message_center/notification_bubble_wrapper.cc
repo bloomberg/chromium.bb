@@ -11,7 +11,6 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/views/message_bubble_base.h"
 #include "ui/message_center/views/message_center_bubble.h"
-#include "ui/message_center/views/message_popup_bubble.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget.h"

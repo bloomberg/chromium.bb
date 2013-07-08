@@ -23,7 +23,6 @@ class MockDelegate : public MessageCenterTrayDelegate {
     return show_message_center_success_;
   }
   virtual void HidePopups() OVERRIDE {}
-  virtual void UpdatePopups() OVERRIDE {}
   virtual bool ShowMessageCenter() OVERRIDE {
     return show_popups_success_;
   }

@@ -247,10 +247,8 @@ MenuModel::MenuModel(message_center::MessageCenter* message_center,
                                        display_source));
   }
   // Add settings menu item.
-  if (message_center::IsRichNotificationEnabled() || !display_source.empty()) {
-    AddItem(kShowSettingsCommand,
-            l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS));
-  }
+  AddItem(kShowSettingsCommand,
+          l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS));
 }
 
 MenuModel::~MenuModel() {
@@ -283,7 +281,7 @@ void MenuModel::ExecuteCommand(int command_id, int event_flags) {
       break;
     case kShowSettingsCommand:
       // |tray_| may be NULL in tests.
-      if (message_center::IsRichNotificationEnabled() && tray_)
+      if (tray_)
         tray_->ShowNotifierSettingsBubble();
       else
         message_center_->ShowNotificationSettings(notification_id_);

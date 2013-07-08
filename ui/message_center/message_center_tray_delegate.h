@@ -25,10 +25,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate {
   // Remove the popup bubbles from the UI.
   virtual void HidePopups() = 0;
 
-  // Called when a change to the message center could cause a change to popups
-  // that are currently being displayed.
-  virtual void UpdatePopups() = 0;
-
   // Display the message center containing all undismissed notifications to the
   // user.  Returns true if the center was actually displayed to the user.
   virtual bool ShowMessageCenter() = 0;

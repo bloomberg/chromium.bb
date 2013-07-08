@@ -20,16 +20,11 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_center_bubble.h"
-#include "ui/message_center/views/message_popup_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 namespace ash {
 
@@ -190,14 +185,9 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   EXPECT_EQ(notifications_to_add,
             GetMessageCenter()->NotificationCount());
-  if (message_center::IsRichNotificationEnabled()) {
-    NotificationList::PopupNotifications popups =
-        GetMessageCenter()->GetPopupNotifications();
-    EXPECT_EQ(message_center::kMaxVisiblePopupNotifications, popups.size());
-  } else {
-    EXPECT_EQ(message_center::kMaxVisiblePopupNotifications,
-              GetTray()->GetPopupBubbleForTest()->NumMessageViewsForTest());
-  }
+  NotificationList::PopupNotifications popups =
+      GetMessageCenter()->GetPopupNotifications();
+  EXPECT_EQ(message_center::kMaxVisiblePopupNotifications, popups.size());
 }
 
 }  // namespace ash

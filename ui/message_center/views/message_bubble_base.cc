@@ -56,9 +56,6 @@ bool MessageBubbleBase::IsVisible() const {
 
 void MessageBubbleBase::SetMaxHeight(int height) {
   // Maximum height makes sense only for the new design.
-  if (!message_center::IsRichNotificationEnabled())
-    return;
-
   if (height == 0)
     height = kMessageBubbleBaseDefaultMaxHeight;
   if (height == max_height_)

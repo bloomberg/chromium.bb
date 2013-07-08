@@ -29,7 +29,6 @@
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/message_bubble_base.h"
 #include "ui/message_center/views/message_center_bubble.h"
-#include "ui/message_center/views/message_popup_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -192,7 +191,6 @@ WebNotificationTray::WebNotificationTray(
 WebNotificationTray::~WebNotificationTray() {
   // Release any child views that might have back pointers before ~View().
   message_center_bubble_.reset();
-  popup_bubble_.reset();
   popup_collection_.reset();
 }
 
@@ -272,31 +270,18 @@ bool WebNotificationTray::ShowPopups() {
       !status_area_widget()->ShouldShowWebNotifications()) {
     return false;
   }
-  if (message_center::IsRichNotificationEnabled()) {
-    // No bubble wrappers here, since |popup_collection_| is not a bubble but a
-    // collection of widgets.
-    popup_collection_.reset(new message_center::MessagePopupCollection(
-        ash::Shell::GetContainer(
-            GetWidget()->GetNativeView()->GetRootWindow(),
-            internal::kShellWindowId_StatusContainer),
-        message_center(),
-        message_center_tray_.get()));
-  } else {
-    message_center::MessagePopupBubble* popup_bubble =
-        new message_center::MessagePopupBubble(message_center());
-    popup_bubble_.reset(new internal::WebNotificationBubbleWrapper(
-        this, popup_bubble));
-  }
+
+  popup_collection_.reset(new message_center::MessagePopupCollection(
+      ash::Shell::GetContainer(
+          GetWidget()->GetNativeView()->GetRootWindow(),
+          internal::kShellWindowId_StatusContainer),
+      message_center(),
+      message_center_tray_.get()));
+
   return true;
 }
 
-void WebNotificationTray::UpdatePopups() {
-  if (popup_bubble())
-    popup_bubble()->bubble()->ScheduleUpdate();
-};
-
 void WebNotificationTray::HidePopups() {
-  popup_bubble_.reset();
   popup_collection_.reset();
 }
 
@@ -365,10 +350,7 @@ bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
 }
 
 bool WebNotificationTray::IsMouseInNotificationBubble() const {
-  if (!popup_bubble())
-    return false;
-  return popup_bubble()->bubble_view()->GetBoundsInScreen().Contains(
-      Shell::GetScreen()->GetCursorScreenPoint());
+  return false;
 }
 
 void WebNotificationTray::ShowMessageCenterBubble() {
@@ -387,12 +369,6 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void WebNotificationTray::AnchorUpdated() {
-  if (popup_bubble()) {
-    popup_bubble()->bubble_view()->UpdateBubble();
-    // Ensure that the notification buble is above the launcher/status area.
-    popup_bubble()->bubble_view()->GetWidget()->StackAtTop();
-    UpdateBubbleViewArrow(popup_bubble()->bubble_view());
-  }
   if (message_center_bubble()) {
     message_center_bubble()->bubble_view()->UpdateBubble();
     UpdateBubbleViewArrow(message_center_bubble()->bubble_view());
@@ -409,8 +385,7 @@ void WebNotificationTray::HideBubbleWithView(
   if (message_center_bubble() &&
       bubble_view == message_center_bubble()->bubble_view()) {
     message_center_tray_->HideMessageCenterBubble();
-  } else if ((popup_bubble() && bubble_view == popup_bubble()->bubble_view()) ||
-             popup_collection_.get()) {
+  } else if (popup_collection_.get()) {
     message_center_tray_->HidePopupBubble();
   }
 }
@@ -431,19 +406,11 @@ bool WebNotificationTray::PerformAction(const ui::Event& event) {
 void WebNotificationTray::BubbleViewDestroyed() {
   if (message_center_bubble())
     message_center_bubble()->bubble()->BubbleViewDestroyed();
-  if (popup_bubble())
-    popup_bubble()->bubble()->BubbleViewDestroyed();
 }
 
-void WebNotificationTray::OnMouseEnteredView() {
-  if (popup_bubble())
-    popup_bubble()->bubble()->OnMouseEnteredView();
-}
+void WebNotificationTray::OnMouseEnteredView() {}
 
-void WebNotificationTray::OnMouseExitedView() {
-  if (popup_bubble())
-    popup_bubble()->bubble()->OnMouseExitedView();
-}
+void WebNotificationTray::OnMouseExitedView() {}
 
 base::string16 WebNotificationTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
@@ -529,14 +496,6 @@ WebNotificationTray::GetMessageCenterBubbleForTest() {
     return NULL;
   return static_cast<message_center::MessageCenterBubble*>(
       message_center_bubble()->bubble());
-}
-
-message_center::MessagePopupBubble*
-WebNotificationTray::GetPopupBubbleForTest() {
-  if (!popup_bubble())
-    return NULL;
-  return static_cast<message_center::MessagePopupBubble*>(
-      popup_bubble()->bubble());
 }
 
 }  // namespace ash

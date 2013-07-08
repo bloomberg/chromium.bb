@@ -198,13 +198,6 @@ void WebNotificationTray::HideMessageCenter() {
   message_center_bubble_.reset();
 }
 
-void WebNotificationTray::UpdatePopups() {
-  // |popup_collection_| receives notification add/remove events and updates
-  // itself, so this method doesn't need to do anything.
-  // TODO(mukai): remove this method (currently this is used by
-  // non-rich-notifications in ChromeOS).
-};
-
 bool WebNotificationTray::ShowNotifierSettings() {
   if (message_center_bubble_) {
     static_cast<MessageCenterBubble*>(

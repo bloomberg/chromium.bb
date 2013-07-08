@@ -20,7 +20,6 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/bounded_label.h"
-#include "ui/message_center/views/message_simple_view.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -341,13 +340,6 @@ MessageView* NotificationView::Create(const Notification& notification,
                                       MessageCenterTray* tray,
                                       bool expanded,
                                       bool top_level) {
-  // Use MessageSimpleView for simple notifications unless rich style
-  // notifications are enabled. This preserves the appearance of notifications
-  // created by existing code that uses webkitNotifications.
-  if (!IsRichNotificationEnabled() &&
-      notification.type() == NOTIFICATION_TYPE_SIMPLE)
-    return new MessageSimpleView(notification, message_center);
-
   switch (notification.type()) {
     case NOTIFICATION_TYPE_BASE_FORMAT:
     case NOTIFICATION_TYPE_IMAGE:
@@ -375,9 +367,7 @@ MessageView* NotificationView::Create(const Notification& notification,
     return notification_view;
 #endif
 
-  if (IsRichNotificationEnabled())
-    notification_view->CreateShadowBorder();
-
+  notification_view->CreateShadowBorder();
   return notification_view;
 }
 
