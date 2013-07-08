@@ -212,6 +212,12 @@ class Port(object):
         baseline_search_paths = self.baseline_search_path()
         return baseline_search_paths[0]
 
+    def virtual_baseline_search_path(self, test_name):
+        suite = self.lookup_virtual_suite(test_name)
+        if not suite:
+            return None
+        return [self._filesystem.join(path, suite.name) for path in self.default_baseline_search_path()]
+
     def baseline_search_path(self):
         return self.get_option('additional_platform_directory', []) + self._compare_baseline() + self.default_baseline_search_path()
 
@@ -1353,11 +1359,20 @@ class Port(object):
                 virtual_tests.extend(suite.tests.keys())
         return virtual_tests
 
-    def lookup_virtual_test_base(self, test_name):
+    def is_virtual_test(self, test_name):
+        return bool(self.lookup_virtual_suite(test_name))
+
+    def lookup_virtual_suite(self, test_name):
         for suite in self.populated_virtual_test_suites():
             if test_name.startswith(suite.name):
-                return test_name.replace(suite.name, suite.base, 1)
+                return suite
         return None
+
+    def lookup_virtual_test_base(self, test_name):
+        suite = self.lookup_virtual_suite(test_name)
+        if not suite:
+            return None
+        return test_name.replace(suite.name, suite.base, 1)
 
     def lookup_virtual_test_args(self, test_name):
         for suite in self.populated_virtual_test_suites():
