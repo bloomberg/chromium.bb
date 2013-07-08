@@ -174,6 +174,7 @@ readonly PNACL_AR="${INSTALL_NEWLIB_BIN}/pnacl-ar"
 readonly PNACL_RANLIB="${INSTALL_NEWLIB_BIN}/pnacl-ranlib"
 readonly PNACL_AS="${INSTALL_NEWLIB_BIN}/pnacl-as"
 readonly PNACL_DIS="${INSTALL_NEWLIB_BIN}/pnacl-dis"
+readonly PNACL_FINALIZE="${INSTALL_NEWLIB_BIN}/pnacl-finalize"
 readonly PNACL_NM="${INSTALL_NEWLIB_BIN}/pnacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_NEWLIB_BIN}/pnacl-translate"
 readonly PNACL_READELF="${INSTALL_NEWLIB_BIN}/pnacl-readelf"
@@ -547,10 +548,10 @@ translator-archive-pexes() {
     local pexe_dir="$(GetTranslatorInstallDir ${arch})/bin"
     echo "pexe_dir is ${pexe_dir}"
     # Label the pexes by architecture.
-    local pexe_ld="${pexe_dir}/ld.${arch}.pexe"
-    cp "${pexe_dir}/ld.pexe" "${pexe_ld}"
-    ${PNACL_STRIP} --strip-all ${pexe_ld} -o ${pexe_ld}.strip-all
-    local all="${pexe_ld} ${pexe_ld}.strip-all"
+    local pexe_ld="${pexe_dir}/ld.${arch}"
+    cp "${pexe_dir}/ld.pexe" "${pexe_ld}.nonfinal.pexe"
+    ${PNACL_FINALIZE} "${pexe_ld}.nonfinal.pexe" -o "${pexe_ld}.final.pexe"
+    local all="${pexe_ld}.final.pexe"
     file ${all}
     ls -l ${all}
     # strip all path components
@@ -562,10 +563,11 @@ translator-archive-pexes() {
     local pexe_dir="$(GetTranslatorInstallDir ${arch})/bin"
     echo "pexe_dir is ${pexe_dir}"
     # Label the pexes by architecture.
-    local pexe_llc="${pexe_dir}/pnacl-llc.${arch}.pexe"
-    cp "${pexe_dir}/pnacl-llc.pexe" ${pexe_llc}
-    ${PNACL_STRIP} --strip-all ${pexe_llc} -o ${pexe_llc}.strip-all
-    local all="${pexe_llc} ${pexe_llc}.strip-all"
+    local pexe_llc="${pexe_dir}/pnacl-llc.${arch}"
+    cp "${pexe_dir}/pnacl-llc.pexe" "${pexe_llc}.nonfinal.pexe"
+    ${PNACL_FINALIZE} "${pexe_llc}.nonfinal.pexe" \
+      -o "${pexe_llc}.final.pexe"
+    local all="${pexe_llc}.final.pexe"
     file ${all}
     ls -l ${all}
     # strip all path components
@@ -633,7 +635,6 @@ translator-all() {
 #+                     build and from translator-archive-pexes.
 translator-prune() {
   find "${INSTALL_TRANSLATOR}" -name "*.pexe" -exec "rm" {} +
-  find "${INSTALL_TRANSLATOR}" -name "*.pexe.strip-all" -exec "rm" {} +
 }
 
 
