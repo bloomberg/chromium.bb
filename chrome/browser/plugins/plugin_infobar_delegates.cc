@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
 
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
@@ -12,8 +13,11 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -35,6 +39,7 @@
 #include "chrome/browser/plugins/plugin_installer.h"
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
+using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
@@ -520,8 +525,34 @@ string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
       IDS_WIN8_DESKTOP_RESTART : IDS_WIN8_RESTART);
 }
 
+void LaunchDesktopInstanceHelper(const string16& url) {
+    base::FilePath exe_path;
+    base::FilePath shortcut_path;
+
+    if (!PathService::Get(base::FILE_EXE, &exe_path))
+      return;
+
+    shortcut_path = ShellIntegration::GetStartMenuShortcut(exe_path);
+
+    SHELLEXECUTEINFO sei = { sizeof(sei) };
+    sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+    sei.nShow = SW_SHOWNORMAL;
+    sei.lpFile = shortcut_path.value().c_str();
+    sei.lpDirectory = L"";
+    sei.lpParameters = url.c_str();
+    ::ShellExecuteEx(&sei);
+}
+
 bool PluginMetroModeInfoBarDelegate::Accept() {
+#if defined(USE_AURA) && defined(USE_ASH)
+    const string16 url = UTF8ToWide(web_contents()->GetURL().spec());
+    // We need to PostTask as there is some IO involved.
+    BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+        base::Bind(&LaunchDesktopInstanceHelper,
+        url));
+#else
   chrome::AttemptRestartWithModeSwitch();
+#endif
   return true;
 }
 
