@@ -59,6 +59,7 @@ class DriveApiRequestsTest : public testing::Test {
 
     request_sender_.reset(new RequestSender(profile_.get(),
                                             request_context_getter_.get(),
+                                            message_loop_.message_loop_proxy(),
                                             std::vector<std::string>(),
                                             kTestUserAgent));
     request_sender_->auth_service()->set_access_token_for_testing(

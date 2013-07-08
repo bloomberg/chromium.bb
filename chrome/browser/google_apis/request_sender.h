@@ -11,12 +11,17 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class Profile;
+
+namespace base {
+class TaskRunner;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -31,8 +36,11 @@ class AuthService;
 // AuthenticatedRequestInterface and handles retries and authentication.
 class RequestSender {
  public:
-  // |url_request_context_getter| is used to perform authentication with
-  // AuthService.
+  // |url_request_context_getter| is the context used to perform network
+  // requests from this RequestSender.
+  //
+  // |blocking_task_runner| is used for running blocking operation, e.g.,
+  // parsing JSON response from the server.
   //
   // |scopes| specifies OAuth2 scopes.
   //
@@ -40,6 +48,7 @@ class RequestSender {
   // requests issued through the request sender if the value is not empty.
   RequestSender(Profile* profile,
                 net::URLRequestContextGetter* url_request_context_getter,
+                base::TaskRunner* blocking_task_runner,
                 const std::vector<std::string>& scopes,
                 const std::string& custom_user_agent);
   virtual ~RequestSender();
@@ -48,6 +57,10 @@ class RequestSender {
 
   net::URLRequestContextGetter* url_request_context_getter() const {
     return url_request_context_getter_;
+  }
+
+  base::TaskRunner* blocking_task_runner() const {
+    return blocking_task_runner_.get();
   }
 
   // Prepares the object for use.
@@ -85,6 +98,7 @@ class RequestSender {
 
   Profile* profile_;  // Not owned.
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   scoped_ptr<AuthService> auth_service_;
   std::set<AuthenticatedRequestInterface*> in_flight_requests_;

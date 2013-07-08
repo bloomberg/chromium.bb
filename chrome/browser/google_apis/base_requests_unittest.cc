@@ -45,6 +45,7 @@ class BaseRequestsTest : public testing::Test {
     profile_.reset(new TestingProfile);
     sender_.reset(new RequestSender(profile_.get(),
                                     NULL /* url_request_context_getter */,
+                                    message_loop_.message_loop_proxy(),
                                     std::vector<std::string>() /* scopes */,
                                     std::string() /* custom user agent */));
     sender_->Initialize();
@@ -57,7 +58,8 @@ class BaseRequestsTest : public testing::Test {
 
 TEST_F(BaseRequestsTest, ParseValidJson) {
   scoped_ptr<base::Value> json;
-  ParseJson(kValidJsonString,
+  ParseJson(message_loop_.message_loop_proxy(),
+            kValidJsonString,
             base::Bind(test_util::CreateCopyResultCallback(&json)));
   // Should wait for a blocking pool task, as the JSON parsing is done in the
   // blocking pool.
@@ -75,7 +77,8 @@ TEST_F(BaseRequestsTest, ParseValidJson) {
 TEST_F(BaseRequestsTest, ParseInvalidJson) {
   // Initialize with a valid pointer to verify that null is indeed assigned.
   scoped_ptr<base::Value> json(base::Value::CreateNullValue());
-  ParseJson(kInvalidJsonString,
+  ParseJson(message_loop_.message_loop_proxy(),
+            kInvalidJsonString,
             base::Bind(test_util::CreateCopyResultCallback(&json)));
   // Should wait for a blocking pool task, as the JSON parsing is done in the
   // blocking pool.

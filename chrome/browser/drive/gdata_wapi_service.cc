@@ -161,6 +161,7 @@ void GDataWapiService::Initialize(Profile* profile) {
   scopes.push_back(kDriveAppsScope);
   sender_.reset(new RequestSender(profile,
                                   url_request_context_getter_,
+                                  blocking_task_runner_.get(),
                                   scopes,
                                   custom_user_agent_));
   sender_->Initialize();

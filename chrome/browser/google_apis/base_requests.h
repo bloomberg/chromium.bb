@@ -35,10 +35,12 @@ typedef base::Callback<void(scoped_ptr<base::Value> value)> ParseJsonCallback;
 // Callback used for DownloadFileRequest and ResumeUploadRequestBase.
 typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
 
-// Parses JSON passed in |json| on blocking pool. Runs |callback| on the calling
-// thread when finished with either success or failure.
+// Parses JSON passed in |json| on |blocking_task_runner|. Runs |callback| on
+// the calling thread when finished with either success or failure.
 // The callback must not be null.
-void ParseJson(const std::string& json, const ParseJsonCallback& callback);
+void ParseJson(base::TaskRunner* blocking_task_runner,
+               const std::string& json,
+               const ParseJsonCallback& callback);
 
 //======================= AuthenticatedRequestInterface ======================
 
@@ -146,6 +148,9 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // Returns true if called on the thread where the constructor was called.
   bool CalledOnValidThread();
 
+  // Returns the task runner that should be used for blocking tasks.
+  base::TaskRunner* blocking_task_runner() const;
+
  private:
   // URLFetcherDelegate overrides.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -176,8 +181,8 @@ typedef base::Callback<void(GDataErrorCode error)> EntryActionCallback;
 // It is meant to be used for requests that return no JSON blobs.
 class EntryActionRequest : public UrlFetchRequestBase {
  public:
-  // |url_request_context_getter| is used to initialize URLFetcher.
-  // |callback| must not be null.
+  // |callback| is called when the request is finished either by success or by
+  // failure. It must not be null.
   EntryActionRequest(RequestSender* sender,
                      const EntryActionCallback& callback);
   virtual ~EntryActionRequest();
@@ -205,7 +210,8 @@ typedef base::Callback<void(GDataErrorCode error,
 // content into a base::Value.
 class GetDataRequest : public UrlFetchRequestBase {
  public:
-  // |callback| must not be null.
+  // |callback| is called when the request finishes either by success or by
+  // failure. On success, a JSON Value object is passed. It must not be null.
   GetDataRequest(RequestSender* sender, const GetDataCallback& callback);
   virtual ~GetDataRequest();
 
@@ -258,8 +264,7 @@ typedef base::Callback<void(GDataErrorCode error,
 class InitiateUploadRequestBase : public UrlFetchRequestBase {
  protected:
   // |callback| will be called with the upload URL, where upload data is
-  // uploaded to with ResumeUploadRequestBase.
-  // |callback| must not be null.
+  // uploaded to with ResumeUploadRequestBase. It must not be null.
   // |content_type| and |content_length| should be the attributes of the
   // uploading file.
   InitiateUploadRequestBase(RequestSender* sender,

@@ -14,10 +14,12 @@ namespace google_apis {
 RequestSender::RequestSender(
     Profile* profile,
     net::URLRequestContextGetter* url_request_context_getter,
+    base::TaskRunner* blocking_task_runner,
     const std::vector<std::string>& scopes,
     const std::string& custom_user_agent)
     : profile_(profile),
       url_request_context_getter_(url_request_context_getter),
+      blocking_task_runner_(blocking_task_runner),
       auth_service_(new AuthService(url_request_context_getter, scopes)),
       custom_user_agent_(custom_user_agent),
       weak_ptr_factory_(this) {

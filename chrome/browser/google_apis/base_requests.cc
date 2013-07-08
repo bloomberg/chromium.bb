@@ -5,13 +5,12 @@
 #include "chrome/browser/google_apis/base_requests.h"
 
 #include "base/json/json_reader.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/request_sender.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
@@ -20,7 +19,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
-using content::BrowserThread;
 using net::URLFetcher;
 
 namespace {
@@ -80,9 +78,11 @@ std::string GetResponseHeadersAsString(
 
 namespace google_apis {
 
-void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
+void ParseJson(base::TaskRunner* blocking_task_runner,
+               const std::string& json,
+               const ParseJsonCallback& callback) {
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      blocking_task_runner,
       FROM_HERE,
       base::Bind(&ParseJsonOnBlockingPool, json),
       callback);
@@ -131,7 +131,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   if (GetOutputFilePath(&output_file_path)) {
     url_fetcher_->SaveResponseToFileAtPath(
         output_file_path,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        blocking_task_runner());
   }
 
   // Add request headers.
@@ -165,7 +165,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
           local_file_path,
           range_offset,
           range_length,
-          BrowserThread::GetBlockingPool());
+          blocking_task_runner());
     } else {
       // Even if there is no content data, UrlFetcher requires to set empty
       // upload data string for POST, PUT and PATCH methods, explicitly.
@@ -231,6 +231,10 @@ GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
 
 bool UrlFetchRequestBase::CalledOnValidThread() {
   return thread_checker_.CalledOnValidThread();
+}
+
+base::TaskRunner* UrlFetchRequestBase::blocking_task_runner() const {
+  return sender_->blocking_task_runner();
 }
 
 void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
@@ -308,7 +312,8 @@ void GetDataRequest::ParseResponse(GDataErrorCode fetch_error_code,
 
   VLOG(1) << "JSON received from " << GetURL().spec() << ": "
           << data.size() << " bytes";
-  ParseJson(data,
+  ParseJson(blocking_task_runner(),
+            data,
             base::Bind(&GetDataRequest::OnDataParsed,
                        weak_ptr_factory_.GetWeakPtr(),
                        fetch_error_code));
@@ -490,7 +495,8 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
     std::string response_content;
     source->GetResponseAsString(&response_content);
 
-    ParseJson(response_content,
+    ParseJson(blocking_task_runner(),
+              response_content,
               base::Bind(&UploadRangeRequestBase::OnDataParsed,
                          weak_ptr_factory_.GetWeakPtr(),
                          code));

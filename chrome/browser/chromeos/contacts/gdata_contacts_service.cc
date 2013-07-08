@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -856,10 +857,12 @@ GDataContactsService::GDataContactsService(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<std::string> scopes;
   scopes.push_back(kContactsScope);
-  sender_.reset(new google_apis::RequestSender(profile,
-                                               url_request_context_getter,
-                                               scopes,
-                                               "" /* custom_user_agent */));
+  sender_.reset(new google_apis::RequestSender(
+      profile,
+      url_request_context_getter,
+      content::BrowserThread::GetBlockingPool(),
+      scopes,
+      "" /* custom_user_agent */));
 }
 
 GDataContactsService::~GDataContactsService() {
