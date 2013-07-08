@@ -40,9 +40,9 @@ class LoginDatabaseTest : public testing::Test {
     db_.public_suffix_domain_matching_ = enabled;
   }
 
-  LoginDatabase db_;
-  base::FilePath file_;
   base::ScopedTempDir temp_dir_;
+  base::FilePath file_;
+  LoginDatabase db_;
 };
 
 TEST_F(LoginDatabaseTest, Logins) {
