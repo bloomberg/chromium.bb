@@ -153,6 +153,9 @@ def NameValueListToDict(name_value_list):
       result[tokens[0]] = True
   return result
 
+def IsWindows():
+  return sys.platform in ('cygwin', 'win32')
+
 def ShlexEnv(env_name):
   flags = os.environ.get(env_name, [])
   if flags:
@@ -329,16 +332,21 @@ def gyp_main(args):
   parser.add_option('--no-circular-check', dest='circular_check',
                     action='store_false', default=True, regenerate=False,
                     help="don't check for circular relationships between files")
-  parser.add_option('--parallel', action='store_true',
-                    env_name='GYP_PARALLEL',
-                    help='Use multiprocessing for speed (experimental)')
   parser.add_option('-S', '--suffix', dest='suffix', default='',
                     help='suffix to add to generated files')
   parser.add_option('--toplevel-dir', dest='toplevel_dir', action='store',
                     default=None, metavar='DIR', type='path',
                     help='directory to use as the root of the source tree')
+  if IsWindows():
+    parser.add_option('--parallel', action='store_true',
+                      env_name='GYP_PARALLEL',
+                      help='Use multiprocessing for speed')
 
   options, build_files_arg = parser.parse_args(args)
+
+  if not hasattr(options, 'parallel'):
+    options.parallel = True
+
   build_files = build_files_arg
 
   # Set up the configuration directory (defaults to ~/.gyp)
@@ -352,7 +360,7 @@ def gyp_main(args):
 
     if not home_dot_gyp:
       home_vars = ['HOME']
-      if sys.platform in ('cygwin', 'win32'):
+      if IsWindows():
         home_vars.append('USERPROFILE')
       for home_var in home_vars:
         home = os.getenv(home_var)
@@ -381,7 +389,7 @@ def gyp_main(args):
       # Nothing in the variable, default based on platform.
       if sys.platform == 'darwin':
         options.formats = ['xcode']
-      elif sys.platform in ('win32', 'cygwin'):
+      elif IsWindows():
         options.formats = ['msvs']
       else:
         options.formats = ['make']
