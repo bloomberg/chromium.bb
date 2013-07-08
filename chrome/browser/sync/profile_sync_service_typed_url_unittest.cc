@@ -959,6 +959,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   // Can't check GetErrorPercentage(), because generating an unrecoverable
   // error will free the model associator.
 }
+
 TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalFileURL) {
   history::VisitVector original_visits;
   // Create http and file url.

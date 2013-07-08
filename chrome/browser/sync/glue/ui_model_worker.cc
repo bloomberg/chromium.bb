@@ -21,7 +21,6 @@ namespace {
 // A simple callback to signal a waitable event after running a closure.
 void CallDoWorkAndSignalCallback(const syncer::WorkCallback& work,
                                  base::WaitableEvent* work_done,
-                                 UIModelWorker* const scheduler,
                                  syncer::SyncerError* error_info) {
   if (work.is_null()) {
     // This can happen during tests or cases where there are more than just the
@@ -37,60 +36,23 @@ void CallDoWorkAndSignalCallback(const syncer::WorkCallback& work,
 
   *error_info = work.Run();
 
-  // Notify the UIModelWorker that scheduled us that we have run
-  // successfully.
-  scheduler->OnTaskCompleted();
   work_done->Signal();  // Unblock the syncer thread that scheduled us.
 }
 
 }  // namespace
 
 UIModelWorker::UIModelWorker(syncer::WorkerLoopDestructionObserver* observer)
-    : syncer::ModelSafeWorker(observer),
-      state_(WORKING),
-      syncapi_has_shutdown_(false),
-      syncapi_event_(&lock_) {
-}
-
-void UIModelWorker::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::AutoLock lock(lock_);
-  DCHECK_EQ(state_, WORKING);
-
-  // We're on our own now, the beloved UI MessageLoop is no longer running.
-  // Any tasks scheduled or to be scheduled on the UI MessageLoop will not run.
-  state_ = RUNNING_MANUAL_SHUTDOWN_PUMP;
-
-  // Drain any final tasks manually until the SyncerThread tells us it has
-  // totally finished. There should only ever be 0 or 1 tasks Run() here.
-  while (!syncapi_has_shutdown_) {
-    if (!pending_work_.is_null())
-      pending_work_.Run();  // OnTaskCompleted will set reset |pending_work_|.
-
-    // http://crbug.com/19757
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
-    // Wait for either a new task or SyncerThread termination.
-    syncapi_event_.Wait();
-  }
-
-  state_ = STOPPED;
+    : syncer::ModelSafeWorker(observer) {
 }
 
 void UIModelWorker::RegisterForLoopDestruction() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::MessageLoop::current()->AddDestructionObserver(this);
+  SetWorkingLoopToCurrent();
 }
 
 syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
-  // In most cases, this method is called in WORKING state. It is possible this
-  // gets called when we are in the RUNNING_MANUAL_SHUTDOWN_PUMP state, because
-  // the UI loop has initiated shutdown but the syncer hasn't got the memo yet.
-  // This is fine, the work will get scheduled and run normally or run by our
-  // code handling this case in Stop(). Note there _no_ way we can be in here
-  // with state_ = STOPPED, so it is safe to read / compare in this case.
-  CHECK_NE(ANNOTATE_UNPROTECTED_READ(state_), STOPPED);
   syncer::SyncerError error_info;
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
@@ -98,25 +60,16 @@ syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
     return work.Run();
   }
 
-  {
-    // We lock only to avoid PostTask'ing a NULL pending_work_ (because it
-    // could get Run() in Stop() and call OnTaskCompleted before we post).
-    // The task is owned by the message loop as per usual.
-    base::AutoLock lock(lock_);
-    DCHECK(pending_work_.is_null());
-    pending_work_ = base::Bind(&CallDoWorkAndSignalCallback, work,
-                               work_done_or_stopped(),
-                               base::Unretained(this), &error_info);
-    if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, pending_work_)) {
-      DLOG(WARNING) << "Could not post work to UI loop.";
-      error_info = syncer::CANNOT_DO_WORK;
-      pending_work_.Reset();
-      syncapi_event_.Signal();
-      return error_info;
-    }
+  if (!BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CallDoWorkAndSignalCallback,
+                 work, work_done_or_stopped(), &error_info))) {
+    DLOG(WARNING) << "Could not post work to UI loop.";
+    error_info = syncer::CANNOT_DO_WORK;
+    return error_info;
   }
-  syncapi_event_.Signal();  // Notify that the syncapi produced work for us.
   work_done_or_stopped()->Wait();
+
   return error_info;
 }
 
@@ -124,21 +77,7 @@ syncer::ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
   return syncer::GROUP_UI;
 }
 
-void UIModelWorker::OnSyncerShutdownComplete() {
-  base::AutoLock lock(lock_);
-  // The SyncerThread has terminated and we are no longer needed by syncapi.
-  // The UI loop initiated shutdown and is (or will be) waiting in Stop().
-  // We could either be WORKING or RUNNING_MANUAL_SHUTDOWN_PUMP, depending
-  // on where we timeslice the UI thread in Stop; but we can't be STOPPED,
-  // because that would imply OnSyncerShutdownComplete already signaled.
-  DCHECK_NE(state_, STOPPED);
-
-  syncapi_has_shutdown_ = true;
-  syncapi_event_.Signal();
-}
-
 UIModelWorker::~UIModelWorker() {
-  DCHECK_EQ(state_, STOPPED);
 }
 
 }  // namespace browser_sync

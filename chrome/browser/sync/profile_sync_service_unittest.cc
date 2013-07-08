@@ -46,6 +46,10 @@ using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
 
+void SignalDone(base::WaitableEvent* done) {
+  done->Signal();
+}
+
 class ProfileSyncServiceTestHarness {
  public:
   ProfileSyncServiceTestHarness()
@@ -57,6 +61,7 @@ class ProfileSyncServiceTestHarness {
   ~ProfileSyncServiceTestHarness() {}
 
   void SetUp() {
+    db_thread_.Start();
     file_thread_.Start();
     io_thread_.StartIOThread();
     profile.reset(new TestingProfile());
@@ -77,6 +82,7 @@ class ProfileSyncServiceTestHarness {
     ui_loop_.RunUntilIdle();
     io_thread_.Stop();
     file_thread_.Stop();
+    db_thread_.Stop();
     // Ensure that the sync objects destruct to avoid memory leaks.
     ui_loop_.RunUntilIdle();
   }
@@ -123,6 +129,21 @@ class ProfileSyncServiceTestHarness {
       }
       service->Initialize();
     }
+  }
+
+  void WaitForBackendInitDone() {
+    for (int i = 0; i < 5; ++i) {
+      base::WaitableEvent done(false, false);
+      service->GetBackendForTest()->GetSyncLoopForTesting()
+          ->PostTask(FROM_HERE,
+                     base::Bind(&SignalDone, &done));
+      done.Wait();
+      ui_loop_.RunUntilIdle();
+      if (service->sync_initialized()) {
+        return;
+      }
+    }
+    LOG(ERROR) << "Backend not initialized.";
   }
 
   void IssueTestTokens() {
@@ -352,6 +373,7 @@ TEST_F(ProfileSyncServiceTest,
 
 TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
   harness_.StartSyncService();
+  harness_.WaitForBackendInitDone();
 
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
@@ -369,6 +391,11 @@ TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
   }
 
   // This forces the sync thread to process the message and reply.
+  base::WaitableEvent done(false, false);
+  harness_.service->GetBackendForTest()->GetSyncLoopForTesting()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&SignalDone, &done));
+  done.Wait();
   harness_.TearDown();
 }
 
@@ -393,9 +420,14 @@ TEST_F(ProfileSyncServiceTest,
   }
 
   harness_.IssueTestTokens();
+  harness_.WaitForBackendInitDone();
 
   // This forces the sync thread to process the message and reply.
-  harness_.TearDown();
+  base::WaitableEvent done(false, false);
+  harness_.service->GetBackendForTest()->GetSyncLoopForTesting()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&SignalDone, &done));
+  done.Wait();  harness_.TearDown();
 }
 
 // Make sure that things still work if sync is not enabled, but some old sync

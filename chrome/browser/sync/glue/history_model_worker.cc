@@ -43,12 +43,12 @@ class WorkerTask : public history::HistoryDBTask {
 
 class AddDBThreadObserverTask : public history::HistoryDBTask {
  public:
-  explicit AddDBThreadObserverTask(HistoryModelWorker* history_worker)
-     : history_worker_(history_worker) {}
+  explicit AddDBThreadObserverTask(base::Closure register_callback)
+     : register_callback_(register_callback) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) OVERRIDE {
-    base::MessageLoop::current()->AddDestructionObserver(history_worker_.get());
+    register_callback_.Run();
     return true;
   }
 
@@ -57,7 +57,7 @@ class AddDBThreadObserverTask : public history::HistoryDBTask {
  private:
   virtual ~AddDBThreadObserverTask() {}
 
-  scoped_refptr<HistoryModelWorker> history_worker_;
+  base::Closure register_callback_;
 };
 
 namespace {
@@ -91,8 +91,15 @@ HistoryModelWorker::HistoryModelWorker(
 
 void HistoryModelWorker::RegisterForLoopDestruction() {
   CHECK(history_service_.get());
-  history_service_->ScheduleDBTask(new AddDBThreadObserverTask(this),
-                                   &cancelable_consumer_);
+  history_service_->ScheduleDBTask(
+      new AddDBThreadObserverTask(
+          base::Bind(&HistoryModelWorker::RegisterOnDBThread, this)),
+      &cancelable_consumer_);
+}
+
+void HistoryModelWorker::RegisterOnDBThread() {
+  base::MessageLoop::current()->AddDestructionObserver(this);
+  SetWorkingLoopToCurrent();
 }
 
 syncer::SyncerError HistoryModelWorker::DoWorkAndWaitUntilDoneImpl(

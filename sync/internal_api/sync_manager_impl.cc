@@ -620,9 +620,9 @@ void SyncManagerImpl::RemoveObserver(SyncManager::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SyncManagerImpl::StopSyncingForShutdown(const base::Closure& callback) {
+void SyncManagerImpl::StopSyncingForShutdown() {
   DVLOG(2) << "StopSyncingForShutdown";
-  scheduler_->RequestStop(callback);
+  scheduler_->RequestStop();
   if (connection_manager_)
     connection_manager_->TerminateAllIO();
 }

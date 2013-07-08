@@ -210,10 +210,7 @@ void FakeSyncManager::SaveChanges() {
   // Do nothing.
 }
 
-void FakeSyncManager::StopSyncingForShutdown(const base::Closure& callback) {
-  if (!sync_task_runner_->PostTask(FROM_HERE, callback)) {
-    NOTREACHED();
-  }
+void FakeSyncManager::StopSyncingForShutdown() {
 }
 
 void FakeSyncManager::ShutdownOnSyncThread() {
