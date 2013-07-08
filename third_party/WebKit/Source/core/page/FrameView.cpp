@@ -961,11 +961,6 @@ void FrameView::layout(bool allowSubtree)
                         body->renderer()->setChildNeedsLayout(true);
                 }
             }
-
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-            if (m_firstLayout && !m_frame->ownerElement())
-                printf("Elapsed time before first layout: %d\n", document->elapsedTime());
-#endif
         }
 
         autoSizeIfEnabled();
@@ -1891,17 +1886,11 @@ void FrameView::endDisableRepaints()
 
 void FrameView::layoutTimerFired(Timer<FrameView>*)
 {
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!m_frame->document()->ownerElement())
-        printf("Layout timer fired at %d\n", m_frame->document()->elapsedTime());
-#endif
     layout();
 }
 
 void FrameView::scheduleRelayout()
 {
-    // FIXME: We should assert the page is not in the page cache, but that is causing
-    // too many false assertions.  See <rdar://problem/7218118>.
     ASSERT(m_frame->view() == this);
 
     if (m_layoutRoot) {
@@ -1928,12 +1917,6 @@ void FrameView::scheduleRelayout()
         return;
 
     m_delayedLayout = delay != 0;
-
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!m_frame->document()->ownerElement())
-        printf("Scheduling layout for %d\n", delay);
-#endif
-
     m_layoutTimer.startOneShot(delay * 0.001);
 }
 
@@ -2023,11 +2006,6 @@ void FrameView::unscheduleRelayout()
 {
     if (!m_layoutTimer.isActive())
         return;
-
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!m_frame->document()->ownerElement())
-        printf("Layout timer unscheduled at %d\n", m_frame->document()->elapsedTime());
-#endif
 
     m_layoutTimer.stop();
     m_delayedLayout = false;

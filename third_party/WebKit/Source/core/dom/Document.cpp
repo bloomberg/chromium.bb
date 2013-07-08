@@ -188,8 +188,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-// #define INSTRUMENT_LAYOUT_SCHEDULING 1
-
 static const double cDefaultIncrementalRenderingSuppressionTimeoutInSeconds = 5;
 
 static const unsigned cMaxWriteRecursionDepth = 21;
@@ -2309,10 +2307,6 @@ void Document::implicitClose()
 
     if (f)
         f->loader()->handledOnloadEvents();
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!ownerElement())
-        printf("onload fired at %d\n", elapsedTime());
-#endif
 
     // An event handler may have removed the frame
     if (!frame()) {
@@ -2379,11 +2373,6 @@ void Document::setParsing(bool b)
 
     if (!m_bParsing && view())
         view()->scheduleRelayout();
-
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!ownerElement() && !m_bParsing)
-        printf("Parsing finished at %d\n", elapsedTime());
-#endif
 }
 
 bool Document::shouldScheduleLayout()
@@ -2430,11 +2419,6 @@ void Document::write(const SegmentedString& text, Document* ownerDocument)
     if (m_writeRecursionIsTooDeep)
        return;
 
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!ownerElement())
-        printf("Beginning a document.write at %d\n", elapsedTime());
-#endif
-
     bool hasInsertionPoint = m_parser && m_parser->hasInsertionPoint();
     if (!hasInsertionPoint && m_ignoreDestructiveWriteCount)
         return;
@@ -2444,11 +2428,6 @@ void Document::write(const SegmentedString& text, Document* ownerDocument)
 
     ASSERT(m_parser);
     m_parser->insert(text);
-
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!ownerElement())
-        printf("Ending a document.write at %d\n", elapsedTime());
-#endif
 }
 
 void Document::write(const String& text, Document* ownerDocument)
@@ -3057,11 +3036,6 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
     }
     m_didCalculateStyleResolver = true;
 
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!ownerElement())
-        printf("Beginning update of style selector at time %d.\n", elapsedTime());
-#endif
-
     bool needsRecalc = m_styleSheetCollection->updateActiveStyleSheets(updateMode);
 
     if (updateType >= DeferRecalcStyle) {
@@ -3084,11 +3058,6 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
         AnimationUpdateBlock animationUpdateBlock(m_frame ? m_frame->animation() : 0);
         recalcStyle(Force);
     }
-
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!ownerElement())
-        printf("Finished update of style selector at time %d\n", elapsedTime());
-#endif
 
     if (renderer()) {
         renderer()->setNeedsLayoutAndPrefWidthsRecalc();

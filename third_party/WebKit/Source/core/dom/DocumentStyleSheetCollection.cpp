@@ -205,11 +205,6 @@ void DocumentStyleSheetCollection::removePendingSheet(RemovePendingSheetNotifica
     ASSERT(m_pendingStylesheets > 0);
 
     m_pendingStylesheets--;
-    
-#ifdef INSTRUMENT_LAYOUT_SCHEDULING
-    if (!ownerElement())
-        printf("Stylesheet loaded at time %d. %d stylesheets still remain.\n", elapsedTime(), m_pendingStylesheets);
-#endif
 
     if (m_pendingStylesheets)
         return;
