@@ -338,6 +338,10 @@ class AutofillDialogControllerTest : public testing::Test {
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
 
+    // Don't get stuck on the first run wallet interstitial.
+    profile()->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
+                                      true);
+
     SetUpControllerWithFormData(DefaultFormData());
   }
 
@@ -1634,8 +1638,11 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidationUnrecoverable) {
 TEST_F(AutofillDialogControllerTest, WalletBanners) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kWalletServiceUseProd);
-  PrefService* prefs = controller()->profile()->GetPrefs();
-  ASSERT_FALSE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
+  PrefService* prefs = profile()->GetPrefs();
+
+  // Simulate first run.
+  prefs->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet, false);
+  SetUpControllerWithFormData(DefaultFormData());
 
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).size());
@@ -1743,6 +1750,12 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
   command_line->AppendSwitch(switches::kWalletServiceUseProd);
   controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
 
+  // Simulate first run.
+  profile()->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
+                                    false);
+  SetUpControllerWithFormData(DefaultFormData());
+  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
+
   // Sign in a user with a completed account.
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
@@ -1754,6 +1767,7 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
 
   AcceptAndLoadFakeFingerprint();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->OverlayButtonPressed();
 
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).size());
@@ -1793,6 +1807,51 @@ TEST_F(AutofillDialogControllerTest, SubmitWithSigninErrorDoesntSetPref) {
 
   EXPECT_FALSE(profile()->GetPrefs()->HasPrefPath(
       ::prefs::kAutofillDialogPayWithoutWallet));
+}
+
+// Tests that there's an overlay shown while waiting for full wallet items,
+// and on first run an additional expository wallet overlay shown after full
+// wallet items are returned.
+// TODO(estade): enable on other platforms when overlays are supported there.
+#if defined(TOOLKIT_VIEWS)
+TEST_F(AutofillDialogControllerTest, WalletFirstRun) {
+  // Simulate first run.
+  PrefService* prefs = profile()->GetPrefs();
+  prefs->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet, false);
+  SetUpControllerWithFormData(DefaultFormData());
+
+  SwitchToWallet();
+  EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
+
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
+  EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
+
+  EXPECT_FALSE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  EXPECT_FALSE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
+  EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
+  EXPECT_FALSE(form_structure());
+
+  controller()->OverlayButtonPressed();
+  EXPECT_TRUE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
+  EXPECT_TRUE(form_structure());
+}
+#endif
+
+// On second run, the second overlay doesn't show.
+TEST_F(AutofillDialogControllerTest, WalletSecondRun) {
+  SwitchToWallet();
+  EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
+
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
+  EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
+
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogHasPaidWithWallet));
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogHasPaidWithWallet));
+  EXPECT_TRUE(form_structure());
 }
 
 TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {

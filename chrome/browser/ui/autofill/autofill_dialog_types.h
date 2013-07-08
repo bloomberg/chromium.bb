@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_constants.h"
 
 namespace autofill {
 
@@ -187,6 +188,30 @@ struct SuggestionState {
   gfx::Image icon;
   string16 extra_text;
   gfx::Image extra_icon;
+};
+
+// A struct to describe a textual message within a dialog overlay.
+struct DialogOverlayString {
+  DialogOverlayString();
+  ~DialogOverlayString();
+  // TODO(estade): need to set a color as well.
+  base::string16 text;
+  gfx::Font font;
+  gfx::HorizontalAlignment alignment;
+};
+
+// A struct to describe a dialog overlay. If |image| is empty, no overlay should
+// be shown.
+struct DialogOverlayState {
+  DialogOverlayState();
+  ~DialogOverlayState();
+  // If empty, there should not be an overlay. If non-empty, an image that is
+  // more or less front and center.
+  gfx::Image image;
+  // If non-empty, messages to display.
+  std::vector<DialogOverlayString> strings;
+  // If non-empty, holds text that should go on a button.
+  base::string16 button_text;
 };
 
 enum ValidationType {

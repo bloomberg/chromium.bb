@@ -750,6 +750,46 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
          IsSubmitPausedOn(wallet::VERIFY_CVV);
 }
 
+DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
+  bool show_wallet_interstitial = IsPayingWithWallet() && is_submitting_ &&
+      !IsSubmitPausedOn(wallet::VERIFY_CVV);
+  if (!show_wallet_interstitial)
+    return DialogOverlayState();
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  DialogOverlayState state;
+  // TODO(estade): use the correct image and strings below.
+  state.image = rb.GetImageNamed(IDR_PRODUCT_LOGO_NAME_48);
+
+  state.strings.push_back(DialogOverlayString());
+  DialogOverlayString& string = state.strings.back();
+#if !defined(OS_ANDROID)
+  // gfx::Font isn't implemented on Android; DeriveFont() causes a null deref.
+  string.font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(4);
+#endif
+
+  // First-run, post-submit, Wallet expository page.
+  if (full_wallet_ && full_wallet_->required_actions().empty()) {
+    string.text = ASCIIToUTF16("...consectetur adipisicing elit");
+
+    state.strings.push_back(DialogOverlayString());
+    DialogOverlayString& subtext = state.strings.back();
+    subtext.font = rb.GetFont(ui::ResourceBundle::BaseFont);
+    subtext.text = ASCIIToUTF16("sed do eiusmod tempor incididunt ut labore "
+        "et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
+        "exercitation ullamco laboris nisi ut aliquip ex ea commodo "
+        "consequat.");
+
+    state.button_text = ASCIIToUTF16("OK, gotcha");
+  } else {
+    // "Submitting" waiting page.
+    string.text = ASCIIToUTF16("Lorem ipsum dolor sit amet...");
+    string.alignment = gfx::ALIGN_CENTER;
+  }
+
+  return state;
+}
+
 const std::vector<ui::Range>& AutofillDialogControllerImpl::
     LegalDocumentLinks() {
   EnsureLegalDocumentsText();
@@ -1795,6 +1835,14 @@ void AutofillDialogControllerImpl::LegalDocumentLinkClicked(
   }
 
   NOTREACHED();
+}
+
+void AutofillDialogControllerImpl::OverlayButtonPressed() {
+  DCHECK(is_submitting_);
+  DCHECK(full_wallet_);
+  profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
+                                   true);
+  FinishSubmit();
 }
 
 void AutofillDialogControllerImpl::OnCancel() {
@@ -3060,6 +3108,19 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
 }
 
 void AutofillDialogControllerImpl::FinishSubmit() {
+  if (IsPayingWithWallet() &&
+      !profile_->GetPrefs()->GetBoolean(
+            ::prefs::kAutofillDialogHasPaidWithWallet)) {
+    // To get past this point, the view must call back OverlayButtonPressed.
+#if defined(TOOLKIT_VIEWS)
+    view_->UpdateButtonStrip();
+#else
+    // TODO(estade): implement overlays on other platforms.
+    OverlayButtonPressed();
+#endif
+    return;
+  }
+
   FillOutputForSection(SECTION_EMAIL);
   FillOutputForSection(SECTION_CC);
   FillOutputForSection(SECTION_BILLING);
@@ -3079,10 +3140,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     FillOutputForSection(SECTION_SHIPPING);
   }
 
-  if (IsPayingWithWallet()) {
-    profile_->GetPrefs()->SetBoolean(
-        ::prefs::kAutofillDialogHasPaidWithWallet, true);
-  } else {
+  if (!IsPayingWithWallet()) {
     for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
       DialogSection section = static_cast<DialogSection>(i);
       if (!SectionIsActive(section))

@@ -32,6 +32,7 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual int GetDialogButtons() const OVERRIDE;
   virtual bool ShouldShowDetailArea() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual DialogOverlayState GetDialogOverlay() const OVERRIDE;
   virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
   MOCK_CONST_METHOD1(RequestedFieldsForSection,
@@ -79,6 +80,7 @@ class MockAutofillDialogController : public AutofillDialogController {
                                                 bool checked) OVERRIDE;
 
   virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
+  virtual void OverlayButtonPressed() OVERRIDE;
   virtual void OnCancel() OVERRIDE;
   virtual void OnAccept() OVERRIDE;
 

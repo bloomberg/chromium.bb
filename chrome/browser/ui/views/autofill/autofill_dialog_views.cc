@@ -23,7 +23,6 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -68,29 +67,29 @@ const int kMinimumContentsHeight = 100;
 const int kAroundTextPadding = 4;
 
 // Padding around icons inside DecoratedTextfields.
-const size_t kTextfieldIconPadding = 3;
+const int kTextfieldIconPadding = 3;
 
 // Size of the triangular mark that indicates an invalid textfield (in pixels).
-const size_t kDogEarSize = 10;
+const int kDogEarSize = 10;
 
 // The space between the edges of a notification bar and the text within (in
 // pixels).
-const size_t kNotificationPadding = 14;
+const int kNotificationPadding = 14;
 
 // Vertical padding above and below each detail section (in pixels).
-const size_t kDetailSectionInset = 10;
+const int kDetailSectionInset = 10;
 
-const size_t kAutocheckoutStepsAreaPadding = 28;
-const size_t kAutocheckoutStepInset = 20;
+const int kAutocheckoutStepsAreaPadding = 28;
+const int kAutocheckoutStepInset = 20;
 
-const size_t kAutocheckoutProgressBarWidth = 375;
-const size_t kAutocheckoutProgressBarHeight = 15;
+const int kAutocheckoutProgressBarWidth = 375;
+const int kAutocheckoutProgressBarHeight = 15;
 
-const size_t kArrowHeight = 7;
-const size_t kArrowWidth = 2 * kArrowHeight;
+const int kArrowHeight = 7;
+const int kArrowWidth = 2 * kArrowHeight;
 
 // The padding around the edges of the legal documents text, in pixels.
-const size_t kLegalDocPadding = 20;
+const int kLegalDocPadding = 20;
 
 // Slight shading for mouse hover and legal document background.
 SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
@@ -99,13 +98,23 @@ SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
 SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 
 // The top padding, in pixels, for the suggestions menu dropdown arrows.
-const size_t kMenuButtonTopOffset = 5;
+const int kMenuButtonTopOffset = 5;
 
 // The side padding, in pixels, for the suggestions menu dropdown arrows.
-const size_t kMenuButtonHorizontalPadding = 20;
+const int kMenuButtonHorizontalPadding = 20;
+
+// The padding around text in the overlay view.
+const int kOverlayTextPadding = 20;
+
+// Spacing between lines of text in the overlay view.
+const int kOverlayTextInterlineSpacing = 10;
 
 const char kDecoratedTextfieldClassName[] = "autofill/DecoratedTextfield";
 const char kNotificationAreaClassName[] = "autofill/NotificationArea";
+const char kOverlayViewClassName[] = "autofill/OverlayView";
+
+typedef ui::MultiAnimation::Part Part;
+typedef ui::MultiAnimation::Parts Parts;
 
 views::Border* CreateLabelAlignmentBorder() {
   // TODO(estade): this should be made to match the native textfield top
@@ -125,98 +134,16 @@ views::Label* CreateDetailsSectionLabel(const string16& text) {
 // Draws an arrow at the top of |canvas| pointing to |tip_x|.
 void DrawArrow(gfx::Canvas* canvas, int tip_x, const SkColor& color) {
   const int arrow_half_width = kArrowWidth / 2.0f;
-  const int arrow_middle = tip_x - arrow_half_width;
 
   SkPath arrow;
-  arrow.moveTo(arrow_middle - arrow_half_width, kArrowHeight);
-  arrow.lineTo(arrow_middle + arrow_half_width, kArrowHeight);
-  arrow.lineTo(arrow_middle, 0);
+  arrow.moveTo(tip_x, 0);
+  arrow.rLineTo(arrow_half_width, kArrowHeight);
+  arrow.rLineTo(-kArrowWidth, 0);
   arrow.close();
-  canvas->ClipPath(arrow);
-  canvas->DrawColor(color);
+  SkPaint paint;
+  paint.setColor(color);
+  canvas->DrawPath(arrow, paint);
 }
-
-typedef ui::MultiAnimation::Part Part;
-typedef ui::MultiAnimation::Parts Parts;
-
-class OverlayView : public views::View,
-                    public ui::AnimationDelegate {
- public:
-  OverlayView() {
-    SetLayoutManager(new views::FillLayout());
-
-    set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
-        GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
-
-    Parts parts;
-    // For this part of the animation, simply show the splash image.
-    parts.push_back(Part(kSplashDisplayDurationMs, ui::Tween::ZERO));
-    // For this part of the animation, fade out the splash image.
-    parts.push_back(Part(kSplashFadeOutDurationMs, ui::Tween::EASE_IN));
-    // For this part of the animation, fade out |this| (fade in the dialog).
-    parts.push_back(Part(kSplashFadeInDialogDurationMs, ui::Tween::EASE_OUT));
-    fade_out_.reset(
-        new ui::MultiAnimation(parts,
-                               ui::MultiAnimation::GetDefaultTimerInterval()));
-    fade_out_->set_delegate(this);
-    fade_out_->set_continuous(false);
-    fade_out_->Start();
-  }
-
-  virtual ~OverlayView() {}
-
-  // ui::AnimationDelegate implementation:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
-    DCHECK_EQ(animation, fade_out_.get());
-    if (fade_out_->current_part_index() != 0)
-      SchedulePaint();
-  }
-
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
-    DCHECK_EQ(animation, fade_out_.get());
-    SetVisible(false);
-  }
-
-  // views::View implementation:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    // BubbleFrameView doesn't mask the window, it just draws the border via
-    // image assets. Match that rounding here.
-    static const SkScalar kCornerRadius = SkIntToScalar(2);
-    gfx::Rect rect =
-        GetWidget()->non_client_view()->frame_view()->GetLocalBounds();
-    rect.Inset(12, 12, 12, 12);
-    gfx::Path window_mask;
-    window_mask.addRoundRect(gfx::RectToSkRect(rect),
-                             kCornerRadius, kCornerRadius);
-    canvas->ClipPath(window_mask);
-
-    if (fade_out_->current_part_index() == 2) {
-      canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
-      views::View::OnPaint(canvas);
-      canvas->Restore();
-    } else {
-      views::View::OnPaint(canvas);
-    }
-  }
-
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE {
-    if (fade_out_->current_part_index() == 0) {
-      views::View::PaintChildren(canvas);
-    } else if (fade_out_->current_part_index() == 1) {
-      canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
-      views::View::PaintChildren(canvas);
-      canvas->Restore();
-    }
-  }
-
- private:
-  // This MultiAnimation is used to first fade out the contents of the overlay,
-  // then fade out the background of the overlay (revealing the dialog behind
-  // the overlay). This avoids cross-fade.
-  scoped_ptr<ui::MultiAnimation> fade_out_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverlayView);
-};
 
 // This class handles layout for the first row of a SuggestionView.
 // It exists to circumvent shortcomings of GridLayout and BoxLayout (namely that
@@ -607,6 +534,184 @@ void AutofillDialogViews::AccountChooser::OnMouseReleased(
 void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
                                                       int event_flags) {
   controller_->SignInLinkClicked();
+}
+
+// AutofillDialogViews::OverlayView --------------------------------------------
+
+AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
+    : image_view_(new views::ImageView()),
+      message_stack_(new views::View()),
+      button_(new views::LabelButton(listener, string16())) {
+  set_border(views::Border::CreateEmptyBorder(12, 12, 12, 12));
+  set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
+      GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
+
+  AddChildView(image_view_);
+
+  AddChildView(message_stack_);
+  message_stack_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           kOverlayTextInterlineSpacing));
+  message_stack_->set_border(views::Border::CreateEmptyBorder(
+      kOverlayTextPadding, kOverlayTextPadding, 0, kOverlayTextPadding));
+
+  AddChildView(button_);
+  button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button_->set_focusable(true);
+}
+
+AutofillDialogViews::OverlayView::~OverlayView() {}
+
+void AutofillDialogViews::OverlayView::SetState(
+    const DialogOverlayState& state,
+    views::ButtonListener* listener) {
+  // Don't update anything if we're still fading out the old state.
+  if (fade_out_)
+    return;
+
+  if (state.image.IsEmpty()) {
+    SetVisible(false);
+    return;
+  }
+
+  image_view_->SetImage(state.image.ToImageSkia());
+
+  message_stack_->RemoveAllChildViews(true);
+  for (size_t i = 0; i < state.strings.size(); ++i) {
+    views::Label* label = new views::Label();
+    label->SetMultiLine(true);
+    label->SetText(state.strings[i].text);
+    label->SetFont(state.strings[i].font);
+    label->SetHorizontalAlignment(state.strings[i].alignment);
+    message_stack_->AddChildView(label);
+  }
+  message_stack_->SetVisible(message_stack_->child_count() > 0);
+
+  button_->SetVisible(!state.button_text.empty());
+  if (!state.button_text.empty())
+    button_->SetText(state.button_text);
+
+  SetVisible(true);
+  if (parent())
+    parent()->Layout();
+}
+
+void AutofillDialogViews::OverlayView::BeginFadeOut() {
+  Parts parts;
+  // For this part of the animation, simply show the splash image.
+  parts.push_back(Part(kSplashDisplayDurationMs, ui::Tween::ZERO));
+  // For this part of the animation, fade out the splash image.
+  parts.push_back(Part(kSplashFadeOutDurationMs, ui::Tween::EASE_IN));
+  // For this part of the animation, fade out |this| (fade in the dialog).
+  parts.push_back(Part(kSplashFadeInDialogDurationMs, ui::Tween::EASE_OUT));
+  fade_out_.reset(
+      new ui::MultiAnimation(parts,
+                             ui::MultiAnimation::GetDefaultTimerInterval()));
+  fade_out_->set_delegate(this);
+  fade_out_->set_continuous(false);
+  fade_out_->Start();
+}
+
+void AutofillDialogViews::OverlayView::AnimationProgressed(
+    const ui::Animation* animation) {
+  DCHECK_EQ(animation, fade_out_.get());
+  if (fade_out_->current_part_index() != 0)
+    SchedulePaint();
+}
+
+void AutofillDialogViews::OverlayView::AnimationEnded(
+    const ui::Animation* animation) {
+  DCHECK_EQ(animation, fade_out_.get());
+  SetVisible(false);
+  fade_out_.reset();
+}
+
+void AutofillDialogViews::OverlayView::Layout() {
+  gfx::Rect bounds = GetContentsBounds();
+  if (!message_stack_->visible()) {
+    image_view_->SetBoundsRect(bounds);
+    return;
+  }
+
+  int y = bounds.bottom() - views::kButtonVEdgeMarginNew;
+  if (button_->visible()) {
+    button_->SizeToPreferredSize();
+    y -= button_->height();
+    button_->SetPosition(gfx::Point(
+        bounds.width() - button_->width() -
+            views::kButtonHEdgeMarginNew,
+        y));
+    y -= views::kButtonVEdgeMarginNew;
+  }
+
+  int message_height = message_stack_->GetHeightForWidth(bounds.width());
+  y -= message_height;
+  message_stack_->SetBounds(bounds.x(), y, bounds.width(), message_height);
+
+  gfx::Size image_size = image_view_->GetPreferredSize();
+  const int kImageBottomMargin = 40;
+  y -= image_size.height() + kImageBottomMargin;
+  image_view_->SetBounds(bounds.x(), y, bounds.width(), image_size.height());
+}
+
+const char* AutofillDialogViews::OverlayView::GetClassName() const {
+  return kOverlayViewClassName;
+}
+
+void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
+  // BubbleFrameView doesn't mask the window, it just draws the border via
+  // image assets. Match that rounding here.
+  static const SkScalar kCornerRadius = SkIntToScalar(2);
+  gfx::Rect rect = GetContentsBounds();
+  gfx::Path window_mask;
+  window_mask.addRoundRect(gfx::RectToSkRect(rect),
+                           kCornerRadius, kCornerRadius);
+  canvas->ClipPath(window_mask);
+
+  // Fade out background (i.e. fade in what's behind |this|).
+  if (fade_out_ && fade_out_->current_part_index() == 2)
+    canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
+
+  OnPaintBackground(canvas);
+
+  // Draw the arrow, border, and fill for the bottom area.
+  if (message_stack_->visible()) {
+    const int arrow_half_width = kArrowWidth / 2.0f;
+    SkPath arrow;
+    int y = message_stack_->y() - 1;
+    // Note that we purposely draw slightly outside of |rect| so that the
+    // stroke is hidden on the sides.
+    arrow.moveTo(rect.x() - 1, y);
+    arrow.rLineTo(rect.width() / 2 - arrow_half_width, 0);
+    arrow.rLineTo(arrow_half_width, -kArrowHeight);
+    arrow.rLineTo(arrow_half_width, kArrowHeight);
+    arrow.lineTo(rect.right() + 1, y);
+    arrow.lineTo(rect.right() + 1, rect.bottom() + 1);
+    arrow.lineTo(rect.x() - 1, rect.bottom() + 1);
+    arrow.close();
+
+    SkPaint paint;
+    paint.setColor(kShadingColor);
+    paint.setStyle(SkPaint::kFill_Style);
+    canvas->DrawPath(arrow, paint);
+    paint.setColor(kSubtleBorderColor);
+    paint.setStyle(SkPaint::kStroke_Style);
+    canvas->DrawPath(arrow, paint);
+  }
+
+  PaintChildren(canvas);
+}
+
+void AutofillDialogViews::OverlayView::PaintChildren(gfx::Canvas* canvas) {
+  // Don't draw children.
+  if (fade_out_ && fade_out_->current_part_index() == 2)
+    return;
+
+  // Fade out children.
+  if (fade_out_ && fade_out_->current_part_index() == 1)
+    canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
+
+  views::View::PaintChildren(canvas);
 }
 
 // AutofillDialogViews::NotificationArea ---------------------------------------
@@ -1018,6 +1123,14 @@ void AutofillDialogViews::Show() {
       views::Widget::GetTopLevelWidgetForNativeView(
           controller_->web_contents()->GetView()->GetNativeView());
   observer_.Add(browser_widget);
+
+  gfx::Image splash_image = controller_->SplashPageImage();
+  if (!splash_image.IsEmpty()) {
+    DialogOverlayState state;
+    state.image = splash_image;
+    overlay_view_->SetState(state, NULL);
+    overlay_view_->BeginFadeOut();
+  }
 }
 
 void AutofillDialogViews::Hide() {
@@ -1069,6 +1182,9 @@ void AutofillDialogViews::UpdateButtonStrip() {
   autocheckout_progress_bar_view_->SetVisible(
       controller_->ShouldShowProgressBar());
   GetDialogClientView()->UpdateDialogButtons();
+
+  overlay_view_->SetState(controller_->GetDialogOverlay(), this);
+
   ContentsPreferredSizeChanged();
 }
 
@@ -1401,15 +1517,6 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
 }
 
 views::View* AutofillDialogViews::CreateOverlayView() {
-  gfx::Image splash_image = controller_->SplashPageImage();
-  if (splash_image.IsEmpty())
-    return NULL;
-
-  overlay_view_ = new OverlayView();
-  views::ImageView* image = new views::ImageView();
-  image->SetImage(splash_image.ToImageSkia());
-  overlay_view_->AddChildView(image);
-
   return overlay_view_;
 }
 
@@ -1439,6 +1546,11 @@ views::NonClientFrameView* AutofillDialogViews::CreateNonClientFrameView(
 
 void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
+  if (sender->GetAncestorWithClassName(kOverlayViewClassName)) {
+    controller_->OverlayButtonPressed();
+    return;
+  }
+
   // TODO(estade): Should the menu be shown on mouse down?
   DetailsGroup* group = NULL;
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
@@ -1581,6 +1693,9 @@ void AutofillDialogViews::InitChildViews() {
   sign_in_delegate_.reset(
       new AutofillDialogSignInDelegate(this,
                                        sign_in_webview_->GetWebContents()));
+
+  overlay_view_ = new OverlayView(this);
+  overlay_view_->SetVisible(false);
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
