@@ -296,6 +296,12 @@ if [[ ! -f ./config.status ]]; then
 fi
 
 MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}"
+STRIP_FLAGS=
+if [ "${OS}" = "Darwin" ]; then
+  # See http://crbug.com/256342
+  STRIP_FLAGS=-x
+fi
+strip ${STRIP_FLAGS} Release+Asserts/bin/clang
 cd -
 
 if [[ -n "${with_android}" ]]; then
