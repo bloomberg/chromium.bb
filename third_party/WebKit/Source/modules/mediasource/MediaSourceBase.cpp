@@ -199,8 +199,8 @@ PassOwnPtr<SourceBufferPrivate> MediaSourceBase::createSourceBufferPrivate(const
     case MediaSourcePrivate::ReachedIdLimit:
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
-        // a QUOTA_EXCEEDED_ERR exception and abort these steps.
-        ec = QUOTA_EXCEEDED_ERR;
+        // a QuotaExceededError exception and abort these steps.
+        ec = QuotaExceededError;
         return nullptr;
     }
 

@@ -99,7 +99,7 @@ void StorageAreaProxy::setItem(const String& key, const String& value, Exception
     }
     WebKit::WebStorageArea::Result result = WebKit::WebStorageArea::ResultOK;
     m_storageArea->setItem(key, value, frame->document()->url(), result);
-    ec = (result == WebKit::WebStorageArea::ResultOK) ? 0 : QUOTA_EXCEEDED_ERR;
+    ec = (result == WebKit::WebStorageArea::ResultOK) ? 0 : QuotaExceededError;
 }
 
 void StorageAreaProxy::removeItem(const String& key, ExceptionCode& ec, Frame* frame)

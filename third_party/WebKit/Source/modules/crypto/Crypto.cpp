@@ -65,7 +65,7 @@ void Crypto::getRandomValues(ArrayBufferView* array, ExceptionCode& ec)
         return;
     }
     if (array->byteLength() > 65536) {
-        ec = QUOTA_EXCEEDED_ERR;
+        ec = QuotaExceededError;
         return;
     }
     cryptographicallyRandomValues(array->baseAddress(), array->byteLength());

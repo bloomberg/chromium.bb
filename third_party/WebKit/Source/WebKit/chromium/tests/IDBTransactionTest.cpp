@@ -147,7 +147,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     // This will generate an abort() call to the back end which is dropped by the fake proxy,
     // so an explicit onAbort call is made.
     scriptExecutionContext()->stopActiveDOMObjects();
-    transaction->onAbort(DOMError::create(ABORT_ERR, "Aborted"));
+    transaction->onAbort(DOMError::create(AbortError, "Aborted"));
 
     EXPECT_EQ(1, transaction->refCount());
 }

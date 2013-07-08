@@ -163,7 +163,7 @@ void IDBRequest::abort()
 
     m_error.clear();
     m_result.clear();
-    onError(DOMError::create(ABORT_ERR, "The transaction was aborted, so the request cannot be fulfilled."));
+    onError(DOMError::create(AbortError, "The transaction was aborted, so the request cannot be fulfilled."));
     m_requestAborted = true;
 }
 
@@ -508,7 +508,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
 void IDBRequest::uncaughtExceptionInEventHandler()
 {
     if (m_transaction && !m_requestAborted) {
-        m_transaction->setError(DOMError::create(ABORT_ERR, "Uncaught exception in event handler."));
+        m_transaction->setError(DOMError::create(AbortError, "Uncaught exception in event handler."));
         m_transaction->abort(IGNORE_EXCEPTION);
     }
 }

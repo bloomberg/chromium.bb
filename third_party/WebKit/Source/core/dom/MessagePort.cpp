@@ -200,7 +200,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     for (unsigned int i = 0; i < ports->size(); ++i) {
         MessagePort* port = (*ports)[i].get();
         if (!port || port->isNeutered() || portSet.contains(port)) {
-            ec = DATA_CLONE_ERR;
+            ec = DataCloneError;
             return nullptr;
         }
         portSet.add(port);

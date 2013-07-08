@@ -55,14 +55,13 @@ namespace WebCore {
         SecurityError,
 
         // Others introduced in HTML5:
-        // FIXME: Rename these to use CamelCase matching the exception name.
-        NETWORK_ERR,
-        ABORT_ERR,
-        URL_MISMATCH_ERR,
-        QUOTA_EXCEEDED_ERR,
-        TIMEOUT_ERR,
-        INVALID_NODE_TYPE_ERR,
-        DATA_CLONE_ERR,
+        NetworkError,
+        AbortError,
+        URLMismatchError,
+        QuotaExceededError,
+        TimeoutError,
+        InvalidNodeTypeError,
+        DataCloneError,
 
         // These are IDB-specific.
         IDBNotFoundError,

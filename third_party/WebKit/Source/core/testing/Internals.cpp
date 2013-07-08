@@ -936,7 +936,7 @@ bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionCode& ec)
     if (textField->tagName() == "TEXTAREA")
         return static_cast<HTMLTextAreaElement*>(textField)->lastChangeWasUserEdit();
 
-    ec = INVALID_NODE_TYPE_ERR;
+    ec = InvalidNodeTypeError;
     return false;
 }
 
@@ -950,7 +950,7 @@ bool Internals::elementShouldAutoComplete(Element* element, ExceptionCode& ec)
     if (element->hasTagName(inputTag))
         return toHTMLInputElement(element)->shouldAutocomplete();
 
-    ec = INVALID_NODE_TYPE_ERR;
+    ec = InvalidNodeTypeError;
     return false;
 }
 
@@ -962,7 +962,7 @@ String Internals::suggestedValue(Element* element, ExceptionCode& ec)
     }
 
     if (!element->hasTagName(inputTag)) {
-        ec = INVALID_NODE_TYPE_ERR;
+        ec = InvalidNodeTypeError;
         return String();
     }
 
@@ -977,7 +977,7 @@ void Internals::setSuggestedValue(Element* element, const String& value, Excepti
     }
 
     if (!element->hasTagName(inputTag)) {
-        ec = INVALID_NODE_TYPE_ERR;
+        ec = InvalidNodeTypeError;
         return;
     }
 
@@ -992,7 +992,7 @@ void Internals::setEditingValue(Element* element, const String& value, Exception
     }
 
     if (!element->hasTagName(inputTag)) {
-        ec = INVALID_NODE_TYPE_ERR;
+        ec = InvalidNodeTypeError;
         return;
     }
 

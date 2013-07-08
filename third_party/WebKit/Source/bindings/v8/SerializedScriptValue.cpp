@@ -2448,7 +2448,7 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
         // If there was an input error, throw a new exception outside
         // of the TryCatch scope.
         didThrow = true;
-        setDOMException(DATA_CLONE_ERR, isolate);
+        setDOMException(DataCloneError, isolate);
         return;
     case Serializer::InvalidStateError:
         didThrow = true;

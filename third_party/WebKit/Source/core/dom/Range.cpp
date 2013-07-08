@@ -1005,17 +1005,17 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
         }
     }
 
-    // INVALID_NODE_TYPE_ERR: Raised if newNode is an Attr, Entity, Notation, ShadowRoot or Document node.
+    // InvalidNodeTypeError: Raised if newNode is an Attr, Entity, Notation, ShadowRoot or Document node.
     switch (newNodeType) {
     case Node::ATTRIBUTE_NODE:
     case Node::ENTITY_NODE:
     case Node::NOTATION_NODE:
     case Node::DOCUMENT_NODE:
-        ec = INVALID_NODE_TYPE_ERR;
+        ec = InvalidNodeTypeError;
         return;
     default:
         if (newNode->isShadowRoot()) {
-            ec = INVALID_NODE_TYPE_ERR;
+            ec = InvalidNodeTypeError;
             return;
         }
         break;
@@ -1134,7 +1134,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionCode& ec) const
         case Node::DOCUMENT_TYPE_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = INVALID_NODE_TYPE_ERR;
+            ec = InvalidNodeTypeError;
             return 0;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
@@ -1165,7 +1165,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionCode& ec) const
 
 void Range::checkNodeBA(Node* n, ExceptionCode& ec) const
 {
-    // INVALID_NODE_TYPE_ERR: Raised if the root container of refNode is not an
+    // InvalidNodeTypeError: Raised if the root container of refNode is not an
     // Attr, Document, DocumentFragment or ShadowRoot node, or part of a SVG shadow DOM tree,
     // or if refNode is a Document, DocumentFragment, ShadowRoot, Attr, Entity, or Notation node.
 
@@ -1175,7 +1175,7 @@ void Range::checkNodeBA(Node* n, ExceptionCode& ec) const
         case Node::DOCUMENT_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = INVALID_NODE_TYPE_ERR;
+            ec = InvalidNodeTypeError;
             return;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
@@ -1205,7 +1205,7 @@ void Range::checkNodeBA(Node* n, ExceptionCode& ec) const
         case Node::PROCESSING_INSTRUCTION_NODE:
         case Node::TEXT_NODE:
         case Node::XPATH_NAMESPACE_NODE:
-            ec = INVALID_NODE_TYPE_ERR;
+            ec = InvalidNodeTypeError;
             return;
     }
 }
@@ -1292,7 +1292,7 @@ void Range::selectNode(Node* refNode, ExceptionCode& ec)
         return;
     }
 
-    // INVALID_NODE_TYPE_ERR: Raised if an ancestor of refNode is an Entity, Notation or
+    // InvalidNodeTypeError: Raised if an ancestor of refNode is an Entity, Notation or
     // DocumentType node or if refNode is a Document, DocumentFragment, ShadowRoot, Attr, Entity, or Notation
     // node.
     for (ContainerNode* anc = refNode->parentNode(); anc; anc = anc->parentNode()) {
@@ -1310,7 +1310,7 @@ void Range::selectNode(Node* refNode, ExceptionCode& ec)
             case Node::DOCUMENT_TYPE_NODE:
             case Node::ENTITY_NODE:
             case Node::NOTATION_NODE:
-                ec = INVALID_NODE_TYPE_ERR;
+                ec = InvalidNodeTypeError;
                 return;
         }
     }
@@ -1329,7 +1329,7 @@ void Range::selectNode(Node* refNode, ExceptionCode& ec)
         case Node::DOCUMENT_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = INVALID_NODE_TYPE_ERR;
+            ec = InvalidNodeTypeError;
             return;
     }
 
@@ -1355,7 +1355,7 @@ void Range::selectNodeContents(Node* refNode, ExceptionCode& ec)
         return;
     }
 
-    // INVALID_NODE_TYPE_ERR: Raised if refNode or an ancestor of refNode is an Entity, Notation
+    // InvalidNodeTypeError: Raised if refNode or an ancestor of refNode is an Entity, Notation
     // or DocumentType node.
     for (Node* n = refNode; n; n = n->parentNode()) {
         switch (n->nodeType()) {
@@ -1372,7 +1372,7 @@ void Range::selectNodeContents(Node* refNode, ExceptionCode& ec)
             case Node::DOCUMENT_TYPE_NODE:
             case Node::ENTITY_NODE:
             case Node::NOTATION_NODE:
-                ec = INVALID_NODE_TYPE_ERR;
+                ec = InvalidNodeTypeError;
                 return;
         }
     }
@@ -1398,7 +1398,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
         return;
     }
 
-    // INVALID_NODE_TYPE_ERR: Raised if node is an Attr, Entity, DocumentType, Notation,
+    // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType, Notation,
     // Document, or DocumentFragment node.
     switch (newParent->nodeType()) {
         case Node::ATTRIBUTE_NODE:
@@ -1407,7 +1407,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
         case Node::DOCUMENT_TYPE_NODE:
         case Node::ENTITY_NODE:
         case Node::NOTATION_NODE:
-            ec = INVALID_NODE_TYPE_ERR;
+            ec = InvalidNodeTypeError;
             return;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:

@@ -225,9 +225,9 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionCode&
         scriptLoader->setTargetType(ResourceRequest::TargetIsScript);
         scriptLoader->loadSynchronously(scriptExecutionContext(), *it, AllowCrossOriginRequests);
 
-        // If the fetching attempt failed, throw a NETWORK_ERR exception and abort all these steps.
+        // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.
         if (scriptLoader->failed()) {
-            ec = NETWORK_ERR;
+            ec = NetworkError;
             return;
         }
 

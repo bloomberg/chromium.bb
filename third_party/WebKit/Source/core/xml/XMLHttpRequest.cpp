@@ -699,7 +699,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
 {
     // Only GET request is supported for blob URL.
     if (m_url.protocolIs("blob") && m_method != "GET") {
-        ec = NETWORK_ERR;
+        ec = NetworkError;
         return;
     }
 
@@ -774,7 +774,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
     }
 
     if (!m_exceptionCode && m_error)
-        m_exceptionCode = NETWORK_ERR;
+        m_exceptionCode = NetworkError;
     ec = m_exceptionCode;
 }
 
@@ -1050,7 +1050,7 @@ void XMLHttpRequest::didFail(const ResourceError& error)
         return;
 
     if (error.isCancellation()) {
-        m_exceptionCode = ABORT_ERR;
+        m_exceptionCode = AbortError;
         abortError();
         return;
     }
@@ -1064,7 +1064,7 @@ void XMLHttpRequest::didFail(const ResourceError& error)
     if (error.domain() == errorDomainWebKitInternal)
         logConsoleError(scriptExecutionContext(), "XMLHttpRequest cannot load " + error.failingURL() + ". " + error.localizedDescription());
 
-    m_exceptionCode = NETWORK_ERR;
+    m_exceptionCode = NetworkError;
     networkError();
 }
 
@@ -1192,11 +1192,11 @@ void XMLHttpRequest::didTimeout()
     clearRequest();
 
     m_error = true;
-    m_exceptionCode = TIMEOUT_ERR;
+    m_exceptionCode = TimeoutError;
 
     if (!m_async) {
         m_state = DONE;
-        m_exceptionCode = TIMEOUT_ERR;
+        m_exceptionCode = TimeoutError;
         return;
     }
 

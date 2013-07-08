@@ -234,7 +234,7 @@ void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr
 
     if (!webWorker) {
         // Existing worker does not match this url, so return an error back to the caller.
-        ec = URL_MISMATCH_ERR;
+        ec = URLMismatchError;
         return;
     }
 

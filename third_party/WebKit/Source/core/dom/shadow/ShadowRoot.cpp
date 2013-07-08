@@ -108,7 +108,7 @@ ShadowRoot* ShadowRoot::bindingsOlderShadowRoot() const
 
 PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionCode& ec)
 {
-    ec = DATA_CLONE_ERR;
+    ec = DataCloneError;
     return 0;
 }
 
