@@ -17,6 +17,15 @@ function FileGrid() {
 }
 
 /**
+ * Thumbnail quality.
+ * @enum {number}
+ */
+FileGrid.ThumbnailQuality = {
+  LOW: 0,
+  HIGH: 1
+};
+
+/**
  * Inherits from cr.ui.Grid.
  */
 FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
@@ -58,8 +67,11 @@ FileGrid.prototype.updateListItemsMetadata = function(type, props) {
     if (!entry || !(entry.toURL() in props))
       continue;
 
-    FileGrid.decorateThumbnailBox(box, entry, this.metadataCache_,
-                                  ThumbnailLoader.FillMode.FIT);
+    FileGrid.decorateThumbnailBox(box,
+                                  entry,
+                                  this.metadataCache_,
+                                  ThumbnailLoader.FillMode.FIT,
+                                  FileGrid.ThumbnailQuality.HIGH);
   }
 };
 
@@ -97,8 +109,11 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
   li.appendChild(frame);
 
   var box = li.ownerDocument.createElement('div');
-  FileGrid.decorateThumbnailBox(
-      box, entry, metadataCache, ThumbnailLoader.FillMode.AUTO);
+  FileGrid.decorateThumbnailBox(box,
+                                entry,
+                                metadataCache,
+                                ThumbnailLoader.FillMode.AUTO,
+                                FileGrid.ThumbnailQuality.HIGH);
   frame.appendChild(box);
 
   var bottom = li.ownerDocument.createElement('div');
@@ -115,11 +130,12 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
  * @param {Entry} entry Entry which thumbnail is generating for.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
+ * @param {FileGrid.ThumbnailQuality} quality Thumbnail quality.
  * @param {function(HTMLElement)=} opt_imageLoadCallback Callback called when
  *     the image has been loaded before inserting it into the DOM.
  */
 FileGrid.decorateThumbnailBox = function(
-    box, entry, metadataCache, fillMode, opt_imageLoadCallback) {
+    box, entry, metadataCache, fillMode, quality, opt_imageLoadCallback) {
   box.className = 'img-container';
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
@@ -139,15 +155,28 @@ FileGrid.decorateThumbnailBox = function(
     metadataTypes += '|media';
   }
 
+  // Drive provides high quality thumbnails via USE_EMBEDDED, however local
+  // images usually provide very tiny thumbnails, therefore USE_EMBEDDE can't
+  // be used to obtain high quality output.
+  var useEmbedded;
+  switch (quality) {
+    case FileGrid.ThumbnailQuality.LOW:
+      useEmbedded = ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
+      break;
+    case FileGrid.ThumbnailQuality.HIGH:
+      useEmbedded = FileType.isOnDrive(imageUrl) ?
+          ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+          ThumbnailLoader.UseEmbedded.NO_EMBEDDED;
+      break;
+  }
+
   metadataCache.get(imageUrl, metadataTypes,
       function(metadata) {
         new ThumbnailLoader(imageUrl,
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata,
                             undefined,  // opt_mediaType
-                            FileType.isOnDrive(imageUrl) ?
-                                ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                                ThumbnailLoader.UseEmbedded.NO_EMBEDDED).
+                            useEmbedded).
             load(box,
                 fillMode,
                 ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,

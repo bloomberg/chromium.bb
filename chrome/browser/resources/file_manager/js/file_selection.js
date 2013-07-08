@@ -650,7 +650,7 @@ FileSelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
                                 entry,
                                 this.fileManager_.metadataCache_,
                                 ThumbnailLoader.FillMode.FILL,
-                                ThumbnailLoader.OptimizationMode.NEVER_DISCARD,
+                                FileGrid.ThumbnailQuality.LOW,
                                 callback);
   return thumbnail;
 };
@@ -703,7 +703,7 @@ FileSelectionHandler.prototype.decorateThumbnailZoom_ = function(
     largeImageBox, img, transform) {
   var width = img.width;
   var height = img.height;
-  var THUMBNAIL_SIZE = 45;
+  var THUMBNAIL_SIZE = 35;
   if (width < THUMBNAIL_SIZE * 2 && height < THUMBNAIL_SIZE * 2)
     return false;
 
