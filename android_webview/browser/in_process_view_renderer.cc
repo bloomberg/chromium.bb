@@ -352,10 +352,11 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
                                    const gfx::Rect& clip) {
   fallback_tick_.Cancel();
   scroll_at_start_of_frame_  = scroll;
-  if (is_hardware_canvas && attached_to_window_ && compositor_ &&
-      HardwareEnabled() && client_->RequestDrawGL(java_canvas)) {
-    // All set: we'll get a call on DrawGL when the time comes.
-    return true;
+  if (is_hardware_canvas && attached_to_window_ && HardwareEnabled()) {
+    // We should be performing a hardware draw here. If we don't have the
+    // comositor yet or if RequestDrawGL fails, it means we failed this draw and
+    // thus return false here to clear to background color for this draw.
+    return compositor_ && client_->RequestDrawGL(java_canvas);
   }
   // Perform a software draw
   block_invalidates_ = true;
@@ -403,8 +404,6 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   }
   last_egl_context_ = current_context;
 
-  // TODO(boliu): Make sure this is not called before compositor is initialized
-  // and GL is ready. Then make this a DCHECK.
   if (!compositor_) {
     TRACE_EVENT_INSTANT0(
         "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
@@ -438,6 +437,12 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
     TRACE_EVENT_INSTANT0(
         "android_webview", "EarlyOut_EmptyClip", TRACE_EVENT_SCOPE_THREAD);
     return true;
+  }
+
+  if (!compositor_) {
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
+    return false;
   }
 
   JNIEnv* env = AttachCurrentThread();
@@ -510,8 +515,11 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
 
 base::android::ScopedJavaLocalRef<jobject>
 InProcessViewRenderer::CapturePicture() {
-  if (!GetAwDrawSWFunctionTable())
+  if (!compositor_ || !GetAwDrawSWFunctionTable()) {
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EarlyOut_CapturePicture", TRACE_EVENT_SCOPE_THREAD);
     return ScopedJavaLocalRef<jobject>();
+  }
 
   gfx::Size record_size(width_, height_);
 
@@ -752,7 +760,7 @@ void InProcessViewRenderer::FallbackTickFired() {
                "InProcessViewRenderer::FallbackTickFired",
                "continuous_invalidate_",
                continuous_invalidate_);
-  if (continuous_invalidate_) {
+  if (continuous_invalidate_ && compositor_) {
     SkDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
     SkCanvas canvas(&device);
     block_invalidates_ = true;
@@ -763,7 +771,8 @@ void InProcessViewRenderer::FallbackTickFired() {
 }
 
 bool InProcessViewRenderer::CompositeSW(SkCanvas* canvas) {
-  return compositor_ && compositor_->DemandDrawSw(canvas);
+  DCHECK(compositor_);
+  return compositor_->DemandDrawSw(canvas);
 }
 
 }  // namespace android_webview
