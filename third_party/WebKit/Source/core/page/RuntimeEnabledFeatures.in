@@ -68,6 +68,7 @@ ProgrammaticScrollNotifications status=test
 Promise status=test
 Quota status=stable
 RequestAutocomplete status=test
+RowSpanLogicalHeightSpreading status=test
 ScriptedSpeech status=stable
 SeamlessIFrames status=experimental
 SessionStorage status=stable

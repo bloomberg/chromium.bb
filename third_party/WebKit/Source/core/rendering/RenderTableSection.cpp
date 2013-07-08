@@ -24,13 +24,16 @@
  */
 
 #include "config.h"
+#include "core/rendering/RenderTableSection.h"
+
+// FIXME: Remove 'RuntimeEnabledFeatures.h' when http://crbug.com/78724 is closed.
+#include "RuntimeEnabledFeatures.h"
 #include <limits>
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableRow.h"
-#include "core/rendering/RenderTableSection.h"
 #include "core/rendering/RenderView.h"
 #include <wtf/HashSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -360,18 +363,26 @@ int RenderTableSection::calcRowLogicalHeight()
                 if (current.inColSpan && cell->rowSpan() == 1)
                     continue;
 
-                if (cell->rowSpan() > 1) {
-                    // For row spanning cells, we only handle them for the first row they span. This ensures we take their baseline into account.
-                    if (cell->rowIndex() == r) {
-                        rowSpanCells.append(cell);
+                if (RuntimeEnabledFeatures::rowSpanLogicalHeightSpreadingEnabled()) {
+                    if (cell->rowSpan() > 1) {
+                        // For row spanning cells, we only handle them for the first row they span. This ensures we take their baseline into account.
+                        if (cell->rowIndex() == r) {
+                            rowSpanCells.append(cell);
 
-                        // Find out the baseline. The baseline is set on the first row in a rowSpan.
-                        updateBaselineForCell(cell, r, baselineDescent);
+                            // Find out the baseline. The baseline is set on the first row in a rowSpan.
+                            updateBaselineForCell(cell, r, baselineDescent);
+                        }
+                        continue;
                     }
-                    continue;
-                }
 
-                ASSERT(cell->rowSpan() == 1);
+                    ASSERT(cell->rowSpan() == 1);
+                } else {
+                    // FIXME: We add all the logical row of a rowspan to the last rows
+                    // until crbug.com/78724 is fixed and the runtime flag removed.
+                    // This avoids propagating temporary regressions while we fix the bug.
+                    if ((cell->rowIndex() + cell->rowSpan() - 1) != r)
+                        continue;
+                }
 
                 if (cell->hasOverrideHeight()) {
                     if (!statePusher.didPush()) {
@@ -385,10 +396,20 @@ int RenderTableSection::calcRowLogicalHeight()
                     cell->layoutIfNeeded();
                 }
 
-                m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r] + cell->logicalHeightForRowSizing());
+                if (RuntimeEnabledFeatures::rowSpanLogicalHeightSpreadingEnabled()) {
+                    m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r] + cell->logicalHeightForRowSizing());
 
-                // Find out the baseline.
-                updateBaselineForCell(cell, r, baselineDescent);
+                    // Find out the baseline.
+                    updateBaselineForCell(cell, r, baselineDescent);
+                } else {
+                    // For row spanning cells, |r| is the last row in the span.
+                    unsigned cellStartRow = cell->rowIndex();
+
+                    m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[cellStartRow] + cell->logicalHeightForRowSizing());
+
+                    // Find out the baseline.
+                    updateBaselineForCell(cell, cellStartRow, baselineDescent);
+                }
             }
         }
 
@@ -397,8 +418,10 @@ int RenderTableSection::calcRowLogicalHeight()
         m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r]);
     }
 
-    if (!rowSpanCells.isEmpty())
+    if (!rowSpanCells.isEmpty()) {
+        ASSERT(RuntimeEnabledFeatures::rowSpanLogicalHeightSpreadingEnabled());
         distributeRowSpanHeightToRows(rowSpanCells);
+    }
 
     ASSERT(!needsLayout());
 
