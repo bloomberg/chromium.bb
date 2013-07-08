@@ -11866,6 +11866,178 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
+<histogram name="Startup.BrowserMessageLoopStartTime">
+  <summary>
+    Time from browser startup to the start of the main thread's message loop.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry"
+    units="milliseconds">
+  <summary>
+    Time from main entry to the start of the main thread's message loop. This
+    stat is only recorded after 7 minutes of OS uptime to try to mitigate the
+    variance resulting from Chrome being autostarted.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun"
+    units="milliseconds">
+  <summary>
+    Time from main entry to the start of the main thread's message loop on first
+    run. This stat is only recorded after 7 minutes of OS uptime to try to
+    mitigate the variance resulting from Chrome being autostarted.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserOpenTabs">
+  <summary>
+    Time taken to open the initial tab or to restore tabs from previous session.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserWindowDisplay" units="milliseconds">
+  <summary>
+    Time from browser startup to the time the browser window initially becomes
+    visible.
+  </summary>
+</histogram>
+
+<histogram name="Startup.ChromeCast.TimeToDisplayVideo" units="milliseconds">
+  <summary>
+    The elapsed time from the ChromeCast application launch to the first video
+    frame displayed.
+  </summary>
+</histogram>
+
+<histogram name="Startup.Fling.TimeToDisplayVideo" units="milliseconds">
+  <summary>
+    The elapsed time from the Fling application launch to the first video frame
+    displayed.
+  </summary>
+</histogram>
+
+<histogram name="Startup.IsResume">
+  <obsolete>
+    Deprecated 12/2011. Merged into MobileSessionStartType.
+  </obsolete>
+  <summary>Whether a startup is a resume (vs a cold start).</summary>
+</histogram>
+
+<histogram name="Startup.MobileSessionStartAction"
+    enum="MobileSessionStartAction">
+  <summary>
+    The action requested on the application startup when called from another app
+    or the OS.
+  </summary>
+</histogram>
+
+<histogram name="Startup.MobileSessionStartFromApps"
+    enum="MobileSessionCallerApp">
+  <summary>The calling application (if any).</summary>
+</histogram>
+
+<histogram name="Startup.ShowAppListColdStart" units="milliseconds">
+  <summary>
+    Time for a newly created browser process to reach the code that starts
+    showing the app launcher, when started with the --show-app-list flag and
+    with no currently running Chrome processes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.ShowAppListWarmStart" units="milliseconds">
+  <summary>
+    Time for a running browser process to reach the code that starts showing the
+    app launcher. Measured from the time a second Chrome process started, which
+    sent its --show-app-list command line argument to the already-running
+    process and will soon exit.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupBookmarksLoad" units="milliseconds">
+  <summary>
+    Time it takes to load bookmarks from disk. This measurement is only sent for
+    startups that take &gt;10 seconds after an uptime of 7 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupExtensionServiceInitAfterImport"
+    units="milliseconds">
+  <summary>
+    Time it takes to finish initialization of the extension service including
+    loading built-in extensions. This measurement is only sent for startups that
+    take &gt;10 seconds after an uptime of 7 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupFinalProfileInit" units="milliseconds">
+  <summary>
+    Time the final stages of profile initialization taking including
+    initialization of profile keyed services. This measurement is only sent for
+    startups that take &gt;10 seconds after an uptime of 7 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupNSSInit" units="milliseconds">
+  <summary>
+    Time it takes to load the NSS libraries and initialize it. This measurement
+    is only sent for startups that take &gt;10 seconds after an uptime of 7
+    minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupPreferenceLoading" units="milliseconds">
+  <summary>
+    Time it takes to load preferences from disk. This measurement is only sent
+    for startups that take &gt;10 seconds after an uptime of 7 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupProfileIODataInit" units="milliseconds">
+  <summary>
+    Time it takes to initialize the ProfileIOData object - this includes
+    initialization of the cookie store. This measurement is only sent for
+    startups that take &gt;10 seconds after an uptime of 7 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupSafeBrowsingGetDatabase"
+    units="milliseconds">
+  <summary>
+    Time it takes to load the safe browsing database from disk. This measurement
+    is only sent for startups that take &gt;10 seconds after an uptime of 7
+    minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupSafeBrowsingServiceInitialize"
+    units="milliseconds">
+  <summary>
+    Time it takes to initialize the safe browsing service. This measurement is
+    only sent for startups that take &gt;10 seconds after an uptime of 7
+    minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.SlowStartupSessionServiceCreateTabsAndWindows"
+    units="milliseconds">
+  <summary>
+    Time it takes for session restore to finish initiating creation of restored
+    tabs and windows. This measurement is only sent for startups that take
+    &gt;10 seconds after an uptime of 7 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.WarmStartTimeFromRemoteProcessStart"
+    units="milliseconds">
+  <summary>
+    Time for a running browser process to start processing the command line
+    passed in by a second Chrome process, which just sent its command line
+    arguments to the already-running process and will soon exit. Measured from
+    the time the second Chrome process started.
+  </summary>
+</histogram>
+
 <histogram name="Sync.AuthInvalidationRejectedTokenAgeLong" units="days">
   <summary>
     Age of all auth tokens rejected by the invalidation server. Measured from
@@ -17143,6 +17315,29 @@ other types of suffix sets.
   <int value="3" label="kInvalidPlayerState"/>
 </enum>
 
+<enum name="MobileSessionCallerApp" type="int">
+  <int value="0" label="Google Search"/>
+  <int value="1" label="GMail"/>
+  <int value="2" label="Google+"/>
+  <int value="3" label="Google Drive"/>
+  <int value="4" label="Google Earth"/>
+  <int value="5" label="Other Google Apps"/>
+  <int value="6" label="Others"/>
+  <int value="7" label="Mobile Safari"/>
+  <int value="8" label="Other Apple Apps"/>
+  <int value="9" label="YouTube"/>
+  <int value="10" label="Google Maps"/>
+</enum>
+
+<enum name="MobileSessionStartAction" type="int">
+  <int value="0" label="Open http"/>
+  <int value="1" label="Open https"/>
+  <int value="2" label="Open file"/>
+  <int value="3" label="x-callback-url open"/>
+  <int value="4" label="x-callback-url other"/>
+  <int value="5" label="Others"/>
+</enum>
+
 <enum name="MouseEventFollowedByClick" type="int">
   <int value="0" label="Missed event before click"/>
   <int value="1" label="Caught event before click"/>
@@ -21193,6 +21388,57 @@ other types of suffix sets.
   <group name="Full_Handshake" label="Full"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
   <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
+</fieldtrial>
+
+<fieldtrial name="SyzygyStartupTime">
+  <group name="PreReadEnabled"/>
+  <group name="PreReadDisabled"/>
+  <group name="XP_PreReadEnabled"/>
+  <group name="XP_PreReadDisabled"/>
+  <group name="PreRead_0"/>
+  <group name="PreRead_5"/>
+  <group name="PreRead_10"/>
+  <group name="PreRead_15"/>
+  <group name="PreRead_20"/>
+  <group name="PreRead_25"/>
+  <group name="PreRead_30"/>
+  <group name="PreRead_35"/>
+  <group name="PreRead_40"/>
+  <group name="PreRead_45"/>
+  <group name="PreRead_50"/>
+  <group name="PreRead_55"/>
+  <group name="PreRead_60"/>
+  <group name="PreRead_65"/>
+  <group name="PreRead_70"/>
+  <group name="PreRead_75"/>
+  <group name="PreRead_80"/>
+  <group name="PreRead_85"/>
+  <group name="PreRead_90"/>
+  <group name="PreRead_95"/>
+  <group name="PreRead_100"/>
+  <group name="XP_PreRead_0"/>
+  <group name="XP_PreRead_5"/>
+  <group name="XP_PreRead_10"/>
+  <group name="XP_PreRead_15"/>
+  <group name="XP_PreRead_20"/>
+  <group name="XP_PreRead_25"/>
+  <group name="XP_PreRead_30"/>
+  <group name="XP_PreRead_35"/>
+  <group name="XP_PreRead_40"/>
+  <group name="XP_PreRead_45"/>
+  <group name="XP_PreRead_50"/>
+  <group name="XP_PreRead_55"/>
+  <group name="XP_PreRead_60"/>
+  <group name="XP_PreRead_65"/>
+  <group name="XP_PreRead_70"/>
+  <group name="XP_PreRead_75"/>
+  <group name="XP_PreRead_80"/>
+  <group name="XP_PreRead_85"/>
+  <group name="XP_PreRead_90"/>
+  <group name="XP_PreRead_95"/>
+  <group name="XP_PreRead_100"/>
+  <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
+  <affected-histogram name="Startup.BrowserOpenTabs"/>
 </fieldtrial>
 
 <fieldtrial name="WebStoreLinkExperiment">
