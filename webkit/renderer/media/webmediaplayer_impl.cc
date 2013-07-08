@@ -956,9 +956,9 @@ WebMediaPlayerImpl::OnTextTrack(media::TextKind kind,
   WebInbandTextTrackImpl* const text_track =
     new WebInbandTextTrackImpl(webkind, weblabel, weblanguage,
                                text_track_index_++);
-  GetClient()->addTextTrack(text_track);
 
-  return scoped_ptr<media::TextTrack>(new TextTrackImpl(text_track));
+  return scoped_ptr<media::TextTrack>(new TextTrackImpl(GetClient(),
+                                                        text_track));
 }
 
 void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,

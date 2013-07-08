@@ -5,16 +5,20 @@
 #include "webkit/renderer/media/texttrack_impl.h"
 
 #include "third_party/WebKit/public/web/WebInbandTextTrackClient.h"
+#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #include "webkit/renderer/media/webinbandtexttrack_impl.h"
 
 namespace webkit_media {
 
-TextTrackImpl::TextTrackImpl(WebInbandTextTrackImpl* text_track)
-    : text_track_(text_track) {
-  // This impl object assumes ownership of the text_track object.
+TextTrackImpl::TextTrackImpl(WebKit::WebMediaPlayerClient* client,
+                             WebInbandTextTrackImpl* text_track)
+    : client_(client), text_track_(text_track) {
+  client_->addTextTrack(text_track_.get());
 }
 
 TextTrackImpl::~TextTrackImpl() {
+  if (text_track_->client())
+    client_->removeTextTrack(text_track_.get());
 }
 
 void TextTrackImpl::addWebVTTCue(const base::TimeDelta& start,

@@ -11,13 +11,20 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/text_track.h"
 
+namespace WebKit {
+class WebMediaPlayerClient;
+}
+
 namespace webkit_media {
 
 class WebInbandTextTrackImpl;
 
 class TextTrackImpl : public media::TextTrack {
  public:
-  explicit TextTrackImpl(WebInbandTextTrackImpl* text_track);
+  // Constructor assumes ownership of the |text_track| object.
+  TextTrackImpl(WebKit::WebMediaPlayerClient* client,
+                WebInbandTextTrackImpl* text_track);
+
   virtual ~TextTrackImpl();
 
   virtual void addWebVTTCue(const base::TimeDelta& start,
@@ -27,6 +34,7 @@ class TextTrackImpl : public media::TextTrack {
                             const std::string& settings) OVERRIDE;
 
  private:
+  WebKit::WebMediaPlayerClient* client_;
   scoped_ptr<WebInbandTextTrackImpl> text_track_;
   DISALLOW_COPY_AND_ASSIGN(TextTrackImpl);
 };
