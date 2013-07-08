@@ -37,7 +37,6 @@
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Canvas::ResourceId;
-using WebCore::TypeBuilder::Canvas::ResourceInfo;
 using WebCore::TypeBuilder::Canvas::ResourceState;
 using WebCore::TypeBuilder::Canvas::TraceLog;
 using WebCore::TypeBuilder::Canvas::TraceLogId;
@@ -164,20 +163,6 @@ void InjectedScriptCanvasModule::replayTraceLog(ErrorString* errorString, const 
         return;
     }
     *result = ResourceState::runtimeCast(resultValue);
-}
-
-void InjectedScriptCanvasModule::resourceInfo(ErrorString* errorString, const ResourceId& resourceId, RefPtr<ResourceInfo>* result)
-{
-    ScriptFunctionCall function(injectedScriptObject(), "resourceInfo");
-    function.appendArgument(resourceId);
-    RefPtr<JSONValue> resultValue;
-    makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
-        if (!resultValue->asString(errorString))
-            *errorString = "Internal error: resourceInfo";
-        return;
-    }
-    *result = ResourceInfo::runtimeCast(resultValue);
 }
 
 void InjectedScriptCanvasModule::resourceState(ErrorString* errorString, const TraceLogId& traceLogId, const ResourceId& resourceId, RefPtr<ResourceState>* result)

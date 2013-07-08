@@ -2731,9 +2731,9 @@ CallFormatter.register = function(resourceName, callFormatter)
 
 /**
  * @param {!ReplayableCall} replayableCall
- * @return {!Object}
+ * @return {!CallFormatter}
  */
-CallFormatter.formatCall = function(replayableCall)
+CallFormatter.forReplayableCall = function(replayableCall)
 {
     var resource = replayableCall.replayableResource();
     var formatter = CallFormatter._formatters[resource.name()];
@@ -2741,7 +2741,7 @@ CallFormatter.formatCall = function(replayableCall)
         var contextResource = resource.replayableContextResource();
         formatter = CallFormatter._formatters[contextResource.name()] || new CallFormatter();
     }
-    return formatter.formatCall(replayableCall);
+    return formatter;
 }
 
 /**
@@ -3438,22 +3438,30 @@ InjectedCanvasModule.prototype = {
             id: id,
             /** @type {Array.<CanvasAgent.Call>} */
             calls: [],
+            /** @type {Array.<CanvasAgent.CallArgument>} */
+            contexts: [],
             alive: alive,
             startOffset: fromIndex,
             totalAvailableCalls: replayableCalls.length
         };
+        /** @type {!Object.<string, boolean>} */
+        var contextIds = {};
         for (var i = fromIndex; i <= toIndex; ++i) {
             var call = replayableCalls[i];
             var contextResource = call.replayableResource().replayableContextResource();
             var stackTrace = call.stackTrace();
             var callFrame = stackTrace ? stackTrace.callFrame(0) || {} : {};
-            var item = CallFormatter.formatCall(call);
+            var item = CallFormatter.forReplayableCall(call).formatCall(call);
             item.contextId = CallFormatter.makeStringResourceId(contextResource.id());
             item.sourceURL = callFrame.sourceURL;
             item.lineNumber = callFrame.lineNumber;
             item.columnNumber = callFrame.columnNumber;
             item.isFrameEndCall = traceLog.isFrameEndCallAt(i);
             result.calls.push(item);
+            if (!contextIds[item.contextId]) {
+                contextIds[item.contextId] = true;
+                result.contexts.push(CallFormatter.forReplayableCall(call).formatValue(contextResource));
+            }
         }
         return result;
     },
@@ -3480,28 +3488,6 @@ InjectedCanvasModule.prototype = {
     },
 
     /**
-     * @param {CanvasAgent.ResourceId} stringResourceId
-     * @return {!CanvasAgent.ResourceInfo|string}
-     */
-    resourceInfo: function(stringResourceId)
-    {
-        var resourceId = this._parseStringId(stringResourceId).resourceId;
-        if (!resourceId)
-            return "Error: Wrong resource ID: " + stringResourceId;
-
-        var replayableResource = null;
-        for (var id in this._traceLogs) {
-            replayableResource = this._traceLogs[id].replayableResource(resourceId);
-            if (replayableResource)
-                break;
-        }
-        if (!replayableResource)
-            return "Error: Resource with the given ID not found.";
-
-        return this._makeResourceInfo(stringResourceId, replayableResource.description());
-    },
-
-    /**
      * @param {CanvasAgent.TraceLogId} traceLogId
      * @param {CanvasAgent.ResourceId} stringResourceId
      * @return {!CanvasAgent.ResourceState|string}
@@ -3512,10 +3498,6 @@ InjectedCanvasModule.prototype = {
         if (!traceLog)
             return "Error: Trace log with the given ID not found.";
 
-        var traceLogPlayer = this._traceLogPlayers[traceLogId];
-        if (!traceLogPlayer)
-            return "Error: Trace log replay has not started yet.";
-
         var parsedStringId1 = this._parseStringId(traceLogId);
         var parsedStringId2 = this._parseStringId(stringResourceId);
         if (parsedStringId1.injectedScriptId !== parsedStringId2.injectedScriptId)
@@ -3525,11 +3507,9 @@ InjectedCanvasModule.prototype = {
         if (!resourceId)
             return "Error: Wrong resource ID: " + stringResourceId;
 
-        var resource = traceLogPlayer.replayWorldResource(resourceId);
-        if (!resource)
-            return "Error: Resource with the given ID has not been replayed yet.";
-
-        return this._makeResourceState(stringResourceId, traceLogId, resource.toDataURL());
+        var traceLogPlayer = this._traceLogPlayers[traceLogId];
+        var resource = traceLogPlayer && traceLogPlayer.replayWorldResource(resourceId);
+        return this._makeResourceState(stringResourceId, traceLogId, resource ? resource.toDataURL() : "");
     },
 
     /**
@@ -3578,19 +3558,6 @@ InjectedCanvasModule.prototype = {
     _makeTraceLogId: function()
     {
         return "{\"injectedScriptId\":" + injectedScriptId + ",\"traceLogId\":" + (++this._lastTraceLogId) + "}";
-    },
-
-    /**
-     * @param {CanvasAgent.ResourceId} stringResourceId
-     * @param {string} description
-     * @return {!CanvasAgent.ResourceInfo}
-     */
-    _makeResourceInfo: function(stringResourceId, description)
-    {
-        return {
-            id: stringResourceId,
-            description: description
-        };
     },
 
     /**

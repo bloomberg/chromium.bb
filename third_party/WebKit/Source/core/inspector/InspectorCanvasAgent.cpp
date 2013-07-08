@@ -50,7 +50,6 @@
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Canvas::ResourceId;
-using WebCore::TypeBuilder::Canvas::ResourceInfo;
 using WebCore::TypeBuilder::Canvas::ResourceState;
 using WebCore::TypeBuilder::Canvas::TraceLog;
 using WebCore::TypeBuilder::Canvas::TraceLogId;
@@ -175,13 +174,6 @@ void InspectorCanvasAgent::replayTraceLog(ErrorString* errorString, const TraceL
     InjectedScriptCanvasModule module = injectedScriptCanvasModule(errorString, traceLogId);
     if (!module.hasNoValue())
         module.replayTraceLog(errorString, traceLogId, stepNo, &result);
-}
-
-void InspectorCanvasAgent::getResourceInfo(ErrorString* errorString, const ResourceId& resourceId, RefPtr<ResourceInfo>& result)
-{
-    InjectedScriptCanvasModule module = injectedScriptCanvasModule(errorString, resourceId);
-    if (!module.hasNoValue())
-        module.resourceInfo(errorString, resourceId, &result);
 }
 
 void InspectorCanvasAgent::getResourceState(ErrorString* errorString, const TraceLogId& traceLogId, const ResourceId& resourceId, RefPtr<ResourceState>& result)
