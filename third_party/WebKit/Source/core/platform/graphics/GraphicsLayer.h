@@ -49,11 +49,6 @@
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebSolidColorLayer.h"
 
-enum DebugIDSpecialValues {
-    DebugIDNoPlatformLayer = -1,
-    DebugIDNoCompositedLayer = -2
-};
-
 namespace WebKit {
 class GraphicsLayerFactoryChromium;
 class WebLayer;
@@ -223,9 +218,6 @@ public:
     const String& name() const { return m_name; }
     void setName(const String&);
 
-    // Layer ID from platform-specific layer. Only used to identify layers in the compositor for debugging purposes.
-    int debugID() const;
-
     void setCompositingReasons(WebKit::WebCompositingReasons);
 
     GraphicsLayer* parent() const { return m_parent; };
@@ -382,18 +374,12 @@ public:
 
     void dumpLayer(TextStream&, int indent = 0, LayerTreeFlags = LayerTreeNormal) const;
 
-    void setShowDebugBorder(bool show) { m_showDebugBorder = show; }
-    bool isShowingDebugBorder() const { return m_showDebugBorder; }
-
     void setShowRepaintCounter(bool show) { m_showRepaintCounter = show; }
     bool isShowingRepaintCounter() const { return m_showRepaintCounter; }
 
     // FIXME: this is really a paint count.
     int repaintCount() const { return m_repaintCount; }
     int incrementRepaintCount() { return ++m_repaintCount; }
-
-    void setDebugBackgroundColor(const Color&) { }
-    void setDebugBorder(const Color&, float /*borderWidth*/) { }
 
     // z-position is the z-equivalent of position(). It's only used for debugging purposes.
     float zPosition() const { return m_zPosition; }
@@ -432,8 +418,6 @@ public:
 
     // Exposed for tests. FIXME - name is too similar to contentLayer(), very error prone.
     WebKit::WebLayer* contentsLayer() const { return m_contentsLayer; }
-
-    void updateDebugIndicators();
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -483,8 +467,6 @@ protected:
     void dumpProperties(TextStream&, int indent, LayerTreeFlags) const;
     void dumpAdditionalProperties(TextStream&, int /*indent*/, LayerTreeFlags) const { }
 
-    void getDebugBorderInfo(Color&, float& width) const;
-
     // Helper functions used by settors to keep layer's the state consistent.
     void updateNames();
     void updateChildList();
@@ -523,7 +505,6 @@ protected:
     bool m_masksToBounds : 1;
     bool m_drawsContent : 1;
     bool m_contentsVisible : 1;
-    bool m_showDebugBorder : 1;
     bool m_showRepaintCounter : 1;
     
     GraphicsLayerPaintingPhase m_paintingPhase;

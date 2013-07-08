@@ -118,7 +118,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_contentsVisible(true)
-    , m_showDebugBorder(false)
     , m_showRepaintCounter(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
     , m_contentsOrientation(CompositingCoordinatesTopDown)
@@ -381,35 +380,6 @@ String GraphicsLayer::animationNameForTransition(AnimatedPropertyID property)
     id.appendNumber(static_cast<int>(property));
     id.append('-');
     return id.toString();
-}
-
-void GraphicsLayer::getDebugBorderInfo(Color& color, float& width) const
-{
-    if (drawsContent()) {
-        color = Color(0, 128, 32, 128); // normal layer: green
-        width = 2;
-        return;
-    }
-    
-    if (masksToBounds()) {
-        color = Color(128, 255, 255, 48); // masking layer: pale blue
-        width = 20;
-        return;
-    }
-        
-    color = Color(255, 255, 0, 192); // container: yellow
-    width = 2;
-}
-
-void GraphicsLayer::updateDebugIndicators()
-{
-    if (!isShowingDebugBorder())
-        return;
-
-    Color borderColor;
-    float width = 0;
-    getDebugBorderInfo(borderColor, width);
-    setDebugBorder(borderColor, width);
 }
 
 void GraphicsLayer::setZPosition(float position)
@@ -951,12 +921,6 @@ void GraphicsLayer::setName(const String& name)
     m_nameBase = name;
     m_name = String::format("GraphicsLayer(%p) ", this) + name;
     updateNames();
-}
-
-int GraphicsLayer::debugID() const
-{
-    // FIXME: change this to assert m_layer always exists, and remove enum.
-    return m_layer ? m_layer->layer()->id() : DebugIDNoCompositedLayer;
 }
 
 void GraphicsLayer::setCompositingReasons(WebKit::WebCompositingReasons reasons)

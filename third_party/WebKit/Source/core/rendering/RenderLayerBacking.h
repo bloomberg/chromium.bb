@@ -133,8 +133,6 @@ public:
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
 
-    void updateDebugIndicators(bool showBorder, bool showRepaintCounter);
-
     // GraphicsLayerClient interface
     virtual void notifyAnimationStarted(const GraphicsLayer*, double startTime) OVERRIDE;
 

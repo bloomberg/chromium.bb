@@ -142,47 +142,6 @@ PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& 
     return graphicsLayer.release();
 }
 
-void RenderLayerBacking::updateDebugIndicators(bool showBorder, bool showRepaintCounter)
-{
-    m_graphicsLayer->setShowDebugBorder(showBorder);
-    m_graphicsLayer->setShowRepaintCounter(showRepaintCounter);
-    
-    if (m_ancestorClippingLayer)
-        m_ancestorClippingLayer->setShowDebugBorder(showBorder);
-
-    if (m_foregroundLayer) {
-        m_foregroundLayer->setShowDebugBorder(showBorder);
-        m_foregroundLayer->setShowRepaintCounter(showRepaintCounter);
-    }
-    
-    if (m_backgroundLayer) {
-        m_backgroundLayer->setShowDebugBorder(showBorder);
-        m_backgroundLayer->setShowRepaintCounter(showRepaintCounter);
-    }
-
-    if (m_maskLayer) {
-        m_maskLayer->setShowDebugBorder(showBorder);
-        m_maskLayer->setShowRepaintCounter(showRepaintCounter);
-    }
-
-    if (m_layerForHorizontalScrollbar)
-        m_layerForHorizontalScrollbar->setShowDebugBorder(showBorder);
-
-    if (m_layerForVerticalScrollbar)
-        m_layerForVerticalScrollbar->setShowDebugBorder(showBorder);
-
-    if (m_layerForScrollCorner)
-        m_layerForScrollCorner->setShowDebugBorder(showBorder);
-
-    if (m_scrollingLayer)
-        m_scrollingLayer->setShowDebugBorder(showBorder);
-
-    if (m_scrollingContentsLayer) {
-        m_scrollingContentsLayer->setShowDebugBorder(showBorder);
-        m_scrollingContentsLayer->setShowRepaintCounter(showRepaintCounter);
-    }
-}
-
 void RenderLayerBacking::createPrimaryGraphicsLayer()
 {
     String layerName;

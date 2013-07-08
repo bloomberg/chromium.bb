@@ -314,7 +314,6 @@ private:
     ChromeClient::CompositingTriggerFlags m_compositingTriggers;
 
     int m_compositedLayerCount;
-    bool m_showDebugBorders;
     bool m_showRepaintCounter;
 
     // When true, we have to wait until layout has happened before we can decide whether to enter compositing mode,

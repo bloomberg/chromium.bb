@@ -141,7 +141,6 @@ public:
     virtual void setShouldDisplayTextDescriptions(bool);
     virtual void setShouldPrintBackgrounds(bool);
     virtual void setShouldRespectImageOrientation(bool);
-    virtual void setShowDebugBorders(bool);
     virtual void setShowFPSCounter(bool);
     virtual void setShowPaintRects(bool);
     virtual void setShrinksStandaloneImagesToFit(bool);

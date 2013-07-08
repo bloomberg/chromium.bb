@@ -393,11 +393,6 @@ void WebSettingsImpl::setWebGLErrorsToConsoleEnabled(bool enabled)
     m_settings->setWebGLErrorsToConsoleEnabled(enabled);
 }
 
-void WebSettingsImpl::setShowDebugBorders(bool show)
-{
-    m_settings->setShowDebugBorders(show);
-}
-
 void WebSettingsImpl::setShowFPSCounter(bool show)
 {
     m_showFPSCounter = show;
