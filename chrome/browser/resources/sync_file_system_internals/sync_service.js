@@ -57,16 +57,19 @@ function createElementFromText(elementName, text, opt_attributes) {
   return element;
 }
 
+// Keeps track of the last log event seen so it's not reprinted.
+var lastLogEventId = -1;
+
 /**
  * Request debug log.
  */
 function getLog() {
-  chrome.send('getLog');
+  chrome.send('getLog', [lastLogEventId]);
 }
 
 /**
  * Handles callback from getUpdateLog.
- * @param {Array} list List of dictionaries containing 'time' and 'logEvent'.
+ * @param {Array} list List of dictionaries containing 'id', 'time', 'logEvent'.
  */
 SyncService.onGetLog = function(logEntries) {
   var itemContainer = $('log-entries');
@@ -79,6 +82,8 @@ SyncService.onGetLog = function(logEntries) {
     tr.appendChild(createElementFromText('td', logEntry.logEvent,
                                          {class: 'log-event' + error}));
     itemContainer.appendChild(tr);
+
+    lastLogEventId = logEntry.id;
   }
 }
 

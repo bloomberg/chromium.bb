@@ -27,8 +27,7 @@ using sync_file_system::SyncServiceState;
 namespace syncfs_internals {
 
 SyncFileSystemInternalsHandler::SyncFileSystemInternalsHandler(Profile* profile)
-    : profile_(profile),
-      last_log_id_sent_(-1) {
+    : profile_(profile) {
   sync_file_system::SyncFileSystemService* sync_service =
       SyncFileSystemServiceFactory::GetForProfile(profile);
   DCHECK(sync_service);
@@ -103,20 +102,25 @@ void SyncFileSystemInternalsHandler::GetLog(
   const std::vector<EventLogger::Event> log =
       sync_file_system::util::GetLogHistory();
 
+  int last_log_id_sent;
+  if (!args->GetInteger(0, &last_log_id_sent))
+    last_log_id_sent = -1;
+
   // Collate events which haven't been sent to WebUI yet.
   base::ListValue list;
   for (std::vector<EventLogger::Event>::const_iterator log_entry = log.begin();
        log_entry != log.end();
        ++log_entry) {
-    if (log_entry->id <= last_log_id_sent_)
+    if (log_entry->id <= last_log_id_sent)
       continue;
 
     base::DictionaryValue* dict = new DictionaryValue;
+    dict->SetInteger("id", log_entry->id);
     dict->SetString("time",
         google_apis::util::FormatTimeAsStringLocaltime(log_entry->when));
     dict->SetString("logEvent", log_entry->what);
     list.Append(dict);
-    last_log_id_sent_ = log_entry->id;
+    last_log_id_sent = log_entry->id;
   }
   if (list.empty())
     return;

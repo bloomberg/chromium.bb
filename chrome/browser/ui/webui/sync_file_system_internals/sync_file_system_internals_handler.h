@@ -45,9 +45,6 @@ class SyncFileSystemInternalsHandler
 
   Profile* profile_;
 
-  // The last log ID sent to the JavaScript side.
-  int last_log_id_sent_;
-
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemInternalsHandler);
 };
 
