@@ -278,7 +278,10 @@ Request.prototype.sendImageData_ = function(data) {
  * @private
  */
 Request.prototype.onImageLoad_ = function(callback) {
-  if (ImageLoader.shouldProcess(this.image_.width,
+  // Perform processing if the url is not a data url, or if there are some
+  // operations requested.
+  if (!this.request_.url.match(/^data/) ||
+      ImageLoader.shouldProcess(this.image_.width,
                                 this.image_.height,
                                 this.request_)) {
     ImageLoader.resize(this.image_, this.canvas_, this.request_);

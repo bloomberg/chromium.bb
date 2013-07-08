@@ -106,7 +106,7 @@ Worker.prototype.start = function() {
   this.started_ = true;
 
   // Process tasks added before worker has been started.
-  this.pendingRequests_.concat(this.newRequests_);
+  this.pendingRequests_ = this.newRequests_;
   this.sortPendingRequests_();
   this.newRequests_ = [];
 
