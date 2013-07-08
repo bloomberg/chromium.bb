@@ -651,6 +651,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void GetMostVisitedItemData(
     const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Logs information from the iframes/titles on the NTP.
+  static void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Gets whether the omnibox has focus or not.
   static void IsFocused(const v8::FunctionCallbackInfo<v8::Value>& args);
 
@@ -745,6 +748,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetSuggestionData);
   if (name->Equals(v8::String::New("GetMostVisitedItemData")))
     return v8::FunctionTemplate::New(GetMostVisitedItemData);
+  if (name->Equals(v8::String::New("LogEvent")))
+    return v8::FunctionTemplate::New(LogEvent);
   if (name->Equals(v8::String::New("IsFocused")))
     return v8::FunctionTemplate::New(IsFocused);
   if (name->Equals(v8::String::New("IsInputInProgress")))
@@ -1471,6 +1476,26 @@ void SearchBoxExtensionWrapper::GetMostVisitedItemData(
   args.GetReturnValue().Set(
       GenerateMostVisitedItem(render_view->GetRoutingID(), restricted_id,
                               mv_item));
+}
+
+// static
+void SearchBoxExtensionWrapper::LogEvent(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+      GURL(chrome::kChromeSearchMostVisitedUrl));
+  if (!render_view) return;
+
+  if (args.Length() < 1 || !args[0]->IsString())
+    return;
+
+  DVLOG(1) << render_view << " LogEvent";
+
+  std::string histogram_name = *v8::String::Utf8Value(args[0]->ToString());
+
+  if (histogram_name == "NewTabPage.NumberOfMouseOvers")
+    SearchBox::Get(render_view)->CountMouseover();
+  else
+    DVLOG(1) << render_view << " Unsupported histogram name";
 }
 
 // static

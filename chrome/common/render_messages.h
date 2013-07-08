@@ -696,6 +696,9 @@ IPC_MESSAGE_ROUTED5(ChromeViewHostMsg_SearchBoxNavigate,
                     WindowOpenDisposition /* disposition */,
                     bool /* is_search_type */)
 
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CountMouseover,
+                    int /* page_id */)
+
 // Sent by the Instant overlay asking to show itself with the given height.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ShowInstantOverlay,
                     int /* page_id */,

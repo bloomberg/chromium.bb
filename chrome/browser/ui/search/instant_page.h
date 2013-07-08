@@ -185,6 +185,7 @@ class InstantPage : public content::WebContentsObserver,
                            content::PageTransition transition,
                            WindowOpenDisposition disposition,
                            bool is_search_type);
+  void OnCountMouseover(int page_id);
   void OnDeleteMostVisitedItem(int page_id, const GURL& url);
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url);
   void OnUndoAllMostVisitedDeletions(int page_id);

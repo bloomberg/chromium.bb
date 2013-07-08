@@ -42,6 +42,12 @@ class InstantNTP : public InstantPage,
   // the page is about to be committed.
   scoped_ptr<content::WebContents> ReleaseContents();
 
+  // Used to log each time the user mouses over NTP tiles or titles.
+  static void CountMouseover(content::WebContents* contents);
+
+  // Used to log in UMA the total number of mouseovers over NTP tiles/titles.
+  static void EmitMouseoverCount(content::WebContents* contents);
+
  private:
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewCreated(

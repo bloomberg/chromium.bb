@@ -7,6 +7,7 @@
 #include "apps/app_launcher.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/search/instant_ntp.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/render_messages.h"
@@ -118,6 +119,7 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
                         OnSearchBoxNavigate);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CountMouseover, OnCountMouseover);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                         OnDeleteMostVisitedItem);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
@@ -199,6 +201,13 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
 
   delegate_->NavigateToURL(
       contents(), url, transition, disposition, is_search_type);
+}
+
+void InstantPage::OnCountMouseover(int page_id) {
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  InstantNTP::CountMouseover(contents());
 }
 
 void InstantPage::OnDeleteMostVisitedItem(int page_id, const GURL& url) {

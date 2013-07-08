@@ -62,6 +62,10 @@ function createMostVisitedLink(params, href, title, text) {
   link.tabIndex = '-1';
   if (text)
     link.textContent = text;
+  link.addEventListener('mouseover', function() {
+    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
+    ntpApiHandle.logEvent('NewTabPage.NumberOfMouseOvers');
+  });
   return link;
 }
 

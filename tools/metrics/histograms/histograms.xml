@@ -7912,6 +7912,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.NumberOfMouseOvers">
+  <summary>
+    The total number of times the user hovered the mouse over Most Visited tile
+    or title elements before changing focus away from the NTP, be it by
+    navigating to a URL, switching tabs, changing the active window or closing
+    the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.OtherSessionsMenu" enum="NtpOtherSessionsType">
   <summary>
     Histogram for usage of the menu on the NTP that allows the user to access

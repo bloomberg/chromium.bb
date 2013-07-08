@@ -259,6 +259,7 @@ if (!chrome.embeddedSearch) {
       native function NavigateNewTabPage();
       native function IsInputInProgress();
       native function GetAppLauncherEnabled();
+      native function LogEvent();
 
       function GetMostVisitedItemsWrapper() {
         var mostVisitedItems = GetMostVisitedItems();
@@ -292,7 +293,12 @@ if (!chrome.embeddedSearch) {
       };
       this.navigateContentWindow = function(destination, disposition) {
         NavigateNewTabPage(destination, disposition);
-      }
+      };
+      // This method is restricted to chrome-search://most-visited pages by
+      // checking the invoking context's origin in searchbox_extension.cc.
+      this.logEvent = function(histogram_name) {
+        LogEvent(histogram_name);
+      };
 
       this.onmostvisitedchange = null;
       this.onthemechange = null;

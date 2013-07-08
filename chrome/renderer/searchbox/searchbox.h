@@ -58,6 +58,9 @@ class SearchBox : public content::RenderViewObserver,
                      WindowOpenDisposition disposition,
                      bool is_search_type);
 
+  // Sends ChromeViewHostMsg_CountMouseover to the browser.
+  void CountMouseover();
+
   // Shows any attached bars.
   void ShowBars();
 

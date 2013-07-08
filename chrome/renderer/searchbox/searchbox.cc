@@ -153,6 +153,11 @@ void SearchBox::NavigateToURL(const GURL& url,
       url, transition, disposition, is_search_type));
 }
 
+void SearchBox::CountMouseover() {
+  render_view()->Send(new ChromeViewHostMsg_CountMouseover(
+      render_view()->GetRoutingID(), render_view()->GetPageId()));
+}
+
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
