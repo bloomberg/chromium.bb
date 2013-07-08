@@ -95,8 +95,10 @@ struct wl_display {
 };
 
 struct wl_global {
+	struct wl_display *display;
 	const struct wl_interface *interface;
 	uint32_t name;
+	uint32_t version;
 	void *data;
 	wl_global_bind_func_t bind;
 	struct wl_list link;
@@ -589,7 +591,8 @@ registry_bind(struct wl_client *client,
 		if (global->name == name)
 			break;
 
-	if (&global->link == &display->global_list)
+	if (&global->link == &display->global_list ||
+	    global->version < version)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid global %d", name);
@@ -652,7 +655,7 @@ display_get_registry(struct wl_client *client,
 				       WL_REGISTRY_GLOBAL,
 				       global->name,
 				       global->interface->name,
-				       global->interface->version);
+				       global->version);
 }
 
 static const struct wl_display_interface display_interface = {
@@ -714,8 +717,8 @@ wl_display_create(void)
 	display->id = 1;
 	display->serial = 0;
 
-	if (!wl_display_add_global(display, &wl_display_interface, 
-				   display, bind_display)) {
+	if (!wl_global_create(display, &wl_display_interface, 1,
+			      display, bind_display)) {
 		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
@@ -749,19 +752,27 @@ wl_display_destroy(struct wl_display *display)
 }
 
 WL_EXPORT struct wl_global *
-wl_display_add_global(struct wl_display *display,
-		      const struct wl_interface *interface,
-		      void *data, wl_global_bind_func_t bind)
+wl_global_create(struct wl_display *display,
+		 const struct wl_interface *interface, int version,
+		 void *data, wl_global_bind_func_t bind)
 {
 	struct wl_global *global;
 	struct wl_resource *resource;
+
+	if (interface->version < version) {
+		wl_log("wl_global_create: implemented version higher "
+		       "than interface version%m\n");
+		return NULL;
+	}
 
 	global = malloc(sizeof *global);
 	if (global == NULL)
 		return NULL;
 
+	global->display = display;
 	global->name = display->id++;
 	global->interface = interface;
+	global->version = version;
 	global->data = data;
 	global->bind = bind;
 	wl_list_insert(display->global_list.prev, &global->link);
@@ -771,14 +782,15 @@ wl_display_add_global(struct wl_display *display,
 				       WL_REGISTRY_GLOBAL,
 				       global->name,
 				       global->interface->name,
-				       global->interface->version);
+				       global->version);
 
 	return global;
 }
 
 WL_EXPORT void
-wl_display_remove_global(struct wl_display *display, struct wl_global *global)
+wl_global_destroy(struct wl_global *global)
 {
+	struct wl_display *display = global->display;
 	struct wl_resource *resource;
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)
@@ -1138,4 +1150,27 @@ wl_client_new_object(struct wl_client *client,
 					       implementation, data, NULL);
 
 	return resource;
+}
+
+struct wl_global *
+wl_display_add_global(struct wl_display *display,
+		      const struct wl_interface *interface,
+		      void *data, wl_global_bind_func_t bind) WL_DEPRECATED;
+
+WL_EXPORT struct wl_global *
+wl_display_add_global(struct wl_display *display,
+		      const struct wl_interface *interface,
+		      void *data, wl_global_bind_func_t bind)
+{
+	return wl_global_create(display, interface, interface->version, data, bind);
+}
+
+void
+wl_display_remove_global(struct wl_display *display,
+			 struct wl_global *global) WL_DEPRECATED;
+
+WL_EXPORT void
+wl_display_remove_global(struct wl_display *display, struct wl_global *global)
+{
+	wl_global_destroy(global);
 }
