@@ -122,6 +122,8 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
       base::FilePath::FromWStringHack(UTF8ToWide(extension_path_));
   base::FilePath key_file =
       base::FilePath::FromWStringHack(UTF8ToWide(private_key_path_));
+  last_used_path_ =
+      base::FilePath::FromWStringHack(UTF8ToWide(extension_path_));
 
   if (root_directory.empty()) {
     if (extension_path_.empty()) {
@@ -161,8 +163,11 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
   ui::SelectFileDialog::Type type = ui::SelectFileDialog::SELECT_FOLDER;
   ui::SelectFileDialog::FileTypeInfo info;
   int file_type_index = 0;
-  if (select_type == "file")
+  base::FilePath path_to_use = last_used_path_;
+  if (select_type == "file") {
     type = ui::SelectFileDialog::SELECT_OPEN_FILE;
+    path_to_use = base::FilePath();
+  }
 
   string16 select_title;
   if (operation == "load") {
@@ -186,7 +191,7 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
   load_extension_dialog_->SelectFile(
       type,
       select_title,
-      base::FilePath(),
+      path_to_use,
       &info,
       file_type_index,
       base::FilePath::StringType(),

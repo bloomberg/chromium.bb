@@ -71,6 +71,9 @@ class PackExtensionHandler : public content::WebUIMessageHandler,
   // Path to private key file, or null if none specified
   std::string private_key_path_;
 
+  // Path to the last used folder to load an extension.
+  base::FilePath last_used_path_;
+
   DISALLOW_COPY_AND_ASSIGN(PackExtensionHandler);
 };
 
