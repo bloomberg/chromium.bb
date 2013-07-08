@@ -41,8 +41,7 @@ class PrefRegistrySyncable;
 class ManagedUserService : public BrowserContextKeyedService,
                            public extensions::ManagementPolicy::Provider,
                            public ProfileSyncServiceObserver,
-                           public content::NotificationObserver,
-                           public chrome::BrowserListObserver {
+                           public content::NotificationObserver {
  public:
   typedef std::vector<string16> CategoryList;
 
@@ -157,9 +156,6 @@ class ManagedUserService : public BrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // chrome::BrowserListObserver implementation:
-  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
-
  private:
   friend class ManagedUserServiceExtensionTest;
 
@@ -226,12 +222,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // corresponding preference is changed.
   void UpdateManualURLs();
 
-  // Records some events (opening the managed user profile, switching from the
-  // managed user profile, and quitting the browser); each is stored
-  // using a key with a prefix (|key_prefix|) indicating the type of the event.
-  // Each entry is a dictionary which has the timestamp of the event.
-  void RecordProfileAndBrowserEventsHelper(const char* key_prefix);
-
   base::WeakPtrFactory<ManagedUserService> weak_ptr_factory_;
 
   // Owns us via the BrowserContextKeyedService mechanism.
@@ -242,7 +232,6 @@ class ManagedUserService : public BrowserContextKeyedService,
 
   // True iff we're waiting for the Sync service to be initialized.
   bool waiting_for_sync_initialization_;
-  bool is_profile_active_;
 
   // Sets a profile in elevated state for testing if set to true.
   bool elevated_for_testing_;
