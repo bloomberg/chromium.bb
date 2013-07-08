@@ -81,8 +81,8 @@ FileMetadata.onGetFileMetadata = function(fileMetadataMap) {
   // Only draw the header if it hasn't been drawn yet
   if (header.children.length === 0) {
     var tr = document.createElement('tr');
-    tr.appendChild(createElementFromText('td', 'Status'));
     tr.appendChild(createElementFromText('td', 'Type'));
+    tr.appendChild(createElementFromText('td', 'Status'));
     tr.appendChild(createElementFromText('td', 'Title'));
     tr.appendChild(createElementFromText('td', 'Details'));
     header.appendChild(tr);
@@ -94,12 +94,22 @@ FileMetadata.onGetFileMetadata = function(fileMetadataMap) {
   for (var i = 0; i < fileMetadataMap.length; i++) {
     var metadatEntry = fileMetadataMap[i];
     var tr = document.createElement('tr');
+    tr.appendChild(createFileIconCell(metadatEntry.type));
     tr.appendChild(createElementFromText('td', metadatEntry.status));
-    tr.appendChild(createElementFromText('td', metadatEntry.type));
     tr.appendChild(createElementFromText('td', metadatEntry.title));
     tr.appendChild(createElementFromDictionary('td', metadatEntry.details));
     itemContainer.appendChild(tr);
   }
+}
+
+/**
+ * @param {string} file type string.
+ * @return {HTMLElement} TD with file or folder icon depending on type.
+ */
+function createFileIconCell(type) {
+  var td = createElementFromText('td', type);
+  td.setAttribute('class', type.toLowerCase() + '-icon');
+  return td;
 }
 
 // TODO(calvinlo): Move to helper file so it doesn't need to be duplicated.
