@@ -17,7 +17,7 @@ namespace ash {
 
 const int LockStateController::kLockTimeoutMs = 400;
 const int LockStateController::kShutdownTimeoutMs = 400;
-const int LockStateController::kLockFailTimeoutMs = 4000;
+const int LockStateController::kLockFailTimeoutMs = 8000;
 const int LockStateController::kLockToShutdownTimeoutMs = 150;
 const int LockStateController::kShutdownRequestDelayMs = 50;
 
