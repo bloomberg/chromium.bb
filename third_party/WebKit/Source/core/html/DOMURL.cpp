@@ -33,32 +33,10 @@
 #include "core/fileapi/BlobURL.h"
 #include "core/html/PublicURLManager.h"
 #include "core/loader/cache/MemoryCache.h"
-#include "modules/mediasource/MediaSourceBase.h"
-#include "modules/mediastream/MediaStream.h"
 #include "weborigin/KURL.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
-
-String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, MediaSourceBase* source)
-{
-    // Since WebWorkers cannot obtain MediaSource objects, we should be on the main thread.
-    ASSERT(isMainThread());
-
-    if (!scriptExecutionContext || !source)
-        return String();
-    return createPublicURL(scriptExecutionContext, source);
-}
-
-String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, MediaStream* stream)
-{
-    // Since WebWorkers cannot obtain Stream objects, we should be on the main thread.
-    ASSERT(isMainThread());
-
-    if (!scriptExecutionContext || !stream)
-        return String();
-    return createPublicURL(scriptExecutionContext, stream);
-}
 
 String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
 {
