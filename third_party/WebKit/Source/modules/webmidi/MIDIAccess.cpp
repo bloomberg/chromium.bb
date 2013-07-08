@@ -32,7 +32,10 @@
 #include "modules/webmidi/MIDIAccess.h"
 
 #include "core/dom/DOMError.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/loader/DocumentLoadTiming.h"
+#include "core/loader/DocumentLoader.h"
 #include "modules/webmidi/MIDIAccessPromise.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 #include "modules/webmidi/MIDIInput.h"
@@ -98,8 +101,17 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
 {
     ASSERT(isMainThread());
 
-    if (m_hasAccess && portIndex < m_inputs.size())
-        m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStamp);
+    if (m_hasAccess && portIndex < m_inputs.size()) {
+        // Convert from time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime()
+        // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
+        // This is how timestamps are defined in the Web MIDI spec.
+        Document* document = toDocument(scriptExecutionContext());
+        ASSERT(document);
+
+        double timeStampInMilliseconds = 1000 * document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(timeStamp);
+
+        m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStampInMilliseconds);
+    }
 }
 
 void MIDIAccess::stop()
