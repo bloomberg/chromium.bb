@@ -115,7 +115,10 @@ namespace WebCore {
         unsigned duration() const { return m_duration; }
         FrameDisposalMethod disposalMethod() const { return m_disposalMethod; }
         bool premultiplyAlpha() const { return m_premultiplyAlpha; }
+        SkBitmap::Allocator* allocator() const { return m_allocator; }
+        const SkBitmap& getSkBitmap() const { return m_bitmap->bitmap(); }
         void reportMemoryUsage(MemoryObjectInfo*) const;
+
         size_t requiredPreviousFrameIndex() const
         {
             ASSERT(m_requiredPreviousFrameIndexValid);
@@ -124,13 +127,15 @@ namespace WebCore {
 #if !ASSERT_DISABLED
         bool requiredPreviousFrameIndexValid() const { return m_requiredPreviousFrameIndexValid; }
 #endif
-
         void setHasAlpha(bool alpha);
         void setOriginalFrameRect(const IntRect& r) { m_originalFrameRect = r; }
         void setStatus(FrameStatus status);
         void setDuration(unsigned duration) { m_duration = duration; }
         void setDisposalMethod(FrameDisposalMethod method) { m_disposalMethod = method; }
         void setPremultiplyAlpha(bool premultiplyAlpha) { m_premultiplyAlpha = premultiplyAlpha; }
+        void setMemoryAllocator(SkBitmap::Allocator* allocator) { m_allocator = allocator; }
+        void setSkBitmap(const SkBitmap& bitmap) { m_bitmap = NativeImageSkia::create(bitmap); }
+
         void setRequiredPreviousFrameIndex(size_t previousFrameIndex)
         {
             m_requiredPreviousFrameIndex = previousFrameIndex;
@@ -139,32 +144,15 @@ namespace WebCore {
 #endif
         }
 
-        inline void setRGBA(int x, int y, unsigned r, unsigned g, unsigned b, unsigned a)
-        {
-            setRGBA(getAddr(x, y), r, g, b, a);
-        }
-
         inline PixelData* getAddr(int x, int y)
         {
             return m_bitmap->bitmap().getAddr32(x, y);
         }
 
-        void setSkBitmap(const SkBitmap& bitmap)
+        inline void setRGBA(int x, int y, unsigned r, unsigned g, unsigned b, unsigned a)
         {
-            m_bitmap = NativeImageSkia::create(bitmap);
+            setRGBA(getAddr(x, y), r, g, b, a);
         }
-
-        const SkBitmap& getSkBitmap() const
-        {
-            return m_bitmap->bitmap();
-        }
-
-        void setMemoryAllocator(SkBitmap::Allocator* allocator)
-        {
-            m_allocator = allocator;
-        }
-
-        SkBitmap::Allocator* allocator() const { return m_allocator; }
 
         // Use fix point multiplier instead of integer division or floating point math.
         // This multipler produces exactly the same result for all values in range 0 - 255.
