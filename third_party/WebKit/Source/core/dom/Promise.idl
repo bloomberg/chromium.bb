@@ -34,4 +34,8 @@
 ] interface Promise {
    [Custom] Promise then(optional any fulfillCallback, optional any rejectCallback);
    [Custom] Promise catch(optional any rejectCallback);
+
+   [Custom] static Promise any(value... values);
+   [Custom] static Promise every(value... values);
+   [Custom] static Promise some(value... values);
 };

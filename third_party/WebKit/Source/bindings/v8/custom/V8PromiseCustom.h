@@ -46,6 +46,19 @@ public:
         WrapperCallbackEnvironmentFieldCount, // This entry must always be at the bottom.
     };
 
+    enum PromiseEveryEnvironmentFieldIndex {
+        PromiseEveryEnvironmentPromiseResolverIndex,
+        PromiseEveryEnvironmentCountdownIndex,
+        PromiseEveryEnvironmentIndexIndex,
+        PromiseEveryEnvironmentResultsIndex,
+        PromiseEveryEnvironmentFieldCount, // This entry must always be at the bottom.
+    };
+
+    enum PrimitiveWrapperFieldIndex {
+        PrimitiveWrapperPrimitiveIndex,
+        PrimitiveWrapperFieldCount, // This entry must always be at the bottom.
+    };
+
     enum PromiseAlgorithm {
         FulfillAlgorithm,
         ResolveAlgorithm,
