@@ -190,8 +190,6 @@ class CompleteInstallFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void AfterMaybeInstallAppLauncher(bool ok);
-
   scoped_ptr<WebstoreInstaller::Approval> approval_;
 };
 
@@ -208,9 +206,6 @@ class EnableAppLauncherFunction
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  void AfterEnableAppLauncher(bool ok);
 };
 
 class GetBrowserLoginFunction : public SyncExtensionFunction {

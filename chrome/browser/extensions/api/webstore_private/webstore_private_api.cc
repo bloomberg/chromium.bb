@@ -176,16 +176,6 @@ base::DictionaryValue* CreateLoginResult(Profile* profile) {
 
 WebstoreInstaller::Delegate* test_webstore_installer_delegate = NULL;
 
-void EnableAppLauncher(base::Callback<void(bool)> callback) {
-#if defined(OS_WIN)
-  LOG(INFO) << "Enabling App Launcher via internal enable";
-  AppListService::Get()->EnableAppList();
-  callback.Run(true);
-#else
-  callback.Run(true);
-#endif
-}
-
 // We allow the web store to set a string containing login information when a
 // purchase is made, so that when a user logs into sync with a different
 // account we can recognize the situation. The Get function returns the login if
@@ -569,21 +559,9 @@ bool CompleteInstallFunction::RunImpl() {
   // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
   AddRef();
 
-  if (approval_->enable_launcher) {
-    EnableAppLauncher(
-        base::Bind(&CompleteInstallFunction::AfterMaybeInstallAppLauncher,
-                   this));
-  } else {
-    AfterMaybeInstallAppLauncher(true);
-  }
+  if (approval_->enable_launcher)
+    AppListService::Get()->EnableAppList();
 
-  return true;
-}
-
-void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
-  if (!ok)
-    LOG(ERROR) << "Error installing app launcher";
-  std::string id = approval_->extension_id;
   if (apps::IsAppLauncherEnabled()) {
     // Show the app list to show download is progressing. Don't show the app
     // list on first app install so users can be trained to open it themselves.
@@ -598,6 +576,8 @@ void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
       id, approval_.Pass(), WebstoreInstaller::FLAG_NONE);
   installer->Start();
+
+  return true;
 }
 
 void CompleteInstallFunction::OnExtensionInstallSuccess(
@@ -636,15 +616,9 @@ EnableAppLauncherFunction::EnableAppLauncherFunction() {}
 EnableAppLauncherFunction::~EnableAppLauncherFunction() {}
 
 bool EnableAppLauncherFunction::RunImpl() {
-  EnableAppLauncher(
-      base::Bind(&EnableAppLauncherFunction::AfterEnableAppLauncher, this));
+  AppListService::Get()->EnableAppList();
+  SendResponse(true);
   return true;
-}
-
-void EnableAppLauncherFunction::AfterEnableAppLauncher(bool ok) {
-  if (!ok)
-    LOG(ERROR) << "Error installing app launcher";
-  SendResponse(ok);
 }
 
 bool GetBrowserLoginFunction::RunImpl() {
