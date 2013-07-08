@@ -1867,6 +1867,8 @@
         'browser/site_details.h',
         'browser/speech/chrome_speech_recognition_manager_delegate.cc',
         'browser/speech/chrome_speech_recognition_manager_delegate.h',
+        'browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui.cc',
+        'browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui.h',
         'browser/speech/chrome_speech_recognition_preferences.cc',
         'browser/speech/chrome_speech_recognition_preferences.h',
         'browser/speech/extension_api/tts_extension_api_constants.cc',
@@ -2830,8 +2832,8 @@
         }],
         ['input_speech==0', {
           'sources/': [
-            ['exclude', '^browser/speech/chrome_speech'],
-            ['exclude', '^browser/speech/speech_'],
+            ['exclude', '^browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui'],
+            ['exclude', '^browser/speech/speech_recognition_bubble'],
           ],
         }],
         ['notifications==0', {

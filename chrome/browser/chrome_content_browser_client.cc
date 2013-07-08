@@ -194,6 +194,10 @@
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 
+#if defined(ENABLE_INPUT_SPEECH)
+#include "chrome/browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui.h"
+#endif
+
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #endif
@@ -1937,12 +1941,12 @@ void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
 // TODO(tommi): Rename from Get to Create.
 content::SpeechRecognitionManagerDelegate*
     ChromeContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
-#if !defined(OS_ANDROID)
-  return new speech::ChromeSpeechRecognitionManagerDelegate();
+#if defined(ENABLE_INPUT_SPEECH)
+  return new speech::ChromeSpeechRecognitionManagerDelegateBubbleUI();
 #else
-  // TODO(janx): Implement speech::AndroidSpeechRecognitionManagerDelegate
-  // (see crbug.com/222352).
-  return NULL;
+  // Platforms who don't implement x-webkit-speech (a.k.a INPUT_SPEECH) just
+  // need the base delegate without the bubble UI.
+  return new speech::ChromeSpeechRecognitionManagerDelegate();
 #endif
 }
 
