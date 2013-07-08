@@ -97,6 +97,14 @@ fileapi::FileSystemURL PepperExternalFileRefBackend::GetFileSystemURL() const {
   return fileapi::FileSystemURL();
 }
 
+std::string PepperExternalFileRefBackend::GetFileSystemURLSpec() const {
+  return std::string();
+}
+
+base::FilePath PepperExternalFileRefBackend::GetExternalPath() const {
+  return path_;
+}
+
 int32_t PepperExternalFileRefBackend::HasPermissions(
     int permissions) const {
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(

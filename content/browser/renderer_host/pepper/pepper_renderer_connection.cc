@@ -7,6 +7,7 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_message_macros.h"
@@ -16,34 +17,12 @@
 
 namespace content {
 
-PepperRendererConnection::PepperRendererConnection() {
-}
-
-PepperRendererConnection::~PepperRendererConnection() {
-}
-
-bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
-                                                 bool* message_was_ok) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(PepperRendererConnection, msg, *message_was_ok)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostFromHost,
-                        OnMsgCreateResourceHostFromHost)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-
-  return handled;
-}
-
-void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
-    int child_process_id,
-    const ppapi::proxy::ResourceMessageCallParams& params,
-    PP_Instance instance,
-    const IPC::Message& nested_msg) {
+namespace {
+BrowserPpapiHostImpl* GetHostForChildProcess(int child_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserPpapiHostImpl* host = NULL;
 
   // Find the plugin which this message refers to. Check NaCl plugins first.
-  host = static_cast<BrowserPpapiHostImpl*>(
+  BrowserPpapiHostImpl* host = static_cast<BrowserPpapiHostImpl*>(
       GetContentClient()->browser()->GetExternalBrowserPpapiHost(
           child_process_id));
 
@@ -58,7 +37,36 @@ void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
       }
     }
   }
+  return host;
+}
+}  // namespace
 
+PepperRendererConnection::PepperRendererConnection() {
+}
+
+PepperRendererConnection::~PepperRendererConnection() {
+}
+
+bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
+                                                 bool* message_was_ok) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(PepperRendererConnection, msg, *message_was_ok)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostFromHost,
+                        OnMsgCreateResourceHostFromHost)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_FileRef_GetInfoForRenderer,
+                        OnMsgFileRefGetInfoForRenderer)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+
+  return handled;
+}
+
+void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
+    int child_process_id,
+    const ppapi::proxy::ResourceMessageCallParams& params,
+    PP_Instance instance,
+    const IPC::Message& nested_msg) {
+  BrowserPpapiHostImpl* host = GetHostForChildProcess(child_process_id);
   int pending_resource_host_id;
   if (!host) {
     DLOG(ERROR) << "Invalid plugin process ID.";
@@ -74,6 +82,34 @@ void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
 
   Send(new PpapiHostMsg_CreateResourceHostFromHostReply(
       params.sequence(), pending_resource_host_id));
+}
+
+void PepperRendererConnection::OnMsgFileRefGetInfoForRenderer(
+    int routing_id,
+    int child_process_id,
+    const ppapi::proxy::ResourceMessageCallParams& params) {
+  PP_FileSystemType fs_type = PP_FILESYSTEMTYPE_INVALID;
+  std::string file_system_url_spec;
+  base::FilePath external_path;
+  BrowserPpapiHostImpl* host = GetHostForChildProcess(child_process_id);
+  if (host) {
+    ppapi::host::ResourceHost* resource_host =
+        host->GetPpapiHost()->GetResourceHost(params.pp_resource());
+    if (resource_host) {
+      PepperFileRefHost* file_ref_host = resource_host->AsPepperFileRefHost();
+      if (file_ref_host) {
+        fs_type = file_ref_host->GetFileSystemType();
+        file_system_url_spec = file_ref_host->GetFileSystemURLSpec();
+        external_path = file_ref_host->GetExternalPath();
+      }
+    }
+  }
+  Send(new PpapiHostMsg_FileRef_GetInfoForRendererReply(
+      routing_id,
+      params.sequence(),
+      fs_type,
+      file_system_url_spec,
+      external_path));
 }
 
 }  // namespace content

@@ -115,6 +115,18 @@ fileapi::FileSystemURL PepperFileRefHost::GetFileSystemURL() const {
   return fileapi::FileSystemURL();
 }
 
+std::string PepperFileRefHost::GetFileSystemURLSpec() const {
+  if (backend_)
+    return backend_->GetFileSystemURLSpec();
+  return std::string();
+}
+
+base::FilePath PepperFileRefHost::GetExternalPath() const {
+  if (backend_)
+    return backend_->GetExternalPath();
+  return base::FilePath();
+}
+
 int32_t PepperFileRefHost::HasPermissions(int permissions) const {
   if (backend_)
     return backend_->HasPermissions(permissions);

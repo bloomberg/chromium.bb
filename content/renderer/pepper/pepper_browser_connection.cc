@@ -48,6 +48,18 @@ void PepperBrowserConnection::SendBrowserCreate(
           child_process_id, params, instance, nested_msg));
 }
 
+void PepperBrowserConnection::SendBrowserFileRefGetInfo(
+    int child_process_id,
+    PP_Resource resource,
+    const FileRefGetInfoCallback& callback) {
+  int32_t sequence_number = GetNextSequence();
+  get_info_map_[sequence_number] = callback;
+  ppapi::proxy::ResourceMessageCallParams params(resource, sequence_number);
+  plugin_delegate_->render_view()->Send(
+      new PpapiHostMsg_FileRef_GetInfoForRenderer(
+          plugin_delegate_->GetRoutingID(), child_process_id, params));
+}
+
 void PepperBrowserConnection::OnMsgCreateResourceHostFromHostReply(
     int32_t sequence_number,
     int pending_resource_host_id) {
@@ -58,6 +70,23 @@ void PepperBrowserConnection::OnMsgCreateResourceHostFromHostReply(
   if (it != pending_create_map_.end()) {
     it->second.Run(pending_resource_host_id);
     pending_create_map_.erase(it);
+  } else {
+    NOTREACHED();
+  }
+}
+
+void PepperBrowserConnection::OnMsgFileRefGetInfoReply(
+    int32_t sequence_number,
+    PP_FileSystemType type,
+    std::string file_system_url_spec,
+    base::FilePath external_path) {
+  // Check that the message is destined for the plugin this object is associated
+  // with.
+  std::map<int32_t, FileRefGetInfoCallback>::iterator it =
+      get_info_map_.find(sequence_number);
+  if (it != get_info_map_.end()) {
+    it->second.Run(type, file_system_url_spec, external_path);
+    get_info_map_.erase(it);
   } else {
     NOTREACHED();
   }

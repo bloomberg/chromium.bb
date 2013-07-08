@@ -59,12 +59,25 @@ PepperInternalFileRefBackend::~PepperInternalFileRefBackend() {
 }
 
 fileapi::FileSystemURL PepperInternalFileRefBackend::GetFileSystemURL() const {
-  if (!fs_url_.is_valid() && fs_host_.get()) {
+  if (!fs_url_.is_valid() && fs_host_.get() && fs_host_->IsOpened()) {
     GURL fs_path = fs_host_->GetRootUrl().Resolve(
         net::EscapePath(path_.substr(1)));
     fs_url_ = GetFileSystemContext()->CrackURL(fs_path);
   }
   return fs_url_;
+}
+
+std::string PepperInternalFileRefBackend::GetFileSystemURLSpec() const {
+  if (fs_host_.get() && fs_host_->IsOpened() &&
+      fs_host_->GetRootUrl().is_valid()) {
+    return fs_host_->GetRootUrl().Resolve(
+        net::EscapePath(path_.substr(1))).spec();
+  }
+  return std::string();
+}
+
+base::FilePath PepperInternalFileRefBackend::GetExternalPath() const {
+  return base::FilePath();
 }
 
 scoped_refptr<fileapi::FileSystemContext>

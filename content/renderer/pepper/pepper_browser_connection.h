@@ -6,10 +6,14 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_BROWSER_CONNECTION_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_resource.h"
 
 namespace content {
 
@@ -22,11 +26,17 @@ class PepperPluginDelegateImpl;
 class PepperBrowserConnection {
  public:
   typedef base::Callback<void(int)> PendingResourceIDCallback;
+  typedef base::Callback<void(PP_FileSystemType,
+                              std::string,
+                              base::FilePath)> FileRefGetInfoCallback;
 
   explicit PepperBrowserConnection(PepperPluginDelegateImpl* plugin_delegate);
   virtual ~PepperBrowserConnection();
 
   bool OnMessageReceived(const IPC::Message& message);
+
+  // TODO(teravest): Instead of having separate methods per message, we should
+  // add generic functionality similar to PluginResource::Call().
 
   // Sends a request to the browser to create a ResourceHost for the given
   // |instance| of a plugin identified by |child_process_id|. |callback| will be
@@ -36,10 +46,21 @@ class PepperBrowserConnection {
                          const IPC::Message& create_message,
                          const PendingResourceIDCallback& callback);
 
+  // Sends a request to the browser to get information about the given FileRef
+  // |resource|. |callback| will be run when a reply is received with the
+  // file information.
+  void SendBrowserFileRefGetInfo(int child_process_id,
+                                 PP_Resource resource,
+                                 const FileRefGetInfoCallback& callback);
+
  private:
   // Message handlers.
   void OnMsgCreateResourceHostFromHostReply(int32_t sequence_number,
                                             int pending_resource_host_id);
+  void OnMsgFileRefGetInfoReply(int32_t sequence_number,
+                                PP_FileSystemType type,
+                                std::string file_system_url_spec,
+                                base::FilePath external_path);
 
   // Return the next sequence number.
   int32_t GetNextSequence();
@@ -52,7 +73,7 @@ class PepperBrowserConnection {
 
   // Maps a sequence number to the callback to be run.
   std::map<int32_t, PendingResourceIDCallback> pending_create_map_;
-
+  std::map<int32_t, FileRefGetInfoCallback> get_info_map_;
   DISALLOW_COPY_AND_ASSIGN(PepperBrowserConnection);
 };
 
