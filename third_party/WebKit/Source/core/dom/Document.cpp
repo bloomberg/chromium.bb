@@ -3802,23 +3802,16 @@ bool Document::isValidName(const String& name)
     return isValidNameNonASCII(characters, length);
 }
 
-bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, String& localName, ExceptionCode& ec)
+template<typename CharType>
+static bool parseQualifiedNameInternal(const String& qualifiedName, const CharType* characters, unsigned length, String& prefix, String& localName, ExceptionCode& ec)
 {
-    unsigned length = qualifiedName.length();
-
-    if (!length) {
-        ec = INVALID_CHARACTER_ERR;
-        return false;
-    }
-
     bool nameStart = true;
     bool sawColon = false;
     int colonPos = 0;
 
-    const UChar* s = qualifiedName.bloatedCharacters();
     for (unsigned i = 0; i < length;) {
         UChar32 c;
-        U16_NEXT(s, i, length, c)
+        U16_NEXT(characters, i, length, c)
         if (c == ':') {
             if (sawColon) {
                 ec = NAMESPACE_ERR;
@@ -3859,6 +3852,20 @@ bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, S
     }
 
     return true;
+}
+
+bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, String& localName, ExceptionCode& ec)
+{
+    unsigned length = qualifiedName.length();
+
+    if (!length) {
+        ec = INVALID_CHARACTER_ERR;
+        return false;
+    }
+
+    if (qualifiedName.is8Bit())
+        return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters8(), length, prefix, localName, ec);
+    return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters16(), length, prefix, localName, ec);
 }
 
 void Document::setDecoder(PassRefPtr<TextResourceDecoder> decoder)
