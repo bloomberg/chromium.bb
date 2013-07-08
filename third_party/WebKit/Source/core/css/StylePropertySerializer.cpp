@@ -602,6 +602,11 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                     if (value->isImplicitInitialValue() || yValue->isImplicitInitialValue())
                         continue;
 
+                    // FIXME: At some point we need to fix this code to avoid returning an invalid shorthand,
+                    // since some longhand combinations are not serializable into a single shorthand.
+                    if (!value->isPrimitiveValue() || !yValue->isPrimitiveValue())
+                        continue;
+
                     CSSValueID xId = toCSSPrimitiveValue(value.get())->getValueID();
                     CSSValueID yId = toCSSPrimitiveValue(yValue.get())->getValueID();
                     if (xId != yId) {
