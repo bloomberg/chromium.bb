@@ -12,6 +12,8 @@
      4:	c1 e7 02                                     	shl    $0x2,%edi
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # "/6" encoding of SHL.  This is an alias encoding, which we should
@@ -23,6 +25,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: d3  (bad)))
+  1: ('objdump failed to decode', Instruction(0x1: f7  .byte 0xf7))
 ----------------------------------------------------------------------
 @hex:
   d1 f7
@@ -32,6 +37,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: d1  (bad)))
+  1: ('objdump failed to decode', Instruction(0x1: f7  .byte 0xf7))
 ----------------------------------------------------------------------
 @hex:
   c1 f7 02
@@ -42,3 +50,7 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: c1  (bad)))
+  1: ('objdump failed to decode', Instruction(0x1: f7  .byte 0xf7))
+  2: ('objdump failed to decode', Instruction(0x2: 02  .byte 0x2))

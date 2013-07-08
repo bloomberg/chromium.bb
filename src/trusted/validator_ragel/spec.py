@@ -541,6 +541,7 @@ def ValidateRegularInstruction(instruction, bitness):
          'add', 'sub', 'and', 'or', 'xor',
          'xchg', 'xadd',
          'inc', 'dec', 'neg', 'not',
+         'shl', 'shr', 'sar', 'rol', 'ror', 'rcl', 'rcr',
          'pop',
          'lea',
          'adc', 'bsf', 'bsr', 'lzcnt',
@@ -601,6 +602,11 @@ def ValidateRegularInstruction(instruction, bitness):
       assert len(ops) == 1
       zero_extending = True
       write_ops = ops
+
+    elif _InstructionNameIn(name, [
+        'shl', 'shr', 'sar', 'rol', 'ror', 'rcl', 'rcr']):
+      assert len(ops) in [1, 2]
+      write_ops = [ops[-1]]
 
     elif _InstructionNameIn(name, ['pop']):
       assert len(ops) == 1
