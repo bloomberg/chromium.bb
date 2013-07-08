@@ -140,7 +140,7 @@ private:
 TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
 {
     FakeScrollableArea scrollableArea;
-    m_graphicsLayer->setScrollableArea(&scrollableArea);
+    m_graphicsLayer->setScrollableArea(&scrollableArea, false);
 
     WebPoint scrollPosition(7, 9);
     m_platformLayer->setScrollPosition(scrollPosition);

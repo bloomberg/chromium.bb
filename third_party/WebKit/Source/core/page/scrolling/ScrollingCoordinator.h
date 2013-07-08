@@ -108,6 +108,7 @@ protected:
     static GraphicsLayer* scrollLayerForScrollableArea(ScrollableArea*);
     static GraphicsLayer* horizontalScrollbarLayerForScrollableArea(ScrollableArea*);
     static GraphicsLayer* verticalScrollbarLayerForScrollableArea(ScrollableArea*);
+    bool isForMainFrame(ScrollableArea*) const;
 
     unsigned computeCurrentWheelEventHandlerCount();
     GraphicsLayer* scrollLayerForFrameView(FrameView*);

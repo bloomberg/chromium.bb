@@ -140,7 +140,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     m_opaqueRectTrackingContentLayerDelegate = adoptPtr(new OpaqueRectTrackingContentLayerDelegate(this));
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_opaqueRectTrackingContentLayerDelegate.get()));
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
-    m_layer->layer()->setScrollClient(this);
     m_layer->setAutomaticallyComputeRasterScale(true);
 }
 
@@ -1298,6 +1297,21 @@ void GraphicsLayer::setLinkHighlight(LinkHighlightClient* linkHighlight)
 {
     m_linkHighlight = linkHighlight;
     updateChildList();
+}
+
+void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isMainFrame)
+{
+    if (m_scrollableArea == scrollableArea)
+        return;
+
+    m_scrollableArea = scrollableArea;
+
+    // Main frame scrolling may involve pinch zoom and gets routed through
+    // WebViewImpl explicitly rather than via GraphicsLayer::didScroll.
+    if (isMainFrame)
+        m_layer->layer()->setScrollClient(0);
+    else
+        m_layer->layer()->setScrollClient(this);
 }
 
 void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)

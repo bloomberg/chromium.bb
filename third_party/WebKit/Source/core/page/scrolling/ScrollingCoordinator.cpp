@@ -239,7 +239,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
     if (!platformSupportsCoordinatedScrollbar)
         return;
 
-    bool isMainFrame = (scrollableArea == static_cast<ScrollableArea*>(m_page->mainFrame()->view()));
+    bool isMainFrame = isForMainFrame(scrollableArea);
     if (!isMainFrame && platformSupportsMainFrameOnly)
         return;
 
@@ -270,8 +270,10 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
 void ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* scrollableArea)
 {
     GraphicsLayer* scrollLayer = scrollLayerForScrollableArea(scrollableArea);
-    if (scrollLayer)
-        scrollLayer->setScrollableArea(scrollableArea);
+    if (scrollLayer) {
+        bool isMainFrame = isForMainFrame(scrollableArea);
+        scrollLayer->setScrollableArea(scrollableArea, isMainFrame);
+    }
 
     WebLayer* webLayer = scrollingWebLayerForScrollableArea(scrollableArea);
     if (webLayer) {
@@ -530,6 +532,11 @@ GraphicsLayer* ScrollingCoordinator::horizontalScrollbarLayerForScrollableArea(S
 GraphicsLayer* ScrollingCoordinator::verticalScrollbarLayerForScrollableArea(ScrollableArea* scrollableArea)
 {
     return scrollableArea->layerForVerticalScrollbar();
+}
+
+bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const
+{
+    return scrollableArea == m_page->mainFrame()->view();
 }
 
 GraphicsLayer* ScrollingCoordinator::scrollLayerForFrameView(FrameView* frameView)

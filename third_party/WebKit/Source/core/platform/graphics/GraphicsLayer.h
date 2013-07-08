@@ -411,7 +411,7 @@ public:
     // Exposed for tests
     LinkHighlightClient* linkHighlight() { return m_linkHighlight; }
 
-    void setScrollableArea(ScrollableArea* scrollableArea) { m_scrollableArea = scrollableArea; }
+    void setScrollableArea(ScrollableArea*, bool isMainFrame);
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
 
     WebKit::WebContentLayer* contentLayer() const { return m_layer.get(); }
