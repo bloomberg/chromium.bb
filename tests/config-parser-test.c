@@ -25,6 +25,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "config-parser.h"
 
@@ -37,7 +38,7 @@ run_test(const char *text)
 
 	fd = mkstemp(file);
 	len = write(fd, text, strlen(text));
-	assert(len == strlen(text));
+	assert(len == (int) strlen(text));
 
 	config = weston_config_parse(fd);
 	close(fd);
