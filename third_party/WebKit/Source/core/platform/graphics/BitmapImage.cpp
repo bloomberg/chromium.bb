@@ -39,7 +39,6 @@
 #include "wtf/MemoryObjectInfo.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -281,11 +280,6 @@ bool BitmapImage::dataChanged(bool allDataReceived)
     m_haveFrameCount = false;
     m_hasUniformFrameSize = true;
     return isSizeAvailable();
-}
-
-String BitmapImage::filenameExtension() const
-{
-    return m_source.filenameExtension();
 }
 
 void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)

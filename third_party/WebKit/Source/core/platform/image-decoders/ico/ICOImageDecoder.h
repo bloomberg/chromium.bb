@@ -44,7 +44,6 @@ namespace WebCore {
         virtual ~ICOImageDecoder();
 
         // ImageDecoder
-        virtual String filenameExtension() const { return "ico"; }
         virtual void setData(SharedBuffer*, bool allDataReceived);
         virtual bool isSizeAvailable();
         virtual IntSize size() const;

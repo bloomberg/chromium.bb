@@ -33,11 +33,11 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/RetainPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/RetainPtr.h"
 
 namespace WebCore {
 
@@ -62,7 +62,7 @@ public:
 
     static PassRefPtr<Image> create(ImageObserver* = 0);
     static PassRefPtr<Image> loadPlatformResource(const char* name);
-    static bool supportsType(const String&); 
+    static bool supportsType(const String&);
 
     virtual bool isSVGImage() const { return false; }
     virtual bool isBitmapImage() const { return false; }
@@ -89,8 +89,6 @@ public:
 
     bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
     virtual bool dataChanged(bool /*allDataReceived*/) { return false; }
-
-    virtual String filenameExtension() const { return String(); } // null string if unknown
 
     virtual void destroyDecodedData() = 0;
     virtual unsigned decodedSize() const = 0;

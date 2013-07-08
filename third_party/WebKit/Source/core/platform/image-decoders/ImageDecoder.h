@@ -35,7 +35,6 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <wtf/Assertions.h>
 #include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
 
 #if USE(QCMSLIB)
@@ -238,8 +237,6 @@ namespace WebCore {
         // we can't sniff a supported type from the provided data (possibly
         // because there isn't enough data yet).
         static PassOwnPtr<ImageDecoder> create(const SharedBuffer& data, ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
-
-        virtual String filenameExtension() const = 0;
 
         bool isAllDataReceived() const { return m_isAllDataReceived; }
 

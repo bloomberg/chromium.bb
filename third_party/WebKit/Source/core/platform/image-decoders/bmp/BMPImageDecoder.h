@@ -42,7 +42,6 @@ namespace WebCore {
         BMPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
 
         // ImageDecoder
-        virtual String filenameExtension() const { return "bmp"; }
         virtual void setData(SharedBuffer*, bool allDataReceived);
         virtual bool isSizeAvailable();
         virtual ImageFrame* frameBufferAtIndex(size_t);

@@ -46,7 +46,6 @@ public:
     {
     }
 
-    virtual String filenameExtension() const OVERRIDE { return ""; }
     virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE { return 0; }
 
     Vector<ImageFrame, 1>& frameBufferCache()

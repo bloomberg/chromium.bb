@@ -860,9 +860,6 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
         Image* image = getImage(element);
         if (!image || image->isNull())
             return false;
-        // We shouldn't be starting a drag for an image that can't provide an extension.
-        // This is an early detection for problems encountered later upon drop.
-        ASSERT(!image->filenameExtension().isEmpty());
         if (!dragImage) {
             dragImage = dragImageForImage(element, image, dragOrigin, hitTestResult.imageRect(), dragLocation);
         }

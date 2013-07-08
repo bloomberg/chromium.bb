@@ -41,7 +41,6 @@ public:
     WEBPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
     virtual ~WEBPImageDecoder();
 
-    virtual String filenameExtension() const OVERRIDE { return "webp"; }
     virtual bool isSizeAvailable() OVERRIDE;
     virtual size_t frameCount() OVERRIDE;
     virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;

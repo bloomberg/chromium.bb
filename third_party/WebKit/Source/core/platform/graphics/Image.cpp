@@ -40,6 +40,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/MemoryObjectInfo.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

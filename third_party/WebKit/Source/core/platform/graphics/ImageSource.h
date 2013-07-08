@@ -98,7 +98,6 @@ public:
     bool initialized() const;
 
     void setData(SharedBuffer* data, bool allDataReceived);
-    String filenameExtension() const;
 
     bool isSizeAvailable();
     IntSize size(RespectImageOrientationEnum = DoNotRespectImageOrientation) const;

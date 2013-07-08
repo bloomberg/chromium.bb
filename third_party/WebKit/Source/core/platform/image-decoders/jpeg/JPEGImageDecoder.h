@@ -42,7 +42,6 @@ namespace WebCore {
         virtual ~JPEGImageDecoder();
 
         // ImageDecoder
-        virtual String filenameExtension() const { return "jpg"; }
         virtual bool isSizeAvailable();
         virtual ImageFrame* frameBufferAtIndex(size_t);
         // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
