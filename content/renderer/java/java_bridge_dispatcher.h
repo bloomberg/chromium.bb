@@ -8,12 +8,9 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_channel_handle.h"
 #include "third_party/npapi/bindings/npruntime.h"
-
-struct _NPP;
 
 namespace content {
 class JavaBridgeChannel;
@@ -47,7 +44,6 @@ class JavaBridgeDispatcher : public RenderViewObserver {
   typedef std::map<string16, NPVariant> ObjectMap;
   ObjectMap objects_;
   scoped_refptr<JavaBridgeChannel> channel_;
-  scoped_ptr<struct _NPP> owner_id_;
 };
 
 }  // namespace content
