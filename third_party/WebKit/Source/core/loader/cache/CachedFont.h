@@ -29,7 +29,6 @@
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/platform/graphics/FontOrientation.h"
-#include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/FontWidthVariant.h"
 
 namespace WebCore {
@@ -54,7 +53,7 @@ public:
     bool stillNeedsLoad() const { return !m_loadInitiated; }
 
     bool ensureCustomFontData();
-    FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth, FontRenderingMode = NormalRenderingMode);
+    FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 
 #if ENABLE(SVG_FONTS)
     bool ensureSVGFontData();

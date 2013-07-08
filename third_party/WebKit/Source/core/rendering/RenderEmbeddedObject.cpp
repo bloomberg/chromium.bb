@@ -188,7 +188,6 @@ bool RenderEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumul
     ASSERT(settings);
     if (!settings)
         return false;
-    fontDescription.setRenderingMode(settings->fontRenderingMode());
     fontDescription.setComputedSize(fontDescription.specifiedSize());
     font = Font(fontDescription, 0, 0);
     font.update(0);

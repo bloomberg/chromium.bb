@@ -33,7 +33,6 @@
 #define FontCustomPlatformData_h
 
 #include "core/platform/graphics/FontOrientation.h"
-#include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/FontWidthVariant.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
@@ -66,8 +65,7 @@ public:
 
     ~FontCustomPlatformData();
 
-    FontPlatformData fontPlatformData(int size, bool bold, bool italic, FontOrientation = Horizontal,
-                                      FontWidthVariant = RegularWidth, FontRenderingMode = NormalRenderingMode);
+    FontPlatformData fontPlatformData(int size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 
     static bool supportsFormat(const String&);
 

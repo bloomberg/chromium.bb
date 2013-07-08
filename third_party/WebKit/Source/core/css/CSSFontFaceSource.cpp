@@ -166,7 +166,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                     return 0;
 
                 fontData = SimpleFontData::create(m_font->platformDataFromCustomData(fontDescription.computedPixelSize(), syntheticBold, syntheticItalic,
-                    fontDescription.orientation(), fontDescription.widthVariant(), fontDescription.renderingMode()), true, false);
+                    fontDescription.orientation(), fontDescription.widthVariant()), true, false);
             }
         } else {
 #if ENABLE(SVG_FONTS)

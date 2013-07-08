@@ -29,7 +29,6 @@
 #include "core/platform/graphics/FontFamily.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
 #include "core/platform/graphics/FontOrientation.h"
-#include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/FontTraitsMask.h"
 #include "core/platform/graphics/FontWidthVariant.h"
@@ -88,7 +87,6 @@ public:
         , m_weight(FontWeightNormal)
         , m_genericFamily(NoFamily)
         , m_usePrinterFont(false)
-        , m_renderingMode(NormalRenderingMode)
         , m_kerning(AutoKerning)
         , m_commonLigaturesState(NormalLigaturesState)
         , m_discretionaryLigaturesState(NormalLigaturesState)
@@ -119,7 +117,6 @@ public:
     bool usePrinterFont() const { return m_usePrinterFont; }
     // only use fixed default size when there is only one font family, and that family is "monospace"
     bool useFixedDefaultSize() const { return genericFamily() == MonospaceFamily && !family().next() && family().family() == monospaceFamily; }
-    FontRenderingMode renderingMode() const { return static_cast<FontRenderingMode>(m_renderingMode); }
     Kerning kerning() const { return static_cast<Kerning>(m_kerning); }
     LigaturesState commonLigaturesState() const { return static_cast<LigaturesState>(m_commonLigaturesState); }
     LigaturesState discretionaryLigaturesState() const { return static_cast<LigaturesState>(m_discretionaryLigaturesState); }
@@ -152,7 +149,6 @@ public:
 #else
     void setUsePrinterFont(bool p) { m_usePrinterFont = p; }
 #endif
-    void setRenderingMode(FontRenderingMode mode) { m_renderingMode = mode; }
     void setKerning(Kerning kerning) { m_kerning = kerning; }
     void setCommonLigaturesState(LigaturesState commonLigaturesState) { m_commonLigaturesState = commonLigaturesState; }
     void setDiscretionaryLigaturesState(LigaturesState discretionaryLigaturesState) { m_discretionaryLigaturesState = discretionaryLigaturesState; }
@@ -188,7 +184,6 @@ private:
     unsigned m_genericFamily : 3; // GenericFamilyType
     unsigned m_usePrinterFont : 1;
 
-    unsigned m_renderingMode : 1;  // Used to switch between CG and GDI text on Windows.
     unsigned m_kerning : 2; // Kerning
 
     unsigned m_commonLigaturesState : 2;
@@ -216,7 +211,6 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_weight == other.m_weight
         && m_genericFamily == other.m_genericFamily
         && m_usePrinterFont == other.m_usePrinterFont
-        && m_renderingMode == other.m_renderingMode
         && m_kerning == other.m_kerning
         && m_commonLigaturesState == other.m_commonLigaturesState
         && m_discretionaryLigaturesState == other.m_discretionaryLigaturesState

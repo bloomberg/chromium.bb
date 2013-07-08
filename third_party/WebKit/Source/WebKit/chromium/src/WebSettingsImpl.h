@@ -101,7 +101,6 @@ public:
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);
     virtual void setFixedPositionCreatesStackingContext(bool);
-    virtual void setFontRenderingModeNormal();
     virtual void setForceCompositingMode(bool);
     virtual void setFullScreenEnabled(bool);
     virtual void setGestureTapHighlightEnabled(bool);

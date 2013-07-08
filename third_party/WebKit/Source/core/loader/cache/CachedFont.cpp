@@ -88,14 +88,14 @@ bool CachedFont::ensureCustomFontData()
     return m_fontData;
 }
 
-FontPlatformData CachedFont::platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant, FontRenderingMode renderingMode)
+FontPlatformData CachedFont::platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant)
 {
 #if ENABLE(SVG_FONTS)
     if (m_externalSVGDocument)
         return FontPlatformData(size, bold, italic);
 #endif
     ASSERT(m_fontData);
-    return m_fontData->fontPlatformData(static_cast<int>(size), bold, italic, orientation, widthVariant, renderingMode);
+    return m_fontData->fontPlatformData(static_cast<int>(size), bold, italic, orientation, widthVariant);
 }
 
 #if ENABLE(SVG_FONTS)

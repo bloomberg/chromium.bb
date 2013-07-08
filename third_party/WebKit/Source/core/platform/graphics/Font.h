@@ -119,8 +119,6 @@ public:
     void setLetterSpacing(short s) { m_letterSpacing = s; }
     bool isFixedPitch() const;
     bool isPrinterFont() const { return m_fontDescription.usePrinterFont(); }
-    
-    FontRenderingMode renderingMode() const { return m_fontDescription.renderingMode(); }
 
     TypesettingFeatures typesettingFeatures() const { return m_typesettingFeatures; }
 

@@ -133,7 +133,6 @@ Settings::Settings(Page* page)
     , m_areImagesEnabled(true)
     , m_arePluginsEnabled(false)
     , m_isScriptEnabled(false)
-    , m_fontRenderingMode(0)
     , m_isCSSCustomFilterEnabled(false)
     , m_cssStickyPositionEnabled(true)
     , m_dnsPrefetchingEnabled(false)
@@ -146,7 +145,7 @@ Settings::Settings(Page* page)
 PassOwnPtr<Settings> Settings::create(Page* page)
 {
     return adoptPtr(new Settings(page));
-} 
+}
 
 SETTINGS_SETTER_BODIES
 
@@ -336,19 +335,6 @@ void Settings::setUserStyleSheetLocation(const KURL& userStyleSheetLocation)
     m_userStyleSheetLocation = userStyleSheetLocation;
 
     m_page->userStyleSheetLocationChanged();
-}
-
-void Settings::setFontRenderingMode(FontRenderingMode mode)
-{
-    if (fontRenderingMode() == mode)
-        return;
-    m_fontRenderingMode = mode;
-    m_page->setNeedsRecalcStyleInAllFrames();
-}
-
-FontRenderingMode Settings::fontRenderingMode() const
-{
-    return static_cast<FontRenderingMode>(m_fontRenderingMode);
 }
 
 void Settings::setDNSPrefetchingEnabled(bool dnsPrefetchingEnabled)

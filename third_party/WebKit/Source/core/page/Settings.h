@@ -30,7 +30,6 @@
 #include "SettingsMacros.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/IntSize.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashMap.h"
@@ -134,9 +133,6 @@ public:
     void setUserStyleSheetLocation(const KURL&);
     const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
 
-    void setFontRenderingMode(FontRenderingMode mode);
-    FontRenderingMode fontRenderingMode() const;
-
     void setCSSCustomFilterEnabled(bool enabled) { m_isCSSCustomFilterEnabled = enabled; }
     bool isCSSCustomFilterEnabled() const { return m_isCSSCustomFilterEnabled; }
 
@@ -187,7 +183,6 @@ private:
     bool m_areImagesEnabled : 1;
     bool m_arePluginsEnabled : 1;
     bool m_isScriptEnabled : 1;
-    unsigned m_fontRenderingMode : 1;
     bool m_isCSSCustomFilterEnabled : 1;
     bool m_cssStickyPositionEnabled : 1;
     bool m_dnsPrefetchingEnabled : 1;

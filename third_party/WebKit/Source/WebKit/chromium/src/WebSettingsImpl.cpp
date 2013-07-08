@@ -34,7 +34,6 @@
 // FIXME: Needed temporarily for Grid (see http://crbug.com/241619)
 #include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "wtf/UnusedParam.h"
 
@@ -306,14 +305,6 @@ void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
     //        define an enum in WebSettings.h and have a switch statement that
     //        translates.  Until then, this is probably fine, though.
     m_settings->setEditableLinkBehavior(WebCore::EditableLinkNeverLive);
-}
-
-void WebSettingsImpl::setFontRenderingModeNormal()
-{
-    // FIXME: If you ever need more behaviors than this, then we should probably
-    //        define an enum in WebSettings.h and have a switch statement that
-    //        translates.  Until then, this is probably fine, though.
-    m_settings->setFontRenderingMode(WebCore::NormalRenderingMode);
 }
 
 void WebSettingsImpl::setAllowUniversalAccessFromFileURLs(bool allow)

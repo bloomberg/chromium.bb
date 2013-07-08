@@ -1022,7 +1022,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document* document, CSSF
     fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle->locale()));
     if (Settings* settings = document->settings()) {
         fontDescription.setUsePrinterFont(document->printing());
-        fontDescription.setRenderingMode(settings->fontRenderingMode());
         const AtomicString& standardFont = settings->standardFontFamily(fontDescription.script());
         if (!standardFont.isEmpty()) {
             fontDescription.setGenericFamily(FontDescription::StandardFamily);
@@ -2590,7 +2589,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                 ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
                 if (!settings)
                     return;
-                fontDescription.setRenderingMode(settings->fontRenderingMode());
                 fontDescription.setUsePrinterFont(document()->printing());
 
                 // Handle the zoom factor.
@@ -3394,7 +3392,6 @@ void StyleResolver::initializeFontStyle(Settings* settings)
 {
     FontDescription fontDescription;
     fontDescription.setGenericFamily(FontDescription::StandardFamily);
-    fontDescription.setRenderingMode(settings->fontRenderingMode());
     fontDescription.setUsePrinterFont(document()->printing());
     const AtomicString& standardFontFamily = documentSettings()->standardFontFamily();
     if (!standardFontFamily.isEmpty()) {
