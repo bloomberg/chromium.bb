@@ -246,7 +246,7 @@ void SVGLength::setValueAsString(const String& string, ExceptionCode& ec)
         parseValueInternal<UChar>(string, convertedNumber, type);
 
     if (!success) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 

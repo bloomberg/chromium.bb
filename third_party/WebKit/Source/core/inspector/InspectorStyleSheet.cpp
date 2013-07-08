@@ -574,13 +574,13 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
 
         // At least one property + the bogus property added just above should be present.
         if (propertyCount < 2) {
-            ec = SYNTAX_ERR;
+            ec = SyntaxError;
             return false;
         }
 
         // Check for the proper propertyText termination (the parser could at least restore to the PROPERTY_NAME state).
         if (propertyData.at(propertyCount - 1).name != bogusPropertyName) {
-            ec = SYNTAX_ERR;
+            ec = SyntaxError;
             return false;
         }
     }
@@ -1088,7 +1088,7 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionCode
     if (!checkPageStyleSheet(ec))
         return 0;
     if (!checkStyleRuleSelector(m_pageStyleSheet->ownerDocument(), selector)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 
@@ -1114,7 +1114,7 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionCode
         // What we just added has to be a CSSStyleRule - we cannot handle other types of rules yet.
         // If it is not a style rule, pretend we never touched the stylesheet.
         m_pageStyleSheet->deleteRule(lastRuleIndex, ASSERT_NO_EXCEPTION);
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 
@@ -1342,7 +1342,7 @@ bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& t
     if (success)
         fireStyleSheetChanged();
     else
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
     return success;
 }
 

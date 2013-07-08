@@ -64,7 +64,7 @@ PassRefPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value
 
     if (!value->IsFunction()) {
         succeeded = false;
-        setDOMException(TYPE_MISMATCH_ERR, isolate);
+        setDOMException(TypeMismatchError, isolate);
         return 0;
     }
 

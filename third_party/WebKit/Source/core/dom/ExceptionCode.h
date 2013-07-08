@@ -42,19 +42,20 @@ namespace WebCore {
 
         // FIXME: Rename these to use CamelCase matching the exception name.
         // Introduced in DOM Level 2:
-        INVALID_STATE_ERR,
-        SYNTAX_ERR,
-        INVALID_MODIFICATION_ERR,
-        NAMESPACE_ERR,
-        INVALID_ACCESS_ERR,
+        InvalidStateError,
+        SyntaxError,
+        InvalidModificationError,
+        NamespaceError,
+        InvalidAccessError,
 
         // Introduced in DOM Level 3:
-        TYPE_MISMATCH_ERR, // Historical; use TypeError instead
+        TypeMismatchError, // Historical; use TypeError instead
 
         // XMLHttpRequest extension:
-        SECURITY_ERR,
+        SecurityError,
 
         // Others introduced in HTML5:
+        // FIXME: Rename these to use CamelCase matching the exception name.
         NETWORK_ERR,
         ABORT_ERR,
         URL_MISMATCH_ERR,
@@ -82,7 +83,7 @@ namespace WebCore {
         FSNoModificationAllowedError,
         FSInvalidStateError,
         FSSyntaxError,
-        FSInvalidModificationError,
+        FSInvalidModificationError, // FIXME: This seems to be only used by the file system
         FSQuotaExceededError,
         FSTypeMismatchError,
         FSPathExistsError,

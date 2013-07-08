@@ -278,7 +278,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
     RefPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
 
     if (!rule) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
     RuleMutationScope mutationScope(this);

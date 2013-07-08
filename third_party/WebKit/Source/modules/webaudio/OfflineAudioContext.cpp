@@ -45,7 +45,7 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ScriptExecutionConte
     Document* document = toDocument(context);
 
     if (numberOfChannels > 10 || !isSampleRateRangeGood(sampleRate)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 

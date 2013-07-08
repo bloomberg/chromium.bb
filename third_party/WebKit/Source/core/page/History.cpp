@@ -144,7 +144,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
     
     KURL fullURL = urlForState(urlString);
     if (!fullURL.isValid() || !m_frame->document()->securityOrigin()->canRequest(fullURL)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 

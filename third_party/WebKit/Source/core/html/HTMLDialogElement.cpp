@@ -58,7 +58,7 @@ PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tag
 void HTMLDialogElement::close(ExceptionCode& ec)
 {
     if (!fastHasAttribute(openAttr)) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     setBooleanAttribute(openAttr, false);
@@ -111,7 +111,7 @@ void HTMLDialogElement::show()
 void HTMLDialogElement::showModal(ExceptionCode& ec)
 {
     if (fastHasAttribute(openAttr) || !inDocument()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     document()->addToTopLayer(this);

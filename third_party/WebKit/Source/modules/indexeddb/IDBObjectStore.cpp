@@ -73,7 +73,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::get(ScriptExecutionContext* context, Pass
 {
     IDB_TRACE("IDBObjectStore::get");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!keyRange) {
@@ -144,7 +144,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(IDBDatabaseBackendInterface::PutMode 
 {
     RefPtr<IDBKey> key = prpKey;
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -230,7 +230,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ScriptExecutionContext* co
 {
     IDB_TRACE("IDBObjectStore::delete");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -263,7 +263,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::clear(ScriptExecutionContext* context, Ex
 {
     IDB_TRACE("IDBObjectStore::clear");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -365,7 +365,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptExecutionContext* context
 {
     IDB_TRACE("IDBObjectStore::createIndex");
     if (!m_transaction->isVersionChange() || isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -373,7 +373,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptExecutionContext* context
         return 0;
     }
     if (!keyPath.isValid()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
     if (name.isNull()) {
@@ -386,7 +386,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptExecutionContext* context
     }
 
     if (keyPath.type() == IDBKeyPath::ArrayType && multiEntry) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 
@@ -422,11 +422,11 @@ PassRefPtr<IDBIndex> IDBObjectStore::index(const String& name, ExceptionCode& ec
 {
     IDB_TRACE("IDBObjectStore::index");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (m_transaction->isFinished()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -460,7 +460,7 @@ void IDBObjectStore::deleteIndex(const String& name, ExceptionCode& ec)
 {
     IDB_TRACE("IDBObjectStore::deleteIndex");
     if (!m_transaction->isVersionChange() || isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     if (!m_transaction->isActive()) {
@@ -489,7 +489,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ScriptExecutionContext* contex
 {
     IDB_TRACE("IDBObjectStore::openCursor");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -519,7 +519,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::count(ScriptExecutionContext* context, Pa
 {
     IDB_TRACE("IDBObjectStore::count");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {

@@ -80,7 +80,7 @@ void V8HTMLOptionsCollection::removeMethodCustom(const v8::FunctionCallbackInfo<
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (!V8HTMLOptionElement::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+        setDOMException(TypeMismatchError, args.GetIsolate());
         return;
     }
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
@@ -93,7 +93,7 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
         bool ok;
         V8TRYCATCH_VOID(int, index, toInt32(args[1], ok));
         if (!ok)
-            ec = TYPE_MISMATCH_ERR;
+            ec = TypeMismatchError;
         else
             imp->add(option, index, ec);
     }

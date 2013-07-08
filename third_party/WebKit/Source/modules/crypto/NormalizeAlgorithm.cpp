@@ -201,7 +201,7 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
     }
 
     if (!algorithmName.containsOnlyASCII()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return false;
     }
 

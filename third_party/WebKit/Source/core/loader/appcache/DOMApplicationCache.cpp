@@ -72,14 +72,14 @@ void DOMApplicationCache::update(ExceptionCode& ec)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->update())
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
 }
 
 void DOMApplicationCache::swapCache(ExceptionCode& ec)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->swapCache())
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
 }
 
 void DOMApplicationCache::abort()

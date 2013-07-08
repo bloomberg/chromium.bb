@@ -50,7 +50,7 @@ void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index
     HTMLOptionElement* newOption = element.get();
 
     if (!newOption) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return;
     }
 
@@ -119,7 +119,7 @@ bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HT
 {
     HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
     if (!value) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return true;
     }
     base->setOption(index, value.get(), ec);

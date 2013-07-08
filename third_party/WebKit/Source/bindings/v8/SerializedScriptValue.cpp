@@ -2395,7 +2395,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 
     for (size_t i = 0; i < arrayBuffers.size(); i++) {
         if (arrayBuffers[i]->isNeutered()) {
-            setDOMException(INVALID_STATE_ERR, isolate);
+            setDOMException(InvalidStateError, isolate);
             didThrow = true;
             return nullptr;
         }
@@ -2413,7 +2413,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 
         bool result = arrayBuffers[i]->transfer(contents->at(i), neuteredViews);
         if (!result) {
-            setDOMException(INVALID_STATE_ERR, isolate);
+            setDOMException(InvalidStateError, isolate);
             didThrow = true;
             return nullptr;
         }
@@ -2452,7 +2452,7 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
         return;
     case Serializer::InvalidStateError:
         didThrow = true;
-        setDOMException(INVALID_STATE_ERR, isolate);
+        setDOMException(InvalidStateError, isolate);
         return;
     case Serializer::JSFailure:
         // If there was a JS failure (but no exception), there's not

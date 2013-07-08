@@ -95,7 +95,7 @@ IDBRequest::~IDBRequest()
 PassRefPtr<IDBAny> IDBRequest::result(ExceptionCode& ec) const
 {
     if (m_readyState != DONE) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     return m_result;
@@ -104,7 +104,7 @@ PassRefPtr<IDBAny> IDBRequest::result(ExceptionCode& ec) const
 PassRefPtr<DOMError> IDBRequest::error(ExceptionCode& ec) const
 {
     if (m_readyState != DONE) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     return m_error;

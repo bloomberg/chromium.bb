@@ -112,10 +112,10 @@ void MediaKeySession::update(Uint8Array* key, ExceptionCode& ec)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-addkey>:
     // The addKey(key) method must run the following steps:
-    // 1. If the first or second argument [sic] is null or an empty array, throw an INVALID_ACCESS_ERR.
+    // 1. If the first or second argument [sic] is null or an empty array, throw an InvalidAccessError.
     // NOTE: the reference to a "second argument" is a spec bug.
     if (!key || !key->length()) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return;
     }
 

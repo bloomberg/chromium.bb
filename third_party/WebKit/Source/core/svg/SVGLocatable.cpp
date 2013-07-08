@@ -105,7 +105,7 @@ AffineTransform SVGLocatable::getTransformToElement(SVGElement* target, Exceptio
     if (target && target->isSVGGraphicsElement()) {
         AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(styleUpdateStrategy);
         if (!targetCTM.isInvertible()) {
-            ec = INVALID_STATE_ERR;
+            ec = InvalidStateError;
             return ctm;
         }
         ctm = targetCTM.inverse() * ctm;

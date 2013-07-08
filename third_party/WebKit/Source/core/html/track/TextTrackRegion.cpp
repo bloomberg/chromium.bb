@@ -199,7 +199,7 @@ void TextTrackRegion::setScroll(const AtomicString& value, ExceptionCode& ec)
     DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
     if (value != emptyString() && value != upScrollValueKeyword) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 

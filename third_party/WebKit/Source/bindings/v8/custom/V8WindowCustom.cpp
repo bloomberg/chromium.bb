@@ -80,7 +80,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     ScriptExecutionContext* scriptContext = static_cast<ScriptExecutionContext*>(imp->document());
 
     if (!scriptContext) {
-        setDOMException(INVALID_ACCESS_ERR, args.GetIsolate());
+        setDOMException(InvalidAccessError, args.GetIsolate());
         return;
     }
 

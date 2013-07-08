@@ -87,7 +87,7 @@ String V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
 
     v8::Handle<v8::Value> retval = ScriptController::callFunctionWithInstrumentation(0, function, m_resolver, argc, argv);
 
-    // Eat exceptions from namespace resolver and return an empty string. This will most likely cause NAMESPACE_ERR.
+    // Eat exceptions from namespace resolver and return an empty string. This will most likely cause NamespaceError.
     if (tryCatch.HasCaught())
         return String();
 

@@ -157,7 +157,7 @@ void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, cons
         return;
     KURL url = m_frame->document()->url();
     if (!url.setProtocol(protocol)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
     setLocation(url.string(), activeWindow, firstWindow);

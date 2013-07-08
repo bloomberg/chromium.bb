@@ -135,12 +135,12 @@ bool MediaStream::ended() const
 void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode& ec)
 {
     if (ended()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
     if (!prpTrack) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return;
     }
 
@@ -169,12 +169,12 @@ void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode&
 void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode& ec)
 {
     if (ended()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
     if (!prpTrack) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return;
     }
 

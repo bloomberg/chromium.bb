@@ -955,7 +955,7 @@ PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& marku
 
     bool wasValid = fragment->parseXML(markup, contextElement, parserContentPolicy);
     if (!wasValid) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
     return fragment.release();

@@ -131,7 +131,7 @@ void Range::setDocument(Document* document)
 Node* Range::startContainer(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -141,7 +141,7 @@ Node* Range::startContainer(ExceptionCode& ec) const
 int Range::startOffset(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -151,7 +151,7 @@ int Range::startOffset(ExceptionCode& ec) const
 Node* Range::endContainer(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -161,7 +161,7 @@ Node* Range::endContainer(ExceptionCode& ec) const
 int Range::endOffset(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -171,7 +171,7 @@ int Range::endOffset(ExceptionCode& ec) const
 Node* Range::commonAncestorContainer(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -192,7 +192,7 @@ Node* Range::commonAncestorContainer(Node* containerA, Node* containerB)
 bool Range::collapsed(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -214,7 +214,7 @@ static inline bool checkForDifferentRootContainer(const RangeBoundaryPoint& star
 void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -243,7 +243,7 @@ void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionCode& ec)
 void Range::setEnd(PassRefPtr<Node> refNode, int offset, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -284,7 +284,7 @@ void Range::setEnd(const Position& end, ExceptionCode& ec)
 void Range::collapse(bool toStart, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -297,7 +297,7 @@ void Range::collapse(bool toStart, ExceptionCode& ec)
 bool Range::isPointInRange(Node* refNode, int offset, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return false;
     }
 
@@ -326,7 +326,7 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionCode& ec) const
     // refNode node and an offset within the node is before, same as, or after the range respectively.
 
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -372,7 +372,7 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionCode& ec) const
     }
     
     if (!m_start.container() && refNode->attached()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return NODE_BEFORE;
     }
 
@@ -410,7 +410,7 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionCode& ec) const
 short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -454,7 +454,7 @@ short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, Exc
             return compareBoundaryPoints(m_start, sourceRange->m_end, ec);
     }
 
-    ec = SYNTAX_ERR;
+    ec = SyntaxError;
     return 0;
 }
 
@@ -578,7 +578,7 @@ bool Range::intersectsNode(Node* refNode, ExceptionCode& ec)
 
     // Throw exception if the range is already detached.
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return false;
     }
     if (!refNode) {
@@ -937,7 +937,7 @@ PassRefPtr<DocumentFragment> Range::extractContents(ExceptionCode& ec)
 PassRefPtr<DocumentFragment> Range::cloneContents(ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -951,7 +951,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
     ec = 0;
 
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1056,7 +1056,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
 String Range::toString(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return String();
     }
 
@@ -1096,7 +1096,7 @@ String Range::text() const
 PassRefPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -1118,7 +1118,7 @@ void Range::detach(ExceptionCode& ec)
 {
     // Check first to see if we've already detached:
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1213,7 +1213,7 @@ void Range::checkNodeBA(Node* n, ExceptionCode& ec) const
 PassRefPtr<Range> Range::cloneRange(ExceptionCode& ec) const
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -1223,7 +1223,7 @@ PassRefPtr<Range> Range::cloneRange(ExceptionCode& ec) const
 void Range::setStartAfter(Node* refNode, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1243,7 +1243,7 @@ void Range::setStartAfter(Node* refNode, ExceptionCode& ec)
 void Range::setEndBefore(Node* refNode, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1263,7 +1263,7 @@ void Range::setEndBefore(Node* refNode, ExceptionCode& ec)
 void Range::setEndAfter(Node* refNode, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1283,7 +1283,7 @@ void Range::setEndAfter(Node* refNode, ExceptionCode& ec)
 void Range::selectNode(Node* refNode, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1346,7 +1346,7 @@ void Range::selectNode(Node* refNode, ExceptionCode& ec)
 void Range::selectNodeContents(Node* refNode, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1389,7 +1389,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
     RefPtr<Node> newParent = passNewParent;
 
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1447,7 +1447,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
     if (endNonTextContainer->nodeType() == Node::TEXT_NODE)
         endNonTextContainer = endNonTextContainer->parentNode();
     if (startNonTextContainer != endNonTextContainer) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1472,7 +1472,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
 void Range::setStartBefore(Node* refNode, ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1492,7 +1492,7 @@ void Range::setStartBefore(Node* refNode, ExceptionCode& ec)
 void Range::checkDeleteExtract(ExceptionCode& ec)
 {
     if (!m_start.container()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 

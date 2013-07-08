@@ -93,7 +93,7 @@ NodeIterator::~NodeIterator()
 PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionCode& ec)
 {
     if (m_detached) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -122,7 +122,7 @@ PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionCode& ec)
 PassRefPtr<Node> NodeIterator::previousNode(ScriptState* state, ExceptionCode& ec)
 {
     if (m_detached) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 

@@ -47,7 +47,7 @@ namespace WebCore {
 void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (!args.Length()) {
-        setDOMException(SYNTAX_ERR, args.GetIsolate());
+        setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
 
@@ -57,7 +57,7 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
 
     if (args.Length() > 1 && !isUndefinedOrNull(args[1])) {
         if (!args[1]->IsObject()) {
-            setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+            setDOMException(TypeMismatchError, args.GetIsolate());
             return;
         }
 

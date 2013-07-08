@@ -220,13 +220,13 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, Document* 
     parser.parseSelector(selectors, selectorList);
 
     if (!selectorList.first() || selectorList.hasInvalidSelector()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 
-    // throw a NAMESPACE_ERR if the selector includes any namespace prefixes.
+    // throw a NamespaceError if the selector includes any namespace prefixes.
     if (selectorList.selectorsNeedNamespaceResolution()) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return 0;
     }
 

@@ -131,7 +131,7 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     AudioContext::AutoLocker locker(context());
 
     if (!destination) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
@@ -147,7 +147,7 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     }
 
     if (context() != destination->context()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
@@ -165,7 +165,7 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionCode& 
     AudioContext::AutoLocker locker(context());
 
     if (!param) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
@@ -175,7 +175,7 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionCode& 
     }
 
     if (context() != param->context()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
@@ -214,8 +214,9 @@ void AudioNode::setChannelCount(unsigned long channelCount, ExceptionCode& ec)
             if (m_channelCountMode != Max)
                 updateChannelsForInputs();
         }
-    } else
-        ec = INVALID_STATE_ERR;
+    } else {
+        ec = InvalidStateError;
+    }
 }
 
 String AudioNode::channelCountMode()
@@ -246,7 +247,7 @@ void AudioNode::setChannelCountMode(const String& mode, ExceptionCode& ec)
     else if (mode == "explicit")
         m_channelCountMode = Explicit;
     else
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
 
     if (m_channelCountMode != oldMode)
         updateChannelsForInputs();
@@ -274,7 +275,7 @@ void AudioNode::setChannelInterpretation(const String& interpretation, Exception
     else if (interpretation == "discrete")
         m_channelInterpretation = AudioBus::Discrete;
     else
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
 }
 
 void AudioNode::updateChannelsForInputs()

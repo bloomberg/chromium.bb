@@ -106,12 +106,12 @@ void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interTon
     }
 
     if (duration > maxToneDurationMs || duration < minToneDurationMs) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
     if (interToneGap < minInterToneGapMs) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
@@ -119,7 +119,7 @@ void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interTon
     m_interToneGap = interToneGap;
 
     if (!m_handler->insertDTMF(tones, m_duration, m_interToneGap))
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
 }
 
 void RTCDTMFSender::didPlayTone(const String& tone)

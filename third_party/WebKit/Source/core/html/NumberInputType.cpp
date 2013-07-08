@@ -127,11 +127,11 @@ void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior e
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const double floatMax = numeric_limits<float>::max();
     if (newValue < -floatMax) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     if (newValue > floatMax) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     element()->setValue(serializeForNumberType(newValue), eventBehavior);
@@ -142,11 +142,11 @@ void NumberInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventB
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const Decimal floatMax = Decimal::fromDouble(numeric_limits<float>::max());
     if (newValue < -floatMax) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     if (newValue > floatMax) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     element()->setValue(serializeForNumberType(newValue), eventBehavior);

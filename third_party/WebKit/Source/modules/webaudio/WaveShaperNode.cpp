@@ -63,7 +63,7 @@ void WaveShaperNode::setOversample(const String& type, ExceptionCode& ec)
     else if (type == "4x")
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
     else
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
 }
 
 String WaveShaperNode::oversample() const

@@ -98,7 +98,7 @@ void Attr::setPrefix(const AtomicString& prefix, ExceptionCode& ec)
 
     if ((prefix == xmlnsAtom && namespaceURI() != XMLNSNames::xmlnsNamespaceURI)
         || static_cast<Attr*>(this)->qualifiedName() == xmlnsAtom) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return;
     }
 

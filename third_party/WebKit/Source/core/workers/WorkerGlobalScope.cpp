@@ -213,7 +213,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionCode&
     for (Vector<String>::const_iterator it = urls.begin(); it != urlsEnd; ++it) {
         const KURL& url = scriptExecutionContext()->completeURL(*it);
         if (!url.isValid()) {
-            ec = SYNTAX_ERR;
+            ec = SyntaxError;
             return;
         }
         completedURLs.append(url);

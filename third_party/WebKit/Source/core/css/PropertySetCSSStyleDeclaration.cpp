@@ -230,7 +230,7 @@ void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, con
     didMutate(changed ? PropertyChanged : NoChanges);
 
     if (changed) {
-        // CSS DOM requires raising SYNTAX_ERR of parsing failed, but this is too dangerous for compatibility,
+        // CSS DOM requires raising SyntaxError of parsing failed, but this is too dangerous for compatibility,
         // see <http://bugs.webkit.org/show_bug.cgi?id=7296>.
         mutationScope.enqueueMutationRecord();
     }

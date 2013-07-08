@@ -48,14 +48,14 @@ PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary
     String type;
     bool ok = dictionary.get("type", type);
     if (!ok || !verifyType(type)) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return 0;
     }
 
     String sdp;
     ok = dictionary.get("sdp", sdp);
     if (!ok || sdp.isEmpty()) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return 0;
     }
 
@@ -87,7 +87,7 @@ void RTCSessionDescription::setType(const String& type, ExceptionCode& ec)
     if (verifyType(type))
         m_webSessionDescription.setType(type);
     else
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
 }
 
 String RTCSessionDescription::sdp()

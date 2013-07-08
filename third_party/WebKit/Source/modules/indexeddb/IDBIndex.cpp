@@ -59,7 +59,7 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ScriptExecutionContext* context, Pas
 {
     IDB_TRACE("IDBIndex::openCursor");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -89,7 +89,7 @@ PassRefPtr<IDBRequest> IDBIndex::count(ScriptExecutionContext* context, PassRefP
 {
     IDB_TRACE("IDBIndex::count");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -114,7 +114,7 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ScriptExecutionContext* context, 
 {
     IDB_TRACE("IDBIndex::openKeyCursor");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -153,7 +153,7 @@ PassRefPtr<IDBRequest> IDBIndex::get(ScriptExecutionContext* context, PassRefPtr
 {
     IDB_TRACE("IDBIndex::get");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {
@@ -184,7 +184,7 @@ PassRefPtr<IDBRequest> IDBIndex::getKey(ScriptExecutionContext* context, PassRef
 {
     IDB_TRACE("IDBIndex::getKey");
     if (isDeleted()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     if (!m_transaction->isActive()) {

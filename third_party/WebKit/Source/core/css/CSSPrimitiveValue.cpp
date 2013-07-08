@@ -653,7 +653,7 @@ double CSSPrimitiveValue::getDoubleValue(unsigned short unitType, ExceptionCode&
     double result = 0;
     bool success = getDoubleValueInternal(static_cast<UnitTypes>(unitType), &result);
     if (!success) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0.0;
     }
 
@@ -771,7 +771,7 @@ String CSSPrimitiveValue::getStringValue(ExceptionCode& ec) const
         case CSS_PROPERTY_ID:
             return propertyName(m_value.propertyID);
         default:
-            ec = INVALID_ACCESS_ERR;
+            ec = InvalidAccessError;
             break;
     }
 
@@ -801,7 +801,7 @@ Counter* CSSPrimitiveValue::getCounterValue(ExceptionCode& ec) const
 {
     ec = 0;
     if (m_primitiveUnitType != CSS_COUNTER) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 
@@ -812,7 +812,7 @@ Rect* CSSPrimitiveValue::getRectValue(ExceptionCode& ec) const
 {
     ec = 0;
     if (m_primitiveUnitType != CSS_RECT) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 
@@ -823,7 +823,7 @@ Quad* CSSPrimitiveValue::getQuadValue(ExceptionCode& ec) const
 {
     ec = 0;
     if (m_primitiveUnitType != CSS_QUAD) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 
@@ -834,7 +834,7 @@ PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionCode& ec) cons
 {
     ec = 0;
     if (m_primitiveUnitType != CSS_RGBCOLOR) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 
@@ -846,7 +846,7 @@ Pair* CSSPrimitiveValue::getPairValue(ExceptionCode& ec) const
 {
     ec = 0;
     if (m_primitiveUnitType != CSS_PAIR) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 

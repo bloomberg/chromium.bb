@@ -596,7 +596,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     float* data = jsArrayToFloatArray(array, len);
     if (!data) {
         // FIXME: consider different / better exception type.
-        setDOMException(SYNTAX_ERR, args.GetIsolate());
+        setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
     ExceptionCode ec = 0;
@@ -671,7 +671,7 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, Func
     int* data = jsArrayToIntArray(array, len);
     if (!data) {
         // FIXME: consider different / better exception type.
-        setDOMException(SYNTAX_ERR, args.GetIsolate());
+        setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
     ExceptionCode ec = 0;
@@ -782,7 +782,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args,
     float* data = jsArrayToFloatArray(array, len);
     if (!data) {
         // FIXME: consider different / better exception type.
-        setDOMException(SYNTAX_ERR, args.GetIsolate());
+        setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
     ExceptionCode ec = 0;

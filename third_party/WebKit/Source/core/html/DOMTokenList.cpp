@@ -34,7 +34,7 @@ namespace WebCore {
 bool DOMTokenList::validateToken(const AtomicString& token, ExceptionCode& ec)
 {
     if (token.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return false;
     }
 

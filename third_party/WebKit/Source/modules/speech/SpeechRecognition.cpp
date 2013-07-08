@@ -47,7 +47,7 @@ void SpeechRecognition::start(ExceptionCode& ec)
 {
     ASSERT(m_controller);
     if (m_started) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 

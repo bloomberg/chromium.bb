@@ -41,9 +41,9 @@ PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionCode& 
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:
     // The MediaKeys(keySystem) constructor must run the following steps:
 
-    // 1. If keySystem is null or an empty string, throw an INVALID_ACCESS_ERR exception and abort these steps.
+    // 1. If keySystem is null or an empty string, throw an InvalidAccessError exception and abort these steps.
     if (keySystem.isEmpty()) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 
@@ -90,9 +90,9 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ScriptExecutionContext* con
     // Note: The contents of initData are container-specific Initialization Data.
 
     // 1. If type is null or an empty string and initData is not null or an empty string, throw an
-    // INVALID_ACCESS_ERR exception and abort these steps.
+    // InvalidAccessError exception and abort these steps.
     if ((type.isEmpty()) && (!initData || initData->length())) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 

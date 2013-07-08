@@ -54,7 +54,7 @@ void CanvasGradient::addColorStop(float value, const String& color, ExceptionCod
 
     RGBA32 rgba = 0;
     if (!parseColorOrCurrentColor(rgba, color, 0 /*canvas*/)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 

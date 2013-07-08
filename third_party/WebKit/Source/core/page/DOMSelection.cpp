@@ -216,7 +216,7 @@ void DOMSelection::collapseToEnd(ExceptionCode& ec)
     const VisibleSelection& selection = m_frame->selection()->selection();
 
     if (selection.isNone()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -231,7 +231,7 @@ void DOMSelection::collapseToStart(ExceptionCode& ec)
     const VisibleSelection& selection = m_frame->selection()->selection();
 
     if (selection.isNone()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -337,7 +337,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionCode& ec)
         return;
 
     if (!node) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return;
     }
 

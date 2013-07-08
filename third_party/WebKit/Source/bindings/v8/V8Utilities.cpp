@@ -85,7 +85,7 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
         v8::Local<v8::Value> transferrable = transferrables->Get(i);
         // Validation of non-null objects, per HTML5 spec 10.3.3.
         if (isUndefinedOrNull(transferrable)) {
-            setDOMException(INVALID_STATE_ERR, isolate);
+            setDOMException(InvalidStateError, isolate);
             return false;
         }
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
@@ -93,7 +93,7 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
             RefPtr<MessagePort> port = V8MessagePort::toNative(v8::Handle<v8::Object>::Cast(transferrable));
             // Check for duplicate MessagePorts.
             if (ports.contains(port)) {
-                setDOMException(INVALID_STATE_ERR, isolate);
+                setDOMException(InvalidStateError, isolate);
                 return false;
             }
             ports.append(port.release());

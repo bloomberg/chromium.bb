@@ -98,19 +98,19 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
     }
 
     if (!constructorBuilder->validateOptions()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
     QualifiedName tagName = nullQName();
     if (!constructorBuilder->findTagName(type, tagName)) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return;
     }
     ASSERT(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
 
     if (m_definitions.contains(type)) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -119,7 +119,7 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
     // Consulting the constructor builder could execute script and
     // kill the document.
     if (!document()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 

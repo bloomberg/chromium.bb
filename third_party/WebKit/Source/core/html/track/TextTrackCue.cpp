@@ -345,7 +345,7 @@ void TextTrackCue::setVertical(const String& value, ExceptionCode& ec)
     else if (value == verticalGrowingRightKeyword())
         direction = VerticalGrowingRight;
     else
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
     
     if (direction == m_writingDirection)
         return;
@@ -454,7 +454,7 @@ void TextTrackCue::setAlign(const String& value, ExceptionCode& ec)
     else if (value == endKeyword())
         alignment = End;
     else
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
     
     if (alignment == m_cueAlignment)
         return;

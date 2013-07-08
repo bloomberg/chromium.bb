@@ -111,7 +111,7 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
         options |= AttributeFilter;
 
     if (!validateOptions(options)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 

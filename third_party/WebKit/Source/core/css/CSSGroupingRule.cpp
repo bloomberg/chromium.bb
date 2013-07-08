@@ -73,14 +73,14 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     CSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
     RefPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
     if (!newRule) {
-        // SYNTAX_ERR: Raised if the specified rule has a syntax error and is unparsable.
-        ec = SYNTAX_ERR;
+        // SyntaxError: Raised if the specified rule has a syntax error and is unparsable.
+        ec = SyntaxError;
         return 0;
     }
 
     if (newRule->isImportRule()) {
         // FIXME: an HierarchyRequestError should also be thrown for a @charset or a nested
-        // @media rule. They are currently not getting parsed, resulting in a SYNTAX_ERR
+        // @media rule. They are currently not getting parsed, resulting in a SyntaxError
         // to get raised above.
 
         // HierarchyRequestError: Raised if the rule cannot be inserted at the specified

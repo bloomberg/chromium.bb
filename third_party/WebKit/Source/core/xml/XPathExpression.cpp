@@ -73,7 +73,7 @@ PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned sh
 
     if (evaluationContext.hadTypeConversionError) {
         // It is not specified what to do if type conversion fails while evaluating an expression.
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 

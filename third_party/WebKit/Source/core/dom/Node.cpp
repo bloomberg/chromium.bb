@@ -646,8 +646,8 @@ void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionCode& ec)
 {
     // The spec says that for nodes other than elements and attributes, prefix is always null.
     // It does not say what to do when the user tries to set the prefix on another type of
-    // node, however Mozilla throws a NAMESPACE_ERR exception.
-    ec = NAMESPACE_ERR;
+    // node, however Mozilla throws a NamespaceError exception.
+    ec = NamespaceError;
 }
 
 const AtomicString& Node::localName() const
@@ -981,12 +981,12 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionCode& ec)
         return;
     }
 
-    // FIXME: Raise NAMESPACE_ERR if prefix is malformed per the Namespaces in XML specification.
+    // FIXME: Raise NamespaceError if prefix is malformed per the Namespaces in XML specification.
 
     const AtomicString& nodeNamespaceURI = namespaceURI();
     if ((nodeNamespaceURI.isEmpty() && !prefix.isEmpty())
         || (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI)) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return;
     }
     // Attribute-specific checks are in Attr::setPrefix().
@@ -1355,7 +1355,7 @@ PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name)
 PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionCode& ec)
 {
     if (selectors.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 
@@ -1368,7 +1368,7 @@ PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, Exception
 PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionCode& ec)
 {
     if (selectors.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 

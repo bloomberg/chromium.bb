@@ -71,7 +71,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
     RefPtr<XPathNSResolver> resolver = toXPathNSResolver(args[2], args.GetIsolate());
     if (!resolver && !args[2]->IsNull() && !args[2]->IsUndefined()) {
-        setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+        setDOMException(TypeMismatchError, args.GetIsolate());
         return;
     }
 

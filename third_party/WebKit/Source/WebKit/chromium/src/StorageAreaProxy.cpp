@@ -64,7 +64,7 @@ StorageAreaProxy::~StorageAreaProxy()
 unsigned StorageAreaProxy::length(ExceptionCode& ec, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return 0;
     }
     ec = 0;
@@ -74,7 +74,7 @@ unsigned StorageAreaProxy::length(ExceptionCode& ec, Frame* frame)
 String StorageAreaProxy::key(unsigned index, ExceptionCode& ec, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return String();
     }
     ec = 0;
@@ -84,7 +84,7 @@ String StorageAreaProxy::key(unsigned index, ExceptionCode& ec, Frame* frame)
 String StorageAreaProxy::getItem(const String& key, ExceptionCode& ec, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return String();
     }
     ec = 0;
@@ -94,7 +94,7 @@ String StorageAreaProxy::getItem(const String& key, ExceptionCode& ec, Frame* fr
 void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionCode& ec, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
     WebKit::WebStorageArea::Result result = WebKit::WebStorageArea::ResultOK;
@@ -105,7 +105,7 @@ void StorageAreaProxy::setItem(const String& key, const String& value, Exception
 void StorageAreaProxy::removeItem(const String& key, ExceptionCode& ec, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
     ec = 0;
@@ -115,7 +115,7 @@ void StorageAreaProxy::removeItem(const String& key, ExceptionCode& ec, Frame* f
 void StorageAreaProxy::clear(ExceptionCode& ec, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
     ec = 0;
@@ -125,7 +125,7 @@ void StorageAreaProxy::clear(ExceptionCode& ec, Frame* frame)
 bool StorageAreaProxy::contains(const String& key, ExceptionCode& ec, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return false;
     }
     return !getItem(key, ec, frame).isNull();

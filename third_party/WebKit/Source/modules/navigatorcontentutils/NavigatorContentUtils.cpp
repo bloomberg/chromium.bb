@@ -67,16 +67,16 @@ static void initProtocolHandlerWhitelist()
 
 static bool verifyCustomHandlerURL(const String& baseURL, const String& url, ExceptionCode& ec)
 {
-    // The specification requires that it is a SYNTAX_ERR if the "%s" token is
+    // The specification requires that it is a SyntaxError if the "%s" token is
     // not present.
     static const char token[] = "%s";
     int index = url.find(token);
     if (-1 == index) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return false;
     }
 
-    // It is also a SYNTAX_ERR if the custom handler URL, as created by removing
+    // It is also a SyntaxError if the custom handler URL, as created by removing
     // the "%s" token and prepending the base url, does not resolve.
     String newURL = url;
     newURL.remove(index, WTF_ARRAY_LENGTH(token) - 1);
@@ -85,7 +85,7 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     KURL kurl(base, newURL);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return false;
     }
 
@@ -104,13 +104,13 @@ static bool verifyProtocolHandlerScheme(const String& scheme, ExceptionCode& ec)
     if (scheme.startsWith("web+")) {
         if (isValidProtocol(scheme))
             return true;
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return false;
     }
 
     if (isProtocolWhitelisted(scheme))
         return true;
-    ec = SECURITY_ERR;
+    ec = SecurityError;
     return false;
 }
 

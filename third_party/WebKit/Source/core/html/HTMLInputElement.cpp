@@ -553,7 +553,7 @@ bool HTMLInputElement::canHaveSelection() const
 int HTMLInputElement::selectionStartForBinding(ExceptionCode& ec) const
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     return HTMLTextFormControlElement::selectionStart();
@@ -562,7 +562,7 @@ int HTMLInputElement::selectionStartForBinding(ExceptionCode& ec) const
 int HTMLInputElement::selectionEndForBinding(ExceptionCode& ec) const
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     return HTMLTextFormControlElement::selectionEnd();
@@ -571,7 +571,7 @@ int HTMLInputElement::selectionEndForBinding(ExceptionCode& ec) const
 String HTMLInputElement::selectionDirectionForBinding(ExceptionCode& ec) const
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return String();
     }
     return HTMLTextFormControlElement::selectionDirection();
@@ -580,7 +580,7 @@ String HTMLInputElement::selectionDirectionForBinding(ExceptionCode& ec) const
 void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionCode& ec)
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     HTMLTextFormControlElement::setSelectionStart(start);
@@ -589,7 +589,7 @@ void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionCode& ec)
 void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionCode& ec)
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     HTMLTextFormControlElement::setSelectionEnd(end);
@@ -598,7 +598,7 @@ void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionCode& ec)
 void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, ExceptionCode& ec)
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     HTMLTextFormControlElement::setSelectionDirection(direction);
@@ -607,7 +607,7 @@ void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, 
 void HTMLInputElement::setSelectionRangeForBinding(int start, int end, ExceptionCode& ec)
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end);
@@ -616,7 +616,7 @@ void HTMLInputElement::setSelectionRangeForBinding(int start, int end, Exception
 void HTMLInputElement::setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionCode& ec)
 {
     if (!canHaveSelection()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end, direction);
@@ -1027,7 +1027,7 @@ void HTMLInputElement::setEditingValue(const String& value)
 void HTMLInputElement::setValue(const String& value, ExceptionCode& ec, TextFieldEventBehavior eventBehavior)
 {
     if (isFileUpload() && !value.isEmpty()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     setValue(value, eventBehavior);
@@ -1838,7 +1838,7 @@ void ListAttributeTargetObserver::idTargetChanged()
 void HTMLInputElement::setRangeText(const String& replacement, ExceptionCode& ec)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1848,7 +1848,7 @@ void HTMLInputElement::setRangeText(const String& replacement, ExceptionCode& ec
 void HTMLInputElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionCode& ec)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 

@@ -73,7 +73,7 @@ PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, c
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers(document->topOrigin())) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return 0;
     }
 

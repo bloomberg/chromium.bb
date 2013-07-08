@@ -272,7 +272,7 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionCode& ec)
 
     // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
     if (!m_cues || !m_cues->remove(cue)) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -352,7 +352,7 @@ void TextTrack::removeRegion(TextTrackRegion* region, ExceptionCode &ec)
     }
 
     if (!m_regions || !m_regions->remove(region)) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 

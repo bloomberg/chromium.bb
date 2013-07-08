@@ -310,7 +310,7 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
     const int maxSqliteBusyWaitTime = 30000;
 
     if (!m_sqliteDatabase.open(m_filename, true)) {
-        reportOpenDatabaseResult(1, INVALID_STATE_ERR, m_sqliteDatabase.lastError());
+        reportOpenDatabaseResult(1, InvalidStateError, m_sqliteDatabase.lastError());
         errorMessage = formatErrorMessage("unable to open database", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
         return false;
     }
@@ -349,7 +349,7 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
             SQLiteTransaction transaction(m_sqliteDatabase);
             transaction.begin();
             if (!transaction.inProgress()) {
-                reportOpenDatabaseResult(2, INVALID_STATE_ERR, m_sqliteDatabase.lastError());
+                reportOpenDatabaseResult(2, InvalidStateError, m_sqliteDatabase.lastError());
                 errorMessage = formatErrorMessage("unable to open database, failed to start transaction", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
                 m_sqliteDatabase.close();
                 return false;
@@ -360,14 +360,14 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
                 m_new = true;
 
                 if (!m_sqliteDatabase.executeCommand("CREATE TABLE " + tableName + " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {
-                    reportOpenDatabaseResult(3, INVALID_STATE_ERR, m_sqliteDatabase.lastError());
+                    reportOpenDatabaseResult(3, InvalidStateError, m_sqliteDatabase.lastError());
                     errorMessage = formatErrorMessage("unable to open database, failed to create 'info' table", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
                     transaction.rollback();
                     m_sqliteDatabase.close();
                     return false;
                 }
             } else if (!getVersionFromDatabase(currentVersion, false)) {
-                reportOpenDatabaseResult(4, INVALID_STATE_ERR, m_sqliteDatabase.lastError());
+                reportOpenDatabaseResult(4, InvalidStateError, m_sqliteDatabase.lastError());
                 errorMessage = formatErrorMessage("unable to open database, failed to read current version", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
                 transaction.rollback();
                 m_sqliteDatabase.close();
@@ -379,7 +379,7 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
             } else if (!m_new || shouldSetVersionInNewDatabase) {
                 LOG(StorageAPI, "Setting version %s in database %s that was just created", m_expectedVersion.ascii().data(), databaseDebugName().ascii().data());
                 if (!setVersionInDatabase(m_expectedVersion, false)) {
-                    reportOpenDatabaseResult(5, INVALID_STATE_ERR, m_sqliteDatabase.lastError());
+                    reportOpenDatabaseResult(5, InvalidStateError, m_sqliteDatabase.lastError());
                     errorMessage = formatErrorMessage("unable to open database, failed to write current version", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
                     transaction.rollback();
                     m_sqliteDatabase.close();
@@ -400,7 +400,7 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
     // If the expected version isn't the empty string, ensure that the current database version we have matches that version. Otherwise, set an exception.
     // If the expected version is the empty string, then we always return with whatever version of the database we have.
     if ((!m_new || shouldSetVersionInNewDatabase) && m_expectedVersion.length() && m_expectedVersion != currentVersion) {
-        reportOpenDatabaseResult(6, INVALID_STATE_ERR, 0);
+        reportOpenDatabaseResult(6, InvalidStateError, 0);
         errorMessage = "unable to open database, version mismatch, '" + m_expectedVersion + "' does not match the currentVersion of '" + currentVersion + "'";
         m_sqliteDatabase.close();
         return false;

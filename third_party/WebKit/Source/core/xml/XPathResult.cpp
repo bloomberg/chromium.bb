@@ -185,7 +185,7 @@ Node* XPathResult::iterateNext(ExceptionCode& ec)
     }
     
     if (invalidIteratorState()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
     

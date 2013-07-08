@@ -68,12 +68,12 @@ Notification::Notification(const KURL& url, ScriptExecutionContext* context, Exc
 {
     ScriptWrappable::init(this);
     if (m_notificationCenter->checkPermission() != NotificationClient::PermissionAllowed) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 
     if (url.isEmpty() || !url.isValid()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
@@ -92,13 +92,13 @@ Notification::Notification(const String& title, const String& body, const String
 {
     ScriptWrappable::init(this);
     if (m_notificationCenter->checkPermission() != NotificationClient::PermissionAllowed) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 
     m_icon = iconURI.isEmpty() ? KURL() : scriptExecutionContext()->completeURL(iconURI);
     if (!m_icon.isEmpty() && !m_icon.isValid()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 }

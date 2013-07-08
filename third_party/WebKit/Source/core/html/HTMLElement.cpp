@@ -516,7 +516,7 @@ Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChi
 {
     if (!newChild) {
         // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return 0;
     }
 
@@ -539,7 +539,7 @@ static Element* contextElementForInsertion(const String& where, Element* element
     }
     if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
         return element;
-    ec =  SYNTAX_ERR;
+    ec =  SyntaxError;
     return 0;
 }
 
@@ -655,7 +655,7 @@ void HTMLElement::setContentEditable(const String& enabled, ExceptionCode& ec)
     else if (equalIgnoringCase(enabled, "inherit"))
         removeAttribute(contenteditableAttr);
     else
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
 }
 
 bool HTMLElement::draggable() const

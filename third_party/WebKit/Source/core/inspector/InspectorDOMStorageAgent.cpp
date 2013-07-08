@@ -60,7 +60,7 @@ static bool hadException(ExceptionCode ec, ErrorString* errorString)
     switch (ec) {
     case 0:
         return false;
-    case SECURITY_ERR:
+    case SecurityError:
         *errorString = "Security error";
         return true;
     default:

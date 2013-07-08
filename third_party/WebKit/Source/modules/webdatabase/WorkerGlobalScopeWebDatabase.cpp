@@ -48,8 +48,9 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
         database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         ec = DatabaseManager::exceptionCodeForDatabaseError(error);
-    } else
-        ec = SECURITY_ERR;
+    } else {
+        ec = SecurityError;
+    }
 
     return database.release();
 }
@@ -64,8 +65,9 @@ PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGl
 
         ASSERT(database || error != DatabaseError::None);
         ec = DatabaseManager::exceptionCodeForDatabaseError(error);
-    } else
-        ec = SECURITY_ERR;
+    } else {
+        ec = SecurityError;
+    }
 
     return database.release();
 }

@@ -143,7 +143,7 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType, DOM
 bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionCode& ec)
 {
     if (!event || event->type().isEmpty() || event->isBeingDispatched()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return false;
     }
 

@@ -94,7 +94,7 @@ void AudioBuffer::releaseMemory()
 Float32Array* AudioBuffer::getChannelData(unsigned channelIndex, ExceptionCode& ec)
 {
     if (channelIndex >= m_channels.size()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 

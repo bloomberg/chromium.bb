@@ -95,11 +95,11 @@ double MediaSourceBase::duration() const
 void MediaSourceBase::setDuration(double duration, ExceptionCode& ec)
 {
     if (duration < 0.0 || std::isnan(duration)) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return;
     }
     if (!isOpen()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     m_private->setDuration(duration);
@@ -121,9 +121,9 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionCode& ec)
 
     // 3.1 http://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#dom-endofstream
     // 1. If the readyState attribute is not in the "open" state then throw an
-    // INVALID_STATE_ERR exception and abort these steps.
+    // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -136,7 +136,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionCode& ec)
     } else if (error == decode) {
         eosStatus = MediaSourcePrivate::EosDecodeError;
     } else {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return;
     }
 

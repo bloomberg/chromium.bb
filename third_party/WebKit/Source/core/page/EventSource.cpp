@@ -74,13 +74,13 @@ inline EventSource::EventSource(ScriptExecutionContext* context, const KURL& url
 PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionCode& ec)
 {
     if (url.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 
     KURL fullURL = context->completeURL(url);
     if (!fullURL.isValid()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 
@@ -92,7 +92,7 @@ PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, con
     }
     if (!shouldBypassMainWorldContentSecurityPolicy && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
         // FIXME: Should this be throwing an exception?
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return 0;
     }
 

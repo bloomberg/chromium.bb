@@ -69,7 +69,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
 
         TransformOperations operations;
         if (!TransformBuilder::createTransformOperations(value.get(), 0, 0, operations)) {
-            ec = SYNTAX_ERR;
+            ec = SyntaxError;
             return;
         }
 
@@ -78,15 +78,16 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
         TransformationMatrix t;
         for (unsigned i = 0; i < operations.operations().size(); ++i) {
             if (operations.operations()[i].get()->apply(t, IntSize(0, 0))) {
-                ec = SYNTAX_ERR;
+                ec = SyntaxError;
                 return;
             }
         }
 
         // set the matrix
         m_matrix = t;
-    } else // There is something there but parsing failed.
-        ec = SYNTAX_ERR;
+    } else { // There is something there but parsing failed.
+        ec = SyntaxError;
+    }
 }
 
 // Perform a concatenation of the matrices (this * secondMatrix)

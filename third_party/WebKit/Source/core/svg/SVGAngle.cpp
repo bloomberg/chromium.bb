@@ -163,7 +163,7 @@ void SVGAngle::setValueAsString(const String& value, ExceptionCode& ec)
     bool success = value.is8Bit() ? parseValue<LChar>(value, valueInSpecifiedUnits, unitType)
                                   : parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
     if (!success) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 

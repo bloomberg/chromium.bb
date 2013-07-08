@@ -165,9 +165,9 @@ ExceptionCode DatabaseManager::exceptionCodeForDatabaseError(DatabaseError error
     case DatabaseError::DatabaseSizeExceededQuota:
     case DatabaseError::DatabaseSizeOverflowed:
     case DatabaseError::GenericSecurityError:
-        return SECURITY_ERR;
+        return SecurityError;
     case DatabaseError::InvalidDatabaseState:
-        return INVALID_STATE_ERR;
+        return InvalidStateError;
     }
     ASSERT_NOT_REACHED();
     return 0; // Make some older compilers happy.

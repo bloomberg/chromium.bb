@@ -501,9 +501,9 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
         m_topExpr = 0;
 
         if (m_gotNamespaceError)
-            ec = NAMESPACE_ERR;
+            ec = NamespaceError;
         else
-            ec = SYNTAX_ERR;
+            ec = SyntaxError;
         return 0;
     }
 

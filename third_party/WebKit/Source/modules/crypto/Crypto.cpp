@@ -61,7 +61,7 @@ Crypto::Crypto()
 void Crypto::getRandomValues(ArrayBufferView* array, ExceptionCode& ec)
 {
     if (!array || !isIntegerArray(array)) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return;
     }
     if (array->byteLength() > 65536) {

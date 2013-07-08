@@ -120,7 +120,7 @@ String ShadowRoot::innerHTML() const
 void ShadowRoot::setInnerHTML(const String& markup, ExceptionCode& ec)
 {
     if (isOrphan()) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return;
     }
 

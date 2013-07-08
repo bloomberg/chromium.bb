@@ -179,7 +179,7 @@ bool DatasetDOMStringMap::contains(const String& name)
 void DatasetDOMStringMap::setItem(const String& name, const String& value, ExceptionCode& ec)
 {
     if (!isValidPropertyName(name)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
@@ -189,7 +189,7 @@ void DatasetDOMStringMap::setItem(const String& name, const String& value, Excep
 void DatasetDOMStringMap::deleteItem(const String& name, ExceptionCode& ec)
 {
     if (!isValidPropertyName(name)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 

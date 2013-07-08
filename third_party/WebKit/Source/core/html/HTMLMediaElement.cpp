@@ -160,13 +160,13 @@ static ExceptionCode exceptionCodeForMediaKeyException(MediaPlayer::MediaKeyExce
     case MediaPlayer::NoError:
         return 0;
     case MediaPlayer::InvalidPlayerState:
-        return INVALID_STATE_ERR;
+        return InvalidStateError;
     case MediaPlayer::KeySystemNotSupported:
         return NotSupportedError;
     }
 
     ASSERT_NOT_REACHED();
-    return INVALID_STATE_ERR;
+    return InvalidStateError;
 }
 
 class TrackDisplayUpdateScope {
@@ -1826,9 +1826,9 @@ void HTMLMediaElement::seek(double time, ExceptionCode& ec)
 
     // 4.8.9.9 Seeking
 
-    // 1 - If the media element's readyState is HAVE_NOTHING, then raise an INVALID_STATE_ERR exception.
+    // 1 - If the media element's readyState is HAVE_NOTHING, then raise an InvalidStateError exception.
     if (m_readyState == HAVE_NOTHING || !m_player) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -1993,7 +1993,7 @@ double HTMLMediaElement::currentTime() const
 void HTMLMediaElement::setCurrentTime(double time, ExceptionCode& ec)
 {
     if (m_mediaController) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     seek(time, ec);
@@ -2217,12 +2217,12 @@ void HTMLMediaElement::closeMediaSource()
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode& ec)
 {
     if (keySystem.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
     if (!m_player) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -2245,22 +2245,22 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, Excepti
 void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionCode& ec)
 {
     if (keySystem.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
     if (!key) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
     if (!key->length()) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return;
     }
 
     if (!m_player) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -2283,12 +2283,12 @@ void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Arr
 void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionCode& ec)
 {
     if (keySystem.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return;
     }
 
     if (!m_player) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -2589,7 +2589,7 @@ PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const S
 
     // 1. If kind is not one of the following strings, then throw a SyntaxError exception and abort these steps
     if (!TextTrack::isValidKindKeyword(kind)) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return 0;
     }
 

@@ -38,7 +38,7 @@ String XMLSerializer::serializeToString(Node* node, ExceptionCode& ec)
         // with it.  It should be the only type of node where this is possible.
         ASSERT(node->nodeType() == Node::DOCUMENT_TYPE_NODE);
 
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return String();
     }
 

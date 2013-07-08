@@ -37,19 +37,19 @@
 
 #define InternalSettingsGuardForSettingsReturn(returnValue) \
     if (!settings()) { \
-        ec = INVALID_ACCESS_ERR; \
+        ec = InvalidAccessError; \
         return returnValue; \
     }
 
 #define InternalSettingsGuardForSettings()  \
     if (!settings()) { \
-        ec = INVALID_ACCESS_ERR; \
+        ec = InvalidAccessError; \
         return; \
     }
 
 #define InternalSettingsGuardForPage() \
     if (!page()) { \
-        ec = INVALID_ACCESS_ERR; \
+        ec = InvalidAccessError; \
         return; \
     }
 
@@ -289,7 +289,7 @@ void InternalSettings::setEditingBehavior(const String& editingBehavior, Excepti
     else if (equalIgnoringCase(editingBehavior, "android"))
         settings()->setEditingBehaviorType(EditingAndroidBehavior);
     else
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
 }
 
 void InternalSettings::setDialogElementEnabled(bool enabled)

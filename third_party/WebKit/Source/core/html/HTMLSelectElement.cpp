@@ -1566,7 +1566,7 @@ void HTMLSelectElement::finishParsingChildren()
 bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionCode& ec)
 {
     if (!value) {
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
         return false;
     }
     setOption(index, value.get(), ec);

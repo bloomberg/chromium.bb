@@ -783,7 +783,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!hasValidNamespaceForElements(qName)) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return 0;
     }
 
@@ -913,7 +913,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
         // FIXME: The following check might be unnecessary. Is it possible that
         // oldElement has mismatched prefix/namespace?
         if (!hasValidNamespaceForElements(oldElement->tagQName())) {
-            ec = NAMESPACE_ERR;
+            ec = NamespaceError;
             return 0;
         }
         RefPtr<Element> newElement = createElement(oldElement->tagQName(), false);
@@ -1112,7 +1112,7 @@ PassRefPtr<Element> Document::createElementNS(const String& namespaceURI, const 
 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!hasValidNamespaceForElements(qName)) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return 0;
     }
 
@@ -3609,11 +3609,11 @@ String Document::cookie(ExceptionCode& ec) const
         return String();
 
     // FIXME: The HTML5 DOM spec states that this attribute can raise an
-    // INVALID_STATE_ERR exception on getting if the Document has no
+    // InvalidStateError exception on getting if the Document has no
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return String();
     }
 
@@ -3630,11 +3630,11 @@ void Document::setCookie(const String& value, ExceptionCode& ec)
         return;
 
     // FIXME: The HTML5 DOM spec states that this attribute can raise an
-    // INVALID_STATE_ERR exception on setting if the Document has no
+    // InvalidStateError exception on setting if the Document has no
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 
@@ -3660,7 +3660,7 @@ String Document::domain() const
 void Document::setDomain(const String& newDomain, ExceptionCode& ec)
 {
     if (SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(securityOrigin()->protocol())) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 
@@ -3686,14 +3686,14 @@ void Document::setDomain(const String& newDomain, ExceptionCode& ec)
     int newLength = newDomain.length();
     // e.g. newDomain = webkit.org (10) and domain() = www.webkit.org (14)
     if (newLength >= oldLength) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 
     String test = domain();
     // Check that it's a subdomain, not e.g. "ebkit.org"
     if (test[oldLength - newLength - 1] != '.') {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 
@@ -3701,7 +3701,7 @@ void Document::setDomain(const String& newDomain, ExceptionCode& ec)
     // and we check that it's the same thing as newDomain
     test.remove(0, oldLength - newLength);
     if (test != newDomain) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return;
     }
 
@@ -3814,7 +3814,7 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
         U16_NEXT(characters, i, length, c)
         if (c == ':') {
             if (sawColon) {
-                ec = NAMESPACE_ERR;
+                ec = NamespaceError;
                 return false; // multiple colons: not allowed
             }
             nameStart = true;
@@ -3840,14 +3840,14 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
     } else {
         prefix = qualifiedName.substring(0, colonPos);
         if (prefix.isEmpty()) {
-            ec = NAMESPACE_ERR;
+            ec = NamespaceError;
             return false;
         }
         localName = qualifiedName.substring(colonPos + 1);
     }
 
     if (localName.isEmpty()) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return false;
     }
 
@@ -4060,7 +4060,7 @@ PassRefPtr<Attr> Document::createAttributeNS(const String& namespaceURI, const S
     QualifiedName qName(prefix, localName, namespaceURI);
 
     if (!shouldIgnoreNamespaceChecks && !hasValidNamespaceForAttributes(qName)) {
-        ec = NAMESPACE_ERR;
+        ec = NamespaceError;
         return 0;
     }
 

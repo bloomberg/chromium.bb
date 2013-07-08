@@ -69,10 +69,10 @@ WebKitSourceBufferList* WebKitMediaSource::activeSourceBuffers()
 WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, ExceptionCode& ec)
 {
     // 3.1 http://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#dom-addsourcebuffer
-    // 1. If type is null or an empty then throw an INVALID_ACCESS_ERR exception and
+    // 1. If type is null or an empty then throw an InvalidAccessError exception and
     // abort these steps.
     if (type.isNull() || type.isEmpty()) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return 0;
     }
 
@@ -84,9 +84,9 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
     }
 
     // 4. If the readyState attribute is not in the "open" state then throw an
-    // INVALID_STATE_ERR exception and abort these steps.
+    // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -108,17 +108,17 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
 void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, ExceptionCode& ec)
 {
     // 3.1 http://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#dom-removesourcebuffer
-    // 1. If sourceBuffer is null then throw an INVALID_ACCESS_ERR exception and
+    // 1. If sourceBuffer is null then throw an InvalidAccessError exception and
     // abort these steps.
     if (!buffer) {
-        ec = INVALID_ACCESS_ERR;
+        ec = InvalidAccessError;
         return;
     }
 
-    // 2. If sourceBuffers is empty then throw an INVALID_STATE_ERR exception and
+    // 2. If sourceBuffers is empty then throw an InvalidStateError exception and
     // abort these steps.
     if (isClosed() || !m_sourceBuffers->length()) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 

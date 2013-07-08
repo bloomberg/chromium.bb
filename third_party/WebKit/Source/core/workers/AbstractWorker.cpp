@@ -57,24 +57,24 @@ void AbstractWorker::contextDestroyed()
 KURL AbstractWorker::resolveURL(const String& url, ExceptionCode& ec)
 {
     if (url.isEmpty()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return KURL();
     }
 
     // FIXME: This should use the dynamic global scope (bug #27887)
     KURL scriptURL = scriptExecutionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
         return KURL();
     }
 
     if (!scriptExecutionContext()->securityOrigin()->canRequest(scriptURL)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return KURL();
     }
 
     if (scriptExecutionContext()->contentSecurityPolicy() && !scriptExecutionContext()->contentSecurityPolicy()->allowScriptFromSource(scriptURL)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return KURL();
     }
 

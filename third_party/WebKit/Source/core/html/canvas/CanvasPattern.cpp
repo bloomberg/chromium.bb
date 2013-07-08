@@ -54,7 +54,7 @@ void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool&
         repeatY = true;
         return;
     }
-    ec = SYNTAX_ERR;
+    ec = SyntaxError;
 }
 
 CanvasPattern::CanvasPattern(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)

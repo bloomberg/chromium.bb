@@ -47,7 +47,7 @@ namespace WebCore {
 void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (!args.Length()) {
-        setDOMException(SYNTAX_ERR, args.GetIsolate());
+        setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
 
@@ -57,7 +57,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
 
     if (args.Length() > 1 && !isUndefinedOrNull(args[1])) {
         if (!args[1]->IsObject()) {
-            setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+            setDOMException(TypeMismatchError, args.GetIsolate());
             return;
         }
 
@@ -93,7 +93,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     RefPtr<SQLStatementCallback> callback;
     if (args.Length() > 2 && !isUndefinedOrNull(args[2])) {
         if (!args[2]->IsObject()) {
-            setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+            setDOMException(TypeMismatchError, args.GetIsolate());
             return;
         }
         callback = V8SQLStatementCallback::create(args[2], scriptExecutionContext);
@@ -102,7 +102,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     RefPtr<SQLStatementErrorCallback> errorCallback;
     if (args.Length() > 3 && !isUndefinedOrNull(args[3])) {
         if (!args[3]->IsObject()) {
-            setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+            setDOMException(TypeMismatchError, args.GetIsolate());
             return;
         }
         errorCallback = V8SQLStatementErrorCallback::create(args[3], scriptExecutionContext);

@@ -5138,7 +5138,7 @@ bool WebGLRenderingContext::validateHTMLImageElement(const char* functionName, H
         return false;
     }
     if (wouldTaintOrigin(image)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return false;
     }
     return true;
@@ -5151,7 +5151,7 @@ bool WebGLRenderingContext::validateHTMLCanvasElement(const char* functionName, 
         return false;
     }
     if (wouldTaintOrigin(canvas)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return false;
     }
     return true;
@@ -5164,7 +5164,7 @@ bool WebGLRenderingContext::validateHTMLVideoElement(const char* functionName, H
         return false;
     }
     if (wouldTaintOrigin(video)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return false;
     }
     return true;

@@ -121,25 +121,25 @@ void RTCDataChannel::setBinaryType(const String& binaryType, ExceptionCode& ec)
     else if (binaryType == "arraybuffer")
         m_binaryType = BinaryTypeArrayBuffer;
     else
-        ec = TYPE_MISMATCH_ERR;
+        ec = TypeMismatchError;
 }
 
 void RTCDataChannel::send(const String& data, ExceptionCode& ec)
 {
     if (m_readyState != ReadyStateOpen) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
     if (!m_handler->sendStringData(data)) {
         // FIXME: Decide what the right exception here is.
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
     }
 }
 
 void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionCode& ec)
 {
     if (m_readyState != ReadyStateOpen) {
-        ec = INVALID_STATE_ERR;
+        ec = InvalidStateError;
         return;
     }
 
@@ -153,7 +153,7 @@ void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionCode& ec)
 
     if (!m_handler->sendRawData(dataPointer, dataLength)) {
         // FIXME: Decide what the right exception here is.
-        ec = SYNTAX_ERR;
+        ec = SyntaxError;
     }
 }
 

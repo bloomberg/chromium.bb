@@ -58,11 +58,11 @@ public:
     PassRefPtr<Notification> createHTMLNotification(const String& URI, ExceptionCode& ec)
     {
         if (!client()) {
-            ec = INVALID_STATE_ERR;
+            ec = InvalidStateError;
             return 0;
         }
         if (URI.isEmpty()) {
-            ec = SYNTAX_ERR;
+            ec = SyntaxError;
             return 0;
         }
         return Notification::create(scriptExecutionContext()->completeURL(URI), scriptExecutionContext(), ec, this);
@@ -73,7 +73,7 @@ public:
     PassRefPtr<Notification> createNotification(const String& iconURI, const String& title, const String& body, ExceptionCode& ec)
     {
         if (!client()) {
-            ec = INVALID_STATE_ERR;
+            ec = InvalidStateError;
             return 0;
         }
         return Notification::create(title, body, iconURI, scriptExecutionContext(), ec, this);

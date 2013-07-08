@@ -640,13 +640,13 @@ Storage* DOMWindow::sessionStorage(ExceptionCode& ec) const
         return 0;
 
     if (!document->securityOrigin()->canAccessLocalStorage(document->topOrigin())) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return 0;
     }
 
     if (m_sessionStorage) {
         if (!m_sessionStorage->area()->canAccessStorage(m_frame)) {
-            ec = SECURITY_ERR;
+            ec = SecurityError;
             return 0;
         }
         return m_sessionStorage.get();
@@ -658,7 +658,7 @@ Storage* DOMWindow::sessionStorage(ExceptionCode& ec) const
 
     OwnPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return 0;
     }
 
@@ -676,13 +676,13 @@ Storage* DOMWindow::localStorage(ExceptionCode& ec) const
         return 0;
 
     if (!document->securityOrigin()->canAccessLocalStorage(document->topOrigin())) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return 0;
     }
 
     if (m_localStorage) {
         if (!m_localStorage->area()->canAccessStorage(m_frame)) {
-            ec = SECURITY_ERR;
+            ec = SecurityError;
             return 0;
         }
         return m_localStorage.get();
@@ -697,7 +697,7 @@ Storage* DOMWindow::localStorage(ExceptionCode& ec) const
 
     OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        ec = SECURITY_ERR;
+        ec = SecurityError;
         return 0;
     }
 
@@ -713,7 +713,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     Document* sourceDocument = source->document();
 
     // Compute the target origin.  We need to do this synchronously in order
-    // to generate the SYNTAX_ERR exception correctly.
+    // to generate the SyntaxError exception correctly.
     RefPtr<SecurityOrigin> target;
     if (targetOrigin == "/") {
         if (!sourceDocument)
@@ -724,7 +724,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         // It doesn't make sense target a postMessage at a unique origin
         // because there's no way to represent a unique origin in a string.
         if (target->isUnique()) {
-            ec = SYNTAX_ERR;
+            ec = SyntaxError;
             return;
         }
     }
