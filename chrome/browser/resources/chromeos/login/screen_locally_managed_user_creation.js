@@ -190,7 +190,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       podToSelect.passwordElement.value = '';
       podToSelect.focusInput();
       chrome.send('managerSelectedOnLocallyManagedUserCreationFlow',
-          [podToSelect.user.emailAddress]);
+          [podToSelect.user.username]);
 
     },
   };
@@ -485,7 +485,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       if (null == selectedPod)
         return;
 
-      var managerId = selectedPod.user.emailAddress;
+      var managerId = selectedPod.user.username;
       var managerPassword = selectedPod.passwordElement.value;
       if (managerPassword.empty)
         return;

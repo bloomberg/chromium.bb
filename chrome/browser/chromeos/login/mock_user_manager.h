@@ -84,6 +84,8 @@ class MockUserManager : public UserManager {
       const std::string&));
   MOCK_CONST_METHOD1(GetManagerUserIdForManagedUser, std::string(
       const std::string&));
+  MOCK_CONST_METHOD1(GetManagerDisplayEmailForManagedUser, std::string(
+      const std::string&));
   MOCK_METHOD0(GenerateUniqueLocallyManagedUserId, std::string(void));
   MOCK_METHOD1(StartLocallyManagedUserCreationTransaction,
       void(const string16&));

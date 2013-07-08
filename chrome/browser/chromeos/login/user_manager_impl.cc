@@ -77,6 +77,10 @@ const char kManagedUserManagers[] =
 const char kManagedUserManagerNames[] =
     "ManagedUserManagerNames";
 
+// A map from locally managed user id to manager display e-mail.
+const char kManagedUserManagerDisplayEmails[] =
+    "ManagedUserManagerDisplayEmails";
+
 // A vector pref of the locally managed accounts defined on this device, that
 // had not logged in yet.
 const char kLocallyManagedUsersFirstRun[] = "LocallyManagedUsersFirstRun";
@@ -191,6 +195,7 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kUserDisplayEmail);
   registry->RegisterDictionaryPref(kManagedUserManagers);
   registry->RegisterDictionaryPref(kManagedUserManagerNames);
+  registry->RegisterDictionaryPref(kManagedUserManagerDisplayEmails);
 
   SessionLengthLimiter::RegisterPrefs(registry);
 }
@@ -445,17 +450,20 @@ const User* UserManagerImpl::CreateLocallyManagedUserRecord(
   prefs_new_users_update->Insert(0, new base::StringValue(e_mail));
   users_.insert(users_.begin(), new_user);
 
-  const User* manager = FindUser(gaia::CanonicalizeEmail(manager_id));
+  const User* manager = FindUser(manager_id);
   CHECK(manager);
 
   DictionaryPrefUpdate manager_update(local_state, kManagedUserManagers);
   DictionaryPrefUpdate manager_name_update(local_state,
                                            kManagedUserManagerNames);
+  DictionaryPrefUpdate manager_email_update(local_state,
+                                            kManagedUserManagerDisplayEmails);
   manager_update->SetWithoutPathExpansion(e_mail,
-      new base::StringValue(manager->display_email()));
+      new base::StringValue(manager->email()));
   manager_name_update->SetWithoutPathExpansion(e_mail,
       new base::StringValue(manager->GetDisplayName()));
-
+  manager_email_update->SetWithoutPathExpansion(e_mail,
+      new base::StringValue(manager->display_email()));
 
   SaveUserDisplayName(e_mail, display_name);
   g_browser_process->local_state()->CommitPendingWrite();
@@ -472,7 +480,7 @@ string16 UserManagerImpl::GetManagerDisplayNameForManagedUser(
   if (manager_names->GetStringWithoutPathExpansion(managed_user_id, &result) &&
       !result.empty())
     return result;
-  return UTF8ToUTF16(GetManagerUserIdForManagedUser(managed_user_id));
+  return UTF8ToUTF16(GetManagerDisplayEmailForManagedUser(managed_user_id));
 }
 
 std::string UserManagerImpl::GetManagerUserIdForManagedUser(
@@ -483,6 +491,19 @@ std::string UserManagerImpl::GetManagerUserIdForManagedUser(
   std::string result;
   manager_ids->GetStringWithoutPathExpansion(managed_user_id, &result);
   return result;
+}
+
+std::string UserManagerImpl::GetManagerDisplayEmailForManagedUser(
+      const std::string& managed_user_id) const {
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* manager_mails =
+      local_state->GetDictionary(kManagedUserManagerDisplayEmails);
+  std::string result;
+  if (manager_mails->GetStringWithoutPathExpansion(managed_user_id, &result) &&
+      !result.empty()) {
+    return result;
+  }
+  return GetManagerUserIdForManagedUser(managed_user_id);
 }
 
 void UserManagerImpl::RemoveUser(const std::string& email,
@@ -642,7 +663,7 @@ void UserManagerImpl::SaveUserDisplayName(const std::string& username,
     std::string manager_id;
     bool has_manager_id = it.value().GetAsString(&manager_id);
     DCHECK(has_manager_id);
-    if (gaia::CanonicalizeEmail(manager_id) == username) {
+    if (manager_id == username) {
       manager_name_update->SetWithoutPathExpansion(
           it.key(),
           new base::StringValue(display_name));
@@ -1318,6 +1339,10 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& email) {
   DictionaryPrefUpdate manager_names_update(prefs,
                                             kManagedUserManagerNames);
   manager_names_update->RemoveWithoutPathExpansion(email, NULL);
+
+  DictionaryPrefUpdate manager_emails_update(prefs,
+                                             kManagedUserManagerDisplayEmails);
+  manager_emails_update->RemoveWithoutPathExpansion(email, NULL);
 }
 
 User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
@@ -1553,9 +1578,7 @@ UserFlow* UserManagerImpl::GetCurrentUserFlow() const {
 
 UserFlow* UserManagerImpl::GetUserFlow(const std::string& email) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string canonical_email = email.empty() ? email :
-      gaia::CanonicalizeEmail(email);
-  FlowMap::const_iterator it = specific_flows_.find(canonical_email);
+  FlowMap::const_iterator it = specific_flows_.find(email);
   if (it != specific_flows_.end())
     return it->second;
   return GetDefaultUserFlow();
@@ -1563,15 +1586,13 @@ UserFlow* UserManagerImpl::GetUserFlow(const std::string& email) const {
 
 void UserManagerImpl::SetUserFlow(const std::string& email, UserFlow* flow) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string canonical_email = gaia::CanonicalizeEmail(email);
-  ResetUserFlow(canonical_email);
-  specific_flows_[canonical_email] = flow;
+  ResetUserFlow(email);
+  specific_flows_[email] = flow;
 }
 
 void UserManagerImpl::ResetUserFlow(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string canonical_email = gaia::CanonicalizeEmail(email);
-  FlowMap::iterator it = specific_flows_.find(canonical_email);
+  FlowMap::iterator it = specific_flows_.find(email);
   if (it != specific_flows_.end()) {
     delete it->second;
     specific_flows_.erase(it);

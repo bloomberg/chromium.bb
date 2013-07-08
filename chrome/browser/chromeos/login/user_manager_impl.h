@@ -87,6 +87,8 @@ class UserManagerImpl
       const std::string& managed_user_id) const OVERRIDE;
   virtual std::string GetManagerUserIdForManagedUser(
       const std::string& managed_user_id) const OVERRIDE;
+  virtual std::string GetManagerDisplayEmailForManagedUser(
+      const std::string& managed_user_id) const OVERRIDE;
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
   virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const OVERRIDE;

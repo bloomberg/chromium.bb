@@ -238,6 +238,12 @@ class UserManager {
   virtual std::string GetManagerUserIdForManagedUser(
       const std::string& managed_user_id) const = 0;
 
+  // Returns the display email for manager of user |managed_user_id| if it is
+  // known (user is actually a managed user).
+  // Otherwise, returns an empty string.
+  virtual std::string GetManagerDisplayEmailForManagedUser(
+      const std::string& managed_user_id) const = 0;
+
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
 
