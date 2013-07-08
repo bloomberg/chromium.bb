@@ -694,41 +694,34 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     return;
   }
 
+  scoped_refptr<webkit_blob::ShareableFileReference> file_ref = snapshot_file;
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, platform_path)) {
-    // In order for the renderer to be able to read the file, it must be granted
-    // read permission for the file's platform path. By now, it has already been
-    // verified that the renderer has sufficient permissions to read the file.
-    // It is still possible that ChildProcessSecurityPolicyImpl doesn't reflect
-    // that the renderer can read the file's platform path. If this is the case
-    // the renderer should be granted read permission for the file's platform
-    // path. This can happen in the following situations:
-    // - the file comes from sandboxed filesystem. Reading sandboxed files is
-    //   always permitted, but only implicitly.
-    // - the underlying filesystem returned newly created snapshot file.
-    // - the nominal path differs from the platform path. This can happen even
-    //   when the filesystem has been granted permissions. This happens with:
-    //   - Drive filesystems
-    //   - Picasa filesystems
-    //   - iTunes filesystems
-    DCHECK(snapshot_file.get() ||
-           context_->IsSandboxFileSystem(url.type()) ||
-           url.type() == fileapi::kFileSystemTypeDrive ||
-           url.type() == fileapi::kFileSystemTypePicasa ||
-           url.type() == fileapi::kFileSystemTypeItunes);
+    // Give per-file read permission to the snapshot file if it hasn't it yet.
+    // In order for the renderer to be able to read the file via File object,
+    // it must be granted per-file read permission for the file's platform
+    // path. By now, it has already been verified that the renderer has
+    // sufficient permissions to read the file, so giving per-file permission
+    // here must be safe.
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process_id_, platform_path);
-    if (snapshot_file.get()) {
-      // This will revoke all permissions for the file when the last ref
-      // of the file is dropped (assuming it's ok).
-      snapshot_file->AddFinalReleaseCallback(
-          base::Bind(&RevokeFilePermission, process_id_));
+
+    // Revoke all permissions for the file when the last ref of the file
+    // is dropped.
+    if (!file_ref.get()) {
+      // Create a reference for temporary permission handling.
+      file_ref = webkit_blob::ShareableFileReference::GetOrCreate(
+          platform_path,
+          webkit_blob::ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
+          context_->task_runners()->file_task_runner());
     }
+    file_ref->AddFinalReleaseCallback(
+        base::Bind(&RevokeFilePermission, process_id_));
   }
 
-  if (snapshot_file.get()) {
+  if (file_ref.get()) {
     // This ref is held until OnDidReceiveSnapshotFile is called.
-    in_transit_snapshot_files_[request_id] = snapshot_file;
+    in_transit_snapshot_files_[request_id] = file_ref;
   }
 
   // Return the file info and platform_path.

@@ -192,8 +192,6 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     if (has_read_permission) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
-      if (!policy->CanReadFile(child_id, filesystems[i].path))
-        policy->GrantReadFile(child_id, filesystems[i].path);
       policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
     }
   }

@@ -143,12 +143,6 @@ GrantedFileEntry CreateFileEntry(
     policy->GrantWriteFileSystem(renderer_id, result.filesystem_id);
 
   result.id = result.filesystem_id + ":" + result.registered_name;
-
-  // We only need file level access for reading FileEntries. Saving FileEntries
-  // just needs the file system to have read/write access, which is granted
-  // above if required.
-  if (!policy->CanReadFile(renderer_id, path))
-    policy->GrantReadFile(renderer_id, path);
   return result;
 }
 

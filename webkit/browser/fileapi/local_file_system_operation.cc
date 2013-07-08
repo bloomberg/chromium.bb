@@ -29,7 +29,6 @@
 #include "webkit/common/quota/quota_types.h"
 
 using webkit_blob::ScopedFile;
-using webkit_blob::ShareableFileReference;
 
 namespace fileapi {
 

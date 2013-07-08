@@ -426,10 +426,6 @@ bool RuntimeGetPackageDirectoryEntryFunction::RunImpl() {
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   policy->GrantReadFileSystem(renderer_id, filesystem_id);
-
-  if (!policy->CanReadFile(renderer_id, path))
-    policy->GrantReadFile(renderer_id, path);
-
   base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
   dict->SetString("fileSystemId", filesystem_id);
