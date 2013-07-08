@@ -1101,7 +1101,7 @@ sub printWrapperFactoryCppFile
 
 #include "V8$parameters{namespace}Element.h"
 
-#include "bindings/v8/CustomElementHelpers.h"
+#include "bindings/v8/CustomElementWrapper.h"
 
 #include <v8.h>
 
@@ -1148,7 +1148,7 @@ END
 
     Create$parameters{namespace}ElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
     if (element->isCustomElement())
-        return CustomElementHelpers::wrap(element, creationContext, isolate, CustomElementHelpers::CreateWrapperFunction(createWrapperFunction));
+        return CustomElementWrapper<$parameters{namespace}Element>::wrap(element, creationContext, isolate, createWrapperFunction);
     if (createWrapperFunction)
     {
 END
