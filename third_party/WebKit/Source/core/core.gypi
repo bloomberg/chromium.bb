@@ -1048,7 +1048,7 @@
             'loader/EmptyClients.h',
             'loader/FormState.cpp',
             'loader/FormSubmission.cpp',
-            'loader/FrameLoadRequest.cpp',
+            'loader/FrameLoadRequest.h',
             'loader/FrameLoader.cpp',
             'loader/FrameLoaderStateMachine.cpp',
             'loader/HistoryController.cpp',

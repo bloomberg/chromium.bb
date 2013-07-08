@@ -756,7 +756,7 @@ void FrameLoader::loadURLIntoChildFrame(const ResourceRequest& request, Frame* c
             return;
         }
     }
-    childFrame->loader()->loadURL(request, "_self", FrameLoadTypeInitialInChildFrame, 0, 0);
+    childFrame->loader()->loadURL(request, "_self", FrameLoadTypeInitialInChildFrame, 0, 0, childFrame->loader()->defaultSubstituteDataForURL(request.url()));
 }
 
 String FrameLoader::outgoingReferrer() const
@@ -949,7 +949,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
     KURL url = request.resourceRequest().url();
 
     ASSERT(m_frame->document());
-    if (!request.requester()->canDisplay(url)) {
+    if (request.requester() && !request.requester()->canDisplay(url)) {
         reportLocalLoadFailed(m_frame, url.elidedString());
         return;
     }
@@ -975,10 +975,12 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
         loadType = FrameLoadTypeReload;
     else if (lockBackForwardList)
         loadType = FrameLoadTypeRedirectWithLockedBackForwardList;
+    else if (shouldTreatURLAsSameAsCurrent(request.substituteData().failingURL()) && m_loadType == FrameLoadTypeReload)
+        loadType = FrameLoadTypeReload;
     else
         loadType = FrameLoadTypeStandard;
 
-    loadURL(resourceRequest, request.frameName(), loadType, event, formState.get());
+    loadURL(resourceRequest, request.frameName(), loadType, event, formState.get(), request.substituteData());
 
     // FIXME: It's possible this targetFrame will not be the same frame that was targeted by the actual
     // load if frame names have changed.
@@ -992,7 +994,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
     }
 }
 
-void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType, PassRefPtr<Event> event, PassRefPtr<FormState> formState)
+void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType, PassRefPtr<Event> event, PassRefPtr<FormState> formState, const SubstituteData& substituteData)
 {
     if (m_inStopAllLoaders)
         return;
@@ -1004,7 +1006,7 @@ void FrameLoader::loadURL(const ResourceRequest& request, const String& frameNam
     // The search for a target frame is done earlier in the case of form submission.
     Frame* targetFrame = isFormSubmission ? 0 : findFrameForNavigation(frameName);
     if (targetFrame && targetFrame != m_frame) {
-        targetFrame->loader()->loadURL(request, "_self", newLoadType, event, formState);
+        targetFrame->loader()->loadURL(request, "_self", newLoadType, event, formState, substituteData);
         return;
     }
 
@@ -1019,7 +1021,7 @@ void FrameLoader::loadURL(const ResourceRequest& request, const String& frameNam
     }
 
     bool sameURL = shouldTreatURLAsSameAsCurrent(request.url());
-    loadWithNavigationAction(request, action, newLoadType, formState, defaultSubstituteDataForURL(request.url()));
+    loadWithNavigationAction(request, action, newLoadType, formState, substituteData.isValid() ? substituteData : defaultSubstituteDataForURL(request.url()));
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
@@ -1035,37 +1037,6 @@ SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
     ASSERT(!srcdoc.isNull());
     CString encodedSrcdoc = srcdoc.utf8();
     return SubstituteData(SharedBuffer::create(encodedSrcdoc.data(), encodedSrcdoc.length()), "text/html", "UTF-8", KURL());
-}
-
-void FrameLoader::load(const FrameLoadRequest& passedRequest)
-{
-    FrameLoadRequest request(passedRequest);
-
-    if (m_inStopAllLoaders)
-        return;
-
-    if (!request.frameName().isEmpty()) {
-        Frame* frame = findFrameForNavigation(request.frameName());
-        if (frame && frame->loader() != this) {
-            frame->loader()->load(request);
-            return;
-        }
-    }
-
-    if (!request.hasSubstituteData())
-        request.setSubstituteData(defaultSubstituteDataForURL(request.resourceRequest().url()));
-
-    ResourceRequest& r = request.resourceRequest();
-    const KURL& unreachableURL = request.substituteData().failingURL();
-
-    FrameLoadType type;
-    if (shouldTreatURLAsSameAsCurrent(r.url()))
-        type = FrameLoadTypeSame;
-    else if (shouldTreatURLAsSameAsCurrent(unreachableURL) && m_loadType == FrameLoadTypeReload)
-        type = FrameLoadTypeReload;
-    else
-        type = FrameLoadTypeStandard;
-    loadWithNavigationAction(r, NavigationAction(r, type, false), type, 0, request.substituteData());
 }
 
 void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, const String& overrideEncoding)
@@ -1918,7 +1889,6 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
     return (!isFormSubmission || equalIgnoringCase(httpMethod, "GET"))
         && loadType != FrameLoadTypeReload
         && loadType != FrameLoadTypeReloadFromOrigin
-        && loadType != FrameLoadTypeSame
         && !shouldReload(m_frame->document()->url(), url)
         // We don't want to just scroll if a link from within a
         // frameset is trying to reload the frameset into _top.
