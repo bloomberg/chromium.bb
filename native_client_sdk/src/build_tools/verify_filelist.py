@@ -16,6 +16,7 @@ sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
 VALID_PLATFORMS = ['linux', 'mac', 'win']
+PLATFORM_PREFIX_RE = re.compile(r'^\[([^\]]*)\](.*)$')
 
 class ParseException(Exception):
   def __init__(self, filename, line, message):
@@ -26,6 +27,19 @@ class ParseException(Exception):
 
   def __str__(self):
     return '%s:%d: %s' % (self.filename, self.line, self.message)
+
+
+def SplitPattern(pattern):
+  match = PLATFORM_PREFIX_RE.match(pattern)
+  if not match:
+    return pattern, []
+
+  # platform-specific line
+  platforms = match.group(1).split(',')
+
+  # If this platform is included, strip the [...] part.
+  pattern = match.group(2)
+  return pattern, platforms
 
 
 class VerifyException(Exception):
@@ -53,10 +67,8 @@ class Rules(object):
         self.ParsePattern(line_no + 1, rule)
 
   def ParsePattern(self, line_no, pattern):
-    match = re.match(r'^\[([^\]]*)\](.*)$', pattern)
-    if match:
-      # platform-specific pattern
-      platforms = match.group(1).split(',')
+    pattern, platforms = SplitPattern(pattern)
+    if platforms:
       unknown_platforms = set(platforms) - set(VALID_PLATFORMS)
       if unknown_platforms:
         msg = 'Unknown platform(s) %s.' % (
@@ -64,9 +76,6 @@ class Rules(object):
         raise ParseException(self.filename, line_no, msg)
       if self.platform not in platforms:
         return
-
-      # If this platform is included, strip the [...] part.
-      pattern = match.group(2)
 
     pattern = pattern.replace('${PLATFORM}', self.platform)
     pattern = pattern.replace('${EXE_EXT}', self.exe_ext)
@@ -148,11 +157,35 @@ def Verify(rule_path, directory_path, platform=None):
   rules.VerifyDirectoryList(directory_list)
 
 
+def SortFile(rule_path):
+  with open(rule_path) as infile:
+    lines = infile.readlines()
+
+  def compare(line1, line2):
+    line1 = SplitPattern(line1)[0].lower()
+    line2 = SplitPattern(line2)[0].lower()
+    return cmp(line1, line2)
+
+  lines.sort(compare)
+  with open(rule_path, 'w') as output:
+    for line in lines:
+      output.write(line)
+
+
 def main(args):
   parser = optparse.OptionParser(usage='%prog <rule file> <directory>')
   parser.add_option('-p', '--platform',
       help='Test with this platform, instead of the system\'s platform')
+  parser.add_option('-s', '--sort', action='store_true',
+      help='Sort the file list in place, rather than verifying the contents.')
   options, args = parser.parse_args(args)
+
+  if options.sort:
+    if not args:
+      parser.error('Expected rule file.')
+    SortFile(args[0])
+    return 0
+
   if len(args) != 2:
     parser.error('Expected rule file and directory.')
 
