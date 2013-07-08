@@ -55,9 +55,11 @@ ImageDecodingStore::~ImageDecodingStore()
 {
 #ifndef NDEBUG
     setCacheLimitInBytes(0);
-    ASSERT(!m_cacheMap.size());
+    ASSERT(!m_imageCacheMap.size());
+    ASSERT(!m_decoderCacheMap.size());
     ASSERT(!m_orderedCacheList.size());
-    ASSERT(!m_cachedSizeMap.size());
+    ASSERT(!m_imageCacheKeyMap.size());
+    ASSERT(!m_decoderCacheKeyMap.size());
 #endif
 }
 
@@ -76,53 +78,27 @@ void ImageDecodingStore::shutdown()
     setInstance(0);
 }
 
-bool ImageDecodingStore::lockCache(const ImageFrameGenerator* generator, const SkISize& scaledSize, CacheCondition condition, const ScaledImageFragment** cachedImage, ImageDecoder** decoder)
+bool ImageDecodingStore::lockCache(const ImageFrameGenerator* generator, const SkISize& scaledSize, size_t index, const ScaledImageFragment** cachedImage)
 {
     ASSERT(cachedImage);
 
-    CacheEntry* cacheEntry = 0;
     Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
     {
         MutexLocker lock(m_mutex);
-        CacheMap::iterator iter = m_cacheMap.find(std::make_pair(generator, scaledSize));
-        if (iter == m_cacheMap.end())
+        // Public access is restricted to complete images only.
+        ImageCacheMap::iterator iter = m_imageCacheMap.find(ImageCacheEntry::makeCacheKey(generator, scaledSize, index, ScaledImageFragment::CompleteImage));
+        if (iter == m_imageCacheMap.end())
             return false;
-        cacheEntry = iter->value.get();
-        ScaledImageFragment* image = cacheEntry->cachedImage();
-        if (condition == CacheMustBeComplete && !image->isComplete())
-            return false;
-
-        // Incomplete cache entry cannot be used more than once.
-        ASSERT(image->isComplete() || !cacheEntry->useCount());
-
-        image->bitmap().lockPixels();
-        if (image->bitmap().getPixels()) {
-            // Increment use count such that it doesn't get evicted.
-            cacheEntry->incrementUseCount();
-
-            // Complete cache entry doesn't have a decoder.
-            ASSERT(!image->isComplete() || !cacheEntry->cachedDecoder());
-
-            if (decoder)
-                *decoder = cacheEntry->cachedDecoder();
-            *cachedImage = image;
-        } else {
-            image->bitmap().unlockPixels();
-            removeFromCacheInternal(cacheEntry, &cacheEntriesToDelete);
-            removeFromCacheListInternal(cacheEntriesToDelete);
-            return false;
-        }
+        return lockCacheEntryInternal(iter->value.get(), cachedImage, &cacheEntriesToDelete);
     }
-
-    return true;
 }
 
 void ImageDecodingStore::unlockCache(const ImageFrameGenerator* generator, const ScaledImageFragment* cachedImage)
 {
     MutexLocker lock(m_mutex);
     cachedImage->bitmap().unlockPixels();
-    CacheMap::iterator iter = m_cacheMap.find(std::make_pair(generator, cachedImage->scaledSize()));
-    ASSERT(iter != m_cacheMap.end());
+    ImageCacheMap::iterator iter = m_imageCacheMap.find(ImageCacheEntry::makeCacheKey(generator, cachedImage->scaledSize(), cachedImage->index(), cachedImage->generation()));
+    ASSERT(iter != m_imageCacheMap.end());
 
     CacheEntry* cacheEntry = iter->value.get();
     cacheEntry->decrementUseCount();
@@ -132,64 +108,111 @@ void ImageDecodingStore::unlockCache(const ImageFrameGenerator* generator, const
     m_orderedCacheList.append(cacheEntry);
 }
 
-const ScaledImageFragment* ImageDecodingStore::insertAndLockCache(const ImageFrameGenerator* generator, PassOwnPtr<ScaledImageFragment> image, PassOwnPtr<ImageDecoder> decoder)
+const ScaledImageFragment* ImageDecodingStore::insertAndLockCache(const ImageFrameGenerator* generator, PassOwnPtr<ScaledImageFragment> image)
 {
     // Prune old cache entries to give space for the new one.
     prune();
 
-    ScaledImageFragment* cachedImage = image.get();
-    OwnPtr<CacheEntry> newCacheEntry;
+    ScaledImageFragment* newImage = image.get();
+    OwnPtr<ImageCacheEntry> newCacheEntry = ImageCacheEntry::createAndUse(generator, image);
+    Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
+    {
+        MutexLocker lock(m_mutex);
 
-    // ImageDecoder is not used any more if cache is complete.
-    if (image->isComplete())
-        newCacheEntry = CacheEntry::createAndUse(generator, image);
-    else
-        newCacheEntry = CacheEntry::createAndUse(generator, image, decoder);
+        ImageCacheMap::iterator iter = m_imageCacheMap.find(newCacheEntry->cacheKey());
 
-    MutexLocker lock(m_mutex);
-    // Lock the underlying SkBitmap to prevent it from being purged.
-    cachedImage->bitmap().lockPixels();
-    ASSERT(!m_cacheMap.contains(newCacheEntry->cacheKey()));
-    insertCacheInternal(newCacheEntry.release());
-    return cachedImage;
+        // It is rare but possible that the key of a new cache entry is found.
+        // This happens if the generation ID of the image object wraps around.
+        // In this case we will try to return the existing cached object and
+        // discard the new cache object.
+        if (iter != m_imageCacheMap.end()) {
+            const ScaledImageFragment* oldImage;
+            if (lockCacheEntryInternal(iter->value.get(), &oldImage, &cacheEntriesToDelete)) {
+                newCacheEntry->decrementUseCount();
+                return oldImage;
+            }
+        }
+
+        // The new image is not locked yet so do it here.
+        newImage->bitmap().lockPixels();
+        insertCacheInternal(newCacheEntry.release(), &m_imageCacheMap, &m_imageCacheKeyMap);
+    }
+    return newImage;
 }
 
-bool ImageDecodingStore::isCached(const ImageFrameGenerator* generator, const SkISize& scaledSize)
+bool ImageDecodingStore::lockDecoder(const ImageFrameGenerator* generator, const SkISize& scaledSize, ImageDecoder** decoder)
 {
+    ASSERT(decoder);
+
     MutexLocker lock(m_mutex);
-    CacheMap::iterator iter = m_cacheMap.find(std::make_pair(generator, scaledSize));
-    if (iter == m_cacheMap.end())
+    DecoderCacheMap::iterator iter = m_decoderCacheMap.find(DecoderCacheEntry::makeCacheKey(generator, scaledSize));
+    if (iter == m_decoderCacheMap.end())
         return false;
+
+    DecoderCacheEntry* cacheEntry = iter->value.get();
+
+    // There can only be one user of a decoder at a time.
+    ASSERT(!cacheEntry->useCount());
+    cacheEntry->incrementUseCount();
+    *decoder = cacheEntry->cachedDecoder();
     return true;
 }
 
-
-const ScaledImageFragment* ImageDecodingStore::overwriteAndLockCache(const ImageFrameGenerator* generator, const ScaledImageFragment* cachedImage, PassOwnPtr<ScaledImageFragment> newImage)
+void ImageDecodingStore::unlockDecoder(const ImageFrameGenerator* generator, const ImageDecoder* decoder)
 {
-    OwnPtr<ImageDecoder> trash;
-    const ScaledImageFragment* newCachedImage = 0;
+    MutexLocker lock(m_mutex);
+    DecoderCacheMap::iterator iter = m_decoderCacheMap.find(DecoderCacheEntry::makeCacheKey(generator, decoder));
+    ASSERT(iter != m_decoderCacheMap.end());
+
+    CacheEntry* cacheEntry = iter->value.get();
+    cacheEntry->decrementUseCount();
+
+    // Put the entry to the end of list.
+    m_orderedCacheList.remove(cacheEntry);
+    m_orderedCacheList.append(cacheEntry);
+}
+
+void ImageDecodingStore::insertDecoder(const ImageFrameGenerator* generator, PassOwnPtr<ImageDecoder> decoder, bool isDiscardable)
+{
+    // Prune old cache entries to give space for the new one.
+    prune();
+
+    OwnPtr<DecoderCacheEntry> newCacheEntry = DecoderCacheEntry::create(generator, decoder, isDiscardable);
+
+    MutexLocker lock(m_mutex);
+    ASSERT(!m_decoderCacheMap.contains(newCacheEntry->cacheKey()));
+    insertCacheInternal(newCacheEntry.release(), &m_decoderCacheMap, &m_decoderCacheKeyMap);
+}
+
+void ImageDecodingStore::removeDecoder(const ImageFrameGenerator* generator, const ImageDecoder* decoder)
+{
+    Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
     {
         MutexLocker lock(m_mutex);
-        cachedImage->bitmap().unlockPixels();
-        CacheMap::iterator iter = m_cacheMap.find(std::make_pair(generator, cachedImage->scaledSize()));
-        ASSERT(iter != m_cacheMap.end());
+        DecoderCacheMap::iterator iter = m_decoderCacheMap.find(DecoderCacheEntry::makeCacheKey(generator, decoder));
+        ASSERT(iter != m_decoderCacheMap.end());
 
         CacheEntry* cacheEntry = iter->value.get();
-        ASSERT(cacheEntry->useCount() == 1);
-        ASSERT(!cacheEntry->cachedImage()->isComplete());
+        ASSERT(cacheEntry->useCount());
+        cacheEntry->decrementUseCount();
 
-        bool isNewImageDiscardable = DiscardablePixelRef::isDiscardable(newImage->bitmap().pixelRef());
-        if (cacheEntry->isDiscardable() && !isNewImageDiscardable)
-            incrementMemoryUsage(cacheEntry->memoryUsageInBytes());
-        else if (!cacheEntry->isDiscardable() && isNewImageDiscardable)
-            decrementMemoryUsage(cacheEntry->memoryUsageInBytes());
-        trash = cacheEntry->overwriteCachedImage(newImage);
-        newCachedImage = cacheEntry->cachedImage();
-        // Lock the underlying SkBitmap to prevent it from being purged.
-        newCachedImage->bitmap().lockPixels();
+        // Delete only one decoder cache entry. Ownership of the cache entry
+        // is transfered to cacheEntriesToDelete such that object can be deleted
+        // outside of the lock.
+        removeFromCacheInternal(cacheEntry, &cacheEntriesToDelete);
+
+        // Remove from LRU list.
+        removeFromCacheListInternal(cacheEntriesToDelete);
     }
+}
 
-    return newCachedImage;
+bool ImageDecodingStore::isCached(const ImageFrameGenerator* generator, const SkISize& scaledSize, size_t index)
+{
+    MutexLocker lock(m_mutex);
+    ImageCacheMap::iterator iter = m_imageCacheMap.find(ImageCacheEntry::makeCacheKey(generator, scaledSize, index, ScaledImageFragment::CompleteImage));
+    if (iter == m_imageCacheMap.end())
+        return false;
+    return true;
 }
 
 void ImageDecodingStore::removeCacheIndexedByGenerator(const ImageFrameGenerator* generator)
@@ -197,26 +220,13 @@ void ImageDecodingStore::removeCacheIndexedByGenerator(const ImageFrameGenerator
     Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
     {
         MutexLocker lock(m_mutex);
-        CachedSizeMap::iterator iter = m_cachedSizeMap.find(generator);
-        if (iter == m_cachedSizeMap.end())
-            return;
 
-        // Get all cached sizes indexed by generator.
-        Vector<SkISize> cachedSizeList;
-        copyToVector(iter->value, cachedSizeList);
+        // Remove image cache objects and decoder cache objects associated
+        // with a ImageFrameGenerator.
+        removeCacheIndexedByGeneratorInternal(&m_imageCacheMap, &m_imageCacheKeyMap, generator, &cacheEntriesToDelete);
+        removeCacheIndexedByGeneratorInternal(&m_decoderCacheMap, &m_decoderCacheKeyMap, generator, &cacheEntriesToDelete);
 
-        // For each cached size find the corresponding CacheEntry and remove it from
-        // m_cacheMap.
-        for (size_t i = 0; i < cachedSizeList.size(); ++i) {
-            CacheIdentifier key = std::make_pair(generator, cachedSizeList[i]);
-            ASSERT(m_cacheMap.contains(key));
-
-            const CacheEntry* cacheEntry = m_cacheMap.get(key);
-            ASSERT(!cacheEntry->useCount());
-            removeFromCacheInternal(cacheEntry, &cacheEntriesToDelete);
-        }
-
-        // Remove from cache list as well.
+        // Remove from LRU list as well.
         removeFromCacheListInternal(cacheEntriesToDelete);
     }
 }
@@ -256,7 +266,19 @@ size_t ImageDecodingStore::memoryUsageInBytes()
 unsigned ImageDecodingStore::cacheEntries()
 {
     MutexLocker lock(m_mutex);
-    return m_cacheMap.size();
+    return m_imageCacheMap.size() + m_decoderCacheMap.size();
+}
+
+unsigned ImageDecodingStore::imageCacheEntries()
+{
+    MutexLocker lock(m_mutex);
+    return m_imageCacheMap.size();
+}
+
+unsigned ImageDecodingStore::decoderCacheEntries()
+{
+    MutexLocker lock(m_mutex);
+    return m_decoderCacheMap.size();
 }
 
 void ImageDecodingStore::prune()
@@ -284,44 +306,98 @@ void ImageDecodingStore::prune()
     }
 }
 
-void ImageDecodingStore::insertCacheInternal(PassOwnPtr<CacheEntry> cacheEntry)
+bool ImageDecodingStore::lockCacheEntryInternal(ImageCacheEntry* cacheEntry, const ScaledImageFragment** cachedImage, Vector<OwnPtr<CacheEntry> >* deletionList)
 {
+    ScaledImageFragment* image = cacheEntry->cachedImage();
+
+    image->bitmap().lockPixels();
+
+    // Memory for this image entry might be discarded already.
+    // In this case remove the entry.
+    if (!image->bitmap().getPixels()) {
+        image->bitmap().unlockPixels();
+        removeFromCacheInternal(cacheEntry, &m_imageCacheMap, &m_imageCacheKeyMap, deletionList);
+        removeFromCacheListInternal(*deletionList);
+        return false;
+    }
+    cacheEntry->incrementUseCount();
+    *cachedImage = image;
+    return true;
+}
+
+template<class T, class U, class V>
+void ImageDecodingStore::insertCacheInternal(PassOwnPtr<T> cacheEntry, U* cacheMap, V* identifierMap)
+{
+    // Usage of discardable memory is not counted because we want to use more
+    // than the cache limit allows. Cache limit only applies to non-discardable
+    // objects.
     if (!cacheEntry->isDiscardable())
         incrementMemoryUsage(cacheEntry->memoryUsageInBytes());
-    TRACE_COUNTER1("webkit", "ImageDecodingStoreMemoryUsageBytes", m_memoryUsageInBytes);
 
     // m_orderedCacheList is used to support LRU operations to reorder cache
     // entries quickly.
     m_orderedCacheList.append(cacheEntry.get());
 
-    CacheIdentifier key = cacheEntry->cacheKey();
-    // m_cacheMap is used for indexing and quick lookup of a cached image. It owns
-    // all cache entries.
-    m_cacheMap.add(key, cacheEntry);
-    TRACE_COUNTER1("webkit", "ImageDecodingStoreNumOfEntries", m_cacheMap.size());
+    typename U::KeyType key = cacheEntry->cacheKey();
+    typename V::AddResult result = identifierMap->add(cacheEntry->generator(), typename V::MappedType());
+    result.iterator->value.add(key);
+    cacheMap->add(key, cacheEntry);
 
-    // m_cachedSizeMap keeps all scaled sizes associated with an ImageFrameGenerator.
-    CachedSizeMap::AddResult result = m_cachedSizeMap.add(key.first, SizeSet());
-    result.iterator->value.add(key.second);
+    TRACE_COUNTER1("webkit", "ImageDecodingStoreMemoryUsageBytes", m_memoryUsageInBytes);
+    TRACE_COUNTER1("webkit", "ImageDecodingStoreNumOfImages", m_imageCacheMap.size());
+    TRACE_COUNTER1("webkit", "ImageDecodingStoreNumOfDecoders", m_decoderCacheMap.size());
+}
+
+template<class T, class U, class V>
+void ImageDecodingStore::removeFromCacheInternal(const T* cacheEntry, U* cacheMap, V* identifierMap, Vector<OwnPtr<CacheEntry> >* deletionList)
+{
+    if (!cacheEntry->isDiscardable())
+        decrementMemoryUsage(cacheEntry->memoryUsageInBytes());
+
+    // Remove entry from identifier map.
+    typename V::iterator iter = identifierMap->find(cacheEntry->generator());
+    ASSERT(iter != identifierMap->end());
+    iter->value.remove(cacheEntry->cacheKey());
+    if (!iter->value.size())
+        identifierMap->remove(iter);
+
+    // Remove entry from cache map.
+    deletionList->append(cacheMap->take(cacheEntry->cacheKey()));
+
+    TRACE_COUNTER1("webkit", "ImageDecodingStoreMemoryUsageBytes", m_memoryUsageInBytes);
+    TRACE_COUNTER1("webkit", "ImageDecodingStoreNumOfImages", m_imageCacheMap.size());
+    TRACE_COUNTER1("webkit", "ImageDecodingStoreNumOfDecoders", m_decoderCacheMap.size());
 }
 
 void ImageDecodingStore::removeFromCacheInternal(const CacheEntry* cacheEntry, Vector<OwnPtr<CacheEntry> >* deletionList)
 {
-    if (!cacheEntry->isDiscardable())
-        decrementMemoryUsage(cacheEntry->memoryUsageInBytes());
-    TRACE_COUNTER1("webkit", "ImageDecodingStoreMemoryUsageBytes", m_memoryUsageInBytes);
+    if (cacheEntry->type() == CacheEntry::TypeImage) {
+        removeFromCacheInternal(static_cast<const ImageCacheEntry*>(cacheEntry), &m_imageCacheMap, &m_imageCacheKeyMap, deletionList);
+    } else if (cacheEntry->type() == CacheEntry::TypeDecoder) {
+        removeFromCacheInternal(static_cast<const DecoderCacheEntry*>(cacheEntry), &m_decoderCacheMap, &m_decoderCacheKeyMap, deletionList);
+    } else {
+        ASSERT(false);
+    }
+}
 
-    // Remove from m_cacheMap.
-    CacheIdentifier key = cacheEntry->cacheKey();
-    deletionList->append(m_cacheMap.take(key));
-    TRACE_COUNTER1("webkit", "ImageDecodingStoreNumOfEntries", m_cacheMap.size());
+template<class U, class V>
+void ImageDecodingStore::removeCacheIndexedByGeneratorInternal(U* cacheMap, V* identifierMap, const ImageFrameGenerator* generator, Vector<OwnPtr<CacheEntry> >* deletionList)
+{
+    typename V::iterator iter = identifierMap->find(generator);
+    if (iter == identifierMap->end())
+        return;
 
-    // Remove from m_cachedSizeMap.
-    CachedSizeMap::iterator iter = m_cachedSizeMap.find(key.first);
-    ASSERT(iter != m_cachedSizeMap.end());
-    iter->value.remove(key.second);
-    if (!iter->value.size())
-        m_cachedSizeMap.remove(iter);
+    // Get all cache identifiers associated with generator.
+    Vector<typename U::KeyType> cacheIdentifierList;
+    copyToVector(iter->value, cacheIdentifierList);
+
+    // For each cache identifier find the corresponding CacheEntry and remove it.
+    for (size_t i = 0; i < cacheIdentifierList.size(); ++i) {
+        ASSERT(cacheMap->contains(cacheIdentifierList[i]));
+        const typename U::MappedType::PtrType cacheEntry = cacheMap->get(cacheIdentifierList[i]);
+        ASSERT(!cacheEntry->useCount());
+        removeFromCacheInternal(cacheEntry, cacheMap, identifierMap, deletionList);
+    }
 }
 
 void ImageDecodingStore::removeFromCacheListInternal(const Vector<OwnPtr<CacheEntry> >& deletionList)

@@ -33,10 +33,11 @@ ScaledImageFragment::~ScaledImageFragment()
 {
 }
 
-ScaledImageFragment::ScaledImageFragment(const SkISize& scaledSize, const SkBitmap& bitmap, const bool isComplete)
+ScaledImageFragment::ScaledImageFragment(const SkISize& scaledSize, size_t index, size_t generation, const SkBitmap& bitmap)
     : m_scaledSize(scaledSize)
+    , m_index(index)
+    , m_generation(generation)
     , m_bitmap(bitmap)
-    , m_isComplete(isComplete)
 {
 }
 

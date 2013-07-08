@@ -84,11 +84,16 @@ private:
     // Use the given decoder to decode. If a decoder is not given then try to create one.
     PassOwnPtr<ScaledImageFragment> decode(ImageDecoder**);
 
+    // Return the next generation ID of a new image object. This is used
+    // to identify images of the same frame from different stages of
+    // progressive decode.
+    size_t nextGenerationId() { return m_decodeCount++; }
+
     SkISize m_fullSize;
     ThreadSafeDataTransport m_data;
     bool m_decodeFailedAndEmpty;
     bool m_hasAlpha;
-    int m_decodeCount;
+    size_t m_decodeCount;
     DiscardablePixelRefAllocator m_allocator;
 
     OwnPtr<ImageDecoderFactory> m_imageDecoderFactory;

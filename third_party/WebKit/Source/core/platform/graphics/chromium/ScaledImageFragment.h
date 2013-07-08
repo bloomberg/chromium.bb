@@ -37,24 +37,36 @@ namespace WebCore {
 // ScaledImageFragment is a scaled version of an image.
 class ScaledImageFragment {
 public:
-    static PassOwnPtr<ScaledImageFragment> create(const SkISize& scaledSize, const SkBitmap& bitmap, bool isComplete)
+    enum ImageGeneration {
+        CompleteImage = 0,
+        FirstPartialImage = 1,
+    };
+
+    static PassOwnPtr<ScaledImageFragment> createComplete(const SkISize& scaledSize, size_t index, const SkBitmap& bitmap)
     {
-        return adoptPtr(new ScaledImageFragment(scaledSize, bitmap, isComplete));
+        return adoptPtr(new ScaledImageFragment(scaledSize, index, CompleteImage, bitmap));
     }
 
-    ScaledImageFragment(const SkISize&, const SkBitmap&, bool isComplete);
+    static PassOwnPtr<ScaledImageFragment> createPartial(const SkISize& scaledSize, size_t index, size_t generation, const SkBitmap& bitmap)
+    {
+        return adoptPtr(new ScaledImageFragment(scaledSize, index, generation, bitmap));
+    }
+
+    ScaledImageFragment(const SkISize&, size_t index, size_t generation, const SkBitmap&);
     ~ScaledImageFragment();
 
     const SkISize& scaledSize() const { return m_scaledSize; }
+    size_t index() const { return m_index; }
+    size_t generation() const { return m_generation; }
+    bool isComplete() const { return m_generation == CompleteImage; }
     const SkBitmap& bitmap() const { return m_bitmap; }
     SkBitmap& bitmap() { return m_bitmap; }
-    bool isComplete() const { return m_isComplete; }
-    void setIsComplete() { m_isComplete = true; }
 
 private:
     SkISize m_scaledSize;
+    size_t m_index;
+    size_t m_generation;
     SkBitmap m_bitmap;
-    bool m_isComplete;
 };
 
 } // namespace WebCore

@@ -69,7 +69,7 @@ public:
     }
 
 protected:
-    PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size, bool discardable = false)
+    PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size, bool discardable = false, size_t index = 0)
     {
         SkBitmap bitmap;
         bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
@@ -77,10 +77,10 @@ protected:
             bitmap.allocPixels();
         else
             bitmap.setPixelRef(new MockDiscardablePixelRef())->unref();
-        return ScaledImageFragment::create(size, bitmap, true);
+        return ScaledImageFragment::createComplete(size, index, bitmap);
     }
 
-    PassOwnPtr<ScaledImageFragment> createIncompleteImage(const SkISize& size, bool discardable = false)
+    PassOwnPtr<ScaledImageFragment> createIncompleteImage(const SkISize& size, bool discardable = false, size_t generation = 0)
     {
         SkBitmap bitmap;
         bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
@@ -88,7 +88,7 @@ protected:
             bitmap.allocPixels();
         else
             bitmap.setPixelRef(new MockDiscardablePixelRef())->unref();
-        return ScaledImageFragment::create(size, bitmap, false);
+        return ScaledImageFragment::createPartial(size, 0, generation, bitmap);
     }
 
     void insertCache(const SkISize& size)
@@ -98,10 +98,10 @@ protected:
         unlockCache(image);
     }
 
-    const ScaledImageFragment* lockCache(const SkISize& size)
+    const ScaledImageFragment* lockCache(const SkISize& size, size_t index = 0)
     {
         const ScaledImageFragment* cachedImage = 0;
-        if (ImageDecodingStore::instance()->lockCache(m_generator.get(), size, ImageDecodingStore::CacheCanBeIncomplete, &cachedImage))
+        if (ImageDecodingStore::instance()->lockCache(m_generator.get(), size, index, &cachedImage))
             return cachedImage;
         return 0;
     }
@@ -235,63 +235,187 @@ TEST_F(ImageDecodingStoreTest, destroyImageFrameGenerator)
     insertCache(SkISize::Make(1, 1));
     insertCache(SkISize::Make(2, 2));
     insertCache(SkISize::Make(3, 3));
-    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
+    decoder->setSize(1, 1);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
+    EXPECT_EQ(4u, ImageDecodingStore::instance()->cacheEntries());
 
     m_generator.clear();
     EXPECT_FALSE(ImageDecodingStore::instance()->cacheEntries());
 }
 
-TEST_F(ImageDecodingStoreTest, insertIncompleteCache)
+TEST_F(ImageDecodingStoreTest, insertDecoder)
 {
     const SkISize size = SkISize::Make(1, 1);
-    const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), createIncompleteImage(size), MockImageDecoder::create(this));
+    OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
+    decoder->setSize(1, 1);
+    const ImageDecoder* refDecoder = decoder.get();
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
     EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
-    unlockCache(cachedImage);
+    EXPECT_EQ(4u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
-    ImageDecoder* decoder = 0;
-    EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, ImageDecodingStore::CacheCanBeIncomplete, &cachedImage, &decoder));
-    EXPECT_TRUE(decoder);
-    ASSERT_TRUE(cachedImage);
-    EXPECT_FALSE(cachedImage->isComplete());
-    unlockCache(cachedImage);
-    EXPECT_EQ(0, m_decodersDestroyed);
+    ImageDecoder* testDecoder;
+    EXPECT_TRUE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), size, &testDecoder));
+    EXPECT_TRUE(testDecoder);
+    EXPECT_EQ(refDecoder, testDecoder);
+    ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), testDecoder);
+    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
 }
 
-TEST_F(ImageDecodingStoreTest, insertCompleteCacheWithDecoder)
+TEST_F(ImageDecodingStoreTest, evictDecoder)
 {
-    const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), createCompleteImage(SkISize::Make(1, 1)), MockImageDecoder::create(this));
-    unlockCache(cachedImage);
+    OwnPtr<ImageDecoder> decoder1 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder2 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder3 = MockImageDecoder::create(this);
+    decoder1->setSize(1, 1);
+    decoder2->setSize(2, 2);
+    decoder3->setSize(3, 3);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder1.release(), false);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder2.release(), false);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder3.release(), false);
+    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(56u, ImageDecodingStore::instance()->memoryUsageInBytes());
+
+    evictOneCache();
+    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(52u, ImageDecodingStore::instance()->memoryUsageInBytes());
+
+    evictOneCache();
     EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(1, m_decodersDestroyed);
+    EXPECT_EQ(36u, ImageDecodingStore::instance()->memoryUsageInBytes());
+
+    evictOneCache();
+    EXPECT_FALSE(ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_FALSE(ImageDecodingStore::instance()->memoryUsageInBytes());
 }
 
-TEST_F(ImageDecodingStoreTest, incompleteCacheBecomesComplete)
+TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted)
+{
+    OwnPtr<ImageDecoder> decoder1 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder2 = MockImageDecoder::create(this);
+    OwnPtr<ImageDecoder> decoder3 = MockImageDecoder::create(this);
+    decoder1->setSize(1, 1);
+    decoder2->setSize(2, 2);
+    decoder3->setSize(3, 3);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder1.release(), false);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder2.release(), false);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder3.release(), false);
+    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
+
+    ImageDecoder* testDecoder;
+    EXPECT_TRUE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), SkISize::Make(2, 2), &testDecoder));
+
+    evictOneCache();
+    evictOneCache();
+    evictOneCache();
+    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(16u, ImageDecodingStore::instance()->memoryUsageInBytes());
+
+    ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), testDecoder);
+    evictOneCache();
+    EXPECT_FALSE(ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_FALSE(ImageDecodingStore::instance()->memoryUsageInBytes());
+}
+
+TEST_F(ImageDecodingStoreTest, removeDecoder)
 {
     const SkISize size = SkISize::Make(1, 1);
-    const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), createIncompleteImage(size), MockImageDecoder::create(this));
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), cachedImage);
+    OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
+    decoder->setSize(1, 1);
+    const ImageDecoder* refDecoder = decoder.get();
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
     EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+    EXPECT_EQ(4u, ImageDecodingStore::instance()->memoryUsageInBytes());
 
-    ImageDecoder* decoder = 0;
-    EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, ImageDecodingStore::CacheCanBeIncomplete, &cachedImage, &decoder));
-    EXPECT_TRUE(decoder);
-    ASSERT_TRUE(cachedImage);
-    EXPECT_FALSE(cachedImage->isComplete());
+    ImageDecoder* testDecoder;
+    EXPECT_TRUE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), size, &testDecoder));
+    EXPECT_TRUE(testDecoder);
+    EXPECT_EQ(refDecoder, testDecoder);
+    ImageDecodingStore::instance()->removeDecoder(m_generator.get(), testDecoder);
+    EXPECT_FALSE(ImageDecodingStore::instance()->cacheEntries());
 
-    cachedImage = ImageDecodingStore::instance()->overwriteAndLockCache(
-        m_generator.get(), cachedImage, createCompleteImage(size));
-    EXPECT_TRUE(cachedImage->isComplete());
-    EXPECT_EQ(1, m_decodersDestroyed);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), cachedImage);
+    EXPECT_FALSE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), size, &testDecoder));
+}
+
+TEST_F(ImageDecodingStoreTest, multipleIndex)
+{
+    const SkISize size = SkISize::Make(1, 1);
+    const ScaledImageFragment* refImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createCompleteImage(size, false, 0));
+    unlockCache(refImage);
+    const ScaledImageFragment* testImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createCompleteImage(size, false, 1));
+    unlockCache(testImage);
+    EXPECT_NE(refImage, testImage);
+    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+
+    EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, 1, &refImage));
+    EXPECT_EQ(refImage, testImage);
+    unlockCache(refImage);
+}
+
+TEST_F(ImageDecodingStoreTest, finalAndPartialImage)
+{
+    const SkISize size = SkISize::Make(1, 1);
+    const ScaledImageFragment* refImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createCompleteImage(size, false, 0));
+    unlockCache(refImage);
+    const ScaledImageFragment* testImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createIncompleteImage(size, false, 1));
+    unlockCache(testImage);
+    EXPECT_NE(refImage, testImage);
+    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+
+    EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, 0, &refImage));
+    EXPECT_NE(refImage, testImage);
+    unlockCache(refImage);
+}
+
+TEST_F(ImageDecodingStoreTest, insertNoGenerationCollision)
+{
+    const SkISize size = SkISize::Make(1, 1);
+    const ScaledImageFragment* refImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createIncompleteImage(size, false, 1));
+    unlockCache(refImage);
+    const ScaledImageFragment* testImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createIncompleteImage(size, false, 2));
+    unlockCache(testImage);
+    EXPECT_NE(refImage, testImage);
+    EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+}
+
+TEST_F(ImageDecodingStoreTest, insertGenerationCollision)
+{
+    const SkISize size = SkISize::Make(1, 1);
+    const ScaledImageFragment* refImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createIncompleteImage(size, false, 1));
+    unlockCache(refImage);
+    const ScaledImageFragment* testImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createIncompleteImage(size, false, 1));
+    unlockCache(testImage);
+    EXPECT_EQ(refImage, testImage);
+    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
+}
+
+TEST_F(ImageDecodingStoreTest, insertGenerationCollisionAfterMemoryDiscarded)
+{
+    const SkISize size = SkISize::Make(1, 1);
+    const ScaledImageFragment* refImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createIncompleteImage(size, true, 1));
+    unlockCache(refImage);
+    MockDiscardablePixelRef* pixelRef = static_cast<MockDiscardablePixelRef*>(refImage->bitmap().pixelRef());
+    pixelRef->discard();
+    const ScaledImageFragment* testImage = ImageDecodingStore::instance()->insertAndLockCache(
+        m_generator.get(), createIncompleteImage(size, false, 1));
+    unlockCache(testImage);
+    EXPECT_NE(refImage, testImage);
+    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
 }
 
 TEST_F(ImageDecodingStoreTest, lockCacheFailedAfterMemoryDiscarded)
 {
     const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), createCompleteImage(SkISize::Make(1, 1), true), MockImageDecoder::create(this));
+        m_generator.get(), createCompleteImage(SkISize::Make(1, 1), true));
     unlockCache(cachedImage);
     MockDiscardablePixelRef* pixelRef = static_cast<MockDiscardablePixelRef*>(cachedImage->bitmap().pixelRef());
     pixelRef->discard();
@@ -299,55 +423,16 @@ TEST_F(ImageDecodingStoreTest, lockCacheFailedAfterMemoryDiscarded)
     EXPECT_EQ(0u, ImageDecodingStore::instance()->cacheEntries());
 }
 
-TEST_F(ImageDecodingStoreTest, overwriteNonDiscardableCacheWithDiscardable)
-{
-
-    const SkISize size = SkISize::Make(1, 1);
-    const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), createIncompleteImage(size), MockImageDecoder::create(this));
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), cachedImage);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_LT(0u, ImageDecodingStore::instance()->memoryUsageInBytes());
-
-    ImageDecoder* decoder = 0;
-    EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, ImageDecodingStore::CacheCanBeIncomplete, &cachedImage, &decoder));
-    EXPECT_FALSE(cachedImage->isComplete());
-
-    cachedImage = ImageDecodingStore::instance()->overwriteAndLockCache(
-        m_generator.get(), cachedImage, createCompleteImage(size, true));
-    EXPECT_TRUE(cachedImage->isComplete());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->memoryUsageInBytes());
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), cachedImage);
-}
-
-TEST_F(ImageDecodingStoreTest, overwriteDiscardableCacheWithNonDiscardable)
-{
-
-    const SkISize size = SkISize::Make(1, 1);
-    const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), createIncompleteImage(size, true), MockImageDecoder::create(this));
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), cachedImage);
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(0u, ImageDecodingStore::instance()->memoryUsageInBytes());
-
-    ImageDecoder* decoder = 0;
-    EXPECT_TRUE(ImageDecodingStore::instance()->lockCache(m_generator.get(), size, ImageDecodingStore::CacheCanBeIncomplete, &cachedImage, &decoder));
-    EXPECT_FALSE(cachedImage->isComplete());
-
-    cachedImage = ImageDecodingStore::instance()->overwriteAndLockCache(
-        m_generator.get(), cachedImage, createCompleteImage(size));
-    EXPECT_TRUE(cachedImage->isComplete());
-    EXPECT_EQ(1u, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_LT(0u, ImageDecodingStore::instance()->memoryUsageInBytes());
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), cachedImage);
-}
-
 TEST_F(ImageDecodingStoreTest, clear)
 {
     insertCache(SkISize::Make(1, 1));
     insertCache(SkISize::Make(2, 2));
     EXPECT_EQ(2u, ImageDecodingStore::instance()->cacheEntries());
+
+    OwnPtr<ImageDecoder> decoder = MockImageDecoder::create(this);
+    decoder->setSize(1, 1);
+    ImageDecodingStore::instance()->insertDecoder(m_generator.get(), decoder.release(), false);
+    EXPECT_EQ(3u, ImageDecodingStore::instance()->cacheEntries());
 
     ImageDecodingStore::instance()->clear();
     EXPECT_EQ(0u, ImageDecodingStore::instance()->cacheEntries());
