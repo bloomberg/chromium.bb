@@ -19,6 +19,26 @@ TestBrowserThreadBundle::TestBrowserThreadBundle(int options) {
 }
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
+  // To ensure a clean teardown, each thread's message loop must be flushed
+  // just before the thread is destroyed. But destroying a fake thread does not
+  // automatically flush the message loop, so we have to do it manually.
+  // See http://crbug.com/247525 for discussion.
+  base::RunLoop().RunUntilIdle();
+  io_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  cache_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  process_launcher_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  file_user_blocking_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  file_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  webkit_deprecated_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  db_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  ui_thread_.reset();
   base::RunLoop().RunUntilIdle();
 }
 
