@@ -164,6 +164,12 @@ void SetUsesScreenCoordinates(aura::Window* container) {
   container->SetProperty(internal::kUsesScreenCoordinatesKey, true);
 }
 
+// Mark the container window so that a widget added to this container will
+// say in the same root window regardless of the bounds specified.
+void DescendantShouldStayInSameRootWindow(aura::Window* container) {
+  container->SetProperty(internal::kStayInSameRootWindowKey, true);
+}
+
 }  // namespace
 
 namespace internal {
@@ -667,6 +673,7 @@ void RootWindowController::CreateContainersInRootWindow(
                       "StatusContainer",
                       lock_screen_related_containers);
   SetUsesScreenCoordinates(status_container);
+  DescendantShouldStayInSameRootWindow(status_container);
 
   aura::Window* settings_bubble_container = CreateContainer(
       kShellWindowId_SettingBubbleContainer,
@@ -675,6 +682,7 @@ void RootWindowController::CreateContainersInRootWindow(
   views::corewm::SetChildWindowVisibilityChangesAnimated(
       settings_bubble_container);
   SetUsesScreenCoordinates(settings_bubble_container);
+  DescendantShouldStayInSameRootWindow(settings_bubble_container);
 
   aura::Window* menu_container = CreateContainer(
       kShellWindowId_MenuContainer,

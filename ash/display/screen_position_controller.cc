@@ -25,6 +25,14 @@
 namespace ash {
 namespace {
 
+// Return true if the window or its ancestor has |kStayInSameRootWindowkey|
+// property.
+bool ShouldStayInSameRootWindow(const aura::Window* window) {
+  return window &&
+      (window->GetProperty(internal::kStayInSameRootWindowKey) ||
+       ShouldStayInSameRootWindow(window->parent()));
+}
+
 // Move all transient children to |dst_root|, including the ones in
 // the child windows and transient children of the transient children.
 void MoveAllTransientChildrenToNewRoot(const gfx::Display& display,
@@ -151,10 +159,11 @@ void ScreenPositionController::SetBounds(aura::Window* window,
   // Don't move a window to other root window if:
   // a) the window is a transient window. It moves when its
   //    transient_parent moves.
-  // b) if the window has kStayInSameRootWindowkey. It's intentionally kept in
-  //    the same root window even if the bounds is outside of the display.
+  // b) if the window or its ancestor has kStayInSameRootWindowkey. It's
+  //    intentionally kept in the same root window even if the bounds is
+  //    outside of the display.
   if (!window->transient_parent() &&
-      !window->GetProperty(internal::kStayInSameRootWindowKey)) {
+      !ShouldStayInSameRootWindow(window)) {
     aura::RootWindow* dst_root =
         Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
             display.id());

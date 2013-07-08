@@ -4,6 +4,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -724,6 +725,25 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
   w1->GetNativeView()->ClearProperty(internal::kStayInSameRootWindowKey);
   w1->SetBounds(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
+
+  // a window in SettingsBubbleContainer and StatusContainer should
+  // not move to another root window regardles of the bounds specified.
+  aura::Window* settings_bubble_container =
+      Shell::GetPrimaryRootWindowController()->GetContainer(
+          kShellWindowId_SettingBubbleContainer);
+  aura::Window* window = aura::test::CreateTestWindowWithId(
+      100, settings_bubble_container);
+  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
+                            ScreenAsh::GetSecondaryDisplay());
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
+
+  aura::Window* status_container =
+      Shell::GetPrimaryRootWindowController()->GetContainer(
+          kShellWindowId_StatusContainer);
+  window = aura::test::CreateTestWindowWithId(100, status_container);
+  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
+                            ScreenAsh::GetSecondaryDisplay());
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
 }
 
 TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
