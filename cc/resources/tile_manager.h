@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_worker_pool.h"
@@ -31,27 +32,6 @@ class CC_EXPORT TileManagerClient {
  protected:
   virtual ~TileManagerClient() {}
 };
-
-// Tile manager classifying tiles into a few basic
-// bins:
-enum TileManagerBin {
-  NOW_BIN = 0,  // Needed ASAP.
-  SOON_BIN = 1,  // Impl-side version of prepainting.
-  EVENTUALLY_BIN = 2,  // Nice to have, if we've got memory and time.
-  NEVER_BIN = 3,  // Dont bother.
-  NUM_BINS = 4
-  // Be sure to update TileManagerBinAsValue when adding new fields.
-};
-scoped_ptr<base::Value> TileManagerBinAsValue(
-    TileManagerBin bin);
-
-enum TileManagerBinPriority {
-  HIGH_PRIORITY_BIN = 0,
-  LOW_PRIORITY_BIN = 1,
-  NUM_BIN_PRIORITIES = 2
-};
-scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
-    TileManagerBinPriority bin);
 
 // This class manages tiles, deciding which should get rasterized and which
 // should no longer have any memory assigned to them. Tile objects are "owned"
@@ -143,7 +123,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   void DidFinishTileInitialization(Tile* tile);
   void DidTileTreeBinChange(Tile* tile,
-                            TileManagerBin new_tree_bin,
+                            ManagedTileBin new_tree_bin,
                             WhichTree tree);
   scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
   void AddRequiredTileForActivation(Tile* tile);

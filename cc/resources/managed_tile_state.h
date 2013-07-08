@@ -10,9 +10,30 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/tile_manager.h"
 
 namespace cc {
+
+class TileManager;
+
+// Tile manager classifying tiles into a few basic bins:
+enum ManagedTileBin {
+  NOW_BIN = 0,         // Needed ASAP.
+  SOON_BIN = 1,        // Impl-side version of prepainting.
+  EVENTUALLY_BIN = 2,  // Nice to have, if we've got memory and time.
+  NEVER_BIN = 3,       // Dont bother.
+  NUM_BINS = 4
+  // Be sure to update ManagedTileBinAsValue when adding new fields.
+};
+scoped_ptr<base::Value> ManagedTileBinAsValue(
+    ManagedTileBin bin);
+
+enum ManagedTileBinPriority {
+  HIGH_PRIORITY_BIN = 0,
+  LOW_PRIORITY_BIN = 1,
+  NUM_BIN_PRIORITIES = 2
+};
+scoped_ptr<base::Value> ManagedTileBinPriorityAsValue(
+    ManagedTileBinPriority bin);
 
 // This is state that is specific to a tile that is
 // managed by the TileManager.
@@ -122,13 +143,13 @@ class CC_EXPORT ManagedTileState {
            bin[LOW_PRIORITY_BIN] == NOW_BIN;
   }
 
-  TileManagerBin bin[NUM_BIN_PRIORITIES];
-  TileManagerBin tree_bin[NUM_TREES];
+  ManagedTileBin bin[NUM_BIN_PRIORITIES];
+  ManagedTileBin tree_bin[NUM_TREES];
 
   // The bin that the tile would have if the GPU memory manager had
   // a maximally permissive policy, send to the GPU memory manager
   // to determine policy.
-  TileManagerBin gpu_memmgr_stats_bin;
+  ManagedTileBin gpu_memmgr_stats_bin;
   TileResolution resolution;
   bool required_for_activation;
   float time_to_needed_in_seconds;

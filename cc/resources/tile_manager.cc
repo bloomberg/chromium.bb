@@ -26,7 +26,7 @@ namespace {
 
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
-inline TileManagerBin BinFromTilePriority(const TilePriority& prio,
+inline ManagedTileBin BinFromTilePriority(const TilePriority& prio,
                                           TreePriority tree_priority) {
   // The amount of time for which we want to have prepainting coverage.
   const float kPrepaintingWindowTimeSeconds = 1.0f;
@@ -55,43 +55,6 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio,
 }
 
 }  // namespace
-
-scoped_ptr<base::Value> TileManagerBinAsValue(TileManagerBin bin) {
-  switch (bin) {
-  case NOW_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "NOW_BIN"));
-  case SOON_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "SOON_BIN"));
-  case EVENTUALLY_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "EVENTUALLY_BIN"));
-  case NEVER_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "NEVER_BIN"));
-  default:
-      DCHECK(false) << "Unrecognized TileManagerBin value " << bin;
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "<unknown TileManagerBin value>"));
-  }
-}
-
-scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
-    TileManagerBinPriority bin_priority) {
-  switch (bin_priority) {
-  case HIGH_PRIORITY_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "HIGH_PRIORITY_BIN"));
-  case LOW_PRIORITY_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "LOW_PRIORITY_BIN"));
-  default:
-      DCHECK(false) << "Unrecognized TileManagerBinPriority value";
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "<unknown TileManagerBinPriority value>"));
-  }
-}
 
 // static
 scoped_ptr<TileManager> TileManager::Create(
@@ -263,7 +226,7 @@ void TileManager::AssignBinsToTiles() {
   const TreePriority tree_priority = global_state_.tree_priority;
 
   // Memory limit policy works by mapping some bin states to the NEVER bin.
-  TileManagerBin bin_map[NUM_BINS];
+  ManagedTileBin bin_map[NUM_BINS];
   if (global_state_.memory_limit_policy == ALLOW_NOTHING) {
     bin_map[NOW_BIN] = NEVER_BIN;
     bin_map[SOON_BIN] = NEVER_BIN;
@@ -873,7 +836,7 @@ void TileManager::DidFinishTileInitialization(Tile* tile) {
 }
 
 void TileManager::DidTileTreeBinChange(Tile* tile,
-                                       TileManagerBin new_tree_bin,
+                                       ManagedTileBin new_tree_bin,
                                        WhichTree tree) {
   ManagedTileState& mts = tile->managed_state();
   mts.tree_bin[tree] = new_tree_bin;

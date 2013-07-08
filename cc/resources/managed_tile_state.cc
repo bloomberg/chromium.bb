@@ -10,6 +10,43 @@
 
 namespace cc {
 
+scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin) {
+  switch (bin) {
+  case NOW_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "NOW_BIN"));
+  case SOON_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "SOON_BIN"));
+  case EVENTUALLY_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "EVENTUALLY_BIN"));
+  case NEVER_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "NEVER_BIN"));
+  default:
+      DCHECK(false) << "Unrecognized ManagedTileBin value " << bin;
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "<unknown ManagedTileBin value>"));
+  }
+}
+
+scoped_ptr<base::Value> ManagedTileBinPriorityAsValue(
+    ManagedTileBinPriority bin_priority) {
+  switch (bin_priority) {
+  case HIGH_PRIORITY_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "HIGH_PRIORITY_BIN"));
+  case LOW_PRIORITY_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "LOW_PRIORITY_BIN"));
+  default:
+      DCHECK(false) << "Unrecognized ManagedTileBinPriority value";
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "<unknown ManagedTileBinPriority value>"));
+  }
+}
+
 ManagedTileState::ManagedTileState()
     : raster_mode(LOW_QUALITY_RASTER_MODE),
       gpu_memmgr_stats_bin(NEVER_BIN),
@@ -58,10 +95,10 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetBoolean("has_resource",
                     tile_versions[raster_mode].resource_.get() != 0);
-  state->Set("bin.0", TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
-  state->Set("bin.1", TileManagerBinAsValue(bin[PENDING_TREE]).release());
+  state->Set("bin.0", ManagedTileBinAsValue(bin[ACTIVE_TREE]).release());
+  state->Set("bin.1", ManagedTileBinAsValue(bin[PENDING_TREE]).release());
   state->Set("gpu_memmgr_stats_bin",
-      TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
+      ManagedTileBinAsValue(bin[ACTIVE_TREE]).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
   state->Set("time_to_needed_in_seconds",
       MathUtil::AsValueSafely(time_to_needed_in_seconds).release());
