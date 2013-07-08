@@ -758,10 +758,10 @@ WTF_EXPORT bool equal(const StringImpl*, const StringImpl*);
 WTF_EXPORT bool equal(const StringImpl*, const LChar*);
 inline bool equal(const StringImpl* a, const char* b) { return equal(a, reinterpret_cast<const LChar*>(b)); }
 WTF_EXPORT bool equal(const StringImpl*, const LChar*, unsigned);
+WTF_EXPORT bool equal(const StringImpl*, const UChar*, unsigned);
 inline bool equal(const StringImpl* a, const char* b, unsigned length) { return equal(a, reinterpret_cast<const LChar*>(b), length); }
 inline bool equal(const LChar* a, StringImpl* b) { return equal(b, a); }
 inline bool equal(const char* a, StringImpl* b) { return equal(b, reinterpret_cast<const LChar*>(a)); }
-WTF_EXPORT bool equal(const StringImpl*, const UChar*, unsigned);
 WTF_EXPORT bool equalNonNull(const StringImpl* a, const StringImpl* b);
 
 // Do comparisons 8 or 4 bytes-at-a-time on architectures where it's safe.
@@ -879,46 +879,19 @@ ALWAYS_INLINE bool equal(const UChar* a, const UChar* b, unsigned length)
     return true;
 }
 #else
-ALWAYS_INLINE bool equal(const LChar* a, const LChar* b, unsigned length)
-{
-    for (unsigned i = 0; i != length; ++i) {
-        if (a[i] != b[i])
-            return false;
-    }
-
-    return true;
-}
-
-ALWAYS_INLINE bool equal(const UChar* a, const UChar* b, unsigned length)
-{
-    for (unsigned i = 0; i != length; ++i) {
-        if (a[i] != b[i])
-            return false;
-    }
-
-    return true;
-}
+ALWAYS_INLINE bool equal(const LChar* a, const LChar* b, unsigned length) { return !memcmp(a, b, length); }
+ALWAYS_INLINE bool equal(const UChar* a, const UChar* b, unsigned length) { return !memcmp(a, b, length * sizeof(UChar)); }
 #endif
 
 ALWAYS_INLINE bool equal(const LChar* a, const UChar* b, unsigned length)
 {
-    for (unsigned i = 0; i != length; ++i) {
+    for (unsigned i = 0; i < length; ++i) {
         if (a[i] != b[i])
             return false;
     }
-
     return true;
 }
-
-ALWAYS_INLINE bool equal(const UChar* a, const LChar* b, unsigned length)
-{
-    for (unsigned i = 0; i != length; ++i) {
-        if (a[i] != b[i])
-            return false;
-    }
-
-    return true;
-}
+ALWAYS_INLINE bool equal(const UChar* a, const LChar* b, unsigned length) { return equal(b, a, length); }
 
 WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const StringImpl*);
 WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const LChar*);
