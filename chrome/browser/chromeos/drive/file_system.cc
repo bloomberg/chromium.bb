@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/open_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/touch_operation.h"
@@ -122,6 +123,14 @@ void FileSystem::Initialize() {
                                            cache_));
   move_operation_.reset(
       new file_system::MoveOperation(observer, scheduler_, resource_metadata_));
+  open_file_operation_.reset(
+      new file_system::OpenFileOperation(blocking_task_runner_.get(),
+                                         observer,
+                                         scheduler_,
+                                         resource_metadata_,
+                                         cache_,
+                                         temporary_file_directory_,
+                                         &open_files_));
   remove_operation_.reset(
       new file_system::RemoveOperation(blocking_task_runner_.get(),
                                        observer,
@@ -927,95 +936,7 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // If the file is already opened, it cannot be opened again before closed.
-  // This is for avoiding simultaneous modification to the file, and moreover
-  // to avoid an inconsistent cache state (suppose an operation sequence like
-  // Open->Open->modify->Close->modify->Close; the second modify may not be
-  // synchronized to the server since it is already Closed on the cache).
-  if (open_files_.find(file_path) != open_files_.end()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, FILE_ERROR_IN_USE, base::FilePath()));
-    return;
-  }
-  open_files_.insert(file_path);
-
-  download_operation_->EnsureFileDownloadedByPath(
-      file_path,
-      ClientContext(USER_INITIATED),
-      GetFileContentInitializedCallback(),
-      google_apis::GetContentCallback(),
-      base::Bind(&FileSystem::OpenFileAfterFileDownloaded,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 base::Bind(&FileSystem::OnOpenFileFinished,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            file_path,
-                            callback)));
-}
-
-void FileSystem::OpenFileAfterFileDownloaded(
-    const base::FilePath& file_path,
-    const OpenFileCallback& callback,
-    FileError error,
-    const base::FilePath& local_file_path,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error == FILE_ERROR_OK) {
-    DCHECK(entry);
-    DCHECK(entry->has_file_specific_info());
-    if (entry->file_specific_info().is_hosted_document())
-      // No support for opening a hosted document.
-      error = FILE_ERROR_INVALID_OPERATION;
-  }
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath());
-    return;
-  }
-
-  cache_->MarkDirtyOnUIThread(entry->resource_id(),
-                              entry->file_specific_info().md5(),
-                              base::Bind(&FileSystem::OpenFileAfterMarkDirty,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         entry->resource_id(),
-                                         entry->file_specific_info().md5(),
-                                         callback));
-}
-
-void FileSystem::OpenFileAfterMarkDirty(
-    const std::string& resource_id,
-    const std::string& md5,
-    const OpenFileCallback& callback,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath());
-    return;
-  }
-
-  cache_->GetFileOnUIThread(resource_id, md5, callback);
-}
-
-void FileSystem::OnOpenFileFinished(
-    const base::FilePath& file_path,
-    const OpenFileCallback& callback,
-    FileError result,
-    const base::FilePath& cache_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // All the invocation of |callback| from operations initiated from OpenFile
-  // must go through here. Removes the |file_path| from the remembered set when
-  // the file was not successfully opened.
-  if (result != FILE_ERROR_OK)
-    open_files_.erase(file_path);
-
-  callback.Run(result, cache_file_path);
+  open_file_operation_->OpenFile(file_path, callback);
 }
 
 void FileSystem::CloseFile(const base::FilePath& file_path,

@@ -48,6 +48,7 @@ class CreateDirectoryOperation;
 class CreateFileOperation;
 class DownloadOperation;
 class MoveOperation;
+class OpenFileOperation;
 class OperationObserver;
 class RemoveOperation;
 class SearchOperation;
@@ -220,29 +221,6 @@ class FileSystem : public FileSystemInterface,
                    const std::string& resource_id,
                    FileError error);
 
-  // Part of OpenFile(). Called after the file downloading is completed.
-  void OpenFileAfterFileDownloaded(
-      const base::FilePath& file_path,
-      const OpenFileCallback& callback,
-      FileError error,
-      const base::FilePath& local_file_path,
-      scoped_ptr<ResourceEntry> entry);
-
-  // Part of OpenFile(). Called after the cache file is marked dirty.
-  void OpenFileAfterMarkDirty(
-      const std::string& resource_id,
-      const std::string& md5,
-      const OpenFileCallback& callback,
-      FileError error);
-
-  // Invoked at the last step of OpenFile. It removes |file_path| from the
-  // current set of opened files if |result| is an error, and then invokes the
-  // |callback| function.
-  void OnOpenFileFinished(const base::FilePath& file_path,
-                          const OpenFileCallback& callback,
-                          FileError result,
-                          const base::FilePath& cache_file_path);
-
   // Invoked during the process of CloseFile. What is done here is as follows:
   // 1) Gets resource_id and md5 of the entry at |file_path|.
   // 2) Commits the modification to the cache system.
@@ -396,6 +374,7 @@ class FileSystem : public FileSystemInterface,
   scoped_ptr<file_system::CreateDirectoryOperation> create_directory_operation_;
   scoped_ptr<file_system::CreateFileOperation> create_file_operation_;
   scoped_ptr<file_system::MoveOperation> move_operation_;
+  scoped_ptr<file_system::OpenFileOperation> open_file_operation_;
   scoped_ptr<file_system::RemoveOperation> remove_operation_;
   scoped_ptr<file_system::TouchOperation> touch_operation_;
   scoped_ptr<file_system::TruncateOperation> truncate_operation_;

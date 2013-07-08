@@ -614,6 +614,7 @@
         'browser/chromeos/drive/file_system/create_file_operation_unittest.cc',
         'browser/chromeos/drive/file_system/download_operation_unittest.cc',
         'browser/chromeos/drive/file_system/move_operation_unittest.cc',
+        'browser/chromeos/drive/file_system/open_file_operation_unittest.cc',
         'browser/chromeos/drive/file_system/operation_test_base.cc',
         'browser/chromeos/drive/file_system/operation_test_base.h',
         'browser/chromeos/drive/file_system/remove_operation_unittest.cc',
