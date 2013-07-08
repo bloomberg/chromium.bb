@@ -12,6 +12,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/sync_file_system_internals_resources.h"
+#include "ui/ui_resources/grit/ui_resources.h"
 
 namespace {
 
@@ -27,6 +28,8 @@ content::WebUIDataSource* CreateSyncFileSystemInternalsHTMLSource() {
       "file_metadata.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_FILE_METADATA_JS);
   source->AddResourcePath(
       "sync_service.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_SYNC_SERVICE_JS);
+  source->AddResourcePath("file.png", IDR_DEFAULT_FAVICON);
+  source->AddResourcePath("folder_closed.png", IDR_FOLDER_CLOSED);
   source->SetDefaultResource(IDR_SYNC_FILE_SYSTEM_INTERNALS_MAIN_HTML);
   return source;
 }

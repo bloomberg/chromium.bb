@@ -41,16 +41,15 @@ tbody tr:nth-child(odd) {
 }
 
 .file-icon {
-  background-image: url('../../../../ui/webui/resources/images/icon_file.png');
+  background-image: url('chrome://syncfs-internals/file.png');
   background-position: 0 2px;
   background-repeat: no-repeat;
   padding-left: 18px;
 }
 
 .folder-icon {
-  background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/common/folder_closed.png') 1x,
-      url('../../../../ui/resources/default_200_percent/common/folder_closed.png') 2x);
+  background-image: url('chrome://syncfs-internals/folder_closed.png');
   background-position: 0 2px;
   background-repeat: no-repeat;
+  padding-left: 18px;
 }
