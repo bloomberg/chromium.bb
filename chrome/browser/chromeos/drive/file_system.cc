@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system/close_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
@@ -104,6 +105,11 @@ void FileSystem::Initialize() {
   SetupChangeListLoader();
 
   file_system::OperationObserver* observer = this;
+  close_file_operation_.reset(
+      new file_system::CloseFileOperation(blocking_task_runner_.get(),
+                                          observer,
+                                          resource_metadata_,
+                                          &open_files_));
   copy_operation_.reset(
       new file_system::CopyOperation(blocking_task_runner_.get(),
                                      observer,
@@ -942,49 +948,7 @@ void FileSystem::CloseFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (open_files_.find(file_path) == open_files_.end()) {
-    // The file is not being opened.
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, FILE_ERROR_NOT_FOUND));
-    return;
-  }
-
-  // Step 1 of CloseFile: Get resource_id and md5 for |file_path|.
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      file_path,
-      base::Bind(&FileSystem::CloseFileAfterGetResourceEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback));
-}
-
-void FileSystem::CloseFileAfterGetResourceEntry(
-    const base::FilePath& file_path,
-    const FileOperationCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (entry.get() && !entry->has_file_specific_info())
-    error = FILE_ERROR_NOT_FOUND;
-
-  // Step 2 of CloseFile: Trigger upload.
-  // TODO(benchan,kinaba): Call ClearDirtyInCache if the file has not been
-  // modified. Come up with a way to detect the intactness effectively, or
-  // provide a method for user to declare it when calling CloseFile().
-  if (error == FILE_ERROR_OK)
-    sync_client_->AddUploadTask(entry->resource_id());
-
-  // Step 3 of CloseFile.
-  // All the invocation of |callback| from operations initiated from CloseFile
-  // must go through here. Removes the |file_path| from the remembered set so
-  // that subsequent operations can open the file again.
-  open_files_.erase(file_path);
-
-  // Then invokes the user-supplied callback function.
-  callback.Run(error);
+  close_file_operation_->CloseFile(file_path, callback);
 }
 
 void FileSystem::CheckLocalModificationAndRun(

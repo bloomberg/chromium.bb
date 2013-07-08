@@ -43,6 +43,7 @@ class SyncClient;
 }  // namespace internal
 
 namespace file_system {
+class CloseFileOperation;
 class CopyOperation;
 class CreateDirectoryOperation;
 class CreateFileOperation;
@@ -221,17 +222,6 @@ class FileSystem : public FileSystemInterface,
                    const std::string& resource_id,
                    FileError error);
 
-  // Invoked during the process of CloseFile. What is done here is as follows:
-  // 1) Gets resource_id and md5 of the entry at |file_path|.
-  // 2) Commits the modification to the cache system.
-  // 3) Removes the |file_path| from the remembered set of opened files.
-  // 4) Invokes the user-supplied |callback|.
-  // |callback| must not be null.
-  void CloseFileAfterGetResourceEntry(const base::FilePath& file_path,
-                                      const FileOperationCallback& callback,
-                                      FileError error,
-                                      scoped_ptr<ResourceEntry> entry);
-
   // Callback for handling about resource fetch.
   void OnGetAboutResource(
       const GetAvailableSpaceCallback& callback,
@@ -370,6 +360,7 @@ class FileSystem : public FileSystemInterface,
   base::FilePath temporary_file_directory_;
 
   // Implementation of each file system operation.
+  scoped_ptr<file_system::CloseFileOperation> close_file_operation_;
   scoped_ptr<file_system::CopyOperation> copy_operation_;
   scoped_ptr<file_system::CreateDirectoryOperation> create_directory_operation_;
   scoped_ptr<file_system::CreateFileOperation> create_file_operation_;
