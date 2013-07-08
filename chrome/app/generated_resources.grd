@@ -7411,26 +7411,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
 
-      <!-- Instant checkbox strings -->
-      <message name="IDS_INSTANT_CHECKBOX_ENABLED" desc="Description of a preference that enables or disables Instant previews of search results.">
-        Display Instant results.
-      </message>
-      <message name="IDS_INSTANT_CHECKBOX_NO_EXTENDED_API" desc="Description of a preference that's disabled because the Instant Extended API is disabled.">
-        Display Instant results (Instant Extended is disabled).
-      </message>
-      <message name="IDS_INSTANT_CHECKBOX_NO_DEFAULT_SEARCH_PROVIDER" desc="Description of a preference that's disabled because there's no default search engine.">
-        Display Instant results (no default search engine).
-      </message>
-      <message name="IDS_INSTANT_CHECKBOX_UNKNOWN_DEFAULT_SEARCH_PROVIDER" desc="Description of a preference that's disabled because an unnamed default search provider does not support Instant.">
-        Display Instant results (the default search engine does not support Instant).
-      </message>
-      <message name="IDS_INSTANT_CHECKBOX_NON_INSTANT_DEFAULT_SEARCH_PROVIDER" desc="Description of a preference that's disabled because the named default search provider does not support Instant.">
-        Display Instant results (<ph name="SEARCH_ENGINE_NAME">$1<ex>Yahoo!</ex></ph> does not support Instant).
-      </message>
-      <message name="IDS_INSTANT_CHECKBOX_PREDICTION_DISABLED" desc="Description of a preference that's disabled because search query prediction is disabled.">
-        Display Instant results (a prediction service must be enabled).
-      </message>
-
       <!-- Conflicts page -->
       <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">
         Modules (<ph name="TOTAL_COUNT">$1<ex>50</ex></ph>) - No conflicts detected

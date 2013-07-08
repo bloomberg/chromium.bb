@@ -369,7 +369,6 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
 
   // Enable Instant. Still no Instant URL because "strk" is missing.
   EnableInstantExtendedAPIForTesting();
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
   SetDefaultInstantTemplateUrl(false);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
@@ -382,11 +381,6 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
 
   // Enable suggest. No difference.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
-            GetInstantURL(profile(), kDisableStartMargin));
-
-  // Disable Instant. No difference, because suggest is still enabled.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, false);
   EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
             GetInstantURL(profile(), kDisableStartMargin));
 
@@ -411,140 +405,8 @@ TEST_F(SearchTest, StartMarginCGI) {
             GetInstantURL(profile(), 10));
 }
 
-TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
-  // Enable Instant.
-  EnableInstantExtendedAPIForTesting();
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
-  SetDefaultInstantTemplateUrl(false);
-
-  // No default search provider support yet.
-  EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
-
-  // Set an Instant URL with a valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(true);
-
-  // Default search provider should now support instant.
-  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
-  // Enable suggest. No difference.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
-
-  // Disable Instant. No difference.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, false);
-  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
-
-  // Disable suggest. No Instant URL.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
-  // Even with suggest disabled, the default search provider still supports
-  // instant.
-  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
-
-  // Set an Instant URL with no valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(false);
-
-  EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
-}
-
-TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabledWithInstant) {
-  // Enable instant extended.
-  EnableInstantExtendedAPIForTesting();
-
-  // Enable Instant.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
-                                                     "Group1 allow_instant:1"));
-  ASSERT_TRUE(IsInstantCheckboxVisible());
-
-  // Enable suggest.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-
-  // Set an Instant URL with a valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(true);
-
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
-
-  EXPECT_TRUE(IsInstantCheckboxVisible());
-  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
-
-  // Set an Instant URL with no valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(false);
-
-  // For extended instant, the checkbox should now be disabled.
-  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
-
-  // Disable suggest.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
-
-  EXPECT_TRUE(IsInstantCheckboxVisible());
-  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
-
-  // Set an Instant URL with a search terms replacement key.
-  SetDefaultInstantTemplateUrl(true);
-
-  // Should still be disabled, since suggest is still off.
-  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
-
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-
-  // Now that suggest is back on and the instant url is good, the checkbox
-  // should be enabled and checked again.
-  EXPECT_TRUE(IsInstantCheckboxVisible());
-  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
-}
-
-TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabledWithoutInstant) {
-  // Enable instant extended.
-  EnableInstantExtendedAPIForTesting();
-
-  // Leave Instant disallowed.
-  ASSERT_FALSE(IsInstantCheckboxVisible());
-
-  // Enable suggest.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-
-  // Set an Instant URL with a valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(true);
-
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
-
-  EXPECT_FALSE(IsInstantCheckboxVisible());
-  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
-
-  // Set an Instant URL with no valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(false);
-
-  // For extended instant, the checkbox should now be disabled.
-  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
-
-  // Disable suggest.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
-
-  EXPECT_FALSE(IsInstantCheckboxVisible());
-  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
-
-  // Set an Instant URL with a search terms replacement key.
-  SetDefaultInstantTemplateUrl(true);
-
-  // Should still be disabled, since suggest is still off.
-  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
-
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-
-  // Now that suggest is back on and the instant url is good, the checkbox
-  // should be enabled and checked again, but still invisible.
-  EXPECT_FALSE(IsInstantCheckboxVisible());
-  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
-  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
-}
-
 TEST_F(SearchTest, CommandLineOverrides) {
   EnableInstantExtendedAPIForTesting();
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
 
   // GetLocalInstantURL() should default to the non-Google local NTP.
   SetSearchProvider(false);

@@ -86,28 +86,6 @@ bool IsInstantNTP(const content::WebContents* contents);
 bool NavEntryIsInstantNTP(const content::WebContents* contents,
                           const content::NavigationEntry* nav_entry);
 
-// Registers Instant-related user preferences. Called at startup.
-void RegisterInstantUserPrefs(user_prefs::PrefRegistrySyncable* registry);
-
-// Sets the default value of prefs::kSearchInstantEnabled based on field trials.
-void SetInstantExtendedPrefDefault(Profile* profile);
-
-// Returns whether the Instant checkbox in chrome://settings/ should be shown.
-bool IsInstantCheckboxVisible();
-
-// Returns whether the Instant checkbox in chrome://settings/ should be enabled
-// (i.e., toggleable). This returns true iff prefs::kSearchSuggestEnabled is
-// true and the default search engine has a valid Instant URL in its template.
-bool IsInstantCheckboxEnabled(Profile* profile);
-
-// Returns whether the Instant checkbox in chrome://settings/ should be checked
-// (i.e., with a tick mark). This returns true iff IsInstantCheckboxEnabled()
-// and the pref indicated by GetInstantPrefName() is set to true.
-bool IsInstantCheckboxChecked(Profile* profile);
-
-// Returns the label for the Instant checkbox in chrome://settings/.
-string16 GetInstantCheckboxLabel(Profile* profile);
-
 // Returns the Instant URL of the default search engine. Returns an empty GURL
 // if the engine doesn't have an Instant URL, or if it shouldn't be used (say
 // because it doesn't satisfy the requirements for extended mode or if Instant
@@ -124,17 +102,12 @@ GURL GetInstantURL(Profile* profile, int start_margin);
 // to the JS that Google-specific New Tab Page elements should be rendered.
 GURL GetLocalInstantURL(Profile* profile);
 
-// Instant (loading a remote server page and talking to it using the searchbox
-// API) is considered enabled if there's a valid Instant URL that can be used,
-// so this simply returns whether GetInstantURL() is a valid URL.
-// NOTE: This method expands the default search engine's instant_url template,
-// so it shouldn't be called from SearchTermsData or other such code that would
-// lead to an infinite recursion.
-bool IsInstantEnabled(Profile* profile);
-
 // Returns true if 'use_remote_ntp_on_startup' flag is enabled in field trials
 // to always show the remote NTP on browser startup.
 bool ShouldPreferRemoteNTPOnStartup();
+
+// Returns true if the Instant NTP should be preloaded before it is shown.
+bool ShouldPreloadInstantNTP(Profile* profile);
 
 // Returns true if the Instant NTP should be shown and false if not.
 bool ShouldShowInstantNTP();
@@ -214,10 +187,6 @@ uint64 GetUInt64ValueForFlagWithDefault(const std::string& flag,
 bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags);
-
-// Returns whether the default search provider has a valid Instant URL in its
-// template. Exposed for testing only.
-bool DefaultSearchProviderSupportsInstant(Profile* profile);
 
 // Let tests reset the gate that prevents metrics from being sent more than
 // once.

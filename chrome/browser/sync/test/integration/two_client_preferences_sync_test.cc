@@ -163,16 +163,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kShowBookmarkBar) {
   ASSERT_TRUE(BooleanPrefMatches(prefs::kShowBookmarkBar));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kEnableInstant) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSearchInstantEnabled));
-
-  ChangeBooleanPref(0, prefs::kSearchInstantEnabled);
-
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kSearchInstantEnabled));
-}
-
 // TCM ID - 3611311.
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kCheckDefaultBrowser) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

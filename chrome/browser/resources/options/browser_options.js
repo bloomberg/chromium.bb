@@ -692,28 +692,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Updates the Instant checkbox section.
-     * @param {boolean} visible Is the checkbox visible?
-     * @param {boolean} enabled Is the checkbox enabled?
-     * @param {boolean} checked Is the checkbox checked?
-     * @param {string} checkboxLabel Label to show next to the checkbox.
-     * @private
-     */
-    updateInstantCheckboxState_: function(visible, enabled, checked,
-                                          checkboxLabel) {
-      var checkboxSection = $('instant-enabled-setting');
-      var checkbox = $('instant-enabled-control');
-      if (visible) {
-        $('instant-enabled-setting').style.display = 'block';
-        checkbox.disabled = !enabled;
-        checkbox.checked = checked;
-        $('instant-enabled-label').textContent = checkboxLabel;
-      } else {
-        $('instant-enabled-setting').style.display = 'none';
-      }
-    },
-
-    /**
      * Updates the sync section with the given state.
      * @param {Object} syncData A bunch of data records that describe the status
      *     of the sync system.
@@ -1493,7 +1471,6 @@ cr.define('options', function() {
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
-    'updateInstantCheckboxState',
     'updateSearchEngines',
     'updateStartupPages',
     'updateSyncState',

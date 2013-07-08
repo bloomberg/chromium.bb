@@ -58,13 +58,6 @@ const char kStalePageTimeoutFlagName[] = "stale";
 const int kStalePageTimeoutDefault = 3 * 3600;  // 3 hours.
 const int kStalePageTimeoutDisabled = 0;
 
-// Unless "allow_instant:1" is present, users cannot opt into Instant, nor will
-// the "instant" flag below have any effect.
-const char kAllowInstantSearchResultsFlagName[] = "allow_instant";
-
-// Sets the default state for the Instant checkbox.
-const char kInstantSearchResultsFlagName[] = "instant";
-
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 const char kShowNtpFlagName[] = "show_ntp";
 const char kRecentTabsOnNTPFlagName[] = "show_recent_tabs";
@@ -171,6 +164,9 @@ bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
 
 // Returns true if |url| can be used as an Instant URL for |profile|.
 bool IsInstantURL(const GURL& url, Profile* profile) {
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
   if (!url.is_valid())
     return false;
 
@@ -178,8 +174,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!template_url)
     return false;
 
-  const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
-  if (extended_api_enabled && !IsSuitableURLForInstant(url, template_url))
+  if (!IsSuitableURLForInstant(url, template_url))
     return false;
 
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
@@ -187,7 +182,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
       TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin, false);
   return instant_url.is_valid() &&
       (MatchesOriginAndPath(url, instant_url) ||
-       (extended_api_enabled && MatchesAnySearchURL(url, template_url)));
+       MatchesAnySearchURL(url, template_url));
 }
 
 string16 GetSearchTermsImpl(const content::WebContents* contents,
@@ -338,119 +333,29 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   return is_online_ntp || is_local_ntp;
 }
 
-void RegisterInstantUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
-  // This default is overridden by SetInstantExtendedPrefDefault().
-  registry->RegisterBooleanPref(
-      prefs::kSearchInstantEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-}
-
-void SetInstantExtendedPrefDefault(Profile* profile) {
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    bool pref_default = GetBoolValueForFlagWithDefault(
-        kInstantSearchResultsFlagName, true, flags);
-    if (profile && profile->GetPrefs()) {
-      profile->GetPrefs()->SetDefaultPrefValue(
-          prefs::kSearchInstantEnabled,
-          Value::CreateBooleanValue(pref_default));
-    }
-  }
-}
-
 bool IsSuggestPrefEnabled(Profile* profile) {
   return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
          profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
-bool IsInstantPrefEnabled(Profile* profile) {
-  return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
-         profile->GetPrefs()->GetBoolean(prefs::kSearchInstantEnabled);
-}
-
-bool IsInstantCheckboxVisible() {
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(
-        kAllowInstantSearchResultsFlagName, false, flags);
-  }
-  return false;
-}
-
-bool IsInstantCheckboxEnabled(Profile* profile) {
-  RecordInstantExtendedOptInState();
-  return IsInstantExtendedAPIEnabled() &&
-         DefaultSearchProviderSupportsInstant(profile) &&
-         IsSuggestPrefEnabled(profile);
-}
-
-bool IsInstantCheckboxChecked(Profile* profile) {
-  // NOTE: This is a global bool, not profile-specific. So, the histogram will
-  // record the value of whichever profile happens to get here first. There's
-  // no point doing a per-profile bool, because UMA uploads don't carry
-  // profile-specific information anyway.
-  static bool recorded = false;
-  if (!recorded) {
-    recorded = true;
-    UMA_HISTOGRAM_BOOLEAN("InstantExtended.PrefValue",
-                          IsInstantPrefEnabled(profile));
-  }
-
-  return IsInstantCheckboxVisible() &&
-         IsInstantCheckboxEnabled(profile) &&
-         IsInstantPrefEnabled(profile);
-}
-
-string16 GetInstantCheckboxLabel(Profile* profile) {
-  if (!IsInstantExtendedAPIEnabled())
-    return l10n_util::GetStringUTF16(IDS_INSTANT_CHECKBOX_NO_EXTENDED_API);
-
-  if (!DefaultSearchProviderSupportsInstant(profile)) {
-    const TemplateURL* provider = GetDefaultSearchProviderTemplateURL(profile);
-    if (!provider) {
-      return l10n_util::GetStringUTF16(
-          IDS_INSTANT_CHECKBOX_NO_DEFAULT_SEARCH_PROVIDER);
-    }
-
-    if (provider->short_name().empty()) {
-      return l10n_util::GetStringUTF16(
-          IDS_INSTANT_CHECKBOX_UNKNOWN_DEFAULT_SEARCH_PROVIDER);
-    }
-
-    return l10n_util::GetStringFUTF16(
-        IDS_INSTANT_CHECKBOX_NON_INSTANT_DEFAULT_SEARCH_PROVIDER,
-        provider->short_name());
-  }
-
-  if (!IsSuggestPrefEnabled(profile))
-    return l10n_util::GetStringUTF16(IDS_INSTANT_CHECKBOX_PREDICTION_DISABLED);
-
-  DCHECK(IsInstantCheckboxEnabled(profile));
-  return l10n_util::GetStringUTF16(IDS_INSTANT_CHECKBOX_ENABLED);
-}
-
 GURL GetInstantURL(Profile* profile, int start_margin) {
-  if (!IsInstantCheckboxEnabled(profile))
-    return GURL();
-
-  // In non-extended mode, the checkbox must be checked.
-  const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
-  if (!extended_api_enabled && !IsInstantCheckboxChecked(profile))
+  if (!IsInstantExtendedAPIEnabled() || !IsSuggestPrefEnabled(profile))
     return GURL();
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (!template_url)
+    return GURL();
+
   GURL instant_url =
       TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin, true);
+  if (!instant_url.is_valid() ||
+      !template_url->HasSearchTermsReplacementKey(instant_url))
+    return GURL();
 
   // Extended mode requires HTTPS.  Force it unless the base URL was overridden
   // on the command line, in which case we allow HTTP (see comments on
   // IsSuitableURLForInstant()).
-  if (!extended_api_enabled || instant_url.SchemeIsSecure() ||
+  if (instant_url.SchemeIsSecure() ||
       google_util::StartsWithCommandLineGoogleBaseURL(instant_url))
     return instant_url;
   GURL::Replacements replacements;
@@ -469,10 +374,6 @@ GURL GetLocalInstantURL(Profile* profile) {
     return GURL(chrome::kChromeSearchLocalGoogleNtpUrl);
   }
   return GURL(chrome::kChromeSearchLocalNtpUrl);
-}
-
-bool IsInstantEnabled(Profile* profile) {
-  return GetInstantURL(profile, kDisableStartMargin).is_valid();
 }
 
 bool ShouldPreferRemoteNTPOnStartup() {
@@ -494,6 +395,10 @@ bool ShouldPreferRemoteNTPOnStartup() {
                                           flags);
   }
   return false;
+}
+
+bool ShouldPreloadInstantNTP(Profile* profile) {
+  return !GetInstantURL(profile, kDisableStartMargin).is_empty();
 }
 
 bool ShouldShowInstantNTP() {
@@ -654,19 +559,6 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
-}
-
-bool DefaultSearchProviderSupportsInstant(Profile* profile) {
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return false;
-
-  GURL instant_url = TemplateURLRefToGURL(template_url->instant_url_ref(),
-                                          kDisableStartMargin, false);
-  // Extended mode instant requires a search terms replacement key.
-  return instant_url.is_valid() &&
-         (!IsInstantExtendedAPIEnabled() ||
-          template_url->HasSearchTermsReplacementKey(instant_url));
 }
 
 void ResetInstantExtendedOptInStateGateForTest() {

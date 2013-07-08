@@ -290,7 +290,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   BookmarkPromptPrefs::RegisterProfilePrefs(registry);
   bookmark_utils::RegisterProfilePrefs(registry);
   browser_sync::SyncPrefs::RegisterProfilePrefs(registry);
-  chrome::RegisterInstantUserPrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
   chrome_browser_net::HttpServerPropertiesManager::RegisterProfilePrefs(

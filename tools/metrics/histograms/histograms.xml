@@ -3506,6 +3506,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="InstantExtended.PrefValue" enum="BooleanEnabled">
+  <obsolete>
+    Deprecated 2013-06. This preference has not been exposed or used for months,
+    and we do not plan to use it in the future.
+  </obsolete>
   <summary>
     Records, on startup, the value of the &quot;Allow your search engine to
     provide Instant result&quot; preference setting for the first profile
