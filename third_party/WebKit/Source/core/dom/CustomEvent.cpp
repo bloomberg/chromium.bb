@@ -30,10 +30,6 @@
 
 namespace WebCore {
 
-CustomEventInit::CustomEventInit()
-{
-}
-
 CustomEvent::CustomEvent()
 {
     ScriptWrappable::init(this);
@@ -41,7 +37,6 @@ CustomEvent::CustomEvent()
 
 CustomEvent::CustomEvent(const AtomicString& type, const CustomEventInit& initializer)
     : Event(type, initializer)
-    , m_detail(initializer.detail)
 {
     ScriptWrappable::init(this);
 }
@@ -50,20 +45,8 @@ CustomEvent::~CustomEvent()
 {
 }
 
-void CustomEvent::initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, const ScriptValue& detail)
-{
-    ASSERT(!m_serializedScriptValue.get());
-    if (dispatched())
-        return;
-
-    initEvent(type, canBubble, cancelable);
-
-    m_detail = detail;
-}
-
 void CustomEvent::initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> serializedScriptValue)
 {
-    ASSERT(m_detail.hasNoValue());
     if (dispatched())
         return;
 

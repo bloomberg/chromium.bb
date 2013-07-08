@@ -2658,13 +2658,27 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
         if (!fill${implClassName}Init(eventInit, options))
             return;
+END
+        for (my $index = 0; $index < @{$interface->attributes}; $index++) {
+            my $attribute = @{$interface->attributes}[$index];
+            if ($attribute->type eq "any") {
+                my $attributeName = $attribute->name;
+                $implementation{nameSpaceInternal}->add(<<END);
+        v8::Local<v8::Value> ${attributeName};
+        options.get("${attributeName}", ${attributeName});
+        if (!${attributeName}.IsEmpty())
+            args.Holder()->SetHiddenValue(V8HiddenPropertyName::${attributeName}(), ${attributeName});
+END
+            }
+        }
+        $implementation{nameSpaceInternal}->add(<<END);
     }
 
     RefPtr<${implClassName}> event = ${implClassName}::create(type, eventInit);
 
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(event.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    args.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(args, wrapper);
 }
 END
 
@@ -2687,7 +2701,10 @@ END
         my $attribute = @{$interface->attributes}[$index];
         if ($attribute->extendedAttributes->{"InitializedByEventConstructor"}) {
             my $attributeName = $attribute->name;
-            $code .= "    options.get(\"$attributeName\", eventInit.$attributeName);\n";
+            my $attributeType = $attribute->type;
+            if (not ($attribute->type eq "any")) {
+                $code .= "    options.get(\"$attributeName\", eventInit.$attributeName);\n";
+            }
         }
     }
 

@@ -46,7 +46,6 @@ MessageEvent::MessageEvent()
 MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& initializer)
     : Event(type, initializer)
     , m_dataType(DataTypeScriptValue)
-    , m_dataAsScriptValue(initializer.data)
     , m_origin(initializer.origin)
     , m_lastEventId(initializer.lastEventId)
     , m_source(initializer.source)
@@ -55,10 +54,9 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
     ScriptWrappable::init(this);
 }
 
-MessageEvent::MessageEvent(const ScriptValue& data, const String& origin, const String& lastEventId, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortArray> ports)
+MessageEvent::MessageEvent(const String& origin, const String& lastEventId, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortArray> ports)
     : Event(eventNames().messageEvent, false, false)
     , m_dataType(DataTypeScriptValue)
-    , m_dataAsScriptValue(data)
     , m_origin(origin)
     , m_lastEventId(lastEventId)
     , m_source(source)
@@ -115,7 +113,7 @@ MessageEvent::~MessageEvent()
 {
 }
 
-void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const ScriptValue& data, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray> ports)
+void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray> ports)
 {
     if (dispatched())
         return;
@@ -123,7 +121,6 @@ void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bo
     initEvent(type, canBubble, cancelable);
 
     m_dataType = DataTypeScriptValue;
-    m_dataAsScriptValue = data;
     m_origin = origin;
     m_lastEventId = lastEventId;
     m_source = source;

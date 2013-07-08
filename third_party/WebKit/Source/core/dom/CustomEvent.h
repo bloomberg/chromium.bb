@@ -32,11 +32,7 @@
 
 namespace WebCore {
 
-struct CustomEventInit : public EventInit {
-    CustomEventInit();
-
-    ScriptValue detail;
-};
+typedef EventInit CustomEventInit;
 
 class CustomEvent : public Event {
 public:
@@ -52,19 +48,16 @@ public:
         return adoptRef(new CustomEvent(type, initializer));
     }
 
-    void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, const ScriptValue& detail);
     void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue>);
 
     virtual const AtomicString& interfaceName() const;
 
-    const ScriptValue& detail() const { return m_detail; }
     PassRefPtr<SerializedScriptValue> serializedScriptValue() { return m_serializedScriptValue; }
 
 private:
     CustomEvent();
     CustomEvent(const AtomicString& type, const CustomEventInit& initializer);
 
-    ScriptValue m_detail;
     RefPtr<SerializedScriptValue> m_serializedScriptValue;
 };
 

@@ -33,10 +33,6 @@
 
 namespace WebCore {
 
-PopStateEventInit::PopStateEventInit()
-{
-}
-
 PopStateEvent::PopStateEvent()
     : Event(eventNames().popstateEvent, false, true)
     , m_serializedState(0)
@@ -47,7 +43,6 @@ PopStateEvent::PopStateEvent()
 
 PopStateEvent::PopStateEvent(const AtomicString& type, const PopStateEventInit& initializer)
     : Event(type, initializer)
-    , m_state(initializer.state)
     , m_serializedState(0)
     , m_history(0)
 {

@@ -56,11 +56,6 @@ void V8PopStateEvent::stateAttrGetterCustom(v8::Local<v8::String> name, const v8
     }
 
     PopStateEvent* event = V8PopStateEvent::toNative(info.Holder());
-    if (!event->state().hasNoValue()) {
-        v8SetReturnValue(info, cacheState(info.Holder(), event->state().v8Value()));
-        return;
-    }
-
     History* history = event->history();
     if (!history || !event->serializedState()) {
         v8SetReturnValue(info, cacheState(info.Holder(), v8::Null(info.GetIsolate())));

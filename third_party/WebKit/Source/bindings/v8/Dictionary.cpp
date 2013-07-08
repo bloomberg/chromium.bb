@@ -110,6 +110,11 @@ bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
     return true;
 }
 
+bool Dictionary::get(const String& key, v8::Local<v8::Value>& value) const
+{
+    return getKey(key, value);
+}
+
 bool Dictionary::get(const String& key, bool& value) const
 {
     v8::Local<v8::Value> v8Value;

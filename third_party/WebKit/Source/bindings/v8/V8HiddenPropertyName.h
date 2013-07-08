@@ -43,6 +43,7 @@ namespace WebCore {
     V(customElementCreated) \
     V(customElementEnteredDocument) \
     V(customElementLeftDocument) \
+    V(data) \
     V(detail) \
     V(document) \
     V(event) \

@@ -105,7 +105,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(event.release(), &V8TestEventConstructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    args.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(args, wrapper);
 }
 } // namespace TestEventConstructorV8Internal
 

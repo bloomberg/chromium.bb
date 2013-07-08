@@ -32,6 +32,7 @@
 #include "V8MessageEvent.h"
 
 #include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/MessageEvent.h"
 
@@ -49,11 +50,9 @@ void V8MessageEvent::dataAttrGetterCustom(v8::Local<v8::String> name, const v8::
     v8::Handle<v8::Value> result;
     switch (event->dataType()) {
     case MessageEvent::DataTypeScriptValue: {
-        ScriptValue scriptValue = event->dataAsScriptValue();
-        if (scriptValue.hasNoValue())
+        result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::data());
+        if (result.IsEmpty())
             result = v8::Null(info.GetIsolate());
-        else
-            result = scriptValue.v8Value();
         break;
     }
 
@@ -91,12 +90,12 @@ void V8MessageEvent::dataAttrGetterCustom(v8::Local<v8::String> name, const v8::
 void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     MessageEvent* event = V8MessageEvent::toNative(args.Holder());
-    String typeArg = toWebCoreString(args[0]);
-    bool canBubbleArg = args[1]->BooleanValue();
-    bool cancelableArg = args[2]->BooleanValue();
-    ScriptValue dataArg = ScriptValue(args[3]);
-    String originArg = toWebCoreString(args[4]);
-    String lastEventIdArg = toWebCoreString(args[5]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, args[0]);
+    V8TRYCATCH_VOID(bool, canBubbleArg, args[1]->BooleanValue());
+    V8TRYCATCH_VOID(bool, cancelableArg, args[2]->BooleanValue());
+    v8::Handle<v8::Value> dataArg = args[3];
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, originArg, args[4]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, lastEventIdArg, args[5]);
 
     DOMWindow* sourceArg = 0;
     if (args[6]->IsObject()) {
@@ -112,7 +111,8 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
         if (!getMessagePortArray(args[7], *portArray, args.GetIsolate()))
             return;
     }
-    event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, dataArg, originArg, lastEventIdArg, sourceArg, portArray.release());
+    args.Holder()->SetHiddenValue(V8HiddenPropertyName::data(), dataArg);
+    event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, originArg, lastEventIdArg, sourceArg, portArray.release());
 }
 
 void V8MessageEvent::webkitInitMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

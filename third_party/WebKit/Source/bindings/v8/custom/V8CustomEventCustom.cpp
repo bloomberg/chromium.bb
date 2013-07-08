@@ -45,20 +45,46 @@
 
 namespace WebCore {
 
+static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> customEvent, v8::Handle<v8::Value> detail)
+{
+    customEvent->SetHiddenValue(V8HiddenPropertyName::detail(), detail);
+    return detail;
+}
+
+
 void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    CustomEvent* imp = V8CustomEvent::toNative(info.Holder());
-    RefPtr<SerializedScriptValue> serialized = imp->serializedScriptValue();
-    if (serialized) {
-        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(V8HiddenPropertyName::detail());
-        if (value.IsEmpty()) {
-            value = serialized->deserialize();
-            info.Holder()->SetHiddenValue(V8HiddenPropertyName::detail(), value);
-        }
-        v8SetReturnValue(info, value);
+    CustomEvent* event = V8CustomEvent::toNative(info.Holder());
+    ASSERT(!event->serializedScriptValue().get());
+
+    v8::Handle<v8::Value> result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::detail());
+
+    if (!result.IsEmpty()) {
+        v8SetReturnValue(info, result);
         return;
     }
-    v8SetReturnValue(info, imp->detail().v8Value());
+
+    RefPtr<SerializedScriptValue> serialized = event->serializedScriptValue();
+    if (serialized) {
+        result = serialized->deserialize();
+        v8SetReturnValue(info, cacheState(info.Holder(), result));
+        return;
+    }
+
+    v8SetReturnValue(info, cacheState(info.Holder(), v8::Null(info.GetIsolate())));
+}
+
+void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    CustomEvent* event = V8CustomEvent::toNative(args.Holder());
+
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, args[0]);
+    V8TRYCATCH_VOID(bool, canBubbleArg, args[1]->BooleanValue());
+    V8TRYCATCH_VOID(bool, cancelableArg, args[2]->BooleanValue());
+    v8::Handle<v8::Value> detailsArg = args[3];
+
+    args.Holder()->SetHiddenValue(V8HiddenPropertyName::detail(), detailsArg);
+    event->initEvent(typeArg, canBubbleArg, cancelableArg);
 }
 
 } // namespace WebCore
