@@ -843,7 +843,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
 
     bool result = cache_entry->Setup(vertex_program.c_str(),
                                      fragment_program.c_str());
-    DCHECK(result)
+    DCHECK(result || context_->isContextLost())
         << "vertex_program =\n" << vertex_program
         << "fragment_program =\n" << fragment_program;
   }

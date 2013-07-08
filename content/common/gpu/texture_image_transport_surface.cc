@@ -26,6 +26,14 @@ using gpu::gles2::TextureManager;
 using gpu::gles2::TextureRef;
 
 namespace content {
+namespace {
+
+bool IsContextValid(ImageTransportHelper* helper) {
+  return helper->stub()->decoder()->GetGLContext()->IsCurrent(NULL) ||
+      helper->stub()->decoder()->WasContextLost();
+}
+
+}  // namespace
 
 TextureImageTransportSurface::TextureImageTransportSurface(
     GpuChannelManager* manager,
@@ -99,7 +107,7 @@ bool TextureImageTransportSurface::IsOffscreen() {
 }
 
 unsigned int TextureImageTransportSurface::GetBackingFrameBufferObject() {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   if (!fbo_id_) {
     glGenFramebuffersEXT(1, &fbo_id_);
     glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id_);
@@ -166,7 +174,7 @@ void TextureImageTransportSurface::OnResize(gfx::Size size,
 }
 
 void TextureImageTransportSurface::OnWillDestroyStub() {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   helper_->stub()->RemoveDestructionObserver(this);
 
   // We are losing the stub owning us, this is our last chance to clean up the
@@ -189,7 +197,7 @@ void TextureImageTransportSurface::SetLatencyInfo(
 }
 
 bool TextureImageTransportSurface::SwapBuffers() {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   DCHECK(backbuffer_suggested_allocation_);
 
   if (!frontbuffer_suggested_allocation_)
@@ -220,7 +228,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
 
 bool TextureImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   DCHECK(backbuffer_suggested_allocation_);
   if (!frontbuffer_suggested_allocation_)
     return true;
@@ -348,7 +356,7 @@ void TextureImageTransportSurface::OnResizeViewACK() {
 }
 
 void TextureImageTransportSurface::ReleaseBackTexture() {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   backbuffer_ = NULL;
   back_mailbox_name_ = MailboxName();
   glFlush();
@@ -356,7 +364,7 @@ void TextureImageTransportSurface::ReleaseBackTexture() {
 }
 
 void TextureImageTransportSurface::ReleaseFrontTexture() {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   frontbuffer_ = NULL;
   front_mailbox_name_ = MailboxName();
   glFlush();
@@ -366,7 +374,7 @@ void TextureImageTransportSurface::ReleaseFrontTexture() {
 }
 
 void TextureImageTransportSurface::CreateBackTexture() {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   // If |is_swap_buffers_pending| we are waiting for our backbuffer
   // in the mailbox, so we shouldn't be reallocating it now.
   DCHECK(!is_swap_buffers_pending_);
@@ -446,7 +454,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
 }
 
 void TextureImageTransportSurface::AttachBackTextureToFBO() {
-  DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
+  DCHECK(IsContextValid(helper_.get()));
   DCHECK(backbuffer_.get());
   gfx::ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
