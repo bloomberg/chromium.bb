@@ -97,6 +97,8 @@ public:
     void loadFrameRequest(const FrameLoadRequest&, bool lockBackForwardList,  // Called by submitForm, calls loadPostRequest and loadURL.
         PassRefPtr<Event>, PassRefPtr<FormState>, ShouldSendReferrer);
 
+    void load(const FrameLoadRequest&);
+
     unsigned long loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
     void changeLocation(SecurityOrigin*, const KURL&, const String& referrer, bool lockBackForwardList = true, bool refresh = false);
@@ -298,7 +300,7 @@ private:
         FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, const String& overrideEncoding = String());
 
     // Called by loadFrameRequest, calls loadWithNavigationAction or checkNewWindowPolicyAndContinue
-    void loadURL(const ResourceRequest&, const String& frameName, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>, const SubstituteData&);
+    void loadURL(const ResourceRequest&, const String& frameName, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>);
 
     bool shouldReload(const KURL& currentURL, const KURL& destinationURL);
 

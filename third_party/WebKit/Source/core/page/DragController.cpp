@@ -45,7 +45,6 @@
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/html/HTMLAnchorElement.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -247,7 +246,7 @@ bool DragController::performDrag(DragData* dragData)
     if (operationForLoad(dragData) == DragOperationNone)
         return false;
 
-    m_page->mainFrame()->loader()->loadFrameRequest(FrameLoadRequest(0, ResourceRequest(dragData->asURL(m_page->mainFrame()))), false, 0, 0, MaybeSendReferrer);
+    m_page->mainFrame()->loader()->load(FrameLoadRequest(m_page->mainFrame(), ResourceRequest(dragData->asURL(m_page->mainFrame()))));
     return true;
 }
 

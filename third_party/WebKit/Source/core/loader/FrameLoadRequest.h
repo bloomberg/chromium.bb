@@ -37,12 +37,14 @@ struct FrameLoadRequest {
 public:
     explicit FrameLoadRequest(SecurityOrigin* requester)
         : m_requester(requester)
+        , m_lockHistory(false)
     {
     }
 
     FrameLoadRequest(SecurityOrigin* requester, const ResourceRequest& resourceRequest)
         : m_requester(requester)
         , m_resourceRequest(resourceRequest)
+        , m_lockHistory(false)
     {
     }
 
@@ -50,15 +52,13 @@ public:
         : m_requester(requester)
         , m_resourceRequest(resourceRequest)
         , m_frameName(frameName)
+        , m_lockHistory(false)
     {
     }
 
-    FrameLoadRequest(SecurityOrigin* requester, const ResourceRequest& resourceRequest, const SubstituteData& substituteData)
-        : m_requester(requester)
-        , m_resourceRequest(resourceRequest)
-        , m_substituteData(substituteData)
-    {
-    }
+    FrameLoadRequest(Frame*, const ResourceRequest&, const SubstituteData& = SubstituteData());
+
+    bool isEmpty() const { return m_resourceRequest.isEmpty(); }
 
     const SecurityOrigin* requester() const { return m_requester.get(); }
 
@@ -68,12 +68,18 @@ public:
     const String& frameName() const { return m_frameName; }
     void setFrameName(const String& frameName) { m_frameName = frameName; }
 
+    void setLockHistory(bool lockHistory) { m_lockHistory = lockHistory; }
+    bool lockHistory() const { return m_lockHistory; }
+
     const SubstituteData& substituteData() const { return m_substituteData; }
+    void setSubstituteData(const SubstituteData& data) { m_substituteData = data; }
+    bool hasSubstituteData() { return m_substituteData.isValid(); }
 
 private:
     RefPtr<SecurityOrigin> m_requester;
     ResourceRequest m_resourceRequest;
     String m_frameName;
+    bool m_lockHistory;
     SubstituteData m_substituteData;
 };
 
