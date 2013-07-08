@@ -250,10 +250,10 @@ void SQLTransaction::performPendingCallback()
     runStateMachine();
 }
 
-void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> callbackError, ExceptionCode& e)
+void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> callbackError, ExceptionCode& ec)
 {
     if (!m_executeSqlAllowed || !m_database->opened()) {
-        e = INVALID_STATE_ERR;
+        ec = INVALID_STATE_ERR;
         return;
     }
 
