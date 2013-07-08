@@ -1263,12 +1263,13 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
         }
         if (key_code == ui::VKEY_BACK)
           model_->Backspace();
+        else if (shift && model_->HasSelection() && readable)
+          Cut();
         else
           model_->Delete();
 
-        // We have to consume the backspace/delete keys here even if the edit
-        // did not make effects.  This is to prevent further handling of the key
-        // event that might have unintended side-effects.
+        // Consume backspace and delete keys even if the edit did nothing. This
+        // prevents potential unintended side-effects of further event handling.
         text_changed = true;
         break;
       case ui::VKEY_INSERT:

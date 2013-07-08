@@ -38,10 +38,13 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
+#define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(ASCIIToUTF16(ascii), utf16)
+
 namespace {
 
-// A wrapper of Textfield to intercept the result of OnKeyPressed() and
-// OnKeyReleased() methods.
+const char16 kHebrewLetterSamekh = 0x05E1;
+
+// A Textfield wrapper to intercept OnKey[Pressed|Released]() ressults.
 class TestTextfield : public views::Textfield {
  public:
   explicit TestTextfield(StyleFlags style)
@@ -100,18 +103,9 @@ class GestureEventForTest : public ui::GestureEvent {
   DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
 };
 
-const char16 kHebrewLetterSamekh = 0x05E1;
-
 }  // namespace
 
 namespace views {
-
-// Convert to Wide so that the printed string will be readable when
-// check fails.
-#define EXPECT_STR_EQ(ascii, utf16) \
-  EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
-#define EXPECT_STR_NE(ascii, utf16) \
-  EXPECT_NE(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
 // TODO(oshima): Move tests that are independent of TextfieldViews to
 // textfield_unittests.cc once we move the test utility functions
@@ -506,33 +500,18 @@ TEST_F(NativeTextfieldViewsTest, ControlAndSelectTest) {
 TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   // Insert a test string in a textfield.
   InitTextfield(Textfield::STYLE_DEFAULT);
-  char test_str[] = "this is a test";
-  for (size_t i = 0; i < sizeof(test_str); i++) {
-    // This is ugly and should be replaced by a utility standard function.
-    // See comment in NativeTextfieldViews::GetPrintableChar.
-    char c = test_str[i];
-    ui::KeyboardCode code =
-        c == ' ' ? ui::VKEY_SPACE :
-        static_cast<ui::KeyboardCode>(ui::VKEY_A + c - 'a');
-    SendKeyEvent(code);
-  }
-  EXPECT_STR_EQ(test_str, textfield_->text());
+  for (size_t i = 0; i < 10; i++)
+    SendKeyEvent(static_cast<ui::KeyboardCode>(ui::VKEY_A + i));
+  EXPECT_STR_EQ("abcdefghij", textfield_->text());
 
-  // Move the cursor around.
-  for (int i = 0; i < 6; i++) {
-    SendKeyEvent(ui::VKEY_LEFT);
-  }
-  SendKeyEvent(ui::VKEY_RIGHT);
-
-  // Delete using backspace and check resulting string.
-  SendKeyEvent(ui::VKEY_BACK);
-  EXPECT_STR_EQ("this is  test", textfield_->text());
-
-  // Delete using delete key and check resulting string.
-  for (int i = 0; i < 5; i++) {
+  // Test the delete and backspace keys.
+  textfield_->SelectRange(ui::Range(5));
+  for (int i = 0; i < 3; i++)
+    SendKeyEvent(ui::VKEY_BACK);
+  EXPECT_STR_EQ("abfghij", textfield_->text());
+  for (int i = 0; i < 3; i++)
     SendKeyEvent(ui::VKEY_DELETE);
-  }
-  EXPECT_STR_EQ("this is ", textfield_->text());
+  EXPECT_STR_EQ("abij", textfield_->text());
 
   // Select all and replace with "k".
   textfield_->SelectAll(false);
@@ -545,8 +524,7 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   SendKeyEvent(ui::VKEY_BACK, false, false, true, false);
   EXPECT_STR_EQ("one two three ", textfield_->text());
 
-  // Delete upto the beginning of the buffer from cursor in chromeos, do nothing
-  // in windows.
+  // Delete text preceeding the cursor in chromeos, do nothing in windows.
   SendKeyEvent(ui::VKEY_LEFT, false, false, true, false);
   SendKeyEvent(ui::VKEY_BACK, false, true, true, false);
 #if defined(OS_WIN)
@@ -561,8 +539,7 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   SendKeyEvent(ui::VKEY_DELETE, false, false, true, false);
   EXPECT_STR_EQ(" two three four", textfield_->text());
 
-  // Delete upto the end of the buffer from cursor in chromeos, do nothing
-  // in windows.
+  // Delete text following the cursor in chromeos, do nothing in windows.
   SendKeyEvent(ui::VKEY_RIGHT, false, false, true, false);
   SendKeyEvent(ui::VKEY_DELETE, false, true, true, false);
 #if defined(OS_WIN)
@@ -596,6 +573,9 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   SendKeyEvent(ui::VKEY_INSERT, false, true);
   EXPECT_STR_EQ("foo", string16(GetClipboardText()));
   EXPECT_STR_EQ("password", textfield_->text());
+  // [Shift]+[Delete] should just delete without copying text to the clipboard.
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_DELETE, true, false);
 
   // Paste should work normally.
   EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_PASTE));
@@ -1147,6 +1127,7 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   EXPECT_FALSE(textfield_view_->IsCommandIdEnabled(IDS_APP_CUT));
   textfield_view_->ExecuteCommand(IDS_APP_CUT, 0);
   SendKeyEvent(ui::VKEY_X, false, true);
+  SendKeyEvent(ui::VKEY_DELETE, true, false);
   EXPECT_STR_EQ("Test", string16(GetClipboardText()));
   EXPECT_STR_EQ("read only", textfield_->text());
 
@@ -1404,6 +1385,13 @@ TEST_F(NativeTextfieldViewsTest, CutCopyPaste) {
   EXPECT_STR_EQ("456", textfield_->text());
   SendKeyEvent(ui::VKEY_X, false, true);
   EXPECT_STR_EQ("456", string16(GetClipboardText()));
+  EXPECT_STR_EQ("", textfield_->text());
+
+  // Ensure [Shift]+[Delete] cuts.
+  textfield_->SetText(ASCIIToUTF16("123"));
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_DELETE, true, false);
+  EXPECT_STR_EQ("123", string16(GetClipboardText()));
   EXPECT_STR_EQ("", textfield_->text());
 
   // Ensure IDS_APP_COPY copies.

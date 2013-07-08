@@ -23,13 +23,12 @@
 #include "base/win/windows_version.h"
 #endif
 
+#define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(ASCIIToUTF16(ascii), utf16)
+
 namespace {
 
 struct WordAndCursor {
-  WordAndCursor(const wchar_t* w, size_t c)
-      : word(w),
-        cursor(c) {
-  }
+  WordAndCursor(const wchar_t* w, size_t c) : word(w), cursor(c) {}
 
   const wchar_t* word;
   size_t cursor;
@@ -67,8 +66,6 @@ class TextfieldViewsModelTest : public ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(TextfieldViewsModelTest);
 };
 
-#define EXPECT_STR_EQ(ascii, utf16) \
-  EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
 TEST_F(TextfieldViewsModelTest, EditString) {
   TextfieldViewsModel model(NULL);
   // append two strings
