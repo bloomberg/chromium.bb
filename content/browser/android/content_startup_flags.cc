@@ -57,6 +57,7 @@ void SetContentCommandLineFlags(int max_render_process_count,
       switches::kEnableAcceleratedScrollableFrames);
   parsed_command_line->AppendSwitch(
       switches::kEnableCompositedScrollingForFrames);
+  parsed_command_line->AppendSwitch(switches::kEnableBeginFrameScheduling);
 
   parsed_command_line->AppendSwitch(switches::kEnableGestureTapHighlight);
   parsed_command_line->AppendSwitch(switches::kEnablePinch);
