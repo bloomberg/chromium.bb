@@ -16,14 +16,14 @@ function test()
                 [-100, -50, 0, 50, 100],
                 [-100, -14, -13, -12, -11, -10, -1]
             ];
-     
+
             function testArray(array)
             {
                 function comparator(a, b)
                 {
                     return a < b ? -1 : (a > b ? 1 : 0);
                 }
-     
+
                 for (var i = -100; i <= 100; ++i) {
                     var reference = array.indexOf(i);
                     var actual = array.binaryIndexOf(i, comparator);
@@ -31,9 +31,69 @@ function test()
                 }
                 return true;
             }
-     
+
             for (var i = 0, l = testArrays.length; i < l; ++i)
                 testArray(testArrays[i]);
+            next();
+        },
+
+        function lowerBoundTest(next)
+        {
+            var testArrays = [
+                [],
+                [1],
+                [-1, -1, 0, 0, 0, 0, 2, 3, 4, 4, 4, 7, 9, 9, 9]
+            ];
+
+            function testArray(array, useComparator)
+            {
+                function comparator(a, b)
+                {
+                    return a < b ? -1 : (a > b ? 1 : 0);
+                }
+
+                for (var value = -2; value <= 12; ++value) {
+                    var index = useComparator ? array.lowerBound(value, comparator) : array.lowerBound(value);
+                    InspectorTest.assertTrue(0 <= index && index <= array.length, "index is within bounds");
+                    InspectorTest.assertTrue(index === 0 || array[index - 1] < value, "array[index - 1] < value");
+                    InspectorTest.assertTrue(index === array.length || array[index] >= value, "array[index] >= value");
+                }
+            }
+
+            for (var i = 0, l = testArrays.length; i < l; ++i) {
+                testArray(testArrays[i], false);
+                testArray(testArrays[i], true);
+            }
+            next();
+        },
+
+        function upperBoundTest(next)
+        {
+            var testArrays = [
+                [],
+                [1],
+                [-1, -1, 0, 0, 0, 0, 2, 3, 4, 4, 4, 7, 9, 9, 9]
+            ];
+
+            function testArray(array, useComparator)
+            {
+                function comparator(a, b)
+                {
+                    return a < b ? -1 : (a > b ? 1 : 0);
+                }
+
+                for (var value = -2; value <= 12; ++value) {
+                    var index = useComparator ? array.upperBound(value, comparator) : array.upperBound(value);
+                    InspectorTest.assertTrue(0 <= index && index <= array.length, "index is within bounds");
+                    InspectorTest.assertTrue(index === 0 || array[index - 1] <= value, "array[index - 1] <= value");
+                    InspectorTest.assertTrue(index === array.length || array[index] > value, "array[index] > value");
+                }
+            }
+
+            for (var i = 0, l = testArrays.length; i < l; ++i) {
+                testArray(testArrays[i], false);
+                testArray(testArrays[i], true);
+            }
             next();
         },
 
