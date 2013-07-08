@@ -196,7 +196,7 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
 {
     String algorithmName;
     if (!raw.get("name", algorithmName)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return false;
     }
 
@@ -207,12 +207,12 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
 
     const AlgorithmInfo* info = AlgorithmRegistry::lookupAlgorithmByName(algorithmName);
     if (!info) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return false;
     }
 
     if (info->paramsForOperation[op] == UnsupportedOp) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return false;
     }
 
@@ -220,7 +220,7 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
     OwnPtr<WebKit::WebCryptoAlgorithmParams> params = parseAlgorithmParams(raw, paramsType);
 
     if (!params && paramsType != WebKit::WebCryptoAlgorithmParamsTypeNone) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return false;
     }
 

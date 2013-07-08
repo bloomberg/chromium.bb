@@ -825,7 +825,7 @@ const AtomicString& Element::getAttributeNS(const AtomicString& namespaceURI, co
 void Element::setAttribute(const AtomicString& localName, const AtomicString& value, ExceptionCode& ec)
 {
     if (!Document::isValidName(localName)) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return;
     }
 
@@ -1612,7 +1612,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionCode& ec)
     // subtrees won't work well in that element. Until they are fixed, we disable
     // adding author shadow root for them.
     if (!areAuthorShadowsAllowed()) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return 0;
     }
     return ensureShadow()->addShadowRoot(this, ShadowRoot::AuthorShadowRoot);
@@ -1839,10 +1839,10 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
     if (oldAttrNode.get() == attrNode)
         return attrNode; // This Attr is already attached to the element.
 
-    // INUSE_ATTRIBUTE_ERR: Raised if node is an Attr that is already an attribute of another Element object.
+    // InUseAttributeError: Raised if node is an Attr that is already an attribute of another Element object.
     // The DOM user must explicitly clone Attr nodes to re-use them in other elements.
     if (attrNode->ownerElement()) {
-        ec = INUSE_ATTRIBUTE_ERR;
+        ec = InUseAttributeError;
         return 0;
     }
 
@@ -1878,7 +1878,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
         return 0;
     }
     if (attr->ownerElement() != this) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return 0;
     }
 
@@ -1888,7 +1888,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
 
     size_t index = elementData()->getAttrIndex(attr);
     if (index == notFound) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return 0;
     }
 

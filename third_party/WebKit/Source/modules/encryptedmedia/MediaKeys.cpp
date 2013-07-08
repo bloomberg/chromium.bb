@@ -47,9 +47,9 @@ PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionCode& 
         return 0;
     }
 
-    // 2. If keySystem is not one of the user agent's supported Key Systems, throw a NOT_SUPPORTED_ERR and abort these steps.
+    // 2. If keySystem is not one of the user agent's supported Key Systems, throw a NotSupportedError and abort these steps.
     if (!ContentDecryptionModule::supportsKeySystem(keySystem)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -57,7 +57,7 @@ PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionCode& 
     // 4. Load cdm if necessary.
     OwnPtr<ContentDecryptionModule> cdm = ContentDecryptionModule::create(keySystem);
     if (!cdm) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -97,10 +97,10 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ScriptExecutionContext* con
     }
 
     // 2. If type contains a MIME type that is not supported or is not supported by the keySystem, throw
-    // a NOT_SUPPORTED_ERR exception and abort these steps.
+    // a NotSupportedError exception and abort these steps.
     ASSERT(!type.isEmpty());
     if (type.isEmpty() || !m_cdm->supportsMIMEType(type)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 

@@ -228,7 +228,7 @@ void FontLoader::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
     // FIXME: We should report NetworkError in case of timeout, etc.
-    String errorName = (source && source->isDecodeError()) ? "InvalidFontDataError" : DOMException::getErrorName(NOT_FOUND_ERR);
+    String errorName = (source && source->isDecodeError()) ? "InvalidFontDataError" : DOMException::getErrorName(NotFoundError);
     scheduleEvent(CSSFontFaceLoadEvent::createForError(rule, DOMError::create(errorName)));
     queueDoneEvent(rule);
 }

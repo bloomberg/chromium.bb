@@ -59,7 +59,7 @@ XPathExpression::~XPathExpression()
 PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionCode& ec)
 {
     if (!isValidContextNode(contextNode)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 

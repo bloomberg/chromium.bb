@@ -57,7 +57,7 @@ PassRefPtr<SVGAltGlyphElement> SVGAltGlyphElement::create(const QualifiedName& t
 
 void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionCode& ec)
 {
-    ec = NO_MODIFICATION_ALLOWED_ERR;
+    ec = NoModificationAllowedError;
 }
 
 const AtomicString& SVGAltGlyphElement::glyphRef() const
@@ -67,7 +67,7 @@ const AtomicString& SVGAltGlyphElement::glyphRef() const
 
 void SVGAltGlyphElement::setFormat(const AtomicString&, ExceptionCode& ec)
 {
-    ec = NO_MODIFICATION_ALLOWED_ERR;
+    ec = NoModificationAllowedError;
 }
 
 const AtomicString& SVGAltGlyphElement::format() const

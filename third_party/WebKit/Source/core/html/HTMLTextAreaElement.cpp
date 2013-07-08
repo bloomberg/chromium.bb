@@ -441,7 +441,7 @@ int HTMLTextAreaElement::maxLength() const
 void HTMLTextAreaElement::setMaxLength(int newValue, ExceptionCode& ec)
 {
     if (newValue < 0)
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
     else
         setAttribute(maxlengthAttr, String::number(newValue));
 }

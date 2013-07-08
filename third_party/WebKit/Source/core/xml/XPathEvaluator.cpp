@@ -58,7 +58,7 @@ PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression,
                                                  ExceptionCode& ec)
 {
     if (!isValidContextNode(contextNode)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 

@@ -57,7 +57,7 @@ void StorageInfo::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionCont
     StorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
-        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NOT_SUPPORTED_ERR));
+        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
     storageQuota->queryUsageAndQuota(scriptExecutionContext, successCallback, errorCallback);
@@ -69,7 +69,7 @@ void StorageInfo::requestQuota(ScriptExecutionContext* scriptExecutionContext, i
     StorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
-        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NOT_SUPPORTED_ERR));
+        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
     storageQuota->requestQuota(scriptExecutionContext, newQuotaInBytes, successCallback, errorCallback);

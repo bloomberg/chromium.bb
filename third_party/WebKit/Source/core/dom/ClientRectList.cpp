@@ -57,7 +57,7 @@ ClientRect* ClientRectList::item(unsigned index)
 {
     if (index >= m_list.size()) {
         // FIXME: this should throw an exception.
-        // ec = INDEX_SIZE_ERR;
+        // ec = IndexSizeError;
         return 0;
     }
 

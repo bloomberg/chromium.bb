@@ -99,7 +99,7 @@ void TimeRanges::unionWith(const TimeRanges* other)
 double TimeRanges::start(unsigned index, ExceptionCode& ec) const
 {
     if (index >= length()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0;
     }
     return m_ranges[index].m_start;
@@ -108,7 +108,7 @@ double TimeRanges::start(unsigned index, ExceptionCode& ec) const
 double TimeRanges::end(unsigned index, ExceptionCode& ec) const
 {
     if (index >= length()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0;
     }
     return m_ranges[index].m_end;

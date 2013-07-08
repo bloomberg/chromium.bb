@@ -105,7 +105,7 @@ double HTMLProgressElement::value() const
 void HTMLProgressElement::setValue(double value, ExceptionCode& ec)
 {
     if (!std::isfinite(value)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(valueAttr, String::number(value >= 0 ? value : 0));
@@ -120,7 +120,7 @@ double HTMLProgressElement::max() const
 void HTMLProgressElement::setMax(double max, ExceptionCode& ec)
 {
     if (!std::isfinite(max)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(maxAttr, String::number(max > 0 ? max : 1));

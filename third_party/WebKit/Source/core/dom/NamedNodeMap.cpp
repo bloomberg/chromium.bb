@@ -63,7 +63,7 @@ PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, Excepti
 {
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, shouldIgnoreAttributeCase(m_element)) : notFound;
     if (index == notFound) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return 0;
     }
     return m_element->detachAttribute(index);
@@ -73,7 +73,7 @@ PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceUR
 {
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(QualifiedName(nullAtom, localName, namespaceURI)) : notFound;
     if (index == notFound) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return 0;
     }
     return m_element->detachAttribute(index);
@@ -82,13 +82,13 @@ PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceUR
 PassRefPtr<Node> NamedNodeMap::setNamedItem(Node* node, ExceptionCode& ec)
 {
     if (!node) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return 0;
     }
 
     // Not mentioned in spec: throw a HIERARCHY_REQUEST_ERROR if the user passes in a non-attribute node
     if (!node->isAttributeNode()) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return 0;
     }
 

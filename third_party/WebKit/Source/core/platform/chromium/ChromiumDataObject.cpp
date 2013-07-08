@@ -93,7 +93,7 @@ void ChromiumDataObject::clearAll()
 void ChromiumDataObject::add(const String& data, const String& type, ExceptionCode& ec)
 {
     if (!internalAddStringItem(ChromiumDataObjectItem::createFromString(type, data)))
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
 }
 
 void ChromiumDataObject::add(PassRefPtr<File> file, ScriptExecutionContext* context)

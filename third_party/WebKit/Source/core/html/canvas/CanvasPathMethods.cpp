@@ -112,7 +112,7 @@ void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, E
         return;
 
     if (r < 0) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -137,7 +137,7 @@ void CanvasPathMethods::arc(float x, float y, float r, float sa, float ea, bool 
         return;
 
     if (r < 0) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 

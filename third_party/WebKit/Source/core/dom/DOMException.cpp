@@ -102,7 +102,7 @@ static struct CoreException {
 static const CoreException* getErrorEntry(ExceptionCode ec)
 {
     size_t tableSize = WTF_ARRAY_LENGTH(coreExceptions);
-    size_t tableIndex = ec - INDEX_SIZE_ERR;
+    size_t tableIndex = ec - IndexSizeError;
 
     return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
 }

@@ -132,7 +132,7 @@ template<typename T>
 T DataView::getData(unsigned byteOffset, bool littleEndian, ExceptionCode& ec) const
 {
     if (beyondRange<T>(byteOffset)) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0;
     }
 
@@ -147,7 +147,7 @@ template<typename T>
 void DataView::setData(unsigned byteOffset, T value, bool littleEndian, ExceptionCode& ec)
 {
     if (beyondRange<T>(byteOffset)) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 

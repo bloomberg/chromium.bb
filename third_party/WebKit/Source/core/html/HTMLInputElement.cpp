@@ -1079,7 +1079,7 @@ double HTMLInputElement::valueAsNumber() const
 void HTMLInputElement::setValueAsNumber(double newValue, ExceptionCode& ec, TextFieldEventBehavior eventBehavior)
 {
     if (!std::isfinite(newValue)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     m_inputType->setValueAsDouble(newValue, eventBehavior, ec);
@@ -1317,7 +1317,7 @@ int HTMLInputElement::maxLength() const
 void HTMLInputElement::setMaxLength(int maxLength, ExceptionCode& ec)
 {
     if (maxLength < 0)
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
     else
         setAttribute(maxlengthAttr, String::number(maxLength));
 }
@@ -1335,7 +1335,7 @@ void HTMLInputElement::setSize(unsigned size)
 void HTMLInputElement::setSize(unsigned size, ExceptionCode& ec)
 {
     if (!size)
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
     else
         setSize(size);
 }

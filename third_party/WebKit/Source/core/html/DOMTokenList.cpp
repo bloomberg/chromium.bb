@@ -41,7 +41,7 @@ bool DOMTokenList::validateToken(const AtomicString& token, ExceptionCode& ec)
     unsigned length = token.length();
     for (unsigned i = 0; i < length; ++i) {
         if (isHTMLSpace(token[i])) {
-            ec = INVALID_CHARACTER_ERR;
+            ec = InvalidCharacterError;
             return false;
         }
     }

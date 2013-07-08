@@ -241,7 +241,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, Excepti
 void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionCode& ec)
 {
     if (start > end) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 

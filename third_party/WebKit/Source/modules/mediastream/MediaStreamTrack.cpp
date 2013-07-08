@@ -124,7 +124,7 @@ void MediaStreamTrack::getSources(ScriptExecutionContext* context, PassRefPtr<Me
     RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context, callback);
     bool ok = MediaStreamCenter::instance().getMediaStreamTrackSources(request.release());
     if (!ok)
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
 }
 
 bool MediaStreamTrack::ended() const

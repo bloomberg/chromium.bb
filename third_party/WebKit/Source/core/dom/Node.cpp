@@ -543,7 +543,7 @@ Node* Node::pseudoAwareLastChild() const
 bool Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
     if (!isContainerNode()) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return false;
     }
     return toContainerNode(this)->insertBefore(newChild, refChild, ec, attachBehavior);
@@ -552,7 +552,7 @@ bool Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode
 bool Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
     if (!isContainerNode()) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return false;
     }
     return toContainerNode(this)->replaceChild(newChild, oldChild, ec, attachBehavior);
@@ -561,7 +561,7 @@ bool Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode
 bool Node::removeChild(Node* oldChild, ExceptionCode& ec)
 {
     if (!isContainerNode()) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
     return toContainerNode(this)->removeChild(oldChild, ec);
@@ -570,7 +570,7 @@ bool Node::removeChild(Node* oldChild, ExceptionCode& ec)
 bool Node::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
     if (!isContainerNode()) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return false;
     }
     return toContainerNode(this)->appendChild(newChild, ec, attachBehavior);
@@ -977,7 +977,7 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionCode& ec)
     // Element::setPrefix() and Attr::setPrefix()
 
     if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return;
     }
 

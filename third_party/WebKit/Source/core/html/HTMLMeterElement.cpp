@@ -83,7 +83,7 @@ double HTMLMeterElement::min() const
 void HTMLMeterElement::setMin(double min, ExceptionCode& ec)
 {
     if (!std::isfinite(min)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(minAttr, String::number(min));
@@ -97,7 +97,7 @@ double HTMLMeterElement::max() const
 void HTMLMeterElement::setMax(double max, ExceptionCode& ec)
 {
     if (!std::isfinite(max)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(maxAttr, String::number(max));
@@ -112,7 +112,7 @@ double HTMLMeterElement::value() const
 void HTMLMeterElement::setValue(double value, ExceptionCode& ec)
 {
     if (!std::isfinite(value)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(valueAttr, String::number(value));
@@ -127,7 +127,7 @@ double HTMLMeterElement::low() const
 void HTMLMeterElement::setLow(double low, ExceptionCode& ec)
 {
     if (!std::isfinite(low)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(lowAttr, String::number(low));
@@ -142,7 +142,7 @@ double HTMLMeterElement::high() const
 void HTMLMeterElement::setHigh(double high, ExceptionCode& ec)
 {
     if (!std::isfinite(high)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(highAttr, String::number(high));
@@ -157,7 +157,7 @@ double HTMLMeterElement::optimum() const
 void HTMLMeterElement::setOptimum(double optimum, ExceptionCode& ec)
 {
     if (!std::isfinite(optimum)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     setAttribute(optimumAttr, String::number(optimum));

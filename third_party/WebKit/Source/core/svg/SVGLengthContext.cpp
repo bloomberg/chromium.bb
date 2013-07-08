@@ -99,7 +99,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
 
     switch (fromUnit) {
     case LengthTypeUnknown:
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     case LengthTypeNumber:
         return value;
@@ -131,7 +131,7 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 {
     switch (toUnit) {
     case LengthTypeUnknown:
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     case LengthTypeNumber:
         return value;
@@ -164,7 +164,7 @@ float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLe
     float width = 0;
     float height = 0;
     if (!determineViewport(width, height)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -186,7 +186,7 @@ float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLe
     float width = 0;
     float height = 0;
     if (!determineViewport(width, height)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -224,13 +224,13 @@ float SVGLengthContext::convertValueFromUserUnitsToEMS(float value, ExceptionCod
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
     float fontSize = style->fontSize();
     if (!fontSize) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -241,7 +241,7 @@ float SVGLengthContext::convertValueFromEMSToUserUnits(float value, ExceptionCod
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -252,7 +252,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionCod
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -260,7 +260,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionCod
     // if this causes problems in real world cases maybe it would be best to remove this
     float xHeight = ceilf(style->fontMetrics().xHeight());
     if (!xHeight) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -271,7 +271,7 @@ float SVGLengthContext::convertValueFromEXSToUserUnits(float value, ExceptionCod
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 

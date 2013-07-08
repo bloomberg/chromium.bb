@@ -147,34 +147,35 @@ static inline bool containsConsideringHostElements(const Node* newChild, const N
 
 static inline ExceptionCode checkAcceptChild(ContainerNode* newParent, Node* newChild, Node* oldChild)
 {
-    // Not mentioned in spec: throw NOT_FOUND_ERR if newChild is null
+    // Not mentioned in spec: throw NotFoundError if newChild is null
     if (!newChild)
-        return NOT_FOUND_ERR;
+        return NotFoundError;
 
     // Use common case fast path if possible.
     if ((newChild->isElementNode() || newChild->isTextNode()) && newParent->isElementNode()) {
         ASSERT(!newParent->isDocumentTypeNode());
         ASSERT(isChildTypeAllowed(newParent, newChild));
         if (containsConsideringHostElements(newChild, newParent))
-            return HIERARCHY_REQUEST_ERR;
+            return HierarchyRequestError;
         return 0;
     }
 
     // This should never happen, but also protect release builds from tree corruption.
     ASSERT(!newChild->isPseudoElement());
     if (newChild->isPseudoElement())
-        return HIERARCHY_REQUEST_ERR;
+        return HierarchyRequestError;
 
     if (newChild->inDocument() && newChild->isDocumentTypeNode())
-        return HIERARCHY_REQUEST_ERR;
+        return HierarchyRequestError;
     if (containsConsideringHostElements(newChild, newParent))
-        return HIERARCHY_REQUEST_ERR;
+        return HierarchyRequestError;
 
     if (oldChild && newParent->isDocumentNode()) {
         if (!toDocument(newParent)->canReplaceChild(newChild, oldChild))
-            return HIERARCHY_REQUEST_ERR;
-    } else if (!isChildTypeAllowed(newParent, newChild))
-        return HIERARCHY_REQUEST_ERR;
+            return HierarchyRequestError;
+    } else if (!isChildTypeAllowed(newParent, newChild)) {
+        return HierarchyRequestError;
+    }
 
     return 0;
 }
@@ -184,7 +185,7 @@ static inline bool checkAcceptChildGuaranteedNodeTypes(ContainerNode* newParent,
     ASSERT(!newParent->isDocumentTypeNode());
     ASSERT(isChildTypeAllowed(newParent, newChild));
     if (newChild->contains(newParent)) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return false;
     }
 
@@ -227,9 +228,9 @@ bool ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
     if (!checkAddChild(this, newChild.get(), ec))
         return false;
 
-    // NOT_FOUND_ERR: Raised if refChild is not a child of this node
+    // NotFoundError: Raised if refChild is not a child of this node
     if (refChild->parentNode() != this) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 
@@ -339,7 +340,7 @@ bool ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         return true;
 
     if (!oldChild) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 
@@ -347,9 +348,9 @@ bool ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
     if (!checkReplaceChild(this, newChild.get(), oldChild, ec))
         return false;
 
-    // NOT_FOUND_ERR: Raised if oldChild is not a child of this node.
+    // NotFoundError: Raised if oldChild is not a child of this node.
     if (oldChild->parentNode() != this) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 
@@ -457,9 +458,9 @@ bool ContainerNode::removeChild(Node* oldChild, ExceptionCode& ec)
 
     ec = 0;
 
-    // NOT_FOUND_ERR: Raised if oldChild is not a child of this node.
+    // NotFoundError: Raised if oldChild is not a child of this node.
     if (!oldChild || oldChild->parentNode() != this) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 
@@ -473,7 +474,7 @@ bool ContainerNode::removeChild(Node* oldChild, ExceptionCode& ec)
     // Events fired when blurring currently focused node might have moved this
     // child into a different parent.
     if (child->parentNode() != this) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 
@@ -481,7 +482,7 @@ bool ContainerNode::removeChild(Node* oldChild, ExceptionCode& ec)
 
     // Mutation events might have moved this child into a different parent.
     if (child->parentNode() != this) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 

@@ -336,7 +336,7 @@ void HTMLElement::setOuterHTML(const String& html, ExceptionCode& ec)
 {
     Node* p = parentNode();
     if (!p || !p->isHTMLElement()) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
+        ec = NoModificationAllowedError;
         return;
     }
     RefPtr<HTMLElement> parent = toHTMLElement(p);
@@ -392,14 +392,14 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
 void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
 {
     if (ieForbidsInsertHTML()) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
+        ec = NoModificationAllowedError;
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
         hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) || 
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
+        ec = NoModificationAllowedError;
         return;
     }
 
@@ -440,20 +440,20 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
 void HTMLElement::setOuterText(const String &text, ExceptionCode& ec)
 {
     if (ieForbidsInsertHTML()) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
+        ec = NoModificationAllowedError;
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
         hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) || 
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
+        ec = NoModificationAllowedError;
         return;
     }
 
     ContainerNode* parent = parentNode();
     if (!parent) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
+        ec = NoModificationAllowedError;
         return;
     }
 
@@ -469,7 +469,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionCode& ec)
         newChild = Text::create(document(), text);
 
     if (!this || !parentNode())
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
     if (ec)
         return;
     parent->replaceChild(newChild.release(), this, ec);
@@ -508,7 +508,7 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
     }
     
     // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-    ec = NOT_SUPPORTED_ERR;
+    ec = NotSupportedError;
     return 0;
 }
 
@@ -531,7 +531,7 @@ static Element* contextElementForInsertion(const String& where, Element* element
     if (equalIgnoringCase(where, "beforeBegin") || equalIgnoringCase(where, "afterEnd")) {
         ContainerNode* parent = element->parentNode();
         if (parent && !parent->isElementNode()) {
-            ec = NO_MODIFICATION_ALLOWED_ERR;
+            ec = NoModificationAllowedError;
             return 0;
         }
         ASSERT_WITH_SECURITY_IMPLICATION(!parent || parent->isElementNode());

@@ -186,7 +186,7 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
 PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionCode& ec)
 {
     if (index < -1) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0;
     }
 
@@ -201,7 +201,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionCode& ec
             row = HTMLTableRowsCollection::rowAfter(this, lastRow.get());
             if (!row) {
                 if (i != index) {
-                    ec = INDEX_SIZE_ERR;
+                    ec = IndexSizeError;
                     return 0;
                 }
                 break;
@@ -242,7 +242,7 @@ void HTMLTableElement::deleteRow(int index, ExceptionCode& ec)
         }
     }
     if (!row) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
     row->remove(ec);

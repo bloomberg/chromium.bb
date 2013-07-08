@@ -66,7 +66,7 @@ void SVGPaint::setUri(const String&)
 
 void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionCode& ec)
 {
-    ec = NO_MODIFICATION_ALLOWED_ERR;
+    ec = NoModificationAllowedError;
 }
 
 String SVGPaint::customCssText() const

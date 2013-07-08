@@ -74,7 +74,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     ExceptionCode ec = 0;
     V8TRYCATCH_VOID(int, index, toUInt32(args[0]));
     if (UNLIKELY(index < 0)) {
-        setDOMException(INDEX_SIZE_ERR, args.GetIsolate());
+        setDOMException(IndexSizeError, args.GetIsolate());
         return;
     }
     v8SetReturnValue(args, toV8(imp->item(index), args.Holder(), args.GetIsolate()));

@@ -271,7 +271,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
 
     ec = 0;
     if (index > length()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0;
     }
     CSSParser p(m_contents->parserContext(), UseCounter::getFrom(this));
@@ -285,7 +285,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
 
     bool success = m_contents->wrapperInsertRule(rule, index);
     if (!success) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return 0;
     }        
     if (!m_childRuleCSSOMWrappers.isEmpty())
@@ -300,7 +300,7 @@ void CSSStyleSheet::deleteRule(unsigned index, ExceptionCode& ec)
 
     ec = 0;
     if (index >= length()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
     RuleMutationScope mutationScope(this);

@@ -84,7 +84,7 @@ bool MutationObserver::validateOptions(MutationObserverOptions options)
 void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionCode& ec)
 {
     if (!node) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 

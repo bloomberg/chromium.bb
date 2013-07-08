@@ -111,7 +111,7 @@ void V8HTMLOptionsCollection::lengthAttrSetterCustom(v8::Local<v8::String> name,
     ExceptionCode ec = 0;
     if (!std::isnan(v) && !std::isinf(v)) {
         if (v < 0.0)
-            ec = INDEX_SIZE_ERR;
+            ec = IndexSizeError;
         else if (v > static_cast<double>(UINT_MAX))
             newLength = UINT_MAX;
         else

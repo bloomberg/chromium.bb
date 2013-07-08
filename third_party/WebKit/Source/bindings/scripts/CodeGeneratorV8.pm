@@ -1790,7 +1790,7 @@ END
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $svgNativeType* wrapper = ${v8ClassName}::toNative(info.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
-            $code .= "        setDOMException(NO_MODIFICATION_ALLOWED_ERR, info.GetIsolate());\n";
+            $code .= "        setDOMException(NoModificationAllowedError, info.GetIsolate());\n";
             $code .= "        return;\n";
             $code .= "    }\n";
             $code .= "    $svgWrappedNativeType& impInstance = wrapper->propertyReference();\n";
@@ -2189,7 +2189,7 @@ END
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8ClassName}::toNative(args.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
-            $code .= "        setDOMException(NO_MODIFICATION_ALLOWED_ERR, args.GetIsolate());\n";
+            $code .= "        setDOMException(NoModificationAllowedError, args.GetIsolate());\n";
             $code .= "        return;\n";
             $code .= "    }\n";
             my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($interfaceName);
@@ -2442,7 +2442,7 @@ sub GenerateParametersCheck
 
         if ($parameter->extendedAttributes->{"IsIndex"}) {
             $parameterCheckString .= "    if (UNLIKELY($parameterName < 0)) {\n";
-            $parameterCheckString .= "        setDOMException(INDEX_SIZE_ERR, args.GetIsolate());\n";
+            $parameterCheckString .= "        setDOMException(IndexSizeError, args.GetIsolate());\n";
             $parameterCheckString .= "        return;\n";
             $parameterCheckString .= "    }\n";
         }

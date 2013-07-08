@@ -130,7 +130,7 @@ int HTMLMarqueeElement::scrollAmount() const
 void HTMLMarqueeElement::setScrollAmount(int scrollAmount, ExceptionCode& ec)
 {
     if (scrollAmount < 0)
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
     else
         setIntegralAttribute(scrollamountAttr, scrollAmount);
 }
@@ -145,7 +145,7 @@ int HTMLMarqueeElement::scrollDelay() const
 void HTMLMarqueeElement::setScrollDelay(int scrollDelay, ExceptionCode& ec)
 {
     if (scrollDelay < 0)
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
     else
         setIntegralAttribute(scrolldelayAttr, scrollDelay);
 }
@@ -160,7 +160,7 @@ int HTMLMarqueeElement::loop() const
 void HTMLMarqueeElement::setLoop(int loop, ExceptionCode& ec)
 {
     if (loop <= 0 && loop != -1)
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
     else
         setIntegralAttribute(loopAttr, loop);
 }

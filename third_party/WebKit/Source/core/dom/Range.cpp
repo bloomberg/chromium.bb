@@ -219,7 +219,7 @@ void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -248,7 +248,7 @@ void Range::setEnd(PassRefPtr<Node> refNode, int offset, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -302,7 +302,7 @@ bool Range::isPointInRange(Node* refNode, int offset, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return false;
     }
 
@@ -331,12 +331,12 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionCode& ec) const
     }
 
     if (!refNode) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return 0;
     }
 
     if (!refNode->attached() || refNode->document() != m_ownerDocument) {
-        ec = WRONG_DOCUMENT_ERR;
+        ec = WrongDocumentError;
         return 0;
     }
 
@@ -367,7 +367,7 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionCode& ec) const
     // before and after(surrounds), or inside the range, respectively
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return NODE_BEFORE;
     }
     
@@ -392,7 +392,7 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionCode& ec) const
     if (!parentNode) {
         // if the node is the top document we should return NODE_BEFORE_AND_AFTER
         // but we throw to match firefox behavior
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return NODE_BEFORE;
     }
 
@@ -415,7 +415,7 @@ short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, Exc
     }
 
     if (!sourceRange) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return 0;
     }
 
@@ -428,7 +428,7 @@ short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, Exc
         return 0;
 
     if (thisCont->document() != sourceCont->document()) {
-        ec = WRONG_DOCUMENT_ERR;
+        ec = WrongDocumentError;
         return 0;
     }
 
@@ -439,7 +439,7 @@ short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, Exc
     while (sourceTop->parentNode())
         sourceTop = sourceTop->parentNode();
     if (thisTop != sourceTop) { // in different DocumentFragments
-        ec = WRONG_DOCUMENT_ERR;
+        ec = WrongDocumentError;
         return 0;
     }
 
@@ -520,7 +520,7 @@ short Range::compareBoundaryPoints(Node* containerA, int offsetA, Node* containe
     // ### we need to do a traversal here instead
     Node* commonAncestor = commonAncestorContainer(containerA, containerB);
     if (!commonAncestor) {
-        ec = WRONG_DOCUMENT_ERR;
+        ec = WrongDocumentError;
         return 0;
     }
     Node* childA = containerA;
@@ -582,7 +582,7 @@ bool Range::intersectsNode(Node* refNode, ExceptionCode& ec)
         return false;
     }
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 
@@ -597,7 +597,7 @@ bool Range::intersectsNode(Node* refNode, ExceptionCode& ec)
     if (!parentNode) {
         // if the node is the top document we should return NODE_BEFORE_AND_AFTER
         // but we throw to match firefox behavior
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return false;
     }
 
@@ -956,17 +956,17 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
     }
 
     if (!newNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
-    // HIERARCHY_REQUEST_ERR: Raised if the container of the start of the Range is of a type that
+    // HierarchyRequestError: Raised if the container of the start of the Range is of a type that
     // does not allow children of the type of newNode or if newNode is an ancestor of the container.
 
     // an extra one here - if a text node is going to split, it must have a parent to insert into
     bool startIsText = m_start.container()->isTextNode();
     if (startIsText && !m_start.container()->parentNode()) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return;
     }
 
@@ -985,7 +985,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
         numNewChildren = 0;
         for (Node* c = newNode->firstChild(); c; c = c->nextSibling()) {
             if (!checkAgainst->childTypeAllowed(c->nodeType())) {
-                ec = HIERARCHY_REQUEST_ERR;
+                ec = HierarchyRequestError;
                 return;
             }
             ++numNewChildren;
@@ -993,14 +993,14 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
     } else {
         numNewChildren = 1;
         if (!checkAgainst->childTypeAllowed(newNodeType)) {
-            ec = HIERARCHY_REQUEST_ERR;
+            ec = HierarchyRequestError;
             return;
         }
     }
 
     for (Node* n = m_start.container(); n; n = n->parentNode()) {
         if (n == newNode) {
-            ec = HIERARCHY_REQUEST_ERR;
+            ec = HierarchyRequestError;
             return;
         }
     }
@@ -1102,7 +1102,7 @@ PassRefPtr<DocumentFragment> Range::createContextualFragment(const String& marku
 
     Node* element = m_start.container()->isElementNode() ? m_start.container() : m_start.container()->parentNode();
     if (!element || !element->isHTMLElement()) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -1140,11 +1140,11 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionCode& ec) const
         case Node::COMMENT_NODE:
         case Node::TEXT_NODE:
             if (static_cast<unsigned>(offset) > static_cast<CharacterData*>(n)->length())
-                ec = INDEX_SIZE_ERR;
+                ec = IndexSizeError;
             return 0;
         case Node::PROCESSING_INSTRUCTION_NODE:
             if (static_cast<unsigned>(offset) > static_cast<ProcessingInstruction*>(n)->data().length())
-                ec = INDEX_SIZE_ERR;
+                ec = IndexSizeError;
             return 0;
         case Node::ATTRIBUTE_NODE:
         case Node::DOCUMENT_FRAGMENT_NODE:
@@ -1155,7 +1155,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionCode& ec) const
                 return 0;
             Node* childBefore = n->childNode(offset - 1);
             if (!childBefore)
-                ec = INDEX_SIZE_ERR;
+                ec = IndexSizeError;
             return childBefore;
         }
     }
@@ -1228,7 +1228,7 @@ void Range::setStartAfter(Node* refNode, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -1248,7 +1248,7 @@ void Range::setEndBefore(Node* refNode, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -1268,7 +1268,7 @@ void Range::setEndAfter(Node* refNode, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -1288,7 +1288,7 @@ void Range::selectNode(Node* refNode, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -1351,7 +1351,7 @@ void Range::selectNodeContents(Node* refNode, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -1394,7 +1394,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
     }
 
     if (!newParent) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -1418,7 +1418,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
             break;
     }
 
-    // Raise a HIERARCHY_REQUEST_ERR if m_start.container() doesn't accept children like newParent.
+    // Raise a HierarchyRequestError if m_start.container() doesn't accept children like newParent.
     Node* parentOfNewParent = m_start.container();
 
     // If m_start.container() is a character data node, it will be split and it will be its parent that will 
@@ -1427,12 +1427,12 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
     if (parentOfNewParent->isCharacterDataNode())
         parentOfNewParent = parentOfNewParent->parentNode();
     if (!parentOfNewParent || !parentOfNewParent->childTypeAllowed(newParent->nodeType())) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return;
     }
     
     if (newParent->contains(m_start.container())) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return;
     }
 
@@ -1477,7 +1477,7 @@ void Range::setStartBefore(Node* refNode, ExceptionCode& ec)
     }
 
     if (!refNode) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 
@@ -1503,7 +1503,7 @@ void Range::checkDeleteExtract(ExceptionCode& ec)
     Node* pastLast = pastLastNode();
     for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(n)) {
         if (n->nodeType() == Node::DOCUMENT_TYPE_NODE) {
-            ec = HIERARCHY_REQUEST_ERR;
+            ec = HierarchyRequestError;
             return;
         }
     }

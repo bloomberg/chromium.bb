@@ -1217,7 +1217,7 @@ String CSSComputedStyleDeclaration::cssText() const
 
 void CSSComputedStyleDeclaration::setCssText(const String&, ExceptionCode& ec)
 {
-    ec = NO_MODIFICATION_ALLOWED_ERR;
+    ec = NoModificationAllowedError;
 }
 
 static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
@@ -2985,12 +2985,12 @@ bool CSSComputedStyleDeclaration::isPropertyImplicit(const String&)
 
 void CSSComputedStyleDeclaration::setProperty(const String&, const String&, const String&, ExceptionCode& ec)
 {
-    ec = NO_MODIFICATION_ALLOWED_ERR;
+    ec = NoModificationAllowedError;
 }
 
 String CSSComputedStyleDeclaration::removeProperty(const String&, ExceptionCode& ec)
 {
-    ec = NO_MODIFICATION_ALLOWED_ERR;
+    ec = NoModificationAllowedError;
     return String();
 }
     
@@ -3006,7 +3006,7 @@ String CSSComputedStyleDeclaration::getPropertyValueInternal(CSSPropertyID prope
 
 void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID, const String&, bool, ExceptionCode& ec)
 {
-    ec = NO_MODIFICATION_ALLOWED_ERR;
+    ec = NoModificationAllowedError;
 }
 
 PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getBackgroundShorthandValue() const

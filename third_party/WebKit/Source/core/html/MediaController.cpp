@@ -259,7 +259,7 @@ void MediaController::setVolume(double level, ExceptionCode& ec)
     // If the new value is outside the range 0.0 to 1.0 inclusive, then, on setting, an 
     // IndexSizeError exception must be raised instead.
     if (level < 0 || level > 1) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
         

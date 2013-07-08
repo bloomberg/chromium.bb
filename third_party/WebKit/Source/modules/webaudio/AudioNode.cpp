@@ -137,12 +137,12 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
 
     // Sanity check input and output indices.
     if (outputIndex >= numberOfOutputs()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
     if (destination && inputIndex >= destination->numberOfInputs()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -170,7 +170,7 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionCode& 
     }
 
     if (outputIndex >= numberOfOutputs()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -190,7 +190,7 @@ void AudioNode::disconnect(unsigned outputIndex, ExceptionCode& ec)
 
     // Sanity check input and output indices.
     if (outputIndex >= numberOfOutputs()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 

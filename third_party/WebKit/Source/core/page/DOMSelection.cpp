@@ -197,7 +197,7 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionCode& ec)
         return;
 
     if (offset < 0) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -251,7 +251,7 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
         return;
 
     if (baseOffset < 0 || extentOffset < 0) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -270,7 +270,7 @@ void DOMSelection::setPosition(Node* node, int offset, ExceptionCode& ec)
     if (!m_frame)
         return;
     if (offset < 0) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -342,7 +342,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionCode& ec)
     }
 
     if (offset < 0 || offset > (node->offsetInCharacters() ? caretMaxOffset(node) : (int)node->childNodeCount())) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -359,7 +359,7 @@ PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionCode& ec)
         return 0;
 
     if (index < 0 || index >= rangeCount()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0;
     }
 

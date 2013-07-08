@@ -193,8 +193,8 @@ PassOwnPtr<SourceBufferPrivate> MediaSourceBase::createSourceBufferPrivate(const
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 2: If type contains a MIME type ... that is not supported with the types
         // specified for the other SourceBuffer objects in sourceBuffers, then throw
-        // a NOT_SUPPORTED_ERR exception and abort these steps.
-        ec = NOT_SUPPORTED_ERR;
+        // a NotSupportedError exception and abort these steps.
+        ec = NotSupportedError;
         return nullptr;
     case MediaSourcePrivate::ReachedIdLimit:
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type

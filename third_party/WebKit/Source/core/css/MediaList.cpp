@@ -209,7 +209,7 @@ void MediaList::deleteMedium(const String& medium, ExceptionCode& ec)
 
     bool success = m_mediaQueries->remove(medium);
     if (!success) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
     if (m_parentStyleSheet)
@@ -222,7 +222,7 @@ void MediaList::appendMedium(const String& medium, ExceptionCode& ec)
 
     bool success = m_mediaQueries->add(medium);
     if (!success) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return;
     }
 

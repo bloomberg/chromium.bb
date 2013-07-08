@@ -57,7 +57,7 @@ void V8SVGLength::valueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     if (wrapper->isReadOnly()) {
-        setDOMException(NO_MODIFICATION_ALLOWED_ERR, info.GetIsolate());
+        setDOMException(NoModificationAllowedError, info.GetIsolate());
         return;
     }
 
@@ -80,7 +80,7 @@ void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallback
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(args.Holder());
     if (wrapper->isReadOnly()) {
-        setDOMException(NO_MODIFICATION_ALLOWED_ERR, args.GetIsolate());
+        setDOMException(NoModificationAllowedError, args.GetIsolate());
         return;
     }
 

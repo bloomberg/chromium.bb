@@ -48,7 +48,7 @@ PassRefPtr<RTCDataChannel> RTCDataChannel::create(ScriptExecutionContext* contex
 {
     OwnPtr<RTCDataChannelHandler> handler = peerConnectionHandler->createDataChannel(label, init);
     if (!handler) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return adoptRef(new RTCDataChannel(context, handler.release()));
@@ -117,7 +117,7 @@ String RTCDataChannel::binaryType() const
 void RTCDataChannel::setBinaryType(const String& binaryType, ExceptionCode& ec)
 {
     if (binaryType == "blob")
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
     else if (binaryType == "arraybuffer")
         m_binaryType = BinaryTypeArrayBuffer;
     else
@@ -166,7 +166,7 @@ void RTCDataChannel::send(PassRefPtr<ArrayBufferView> data, ExceptionCode& ec)
 void RTCDataChannel::send(PassRefPtr<Blob> data, ExceptionCode& ec)
 {
     // FIXME: implement
-    ec = NOT_SUPPORTED_ERR;
+    ec = NotSupportedError;
 }
 
 void RTCDataChannel::close()

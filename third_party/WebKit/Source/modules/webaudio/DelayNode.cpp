@@ -37,7 +37,7 @@ DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTim
 {
     ScriptWrappable::init(this);
     if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
     m_processor = adoptPtr(new DelayProcessor(context, sampleRate, 1, maxDelayTime));

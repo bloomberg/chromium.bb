@@ -118,7 +118,7 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
 
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0.0f;
     }
 
@@ -130,7 +130,7 @@ FloatPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, Excep
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return FloatPoint();
     }
 
@@ -142,7 +142,7 @@ FloatPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, Excepti
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return FloatPoint();
     }
 
@@ -154,7 +154,7 @@ FloatRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionCode
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return FloatRect();
     }
 
@@ -166,7 +166,7 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionCode& 
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return 0.0f;
     }
 
@@ -183,7 +183,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, E
 {
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 

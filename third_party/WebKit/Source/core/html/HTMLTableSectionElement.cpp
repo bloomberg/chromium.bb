@@ -61,7 +61,7 @@ PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionC
     RefPtr<HTMLCollection> children = rows();
     int numRows = children ? (int)children->length() : 0;
     if (index < -1 || index > numRows)
-        ec = INDEX_SIZE_ERR; // per the DOM
+        ec = IndexSizeError; // per the DOM
     else {
         row = HTMLTableRowElement::create(trTag, document());
         if (numRows == index || index == -1)
@@ -87,8 +87,9 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionCode& ec)
     if (index >= 0 && index < numRows) {
         RefPtr<Node> row = children->item(index);
         HTMLElement::removeChild(row.get(), ec);
-    } else
-        ec = INDEX_SIZE_ERR;
+    } else {
+        ec = IndexSizeError;
+    }
 }
 
 int HTMLTableSectionElement::numRows() const

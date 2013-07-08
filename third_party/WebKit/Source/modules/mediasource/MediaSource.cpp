@@ -77,9 +77,9 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionCode& ec
     }
 
     // 2. If type contains a MIME type that is not supported ..., then throw a
-    // NOT_SUPPORTED_ERR exception and abort these steps.
+    // NotSupportedError exception and abort these steps.
     if (!isTypeSupported(type)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -96,8 +96,8 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionCode& ec
     OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, ec);
 
     if (!sourceBufferPrivate) {
-        ASSERT(ec == NOT_SUPPORTED_ERR || ec == QUOTA_EXCEEDED_ERR);
-        // 2. If type contains a MIME type that is not supported ..., then throw a NOT_SUPPORTED_ERR exception and abort these steps.
+        ASSERT(ec == NotSupportedError || ec == QUOTA_EXCEEDED_ERR);
+        // 2. If type contains a MIME type that is not supported ..., then throw a NotSupportedError exception and abort these steps.
         // 3. If the user agent can't handle any more SourceBuffer objects then throw a QUOTA_EXCEEDED_ERR exception and abort these steps
         return 0;
     }
@@ -124,9 +124,9 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionCode& ec)
     }
 
     // 2. If sourceBuffer specifies an object that is not in sourceBuffers then
-    // throw a NOT_FOUND_ERR exception and abort these steps.
+    // throw a NotFoundError exception and abort these steps.
     if (!m_sourceBuffers->length() || !m_sourceBuffers->contains(buffer)) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 

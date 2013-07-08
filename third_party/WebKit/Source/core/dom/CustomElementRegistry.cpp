@@ -93,7 +93,7 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
 
     AtomicString type = userSuppliedName.lower();
     if (!isValidName(type)) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return;
     }
 
@@ -126,14 +126,14 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
     RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, tagName.localName(), tagName.namespaceURI(), lifecycleCallbacks);
 
     if (!constructorBuilder->createConstructor(document(), definition.get())) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
 
     m_definitions.add(definition->type(), definition);
 
     if (!constructorBuilder->didRegisterDefinition(definition.get())) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
 

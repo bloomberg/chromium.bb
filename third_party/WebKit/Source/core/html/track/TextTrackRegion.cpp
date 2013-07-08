@@ -107,7 +107,7 @@ void TextTrackRegion::setWidth(double value, ExceptionCode& ec)
     }
 
     if (value < 0 || value > 100) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -117,7 +117,7 @@ void TextTrackRegion::setWidth(double value, ExceptionCode& ec)
 void TextTrackRegion::setHeight(long value, ExceptionCode& ec)
 {
     if (value < 0) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -132,7 +132,7 @@ void TextTrackRegion::setRegionAnchorX(double value, ExceptionCode& ec)
     }
 
     if (value < 0 || value > 100) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -147,7 +147,7 @@ void TextTrackRegion::setRegionAnchorY(double value, ExceptionCode& ec)
     }
 
     if (value < 0 || value > 100) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -162,7 +162,7 @@ void TextTrackRegion::setViewportAnchorX(double value, ExceptionCode& ec)
     }
 
     if (value < 0 || value > 100) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 
@@ -177,7 +177,7 @@ void TextTrackRegion::setViewportAnchorY(double value, ExceptionCode& ec)
     }
 
     if (value < 0 || value > 100) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 

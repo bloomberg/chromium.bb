@@ -77,9 +77,9 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
     }
 
     // 2. If type contains a MIME type that is not supported ..., then throw a
-    // NOT_SUPPORTED_ERR exception and abort these steps.
+    // NotSupportedError exception and abort these steps.
     if (!isTypeSupported(type)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -123,11 +123,11 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
     }
 
     // 3. If sourceBuffer specifies an object that is not in sourceBuffers then
-    // throw a NOT_FOUND_ERR exception and abort these steps.
+    // throw a NotFoundError exception and abort these steps.
     // 6. Remove sourceBuffer from sourceBuffers and fire a removesourcebuffer event
     // on that object.
     if (!m_sourceBuffers->remove(buffer)) {
-        ec = NOT_FOUND_ERR;
+        ec = NotFoundError;
         return;
     }
 

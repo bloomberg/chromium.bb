@@ -942,7 +942,7 @@ String DOMWindow::btoa(const String& stringToEncode, ExceptionCode& ec)
         return String();
 
     if (!stringToEncode.containsOnlyLatin1()) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return String();
     }
 
@@ -955,13 +955,13 @@ String DOMWindow::atob(const String& encodedString, ExceptionCode& ec)
         return String();
 
     if (!encodedString.containsOnlyLatin1()) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return String();
     }
 
     Vector<char> out;
     if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacter)) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return String();
     }
 

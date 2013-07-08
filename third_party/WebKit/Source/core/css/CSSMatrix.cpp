@@ -101,7 +101,7 @@ PassRefPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
 PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionCode& ec) const
 {
     if (!m_matrix.isInvertible()) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 

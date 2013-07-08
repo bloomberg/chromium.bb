@@ -162,7 +162,7 @@ static ExceptionCode exceptionCodeForMediaKeyException(MediaPlayer::MediaKeyExce
     case MediaPlayer::InvalidPlayerState:
         return INVALID_STATE_ERR;
     case MediaPlayer::KeySystemNotSupported:
-        return NOT_SUPPORTED_ERR;
+        return NotSupportedError;
     }
 
     ASSERT_NOT_REACHED();
@@ -2338,7 +2338,7 @@ void HTMLMediaElement::setVolume(double vol, ExceptionCode& ec)
     LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
 
     if (vol < 0.0f || vol > 1.0f) {
-        ec = INDEX_SIZE_ERR;
+        ec = IndexSizeError;
         return;
     }
 

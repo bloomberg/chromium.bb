@@ -743,7 +743,7 @@ void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* a
 PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionCode& ec)
 {
     if (!isValidName(name)) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return 0;
     }
 
@@ -756,7 +756,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionC
 PassRefPtr<Element> Document::createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionCode& ec)
 {
     if (!isValidName(localName)) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return 0;
     }
 
@@ -809,7 +809,7 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
 ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionCode& ec)
 {
     if (!isHTMLDocument() && !isXHTMLDocument()) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return ScriptValue();
     }
 
@@ -861,7 +861,7 @@ PassRefPtr<Comment> Document::createComment(const String& data)
 PassRefPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionCode& ec)
 {
     if (isHTMLDocument()) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return CDATASection::create(this, data);
@@ -870,11 +870,11 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
 PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionCode& ec)
 {
     if (!isValidName(target)) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return 0;
     }
     if (isHTMLDocument()) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return ProcessingInstruction::create(this, target, data);
@@ -895,7 +895,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
     ec = 0;
 
     if (!importedNode) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -965,7 +965,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
     case XPATH_NAMESPACE_NODE:
         break;
     }
-    ec = NOT_SUPPORTED_ERR;
+    ec = NotSupportedError;
     return 0;
 }
 
@@ -973,7 +973,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
 PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
 {
     if (!source) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -985,7 +985,7 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
     case DOCUMENT_NODE:
     case DOCUMENT_TYPE_NODE:
     case XPATH_NAMESPACE_NODE:
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     case ATTRIBUTE_NODE: {
         Attr* attr = toAttr(source.get());
@@ -997,14 +997,14 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
     default:
         if (source->isShadowRoot()) {
             // ShadowRoot cannot disconnect itself from the host node.
-            ec = HIERARCHY_REQUEST_ERR;
+            ec = HierarchyRequestError;
             return 0;
         }
 
         if (source->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwnerElement = toFrameOwnerElement(source.get());
             if (frame() && frame()->tree()->isDescendantOf(frameOwnerElement->contentFrame())) {
-                ec = HIERARCHY_REQUEST_ERR;
+                ec = HierarchyRequestError;
                 return 0;
             }
         }
@@ -1196,12 +1196,12 @@ void Document::setContentLanguage(const String& language)
 void Document::setXMLVersion(const String& version, ExceptionCode& ec)
 {
     if (!implementation()->hasFeature("XML", String())) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
 
     if (!XMLDocumentParser::supportsXMLVersion(version)) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
 
@@ -1211,7 +1211,7 @@ void Document::setXMLVersion(const String& version, ExceptionCode& ec)
 void Document::setXMLStandalone(bool standalone, ExceptionCode& ec)
 {
     if (!implementation()->hasFeature("XML", String())) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return;
     }
 
@@ -1510,7 +1510,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionCode&
 {
     // FIXME: Probably this should be handled within the bindings layer and TypeError should be thrown.
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return NodeIterator::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
@@ -1519,7 +1519,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionCode&
 PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, ExceptionCode& ec)
 {
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
@@ -1530,7 +1530,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionCode& ec)
 {
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     // FIXME: Ditto.
@@ -1540,7 +1540,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionCode& ec)
 {
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     // FIXME: Warn if |expandEntityReferences| is specified. This optional argument is deprecated in DOM4.
@@ -1551,7 +1551,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionCode& ec)
 {
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return TreeWalker::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
@@ -1560,7 +1560,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionCode& ec)
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, ExceptionCode& ec)
 {
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return TreeWalker::create(root, whatToShow, PassRefPtr<NodeFilter>());
@@ -1569,7 +1569,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionCode& ec)
 {
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return TreeWalker::create(root, whatToShow, filter);
@@ -1579,7 +1579,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 {
     UNUSED_PARAM(expandEntityReferences);
     if (!root) {
-        ec = NOT_SUPPORTED_ERR;
+        ec = NotSupportedError;
         return 0;
     }
     return TreeWalker::create(root, whatToShow, filter);
@@ -2197,7 +2197,7 @@ void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionCode& ec)
     RefPtr<HTMLElement> newBody = prpNewBody;
 
     if (!newBody || !documentElement() || !newBody->hasTagName(bodyTag)) {
-        ec = HIERARCHY_REQUEST_ERR;
+        ec = HierarchyRequestError;
         return;
     }
 
@@ -2931,7 +2931,7 @@ bool Document::childTypeAllowed(NodeType type) const
 bool Document::canReplaceChild(Node* newChild, Node* oldChild)
 {
     if (!oldChild)
-        // ContainerNode::replaceChild will raise a NOT_FOUND_ERR.
+        // ContainerNode::replaceChild will raise a NotFoundError.
         return true;
 
     if (oldChild->nodeType() == newChild->nodeType())
@@ -3541,7 +3541,7 @@ PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionCode& 
     if (event)
         return event.release();
 
-    ec = NOT_SUPPORTED_ERR;
+    ec = NotSupportedError;
     return 0;
 }
 
@@ -3822,13 +3822,13 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
             colonPos = i - 1;
         } else if (nameStart) {
             if (!isValidNameStart(c)) {
-                ec = INVALID_CHARACTER_ERR;
+                ec = InvalidCharacterError;
                 return false;
             }
             nameStart = false;
         } else {
             if (!isValidNamePart(c)) {
-                ec = INVALID_CHARACTER_ERR;
+                ec = InvalidCharacterError;
                 return false;
             }
         }
@@ -3859,7 +3859,7 @@ bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, S
     unsigned length = qualifiedName.length();
 
     if (!length) {
-        ec = INVALID_CHARACTER_ERR;
+        ec = InvalidCharacterError;
         return false;
     }
 
