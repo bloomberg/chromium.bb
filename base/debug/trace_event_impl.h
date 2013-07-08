@@ -40,7 +40,7 @@
         name, reinterpret_cast<const void*>(id), extra)
 
 template <typename Type>
-struct StaticMemorySingletonTraits;
+struct DefaultSingletonTraits;
 
 namespace base {
 
@@ -440,9 +440,6 @@ class BASE_EXPORT TraceLog {
   // Allows deleting our singleton instance.
   static void DeleteForTesting();
 
-  // Allows resurrecting our singleton instance post-AtExit processing.
-  static void Resurrect();
-
   // Allow tests to inspect TraceEvents.
   size_t GetEventsSize() const { return logged_events_->Size(); }
   const TraceEvent& GetEventAt(size_t index) const {
@@ -478,7 +475,7 @@ class BASE_EXPORT TraceLog {
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
-  friend struct StaticMemorySingletonTraits<TraceLog>;
+  friend struct DefaultSingletonTraits<TraceLog>;
 
   // Enable/disable each category group based on the current category_filter_.
   // If the category group contains a category that matches an included category

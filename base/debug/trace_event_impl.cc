@@ -36,7 +36,7 @@ class DeleteTraceLogForTesting {
  public:
   static void Delete() {
     Singleton<base::debug::TraceLog,
-              StaticMemorySingletonTraits<base::debug::TraceLog> >::OnExit(0);
+              LeakySingletonTraits<base::debug::TraceLog> >::OnExit(0);
   }
 };
 
@@ -743,7 +743,7 @@ void TraceLog::NotificationHelper::SendNotificationIfAny() {
 
 // static
 TraceLog* TraceLog::GetInstance() {
-  return Singleton<TraceLog, StaticMemorySingletonTraits<TraceLog> >::get();
+  return Singleton<TraceLog, LeakySingletonTraits<TraceLog> >::get();
 }
 
 // static
@@ -775,6 +775,7 @@ TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
 TraceLog::TraceLog()
     : enable_count_(0),
       num_traces_recorded_(0),
+      event_callback_(NULL),
       dispatching_to_observer_list_(false),
       process_sort_index_(0),
       watch_category_(NULL),
@@ -1382,10 +1383,6 @@ void TraceLog::InstallWaitableEventForSamplingTesting(
 
 void TraceLog::DeleteForTesting() {
   DeleteTraceLogForTesting::Delete();
-}
-
-void TraceLog::Resurrect() {
-  StaticMemorySingletonTraits<TraceLog>::Resurrect();
 }
 
 void TraceLog::SetProcessID(int process_id) {

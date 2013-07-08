@@ -25,7 +25,6 @@ class TraceEventAnalyzerTest : public testing::Test {
 };
 
 void TraceEventAnalyzerTest::ManualSetUp() {
-  base::debug::TraceLog::Resurrect();
   ASSERT_TRUE(base::debug::TraceLog::GetInstance());
   buffer_.SetOutputCallback(output_.GetCallback());
   output_.json_output.clear();

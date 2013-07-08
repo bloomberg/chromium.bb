@@ -49,9 +49,6 @@ const char kAsyncId2Str[] = "0x6";
 
 class TraceEventTestFixture : public testing::Test {
  public:
-  // This fixture does not use SetUp() because the fixture must be manually set
-  // up multiple times when testing AtExit. Use ManualTestSetUp for this.
-  void ManualTestSetUp();
   void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& events_str);
   void OnTraceNotification(int notification) {
@@ -97,6 +94,15 @@ class TraceEventTestFixture : public testing::Test {
     const char* name = PlatformThread::GetName();
     old_thread_name_ = name ? strdup(name) : NULL;
     notifications_received_ = 0;
+
+    TraceLog::DeleteForTesting();
+    TraceLog* tracelog = TraceLog::GetInstance();
+    ASSERT_TRUE(tracelog);
+    ASSERT_FALSE(tracelog->IsEnabled());
+    tracelog->SetNotificationCallback(
+        base::Bind(&TraceEventTestFixture::OnTraceNotification,
+                   base::Unretained(this)));
+    trace_buffer_.SetOutputCallback(json_output_.GetCallback());
   }
   virtual void TearDown() OVERRIDE {
     if (TraceLog::GetInstance())
@@ -104,6 +110,8 @@ class TraceEventTestFixture : public testing::Test {
     PlatformThread::SetName(old_thread_name_ ? old_thread_name_ : "");
     free(old_thread_name_);
     old_thread_name_ = NULL;
+    // We want our singleton torn down after each test.
+    TraceLog::DeleteForTesting();
   }
 
   char* old_thread_name_;
@@ -118,18 +126,6 @@ class TraceEventTestFixture : public testing::Test {
   ShadowingAtExitManager at_exit_manager_;
   Lock lock_;
 };
-
-void TraceEventTestFixture::ManualTestSetUp() {
-  TraceLog::DeleteForTesting();
-  TraceLog::Resurrect();
-  TraceLog* tracelog = TraceLog::GetInstance();
-  ASSERT_TRUE(tracelog);
-  ASSERT_FALSE(tracelog->IsEnabled());
-  tracelog->SetNotificationCallback(
-      base::Bind(&TraceEventTestFixture::OnTraceNotification,
-                 base::Unretained(this)));
-  trace_buffer_.SetOutputCallback(json_output_.GetCallback());
-}
 
 void TraceEventTestFixture::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& events_str) {
@@ -807,7 +803,6 @@ void HighResSleepForTraceTest(base::TimeDelta elapsed) {
 
 // Simple Test for emitting data and validating it was received.
 TEST_F(TraceEventTestFixture, DataCaptured) {
-  ManualTestSetUp();
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                       TraceLog::RECORD_UNTIL_FULL);
 
@@ -826,8 +821,6 @@ class MockEnabledStateChangedObserver :
 };
 
 TEST_F(TraceEventTestFixture, EnabledObserverFiresOnEnable) {
-  ManualTestSetUp();
-
   MockEnabledStateChangedObserver observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
@@ -844,8 +837,6 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnEnable) {
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
-  ManualTestSetUp();
-
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                       TraceLog::RECORD_UNTIL_FULL);
 
@@ -868,8 +859,6 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnNestedDisable) {
-  ManualTestSetUp();
-
   CategoryFilter cf_inc_all("*");
   TraceLog::GetInstance()->SetEnabled(cf_inc_all, TraceLog::RECORD_UNTIL_FULL);
   TraceLog::GetInstance()->SetEnabled(cf_inc_all, TraceLog::RECORD_UNTIL_FULL);
@@ -890,8 +879,6 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnNestedDisable) {
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
-  ManualTestSetUp();
-
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                       TraceLog::RECORD_UNTIL_FULL);
 
@@ -925,8 +912,6 @@ class AfterStateChangeEnabledStateObserver
 };
 
 TEST_F(TraceEventTestFixture, ObserversFireAfterStateChange) {
-  ManualTestSetUp();
-
   AfterStateChangeEnabledStateObserver observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
@@ -956,7 +941,6 @@ class SelfRemovingEnabledStateObserver
 };
 
 TEST_F(TraceEventTestFixture, SelfRemovingObserver) {
-  ManualTestSetUp();
   ASSERT_EQ(0u, TraceLog::GetInstance()->GetObserverCountForTest());
 
   SelfRemovingEnabledStateObserver observer;
@@ -977,7 +961,6 @@ bool IsNewTrace() {
 }
 
 TEST_F(TraceEventTestFixture, NewTraceRecording) {
-  ManualTestSetUp();
   ASSERT_FALSE(IsNewTrace());
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                       TraceLog::RECORD_UNTIL_FULL);
@@ -1003,8 +986,6 @@ TEST_F(TraceEventTestFixture, NewTraceRecording) {
 
 // Test that categories work.
 TEST_F(TraceEventTestFixture, Categories) {
-  ManualTestSetUp();
-
   // Test that categories that are used can be retrieved whether trace was
   // enabled or disabled when the trace event was encountered.
   TRACE_EVENT_INSTANT0("c1", "name", TRACE_EVENT_SCOPE_THREAD);
@@ -1149,8 +1130,6 @@ TEST_F(TraceEventTestFixture, Categories) {
 
 // Test EVENT_WATCH_NOTIFICATION
 TEST_F(TraceEventTestFixture, EventWatchNotification) {
-  ManualTestSetUp();
-
   // Basic one occurrence.
   BeginTrace();
   TraceLog::GetInstance()->SetWatchEvent("cat", "event");
@@ -1208,7 +1187,6 @@ TEST_F(TraceEventTestFixture, EventWatchNotification) {
 
 // Test ASYNC_BEGIN/END events
 TEST_F(TraceEventTestFixture, AsyncBeginEndEvents) {
-  ManualTestSetUp();
   BeginTrace();
 
   unsigned long long id = 0xfeedbeeffeedbeefull;
@@ -1238,8 +1216,6 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndEvents) {
 
 // Test ASYNC_BEGIN/END events
 TEST_F(TraceEventTestFixture, AsyncBeginEndPointerMangling) {
-  ManualTestSetUp();
-
   void* ptr = this;
 
   TraceLog::GetInstance()->SetProcessID(100);
@@ -1277,7 +1253,6 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndPointerMangling) {
 
 // Test that static strings are not copied.
 TEST_F(TraceEventTestFixture, StaticStringVsString) {
-  ManualTestSetUp();
   TraceLog* tracer = TraceLog::GetInstance();
   // Make sure old events are flushed:
   EndTraceAndFlush();
@@ -1330,7 +1305,6 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
 
 // Test that data sent from other threads is gathered
 TEST_F(TraceEventTestFixture, DataCapturedOnThread) {
-  ManualTestSetUp();
   BeginTrace();
 
   Thread thread("1");
@@ -1348,7 +1322,6 @@ TEST_F(TraceEventTestFixture, DataCapturedOnThread) {
 
 // Test that data sent from multiple threads is gathered
 TEST_F(TraceEventTestFixture, DataCapturedManyThreads) {
-  ManualTestSetUp();
   BeginTrace();
 
   const int num_threads = 4;
@@ -1382,8 +1355,6 @@ TEST_F(TraceEventTestFixture, DataCapturedManyThreads) {
 
 // Test that thread and process names show up in the trace
 TEST_F(TraceEventTestFixture, ThreadNames) {
-  ManualTestSetUp();
-
   // Create threads before we enable tracing to make sure
   // that tracelog still captures them.
   const int num_threads = 4;
@@ -1451,8 +1422,6 @@ TEST_F(TraceEventTestFixture, ThreadNames) {
 }
 
 TEST_F(TraceEventTestFixture, ThreadNameChanges) {
-  ManualTestSetUp();
-
   BeginTrace();
 
   PlatformThread::SetName("");
@@ -1492,8 +1461,6 @@ TEST_F(TraceEventTestFixture, ThreadNameChanges) {
 // Test that the disabled trace categories are included/excluded from the
 // trace output correctly.
 TEST_F(TraceEventTestFixture, DisabledCategories) {
-  ManualTestSetUp();
-
   BeginTrace();
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("cc"), "first",
                        TRACE_EVENT_SCOPE_THREAD);
@@ -1521,77 +1488,10 @@ TEST_F(TraceEventTestFixture, DisabledCategories) {
   }
 }
 
-// Test trace calls made after tracing singleton shut down.
-//
-// The singleton is destroyed by our base::AtExitManager, but there can be
-// code still executing as the C++ static objects are destroyed. This test
-// forces the singleton to destroy early, and intentinally makes trace calls
-// afterwards.
-TEST_F(TraceEventTestFixture, AtExit) {
-  // Repeat this test a few times. Besides just showing robustness, it also
-  // allows us to test that events at shutdown do not appear with valid events
-  // recorded after the system is started again.
-  for (int i = 0; i < 4; i++) {
-    // Scope to contain the then destroy the TraceLog singleton.
-    {
-      base::ShadowingAtExitManager exit_manager_will_destroy_singletons;
-
-      // Setup TraceLog singleton inside this test's exit manager scope
-      // so that it will be destroyed when this scope closes.
-      ManualTestSetUp();
-
-      TRACE_EVENT_INSTANT0("all", "not recorded; system not enabled",
-                           TRACE_EVENT_SCOPE_THREAD);
-
-      BeginTrace();
-
-      TRACE_EVENT_INSTANT0("all", "is recorded 1; system has been enabled",
-                           TRACE_EVENT_SCOPE_THREAD);
-      // Trace calls that will cache pointers to categories; they're valid here
-      TraceCallsWithCachedCategoryPointersPointers(
-          "is recorded 2; system has been enabled");
-
-      EndTraceAndFlush();
-    } // scope to destroy singleton
-    ASSERT_FALSE(TraceLog::GetInstance());
-
-    // Now that singleton is destroyed, check what trace events were recorded
-    const DictionaryValue* item = NULL;
-    ListValue& trace_parsed = trace_parsed_;
-    EXPECT_FIND_("is recorded 1");
-    EXPECT_FIND_("is recorded 2");
-    EXPECT_NOT_FIND_("not recorded");
-
-    // Make additional trace event calls on the shutdown system. They should
-    // all pass cleanly, but the data not be recorded. We'll verify that next
-    // time around the loop (the only way to flush the trace buffers).
-    TRACE_EVENT_BEGIN_ETW("not recorded; system shutdown", 0, NULL);
-    TRACE_EVENT_END_ETW("not recorded; system shutdown", 0, NULL);
-    TRACE_EVENT_INSTANT_ETW("not recorded; system shutdown", 0, NULL);
-    TRACE_EVENT0("all", "not recorded; system shutdown");
-    TRACE_EVENT_INSTANT0("all", "not recorded; system shutdown",
-                         TRACE_EVENT_SCOPE_THREAD);
-    TRACE_EVENT_BEGIN0("all", "not recorded; system shutdown");
-    TRACE_EVENT_END0("all", "not recorded; system shutdown");
-
-    TRACE_EVENT0("new category 0!", "not recorded; system shutdown");
-    TRACE_EVENT_INSTANT0("new category 1!", "not recorded; system shutdown",
-                         TRACE_EVENT_SCOPE_THREAD);
-    TRACE_EVENT_BEGIN0("new category 2!", "not recorded; system shutdown");
-    TRACE_EVENT_END0("new category 3!", "not recorded; system shutdown");
-
-    // Cached categories should be safe to check, and still disable traces
-    TraceCallsWithCachedCategoryPointersPointers(
-        "not recorded; system shutdown");
-  }
-}
-
 TEST_F(TraceEventTestFixture, NormallyNoDeepCopy) {
   // Test that the TRACE_EVENT macros do not deep-copy their string. If they
   // do so it may indicate a performance regression, but more-over it would
   // make the DEEP_COPY overloads redundant.
-  ManualTestSetUp();
-
   std::string name_string("event name");
 
   BeginTrace();
@@ -1609,8 +1509,6 @@ TEST_F(TraceEventTestFixture, NormallyNoDeepCopy) {
 }
 
 TEST_F(TraceEventTestFixture, DeepCopy) {
-  ManualTestSetUp();
-
   static const char kOriginalName1[] = "name1";
   static const char kOriginalName2[] = "name2";
   static const char kOriginalName3[] = "name3";
@@ -1662,8 +1560,6 @@ TEST_F(TraceEventTestFixture, DeepCopy) {
 // Test that TraceResultBuffer outputs the correct result whether it is added
 // in chunks or added all at once.
 TEST_F(TraceEventTestFixture, TraceResultBuffer) {
-  ManualTestSetUp();
-
   Clear();
 
   trace_buffer_.Start();
@@ -1684,7 +1580,6 @@ TEST_F(TraceEventTestFixture, TraceResultBuffer) {
 // Test that trace_event parameters are not evaluated if the tracing
 // system is disabled.
 TEST_F(TraceEventTestFixture, TracingIsLazy) {
-  ManualTestSetUp();
   BeginTrace();
 
   int a = 0;
@@ -1700,8 +1595,6 @@ TEST_F(TraceEventTestFixture, TracingIsLazy) {
 }
 
 TEST_F(TraceEventTestFixture, TraceEnableDisable) {
-  ManualTestSetUp();
-
   TraceLog* trace_log = TraceLog::GetInstance();
   CategoryFilter cf_inc_all("*");
   trace_log->SetEnabled(cf_inc_all, TraceLog::RECORD_UNTIL_FULL);
@@ -1721,8 +1614,6 @@ TEST_F(TraceEventTestFixture, TraceEnableDisable) {
 }
 
 TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
-  ManualTestSetUp();
-
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(CategoryFilter("foo,bar"), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
@@ -1772,8 +1663,6 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
 }
 
 TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
-  ManualTestSetUp();
-
   EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL,
             TraceLog::TraceOptionsFromString(std::string()));
 
@@ -1791,8 +1680,6 @@ TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
 // Not supported in split dll build. http://crbug.com/256965
 #if !defined(CHROME_SPLIT_DLL)
 TEST_F(TraceEventTestFixture, TraceSampling) {
-  ManualTestSetUp();
-
   event_watch_notification_ = 0;
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter("*"),
@@ -1815,8 +1702,6 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
 }
 
 TEST_F(TraceEventTestFixture, TraceSamplingScope) {
-  ManualTestSetUp();
-
   event_watch_notification_ = 0;
   TraceLog::GetInstance()->SetEnabled(
     CategoryFilter("*"),
@@ -1869,7 +1754,6 @@ class MyData : public base::debug::ConvertableToTraceFormat {
 };
 
 TEST_F(TraceEventTestFixture, ConvertableTypes) {
-  ManualTestSetUp();
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
       TraceLog::RECORD_UNTIL_FULL);
 
@@ -1979,7 +1863,6 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
  public:
   virtual void SetUp() OVERRIDE {
     TraceEventTestFixture::SetUp();
-    ManualTestSetUp();
     ASSERT_EQ(NULL, s_instance);
     s_instance = this;
   }
@@ -2043,8 +1926,6 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackWhileFull) {
 
 // Test the category filter.
 TEST_F(TraceEventTestFixture, CategoryFilter) {
-  ManualTestSetUp();
-
   // Using the default filter.
   CategoryFilter default_cf = CategoryFilter(
       CategoryFilter::kDefaultCategoryFilterString);

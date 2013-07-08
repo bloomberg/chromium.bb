@@ -158,6 +158,9 @@ class TraceEventWinTest: public testing::Test {
 
     if (!log_file_.value().empty())
       base::Delete(log_file_, false);
+
+    // We want our singleton torn down after each test.
+    TraceLog::DeleteForTesting();
   }
 
   void ExpectEvent(REFGUID guid,
