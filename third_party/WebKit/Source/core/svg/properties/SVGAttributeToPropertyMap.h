@@ -21,7 +21,7 @@
 #define SVGAttributeToPropertyMap_h
 
 #include "core/svg/properties/SVGPropertyInfo.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

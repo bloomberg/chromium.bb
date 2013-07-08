@@ -22,10 +22,11 @@
 #define SVGPathTraversalStateBuilder_h
 
 #include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/PathTraversalState.h"
 #include "core/svg/SVGPathConsumer.h"
 
 namespace WebCore {
+
+class PathTraversalState;
 
 class SVGPathTraversalStateBuilder : public SVGPathConsumer {
 public:

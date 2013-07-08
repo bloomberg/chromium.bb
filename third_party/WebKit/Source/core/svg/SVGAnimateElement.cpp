@@ -29,6 +29,8 @@
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/QualifiedName.h"
+#include "core/svg/SVGAnimatedType.h"
+#include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimatorFactory.h"
 
 namespace WebCore {

@@ -21,12 +21,8 @@
 #define SVGVKernElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontElement.h"
-#include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGStyledElement.h"
-
-#include <limits>
-#include <wtf/Forward.h>
 
 namespace WebCore {
 

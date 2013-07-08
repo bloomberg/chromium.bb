@@ -22,10 +22,11 @@
 #define SVGAnimateMotionElement_h
 
 #include "core/platform/graphics/Path.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/SVGAnimationElement.h"
 
 namespace WebCore {
+
+class AffineTransform;
             
 class SVGAnimateMotionElement FINAL : public SVGAnimationElement {
 public:

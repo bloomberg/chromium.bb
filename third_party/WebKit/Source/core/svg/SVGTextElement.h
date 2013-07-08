@@ -21,7 +21,6 @@
 #ifndef SVGTextElement_h
 #define SVGTextElement_h
 
-#include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
 namespace WebCore {

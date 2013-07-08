@@ -27,6 +27,7 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
+#include "XLinkNames.h"
 #include "XMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSCursorImageValue.h"

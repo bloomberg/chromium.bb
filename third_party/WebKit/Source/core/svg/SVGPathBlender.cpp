@@ -23,6 +23,7 @@
 
 #include "core/platform/animation/AnimationUtilities.h"
 #include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathSource.h"
 #include <wtf/TemporaryChange.h>
 
 namespace WebCore {

@@ -22,6 +22,7 @@
 #ifndef SVGAnimatedPropertyMacros_h
 #define SVGAnimatedPropertyMacros_h
 
+#include "core/dom/Element.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGAttributeToPropertyMap.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
@@ -55,7 +56,7 @@ struct SVGSynchronizableAnimatedProperty {
     {
     }
 
-    void synchronize(SVGElement* ownerElement, const QualifiedName& attrName, const AtomicString& value)
+    void synchronize(Element* ownerElement, const QualifiedName& attrName, const AtomicString& value)
     {
         ownerElement->setSynchronizedLazyAttribute(attrName, value);
     }

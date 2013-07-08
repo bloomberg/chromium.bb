@@ -150,6 +150,12 @@ bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const NodeRenderingC
     return false;
 }
 
+void SVGFilterPrimitiveStandardAttributes::primitiveAttributeChanged(const QualifiedName& attribute)
+{
+    if (RenderObject* primitiveRenderer = renderer())
+        static_cast<RenderSVGResourceFilterPrimitive*>(primitiveRenderer)->primitiveAttributeChanged(attribute);
+}
+
 void invalidateFilterPrimitiveParent(SVGElement* element)
 {
     if (!element)

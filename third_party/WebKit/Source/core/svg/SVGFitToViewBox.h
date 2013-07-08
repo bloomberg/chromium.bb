@@ -22,7 +22,6 @@
 #define SVGFitToViewBox_h
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/QualifiedName.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/svg/SVGPreserveAspectRatio.h"

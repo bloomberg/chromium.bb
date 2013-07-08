@@ -23,12 +23,12 @@
 
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGTransform.h"
-#include "core/svg/SVGTransformList.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
     
 class AffineTransform;
+class SVGTransformList;
 
 class SVGTransformable : virtual public SVGLocatable {
 public:

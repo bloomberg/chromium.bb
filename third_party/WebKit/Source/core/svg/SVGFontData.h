@@ -22,9 +22,11 @@
 
 #if ENABLE(SVG_FONTS)
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/svg/SVGFontFaceElement.h"
 
 namespace WebCore {
+
+class SVGFontElement;
+class SVGFontFaceElement;
 
 class SVGFontData : public SimpleFontData::AdditionalFontData {
 public:

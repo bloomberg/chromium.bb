@@ -21,10 +21,11 @@
 #define SVGElementInstanceList_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/svg/SVGElementInstance.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
+
+class SVGElementInstance;
 
 class SVGElementInstanceList : public RefCounted<SVGElementInstanceList>, public ScriptWrappable {
 public:

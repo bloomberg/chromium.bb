@@ -20,8 +20,7 @@
 #ifndef GradientAttributes_h
 #define GradientAttributes_h
 
-#include "core/svg/SVGGradientElement.h"
-#include "core/svg/SVGLength.h"
+#include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 

@@ -21,8 +21,7 @@
 #ifndef SVGFilterPrimitiveStandardAttributes_h
 #define SVGFilterPrimitiveStandardAttributes_h
 
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
-#include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGStyledElement.h"
@@ -34,6 +33,7 @@ namespace WebCore {
 
 class Filter;
 class FilterEffect;
+class RenderSVGResourceFilterPrimitive;
 class SVGFilterBuilder;
 
 class SVGFilterPrimitiveStandardAttributes : public SVGStyledElement {
@@ -58,11 +58,7 @@ protected:
             RenderSVGResource::markForLayoutAndParentResourceInvalidation(primitiveRenderer);
     }
 
-    inline void primitiveAttributeChanged(const QualifiedName& attribute)
-    {
-        if (RenderObject* primitiveRenderer = renderer())
-            static_cast<RenderSVGResourceFilterPrimitive*>(primitiveRenderer)->primitiveAttributeChanged(attribute);
-    }
+    void primitiveAttributeChanged(const QualifiedName&);
 
 private:
     virtual bool isFilterEffect() const { return true; }

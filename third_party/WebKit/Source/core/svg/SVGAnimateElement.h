@@ -23,14 +23,14 @@
 #ifndef SVGAnimateElement_h
 #define SVGAnimateElement_h
 
-#include "core/svg/SVGAnimatedType.h"
-#include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimationElement.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {
     
 class SVGAnimatedProperty;
+class SVGAnimatedType;
+class SVGAnimatedTypeAnimator;
 
 class SVGAnimateElement : public SVGAnimationElement {
 public:

@@ -28,9 +28,7 @@
 #include "core/platform/graphics/UnitBezier.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGStringList.h"
 #include "core/svg/SVGTests.h"
-#include "core/svg/animation/SMILTime.h"
 #include "core/svg/animation/SVGSMILElement.h"
 
 namespace WebCore {

@@ -24,6 +24,7 @@
 #include "core/svg/SVGPatternElement.h"
 
 #include "SVGNames.h"
+#include "XLinkNames.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 #include "core/svg/PatternAttributes.h"

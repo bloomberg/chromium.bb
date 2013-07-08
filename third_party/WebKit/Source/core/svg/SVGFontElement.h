@@ -25,7 +25,6 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGGlyphElement.h"
 #include "core/svg/SVGGlyphMap.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGStyledElement.h"

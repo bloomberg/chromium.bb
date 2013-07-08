@@ -22,11 +22,8 @@
 #define SVGZoomAndPan_h
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/QualifiedName.h"
 #include <wtf/HashSet.h>
-#include <wtf/RefCounted.h>
-#include <wtf/unicode/Unicode.h>
 
 namespace WebCore {
 

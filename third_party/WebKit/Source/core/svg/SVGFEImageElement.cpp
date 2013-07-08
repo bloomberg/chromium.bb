@@ -24,6 +24,7 @@
 #include "core/svg/SVGFEImageElement.h"
 
 #include "SVGNames.h"
+#include "XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"

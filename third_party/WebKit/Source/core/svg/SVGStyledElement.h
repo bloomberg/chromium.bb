@@ -23,6 +23,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/svg/SVGAnimatedString.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGLocatable.h"
 #include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>

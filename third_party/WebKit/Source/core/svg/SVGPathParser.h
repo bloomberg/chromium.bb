@@ -26,11 +26,12 @@
 
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSeg.h"
-#include "core/svg/SVGPathSource.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
+
+class SVGPathSource;
 
 class SVGPathParser {
     WTF_MAKE_NONCOPYABLE(SVGPathParser); WTF_MAKE_FAST_ALLOCATED;

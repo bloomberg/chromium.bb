@@ -29,6 +29,7 @@
 
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 
+#include "SVGNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Element.h"
@@ -36,6 +37,7 @@
 #include "core/loader/cache/CachedSVGDocumentReference.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"

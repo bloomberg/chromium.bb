@@ -25,10 +25,11 @@
 #define SVGPathBuilder_h
 
 #include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/Path.h"
 #include "core/svg/SVGPathConsumer.h"
 
 namespace WebCore {
+
+class Path;
 
 class SVGPathBuilder : public SVGPathConsumer {
 public:
