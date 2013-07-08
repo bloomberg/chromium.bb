@@ -1002,9 +1002,6 @@ struct weston_frame_callback {
 WL_EXPORT void
 weston_surface_destroy(struct weston_surface *surface)
 {
-	/* Not a valid way to destroy a client surface */
-	assert(surface->resource == NULL);
-
 	wl_signal_emit(&surface->destroy_signal, &surface->resource);
 
 	struct weston_compositor *compositor = surface->compositor;
@@ -1053,7 +1050,6 @@ destroy_surface(struct wl_resource *resource)
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
-	surface->resource = NULL;
 	weston_surface_destroy(surface);
 }
 
