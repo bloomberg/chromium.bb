@@ -701,6 +701,7 @@
                'scoped_native_library.cc',
                'files/scoped_temp_dir.cc',
                'sys_info_posix.cc',
+               'threading/sequenced_worker_pool.cc',
                'third_party/dynamic_annotations/dynamic_annotations.c',
             ],
             'sources/': [

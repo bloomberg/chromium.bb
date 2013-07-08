@@ -126,11 +126,6 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
       return id_ == other.id_;
     }
 
-    // Returns false if current thread is executing an unsequenced task.
-    bool IsValid() const {
-      return id_ != 0;
-    }
-
    private:
     friend class SequencedWorkerPool;
 
@@ -148,11 +143,6 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
     virtual void OnDestruct() = 0;
   };
 
-  // Gets the SequencedToken of the current thread.
-  // If current thread is not a SequencedWorkerPool worker thread or is running
-  // an unsequenced task, returns an invalid SequenceToken.
-  static SequenceToken GetSequenceTokenForCurrentThread();
-
   // When constructing a SequencedWorkerPool, there must be a
   // MessageLoop on the current thread unless you plan to deliberately
   // leak it.
@@ -169,7 +159,7 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
                       TestingObserver* observer);
 
   // Returns a unique token that can be used to sequence tasks posted to
-  // PostSequencedWorkerTask(). Valid tokens are always nonzero.
+  // PostSequencedWorkerTask(). Valid tokens are alwys nonzero.
   SequenceToken GetSequenceToken();
 
   // Returns the sequence token associated with the given name. Calling this
