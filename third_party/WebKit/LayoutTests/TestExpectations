@@ -1839,8 +1839,4 @@ Bug(cbiesinger) [ Win ] fast/forms/button-default-title.html [ Failure ]
 
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
 
-# Will fail until V8 roll 3.20.3.
-crbug.com/257613 fast/js/array-prototype-properties.html [ Pass Failure ]
-crbug.com/257613 fast/js/object-prototype-properties.html [ Pass Failure ]
-
 Bug(mkwst) [ Win ] editing/selection/drag-select-1.html [ NeedsRebaseline ]
