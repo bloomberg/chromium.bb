@@ -76,7 +76,15 @@ void MediaDocumentParser::createDocumentStructure()
 
     if (document()->frame())
         document()->frame()->loader()->dispatchDocumentElementAvailable();
-        
+
+    RefPtr<Element> head = document()->createElement(headTag, false);
+    rootElement->appendChild(head, IGNORE_EXCEPTION);
+
+    RefPtr<Element> meta = document()->createElement(metaTag, false);
+    meta->setAttribute(nameAttr, "viewport");
+    meta->setAttribute(contentAttr, "width=device-width");
+    head->appendChild(meta, IGNORE_EXCEPTION);
+
     RefPtr<Element> body = document()->createElement(bodyTag, false);
     rootElement->appendChild(body, IGNORE_EXCEPTION);
 

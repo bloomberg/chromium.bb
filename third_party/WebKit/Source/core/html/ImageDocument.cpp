@@ -191,7 +191,15 @@ void ImageDocument::createDocumentStructure()
 
     if (frame() && frame()->loader())
         frame()->loader()->dispatchDocumentElementAvailable();
-    
+
+    RefPtr<Element> head = document()->createElement(headTag, false);
+    rootElement->appendChild(head, IGNORE_EXCEPTION);
+
+    RefPtr<Element> meta = document()->createElement(metaTag, false);
+    meta->setAttribute(nameAttr, "viewport");
+    meta->setAttribute(contentAttr, "width=device-width");
+    head->appendChild(meta, IGNORE_EXCEPTION);
+
     RefPtr<Element> body = Document::createElement(bodyTag, false);
     body->setAttribute(styleAttr, "margin: 0px;");
     

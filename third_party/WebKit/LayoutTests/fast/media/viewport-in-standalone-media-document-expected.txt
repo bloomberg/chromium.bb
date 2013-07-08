@@ -1,0 +1,7 @@
+This tests that a standalone media document has viewport settings.
+
+
+EXPECTED (metaElement.name == 'viewport') OK
+EXPECTED (metaElement.content == 'width=device-width') OK
+END OF TEST
+
