@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,6 +61,11 @@ const char kManagedUserAccessRequestKeyPrefix[] =
     "X-ManagedUser-AccessRequests";
 const char kManagedUserAccessRequestTime[] = "timestamp";
 const char kManagedUserPseudoEmail[] = "managed_user@localhost";
+const char kOpenManagedProfileKeyPrefix[] = "X-ManagedUser-Events-OpenProfile";
+const char kQuitBrowserKeyPrefix[] = "X-ManagedUser-Events-QuitBrowser";
+const char kSwitchFromManagedProfileKeyPrefix[] =
+    "X-ManagedUser-Events-SwitchProfile";
+const char kEventTimestamp[] = "timestamp";
 
 std::string CanonicalizeHostname(const std::string& hostname) {
   std::string canonicalized;
@@ -140,12 +147,19 @@ ManagedUserService::ManagedUserService(Profile* profile)
     : weak_ptr_factory_(this),
       profile_(profile),
       waiting_for_sync_initialization_(false),
+      is_profile_active_(false),
       elevated_for_testing_(false) {
 }
 
-ManagedUserService::~ManagedUserService() {}
+ManagedUserService::~ManagedUserService() {
+}
 
 void ManagedUserService::Shutdown() {
+  if (ProfileIsManaged()) {
+    RecordProfileAndBrowserEventsHelper(kQuitBrowserKeyPrefix);
+    BrowserList::RemoveObserver(this);
+  }
+
   if (!waiting_for_sync_initialization_)
     return;
 
@@ -534,6 +548,8 @@ void ManagedUserService::Init() {
       base::Bind(&ManagedUserService::UpdateManualURLs,
                  base::Unretained(this)));
 
+  BrowserList::AddObserver(this);
+
   if (policy_provider)
     policy_provider->InitLocalPolicies();
 
@@ -618,4 +634,30 @@ void ManagedUserService::UpdateManualURLs() {
     (*url_map)[GURL(it.key())] = allow;
   }
   url_filter_context_.SetManualURLs(url_map.Pass());
+}
+
+void ManagedUserService::OnBrowserSetLastActive(Browser* browser) {
+  bool profile_became_active = profile_->IsSameProfile(browser->profile());
+  if (!is_profile_active_ && profile_became_active)
+    RecordProfileAndBrowserEventsHelper(kOpenManagedProfileKeyPrefix);
+  else if (is_profile_active_ && !profile_became_active)
+    RecordProfileAndBrowserEventsHelper(kSwitchFromManagedProfileKeyPrefix);
+
+  is_profile_active_ = profile_became_active;
+}
+
+void ManagedUserService::RecordProfileAndBrowserEventsHelper(
+    const char* key_prefix) {
+  std::string key = ManagedModePolicyProvider::MakeSplitSettingKey(key_prefix,
+      base::Int64ToString(base::TimeTicks::Now().ToInternalValue()));
+
+  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+
+  // TODO(bauerb): Use sane time when ready.
+  dict->SetDouble(kEventTimestamp, base::Time::Now().ToJsTime());
+
+  ManagedModePolicyProvider* provider = GetPolicyProvider();
+  // It is NULL in tests.
+  if (provider)
+    provider->UploadItem(key, dict.PassAs<Value>());
 }
