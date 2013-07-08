@@ -290,6 +290,10 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->IsBookmarkBarVisible();
   }
 
+  virtual FullscreenExitBubbleViews* GetFullscreenExitBubble() const OVERRIDE {
+    return browser_view_->fullscreen_exit_bubble();
+  }
+
  private:
   BrowserView* browser_view_;
 
@@ -1109,15 +1113,6 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  // Reveal the top-of-window views immediately (if they are not already
-  // revealed) because it looks weird to show the bookmark bubble while the
-  // top-of-window views are still animating. If the bookmark bubble gains
-  // focus, |immersive_mode_controller_| will keep the top-of-window views
-  // revealed.
-  scoped_ptr<ImmersiveRevealedLock> focus_reveal_lock(
-      immersive_mode_controller_->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_NO));
-
   chrome::ShowBookmarkBubbleView(GetToolbarView()->GetBookmarkBubbleAnchor(),
                                  bookmark_bar_view_.get(), browser_->profile(),
                                  url, !already_bookmarked);

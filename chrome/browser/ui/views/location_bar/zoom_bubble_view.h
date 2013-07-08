@@ -115,10 +115,6 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   // Not owned.
   ImmersiveModeController* immersive_mode_controller_;
 
-  // Keeps the top-of-window views revealed (but does not initiate a reveal)
-  // when the bubble is visible in immersive fullscreen.
-  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
-
   // Used to register for fullscreen change notifications.
   content::NotificationRegistrar registrar_;
 

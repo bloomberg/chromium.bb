@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -655,14 +654,6 @@ void ExtensionInstalledBubble::ShowInternal() {
   AddChildView(
       new InstalledBubbleContent(browser_, extension_, type_, &icon_, this));
 
-  // If we are in immersive fullscreen, reveal the top-of-window views
-  // (omnibox, toolbar) so that the view the bubble is anchored to is visible.
-  // We do not need to hold onto the lock because ImmersiveModeController will
-  // keep the top-of-window views revealed as long as the popup is active.
-  // TODO(pkotwicz): Move logic to ImmersiveModeController.
-  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock(
-      browser_view->immersive_mode_controller()->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_NO));
   views::BubbleDelegateView::CreateBubble(this);
 
   // The bubble widget is now the parent and owner of |this| and takes care of

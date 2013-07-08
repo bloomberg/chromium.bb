@@ -72,10 +72,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
       const gfx::Size& top_container_size) const OVERRIDE;
   virtual ImmersiveRevealedLock* GetRevealedLock(
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
-  virtual void AnchorWidgetToTopContainer(views::Widget* widget,
-                                          int y_offset) OVERRIDE;
-  virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;
-  virtual void OnTopContainerBoundsChanged() OVERRIDE;
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) OVERRIDE;
 
@@ -108,6 +104,10 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
+  virtual void OnAddTransientChild(aura::Window* window,
+                                   aura::Window* transient) OVERRIDE;
+  virtual void OnRemoveTransientChild(aura::Window* window,
+                                      aura::Window* transient) OVERRIDE;
 
   // Testing interface.
   void SetForceHideTabIndicatorsForTest(bool force);
@@ -219,6 +219,10 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // is a bezel sensor above the top container.
   bool ShouldHandleGestureEvent(const gfx::Point& location) const;
 
+  // Recreate |bubble_manager_| and start observing any bubbles anchored to a
+  // child of |top_container_|.
+  void RecreateBubbleManager();
+
   // Injected dependencies. Not owned.
   Delegate* delegate_;
   views::Widget* widget_;
@@ -274,9 +278,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Whether the animations are disabled for testing.
   bool animations_disabled_for_test_;
 
-  // Manages widgets which are anchored to the top-of-window views.
-  class AnchoredWidgetManager;
-  scoped_ptr<AnchoredWidgetManager> anchored_widget_manager_;
+  // Manages bubbles which are anchored to a child of |top_container_|.
+  class BubbleManager;
+  scoped_ptr<BubbleManager> bubble_manager_;
 
   content::NotificationRegistrar registrar_;
 

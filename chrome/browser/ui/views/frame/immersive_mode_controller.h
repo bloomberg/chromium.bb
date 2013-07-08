@@ -115,27 +115,6 @@ class ImmersiveModeController {
   virtual ImmersiveRevealedLock* GetRevealedLock(
       AnimateReveal animate_reveal) WARN_UNUSED_RESULT = 0;
 
-  // Anchor |widget| to the top-of-window views. This repositions |widget| such
-  // that it stays |y_offset| below the top-of-window views when the
-  // top-of-window views are animating (top-of-window views reveal / unreveal)
-  // or the top container's bounds change (eg the bookmark bar is shown).
-  // If the top-of-window views are revealed (or become revealed), |widget|
-  // will keep the top-of-window views revealed till either |widget| is hidden
-  // or UnanchorWidgetFromTopContainer() is called.
-  // It is legal for a widget to be anchored when immersive fullscreen is
-  // disabled, however it will have no effect till immersive fullscreen is
-  // enabled.
-  virtual void AnchorWidgetToTopContainer(views::Widget* widget,
-                                          int y_offset) = 0;
-
-  // Stops managing |widget|'s y position.
-  // Closes the top-of-window views if no locks or other anchored widgets are
-  // keeping the top-of-window views revealed.
-  virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) = 0;
-
-  // Called by the TopContainerView to indicate that its bounds have changed.
-  virtual void OnTopContainerBoundsChanged() = 0;
-
   // Called by the find bar to indicate that its visible bounds have changed.
   // |new_visible_bounds_in_screen| should be empty if the find bar is not
   // visible.

@@ -32,13 +32,6 @@ const char* TopContainerView::GetClassName() const {
   return "TopContainerView";
 }
 
-void TopContainerView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  ImmersiveModeController* immersive_controller =
-      browser_view_->immersive_mode_controller();
-  if (immersive_controller->IsEnabled())
-    immersive_controller->OnTopContainerBoundsChanged();
-}
-
 void TopContainerView::PaintChildren(gfx::Canvas* canvas) {
   if (browser_view_->immersive_mode_controller()->IsRevealed()) {
     // Top-views depend on parts of the frame (themes, window buttons) being

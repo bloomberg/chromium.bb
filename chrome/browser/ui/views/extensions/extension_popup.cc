@@ -14,8 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -64,13 +62,11 @@ const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
-ExtensionPopup::ExtensionPopup(Browser* browser,
-                               extensions::ExtensionHost* host,
+ExtensionPopup::ExtensionPopup(extensions::ExtensionHost* host,
                                views::View* anchor_view,
                                views::BubbleBorder::Arrow arrow,
                                ShowAction show_action)
     : BubbleDelegateView(anchor_view, arrow),
-      browser_(browser),
       extension_host_(host),
       devtools_callback_(base::Bind(
           &ExtensionPopup::OnDevToolsStateChanged, base::Unretained(this))) {
@@ -174,8 +170,8 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
-  ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
-      arrow, show_action);
+  ExtensionPopup* popup = new ExtensionPopup(host, anchor_view, arrow,
+      show_action);
   views::BubbleDelegateView::CreateBubble(popup);
 
 #if defined(USE_AURA)
@@ -197,21 +193,6 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
 }
 
 void ExtensionPopup::ShowBubble() {
-  BrowserView* browser_view = browser_ ?
-      BrowserView::GetBrowserViewForBrowser(browser_) : NULL;
-  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock;
-  if (browser_view &&
-      browser_view->top_container()->Contains(anchor_view())) {
-    // If we are in immersive fullscreen and we are anchored to a view in the
-    // top-of-window views (eg omnibox, toolbar), trigger an immersive reveal.
-    // We do not need to hold onto the lock because ImmersiveModeController will
-    // keep the top-of-window views revealed as long as the popup is active.
-    // TODO(pkotwicz): Move logic to ImmersiveModeController.
-    immersive_reveal_lock.reset(
-        browser_view->immersive_mode_controller()->GetRevealedLock(
-            ImmersiveModeController::ANIMATE_REVEAL_NO));
-    SizeToContents();
-  }
   GetWidget()->Show();
 
   // Focus on the host contents when the bubble is first shown.

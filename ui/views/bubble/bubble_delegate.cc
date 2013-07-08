@@ -294,6 +294,10 @@ void BubbleDelegateView::SetArrowPaintType(
   SizeToContents();
 }
 
+void BubbleDelegateView::OnAnchorViewBoundsChanged() {
+  SizeToContents();
+}
+
 bool BubbleDelegateView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)

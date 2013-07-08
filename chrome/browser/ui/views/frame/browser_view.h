@@ -183,6 +183,11 @@ class BrowserView : public BrowserWindow,
   // Accessor for the InfobarContainer.
   InfoBarContainerView* infobar_container() { return infobar_container_; }
 
+  // Accessor for the FullscreenExitBubbleViews.
+  FullscreenExitBubbleViews* fullscreen_exit_bubble() {
+    return fullscreen_bubble_.get();
+  }
+
   // Returns true if various window components are visible.
   bool IsTabStripVisible() const;
 

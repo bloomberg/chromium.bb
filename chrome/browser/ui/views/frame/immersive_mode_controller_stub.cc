@@ -48,18 +48,6 @@ ImmersiveRevealedLock* ImmersiveModeControllerStub::GetRevealedLock(
   return NULL;
 }
 
-void ImmersiveModeControllerStub::AnchorWidgetToTopContainer(
-    views::Widget* widget,
-    int y_offset) {
-}
-
-void ImmersiveModeControllerStub::UnanchorWidgetFromTopContainer(
-    views::Widget* widget) {
-}
-
-void ImmersiveModeControllerStub::OnTopContainerBoundsChanged() {
-}
-
 void ImmersiveModeControllerStub::OnFindBarVisibleBoundsChanged(
     const gfx::Rect& new_visible_bounds_in_screen) {
 }

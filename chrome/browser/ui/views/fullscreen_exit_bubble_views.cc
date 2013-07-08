@@ -274,6 +274,8 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
       this, accelerator.GetShortcutText(), url, bubble_type_);
 
   // TODO(yzshen): Change to use the new views bubble, BubbleDelegateView.
+  // TODO(pkotwicz): When this becomes a views bubble, make sure that this
+  // bubble is ignored by ImmersiveModeControllerAsh::BubbleManager.
   // Initialize the popup.
   popup_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
@@ -306,11 +308,6 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
 
 FullscreenExitBubbleViews::~FullscreenExitBubbleViews() {
   popup_->RemoveObserver(this);
-  ImmersiveModeController* immersive_controller =
-      browser_view_->immersive_mode_controller();
-  // |immersive_controller| may already have been destroyed.
-  if (immersive_controller)
-    immersive_controller->UnanchorWidgetFromTopContainer(popup_);
 
   // This is tricky.  We may be in an ATL message handler stack, in which case
   // the popup cannot be deleted yet.  We also can't set the popup's ownership
@@ -349,6 +346,11 @@ void FullscreenExitBubbleViews::UpdateContent(
   UpdateMouseWatcher();
 }
 
+void FullscreenExitBubbleViews::RepositionIfVisible() {
+  if (popup_->IsVisible())
+    UpdateBounds();
+}
+
 void FullscreenExitBubbleViews::UpdateMouseWatcher() {
   bool should_watch_mouse = false;
   if (popup_->IsVisible())
@@ -366,11 +368,8 @@ void FullscreenExitBubbleViews::UpdateMouseWatcher() {
 }
 
 void FullscreenExitBubbleViews::UpdateForImmersiveState() {
-  ImmersiveModeController* immersive_controller =
-      browser_view_->immersive_mode_controller();
-
   AnimatedAttribute expected_animated_attribute =
-      immersive_controller->IsEnabled() ?
+      browser_view_->immersive_mode_controller()->IsEnabled() ?
           ANIMATED_ATTRIBUTE_OPACITY : ANIMATED_ATTRIBUTE_BOUNDS;
   if (animated_attribute_ != expected_animated_attribute) {
     // If an animation is currently in progress, skip to the end because
@@ -389,27 +388,14 @@ void FullscreenExitBubbleViews::UpdateForImmersiveState() {
       UpdateBounds();
   }
 
-  if (immersive_controller->IsEnabled()) {
-    // In immersive mode, anchor |popup_| to the top container. This repositions
-    // the top container so that it stays |kPopupTopPx| below the top container
-    // when the top container animates its position (top container reveals /
-    // unreveals) or the top container bounds change (eg bookmark bar is shown).
-    immersive_controller->AnchorWidgetToTopContainer(popup_, kPopupTopPx);
-  } else {
-    immersive_controller->UnanchorWidgetFromTopContainer(popup_);
-  }
-
   UpdateMouseWatcher();
 }
 
 void FullscreenExitBubbleViews::UpdateBounds() {
   gfx::Rect popup_rect(GetPopupRect(false));
-  if (popup_rect.IsEmpty()) {
-    popup_->Hide();
-  } else {
+  if (!popup_rect.IsEmpty()) {
     popup_->SetBounds(popup_rect);
     view_->SetY(popup_rect.height() - view_->height());
-    popup_->Show();
   }
 }
 
@@ -428,7 +414,12 @@ void FullscreenExitBubbleViews::AnimationProgressed(
       popup_->SetOpacity(opacity);
     }
   } else {
-    UpdateBounds();
+    if (GetPopupRect(false).IsEmpty()) {
+      popup_->Hide();
+    } else {
+      UpdateBounds();
+      popup_->Show();
+    }
   }
 }
 

@@ -30,10 +30,6 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
       const gfx::Size& top_container_size) const OVERRIDE;
   virtual ImmersiveRevealedLock* GetRevealedLock(
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
-  virtual void AnchorWidgetToTopContainer(views::Widget* widget,
-                                          int y_offset) OVERRIDE;
-  virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;
-  virtual void OnTopContainerBoundsChanged() OVERRIDE;
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) OVERRIDE;
 

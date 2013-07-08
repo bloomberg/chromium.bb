@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/overlay_container.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -373,6 +374,14 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
         gfx::Rect(), true);
   }
+
+  // Adjust the fullscreen exit bubble bounds for |top_container_|'s new bounds.
+  // This makes the fullscreen exit bubble look like it animates with
+  // |top_container_| in immersive fullscreen.
+  FullscreenExitBubbleViews* fullscreen_exit_bubble =
+      delegate_->GetFullscreenExitBubble();
+  if (fullscreen_exit_bubble)
+    fullscreen_exit_bubble->RepositionIfVisible();
 
   // Adjust any web contents modal dialogs.
   dialog_host_->NotifyPositionRequiresUpdate();

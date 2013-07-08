@@ -37,6 +37,9 @@ class FullscreenExitBubbleViews : public FullscreenExitBubble,
 
   void UpdateContent(const GURL& url, FullscreenExitBubbleType bubble_type);
 
+  // Repositions |popup_| if it is visible.
+  void RepositionIfVisible();
+
  private:
   class FullscreenExitView;
 

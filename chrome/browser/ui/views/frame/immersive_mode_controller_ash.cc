@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
+#include <set>
+
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
@@ -23,7 +25,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/slide_animation.h"
-#include "ui/gfx/transform.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -66,19 +68,24 @@ void MoveMouse(views::View* view, bool hovered) {
   aura::Env::GetInstance()->set_last_mouse_location(cursor_pos);
 }
 
-// Returns true if the currently active window is a transient child of
-// |toplevel|.
-bool IsActiveWindowTransientChildOf(aura::Window* toplevel) {
-  if (!toplevel)
+// Returns the BubbleDelegateView corresponding to |maybe_bubble| if
+// |maybe_bubble| is a bubble.
+views::BubbleDelegateView* AsBubbleDelegate(aura::Window* maybe_bubble) {
+  if (!maybe_bubble)
+    return NULL;
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(maybe_bubble);
+  if (!widget)
+    return NULL;
+  return widget->widget_delegate()->AsBubbleDelegate();
+}
+
+// Returns true if |maybe_transient| is a transient child of |toplevel|.
+bool IsWindowTransientChildOf(aura::Window* maybe_transient,
+                              aura::Window* toplevel) {
+  if (!maybe_transient || !toplevel)
     return false;
 
-  aura::Window* active_window = aura::client::GetActivationClient(
-      toplevel->GetRootWindow())->GetActiveWindow();
-
-  if (!active_window)
-    return false;
-
-  for (aura::Window* window = active_window; window;
+  for (aura::Window* window = maybe_transient; window;
        window = window->transient_parent()) {
     if (window == toplevel)
       return true;
@@ -122,168 +129,116 @@ class RevealedLockAsh : public ImmersiveRevealedLock {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Manages widgets which should move in sync with the top-of-window views.
-class ImmersiveModeControllerAsh::AnchoredWidgetManager
-    : public views::WidgetObserver {
+// Class which keeps the top-of-window views revealed as long as one of the
+// bubbles it is observing is visible. The logic to keep the top-of-window
+// views revealed based on the visibility of bubbles anchored to
+// children of |ImmersiveModeController::top_container_| is separate from
+// the logic related to |ImmersiveModeControllerAsh::focus_revealed_lock_|
+// so that bubbles which are not activatable and bubbles which do not close
+// upon deactivation also keep the top-of-window views revealed for the
+// duration of their visibility.
+class ImmersiveModeControllerAsh::BubbleManager : public aura::WindowObserver {
  public:
-  explicit AnchoredWidgetManager(ImmersiveModeControllerAsh* controller);
-  virtual ~AnchoredWidgetManager();
+  explicit BubbleManager(ImmersiveModeControllerAsh* controller);
+  virtual ~BubbleManager();
 
-  // Anchors |widget| such that it stays |y_offset| below the top-of-window
-  // views. |widget| will be repositioned whenever the top-of-window views are
-  // animated (top-of-window views revealing / unrevealing) or the top-of-window
-  // bounds change (eg the bookmark bar is shown).
-  // If the top-of-window views are revealed (or become revealed), |widget| will
-  // keep the top-of-window views revealed till |widget| is hidden or
-  // RemoveAnchoredWidget() is called.
-  void AddAnchoredWidget(views::Widget* widget, int y_offset);
-
-  // Stops managing |widget|'s y position.
-  // Closes the top-of-window views if no locks or other anchored widgets are
-  // keeping the top-of-window views revealed.
-  void RemoveAnchoredWidget(views::Widget* widget);
-
-  // Repositions the anchored widgets for the current top container bounds if
-  // immersive mode is enabled.
-  void MaybeRepositionAnchoredWidgets();
-
-  // Called when immersive mode has been enabled.
-  void OnImmersiveModeEnabled();
+  // Start / stop observing changes to |bubble|'s visibility.
+  void StartObserving(aura::Window* bubble);
+  void StopObserving(aura::Window* bubble);
 
  private:
-  // Updates |revealed_lock_| based on the visible anchored widgets.
+  // Updates |revealed_lock_| based on whether any of |bubbles_| is visible.
   void UpdateRevealedLock();
 
-  // Updates the y position of |widget| given |y_offset| and the top
-  // container's target bounds.
-  void UpdateWidgetBounds(views::Widget* widget, int y_offset);
-
-  // views::WidgetObserver overrides:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
+  // aura::WindowObserver overrides:
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   ImmersiveModeControllerAsh* controller_;
 
-  // Mapping of anchored widgets to the y offset below the top-of-window views
-  // that they should be positioned at.
-  std::map<views::Widget*, int> widgets_;
+  std::set<aura::Window*> bubbles_;
 
-  // The subset of |widgets_| which are visible.
-  std::set<views::Widget*> visible_;
-
-  // Lock which keeps the top-of-window views revealed based on the visible
-  // anchored widgets.
+  // Lock which keeps the top-of-window views revealed based on whether any of
+  // |bubbles_| is visible.
   scoped_ptr<ImmersiveRevealedLock> revealed_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(AnchoredWidgetManager);
+  DISALLOW_COPY_AND_ASSIGN(BubbleManager);
 };
 
-ImmersiveModeControllerAsh::AnchoredWidgetManager::AnchoredWidgetManager(
+ImmersiveModeControllerAsh::BubbleManager::BubbleManager(
     ImmersiveModeControllerAsh* controller)
     : controller_(controller) {
 }
 
-ImmersiveModeControllerAsh::AnchoredWidgetManager::~AnchoredWidgetManager() {
-  while (!widgets_.empty())
-    RemoveAnchoredWidget(widgets_.begin()->first);
+ImmersiveModeControllerAsh::BubbleManager::~BubbleManager() {
+  for (std::set<aura::Window*>::const_iterator it = bubbles_.begin();
+       it != bubbles_.end(); ++it) {
+    (*it)->RemoveObserver(this);
+  }
 }
 
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::AddAnchoredWidget(
-    views::Widget* widget,
-    int y_offset) {
-  DCHECK(widget);
-  bool already_added = widgets_.count(widget) > 0;
-  widgets_[widget] = y_offset;
-
-  if (already_added)
-    return;
-
-  widget->AddObserver(this);
-
-  if (widget->IsVisible())
-    visible_.insert(widget);
-
-  UpdateRevealedLock();
-  UpdateWidgetBounds(widget, y_offset);
+void ImmersiveModeControllerAsh::BubbleManager::StartObserving(
+    aura::Window* bubble) {
+  if (bubbles_.insert(bubble).second) {
+    bubble->AddObserver(this);
+    UpdateRevealedLock();
+  }
 }
 
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::RemoveAnchoredWidget(
-    views::Widget* widget) {
-  if (!widgets_.count(widget))
-    return;
-
-  widget->RemoveObserver(this);
-  widgets_.erase(widget);
-  visible_.erase(widget);
-
-  UpdateRevealedLock();
+void ImmersiveModeControllerAsh::BubbleManager::StopObserving(
+    aura::Window* bubble) {
+  if (bubbles_.erase(bubble)) {
+    bubble->RemoveObserver(this);
+    UpdateRevealedLock();
+  }
 }
 
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::
-    MaybeRepositionAnchoredWidgets() {
-  for (std::map<views::Widget*, int>::iterator it = widgets_.begin();
-       it != widgets_.end(); ++it) {
-    UpdateWidgetBounds(it->first, it->second);
+void ImmersiveModeControllerAsh::BubbleManager::UpdateRevealedLock() {
+  bool has_visible_bubble = false;
+  for (std::set<aura::Window*>::const_iterator it = bubbles_.begin();
+       it != bubbles_.end(); ++it) {
+    if ((*it)->IsVisible()) {
+      has_visible_bubble = true;
+      break;
+    }
   }
 
-  UpdateRevealedLock();
-}
-
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::
-    OnImmersiveModeEnabled() {
-  UpdateRevealedLock();
-  // The top container bounds may have changed while immersive mode was
-  // disabled.
-  MaybeRepositionAnchoredWidgets();
-}
-
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateRevealedLock() {
-  if (visible_.empty()) {
-    revealed_lock_.reset();
-  } else if (controller_->IsRevealed()) {
+  bool was_revealed = controller_->IsRevealed();
+  if (has_visible_bubble) {
     if (!revealed_lock_.get()) {
-      // CAUTION: Acquiring the lock results in a reentrant call to
-      // UpdateRevealedLock() when
-      // |ImmersiveModeControllerAsh::animations_disabled_for_test_| is true.
+      // Reveal the top-of-window views without animating because it looks
+      // weird for the top-of-window views to animate and the bubble not to
+      // animate along with the top-of-window views.
       revealed_lock_.reset(controller_->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_YES));
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+    }
+  } else {
+    revealed_lock_.reset();
+  }
+
+  if (!was_revealed && revealed_lock_.get()) {
+    // Currently, there is no nice way for bubbles to reposition themselves
+    // whenever the anchor view moves. Tell the bubbles to reposition themselves
+    // explicitly instead. The hidden bubbles are also repositioned because
+    // BubbleDelegateView does not reposition its widget as a result of a
+    // visibility change.
+    for (std::set<aura::Window*>::const_iterator it = bubbles_.begin();
+         it != bubbles_.end(); ++it) {
+      AsBubbleDelegate(*it)->OnAnchorViewBoundsChanged();
     }
   }
 }
 
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateWidgetBounds(
-    views::Widget* widget,
-    int y_offset) {
-  if (!controller_->IsEnabled() || !widget->IsVisible())
-    return;
-
-  gfx::Rect top_container_bounds =
-      controller_->top_container_->GetBoundsInScreen();
-  gfx::Rect bounds(widget->GetWindowBoundsInScreen());
-  bounds.set_y(top_container_bounds.bottom() + y_offset);
-  widget->SetBounds(bounds);
-}
-
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::OnWidgetDestroying(
-    views::Widget* widget) {
-  RemoveAnchoredWidget(widget);
-}
-
-void ImmersiveModeControllerAsh::AnchoredWidgetManager::
-    OnWidgetVisibilityChanged(
-        views::Widget* widget,
-        bool visible) {
-  if (visible)
-    visible_.insert(widget);
-  else
-    visible_.erase(widget);
-
+void ImmersiveModeControllerAsh::BubbleManager::OnWindowVisibilityChanged(
+    aura::Window*,
+    bool visible) {
   UpdateRevealedLock();
+}
 
-  std::map<views::Widget*, int>::iterator it = widgets_.find(widget);
-  DCHECK(it != widgets_.end());
-  UpdateWidgetBounds(it->first, it->second);
+void ImmersiveModeControllerAsh::BubbleManager::OnWindowDestroying(
+    aura::Window* window) {
+  StopObserving(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,8 +305,6 @@ void ImmersiveModeControllerAsh::Init(
           HasSwitch(ash::switches::kAshImmersiveHideTabIndicators)) {
     tab_indicator_visibility_ = TAB_INDICATORS_FORCE_HIDE;
   }
-
-  anchored_widget_manager_.reset(new AnchoredWidgetManager(this));
 }
 
 void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
@@ -387,7 +340,6 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
       UpdateLocatedEventRevealedLock(NULL);
       UpdateFocusRevealedLock();
     }
-    anchored_widget_manager_->OnImmersiveModeEnabled();
   } else {
     // Stop cursor-at-top tracking.
     top_edge_hover_timer_.Stop();
@@ -430,21 +382,6 @@ int ImmersiveModeControllerAsh::GetTopContainerVerticalOffset(
 ImmersiveRevealedLock* ImmersiveModeControllerAsh::GetRevealedLock(
     AnimateReveal animate_reveal) {
   return new RevealedLockAsh(weak_ptr_factory_.GetWeakPtr(), animate_reveal);
-}
-
-void ImmersiveModeControllerAsh::AnchorWidgetToTopContainer(
-    views::Widget* widget,
-    int y_offset) {
-  anchored_widget_manager_->AddAnchoredWidget(widget, y_offset);
-}
-
-void ImmersiveModeControllerAsh::UnanchorWidgetFromTopContainer(
-    views::Widget* widget) {
-  anchored_widget_manager_->RemoveAnchoredWidget(widget);
-}
-
-void ImmersiveModeControllerAsh::OnTopContainerBoundsChanged() {
-  anchored_widget_manager_->MaybeRepositionAnchoredWidgets();
 }
 
 void ImmersiveModeControllerAsh::OnFindBarVisibleBoundsChanged(
@@ -539,6 +476,14 @@ void ImmersiveModeControllerAsh::OnWillChangeFocus(views::View* focused_before,
 
 void ImmersiveModeControllerAsh::OnDidChangeFocus(views::View* focused_before,
                                                   views::View* focused_now) {
+  scoped_ptr<ImmersiveRevealedLock> lock;
+  if (reveal_state_ == REVEALED || reveal_state_ == SLIDING_OPEN) {
+    // Acquire a lock so that if UpdateLocatedEventRevealedLock() or
+    // UpdateFocusRevealedLock() ends the reveal, it occurs after the
+    // function terminates. This is useful in tests.
+    lock.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
+  }
+
   UpdateLocatedEventRevealedLock(NULL);
   UpdateFocusRevealedLock();
 }
@@ -555,6 +500,14 @@ void ImmersiveModeControllerAsh::OnWidgetDestroying(views::Widget* widget) {
 void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
     views::Widget* widget,
     bool active) {
+  scoped_ptr<ImmersiveRevealedLock> lock;
+  if (reveal_state_ == REVEALED || reveal_state_ == SLIDING_OPEN) {
+    // Acquire a lock so that if UpdateLocatedEventRevealedLock() or
+    // UpdateFocusRevealedLock() ends the reveal, it occurs after the
+    // function terminates. This is useful in tests.
+    lock.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
+  }
+
   // Mouse hover should not initiate revealing the top-of-window views while
   // |native_window_| is inactive.
   top_edge_hover_timer_.Stop();
@@ -620,6 +573,25 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+void ImmersiveModeControllerAsh::OnAddTransientChild(aura::Window* window,
+                                                     aura::Window* transient) {
+  views::BubbleDelegateView* bubble_delegate = AsBubbleDelegate(transient);
+  if (bubble_delegate &&
+      bubble_delegate->anchor_view() &&
+      top_container_->Contains(bubble_delegate->anchor_view())) {
+    // Observe the aura::Window because the BubbleDelegateView may not be
+    // parented to the widget's root view yet so |bubble_delegate->GetWidget()|
+    // may still return NULL.
+    bubble_manager_->StartObserving(transient);
+  }
+}
+
+void ImmersiveModeControllerAsh::OnRemoveTransientChild(
+    aura::Window* window,
+    aura::Window* transient) {
+  bubble_manager_->StopObserving(transient);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Testing interface:
 
@@ -679,6 +651,16 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
     native_window_->AddObserver(this);
   } else {
     native_window_->RemoveObserver(this);
+  }
+
+  if (enable) {
+    RecreateBubbleManager();
+  } else {
+    // We have stopped observing whether transient children are added or removed
+    // to |native_window_|. The set of bubbles that BubbleManager is observing
+    // will become stale really quickly. Destroy BubbleManager and recreate it
+    // when we start observing |native_window_| again.
+    bubble_manager_.reset();
   }
 
   if (enable) {
@@ -823,16 +805,29 @@ void ImmersiveModeControllerAsh::UpdateFocusRevealedLock() {
     if (top_container_->Contains(focused_view))
       hold_lock = true;
   } else {
-    // If the currently active window is not |native_window_|, the top-of-window
-    // views should be revealed if:
-    // 1) The newly active window is a transient child of |native_window_|.
-    // 2) The top-of-window views are already revealed. This restriction
-    //    prevents a transient window opened by the web contents while the
-    //    top-of-window views are hidden from from initiating a reveal.
-    // The top-of-window views will stay revealed till |native_window_| is
-    // reactivated.
-    if (IsRevealed() && IsActiveWindowTransientChildOf(native_window_))
-      hold_lock = true;
+    aura::Window* active_window = aura::client::GetActivationClient(
+        native_window_->GetRootWindow())->GetActiveWindow();
+    views::BubbleDelegateView* bubble_delegate =
+        AsBubbleDelegate(active_window);
+    if (bubble_delegate && bubble_delegate->anchor_view()) {
+      // BubbleManager will already have locked the top-of-window views if the
+      // bubble is anchored to a child of |top_container_|. Don't acquire
+      // |focus_revealed_lock_| here for the sake of simplicity.
+    } else {
+      // The currently active window is not |native_window_| and it is not a
+      // bubble with an anchor view. The top-of-window views should be revealed
+      // if:
+      // 1) The active window is a transient child of |native_window_|.
+      // 2) The top-of-window views are already revealed. This restriction
+      //    prevents a transient window opened by the web contents while the
+      //    top-of-window views are hidden from from initiating a reveal.
+      // The top-of-window views will stay revealed till |native_window_| is
+      // reactivated.
+      if (IsRevealed() &&
+          IsWindowTransientChildOf(active_window, native_window_)) {
+        hold_lock = true;
+      }
+    }
   }
 
   if (hold_lock) {
@@ -1086,4 +1081,20 @@ bool ImmersiveModeControllerAsh::ShouldHandleGestureEvent(
       ((location.y() < near_bounds.y()) &&
        (location.x() >= near_bounds.x()) &&
        (location.x() < near_bounds.right()));
+}
+
+void ImmersiveModeControllerAsh::RecreateBubbleManager() {
+  bubble_manager_.reset(new BubbleManager(this));
+  const std::vector<aura::Window*> transient_children =
+      native_window_->transient_children();
+  for (size_t i = 0; i < transient_children.size(); ++i) {
+    aura::Window* transient_child = transient_children[i];
+    views::BubbleDelegateView* bubble_delegate =
+        AsBubbleDelegate(transient_child);
+    if (bubble_delegate &&
+        bubble_delegate->anchor_view() &&
+        top_container_->Contains(bubble_delegate->anchor_view())) {
+      bubble_manager_->StartObserving(transient_child);
+    }
+  }
 }

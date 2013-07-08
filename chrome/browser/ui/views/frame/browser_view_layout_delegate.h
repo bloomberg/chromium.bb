@@ -5,6 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_DELEGATE_H_
 
+class FullscreenExitBubbleViews;
+
+namespace gfx {
+class Rect;
+}
+namespace views {
+class View;
+}
+
 // Delegate class to allow BrowserViewLayout to be decoupled from BrowserView
 // for testing.
 class BrowserViewLayoutDelegate {
@@ -17,6 +26,7 @@ class BrowserViewLayoutDelegate {
   virtual bool IsToolbarVisible() const = 0;
   virtual bool IsBookmarkBarVisible() const = 0;
   virtual bool DownloadShelfNeedsLayout() const = 0;
+  virtual FullscreenExitBubbleViews* GetFullscreenExitBubble() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_DELEGATE_H_

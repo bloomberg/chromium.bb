@@ -116,6 +116,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Sets the bubble arrow paint type.
   void SetArrowPaintType(BubbleBorder::ArrowPaintType paint_type);
 
+  // Call this method when the anchor view bounds have changed to reposition
+  // the bubble. The bubble is automatically repositioned when the anchor view
+  // bounds change as a result of the widget's bounds changing.
+  void OnAnchorViewBoundsChanged();
+
  protected:
   // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();

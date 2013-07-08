@@ -60,6 +60,10 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
     return download_shelf_needs_layout_;
   }
 
+  virtual FullscreenExitBubbleViews* GetFullscreenExitBubble() const OVERRIDE {
+    return NULL;
+  }
+
  private:
   bool tab_strip_visible_;
   bool toolbar_visible_;
@@ -111,10 +115,6 @@ class MockImmersiveModeController : public ImmersiveModeController {
       const gfx::Size& top_container_size) const OVERRIDE { return 0; }
   virtual ImmersiveRevealedLock* GetRevealedLock(
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT { return NULL; }
-  virtual void AnchorWidgetToTopContainer(views::Widget* widget,
-                                          int y_offset) OVERRIDE {}
-  virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE {}
-  virtual void OnTopContainerBoundsChanged() OVERRIDE {}
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds) OVERRIDE {}
 

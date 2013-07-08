@@ -23,7 +23,6 @@ class TopContainerView : public views::View {
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
  private:

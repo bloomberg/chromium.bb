@@ -121,16 +121,6 @@ ZoomBubbleView::ZoomBubbleView(
   set_use_focusless(auto_close);
   set_notify_enter_exit_on_child(true);
 
-  if (anchor_view) {
-    // If we are in immersive fullscreen and the top-of-window views are
-    // already revealed, lock the top-of-window views in the revealed state
-    // as long as the zoom bubble is visible. ImmersiveModeController does
-    // not do this for us automatically because the zoom bubble is not
-    // activatable.
-    immersive_reveal_lock_.reset(immersive_mode_controller_->GetRevealedLock(
-        ImmersiveModeController::ANIMATE_REVEAL_NO));
-  }
-
   // Add observers to close the bubble if the fullscreen state or immersive
   // fullscreen revealed state changes.
   registrar_.Add(this,

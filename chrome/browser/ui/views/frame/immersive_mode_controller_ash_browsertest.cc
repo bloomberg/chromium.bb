@@ -13,23 +13,16 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -62,13 +55,6 @@ class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
 
   BrowserView* browser_view() { return browser_view_; }
   ImmersiveModeControllerAsh* controller() { return controller_; }
-
-  // Callback for when the onbeforeunload dialog closes for the sake of testing
-  // the dialog with immersive mode.
-  void OnBeforeUnloadJavaScriptDialogClosed(
-      bool success,
-      const string16& user_input) {
-  }
 
   // content::BrowserTestBase overrides:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -232,102 +218,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveMode) {
   controller()->StartRevealForTest(true);
 }
 
-// Test how focus affects whether the top-of-window views are revealed.
-// Do not test under windows because focus testing is not reliable on
-// Windows, crbug.com/79493
-#if !defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, Focus) {
-  chrome::ToggleFullscreenMode(browser());
-  ASSERT_TRUE(controller()->IsEnabled());
-
-  // 1) Test that focusing the location bar automatically reveals the
-  // top-of-window views.
-  //
-  // Move the mouse of the way.
-  controller()->SetMouseHoveredForTest(false);
-  browser_view()->SetFocusToLocationBar(false);
-  EXPECT_TRUE(controller()->IsRevealed());
-  browser_view()->GetFocusManager()->ClearFocus();
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // 2) Test that the top-of-window views stay revealed as long as either the
-  // location bar has focus or the mouse is hovered above the top-of-window
-  // views.
-  controller()->StartRevealForTest(true);
-  browser_view()->SetFocusToLocationBar(false);
-  browser_view()->GetFocusManager()->ClearFocus();
-  EXPECT_TRUE(controller()->IsRevealed());
-  browser_view()->SetFocusToLocationBar(false);
-  controller()->SetMouseHoveredForTest(false);
-  EXPECT_TRUE(controller()->IsRevealed());
-  browser_view()->GetFocusManager()->ClearFocus();
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // 3) Test that a bubble keeps the top-of-window views revealed for the
-  // duration of its visibity.
-  //
-  // Setup so that the bookmark bubble actually shows.
-  ui_test_utils::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(browser()->profile()));
-  browser_view()->Activate();
-  EXPECT_TRUE(browser_view()->IsActive());
-
-  controller()->StartRevealForTest(false);
-  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE_FROM_STAR);
-  EXPECT_TRUE(chrome::IsBookmarkBubbleViewShowing());
-  EXPECT_TRUE(controller()->IsRevealed());
-  chrome::HideBookmarkBubbleView();
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // 4) Test that focusing the web contents hides the top-of-window views.
-  browser_view()->SetFocusToLocationBar(false);
-  EXPECT_TRUE(controller()->IsRevealed());
-  browser_view()->GetTabContentsContainerView()->RequestFocus();
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // 5) Test that a loss of focus of the location bar to the web contents
-  // while immersive mode is disabled is properly registered.
-  browser_view()->SetFocusToLocationBar(false);
-  EXPECT_TRUE(controller()->IsRevealed());
-  chrome::ToggleFullscreenMode(browser());
-  EXPECT_FALSE(controller()->IsEnabled());
-  EXPECT_FALSE(controller()->IsRevealed());
-  browser_view()->GetTabContentsContainerView()->RequestFocus();
-  chrome::ToggleFullscreenMode(browser());
-  EXPECT_TRUE(controller()->IsEnabled());
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // Repeat test but with a revealed lock acquired when immersive mode is
-  // enabled because the code path is different.
-  browser_view()->SetFocusToLocationBar(false);
-  EXPECT_TRUE(controller()->IsRevealed());
-  chrome::ToggleFullscreenMode(browser());
-  scoped_ptr<ImmersiveRevealedLock> lock(controller()->GetRevealedLock(
-      ImmersiveModeController::ANIMATE_REVEAL_NO));
-  EXPECT_FALSE(controller()->IsRevealed());
-  browser_view()->GetTabContentsContainerView()->RequestFocus();
-  chrome::ToggleFullscreenMode(browser());
-  EXPECT_TRUE(controller()->IsRevealed());
-  lock.reset();
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // 6) Test that a dialog opened by the web contents does not initiate a
-  // reveal.
-  AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
-  EXPECT_FALSE(queue->HasActiveDialog());
-  content::WebContents* web_contents = browser_view()->GetActiveWebContents();
-  GetJavaScriptDialogManagerInstance()->RunBeforeUnloadDialog(
-      web_contents,
-      string16(),
-      false,
-      base::Bind(
-          &ImmersiveModeControllerAshTest::OnBeforeUnloadJavaScriptDialogClosed,
-          base::Unretained(this)));
-  EXPECT_TRUE(queue->HasActiveDialog());
-  EXPECT_FALSE(controller()->IsRevealed());
-}
-#endif  // OS_WIN
-
 // Test behavior when the mouse becomes hovered without moving.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
                        MouseHoveredWithoutMoving) {
@@ -436,126 +326,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
 
   lock2.reset();
   EXPECT_FALSE(controller()->IsRevealed());
-}
-
-// Test how changing the bounds of the top container repositions anchored
-// widgets and how the visibility of anchored widgets affects whether the
-// top-of-window views stay revealed.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, AnchoredWidgets) {
-  BookmarkBarView::DisableAnimationsForTesting(true);
-
-  chrome::ToggleFullscreenMode(browser());
-  ASSERT_TRUE(controller()->IsEnabled());
-
-  gfx::Rect kInitialBounds(100, 100, 100, 100);
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = browser_view()->GetNativeWindow();
-  params.bounds = kInitialBounds;
-  views::Widget anchored_widget;
-  anchored_widget.Init(params);
-
-  // 1) Test that an anchored widget does not cause the top-of-window views to
-  // reveal but instead prolongs the duration of the reveal till either the
-  // widget is unanchored or is hidden.
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  anchored_widget.Show();
-  controller()->AnchorWidgetToTopContainer(&anchored_widget, 10);
-
-  // Anchoring a widget should not cause the top-of-window views to reveal.
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  controller()->StartRevealForTest(true);
-  EXPECT_TRUE(controller()->IsRevealed());
-
-  // Once the top-of-window views are revealed, the top-of-window views should
-  // stay revealed as long as there is a visible anchored widget (or something
-  // else like the mouse hover is keeping the top-of-window views revealed).
-  controller()->SetMouseHoveredForTest(false);
-  EXPECT_TRUE(controller()->IsRevealed());
-  anchored_widget.Hide();
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  anchored_widget.Show();
-  EXPECT_FALSE(controller()->IsRevealed());
-  controller()->StartRevealForTest(true);
-  EXPECT_TRUE(controller()->IsRevealed());
-
-  controller()->UnanchorWidgetFromTopContainer(&anchored_widget);
-  EXPECT_TRUE(controller()->IsRevealed());
-  controller()->SetMouseHoveredForTest(false);
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // 2) Test that the anchored widget is repositioned to |y_offset| below
-  // the bottom of the top container when the top container bounds are changed.
-  //
-  // Make sure that the bookmark bar is hidden.
-  ui_test_utils::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(browser()->profile()));
-  if (browser_view()->IsBookmarkBarVisible())
-    chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_FALSE(browser_view()->IsBookmarkBarVisible());
-
-  anchored_widget.SetBounds(kInitialBounds);
-
-  // Anchoring the widget should adjust the top-of-window bounds.
-  controller()->AnchorWidgetToTopContainer(&anchored_widget, 10);
-  gfx::Rect bounds1 = anchored_widget.GetWindowBoundsInScreen();
-  EXPECT_EQ(bounds1.y(),
-            browser_view()->top_container()->GetBoundsInScreen().bottom() + 10);
-  EXPECT_EQ(kInitialBounds.x(), bounds1.x());
-  EXPECT_EQ(kInitialBounds.size(), bounds1.size());
-
-  controller()->StartRevealForTest(true);
-  gfx::Rect bounds2 = anchored_widget.GetWindowBoundsInScreen();
-
-  // The top-of-window bounds changed in the immersive reveal. |anchored_widget|
-  // should have been repositioned.
-  EXPECT_EQ(bounds2.y(),
-            browser_view()->top_container()->GetBoundsInScreen().bottom() + 10);
-  EXPECT_EQ(kInitialBounds.x(), bounds2.x());
-  EXPECT_EQ(kInitialBounds.size(), bounds2.size());
-
-  // Showing the bookmark bar changes the top container bounds and should
-  // reposition the anchored widget.
-  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_TRUE(browser_view()->IsBookmarkBarVisible());
-  gfx::Rect bounds3 = anchored_widget.GetWindowBoundsInScreen();
-  EXPECT_EQ(bounds3.y(),
-            browser_view()->top_container()->GetBoundsInScreen().bottom() + 10);
-  EXPECT_GT(bounds3.y(), bounds2.y());
-  EXPECT_EQ(kInitialBounds.x(), bounds3.x());
-  EXPECT_EQ(kInitialBounds.size(), bounds3.size());
-
-  // 3) Test that the anchored widget is not repositioned when immersive mode
-  // is not enabled.
-  chrome::ToggleFullscreenMode(browser());
-  ASSERT_FALSE(controller()->IsEnabled());
-  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
-  EXPECT_EQ(bounds3, anchored_widget.GetWindowBoundsInScreen());
-  EXPECT_NE(browser_view()->top_container()->GetBoundsInScreen().bottom() + 10,
-            bounds3.bottom());
-
-  // 4) Test that reenabling immersive fullscreen repositions any anchored
-  // widgets.
-  //
-  // Maximize the window so that a bounds change in the top container is not
-  // reported when entering immersive fullscreen. The top container has the
-  // same bounds when |browser_view| is maximized as when the top container is
-  // revealed when |browser_view_| is in immersive mode.
-  ash::wm::MaximizeWindow(browser_view()->GetNativeWindow());
-  chrome::ToggleFullscreenMode(browser());
-  ASSERT_TRUE(controller()->IsEnabled());
-
-  gfx::Rect bounds4 = anchored_widget.GetWindowBoundsInScreen();
-  EXPECT_NE(bounds3, bounds4);
-  EXPECT_EQ(bounds4.y(),
-            browser_view()->top_container()->GetBoundsInScreen().bottom() + 10);
-  EXPECT_EQ(kInitialBounds.x(), bounds4.x());
-  EXPECT_EQ(kInitialBounds.size(), bounds4.size());
-
-  BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
 // Shelf-specific immersive mode tests.
