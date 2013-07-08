@@ -15,9 +15,7 @@
  * It must make it safe for vanilla newlib code to run.
  */
 void __pthread_initialize_minimal(size_t tdb_size) {
-  /* Adapt size for sbrk. */
-  /* TODO(robertm): this is somewhat arbitrary - re-examine). */
-  size_t combined_size = (__nacl_tls_combined_size(tdb_size) + 15) & ~15;
+  size_t combined_size = __nacl_tls_combined_size(tdb_size);
 
   /*
    * Use sbrk not malloc here since the library is not initialized yet.
