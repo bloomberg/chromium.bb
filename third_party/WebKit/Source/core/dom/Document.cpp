@@ -5088,11 +5088,16 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     for (size_t i = 0; i < removeCount; ++i)
         nodesToRemoveFromChain[i]->setHovered(false);
 
+    bool sawCommonAncestor = false;
     size_t addCount = nodesToAddToChain.size();
     for (size_t i = 0; i < addCount; ++i) {
+        // Elements past the common ancestor do not change hover state, but might change active state.
+        if (ancestor && nodesToAddToChain[i] == ancestor->node())
+            sawCommonAncestor = true;
         if (allowActiveChanges)
             nodesToAddToChain[i]->setActive(true);
-        nodesToAddToChain[i]->setHovered(true);
+        if (!sawCommonAncestor)
+            nodesToAddToChain[i]->setHovered(true);
     }
 
     updateStyleIfNeeded();
