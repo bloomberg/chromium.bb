@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/fileapi/remote_file_stream_writer.h"
+#include "chrome/browser/chromeos/drive/remote_file_stream_writer.h"
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -11,7 +11,7 @@
 #include "webkit/browser/fileapi/remote_file_system_proxy.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-namespace chromeos {
+namespace drive {
 
 RemoteFileStreamWriter::RemoteFileStreamWriter(
     const scoped_refptr<fileapi::RemoteFileSystemProxyInterface>&
@@ -119,4 +119,4 @@ void RemoteFileStreamWriter::InvokePendingCancelCallback(int result) {
   callback.Run(result);
 }
 
-}  // namespace chromeos
+}  // namespace drive

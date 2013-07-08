@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
-#define CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_REMOTE_FILE_STREAM_WRITER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_REMOTE_FILE_STREAM_WRITER_H_
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -26,9 +26,9 @@ namespace webkit_blob {
 class ShareableFileReference;
 }
 
-namespace chromeos {
+namespace drive {
 
-// FileStreamWriter interface for writing to a file on remote file system.
+// The implementation of fileapi::FileStreamWriter for the Drive File System.
 class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
  public:
   // Creates a writer for a file on |remote_filesystem| with path url |url|
@@ -77,6 +77,6 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   DISALLOW_COPY_AND_ASSIGN(RemoteFileStreamWriter);
 };
 
-}  // namespace chromeos
+}  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_REMOTE_FILE_STREAM_WRITER_H_

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/mount_point_provider_delegate.h"
 
-#include "chrome/browser/chromeos/fileapi/remote_file_stream_writer.h"
+#include "chrome/browser/chromeos/drive/remote_file_stream_writer.h"
 #include "chrome/browser/chromeos/fileapi/remote_file_system_operation.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
@@ -67,7 +67,7 @@ MountPointProviderDelegate::CreateFileStreamWriter(
     return scoped_ptr<fileapi::FileStreamWriter>();
 
   return scoped_ptr<fileapi::FileStreamWriter>(
-      new chromeos::RemoteFileStreamWriter(
+      new RemoteFileStreamWriter(
           proxy, url, offset, context->task_runners()->file_task_runner()));
 }
 
