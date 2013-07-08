@@ -22,7 +22,7 @@ HeadsUpDisplayLayer::HeadsUpDisplayLayer() : ContentsScalingLayer() {
 
 HeadsUpDisplayLayer::~HeadsUpDisplayLayer() {}
 
-void HeadsUpDisplayLayer::Update(ResourceUpdateQueue*,
+bool HeadsUpDisplayLayer::Update(ResourceUpdateQueue*,
                                  const OcclusionTracker*) {
   gfx::Size device_viewport = layer_tree_host()->device_viewport_size();
   float device_scale_factor = layer_tree_host()->device_scale_factor();
@@ -54,6 +54,7 @@ void HeadsUpDisplayLayer::Update(ResourceUpdateQueue*,
   // The HudLayer used to show up with the wrong bounds for one frame.
   // This call fixes that the bounds get passed to LayerImpl on the next commit.
   SavePaintProperties();
+  return false;
 }
 
 bool HeadsUpDisplayLayer::DrawsContent() const { return true; }

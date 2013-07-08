@@ -73,7 +73,7 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
   Layer::SetNeedsDisplayRect(layer_rect);
 }
 
-void PictureLayer::Update(ResourceUpdateQueue*,
+bool PictureLayer::Update(ResourceUpdateQueue*,
                           const OcclusionTracker*) {
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
@@ -89,12 +89,18 @@ void PictureLayer::Update(ResourceUpdateQueue*,
       visible_content_rect(), 1.f / contents_scale_x());
   devtools_instrumentation::ScopedLayerTask paint_layer(
       devtools_instrumentation::kPaintLayer, id());
-  pile_->Update(client_,
-                SafeOpaqueBackgroundColor(),
-                contents_opaque(),
-                pile_invalidation_,
-                visible_layer_rect,
-                rendering_stats_instrumentation());
+  bool updated = pile_->Update(client_,
+                               SafeOpaqueBackgroundColor(),
+                               contents_opaque(),
+                               pile_invalidation_,
+                               visible_layer_rect,
+                               rendering_stats_instrumentation());
+  if (!updated) {
+    // If this invalidation did not affect the pile, then it can be cleared as
+    // an optimization.
+    pile_invalidation_.Clear();
+  }
+  return updated;
 }
 
 void PictureLayer::SetIsMask(bool is_mask) {

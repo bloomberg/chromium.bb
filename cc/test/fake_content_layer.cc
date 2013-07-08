@@ -24,10 +24,11 @@ scoped_ptr<LayerImpl> FakeContentLayer::CreateLayerImpl(
   return FakeContentLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-void FakeContentLayer::Update(ResourceUpdateQueue* queue,
+bool FakeContentLayer::Update(ResourceUpdateQueue* queue,
                               const OcclusionTracker* occlusion) {
-  ContentLayer::Update(queue, occlusion);
+  bool updated = ContentLayer::Update(queue, occlusion);
   update_count_++;
+  return updated;
 }
 
 bool FakeContentLayer::HaveBackingAt(int i, int j) {

@@ -128,7 +128,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   virtual void AcquireLayerTextures();
   // Returns false if we should abort this frame due to initialization failure.
   bool InitializeOutputSurfaceIfNeeded();
-  void UpdateLayers(ResourceUpdateQueue* queue,
+  bool UpdateLayers(ResourceUpdateQueue* queue,
                     size_t contents_memory_limit_bytes);
 
   LayerTreeHostClient* client() { return client_; }
@@ -263,11 +263,15 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
  private:
   bool InitializeProxy(scoped_ptr<Proxy> proxy);
 
-  bool PaintLayerContents(const LayerList& render_surface_layer_list,
-                          ResourceUpdateQueue* quue);
-  bool PaintMasksForRenderSurface(Layer* render_surface_layer,
-                                  ResourceUpdateQueue* queue);
-  void UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
+  void PaintLayerContents(const LayerList& render_surface_layer_list,
+                          ResourceUpdateQueue* queue,
+                          bool* did_paint_content,
+                          bool* need_more_updates);
+  void PaintMasksForRenderSurface(Layer* render_surface_layer,
+                                  ResourceUpdateQueue* queue,
+                                  bool* did_paint_content,
+                                  bool* need_more_updates);
+  bool UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
   void UpdateHudLayer();
   void TriggerPrepaint();
 

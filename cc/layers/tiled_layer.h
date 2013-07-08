@@ -34,7 +34,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
 
  protected:

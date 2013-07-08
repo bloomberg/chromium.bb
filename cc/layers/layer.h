@@ -280,8 +280,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // These methods typically need to be overwritten by derived classes.
   virtual bool DrawsContent() const;
   virtual void SavePaintProperties();
-  virtual void Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) {}
+  // Returns true iff any resources were updated that need to be committed.
+  virtual bool Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker* occlusion);
   virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
   virtual void ReduceMemoryUsage() {}

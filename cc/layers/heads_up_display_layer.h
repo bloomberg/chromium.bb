@@ -15,7 +15,7 @@ class CC_EXPORT HeadsUpDisplayLayer : public ContentsScalingLayer {
  public:
   static scoped_refptr<HeadsUpDisplayLayer> Create();
 
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* tracker) OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE;
 

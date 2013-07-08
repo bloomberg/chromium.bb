@@ -166,22 +166,31 @@ bool TextureLayer::DrawsContent() const {
          !context_lost_ && Layer::DrawsContent();
 }
 
-void TextureLayer::Update(ResourceUpdateQueue* queue,
+bool TextureLayer::Update(ResourceUpdateQueue* queue,
                           const OcclusionTracker* occlusion) {
+  bool updated = false;
   if (client_) {
     if (uses_mailbox_) {
       TextureMailbox mailbox;
-      if (client_->PrepareTextureMailbox(&mailbox))
+      if (client_->PrepareTextureMailbox(&mailbox)) {
         SetTextureMailbox(mailbox);
+        updated = true;
+      }
     } else {
       DCHECK(client_->Context3d());
       texture_id_ = client_->PrepareTexture(queue);
       context_lost_ = client_->Context3d() &&
           client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR;
+      updated = true;
     }
   }
 
   needs_display_ = false;
+
+  // SetTextureMailbox could be called externally and the same mailbox used for
+  // different textures.  Such callers notify this layer that the texture has
+  // changed by calling SetNeedsDisplay, so check for that here.
+  return updated || !update_rect_.IsEmpty();
 }
 
 void TextureLayer::PushPropertiesTo(LayerImpl* layer) {

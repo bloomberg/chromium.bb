@@ -28,7 +28,7 @@ class FakeScrollbarLayer : public ScrollbarLayer {
     return last_update_partial_upload_size_;
   }
 
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
 
  private:

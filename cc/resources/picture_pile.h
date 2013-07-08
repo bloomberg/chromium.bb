@@ -19,7 +19,8 @@ class CC_EXPORT PicturePile : public PicturePileBase {
 
   // Re-record parts of the picture that are invalid.
   // Invalidations are in layer space.
-  void Update(
+  // Return true iff the pile was modified.
+  bool Update(
       ContentLayerClient* painter,
       SkColor background_color,
       bool contents_opaque,

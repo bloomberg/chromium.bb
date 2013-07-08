@@ -921,10 +921,11 @@ class ContentLayerWithUpdateTracking : public ContentLayer {
   int PaintContentsCount() { return paint_contents_count_; }
   void ResetPaintContentsCount() { paint_contents_count_ = 0; }
 
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE {
-    ContentLayer::Update(queue, occlusion);
+    bool updated = ContentLayer::Update(queue, occlusion);
     paint_contents_count_++;
+    return updated;
   }
 
  private:
@@ -1583,7 +1584,7 @@ class EvictionTestLayer : public Layer {
     return make_scoped_refptr(new EvictionTestLayer());
   }
 
-  virtual void Update(ResourceUpdateQueue*,
+  virtual bool Update(ResourceUpdateQueue*,
                       const OcclusionTracker*) OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE { return true; }
 
@@ -1643,16 +1644,17 @@ void EvictionTestLayer::SetTexturePriorities(const PriorityCalculator&) {
   texture_->set_request_priority(PriorityCalculator::UIPriority(true));
 }
 
-void EvictionTestLayer::Update(ResourceUpdateQueue* queue,
+bool EvictionTestLayer::Update(ResourceUpdateQueue* queue,
                                const OcclusionTracker*) {
   CreateTextureIfNeeded();
   if (!texture_)
-    return;
+    return false;
 
   gfx::Rect full_rect(0, 0, 10, 10);
   ResourceUpdate upload = ResourceUpdate::Create(
       texture_.get(), &bitmap_, full_rect, full_rect, gfx::Vector2d());
   queue->AppendFullUpload(upload);
+  return true;
 }
 
 scoped_ptr<LayerImpl> EvictionTestLayer::CreateLayerImpl(

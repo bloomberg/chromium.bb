@@ -35,7 +35,7 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   // Layer interface
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
@@ -55,7 +55,7 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   virtual ~ScrollbarLayer();
 
  private:
-  void UpdatePart(CachingBitmapContentLayerUpdater* painter,
+  bool UpdatePart(CachingBitmapContentLayerUpdater* painter,
                   LayerUpdater::Resource* resource,
                   gfx::Rect rect,
                   ResourceUpdateQueue* queue);

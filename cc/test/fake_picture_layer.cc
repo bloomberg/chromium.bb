@@ -23,10 +23,11 @@ scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
   return FakePictureLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-void FakePictureLayer::Update(ResourceUpdateQueue* queue,
+bool FakePictureLayer::Update(ResourceUpdateQueue* queue,
                               const OcclusionTracker* occlusion) {
-  PictureLayer::Update(queue, occlusion);
+  bool updated = PictureLayer::Update(queue, occlusion);
   update_count_++;
+  return updated;
 }
 
 }  // namespace cc

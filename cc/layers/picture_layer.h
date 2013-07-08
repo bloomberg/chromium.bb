@@ -29,7 +29,7 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void SetNeedsDisplayRect(const gfx::RectF& layer_rect) OVERRIDE;
-  virtual void Update(
+  virtual bool Update(
       ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void SetIsMask(bool is_mask) OVERRIDE;

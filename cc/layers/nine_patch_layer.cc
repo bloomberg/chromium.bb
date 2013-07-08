@@ -54,7 +54,7 @@ void NinePatchLayer::SetBitmap(const SkBitmap& bitmap, gfx::Rect aperture) {
   SetNeedsDisplay();
 }
 
-void NinePatchLayer::Update(ResourceUpdateQueue* queue,
+bool NinePatchLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion) {
   CreateUpdaterIfNeeded();
 
@@ -68,7 +68,9 @@ void NinePatchLayer::Update(ResourceUpdateQueue* queue,
                                                    gfx::Vector2d());
     queue->AppendFullUpload(upload);
     bitmap_dirty_ = false;
+    return true;
   }
+  return false;
 }
 
 void NinePatchLayer::CreateUpdaterIfNeeded() {

@@ -44,7 +44,7 @@ class CC_EXPORT ContentLayer : public TiledLayer {
   virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) OVERRIDE;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual bool NeedMoreUpdates() OVERRIDE;
 

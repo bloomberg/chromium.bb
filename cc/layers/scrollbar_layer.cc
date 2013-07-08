@@ -207,24 +207,24 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
   }
 }
 
-void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
+bool ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                                 LayerUpdater::Resource* resource,
                                 gfx::Rect rect,
                                 ResourceUpdateQueue* queue) {
   if (layer_tree_host()->settings().solid_color_scrollbars)
-    return;
+    return false;
 
   // Skip painting and uploading if there are no invalidations and
   // we already have valid texture data.
   if (resource->texture()->have_backing_texture() &&
       resource->texture()->size() == rect.size() &&
       !is_dirty())
-    return;
+    return false;
 
   // We should always have enough memory for UI.
   DCHECK(resource->texture()->can_acquire_backing_texture());
   if (!resource->texture()->can_acquire_backing_texture())
-    return;
+    return false;
 
   // Paint and upload the entire part.
   gfx::Rect painted_opaque_rect;
@@ -238,7 +238,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
     TRACE_EVENT_INSTANT0("cc",
                          "ScrollbarLayer::UpdatePart no texture upload needed",
                          TRACE_EVENT_SCOPE_THREAD);
-    return;
+    return false;
   }
 
   bool partial_updates_allowed =
@@ -248,6 +248,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
 
   gfx::Vector2d dest_offset(0, 0);
   resource->Update(queue, rect, dest_offset, partial_updates_allowed);
+  return true;
 }
 
 gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
@@ -289,12 +290,12 @@ void ScrollbarLayer::SetTexturePriorities(
   }
 }
 
-void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
+bool ScrollbarLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion) {
   track_rect_ = scrollbar_->TrackRect();
 
   if (layer_tree_host()->settings().solid_color_scrollbars)
-    return;
+    return false;
 
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
@@ -304,32 +305,29 @@ void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
 
   dirty_rect_.Union(update_rect_);
   if (content_bounds().IsEmpty())
-    return;
+    return false;
   if (visible_content_rect().IsEmpty())
-    return;
+    return false;
 
   CreateUpdaterIfNeeded();
 
   gfx::Rect content_rect = ScrollbarLayerRectToContentRect(
       gfx::Rect(scrollbar_->Location(), bounds()));
-  UpdatePart(track_updater_.get(),
-             track_.get(),
-             content_rect,
-             queue);
+  bool updated = UpdatePart(track_updater_.get(), track_.get(), content_rect,
+                            queue);
 
   if (scrollbar_->HasThumb()) {
     thumb_thickness_ = scrollbar_->ThumbThickness();
     thumb_length_ = scrollbar_->ThumbLength();
     gfx::Rect origin_thumb_rect = OriginThumbRect();
     if (!origin_thumb_rect.IsEmpty()) {
-      UpdatePart(thumb_updater_.get(),
-                 thumb_.get(),
-                 origin_thumb_rect,
-                 queue);
+      updated |= UpdatePart(thumb_updater_.get(), thumb_.get(),
+                            origin_thumb_rect, queue);
     }
   }
 
   dirty_rect_ = gfx::RectF();
+  return updated;
 }
 
 gfx::Rect ScrollbarLayer::OriginThumbRect() const {

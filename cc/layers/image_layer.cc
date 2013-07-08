@@ -40,7 +40,7 @@ void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
   TiledLayer::SetTexturePriorities(priority_calc);
 }
 
-void ImageLayer::Update(ResourceUpdateQueue* queue,
+bool ImageLayer::Update(ResourceUpdateQueue* queue,
                         const OcclusionTracker* occlusion) {
   CreateUpdaterIfNeeded();
   if (needs_display_) {
@@ -49,7 +49,7 @@ void ImageLayer::Update(ResourceUpdateQueue* queue,
     InvalidateContentRect(gfx::Rect(content_bounds()));
     needs_display_ = false;
   }
-  TiledLayer::Update(queue, occlusion);
+  return TiledLayer::Update(queue, occlusion);
 }
 
 void ImageLayer::CreateUpdaterIfNeeded() {

@@ -81,7 +81,7 @@ void ContentLayer::SetTexturePriorities(
   TiledLayer::SetTexturePriorities(priority_calc);
 }
 
-void ContentLayer::Update(ResourceUpdateQueue* queue,
+bool ContentLayer::Update(ResourceUpdateQueue* queue,
                           const OcclusionTracker* occlusion) {
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
@@ -91,8 +91,9 @@ void ContentLayer::Update(ResourceUpdateQueue* queue,
     UpdateCanUseLCDText();
   }
 
-  TiledLayer::Update(queue, occlusion);
+  bool updated = TiledLayer::Update(queue, occlusion);
   needs_display_ = false;
+  return updated;
 }
 
 bool ContentLayer::NeedMoreUpdates() {

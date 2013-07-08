@@ -323,7 +323,6 @@ bool TiledLayer::UpdateTiles(int left,
                              ResourceUpdateQueue* queue,
                              const OcclusionTracker* occlusion,
                              bool* did_paint) {
-  *did_paint = false;
   CreateUpdaterIfNeeded();
 
   bool ignore_occlusions = !occlusion;
@@ -723,7 +722,7 @@ void TiledLayer::UpdateScrollPrediction() {
   previous_visible_rect_ = visible_content_rect();
 }
 
-void TiledLayer::Update(ResourceUpdateQueue* queue,
+bool TiledLayer::Update(ResourceUpdateQueue* queue,
                         const OcclusionTracker* occlusion) {
   DCHECK(!skips_draw_ && !failed_update_);  // Did ResetUpdateState get skipped?
   {
@@ -735,7 +734,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
   }
 
   if (tiler_->has_empty_bounds() || !DrawsContent())
-    return;
+    return false;
 
   bool did_paint = false;
 
@@ -751,14 +750,14 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
                                      &bottom);
     UpdateTiles(left, top, right, bottom, queue, NULL, &did_paint);
     if (did_paint)
-      return;
+      return did_paint;
     // This was an attempt to paint the entire layer so if we fail it's okay,
     // just fallback on painting visible etc. below.
     failed_update_ = false;
   }
 
   if (predicted_visible_rect_.IsEmpty())
-    return;
+    return did_paint;
 
   // Visible painting. First occlude visible tiles and paint the non-occluded
   // tiles.
@@ -771,18 +770,18 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
   if (skips_draw_)
     tiler_->reset();
   if (skips_draw_ || did_paint)
-    return;
+    return true;
 
   // If we have already painting everything visible. Do some pre-painting while
   // idle.
   gfx::Rect idle_paint_content_rect = IdlePaintRect();
   if (idle_paint_content_rect.IsEmpty())
-    return;
+    return did_paint;
 
   // Prepaint anything that was occluded but inside the layer's visible region.
   if (!UpdateTiles(left, top, right, bottom, queue, NULL, &did_paint) ||
       did_paint)
-    return;
+    return did_paint;
 
   int prepaint_left, prepaint_top, prepaint_right, prepaint_bottom;
   tiler_->ContentRectToTileIndices(idle_paint_content_rect,
@@ -812,7 +811,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
         if (!UpdateTiles(
                 left, bottom, right, bottom, queue, NULL, &did_paint) ||
             did_paint)
-          return;
+          return did_paint;
       }
     }
     if (deltas[i].y() < 0) {
@@ -821,7 +820,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
         if (!UpdateTiles(
                 left, top, right, top, queue, NULL, &did_paint) ||
             did_paint)
-          return;
+          return did_paint;
       }
     }
     if (deltas[i].x() < 0) {
@@ -830,7 +829,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
         if (!UpdateTiles(
                 left, top, left, bottom, queue, NULL, &did_paint) ||
             did_paint)
-          return;
+          return did_paint;
       }
     }
     if (deltas[i].x() > 0) {
@@ -839,10 +838,11 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
         if (!UpdateTiles(
                 right, top, right, bottom, queue, NULL, &did_paint) ||
             did_paint)
-          return;
+          return did_paint;
       }
     }
   }
+  return did_paint;
 }
 
 bool TiledLayer::NeedsIdlePaint() {

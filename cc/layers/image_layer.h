@@ -22,7 +22,7 @@ class CC_EXPORT ImageLayer : public TiledLayer {
   virtual bool DrawsContent() const OVERRIDE;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,

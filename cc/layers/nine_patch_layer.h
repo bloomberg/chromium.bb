@@ -23,7 +23,7 @@ class CC_EXPORT NinePatchLayer : public Layer {
   virtual bool DrawsContent() const OVERRIDE;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
-  virtual void Update(ResourceUpdateQueue* queue,
+  virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 

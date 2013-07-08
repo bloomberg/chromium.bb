@@ -17,11 +17,11 @@ class TestLayer : public Layer {
     return make_scoped_refptr(new TestLayer());
   }
 
-  virtual void Update(
+  virtual bool Update(
       ResourceUpdateQueue* update_queue,
       const OcclusionTracker* occlusion) OVERRIDE {
     if (!occlusion)
-      return;
+      return false;
 
     // Gain access to internals of the OcclusionTracker.
     const TestOcclusionTracker* test_occlusion =
@@ -29,6 +29,7 @@ class TestLayer : public Layer {
     occlusion_ = UnionRegions(
         test_occlusion->occlusion_from_inside_target(),
         test_occlusion->occlusion_from_outside_target());
+    return false;
   }
 
   const Region& occlusion() const { return occlusion_; }

@@ -786,6 +786,11 @@ void Layer::SavePaintProperties() {
   paint_properties_.bounds = bounds_;
 }
 
+bool Layer::Update(ResourceUpdateQueue* queue,
+                   const OcclusionTracker* occlusion) {
+  return false;
+}
+
 bool Layer::NeedMoreUpdates() {
   return false;
 }

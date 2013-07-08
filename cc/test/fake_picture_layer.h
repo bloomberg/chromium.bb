@@ -23,7 +23,7 @@ class FakePictureLayer : public PictureLayer {
   size_t update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
-  virtual void Update(
+  virtual bool Update(
       ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion) OVERRIDE;
 
