@@ -221,12 +221,6 @@ SuggestionState::SuggestionState(const string16& text,
       extra_icon(extra_icon) {}
 SuggestionState::~SuggestionState() {}
 
-DialogOverlayString::DialogOverlayString() : alignment(gfx::ALIGN_LEFT) {}
-DialogOverlayString::~DialogOverlayString() {}
-
-DialogOverlayState::DialogOverlayState() {}
-DialogOverlayState::~DialogOverlayState() {}
-
 AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(
     DialogSection section) {
   switch (section) {

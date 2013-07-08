@@ -65,10 +65,6 @@ gfx::Image MockAutofillDialogController::AccountChooserImage() {
   return gfx::Image();
 }
 
-bool MockAutofillDialogController::ShouldShowDetailArea() const {
-  return false;
-}
-
 bool MockAutofillDialogController::ShouldShowProgressBar() const {
   return false;
 }
@@ -77,13 +73,13 @@ int MockAutofillDialogController::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
-bool MockAutofillDialogController::IsDialogButtonEnabled(
-    ui::DialogButton button) const {
+bool MockAutofillDialogController::ShouldShowDetailArea() const {
   return false;
 }
 
-DialogOverlayState MockAutofillDialogController::GetDialogOverlay() const {
-  return DialogOverlayState();
+bool MockAutofillDialogController::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  return false;
 }
 
 const std::vector<ui::Range>&
@@ -174,8 +170,6 @@ void MockAutofillDialogController::NotificationCheckboxStateChanged(
 
 void MockAutofillDialogController::LegalDocumentLinkClicked(
     const ui::Range& range) {}
-
-void MockAutofillDialogController::OverlayButtonPressed() {}
 
 void MockAutofillDialogController::OnCancel() {}
 

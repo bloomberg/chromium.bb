@@ -80,10 +80,6 @@ class AutofillDialogController {
   // Whether or not the |button| should be enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const = 0;
 
-  // Returns a struct full of data concerning what overlay, if any, should be
-  // displayed on top of the dialog.
-  virtual DialogOverlayState GetDialogOverlay() const = 0;
-
   // Returns ranges to linkify in the text returned by |LegalDocumentsText()|.
   virtual const std::vector<ui::Range>& LegalDocumentLinks() = 0;
 
@@ -190,9 +186,6 @@ class AutofillDialogController {
 
   // A legal document link has been clicked.
   virtual void LegalDocumentLinkClicked(const ui::Range& range) = 0;
-
-  // A button in the dialog's overlay has been pressed.
-  virtual void OverlayButtonPressed() = 0;
 
   // Called when the view has been cancelled.
   virtual void OnCancel() = 0;

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -43,7 +42,6 @@ class FocusManager;
 class ImageButton;
 class ImageView;
 class Label;
-class LabelButton;
 class Link;
 class MenuRunner;
 class StyledLabel;
@@ -54,7 +52,6 @@ class Widget;
 namespace ui {
 class ComboboxModel;
 class KeyEvent;
-class MultiAnimation;
 }
 
 namespace autofill {
@@ -273,48 +270,6 @@ class AutofillDialogViews : public AutofillDialogView,
     scoped_ptr<views::MenuRunner> menu_runner_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountChooser);
-  };
-
-  // A view which displays an image, optionally some messages and a button. Used
-  // for the splash page as well as the Wallet interstitial.
-  class OverlayView : public views::View,
-                      public ui::AnimationDelegate {
-   public:
-    // The listener is informed when |button_| is pressed.
-    explicit OverlayView(views::ButtonListener* listener);
-    virtual ~OverlayView();
-
-    // Sets properties that should be displayed.
-    void SetState(const DialogOverlayState& state,
-                  views::ButtonListener* listener);
-
-    // Fades the view out after a delay.
-    void BeginFadeOut();
-
-    // ui::AnimationDelegate implementation:
-    virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-    virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-
-    // views::View implementation:
-    virtual void Layout() OVERRIDE;
-    virtual const char* GetClassName() const OVERRIDE;
-    virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-
-   private:
-    // Child View. Front and center.
-    views::ImageView* image_view_;
-    // Child View. When visible, below |image_view_|.
-    views::View* message_stack_;
-    // Child View. When visible, below |message_stack_|.
-    views::LabelButton* button_;
-
-    // This MultiAnimation is used to first fade out the contents of the
-    // overlay, then fade out the background of the overlay (revealing the
-    // dialog behind the overlay). This avoids cross-fade.
-    scoped_ptr<ui::MultiAnimation> fade_out_;
-
-    DISALLOW_COPY_AND_ASSIGN(OverlayView);
   };
 
   // An area for notifications. Some notifications point at the account chooser.
@@ -610,7 +565,7 @@ class AutofillDialogViews : public AutofillDialogView,
   views::Label* loading_shield_;
 
   // The view that completely overlays the dialog (used for the splash page).
-  OverlayView* overlay_view_;
+  views::View* overlay_view_;
 
   // The "Extra view" is on the same row as the dialog buttons.
   views::View* button_strip_extra_view_;
