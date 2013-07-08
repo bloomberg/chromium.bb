@@ -65,18 +65,18 @@ struct WebFileChooserParams {
     // before opening a file chooser dialog.
     WebVector<WebString> selectedFiles;
     // See http://www.w3.org/TR/html-media-capture/ for the semantics of the
-    // capture attribute. This string will either be empty (meaning the feature
-    // is disabled) or one of the following values:
-    //  - filesystem (default)
-    //  - camera
-    //  - camcorder
-    //  - microphone
+    // capture attribute. If |useMediaCapture| is true, the media types
+    // indicated in |acceptTypes| should be obtained from the device's
+    // environment using a media capture mechanism. |capture| is deprecated and
+    // provided for compatibility reasons.
     WebString capture;
+    bool useMediaCapture;
 
     WebFileChooserParams()
         : multiSelect(false)
         , directory(false)
         , saveAs(false)
+        , useMediaCapture(false)
     {
     }
 };

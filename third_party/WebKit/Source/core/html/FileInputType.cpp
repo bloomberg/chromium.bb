@@ -152,6 +152,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
         settings.selectedFiles = m_fileList->paths();
 #if ENABLE(MEDIA_CAPTURE)
         settings.capture = input->capture();
+        settings.useMediaCapture = input->fastHasAttribute(captureAttr);
 #endif
         chrome->runOpenPanel(input->document()->frame(), newFileChooser(settings));
     }
