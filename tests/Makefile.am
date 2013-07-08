@@ -5,17 +5,19 @@ module_tests =				\
 	surface-global-test.la
 
 weston_tests =				\
-	keyboard-test			\
-	event-test			\
-	button-test			\
-	text-test			\
-	subsurface-test			\
+	keyboard.weston			\
+	event.weston			\
+	button.weston			\
+	text.weston			\
+	subsurface.weston		\
 	$(xwayland_test)
 
 AM_TESTS_ENVIRONMENT = \
 	abs_builddir='$(abs_builddir)'; export abs_builddir;
 
-LOG_COMPILER = $(srcdir)/weston-tests-env
+TEST_EXTENSIONS = .la .weston
+LA_LOG_COMPILER = $(srcdir)/weston-tests-env
+WESTON_LOG_COMPILER = $(srcdir)/weston-tests-env
 
 clean-local:
 	-rm -rf logs
@@ -72,29 +74,30 @@ weston_test_client_libs =		\
 	$(SIMPLE_CLIENT_LIBS)		\
 	../shared/libshared.la
 
-keyboard_test_SOURCES = keyboard-test.c $(weston_test_client_src)
-keyboard_test_LDADD = $(weston_test_client_libs)
+keyboard_weston_SOURCES = keyboard-test.c $(weston_test_client_src)
+keyboard_weston_LDADD = $(weston_test_client_libs)
 
-event_test_SOURCES = event-test.c $(weston_test_client_src)
-event_test_LDADD = $(weston_test_client_libs)
+event_weston_SOURCES = event-test.c $(weston_test_client_src)
+event_weston_LDADD = $(weston_test_client_libs)
 
-button_test_SOURCES = button-test.c $(weston_test_client_src)
-button_test_LDADD = $(weston_test_client_libs)
+button_weston_SOURCES = button-test.c $(weston_test_client_src)
+button_weston_LDADD = $(weston_test_client_libs)
 
-text_test_SOURCES =				\
+text_weston_SOURCES =				\
 	text-test.c				\
 	../clients/text-protocol.c		\
 	$(weston_test_client_src)
-text_test_LDADD = $(weston_test_client_libs)
+text_weston_LDADD = $(weston_test_client_libs)
 
-subsurface_test_SOURCES = subsurface-test.c $(weston_test_client_src)
-subsurface_test_LDADD = $(weston_test_client_libs)
+subsurface_weston_SOURCES = subsurface-test.c $(weston_test_client_src)
+subsurface_weston_LDADD = $(weston_test_client_libs)
 
-xwayland_test_SOURCES = xwayland-test.c	$(weston_test_client_src)
-xwayland_test_LDADD = $(weston_test_client_libs) $(XWAYLAND_TEST_LIBS)
+xwayland_weston_SOURCES = xwayland-test.c	$(weston_test_client_src)
+
+xwayland_weston_LDADD = $(weston_test_client_libs) $(XWAYLAND_TEST_LIBS)
 
 if ENABLE_XWAYLAND_TEST
-xwayland_test = xwayland-test
+xwayland_test = xwayland.weston
 endif
 
 matrix_test_SOURCES =				\

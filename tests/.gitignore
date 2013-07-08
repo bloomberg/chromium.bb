@@ -1,3 +1,4 @@
+*.weston
 logs
 matrix-test
 setbacklight
@@ -6,11 +7,5 @@ test-text-client
 wayland-test-client-protocol.h
 wayland-test-protocol.c
 wayland-test-server-protocol.h
-text-test
-keyboard-test
-event-test
-button-test
-xwayland-test
 subsurface-client-protocol.h
 subsurface-protocol.c
-subsurface-test
