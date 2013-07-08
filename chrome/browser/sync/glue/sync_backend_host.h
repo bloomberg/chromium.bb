@@ -176,7 +176,6 @@ class SyncBackendHost
   // Note: |unrecoverable_error_handler| may be invoked from any thread.
   void Initialize(
       SyncFrontend* frontend,
-      scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const syncer::SyncCredentials& credentials,
@@ -227,10 +226,7 @@ class SyncBackendHost
   // |sync_disabled| indicates if syncing is being disabled or not.
   // See the implementation and Core::DoShutdown for details.
   // Must be called *after* StopSyncingForShutdown.
-  // If |sync_disabled| is false, return sync thread to caller, i.e. PSS,
-  // which will be responsible to stop sync thread. Otherwise, backend will
-  // stop sync thread after backend shutdown finishes.
-  scoped_ptr<base::Thread> Shutdown(bool sync_disabled);
+  void Shutdown(bool sync_disabled);
 
   // Changes the set of data types that are currently being synced.
   // The ready_task will be run when configuration is done with the
@@ -292,8 +288,6 @@ class SyncBackendHost
 
   // Fetches the DeviceInfo tracker.
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const;
-
-  base::MessageLoop* GetSyncLoopForTesting();
 
  protected:
   // The types and functions below are protected so that test
@@ -512,11 +506,14 @@ class SyncBackendHost
 
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
-  void StopSyncManagerForShutdown();
+  void StopSyncManagerForShutdown(const base::Closure& closure);
 
   base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  // A thread where all the sync operations happen.
+  base::Thread sync_thread_;
 
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
@@ -527,9 +524,7 @@ class SyncBackendHost
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;
 
-  // Our core, which communicates directly to the syncapi. Use refptr instead
-  // of WeakHandle because |core_| is created on UI loop but released on
-  // sync loop.
+  // Our core, which communicates directly to the syncapi.
   scoped_refptr<Core> core_;
 
   InitializationState initialization_state_;

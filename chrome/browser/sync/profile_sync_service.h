@@ -907,13 +907,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // and association information.
   syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
-  // A thread where all the sync operations happen.
-  // OWNERSHIP Notes:
-  //     * Created when backend starts for the first time.
-  //     * If sync is disabled, PSS claims ownership from backend.
-  //     * If sync is reenabled, PSS passes ownership to new backend.
-  scoped_ptr<base::Thread> sync_thread_;
-
   // Specifies whenever to use oauth2 access token or ClientLogin token in
   // communications with sync and xmpp servers.
   // TODO(pavely): Remove once android is converted to oauth2 tokens.

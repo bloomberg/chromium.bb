@@ -18,8 +18,7 @@ PassiveModelWorker::~PassiveModelWorker() {
 }
 
 void PassiveModelWorker::RegisterForLoopDestruction() {
-  base::MessageLoop::current()->AddDestructionObserver(this);
-  SetWorkingLoopToCurrent();
+  NOTREACHED();
 }
 
 SyncerError PassiveModelWorker::DoWorkAndWaitUntilDoneImpl(
