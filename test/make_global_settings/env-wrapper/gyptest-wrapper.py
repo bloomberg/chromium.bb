@@ -20,7 +20,11 @@ os.environ['CC.host_wrapper'] = 'ccache'
 
 test = TestGyp.TestGyp(formats=test_format)
 
+old_env = dict(os.environ)
+os.environ['GYP_CROSSCOMPILE'] = '1'
 test.run_gyp('wrapper.gyp')
+os.environ.clear()
+os.environ.update(old_env)
 
 if test.format == 'ninja':
   cc_expected = ('cc = ' + os.path.join('..', '..', 'distcc') + ' ' +

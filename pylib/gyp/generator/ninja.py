@@ -1565,11 +1565,6 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja.variable('cxx', CommandWithWrapper('CXX', wrappers, cxx))
   ld = GetEnvironFallback(['LD_target', 'LD'], ld)
 
-  if not cc_host:
-    cc_host = cc
-  if not cxx_host:
-    cxx_host = cxx
-
   if flavor == 'win':
     master_ninja.variable('ld', ld)
     master_ninja.variable('idl', 'midl.exe')
@@ -1581,26 +1576,32 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('ld', CommandWithWrapper('LINK', wrappers, ld))
     master_ninja.variable('ar', GetEnvironFallback(['AR_target', 'AR'], 'ar'))
 
-  master_ninja.variable('ar_host', GetEnvironFallback(['AR_host'], 'ar'))
-  cc_host = GetEnvironFallback(['CC_host'], cc_host)
-  cxx_host = GetEnvironFallback(['CXX_host'], cxx_host)
-  ld_host = GetEnvironFallback(['LD_host'], ld_host)
+  if generator_supports_multiple_toolsets:
+    if not cc_host:
+      cc_host = cc
+    if not cxx_host:
+      cxx_host = cxx
 
-  # The environment variable could be used in 'make_global_settings', like
-  # ['CC.host', '$(CC)'] or ['CXX.host', '$(CXX)'], transform them here.
-  if '$(CC)' in cc_host and cc_host_global_setting:
-    cc_host = cc_host_global_setting.replace('$(CC)', cc)
-  if '$(CXX)' in cxx_host and cxx_host_global_setting:
-    cxx_host = cxx_host_global_setting.replace('$(CXX)', cxx)
-  master_ninja.variable('cc_host',
-                        CommandWithWrapper('CC.host', wrappers, cc_host))
-  master_ninja.variable('cxx_host',
-                        CommandWithWrapper('CXX.host', wrappers, cxx_host))
-  if flavor == 'win':
-    master_ninja.variable('ld_host', ld_host)
-  else:
-    master_ninja.variable('ld_host', CommandWithWrapper(
-        'LINK', wrappers, ld_host))
+    master_ninja.variable('ar_host', GetEnvironFallback(['AR_host'], 'ar'))
+    cc_host = GetEnvironFallback(['CC_host'], cc_host)
+    cxx_host = GetEnvironFallback(['CXX_host'], cxx_host)
+    ld_host = GetEnvironFallback(['LD_host'], ld_host)
+
+    # The environment variable could be used in 'make_global_settings', like
+    # ['CC.host', '$(CC)'] or ['CXX.host', '$(CXX)'], transform them here.
+    if '$(CC)' in cc_host and cc_host_global_setting:
+      cc_host = cc_host_global_setting.replace('$(CC)', cc)
+    if '$(CXX)' in cxx_host and cxx_host_global_setting:
+      cxx_host = cxx_host_global_setting.replace('$(CXX)', cxx)
+    master_ninja.variable('cc_host',
+                          CommandWithWrapper('CC.host', wrappers, cc_host))
+    master_ninja.variable('cxx_host',
+                          CommandWithWrapper('CXX.host', wrappers, cxx_host))
+    if flavor == 'win':
+      master_ninja.variable('ld_host', ld_host)
+    else:
+      master_ninja.variable('ld_host', CommandWithWrapper(
+          'LINK', wrappers, ld_host))
 
   master_ninja.newline()
 

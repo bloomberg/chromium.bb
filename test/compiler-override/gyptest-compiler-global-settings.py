@@ -34,7 +34,12 @@ output = open(gypfile, 'w')
 output.write(s.substitute(replacements))
 output.close()
 
+old_env = dict(os.environ)
+os.environ['GYP_CROSSCOMPILE'] = '1'
 test.run_gyp(gypfile)
+os.environ.clear()
+os.environ.update(old_env)
+
 test.build(gypfile)
 test.must_contain_all_lines(test.stdout(), ['my_cc.py', 'my_cxx.py', 'FOO'])
 
@@ -45,7 +50,12 @@ output = open(gypfile, 'w')
 output.write(s.substitute(replacements))
 output.close()
 
+old_env = dict(os.environ)
+os.environ['GYP_CROSSCOMPILE'] = '1'
 test.run_gyp(gypfile)
+os.environ.clear()
+os.environ.update(old_env)
+
 test.build(gypfile)
 test.must_contain_all_lines(test.stdout(), ['my_cc.py', 'my_cxx.py', 'BAR'])
 
