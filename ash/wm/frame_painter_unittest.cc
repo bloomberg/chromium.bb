@@ -27,6 +27,7 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
 
+using ash::FramePainter;
 using ui::ThemeProvider;
 using views::Button;
 using views::ImageButton;
@@ -128,6 +129,25 @@ class ScopedOpacityConstantModifier {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedOpacityConstantModifier);
 };
+
+// Creates a new FramePainter with empty buttons. Caller owns the memory.
+// TODO(jamescook): Convert tests to use this method for creating their
+// FramePainter objects.
+FramePainter* CreateTestPainter(Widget* widget) {
+  FramePainter* painter = new FramePainter();
+  ImageButton* size_button = new ImageButton(NULL);
+  ImageButton* close_button = new ImageButton(NULL);
+  // Add the buttons to the widget's client view so they will be deleted
+  // when the widget is destroyed.
+  widget->client_view()->AddChildView(size_button);
+  widget->client_view()->AddChildView(close_button);
+  painter->Init(widget,
+                NULL,
+                size_button,
+                close_button,
+                FramePainter::SIZE_BUTTON_MAXIMIZES);
+  return painter;
+}
 
 }  // namespace
 
@@ -453,6 +473,29 @@ TEST_F(FramePainterTest, UseSoloWindowHeaderConstrained) {
 
   // The constrained window itself is not considered solo.
   EXPECT_FALSE(p2.UseSoloWindowHeader());
+}
+
+// Non-drawing windows should not affect the solo computation.
+TEST_F(FramePainterTest, UseSoloWindowHeaderNotDrawn) {
+  // Create a widget and a painter for it.
+  scoped_ptr<Widget> widget(CreateTestWidget());
+  scoped_ptr<FramePainter> painter(CreateTestPainter(widget.get()));
+  widget->Show();
+
+  // We only have one window, so it should use a solo header.
+  EXPECT_TRUE(painter->UseSoloWindowHeader());
+
+  // Create non-drawing window similar to DragDropTracker.
+  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->SetDefaultParentByRootWindow(
+      widget->GetNativeWindow()->GetRootWindow(), gfx::Rect());
+  window->Show();
+
+  // Despite two windows, the first window should still be considered "solo"
+  // because non-drawing windows aren't included in the computation.
+  EXPECT_TRUE(painter->UseSoloWindowHeader());
 }
 
 #if defined(OS_WIN)

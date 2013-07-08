@@ -165,11 +165,15 @@ bool IsVisibleToRoot(Window* child) {
 }
 
 // Returns true if |window| is a "normal" window for purposes of solo window
-// computations.
+// computations. Returns false for windows that are:
+// * Not drawn (for example, DragDropTracker uses one for mouse capture)
+// * Modal alerts (it looks odd for headers to change when an alert opens)
+// * Constrained windows (ditto)
 bool IsSoloWindowHeaderCandidate(aura::Window* window) {
-  // A normal, non-modal, non-constrained window.
   return window &&
       window->type() == aura::client::WINDOW_TYPE_NORMAL &&
+      window->layer() &&
+      window->layer()->type() != ui::LAYER_NOT_DRAWN &&
       window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE &&
       !window->GetProperty(ash::kConstrainedWindowKey);
 }
