@@ -42,8 +42,6 @@ class SVGElement;
 
 class CustomElementHelpers {
 public:
-    static bool isFeatureAllowed(v8::Handle<v8::Context>);
-
     typedef v8::Handle<v8::Object> (*CreateSVGWrapperFunction)(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     typedef v8::Handle<v8::Object> (*CreateHTMLWrapperFunction)(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
@@ -69,8 +67,6 @@ public:
     // ElementWrapperFactories call V8CustomElement::wrap() with
     // proper prototype instances accordingly.
     static v8::Handle<v8::Object> wrap(Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
-
-    static WrapperTypeInfo* findWrapperType(v8::Handle<v8::Value> chain);
 
 private:
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<Element>, v8::Handle<v8::Object>, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);

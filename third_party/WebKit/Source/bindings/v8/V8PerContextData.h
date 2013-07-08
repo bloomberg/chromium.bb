@@ -31,6 +31,7 @@
 #ifndef V8PerContextData_h
 #define V8PerContextData_h
 
+#include "bindings/v8/CustomElementBinding.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
@@ -107,18 +108,15 @@ public:
         m_activityLogger = logger;
     }
 
-    typedef WTF::HashMap<AtomicString, UnsafePersistent<v8::Object> > CustomElementPrototypeMap;
-
-    CustomElementPrototypeMap* customElementPrototypes()
-    {
-        return &m_customElementPrototypeMap;
-    }
+    void addCustomElementBinding(const AtomicString& type, PassOwnPtr<CustomElementBinding>);
+    CustomElementBinding* customElementBinding(const AtomicString& type);
 
 private:
     explicit V8PerContextData(v8::Handle<v8::Context> context)
         : m_activityLogger(0)
         , m_isolate(v8::Isolate::GetCurrent())
         , m_context(m_isolate, context)
+        , m_customElementBindings(adoptPtr(new CustomElementBindingMap()))
     {
     }
 
@@ -144,7 +142,8 @@ private:
     v8::Persistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 
-    CustomElementPrototypeMap m_customElementPrototypeMap;
+    typedef WTF::HashMap<AtomicString, OwnPtr<CustomElementBinding> > CustomElementBindingMap;
+    OwnPtr<CustomElementBindingMap> m_customElementBindings;
 };
 
 class V8PerContextDebugData {

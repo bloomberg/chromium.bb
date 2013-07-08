@@ -52,16 +52,6 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
     // to never pass an empty creation context.
     v8::Handle<v8::Context> context = creationContext.IsEmpty() ? isolate->GetCurrentContext() : creationContext->CreationContext();
 
-    // The constructor and registered lifecycle callbacks should be visible only from main world.
-    // FIXME: This shouldn't be needed once each custom element has its own FunctionTemplate
-    // https://bugs.webkit.org/show_bug.cgi?id=108138
-    if (!CustomElementHelpers::isFeatureAllowed(context)) {
-        v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &V8HTMLElement::info, impl.get(), isolate);
-        if (!wrapper.IsEmpty())
-            V8DOMWrapper::associateObjectWithWrapper(impl, &V8HTMLElement::info, wrapper, isolate, WrapperConfiguration::Dependent);
-        return wrapper;
-    }
-
     CustomElementRegistry* registry = impl->document()->registry();
     RefPtr<CustomElementDefinition> definition = registry->findFor(impl.get());
     if (!impl->isUpgradedCustomElement() || !definition)
@@ -71,20 +61,15 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
     if (!perContextData)
         return v8::Handle<v8::Object>();
 
-    v8::Handle<v8::Object> prototype = perContextData->customElementPrototypes()->get(definition->type()).newLocal(isolate);
-    WrapperTypeInfo* typeInfo = CustomElementHelpers::findWrapperType(prototype);
-    if (!typeInfo) {
-        // FIXME: When can this happen?
-        return v8::Handle<v8::Object>();
-    }
+    CustomElementBinding* customElementBinding = perContextData->customElementBinding(definition->type());
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, typeInfo, impl.get(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, customElementBinding->wrapperType(), impl.get(), isolate);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();
 
-    wrapper->SetPrototype(prototype);
+    wrapper->SetPrototype(customElementBinding->prototype());
 
-    V8DOMWrapper::associateObjectWithWrapper(impl, typeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper(impl, customElementBinding->wrapperType(), wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
 
@@ -119,26 +104,6 @@ v8::Handle<v8::Object> CustomElementHelpers::createUpgradeCandidateWrapper(PassR
         // It's a type extension
         return createTypeExtensionUpgradeCandidateWrapper.invoke(element.get(), creationContext, isolate);
     }
-}
-
-bool CustomElementHelpers::isFeatureAllowed(v8::Handle<v8::Context> context)
-{
-    if (DOMWrapperWorld* world = DOMWrapperWorld::isolatedWorld(context))
-        return world->isMainWorld();
-    return true;
-}
-
-WrapperTypeInfo* CustomElementHelpers::findWrapperType(v8::Handle<v8::Value> chain)
-{
-    while (!chain.IsEmpty() && chain->IsObject()) {
-        v8::Handle<v8::Object> chainObject = v8::Handle<v8::Object>::Cast(chain);
-        // Only prototype objects of native-backed types have the extra internal field storing WrapperTypeInfo.
-        if (v8PrototypeInternalFieldcount == chainObject->InternalFieldCount())
-            return reinterpret_cast<WrapperTypeInfo*>(chainObject->GetAlignedPointerFromInternalField(v8PrototypeTypeIndex));
-        chain = chainObject->GetPrototype();
-    }
-
-    return 0;
 }
 
 } // namespace WebCore

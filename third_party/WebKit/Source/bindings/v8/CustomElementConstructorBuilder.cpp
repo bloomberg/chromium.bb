@@ -36,7 +36,8 @@
 #include "V8Document.h"
 #include "V8HTMLElementWrapperFactory.h"
 #include "V8SVGElementWrapperFactory.h"
-#include "bindings/v8/CustomElementHelpers.h"
+#include "bindings/v8/CustomElementBinding.h"
+#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
@@ -56,13 +57,15 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* state, const Dictionary* options)
     : m_context(state->context())
     , m_options(options)
+    , m_wrapperType(0)
 {
     ASSERT(m_context == v8::Isolate::GetCurrent()->GetCurrentContext());
 }
 
 bool CustomElementConstructorBuilder::isFeatureAllowed() const
 {
-    return CustomElementHelpers::isFeatureAllowed(m_context);
+    // Check that we are in the main world
+    return !DOMWrapperWorld::isolatedWorld(m_context);
 }
 
 bool CustomElementConstructorBuilder::validateOptions()
@@ -82,7 +85,7 @@ bool CustomElementConstructorBuilder::validateOptions()
     v8::Handle<v8::Value> prototypeValue = prototypeScriptValue.v8Value();
     if (prototypeValue.IsEmpty() || !prototypeValue->IsObject())
         return false;
-    m_prototype = v8::Handle<v8::Object>::Cast(prototypeValue);
+    m_prototype = prototypeValue.As<v8::Object>();
 
     V8PerContextData* perContextData;
     if (!(perContextData = V8PerContextData::from(m_context))) {
@@ -109,23 +112,23 @@ bool CustomElementConstructorBuilder::validateOptions()
     return false;
 }
 
-bool CustomElementConstructorBuilder::findTagName(const AtomicString& customElementType, QualifiedName& tagName) const
+bool CustomElementConstructorBuilder::findTagName(const AtomicString& customElementType, QualifiedName& tagName)
 {
     ASSERT(!m_prototype.IsEmpty());
 
-    WrapperTypeInfo* wrapperTypeInfo = CustomElementHelpers::findWrapperType(m_prototype);
-    if (!wrapperTypeInfo) {
+    m_wrapperType = findWrapperType(m_prototype);
+    if (!m_wrapperType) {
         // Invalid prototype.
         return false;
     }
 
-    if (const QualifiedName* htmlName = findHTMLTagNameOfV8Type(wrapperTypeInfo)) {
+    if (const QualifiedName* htmlName = findHTMLTagNameOfV8Type(m_wrapperType)) {
         ASSERT(htmlName->namespaceURI() == m_namespaceURI);
         tagName = *htmlName;
         return true;
     }
 
-    if (const QualifiedName* svgName = findSVGTagNameOfV8Type(wrapperTypeInfo)) {
+    if (const QualifiedName* svgName = findSVGTagNameOfV8Type(m_wrapperType)) {
         ASSERT(svgName->namespaceURI() == m_namespaceURI);
         tagName = *svgName;
         return true;
@@ -163,7 +166,7 @@ v8::Handle<v8::Function> CustomElementConstructorBuilder::retrieveCallback(v8::I
     v8::Handle<v8::Value> value = m_prototype->Get(v8String(name, isolate));
     if (value.IsEmpty() || !value->IsFunction())
         return v8::Handle<v8::Function>();
-    return v8::Handle<v8::Function>::Cast(value);
+    return value.As<v8::Function>();
 }
 
 bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition)
@@ -190,7 +193,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     else
         v8Type = v8::Null(isolate);
 
-    m_constructor->SetName(v8Type->IsNull() ? v8Name : v8::Handle<v8::String>::Cast(v8Type));
+    m_constructor->SetName(v8Type->IsNull() ? v8Name : v8Type.As<v8::String>());
 
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "document", toV8(document, m_context->Global(), isolate));
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "namespaceURI", v8String(definition->namespaceURI(), isolate));
@@ -238,8 +241,7 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
         return false;
 
     // Bindings retrieve the prototype when needed from per-context data.
-    v8::Persistent<v8::Object> persistentPrototype(m_context->GetIsolate(), m_prototype);
-    perContextData->customElementPrototypes()->add(definition->type(), UnsafePersistent<v8::Object>(persistentPrototype));
+    perContextData->addCustomElementBinding(definition->type(), CustomElementBinding::create(m_context->GetIsolate(), m_prototype, m_wrapperType));
 
     return true;
 }
@@ -249,12 +251,26 @@ ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
     return ScriptValue(m_constructor);
 }
 
+WrapperTypeInfo* CustomElementConstructorBuilder::findWrapperType(v8::Handle<v8::Value> chain)
+{
+    while (!chain.IsEmpty() && chain->IsObject()) {
+        v8::Handle<v8::Object> chainObject = chain.As<v8::Object>();
+        // Only prototype objects of native-backed types have the extra internal field storing WrapperTypeInfo.
+        if (v8PrototypeInternalFieldcount == chainObject->InternalFieldCount()) {
+            WrapperTypeInfo* wrapperType = reinterpret_cast<WrapperTypeInfo*>(chainObject->GetAlignedPointerFromInternalField(v8PrototypeTypeIndex));
+            ASSERT(wrapperType);
+            return wrapperType;
+        }
+        chain = chainObject->GetPrototype();
+    }
+
+    return 0;
+}
+
 bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(V8PerContextData* perContextData, WrapperTypeInfo* typeInfo) const
 {
-    v8::Handle<v8::Object> elementConstructor = v8::Handle<v8::Object>::Cast(perContextData->constructorForType(typeInfo));
-    if (elementConstructor.IsEmpty())
-        return false;
-    v8::Handle<v8::Object> elementPrototype = v8::Handle<v8::Object>::Cast(elementConstructor->Get(v8String("prototype", m_context->GetIsolate())));
+    v8::Handle<v8::Object> elementConstructor = perContextData->constructorForType(typeInfo);
+    v8::Handle<v8::Object> elementPrototype = elementConstructor->Get(v8String("prototype", m_context->GetIsolate())).As<v8::Object>();
     if (elementPrototype.IsEmpty())
         return false;
 
@@ -262,7 +278,7 @@ bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(V8PerContextData
     while (!chain.IsEmpty() && chain->IsObject()) {
         if (chain == elementPrototype)
             return true;
-        chain = v8::Handle<v8::Object>::Cast(chain)->GetPrototype();
+        chain = chain.As<v8::Object>()->GetPrototype();
     }
 
     return false;
@@ -282,7 +298,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& ar
         return;
     }
 
-    Document* document = V8Document::toNative(v8::Handle<v8::Object>::Cast(args.Callee()->GetHiddenValue(V8HiddenPropertyName::document())));
+    Document* document = V8Document::toNative(args.Callee()->GetHiddenValue(V8HiddenPropertyName::document()).As<v8::Object>());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, args.Callee()->GetHiddenValue(V8HiddenPropertyName::namespaceURI()));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args.Callee()->GetHiddenValue(V8HiddenPropertyName::name()));
     v8::Handle<v8::Value> maybeType = args.Callee()->GetHiddenValue(V8HiddenPropertyName::type());

@@ -53,7 +53,7 @@ void V8PerContextData::dispose()
 
     disposeMapWithUnsafePersistentValues(&m_wrapperBoilerplates);
     disposeMapWithUnsafePersistentValues(&m_constructorMap);
-    disposeMapWithUnsafePersistentValues(&m_customElementPrototypeMap);
+    m_customElementBindings.clear();
 
     m_context.Dispose();
 }
@@ -130,6 +130,21 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
 
     return function;
 }
+
+void V8PerContextData::addCustomElementBinding(const AtomicString& type, PassOwnPtr<CustomElementBinding> binding)
+{
+    ASSERT(!m_customElementBindings->contains(type));
+    m_customElementBindings->add(type, binding);
+}
+
+CustomElementBinding* V8PerContextData::customElementBinding(const AtomicString& type)
+{
+    CustomElementBindingMap::const_iterator it = m_customElementBindings->find(type);
+    ASSERT(it != m_customElementBindings->end());
+    return it->value.get();
+}
+
+
 static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId) 
 {
     char buffer[32];

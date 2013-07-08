@@ -32,7 +32,6 @@
 #include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
 
 #include "V8Element.h"
-#include "bindings/v8/CustomElementHelpers.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
