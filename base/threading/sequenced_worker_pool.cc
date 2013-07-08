@@ -10,32 +10,27 @@
 #include <utility>
 #include <vector>
 
-#include "base/atomic_sequence_num.h"
+#include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/critical_closure.h"
 #include "base/debug/trace_event.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
-#include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#endif
-
-#if !defined(OS_NACL)
-#include "base/metrics/histogram.h"
 #endif
 
 namespace base {
@@ -218,10 +213,6 @@ uint64 GetTaskTraceID(const SequencedTask& task,
          static_cast<uint64>(reinterpret_cast<intptr_t>(pool));
 }
 
-base::LazyInstance<base::ThreadLocalPointer<
-    SequencedWorkerPool::SequenceToken> > g_lazy_tls_ptr =
-        LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 // Worker ---------------------------------------------------------------------
@@ -391,9 +382,8 @@ class SequencedWorkerPool::Inner {
 
   // The last sequence number used. Managed by GetSequenceToken, since this
   // only does threadsafe increment operations, you do not need to hold the
-  // lock. This is class-static to make SequenceTokens issued by
-  // GetSequenceToken unique across SequencedWorkerPool instances.
-  static base::StaticAtomicSequenceNumber g_last_sequence_number_;
+  // lock.
+  volatile subtle::Atomic32 last_sequence_number_;
 
   // This lock protects |everything in this class|. Do not read or modify
   // anything without holding this lock. Do not block while holding this
@@ -489,10 +479,6 @@ SequencedWorkerPool::Worker::~Worker() {
 }
 
 void SequencedWorkerPool::Worker::Run() {
-  // Store a pointer to the running sequence in thread local storage for
-  // static function access.
-  g_lazy_tls_ptr.Get().Set(&running_sequence_);
-
   // Just jump back to the Inner object to run the thread, since it has all the
   // tracking information and queues. It might be more natural to implement
   // using DelegateSimpleThread and have Inner implement the Delegate to avoid
@@ -511,6 +497,7 @@ SequencedWorkerPool::Inner::Inner(
     const std::string& thread_name_prefix,
     TestingObserver* observer)
     : worker_pool_(worker_pool),
+      last_sequence_number_(0),
       lock_(),
       has_work_cv_(&lock_),
       can_shutdown_cv_(&lock_),
@@ -545,9 +532,9 @@ SequencedWorkerPool::Inner::~Inner() {
 
 SequencedWorkerPool::SequenceToken
 SequencedWorkerPool::Inner::GetSequenceToken() {
-  // Need to add one because StaticAtomicSequenceNumber starts at zero, which
-  // is used as a sentinel value in SequenceTokens.
-  return SequenceToken(g_last_sequence_number_.GetNext() + 1);
+  subtle::Atomic32 result =
+      subtle::NoBarrier_AtomicIncrement(&last_sequence_number_, 1);
+  return SequenceToken(static_cast<int>(result));
 }
 
 SequencedWorkerPool::SequenceToken
@@ -628,7 +615,7 @@ bool SequencedWorkerPool::Inner::IsRunningSequenceOnCurrentThread(
   ThreadMap::const_iterator found = threads_.find(PlatformThread::CurrentId());
   if (found == threads_.end())
     return false;
-  return sequence_token.Equals(found->second->running_sequence());
+  return found->second->running_sequence().Equals(sequence_token);
 }
 
 // See https://code.google.com/p/chromium/issues/detail?id=168415
@@ -687,10 +674,8 @@ void SequencedWorkerPool::Inner::Shutdown(
     while (!CanShutdown())
       can_shutdown_cv_.Wait();
   }
-#if !defined(OS_NACL)
   UMA_HISTOGRAM_TIMES("SequencedWorkerPool.ShutdownDelayTime",
                       TimeTicks::Now() - shutdown_wait_begin);
-#endif
 }
 
 void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
@@ -887,10 +872,8 @@ SequencedWorkerPool::Inner::GetWorkStatus SequencedWorkerPool::Inner::GetWork(
     std::vector<Closure>* delete_these_outside_lock) {
   lock_.AssertAcquired();
 
-#if !defined(OS_NACL)
   UMA_HISTOGRAM_COUNTS_100("SequencedWorkerPool.TaskCount",
                            static_cast<int>(pending_tasks_.size()));
-#endif
 
   // Find the next task with a sequence token that's not currently in use.
   // If the token is in use, that means another thread is running something
@@ -975,10 +958,8 @@ SequencedWorkerPool::Inner::GetWorkStatus SequencedWorkerPool::Inner::GetWork(
   // Track the number of tasks we had to skip over to see if we should be
   // making this more efficient. If this number ever becomes large or is
   // frequently "some", we should consider the optimization above.
-#if !defined(OS_NACL)
   UMA_HISTOGRAM_COUNTS_100("SequencedWorkerPool.UnrunnableTaskCount",
                            unrunnable_tasks);
-#endif
   return status;
 }
 
@@ -1107,19 +1088,7 @@ bool SequencedWorkerPool::Inner::CanShutdown() const {
          blocking_shutdown_pending_task_count_ == 0;
 }
 
-base::StaticAtomicSequenceNumber
-SequencedWorkerPool::Inner::g_last_sequence_number_;
-
 // SequencedWorkerPool --------------------------------------------------------
-
-// static
-SequencedWorkerPool::SequenceToken
-SequencedWorkerPool::GetSequenceTokenForCurrentThread() {
-  SequencedWorkerPool::SequenceToken* token = g_lazy_tls_ptr.Get().Get();
-  if (!token)
-    return SequenceToken();
-  return *token;
-}
 
 SequencedWorkerPool::SequencedWorkerPool(
     size_t max_threads,
