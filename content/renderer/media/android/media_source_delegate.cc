@@ -112,9 +112,14 @@ void MediaSourceDelegate::Destroy() {
   audio_decrypting_demuxer_stream_.reset();
   video_decrypting_demuxer_stream_.reset();
 
+  weak_this_.InvalidateWeakPtrs();
+  DCHECK(!weak_this_.HasWeakPtrs());
+
   if (chunk_demuxer_) {
-    chunk_demuxer_->Stop(
-        BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerStopDone));
+    // The callback OnDemuxerStopDone() owns |this| and will delete it when
+    // called. Hence using base::Unretained(this) is safe here.
+    chunk_demuxer_->Stop(base::Bind(&MediaSourceDelegate::OnDemuxerStopDone,
+                                    base::Unretained(this)));
   }
 }
 
@@ -135,8 +140,8 @@ void MediaSourceDelegate::InitializeMediaSource(
   chunk_demuxer_.reset(new media::ChunkDemuxer(
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerOpened),
       BIND_TO_RENDER_LOOP_1(&MediaSourceDelegate::OnNeedKey, ""),
-      base::Bind(&MediaSourceDelegate::OnAddTextTrack,
-                 base::Unretained(this)),
+      // WeakPtrs can only bind to methods without return values.
+      base::Bind(&MediaSourceDelegate::OnAddTextTrack, base::Unretained(this)),
       base::Bind(&LogMediaSourceError, media_log_)));
   demuxer_ = chunk_demuxer_.get();
 
@@ -258,10 +263,7 @@ void MediaSourceDelegate::OnBufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
   DVLOG(1) << "OnBufferReady() : " << player_id_;
-
-  // Drop any buffer returned during destruction.
-  if (!demuxer_)
-    return;
+  DCHECK(demuxer_);
 
   // No new OnReadFromDemuxer() will be called during seeking. So this callback
   // must be from previous OnReadFromDemuxer() call and should be ignored.
@@ -369,10 +371,7 @@ void MediaSourceDelegate::OnDemuxerError(media::PipelineStatus status) {
 
 void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
   DVLOG(1) << "OnDemuxerInitDone(" << status << ") : " << player_id_;
-  // It is possible that this function is called after Destroy(). As a result,
-  // we need to check whether the |demuxer_| is NULL before we proceed.
-  if (!demuxer_)
-    return;
+  DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK) {
     OnDemuxerError(status);
@@ -429,11 +428,7 @@ void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
 void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
   DVLOG(1) << "OnAudioDecryptingDemuxerStreamInitDone() : " << status;
-
-  // It is possible that this function is called after Destroy(). As a result,
-  // we need to check whether the |demuxer_| is NULL before we proceed.
-  if (!demuxer_)
-    return;
+  DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK)
     audio_decrypting_demuxer_stream_.reset();
@@ -455,11 +450,7 @@ void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
 void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
     media::PipelineStatus status) {
   DVLOG(1) << "OnVideoDecryptingDemuxerStreamInitDone() : " << status;
-
-  // It is possible that this function is called after Destroy(). As a result,
-  // we need to check whether the |demuxer_| is NULL before we proceed.
-  if (!demuxer_)
-    return;
+  DCHECK(demuxer_);
 
   if (status != media::PIPELINE_OK)
     video_decrypting_demuxer_stream_.reset();
