@@ -635,7 +635,7 @@ main(int argc, char *argv[])
                     initgroups(wl.pw->pw_name, wl.pw->pw_gid) < 0 ||
 #endif
 		    setuid(wl.pw->pw_uid) < 0)
-			error(1, errno, "dropping privilidges failed");
+			error(1, errno, "dropping priviledges failed");
 
 
 		if (sleep_fork) {
