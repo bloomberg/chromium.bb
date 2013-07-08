@@ -4,6 +4,9 @@ runtime: python27
 api_version: 1
 threadsafe: true
 
+builtins:
+- appstats: on
+
 handlers:
 - url: /robots.txt
   static_files: robots.txt
