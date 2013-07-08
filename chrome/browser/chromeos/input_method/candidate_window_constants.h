@@ -8,22 +8,6 @@
 namespace chromeos {
 namespace input_method {
 
-// Colors used in the candidate window UI.
-const SkColor kFrameColor = SkColorSetRGB(0x96, 0x96, 0x96);
-const SkColor kShortcutBackgroundColor = SkColorSetARGB(0x10, 0x3, 0x4, 0xf);
-const SkColor kSelectedRowBackgroundColor = SkColorSetRGB(0xd1, 0xea, 0xff);
-const SkColor kDefaultBackgroundColor = SkColorSetRGB(0xff, 0xff, 0xff);
-const SkColor kSelectedRowFrameColor = SkColorSetRGB(0x7f, 0xac, 0xdd);
-const SkColor kFooterTopColor = SkColorSetRGB(0xff, 0xff, 0xff);
-const SkColor kFooterBottomColor = SkColorSetRGB(0xee, 0xee, 0xee);
-const SkColor kShortcutColor = SkColorSetRGB(0x61, 0x61, 0x61);
-const SkColor kDisabledShortcutColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-const SkColor kAnnotationColor = SkColorSetRGB(0x88, 0x88, 0x88);
-const SkColor kSelectedInfolistRowBackgroundColor =
-    SkColorSetRGB(0xee, 0xee, 0xee);
-const SkColor kSelectedInfolistRowFrameColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-const SkColor kInfolistTitleBackgroundColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
-
 // We'll use a bigger font size, so Chinese characters are more readable
 // in the candidate window.
 const int kFontSizeDelta = 2;

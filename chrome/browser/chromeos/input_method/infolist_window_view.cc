@@ -15,7 +15,9 @@
 #include "chrome/browser/chromeos/input_method/hidable_area.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -124,10 +126,12 @@ void InfolistEntryView::Select() {
   if (selected_)
     return;
   selected_ = true;
-  set_background(views::Background::CreateSolidBackground(
-      kSelectedInfolistRowBackgroundColor));
+  set_background(
+      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
   set_border(
-      views::Border::CreateSolidBorder(1, kSelectedInfolistRowFrameColor));
+      views::Border::CreateSolidBorder(1, GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_FocusedBorderColor)));
   UpdateLabelBackgroundColors();
 }
 
@@ -142,7 +146,9 @@ void InfolistEntryView::Unselect() {
 
 void InfolistEntryView::UpdateLabelBackgroundColors() {
   SkColor color = background() ?
-      background()->get_color() : kDefaultBackgroundColor;
+      background()->get_color() :
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_WindowBackground);
   title_label_->SetBackgroundColor(color);
   description_label_->SetBackgroundColor(color);
 }
@@ -162,8 +168,11 @@ InfolistWindowView::~InfolistWindowView() {
 
 void InfolistWindowView::Init() {
   set_background(
-      views::Background::CreateSolidBackground(kDefaultBackgroundColor));
-  set_border(views::Border::CreateSolidBorder(1, kFrameColor));
+      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_WindowBackground)));
+  set_border(
+      views::Border::CreateSolidBorder(1, GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuBorderColor)));
 
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
                                                   0, 0, 0);
@@ -174,9 +183,14 @@ void InfolistWindowView::Init() {
   caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   caption_label->SetText(
       l10n_util::GetStringUTF16(IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE));
+  caption_label->SetEnabledColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor));
   caption_label->set_border(views::Border::CreateEmptyBorder(2, 2, 2, 2));
-  caption_label->set_background(
-      views::Background::CreateSolidBackground(kInfolistTitleBackgroundColor));
+  caption_label->set_background(views::Background::CreateSolidBackground(
+      color_utils::AlphaBlend(SK_ColorBLACK,
+                              GetNativeTheme()->GetSystemColor(
+                                  ui::NativeTheme::kColorId_WindowBackground),
+                              0x10)));
   caption_label->SetBackgroundColor(caption_label->background()->get_color());
 
   AddChildView(caption_label);

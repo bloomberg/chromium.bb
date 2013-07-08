@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_constants.h"
 #include "chrome/browser/chromeos/input_method/hidable_area.h"
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
@@ -81,7 +83,7 @@ string16 CreateShortcutText(size_t index, const IBusLookupTable& table) {
 // Creates the shortcut label, and returns it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateShortcutLabel(
-    IBusLookupTable::Orientation orientation) {
+    IBusLookupTable::Orientation orientation, const ui::NativeTheme& theme) {
   // Create the shortcut label. The label will be owned by
   // |wrapped_shortcut_label|, hence it's deleted when
   // |wrapped_shortcut_label| is deleted.
@@ -96,8 +98,10 @@ views::Label* CreateShortcutLabel(
   }
   // TODO(satorux): Maybe we need to use language specific fonts for
   // candidate_label, like Chinese font for Chinese input method?
-  shortcut_label->SetEnabledColor(kShortcutColor);
-  shortcut_label->SetDisabledColor(kDisabledShortcutColor);
+  shortcut_label->SetEnabledColor(theme.GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor));
+  shortcut_label->SetDisabledColor(theme.GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor));
 
   return shortcut_label;
 }
@@ -107,7 +111,8 @@ views::Label* CreateShortcutLabel(
 // The label text is not set in this function.
 views::View* CreateWrappedShortcutLabel(
     views::Label* shortcut_label,
-    IBusLookupTable::Orientation orientation) {
+    IBusLookupTable::Orientation orientation,
+    const ui::NativeTheme& theme) {
   // Wrap it with padding.
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
   const gfx::Insets kHorizontalShortcutLabelInsets(1, 3, 1, 0);
@@ -121,9 +126,14 @@ views::View* CreateWrappedShortcutLabel(
   // Add decoration based on the orientation.
   if (orientation == IBusLookupTable::VERTICAL) {
     // Set the background color.
+    SkColor blackish = color_utils::AlphaBlend(
+        SK_ColorBLACK,
+        theme.GetSystemColor(ui::NativeTheme::kColorId_WindowBackground),
+        0x40);
+    SkColor transparent_blakish = color_utils::AlphaBlend(
+        SK_ColorTRANSPARENT, blackish, 0xE0);
     wrapped_shortcut_label->set_background(
-        views::Background::CreateSolidBackground(
-            kShortcutBackgroundColor));
+        views::Background::CreateSolidBackground(transparent_blakish));
     shortcut_label->SetBackgroundColor(
         wrapped_shortcut_label->background()->get_color());
   }
@@ -156,14 +166,15 @@ views::Label* CreateCandidateLabel(
 // Creates the annotation label, and return it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateAnnotationLabel(
-    IBusLookupTable::Orientation orientation) {
+    IBusLookupTable::Orientation orientation, const ui::NativeTheme& theme) {
   // Create the annotation label.
   views::Label* annotation_label = new views::Label;
 
   // Change the font size and color.
   annotation_label->SetFont(
       annotation_label->font().DeriveFont(kFontSizeDelta));
-  annotation_label->SetEnabledColor(kAnnotationColor);
+  annotation_label->SetEnabledColor(theme.GetSystemColor(
+      ui::NativeTheme::kColorId_LabelDisabledColor));
   annotation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   return annotation_label;
@@ -171,16 +182,19 @@ views::Label* CreateAnnotationLabel(
 
 // Computes shortcut column size.
 gfx::Size ComputeShortcutColumnSize(
-    const IBusLookupTable& lookup_table) {
+    const IBusLookupTable& lookup_table,
+    const ui::NativeTheme& theme) {
   int shortcut_column_width = 0;
   int shortcut_column_height = 0;
   // Create the shortcut label. The label will be owned by
   // |wrapped_shortcut_label|, hence it's deleted when
   // |wrapped_shortcut_label| is deleted.
   views::Label* shortcut_label = CreateShortcutLabel(
-      lookup_table.orientation());
+      lookup_table.orientation(), theme);
   scoped_ptr<views::View> wrapped_shortcut_label(
-      CreateWrappedShortcutLabel(shortcut_label, lookup_table.orientation()));
+      CreateWrappedShortcutLabel(shortcut_label,
+                                 lookup_table.orientation(),
+                                 theme));
 
   // Compute the max width and height in shortcut labels.
   // We'll create temporary shortcut labels, and choose the largest width and
@@ -239,11 +253,11 @@ gfx::Size ComputeCandidateColumnSize(
 
 // Computes annotation column size.
 gfx::Size ComputeAnnotationColumnSize(
-    const IBusLookupTable& lookup_table) {
+    const IBusLookupTable& lookup_table, const ui::NativeTheme& theme) {
   int annotation_column_width = 0;
   int annotation_column_height = 0;
   scoped_ptr<views::Label> annotation_label(
-      CreateAnnotationLabel(lookup_table.orientation()));
+      CreateAnnotationLabel(lookup_table.orientation(), theme));
 
   // Compute the start index of |lookup_table_|.
   const int current_page_index = ComputePageIndex(lookup_table);
@@ -283,12 +297,15 @@ class InformationTextArea : public HidableArea {
     const gfx::Insets kInsets(2, 2, 2, 4);
     views::View* contents = WrapWithPadding(label_, kInsets);
     SetContents(contents);
-    contents->set_border(
-        views::Border::CreateSolidBorder(1, kFrameColor));
-    contents->set_background(
-        views::Background::CreateVerticalGradientBackground(
-            kFooterTopColor,
-            kFooterBottomColor));
+    contents->set_border(views::Border::CreateSolidBorder(
+        1,
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_MenuBorderColor)));
+    contents->set_background(views::Background::CreateSolidBackground(
+        color_utils::AlphaBlend(SK_ColorBLACK,
+                                GetNativeTheme()->GetSystemColor(
+                                    ui::NativeTheme::kColorId_WindowBackground),
+                                0x10)));
     label_->SetBackgroundColor(contents->background()->get_color());
   }
 
@@ -337,11 +354,12 @@ void CandidateView::Init(int shortcut_column_width,
   SetLayoutManager(layout);  // |this| owns |layout|.
 
   // Create Labels.
-  shortcut_label_ = CreateShortcutLabel(orientation_);
+  const ui::NativeTheme& theme = *GetNativeTheme();
+  shortcut_label_ = CreateShortcutLabel(orientation_, theme);
   views::View* wrapped_shortcut_label =
-      CreateWrappedShortcutLabel(shortcut_label_, orientation_);
+      CreateWrappedShortcutLabel(shortcut_label_, orientation_, theme);
   candidate_label_ = CreateCandidateLabel(orientation_);
-  annotation_label_ = CreateAnnotationLabel(orientation_);
+  annotation_label_ = CreateAnnotationLabel(orientation_, theme);
 
   // Initialize the column set with three columns.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
@@ -443,16 +461,22 @@ void CandidateView::SetInfolistIcon(bool enable) {
   if (!infolist_icon_ || (infolist_icon_enabled_ == enable))
     return;
   infolist_icon_enabled_ = enable;
-  infolist_icon_->set_background(enable ?
-      views::Background::CreateSolidBackground(kSelectedRowFrameColor) : NULL);
+  infolist_icon_->set_background(
+      enable ?
+      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_FocusedBorderColor)) :
+      NULL);
   UpdateLabelBackgroundColors();
   SchedulePaint();
 }
 
 void CandidateView::Select() {
   set_background(
-      views::Background::CreateSolidBackground(kSelectedRowBackgroundColor));
-  set_border(views::Border::CreateSolidBorder(1, kSelectedRowFrameColor));
+      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
+  set_border(views::Border::CreateSolidBorder(
+      1, GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_FocusedBorderColor)));
   UpdateLabelBackgroundColors();
   // Need to call SchedulePaint() for background and border color changes.
   SchedulePaint();
@@ -503,7 +527,9 @@ void CandidateView::SelectCandidateAt(const gfx::Point& location) {
 
 void CandidateView::UpdateLabelBackgroundColors() {
   SkColor color = background() ?
-      background()->get_color() : kDefaultBackgroundColor;
+      background()->get_color() :
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_WindowBackground);
   if (orientation_ != IBusLookupTable::VERTICAL)
     shortcut_label_->SetBackgroundColor(color);
   candidate_label_->SetBackgroundColor(color);
@@ -531,8 +557,11 @@ CandidateWindowView::~CandidateWindowView() {
 void CandidateWindowView::Init() {
   // Set the background and the border of the view.
   set_background(
-      views::Background::CreateSolidBackground(kDefaultBackgroundColor));
-  set_border(views::Border::CreateSolidBorder(1, kFrameColor));
+      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_WindowBackground)));
+  set_border(views::Border::CreateSolidBorder(
+      1, GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuBorderColor)));
 
   // Create areas.
   preedit_area_ = new InformationTextArea(gfx::ALIGN_LEFT,
@@ -758,9 +787,10 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // If orientation is horizontal, don't need to compute width,
   // because each label is left aligned.
   if (orientation == IBusLookupTable::VERTICAL) {
-    shortcut_column_size = ComputeShortcutColumnSize(lookup_table);
+    const ui::NativeTheme& theme = *GetNativeTheme();
+    shortcut_column_size = ComputeShortcutColumnSize(lookup_table, theme);
     candidate_column_size = ComputeCandidateColumnSize(lookup_table);
-    annotation_column_size = ComputeAnnotationColumnSize(lookup_table);
+    annotation_column_size = ComputeAnnotationColumnSize(lookup_table, theme);
   }
 
   // If the requested number of views matches the number of current views, and
