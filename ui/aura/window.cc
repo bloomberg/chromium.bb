@@ -803,25 +803,20 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
     Window* child = *it;
 
     if (for_event_handling) {
+      if (child->ignore_events_)
+        continue;
       // The client may not allow events to be processed by certain subtrees.
       client::EventClient* client = client::GetEventClient(GetRootWindow());
       if (client && !client->CanProcessEventsWithinSubtree(child))
         continue;
+      if (delegate_ && !delegate_->ShouldDescendIntoChildForEventHandling(
+              child, local_point)) {
+        continue;
+      }
     }
-
-    // We don't process events for invisible windows or those that have asked
-    // to ignore events.
-    if (!child->IsVisible() || (for_event_handling && child->ignore_events_))
-      continue;
 
     gfx::Point point_in_child_coords(local_point);
     ConvertPointToTarget(this, child, &point_in_child_coords);
-    if (for_event_handling && delegate_ &&
-        !delegate_->ShouldDescendIntoChildForEventHandling(
-            child, local_point)) {
-      continue;
-    }
-
     Window* match = child->GetWindowForPoint(point_in_child_coords,
                                              return_tightest,
                                              for_event_handling);

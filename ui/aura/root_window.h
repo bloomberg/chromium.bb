@@ -311,11 +311,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // factor. The RootWindowHostDelegate dispatches events in the physical pixel
   // coordinate. But the event processing from RootWindow onwards happen in
   // device-independent pixel coordinate. So it is necessary to update the event
-  // received from the host. When |keep_inside_root| is true and the event's
-  // system location is inside host window's bounds, the location will be
-  // kept inside the root window's bounds.
-  void TransformEventForDeviceScaleFactor(bool keep_inside_root,
-                                          ui::LocatedEvent* event);
+  // received from the host.
+  void TransformEventForDeviceScaleFactor(ui::LocatedEvent* event);
 
   // Moves the cursor to the specified location. This method is internally used
   // by MoveCursorTo() and MoveCursorToHostLocation().

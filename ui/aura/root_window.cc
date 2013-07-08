@@ -707,8 +707,7 @@ void RootWindow::ClearMouseHandlers() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
-void RootWindow::TransformEventForDeviceScaleFactor(bool keep_inside_root,
-                                                    ui::LocatedEvent* event) {
+void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
   event->UpdateForRootTransform(GetInverseRootTransform());
 }
 
@@ -918,7 +917,7 @@ bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
 bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
   DispatchHeldEvents();
 
-  TransformEventForDeviceScaleFactor(false, event);
+  TransformEventForDeviceScaleFactor(event);
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
 
@@ -931,13 +930,12 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
   if (!target)
     target = this;
 
+  event->ConvertLocationToTarget(static_cast<Window*>(this), target);
   int flags = event->flags();
-  gfx::Point location_in_window = event->location();
-  Window::ConvertPointToTarget(this, target, &location_in_window);
-  if (IsNonClientLocation(target, location_in_window))
+  if (IsNonClientLocation(target, event->location()))
     flags |= ui::EF_IS_NON_CLIENT;
   event->set_flags(flags);
-  event->ConvertLocationToTarget(static_cast<Window*>(this), target);
+
   ProcessEvent(target, event);
   return event->handled();
 }
@@ -1014,7 +1012,7 @@ RootWindow* RootWindow::AsRootWindow() {
 // RootWindow, private:
 
 bool RootWindow::DispatchMouseEventImpl(ui::MouseEvent* event) {
-  TransformEventForDeviceScaleFactor(true, event);
+  TransformEventForDeviceScaleFactor(event);
   Window* target = mouse_pressed_handler_ ?
       mouse_pressed_handler_ : client::GetCaptureWindow(this);
   if (!target)
@@ -1107,7 +1105,7 @@ bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {
     default:
       break;
   }
-  TransformEventForDeviceScaleFactor(false, event);
+  TransformEventForDeviceScaleFactor(event);
   bool handled = false;
   Window* target = client::GetCaptureWindow(this);
   if (!target) {
