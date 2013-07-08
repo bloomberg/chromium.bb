@@ -5,11 +5,9 @@
 
 """Python API for retrieving API keys.
 
-Note that this cannot have the exact same semantics (at the moment) as
-the C++ API in google_api_keys.h, since it does not have access to gyp
-variables or preprocessor defines.
-
-TODO(joi): Give this have the same semantics as the C++ API.
+Note that this does not have the exact same semantics as the C++ API
+in google_api_keys.h, since it does not have access to gyp variables
+or preprocessor defines.
 """
 
 import os

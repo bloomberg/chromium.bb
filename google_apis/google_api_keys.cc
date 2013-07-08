@@ -17,22 +17,6 @@
 #include "google_apis/internal/google_chrome_api_keys.h"
 #endif
 
-// TODO(joi): Can we enable this warning without having it treated as
-// an error? We don't want to fail builds, just warn, but all warnings
-// from the preprocessor are currently treated as errors, at least in
-// Linux builds.
-#if 0
-#if !defined(GOOGLE_API_KEY) && (                      \
-  (!defined(GOOGLE_DEFAULT_CLIENT_ID) &&               \
-   !defined(GOOGLE_DEFAULT_CLIENT_SECRET))             \
-  ||                                                   \
-  (!defined(GOOGLE_CLIENT_ID_MAIN) &&                  \
-   !defined(GOOGLE_CLIENT_SECRET_MAIN)))
-#warning You have not specified API keys; some features may not work.
-#warning See www.chromium.org/developers/how-tos/api-keys for details.
-#endif  // (API keys unset)
-#endif  // 0
-
 // Used to indicate an unset key/id/secret.  This works better with
 // various unit tests than leaving the token empty.
 #define DUMMY_API_TOKEN "dummytoken"
