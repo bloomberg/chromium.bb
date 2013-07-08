@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import math
 import logging
 
 from google.appengine.ext import blobstore
@@ -33,6 +34,14 @@ from google.appengine.ext import db
 
 MAX_DATA_ENTRY_PER_FILE = 20
 MAX_ENTRY_LEN = 1000 * 1000
+
+
+class ChunkData:
+    def __init__(self):
+        self.reused_key = None
+        self.data_entry = None
+        self.entry_future = None
+        self.index = None
 
 
 class DataEntry(db.Model):
@@ -46,8 +55,13 @@ class DataEntry(db.Model):
     def get(cls, key):
         return db.get(key)
 
-    def get_data(self, key):
-        return db.get(key)
+    @classmethod
+    def get_async(cls, key):
+        return db.get_async(key)
+
+    @classmethod
+    def delete_async(cls, key):
+        return db.delete_async(key)
 
 
 class DataStoreFile(db.Model):
@@ -65,7 +79,10 @@ class DataStoreFile(db.Model):
 
     data = None
 
-    # FIXME: Remove this once all the bots have cycled after converting to the high-replication database.
+    def _get_chunk_indices(self, data_length):
+        nchunks = math.ceil(float(data_length) / MAX_ENTRY_LEN)
+        return xrange(0, int(nchunks) * MAX_ENTRY_LEN, MAX_ENTRY_LEN)
+
     def _convert_blob_keys(self, keys):
         converted_keys = []
         for key in keys:
@@ -79,11 +96,17 @@ class DataStoreFile(db.Model):
     def delete_data(self, keys=None):
         if not keys:
             keys = self._convert_blob_keys(self.data_keys)
+        logging.info('Doing async delete of keys: %s', keys)
 
-        for key in keys:
-            data_entry = DataEntry.get(key)
-            if data_entry:
-                data_entry.delete()
+        get_futures = [DataEntry.get_async(k) for k in keys]
+        delete_futures = []
+        for get_future in get_futures:
+            result = get_future.get_result()
+            if result:
+                delete_futures.append(DataEntry.delete_async(result.key()))
+
+        for delete_future in delete_futures:
+            delete_future.get_result()
 
     def save_data(self, data):
         if not data:
@@ -105,33 +128,41 @@ class DataStoreFile(db.Model):
         keys = self._convert_blob_keys(self.new_data_keys)
         self.new_data_keys = []
 
-        # FIXME: is all this complexity with storing the file in chunks really needed anymore?
-        # Can we just store it in a single blob?
-        while start < len(data):
-            if keys:
-                key = keys[0]
-                data_entry = DataEntry.get(key)
-                if not data_entry:
-                    logging.warning("Found key, but no data entry: %s", key)
-                    data_entry = DataEntry()
-            else:
-                data_entry = DataEntry()
+        chunk_indices = self._get_chunk_indices(len(data))
+        logging.info('Saving file in %s chunks', len(chunk_indices))
 
-            data_entry.data = db.Blob(data[start: start + MAX_ENTRY_LEN])
+        chunk_data = []
+        for chunk_index in chunk_indices:
+            chunk = ChunkData()
+            chunk.index = chunk_index
+            if keys:
+                chunk.reused_key = keys.pop()
+                chunk.entry_future = DataEntry.get_async(chunk.reused_key)
+            else:
+                chunk.data_entry = DataEntry()
+            chunk_data.append(chunk)
+
+        put_futures = []
+        for chunk in chunk_data:
+            if chunk.entry_future:
+                data_entry = chunk.entry_future.get_result()
+                if not data_entry:
+                    logging.warning("Found key, but no data entry: %s", chunk.reused_key)
+                    data_entry = DataEntry()
+                chunk.data_entry = data_entry
+
+            chunk.data_entry.data = db.Blob(data[chunk.index: chunk.index + MAX_ENTRY_LEN])
+            put_futures.append(db.put_async(chunk.data_entry))
+
+        for future in put_futures:
+            key = None
             try:
-                data_entry.put()
+                key = future.get_result()
+                self.new_data_keys.append(key)
             except Exception, err:
                 logging.error("Failed to save data store entry: %s", err)
-                if keys:
-                    self.delete_data(keys)
+                self.delete_data(keys)
                 return False
-
-            logging.info("Data saved: %s.", data_entry.key())
-            self.new_data_keys.append(data_entry.key())
-            if keys:
-                keys.pop(0)
-
-            start = start + MAX_ENTRY_LEN
 
         if keys:
             self.delete_data(keys)
@@ -148,16 +179,16 @@ class DataStoreFile(db.Model):
             logging.warning("No data to load.")
             return None
 
+        data_futures = [(k, DataEntry.get_async(k)) for k in self._convert_blob_keys(self.data_keys)]
+
         data = []
-        for key in self._convert_blob_keys(self.data_keys):
-            logging.info("Loading data for key: %s.", key)
-            data_entry = DataEntry.get(key)
-            if not data_entry:
+        for key, future in data_futures:
+            result = future.get_result()
+            if not result:
                 logging.error("No data found for key: %s.", key)
                 return None
+            data.append(result)
 
-            data.append(data_entry.data)
-
-        self.data = "".join(data)
+        self.data = "".join([d.data for d in data])
 
         return self.data
