@@ -103,7 +103,7 @@ enum UnmountOptions {
 };
 
 // A class to represent information about a disk sent from cros-disks.
-class DiskInfo {
+class CHROMEOS_EXPORT DiskInfo {
  public:
   DiskInfo(const std::string& device_path, dbus::Response* response);
   ~DiskInfo();
