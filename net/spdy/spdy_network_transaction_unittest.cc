@@ -563,7 +563,7 @@ class SpdyNetworkTransactionTest
     BoundNetLog log;
     const scoped_refptr<HttpNetworkSession>& session = helper.session();
     scoped_refptr<SpdySession> spdy_session =
-        session->spdy_session_pool()->GetIfExists(key, log);
+        session->spdy_session_pool()->FindAvailableSession(key, log);
     ASSERT_TRUE(spdy_session != NULL);
     EXPECT_EQ(0u, spdy_session->num_active_streams());
     EXPECT_EQ(0u, spdy_session->num_unclaimed_pushed_streams());

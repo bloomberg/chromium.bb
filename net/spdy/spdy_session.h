@@ -200,7 +200,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // |session| is the HttpNetworkSession.  |net_log| is the NetLog that we log
   // network events to.
   SpdySession(const SpdySessionKey& spdy_session_key,
-              SpdySessionPool* spdy_session_pool,
               HttpServerProperties* http_server_properties,
               bool verify_domain_authentication,
               bool enable_sending_initial_settings,
@@ -236,11 +235,16 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       base::WeakPtr<SpdyStream>* spdy_stream,
       const BoundNetLog& stream_net_log);
 
-  // Used by SpdySessionPool to initialize with a pre-existing SSL socket. For
-  // testing, setting is_secure to false allows initialization with a
-  // pre-existing TCP socket.
-  // Returns OK on success, or an error on failure.
+  // Initialize the session with the given connection. |is_secure|
+  // must indicate whether |connection| uses an SSL socket or not; it
+  // is usually true, but it can be false for testing or when SPDY is
+  // configured to work with non-secure sockets.
+  //
+  // Returns OK on success, or an error on failure. Never returns
+  // ERR_IO_PENDING. If an error is returned, the session must be
+  // destroyed immediately.
   Error InitializeWithSocket(scoped_ptr<ClientSocketHandle> connection,
+                             SpdySessionPool* spdy_session_pool,
                              bool is_secure,
                              int certificate_error_code);
 

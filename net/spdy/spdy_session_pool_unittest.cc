@@ -400,7 +400,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // Grab the session to host 1 and verify that it is the same session
   // we got with host 0, and that is a different from host 2's session.
   scoped_refptr<SpdySession> session1 =
-      spdy_session_pool_->GetIfExists(test_hosts[1].key, BoundNetLog());
+      spdy_session_pool_->FindAvailableSession(
+          test_hosts[1].key, BoundNetLog());
   EXPECT_EQ(session.get(), session1.get());
   EXPECT_NE(session2.get(), session1.get());
 
@@ -417,9 +418,11 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // Cleanup the sessions.
   switch (close_sessions_type) {
     case SPDY_POOL_CLOSE_SESSIONS_MANUALLY:
-      spdy_session_pool_->Remove(session);
+      spdy_session_pool_->MakeSessionUnavailable(session);
+      spdy_session_pool_->RemoveUnavailableSession(session);
       session = NULL;
-      spdy_session_pool_->Remove(session2);
+      spdy_session_pool_->MakeSessionUnavailable(session2);
+      spdy_session_pool_->RemoveUnavailableSession(session2);
       session2 = NULL;
       break;
     case SPDY_POOL_CLOSE_CURRENT_SESSIONS:
@@ -469,7 +472,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
       EXPECT_EQ(NULL, spdy_stream.get());
       EXPECT_EQ(NULL, spdy_stream1.get());
       EXPECT_EQ(NULL, spdy_stream2.get());
-      spdy_session_pool_->Remove(session2);
+      spdy_session_pool_->MakeSessionUnavailable(session2);
+      spdy_session_pool_->RemoveUnavailableSession(session2);
       session2 = NULL;
       break;
   }

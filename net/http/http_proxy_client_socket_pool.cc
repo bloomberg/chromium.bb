@@ -204,7 +204,7 @@ int HttpProxyConnectJob::DoSSLConnect() {
     SpdySessionKey key(params_->destination().host_port_pair(),
                        ProxyServer::Direct(),
                        kPrivacyModeDisabled);
-    if (params_->spdy_session_pool()->GetIfExists(key, net_log())) {
+    if (params_->spdy_session_pool()->FindAvailableSession(key, net_log())) {
       using_spdy_ = true;
       next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
       return OK;
@@ -303,7 +303,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
                      kPrivacyModeDisabled);
   SpdySessionPool* spdy_pool = params_->spdy_session_pool();
   scoped_refptr<SpdySession> spdy_session =
-      spdy_pool->GetIfExists(key, net_log());
+      spdy_pool->FindAvailableSession(key, net_log());
   // It's possible that a session to the proxy has recently been created
   if (spdy_session) {
     if (transport_socket_handle_.get()) {
@@ -313,7 +313,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
     }
   } else {
     // Create a session direct to the proxy itself
-    int rv = spdy_pool->GetSpdySessionFromSocket(
+    int rv = spdy_pool->CreateAvailableSessionFromSocket(
         key, transport_socket_handle_.Pass(),
         net_log(), OK, &spdy_session, /*using_ssl_*/ true);
     if (rv < 0)

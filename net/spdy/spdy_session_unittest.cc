@@ -262,7 +262,8 @@ TEST_P(SpdySessionTest, GoAway) {
   session = NULL;
 
   // Delete the second session.
-  spdy_session_pool_->Remove(session2);
+  spdy_session_pool_->MakeSessionUnavailable(session2);
+  spdy_session_pool_->RemoveUnavailableSession(session2);
   session2 = NULL;
   EXPECT_EQ(NULL, spdy_stream2.get());
 }
@@ -1438,7 +1439,9 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
                                      HttpNetworkSession::NORMAL_SOCKET_POOL),
                                  BoundNetLog()));
 
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.Pass(), false, OK));
+  EXPECT_EQ(OK,
+            session->InitializeWithSocket(
+                connection.Pass(), spdy_session_pool_, false, OK));
   EXPECT_TRUE(session->VerifyDomainAuthentication("www.example.org"));
   EXPECT_TRUE(session->VerifyDomainAuthentication("mail.example.org"));
   EXPECT_TRUE(session->VerifyDomainAuthentication("mail.example.com"));
@@ -1508,7 +1511,9 @@ TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
                                      HttpNetworkSession::NORMAL_SOCKET_POOL),
                                  BoundNetLog()));
 
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.Pass(), false, OK));
+  EXPECT_EQ(OK,
+            session->InitializeWithSocket(
+                connection.Pass(), spdy_session_pool_, false, OK));
   EXPECT_TRUE(session->VerifyDomainAuthentication("www.example.org"));
   EXPECT_TRUE(session->VerifyDomainAuthentication("mail.example.org"));
   EXPECT_FALSE(session->VerifyDomainAuthentication("mail.example.com"));
@@ -1782,14 +1787,17 @@ TEST_P(SpdySessionTest, NeedsCredentials) {
                                      HttpNetworkSession::NORMAL_SOCKET_POOL),
                                  BoundNetLog()));
 
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.Pass(), true, OK));
+  EXPECT_EQ(OK,
+            session->InitializeWithSocket(
+                connection.Pass(), spdy_session_pool_, true, OK));
 
   EXPECT_EQ(spdy_util_.spdy_version() >= SPDY3, session->NeedsCredentials());
 
   // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
-  spdy_session_pool_->Remove(session);
+  spdy_session_pool_->MakeSessionUnavailable(session);
+  spdy_session_pool_->RemoveUnavailableSession(session);
 }
 
 // Test that SpdySession::DoRead reads data from the socket without yielding.
@@ -2298,7 +2306,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
       info, &addresses, CompletionCallback(), NULL, BoundNetLog());
   // Get a session for |key2|, which should return the session created earlier.
   scoped_refptr<SpdySession> session2 =
-      spdy_session_pool_->GetIfExists(key2, BoundNetLog());
+      spdy_session_pool_->FindAvailableSession(key2, BoundNetLog());
   ASSERT_EQ(session1.get(), session2.get());
   EXPECT_FALSE(pool->IsStalled());
 
@@ -2501,11 +2509,13 @@ TEST_P(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
 
-  spdy_session_pool_->Remove(session_privacy_enabled);
+  spdy_session_pool_->MakeSessionUnavailable(session_privacy_enabled);
+  spdy_session_pool_->RemoveUnavailableSession(session_privacy_enabled);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
 
-  spdy_session_pool_->Remove(session_privacy_disabled);
+  spdy_session_pool_->MakeSessionUnavailable(session_privacy_disabled);
+  spdy_session_pool_->RemoveUnavailableSession(session_privacy_disabled);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
 }
@@ -2572,13 +2582,16 @@ TEST_P(SpdySessionTest, SendCredentials) {
                                      HttpNetworkSession::NORMAL_SOCKET_POOL),
                                  BoundNetLog()));
 
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.Pass(), true, OK));
+  EXPECT_EQ(OK,
+            session->InitializeWithSocket(
+                connection.Pass(), spdy_session_pool_, true, OK));
   EXPECT_TRUE(session->NeedsCredentials());
 
   // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
-  spdy_session_pool_->Remove(session);
+  spdy_session_pool_->MakeSessionUnavailable(session);
+  spdy_session_pool_->RemoveUnavailableSession(session);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key));
 }
 

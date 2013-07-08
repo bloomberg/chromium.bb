@@ -482,7 +482,7 @@ SpdyURLRequestContext::~SpdyURLRequestContext() {
 }
 
 bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key) {
-  return pool->GetIfExists(key, BoundNetLog()) != NULL;
+  return pool->FindAvailableSession(key, BoundNetLog()) != NULL;
 }
 
 namespace {
@@ -542,7 +542,7 @@ scoped_refptr<SpdySession> CreateSpdySessionHelper(
   scoped_refptr<SpdySession> spdy_session;
   EXPECT_EQ(
       OK,
-      http_session->spdy_session_pool()->GetSpdySessionFromSocket(
+      http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(
           key, connection.Pass(), net_log, OK, &spdy_session,
           is_secure));
   EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
@@ -628,7 +628,7 @@ scoped_refptr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
   handle->set_socket(new FakeSpdySessionClientSocket());
   EXPECT_EQ(
       OK,
-      pool->GetSpdySessionFromSocket(
+      pool->CreateAvailableSessionFromSocket(
           key, handle.Pass(), BoundNetLog(), OK, &spdy_session,
           true /* is_secure */));
   EXPECT_TRUE(HasSpdySession(pool, key));

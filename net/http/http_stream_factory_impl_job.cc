@@ -422,9 +422,9 @@ int HttpStreamFactoryImpl::Job::OnHostResolution(
   // It is OK to dereference spdy_session_pool, because the
   // ClientSocketPoolManager will be destroyed in the same callback that
   // destroys the SpdySessionPool.
-  bool has_session =
-      spdy_session_pool->GetIfExists(spdy_session_key, net_log).get() != NULL;
-  return has_session ? ERR_SPDY_SESSION_ALREADY_EXISTS : OK;
+  return
+      spdy_session_pool->FindAvailableSession(spdy_session_key, net_log) ?
+      ERR_SPDY_SESSION_ALREADY_EXISTS : OK;
 }
 
 void HttpStreamFactoryImpl::Job::OnIOComplete(int result) {
@@ -762,8 +762,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   // straight to using that.
   SpdySessionKey spdy_session_key = GetSpdySessionKey();
   scoped_refptr<SpdySession> spdy_session =
-      session_->spdy_session_pool()->GetIfExists(spdy_session_key, net_log_);
-  if (spdy_session.get() && CanUseExistingSpdySession()) {
+      session_->spdy_session_pool()->FindAvailableSession(
+          spdy_session_key, net_log_);
+  if (spdy_session && CanUseExistingSpdySession()) {
     // If we're preconnecting, but we already have a SpdySession, we don't
     // actually need to preconnect any sockets, so we're done.
     if (IsPreconnecting())
@@ -876,8 +877,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     // probably an IP pooled connection.
     SpdySessionKey spdy_session_key = GetSpdySessionKey();
     existing_spdy_session_ =
-        session_->spdy_session_pool()->GetIfExists(spdy_session_key, net_log_);
-    if (existing_spdy_session_.get()) {
+        session_->spdy_session_pool()->FindAvailableSession(
+            spdy_session_key, net_log_);
+    if (existing_spdy_session_) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
     } else {
@@ -1096,9 +1098,10 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     spdy_session.swap(existing_spdy_session_);
   } else {
     SpdySessionPool* spdy_pool = session_->spdy_session_pool();
-    spdy_session = spdy_pool->GetIfExists(spdy_session_key, net_log_);
-    if (!spdy_session.get()) {
-      int error = spdy_pool->GetSpdySessionFromSocket(spdy_session_key,
+    spdy_session = spdy_pool->FindAvailableSession(spdy_session_key, net_log_);
+    if (!spdy_session) {
+      int error =
+          spdy_pool->CreateAvailableSessionFromSocket(spdy_session_key,
                                                       connection_.Pass(),
                                                       net_log_,
                                                       spdy_certificate_error_,

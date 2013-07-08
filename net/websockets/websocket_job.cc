@@ -597,7 +597,7 @@ int WebSocketJob::TrySpdyStream() {
   // Forbid wss downgrade to SPDY without SSL.
   // TODO(toyoshim): Does it realize the same policy with HTTP?
   scoped_refptr<SpdySession> spdy_session =
-      spdy_pool->GetIfExists(key, *socket_->net_log());
+      spdy_pool->FindAvailableSession(key, *socket_->net_log());
   if (!spdy_session)
     return OK;
 

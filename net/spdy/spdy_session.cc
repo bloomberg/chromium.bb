@@ -333,7 +333,6 @@ SpdySession::PushedStreamInfo::PushedStreamInfo(
 SpdySession::PushedStreamInfo::~PushedStreamInfo() {}
 
 SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
-                         SpdySessionPool* spdy_session_pool,
                          HttpServerProperties* http_server_properties,
                          bool verify_domain_authentication,
                          bool enable_sending_initial_settings,
@@ -349,9 +348,8 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
                          NetLog* net_log)
     : weak_factory_(this),
       spdy_session_key_(spdy_session_key),
-      spdy_session_pool_(spdy_session_pool),
+      spdy_session_pool_(NULL),
       http_server_properties_(http_server_properties),
-      connection_(new ClientSocketHandle),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       stream_hi_water_mark_(kFirstStreamId),
       write_pending_(false),
@@ -421,10 +419,11 @@ SpdySession::~SpdySession() {
     CloseAllStreams(ERR_ABORTED);
   }
 
-  if (connection_->is_initialized()) {
-    // With SPDY we can't recycle sockets.
-    connection_->socket()->Disconnect();
-  }
+  // TODO(akalin): Check connection->is_initialized() instead. This
+  // requires re-working CreateFakeSpdySession(), though.
+  DCHECK(connection_->socket());
+  // With SPDY we can't recycle sockets.
+  connection_->socket()->Disconnect();
 
   // Streams should all be gone now.
   DCHECK_EQ(0u, num_active_streams());
@@ -442,14 +441,17 @@ SpdySession::~SpdySession() {
 
 Error SpdySession::InitializeWithSocket(
     scoped_ptr<ClientSocketHandle> connection,
+    SpdySessionPool* spdy_session_pool,
     bool is_secure,
     int certificate_error_code) {
+  // TODO(akalin): Check connection->is_initialized() instead. This
+  // requires re-working CreateFakeSpdySession(), though.
+  DCHECK(connection->socket());
   base::StatsCounter spdy_sessions("spdy.sessions");
   spdy_sessions.Increment();
 
   state_ = STATE_DO_READ;
   connection_ = connection.Pass();
-  connection_->AddLayeredPool(this);
   is_secure_ = is_secure;
   certificate_error_code_ = certificate_error_code;
 
@@ -485,18 +487,23 @@ Error SpdySession::InitializeWithSocket(
   buffered_spdy_framer_.reset(
       new BufferedSpdyFramer(NPNToSpdyVersion(protocol), enable_compression_));
   buffered_spdy_framer_->set_visitor(this);
-  SendInitialSettings();
   UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol, kProtoMaximumVersion);
 
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_INITIALIZED,
       connection_->socket()->NetLog().source().ToEventParametersCallback());
 
-  // Write out any data that we might have to send, such as the settings frame.
-  WriteSocketLater();
   int error = DoLoop(OK);
   if (error == ERR_IO_PENDING)
-    return OK;
+    error = OK;
+  if (error == OK) {
+    connection_->AddLayeredPool(this);
+    SendInitialSettings();
+    // Write out any data that we might have to send, such as the
+    // settings frame.
+    WriteSocketLater();
+    spdy_session_pool_ = spdy_session_pool;
+  }
   return static_cast<Error>(error);
 }
 
@@ -685,14 +692,15 @@ int SpdySession::GetProtocolVersion() const {
 }
 
 bool SpdySession::CloseOneIdleConnection() {
-  if (!spdy_session_pool_ || num_active_streams() > 0)
+  DCHECK(spdy_session_pool_);
+  if (num_active_streams() > 0)
     return false;
   base::WeakPtr<SpdySession> weak_ptr = weak_factory_.GetWeakPtr();
   // Will remove a reference to this.
   RemoveFromPool();
   // Since the underlying socket is only returned when |this| is destroyed,
   // we should only return true if |this| no longer exists.
-  return weak_ptr.get() == NULL;
+  return !weak_ptr;
 }
 
 void SpdySession::EnqueueStreamWrite(
@@ -1074,7 +1082,7 @@ int SpdySession::DoRead() {
     return ERR_IO_PENDING;
   }
 
-  CHECK(connection_.get());
+  CHECK(connection_);
   CHECK(connection_->socket());
   state_ = STATE_DO_READ_COMPLETE;
   return connection_->socket()->Read(
@@ -1522,7 +1530,9 @@ void SpdySession::RemoveFromPool() {
   if (spdy_session_pool_) {
     SpdySessionPool* pool = spdy_session_pool_;
     spdy_session_pool_ = NULL;
-    pool->Remove(make_scoped_refptr(this));
+    scoped_refptr<SpdySession> self(this);
+    pool->MakeSessionUnavailable(self);
+    pool->RemoveUnavailableSession(self);
   }
 }
 
