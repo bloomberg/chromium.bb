@@ -35,7 +35,7 @@ class BaseLayoutManagerTest : public test::AshTestBase {
     Shell::GetInstance()->SetDisplayWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(1, 2, 3, 4));
-    Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
+    UpdateDisplay("800x600");
     aura::Window* default_container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(),
         internal::kShellWindowId_DefaultContainer);
@@ -143,7 +143,7 @@ TEST_F(BaseLayoutManagerTest, MAYBE_MaximizeRootWindowResize) {
       ScreenAsh::GetMaximizedWindowBoundsInParent(window.get());
   EXPECT_EQ(initial_work_area_bounds.ToString(), window->bounds().ToString());
   // Enlarge the root window.  We should still match the work area size.
-  Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(900, 700));
+  UpdateDisplay("900x700");
   EXPECT_EQ(
       ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window->bounds().ToString());
@@ -175,7 +175,7 @@ TEST_F(BaseLayoutManagerTest, FullscreenRootWindowResize) {
                 window.get()).bounds().ToString(),
             window->bounds().ToString());
   // Enlarge the root window.  We should still match the display size.
-  Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
+  UpdateDisplay("800x600");
   EXPECT_EQ(Shell::GetScreen()->GetDisplayNearestWindow(
                 window.get()).bounds().ToString(),
             window->bounds().ToString());
@@ -200,14 +200,14 @@ TEST_F(BaseLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window narrower than our window.
-  Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(300, 400));
+  UpdateDisplay("300x400");
   work_area = Shell::GetScreen()->GetDisplayNearestWindow(
       window.get()).work_area();
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window shorter than our window.
-  Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(300, 200));
+  UpdateDisplay("300x200");
   work_area = Shell::GetScreen()->GetDisplayNearestWindow(
       window.get()).work_area();
   EXPECT_LE(window->bounds().width(), work_area.width());
@@ -215,7 +215,7 @@ TEST_F(BaseLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
 
   // Enlarging the root window does not change the window bounds.
   gfx::Rect old_bounds = window->bounds();
-  Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
+  UpdateDisplay("800x600");
   EXPECT_EQ(old_bounds.width(), window->bounds().width());
   EXPECT_EQ(old_bounds.height(), window->bounds().height());
 }
