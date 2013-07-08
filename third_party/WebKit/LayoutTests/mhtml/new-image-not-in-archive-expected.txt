@@ -1,0 +1,1 @@
+This tests that we don't crash if the page contains script that tries to add a resource that isn't in the archive.

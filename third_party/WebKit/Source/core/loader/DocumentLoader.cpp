@@ -824,12 +824,16 @@ bool DocumentLoader::scheduleArchiveLoad(CachedResource* cachedResource, const R
 
     ASSERT(m_archiveResourceCollection);
     ArchiveResource* archiveResource = m_archiveResourceCollection->archiveResourceForURL(request.url());
-    ASSERT(archiveResource);
+    if (!archiveResource) {
+        cachedResource->error(CachedResource::LoadError);
+        return true;
+    }
 
     cachedResource->setLoading(true);
-    SharedBuffer* data = archiveResource->data();
     cachedResource->responseReceived(archiveResource->response());
-    cachedResource->appendData(data->data(), data->size());
+    SharedBuffer* data = archiveResource->data();
+    if (data)
+        cachedResource->appendData(data->data(), data->size());
     cachedResource->finish();
     return true;
 }
