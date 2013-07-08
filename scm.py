@@ -454,12 +454,12 @@ class GIT(object):
     if re.match(r'^[0-9a-fA-F]{40}$', rev):
       lookup_rev = rev[:-1]
     try:
-      sha = GIT.Capture(['rev-parse', lookup_rev], cwd=cwd)
+      sha = GIT.Capture(['rev-parse', lookup_rev], cwd=cwd).lower()
       if lookup_rev != rev:
         # Make sure we get the original 40 chars back.
-        return rev == sha
+        return rev.lower() == sha
       if sha_only:
-        return sha.startswith(rev)
+        return sha.startswith(rev.lower())
       return True
     except subprocess2.CalledProcessError:
       return False
