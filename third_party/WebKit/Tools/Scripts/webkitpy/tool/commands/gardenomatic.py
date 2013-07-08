@@ -33,7 +33,6 @@ class GardenOMatic(AbstractRebaseliningCommand):
 
     def __init__(self):
         super(GardenOMatic, self).__init__(options=(self.platform_options + [
-            self.move_overwritten_baselines_option,
             self.results_directory_option,
             self.no_optimize_option,
             ]))
