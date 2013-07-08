@@ -1,0 +1,37 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Derived from /ui/webui/resources/css/menu.css. */
+
+menu {
+  position: fixed;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+menu:not(.decorated) {
+  display: none;
+}
+
+menu > * {
+  box-sizing: border-box;
+  display: block;
+  text-align: start;
+}
+
+menu > hr {
+  border: 0;
+  height: 1px;
+}
+
+menu > [hidden] {
+  display: none;
+}
+
+menu > [shortcutText]::after {
+  -webkit-padding-start: 30px;
+  color: #999;
+  content: attr(shortcutText);
+  float: right;
+}

@@ -1377,10 +1377,6 @@ input.rename {
   padding-left: 32px;
 }
 
-menu[showShortcuts] > menuitem[selected]:not([disabled])::after {
-  color: white;
-}
-
 #preview-lines {
   -webkit-box-flex: 1;
   -webkit-margin-end: 10px;

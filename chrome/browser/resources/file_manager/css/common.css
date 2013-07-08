@@ -220,7 +220,6 @@ menu.chrome-menu > .menuitem-button.right {
 }
 
 menu.chrome-menu > menuitem[disabled] {
-  background-color: rgb(252, 252, 252);
   color: rgb(153, 153, 153);
 }
 
@@ -244,6 +243,10 @@ menu.chrome-menu > menuitem[checked] {
 
 menu.chrome-menu > [checked]::before {
   display: none;
+}
+
+menu[showShortcuts] > menuitem[shortcutText][selected]:not([disabled])::after {
+  color: white;
 }
 
 /**
