@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Enables debugging via RSP over a socket.
+const char kEnableNaClDebug[]               = "enable-nacl-debug";
+
 // Causes the process to run as a NativeClient broker
 // (used for launching NaCl loader processes on 64-bit Windows).
 const char kNaClBrokerProcess[]             = "nacl-broker";

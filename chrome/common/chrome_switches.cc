@@ -600,9 +600,6 @@ const char kEnableMetricsReportingForTesting[] =
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
 
-// Enables debugging via RSP over a socket.
-const char kEnableNaClDebug[]               = "enable-nacl-debug";
-
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 
