@@ -31,6 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
@@ -152,10 +153,12 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         m_frame->loader()->history()->pushState(data, title, fullURL.string());
     else if (stateObjectType == StateObjectReplace)
         m_frame->loader()->history()->replaceState(data, title, fullURL.string());
-            
+
     if (!urlString.isEmpty())
         m_frame->document()->updateURLForPushOrReplaceState(fullURL);
 
+    m_frame->loader()->documentLoader()->clearRedirectChain();
+    m_frame->loader()->documentLoader()->appendRedirect(fullURL);
     m_frame->loader()->client()->dispatchDidNavigateWithinPage();
 }
 

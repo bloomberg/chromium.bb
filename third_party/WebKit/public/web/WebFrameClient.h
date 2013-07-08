@@ -162,15 +162,6 @@ public:
     // A form submission is about to occur.
     virtual void willSubmitForm(WebFrame*, const WebFormElement&) { }
 
-    // A client-side redirect will occur.  This may correspond to a <META
-    // refresh> or some script activity.
-    virtual void willPerformClientRedirect(
-        WebFrame*, const WebURL& from, const WebURL& to,
-        double interval, double fireTime) { }
-
-    // A client-side redirect was cancelled.
-    virtual void didCancelClientRedirect(WebFrame*) { }
-
     // A client-side redirect completed.
     virtual void didCompleteClientRedirect(WebFrame*, const WebURL& fromURL) { }
 

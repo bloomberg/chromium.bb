@@ -175,6 +175,7 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_suppressOpenerInNewFrame(false)
+    , m_startingClientRedirect(false)
     , m_forcedSandboxFlags(SandboxNone)
 {
 }
@@ -219,8 +220,10 @@ void FrameLoader::setDefersLoading(bool defers)
 
 void FrameLoader::changeLocation(SecurityOrigin* securityOrigin, const KURL& url, const String& referrer, bool lockBackForwardList, bool refresh)
 {
+    m_startingClientRedirect = true;
     urlSelected(FrameLoadRequest(securityOrigin, ResourceRequest(url, referrer, refresh ? ReloadIgnoringCacheData : UseProtocolCachePolicy), "_self"),
         0, lockBackForwardList, MaybeSendReferrer);
+    m_startingClientRedirect = false;
 }
 
 void FrameLoader::urlSelected(const KURL& url, const String& passedTarget, PassRefPtr<Event> triggeringEvent, bool lockBackForwardList, ShouldSendReferrer shouldSendReferrer)
@@ -886,7 +889,23 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         checkLoadComplete();
     }
 
+    // Generate start and stop notifications only when loader is completed so that we
+    // don't fire them for fragment redirection that happens in window.onload handler.
+    // See https://bugs.webkit.org/show_bug.cgi?id=31838
+    if (m_documentLoader->wasOnloadHandled())
+        m_client->postProgressStartedNotification();
+
+    m_documentLoader->clearRedirectChain();
+    if ((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture()) {
+        m_client->dispatchDidCompleteClientRedirect(oldURL);
+        m_documentLoader->appendRedirect(oldURL);
+    }
+    m_documentLoader->appendRedirect(url);
+
     m_client->dispatchDidNavigateWithinPage();
+
+    if (m_documentLoader->wasOnloadHandled())
+        m_client->postProgressFinishedNotification();
 
     m_frame->document()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
     
@@ -1285,12 +1304,6 @@ void FrameLoader::commitProvisionalLoad()
     }
 
     transitionToCommitted();
-
-    // Call clientRedirectCancelledOrFinished() here so that the frame load delegate is notified that the redirect's
-    // status has changed, if there was a redirect.
-    if (pdl->isClientRedirect())
-        clientRedirectCancelledOrFinished();
-    
     didOpenURL();
 
     LOG(Loading, "WebCoreLoading %s: Finished committing provisional load to URL %s", m_frame->tree()->uniqueName().string().utf8().data(),
@@ -1341,16 +1354,6 @@ void FrameLoader::transitionToCommitted()
 
     if (!m_stateMachine.creatingInitialEmptyDocument() && !m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
-}
-
-void FrameLoader::clientRedirectCancelledOrFinished()
-{
-    m_client->dispatchDidCancelClientRedirect();
-}
-
-void FrameLoader::clientRedirected(const KURL& url, double seconds, double fireDate)
-{
-    m_client->dispatchWillPerformClientRedirect(url, seconds, fireDate);
 }
 
 bool FrameLoader::shouldReload(const KURL& currentURL, const KURL& destinationURL)
@@ -1850,11 +1853,6 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
         if (m_submittedFormURL == m_provisionalDocumentLoader->originalRequestCopy().url())
             m_submittedFormURL = KURL();
-            
-        // Call clientRedirectCancelledOrFinished here so that the frame load delegate is notified that the redirect's
-        // status has changed, if there was a redirect.
-        if (loader->isClientRedirect())
-            clientRedirectCancelledOrFinished();
     }
 
     checkCompleted();
@@ -2001,11 +1999,6 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
     bool canContinue = shouldContinue && shouldClose();
 
     if (!canContinue) {
-        // If we were waiting for a client redirect, but the policy delegate decided to ignore it, then we
-        // need to report that the client redirect was cancelled.
-        if (m_policyDocumentLoader->isClientRedirect())
-            clientRedirectCancelledOrFinished();
-
         setPolicyDocumentLoader(0);
 
         // If the navigation request came from the back/forward menu, and we punt on it, we have the 
@@ -2044,7 +2037,12 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
         m_client->dispatchWillSubmitForm(formState);
 
     m_progressTracker->progressStarted();
+    if (m_startingClientRedirect)
+        m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
+    m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
     m_client->dispatchDidStartProvisionalLoad();
+    if (m_startingClientRedirect)
+        m_client->dispatchDidCompleteClientRedirect(m_frame->document()->url());
     ASSERT(m_provisionalDocumentLoader);
 
     if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache()) {

@@ -75,12 +75,6 @@ public:
 
     static WebNavigationType toWebNavigationType(WebCore::NavigationType type);
 
-    bool hasRedirectChain() const { return !m_redirectChain.isEmpty(); }
-    bool isRedirect() const { return m_redirectChain.size() > 1; }
-    const WebCore::KURL& endOfRedirectChain() const;
-    void clearRedirectChain();
-    void appendRedirect(const WebCore::KURL& url);
-
     PassOwnPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
     static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
 
@@ -93,11 +87,6 @@ private:
     mutable WrappedResourceRequest m_originalRequestWrapper;
     mutable WrappedResourceRequest m_requestWrapper;
     mutable WrappedResourceResponse m_responseWrapper;
-
-    // Lists all intermediate URLs that have redirected for the current provisional load.
-    // See WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad for a
-    // description of who modifies this when to keep it up to date.
-    Vector<WebCore::KURL> m_redirectChain;
 
     OwnPtr<ExtraData> m_extraData;
     OwnPtr<WebPluginLoadObserver> m_pluginLoadObserver;

@@ -354,237 +354,24 @@ void FrameLoaderClientImpl::dispatchDidHandleOnloadEvents()
         m_webFrame->client()->didHandleOnloadEvents(m_webFrame);
 }
 
-// Redirect Tracking
-// =================
-// We want to keep track of the chain of redirects that occur during page
-// loading. There are two types of redirects, server redirects which are HTTP
-// response codes, and client redirects which are document.location= and meta
-// refreshes.
-//
-// This outlines the callbacks that we get in different redirect situations,
-// and how each call modifies the redirect chain.
-//
-// Normal page load
-// ----------------
-//   dispatchDidStartProvisionalLoad() -> adds URL to the redirect list
-//   dispatchDidCommitLoad()           -> DISPATCHES & clears list
-//
-// Server redirect (success)
-// -------------------------
-//   dispatchDidStartProvisionalLoad()                    -> adds source URL
-//   dispatchDidReceiveServerRedirectForProvisionalLoad() -> adds dest URL
-//   dispatchDidCommitLoad()                              -> DISPATCHES
-//
-// Client redirect (success)
-// -------------------------
-//   (on page)
-//   dispatchWillPerformClientRedirect() -> saves expected redirect
-//   dispatchDidStartProvisionalLoad()   -> appends redirect source (since
-//                                          it matches the expected redirect)
-//                                          and the current page as the dest)
-//   dispatchDidCancelClientRedirect()   -> clears expected redirect
-//   dispatchDidCommitLoad()             -> DISPATCHES
-//
-// Client redirect (cancelled)
-// (e.g meta-refresh trumped by manual doc.location change, or just cancelled
-// because a link was clicked that requires the meta refresh to be rescheduled
-// (the SOURCE URL may have changed).
-// ---------------------------
-//   dispatchDidCancelClientRedirect()                 -> clears expected redirect
-//   dispatchDidStartProvisionalLoad()                 -> adds only URL to redirect list
-//   dispatchDidCommitLoad()                           -> DISPATCHES & clears list
-//   rescheduled ? dispatchWillPerformClientRedirect() -> saves expected redirect
-//               : nothing
-
-// Client redirect (failure)
-// -------------------------
-//   (on page)
-//   dispatchWillPerformClientRedirect() -> saves expected redirect
-//   dispatchDidStartProvisionalLoad()   -> appends redirect source (since
-//                                          it matches the expected redirect)
-//                                          and the current page as the dest)
-//   dispatchDidCancelClientRedirect()
-//   dispatchDidFailProvisionalLoad()
-//
-// Load 1 -> Server redirect to 2 -> client redirect to 3 -> server redirect to 4
-// ------------------------------------------------------------------------------
-//   dispatchDidStartProvisionalLoad()                    -> adds source URL 1
-//   dispatchDidReceiveServerRedirectForProvisionalLoad() -> adds dest URL 2
-//   dispatchDidCommitLoad()                              -> DISPATCHES 1+2
-//    -- begin client redirect and NEW DATA SOURCE
-//   dispatchWillPerformClientRedirect()                  -> saves expected redirect
-//   dispatchDidStartProvisionalLoad()                    -> appends URL 2 and URL 3
-//   dispatchDidReceiveServerRedirectForProvisionalLoad() -> appends destination URL 4
-//   dispatchDidCancelClientRedirect()                    -> clears expected redirect
-//   dispatchDidCommitLoad()                              -> DISPATCHES
-//
-// Interesting case with multiple location changes involving anchors.
-// Load page 1 containing future client-redirect (back to 1, e.g meta refresh) > Click
-// on a link back to the same page (i.e an anchor href) >
-// client-redirect finally fires (with new source, set to 1#anchor)
-// -----------------------------------------------------------------------------
-//   dispatchWillPerformClientRedirect(non-zero 'interval' param) -> saves expected redirect
-//   -- click on anchor href
-//   dispatchDidCancelClientRedirect()                            -> clears expected redirect
-//   dispatchDidStartProvisionalLoad()                            -> adds 1#anchor source
-//   dispatchDidCommitLoad()                                      -> DISPATCHES 1#anchor
-//   dispatchWillPerformClientRedirect()                          -> saves exp. source (1#anchor)
-//   -- redirect timer fires
-//   dispatchDidStartProvisionalLoad()                            -> appends 1#anchor (src) and 1 (dest)
-//   dispatchDidCancelClientRedirect()                            -> clears expected redirect
-//   dispatchDidCommitLoad()                                      -> DISPATCHES 1#anchor + 1
-//
 void FrameLoaderClientImpl::dispatchDidReceiveServerRedirectForProvisionalLoad()
 {
-    WebDataSourceImpl* ds = m_webFrame->provisionalDataSourceImpl();
-    if (!ds) {
-        // Got a server redirect when there is no provisional DS!
-        ASSERT_NOT_REACHED();
-        return;
-    }
-
-    // The server redirect may have been blocked.
-    if (ds->request().isNull())
-        return;
-
-    // A provisional load should have started already, which should have put an
-    // entry in our redirect chain.
-    ASSERT(ds->hasRedirectChain());
-
-    // The URL of the destination is on the provisional data source. We also need
-    // to update the redirect chain to account for this addition (we do this
-    // before the callback so the callback can look at the redirect chain to see
-    // what happened).
-    ds->appendRedirect(ds->request().url());
-
     if (m_webFrame->client())
         m_webFrame->client()->didReceiveServerRedirectForProvisionalLoad(m_webFrame);
 }
 
-// Called on both success and failure of a client redirect.
-void FrameLoaderClientImpl::dispatchDidCancelClientRedirect()
+void FrameLoaderClientImpl::dispatchDidCompleteClientRedirect(const KURL& sourceURL)
 {
-    // No longer expecting a client redirect.
-    if (m_webFrame->client()) {
-        m_expectedClientRedirectSrc = KURL();
-        m_expectedClientRedirectDest = KURL();
-        m_webFrame->client()->didCancelClientRedirect(m_webFrame);
-    }
-
-    // No need to clear the redirect chain, since that data source has already
-    // been deleted by the time this function is called.
-}
-
-void FrameLoaderClientImpl::dispatchWillPerformClientRedirect(
-    const KURL& url,
-    double interval,
-    double fireDate)
-{
-    // Tells dispatchDidStartProvisionalLoad that if it sees this item it is a
-    // redirect and the source item should be added as the start of the chain.
-    m_expectedClientRedirectSrc = m_webFrame->document().url();
-    m_expectedClientRedirectDest = url;
-
-    // FIXME: bug 1135512. Webkit does not properly notify us of cancelling
-    // http > file client redirects. Since the FrameLoader's policy is to never
-    // carry out such a navigation anyway, the best thing we can do for now to
-    // not get confused is ignore this notification.
-    if (m_expectedClientRedirectDest.isLocalFile()
-        && m_expectedClientRedirectSrc.protocolIsInHTTPFamily()) {
-        m_expectedClientRedirectSrc = KURL();
-        m_expectedClientRedirectDest = KURL();
-        return;
-    }
-
-    if (m_webFrame->client()) {
-        m_webFrame->client()->willPerformClientRedirect(
-            m_webFrame,
-            m_expectedClientRedirectSrc,
-            m_expectedClientRedirectDest,
-            static_cast<unsigned int>(interval),
-            static_cast<unsigned int>(fireDate));
-    }
+    if (m_webFrame->client())
+        m_webFrame->client()->didCompleteClientRedirect(m_webFrame, sourceURL);
 }
 
 void FrameLoaderClientImpl::dispatchDidNavigateWithinPage()
 {
-    // Anchor fragment navigations are not normal loads, so we need to synthesize
-    // some events for our delegate.
-    WebViewImpl* webView = m_webFrame->viewImpl();
-
-    // Flag of whether frame loader is completed. Generate didStartLoading and
-    // didStopLoading only when loader is completed so that we don't fire
-    // them for fragment redirection that happens in window.onload handler.
-    // See https://bugs.webkit.org/show_bug.cgi?id=31838
-    //
-    // FIXME: Although FrameLoader::loadInSameDocument which invokes this
-    // method does not have a provisional document loader, we're seeing crashes
-    // where the FrameLoader is in provisional state, and thus
-    // activeDocumentLoader returns 0. Lacking any understanding of how this
-    // can happen, we do this check here to avoid crashing.
-    FrameLoader* loader = webView->page()->mainFrame()->loader();
-    bool loaderCompleted = !(loader->activeDocumentLoader() && loader->activeDocumentLoader()->isLoadingInAPISense());
-
-    // Generate didStartLoading if loader is completed.
-    if (webView->client() && loaderCompleted)
-        webView->client()->didStartLoading();
-
-    // We need to classify some hash changes as client redirects.
-    // FIXME: It seems wrong that the currentItem can sometimes be null.
-    HistoryItem* currentItem = m_webFrame->frame()->loader()->history()->currentItem();
-    bool isHashChange = !currentItem || !currentItem->stateObject();
-
-    WebDataSourceImpl* ds = m_webFrame->dataSourceImpl();
-    ASSERT(ds);  // Should not be null when navigating to a reference fragment!
-    if (ds) {
-        KURL url = ds->request().url();
-        KURL chainEnd;
-        if (ds->hasRedirectChain()) {
-            chainEnd = ds->endOfRedirectChain();
-            ds->clearRedirectChain();
-        }
-
-        if (isHashChange) {
-            // Figure out if this location change is because of a JS-initiated
-            // client redirect (e.g onload/setTimeout document.location.href=).
-            // FIXME: (b/1085325, b/1046841) We don't get proper redirect
-            // performed/cancelled notifications across anchor navigations, so the
-            // other redirect-tracking code in this class (see
-            // dispatch*ClientRedirect() and dispatchDidStartProvisionalLoad) is
-            // insufficient to catch and properly flag these transitions. Once a
-            // proper fix for this bug is identified and applied the following
-            // block may no longer be required.
-            //
-            // FIXME: Why do we call processingUserGesture here but none of
-            // the other ports do?
-            bool wasClientRedirect =
-                (url == m_expectedClientRedirectDest && chainEnd == m_expectedClientRedirectSrc)
-                || !UserGestureIndicator::processingUserGesture();
-
-            if (wasClientRedirect) {
-                if (m_webFrame->client())
-                    m_webFrame->client()->didCompleteClientRedirect(m_webFrame, chainEnd);
-                ds->appendRedirect(chainEnd);
-                // Make sure we clear the expected redirect since we just effectively
-                // completed it.
-                m_expectedClientRedirectSrc = KURL();
-                m_expectedClientRedirectDest = KURL();
-            }
-        }
-
-        // Regardless of how we got here, we are navigating to a URL so we need to
-        // add it to the redirect chain.
-        ds->appendRedirect(url);
-    }
-
     bool isNewNavigation;
-    webView->didCommitLoad(&isNewNavigation, true);
+    m_webFrame->viewImpl()->didCommitLoad(&isNewNavigation, true);
     if (m_webFrame->client())
         m_webFrame->client()->didNavigateWithinPage(m_webFrame, isNewNavigation);
-
-    // Generate didStopLoading if loader is completed.
-    if (webView->client() && loaderCompleted)
-        webView->client()->didStopLoading();
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeLocationWithinPage()
@@ -601,56 +388,8 @@ void FrameLoaderClientImpl::dispatchWillClose()
 
 void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad()
 {
-    // In case a redirect occurs, we need this to be set so that the redirect
-    // handling code can tell where the redirect came from. Server redirects
-    // will occur on the provisional load, so we need to keep track of the most
-    // recent provisional load URL.
-    // See dispatchDidReceiveServerRedirectForProvisionalLoad.
-    WebDataSourceImpl* ds = m_webFrame->provisionalDataSourceImpl();
-    if (!ds) {
-        ASSERT_NOT_REACHED();
-        return;
-    }
-    KURL url = ds->request().url();
-
-    // Since the provisional load just started, we should have not gotten
-    // any redirects yet.
-    ASSERT(!ds->hasRedirectChain());
-
-    // If this load is what we expected from a client redirect, treat it as a
-    // redirect from that original page. The expected redirect urls will be
-    // cleared by DidCancelClientRedirect.
-    bool completingClientRedirect = false;
-    if (m_expectedClientRedirectSrc.isValid()) {
-        // m_expectedClientRedirectDest could be something like
-        // "javascript:history.go(-1)" thus we need to exclude url starts with
-        // "javascript:". See bug: 1080873
-        if (m_expectedClientRedirectDest.protocolIs("javascript")
-            || m_expectedClientRedirectDest == url) {
-            ds->appendRedirect(m_expectedClientRedirectSrc);
-            completingClientRedirect = true;
-        } else {
-            // Any pending redirect is no longer in progress. This can happen
-            // if the navigation was canceled with PolicyIgnore, or if the
-            // redirect was scheduled on the wrong frame (e.g., due to a form
-            // submission targeted to _blank, as in http://webkit.org/b/44079).
-            m_expectedClientRedirectSrc = KURL();
-            m_expectedClientRedirectDest = KURL();
-        }
-    }
-    ds->appendRedirect(url);
-
-    if (m_webFrame->client()) {
-        // Whatever information didCompleteClientRedirect contains should only
-        // be considered relevant until the next provisional load has started.
-        // So we first tell the client that the load started, and then tell it
-        // about the client redirect the load is responsible for completing.
+    if (m_webFrame->client())
         m_webFrame->client()->didStartProvisionalLoad(m_webFrame);
-        if (completingClientRedirect) {
-            m_webFrame->client()->didCompleteClientRedirect(
-                m_webFrame, m_expectedClientRedirectSrc);
-        }
-    }
 }
 
 void FrameLoaderClientImpl::dispatchDidReceiveTitle(const StringWithDirection& title)

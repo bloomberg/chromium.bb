@@ -499,6 +499,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     if (redirectResponse.isNull())
         return;
 
+    appendRedirect(newRequest.url());
     frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
     if (!shouldContinueForNavigationPolicy(newRequest, PolicyCheckRedirect))
         stopLoadingForPolicyChange();
@@ -711,6 +712,16 @@ void DocumentLoader::checkLoadComplete()
     // See https://bugs.webkit.org/show_bug.cgi?id=110937
     // ASSERT(this == frameLoader()->activeDocumentLoader())
     m_frame->document()->domWindow()->finishedLoading();
+}
+
+void DocumentLoader::clearRedirectChain()
+{
+    m_redirectChain.clear();
+}
+
+void DocumentLoader::appendRedirect(const KURL& url)
+{
+    m_redirectChain.append(url);
 }
 
 void DocumentLoader::setFrame(Frame* frame)

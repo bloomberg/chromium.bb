@@ -188,8 +188,6 @@ protected:
     bool runModalPromptDialog(WebKit::WebFrame*, const WebKit::WebString& message, const WebKit::WebString& defaultValue, WebKit::WebString* actualValue);
     bool runModalBeforeUnloadDialog(WebKit::WebFrame*, const WebKit::WebString&);
 
-    void willPerformClientRedirect(WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fire_time);
-    void didCancelClientRedirect(WebKit::WebFrame*);
     void didStartProvisionalLoad(WebKit::WebFrame*);
     void didReceiveServerRedirectForProvisionalLoad(WebKit::WebFrame*);
     bool didFailProvisionalLoad(WebKit::WebFrame*, const WebKit::WebURLError&);
@@ -459,17 +457,6 @@ public:
         WebTestProxyBase::resetInputMethod();
     }
 
-    // WebFrameClient implementation.
-    virtual void willPerformClientRedirect(WebKit::WebFrame* frame, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fireTime)
-    {
-        WebTestProxyBase::willPerformClientRedirect(frame, from, to, interval, fireTime);
-        Base::willPerformClientRedirect(frame, from, to, interval, fireTime);
-    }
-    virtual void didCancelClientRedirect(WebKit::WebFrame* frame)
-    {
-        WebTestProxyBase::didCancelClientRedirect(frame);
-        Base::didCancelClientRedirect(frame);
-    }
     virtual void didStartProvisionalLoad(WebKit::WebFrame* frame)
     {
         WebTestProxyBase::didStartProvisionalLoad(frame);

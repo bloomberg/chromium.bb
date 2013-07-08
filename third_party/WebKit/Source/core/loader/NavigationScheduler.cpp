@@ -71,7 +71,6 @@ public:
 
     virtual bool shouldStartTimer(Frame*) { return true; }
     virtual void didStartTimer(Frame*, Timer<NavigationScheduler>*) { }
-    virtual void didStopTimer(Frame*) { }
 
     double delay() const { return m_delay; }
     bool lockBackForwardList() const { return m_lockBackForwardList; }
@@ -121,23 +120,8 @@ protected:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader()->clientRedirected(KURL(ParsedURLString, m_url), delay(), currentTime() + timer->nextFireInterval());
         if (frame->loader()->history()->currentItemShouldBeReplaced())
             setLockBackForwardList(true);
-    }
-
-    virtual void didStopTimer(Frame* frame)
-    {
-        if (!m_haveToldClient)
-            return;
-
-        // Do not set a UserGestureIndicator because
-        // clientRedirectCancelledOrFinished() is also called from many places
-        // inside FrameLoader, where the gesture state is not set and is in
-        // fact unavailable. We need to be consistent with them, otherwise the
-        // gesture state will sometimes be set and sometimes not within
-        // dispatchDidCancelClientRedirect().
-        frame->loader()->clientRedirectCancelledOrFinished();
     }
 
     SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
@@ -249,23 +233,8 @@ public:
         m_haveToldClient = true;
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader()->clientRedirected(m_submission->requestURL(), delay(), currentTime() + timer->nextFireInterval());
         if (frame->loader()->history()->currentItemShouldBeReplaced())
             setLockBackForwardList(true);
-    }
-
-    virtual void didStopTimer(Frame* frame)
-    {
-        if (!m_haveToldClient)
-            return;
-
-        // Do not set a UserGestureIndicator because
-        // clientRedirectCancelledOrFinished() is also called from many places
-        // inside FrameLoader, where the gesture state is not set and is in
-        // fact unavailable. We need to be consistent with them, otherwise the
-        // gesture state will sometimes be set and sometimes not within
-        // dispatchDidCancelClientRedirect().
-        frame->loader()->clientRedirectCancelledOrFinished();
     }
 
 private:
@@ -482,10 +451,7 @@ void NavigationScheduler::cancel()
     if (m_timer.isActive())
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     m_timer.stop();
-
-    OwnPtr<ScheduledNavigation> redirect(m_redirect.release());
-    if (redirect)
-        redirect->didStopTimer(m_frame);
+    m_redirect.clear();
 }
 
 } // namespace WebCore

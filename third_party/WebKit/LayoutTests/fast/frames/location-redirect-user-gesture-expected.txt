@@ -1,3 +1,2 @@
-Frame with user gesture "false" - in willPerformClientRedirect
 Frame with user gesture "false" - in didStartProvisionalLoadForFrame
 

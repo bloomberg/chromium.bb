@@ -233,8 +233,6 @@ public:
 
     void completed();
     bool allAncestorsAreComplete() const; // including this
-    void clientRedirected(const KURL&, double delay, double fireDate);
-    void clientRedirectCancelledOrFinished();
 
     void setOriginalURLForDownloadRequest(ResourceRequest&);
 
@@ -371,6 +369,7 @@ private:
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
     bool m_suppressOpenerInNewFrame;
+    bool m_startingClientRedirect;
 
     SandboxFlags m_forcedSandboxFlags;
 

@@ -81,8 +81,7 @@ public:
     virtual void dispatchDidLoadResourceFromMemoryCache(WebCore::DocumentLoader*, const WebCore::ResourceRequest&, const WebCore::ResourceResponse&, int length);
     virtual void dispatchDidHandleOnloadEvents();
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad();
-    virtual void dispatchDidCancelClientRedirect();
-    virtual void dispatchWillPerformClientRedirect(const WebCore::KURL&, double interval, double fireDate);
+    virtual void dispatchDidCompleteClientRedirect(const WebCore::KURL&);
     virtual void dispatchDidNavigateWithinPage();
     virtual void dispatchDidChangeLocationWithinPage();
     virtual void dispatchWillClose();
@@ -175,15 +174,6 @@ private:
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.
     WebFrameImpl* m_webFrame;
-
-    // Used to help track client redirects. When a provisional load starts, it
-    // has no redirects in its chain. But in the case of client redirects, we want
-    // to add that initial load as a redirect. When we get a new provisional load
-    // and the dest URL matches that load, we know that it was the result of a
-    // previous client redirect and the source should be added as a redirect.
-    // Both should be empty if unused.
-    WebCore::KURL m_expectedClientRedirectSrc;
-    WebCore::KURL m_expectedClientRedirectDest;
 };
 
 } // namespace WebKit

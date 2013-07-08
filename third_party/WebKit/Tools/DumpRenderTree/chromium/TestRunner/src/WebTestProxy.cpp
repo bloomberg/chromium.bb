@@ -1151,25 +1151,6 @@ bool WebTestProxyBase::isChooserShown()
     return 0 < m_chooserCount;
 }
 
-void WebTestProxyBase::willPerformClientRedirect(WebFrame* frame, const WebURL&, const WebURL& to, double, double)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks()) {
-        printFrameDescription(m_delegate, frame);
-        m_delegate->printMessage(string(" - willPerformClientRedirectToURL: ") + to.spec().data() + " \n");
-    }
-
-    if (m_testInterfaces->testRunner()->shouldDumpUserGestureInFrameLoadCallbacks())
-        printFrameUserGestureStatus(m_delegate, frame, " - in willPerformClientRedirect\n");
-}
-
-void WebTestProxyBase::didCancelClientRedirect(WebFrame* frame)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks()) {
-        printFrameDescription(m_delegate, frame);
-        m_delegate->printMessage(" - didCancelClientRedirectForFrame\n");
-    }
-}
-
 void WebTestProxyBase::didStartProvisionalLoad(WebFrame* frame)
 {
     if (!m_testInterfaces->testRunner()->topLoadingFrame())

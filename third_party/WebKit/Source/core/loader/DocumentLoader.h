@@ -162,10 +162,15 @@ namespace WebCore {
         virtual void reportMemoryUsage(MemoryObjectInfo*) const;
         void checkLoadComplete();
 
+        bool isRedirect() const { return m_redirectChain.size() > 1; }
+        void clearRedirectChain();
+        void appendRedirect(const KURL&);
+
     protected:
         DocumentLoader(const ResourceRequest&, const SubstituteData&);
 
         bool m_deferMainResourceDataLoad;
+        Vector<KURL> m_redirectChain;
 
     private:
         static PassRefPtr<DocumentWriter> createWriterFor(Frame*, const Document* ownerDocument, const KURL&, const String& mimeType, const String& encoding, bool userChosen, bool dispatch);

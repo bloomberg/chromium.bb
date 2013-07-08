@@ -199,8 +199,6 @@ public:
 
     virtual void dispatchDidHandleOnloadEvents() OVERRIDE { }
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() OVERRIDE { }
-    virtual void dispatchDidCancelClientRedirect() OVERRIDE { }
-    virtual void dispatchWillPerformClientRedirect(const KURL&, double, double) OVERRIDE { }
     virtual void dispatchDidChangeLocationWithinPage() OVERRIDE { }
     virtual void dispatchWillClose() OVERRIDE { }
     virtual void dispatchDidStartProvisionalLoad() OVERRIDE { }
