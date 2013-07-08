@@ -1835,5 +1835,3 @@ crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li
 Bug(cbiesinger) [ Win ] fast/forms/button-default-title.html [ Failure ]
 
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
-
-Bug(mkwst) [ Win ] editing/selection/drag-select-1.html [ NeedsRebaseline ]
