@@ -10,9 +10,9 @@
  * and the symbol for __EH_FRAME_BEGIN__. This is native because
  * exception handling is also native (externally provided).
  *
- * One x86-64 we also need to sneak in the native shim library
- * between these bookends because otherwise the unwind tables will be
- * messed up, c.f.
+ * We also need to sneak in the native PPAPI shim library between
+ * these bookends because otherwise the unwind tables will be messed
+ * up, c.f.
  * https://chromiumcodereview.appspot.com/9909016/
  * TODO(robertm): see whether this problem goes away once we switch
  * eh_frame_headers
@@ -26,7 +26,6 @@
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 
 void _pnacl_wrapper_start(uint32_t *info);
-void _start(uint32_t *info);
 
 /*
  * HACK:
