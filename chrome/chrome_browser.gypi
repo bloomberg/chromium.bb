@@ -1196,8 +1196,6 @@
         'browser/notifications/message_center_settings_controller.h',
         'browser/notifications/notification.cc',
         'browser/notifications/notification.h',
-        'browser/notifications/notification_audio_controller.cc',
-        'browser/notifications/notification_audio_controller.h',
         'browser/notifications/notification_delegate.cc',
         'browser/notifications/notification_delegate.h',
         'browser/notifications/notification_object_proxy.cc',
