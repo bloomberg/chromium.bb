@@ -1,4 +1,7 @@
-TESTS = $(module_tests) $(weston_tests)
+TESTS = $(shared_tests) $(module_tests) $(weston_tests)
+
+shared_tests = \
+	config-parser.test
 
 module_tests =				\
 	surface-test.la			\
@@ -36,6 +39,7 @@ check_LTLIBRARIES =			\
 	$(module_tests)
 
 check_PROGRAMS =			\
+	$(shared_tests)			\
 	$(weston_tests)
 
 AM_CFLAGS = $(GCC_CFLAGS)
@@ -46,6 +50,12 @@ AM_CPPFLAGS =					\
 	-DUNIT_TEST				\
 	$(COMPOSITOR_CFLAGS)
 AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
+
+config_parser_test_LDADD =	\
+	../shared/libshared.la	\
+	$(COMPOSITOR_LIBS)
+config_parser_test_SOURCES =	\
+	config-parser-test.c
 
 surface_global_test_la_SOURCES = surface-global-test.c
 surface_test_la_SOURCES = surface-test.c

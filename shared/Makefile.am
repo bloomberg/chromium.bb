@@ -30,14 +30,3 @@ libshared_cairo_la_SOURCES =			\
 	image-loader.h				\
 	cairo-util.c				\
 	cairo-util.h
-
-TESTS = config-parser-test
-
-check_PROGRAMS = $(TESTS)
-
-config_parser_test_LDADD = $(COMPOSITOR_LIBS)
-config_parser_test_CFLAGS = $(COMPOSITOR_CFLAGS)
-config_parser_test_SOURCES =			\
-	config-parser.c				\
-	config-parser.h				\
-	config-parser-test.c
