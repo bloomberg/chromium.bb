@@ -380,23 +380,13 @@ bool String::percentage(int& result) const
 
 Vector<UChar> String::charactersWithNullTermination() const
 {
+    if (!m_impl)
+        return Vector<UChar>();
+
     Vector<UChar> result;
-
-    if (m_impl) {
-        result.reserveInitialCapacity(length() + 1);
-
-        if (is8Bit()) {
-            const LChar* characters8 = m_impl->characters8();
-            for (size_t i = 0; i < length(); ++i)
-                result.uncheckedAppend(characters8[i]);
-        } else {
-            const UChar* characters16 = m_impl->characters16();
-            result.append(characters16, m_impl->length());
-        }
-
-        result.append(0);
-    }
-
+    result.reserveInitialCapacity(length() + 1);
+    appendTo(result);
+    result.append(0);
     return result;
 }
 
@@ -410,6 +400,22 @@ unsigned String::copyTo(UChar* buffer, unsigned maxLength) const
     else
         StringImpl::copyChars(buffer, characters16(), numCharacters);
     return numCharacters;
+}
+
+void String::appendTo(Vector<UChar>& result) const
+{
+    unsigned length = this->length();
+    if (!length)
+        return;
+    result.reserveCapacity(result.size() + length);
+    if (is8Bit()) {
+        const LChar* characters8 = m_impl->characters8();
+        for (size_t i = 0; i < length; ++i)
+            result.uncheckedAppend(characters8[i]);
+    } else {
+        const UChar* characters16 = m_impl->characters16();
+        result.append(characters16, length);
+    }
 }
 
 String String::format(const char *format, ...)

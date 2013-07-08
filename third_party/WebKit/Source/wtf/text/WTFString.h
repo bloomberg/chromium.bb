@@ -268,6 +268,7 @@ public:
 
     Vector<UChar> charactersWithNullTermination() const;
     unsigned copyTo(UChar* buffer, unsigned maxLength) const;
+    void appendTo(Vector<UChar>&) const;
 
     UChar32 characterStartingAt(unsigned) const; // Ditto.
     
