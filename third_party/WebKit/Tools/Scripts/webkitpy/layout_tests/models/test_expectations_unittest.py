@@ -519,15 +519,17 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
-    def test_remove_line(self):
+    def test_remove_line_with_comments(self):
         host = MockHost()
         test_port = host.port_factory.get('test-win-xp', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
         test_config = test_port.test_configuration()
-        test_port.expectations_dict = lambda: {'expectations': """Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
-Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+        test_port.expectations_dict = lambda: {'expectations': """Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+
+ # This comment line should get stripped. As should the preceding line.
+Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
 """}
         expectations = TestExpectations(test_port)
 
@@ -535,6 +537,110 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
         actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
 
         self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+""", actual_expectations)
+
+    def test_remove_line_with_comments_at_start(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {'expectations': """
+ # This comment line should get stripped. As should the preceding line.
+Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
+
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+"""}
+        expectations = TestExpectations(test_port)
+
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+
+        self.assertEqual("""
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+""", actual_expectations)
+
+    def test_remove_line_with_comments_at_end_with_no_trailing_newline(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {'expectations': """Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+
+ # This comment line should get stripped. As should the preceding line.
+Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]"""}
+        expectations = TestExpectations(test_port)
+
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+
+        self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]""", actual_expectations)
+
+    def test_remove_line_leaves_comments_for_next_line(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {'expectations': """
+ # This comment line should not get stripped.
+Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+"""}
+        expectations = TestExpectations(test_port)
+
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+
+        self.assertEqual("""
+ # This comment line should not get stripped.
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+""", actual_expectations)
+
+    def test_remove_line_no_whitespace_lines(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {'expectations': """
+ # This comment line should get stripped.
+Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
+ # This comment line should not get stripped.
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+"""}
+        expectations = TestExpectations(test_port)
+
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+
+        self.assertEqual(""" # This comment line should not get stripped.
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+""", actual_expectations)
+
+    def test_remove_first_line(self):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        test_port.test_exists = lambda test: True
+        test_port.test_isfile = lambda test: True
+
+        test_config = test_port.test_configuration()
+        test_port.expectations_dict = lambda: {'expectations': """Bug(x) [ Win Release ] failures/expected/foo.html [ Failure ]
+ # This comment line should not get stripped.
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
+"""}
+        expectations = TestExpectations(test_port)
+
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
+        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
+
+        self.assertEqual(""" # This comment line should not get stripped.
+Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
     def test_remove_flaky_line(self):
