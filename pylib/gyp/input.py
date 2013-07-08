@@ -2565,7 +2565,6 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     build_file = os.path.normpath(build_file)
     try:
       if parallel:
-        print >>sys.stderr, 'Using parallel processing.'
         LoadTargetBuildFileParallel(build_file, data, aux_data,
                                     variables, includes, depth, check)
       else:
