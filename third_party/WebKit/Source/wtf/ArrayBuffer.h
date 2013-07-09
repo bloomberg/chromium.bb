@@ -53,6 +53,8 @@ public:
     inline const void* data() const;
     inline unsigned byteLength() const;
 
+    // Creates a new ArrayBuffer object with copy of bytes in this object
+    // ranging from |begin| upto but not including |end|.
     inline PassRefPtr<ArrayBuffer> slice(int begin, int end) const;
     inline PassRefPtr<ArrayBuffer> slice(int begin) const;
 

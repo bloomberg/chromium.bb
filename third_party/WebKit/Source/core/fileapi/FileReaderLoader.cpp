@@ -271,7 +271,7 @@ PassRefPtr<ArrayBuffer> FileReaderLoader::arrayBufferResult() const
         return m_rawData;
 
     // Otherwise, return a copy.
-    return ArrayBuffer::create(m_rawData.get());
+    return m_rawData->slice(0, m_bytesLoaded);
 }
 
 #if ENABLE(STREAM)
