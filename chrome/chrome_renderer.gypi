@@ -270,8 +270,8 @@
         'renderer/prerender/prerender_extra_data.h',
         'renderer/prerender/prerender_helper.cc',
         'renderer/prerender/prerender_helper.h',
-        'renderer/prerender/prerender_webmediaplayer.cc',
-        'renderer/prerender/prerender_webmediaplayer.h',
+        'renderer/prerender/prerender_media_load_deferrer.cc',
+        'renderer/prerender/prerender_media_load_deferrer.h',
         'renderer/prerender/prerenderer_client.cc',
         'renderer/prerender/prerenderer_client.h',
         'renderer/printing/print_web_view_helper.cc',
@@ -400,8 +400,8 @@
         }],
         ['OS=="android"', {
           'sources!': [
-            'renderer/prerender/prerender_webmediaplayer.cc',
-            'renderer/prerender/prerender_webmediaplayer.h',
+            'renderer/prerender/prerender_media_load_deferrer.cc',
+            'renderer/prerender/prerender_media_load_deferrer.h',
             'renderer/printing/print_web_view_helper.cc',
           ],
           'defines': [

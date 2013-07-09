@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/prerender/prerender_webmediaplayer.h"
+#include "chrome/renderer/prerender/prerender_media_load_deferrer.h"
 
 #include "base/callback_helpers.h"
 #include "chrome/common/prerender_messages.h"
@@ -10,7 +10,7 @@
 
 namespace prerender {
 
-PrerenderWebMediaPlayer::PrerenderWebMediaPlayer(
+PrerenderMediaLoadDeferrer::PrerenderMediaLoadDeferrer(
     content::RenderView* render_view,
     const base::Closure& closure)
     : RenderViewObserver(render_view),
@@ -19,19 +19,20 @@ PrerenderWebMediaPlayer::PrerenderWebMediaPlayer(
   DCHECK(!continue_loading_cb_.is_null());
 }
 
-PrerenderWebMediaPlayer::~PrerenderWebMediaPlayer() {}
+PrerenderMediaLoadDeferrer::~PrerenderMediaLoadDeferrer() {}
 
-bool PrerenderWebMediaPlayer::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(PrerenderWebMediaPlayer, message)
+bool PrerenderMediaLoadDeferrer::OnMessageReceived(
+    const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(PrerenderMediaLoadDeferrer, message)
     IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
 
   return false;
 }
 
-void PrerenderWebMediaPlayer::OnSetIsPrerendering(bool is_prerendering) {
+void PrerenderMediaLoadDeferrer::OnSetIsPrerendering(bool is_prerendering) {
   // Prerendering can only be enabled prior to a RenderView's first
-  // navigation, so no PrerenderWebMediaPlayer should see the notification
+  // navigation, so no PrerenderMediaLoadDeferrer should see the notification
   // that enables prerendering.
   DCHECK(!is_prerendering);
   if (!is_prerendering_ || is_prerendering)

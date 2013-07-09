@@ -55,7 +55,7 @@
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
-#include "chrome/renderer/prerender/prerender_webmediaplayer.h"
+#include "chrome/renderer/prerender/prerender_media_load_deferrer.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
@@ -477,7 +477,7 @@ void ChromeContentRendererClient::DeferMediaLoad(
   }
 
   // Lifetime is tied to |render_view| via content::RenderViewObserver.
-  new prerender::PrerenderWebMediaPlayer(render_view, closure);
+  new prerender::PrerenderMediaLoadDeferrer(render_view, closure);
 #endif
 }
 
