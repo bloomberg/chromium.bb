@@ -18,6 +18,13 @@ class WebGraphicsContext3D;
 
 namespace content {
 class GLHelper;
+class GLContextLostListener;
+
+class ImageTransportFactoryAndroidObserver {
+ public:
+  virtual ~ImageTransportFactoryAndroidObserver() {}
+  virtual void OnLostResources() = 0;
+};
 
 class ImageTransportFactoryAndroid {
  public:
@@ -35,8 +42,13 @@ class ImageTransportFactoryAndroid {
   virtual WebKit::WebGraphicsContext3D* GetContext3D() = 0;
   virtual GLHelper* GetGLHelper() = 0;
 
+  static void AddObserver(ImageTransportFactoryAndroidObserver* observer);
+  static void RemoveObserver(ImageTransportFactoryAndroidObserver* observer);
+
 protected:
   ImageTransportFactoryAndroid();
+
+  scoped_ptr<GLContextLostListener> context_lost_listener_;
 };
 
 }  // namespace content

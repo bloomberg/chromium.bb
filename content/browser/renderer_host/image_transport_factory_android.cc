@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -17,6 +18,18 @@
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace content {
+
+base::LazyInstance<ObserverList<ImageTransportFactoryAndroidObserver> >::Leaky
+    g_factory_observers = LAZY_INSTANCE_INITIALIZER;
+
+class GLContextLostListener
+    : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+ public:
+  // WebGraphicsContextLostCallback implementation.
+  virtual void onContextLost() OVERRIDE;
+ private:
+  static void DidLoseContext();
+};
 
 namespace {
 
@@ -56,6 +69,7 @@ DirectGLImageTransportFactory::DirectGLImageTransportFactory() {
   attrs.noAutomaticFlushes = true;
   context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
       CreateViewContext(attrs, NULL);
+  context_->setContextLostCallback(context_lost_listener_.get());
   if (context_->makeContextCurrent())
     context_->pushGroupMarkerEXT(
         base::StringPrintf("DirectGLImageTransportFactory-%p",
@@ -63,6 +77,7 @@ DirectGLImageTransportFactory::DirectGLImageTransportFactory() {
 }
 
 DirectGLImageTransportFactory::~DirectGLImageTransportFactory() {
+  context_->setContextLostCallback(NULL);
 }
 
 class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
@@ -104,6 +119,7 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
       display_info.GetDisplayHeight() *
       display_info.GetDisplayWidth() *
       kBytesPerPixel;
+  context_->setContextLostCallback(context_lost_listener_.get());
   context_->Initialize(
       attrs,
       false,
@@ -122,6 +138,7 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
 }
 
 CmdBufferImageTransportFactory::~CmdBufferImageTransportFactory() {
+  context_->setContextLostCallback(NULL);
 }
 
 uint32_t CmdBufferImageTransportFactory::InsertSyncPoint() {
@@ -188,10 +205,36 @@ ImageTransportFactoryAndroid* ImageTransportFactoryAndroid::GetInstance() {
   return g_factory;
 }
 
-ImageTransportFactoryAndroid::ImageTransportFactoryAndroid() {
+ImageTransportFactoryAndroid::ImageTransportFactoryAndroid()
+    : context_lost_listener_(new GLContextLostListener()) {}
+
+ImageTransportFactoryAndroid::~ImageTransportFactoryAndroid() {}
+
+void ImageTransportFactoryAndroid::AddObserver(
+    ImageTransportFactoryAndroidObserver* observer) {
+  g_factory_observers.Get().AddObserver(observer);
 }
 
-ImageTransportFactoryAndroid::~ImageTransportFactoryAndroid() {
+void ImageTransportFactoryAndroid::RemoveObserver(
+    ImageTransportFactoryAndroidObserver* observer) {
+  g_factory_observers.Get().RemoveObserver(observer);
+}
+
+void GLContextLostListener::onContextLost() {
+  // Need to post a task because the command buffer client cannot be deleted
+  // from within this callback.
+  LOG(ERROR) << "Context lost.";
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GLContextLostListener::DidLoseContext));
+}
+
+void GLContextLostListener::DidLoseContext() {
+  delete g_factory;
+  g_factory = NULL;
+  FOR_EACH_OBSERVER(ImageTransportFactoryAndroidObserver,
+      g_factory_observers.Get(),
+      OnLostResources());
 }
 
 } // namespace content
