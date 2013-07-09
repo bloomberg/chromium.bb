@@ -1747,24 +1747,6 @@ void RenderWidget::OnSetInputMethodActive(bool is_active) {
   input_method_is_active_ = is_active;
 }
 
-void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
-  ui::Range range = ui::Range();
-  if (should_update_range) {
-    GetCompositionRange(&range);
-  } else {
-    range = composition_range_;
-  }
-  std::vector<gfx::Rect> character_bounds;
-  GetCompositionCharacterBounds(&character_bounds);
-
-  if (!ShouldUpdateCompositionInfo(range, character_bounds))
-    return;
-  composition_character_bounds_ = character_bounds;
-  composition_range_ = range;
-  Send(new ViewHostMsg_ImeCompositionRangeChanged(
-      routing_id(), composition_range_, composition_character_bounds_));
-}
-
 void RenderWidget::OnImeSetComposition(
     const string16& text,
     const std::vector<WebCompositionUnderline>& underlines,
@@ -1780,7 +1762,9 @@ void RenderWidget::OnImeSetComposition(
     // sure we are in a consistent state.
     Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   }
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   UpdateCompositionInfo(true);
+#endif
 }
 
 void RenderWidget::OnImeConfirmComposition(
@@ -1791,7 +1775,9 @@ void RenderWidget::OnImeConfirmComposition(
   handling_input_event_ = true;
   webwidget_->confirmComposition(text);
   handling_input_event_ = false;
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   UpdateCompositionInfo(true);
+#endif
 }
 
 // This message causes the renderer to render an image of the
@@ -2165,22 +2151,9 @@ void RenderWidget::UpdateSelectionBounds() {
     params.is_anchor_first = webwidget_->isSelectionAnchorFirst();
     Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
   }
-
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   UpdateCompositionInfo(false);
-}
-
-bool RenderWidget::ShouldUpdateCompositionInfo(
-    const ui::Range& range,
-    const std::vector<gfx::Rect>& bounds) {
-  if (composition_range_ != range)
-    return true;
-  if (bounds.size() != composition_character_bounds_.size())
-    return true;
-  for (size_t i = 0; i < bounds.size(); ++i) {
-    if (bounds[i] != composition_character_bounds_[i])
-      return true;
-  }
-  return false;
+#endif
 }
 
 // Check WebKit::WebTextInputType and ui::TextInputType is kept in sync.
@@ -2233,6 +2206,25 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
+  ui::Range range = ui::Range();
+  if (should_update_range) {
+    GetCompositionRange(&range);
+  } else {
+    range = composition_range_;
+  }
+  std::vector<gfx::Rect> character_bounds;
+  GetCompositionCharacterBounds(&character_bounds);
+
+  if (!ShouldUpdateCompositionInfo(range, character_bounds))
+    return;
+  composition_character_bounds_ = character_bounds;
+  composition_range_ = range;
+  Send(new ViewHostMsg_ImeCompositionRangeChanged(
+      routing_id(), composition_range_, composition_character_bounds_));
+}
+
 void RenderWidget::GetCompositionCharacterBounds(
     std::vector<gfx::Rect>* bounds) {
   DCHECK(bounds);
@@ -2251,6 +2243,21 @@ void RenderWidget::GetCompositionRange(ui::Range* range) {
     *range = ui::Range::InvalidRange();
   }
 }
+
+bool RenderWidget::ShouldUpdateCompositionInfo(
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& bounds) {
+  if (composition_range_ != range)
+    return true;
+  if (bounds.size() != composition_character_bounds_.size())
+    return true;
+  for (size_t i = 0; i < bounds.size(); ++i) {
+    if (bounds[i] != composition_character_bounds_[i])
+      return true;
+  }
+  return false;
+}
+#endif
 
 bool RenderWidget::CanComposeInline() {
   return true;
@@ -2277,7 +2284,9 @@ void RenderWidget::resetInputMethod() {
       Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   }
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   UpdateCompositionInfo(true);
+#endif
 }
 
 void RenderWidget::didHandleGestureEvent(

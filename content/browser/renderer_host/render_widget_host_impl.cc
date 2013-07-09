@@ -469,8 +469,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputTypeChanged,
                         OnTextInputTypeChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
-                        OnImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidActivateAcceleratedCompositing,
@@ -486,6 +484,10 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnWindowlessPluginDummyWindowDestroyed)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
+                        OnImeCompositionRangeChanged)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -2137,12 +2139,14 @@ void RenderWidgetHostImpl::OnTextInputTypeChanged(ui::TextInputType type,
     view_->TextInputTypeChanged(type, can_compose_inline);
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 void RenderWidgetHostImpl::OnImeCompositionRangeChanged(
     const ui::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   if (view_)
     view_->ImeCompositionRangeChanged(range, character_bounds);
 }
+#endif
 
 void RenderWidgetHostImpl::OnImeCancelComposition() {
   if (view_)

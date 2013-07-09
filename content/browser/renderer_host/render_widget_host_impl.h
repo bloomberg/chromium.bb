@@ -659,9 +659,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnSetCursor(const WebCursor& cursor);
   void OnTextInputTypeChanged(ui::TextInputType type, bool can_compose_inline);
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   void OnImeCompositionRangeChanged(
       const ui::Range& range,
       const std::vector<gfx::Rect>& character_bounds);
+#endif
   void OnImeCancelComposition();
   void OnDidActivateAcceleratedCompositing(bool activated);
   void OnLockMouse(bool user_gesture,

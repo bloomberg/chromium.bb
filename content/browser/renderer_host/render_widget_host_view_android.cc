@@ -446,11 +446,6 @@ void RenderWidgetHostViewAndroid::ImeCancelComposition() {
   ime_adapter_android_.CancelComposition();
 }
 
-void RenderWidgetHostViewAndroid::ImeCompositionRangeChanged(
-    const ui::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
-}
-
 void RenderWidgetHostViewAndroid::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,

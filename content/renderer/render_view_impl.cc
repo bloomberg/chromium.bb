@@ -6164,7 +6164,9 @@ void RenderViewImpl::SimulateImeConfirmComposition(
 
 void RenderViewImpl::PpapiPluginCancelComposition() {
   Send(new ViewHostMsg_ImeCancelComposition(routing_id()));;
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   UpdateCompositionInfo(true);
+#endif
 }
 
 void RenderViewImpl::PpapiPluginSelectionChanged() {
@@ -6295,6 +6297,7 @@ void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
   RenderWidget::GetSelectionBounds(start, end);
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 void RenderViewImpl::GetCompositionCharacterBounds(
     std::vector<gfx::Rect>* bounds) {
   DCHECK(bounds);
@@ -6334,6 +6337,7 @@ void RenderViewImpl::GetCompositionRange(ui::Range* range) {
   }
   RenderWidget::GetCompositionRange(range);
 }
+#endif
 
 bool RenderViewImpl::CanComposeInline() {
   return pepper_helper_->IsPluginFocused() ?

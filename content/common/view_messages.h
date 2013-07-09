@@ -1964,11 +1964,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_TextInputTypeChanged,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
                     ViewHostMsg_TextInputState_Params /* input state params */)
 
-// Message sent when the IME text composition range changes.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,
-                    ui::Range /* composition range */,
-                    std::vector<gfx::Rect> /* character bounds */)
-
 // Required for cancelling an ongoing input method composition.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
 
@@ -2327,6 +2322,15 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
 // renderer is finished with them.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
                      TransportDIB::Id /* DIB id */)
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+// On MACOSX, WIN and AURA IME can request composition character bounds
+// synchronously (see crbug.com/120597). This IPC message sends the character
+// bounds after every composition change to always have correct bound info.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,
+                    ui::Range /* composition range */,
+                    std::vector<gfx::Rect> /* character bounds */)
 #endif
 
 // Adding a new message? Stick to the sort order above: first platform

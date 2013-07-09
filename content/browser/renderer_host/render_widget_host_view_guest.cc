@@ -281,10 +281,12 @@ void RenderWidgetHostViewGuest::ImeCancelComposition() {
   platform_view_->ImeCancelComposition();
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
     const ui::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
 }
+#endif
 
 void RenderWidgetHostViewGuest::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,

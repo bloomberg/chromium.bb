@@ -85,9 +85,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual void TextInputTypeChanged(ui::TextInputType type,
                                     bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
-  virtual void ImeCompositionRangeChanged(
-      const ui::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,

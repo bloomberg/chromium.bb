@@ -420,17 +420,18 @@ class CONTENT_EXPORT RenderWidget
   // the new value will be sent to the browser process.
   virtual void UpdateSelectionBounds();
 
-  // Checks if the composition range or composition character bounds have been
-  // changed. If they are changed, the new value will be sent to the browser
-  // process.
-  virtual void UpdateCompositionInfo(bool should_update_range);
-
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
   virtual ui::TextInputType WebKitToUiTextInputType(
       WebKit::WebTextInputType type);
+
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+  // Checks if the composition range or composition character bounds have been
+  // changed. If they are changed, the new value will be sent to the browser
+  // process.
+  void UpdateCompositionInfo(bool should_update_range);
 
   // Override point to obtain that the current composition character bounds.
   // In the case of surrogate pairs, the character is treated as two characters:
@@ -448,6 +449,7 @@ class CONTENT_EXPORT RenderWidget
   bool ShouldUpdateCompositionInfo(
       const ui::Range& range,
       const std::vector<gfx::Rect>& bounds);
+#endif
 
   // Override point to obtain that the current input method state about
   // composition text.

@@ -844,11 +844,6 @@ void RenderWidgetHostViewGtk::ImeCancelComposition() {
   im_context_->CancelComposition();
 }
 
-void RenderWidgetHostViewGtk::ImeCompositionRangeChanged(
-    const ui::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
-}
-
 void RenderWidgetHostViewGtk::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,

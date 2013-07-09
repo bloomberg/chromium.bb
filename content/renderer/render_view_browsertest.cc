@@ -1670,6 +1670,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_EQ(1, was_page_b);
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   LoadHTML("<textarea id=\"test\"></textarea>");
   ExecuteJavaScript("document.getElementById('test').focus();");
@@ -1733,6 +1734,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   }
   view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
 }
+#endif
 
 TEST_F(RenderViewImplTest, ZoomLimit) {
   const double kMinZoomLevel =
