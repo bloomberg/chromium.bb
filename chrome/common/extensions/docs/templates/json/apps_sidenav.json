@@ -177,6 +177,15 @@
     ]
   },
   {
+    "title": "Google Services",
+    "items": [
+      {
+        "title": "In-App Payments",
+        "href": "/apps/in_app_payments.html"
+      }
+    ]
+  },
+  {
     "title": "Reference",
     "items": [
       {

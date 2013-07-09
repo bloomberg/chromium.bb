@@ -566,6 +566,12 @@ button.google-button:active {
   clear: right;
 }
 
+/* small indent for better visual distinction
+   (e.g., in a long list) */
+.indent-small {
+  margin-left: 2em;
+}
+
 /* Tabbed pane with header (tabs) and content */
 tabs {
   margin: 25px 0;
