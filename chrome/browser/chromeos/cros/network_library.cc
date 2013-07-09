@@ -227,54 +227,14 @@ Network::Network(const std::string& service_path,
       notify_failure_(false),
       profile_type_(PROFILE_NONE),
       service_path_(service_path),
-      type_(type),
-      is_behind_portal_for_testing_(false) {
+      type_(type) {
 }
 
 Network::~Network() {
-  for (PropertyMap::const_iterator props = property_map_.begin();
-       props != property_map_.end(); ++props) {
-     delete props->second;
-  }
 }
 
 void Network::SetNetworkParser(NetworkParser* parser) {
   network_parser_.reset(parser);
-}
-
-void Network::UpdatePropertyMap(PropertyIndex index, const base::Value* value) {
-  if (!value) {
-    // Clear the property if |value| is NULL.
-    PropertyMap::iterator iter(property_map_.find(index));
-    if (iter != property_map_.end()) {
-      delete iter->second;
-      property_map_.erase(iter);
-    }
-    return;
-  }
-
-  // Add the property to property_map_.  Delete previous value if necessary.
-  Value*& entry = property_map_[index];
-  delete entry;
-  entry = value->DeepCopy();
-  if (VLOG_IS_ON(3)) {
-    std::string value_json;
-    base::JSONWriter::WriteWithOptions(value,
-                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                       &value_json);
-    VLOG(3) << "Updated property map on network: "
-            << unique_id() << "[" << index << "] = " << value_json;
-  }
-}
-
-bool Network::GetProperty(PropertyIndex index,
-                          const base::Value** value) const {
-  PropertyMap::const_iterator i = property_map_.find(index);
-  if (i == property_map_.end())
-    return false;
-  if (value != NULL)
-    *value = i->second;
-  return true;
 }
 
 // static
@@ -1119,14 +1079,6 @@ void WifiNetwork::EraseCredentials() {
   WipeString(&eap_identity_);
   WipeString(&eap_anonymous_identity_);
   WipeString(&eap_passphrase_);
-}
-
-void WifiNetwork::SetIdentity(const std::string& identity) {
-  SetStringProperty(flimflam::kIdentityProperty, identity, &identity_);
-}
-
-void WifiNetwork::SetHiddenSSID(bool hidden_ssid) {
-  SetBooleanProperty(flimflam::kWifiHiddenSsid, hidden_ssid, &hidden_ssid_);
 }
 
 void WifiNetwork::SetEAPMethod(EAPMethod method) {

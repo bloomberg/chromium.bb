@@ -117,9 +117,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, wimax_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const WimaxNetwork*)(NULL))));
-  EXPECT_CALL(*mock_network_library_, mobile_network())
-      .Times(AnyNumber())
-      .WillRepeatedly((Return((const Network*)(NULL))));
   EXPECT_CALL(*mock_network_library_, cellular_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const CellularNetwork*)(NULL))));
@@ -153,8 +150,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, cellular_initializing())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
-  EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
-        .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
         .Times(AnyNumber());
 

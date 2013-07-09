@@ -121,7 +121,6 @@ bool NetworkParser::UpdateStatus(const std::string& key,
   PropertyIndex found_index = mapper().Get(key);
   if (index)
     *index = found_index;
-  network->UpdatePropertyMap(found_index, &value);
   if (!ParseValue(found_index, value, network)) {
     VLOG(3) << "Unhandled key '" << key << "' in Network: " << network->name()
             << " ID: " << network->unique_id()

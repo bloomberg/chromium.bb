@@ -102,7 +102,6 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kMdnProperty, PROPERTY_INDEX_MDN },
   { flimflam::kMeidProperty, PROPERTY_INDEX_MEID },
   { flimflam::kMinProperty, PROPERTY_INDEX_MIN },
-  { flimflam::kModeProperty, PROPERTY_INDEX_MODE },
   { flimflam::kModelIDProperty, PROPERTY_INDEX_MODEL_ID },
   { flimflam::kNameProperty, PROPERTY_INDEX_NAME },
   { flimflam::kNetworkTechnologyProperty, PROPERTY_INDEX_NETWORK_TECHNOLOGY },
@@ -737,14 +736,6 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
       }
       break;
     }
-    case PROPERTY_INDEX_MODE: {
-      std::string mode_string;
-      if (value.GetAsString(&mode_string)) {
-        network->set_mode(ParseMode(mode_string));
-        return true;
-      }
-      break;
-    }
     case PROPERTY_INDEX_ERROR: {
       std::string error_string;
       if (value.GetAsString(&error_string)) {
@@ -796,16 +787,6 @@ ConnectionType NativeNetworkParser::ParseTypeFromDictionary(
   std::string type_string;
   info.GetString(flimflam::kTypeProperty, &type_string);
   return ParseType(type_string);
-}
-
-ConnectionMode NativeNetworkParser::ParseMode(const std::string& mode) {
-  static EnumMapper<ConnectionMode>::Pair table[] = {
-    { flimflam::kModeManaged, MODE_MANAGED },
-    { flimflam::kModeAdhoc, MODE_ADHOC },
-  };
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionMode>, parser,
-      (table, arraysize(table), MODE_UNKNOWN));
-  return parser.Get(mode);
 }
 
 ConnectionState NativeNetworkParser::ParseState(const std::string& state) {

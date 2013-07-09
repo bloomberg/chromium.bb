@@ -228,11 +228,6 @@ CHROMEOS_EXPORT void CrosRequestCellularRegister(
     const std::string& network_id,
     const NetworkOperationCallback& callback);
 
-// Enables or disables the specific network device for connection.
-// Set offline mode. This will turn off all radios.
-// Returns false on failure and true on success.
-CHROMEOS_EXPORT bool CrosSetOfflineMode(bool offline);
-
 // Gets a list of all the NetworkIPConfigs using a given device path,
 // and returns the information via callback.
 CHROMEOS_EXPORT void CrosListIPConfigs(
@@ -252,9 +247,6 @@ CHROMEOS_EXPORT void CrosConfigureService(
 CHROMEOS_EXPORT void CrosSetCarrier(const std::string& device_path,
                                     const std::string& carrier,
                                     const NetworkOperationCallback& callback);
-
-// Resets the device.
-CHROMEOS_EXPORT void CrosReset(const std::string& device_path);
 
 }  // namespace chromeos
 

@@ -75,7 +75,6 @@ class NativeNetworkParser : public NetworkParser {
   virtual ConnectionType ParseTypeFromDictionary(
       const base::DictionaryValue& info) OVERRIDE;
 
-  ConnectionMode ParseMode(const std::string& mode);
   ConnectionState ParseState(const std::string& state);
   ConnectionError ParseError(const std::string& error);
 

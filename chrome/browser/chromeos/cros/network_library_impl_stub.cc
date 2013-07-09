@@ -231,7 +231,6 @@ void NetworkLibraryImplStub::CompleteWifiInit() {
   AddStubNetwork(vpn_cert_pattern, PROFILE_USER);
 
   wifi_scanning_ = false;
-  offline_mode_ = false;
 
   // Ensure our active network is connected and vice versa, otherwise our
   // autotest browser_tests sometimes conclude the device is offline.
@@ -471,10 +470,7 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
   }
 
   // Set connected state.
-  if (network->is_behind_portal_for_testing())
-    network->set_behind_portal();
-  else
-    network->set_connected();
+  network->set_connected();
   network->set_user_connect_state(USER_CONNECT_CONNECTED);
 
   // Make the connected network the highest priority network.
@@ -684,9 +680,6 @@ void NetworkLibraryImplStub::SetCarrier(
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
-void NetworkLibraryImplStub::ResetModem() {
-}
-
 bool NetworkLibraryImplStub::IsCellularAlwaysInRoaming() {
   return false;
 }
@@ -702,9 +695,6 @@ void NetworkLibraryImplStub::RequestNetworkScan() {
       base::TimeDelta::FromMilliseconds(scan_delay_ms));
 }
 
-void NetworkLibraryImplStub::RefreshIPConfig(Network* network) {
-}
-
 void NetworkLibraryImplStub::DisconnectFromNetwork(const Network* network) {
   // Update the network state here since no network manager in stub impl.
   Network* modify_network = const_cast<Network*>(network);
@@ -718,14 +708,6 @@ void NetworkLibraryImplStub::DisconnectFromNetwork(const Network* network) {
     active_virtual_ = NULL;
   SignalNetworkManagerObservers();
   NotifyNetworkChanged(network);
-}
-
-void NetworkLibraryImplStub::EnableOfflineMode(bool enable) {
-  if (enable != offline_mode_) {
-    offline_mode_ = enable;
-    CallEnableNetworkDeviceType(TYPE_WIFI, !enable);
-    CallEnableNetworkDeviceType(TYPE_CELLULAR, !enable);
-  }
 }
 
 void NetworkLibraryImplStub::GetIPConfigs(

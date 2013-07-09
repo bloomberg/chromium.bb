@@ -58,18 +58,13 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void SetCellularDataRoamingAllowed(bool new_value) OVERRIDE;
   virtual void SetCarrier(const std::string& carrier,
                           const NetworkOperationCallback& completed) OVERRIDE;
-  virtual void ResetModem() OVERRIDE;
   virtual bool IsCellularAlwaysInRoaming() OVERRIDE;
   virtual void RequestNetworkScan() OVERRIDE;
-
-  virtual void RefreshIPConfig(Network* network) OVERRIDE;
 
   virtual void DisconnectFromNetwork(const Network* network) OVERRIDE;
   virtual void CallEnableNetworkDeviceType(
       ConnectionType device, bool enable) OVERRIDE;
   virtual void CallRemoveNetwork(const Network* network) OVERRIDE;
-
-  virtual void EnableOfflineMode(bool enable) OVERRIDE;
 
   virtual void GetIPConfigs(
       const std::string& device_path,
@@ -137,6 +132,10 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   // since Bind only takes up to six parameters.
   struct IPParameterInfo;
 
+  // Refresh the IP configuration of the given network after changes.  Puts
+  // newly configured properties into effect and renews DHCP lease.
+  void RefreshIPConfig(Network* network);
+
   // Second half of setting IP Parameters.  SetIPParameters above kicks off
   // an async information fetch, and this completes the operation when that
   // fetch is complete.
@@ -183,8 +182,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   class NetworkLibraryDeviceObserver : public NetworkDeviceObserver {
    public:
     virtual ~NetworkLibraryDeviceObserver() {}
-    virtual void OnNetworkDeviceChanged(
-        NetworkLibrary* cros, const NetworkDevice* device) OVERRIDE {}
   };
 
   typedef std::map<std::string, CrosNetworkWatcher*> NetworkWatcherMap;

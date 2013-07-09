@@ -63,7 +63,6 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
       enabled_devices_(0),
       busy_devices_(0),
       wifi_scanning_(false),
-      offline_mode_(false),
       is_locked_(false),
       sim_operation_(SIM_OPERATION_NONE),
       notify_manager_weak_factory_(this) {
@@ -75,7 +74,6 @@ NetworkLibraryImplBase::~NetworkLibraryImplBase() {
   network_profile_observers_.Clear();
   network_manager_observers_.Clear();
   pin_operation_observers_.Clear();
-  user_action_observers_.Clear();
   STLDeleteValues(&network_map_);
   ClearNetworks();
   DeleteRememberedNetworks();
@@ -207,17 +205,6 @@ void NetworkLibraryImplBase::RemovePinOperationObserver(
   pin_operation_observers_.RemoveObserver(observer);
 }
 
-void NetworkLibraryImplBase::AddUserActionObserver(
-    UserActionObserver* observer) {
-  if (!user_action_observers_.HasObserver(observer))
-    user_action_observers_.AddObserver(observer);
-}
-
-void NetworkLibraryImplBase::RemoveUserActionObserver(
-    UserActionObserver* observer) {
-  user_action_observers_.RemoveObserver(observer);
-}
-
 const EthernetNetwork* NetworkLibraryImplBase::ethernet_network() const {
   return ethernet_;
 }
@@ -254,17 +241,6 @@ bool NetworkLibraryImplBase::wimax_connecting() const {
 }
 bool NetworkLibraryImplBase::wimax_connected() const {
   return active_wimax_ ? active_wimax_->connected() : false;
-}
-const Network* NetworkLibraryImplBase::mobile_network() const {
-  return active_cellular_ ?
-      static_cast<Network*>(active_cellular_) :
-      static_cast<Network*>(active_wimax_);
-}
-bool NetworkLibraryImplBase::mobile_connecting() const {
-  return cellular_connecting() || wimax_connecting();
-}
-bool NetworkLibraryImplBase::mobile_connected() const {
-  return wimax_connecting() || wimax_connected();
 }
 const VirtualNetwork* NetworkLibraryImplBase::virtual_network() const {
   return active_virtual_;
@@ -383,10 +359,6 @@ bool NetworkLibraryImplBase::cellular_available() const {
   return available_devices_ & (1 << TYPE_CELLULAR);
 }
 
-bool NetworkLibraryImplBase::mobile_available() const {
-  return cellular_available() || wimax_available();
-}
-
 bool NetworkLibraryImplBase::ethernet_enabled() const {
   return enabled_devices_ & (1 << TYPE_ETHERNET);
 }
@@ -403,10 +375,6 @@ bool NetworkLibraryImplBase::cellular_enabled() const {
   return enabled_devices_ & (1 << TYPE_CELLULAR);
 }
 
-bool NetworkLibraryImplBase::mobile_enabled() const {
-  return cellular_enabled() || wimax_enabled();
-}
-
 bool NetworkLibraryImplBase::wifi_scanning() const {
   return wifi_scanning_;
 }
@@ -418,22 +386,6 @@ bool NetworkLibraryImplBase::cellular_initializing() const {
   if (device && device->scanning())
     return true;
   return false;
-}
-
-bool NetworkLibraryImplBase::offline_mode() const { return offline_mode_; }
-
-// Returns the IP address for the active network.
-// TODO(stevenjb): Fix this for VPNs. See chromium-os:13972.
-const std::string& NetworkLibraryImplBase::IPAddress() const {
-  const Network* result = active_network();
-  if (!result)
-    result = connected_network();  // happens if we are connected to a VPN.
-  if (!result)
-    result = ethernet_;  // Use non active ethernet addr if no active network.
-  if (result)
-    return result->ip_address();
-  CR_DEFINE_STATIC_LOCAL(std::string, null_address, ("0.0.0.0"));
-  return null_address;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -458,18 +410,6 @@ NetworkDevice* NetworkLibraryImplBase::FindNetworkDeviceByPath(
 
 const NetworkDevice* NetworkLibraryImplBase::FindCellularDevice() const {
   return FindDeviceByType(TYPE_CELLULAR);
-}
-
-const NetworkDevice* NetworkLibraryImplBase::FindEthernetDevice() const {
-  return FindDeviceByType(TYPE_ETHERNET);
-}
-
-const NetworkDevice* NetworkLibraryImplBase::FindWifiDevice() const {
-  return FindDeviceByType(TYPE_WIFI);
-}
-
-const NetworkDevice* NetworkLibraryImplBase::FindWimaxDevice() const {
-  return FindDeviceByType(TYPE_WIMAX);
 }
 
 const NetworkDevice* NetworkLibraryImplBase::FindMobileDevice() const {
@@ -780,7 +720,6 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
 
   // Notify observers.
   NotifyNetworkManagerChanged(true);  // Forced update.
-  NotifyUserConnectionInitiated(network);
   NotifyNetworkChanged(network);
 }
 
@@ -960,11 +899,6 @@ void NetworkLibraryImplBase::EnableWifiNetworkDevice(bool enable) {
   if (is_locked_)
     return;
   CallEnableNetworkDeviceType(TYPE_WIFI, enable);
-}
-
-void NetworkLibraryImplBase::EnableMobileNetworkDevice(bool enable) {
-  EnableWimaxNetworkDevice(enable);
-  EnableCellularNetworkDevice(enable);
 }
 
 void NetworkLibraryImplBase::EnableWimaxNetworkDevice(bool enable) {
@@ -1629,9 +1563,6 @@ void NetworkLibraryImplBase::NotifyNetworkDeviceChanged(
                         *device_observer_list,
                         OnNetworkDeviceSimLockChanged(this, device));
     }
-    FOR_EACH_OBSERVER(NetworkDeviceObserver,
-                      *device_observer_list,
-                      OnNetworkDeviceChanged(this, device));
   } else {
     LOG(ERROR) << "Unexpected signal for unobserved device: "
                << device->name();
@@ -1644,13 +1575,6 @@ void NetworkLibraryImplBase::NotifyPinOperationCompleted(
                     pin_operation_observers_,
                     OnPinOperationCompleted(this, error));
   sim_operation_ = SIM_OPERATION_NONE;
-}
-
-void NetworkLibraryImplBase::NotifyUserConnectionInitiated(
-    const Network* network) {
-  FOR_EACH_OBSERVER(UserActionObserver,
-                    user_action_observers_,
-                    OnConnectionInitiated(this, network));
 }
 
 //////////////////////////////////////////////////////////////////////////////

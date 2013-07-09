@@ -35,8 +35,6 @@ class MockNetworkLibrary : public NetworkLibrary {
                                                  NetworkDeviceObserver*));
   MOCK_METHOD1(AddPinOperationObserver, void(PinOperationObserver*));
   MOCK_METHOD1(RemovePinOperationObserver, void(PinOperationObserver*));
-  MOCK_METHOD1(AddUserActionObserver, void(UserActionObserver*));
-  MOCK_METHOD1(RemoveUserActionObserver, void(UserActionObserver*));
   MOCK_CONST_METHOD0(ethernet_network, const EthernetNetwork*(void));
   MOCK_CONST_METHOD0(ethernet_connecting, bool(void));
   MOCK_CONST_METHOD0(ethernet_connected, bool(void));
@@ -53,10 +51,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wimax_connecting, bool(void));
   MOCK_CONST_METHOD0(wimax_connected, bool(void));
 
-  MOCK_CONST_METHOD0(mobile_network, const Network*(void));
-  MOCK_CONST_METHOD0(mobile_connecting, bool(void));
-  MOCK_CONST_METHOD0(mobile_connected, bool(void));
-
   MOCK_CONST_METHOD0(virtual_network, const VirtualNetwork*(void));
   MOCK_CONST_METHOD0(virtual_network_connecting, bool(void));
   MOCK_CONST_METHOD0(virtual_network_connected, bool(void));
@@ -64,7 +58,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(Connected, bool(void));
   MOCK_CONST_METHOD0(Connecting, bool(void));
 
-  MOCK_CONST_METHOD0(IPAddress, const std::string&(void));
   MOCK_CONST_METHOD0(wifi_networks, const WifiNetworkVector&(void));
   MOCK_CONST_METHOD0(remembered_wifi_networks, const WifiNetworkVector&(void));
   MOCK_CONST_METHOD0(cellular_networks, const CellularNetworkVector&(void));
@@ -104,13 +97,10 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(SetCellularDataRoamingAllowed, void(bool));
   MOCK_METHOD2(SetCarrier, void(const std::string&,
                                 const NetworkOperationCallback&));
-  MOCK_METHOD0(ResetModem, void());
   MOCK_METHOD0(IsCellularAlwaysInRoaming, bool());
 
   MOCK_METHOD0(RequestNetworkScan, void(void));
-  MOCK_CONST_METHOD1(HasProfileType, bool(NetworkProfileType));
   MOCK_CONST_METHOD1(CanConnectToNetwork, bool(const Network*));
-  MOCK_METHOD1(RefreshIPConfig, void(Network*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
   MOCK_METHOD2(ConnectToWifiNetwork, void(WifiNetwork*, bool));
   MOCK_METHOD1(ConnectToWimaxNetwork, void(WimaxNetwork*));
@@ -141,13 +131,11 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wifi_available, bool(void));
   MOCK_CONST_METHOD0(cellular_available, bool(void));
   MOCK_CONST_METHOD0(wimax_available, bool(void));
-  MOCK_CONST_METHOD0(mobile_available, bool(void));
 
   MOCK_CONST_METHOD0(ethernet_enabled, bool(void));
   MOCK_CONST_METHOD0(wifi_enabled, bool(void));
   MOCK_CONST_METHOD0(cellular_enabled, bool(void));
   MOCK_CONST_METHOD0(wimax_enabled, bool(void));
-  MOCK_CONST_METHOD0(mobile_enabled, bool(void));
 
   MOCK_CONST_METHOD0(active_network, const Network*(void));
   MOCK_CONST_METHOD0(active_nonvirtual_network, const Network*(void));
@@ -156,14 +144,11 @@ class MockNetworkLibrary : public NetworkLibrary {
 
   MOCK_CONST_METHOD0(wifi_scanning, bool(void));
   MOCK_CONST_METHOD0(cellular_initializing, bool(void));
-  MOCK_CONST_METHOD0(offline_mode, bool(void));
 
   MOCK_METHOD1(EnableEthernetNetworkDevice, void(bool));
   MOCK_METHOD1(EnableWifiNetworkDevice, void(bool));
   MOCK_METHOD1(EnableCellularNetworkDevice, void(bool));
   MOCK_METHOD1(EnableWimaxNetworkDevice, void(bool));
-  MOCK_METHOD1(EnableMobileNetworkDevice, void(bool));
-  MOCK_METHOD1(EnableOfflineMode, void(bool));
   MOCK_METHOD3(GetIPConfigs, void(const std::string&,
                                   HardwareAddressFormat,
                                   const NetworkGetIPConfigsCallback&));
@@ -176,7 +161,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD2(RequestNetworkServiceProperties,
                void(const std::string&,
                     const NetworkServicePropertiesCallback&));
-  MOCK_METHOD0(SwitchToPreferredNetwork, void(void));
   MOCK_METHOD2(LoadOncNetworks, void(const base::ListValue&,
                                      onc::ONCSource));
   MOCK_METHOD2(SetActiveNetwork, bool(ConnectionType, const std::string&));

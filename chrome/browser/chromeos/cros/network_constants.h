@@ -82,7 +82,6 @@ enum PropertyIndex {
   PROPERTY_INDEX_MDN,
   PROPERTY_INDEX_MEID,
   PROPERTY_INDEX_MIN,
-  PROPERTY_INDEX_MODE,
   PROPERTY_INDEX_MODEL_ID,
   PROPERTY_INDEX_NAME,
   PROPERTY_INDEX_NETWORKS,
@@ -175,12 +174,6 @@ enum ConnectionType {
   TYPE_BLUETOOTH = 4,
   TYPE_CELLULAR  = 5,
   TYPE_VPN       = 6,
-};
-
-enum ConnectionMode {
-  MODE_UNKNOWN = 0,
-  MODE_MANAGED = 1,
-  MODE_ADHOC   = 2,
 };
 
 enum ConnectionSecurity {

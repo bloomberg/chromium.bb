@@ -774,14 +774,6 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestCellularRegister) {
   callback.Run();
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosSetOfflineMode) {
-  const bool kOffline = true;
-  const base::FundamentalValue value(kOffline);
-  EXPECT_CALL(*mock_manager_client_, SetProperty(
-      flimflam::kOfflineModeProperty, IsEqualTo(&value), _, _)).Times(1);
-  CrosSetOfflineMode(kOffline);
-}
-
 TEST_F(CrosNetworkFunctionsTest, CrosConfigureService) {
   const std::string key1 = "key1";
   const std::string string1 = "string1";

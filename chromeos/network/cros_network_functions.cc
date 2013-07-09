@@ -595,14 +595,6 @@ void CrosRequestCellularRegister(const std::string& device_path,
       base::Bind(&OnNetworkActionError, callback, device_path));
 }
 
-bool CrosSetOfflineMode(bool offline) {
-  base::FundamentalValue value(offline);
-  DBusThreadManager::Get()->GetShillManagerClient()->SetProperty(
-      flimflam::kOfflineModeProperty, value, base::Bind(&DoNothing),
-      base::Bind(&IgnoreErrors));
-  return true;
-}
-
 void CrosListIPConfigs(const std::string& device_path,
                        const NetworkGetIPConfigsCallback& callback) {
   const dbus::ObjectPath device_object_path(device_path);
@@ -632,14 +624,6 @@ void CrosSetCarrier(const std::string& device_path,
       base::Bind(callback, device_path, NETWORK_METHOD_ERROR_NONE,
                  std::string()),
       base::Bind(&OnNetworkActionError, callback, device_path));
-}
-
-// Resets the device.
-void CrosReset(const std::string& device_path) {
-  DBusThreadManager::Get()->GetShillDeviceClient()->Reset(
-      dbus::ObjectPath(device_path),
-      base::Bind(&DoNothing),
-      base::Bind(&IgnoreErrors));
 }
 
 }  // namespace chromeos

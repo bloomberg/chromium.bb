@@ -423,15 +423,6 @@ void NetworkLibraryImplCros::SetCarrier(
   CrosSetCarrier(cellular->device_path(), carrier, completed);
 }
 
-void NetworkLibraryImplCros::ResetModem() {
-  const NetworkDevice* cellular = FindCellularDevice();
-  if (!cellular) {
-    NOTREACHED() << "Calling ResetModem method w/o cellular device.";
-    return;
-  }
-  CrosReset(cellular->device_path());
-}
-
 bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
   const NetworkDevice* cellular = FindCellularDevice();
   if (!cellular) {
@@ -501,13 +492,6 @@ void NetworkLibraryImplCros::CallRemoveNetwork(const Network* network) {
     CrosRequestNetworkServiceDisconnect(service_path);
   CrosRequestRemoveNetworkService(service_path);
 }
-
-void NetworkLibraryImplCros::EnableOfflineMode(bool enable) {
-  // If network device is already enabled/disabled, then don't do anything.
-  if (CrosSetOfflineMode(enable))
-    offline_mode_ = enable;
-}
-
 
 void NetworkLibraryImplCros::GetIPConfigsCallback(
     const NetworkGetIPConfigsCallback& callback,
@@ -636,12 +620,6 @@ bool NetworkLibraryImplCros::NetworkManagerStatusChanged(
     case PROPERTY_INDEX_DEFAULT_TECHNOLOGY:
       // Currently we ignore DefaultTechnology.
       break;
-    case PROPERTY_INDEX_OFFLINE_MODE: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_BOOLEAN);
-      value->GetAsBoolean(&offline_mode_);
-      NotifyNetworkManagerChanged(false);  // Not forced.
-      break;
-    }
     case PROPERTY_INDEX_ACTIVE_PROFILE: {
       std::string prev = active_profile_path_;
       DCHECK_EQ(value->GetType(), Value::TYPE_STRING);
