@@ -97,6 +97,8 @@ AlarmManager::AlarmManager(Profile* profile)
       delegate_(new DefaultAlarmDelegate(profile)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
 
   StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
   if (storage)
@@ -342,6 +344,12 @@ void AlarmManager::Observe(
             base::Bind(&AlarmManager::ReadFromStorage,
                        AsWeakPtr(), extension->id()));
       }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      RemoveAllAlarms(extension->id());
       break;
     }
     default:
