@@ -56,9 +56,11 @@ class Namespace(object):
   def __init__(self, json, source_file, include_compiler_options=False):
     self.name = json['namespace']
     if 'description' not in json:
-      raise ValueError('%s must have a "description" field. This will appear '
+      # TODO(kalman): Go back to throwing an error here.
+      print('%s must have a "description" field. This will appear '
                        'on the API summary page.' % self.name)
-    self.description = json.get('description', None)
+      json['description'] = ''
+    self.description = json['description']
     self.unix_name = UnixName(self.name)
     self.source_file = source_file
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)

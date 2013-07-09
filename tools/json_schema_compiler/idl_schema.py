@@ -367,8 +367,10 @@ class IDLSchema(object):
     for node in self.idl:
       if node.cls == 'Namespace':
         if not description:
-          raise ValueError('%s must have a namespace-level comment. This will '
+          # TODO(kalman): Go back to throwing an error here.
+          print('%s must have a namespace-level comment. This will '
                            'appear on the API summary page.' % node.GetName())
+          description = ''
         namespace = Namespace(node, description, nodoc, internal)
         namespaces.append(namespace.process())
         nodoc = False
