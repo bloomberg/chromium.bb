@@ -22,6 +22,14 @@
 #define XIScrollClass 3
 #endif
 
+// Multi-touch support was introduced in XI 2.2. Add XI event types here
+// for backward-compatibility with older versions of XInput.
+#if !defined(XI_TouchBegin)
+#define XI_TouchBegin  18
+#define XI_TouchUpdate 19
+#define XI_TouchEnd    20
+#endif
+
 // Copied from xserver-properties.h
 #define AXIS_LABEL_PROP_REL_HWHEEL "Rel Horiz Wheel"
 #define AXIS_LABEL_PROP_REL_WHEEL "Rel Vert Wheel"
@@ -109,12 +117,52 @@ DeviceDataManager* DeviceDataManager::GetInstance() {
 DeviceDataManager::DeviceDataManager()
     : natural_scroll_enabled_(false),
       atom_cache_(ui::GetXDisplay(), kCachedAtoms) {
+  InitializeXInputInternal();
+
   // Make sure the sizes of enum and kCachedAtoms are aligned.
   CHECK(arraysize(kCachedAtoms) == static_cast<size_t>(DT_LAST_ENTRY) + 1);
   UpdateDeviceList(ui::GetXDisplay());
 }
 
 DeviceDataManager::~DeviceDataManager() {
+}
+
+bool DeviceDataManager::InitializeXInputInternal() {
+  // Check if XInput is available on the system.
+  xi_opcode_ = -1;
+  int opcode, event, error;
+  if (!XQueryExtension(
+      ui::GetXDisplay(), "XInputExtension", &opcode, &event, &error)) {
+    VLOG(1) << "X Input extension not available: error=" << error;
+    return false;
+  }
+  xi_opcode_ = opcode;
+
+  // Check the XInput version.
+#if defined(USE_XI2_MT)
+  int major = 2, minor = USE_XI2_MT;
+#else
+  int major = 2, minor = 0;
+#endif
+  if (XIQueryVersion(ui::GetXDisplay(), &major, &minor) == BadRequest) {
+    VLOG(1) << "XInput2 not supported in the server.";
+    return false;
+  }
+
+  // Possible XI event types for XIDeviceEvent. See the XI2 protocol
+  // specification.
+  xi_device_event_types_[XI_KeyPress] = true;
+  xi_device_event_types_[XI_KeyRelease] = true;
+  xi_device_event_types_[XI_ButtonPress] = true;
+  xi_device_event_types_[XI_ButtonRelease] = true;
+  xi_device_event_types_[XI_Motion] = true;
+  // Multi-touch support was introduced in XI 2.2.
+  if (minor >= 2) {
+    xi_device_event_types_[XI_TouchBegin] = true;
+    xi_device_event_types_[XI_TouchUpdate] = true;
+    xi_device_event_types_[XI_TouchEnd] = true;
+  }
+  return true;
 }
 
 float DeviceDataManager::GetNaturalScrollFactor(int sourceid) const {
@@ -264,6 +312,14 @@ bool DeviceDataManager::GetEventData(const XEvent& xev,
 #endif
 
   return false;
+}
+
+bool DeviceDataManager::IsXIDeviceEvent(
+    const base::NativeEvent& native_event) const {
+  if (native_event->type != GenericEvent ||
+      native_event->xcookie.extension != xi_opcode_)
+    return false;
+  return xi_device_event_types_[native_event->xcookie.evtype];
 }
 
 bool DeviceDataManager::IsTouchpadXInputEvent(
