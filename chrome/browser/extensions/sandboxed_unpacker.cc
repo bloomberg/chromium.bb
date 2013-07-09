@@ -178,14 +178,12 @@ namespace extensions {
 
 SandboxedUnpacker::SandboxedUnpacker(
     const base::FilePath& crx_path,
-    bool run_out_of_process,
     Manifest::Location location,
     int creation_flags,
     const base::FilePath& extensions_dir,
     base::SequencedTaskRunner* unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
     : crx_path_(crx_path),
-      run_out_of_process_(run_out_of_process),
       client_(client),
       extensions_dir_(extensions_dir),
       got_response_(false),
@@ -256,46 +254,29 @@ void SandboxedUnpacker::Start() {
     return;
   }
 
-  // If we are supposed to use a subprocess, kick off the subprocess.
-  //
-  // TODO(asargent) we shouldn't need to do this branch here - instead
-  // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-  bool use_utility_process = run_out_of_process_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-  if (use_utility_process) {
-    // The utility process will have access to the directory passed to
-    // SandboxedUnpacker.  That directory should not contain a symlink or NTFS
-    // reparse point.  When the path is used, following the link/reparse point
-    // will cause file system access outside the sandbox path, and the sandbox
-    // will deny the operation.
-    base::FilePath link_free_crx_path;
-    if (!file_util::NormalizeFilePath(temp_crx_path, &link_free_crx_path)) {
-      LOG(ERROR) << "Could not get the normalized path of "
-                 << temp_crx_path.value();
-      ReportFailure(
-          COULD_NOT_GET_SANDBOX_FRIENDLY_PATH,
-          l10n_util::GetStringUTF16(IDS_EXTENSION_UNPACK_FAILED));
-      return;
-    }
-    PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackLinkFreeCrxPathLength",
-                          link_free_crx_path);
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &SandboxedUnpacker::StartProcessOnIOThread,
-            this,
-            link_free_crx_path));
-  } else {
-    // Otherwise, unpack the extension in this process.
-    Unpacker unpacker(temp_crx_path, extension_id_, location_, creation_flags_);
-    if (unpacker.Run() && unpacker.DumpImagesToFile() &&
-        unpacker.DumpMessageCatalogsToFile()) {
-      OnUnpackExtensionSucceeded(*unpacker.parsed_manifest());
-    } else {
-      OnUnpackExtensionFailed(unpacker.error_message());
-    }
+  // The utility process will have access to the directory passed to
+  // SandboxedUnpacker.  That directory should not contain a symlink or NTFS
+  // reparse point.  When the path is used, following the link/reparse point
+  // will cause file system access outside the sandbox path, and the sandbox
+  // will deny the operation.
+  base::FilePath link_free_crx_path;
+  if (!file_util::NormalizeFilePath(temp_crx_path, &link_free_crx_path)) {
+    LOG(ERROR) << "Could not get the normalized path of "
+               << temp_crx_path.value();
+    ReportFailure(
+        COULD_NOT_GET_SANDBOX_FRIENDLY_PATH,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_UNPACK_FAILED));
+    return;
   }
+  PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackLinkFreeCrxPathLength",
+                        link_free_crx_path);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &SandboxedUnpacker::StartProcessOnIOThread,
+          this,
+          link_free_crx_path));
 }
 
 SandboxedUnpacker::~SandboxedUnpacker() {

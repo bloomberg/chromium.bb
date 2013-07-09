@@ -186,7 +186,6 @@ void KioskModeScreensaver::ScreensaverPathCallback(
   scoped_refptr<SandboxedUnpacker> screensaver_unpacker(
       new SandboxedUnpacker(
           screensaver_crx,
-          true,
           extensions::Manifest::COMPONENT,
           Extension::NO_FLAGS,
           extensions_dir,

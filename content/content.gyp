@@ -91,6 +91,7 @@
               'dependencies': [
                 'content_gpu',
                 'content_renderer',
+                'content_utility',
               ],
             }],
             ['chrome_split_dll', {

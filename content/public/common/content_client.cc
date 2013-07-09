@@ -30,6 +30,12 @@ class InternalTestInitializer {
     g_client->renderer_ = r;
     return rv;
   }
+
+  static ContentUtilityClient* SetUtility(ContentUtilityClient* u) {
+    ContentUtilityClient* rv = g_client->utility_;
+    g_client->utility_ = u;
+    return rv;
+  }
 };
 
 void SetContentClient(ContentClient* client) {
@@ -53,6 +59,10 @@ ContentBrowserClient* SetBrowserClientForTesting(ContentBrowserClient* b) {
 
 ContentRendererClient* SetRendererClientForTesting(ContentRendererClient* r) {
   return InternalTestInitializer::SetRenderer(r);
+}
+
+ContentUtilityClient* SetUtilityClientForTesting(ContentUtilityClient* u) {
+  return InternalTestInitializer::SetUtility(u);
 }
 
 const std::string& GetUserAgent(const GURL& url) {

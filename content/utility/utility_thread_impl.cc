@@ -13,7 +13,9 @@
 #include "content/child/webkitplatformsupport_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/utility_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/utility/content_utility_client.h"
+#include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -36,19 +38,22 @@ void ConvertVector(const SRC& src, DEST* dest) {
 
 }  // namespace
 
-UtilityThreadImpl::UtilityThreadImpl()
-    : batch_mode_(false) {
-  ChildProcess::current()->AddRefProcess();
-  webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
-  WebKit::initialize(webkit_platform_support_.get());
-  GetContentClient()->utility()->UtilityThreadStarted();
+UtilityThreadImpl::UtilityThreadImpl() : single_process_(false) {
+  Init();
+}
+
+UtilityThreadImpl::UtilityThreadImpl(const std::string& channel_name)
+    : ChildThread(channel_name),
+      single_process_(true) {
+  Init();
 }
 
 UtilityThreadImpl::~UtilityThreadImpl() {
 }
 
 void UtilityThreadImpl::Shutdown() {
-  WebKit::shutdown();
+  if (!single_process_)
+    WebKit::shutdown();
 }
 
 bool UtilityThreadImpl::Send(IPC::Message* msg) {
@@ -56,8 +61,20 @@ bool UtilityThreadImpl::Send(IPC::Message* msg) {
 }
 
 void UtilityThreadImpl::ReleaseProcessIfNeeded() {
-  if (!batch_mode_)
+  if (batch_mode_)
+    return;
+
+  if (single_process_) {
+    // Just quit the message loop directly so that unit tests don't need to
+    // pump the client message loop again. In normal multi-process mode, need
+    // normal shutdown as the IO thread could still be sending the result IPC.
+    // Also close the IPC channel manually as normally that's done by the child
+    // process exiting, which doesn't happen here.
+    channel()->Close();
+    base::MessageLoop::current()->Quit();
+  } else {
     ChildProcess::current()->ReleaseProcess();
+  }
 }
 
 #if defined(OS_WIN)
@@ -72,6 +89,19 @@ void UtilityThreadImpl::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
+void UtilityThreadImpl::Init() {
+  batch_mode_ = false;
+  ChildProcess::current()->AddRefProcess();
+  if (!single_process_) {
+    // We can only initialize WebKit on one thread, and in single process mode
+    // we run the utility thread on separate thread. This means that if any code
+    // needs WebKit initialized in the utility process, they need to have
+    // another path to support single process mode.
+    webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
+    WebKit::initialize(webkit_platform_support_.get());
+  }
+  GetContentClient()->utility()->UtilityThreadStarted();
+}
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   if (GetContentClient()->utility()->OnMessageReceived(msg))

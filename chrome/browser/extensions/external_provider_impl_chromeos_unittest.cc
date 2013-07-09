@@ -8,9 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 
 namespace extensions {
 
@@ -60,7 +63,9 @@ TEST_F(ExternalProviderImplTest, Normal) {
   InitServiceWithExternalProviders();
 
   service_->CheckForExternalUpdates();
-  loop_.RunUntilIdle();
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources()).Wait();
 
   EXPECT_TRUE(service_->GetInstalledExtension(kExternalAppId));
 }

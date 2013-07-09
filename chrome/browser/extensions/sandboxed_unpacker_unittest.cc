@@ -102,7 +102,6 @@ class SandboxedUnpackerTest : public testing::Test {
 
     sandboxed_unpacker_ = new SandboxedUnpacker(
         crx_path,
-        false,
         Manifest::INTERNAL,
         Extension::NO_FLAGS,
         extensions_dir_.path(),

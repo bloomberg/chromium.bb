@@ -26,6 +26,8 @@ class UtilityThreadImpl : public UtilityThread,
                           public ChildThread {
  public:
   UtilityThreadImpl();
+  // Constructor that's used when running in single process mode.
+  explicit UtilityThreadImpl(const std::string& channel_name);
   virtual ~UtilityThreadImpl();
   virtual void Shutdown() OVERRIDE;
 
@@ -37,6 +39,8 @@ class UtilityThreadImpl : public UtilityThread,
 #endif
 
  private:
+  void Init();
+
   // ChildThread implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -50,6 +54,9 @@ class UtilityThreadImpl : public UtilityThread,
 
   // True when we're running in batch mode.
   bool batch_mode_;
+
+  // True if running in single process mode.
+  bool single_process_;
 
   scoped_ptr<WebKitPlatformSupportImpl> webkit_platform_support_;
 

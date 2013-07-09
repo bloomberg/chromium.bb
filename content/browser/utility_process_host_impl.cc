@@ -7,15 +7,24 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/child/child_process.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/process_type.h"
+#include "content/utility/utility_thread_impl.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
@@ -45,6 +54,51 @@ private:
 };
 #endif
 
+// We want to ensure there's only one utility thread running at a time, as there
+// are many globals used in the utility process.
+static base::LazyInstance<base::Lock> g_one_utility_thread_lock;
+
+class UtilityMainThread : public base::Thread {
+ public:
+  UtilityMainThread(const std::string& channel_id)
+      : Thread("Chrome_InProcUtilityThread"),
+        channel_id_(channel_id) {
+  }
+
+  virtual ~UtilityMainThread() {
+    Stop();
+  }
+
+ private:
+  // base::Thread implementation:
+  virtual void Init() OVERRIDE {
+    // We need to return right away or else the main thread that started us will
+    // hang.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&UtilityMainThread::InitInternal, base::Unretained(this)));
+  }
+
+  virtual void CleanUp() OVERRIDE {
+    child_process_.reset();
+
+    // See comment in RendererMainThread.
+    SetThreadWasQuitProperly(true);
+    g_one_utility_thread_lock.Get().Release();
+  }
+
+  void InitInternal() {
+    g_one_utility_thread_lock.Get().Acquire();
+    child_process_.reset(new ChildProcess());
+    child_process_->set_main_thread(new UtilityThreadImpl(channel_id_));
+  }
+
+  std::string channel_id_;
+  scoped_ptr<ChildProcess> child_process_;
+
+  DISALLOW_COPY_AND_ASSIGN(UtilityMainThread);
+};
+
 UtilityProcessHost* UtilityProcessHost::Create(
     UtilityProcessHostClient* client,
     base::SequencedTaskRunner* client_task_runner) {
@@ -65,7 +119,6 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
 #endif
       use_linux_zygote_(false),
       started_(false) {
-  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this));
 }
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {
@@ -124,79 +177,88 @@ bool UtilityProcessHostImpl::StartProcess() {
 
   if (is_batch_mode_)
     return true;
+
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
+  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this));
   process_->SetName(ASCIIToUTF16("utility process"));
 
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
     return false;
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  int child_flags = child_flags_;
+  if (RenderProcessHost::run_renderer_in_process()) {
+    // See comment in RenderProcessHostImpl::Init() for the background on why we
+    // support single process mode this way.
+    in_process_thread_.reset(new UtilityMainThread(channel_id));
+    in_process_thread_->Start();
+  } else {
+    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    int child_flags = child_flags_;
 
 #if defined(OS_POSIX)
-  bool has_cmd_prefix = browser_command_line.HasSwitch(
-      switches::kUtilityCmdPrefix);
+    bool has_cmd_prefix = browser_command_line.HasSwitch(
+        switches::kUtilityCmdPrefix);
 
-  // When running under gdb, forking /proc/self/exe ends up forking the gdb
-  // executable instead of Chromium. It is almost safe to assume that no
-  // updates will happen while a developer is running with
-  // |switches::kUtilityCmdPrefix|. See ChildProcessHost::GetChildPath() for
-  // a similar case with Valgrind.
-  if (has_cmd_prefix)
-    child_flags = ChildProcessHost::CHILD_NORMAL;
+    // When running under gdb, forking /proc/self/exe ends up forking the gdb
+    // executable instead of Chromium. It is almost safe to assume that no
+    // updates will happen while a developer is running with
+    // |switches::kUtilityCmdPrefix|. See ChildProcessHost::GetChildPath() for
+    // a similar case with Valgrind.
+    if (has_cmd_prefix)
+      child_flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
-  if (exe_path.empty()) {
-    NOTREACHED() << "Unable to get utility process binary name.";
-    return false;
-  }
+    base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
+    if (exe_path.empty()) {
+      NOTREACHED() << "Unable to get utility process binary name.";
+      return false;
+    }
 
-  CommandLine* cmd_line = new CommandLine(exe_path);
-  cmd_line->AppendSwitchASCII(switches::kProcessType,
-                              switches::kUtilityProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  std::string locale = GetContentClient()->browser()->GetApplicationLocale();
-  cmd_line->AppendSwitchASCII(switches::kLang, locale);
+    CommandLine* cmd_line = new CommandLine(exe_path);
+    cmd_line->AppendSwitchASCII(switches::kProcessType,
+                                switches::kUtilityProcess);
+    cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
+    std::string locale = GetContentClient()->browser()->GetApplicationLocale();
+    cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
-  if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
-    cmd_line->AppendSwitch(switches::kNoSandbox);
+    if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
+      cmd_line->AppendSwitch(switches::kNoSandbox);
 #if defined(OS_MACOSX)
-  if (browser_command_line.HasSwitch(switches::kEnableSandboxLogging))
-    cmd_line->AppendSwitch(switches::kEnableSandboxLogging);
+    if (browser_command_line.HasSwitch(switches::kEnableSandboxLogging))
+      cmd_line->AppendSwitch(switches::kEnableSandboxLogging);
 #endif
-  if (browser_command_line.HasSwitch(switches::kDebugPluginLoading))
-    cmd_line->AppendSwitch(switches::kDebugPluginLoading);
+    if (browser_command_line.HasSwitch(switches::kDebugPluginLoading))
+      cmd_line->AppendSwitch(switches::kDebugPluginLoading);
 
 #if defined(OS_POSIX)
-  // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
-  // Linux updating.
-  if (has_cmd_prefix) {
-    // launch the utility child process with some prefix (usually "xterm -e gdb
-    // --args").
-    cmd_line->PrependWrapper(browser_command_line.GetSwitchValueNative(
-        switches::kUtilityCmdPrefix));
-  }
+    // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
+    // Linux updating.
+    if (has_cmd_prefix) {
+      // launch the utility child process with some prefix (usually "xterm -e gdb
+      // --args").
+      cmd_line->PrependWrapper(browser_command_line.GetSwitchValueNative(
+          switches::kUtilityCmdPrefix));
+    }
 
-  cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir, exposed_dir_);
+    cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir, exposed_dir_);
 #endif
 
-  bool use_zygote = false;
+    bool use_zygote = false;
 
 #if defined(OS_LINUX)
-  use_zygote = !no_sandbox_ && use_linux_zygote_;
+    use_zygote = !no_sandbox_ && use_linux_zygote_;
 #endif
 
-  process_->Launch(
+    process_->Launch(
 #if defined(OS_WIN)
-      new UtilitySandboxedProcessLauncherDelegate(exposed_dir_),
+        new UtilitySandboxedProcessLauncherDelegate(exposed_dir_),
 #elif defined(OS_POSIX)
-      use_zygote,
-      env_,
+        use_zygote,
+        env_,
 #endif
-      cmd_line);
+        cmd_line);
+  }
 
   return true;
 }

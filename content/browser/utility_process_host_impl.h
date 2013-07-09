@@ -22,6 +22,7 @@ class SequencedTaskRunner;
 
 namespace content {
 class BrowserChildProcessHostImpl;
+class UtilityMainThread;
 
 class CONTENT_EXPORT UtilityProcessHostImpl
     : public NON_EXPORTED_BASE(UtilityProcessHost),
@@ -77,6 +78,9 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool started_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
+
+  // Used in single-process mode instead of process_.
+  scoped_ptr<UtilityMainThread> in_process_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHostImpl);
 };

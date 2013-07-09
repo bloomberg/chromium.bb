@@ -74,7 +74,6 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // |client| with the result. If |run_out_of_process| is provided, unpacking
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedUnpacker(const base::FilePath& crx_path,
-                    bool run_out_of_process,
                     Manifest::Location location,
                     int creation_flags,
                     const base::FilePath& extensions_dir,
@@ -194,9 +193,6 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
 
   // The path to the CRX to unpack.
   base::FilePath crx_path_;
-
-  // True if unpacking should be done by the utility process.
-  bool run_out_of_process_;
 
   // Our client.
   scoped_refptr<SandboxedUnpackerClient> client_;

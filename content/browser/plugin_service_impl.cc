@@ -66,6 +66,13 @@ bool LoadPluginListInProcess() {
 #else
   // If on POSIX, we don't want to load the list of NPAPI plugins in-process as
   // that causes instability.
+
+  // Can't load the plugins on the utility thread when in single process mode
+  // since that requires using WebKit and GTK and they can only be used on the
+  // main thread.
+  if (RenderProcessHost::run_renderer_in_process())
+    return true;
+
   return !webkit::npapi::NPAPIPluginsSupported();
 #endif
 }

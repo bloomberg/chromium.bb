@@ -72,6 +72,8 @@ CONTENT_EXPORT ContentBrowserClient* SetBrowserClientForTesting(
     ContentBrowserClient* b);
 CONTENT_EXPORT ContentRendererClient* SetRendererClientForTesting(
     ContentRendererClient* r);
+CONTENT_EXPORT ContentUtilityClient* SetUtilityClientForTesting(
+    ContentUtilityClient* u);
 
 // Returns the user agent string being used by the browser. SetContentClient()
 // must be called prior to calling this, and this routine must be used

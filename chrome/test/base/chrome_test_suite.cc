@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/utility/chrome_content_utility_client.h"
 #include "content/public/test/test_launcher.h"
 #include "extensions/common/extension_paths.h"
 #include "net/base/net_errors.h"
@@ -144,7 +145,9 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
     browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
-    SetBrowserClientForTesting(browser_content_client_.get());
+    content::SetBrowserClientForTesting(browser_content_client_.get());
+    utility_content_client_.reset(new chrome::ChromeContentUtilityClient());
+    content::SetUtilityClientForTesting(utility_content_client_.get());
 #endif
 
     SetUpHostResolver();
@@ -161,6 +164,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
     browser_content_client_.reset();
+    utility_content_client_.reset();
 #endif
     content_client_.reset();
     content::SetContentClient(NULL);
@@ -184,6 +188,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
   // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
   scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
+  scoped_ptr<chrome::ChromeContentUtilityClient> utility_content_client_;
 #endif
 
   scoped_refptr<LocalHostResolverProc> host_resolver_proc_;

@@ -139,7 +139,6 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
 
     scoped_refptr<SandboxedUnpacker> unpacker(
         new SandboxedUnpacker(crx_file_,
-                              true /* out of process */,
                               Manifest::INTERNAL,
                               0, /* no special creation flags */
                               temp_dir_,
