@@ -14,7 +14,6 @@ import time
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
-from pylib import forwarder
 from pylib import json_perf_parser
 from pylib import perf_tests_helper
 from pylib import valgrind_tools
@@ -86,7 +85,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
     self.install_apk = options.install_apk
-    self.forwarder = None
 
   #override
   def InstallTestPackage(self):
@@ -151,18 +149,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     http_server_ports = self.LaunchTestHttpServer(
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.ports_to_forward:
-      port_pairs = [(port, port) for port in self.ports_to_forward]
-      # We need to remember which ports the HTTP server is using, since the
-      # forwarder will stomp on them otherwise.
-      port_pairs.append(http_server_ports)
-      self.forwarder = forwarder.Forwarder(self.adb, self.build_type)
-      self.forwarder.Run(port_pairs, self.tool)
+      self.StartForwarder([(port, port) for port in self.ports_to_forward])
     self.flags.AddFlags(['--enable-test-intents'])
 
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
-    if self.forwarder:
-      self.forwarder.Close()
     super(TestRunner, self).TearDown()
 
   def TestSetup(self, test):
