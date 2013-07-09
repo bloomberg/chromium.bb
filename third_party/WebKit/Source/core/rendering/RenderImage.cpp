@@ -397,10 +397,10 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
         return;
 
     Node* focusedNode = document->focusedNode();
-    if (!focusedNode || !focusedNode->hasTagName(areaTag))
+    if (!focusedNode || !isHTMLAreaElement(focusedNode))
         return;
 
-    HTMLAreaElement* areaElement = static_cast<HTMLAreaElement*>(focusedNode);
+    HTMLAreaElement* areaElement = toHTMLAreaElement(focusedNode);
     if (areaElement->imageElement() != node())
         return;
 

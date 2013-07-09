@@ -68,6 +68,22 @@ private:
     Shape m_shape;
 };
 
+inline bool isHTMLAreaElement(const Node* node)
+{
+    return node->hasTagName(HTMLNames::areaTag);
+}
+
+inline bool isHTMLAreaElement(const Element* element)
+{
+    return element->hasTagName(HTMLNames::areaTag);
+}
+
+inline HTMLAreaElement* toHTMLAreaElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLAreaElement(node));
+    return static_cast<HTMLAreaElement*>(node);
+}
+
 } //namespace
 
 #endif

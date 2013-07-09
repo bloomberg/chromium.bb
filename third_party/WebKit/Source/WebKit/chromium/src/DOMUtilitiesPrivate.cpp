@@ -33,6 +33,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLInputElement.h"
 
 using namespace WebCore;
@@ -45,7 +46,7 @@ bool elementHasLegalLinkAttribute(const Element* element, const QualifiedName& a
     if (attrName == srcAttr)
         return element->hasTagName(imgTag) || element->hasTagName(scriptTag) || element->hasTagName(iframeTag) || element->hasTagName(frameTag) || (element->hasTagName(inputTag) && toHTMLInputElement(element)->isImageButton());
     if (attrName == hrefAttr)
-        return element->hasTagName(linkTag) || element->hasTagName(aTag) || element->hasTagName(areaTag);
+        return element->hasTagName(linkTag) || element->hasTagName(aTag) || isHTMLAreaElement(element);
     if (attrName == actionAttr)
         return element->hasTagName(formTag);
     if (attrName == backgroundAttr)

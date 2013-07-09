@@ -850,8 +850,8 @@ bool FocusController::advanceFocusDirectionally(FocusDirection direction, Keyboa
         if (!hasOffscreenRect(focusedNode)) {
             container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(direction, focusedNode);
             startingRect = nodeRectInAbsoluteCoordinates(focusedNode, true /* ignore border */);
-        } else if (focusedNode->hasTagName(areaTag)) {
-            HTMLAreaElement* area = static_cast<HTMLAreaElement*>(focusedNode);
+        } else if (isHTMLAreaElement(focusedNode)) {
+            HTMLAreaElement* area = toHTMLAreaElement(focusedNode);
             container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(direction, area->imageElement());
             startingRect = virtualRectForAreaElementAndDirection(area, direction);
         }

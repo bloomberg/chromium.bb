@@ -67,8 +67,8 @@ FocusCandidate::FocusCandidate(Node* node, FocusDirection direction)
     ASSERT(node);
     ASSERT(node->isElementNode());
 
-    if (node->hasTagName(HTMLNames::areaTag)) {
-        HTMLAreaElement* area = static_cast<HTMLAreaElement*>(node);
+    if (isHTMLAreaElement(node)) {
+        HTMLAreaElement* area = toHTMLAreaElement(node);
         HTMLImageElement* image = area->imageElement();
         if (!image || !image->renderer())
             return;
@@ -604,7 +604,7 @@ bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCand
     if (!firstCandidate.rect.intersects(secondCandidate.rect))
         return false;
 
-    if (firstCandidate.focusableNode->hasTagName(HTMLNames::areaTag) || secondCandidate.focusableNode->hasTagName(HTMLNames::areaTag))
+    if (isHTMLAreaElement(firstCandidate.focusableNode) || isHTMLAreaElement(secondCandidate.focusableNode))
         return false;
 
     if (!firstCandidate.visibleNode->renderer()->isRenderInline() || !secondCandidate.visibleNode->renderer()->isRenderInline())

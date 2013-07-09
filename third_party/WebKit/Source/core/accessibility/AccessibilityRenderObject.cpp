@@ -1397,8 +1397,8 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPo
         return 0;
     Node* node = hitTestResult.innerNode()->deprecatedShadowAncestorNode();
 
-    if (node->hasTagName(areaTag))
-        return accessibilityImageMapHitTest(static_cast<HTMLAreaElement*>(node), point);
+    if (isHTMLAreaElement(node))
+        return accessibilityImageMapHitTest(toHTMLAreaElement(node), point);
 
     if (node->hasTagName(optionTag))
         node = toHTMLOptionElement(node)->ownerSelectElement();
@@ -2351,9 +2351,9 @@ void AccessibilityRenderObject::addImageMapChildren()
 
     for (Element* current = ElementTraversal::firstWithin(map); current; current = ElementTraversal::next(current, map)) {
         // add an <area> element for this child if it has a link
-        if (current->hasTagName(areaTag) && current->isLink()) {
+        if (isHTMLAreaElement(current) && current->isLink()) {
             AccessibilityImageMapLink* areaObject = static_cast<AccessibilityImageMapLink*>(axObjectCache()->getOrCreate(ImageMapLinkRole));
-            areaObject->setHTMLAreaElement(static_cast<HTMLAreaElement*>(current));
+            areaObject->setHTMLAreaElement(toHTMLAreaElement(current));
             areaObject->setHTMLMapElement(map);
             areaObject->setParent(this);
             if (!areaObject->accessibilityIsIgnored())
