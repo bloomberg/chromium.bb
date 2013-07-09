@@ -524,7 +524,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   // Copy the original mini_installer.
   base::FilePath mini_installer =
       work_dir.directory().Append(original_installer_path.BaseName());
-  if (!file_util::CopyFile(original_installer_path, mini_installer)) {
+  if (!base::CopyFile(original_installer_path, mini_installer)) {
     LOG(DFATAL) << "Failed copying \"" << original_installer_path.value()
                 << "\" to \"" << mini_installer.value() << "\"";
     return false;
@@ -679,7 +679,7 @@ bool GenerateSpecificPEFileVersion(const base::FilePath& original_file,
                                    const base::FilePath& target_file,
                                    const Version& version) {
   // First copy original_file to target_file.
-  if (!file_util::CopyFile(original_file, target_file)) {
+  if (!base::CopyFile(original_file, target_file)) {
     LOG(DFATAL) << "Failed copying \"" << original_file.value()
                 << "\" to \"" << target_file.value() << "\"";
     return false;

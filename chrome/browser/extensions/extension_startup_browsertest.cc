@@ -70,10 +70,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
       src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
 
-      file_util::CopyFile(src_dir.AppendASCII("Preferences"),
-                          preferences_file_);
-      file_util::CopyDirectory(src_dir.AppendASCII("Extensions"),
-                               profile_dir, true);  // recursive
+      base::CopyFile(src_dir.AppendASCII("Preferences"), preferences_file_);
+      base::CopyDirectory(src_dir.AppendASCII("Extensions"),
+                          profile_dir, true);  // recursive
     }
     return true;
   }

@@ -239,7 +239,7 @@ bool WidevineCdmComponentInstaller::Install(
 
   base::FilePath adapter_install_path =
       install_path.AppendASCII(kWidevineCdmAdapterFileName);
-  if (!file_util::CopyFile(adapter_source_path, adapter_install_path))
+  if (!base::CopyFile(adapter_source_path, adapter_install_path))
     return false;
 
   // Installation is done. Now register the Widevine CDM with chrome.

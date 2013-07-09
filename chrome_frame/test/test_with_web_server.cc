@@ -110,12 +110,12 @@ void ChromeFrameTestWithWebServer::SetUpTestCase() {
   CFInstance_src_path = chrome_frame_source_path.AppendASCII("CFInstance.js");
   CFInstance_path_ = test_file_path_.AppendASCII("CFInstance.js");
 
-  ASSERT_TRUE(file_util::CopyFile(CFInstance_src_path, CFInstance_path_));
+  ASSERT_TRUE(base::CopyFile(CFInstance_src_path, CFInstance_path_));
 
   CFInstall_src_path = chrome_frame_source_path.AppendASCII("CFInstall.js");
   CFInstall_path_ = test_file_path_.AppendASCII("CFInstall.js");
 
-  ASSERT_TRUE(file_util::CopyFile(CFInstall_src_path, CFInstall_path_));
+  ASSERT_TRUE(base::CopyFile(CFInstall_src_path, CFInstall_path_));
 
   loop_ = new chrome_frame_test::TimedMsgLoop();
   loop_->set_snapshot_on_timeout(true);

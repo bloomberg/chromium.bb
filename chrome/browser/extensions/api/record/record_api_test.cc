@@ -104,7 +104,7 @@ class TestProcessStrategy : public ProcessStrategy {
             base::FilePath(base::FilePath::StringType(kMockCacheFile)));
 
         if (command_line.HasSwitch(switches::kRecordMode)) {
-          file_util::CopyFile(url_path, url_path_copy);
+          base::CopyFile(url_path, url_path_copy);
         } else {
           if (!file_util::ContentsEqual(url_path, url_path_copy)) {
             std::string contents1, contents2;

@@ -432,7 +432,7 @@ base::FilePath BackupLocalStateFile(
     if (!file_util::CreateTemporaryFile(&backup))
       LOG(ERROR) << "Failed to create temporary file for Local State.";
     else
-      file_util::CopyFile(state_file, backup);
+      base::CopyFile(state_file, backup);
     break;
   }
   return backup;

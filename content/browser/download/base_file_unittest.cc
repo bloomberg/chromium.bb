@@ -392,7 +392,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
   base::FilePath new_file_path(temp_dir_.path().Append(
       base::FilePath(FILE_PATH_LITERAL("second_file"))));
 
-  ASSERT_TRUE(file_util::CopyFile(base_file_->full_path(), new_file_path));
+  ASSERT_TRUE(base::CopyFile(base_file_->full_path(), new_file_path));
 
   // Create another file
   BaseFile second_file(new_file_path,

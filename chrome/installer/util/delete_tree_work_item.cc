@@ -62,7 +62,7 @@ bool DeleteTreeWorkItem::Do() {
       if (!backup.CreateUniqueTempDirUnderPath(temp_path_)) {
         PLOG(ERROR) << "Could not create temp dir in " << temp_path_.value();
         abort = true;
-      } else if (!file_util::CopyFile(key_file,
+      } else if (!base::CopyFile(key_file,
                      backup.path().Append(key_file.BaseName()))) {
         PLOG(ERROR) << "Could not back up " << key_file.value()
                     << " to directory " << backup.path().value();
@@ -117,7 +117,7 @@ bool DeleteTreeWorkItem::Do() {
       } else {
         base::FilePath backup =
             backup_path_.path().Append(root_path_.BaseName());
-        if (!file_util::CopyDirectory(root_path_, backup, true)) {
+        if (!base::CopyDirectory(root_path_, backup, true)) {
           LOG(ERROR) << "can not copy " << root_path_.value()
                      << " to backup path " << backup.value();
           return false;

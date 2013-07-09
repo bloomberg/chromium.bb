@@ -305,7 +305,7 @@ void RenameChromeDesktopShortcutForProfile(
     const base::FilePath possible_old_system_shortcut =
         system_shortcuts_directory.Append(old_shortcut_filename);
     if (file_util::PathExists(possible_old_system_shortcut))
-      file_util::CopyFile(possible_old_system_shortcut, new_shortcut_path);
+      base::CopyFile(possible_old_system_shortcut, new_shortcut_path);
   }
 }
 

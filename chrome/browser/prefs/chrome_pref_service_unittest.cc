@@ -93,7 +93,7 @@ class ChromePrefServiceUserFilePrefsTest : public testing::Test {
 TEST_F(ChromePrefServiceUserFilePrefsTest, PreserveEmptyValue) {
   base::FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
 
-  ASSERT_TRUE(file_util::CopyFile(
+  ASSERT_TRUE(base::CopyFile(
       data_dir_.AppendASCII("read.need_empty_value.json"),
       pref_file));
 

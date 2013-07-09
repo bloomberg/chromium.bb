@@ -125,7 +125,7 @@ ComponentUnpacker::Error DeltaUpdateOpCopy::DoParseArguments(
 ComponentUnpacker::Error DeltaUpdateOpCopy::DoRun(ComponentPatcher*,
                                                   int* error) {
   *error = 0;
-  if (!file_util::CopyFile(input_abs_path_, output_abs_path_))
+  if (!base::CopyFile(input_abs_path_, output_abs_path_))
     return ComponentUnpacker::kDeltaOperationFailure;
 
   return ComponentUnpacker::kNone;

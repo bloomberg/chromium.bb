@@ -277,7 +277,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
   base::FilePath exe_full_path(exe_full_path_str);
   base::FilePath to_file(to_dir);
   to_file = to_file.AppendASCII("To_File");
-  file_util::CopyFile(exe_full_path, to_file);
+  base::CopyFile(exe_full_path, to_file);
   ASSERT_TRUE(file_util::PathExists(to_file));
 
   // Run the executable in destination path
@@ -329,7 +329,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   base::FilePath exe_full_path(exe_full_path_str);
   base::FilePath from_file(from_dir);
   from_file = from_file.AppendASCII("From_File");
-  file_util::CopyFile(exe_full_path, from_file);
+  base::CopyFile(exe_full_path, from_file);
   ASSERT_TRUE(file_util::PathExists(from_file));
 
   // Create a destination source dir and generate destination file name.

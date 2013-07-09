@@ -1147,7 +1147,7 @@ TEST_F(FileUtilTest, MoveNew) {
   EXPECT_FALSE(base::Move(file_name_from, file_name_to));
   EXPECT_TRUE(file_util::PathExists(file_name_from));
   EXPECT_FALSE(file_util::PathExists(file_name_to));
-  EXPECT_TRUE(base::MoveUnsafe(file_name_from, file_name_to));
+  EXPECT_TRUE(base::internal::MoveUnsafe(file_name_from, file_name_to));
   EXPECT_FALSE(file_util::PathExists(file_name_from));
   EXPECT_TRUE(file_util::PathExists(file_name_to));
 }
@@ -1224,7 +1224,7 @@ TEST_F(FileUtilTest, CopyDirectoryRecursivelyNew) {
 
   ASSERT_FALSE(file_util::PathExists(dir_name_to));
 
-  EXPECT_TRUE(file_util::CopyDirectory(dir_name_from, dir_name_to, true));
+  EXPECT_TRUE(base::CopyDirectory(dir_name_from, dir_name_to, true));
 
   // Check everything has been copied.
   EXPECT_TRUE(file_util::PathExists(dir_name_from));
@@ -1279,7 +1279,7 @@ TEST_F(FileUtilTest, CopyDirectoryRecursivelyExists) {
   file_util::CreateDirectory(dir_name_exists);
   ASSERT_TRUE(file_util::PathExists(dir_name_exists));
 
-  EXPECT_TRUE(file_util::CopyDirectory(dir_name_from, dir_name_exists, true));
+  EXPECT_TRUE(base::CopyDirectory(dir_name_from, dir_name_exists, true));
 
   // Check everything has been copied.
   EXPECT_TRUE(file_util::PathExists(dir_name_from));
@@ -1327,7 +1327,7 @@ TEST_F(FileUtilTest, CopyDirectoryNew) {
 
   ASSERT_FALSE(file_util::PathExists(dir_name_to));
 
-  EXPECT_TRUE(file_util::CopyDirectory(dir_name_from, dir_name_to, false));
+  EXPECT_TRUE(base::CopyDirectory(dir_name_from, dir_name_to, false));
 
   // Check everything has been copied.
   EXPECT_TRUE(file_util::PathExists(dir_name_from));
@@ -1376,7 +1376,7 @@ TEST_F(FileUtilTest, CopyDirectoryExists) {
   file_util::CreateDirectory(dir_name_to);
   ASSERT_TRUE(file_util::PathExists(dir_name_to));
 
-  EXPECT_TRUE(file_util::CopyDirectory(dir_name_from, dir_name_to, false));
+  EXPECT_TRUE(base::CopyDirectory(dir_name_from, dir_name_to, false));
 
   // Check everything has been copied.
   EXPECT_TRUE(file_util::PathExists(dir_name_from));
@@ -1400,7 +1400,7 @@ TEST_F(FileUtilTest, CopyFileWithCopyDirectoryRecursiveToNew) {
       FILE_PATH_LITERAL("Copy_Test_File_Destination.txt"));
   ASSERT_FALSE(file_util::PathExists(file_name_to));
 
-  EXPECT_TRUE(file_util::CopyDirectory(file_name_from, file_name_to, true));
+  EXPECT_TRUE(base::CopyDirectory(file_name_from, file_name_to, true));
 
   // Check the has been copied
   EXPECT_TRUE(file_util::PathExists(file_name_to));
@@ -1419,7 +1419,7 @@ TEST_F(FileUtilTest, CopyFileWithCopyDirectoryRecursiveToExisting) {
   CreateTextFile(file_name_to, L"Old file content");
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
-  EXPECT_TRUE(file_util::CopyDirectory(file_name_from, file_name_to, true));
+  EXPECT_TRUE(base::CopyDirectory(file_name_from, file_name_to, true));
 
   // Check the has been copied
   EXPECT_TRUE(file_util::PathExists(file_name_to));
@@ -1441,7 +1441,7 @@ TEST_F(FileUtilTest, CopyFileWithCopyDirectoryRecursiveToExistingDirectory) {
   FilePath file_name_to =
       dir_name_to.Append(FILE_PATH_LITERAL("Copy_Test_File.txt"));
 
-  EXPECT_TRUE(file_util::CopyDirectory(file_name_from, dir_name_to, true));
+  EXPECT_TRUE(base::CopyDirectory(file_name_from, dir_name_to, true));
 
   // Check the has been copied
   EXPECT_TRUE(file_util::PathExists(file_name_to));
@@ -1475,7 +1475,7 @@ TEST_F(FileUtilTest, CopyDirectoryWithTrailingSeparators) {
       temp_dir_.path().Append(FILE_PATH_LITERAL("Copy_From_Subdir///"));
 #endif
 
-  EXPECT_TRUE(file_util::CopyDirectory(from_path, dir_name_to, true));
+  EXPECT_TRUE(base::CopyDirectory(from_path, dir_name_to, true));
 
   // Check everything has been copied.
   EXPECT_TRUE(file_util::PathExists(dir_name_from));
@@ -1500,14 +1500,14 @@ TEST_F(FileUtilTest, CopyFile) {
 
   // Copy the file.
   FilePath dest_file = dir_name_from.Append(FILE_PATH_LITERAL("DestFile.txt"));
-  ASSERT_TRUE(file_util::CopyFile(file_name_from, dest_file));
+  ASSERT_TRUE(base::CopyFile(file_name_from, dest_file));
 
   // Copy the file to another location using '..' in the path.
   FilePath dest_file2(dir_name_from);
   dest_file2 = dest_file2.AppendASCII("..");
   dest_file2 = dest_file2.AppendASCII("DestFile.txt");
-  ASSERT_FALSE(file_util::CopyFile(file_name_from, dest_file2));
-  ASSERT_TRUE(file_util::CopyFileUnsafe(file_name_from, dest_file2));
+  ASSERT_FALSE(base::CopyFile(file_name_from, dest_file2));
+  ASSERT_TRUE(base::internal::CopyFileUnsafe(file_name_from, dest_file2));
 
   FilePath dest_file2_test(dir_name_from);
   dest_file2_test = dest_file2_test.DirName();
@@ -1644,7 +1644,8 @@ TEST_F(FileUtilTest, CopyAndDeleteDirectoryTest) {
 
   ASSERT_FALSE(file_util::PathExists(dir_name_to));
 
-  EXPECT_TRUE(file_util::CopyAndDeleteDirectory(dir_name_from, dir_name_to));
+  EXPECT_TRUE(base::internal::CopyAndDeleteDirectory(dir_name_from,
+                                                     dir_name_to));
 
   // Check everything has been moved.
   EXPECT_FALSE(file_util::PathExists(dir_name_from));

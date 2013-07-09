@@ -61,8 +61,8 @@ class DllRedirectorLoadingTest : public testing::Test {
     // folder.
     original_chrome_frame_dll_ =
         original_version_dir.Append(build_chrome_frame_dll.BaseName());
-    ASSERT_TRUE(file_util::CopyFile(build_chrome_frame_dll,
-                                    original_chrome_frame_dll_));
+    ASSERT_TRUE(base::CopyFile(build_chrome_frame_dll,
+                               original_chrome_frame_dll_));
     ASSERT_TRUE(file_util::PathExists(original_chrome_frame_dll_));
 
     // Temporary location for the new Chrome Frame DLL.

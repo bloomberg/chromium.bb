@@ -311,7 +311,7 @@ class PerformanceMonitorUncleanExitBrowserTest
 
     base::FilePath first_profile_prefs_file =
         first_profile.Append(chrome::kPreferencesFilename);
-    CHECK(file_util::CopyFile(stock_prefs_file, first_profile_prefs_file));
+    CHECK(base::CopyFile(stock_prefs_file, first_profile_prefs_file));
     CHECK(file_util::PathExists(first_profile_prefs_file));
 
     second_profile_name_ =
@@ -324,7 +324,7 @@ class PerformanceMonitorUncleanExitBrowserTest
 
     base::FilePath second_profile_prefs_file =
         second_profile.Append(chrome::kPreferencesFilename);
-    CHECK(file_util::CopyFile(stock_prefs_file, second_profile_prefs_file));
+    CHECK(base::CopyFile(stock_prefs_file, second_profile_prefs_file));
     CHECK(file_util::PathExists(second_profile_prefs_file));
 
     return true;

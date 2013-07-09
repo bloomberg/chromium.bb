@@ -141,7 +141,7 @@ void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
                                    const base::FilePath& prefs_source_path) {
   base::FilePath prefs_dest_path(installer_state.target_path().AppendASCII(
       installer::kDefaultMasterPrefs));
-  if (!file_util::CopyFile(prefs_source_path, prefs_dest_path)) {
+  if (!base::CopyFile(prefs_source_path, prefs_dest_path)) {
     VLOG(1) << "Failed to copy master preferences from:"
             << prefs_source_path.value() << " gle: " << ::GetLastError();
   }

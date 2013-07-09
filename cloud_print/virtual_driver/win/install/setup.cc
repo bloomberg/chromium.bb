@@ -111,7 +111,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
   if (install) {
     base::FilePath source_path =
         install_path.Append(GetPortMonitorDllName());
-    if (!file_util::CopyFile(source_path, target_path)) {
+    if (!base::CopyFile(source_path, target_path)) {
       LOG(ERROR) << "Unable copy port monitor dll from " <<
           source_path.value() << " to " << target_path.value();
       return GetLastHResult();
@@ -241,7 +241,7 @@ void ReadyDriverDependencies(const base::FilePath& destination) {
         base::FilePath src_path = driver_cache_path.Append(kDependencyList[i]);
         if (!file_util::PathExists(src_path))
           src_path = GetSystemPath(kDependencyList[i]);
-        file_util::CopyFile(src_path, dst_path);
+        base::CopyFile(src_path, dst_path);
       }
     }
   }

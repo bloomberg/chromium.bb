@@ -1040,7 +1040,7 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile(
   }
 
   if (success_)
-    file_util::CopyFile(src_path, target_path);
+    base::CopyFile(src_path, target_path);
 
   CHECK(pendingCopyOperationsCount_ > 0);
   pendingCopyOperationsCount_--;

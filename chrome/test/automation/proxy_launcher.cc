@@ -55,10 +55,10 @@ bool CopyDirectoryContentsNoCache(const base::FilePath& source,
   for (base::FilePath cur = en.Next(); !cur.empty(); cur = en.Next()) {
     base::FileEnumerator::FileInfo info = en.GetInfo();
     if (info.IsDirectory()) {
-      if (!file_util::CopyDirectory(cur, dest, true))
+      if (!base::CopyDirectory(cur, dest, true))
         return false;
     } else {
-      if (!file_util::CopyFile(cur, dest.Append(cur.BaseName())))
+      if (!base::CopyFile(cur, dest.Append(cur.BaseName())))
         return false;
     }
   }

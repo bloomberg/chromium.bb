@@ -28,7 +28,7 @@ TEST(HistoryDatabaseTest, DropBookmarks) {
   old_history_path = old_history_path.AppendASCII("bookmarks");
   old_history_path = old_history_path.Append(
       FILE_PATH_LITERAL("History_with_starred"));
-  file_util::CopyFile(old_history_path, db_file);
+  base::CopyFile(old_history_path, db_file);
 
   // Load the DB twice. The first time it should migrate. Make sure that the
   // migration leaves it in a state fit to load again later.

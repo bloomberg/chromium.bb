@@ -118,7 +118,7 @@ class LocalTestVolume {
         base::FilePath source_path =
             google_apis::test_util::GetTestFilePath("chromeos/file_manager").
             AppendASCII(entry.source_file_name);
-        ASSERT_TRUE(file_util::CopyFile(source_path, target_path))
+        ASSERT_TRUE(base::CopyFile(source_path, target_path))
             << "Copy from " << source_path.value()
             << " to " << target_path.value() << " failed.";
         break;

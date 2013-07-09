@@ -858,7 +858,7 @@ TEST_F(SessionServiceTest, CanOpenV1TabClosed) {
   // Forces closing the file.
   helper_.set_service(NULL);
 
-  ASSERT_TRUE(file_util::CopyFile(v1_file_path, dest_file_path));
+  ASSERT_TRUE(base::CopyFile(v1_file_path, dest_file_path));
 
   SessionService* session_service = new SessionService(path_);
   helper_.set_service(session_service);

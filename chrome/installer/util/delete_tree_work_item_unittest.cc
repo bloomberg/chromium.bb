@@ -181,7 +181,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   ::GetModuleFileNameW(NULL, exe_full_path_str, MAX_PATH);
   base::FilePath exe_full_path(exe_full_path_str);
 
-  file_util::CopyFile(exe_full_path, key_path);
+  base::CopyFile(exe_full_path, key_path);
   ASSERT_TRUE(file_util::PathExists(key_path));
 
   VLOG(1) << "copy ourself from " << exe_full_path.value()

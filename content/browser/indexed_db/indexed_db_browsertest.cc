@@ -243,9 +243,9 @@ static void CopyLevelDBToProfile(Shell* shell,
   // profile/IndexedDB/file__0.xxx/
   ASSERT_TRUE(file_util::CreateDirectory(dest));
   const bool kRecursive = true;
-  ASSERT_TRUE(file_util::CopyDirectory(test_data_dir,
-                                       context_impl->data_path(),
-                                       kRecursive));
+  ASSERT_TRUE(base::CopyDirectory(test_data_dir,
+                                  context_impl->data_path(),
+                                  kRecursive));
 }
 
 class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {

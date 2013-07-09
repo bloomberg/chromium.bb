@@ -90,10 +90,11 @@ bool MoveFile(const base::FilePath& source_path,
   return true;
 }
 
-// Copies the file.
-bool CopyFile(const base::FilePath& source_path,
-              const base::FilePath& dest_path) {
-  if (!file_util::CopyFile(source_path, dest_path)) {
+// Copies the file. Note this isn't called CopyFile which collides with
+// base::CopyFile when doing argument-dependent name lookup.
+bool CopyFileWrapper(const base::FilePath& source_path,
+                     const base::FilePath& dest_path) {
+  if (!base::CopyFile(source_path, dest_path)) {
     LOG(ERROR) << "Failed to copy " << source_path.value()
                << " to " << dest_path.value();
     return false;
@@ -682,7 +683,7 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
       success = MoveFile(source_path, dest_path);
       break;
     case FILE_OPERATION_COPY:
-      success = CopyFile(source_path, dest_path);
+      success = CopyFileWrapper(source_path, dest_path);
       break;
     default:
       NOTREACHED();

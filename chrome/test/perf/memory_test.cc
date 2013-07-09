@@ -238,7 +238,7 @@ class MemoryTest : public UIPerfTest {
       return false;
     }
 
-    if (!file_util::CopyDirectory(src_dir, temp_dir_, true)) {
+    if (!base::CopyDirectory(src_dir, temp_dir_, true)) {
       LOG(ERROR) << "Could not copy temp directory";
       return false;
     }

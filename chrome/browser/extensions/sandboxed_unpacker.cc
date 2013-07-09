@@ -246,7 +246,7 @@ void SandboxedUnpacker::Start() {
   PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackTempCrxPathLength",
                         temp_crx_path);
 
-  if (!file_util::CopyFile(crx_path_, temp_crx_path)) {
+  if (!base::CopyFile(crx_path_, temp_crx_path)) {
     // Failed to copy extension file to temporary directory.
     ReportFailure(
         FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY,

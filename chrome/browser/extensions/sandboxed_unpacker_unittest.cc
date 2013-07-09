@@ -88,7 +88,7 @@ class SandboxedUnpackerTest : public testing::Test {
     // CRX to the temp directory, and create a subdirectory into which to
     // unpack it.
     base::FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
-    ASSERT_TRUE(file_util::CopyFile(original_path, crx_path)) <<
+    ASSERT_TRUE(base::CopyFile(original_path, crx_path)) <<
         "Original path: " << original_path.value() <<
         ", Crx path: " << crx_path.value();
 

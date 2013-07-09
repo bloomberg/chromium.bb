@@ -164,8 +164,8 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   // Write the script file.
-  if (!file_util::CopyFile(user_script_path,
-                           temp_dir.path().AppendASCII("script.js"))) {
+  if (!base::CopyFile(user_script_path,
+                      temp_dir.path().AppendASCII("script.js"))) {
     *error = ASCIIToUTF16("Could not copy script file.");
     return NULL;
   }

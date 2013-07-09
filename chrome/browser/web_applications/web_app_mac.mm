@@ -269,7 +269,7 @@ bool WebAppShortcutCreator::BuildShortcut(
     const base::FilePath& staging_path) const {
   // Update the app's plist and icon in a temp directory. This works around
   // a Finder bug where the app's icon doesn't properly update.
-  if (!file_util::CopyDirectory(GetAppLoaderPath(), staging_path, true)) {
+  if (!base::CopyDirectory(GetAppLoaderPath(), staging_path, true)) {
     LOG(ERROR) << "Copying app to staging path: " << staging_path.value()
                << " failed.";
     return false;
@@ -304,7 +304,7 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
   for (std::vector<base::FilePath>::const_iterator it = folders.begin();
        it != folders.end(); ++it) {
     const base::FilePath& dst_path = *it;
-    if (!file_util::CopyDirectory(staging_path, dst_path, true)) {
+    if (!base::CopyDirectory(staging_path, dst_path, true)) {
       LOG(ERROR) << "Copying app to dst path: " << dst_path.value()
                  << " failed";
       return succeeded;

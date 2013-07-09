@@ -228,7 +228,7 @@ PlatformFileError NativeFileUtil::CopyOrMoveFile(
   }
 
   if (copy) {
-    if (file_util::CopyFile(src_path, dest_path))
+    if (base::CopyFile(src_path, dest_path))
       return base::PLATFORM_FILE_OK;
   } else {
     if (base::Move(src_path, dest_path))

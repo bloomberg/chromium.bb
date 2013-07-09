@@ -33,7 +33,7 @@ const int kSaveDelayMS = 2500;
 
 void BackupCallback(const base::FilePath& path) {
   base::FilePath backup_path = path.ReplaceExtension(kBackupExtension);
-  file_util::CopyFile(path, backup_path);
+  base::CopyFile(path, backup_path);
 }
 
 // Adds node to the model's index, recursing through all children as well.

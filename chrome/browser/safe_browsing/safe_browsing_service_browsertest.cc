@@ -908,7 +908,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     // expires in 2038.
     base::FilePath initial_cookies = test_dir.AppendASCII("safe_browsing")
         .AppendASCII("Safe Browsing Cookies");
-    if (!file_util::CopyFile(initial_cookies, cookie_path)) {
+    if (!base::CopyFile(initial_cookies, cookie_path)) {
       EXPECT_TRUE(false);
       return false;
     }

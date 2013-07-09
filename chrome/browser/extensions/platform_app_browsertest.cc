@@ -111,7 +111,7 @@ bool CopyTestDataAndSetCommandLineArg(
     const char* filename) {
   base::FilePath path = temp_dir.AppendASCII(
       filename).NormalizePathSeparators();
-  if (!(file_util::CopyFile(test_data_file, path)))
+  if (!(base::CopyFile(test_data_file, path)))
     return false;
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();

@@ -22,15 +22,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
   // Create an Extension whose messages.json file will be updated.
   base::ScopedTempDir extension_dir;
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
-  file_util::CopyFile(
+  base::CopyFile(
       test_data_dir_.AppendASCII("i18nUpdate")
                     .AppendASCII("manifest.json"),
       extension_dir.path().AppendASCII("manifest.json"));
-  file_util::CopyFile(
+  base::CopyFile(
       test_data_dir_.AppendASCII("i18nUpdate")
                     .AppendASCII("contentscript.js"),
       extension_dir.path().AppendASCII("contentscript.js"));
-  file_util::CopyDirectory(
+  base::CopyDirectory(
       test_data_dir_.AppendASCII("i18nUpdate")
                     .AppendASCII("_locales"),
       extension_dir.path().AppendASCII("_locales"),
@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
   EXPECT_EQ(std::string("FIRSTMESSAGE"), UTF16ToUTF8(title));
 
   // Change messages.json file and reload extension.
-  file_util::CopyFile(
+  base::CopyFile(
       test_data_dir_.AppendASCII("i18nUpdate")
                     .AppendASCII("messages2.json"),
       extension_dir.path().AppendASCII("_locales/en/messages.json"));

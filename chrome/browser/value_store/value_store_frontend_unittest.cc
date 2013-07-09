@@ -30,7 +30,7 @@ class ValueStoreFrontendTest : public testing::Test {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     base::FilePath src_db(test_data_dir.AppendASCII("value_store_db"));
     db_path_ = temp_dir_.path().AppendASCII("temp_db");
-    file_util::CopyDirectory(src_db, db_path_, true);
+    base::CopyDirectory(src_db, db_path_, true);
 
     ResetStorage();
   }

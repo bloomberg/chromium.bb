@@ -92,7 +92,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
     base::FilePath destination = temp_dir_.path().AppendASCII(destination_name);
     if (copy_gold) {
       base::FilePath source = test_root_folder_.AppendASCII("gold.txt");
-      EXPECT_TRUE(file_util::CopyFile(source, destination));
+      EXPECT_TRUE(base::CopyFile(source, destination));
     }
     return destination;
   }
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 
   base::FilePath test_file = test_path.AppendASCII("gold.txt");
   base::FilePath source = test_root_folder_.AppendASCII("gold.txt");
-  EXPECT_TRUE(file_util::CopyFile(source, test_file));
+  EXPECT_TRUE(base::CopyFile(source, test_file));
 
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);

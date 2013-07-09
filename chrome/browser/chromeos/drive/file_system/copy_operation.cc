@@ -28,12 +28,12 @@ namespace file_system {
 namespace {
 
 // Copies a file from |src_file_path| to |dest_file_path| on the local
-// file system using file_util::CopyFile.
+// file system using base::CopyFile.
 // Returns FILE_ERROR_OK on success or FILE_ERROR_FAILED otherwise.
 FileError CopyLocalFileOnBlockingPool(
     const base::FilePath& src_file_path,
     const base::FilePath& dest_file_path) {
-  return file_util::CopyFile(src_file_path, dest_file_path) ?
+  return base::CopyFile(src_file_path, dest_file_path) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 

@@ -514,11 +514,11 @@ void ExtensionServiceTestBase::InitializeInstalledExtensionService(
   base::Delete(path, true);
   file_util::CreateDirectory(path);
   base::FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
-  file_util::CopyFile(prefs_file, temp_prefs);
+  base::CopyFile(prefs_file, temp_prefs);
 
   extensions_install_dir_ = path.Append(FILE_PATH_LITERAL("Extensions"));
   base::Delete(extensions_install_dir_, true);
-  file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
+  base::CopyDirectory(source_install_dir, extensions_install_dir_, true);
 
   ExtensionServiceInitParams params;
   params.profile_path = path;
@@ -872,7 +872,7 @@ class ExtensionServiceTest
     // it.
     base::FilePath path = temp_dir_.path();
     path = path.Append(in_path.BaseName());
-    ASSERT_TRUE(file_util::CopyFile(in_path, path));
+    ASSERT_TRUE(base::CopyFile(in_path, path));
 
     int previous_enabled_extension_count =
         service_->extensions()->size();
@@ -2125,7 +2125,7 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
 
     // Copy the extension into the output directory, as PackExtensionJob doesn't
     // let us choose where to output the packed extension.
-    ASSERT_TRUE(file_util::CopyDirectory(input_directory, output_dir, true));
+    ASSERT_TRUE(base::CopyDirectory(input_directory, output_dir, true));
 
     base::FilePath expected_crx_path =
         temp_dir.path().Append(expected_crx_names[i]);
@@ -2159,7 +2159,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
   base::ScopedTempDir extension_temp_dir;
   ASSERT_TRUE(extension_temp_dir.CreateUniqueTempDir());
   base::FilePath input_directory = extension_temp_dir.path().AppendASCII("ext");
-  ASSERT_TRUE(file_util::CopyDirectory(
+  ASSERT_TRUE(base::CopyDirectory(
       data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
@@ -2312,7 +2312,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
   ASSERT_TRUE(file_util::PathExists(manifest_with_key));
 
   // Load the unpacked extension with no key.
-  file_util::CopyFile(manifest_no_key, manifest_path);
+  base::CopyFile(manifest_no_key, manifest_path);
   extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
 
   loop_.RunUntilIdle();
@@ -2321,7 +2321,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
   EXPECT_EQ(1u, service_->extensions()->size());
 
   // Add the key to the manifest.
-  file_util::CopyFile(manifest_with_key, manifest_path);
+  base::CopyFile(manifest_with_key, manifest_path);
   loaded_.clear();
 
   // Reload the extensions.
@@ -2353,7 +2353,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
   base::FilePath manifest = extension_path.Append(
       extensions::kManifestFilename);
   base::FilePath icon_symlink = extension_path.AppendASCII("icon.png");
-  file_util::CopyFile(source_manifest, manifest);
+  base::CopyFile(source_manifest, manifest);
   file_util::CreateSymbolicLink(source_icon, icon_symlink);
 
   // Load extension.

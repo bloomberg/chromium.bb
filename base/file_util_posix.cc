@@ -197,31 +197,6 @@ bool Delete(const FilePath& path, bool recursive) {
   return success;
 }
 
-bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
-  ThreadRestrictions::AssertIOAllowed();
-  // Windows compatibility: if to_path exists, from_path and to_path
-  // must be the same type, either both files, or both directories.
-  stat_wrapper_t to_file_info;
-  if (CallStat(to_path.value().c_str(), &to_file_info) == 0) {
-    stat_wrapper_t from_file_info;
-    if (CallStat(from_path.value().c_str(), &from_file_info) == 0) {
-      if (S_ISDIR(to_file_info.st_mode) != S_ISDIR(from_file_info.st_mode))
-        return false;
-    } else {
-      return false;
-    }
-  }
-
-  if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
-    return true;
-
-  if (!file_util::CopyDirectory(from_path, to_path, true))
-    return false;
-
-  Delete(from_path, true);
-  return true;
-}
-
 bool ReplaceFile(const FilePath& from_path,
                  const FilePath& to_path,
                  PlatformFileError* error) {
@@ -233,25 +208,10 @@ bool ReplaceFile(const FilePath& from_path,
   return false;
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::stat_wrapper_t;
-using base::CallStat;
-using base::CallLstat;
-using base::FileEnumerator;
-using base::FilePath;
-using base::MakeAbsoluteFilePath;
-using base::RealPath;
-using base::VerifySpecificPathControlledByUser;
-
 bool CopyDirectory(const FilePath& from_path,
                    const FilePath& to_path,
                    bool recursive) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   // Some old callers of CopyDirectory want it to support wildcards.
   // After some discussion, we decided to fix those callers.
   // Break loudly here if anyone tries to do this.
@@ -260,14 +220,14 @@ bool CopyDirectory(const FilePath& from_path,
   DCHECK(from_path.value().find('*') == std::string::npos);
 
   char top_dir[PATH_MAX];
-  if (base::strlcpy(top_dir, from_path.value().c_str(),
-                    arraysize(top_dir)) >= arraysize(top_dir)) {
+  if (strlcpy(top_dir, from_path.value().c_str(),
+              arraysize(top_dir)) >= arraysize(top_dir)) {
     return false;
   }
 
   // This function does not properly handle destinations within the source
   FilePath real_to_path = to_path;
-  if (PathExists(real_to_path)) {
+  if (file_util::PathExists(real_to_path)) {
     real_to_path = MakeAbsoluteFilePath(real_to_path);
     if (real_to_path.empty())
       return false;
@@ -348,6 +308,21 @@ bool CopyDirectory(const FilePath& from_path,
 
   return success;
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::stat_wrapper_t;
+using base::CallStat;
+using base::CallLstat;
+using base::FileEnumerator;
+using base::FilePath;
+using base::MakeAbsoluteFilePath;
+using base::RealPath;
+using base::VerifySpecificPathControlledByUser;
 
 bool PathExists(const FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -821,53 +796,6 @@ FilePath GetHomeDir() {
   // Last resort.
   return FilePath("/tmp");
 }
-
-bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  int infile = HANDLE_EINTR(open(from_path.value().c_str(), O_RDONLY));
-  if (infile < 0)
-    return false;
-
-  int outfile = HANDLE_EINTR(creat(to_path.value().c_str(), 0666));
-  if (outfile < 0) {
-    ignore_result(HANDLE_EINTR(close(infile)));
-    return false;
-  }
-
-  const size_t kBufferSize = 32768;
-  std::vector<char> buffer(kBufferSize);
-  bool result = true;
-
-  while (result) {
-    ssize_t bytes_read = HANDLE_EINTR(read(infile, &buffer[0], buffer.size()));
-    if (bytes_read < 0) {
-      result = false;
-      break;
-    }
-    if (bytes_read == 0)
-      break;
-    // Allow for partial writes
-    ssize_t bytes_written_per_read = 0;
-    do {
-      ssize_t bytes_written_partial = HANDLE_EINTR(write(
-          outfile,
-          &buffer[bytes_written_per_read],
-          bytes_read - bytes_written_per_read));
-      if (bytes_written_partial < 0) {
-        result = false;
-        break;
-      }
-      bytes_written_per_read += bytes_written_partial;
-    } while (bytes_written_per_read < bytes_read);
-  }
-
-  if (HANDLE_EINTR(close(infile)) < 0)
-    result = false;
-  if (HANDLE_EINTR(close(outfile)) < 0)
-    result = false;
-
-  return result;
-}
 #endif  // !defined(OS_MACOSX)
 
 bool VerifyPathControlledByUser(const FilePath& base,
@@ -946,3 +874,84 @@ int GetMaximumPathComponentLength(const FilePath& path) {
 }
 
 }  // namespace file_util
+
+namespace base {
+namespace internal {
+
+bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
+  ThreadRestrictions::AssertIOAllowed();
+  // Windows compatibility: if to_path exists, from_path and to_path
+  // must be the same type, either both files, or both directories.
+  stat_wrapper_t to_file_info;
+  if (CallStat(to_path.value().c_str(), &to_file_info) == 0) {
+    stat_wrapper_t from_file_info;
+    if (CallStat(from_path.value().c_str(), &from_file_info) == 0) {
+      if (S_ISDIR(to_file_info.st_mode) != S_ISDIR(from_file_info.st_mode))
+        return false;
+    } else {
+      return false;
+    }
+  }
+
+  if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
+    return true;
+
+  if (!CopyDirectory(from_path, to_path, true))
+    return false;
+
+  Delete(from_path, true);
+  return true;
+}
+
+#if !defined(OS_MACOSX)
+// Mac has its own implementation, this is for all other Posix systems.
+bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
+  ThreadRestrictions::AssertIOAllowed();
+  int infile = HANDLE_EINTR(open(from_path.value().c_str(), O_RDONLY));
+  if (infile < 0)
+    return false;
+
+  int outfile = HANDLE_EINTR(creat(to_path.value().c_str(), 0666));
+  if (outfile < 0) {
+    ignore_result(HANDLE_EINTR(close(infile)));
+    return false;
+  }
+
+  const size_t kBufferSize = 32768;
+  std::vector<char> buffer(kBufferSize);
+  bool result = true;
+
+  while (result) {
+    ssize_t bytes_read = HANDLE_EINTR(read(infile, &buffer[0], buffer.size()));
+    if (bytes_read < 0) {
+      result = false;
+      break;
+    }
+    if (bytes_read == 0)
+      break;
+    // Allow for partial writes
+    ssize_t bytes_written_per_read = 0;
+    do {
+      ssize_t bytes_written_partial = HANDLE_EINTR(write(
+          outfile,
+          &buffer[bytes_written_per_read],
+          bytes_read - bytes_written_per_read));
+      if (bytes_written_partial < 0) {
+        result = false;
+        break;
+      }
+      bytes_written_per_read += bytes_written_partial;
+    } while (bytes_written_per_read < bytes_read);
+  }
+
+  if (HANDLE_EINTR(close(infile)) < 0)
+    result = false;
+  if (HANDLE_EINTR(close(outfile)) < 0)
+    result = false;
+
+  return result;
+}
+#endif  // !defined(OS_MACOSX)
+
+}  // namespace internal
+}  // namespace base

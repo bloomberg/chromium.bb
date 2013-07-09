@@ -53,7 +53,7 @@ bool CopyTreeWorkItem::Do() {
     // handle overwrite_option_ = NEW_NAME_IF_IN_USE case.
     if (alternative_path_.empty() ||
         file_util::PathExists(alternative_path_) ||
-        !file_util::CopyFile(source_path_, alternative_path_)) {
+        !base::CopyFile(source_path_, alternative_path_)) {
       LOG(ERROR) << "failed to copy " << source_path_.value()
                  << " to " << alternative_path_.value();
       return false;
@@ -90,7 +90,7 @@ bool CopyTreeWorkItem::Do() {
   }
 
   // In all cases that reach here, copy source to destination.
-  if (file_util::CopyDirectory(source_path_, dest_path_, true)) {
+  if (base::CopyDirectory(source_path_, dest_path_, true)) {
     copied_to_dest_path_ = true;
     VLOG(1) << "Copied source " << source_path_.value()
             << " to destination " << dest_path_.value();

@@ -334,7 +334,7 @@ bool CopyPrefFile(const base::FilePath& user_data_dir,
 
   // The master prefs are regular prefs so we can just copy the file
   // to the default place and they just work.
-  return file_util::CopyFile(master_prefs_path, user_prefs);
+  return base::CopyFile(master_prefs_path, user_prefs);
 }
 
 void SetupMasterPrefsFromInstallPrefs(

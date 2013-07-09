@@ -160,9 +160,8 @@ class PageCyclerCachedBrowserTest : public PageCyclerBrowserTest {
         user_data_dir_.path().AppendASCII("cached_data_dir");
     CHECK(!file_util::PathExists(dest_data_dir));
 
-    CHECK(file_util::CopyDirectory(source_data_dir,
-                                   user_data_dir_.path(),
-                                   true));  // recursive.
+    CHECK(base::CopyDirectory(source_data_dir, user_data_dir_.path(),
+                              true));  // recursive.
     CHECK(file_util::PathExists(dest_data_dir));
 
     command_line->AppendSwitchPath(switches::kUserDataDir,

@@ -70,7 +70,7 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
 TEST_F(JsonPrefStoreTest, InvalidFile) {
   base::FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
   base::FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
-  ASSERT_TRUE(file_util::CopyFile(invalid_file_original, invalid_file));
+  ASSERT_TRUE(base::CopyFile(invalid_file_original, invalid_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(invalid_file, message_loop_.message_loop_proxy().get());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE,
@@ -152,7 +152,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
 }
 
 TEST_F(JsonPrefStoreTest, Basic) {
-  ASSERT_TRUE(file_util::CopyFile(data_dir_.AppendASCII("read.json"),
+  ASSERT_TRUE(base::CopyFile(data_dir_.AppendASCII("read.json"),
                                   temp_dir_.path().AppendASCII("write.json")));
 
   // Test that the persistent value can be loaded.
@@ -178,7 +178,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
 }
 
 TEST_F(JsonPrefStoreTest, BasicAsync) {
-  ASSERT_TRUE(file_util::CopyFile(data_dir_.AppendASCII("read.json"),
+  ASSERT_TRUE(base::CopyFile(data_dir_.AppendASCII("read.json"),
                                   temp_dir_.path().AppendASCII("write.json")));
 
   // Test that the persistent value can be loaded.
@@ -241,7 +241,7 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
 TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
   base::FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
 
-  ASSERT_TRUE(file_util::CopyFile(
+  ASSERT_TRUE(base::CopyFile(
       data_dir_.AppendASCII("read.need_empty_value.json"),
       pref_file));
 

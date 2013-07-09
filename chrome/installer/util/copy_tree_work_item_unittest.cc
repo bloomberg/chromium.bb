@@ -337,7 +337,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
 
   base::FilePath file_name_to(dir_name_to);
   file_name_to = file_name_to.AppendASCII("File_To");
-  file_util::CopyFile(exe_full_path, file_name_to);
+  base::CopyFile(exe_full_path, file_name_to);
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
   VLOG(1) << "copy ourself from " << exe_full_path.value()
@@ -417,7 +417,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   base::FilePath file_name_to(dir_name_to), alternate_to(dir_name_to);
   file_name_to = file_name_to.AppendASCII("File_To");
   alternate_to = alternate_to.AppendASCII("Alternate_To");
-  file_util::CopyFile(exe_full_path, file_name_to);
+  base::CopyFile(exe_full_path, file_name_to);
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
   VLOG(1) << "copy ourself from " << exe_full_path.value()
@@ -526,7 +526,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_IfNotPresentTest) {
   ASSERT_TRUE(file_util::PathExists(dir_name_to));
   base::FilePath file_name_to(dir_name_to);
   file_name_to = file_name_to.AppendASCII("File_To");
-  file_util::CopyFile(exe_full_path, file_name_to);
+  base::CopyFile(exe_full_path, file_name_to);
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
   // Get the path of backup file
@@ -609,7 +609,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
 
   base::FilePath file_name_to(dir_name_to);
   file_name_to = file_name_to.AppendASCII("File_To");
-  file_util::CopyFile(exe_full_path, file_name_to);
+  base::CopyFile(exe_full_path, file_name_to);
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
   VLOG(1) << "copy ourself from " << exe_full_path.value()

@@ -132,7 +132,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
 
     if (GenerateFiles()) {
       // Copy the .emf and generate an .png.
-      file_util::CopyFile(test_result, emf);
+      base::CopyFile(test_result, emf);
       Image emf_content(emf);
       emf_content.SaveToPng(png);
       // Saving is always fine.
@@ -151,7 +151,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
         // Backup the result emf file.
         base::FilePath failed(
             base_path.Append(verification_name + L"_failed.emf"));
-        file_util::CopyFile(test_result, failed);
+        base::CopyFile(test_result, failed);
       }
 
       // This verification is only to know that the EMF rendering stays

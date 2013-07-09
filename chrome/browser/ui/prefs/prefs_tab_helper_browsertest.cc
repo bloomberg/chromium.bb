@@ -41,7 +41,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
     }
     base::FilePath default_pref_file =
         default_profile.Append(chrome::kPreferencesFilename);
-    if (!file_util::CopyFile(non_global_pref_file, default_pref_file)) {
+    if (!base::CopyFile(non_global_pref_file, default_pref_file)) {
       LOG(ERROR) << "Copy error from " << non_global_pref_file.MaybeAsASCII()
                  << " to " << default_pref_file.MaybeAsASCII();
       return false;

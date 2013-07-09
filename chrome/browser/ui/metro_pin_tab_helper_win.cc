@@ -132,7 +132,7 @@ bool GetPathToBackupLogo(const base::FilePath& logo_dir,
     return false;
 
   default_logo_path = default_logo_path.Append(kDefaultLogoFileName);
-  return file_util::CopyFile(default_logo_path, *logo_path);
+  return base::CopyFile(default_logo_path, *logo_path);
 }
 
 // UMA reporting callback for site-specific secondary tile creation.

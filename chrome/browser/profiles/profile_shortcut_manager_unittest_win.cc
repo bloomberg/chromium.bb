@@ -518,7 +518,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsGetDeleted) {
   const base::FilePath profile_2_shortcut_path_2 =
       GetUserShortcutsDirectory().Append(L"MyChrome.lnk");
   // Make a copy of the shortcut.
-  ASSERT_TRUE(file_util::CopyFile(profile_2_shortcut_path_1,
+  ASSERT_TRUE(base::CopyFile(profile_2_shortcut_path_1,
                                   profile_2_shortcut_path_2));
   ValidateProfileShortcutAtPath(FROM_HERE, profile_2_shortcut_path_1,
                                 profile_2_path_);
@@ -528,7 +528,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsGetDeleted) {
   // Also, copy the shortcut for the first user and ensure it gets preserved.
   const base::FilePath preserved_profile_1_shortcut_path =
       GetUserShortcutsDirectory().Append(L"Preserved.lnk");
-  ASSERT_TRUE(file_util::CopyFile(
+  ASSERT_TRUE(base::CopyFile(
       GetDefaultShortcutPathForProfile(profile_1_name_),
       preserved_profile_1_shortcut_path));
   EXPECT_TRUE(file_util::PathExists(preserved_profile_1_shortcut_path));
@@ -550,7 +550,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsAfterProfileRename) {
   const base::FilePath profile_2_shortcut_path_2 =
       GetUserShortcutsDirectory().Append(L"MyChrome.lnk");
   // Make a copy of the shortcut.
-  ASSERT_TRUE(file_util::CopyFile(profile_2_shortcut_path_1,
+  ASSERT_TRUE(base::CopyFile(profile_2_shortcut_path_1,
                                   profile_2_shortcut_path_2));
   ValidateProfileShortcutAtPath(FROM_HERE, profile_2_shortcut_path_1,
                                 profile_2_path_);
@@ -623,9 +623,9 @@ TEST_F(ProfileShortcutManagerTest, RemoveProfileShortcuts) {
       GetUserShortcutsDirectory().Append(L"Copied1.lnk");
   const base::FilePath profile_2_shortcut_path_2 =
       GetUserShortcutsDirectory().Append(L"Copied2.lnk");
-  ASSERT_TRUE(file_util::CopyFile(profile_1_shortcut_path_1,
+  ASSERT_TRUE(base::CopyFile(profile_1_shortcut_path_1,
                                   profile_1_shortcut_path_2));
-  ASSERT_TRUE(file_util::CopyFile(profile_2_shortcut_path_1,
+  ASSERT_TRUE(base::CopyFile(profile_2_shortcut_path_1,
                                   profile_2_shortcut_path_2));
   ValidateProfileShortcutAtPath(FROM_HERE, profile_1_shortcut_path_2,
                                 profile_1_path_);

@@ -237,10 +237,10 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII(profile_dir);
-    ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, true));
+    ASSERT_TRUE(base::CopyDirectory(data_path, profile_path_, true));
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("firefox3_nss");
-    ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, false));
+    ASSERT_TRUE(base::CopyDirectory(data_path, profile_path_, false));
 
     base::FilePath search_engine_path = app_path_;
     search_engine_path = search_engine_path.AppendASCII("searchplugins");
@@ -253,8 +253,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
         LOG(ERROR) << L"Missing internal test data";
         return;
       }
-      ASSERT_TRUE(file_util::CopyDirectory(data_path,
-                                           search_engine_path, false));
+      ASSERT_TRUE(base::CopyDirectory(data_path, search_engine_path, false));
     }
 
     importer::SourceProfile source_profile;

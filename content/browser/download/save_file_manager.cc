@@ -459,7 +459,7 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
 
   // Copy the local file to the temporary file. It will be renamed to its
   // final name later.
-  bool success = file_util::CopyFile(file_path, save_file->FullPath());
+  bool success = base::CopyFile(file_path, save_file->FullPath());
   if (!success)
     base::Delete(save_file->FullPath(), false);
   SaveFinished(save_id, original_file_url, render_process_id, success);
