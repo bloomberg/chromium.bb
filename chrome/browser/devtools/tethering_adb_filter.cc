@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
 #include "net/base/address_list.h"
@@ -31,6 +32,7 @@ static const char kConnectionIdAttribute[] = "connectionId";
 static const char kTetheringAccepted[] = "Tethering.accepted";
 static const char kTetheringBind[] = "Tethering.bind";
 static const char kTetheringUnbind[] = "Tethering.unbind";
+static const char kLocalAbstractCommand[] = "localabstract:%s";
 
 class SocketTunnel {
  public:
@@ -229,8 +231,10 @@ bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
   std::string location = it->second;
 
   SocketTunnel* tunnel = new SocketTunnel(location);
+  std::string command = base::StringPrintf(kLocalAbstractCommand,
+                                           connection_id.c_str());
   AdbClientSocket::TransportQuery(
-      adb_port_, serial_, connection_id,
+      adb_port_, serial_, command,
       base::Bind(&SocketTunnel::Start, base::Unretained(tunnel)));
   return true;
 }
