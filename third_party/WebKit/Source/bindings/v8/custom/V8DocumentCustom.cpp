@@ -31,16 +31,6 @@
 #include "config.h"
 #include "V8Document.h"
 
-#include "bindings/v8/ScriptController.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/Node.h"
-#include "core/dom/TouchList.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/page/Frame.h"
-#include "core/xml/XPathNSResolver.h"
-#include "core/xml/XPathResult.h"
-
 #include "V8CanvasRenderingContext2D.h"
 #include "V8DOMImplementation.h"
 #include "V8HTMLDocument.h"
@@ -51,11 +41,20 @@
 #include "V8WebGLRenderingContext.h"
 #include "V8XPathNSResolver.h"
 #include "V8XPathResult.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/custom/V8CustomXPathNSResolver.h"
-
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/Node.h"
+#include "core/dom/TouchList.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/page/Frame.h"
+#include "core/xml/DocumentXPathEvaluator.h"
+#include "core/xml/XPathNSResolver.h"
+#include "core/xml/XPathResult.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -80,7 +79,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (V8XPathResult::HasInstance(args[4], args.GetIsolate(), worldType(args.GetIsolate())))
         inResult = V8XPathResult::toNative(v8::Handle<v8::Object>::Cast(args[4]));
 
-    V8TRYCATCH_VOID(RefPtr<XPathResult>, result, document->evaluate(expression, contextNode.get(), resolver.get(), type, inResult.get(), ec));
+    V8TRYCATCH_VOID(RefPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.get(), type, inResult.get(), ec));
     if (ec) {
         setDOMException(ec, args.GetIsolate());
         return;

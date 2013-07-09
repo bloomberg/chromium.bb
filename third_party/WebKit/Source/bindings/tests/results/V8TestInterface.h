@@ -44,6 +44,9 @@ public:
 #if ENABLE(Condition22) || ENABLE(Condition23)
     static void implementsMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
+#if ENABLE(Condition11) || ENABLE(Condition12)
+    static void supplementalMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 #if ENABLE(Condition22) || ENABLE(Condition23)
     static void implementsStr3AttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);

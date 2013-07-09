@@ -50,6 +50,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/markup.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -72,16 +73,14 @@
 #include "core/platform/PlatformTouchEvent.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
+#include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
-
-#include "core/editing/markup.h"
-
-#include <wtf/HashSet.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -982,7 +981,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
             ExceptionCode ec = 0;
-            RefPtr<XPathResult> result = document->evaluate(whitespaceTrimmedQuery, document, 0, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, ec);
+            RefPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(document, whitespaceTrimmedQuery, document, 0, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, ec);
             if (ec || !result)
                 continue;
 

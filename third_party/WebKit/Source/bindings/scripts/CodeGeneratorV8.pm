@@ -699,7 +699,7 @@ END
         next if $name eq "";
         my $attrExt = $function->extendedAttributes;
 
-        if (HasCustomMethod($attrExt) && !$attrExt->{"ImplementedBy"} && $function->{overloadIndex} == 1) {
+        if (HasCustomMethod($attrExt) && $function->{overloadIndex} == 1) {
             my $conditionalString = GenerateConditionalString($function);
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);

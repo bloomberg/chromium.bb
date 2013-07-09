@@ -97,16 +97,6 @@ callback CustomElementConstructor = Element ();
      CSSStyleDeclaration getOverrideStyle([Default=Undefined] optional Element element,
                                                         [Default=Undefined] optional DOMString pseudoElement);
 
-    // DOM Level 3 XPath (XPathEvaluator interface)
-     [RaisesException] XPathExpression createExpression([Default=Undefined] optional DOMString expression,
-                                                    [Default=Undefined] optional XPathNSResolver resolver);
-    XPathNSResolver    createNSResolver(Node nodeResolver);
-    [Custom, RaisesException] XPathResult evaluate([Default=Undefined] optional DOMString expression,
-                                                  [Default=Undefined] optional Node contextNode,
-                                                  [Default=Undefined] optional XPathNSResolver resolver,
-                                                  [Default=Undefined] optional unsigned short type,
-                                                  [Default=Undefined] optional XPathResult inResult);
-
     // Common extensions
     [DeliverCustomElementCallbacks]
     boolean            execCommand([Default=Undefined] optional DOMString command,

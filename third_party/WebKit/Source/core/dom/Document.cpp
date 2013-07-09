@@ -160,10 +160,6 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGStyleElement.h"
 #include "core/workers/SharedWorkerRepository.h"
-#include "core/xml/XPathEvaluator.h"
-#include "core/xml/XPathExpression.h"
-#include "core/xml/XPathNSResolver.h"
-#include "core/xml/XPathResult.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "weborigin/SchemeRegistry.h"
@@ -4101,34 +4097,6 @@ void Document::styleResolverThrowawayTimerFired(Timer<Document>*)
     clearStyleResolver();
 }
 
-PassRefPtr<XPathExpression> Document::createExpression(const String& expression,
-                                                       XPathNSResolver* resolver,
-                                                       ExceptionCode& ec)
-{
-    if (!m_xpathEvaluator)
-        m_xpathEvaluator = XPathEvaluator::create();
-    return m_xpathEvaluator->createExpression(expression, resolver, ec);
-}
-
-PassRefPtr<XPathNSResolver> Document::createNSResolver(Node* nodeResolver)
-{
-    if (!m_xpathEvaluator)
-        m_xpathEvaluator = XPathEvaluator::create();
-    return m_xpathEvaluator->createNSResolver(nodeResolver);
-}
-
-PassRefPtr<XPathResult> Document::evaluate(const String& expression,
-                                           Node* contextNode,
-                                           XPathNSResolver* resolver,
-                                           unsigned short type,
-                                           XPathResult* result,
-                                           ExceptionCode& ec)
-{
-    if (!m_xpathEvaluator)
-        m_xpathEvaluator = XPathEvaluator::create();
-    return m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, ec);
-}
-
 const Vector<IconURL>& Document::shortcutIconURLs()
 {
     // Include any icons where type = link, rel = "shortcut icon".
@@ -5048,7 +5016,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_transformSource, "transformSource");
     info.addMember(m_transformSourceDocument, "transformSourceDocument");
     info.addMember(m_decoder, "decoder");
-    info.addMember(m_xpathEvaluator, "xpathEvaluator");
     info.addMember(m_svgExtensions, "svgExtensions");
     info.addMember(m_selectorQueryCache, "selectorQueryCache");
     info.addMember(m_renderer, "renderer");

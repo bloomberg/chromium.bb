@@ -71,19 +71,6 @@
 #include "config.h"
 #include "WebFrameImpl.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFileSystemType.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebFloatRect.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebVector.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/HashMap.h"
-#include <algorithm>
 #include "AssociatedURLLoader.h"
 #include "AsyncFileSystemChromium.h"
 #include "DOMUtilitiesPrivate.h"
@@ -185,14 +172,28 @@
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemType.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemType.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebFloatRect.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebVector.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityPolicy.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/HashMap.h"
+#include <algorithm>
 
 using namespace WebCore;
 
@@ -737,7 +738,7 @@ WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
     Document* document = frame()->document();
 
     ExceptionCode ec = 0;
-    RefPtr<XPathResult> xpathResult = document->evaluate(xpath, document, 0, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, ec);
+    RefPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(document, xpath, document, 0, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, ec);
     if (!xpathResult)
         return 0;
 

@@ -154,10 +154,6 @@ class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
 class XMLHttpRequest;
-class XPathEvaluator;
-class XPathExpression;
-class XPathNSResolver;
-class XPathResult;
 
 struct AnnotatedRegionValue;
 
@@ -851,18 +847,6 @@ public:
 
     void setDocType(PassRefPtr<DocumentType>);
 
-    // XPathEvaluator methods
-    PassRefPtr<XPathExpression> createExpression(const String& expression,
-                                                 XPathNSResolver* resolver,
-                                                 ExceptionCode& ec);
-    PassRefPtr<XPathNSResolver> createNSResolver(Node *nodeResolver);
-    PassRefPtr<XPathResult> evaluate(const String& expression,
-                                     Node* contextNode,
-                                     XPathNSResolver* resolver,
-                                     unsigned short type,
-                                     XPathResult* result,
-                                     ExceptionCode& ec);
-
     enum PendingSheetLayout { NoLayoutWithPendingSheets, DidLayoutWithPendingSheets, IgnoreLayoutWithPendingSheets };
 
     bool didLayoutWithPendingStylesheets() const { return m_pendingSheetLayout == DidLayoutWithPendingSheets; }
@@ -1274,8 +1258,6 @@ private:
 
     HashSet<LiveNodeListBase*> m_listsInvalidatedAtDocument;
     unsigned m_nodeListCounts[numNodeListInvalidationTypes];
-
-    RefPtr<XPathEvaluator> m_xpathEvaluator;
 
     OwnPtr<SVGDocumentExtensions> m_svgExtensions;
 
