@@ -1464,6 +1464,11 @@ string16 AutofillDialogViews::GetWindowTitle() const {
 
 void AutofillDialogViews::WindowClosing() {
   focus_manager_->RemoveFocusChangeListener(this);
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // TODO(abodenha): Remove this when no longer needed. See
+  // http://crbug.com/242584.
+  focus_manager_->UnregisterAccelerators(this);
+#endif
 }
 
 void AutofillDialogViews::DeleteDelegate() {
