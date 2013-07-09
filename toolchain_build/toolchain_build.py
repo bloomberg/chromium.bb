@@ -392,6 +392,23 @@ def HostTools(target):
                   ]],
           'commands': ConfigureTargetPrep(target) + [
               ConfigureGccCommand(target),
+              # GCC's configure step writes configargs.h with some strings
+              # including the configure command line, which get embedded
+              # into the gcc driver binary.  The build only works if we use
+              # absolute paths in some of the configure switches, but
+              # embedding those paths makes the output differ in repeated
+              # builds done in different directories, which we do not want.
+              # So force the generation of that file early and then edit it
+              # in place to replace the absolute paths with something that
+              # never varies.  Note that the 'configure-gcc' target will
+              # actually build some components before running gcc/configure.
+              GccCommand(target, MAKE_PARALLEL_CMD + ['configure-gcc']),
+              command.Command(['sed', '-i', '-e',
+                               ';'.join(['s@%%(abs_%s)s@.../%s_install@g' %
+                                         (component, component)
+                                         for component in HOST_GCC_LIBS_DEPS] +
+                                        ['s@%(cwd)s@...@g']),
+                               os.path.join('gcc', 'configargs.h')]),
               # gcc/Makefile's install rules ordinarily look at the
               # installed include directory for a limits.h to decide
               # whether the lib/gcc/.../include-fixed/limits.h header
