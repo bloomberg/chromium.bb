@@ -2875,7 +2875,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-#if defined(ENABLE_WEBRTC) && !defined(GOOGLE_TV)
+#if defined(ENABLE_WEBRTC)
   webkit_media::MediaStreamClient* media_stream_client =
       GetContentClient()->renderer()->OverrideCreateMediaStreamClient();
   if (!media_stream_client) {
@@ -2883,17 +2883,18 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     media_stream_client = media_stream_impl_;
   }
 
+#if !defined(GOOGLE_TV)
   if (media_stream_client->IsMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     bool found_neon =
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
     UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
 #endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    EnsureMediaStreamImpl();
     return new webkit_media::WebMediaPlayerMS(
         frame, client, AsWeakPtr(), media_stream_client, new RenderMediaLog());
   }
-#endif
+#endif  // !defined(GOOGLE_TV)
+#endif  // defined(ENABLE_WEBRTC)
 
 #if defined(OS_ANDROID)
   GpuChannelHost* gpu_channel_host =
@@ -2926,14 +2927,13 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
               context_provider->Context3d(), gpu_channel_host, routing_id_),
           new RenderMediaLog()));
 #if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
-  if (MediaStreamImpl::CheckMediaStream(url)) {
-    EnsureMediaStreamImpl();
+  if (media_stream_client->IsMediaStream(url)) {
     RTCVideoDecoderFactoryTv* factory = RenderThreadImpl::current()
         ->GetMediaStreamDependencyFactory()->decoder_factory_tv();
-    // |media_stream_impl_| and |factory| outlives |web_media_player_android|.
+    // |media_stream_client| and |factory| outlives |web_media_player_android|.
     if (!factory->AcquireDemuxer() ||
         !web_media_player_android->InjectMediaStream(
-            media_stream_impl_,
+            media_stream_client,
             factory,
             base::Bind(
                 base::IgnoreResult(&RTCVideoDecoderFactoryTv::ReleaseDemuxer),
