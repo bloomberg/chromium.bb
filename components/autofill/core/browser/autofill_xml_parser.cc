@@ -196,7 +196,7 @@ void AutofillQueryXmlParser::CharacterData(
     return;
 
   int type = -1;
-  base::StringToInt(text, &type);
+  base::StringToInt(std::string(text, len), &type);
   if (type >= AUTOCHECKOUT_STEP_MIN_VALUE &&
       type <= AUTOCHECKOUT_STEP_MAX_VALUE) {
     AutocheckoutStepType step_type =
