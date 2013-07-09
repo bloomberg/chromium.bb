@@ -122,9 +122,8 @@ void ExtensionSyncBundle::AddPendingExtension(
   pending_sync_data_[id] = extension_sync_data;
 }
 
-bool ExtensionSyncBundle::HandlesExtension(const Extension& extension) const {
-  return sync_processor_ != NULL &&
-      sync_helper::IsSyncableExtension(&extension);
+bool ExtensionSyncBundle::IsSyncing() const {
+  return sync_processor_ != NULL;
 }
 
 std::vector<ExtensionSyncData> ExtensionSyncBundle::GetPendingData() const {
@@ -148,7 +147,7 @@ void ExtensionSyncBundle::GetExtensionSyncDataListHelper(
     // If we have pending extension data for this extension, then this
     // version is out of date.  We'll sync back the version we got from
     // sync.
-    if (HandlesExtension(extension) &&
+    if (IsSyncing() && sync_helper::IsSyncableExtension(&extension) &&
         !HasPendingExtensionId(extension.id())) {
       sync_data_list->push_back(
           extension_service_->GetExtensionSyncData(extension));

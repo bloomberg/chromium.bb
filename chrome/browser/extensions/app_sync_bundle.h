@@ -72,9 +72,6 @@ class AppSyncBundle {
   void AddPendingApp(const std::string& id,
                      const AppSyncData& app_sync_data);
 
-  // Returns true if |extension| should be handled by this sync bundle.
-  bool HandlesApp(const Extension& extension) const;
-
   // Returns a vector of all the pending sync data.
   std::vector<AppSyncData> GetPendingData() const;
 
@@ -82,6 +79,9 @@ class AppSyncBundle {
   void GetAppSyncDataListHelper(
       const ExtensionSet& extensions,
       std::vector<extensions::AppSyncData>* sync_data_list) const;
+
+  // Returns true if SetupSync has been called, false otherwise.
+  bool IsSyncing() const;
 
  private:
   // Add a synced app.

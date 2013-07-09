@@ -72,9 +72,6 @@ class ExtensionSyncBundle {
   void AddPendingExtension(const std::string& id,
                            const ExtensionSyncData& extension_sync_data);
 
-  // Returns true if |extension| should be handled by this sync bundle.
-  bool HandlesExtension(const Extension& extension) const;
-
   // Returns a vector of all the pending sync data.
   std::vector<ExtensionSyncData> GetPendingData() const;
 
@@ -82,6 +79,9 @@ class ExtensionSyncBundle {
   void GetExtensionSyncDataListHelper(
       const ExtensionSet& extensions,
       std::vector<extensions::ExtensionSyncData>* sync_data_list) const;
+
+  // Returns true if SetupSync has been called, false otherwise.
+  bool IsSyncing() const;
 
  private:
   // Add a synced extension.

@@ -682,6 +682,10 @@ class ExtensionService
   void AddUpdateObserver(extensions::UpdateObserver* observer);
   void RemoveUpdateObserver(extensions::UpdateObserver* observer);
 
+  // |flare| provides a StartSyncFlare to the SyncableService. See
+  // sync_start_util for more.
+  void SetSyncStartFlare(const syncer::SyncableService::StartSyncFlare& flare);
+
  private:
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
@@ -936,6 +940,11 @@ class ExtensionService
 #endif
 
   ObserverList<extensions::UpdateObserver, true> update_observers_;
+
+  // Run()ning tells sync to try and start soon, because syncable changes
+  // have started happening. It will cause sync to call us back
+  // asynchronously via MergeDataAndStartSyncing as soon as possible.
+  syncer::SyncableService::StartSyncFlare flare_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

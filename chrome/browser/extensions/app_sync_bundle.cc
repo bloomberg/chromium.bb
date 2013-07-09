@@ -119,8 +119,8 @@ void AppSyncBundle::AddPendingApp(const std::string& id,
   pending_sync_data_[id] = app_sync_data;
 }
 
-bool AppSyncBundle::HandlesApp(const Extension& extension) const {
-  return sync_processor_ != NULL && sync_helper::IsSyncableApp(&extension);
+bool AppSyncBundle::IsSyncing() const {
+  return sync_processor_ != NULL;
 }
 
 std::vector<AppSyncData> AppSyncBundle::GetPendingData() const {
@@ -144,7 +144,7 @@ void AppSyncBundle::GetAppSyncDataListHelper(
     // If we have pending app data for this app, then this
     // version is out of date.  We'll sync back the version we got from
     // sync.
-    if (HandlesApp(extension) &&
+    if (IsSyncing() && sync_helper::IsSyncableApp(&extension) &&
         !HasPendingExtensionId(extension.id())) {
       sync_data_list->push_back(extension_service_->GetAppSyncData(extension));
     }

@@ -464,6 +464,11 @@ ExtensionService::~ExtensionService() {
   }
 }
 
+void ExtensionService::SetSyncStartFlare(
+    const syncer::SyncableService::StartSyncFlare& flare) {
+  flare_ = flare;
+}
+
 void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
@@ -764,12 +769,21 @@ bool ExtensionService::UninstallExtension(
 
   // Extract the data we need for sync now, but don't actually sync until we've
   // completed the uninstallation.
+  // TODO(tim): If we get here and IsSyncing is false, this will cause
+  // "back from the dead" style bugs, because sync will add-back the extension
+  // that was uninstalled here when MergeDataAndStartSyncing is called.
+  // See crbug.com/256795.
   syncer::SyncChange sync_change;
-  if (app_sync_bundle_.HandlesApp(*extension.get())) {
-    sync_change = app_sync_bundle_.CreateSyncChangeToDelete(extension.get());
-  } else if (extension_sync_bundle_.HandlesExtension(*extension.get())) {
-    sync_change =
-        extension_sync_bundle_.CreateSyncChangeToDelete(extension.get());
+  if (extensions::sync_helper::IsSyncableApp(extension.get())) {
+    if (app_sync_bundle_.IsSyncing())
+      sync_change = app_sync_bundle_.CreateSyncChangeToDelete(extension.get());
+    else if (is_ready() && !flare_.is_null())
+      flare_.Run(syncer::APPS);  // Tell sync to start ASAP.
+  } else if (extensions::sync_helper::IsSyncableExtension(extension.get())) {
+    if (extension_sync_bundle_.IsSyncing())
+      sync_change = extension_sync_bundle_.CreateSyncChangeToDelete(extension);
+    else if (is_ready() && !flare_.is_null())
+      flare_.Run(syncer::EXTENSIONS);  // Tell sync to start ASAP.
   }
 
   if (IsUnacknowledgedExternalExtension(extension.get())) {
@@ -1943,10 +1957,16 @@ void ExtensionService::GarbageCollectExtensions() {
 }
 
 void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {
-  if (app_sync_bundle_.HandlesApp(extension)) {
-    app_sync_bundle_.SyncChangeIfNeeded(extension);
-  } else if (extension_sync_bundle_.HandlesExtension(extension)) {
-    extension_sync_bundle_.SyncChangeIfNeeded(extension);
+  if (extensions::sync_helper::IsSyncableApp(&extension)) {
+    if (app_sync_bundle_.IsSyncing())
+      app_sync_bundle_.SyncChangeIfNeeded(extension);
+    else if (is_ready() && !flare_.is_null())
+      flare_.Run(syncer::APPS);
+  } else if (extensions::sync_helper::IsSyncableExtension(&extension)) {
+    if (extension_sync_bundle_.IsSyncing())
+      extension_sync_bundle_.SyncChangeIfNeeded(extension);
+    else if (is_ready() && !flare_.is_null())
+      flare_.Run(syncer::EXTENSIONS);
   }
 }
 

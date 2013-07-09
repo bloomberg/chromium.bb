@@ -98,6 +98,7 @@
 #include "sync/api/string_ordinal.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
+#include "sync/api/syncable_service.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -641,6 +642,13 @@ class ExtensionServiceTest
   void AddMockExternalProvider(
       extensions::ExternalProviderInterface* provider) {
     service_->AddProviderForTesting(provider);
+  }
+
+  void MockSyncStartFlare(bool* was_called,
+                          syncer::ModelType* model_type_passed_in,
+                          syncer::ModelType model_type) {
+    *was_called = true;
+    *model_type_passed_in = model_type;
   }
 
  protected:
@@ -4952,6 +4960,100 @@ namespace {
       return syncer::SyncError();
     }
   };
+}
+
+TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledComponent) {
+  InitializeEmptyExtensionService();
+
+  bool flare_was_called = false;
+  syncer::ModelType triggered_type(syncer::UNSPECIFIED);
+  base::WeakPtrFactory<ExtensionServiceTest> factory(this);
+  service_->SetSyncStartFlare(
+      base::Bind(&ExtensionServiceTest::MockSyncStartFlare,
+                 factory.GetWeakPtr(),
+                 &flare_was_called,  // Safe due to WeakPtrFactory scope.
+                 &triggered_type));  // Safe due to WeakPtrFactory scope.
+
+  // Install a component extension.
+  base::FilePath path = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII(good0)
+      .AppendASCII("1.0.0.0");
+  std::string manifest;
+  ASSERT_TRUE(file_util::ReadFileToString(
+      path.Append(extensions::kManifestFilename), &manifest));
+  service_->component_loader()->Add(manifest, path);
+  ASSERT_FALSE(service_->is_ready());
+  service_->Init();
+  ASSERT_TRUE(service_->is_ready());
+
+  // Extensions added before service is_ready() don't trigger sync startup.
+  EXPECT_FALSE(flare_was_called);
+  ASSERT_EQ(syncer::UNSPECIFIED, triggered_type);
+}
+
+TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledNormal) {
+  // Initialize the test dir with a good Preferences/extensions.
+  base::FilePath source_install_dir = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions");
+  base::FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  bool flare_was_called = false;
+  syncer::ModelType triggered_type(syncer::UNSPECIFIED);
+  base::WeakPtrFactory<ExtensionServiceTest> factory(this);
+  service_->SetSyncStartFlare(
+      base::Bind(&ExtensionServiceTest::MockSyncStartFlare,
+                 factory.GetWeakPtr(),
+                 &flare_was_called,  // Safe due to WeakPtrFactory scope.
+                 &triggered_type));  // Safe due to WeakPtrFactory scope.
+
+  ASSERT_FALSE(service_->is_ready());
+  service_->Init();
+  ASSERT_TRUE(service_->is_ready());
+
+  // Extensions added before service is_ready() don't trigger sync startup.
+  EXPECT_FALSE(flare_was_called);
+  ASSERT_EQ(syncer::UNSPECIFIED, triggered_type);
+}
+
+TEST_F(ExtensionServiceTest, DeferredSyncStartupOnInstall) {
+  InitializeEmptyExtensionService();
+  service_->Init();
+  ASSERT_TRUE(service_->is_ready());
+
+  bool flare_was_called = false;
+  syncer::ModelType triggered_type(syncer::UNSPECIFIED);
+  base::WeakPtrFactory<ExtensionServiceTest> factory(this);
+  service_->SetSyncStartFlare(
+      base::Bind(&ExtensionServiceTest::MockSyncStartFlare,
+                 factory.GetWeakPtr(),
+                 &flare_was_called,  // Safe due to WeakPtrFactory scope.
+                 &triggered_type));  // Safe due to WeakPtrFactory scope.
+
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
+  InstallCRX(path, INSTALL_NEW);
+
+  EXPECT_TRUE(flare_was_called);
+  EXPECT_EQ(syncer::EXTENSIONS, triggered_type);
+
+  // Reset.
+  flare_was_called = false;
+  triggered_type = syncer::UNSPECIFIED;
+
+  // Once sync starts, flare should no longer be invoked.
+  service_->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS, syncer::SyncDataList(),
+      scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+  path = data_dir_.AppendASCII("page_action.crx");
+  InstallCRX(path, INSTALL_NEW);
+  EXPECT_FALSE(flare_was_called);
+  ASSERT_EQ(syncer::UNSPECIFIED, triggered_type);
 }
 
 TEST_F(ExtensionServiceTest, GetSyncData) {
