@@ -913,16 +913,6 @@ inline ContainerNode* Node::parentNodeGuaranteedHostFree() const
     return parentOrShadowHostNode();
 }
 
-inline void Node::reattach(const AttachContext& context)
-{
-    AttachContext reattachContext(context);
-    reattachContext.performingReattach = true;
-
-    if (attached())
-        detach(reattachContext);
-    attach(reattachContext);
-}
-
 inline void Node::lazyReattachIfAttached()
 {
     if (attached())

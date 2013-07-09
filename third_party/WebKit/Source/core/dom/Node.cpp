@@ -1037,6 +1037,18 @@ bool Node::containsIncludingHostElements(const Node* node) const
     return false;
 }
 
+void Node::reattach(const AttachContext& context)
+{
+    // FIXME: Text::updateTextRenderer calls reattach outside a style recalc.
+    ASSERT(document()->inStyleRecalc() || isTextNode());
+    AttachContext reattachContext(context);
+    reattachContext.performingReattach = true;
+
+    if (attached())
+        detach(reattachContext);
+    attach(reattachContext);
+}
+
 void Node::attach(const AttachContext&)
 {
     ASSERT(!attached());
