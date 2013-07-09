@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/android/tab_android.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -219,10 +221,17 @@ void BookmarksHandler::PopulateBookmark(const BookmarkNode* node,
 
   DictionaryValue* filler_value = new DictionaryValue();
   filler_value->SetString("title", node->GetTitle());
-  // Mark reserved system nodes and partner bookmarks as uneditable
+
+  // Mark reserved system nodes and partner bookmarks as uneditable.
+  // Also mark them uneditable when it is disabled by a preference
+  // (which can be forced by a policy).
   // (i.e. the bookmark bar along with the "Other Bookmarks" folder).
-  filler_value->SetBoolean("editable",
-                           partner_bookmarks_shim_->IsBookmarkEditable(node));
+  const PrefService* pref = Profile::FromBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext())->GetPrefs();
+  bool editable = partner_bookmarks_shim_->IsBookmarkEditable(node) &&
+                  pref->GetBoolean(prefs::kEditBookmarksEnabled);
+  filler_value->SetBoolean("editable", editable);
+
   if (node->is_url()) {
     filler_value->SetBoolean("folder", false);
     filler_value->SetString("url", node->url().spec());
