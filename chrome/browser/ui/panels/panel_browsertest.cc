@@ -1315,19 +1315,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FocusLostOnMinimize) {
   panel->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_CreateInactiveSwitchToActive DISABLED_CreateInactiveSwitchToActive
-#else
-#define MAYBE_CreateInactiveSwitchToActive CreateInactiveSwitchToActive
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreateInactiveSwitchToActive) {
-  // Compiz will not activate initially inactive window.
-  if (SkipTestIfCompizWM())
-    return;
-
-  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateInactiveSwitchToActive) {
+  Panel* panel = CreateInactivePanel("1");
 
   panel->Activate();
   WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
