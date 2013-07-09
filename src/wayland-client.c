@@ -107,8 +107,6 @@ display_fatal_error(struct wl_display *display, int error)
 		error = 1;
 
 	display->last_error = error;
-	close(display->fd);
-	display->fd = -1;
 
 	wl_list_for_each(iter, &display->event_queue_list, link)
 		pthread_cond_broadcast(&iter->cond);
@@ -612,8 +610,7 @@ wl_display_disconnect(struct wl_display *display)
 	wl_event_queue_release(&display->queue);
 	pthread_mutex_destroy(&display->mutex);
 	pthread_cond_destroy(&display->reader_cond);
-	if (display->fd > 0)
-		close(display->fd);
+	close(display->fd);
 
 	free(display);
 }
