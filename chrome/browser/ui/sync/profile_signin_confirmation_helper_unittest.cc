@@ -34,7 +34,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,8 +116,7 @@ static scoped_refptr<extensions::Extension> CreateExtension(
 class ProfileSigninConfirmationHelperTest : public testing::Test {
  public:
   ProfileSigninConfirmationHelperTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        user_prefs_(NULL),
+      : user_prefs_(NULL),
         model_(NULL) {
   }
 
@@ -153,12 +152,11 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     // TestExtensionSystem uses DeleteSoon, so we need to delete the profile
     // and then run the message queue to clean up.
     profile_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   TestingPrefStoreWithCustomReadError* user_prefs_;
   BookmarkModel* model_;
