@@ -118,8 +118,8 @@ function search(query, callback) {
   else
     query = '"' + query + '"';
 
-  var url = "http://code.google.com/p/chromium/source/search?q=" + query;
-
+  var url = "https://code.google.com/p/chromium/codesearch#search/&type=cs&q=" + query +
+      "&exact_package=chromium&type=cs";
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
   req.setRequestHeader("GData-Version", "2");
@@ -133,8 +133,8 @@ function search(query, callback) {
 }
 
 function getUrl(path, line) {
-  var url = "http://code.google.com/codesearch#OAMlx_jo-ck/" + path
-      "&exact_package=chromium&type=cs";
+  var url = "https://code.google.com/p/chromium/codesearch#" + path
+      "&sq=package:chromium";
   if (line)
     url += "&l=" + line;
   return url;
@@ -164,7 +164,8 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
   } else if (text == 'halp') {
     // TODO(aa)
   } else {
-    navigate("http://codesearch.google.com/codesearch?" +
-             "vert=chromium&as_q=" + text);
+    navigate("https://code.google.com/p/chromium/codesearch#search/&type=cs" +
+             "&q=" + text +
+             "&exact_package=chromium&type=cs");
   }
 });
