@@ -2355,11 +2355,15 @@ skia::RefPtr<SkPicture> LayerTreeHostImpl::CapturePicture() {
   return layer ? layer->GetPicture() : skia::RefPtr<SkPicture>();
 }
 
-void LayerTreeHostImpl::SetDebugState(const LayerTreeDebugState& debug_state) {
-  if (debug_state_.continuous_painting != debug_state.continuous_painting)
+void LayerTreeHostImpl::SetDebugState(
+    const LayerTreeDebugState& new_debug_state) {
+  if (LayerTreeDebugState::Equal(debug_state_, new_debug_state))
+    return;
+  if (debug_state_.continuous_painting != new_debug_state.continuous_painting)
     paint_time_counter_->ClearHistory();
 
-  debug_state_ = debug_state;
+  debug_state_ = new_debug_state;
+  SetFullRootLayerDamage();
 }
 
 }  // namespace cc

@@ -310,7 +310,7 @@ class CC_EXPORT LayerTreeHostImpl
     return animation_registrar_.get();
   }
 
-  void SetDebugState(const LayerTreeDebugState& debug_state);
+  void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
   class CC_EXPORT CullRenderPassesWithCachedTextures {

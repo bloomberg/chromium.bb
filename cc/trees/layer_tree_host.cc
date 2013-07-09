@@ -556,7 +556,7 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
 
-  SetNeedsRedraw();
+  SetNeedsCommit();
 }
 
 void LayerTreeHost::SetViewportSize(gfx::Size device_viewport_size) {
