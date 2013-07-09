@@ -62,28 +62,22 @@ void SelectFileDialogImpl::SelectFileImpl(
     void* params) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  ScopedJavaLocalRef<jstring> capture_value;
-  std::vector<base::string16> accept_types;
-  if (params) {
-    accept_types = *(reinterpret_cast<std::vector<base::string16>*>(params));
+  // The first element in the pair is a list of accepted types, the second
+  // indicates whether the device's capture capabilities should be used.
+  typedef std::pair<std::vector<base::string16>, bool> AcceptTypes;
+  AcceptTypes accept_types = std::make_pair(std::vector<base::string16>(),
+                                            false);
 
-    // The last string in params is expected to be the string
-    // with capture value.
-    capture_value = base::android::ConvertUTF16ToJavaString(env,
-          StringToLowerASCII(accept_types.back()));
-    base::android::CheckException(env);
-    accept_types.pop_back();
-  } else {
-    capture_value = base::android::ConvertUTF8ToJavaString(env, "filesystem");
+  if (params) {
+    accept_types = *(reinterpret_cast<AcceptTypes*>(params));
   }
 
-  // The rest params elements are expected to be accept_types.
   ScopedJavaLocalRef<jobjectArray> accept_types_java =
-      base::android::ToJavaArrayOfStrings(env, accept_types);
+      base::android::ToJavaArrayOfStrings(env, accept_types.first);
 
   Java_SelectFileDialog_selectFile(env, java_object_.obj(),
                                    accept_types_java.obj(),
-                                   capture_value.obj(),
+                                   accept_types.second,
                                    owning_window->GetJavaObject().obj());
   is_running_ = true;
 }

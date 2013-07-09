@@ -2418,7 +2418,7 @@ bool RenderViewImpl::runFileChooser(
   for (size_t i = 0; i < params.acceptTypes.size(); ++i)
     ipc_params.accept_types.push_back(params.acceptTypes[i]);
 #if defined(OS_ANDROID)
-  ipc_params.capture = params.capture;
+  ipc_params.capture = params.useMediaCapture;
 #endif
 
   return ScheduleFileChooser(ipc_params, chooser_completion);

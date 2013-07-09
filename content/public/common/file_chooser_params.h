@@ -47,9 +47,9 @@ struct CONTENT_EXPORT FileChooserParams {
   std::vector<string16> accept_types;
 
 #if defined(OS_ANDROID)
-  // Used to select items other than files, i.e. camera/mic. See
-  // SelectFileDialog.java for more details.
-  string16 capture;
+  // See http://www.w3.org/TR/html-media-capture for more information.
+  // If true, the data should be obtained using the device's camera/mic/etc.
+  bool capture;
 #endif
 };
 
