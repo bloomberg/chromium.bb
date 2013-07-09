@@ -107,8 +107,6 @@
                 'src/DOMUtilitiesPrivate.h',
                 'src/DragClientImpl.cpp',
                 'src/DragClientImpl.h',
-                'src/DragScrollTimer.cpp',
-                'src/DragScrollTimer.h',
                 'src/EditorClientImpl.cpp',
                 'src/EditorClientImpl.h',
                 'src/EventListenerWrapper.cpp',
