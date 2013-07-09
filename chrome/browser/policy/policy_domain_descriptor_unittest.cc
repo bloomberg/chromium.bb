@@ -4,7 +4,13 @@
 
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 
+#include <string>
+
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
+#include "chrome/browser/policy/external_data_manager.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_schema.h"
@@ -12,7 +18,19 @@
 
 namespace policy {
 
-TEST(PolicyDomainDescriptor, FilterBundle) {
+class PolicyDomainDescriptorTest : public testing::Test {
+ protected:
+  scoped_ptr<ExternalDataFetcher> CreateExternalDataFetcher() const;
+};
+
+scoped_ptr<ExternalDataFetcher>
+    PolicyDomainDescriptorTest::CreateExternalDataFetcher() const {
+  return make_scoped_ptr(
+      new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(),
+                              std::string()));
+}
+
+TEST_F(PolicyDomainDescriptorTest, FilterBundle) {
   scoped_refptr<PolicyDomainDescriptor> descriptor =
       new PolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS);
   EXPECT_EQ(POLICY_DOMAIN_EXTENSIONS, descriptor->domain());
@@ -60,7 +78,8 @@ TEST(PolicyDomainDescriptor, FilterBundle) {
   expected_bundle.Get(chrome_ns).Set("ChromePolicy",
                                      POLICY_LEVEL_MANDATORY,
                                      POLICY_SCOPE_USER,
-                                     base::Value::CreateStringValue("value"));
+                                     base::Value::CreateStringValue("value"),
+                                     NULL);
   bundle.CopyFrom(expected_bundle);
   // Unknown components of the domain are filtered out.
   PolicyNamespace another_extension_ns(POLICY_DOMAIN_EXTENSIONS, "xyz");
@@ -68,7 +87,8 @@ TEST(PolicyDomainDescriptor, FilterBundle) {
       "AnotherExtensionPolicy",
       POLICY_LEVEL_MANDATORY,
       POLICY_SCOPE_USER,
-      base::Value::CreateStringValue("value"));
+      base::Value::CreateStringValue("value"),
+      NULL);
   descriptor->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
 
@@ -78,27 +98,29 @@ TEST(PolicyDomainDescriptor, FilterBundle) {
   list.AppendString("a");
   list.AppendString("b");
   map.Set("Array", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          list.DeepCopy());
+          list.DeepCopy(), NULL);
   map.Set("Boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateBooleanValue(true));
+          base::Value::CreateBooleanValue(true), NULL);
   map.Set("Integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateIntegerValue(1));
+          base::Value::CreateIntegerValue(1), NULL);
   map.Set("Null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateNullValue());
+          base::Value::CreateNullValue(), NULL);
   map.Set("Number", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateDoubleValue(1.2));
+          base::Value::CreateDoubleValue(1.2), NULL);
   base::DictionaryValue dict;
   dict.SetString("a", "b");
   dict.SetInteger("b", 2);
-  map.Set("Object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, dict.DeepCopy());
+  map.Set("Object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          dict.DeepCopy(), NULL);
   map.Set("String", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateStringValue("value"));
+          base::Value::CreateStringValue("value"), NULL);
 
   bundle.MergeFrom(expected_bundle);
   bundle.Get(extension_ns).Set("Unexpected",
                                POLICY_LEVEL_MANDATORY,
                                POLICY_SCOPE_USER,
-                               base::Value::CreateStringValue("to-be-removed"));
+                               base::Value::CreateStringValue("to-be-removed"),
+                               NULL);
 
   descriptor->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
@@ -107,19 +129,19 @@ TEST(PolicyDomainDescriptor, FilterBundle) {
   bundle.Clear();
   PolicyMap& badmap = bundle.Get(extension_ns);
   badmap.Set("Array", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false));
+             base::Value::CreateBooleanValue(false), NULL);
   badmap.Set("Boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateIntegerValue(0));
+             base::Value::CreateIntegerValue(0), NULL);
   badmap.Set("Integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false));
+             base::Value::CreateBooleanValue(false), NULL);
   badmap.Set("Null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false));
+             base::Value::CreateBooleanValue(false), NULL);
   badmap.Set("Number", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false));
+             base::Value::CreateBooleanValue(false), NULL);
   badmap.Set("Object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false));
+             base::Value::CreateBooleanValue(false), NULL);
   badmap.Set("String", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false));
+             NULL, CreateExternalDataFetcher().release());
 
   descriptor->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(empty_bundle));

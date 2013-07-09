@@ -7,12 +7,14 @@
 #include <string>
 
 #include "ash/magnifier/magnifier_constants.h"
+#include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -103,7 +105,8 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
   if (!sanitized_config)
     sanitized_config = base::Value::CreateNullValue();
 
-  policies->Set(policy_name(), entry->level, entry->scope, sanitized_config);
+  policies->Set(policy_name(), entry->level, entry->scope,
+                sanitized_config, NULL);
 }
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(

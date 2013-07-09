@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
@@ -30,7 +32,8 @@ void ApplyDevicePolicy(const std::string& device_policy,
     user_policy_map->Set(user_policy,
                          POLICY_LEVEL_RECOMMENDED,
                          POLICY_SCOPE_USER,
-                         value->DeepCopy());
+                         value->DeepCopy(),
+                         NULL);
   }
 }
 

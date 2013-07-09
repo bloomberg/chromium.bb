@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
@@ -172,7 +174,7 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
 
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, Value::CreateStringValue(onc_policy));
+             POLICY_SCOPE_USER, Value::CreateStringValue(onc_policy), NULL);
   UpdateProviderPolicy(policy);
 
   EXPECT_CALL(network_library_, AddNetworkProfileObserver(_));
@@ -224,7 +226,7 @@ class NetworkConfigurationUpdaterTestWithParam
 TEST_P(NetworkConfigurationUpdaterTestWithParam, InitialUpdates) {
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             Value::CreateStringValue(kFakeONC));
+             Value::CreateStringValue(kFakeONC), NULL);
   UpdateProviderPolicy(policy);
 
   EXPECT_CALL(network_library_, AddNetworkProfileObserver(_));
@@ -380,7 +382,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
 
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             Value::CreateStringValue(kFakeONC));
+             Value::CreateStringValue(kFakeONC), NULL);
   UpdateProviderPolicy(policy);
   Mock::VerifyAndClearExpectations(&network_library_);
   Mock::VerifyAndClearExpectations(&certificate_handler);

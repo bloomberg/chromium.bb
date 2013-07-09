@@ -5,11 +5,13 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_loader_mac.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -282,7 +284,8 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
       .Set(test_policy_definitions::kKeyString,
            POLICY_LEVEL_RECOMMENDED,
            POLICY_SCOPE_USER,
-           base::Value::CreateStringValue("string value"));
+           base::Value::CreateStringValue("string value"),
+           NULL);
   EXPECT_TRUE(provider_.policies().Equals(expected_bundle));
 }
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -198,8 +200,10 @@ void PreferencesBrowserTest::SetUserPolicies(
     const std::vector<base::Value*>& values,
     policy::PolicyLevel level) {
   policy::PolicyMap map;
-  for (size_t i = 0; i < names.size(); ++i)
-    map.Set(names[i], level, policy::POLICY_SCOPE_USER, values[i]->DeepCopy());
+  for (size_t i = 0; i < names.size(); ++i) {
+    map.Set(names[i], level, policy::POLICY_SCOPE_USER,
+            values[i]->DeepCopy(), NULL);
+  }
   policy_provider_.UpdateChromePolicy(map);
 }
 

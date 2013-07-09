@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "chrome/browser/chromeos/policy/proxy_policy_provider.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +52,8 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
       .Set("policy",
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           Value::CreateStringValue("value"));
+           Value::CreateStringValue("value"),
+           NULL);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
 
   EXPECT_CALL(observer_, OnUpdatePolicy(&proxy_provider_));
@@ -63,7 +66,8 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
       .Set("policy",
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           Value::CreateStringValue("new value"));
+           Value::CreateStringValue("new value"),
+           NULL);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(bundle.Equals(proxy_provider_.policies()));

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -61,27 +63,32 @@ class DeviceLocalAccountPolicyServiceTest
                              POLICY_SCOPE_USER,
                              base::Value::CreateIntegerValue(
                                  chromeos::PowerPolicyController::
-                                     ACTION_STOP_SESSION));
+                                     ACTION_STOP_SESSION),
+                             NULL);
     expected_policy_map_.Set(key::kShelfAutoHideBehavior,
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
-                             Value::CreateStringValue("Never"));
+                             Value::CreateStringValue("Never"),
+                             NULL);
     expected_policy_map_.Set(key::kShowLogoutButtonInTray,
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
-                             Value::CreateBooleanValue(true));
+                             Value::CreateBooleanValue(true),
+                             NULL);
     scoped_ptr<base::ListValue> allowed_extension_types(new base::ListValue());
     allowed_extension_types->AppendString("hosted_app");
     expected_policy_map_.Set(key::kExtensionAllowedTypes,
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
-                             allowed_extension_types.release());
+                             allowed_extension_types.release(),
+                             NULL);
 
     // Explicitly set value.
     expected_policy_map_.Set(key::kDisableSpdy,
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
-                             Value::CreateBooleanValue(true));
+                             Value::CreateBooleanValue(true),
+                             NULL);
 
     device_local_account_policy_.payload().mutable_disablespdy()->set_value(
         true);
@@ -479,7 +486,8 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
       .Set(key::kDisableSpdy,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           Value::CreateBooleanValue(false));
+           Value::CreateBooleanValue(false),
+           NULL);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_.policies()));
 
   // Any values set for the |ShelfAutoHideBehavior|, |ShowLogoutButtonInTray|

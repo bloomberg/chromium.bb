@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/cloud/component_cloud_policy_store.h"
 
+#include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/sha1.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
@@ -334,7 +336,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     // If policy for components is ever used for device-level settings then
     // this must support a configurable scope; assuming POLICY_SCOPE_USER is
     // fine for now.
-    policy->Set(it.key(), level, POLICY_SCOPE_USER, value);
+    policy->Set(it.key(), level, POLICY_SCOPE_USER, value, NULL);
   }
 
   return true;

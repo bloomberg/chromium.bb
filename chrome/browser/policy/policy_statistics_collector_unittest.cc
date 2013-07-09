@@ -5,6 +5,7 @@
 #include <cstring>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,6 +13,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_policy_service.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
@@ -92,7 +94,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
   void SetPolicy(const std::string& name) {
     policy_map_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    base::Value::CreateBooleanValue(true));
+                    base::Value::CreateBooleanValue(true), NULL);
   }
 
   base::TimeDelta GetFirstDelay() const {

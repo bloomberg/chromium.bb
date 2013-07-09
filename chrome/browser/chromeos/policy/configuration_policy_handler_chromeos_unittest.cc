@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
+#include "base/callback.h"
 #include "base/prefs/pref_value_map.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -42,7 +44,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 Value::CreateStringValue(kTestONC));
+                 Value::CreateStringValue(kTestONC),
+                 NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -55,7 +58,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 Value::CreateBooleanValue(false));
+                 Value::CreateBooleanValue(false),
+                 NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -69,7 +73,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 Value::CreateStringValue(kTestONC));
+                 Value::CreateStringValue(kTestONC),
+                 NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -96,7 +101,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
   policy_map.Set(key::kOpenNetworkConfiguration,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 Value::CreateStringValue(kTestONC));
+                 Value::CreateStringValue(kTestONC),
+                 NULL);
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -118,7 +124,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   PinnedLauncherAppsPolicyHandler handler;
 
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPinnedLauncherApps, &value));
   EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
@@ -129,7 +135,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   expected_pinned_apps.Append(entry1_dict);
   list.Append(entry1.DeepCopy());
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPinnedLauncherApps, &value));

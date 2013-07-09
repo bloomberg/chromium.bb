@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_types.h"
 
 namespace policy {
@@ -24,11 +25,13 @@ class PolicyMap {
     PolicyLevel level;
     PolicyScope scope;
     base::Value* value;
+    ExternalDataFetcher* external_data_fetcher;
 
     Entry()
         : level(POLICY_LEVEL_RECOMMENDED),
           scope(POLICY_SCOPE_USER),
-          value(NULL) {}
+          value(NULL),
+          external_data_fetcher(NULL) {}
 
     // Returns true if |this| has higher priority than |other|.
     bool has_higher_priority_than(const Entry& other) const;
@@ -52,12 +55,13 @@ class PolicyMap {
   // This is equivalent to Get(policy)->value, when it doesn't return NULL.
   const base::Value* GetValue(const std::string& policy) const;
 
-  // Takes ownership of |value|. Overwrites any existing value stored in the
-  // map for the key |policy|.
+  // Takes ownership of |value| and |external_data_fetcher|. Overwrites any
+  // existing information stored in the map for the key |policy|.
   void Set(const std::string& policy,
            PolicyLevel level,
            PolicyScope scope,
-           base::Value* value);
+           base::Value* value,
+           ExternalDataFetcher* external_data_fetcher);
 
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
@@ -85,9 +89,9 @@ class PolicyMap {
                 PolicyScope scope);
 
   // Compares this value map against |other| and stores all key names that have
-  // different values in |differing_keys|. This includes keys that are present
-  // only in one of the maps. |differing_keys| is not cleared before the keys
-  // are added.
+  // different values or reference different external data in |differing_keys|.
+  // This includes keys that are present only in one of the maps.
+  // |differing_keys| is not cleared before the keys are added.
   void GetDifferingKeys(const PolicyMap& other,
                         std::set<std::string>* differing_keys) const;
 

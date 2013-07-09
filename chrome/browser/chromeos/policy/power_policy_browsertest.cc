@@ -4,11 +4,13 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/power/power_api_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
@@ -68,7 +70,7 @@ void PowerPolicyBrowserTest::SetUserPolicy(
     base::Value* user_policy_value) {
   PolicyMap policy_map;
   policy_map.Set(user_policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 user_policy_value);
+                 user_policy_value, NULL);
   provider_.UpdateChromePolicy(policy_map);
   base::RunLoop().RunUntilIdle();
 }

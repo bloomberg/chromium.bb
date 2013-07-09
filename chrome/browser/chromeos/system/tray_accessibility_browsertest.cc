@@ -7,6 +7,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/user/login_status.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
@@ -94,7 +96,8 @@ class TrayAccessibilityTest
       policy_map.Set(policy::key::kShowAccessibilityOptionsInSystemTrayMenu,
                      policy::POLICY_LEVEL_MANDATORY,
                      policy::POLICY_SCOPE_USER,
-                     base::Value::CreateBooleanValue(value));
+                     base::Value::CreateBooleanValue(value),
+                     NULL);
       provider_.UpdateChromePolicy(policy_map);
       base::RunLoop().RunUntilIdle();
     } else {

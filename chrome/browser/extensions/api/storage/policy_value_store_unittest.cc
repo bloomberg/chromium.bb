@@ -4,12 +4,14 @@
 
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/value_store/leveldb_value_store.h"
 #include "chrome/browser/value_store/value_store_unittest.h"
@@ -119,9 +121,10 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   policy::PolicyMap policies;
   base::FundamentalValue expected(123);
   policies.Set("must", policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, expected.DeepCopy());
+               policy::POLICY_SCOPE_USER, expected.DeepCopy(), NULL);
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
-               policy::POLICY_SCOPE_USER, base::Value::CreateIntegerValue(456));
+               policy::POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(456), NULL);
   store_->SetCurrentPolicy(policies, false);
   ValueStore::ReadResult result = store_->Get();
   ASSERT_FALSE(result->HasError());
@@ -152,7 +155,7 @@ TEST_F(PolicyValueStoreTest, ReadOnly) {
 TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   policy::PolicyMap policies;
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("111"));
+               base::Value::CreateStringValue("111"), NULL);
   EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
   // No notification when setting the initial policy.
   store_->SetCurrentPolicy(policies, false);
@@ -161,9 +164,9 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
 
   // And no notifications on changes when not asked for.
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("222"));
+               base::Value::CreateStringValue("222"), NULL);
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("223"));
+               base::Value::CreateStringValue("223"), NULL);
   EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
   store_->SetCurrentPolicy(policies, false);
   loop_.RunUntilIdle();
@@ -174,7 +177,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   base::StringValue value("333");
   changes.push_back(ValueStoreChange("ccc", NULL, value.DeepCopy()));
   policies.Set("ccc", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               value.DeepCopy());
+               value.DeepCopy(), NULL);
   EXPECT_CALL(observer_, OnSettingsChanged(kTestExtensionId,
                                            settings_namespace::MANAGED,
                                            ValueStoreChange::ToJson(changes)));
@@ -188,7 +191,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   changes.push_back(
       ValueStoreChange("ccc", value.DeepCopy(), new_value.DeepCopy()));
   policies.Set("ccc", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               new_value.DeepCopy());
+               new_value.DeepCopy(), NULL);
   EXPECT_CALL(observer_, OnSettingsChanged(kTestExtensionId,
                                            settings_namespace::MANAGED,
                                            ValueStoreChange::ToJson(changes)));

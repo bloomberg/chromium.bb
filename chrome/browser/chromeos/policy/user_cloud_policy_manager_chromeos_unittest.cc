@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -103,7 +105,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     // Set up a policy map for testing.
     policy_map_.Set("HomepageLocation",
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    base::Value::CreateStringValue("http://chromium.org"));
+                    base::Value::CreateStringValue("http://chromium.org"),
+                    NULL);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
 

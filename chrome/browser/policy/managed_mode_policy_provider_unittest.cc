@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -382,7 +384,8 @@ TEST_F(ManagedModePolicyProviderAPITest, SetLocalPolicy) {
   policy_map->Set(kPolicyKey,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
-                  policy_value.DeepCopy());
+                  policy_value.DeepCopy(),
+                  NULL);
   EXPECT_TRUE(provider_.policies().Equals(expected_bundle));
 }
 

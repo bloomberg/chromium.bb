@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -82,20 +84,23 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
                   base::Value::CreateIntegerValue(
-                      chromeos::PowerPolicyController::ACTION_STOP_SESSION));
+                      chromeos::PowerPolicyController::ACTION_STOP_SESSION),
+                  NULL);
 
   // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the ash
   // shelf does not auto-hide.
   policy_map_.Set(key::kShelfAutoHideBehavior,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
-                  Value::CreateStringValue("Never"));
+                  Value::CreateStringValue("Never"),
+                  NULL);
   // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
   // red logout button is shown in the ash system tray.
   policy_map_.Set(key::kShowLogoutButtonInTray,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
-                  Value::CreateBooleanValue(true));
+                  Value::CreateBooleanValue(true),
+                  NULL);
   // Restrict device-local accounts to hosted apps for now (i.e. no extensions,
   // packaged apps etc.) for security/privacy reasons (i.e. we'd like to
   // prevent the admin from stealing private information from random people).
@@ -104,7 +109,8 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
   policy_map_.Set(key::kExtensionAllowedTypes,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
-                  allowed_extension_types.release());
+                  allowed_extension_types.release(),
+                  NULL);
 
   status_ = STATUS_OK;
   NotifyStoreLoaded();

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -471,8 +473,9 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetScreenshotPolicy(bool enabled) {
     PolicyMap policies;
-    policies.Set(key::kDisableScreenshots, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateBooleanValue(!enabled));
+    policies.Set(key::kDisableScreenshots,
+                 POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 base::Value::CreateBooleanValue(!enabled), NULL);
     UpdateProviderPolicy(policies);
   }
 
@@ -626,7 +629,7 @@ class LocalePolicyTest : public PolicyTest {
     PolicyMap policies;
     policies.Set(
         key::kApplicationLocaleValue, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateStringValue("fr"));
+        base::Value::CreateStringValue("fr"), NULL);
     provider_.UpdateChromePolicy(policies);
     // The "en-US" ResourceBundle is always loaded before this step for tests,
     // but in this test we want the browser to load the bundle as it
@@ -664,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
 
   PolicyMap policies;
   policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
   EXPECT_TRUE(prefs->GetBoolean(prefs::kShowBookmarkBar));
@@ -675,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 
   policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowBookmarkBar));
@@ -711,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_DefaultCookiesSetting) {
   // Now set the policy and the cookie should be gone after another restart.
   PolicyMap policies;
   policies.Set(key::kDefaultCookiesSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4));
+               POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4), NULL);
   UpdateProviderPolicy(policies);
 }
 
@@ -749,19 +752,22 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   // Override the default search provider using policies.
   PolicyMap policies;
   policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  policies.Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateStringValue(kKeyword));
-  policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
+  policies.Set(key::kDefaultSearchProviderKeyword,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kKeyword), NULL);
+  policies.Set(key::kDefaultSearchProviderSearchURL,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kSearchURL), NULL);
   base::ListValue* alternate_urls = new base::ListValue();
   alternate_urls->AppendString(kAlternateURL0);
   alternate_urls->AppendString(kAlternateURL1);
   policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, alternate_urls);
+               POLICY_SCOPE_USER, alternate_urls, NULL);
   policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateStringValue(kSearchTermsReplacementKey));
+               base::Value::CreateStringValue(kSearchTermsReplacementKey),
+               NULL);
   UpdateProviderPolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
@@ -787,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   // Verify that searching from the omnibox can be disabled.
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   EXPECT_TRUE(service->GetDefaultSearchProvider());
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(service->GetDefaultSearchProvider());
@@ -829,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   // Override the default SafeSearch setting using policies.
   PolicyMap policies;
   policies.Set(key::kForceSafeSearch, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
 
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kForceSafeSearch));
@@ -885,21 +891,25 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   // Override the default search provider using policies.
   PolicyMap policies;
   policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  policies.Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateStringValue(kKeyword));
-  policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL));
-  policies.Set(key::kDefaultSearchProviderInstantURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateStringValue(kInstantURL));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
+  policies.Set(key::kDefaultSearchProviderKeyword,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kKeyword), NULL);
+  policies.Set(key::kDefaultSearchProviderSearchURL,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kSearchURL), NULL);
+  policies.Set(key::kDefaultSearchProviderInstantURL,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kInstantURL), NULL);
   base::ListValue* alternate_urls = new base::ListValue();
   alternate_urls->AppendString(kAlternateURL0);
   alternate_urls->AppendString(kAlternateURL1);
   policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, alternate_urls);
+               POLICY_SCOPE_USER, alternate_urls, NULL);
   policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateStringValue(kSearchTermsReplacementKey));
+               base::Value::CreateStringValue(kSearchTermsReplacementKey),
+               NULL);
   UpdateProviderPolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
@@ -972,7 +982,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   // Disable with a policy.
   PolicyMap policies;
   policies.Set(key::kDisable3DAPIs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   // Crash and reload the tab to get a new renderer.
   content::CrashTab(contents);
@@ -980,7 +990,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   EXPECT_FALSE(IsWebGLEnabled(contents));
   // Enable with a policy.
   policies.Set(key::kDisable3DAPIs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   content::CrashTab(contents);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
@@ -993,14 +1003,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableSpdy) {
   EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
   PolicyMap policies;
   policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
   // Verify that it can be force-enabled too.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableSpdy, true);
   policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
@@ -1029,7 +1039,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPlugins) {
   disabled_plugins.Append(base::Value::CreateStringValue("*Flash*"));
   PolicyMap policies;
   policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, disabled_plugins.DeepCopy());
+               POLICY_SCOPE_USER, disabled_plugins.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
   // The user shouldn't be able to enable it.
@@ -1056,7 +1066,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
   disabled_plugins.Append(base::Value::CreateStringValue("*"));
   PolicyMap policies;
   policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, disabled_plugins.DeepCopy());
+               POLICY_SCOPE_USER, disabled_plugins.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
   // The user shouldn't be able to enable it.
@@ -1068,7 +1078,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
   disabled_plugins_exceptions.Append(
       base::Value::CreateStringValue("*Flash*"));
   policies.Set(key::kDisabledPluginsExceptions, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, disabled_plugins_exceptions.DeepCopy());
+               POLICY_SCOPE_USER, disabled_plugins_exceptions.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   // It should revert to the user's preference automatically.
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
@@ -1097,7 +1107,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
   plugin_list.Append(base::Value::CreateStringValue(kFlashPluginName));
   PolicyMap policies;
   policies.Set(key::kEnabledPlugins, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, plugin_list.DeepCopy());
+               POLICY_SCOPE_USER, plugin_list.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
   // The user can't disable it anymore.
@@ -1106,7 +1116,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
 
   // When a plugin is both enabled and disabled, the whitelist takes precedence.
   policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, plugin_list.DeepCopy());
+               POLICY_SCOPE_USER, plugin_list.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
 }
@@ -1149,7 +1159,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   // Now set a policy to always authorize this.
   PolicyMap policies;
   policies.Set(key::kAlwaysAuthorizePlugins, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   // Reloading the page shouldn't trigger the infobar this time.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1170,7 +1180,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   // Disable devtools via policy.
   PolicyMap policies;
   policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   // The existing devtools window should have closed.
   EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
@@ -1200,7 +1210,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebStoreIconHidden) {
   // Turn off the web store icons.
   PolicyMap policies;
   policies.Set(key::kHideWebStoreIcon, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
 
   // The web store icons should now be hidden.
@@ -1235,7 +1245,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   PolicyMap policies;
   policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateStringValue(forced_dir.path().value()));
+               base::Value::CreateStringValue(forced_dir.path().value()), NULL);
   UpdateProviderPolicy(policies);
   DownloadAndVerifyFile(browser(), forced_dir.path(), file);
   // Verify that the first download location wasn't affected.
@@ -1259,7 +1269,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklist) {
   blacklist.Append(base::Value::CreateStringValue(kGoodCrxId));
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, blacklist.DeepCopy());
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
 
   // "good.crx" is blacklisted.
@@ -1277,7 +1287,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklist) {
   blacklist.Clear();
   blacklist.Append(base::Value::CreateStringValue("*"));
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, blacklist.DeepCopy());
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   // AdBlock was automatically removed.
   ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
@@ -1299,9 +1309,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
   whitelist.Append(base::Value::CreateStringValue(kGoodCrxId));
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, blacklist.DeepCopy());
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   policies.Set(key::kExtensionInstallWhitelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, whitelist.DeepCopy());
+               POLICY_SCOPE_USER, whitelist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   // "adblock.crx" is blacklisted.
   EXPECT_FALSE(InstallExtension(kAdBlockCrxName));
@@ -1334,7 +1344,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
       "%s;%s", kGoodCrxId, url.spec().c_str())));
   PolicyMap policies;
   policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, forcelist.DeepCopy());
+               POLICY_SCOPE_USER, forcelist.DeepCopy(), NULL);
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::NotificationService::AllSources());
@@ -1399,7 +1409,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
   allowed_types.AppendString("hosted_app");
   PolicyMap policies;
   policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, allowed_types.DeepCopy());
+               POLICY_SCOPE_USER, allowed_types.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
 
   // "good.crx" is blocked.
@@ -1445,7 +1455,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallSources) {
   install_sources.AppendString(referrer_url.spec());
   PolicyMap policies;
   policies.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, install_sources.DeepCopy());
+               POLICY_SCOPE_USER, install_sources.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
 
   content::WindowedNotificationObserver observer(
@@ -1481,14 +1491,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   PolicyMap policies;
   policies.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateStringValue(chrome::kChromeUICreditsURL));
+               base::Value::CreateStringValue(chrome::kChromeUICreditsURL),
+               NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   content::WaitForLoadStop(contents);
   EXPECT_EQ(GURL(chrome::kChromeUICreditsURL), contents->GetURL());
 
   policies.Set(key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   content::WaitForLoadStop(contents);
@@ -1507,7 +1518,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
   PolicyMap policies;
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(1u, active_browser_list->size());
@@ -1515,7 +1526,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
 
   // Enable via policy and verify that incognito windows can be opened.
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(2u, active_browser_list->size());
@@ -1533,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   // Disable Javascript via policy.
   PolicyMap policies;
   policies.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   // Reload the page.
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
@@ -1550,7 +1561,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   EXPECT_FALSE(IsJavascriptEnabled(contents));
   policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+               base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW), NULL);
   UpdateProviderPolicy(policies);
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
@@ -1560,7 +1571,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   // Verifies that browsing history is not saved.
   PolicyMap policies;
   policies.Set(key::kSavingBrowserHistoryDisabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
@@ -1572,7 +1583,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
 
   // Now flip the policy and try again.
   policies.Set(key::kSavingBrowserHistoryDisabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   ui_test_utils::NavigateToURL(browser(), url);
   // Verify that the navigation was saved in the history.
@@ -1596,7 +1607,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   // Force enable the translate feature.
   PolicyMap policies;
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   // Instead of waiting for NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, this test
   // waits for NOTIFICATION_TAB_LANGUAGE_DETERMINED because that's what the
@@ -1637,7 +1648,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   infobar_service->RemoveInfoBar(infobar_delegate);
   EXPECT_EQ(0u, infobar_service->infobar_count());
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   // Navigating to the same URL now doesn't trigger an infobar.
   content::WindowedNotificationObserver language_observer2(
@@ -1677,7 +1688,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   blacklist.Append(base::Value::CreateStringValue("bbb.com"));
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, blacklist.DeepCopy());
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
@@ -1690,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   whitelist.Append(base::Value::CreateStringValue("sub.bbb.com"));
   whitelist.Append(base::Value::CreateStringValue("bbb.com/policy"));
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, whitelist.DeepCopy());
+               POLICY_SCOPE_USER, whitelist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   CheckURLIsBlocked(browser(), kURLS[1]);
@@ -1726,7 +1737,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   blacklist.Append(base::Value::CreateStringValue("file://*"));
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, blacklist.DeepCopy());
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -1736,7 +1747,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   // Replace the URLblacklist with disabling the file scheme.
   blacklist.Remove(base::StringValue("file://*"), NULL);
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, blacklist.DeepCopy());
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -1748,7 +1759,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   base::ListValue disabledscheme;
   disabledscheme.Append(base::Value::CreateStringValue("file"));
   policies.Set(key::kDisabledSchemes, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, disabledscheme.DeepCopy());
+               POLICY_SCOPE_USER, disabledscheme.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -1760,10 +1771,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   base::ListValue whitelist;
   whitelist.Append(base::Value::CreateStringValue(base_path));
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, whitelist.DeepCopy());
+               POLICY_SCOPE_USER, whitelist.DeepCopy(), NULL);
   blacklist.Append(base::Value::CreateStringValue(folder_path));
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, blacklist.DeepCopy());
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -1816,7 +1827,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_DisableAudioOutput) {
   EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
   PolicyMap policies;
   policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(audio_handler->IsMuted());
   // This should not change the state now and should not trigger OnMuteToggled.
@@ -1826,7 +1837,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_DisableAudioOutput) {
   // Toggle back and observe if the trigger was successful.
   EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
   policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(audio_handler->IsMuted());
   EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
@@ -1861,7 +1872,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   PolicyMap policies;
   policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(180 * 60 * 1000));  // 3 hours.
+               base::Value::CreateIntegerValue(180 * 60 * 1000),  // 3 hours.
+               NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
@@ -1871,7 +1883,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _));
   policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(60 * 60 * 1000));  // 1 hour.
+               base::Value::CreateIntegerValue(60 * 60 * 1000),  // 1 hour.
+               NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
@@ -1891,7 +1904,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, LargeCursorEnabled) {
   PolicyMap policies;
   policies.Set(key::kLargeCursorEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(false));
+               base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsLargeCursorEnabled());
 
@@ -1915,7 +1928,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SpokenFeedbackEnabled) {
   PolicyMap policies;
   policies.Set(key::kSpokenFeedbackEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(false));
+               base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
 
@@ -1939,7 +1952,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HighContrastEnabled) {
   PolicyMap policies;
   policies.Set(key::kHighContrastEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(false));
+               base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
 
@@ -1963,7 +1976,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeNone) {
   PolicyMap policies;
   policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(0));
+               base::Value::CreateIntegerValue(0), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
 
@@ -1984,7 +1997,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
   PolicyMap policies;
   policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(ash::MAGNIFIER_FULL));
+               base::Value::CreateIntegerValue(ash::MAGNIFIER_FULL), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
@@ -2054,13 +2067,14 @@ class RestoreOnStartupPolicyTest
     policies.Set(
         key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         base::Value::CreateIntegerValue(
-            SessionStartupPref::kPrefValueHomePage));
+            SessionStartupPref::kPrefValueHomePage),
+        NULL);
     policies.Set(
         key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateBooleanValue(false));
+        base::Value::CreateBooleanValue(false), NULL);
     policies.Set(
         key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateStringValue(kRestoredURLs[1]));
+        base::Value::CreateStringValue(kRestoredURLs[1]), NULL);
     provider_.UpdateChromePolicy(policies);
 
     expected_urls_.push_back(GURL(kRestoredURLs[1]));
@@ -2073,10 +2087,11 @@ class RestoreOnStartupPolicyTest
     policies.Set(
         key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         base::Value::CreateIntegerValue(
-            SessionStartupPref::kPrefValueHomePage));
+            SessionStartupPref::kPrefValueHomePage),
+        NULL);
     policies.Set(
         key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateBooleanValue(true));
+        base::Value::CreateBooleanValue(true), NULL);
     provider_.UpdateChromePolicy(policies);
 
     expected_urls_.push_back(GURL(chrome::kChromeUINewTabURL));
@@ -2092,10 +2107,11 @@ class RestoreOnStartupPolicyTest
     PolicyMap policies;
     policies.Set(
         key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueURLs));
+        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueURLs),
+        NULL);
     policies.Set(
         key::kRestoreOnStartupURLs, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        urls.DeepCopy());
+        urls.DeepCopy(), NULL);
     provider_.UpdateChromePolicy(policies);
   }
 
@@ -2104,7 +2120,8 @@ class RestoreOnStartupPolicyTest
     PolicyMap policies;
     policies.Set(
         key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueNewTab));
+        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueNewTab),
+        NULL);
     provider_.UpdateChromePolicy(policies);
     expected_urls_.push_back(GURL(chrome::kChromeUINewTabURL));
   }
@@ -2114,7 +2131,8 @@ class RestoreOnStartupPolicyTest
     PolicyMap policies;
     policies.Set(
         key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueLast));
+        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueLast),
+        NULL);
     provider_.UpdateChromePolicy(policies);
     // This should restore the tabs opened at PRE_RunTest below.
     for (size_t i = 0; i < arraysize(kRestoredURLs); ++i)
@@ -2169,13 +2187,13 @@ class PolicyStatisticsCollectorTest : public PolicyTest {
     PolicyMap policies;
     policies.Set(
         key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateBooleanValue(true));
+        base::Value::CreateBooleanValue(true), NULL);
     policies.Set(
         key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateBooleanValue(false));
+        base::Value::CreateBooleanValue(false), NULL);
     policies.Set(
         key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateStringValue("http://chromium.org"));
+        base::Value::CreateStringValue("http://chromium.org"), NULL);
     provider_.UpdateChromePolicy(policies);
   }
 };
@@ -2240,7 +2258,7 @@ class MediaStreamDevicesControllerBrowserTest
                           const char* whitelist_policy,
                           const char* allow_rule) {
     policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateBooleanValue(policy_value_));
+        base::Value::CreateBooleanValue(policy_value_), NULL);
 
     if (whitelist_policy) {
       // TODO(tommi): Remove the kiosk mode flag when the whitelist is visible
@@ -2263,7 +2281,7 @@ class MediaStreamDevicesControllerBrowserTest
         request_url_allowed_via_whitelist_ = false;
       }
       policies->Set(whitelist_policy, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER, list);
+                    POLICY_SCOPE_USER, list, NULL);
     }
   }
 
@@ -2449,7 +2467,8 @@ class PolicyVariationsServiceTest : public PolicyTest {
         key::kVariationsRestrictParameter,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
-        base::Value::CreateStringValue("restricted"));
+        base::Value::CreateStringValue("restricted"),
+        NULL);
     provider_.UpdateChromePolicy(policies);
   }
 };

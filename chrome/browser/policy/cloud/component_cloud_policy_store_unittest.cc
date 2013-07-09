@@ -9,12 +9,14 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,9 +75,9 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
     PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
     PolicyMap& policy = expected_bundle_.Get(ns);
     policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("disabled"));
+               base::Value::CreateStringValue("disabled"), NULL);
     policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("maybe"));
+               base::Value::CreateStringValue("maybe"), NULL);
   }
 
   // Returns true if the policy exposed by the |store_| is empty.

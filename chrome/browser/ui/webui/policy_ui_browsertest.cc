@@ -4,10 +4,12 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
@@ -202,29 +204,34 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   values.Set(policy::key::kRestoreOnStartupURLs,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             restore_on_startup_urls);
+             restore_on_startup_urls,
+             NULL);
   expected_values[policy::key::kRestoreOnStartupURLs] = "aaa,bbb,ccc";
   values.Set(policy::key::kHomepageLocation,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE,
-             base::Value::CreateStringValue("http://google.com"));
+             base::Value::CreateStringValue("http://google.com"),
+             NULL);
   expected_values[policy::key::kHomepageLocation] = "http://google.com";
   values.Set(policy::key::kRestoreOnStartup,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_USER,
-             base::Value::CreateIntegerValue(4));
+             base::Value::CreateIntegerValue(4),
+             NULL);
   expected_values[policy::key::kRestoreOnStartup] = "4";
   values.Set(policy::key::kShowHomeButton,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_MACHINE,
-             base::Value::CreateBooleanValue(true));
+             base::Value::CreateBooleanValue(true),
+             NULL);
   expected_values[policy::key::kShowHomeButton] = "true";
   // Set the value of a policy that does not exist.
   const std::string kUnknownPolicy = "NoSuchThing";
   values.Set(kUnknownPolicy,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true));
+             base::Value::CreateBooleanValue(true),
+             NULL);
   expected_values[kUnknownPolicy] = "true";
   UpdateProviderPolicy(values);
 

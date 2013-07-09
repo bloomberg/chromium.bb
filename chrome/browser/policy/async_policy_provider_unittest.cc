@@ -4,9 +4,11 @@
 
 #include "chrome/browser/policy/async_policy_provider.h"
 
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/policy/async_policy_loader.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -30,7 +32,8 @@ void SetPolicy(PolicyBundle* bundle,
       .Set(name,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           base::Value::CreateStringValue(value));
+           base::Value::CreateStringValue(value),
+           NULL);
 }
 
 class MockPolicyLoader : public AsyncPolicyLoader {

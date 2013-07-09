@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "base/stl_util.h"
 
 namespace policy {
@@ -21,7 +22,9 @@ bool PolicyMap::Entry::has_higher_priority_than(
 bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
   return level == other.level &&
          scope == other.scope &&
-         Value::Equals(value, other.value);
+         Value::Equals(value, other.value) &&
+         ExternalDataFetcher::Equals(external_data_fetcher,
+                                     other.external_data_fetcher);
 }
 
 PolicyMap::PolicyMap() {
@@ -44,18 +47,22 @@ const Value* PolicyMap::GetValue(const std::string& policy) const {
 void PolicyMap::Set(const std::string& policy,
                     PolicyLevel level,
                     PolicyScope scope,
-                    Value* value) {
+                    Value* value,
+                    ExternalDataFetcher* external_data_fetcher) {
   Entry& entry = map_[policy];
   delete entry.value;
+  delete entry.external_data_fetcher;
   entry.level = level;
   entry.scope = scope;
   entry.value = value;
+  entry.external_data_fetcher = external_data_fetcher;
 }
 
 void PolicyMap::Erase(const std::string& policy) {
   PolicyMapType::iterator it = map_.find(policy);
   if (it != map_.end()) {
     delete it->second.value;
+    delete it->second.external_data_fetcher;
     map_.erase(it);
   }
 }
@@ -68,7 +75,9 @@ void PolicyMap::CopyFrom(const PolicyMap& other) {
   Clear();
   for (const_iterator it = other.begin(); it != other.end(); ++it) {
     const Entry& entry = it->second;
-    Set(it->first, entry.level, entry.scope, entry.value->DeepCopy());
+    Set(it->first, entry.level, entry.scope,
+        entry.value->DeepCopy(), entry.external_data_fetcher ?
+            new ExternalDataFetcher(*entry.external_data_fetcher) : NULL);
   }
 }
 
@@ -83,7 +92,9 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
     const Entry* entry = Get(it->first);
     if (!entry || it->second.has_higher_priority_than(*entry)) {
       Set(it->first, it->second.level, it->second.scope,
-          it->second.value->DeepCopy());
+          it->second.value->DeepCopy(), it->second.external_data_fetcher ?
+              new ExternalDataFetcher(*it->second.external_data_fetcher) :
+              NULL);
     }
   }
 }
@@ -93,7 +104,7 @@ void PolicyMap::LoadFrom(
     PolicyLevel level,
     PolicyScope scope) {
   for (DictionaryValue::Iterator it(*policies); !it.IsAtEnd(); it.Advance())
-    Set(it.key(), level, scope, it.value().DeepCopy());
+    Set(it.key(), level, scope, it.value().DeepCopy(), NULL);
 }
 
 void PolicyMap::GetDifferingKeys(const PolicyMap& other,
@@ -129,6 +140,7 @@ void PolicyMap::FilterLevel(PolicyLevel level) {
   while (iter != map_.end()) {
     if (iter->second.level != level) {
       delete iter->second.value;
+      delete iter->second.external_data_fetcher;
       map_.erase(iter++);
     } else {
       ++iter;
@@ -158,8 +170,10 @@ PolicyMap::const_iterator PolicyMap::end() const {
 }
 
 void PolicyMap::Clear() {
-  for (PolicyMapType::iterator it = map_.begin(); it != map_.end(); ++it)
+  for (PolicyMapType::iterator it = map_.begin(); it != map_.end(); ++it) {
     delete it->second.value;
+    delete it->second.external_data_fetcher;
+  }
   map_.clear();
 }
 

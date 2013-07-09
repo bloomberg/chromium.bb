@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/common/pref_names.h"
@@ -34,28 +36,29 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
       kTestTypeMap, kTestTypeMap + arraysize(kTestTypeMap));
 
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.AppendString("one");
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.AppendString("invalid");
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
   EXPECT_FALSE(errors.GetErrors(key::kExtensionAllowedTypes).empty());
 
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateStringValue("no list"));
+                 POLICY_SCOPE_USER,
+                 base::Value::CreateStringValue("no list"), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -73,7 +76,7 @@ TEST(StringToIntEnumListPolicyHandlerTest, ApplyPolicySettings) {
       kTestTypeMap, kTestTypeMap + arraysize(kTestTypeMap));
 
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
@@ -81,14 +84,14 @@ TEST(StringToIntEnumListPolicyHandlerTest, ApplyPolicySettings) {
   list.AppendString("two");
   expected.AppendInteger(2);
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   list.AppendString("invalid");
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
@@ -104,19 +107,19 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -124,21 +127,22 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsClamp) {
   // Check that values lying outside the accepted range are not rejected
   // (because clamping is enabled) but do yield a warning message.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   // Check that an entirely invalid value is rejected and yields an error
   // message.
-  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  policy_map.Set(key::kDiskCacheSize,
+                 POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 base::Value::CreateStringValue("invalid"), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -154,19 +158,19 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -174,21 +178,21 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsDontClamp) {
   // Check that values lying outside the accepted range are rejected and yield
   // an error message.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   // Check that an entirely invalid value is rejected and yields an error
   // message.
-  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 base::Value::CreateStringValue("invalid"), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -206,7 +210,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(0));
@@ -214,7 +218,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(5));
@@ -222,7 +226,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(10));
@@ -232,7 +236,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   // Check that values lying outside the accepted range are clamped and written
   // to the pref.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(0));
@@ -240,7 +244,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(10));
@@ -260,7 +264,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(0));
@@ -268,7 +272,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(5));
@@ -276,7 +280,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateIntegerValue(10));
@@ -295,19 +299,19 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -315,21 +319,21 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsClamp) {
   // Check that values lying outside the accepted range are not rejected
   // (because clamping is enabled) but do yield a warning message.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   // Check that an entirely invalid value is rejected and yields an error
   // message.
-  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 base::Value::CreateStringValue("invalid"), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -346,19 +350,19 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -366,21 +370,21 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsDontClamp) {
   // Check that values lying outside the accepted range are rejected and yield
   // an error message.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   // Check that an entirely invalid value is rejected and yields an error
   // message.
-  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateStringValue("invalid"));
+  policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 base::Value::CreateStringValue("invalid"), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -399,7 +403,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.0));
@@ -407,7 +411,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.05));
@@ -415,7 +419,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.1));
@@ -425,7 +429,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   // Check that values lying outside the accepted range are clamped and written
   // to the pref.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(-5), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.0));
@@ -433,7 +437,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(15), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.1));
@@ -454,7 +458,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(0), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.0));
@@ -462,7 +466,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(5), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.05));
@@ -470,7 +474,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
   policy_map.Set(key::kDiskCacheSize, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10));
+                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(10), NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(base::Value::CreateDoubleValue(0.1));
@@ -487,28 +491,28 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
                                      true);
 
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.Append(Value::CreateStringValue("abcdefghijklmnopabcdefghijklmnop"));
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.Append(Value::CreateStringValue("*"));
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.Append(Value::CreateStringValue("invalid"));
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -529,14 +533,14 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   expected.Append(Value::CreateStringValue("abcdefghijklmnopabcdefghijklmnop"));
 
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, policy.DeepCopy());
+                 POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallDenyList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   policy.Append(Value::CreateStringValue("invalid"));
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, policy.DeepCopy());
+                 POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallDenyList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
@@ -549,14 +553,14 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   ExtensionInstallForcelistPolicyHandler handler;
 
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.AppendString("abcdefghijklmnopabcdefghijklmnop;http://example.com");
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -565,7 +569,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   // entry should still be translated successfully.
   list.AppendString("adfasdf;http://example.com");
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_EQ(1U, errors.size());
@@ -573,7 +577,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   // Add an entry with bad URL, which should generate another error.
   list.AppendString("abcdefghijklmnopabcdefghijklmnop;nourl");
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_EQ(2U, errors.size());
@@ -581,7 +585,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   // Just an extension ID should also generate an error.
   list.AppendString("abcdefghijklmnopabcdefghijklmnop");
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_EQ(3U, errors.size());
@@ -600,7 +604,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_FALSE(value);
 
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, policy.DeepCopy());
+                 POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
@@ -609,14 +613,14 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   extensions::ExternalPolicyLoader::AddExtension(
       &expected, "abcdefghijklmnopabcdefghijklmnop", "http://example.com");
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, policy.DeepCopy());
+                 POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   policy.AppendString("invalid");
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, policy.DeepCopy());
+                 POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
@@ -631,28 +635,28 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
       prefs::kExtensionAllowedInstallSites);
 
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.Append(Value::CreateStringValue("http://*.google.com/*"));
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.Append(Value::CreateStringValue("<all_urls>"));
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.Append(Value::CreateStringValue("invalid"));
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -662,7 +666,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   // would be compatible today, it would be brittle, so we disallow.
   list.Append(Value::CreateStringValue("*"));
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -680,7 +684,7 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, ApplyPolicySettings) {
 
   list.Append(Value::CreateStringValue("https://corp.monkey.net/*"));
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
   ASSERT_TRUE(prefs.GetValue(prefs::kExtensionAllowedInstallSites, &value));
   EXPECT_TRUE(base::Value::Equals(&list, value));

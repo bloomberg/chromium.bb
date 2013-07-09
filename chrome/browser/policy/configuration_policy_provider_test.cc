@@ -5,9 +5,11 @@
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -113,7 +115,8 @@ void ConfigurationPolicyProviderTest::CheckValue(
       .Set(policy_name,
            test_harness_->policy_level(),
            test_harness_->policy_scope(),
-           expected_value.DeepCopy());
+           expected_value.DeepCopy(),
+           NULL);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
   // TODO(joaodasilva): set the policy in the POLICY_DOMAIN_EXTENSIONS too,
   // and extend the |expected_bundle|, once all providers are ready.
@@ -228,7 +231,8 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
       .Set(test_policy_definitions::kKeyString,
            test_harness_->policy_level(),
            test_harness_->policy_scope(),
-           base::Value::CreateStringValue("value"));
+           base::Value::CreateStringValue("value"),
+           NULL);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
 }
@@ -238,18 +242,21 @@ TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
   policy_map.Set(key::kProxyServerMode,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateIntegerValue(3));
+                 base::Value::CreateIntegerValue(3),
+                 NULL);
 
   // Both these policies should be ignored, since there's a higher priority
   // policy available.
   policy_map.Set(key::kProxyMode,
                  POLICY_LEVEL_RECOMMENDED,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue("pac_script"));
+                 base::Value::CreateStringValue("pac_script"),
+                 NULL);
   policy_map.Set(key::kProxyPacUrl,
                  POLICY_LEVEL_RECOMMENDED,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue("http://example.com/wpad.dat"));
+                 base::Value::CreateStringValue("http://example.com/wpad.dat"),
+                 NULL);
 
   MockConfigurationPolicyProvider provider;
   provider.Init();
@@ -262,7 +269,8 @@ TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
       .Set(key::kProxySettings,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           expected_value);
+           expected_value,
+           NULL);
   EXPECT_TRUE(provider.policies().Equals(expected_bundle));
   provider.Shutdown();
 }
@@ -313,7 +321,8 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   expected_policy.Set(test_policy_definitions::kKeyDictionary,
                       test_harness_->policy_level(),
                       test_harness_->policy_scope(),
-                      policy_dict.DeepCopy());
+                      policy_dict.DeepCopy(),
+                      NULL);
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(expected_policy);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/cloud/component_cloud_policy_service.h"
 
+#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_schema.h"
@@ -116,9 +118,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     builder_.payload().set_secure_hash(base::SHA1HashString(kTestPolicy));
 
     expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                         base::Value::CreateStringValue("disabled"));
+                         base::Value::CreateStringValue("disabled"), NULL);
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                         base::Value::CreateStringValue("maybe"));
+                         base::Value::CreateStringValue("maybe"), NULL);
 
     // A NULL |request_context_| is enough to construct the updater, but
     // ComponentCloudPolicyService::Backend::LoadStore() tests the pointer when

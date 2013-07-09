@@ -1394,6 +1394,10 @@
         'browser/policy/configuration_policy_pref_store.h',
         'browser/policy/configuration_policy_provider.cc',
         'browser/policy/configuration_policy_provider.h',
+        'browser/policy/external_data_fetcher.cc',
+        'browser/policy/external_data_fetcher.h',
+        'browser/policy/external_data_manager.cc',
+        'browser/policy/external_data_manager.h',
         'browser/policy/managed_mode_policy_provider.cc',
         'browser/policy/managed_mode_policy_provider.h',
         'browser/policy/policy_bundle.cc',
@@ -2546,6 +2550,8 @@
         }, {  # configuration_policy==0
           'sources/': [
             ['exclude', '^browser/policy/'],
+            ['include', 'browser/policy/external_data_fetcher.cc'],
+            ['include', 'browser/policy/external_data_fetcher.h'],
             ['include', 'browser/policy/policy_domain_descriptor.h'],
             ['include', 'browser/policy/policy_map.cc'],
             ['include', 'browser/policy/policy_map.h'],
@@ -2557,6 +2563,7 @@
             ['include', 'browser/policy/profile_policy_connector.h'],
             ['include', 'browser/policy/profile_policy_connector_factory.cc'],
             ['include', 'browser/policy/profile_policy_connector_factory.h'],
+            ['include', 'browser/policy/stub_external_data_manager.h'],
             ['include', 'browser/policy/url_blacklist_manager.cc'],
             ['include', 'browser/policy/url_blacklist_manager.h'],
           ],

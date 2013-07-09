@@ -412,8 +412,10 @@ CPP_HEAD = '''
 #include <limits>
 #include <string>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
@@ -498,8 +500,9 @@ def _WritePolicyCode(f, policy):
           '      if (do_set) {\n')
   f.write('        base::Value* value = %s;\n' %
           (_CreateValue(policy.value_type, 'policy_proto.value()')))
-  f.write('        map->Set(key::k%s, level, POLICY_SCOPE_USER, value);\n' %
+  f.write('        map->Set(key::k%s, level, POLICY_SCOPE_USER,\n' %
           policy.name)
+  f.write('                 value, NULL);\n')
   f.write('      }\n'
           '    }\n'
           '  }\n')

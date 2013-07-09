@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -149,7 +150,8 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
       .Set(key::kDeviceMetricsReportingEnabled,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_MACHINE,
-           Value::CreateBooleanValue(false));
+           Value::CreateBooleanValue(false),
+           NULL);
   EXPECT_TRUE(manager_.policies().Equals(bundle));
 
   manager_.Connect(&local_state_,
@@ -251,7 +253,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .Set(key::kDeviceMetricsReportingEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_MACHINE,
-             Value::CreateBooleanValue(false));
+             Value::CreateBooleanValue(false),
+             NULL);
     EXPECT_TRUE(manager_.policies().Equals(bundle));
   }
 

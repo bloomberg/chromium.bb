@@ -13,6 +13,7 @@
 #include <iterator>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -28,6 +29,7 @@
 #include "base/win/registry.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preg_parser_win.h"
@@ -878,7 +880,7 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
       .Set(test_policy_definitions::kKeyString,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_MACHINE,
-           base::Value::CreateStringValue("hklm"));
+           base::Value::CreateStringValue("hklm"), NULL);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -944,13 +946,14 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   PolicyMap& expected_policy =
       expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "merge"));
   expected_policy.Set("a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      base::Value::CreateStringValue(kMachineMandatory));
+                      base::Value::CreateStringValue(kMachineMandatory), NULL);
   expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                      base::Value::CreateStringValue(kUserMandatory));
+                      base::Value::CreateStringValue(kUserMandatory), NULL);
   expected_policy.Set("c", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-                      base::Value::CreateStringValue(kMachineRecommended));
+                      base::Value::CreateStringValue(kMachineRecommended),
+                      NULL);
   expected_policy.Set("d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                      base::Value::CreateStringValue(kUserRecommended));
+                      base::Value::CreateStringValue(kUserRecommended), NULL);
   EXPECT_TRUE(Matches(expected));
 }
 

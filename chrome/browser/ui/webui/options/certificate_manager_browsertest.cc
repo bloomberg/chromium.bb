@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
@@ -64,7 +66,8 @@ class CertificateManagerBrowserTest : public options::OptionsBrowserTest {
     policy.Set(policy::key::kOpenNetworkConfiguration,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
-               Value::CreateStringValue(user_policy_blob));
+               Value::CreateStringValue(user_policy_blob),
+               NULL);
     provider_.UpdateChromePolicy(policy);
     content::RunAllPendingInMessageLoop();
   }

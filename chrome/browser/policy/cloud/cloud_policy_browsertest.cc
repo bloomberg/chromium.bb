@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -113,18 +115,18 @@ std::string GetTestPolicy(int key_version) {
 
 void GetExpectedTestPolicy(PolicyMap* expected) {
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                base::Value::CreateBooleanValue(true));
+                base::Value::CreateBooleanValue(true), NULL);
   expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4));
+                POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4), NULL);
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
   expected->Set(
       key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      list.DeepCopy());
+      list.DeepCopy(), NULL);
   expected->Set(
       key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
-      POLICY_SCOPE_USER, base::Value::CreateStringValue("google.com"));
+      POLICY_SCOPE_USER, base::Value::CreateStringValue("google.com"), NULL);
 }
 
 }  // namespace

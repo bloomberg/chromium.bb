@@ -4,12 +4,14 @@
 
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 
+#include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -364,7 +366,7 @@ void ManagedModePolicyProvider::UpdatePolicyFromCache() {
       continue;
 
     policy_map->Set(it.key(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    it.value().DeepCopy());
+                    it.value().DeepCopy(), NULL);
   }
 
   DictionaryValue* split_settings = GetSplitSettings();
@@ -374,7 +376,7 @@ void ManagedModePolicyProvider::UpdatePolicyFromCache() {
       continue;
 
     policy_map->Set(it.key(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    it.value().DeepCopy());
+                    it.value().DeepCopy(), NULL);
   }
   UpdatePolicy(policy_bundle.Pass());
 }

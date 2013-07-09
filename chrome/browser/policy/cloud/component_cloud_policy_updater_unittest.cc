@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/sequenced_task_runner.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/policy/cloud/component_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
@@ -103,9 +105,9 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
   PolicyMap& policy = expected_bundle_.Get(ns);
   policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateStringValue("disabled"));
+             base::Value::CreateStringValue("disabled"), NULL);
   policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-             base::Value::CreateStringValue("maybe"));
+             base::Value::CreateStringValue("maybe"), NULL);
 }
 
 scoped_ptr<em::PolicyFetchResponse>
