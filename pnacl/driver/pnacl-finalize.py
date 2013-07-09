@@ -47,7 +47,7 @@ def main(argv):
   else:
     f_output = f_input
 
-  if env.getbool('DISABLE_FINALIZE') or driver_tools.IsPNaClBitcode(f_input):
+  if env.getbool('DISABLE_FINALIZE'):
     # Just copy the input file to the output file.
     if f_input != f_output:
       shutil.copyfile(f_input, f_output)
