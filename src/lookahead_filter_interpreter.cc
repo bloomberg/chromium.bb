@@ -106,6 +106,11 @@ void LookaheadFilterInterpreter::Interpolate(const HardwareState& first,
     mid->tracking_id = older.tracking_id;
     mid->flags = newer.flags;
   }
+  // We are not interested in interpolating relative movement values.
+  out->rel_x = 0;
+  out->rel_y = 0;
+  out->rel_wheel = 0;
+  out->rel_hwheel = 0;
 }
 
 void LookaheadFilterInterpreter::AssignTrackingIds() {

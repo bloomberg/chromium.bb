@@ -68,6 +68,8 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   void ConsumeGesture(const Gesture& gs);
   void FilterLowPressure(HardwareState* hwstate);
   void FilterZeroArea(HardwareState* hwstate);
+  bool IsMouseDevice(GestureInterpreterDeviceClass devclass);
+  bool IsTouchpadDevice(GestureInterpreterDeviceClass devclass);
 
   GestureInterpreterDeviceClass devclass_;
 
@@ -102,6 +104,19 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   DoubleProperty mouse_cpi_;
 
   HardwareProperties friendly_props_;
+
+  // XInput properties that we use to identify the device type in Chrome for
+  // all CMT devices. We put them here for now because they are not large
+  // enough to constitute a stand-alone class.
+  // TODO(sheckylin): Find a better place for them.
+
+  // If the device is mouse. Note that a device can both be a mouse and a
+  // touchpad at the same time (e.g. a multi-touch mouse).
+  BoolProperty device_mouse_;
+
+  // If the device is touchpad. It would be false if it is a regular mouse
+  // running the CMT driver.
+  BoolProperty device_touchpad_;
 };
 
 }  // namespace gestures

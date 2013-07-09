@@ -214,6 +214,7 @@ typedef struct {
 // Metrics types that we care about
 enum GestureMetricsType {
   kGestureMetricsTypeNoisyGround = 0,
+  kGestureMetricsTypeMouseMovement,
   kGestureMetricsTypeUnknown,
 };
 

@@ -509,7 +509,8 @@ void GestureInterpreter::InitializeTouchpad(void) {
                                               tracer_.get());
   temp = new TrendClassifyingFilterInterpreter(prop_reg_.get(), temp,
                                                tracer_.get());
-  temp = new MetricsFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new MetricsFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
+                                      GESTURES_DEVCLASS_TOUCHPAD);
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_TOUCHPAD);
   temp = new FingerMergeFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
@@ -549,6 +550,8 @@ void GestureInterpreter::InitializeMultitouchMouse(void) {
   // TODO(clchiou;chromium-os:36321): Use mouse acceleration algorithm for mice
   temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
+                                      GESTURES_DEVCLASS_MULTITOUCH_MOUSE);
+  temp = new MetricsFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_MULTITOUCH_MOUSE);
   temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
   temp = new StuckButtonInhibitorFilterInterpreter(temp, tracer_.get());

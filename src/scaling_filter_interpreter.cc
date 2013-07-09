@@ -33,7 +33,11 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(
       pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
       pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
-      mouse_cpi_(prop_reg, "Mouse CPI", 1000.0) {
+      mouse_cpi_(prop_reg, "Mouse CPI", 1000.0),
+      device_mouse_(prop_reg, "Device Mouse", IsMouseDevice(devclass)),
+      device_touchpad_(prop_reg,
+                       "Device Touchpad",
+                       IsTouchpadDevice(devclass)) {
   InitName();
 }
 
@@ -85,6 +89,18 @@ void ScalingFilterInterpreter::FilterZeroArea(HardwareState* hwstate) {
   }
   hwstate->finger_cnt = finger_cnt;
   hwstate->touch_cnt = touch_cnt;
+}
+
+bool ScalingFilterInterpreter::IsMouseDevice(
+    GestureInterpreterDeviceClass devclass) {
+  return (devclass == GESTURES_DEVCLASS_MOUSE ||
+          devclass == GESTURES_DEVCLASS_MULTITOUCH_MOUSE);
+}
+
+bool ScalingFilterInterpreter::IsTouchpadDevice(
+    GestureInterpreterDeviceClass devclass) {
+  return (devclass == GESTURES_DEVCLASS_TOUCHPAD ||
+          devclass == GESTURES_DEVCLASS_MULTITOUCH_MOUSE);
 }
 
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {

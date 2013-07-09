@@ -16,39 +16,123 @@
 
 namespace gestures {
 
-MetricsFilterInterpreter::MetricsFilterInterpreter(PropRegistry* prop_reg,
-                                                       Interpreter* next,
-                                                       Tracer* tracer)
+MetricsFilterInterpreter::MetricsFilterInterpreter(
+    PropRegistry* prop_reg,
+    Interpreter* next,
+    Tracer* tracer,
+    GestureInterpreterDeviceClass devclass)
     : FilterInterpreter(NULL, next, tracer, false),
+      devclass_(devclass),
       history_mm_(kMaxFingers),
-      mstate_mm_(kMaxFingers * MState::kHistorySize),
-      noisy_ground_distance_threshold_(
-          prop_reg, "Metrics Noisy Ground Distance", 10.0),
-      noisy_ground_time_threshold_(
-          prop_reg, "Metrics Noisy Ground Time", 0.1) {
+      mstate_mm_(kMaxFingers * MState::MaxHistorySize()),
+      mouse_movement_session_index_(0),
+      mouse_movement_current_session_length(0),
+      mouse_movement_current_session_start(0),
+      mouse_movement_current_session_last(0),
+      mouse_movement_current_session_distance(0),
+      noisy_ground_distance_threshold_(prop_reg,
+                                       "Metrics Noisy Ground Distance",
+                                       10.0),
+      noisy_ground_time_threshold_(prop_reg, "Metrics Noisy Ground Time", 0.1),
+      mouse_moving_time_threshold_(prop_reg,
+                                   "Metrics Mouse Moving Time",
+                                   0.05),
+      mouse_control_warmup_sessions_(prop_reg,
+                                     "Metrics Mouse Warmup Session",
+                                     100) {
   InitName();
 }
 
 void MetricsFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                    stime_t* timeout) {
-  UpdateFingerState(*hwstate);
+  if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD) {
+    // Right now, we only want to update finger states for built-in touchpads
+    // because all the generated metrics gestures would be put under each
+    // platform's hat on the Chrome UMA dashboard. If we send metrics gestures
+    // (e.g. noisy ground instances) for external peripherals (e.g. multi-touch
+    // mice), they would be mistaken as from the platform's touchpad and thus
+    // results in over-counting.
+    //
+    // TODO(sheckylin): Don't send metric gestures for external touchpads
+    // either.
+    // TODO(sheckylin): Track finger related metrics for external peripherals
+    // as well after gaining access to the UMA log.
+    UpdateFingerState(*hwstate);
+  } else if (devclass_ == GESTURES_DEVCLASS_MOUSE ||
+             devclass_ == GESTURES_DEVCLASS_MULTITOUCH_MOUSE) {
+    UpdateMouseMovementState(*hwstate);
+  }
   next_->SyncInterpret(hwstate, timeout);
 }
 
+template <class StateType, class DataType>
 void MetricsFilterInterpreter::AddNewStateToBuffer(
-    FingerHistory* history, const FingerState& fs,
+    MemoryManagedList<StateType>* history,
+    const DataType& data,
     const HardwareState& hwstate) {
   // The history buffer is already full, pop one
-  if (history->size() == static_cast<size_t>(MState::kHistorySize))
+  if (history->size() == StateType::MaxHistorySize())
     history->DeleteFront();
 
   // Push the new finger state to the back of buffer
-  MState* current = history->PushNewEltBack();
+  StateType* current = history->PushNewEltBack();
   if (!current) {
-    Err("MState buffer out of space");
+    Err("MetricsFilterInterpreter buffer out of space");
     return;
   }
-  current->Init(fs, hwstate);
+  current->Init(data, hwstate);
+}
+
+void MetricsFilterInterpreter::UpdateMouseMovementState(
+    const HardwareState& hwstate) {
+  // Skip finger-only hardware states for multi-touch mice.
+  if (hwstate.rel_x == 0 && hwstate.rel_y == 0)
+    return;
+
+  // If the last movement is too long ago, we consider the history
+  // an independent session. Report statistic for it and start a new
+  // one.
+  if (mouse_movement_current_session_length >= 1 &&
+      (hwstate.timestamp - mouse_movement_current_session_last >
+       mouse_moving_time_threshold_.val_)) {
+    // We skip the first a few sessions right after the user starts using the
+    // mouse because they tend to be more noisy.
+    if (mouse_movement_session_index_ >= mouse_control_warmup_sessions_.val_)
+      ReportMouseStatistics();
+    mouse_movement_current_session_length = 0;
+    mouse_movement_current_session_distance = 0;
+    ++mouse_movement_session_index_;
+  }
+
+  // We skip the movement of the first event because there is no way to tell
+  // the start time of it.
+  if (!mouse_movement_current_session_length) {
+    mouse_movement_current_session_start = hwstate.timestamp;
+  } else {
+    mouse_movement_current_session_distance +=
+        sqrtf(hwstate.rel_x * hwstate.rel_x + hwstate.rel_y * hwstate.rel_y);
+  }
+  mouse_movement_current_session_last = hwstate.timestamp;
+  ++mouse_movement_current_session_length;
+}
+
+void MetricsFilterInterpreter::ReportMouseStatistics() {
+  // At least 2 samples are needed to compute delta t.
+  if (mouse_movement_current_session_length == 1)
+    return;
+
+  // Compute the average speed.
+  stime_t session_time = mouse_movement_current_session_last -
+                         mouse_movement_current_session_start;
+  double avg_speed = mouse_movement_current_session_distance / session_time;
+
+  // Send the metrics gesture.
+  ProduceGesture(Gesture(kGestureMetrics,
+                         mouse_movement_current_session_start,
+                         mouse_movement_current_session_last,
+                         kGestureMetricsTypeMouseMovement,
+                         avg_speed,
+                         session_time));
 }
 
 void MetricsFilterInterpreter::UpdateFingerState(
