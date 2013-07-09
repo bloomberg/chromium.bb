@@ -511,10 +511,10 @@ bool AccessibilityRenderObject::isLinked() const
         return false;
 
     Element* anchor = anchorElement();
-    if (!anchor || !anchor->hasTagName(aTag))
+    if (!anchor || !isHTMLAnchorElement(anchor))
         return false;
 
-    return !static_cast<HTMLAnchorElement*>(anchor)->href().isEmpty();
+    return !toHTMLAnchorElement(anchor)->href().isEmpty();
 }
 
 bool AccessibilityRenderObject::isLoaded() const
@@ -928,8 +928,8 @@ AccessibilityObject* AccessibilityRenderObject::titleUIElement() const
 
 KURL AccessibilityRenderObject::url() const
 {
-    if (isAnchor() && m_renderer->node()->hasTagName(aTag)) {
-        if (HTMLAnchorElement* anchor = static_cast<HTMLAnchorElement*>(anchorElement()))
+    if (isAnchor() && isHTMLAnchorElement(m_renderer->node())) {
+        if (HTMLAnchorElement* anchor = toHTMLAnchorElement(anchorElement()))
             return anchor->href();
     }
 
@@ -1664,7 +1664,7 @@ Element* AccessibilityRenderObject::anchorElement() const
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     Node* node = currRenderer->node();
     for ( ; node; node = node->parentNode()) {
-        if (node->hasTagName(aTag) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
+        if (isHTMLAnchorElement(node) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
             return toElement(node);
     }
 
@@ -2083,9 +2083,9 @@ AccessibilityObject* AccessibilityRenderObject::internalLinkElement() const
         return 0;
 
     // Right now, we do not support ARIA links as internal link elements
-    if (!element->hasTagName(aTag))
+    if (!isHTMLAnchorElement(element))
         return 0;
-    HTMLAnchorElement* anchor = static_cast<HTMLAnchorElement*>(element);
+    HTMLAnchorElement* anchor = toHTMLAnchorElement(element);
 
     KURL linkURL = anchor->href();
     String fragmentIdentifier = linkURL.fragmentIdentifier();

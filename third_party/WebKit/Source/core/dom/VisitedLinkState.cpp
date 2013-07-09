@@ -50,16 +50,16 @@ inline static const AtomicString& linkAttribute(Element* element)
 
 inline static LinkHash linkHashForElement(Document* document, Element* element)
 {
-    if (element->hasTagName(aTag))
-        return static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
+    if (isHTMLAnchorElement(element))
+        return toHTMLAnchorElement(element)->visitedLinkHash();
     return visitedLinkHash(document->baseURL(), linkAttribute(element));
 }
 
 inline static LinkHash linkHashForElementWithAttribute(Document* document, Element* element, const AtomicString& attribute)
 {
     ASSERT(linkAttribute(element) == attribute);
-    if (element->hasTagName(aTag))
-        return static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
+    if (isHTMLAnchorElement(element))
+        return toHTMLAnchorElement(element)->visitedLinkHash();
     return visitedLinkHash(document->baseURL(), attribute);
 }
 

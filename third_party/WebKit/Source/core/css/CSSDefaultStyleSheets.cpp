@@ -34,6 +34,7 @@
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/FullscreenController.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
@@ -58,7 +59,7 @@ static const char* simpleUserAgentStyleSheet = "html,body,div{display:block}head
 
 static inline bool elementCanUseSimpleDefaultStyle(Element* e)
 {
-    return e->hasTagName(htmlTag) || e->hasTagName(headTag) || e->hasTagName(bodyTag) || e->hasTagName(divTag) || e->hasTagName(spanTag) || e->hasTagName(brTag) || e->hasTagName(aTag);
+    return e->hasTagName(htmlTag) || e->hasTagName(headTag) || e->hasTagName(bodyTag) || e->hasTagName(divTag) || e->hasTagName(spanTag) || e->hasTagName(brTag) || isHTMLAnchorElement(e);
 }
 
 static const MediaQueryEvaluator& screenEval()

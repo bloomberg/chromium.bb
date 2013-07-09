@@ -46,7 +46,7 @@ bool elementHasLegalLinkAttribute(const Element* element, const QualifiedName& a
     if (attrName == srcAttr)
         return element->hasTagName(imgTag) || element->hasTagName(scriptTag) || element->hasTagName(iframeTag) || element->hasTagName(frameTag) || (element->hasTagName(inputTag) && toHTMLInputElement(element)->isImageButton());
     if (attrName == hrefAttr)
-        return element->hasTagName(linkTag) || element->hasTagName(aTag) || isHTMLAreaElement(element);
+        return element->hasTagName(linkTag) || isHTMLAnchorElement(element) || isHTMLAreaElement(element);
     if (attrName == actionAttr)
         return element->hasTagName(formTag);
     if (attrName == backgroundAttr)

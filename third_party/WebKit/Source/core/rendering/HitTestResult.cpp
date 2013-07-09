@@ -325,7 +325,7 @@ KURL HitTestResult::absoluteLinkURL() const
         return KURL();
 
     AtomicString urlString;
-    if (m_innerURLElement->hasTagName(aTag) || isHTMLAreaElement(m_innerURLElement.get()) || m_innerURLElement->hasTagName(linkTag))
+    if (isHTMLAnchorElement(m_innerURLElement.get()) || isHTMLAreaElement(m_innerURLElement.get()) || m_innerURLElement->hasTagName(linkTag))
         urlString = m_innerURLElement->getAttribute(hrefAttr);
     else if (m_innerURLElement->hasTagName(SVGNames::aTag))
         urlString = m_innerURLElement->getAttribute(XLinkNames::hrefAttr);
@@ -340,8 +340,8 @@ bool HitTestResult::isLiveLink() const
     if (!(m_innerURLElement && m_innerURLElement->document()))
         return false;
 
-    if (m_innerURLElement->hasTagName(aTag))
-        return static_cast<HTMLAnchorElement*>(m_innerURLElement.get())->isLiveLink();
+    if (isHTMLAnchorElement(m_innerURLElement.get()))
+        return toHTMLAnchorElement(m_innerURLElement.get())->isLiveLink();
 
     if (m_innerURLElement->hasTagName(SVGNames::aTag))
         return m_innerURLElement->isLink();
