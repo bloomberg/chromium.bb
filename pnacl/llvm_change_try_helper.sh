@@ -22,24 +22,36 @@
 
 set -eux
 
+if [ "$#" = 1 ]; then
+  component="$1"
+elif [ "$#" = 0 ]; then
+  # Default
+  component=llvm
+else
+  echo "Usage: $0 [<component-name>]"
+  echo "where <component-name> is the name of a subdirectory of pnacl/git/"
+  exit 1
+fi
+
 top_dir="$(pwd)"
 
 mkdir -p pnacl/not_for_commit
 
-pushd pnacl/git/llvm
+pushd pnacl/git/${component}
 # Save the commit ID plus its subject line to give readable context.
 git log --no-walk --pretty="format:%H%n%ad%n%s" HEAD \
-    > $top_dir/pnacl/not_for_commit/llvm_commit_id
-git bundle create $top_dir/pnacl/not_for_commit/llvm_bundle origin/master..HEAD
+    > $top_dir/pnacl/not_for_commit/${component}_commit_id
+git bundle create $top_dir/pnacl/not_for_commit/${component}_bundle \
+    origin/master..HEAD
 popd
 
 python -c "import base64, sys; base64.encode(sys.stdin, sys.stdout)" \
-    < pnacl/not_for_commit/llvm_bundle \
-    > pnacl/not_for_commit/llvm_bundle.b64
+    < pnacl/not_for_commit/${component}_bundle \
+    > pnacl/not_for_commit/${component}_bundle.b64
 
-git add pnacl/not_for_commit/llvm_bundle.b64
-git add pnacl/not_for_commit/llvm_commit_id
+git add pnacl/not_for_commit/${component}_bundle.b64
+git add pnacl/not_for_commit/${component}_commit_id
 
-git commit -m "LLVM patch for trybot" \
-    pnacl/not_for_commit/llvm_bundle.b64 \
-    pnacl/not_for_commit/llvm_commit_id
+git commit -m "${component} patch for trybot" \
+    pnacl/not_for_commit/${component}_bundle.b64 \
+    pnacl/not_for_commit/${component}_commit_id

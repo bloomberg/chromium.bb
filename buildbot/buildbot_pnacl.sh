@@ -73,7 +73,7 @@ tc-compile-toolchain() {
   echo @@@BUILD_STEP compile_toolchain@@@
   ${PNACL_BUILD} clean
   ${PNACL_BUILD} sync-sources
-  ${PNACL_BUILD} checkout-llvm-bundle-for-trybot
+  ${PNACL_BUILD} checkout-git-bundles-for-trybot
   if ${build_fat}; then
     HOST_ARCH=x86_32 ${PNACL_BUILD} build-all
     HOST_ARCH=x86_64 ${PNACL_BUILD} build-host
