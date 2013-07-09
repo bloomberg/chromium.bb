@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
@@ -157,12 +157,12 @@ class TestPicasaFileUtil : public PicasaFileUtil {
   PicasaDataProvider* data_provider_;
 };
 
-class TestMediaFileSystemMountPointProvider
-    : public chrome::MediaFileSystemMountPointProvider {
+class TestMediaFileSystemBackend
+    : public chrome::MediaFileSystemBackend {
  public:
-  TestMediaFileSystemMountPointProvider(const base::FilePath& profile_path,
+  TestMediaFileSystemBackend(const base::FilePath& profile_path,
                                         PicasaFileUtil* picasa_file_util)
-      : chrome::MediaFileSystemMountPointProvider(
+      : chrome::MediaFileSystemBackend(
             profile_path,
             base::MessageLoopProxy::current().get()),
         test_file_util_(picasa_file_util) {}
@@ -234,8 +234,8 @@ class PicasaFileUtilTest : public testing::Test {
 
     picasa_data_provider_.reset(new TestPicasaDataProvider());
 
-    ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
-    additional_providers.push_back(new TestMediaFileSystemMountPointProvider(
+    ScopedVector<fileapi::FileSystemBackend> additional_providers;
+    additional_providers.push_back(new TestMediaFileSystemBackend(
         profile_dir_.path(),
         new TestPicasaFileUtil(picasa_data_provider_.get())));
 
@@ -399,7 +399,7 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
       new chrome::MediaPathFilter());
 
   operation_context->SetUserValue(
-      chrome::MediaFileSystemMountPointProvider::kMediaPathFilterKey,
+      chrome::MediaFileSystemBackend::kMediaPathFilterKey,
       media_path_filter.get());
 
   scoped_ptr<TestPicasaDataProvider> test_picasa_data_provider(

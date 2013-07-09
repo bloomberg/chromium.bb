@@ -16,7 +16,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -62,7 +62,7 @@ void SandboxFileSystemTestHelper::TearDown() {
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetOriginRootPath() {
-  return file_system_context_->sandbox_provider()->
+  return file_system_context_->sandbox_backend()->
       GetBaseDirectoryForOriginAndType(origin_, type_, false);
 }
 
@@ -82,7 +82,7 @@ base::FilePath SandboxFileSystemTestHelper::GetLocalPathFromASCII(
 
 base::FilePath SandboxFileSystemTestHelper::GetUsageCachePath() const {
   return file_system_context_->
-      sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
+      sandbox_backend()->GetUsageCachePathForOriginAndType(origin_, type_);
 }
 
 FileSystemURL SandboxFileSystemTestHelper::CreateURL(
@@ -125,23 +125,23 @@ SandboxFileSystemTestHelper::NewOperationContext() {
 
 void SandboxFileSystemTestHelper::AddFileChangeObserver(
     FileChangeObserver* observer) {
-  file_system_context_->sandbox_provider()->
+  file_system_context_->sandbox_backend()->
       AddFileChangeObserver(type_, observer, NULL);
 }
 
 FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
-  return file_system_context()->sandbox_provider()->usage_cache();
+  return file_system_context()->sandbox_backend()->usage_cache();
 }
 
 void SandboxFileSystemTestHelper::SetUpFileSystem() {
   DCHECK(file_system_context_.get());
-  DCHECK(file_system_context_->sandbox_provider()->CanHandleType(type_));
+  DCHECK(file_system_context_->sandbox_backend()->CanHandleType(type_));
 
   file_util_ = file_system_context_->GetFileUtil(type_);
   DCHECK(file_util_);
 
   // Prepare the origin's root directory.
-  file_system_context_->sandbox_provider()->
+  file_system_context_->sandbox_backend()->
       GetBaseDirectoryForOriginAndType(origin_, type_, true /* create */);
 
   // Initialize the usage cache file.

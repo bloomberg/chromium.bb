@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/mount_point_provider_delegate.h"
+#include "chrome/browser/chromeos/drive/file_system_backend_delegate.h"
 
 #include "chrome/browser/chromeos/drive/remote_file_stream_writer.h"
 #include "chrome/browser/chromeos/fileapi/remote_file_system_operation.h"
@@ -16,15 +16,15 @@ using content::BrowserThread;
 
 namespace drive {
 
-MountPointProviderDelegate::MountPointProviderDelegate(
+FileSystemBackendDelegate::FileSystemBackendDelegate(
     fileapi::ExternalMountPoints* mount_points)
     : mount_points_(mount_points) {
 }
 
-MountPointProviderDelegate::~MountPointProviderDelegate() {
+FileSystemBackendDelegate::~FileSystemBackendDelegate() {
 }
 
-fileapi::AsyncFileUtil* MountPointProviderDelegate::GetAsyncFileUtil(
+fileapi::AsyncFileUtil* FileSystemBackendDelegate::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(fileapi::kFileSystemTypeDrive, type);
@@ -35,7 +35,7 @@ fileapi::AsyncFileUtil* MountPointProviderDelegate::GetAsyncFileUtil(
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
-MountPointProviderDelegate::CreateFileStreamReader(
+FileSystemBackendDelegate::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -54,7 +54,7 @@ MountPointProviderDelegate::CreateFileStreamReader(
 }
 
 scoped_ptr<fileapi::FileStreamWriter>
-MountPointProviderDelegate::CreateFileStreamWriter(
+FileSystemBackendDelegate::CreateFileStreamWriter(
     const fileapi::FileSystemURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) {
@@ -72,7 +72,7 @@ MountPointProviderDelegate::CreateFileStreamWriter(
 }
 
 fileapi::FileSystemOperation*
-MountPointProviderDelegate::CreateFileSystemOperation(
+FileSystemBackendDelegate::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context,
     base::PlatformFileError* error_code) {

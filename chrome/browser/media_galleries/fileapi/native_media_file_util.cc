@@ -12,7 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_sniffer.h"
@@ -90,7 +90,7 @@ bool IsOnTaskRunnerThread(fileapi::FileSystemOperationContext* context) {
 MediaPathFilter* GetMediaPathFilter(
     fileapi::FileSystemOperationContext* context) {
   return context->GetUserValue<MediaPathFilter*>(
-          MediaFileSystemMountPointProvider::kMediaPathFilterKey);
+          MediaFileSystemBackend::kMediaPathFilterKey);
 }
 
 }  // namespace

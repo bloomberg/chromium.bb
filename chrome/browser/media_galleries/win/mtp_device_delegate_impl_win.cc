@@ -22,7 +22,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_galleries/win/mtp_device_operations_util.h"
@@ -60,7 +60,7 @@ scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
       pool->GetNamedSequenceToken(
-          MediaFileSystemMountPointProvider::kMediaTaskRunnerName);
+          MediaFileSystemBackend::kMediaTaskRunnerName);
   return pool->GetSequencedTaskRunner(media_sequence_token);
 }
 

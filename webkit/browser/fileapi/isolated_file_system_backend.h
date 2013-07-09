@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_BROWSER_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_ISOLATED_FILE_SYSTEM_BACKEND_H_
+#define WEBKIT_BROWSER_FILEAPI_ISOLATED_FILE_SYSTEM_BACKEND_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 
 namespace fileapi {
 
 class AsyncFileUtilAdapter;
 
-class IsolatedMountPointProvider : public FileSystemMountPointProvider {
+class IsolatedFileSystemBackend : public FileSystemBackend {
  public:
-  IsolatedMountPointProvider();
-  virtual ~IsolatedMountPointProvider();
+  IsolatedFileSystemBackend();
+  virtual ~IsolatedFileSystemBackend();
 
-  // FileSystemMountPointProvider implementation.
+  // FileSystemBackend implementation.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
   virtual void OpenFileSystem(
       const GURL& origin_url,
@@ -52,4 +52,4 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_ISOLATED_FILE_SYSTEM_BACKEND_H_

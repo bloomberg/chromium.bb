@@ -18,7 +18,7 @@
 namespace fileapi {
 class FileSystemContext;
 class FileSystemOperationContext;
-class SandboxMountPointProvider;
+class SandboxFileSystemBackend;
 }
 
 namespace sync_file_system {
@@ -87,9 +87,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SyncableFileSystemOperation
   typedef SyncableFileSystemOperation self;
   class QueueableTask;
 
-  // Only MountPointProviders can create a new operation directly.
-  friend class fileapi::SandboxMountPointProvider;
-  friend class SandboxMountPointProvider;
+  // Only FileSystemBackends can create a new operation directly.
+  friend class fileapi::SandboxFileSystemBackend;
+  friend class SandboxFileSystemBackend;
   SyncableFileSystemOperation(
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* file_system_context,

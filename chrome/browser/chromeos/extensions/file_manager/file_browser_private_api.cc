@@ -35,7 +35,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
-#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
@@ -219,10 +219,10 @@ void SetDriveMountPointPermissions(
   }
 
   content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
-  fileapi::ExternalFileSystemMountPointProvider* provider =
+  fileapi::ExternalFileSystemBackend* backend =
       BrowserContext::GetStoragePartition(profile, site_instance)->
-      GetFileSystemContext()->external_provider();
-  if (!provider)
+      GetFileSystemContext()->external_backend();
+  if (!backend)
     return;
 
   const base::FilePath mount_point = drive::util::GetDriveMountPointPath();
@@ -233,8 +233,8 @@ void SetDriveMountPointPermissions(
                              file_handler_util::GetReadWritePermissions());
 
   base::FilePath mount_point_virtual;
-  if (provider->GetVirtualPath(mount_point, &mount_point_virtual))
-    provider->GrantFileAccessToExtension(extension_id, mount_point_virtual);
+  if (backend->GetVirtualPath(mount_point, &mount_point_virtual))
+    backend->GrantFileAccessToExtension(extension_id, mount_point_virtual);
 }
 
 // Finds an icon in the list of icons. If unable to find an icon of the exact
@@ -540,17 +540,17 @@ bool RequestFileSystemFunction::SetupFileSystemAccessPermissions(
     return false;
   }
 
-  fileapi::ExternalFileSystemMountPointProvider* provider =
-      file_system_context->external_provider();
-  if (!provider)
+  fileapi::ExternalFileSystemBackend* backend =
+      file_system_context->external_backend();
+  if (!backend)
     return false;
 
   // Grant full access to File API from this component extension.
-  provider->GrantFullAccessToExtension(extension_->id());
+  backend->GrantFullAccessToExtension(extension_->id());
 
   // Grant R/W file permissions to the renderer hosting component
-  // extension for all paths exposed by our local file system provider.
-  std::vector<base::FilePath> root_dirs = provider->GetRootDirectories();
+  // extension for all paths exposed by our local file system backend.
+  std::vector<base::FilePath> root_dirs = backend->GetRootDirectories();
   for (size_t i = 0; i < root_dirs.size(); ++i) {
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         child_id, root_dirs[i],
@@ -906,7 +906,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     GURL file_url(file_url_str);
     fileapi::FileSystemURL file_system_url(
         file_system_context->CrackURL(file_url));
-    if (!chromeos::CrosMountPointProvider::CanHandleURL(file_system_url))
+    if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))
       continue;
 
     file_urls.push_back(file_url);
@@ -1045,7 +1045,7 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
       return false;
     }
     FileSystemURL url = file_system_context->CrackURL(GURL(file_url_str));
-    if (!chromeos::CrosMountPointProvider::CanHandleURL(url)) {
+    if (!chromeos::FileSystemBackend::CanHandleURL(url)) {
       error_ = kInvalidFileUrl;
       return false;
     }
@@ -1163,7 +1163,7 @@ base::FilePath FileBrowserFunction::GetLocalPathFromURL(const GURL& url) {
   const fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(url));
   base::FilePath path;
-  if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
+  if (!chromeos::FileSystemBackend::CanHandleURL(filesystem_url))
     return base::FilePath();
   return filesystem_url.path();
 }
@@ -3056,7 +3056,7 @@ bool ValidatePathNameLengthFunction::RunImpl() {
           GetFileSystemContext();
   fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(GURL(parent_url)));
-  if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
+  if (!chromeos::FileSystemBackend::CanHandleURL(filesystem_url))
     return false;
 
   // No explicit limit on the length of Drive file names.

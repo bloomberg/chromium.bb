@@ -22,7 +22,7 @@
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using quota::StorageType;
@@ -68,7 +68,7 @@ quota::QuotaStatusCode DeleteOriginOnFileThread(
     FileSystemContext* context,
     const GURL& origin,
     FileSystemType type) {
-  FileSystemMountPointProvider* provider = context->GetMountPointProvider(type);
+  FileSystemBackend* provider = context->GetFileSystemBackend(type);
   if (!provider || !provider->GetQuotaUtil())
     return quota::kQuotaErrorNotSupported;
   base::PlatformFileError result =

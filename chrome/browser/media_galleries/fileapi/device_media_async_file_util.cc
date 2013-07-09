@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
@@ -44,7 +44,7 @@ MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(
   DCHECK(IsOnIOThread(context));
   return MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(
       context->GetUserValue<std::string>(
-          MediaFileSystemMountPointProvider::kMTPDeviceDelegateURLKey));
+          MediaFileSystemBackend::kMTPDeviceDelegateURLKey));
 }
 
 // Called on a blocking pool thread to create a snapshot file to hold the

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 
 #include <string>
 
@@ -43,14 +43,14 @@ using fileapi::FileSystemURL;
 
 namespace chrome {
 
-const char MediaFileSystemMountPointProvider::kMediaTaskRunnerName[] =
+const char MediaFileSystemBackend::kMediaTaskRunnerName[] =
     "media-task-runner";
-const char MediaFileSystemMountPointProvider::kMediaPathFilterKey[] =
+const char MediaFileSystemBackend::kMediaPathFilterKey[] =
     "MediaPathFilterKey";
-const char MediaFileSystemMountPointProvider::kMTPDeviceDelegateURLKey[] =
+const char MediaFileSystemBackend::kMTPDeviceDelegateURLKey[] =
     "MTPDeviceDelegateKey";
 
-MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
+MediaFileSystemBackend::MediaFileSystemBackend(
     const base::FilePath& profile_path,
     base::SequencedTaskRunner* media_task_runner)
     : profile_path_(profile_path),
@@ -68,11 +68,11 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
 {
 }
 
-MediaFileSystemMountPointProvider::~MediaFileSystemMountPointProvider() {
+MediaFileSystemBackend::~MediaFileSystemBackend() {
 }
 
 // static
-bool MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread() {
+bool MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread() {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
       pool->GetNamedSequenceToken(kMediaTaskRunnerName);
@@ -81,14 +81,14 @@ bool MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread() {
 
 // static
 scoped_refptr<base::SequencedTaskRunner>
-MediaFileSystemMountPointProvider::MediaTaskRunner() {
+MediaFileSystemBackend::MediaTaskRunner() {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
       pool->GetNamedSequenceToken(kMediaTaskRunnerName);
   return pool->GetSequencedTaskRunner(media_sequence_token);
 }
 
-bool MediaFileSystemMountPointProvider::CanHandleType(
+bool MediaFileSystemBackend::CanHandleType(
     fileapi::FileSystemType type) const {
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
@@ -103,7 +103,7 @@ bool MediaFileSystemMountPointProvider::CanHandleType(
   }
 }
 
-void MediaFileSystemMountPointProvider::OpenFileSystem(
+void MediaFileSystemBackend::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     fileapi::OpenFileSystemMode mode,
@@ -114,13 +114,13 @@ void MediaFileSystemMountPointProvider::OpenFileSystem(
       base::Bind(callback, base::PLATFORM_FILE_ERROR_SECURITY));
 }
 
-fileapi::FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
+fileapi::FileSystemFileUtil* MediaFileSystemBackend::GetFileUtil(
     fileapi::FileSystemType type) {
   NOTREACHED();
   return NULL;
 }
 
-fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
+fileapi::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
@@ -140,7 +140,7 @@ fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
 }
 
 fileapi::CopyOrMoveFileValidatorFactory*
-MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+MediaFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     fileapi::FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
@@ -160,7 +160,7 @@ MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
 }
 
 fileapi::FileSystemOperation*
-MediaFileSystemMountPointProvider::CreateFileSystemOperation(
+MediaFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
@@ -180,7 +180,7 @@ MediaFileSystemMountPointProvider::CreateFileSystemOperation(
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
-MediaFileSystemMountPointProvider::CreateFileStreamReader(
+MediaFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -192,7 +192,7 @@ MediaFileSystemMountPointProvider::CreateFileStreamReader(
 }
 
 scoped_ptr<fileapi::FileStreamWriter>
-MediaFileSystemMountPointProvider::CreateFileStreamWriter(
+MediaFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
@@ -203,7 +203,7 @@ MediaFileSystemMountPointProvider::CreateFileStreamWriter(
 }
 
 fileapi::FileSystemQuotaUtil*
-MediaFileSystemMountPointProvider::GetQuotaUtil() {
+MediaFileSystemBackend::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }

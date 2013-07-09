@@ -16,17 +16,17 @@ class SpecialStoragePolicy;
 namespace fileapi {
 
 class FileSystemContext;
-class FileSystemMountPointProvider;
+class FileSystemBackend;
 
 FileSystemContext* CreateFileSystemContextForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path);
 
-// The caller is responsible for including TestMountPointProvider in
+// The caller is responsible for including TestFileSystemBackend in
 // |additional_providers| if needed.
 FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
-    ScopedVector<FileSystemMountPointProvider> additional_providers,
+    ScopedVector<FileSystemBackend> additional_providers,
     const base::FilePath& base_path);
 
 }  // namespace fileapi

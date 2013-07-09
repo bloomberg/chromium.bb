@@ -29,7 +29,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
     : public NON_EXPORTED_BASE(FileSystemOperation),
       public base::SupportsWeakPtr<LocalFileSystemOperation> {
  public:
-  // NOTE: This constructor should not be called outside MountPointProviders;
+  // NOTE: This constructor should not be called outside FileSystemBackends;
   // instead please consider using
   // file_system_context->CreateFileSystemOperation() to instantiate
   // an appropriate FileSystemOperation.

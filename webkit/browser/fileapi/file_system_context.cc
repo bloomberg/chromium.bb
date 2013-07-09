@@ -22,13 +22,13 @@
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/isolated_mount_point_provider.h"
+#include "webkit/browser/fileapi/isolated_file_system_backend.h"
 #include "webkit/browser/fileapi/mount_points.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
-#include "webkit/browser/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -105,20 +105,20 @@ FileSystemContext::FileSystemContext(
     ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
-    ScopedVector<FileSystemMountPointProvider> additional_providers,
+    ScopedVector<FileSystemBackend> additional_backends,
     const base::FilePath& partition_path,
     const FileSystemOptions& options)
     : task_runners_(task_runners.Pass()),
       quota_manager_proxy_(quota_manager_proxy),
-      sandbox_provider_(
-          new SandboxMountPointProvider(
+      sandbox_backend_(
+          new SandboxFileSystemBackend(
               quota_manager_proxy,
               task_runners_->file_task_runner(),
               partition_path,
               options,
               special_storage_policy)),
-      isolated_provider_(new IsolatedMountPointProvider()),
-      additional_providers_(additional_providers.Pass()),
+      isolated_backend_(new IsolatedFileSystemBackend()),
+      additional_backends_(additional_backends.Pass()),
       external_mount_points_(external_mount_points),
       partition_path_(partition_path),
       operation_runner_(new FileSystemOperationRunner(this)) {
@@ -129,13 +129,13 @@ FileSystemContext::FileSystemContext(
             this, options.is_incognito()));
   }
 
-  RegisterMountPointProvider(sandbox_provider_.get());
-  RegisterMountPointProvider(isolated_provider_.get());
+  RegisterBackend(sandbox_backend_.get());
+  RegisterBackend(isolated_backend_.get());
 
-  for (ScopedVector<FileSystemMountPointProvider>::const_iterator iter =
-          additional_providers_.begin();
-       iter != additional_providers_.end(); ++iter) {
-    RegisterMountPointProvider(*iter);
+  for (ScopedVector<FileSystemBackend>::const_iterator iter =
+          additional_backends_.begin();
+       iter != additional_backends_.end(); ++iter) {
+    RegisterBackend(*iter);
   }
 
   // Additional mount points must be added before regular system-wide
@@ -152,13 +152,13 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
   DCHECK(origin_url == origin_url.GetOrigin());
 
   bool success = true;
-  for (MountPointProviderMap::iterator iter = provider_map_.begin();
-       iter != provider_map_.end();
+  for (FileSystemBackendMap::iterator iter = backend_map_.begin();
+       iter != backend_map_.end();
        ++iter) {
-    FileSystemMountPointProvider* provider = iter->second;
-    if (!provider->GetQuotaUtil())
+    FileSystemBackend* backend = iter->second;
+    if (!backend->GetQuotaUtil())
       continue;
-    if (provider->GetQuotaUtil()->DeleteOriginDataOnFileThread(
+    if (backend->GetQuotaUtil()->DeleteOriginDataOnFileThread(
             this, quota_manager_proxy(), origin_url, iter->first)
             != base::PLATFORM_FILE_OK) {
       // Continue the loop, but record the failure.
@@ -171,29 +171,26 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
 
 FileSystemQuotaUtil*
 FileSystemContext::GetQuotaUtil(FileSystemType type) const {
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  if (!mount_point_provider)
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend)
     return NULL;
-  return mount_point_provider->GetQuotaUtil();
+  return backend->GetQuotaUtil();
 }
 
 AsyncFileUtil* FileSystemContext::GetAsyncFileUtil(
     FileSystemType type) const {
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  if (!mount_point_provider)
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend)
     return NULL;
-  return mount_point_provider->GetAsyncFileUtil(type);
+  return backend->GetAsyncFileUtil(type);
 }
 
 FileSystemFileUtil* FileSystemContext::GetFileUtil(
     FileSystemType type) const {
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  if (!mount_point_provider)
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend)
     return NULL;
-  return mount_point_provider->GetFileUtil(type);
+  return backend->GetFileUtil(type);
 }
 
 CopyOrMoveFileValidatorFactory*
@@ -201,18 +198,17 @@ FileSystemContext::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) const {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  if (!mount_point_provider)
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend)
     return NULL;
-  return mount_point_provider->GetCopyOrMoveFileValidatorFactory(
+  return backend->GetCopyOrMoveFileValidatorFactory(
       type, error_code);
 }
 
-FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
+FileSystemBackend* FileSystemContext::GetFileSystemBackend(
     FileSystemType type) const {
-  MountPointProviderMap::const_iterator found = provider_map_.find(type);
-  if (found != provider_map_.end())
+  FileSystemBackendMap::const_iterator found = backend_map_.find(type);
+  if (found != backend_map_.end())
     return found->second;
   NOTREACHED() << "Unknown filesystem type: " << type;
   return NULL;
@@ -224,41 +220,40 @@ bool FileSystemContext::IsSandboxFileSystem(FileSystemType type) const {
 
 const UpdateObserverList* FileSystemContext::GetUpdateObservers(
     FileSystemType type) const {
-  // Currently update observer is only available in SandboxMountPointProvider
-  // and TestMountPointProvider.
+  // Currently update observer is only available in SandboxFileSystemBackend
+  // and TestFileSystemBackend.
   // TODO(kinuko): Probably GetUpdateObservers() virtual method should be
-  // added to FileSystemMountPointProvider interface and be called like
+  // added to FileSystemBackend interface and be called like
   // other GetFoo() methods do.
-  if (sandbox_provider_->CanHandleType(type))
-    return sandbox_provider_->GetUpdateObservers(type);
+  if (sandbox_backend_->CanHandleType(type))
+    return sandbox_backend_->GetUpdateObservers(type);
   if (type != kFileSystemTypeTest)
     return NULL;
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  return static_cast<TestMountPointProvider*>(
-      mount_point_provider)->GetUpdateObservers(type);
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  return static_cast<TestFileSystemBackend*>(
+      backend)->GetUpdateObservers(type);
 }
 
 const AccessObserverList* FileSystemContext::GetAccessObservers(
     FileSystemType type) const {
-  // Currently access observer is only available in SandboxMountPointProvider.
-  if (sandbox_provider_->CanHandleType(type))
-    return sandbox_provider_->GetAccessObservers(type);
+  // Currently access observer is only available in SandboxFileSystemBackend.
+  if (sandbox_backend_->CanHandleType(type))
+    return sandbox_backend_->GetAccessObservers(type);
   return NULL;
 }
 
 void FileSystemContext::GetFileSystemTypes(
     std::vector<FileSystemType>* types) const {
   types->clear();
-  for (MountPointProviderMap::const_iterator iter = provider_map_.begin();
-       iter != provider_map_.end(); ++iter)
+  for (FileSystemBackendMap::const_iterator iter = backend_map_.begin();
+       iter != backend_map_.end(); ++iter)
     types->push_back(iter->first);
 }
 
-ExternalFileSystemMountPointProvider*
-FileSystemContext::external_provider() const {
-  return static_cast<ExternalFileSystemMountPointProvider*>(
-      GetMountPointProvider(kFileSystemTypeExternal));
+ExternalFileSystemBackend*
+FileSystemContext::external_backend() const {
+  return static_cast<ExternalFileSystemBackend*>(
+      GetFileSystemBackend(kFileSystemTypeExternal));
 }
 
 void FileSystemContext::OpenFileSystem(
@@ -268,9 +263,8 @@ void FileSystemContext::OpenFileSystem(
     const OpenFileSystemCallback& callback) {
   DCHECK(!callback.is_null());
 
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  if (!mount_point_provider) {
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend) {
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, std::string(), GURL());
     return;
   }
@@ -282,7 +276,7 @@ void FileSystemContext::OpenFileSystem(
     root_url = GetFileSystemRootURI(origin_url, type);
   std::string name = GetFileSystemName(origin_url, type);
 
-  mount_point_provider->OpenFileSystem(
+  backend->OpenFileSystem(
       origin_url, type, mode,
       base::Bind(&DidOpenFileSystem, callback, root_url, name));
 }
@@ -292,13 +286,12 @@ void FileSystemContext::DeleteFileSystem(
     FileSystemType type,
     const DeleteFileSystemCallback& callback) {
   DCHECK(origin_url == origin_url.GetOrigin());
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  if (!mount_point_provider) {
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend) {
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
     return;
   }
-  if (!mount_point_provider->GetQuotaUtil()) {
+  if (!backend->GetQuotaUtil()) {
     callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
     return;
   }
@@ -308,7 +301,7 @@ void FileSystemContext::DeleteFileSystem(
       FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
       base::Bind(&FileSystemQuotaUtil::DeleteOriginDataOnFileThread,
-                 base::Unretained(mount_point_provider->GetQuotaUtil()),
+                 base::Unretained(backend->GetQuotaUtil()),
                  make_scoped_refptr(this),
                  base::Unretained(quota_manager_proxy()),
                  origin_url,
@@ -323,11 +316,10 @@ FileSystemContext::CreateFileStreamReader(
     const base::Time& expected_modification_time) {
   if (!url.is_valid())
     return scoped_ptr<webkit_blob::FileStreamReader>();
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(url.type());
-  if (!mount_point_provider)
+  FileSystemBackend* backend = GetFileSystemBackend(url.type());
+  if (!backend)
     return scoped_ptr<webkit_blob::FileStreamReader>();
-  return mount_point_provider->CreateFileStreamReader(
+  return backend->CreateFileStreamReader(
       url, offset, expected_modification_time, this);
 }
 
@@ -336,11 +328,10 @@ scoped_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(
     int64 offset) {
   if (!url.is_valid())
     return scoped_ptr<FileStreamWriter>();
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(url.type());
-  if (!mount_point_provider)
+  FileSystemBackend* backend = GetFileSystemBackend(url.type());
+  if (!backend)
     return scoped_ptr<FileStreamWriter>();
-  return mount_point_provider->CreateFileStreamWriter(url, offset, this);
+  return backend->CreateFileStreamWriter(url, offset, this);
 }
 
 void FileSystemContext::SetLocalFileChangeTracker(
@@ -348,11 +339,11 @@ void FileSystemContext::SetLocalFileChangeTracker(
   DCHECK(!change_tracker_.get());
   DCHECK(tracker.get());
   change_tracker_ = tracker.Pass();
-  sandbox_provider_->AddFileUpdateObserver(
+  sandbox_backend_->AddFileUpdateObserver(
       kFileSystemTypeSyncable,
       change_tracker_.get(),
       task_runners_->file_task_runner());
-  sandbox_provider_->AddFileChangeObserver(
+  sandbox_backend_->AddFileChangeObserver(
       kFileSystemTypeSyncable,
       change_tracker_.get(),
       task_runners_->file_task_runner());
@@ -376,7 +367,7 @@ FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
 
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
 void FileSystemContext::EnableTemporaryFileSystemInIncognito() {
-  sandbox_provider_->set_enable_temporary_file_system_in_incognito(true);
+  sandbox_backend_->set_enable_temporary_file_system_in_incognito(true);
 }
 #endif
 
@@ -401,9 +392,8 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
     return NULL;
   }
 
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(url.type());
-  if (!mount_point_provider) {
+  FileSystemBackend* backend = GetFileSystemBackend(url.type());
+  if (!backend) {
     if (error_code)
       *error_code = base::PLATFORM_FILE_ERROR_FAILED;
     return NULL;
@@ -411,7 +401,7 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
 
   base::PlatformFileError fs_error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
-      mount_point_provider->CreateFileSystemOperation(url, this, &fs_error);
+      backend->CreateFileSystemOperation(url, this, &fs_error);
 
   if (error_code)
     *error_code = fs_error;
@@ -446,29 +436,29 @@ FileSystemURL FileSystemContext::CrackFileSystemURL(
   return current;
 }
 
-void FileSystemContext::RegisterMountPointProvider(
-    FileSystemMountPointProvider* provider) {
+void FileSystemContext::RegisterBackend(
+    FileSystemBackend* backend) {
   const FileSystemType mount_types[] = {
     kFileSystemTypeTemporary,
     kFileSystemTypePersistent,
     kFileSystemTypeIsolated,
     kFileSystemTypeExternal,
   };
-  // Register mount point providers for public mount types.
+  // Register file system backends for public mount types.
   for (size_t j = 0; j < ARRAYSIZE_UNSAFE(mount_types); ++j) {
-    if (provider->CanHandleType(mount_types[j])) {
-      const bool inserted = provider_map_.insert(
-          std::make_pair(mount_types[j], provider)).second;
+    if (backend->CanHandleType(mount_types[j])) {
+      const bool inserted = backend_map_.insert(
+          std::make_pair(mount_types[j], backend)).second;
       DCHECK(inserted);
     }
   }
-  // Register mount point providers for internal types.
+  // Register file system backends for internal types.
   for (int t = kFileSystemInternalTypeEnumStart + 1;
        t < kFileSystemInternalTypeEnumEnd; ++t) {
     FileSystemType type = static_cast<FileSystemType>(t);
-    if (provider->CanHandleType(type)) {
-      const bool inserted = provider_map_.insert(
-          std::make_pair(type, provider)).second;
+    if (backend->CanHandleType(type)) {
+      const bool inserted = backend_map_.insert(
+          std::make_pair(type, backend)).second;
       DCHECK(inserted);
     }
   }

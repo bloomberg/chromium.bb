@@ -33,7 +33,7 @@ class FileSystemURL;
 // must implement this interface or a synchronous version of interface:
 // FileSystemFileUtil.
 //
-// As far as an instance of this class is owned by a MountPointProvider
+// As far as an instance of this class is owned by a FileSystemBackend
 // (which is owned by FileSystemContext), it's guaranteed that this instance's
 // alive while FileSystemOperationContext given to each operation is kept
 // alive. (Note that this instance might be freed on different thread

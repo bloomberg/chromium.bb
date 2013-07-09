@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_BACKEND_H_
+#define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_BACKEND_H_
 
 #include <string>
 #include <vector>
@@ -35,18 +35,17 @@ class FileSystemOperation;
 class FileSystemQuotaUtil;
 class RemoteFileSystemProxyInterface;
 
-// An interface to provide mount-point-specific path-related utilities
-// and specialized FileSystemFileUtil instance.
+// An interface for defining a file system backend.
 //
-// NOTE: when you implement a new MountPointProvider for your own
+// NOTE: when you implement a new FileSystemBackend for your own
 // FileSystem module, please contact to kinuko@chromium.org.
 //
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemMountPointProvider {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
  public:
   // Callback for OpenFileSystem.
   typedef base::Callback<void(base::PlatformFileError error)>
       OpenFileSystemCallback;
-  virtual ~FileSystemMountPointProvider() {}
+  virtual ~FileSystemBackend() {}
 
   // Returns true if this mount point provider can handle |type|.
   // One mount point provider may be able to handle multiple filesystem types.
@@ -118,8 +117,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemMountPointProvider {
 };
 
 // An interface to control external file system access permissions.
-class ExternalFileSystemMountPointProvider
-    : public FileSystemMountPointProvider {
+// TODO(satorux): Move this out of 'webkit/browser/fileapi'. crbug.com/257279
+class ExternalFileSystemBackend : public FileSystemBackend {
  public:
   // Returns true if |url| is allowed to be accessed.
   // This is supposed to perform ExternalFileSystem-specific security
@@ -147,4 +146,4 @@ class ExternalFileSystemMountPointProvider
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_BACKEND_H_

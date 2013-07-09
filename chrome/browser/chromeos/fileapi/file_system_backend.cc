@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,8 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider_delegate.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
@@ -37,7 +37,7 @@ const char kChromeUIScheme[] = "chrome";
 namespace chromeos {
 
 // static
-bool CrosMountPointProvider::CanHandleURL(const fileapi::FileSystemURL& url) {
+bool FileSystemBackend::CanHandleURL(const fileapi::FileSystemURL& url) {
   if (!url.is_valid())
     return false;
   return url.type() == fileapi::kFileSystemTypeNativeLocal ||
@@ -45,8 +45,8 @@ bool CrosMountPointProvider::CanHandleURL(const fileapi::FileSystemURL& url) {
          url.type() == fileapi::kFileSystemTypeDrive;
 }
 
-CrosMountPointProvider::CrosMountPointProvider(
-    CrosMountPointProviderDelegate* drive_delegate,
+FileSystemBackend::FileSystemBackend(
+    FileSystemBackendDelegate* drive_delegate,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<fileapi::ExternalMountPoints> mount_points,
     fileapi::ExternalMountPoints* system_mount_points)
@@ -59,10 +59,10 @@ CrosMountPointProvider::CrosMountPointProvider(
       system_mount_points_(system_mount_points) {
 }
 
-CrosMountPointProvider::~CrosMountPointProvider() {
+FileSystemBackend::~FileSystemBackend() {
 }
 
-void CrosMountPointProvider::AddSystemMountPoints() {
+void FileSystemBackend::AddSystemMountPoints() {
   // RegisterFileSystem() is no-op if the mount point with the same name
   // already exists, hence it's safe to call without checking if a mount
   // point already exists or not.
@@ -93,7 +93,7 @@ void CrosMountPointProvider::AddSystemMountPoints() {
       base::FilePath(FILE_PATH_LITERAL("/usr/share/oem")));
 }
 
-bool CrosMountPointProvider::CanHandleType(fileapi::FileSystemType type) const {
+bool FileSystemBackend::CanHandleType(fileapi::FileSystemType type) const {
   switch (type) {
     case fileapi::kFileSystemTypeExternal:
     case fileapi::kFileSystemTypeDrive:
@@ -106,7 +106,7 @@ bool CrosMountPointProvider::CanHandleType(fileapi::FileSystemType type) const {
   }
 }
 
-void CrosMountPointProvider::OpenFileSystem(
+void FileSystemBackend::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     fileapi::OpenFileSystemMode mode,
@@ -116,12 +116,12 @@ void CrosMountPointProvider::OpenFileSystem(
   callback.Run(base::PLATFORM_FILE_OK);
 }
 
-fileapi::FileSystemQuotaUtil* CrosMountPointProvider::GetQuotaUtil() {
+fileapi::FileSystemQuotaUtil* FileSystemBackend::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }
 
-bool CrosMountPointProvider::IsAccessAllowed(
+bool FileSystemBackend::IsAccessAllowed(
     const fileapi::FileSystemURL& url) const {
   if (!url.is_valid())
     return false;
@@ -147,7 +147,7 @@ bool CrosMountPointProvider::IsAccessAllowed(
                                                        url.virtual_path());
 }
 
-void CrosMountPointProvider::GrantFullAccessToExtension(
+void FileSystemBackend::GrantFullAccessToExtension(
     const std::string& extension_id) {
   DCHECK(special_storage_policy_->IsFileHandler(extension_id));
   if (!special_storage_policy_->IsFileHandler(extension_id))
@@ -164,7 +164,7 @@ void CrosMountPointProvider::GrantFullAccessToExtension(
   }
 }
 
-void CrosMountPointProvider::GrantFileAccessToExtension(
+void FileSystemBackend::GrantFileAccessToExtension(
     const std::string& extension_id, const base::FilePath& virtual_path) {
   // All we care about here is access from extensions for now.
   DCHECK(special_storage_policy_->IsFileHandler(extension_id));
@@ -188,12 +188,12 @@ void CrosMountPointProvider::GrantFileAccessToExtension(
   file_access_permissions_->GrantAccessPermission(extension_id, virtual_path);
 }
 
-void CrosMountPointProvider::RevokeAccessForExtension(
+void FileSystemBackend::RevokeAccessForExtension(
       const std::string& extension_id) {
   file_access_permissions_->RevokePermissions(extension_id);
 }
 
-std::vector<base::FilePath> CrosMountPointProvider::GetRootDirectories() const {
+std::vector<base::FilePath> FileSystemBackend::GetRootDirectories() const {
   std::vector<fileapi::MountPoints::MountPointInfo> mount_points;
   mount_points_->AddMountPointInfosTo(&mount_points);
   system_mount_points_->AddMountPointInfosTo(&mount_points);
@@ -204,14 +204,14 @@ std::vector<base::FilePath> CrosMountPointProvider::GetRootDirectories() const {
   return root_dirs;
 }
 
-fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil(
+fileapi::FileSystemFileUtil* FileSystemBackend::GetFileUtil(
     fileapi::FileSystemType type) {
   DCHECK(type == fileapi::kFileSystemTypeNativeLocal ||
          type == fileapi::kFileSystemTypeRestrictedNativeLocal);
   return local_file_util_->sync_file_util();
 }
 
-fileapi::AsyncFileUtil* CrosMountPointProvider::GetAsyncFileUtil(
+fileapi::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   if (type == fileapi::kFileSystemTypeDrive)
     return drive_delegate_->GetAsyncFileUtil(type);
@@ -222,14 +222,14 @@ fileapi::AsyncFileUtil* CrosMountPointProvider::GetAsyncFileUtil(
 }
 
 fileapi::CopyOrMoveFileValidatorFactory*
-CrosMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+FileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     fileapi::FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
   return NULL;
 }
 
-fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
+fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context,
     base::PlatformFileError* error_code) const {
@@ -253,7 +253,7 @@ fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
-CrosMountPointProvider::CreateFileStreamReader(
+FileSystemBackend::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -274,7 +274,7 @@ CrosMountPointProvider::CreateFileStreamReader(
 }
 
 scoped_ptr<fileapi::FileStreamWriter>
-CrosMountPointProvider::CreateFileStreamWriter(
+FileSystemBackend::CreateFileStreamWriter(
     const fileapi::FileSystemURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const {
@@ -295,14 +295,14 @@ CrosMountPointProvider::CreateFileStreamWriter(
           context->task_runners()->file_task_runner(), url.path(), offset));
 }
 
-bool CrosMountPointProvider::GetVirtualPath(
+bool FileSystemBackend::GetVirtualPath(
     const base::FilePath& filesystem_path,
     base::FilePath* virtual_path) {
   return mount_points_->GetVirtualPath(filesystem_path, virtual_path) ||
          system_mount_points_->GetVirtualPath(filesystem_path, virtual_path);
 }
 
-base::FilePath CrosMountPointProvider::GetFileSystemRootPath(
+base::FilePath FileSystemBackend::GetFileSystemRootPath(
     const fileapi::FileSystemURL& url) const {
   DCHECK(fileapi::IsolatedContext::IsIsolatedType(url.mount_type()));
   if (!url.is_valid())

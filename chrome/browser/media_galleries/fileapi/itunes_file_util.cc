@@ -12,7 +12,7 @@
 #include "base/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "content/public/browser/browser_thread.h"
@@ -197,7 +197,7 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     chrome::MediaPathFilter* path_filter =
         context->GetUserValue<chrome::MediaPathFilter*>(
-            chrome::MediaFileSystemMountPointProvider::kMediaPathFilterKey);
+            chrome::MediaFileSystemBackend::kMediaPathFilterKey);
     ITunesDataProvider::Album::const_iterator it;
     for (it = album.begin(); it != album.end(); ++it) {
       base::PlatformFileInfo file_info;

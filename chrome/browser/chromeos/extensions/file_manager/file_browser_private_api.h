@@ -81,7 +81,7 @@ class FileBrowserFunction : public AsyncExtensionFunction {
   int32 GetTabId() const;
 
   // Returns the local FilePath associated with |url|. If the file isn't of the
-  // type CrosMountPointProvider handles, returns an empty FilePath.
+  // type FileSystemBackend handles, returns an empty FilePath.
   //
   // Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
   // "/special/drive/foo/bar.txt".

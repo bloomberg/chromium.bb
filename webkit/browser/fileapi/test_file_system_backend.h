@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_BROWSER_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_TEST_FILE_SYSTEM_BACKEND_H_
+#define WEBKIT_BROWSER_FILEAPI_TEST_FILE_SYSTEM_BACKEND_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
@@ -23,17 +23,17 @@ class AsyncFileUtilAdapter;
 class FileSystemQuotaUtil;
 
 // This should be only used for testing.
-// This mount point provider uses LocalFileUtil and stores data file
+// This file system backend uses LocalFileUtil and stores data file
 // under the given directory.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestMountPointProvider
-    : public FileSystemMountPointProvider {
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestFileSystemBackend
+    : public FileSystemBackend {
  public:
-  TestMountPointProvider(
+  TestFileSystemBackend(
       base::SequencedTaskRunner* task_runner,
       const base::FilePath& base_path);
-  virtual ~TestMountPointProvider();
+  virtual ~TestFileSystemBackend();
 
-  // FileSystemMountPointProvider implementation.
+  // FileSystemBackend implementation.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
   virtual void OpenFileSystem(
       const GURL& origin_url,
@@ -89,9 +89,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestMountPointProvider
   scoped_ptr<CopyOrMoveFileValidatorFactory>
       copy_or_move_file_validator_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestMountPointProvider);
+  DISALLOW_COPY_AND_ASSIGN(TestFileSystemBackend);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_TEST_FILE_SYSTEM_BACKEND_H_

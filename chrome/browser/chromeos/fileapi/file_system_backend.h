@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_SYSTEM_BACKEND_H_
+#define CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_SYSTEM_BACKEND_H_
 
 #include <map>
 #include <string>
@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -29,11 +29,11 @@ class IsolatedContext;
 
 namespace chromeos {
 
-class CrosMountPointProviderDelegate;
+class FileSystemBackendDelegate;
 class FileAccessPermissions;
 
-// CrosMountPointProvider is a Chrome OS specific implementation of
-// ExternalFileSystemMountPointProvider. This class is responsible for a
+// FileSystemBackend is a Chrome OS specific implementation of
+// ExternalFileSystemBackend. This class is responsible for a
 // number of things, including:
 //
 // - Add system mount points
@@ -64,21 +64,20 @@ class FileAccessPermissions;
 //
 //   filesystem:<origin>/external/<mount_name>/...
 //
-class CrosMountPointProvider
-    : public fileapi::ExternalFileSystemMountPointProvider {
+class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
  public:
-  using fileapi::FileSystemMountPointProvider::OpenFileSystemCallback;
+  using fileapi::FileSystemBackend::OpenFileSystemCallback;
 
-  // CrosMountPointProvider will take an ownership of a |mount_points|
+  // FileSystemBackend will take an ownership of a |mount_points|
   // reference. On the other hand, |system_mount_points| will be kept as a raw
-  // pointer and it should outlive CrosMountPointProvider instance.
+  // pointer and it should outlive FileSystemBackend instance.
   // The ownership of |drive_delegate| is also taken.
-  CrosMountPointProvider(
-      CrosMountPointProviderDelegate* drive_delegate,
+  FileSystemBackend(
+      FileSystemBackendDelegate* drive_delegate,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<fileapi::ExternalMountPoints> mount_points,
       fileapi::ExternalMountPoints* system_mount_points);
-  virtual ~CrosMountPointProvider();
+  virtual ~FileSystemBackend();
 
   // Adds system mount points, such as "archive", and "removable". This
   // function is no-op if these mount points are already present.
@@ -89,7 +88,7 @@ class CrosMountPointProvider
   // This could be called on any threads.
   static bool CanHandleURL(const fileapi::FileSystemURL& url);
 
-  // fileapi::FileSystemMountPointProvider overrides.
+  // fileapi::FileSystemBackend overrides.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
   virtual void OpenFileSystem(
       const GURL& origin_url,
@@ -119,7 +118,7 @@ class CrosMountPointProvider
       fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
-  // fileapi::ExternalFileSystemMountPointProvider overrides.
+  // fileapi::ExternalFileSystemBackend overrides.
   virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url)
       const OVERRIDE;
   virtual std::vector<base::FilePath> GetRootDirectories() const OVERRIDE;
@@ -141,7 +140,7 @@ class CrosMountPointProvider
   scoped_ptr<fileapi::AsyncFileUtilAdapter> local_file_util_;
 
   // The Delegate instance for the drive file system related operation.
-  scoped_ptr<CrosMountPointProviderDelegate> drive_delegate_;
+  scoped_ptr<FileSystemBackendDelegate> drive_delegate_;
 
   // Mount points specific to the owning context (i.e. per-profile mount
   // points).
@@ -157,12 +156,12 @@ class CrosMountPointProvider
   scoped_refptr<fileapi::ExternalMountPoints> mount_points_;
 
   // Globally visible mount points. System MountPonts instance should outlive
-  // all CrosMountPointProvider instances, so raw pointer is safe.
+  // all FileSystemBackend instances, so raw pointer is safe.
   fileapi::ExternalMountPoints* system_mount_points_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrosMountPointProvider);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemBackend);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_SYSTEM_BACKEND_H_

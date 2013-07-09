@@ -55,8 +55,8 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -256,12 +256,12 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
   // site for which file access permissions should be granted.
   GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
       GetSiteForExtensionId(kFileBrowserDomain);
-  fileapi::ExternalFileSystemMountPointProvider* external_provider =
+  fileapi::ExternalFileSystemBackend* backend =
       BrowserContext::GetStoragePartitionForSite(profile, site)->
-          GetFileSystemContext()->external_provider();
-  if (!external_provider)
+          GetFileSystemContext()->external_backend();
+  if (!backend)
     return false;
-  external_provider->GrantFullAccessToExtension(GetFileBrowserUrl().host());
+  backend->GrantFullAccessToExtension(GetFileBrowserUrl().host());
   return true;
 }
 
@@ -570,14 +570,14 @@ bool ConvertFileToRelativeFileSystemPath(
   // extension's site is the one in whose file system context the virtual path
   // should be found.
   GURL site = service->GetSiteForExtensionId(extension_id);
-  fileapi::ExternalFileSystemMountPointProvider* provider =
+  fileapi::ExternalFileSystemBackend* backend =
       BrowserContext::GetStoragePartitionForSite(profile, site)->
-          GetFileSystemContext()->external_provider();
-  if (!provider)
+          GetFileSystemContext()->external_backend();
+  if (!backend)
     return false;
 
-  // Find if this file path is managed by the external provider.
-  if (!provider->GetVirtualPath(full_file_path, virtual_path))
+  // Find if this file path is managed by the external backend.
+  if (!backend->GetVirtualPath(full_file_path, virtual_path))
     return false;
 
   return true;

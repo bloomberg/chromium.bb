@@ -4,13 +4,13 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_itunes_library_parser.h"
 
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "ipc/ipc_platform_file.h"
 
-using chrome::MediaFileSystemMountPointProvider;
+using chrome::MediaFileSystemBackend;
 using content::BrowserThread;
 using content::UtilityProcessHost;
 
@@ -24,7 +24,7 @@ SafeITunesLibraryParser::SafeITunesLibraryParser(
       parser_state_(INITIAL_STATE) {}
 
 void SafeITunesLibraryParser::Start() {
-  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
   // |itunes_library_platform_file_| will be closed on the IO thread once it
   // has been handed off to the child process.
@@ -87,7 +87,7 @@ void SafeITunesLibraryParser::OnGotITunesLibrary(
   if (parser_state_ != STARTED_PARSING_STATE)
     return;
 
-  MediaFileSystemMountPointProvider::MediaTaskRunner()->PostTask(
+  MediaFileSystemBackend::MediaTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(callback_, result, library));
   parser_state_ = FINISHED_PARSING_STATE;

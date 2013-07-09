@@ -114,8 +114,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #endif
 
 using content::BrowserContext;
@@ -1135,8 +1135,8 @@ void ExtensionService::NotifyExtensionUnloaded(
   fileapi::FileSystemContext* filesystem_context =
       BrowserContext::GetStoragePartitionForSite(profile_, site)->
           GetFileSystemContext();
-  if (filesystem_context && filesystem_context->external_provider()) {
-    filesystem_context->external_provider()->
+  if (filesystem_context && filesystem_context->external_backend()) {
+    filesystem_context->external_backend()->
         RevokeAccessForExtension(extension->id());
   }
 #endif

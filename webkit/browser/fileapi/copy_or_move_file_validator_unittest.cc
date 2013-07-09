@@ -11,12 +11,12 @@
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/browser/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -52,16 +52,16 @@ class CopyOrMoveFileValidatorTestHelper {
 
     file_system_context_ = CreateFileSystemContextForTesting(NULL, base_dir);
 
-    // Set up TestMountPointProvider to require CopyOrMoveFileValidator.
-    FileSystemMountPointProvider* test_mount_point_provider =
-        file_system_context_->GetMountPointProvider(kWithValidatorType);
-    static_cast<TestMountPointProvider*>(test_mount_point_provider)->
+    // Set up TestFileSystemBackend to require CopyOrMoveFileValidator.
+    FileSystemBackend* test_file_system_backend =
+        file_system_context_->GetFileSystemBackend(kWithValidatorType);
+    static_cast<TestFileSystemBackend*>(test_file_system_backend)->
         set_require_copy_or_move_validator(true);
 
     // Sets up source.
-    FileSystemMountPointProvider* src_mount_point_provider =
-        file_system_context_->GetMountPointProvider(src_type_);
-    src_mount_point_provider->OpenFileSystem(
+    FileSystemBackend* src_file_system_backend =
+        file_system_context_->GetFileSystemBackend(src_type_);
+    src_file_system_backend->OpenFileSystem(
         origin_, src_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
@@ -88,9 +88,9 @@ class CopyOrMoveFileValidatorTestHelper {
 
   void SetMediaCopyOrMoveFileValidatorFactory(
       scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
-    TestMountPointProvider* provider = static_cast<TestMountPointProvider*>(
-        file_system_context_->GetMountPointProvider(kWithValidatorType));
-    provider->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
+    TestFileSystemBackend* backend = static_cast<TestFileSystemBackend*>(
+        file_system_context_->GetFileSystemBackend(kWithValidatorType));
+    backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
   }
 
   void CopyTest(base::PlatformFileError expected) {

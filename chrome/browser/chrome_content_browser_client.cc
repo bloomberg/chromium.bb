@@ -148,8 +148,8 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
-#include "chrome/browser/chromeos/drive/mount_point_provider_delegate.h"
-#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
+#include "chrome/browser/chromeos/drive/file_system_backend_delegate.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -187,7 +187,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -2305,29 +2305,29 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
   additional_allowed_schemes->push_back(extensions::kExtensionScheme);
 }
 
-void ChromeContentBrowserClient::GetAdditionalFileSystemMountPointProviders(
+void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
     const base::FilePath& storage_partition_path,
     quota::SpecialStoragePolicy* special_storage_policy,
     fileapi::ExternalMountPoints* external_mount_points,
-    ScopedVector<fileapi::FileSystemMountPointProvider>* additional_providers) {
+    ScopedVector<fileapi::FileSystemBackend>* additional_backends) {
 #if !defined(OS_ANDROID)
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  additional_providers->push_back(new MediaFileSystemMountPointProvider(
+  additional_backends->push_back(new MediaFileSystemBackend(
       storage_partition_path,
       pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken(
-          MediaFileSystemMountPointProvider::kMediaTaskRunnerName)).get()));
+          MediaFileSystemBackend::kMediaTaskRunnerName)).get()));
 #endif
 #if defined(OS_CHROMEOS)
   DCHECK(external_mount_points);
-  chromeos::CrosMountPointProvider* cros_mount_provider =
-      new chromeos::CrosMountPointProvider(
-          new drive::MountPointProviderDelegate(external_mount_points),
+  chromeos::FileSystemBackend* backend =
+      new chromeos::FileSystemBackend(
+          new drive::FileSystemBackendDelegate(external_mount_points),
           special_storage_policy,
           external_mount_points,
           fileapi::ExternalMountPoints::GetSystemInstance());
-  cros_mount_provider->AddSystemMountPoints();
-  DCHECK(cros_mount_provider->CanHandleType(fileapi::kFileSystemTypeExternal));
-  additional_providers->push_back(cros_mount_provider);
+  backend->AddSystemMountPoints();
+  DCHECK(backend->CanHandleType(fileapi::kFileSystemTypeExternal));
+  additional_backends->push_back(backend);
 #endif
 }
 

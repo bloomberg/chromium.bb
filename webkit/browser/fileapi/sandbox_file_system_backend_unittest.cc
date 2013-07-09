@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 
 #include <set>
 
@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -78,28 +78,28 @@ void DidOpenFileSystem(base::PlatformFileError* error_out,
 
 }  // namespace
 
-class SandboxMountPointProviderTest : public testing::Test {
+class SandboxFileSystemBackendTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
 
-  void SetUpNewProvider(const FileSystemOptions& options) {
-    provider_.reset(
-        new SandboxMountPointProvider(NULL,
+  void SetUpNewBackend(const FileSystemOptions& options) {
+    backend_.reset(
+        new SandboxFileSystemBackend(NULL,
                                       base::MessageLoopProxy::current().get(),
                                       data_dir_.path(),
                                       options,
                                       NULL));
   }
 
-  SandboxMountPointProvider::OriginEnumerator* CreateOriginEnumerator() const {
-    return provider_->CreateOriginEnumerator();
+  SandboxFileSystemBackend::OriginEnumerator* CreateOriginEnumerator() const {
+    return backend_->CreateOriginEnumerator();
   }
 
   void CreateOriginTypeDirectory(const GURL& origin,
                                  fileapi::FileSystemType type) {
-    base::FilePath target = provider_->
+    base::FilePath target = backend_->
         GetBaseDirectoryForOriginAndType(origin, type, true);
     ASSERT_TRUE(!target.empty());
     ASSERT_TRUE(file_util::DirectoryExists(target));
@@ -110,14 +110,14 @@ class SandboxMountPointProviderTest : public testing::Test {
                    OpenFileSystemMode mode,
                    base::FilePath* root_path) {
     base::PlatformFileError error = base::PLATFORM_FILE_OK;
-    provider_->OpenFileSystem(
+    backend_->OpenFileSystem(
         origin_url, type, mode,
         base::Bind(&DidOpenFileSystem, &error));
     base::MessageLoop::current()->RunUntilIdle();
     if (error != base::PLATFORM_FILE_OK)
       return false;
     base::FilePath returned_root_path =
-        provider_->GetBaseDirectoryForOriginAndType(
+        backend_->GetBaseDirectoryForOriginAndType(
             origin_url, type, false /* create */);
     if (root_path)
       *root_path = returned_root_path;
@@ -126,23 +126,23 @@ class SandboxMountPointProviderTest : public testing::Test {
 
   base::FilePath file_system_path() const {
     return data_dir_.path().Append(
-        SandboxMountPointProvider::kFileSystemDirectory);
+        SandboxFileSystemBackend::kFileSystemDirectory);
   }
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-  scoped_ptr<SandboxMountPointProvider> provider_;
+  scoped_ptr<SandboxFileSystemBackend> backend_;
 };
 
-TEST_F(SandboxMountPointProviderTest, Empty) {
-  SetUpNewProvider(CreateAllowFileAccessOptions());
-  scoped_ptr<SandboxMountPointProvider::OriginEnumerator> enumerator(
+TEST_F(SandboxFileSystemBackendTest, Empty) {
+  SetUpNewBackend(CreateAllowFileAccessOptions());
+  scoped_ptr<SandboxFileSystemBackend::OriginEnumerator> enumerator(
       CreateOriginEnumerator());
   ASSERT_TRUE(enumerator->Next().is_empty());
 }
 
-TEST_F(SandboxMountPointProviderTest, EnumerateOrigins) {
-  SetUpNewProvider(CreateAllowFileAccessOptions());
+TEST_F(SandboxFileSystemBackendTest, EnumerateOrigins) {
+  SetUpNewBackend(CreateAllowFileAccessOptions());
   const char* temporary_origins[] = {
     "http://www.bar.com/",
     "http://www.foo.com/",
@@ -169,7 +169,7 @@ TEST_F(SandboxMountPointProviderTest, EnumerateOrigins) {
     persistent_set.insert(GURL(persistent_origins[i]));
   }
 
-  scoped_ptr<SandboxMountPointProvider::OriginEnumerator> enumerator(
+  scoped_ptr<SandboxFileSystemBackend::OriginEnumerator> enumerator(
       CreateOriginEnumerator());
   size_t temporary_actual_size = 0;
   size_t persistent_actual_size = 0;
@@ -190,53 +190,53 @@ TEST_F(SandboxMountPointProviderTest, EnumerateOrigins) {
   EXPECT_EQ(persistent_size, persistent_actual_size);
 }
 
-TEST_F(SandboxMountPointProviderTest, IsAccessValid) {
-  SetUpNewProvider(CreateAllowFileAccessOptions());
+TEST_F(SandboxFileSystemBackendTest, IsAccessValid) {
+  SetUpNewBackend(CreateAllowFileAccessOptions());
 
   // Normal case.
-  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL("a")));
+  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL("a")));
 
   // Access to a path with parent references ('..') should be disallowed.
-  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL("a/../b")));
+  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL("a/../b")));
 
   // Access from non-allowed scheme should be disallowed.
-  EXPECT_FALSE(provider_->IsAccessValid(
+  EXPECT_FALSE(backend_->IsAccessValid(
       FileSystemURL::CreateForTest(
           GURL("unknown://bar"), kFileSystemTypeTemporary,
           base::FilePath::FromUTF8Unsafe("foo"))));
 
   // Access for non-sandbox type should be disallowed.
-  EXPECT_FALSE(provider_->IsAccessValid(
+  EXPECT_FALSE(backend_->IsAccessValid(
       FileSystemURL::CreateForTest(
           GURL("http://foo/"), kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe("foo"))));
 
   // Access with restricted name should be disallowed.
-  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL(".")));
-  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL("..")));
+  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL(".")));
+  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL("..")));
 
   // This is also diallowed due to Windows XP parent path handling.
-  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL("...")));
+  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL("...")));
 
   // These are identified as unsafe cases due to weird path handling
   // on Windows.
-  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL(" ..")));
-  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL(".. ")));
+  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL(" ..")));
+  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL(".. ")));
 
   // Similar but safe cases.
-  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL(" .")));
-  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL(". ")));
-  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL("b.")));
-  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL(".b")));
+  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL(" .")));
+  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL(". ")));
+  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL("b.")));
+  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL(".b")));
 
   // A path that looks like a drive letter.
-  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL("c:")));
+  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL("c:")));
 }
 
-TEST_F(SandboxMountPointProviderTest, GetRootPathCreateAndExamine) {
+TEST_F(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
   std::vector<base::FilePath> returned_root_path(
       ARRAYSIZE_UNSAFE(kRootPathTestCases));
-  SetUpNewProvider(CreateAllowFileAccessOptions());
+  SetUpNewBackend(CreateAllowFileAccessOptions());
 
   // Create a new root directory.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
@@ -273,11 +273,11 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathCreateAndExamine) {
   }
 }
 
-TEST_F(SandboxMountPointProviderTest,
-       GetRootPathCreateAndExamineWithNewProvider) {
+TEST_F(SandboxFileSystemBackendTest,
+       GetRootPathCreateAndExamineWithNewBackend) {
   std::vector<base::FilePath> returned_root_path(
       ARRAYSIZE_UNSAFE(kRootPathTestCases));
-  SetUpNewProvider(CreateAllowFileAccessOptions());
+  SetUpNewBackend(CreateAllowFileAccessOptions());
 
   GURL origin_url("http://foo.com:1/");
 
@@ -286,7 +286,7 @@ TEST_F(SandboxMountPointProviderTest,
                           OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                           &root_path1));
 
-  SetUpNewProvider(CreateDisallowFileAccessOptions());
+  SetUpNewBackend(CreateDisallowFileAccessOptions());
   base::FilePath root_path2;
   EXPECT_TRUE(GetRootPath(origin_url, kFileSystemTypeTemporary,
                           OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
@@ -295,8 +295,8 @@ TEST_F(SandboxMountPointProviderTest,
   EXPECT_EQ(root_path1.value(), root_path2.value());
 }
 
-TEST_F(SandboxMountPointProviderTest, GetRootPathGetWithoutCreate) {
-  SetUpNewProvider(CreateDisallowFileAccessOptions());
+TEST_F(SandboxFileSystemBackendTest, GetRootPathGetWithoutCreate) {
+  SetUpNewBackend(CreateDisallowFileAccessOptions());
 
   // Try to get a root directory without creating.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
@@ -309,8 +309,8 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathGetWithoutCreate) {
   }
 }
 
-TEST_F(SandboxMountPointProviderTest, GetRootPathInIncognito) {
-  SetUpNewProvider(CreateIncognitoFileSystemOptions());
+TEST_F(SandboxFileSystemBackendTest, GetRootPathInIncognito) {
+  SetUpNewBackend(CreateIncognitoFileSystemOptions());
 
   // Try to get a root directory.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
@@ -324,8 +324,8 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathInIncognito) {
   }
 }
 
-TEST_F(SandboxMountPointProviderTest, GetRootPathFileURI) {
-  SetUpNewProvider(CreateDisallowFileAccessOptions());
+TEST_F(SandboxFileSystemBackendTest, GetRootPathFileURI) {
+  SetUpNewBackend(CreateDisallowFileAccessOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (disallow) #"
                  << i << " " << kRootPathFileURITestCases[i].expected_path);
@@ -337,8 +337,8 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathFileURI) {
   }
 }
 
-TEST_F(SandboxMountPointProviderTest, GetRootPathFileURIWithAllowFlag) {
-  SetUpNewProvider(CreateAllowFileAccessOptions());
+TEST_F(SandboxFileSystemBackendTest, GetRootPathFileURIWithAllowFlag) {
+  SetUpNewBackend(CreateAllowFileAccessOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (allow) #"
                  << i << " " << kRootPathFileURITestCases[i].expected_path);

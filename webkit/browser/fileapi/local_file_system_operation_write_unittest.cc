@@ -25,7 +25,7 @@
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/browser/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -80,8 +80,8 @@ class LocalFileSystemOperationWriteTest
         URLForPath(virtual_path_), true /* exclusive */,
         base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
 
-    static_cast<TestMountPointProvider*>(
-        file_system_context_->GetMountPointProvider(kFileSystemType))
+    static_cast<TestFileSystemBackend*>(
+        file_system_context_->GetFileSystemBackend(kFileSystemType))
         ->AddFileChangeObserver(change_observer());
   }
 

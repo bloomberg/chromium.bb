@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -75,7 +75,7 @@ const base::FilePath::CharType kRestrictedChars[] = {
 };
 
 class ObfuscatedOriginEnumerator
-    : public SandboxMountPointProvider::OriginEnumerator {
+    : public SandboxFileSystemBackend::OriginEnumerator {
  public:
   explicit ObfuscatedOriginEnumerator(ObfuscatedFileUtil* file_util) {
     enum_.reset(file_util->CreateOriginEnumerator());
@@ -95,8 +95,8 @@ class ObfuscatedOriginEnumerator
 };
 
 void DidOpenFileSystem(
-    base::WeakPtr<SandboxMountPointProvider> mount_point_provider,
-    const FileSystemMountPointProvider::OpenFileSystemCallback& callback,
+    base::WeakPtr<SandboxFileSystemBackend> mount_point_provider,
+    const FileSystemBackend::OpenFileSystemCallback& callback,
     base::PlatformFileError* error) {
   if (mount_point_provider.get())
     mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
@@ -130,10 +130,10 @@ void OpenFileSystemOnFileThread(
 }  // anonymous namespace
 
 const base::FilePath::CharType
-SandboxMountPointProvider::kFileSystemDirectory[] =
+SandboxFileSystemBackend::kFileSystemDirectory[] =
     FILE_PATH_LITERAL("File System");
 
-SandboxMountPointProvider::SandboxMountPointProvider(
+SandboxFileSystemBackend::SandboxFileSystemBackend(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& profile_path,
@@ -184,7 +184,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
   }
 }
 
-SandboxMountPointProvider::~SandboxMountPointProvider() {
+SandboxFileSystemBackend::~SandboxFileSystemBackend() {
   if (!file_task_runner_->RunsTasksOnCurrentThread()) {
     AsyncFileUtilAdapter* sandbox_file_util = sandbox_file_util_.release();
     SandboxQuotaObserver* quota_observer = quota_observer_.release();
@@ -199,14 +199,14 @@ SandboxMountPointProvider::~SandboxMountPointProvider() {
   }
 }
 
-bool SandboxMountPointProvider::CanHandleType(FileSystemType type) const {
+bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
   return type == kFileSystemTypeTemporary ||
          type == kFileSystemTypePersistent ||
          type == kFileSystemTypeSyncable ||
          type == kFileSystemTypeSyncableForInternalSync;
 }
 
-void SandboxMountPointProvider::OpenFileSystem(
+void SandboxFileSystemBackend::OpenFileSystem(
     const GURL& origin_url, fileapi::FileSystemType type,
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
@@ -247,24 +247,24 @@ void SandboxMountPointProvider::OpenFileSystem(
   // --disable-file-system-usage-tracking.
   file_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SandboxMountPointProvider::InvalidateUsageCacheOnFileThread,
+      base::Bind(&SandboxFileSystemBackend::InvalidateUsageCacheOnFileThread,
                  sandbox_sync_file_util(), origin_url, type,
                  file_system_usage_cache_.get()));
 };
 
-FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil(
+FileSystemFileUtil* SandboxFileSystemBackend::GetFileUtil(
     FileSystemType type) {
   DCHECK(sandbox_file_util_.get());
   return sandbox_file_util_->sync_file_util();
 }
 
-AsyncFileUtil* SandboxMountPointProvider::GetAsyncFileUtil(
+AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
     FileSystemType type) {
   return sandbox_file_util_.get();
 }
 
 CopyOrMoveFileValidatorFactory*
-SandboxMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+SandboxFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type,
     base::PlatformFileError* error_code) {
   DCHECK(error_code);
@@ -272,7 +272,7 @@ SandboxMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
+FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
@@ -307,7 +307,7 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
-SandboxMountPointProvider::CreateFileStreamReader(
+SandboxFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -320,7 +320,7 @@ SandboxMountPointProvider::CreateFileStreamReader(
 }
 
 scoped_ptr<fileapi::FileStreamWriter>
-SandboxMountPointProvider::CreateFileStreamWriter(
+SandboxFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
@@ -330,16 +330,16 @@ SandboxMountPointProvider::CreateFileStreamWriter(
       new SandboxFileStreamWriter(context, url, offset, update_observers_));
 }
 
-FileSystemQuotaUtil* SandboxMountPointProvider::GetQuotaUtil() {
+FileSystemQuotaUtil* SandboxFileSystemBackend::GetQuotaUtil() {
   return this;
 }
 
-SandboxMountPointProvider::OriginEnumerator*
-SandboxMountPointProvider::CreateOriginEnumerator() {
+SandboxFileSystemBackend::OriginEnumerator*
+SandboxFileSystemBackend::CreateOriginEnumerator() {
   return new ObfuscatedOriginEnumerator(sandbox_sync_file_util());
 }
 
-base::FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
+base::FilePath SandboxFileSystemBackend::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) {
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -351,7 +351,7 @@ base::FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
 }
 
 base::PlatformFileError
-SandboxMountPointProvider::DeleteOriginDataOnFileThread(
+SandboxFileSystemBackend::DeleteOriginDataOnFileThread(
     FileSystemContext* file_system_context,
     QuotaManagerProxy* proxy,
     const GURL& origin_url,
@@ -376,7 +376,7 @@ SandboxMountPointProvider::DeleteOriginDataOnFileThread(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(
+void SandboxFileSystemBackend::GetOriginsForTypeOnFileThread(
     fileapi::FileSystemType type, std::set<GURL>* origins) {
   DCHECK(CanHandleType(type));
   DCHECK(origins);
@@ -401,7 +401,7 @@ void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(
   }
 }
 
-void SandboxMountPointProvider::GetOriginsForHostOnFileThread(
+void SandboxFileSystemBackend::GetOriginsForHostOnFileThread(
     fileapi::FileSystemType type, const std::string& host,
     std::set<GURL>* origins) {
   DCHECK(CanHandleType(type));
@@ -415,7 +415,7 @@ void SandboxMountPointProvider::GetOriginsForHostOnFileThread(
   }
 }
 
-int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
+int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
     FileSystemContext* file_system_context,
     const GURL& origin_url,
     fileapi::FileSystemType type) {
@@ -458,7 +458,7 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   return usage;
 }
 
-void SandboxMountPointProvider::InvalidateUsageCache(
+void SandboxFileSystemBackend::InvalidateUsageCache(
     const GURL& origin,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
@@ -470,7 +470,7 @@ void SandboxMountPointProvider::InvalidateUsageCache(
   file_system_usage_cache_->IncrementDirty(usage_file_path);
 }
 
-void SandboxMountPointProvider::StickyInvalidateUsageCache(
+void SandboxFileSystemBackend::StickyInvalidateUsageCache(
     const GURL& origin,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
@@ -479,7 +479,7 @@ void SandboxMountPointProvider::StickyInvalidateUsageCache(
   InvalidateUsageCache(origin, type);
 }
 
-void SandboxMountPointProvider::CollectOpenFileSystemMetrics(
+void SandboxFileSystemBackend::CollectOpenFileSystemMetrics(
     base::PlatformFileError error_code) {
   base::Time now = base::Time::Now();
   bool throttled = now < next_release_time_for_open_filesystem_stat_;
@@ -516,7 +516,7 @@ void SandboxMountPointProvider::CollectOpenFileSystemMetrics(
 #undef REPORT
 }
 
-const UpdateObserverList* SandboxMountPointProvider::GetUpdateObservers(
+const UpdateObserverList* SandboxFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
   DCHECK(CanHandleType(type));
   if (type == kFileSystemTypeSyncable)
@@ -524,13 +524,13 @@ const UpdateObserverList* SandboxMountPointProvider::GetUpdateObservers(
   return &update_observers_;
 }
 
-const AccessObserverList* SandboxMountPointProvider::GetAccessObservers(
+const AccessObserverList* SandboxFileSystemBackend::GetAccessObservers(
     FileSystemType type) const {
   DCHECK(CanHandleType(type));
   return &access_observers_;
 }
 
-void SandboxMountPointProvider::AddFileUpdateObserver(
+void SandboxFileSystemBackend::AddFileUpdateObserver(
     FileSystemType type,
     FileUpdateObserver* observer,
     base::SequencedTaskRunner* task_runner) {
@@ -543,7 +543,7 @@ void SandboxMountPointProvider::AddFileUpdateObserver(
   *list = UpdateObserverList(observer_source);
 }
 
-void SandboxMountPointProvider::AddFileChangeObserver(
+void SandboxFileSystemBackend::AddFileChangeObserver(
     FileSystemType type,
     FileChangeObserver* observer,
     base::SequencedTaskRunner* task_runner) {
@@ -555,7 +555,7 @@ void SandboxMountPointProvider::AddFileChangeObserver(
   *list = ChangeObserverList(observer_source);
 }
 
-bool SandboxMountPointProvider::IsAccessValid(
+bool SandboxFileSystemBackend::IsAccessValid(
     const FileSystemURL& url) const {
   if (!IsAllowedScheme(url.origin()))
     return false;
@@ -590,7 +590,7 @@ bool SandboxMountPointProvider::IsAccessValid(
   return true;
 }
 
-base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
+base::FilePath SandboxFileSystemBackend::GetUsageCachePathForOriginAndType(
     const GURL& origin_url,
     FileSystemType type) {
   base::PlatformFileError error;
@@ -602,7 +602,7 @@ base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
 }
 
 // static
-base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
+base::FilePath SandboxFileSystemBackend::GetUsageCachePathForOriginAndType(
     ObfuscatedFileUtil* sandbox_file_util,
     const GURL& origin_url,
     fileapi::FileSystemType type,
@@ -616,7 +616,7 @@ base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
   return base_path.Append(FileSystemUsageCache::kUsageFileName);
 }
 
-bool SandboxMountPointProvider::IsAllowedScheme(const GURL& url) const {
+bool SandboxFileSystemBackend::IsAllowedScheme(const GURL& url) const {
   // Basically we only accept http or https. We allow file:// URLs
   // only if --allow-file-access-from-files flag is given.
   if (url.SchemeIs("http") || url.SchemeIs("https"))
@@ -634,13 +634,13 @@ bool SandboxMountPointProvider::IsAllowedScheme(const GURL& url) const {
   return false;
 }
 
-ObfuscatedFileUtil* SandboxMountPointProvider::sandbox_sync_file_util() {
+ObfuscatedFileUtil* SandboxFileSystemBackend::sandbox_sync_file_util() {
   DCHECK(sandbox_file_util_.get());
   return static_cast<ObfuscatedFileUtil*>(sandbox_file_util_->sync_file_util());
 }
 
 // static
-void SandboxMountPointProvider::InvalidateUsageCacheOnFileThread(
+void SandboxFileSystemBackend::InvalidateUsageCacheOnFileThread(
     ObfuscatedFileUtil* file_util,
     const GURL& origin,
     FileSystemType type,
@@ -652,7 +652,7 @@ void SandboxMountPointProvider::InvalidateUsageCacheOnFileThread(
     usage_cache->IncrementDirty(usage_cache_path);
 }
 
-int64 SandboxMountPointProvider::RecalculateUsage(FileSystemContext* context,
+int64 SandboxFileSystemBackend::RecalculateUsage(FileSystemContext* context,
                                                   const GURL& origin,
                                                   FileSystemType type) {
   FileSystemOperationContext operation_context(context);

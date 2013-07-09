@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/fileapi/test_file_system_backend.h"
 
 #include <set>
 #include <string>
@@ -25,7 +25,7 @@
 namespace fileapi {
 
 // This only supports single origin.
-class TestMountPointProvider::QuotaUtil
+class TestFileSystemBackend::QuotaUtil
     : public FileSystemQuotaUtil,
       public FileUpdateObserver {
  public:
@@ -79,7 +79,7 @@ class TestMountPointProvider::QuotaUtil
   int64 usage_;
 };
 
-TestMountPointProvider::TestMountPointProvider(
+TestFileSystemBackend::TestFileSystemBackend(
     base::SequencedTaskRunner* task_runner,
     const base::FilePath& base_path)
     : base_path_(base_path),
@@ -92,14 +92,14 @@ TestMountPointProvider::TestMountPointProvider(
   update_observers_ = UpdateObserverList(source);
 }
 
-TestMountPointProvider::~TestMountPointProvider() {
+TestFileSystemBackend::~TestFileSystemBackend() {
 }
 
-bool TestMountPointProvider::CanHandleType(FileSystemType type) const {
+bool TestFileSystemBackend::CanHandleType(FileSystemType type) const {
   return (type == kFileSystemTypeTest);
 }
 
-void TestMountPointProvider::OpenFileSystem(
+void TestFileSystemBackend::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
     OpenFileSystemMode mode,
@@ -107,17 +107,17 @@ void TestMountPointProvider::OpenFileSystem(
   callback.Run(base::PLATFORM_FILE_OK);
 }
 
-FileSystemFileUtil* TestMountPointProvider::GetFileUtil(FileSystemType type) {
+FileSystemFileUtil* TestFileSystemBackend::GetFileUtil(FileSystemType type) {
   DCHECK(local_file_util_.get());
   return local_file_util_->sync_file_util();
 }
 
-AsyncFileUtil* TestMountPointProvider::GetAsyncFileUtil(FileSystemType type) {
+AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(FileSystemType type) {
   return local_file_util_.get();
 }
 
 CopyOrMoveFileValidatorFactory*
-TestMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
@@ -129,7 +129,7 @@ TestMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-void TestMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
+void TestFileSystemBackend::InitializeCopyOrMoveFileValidatorFactory(
     scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
   if (!require_copy_or_move_validator_) {
     DCHECK(!factory);
@@ -139,7 +139,7 @@ void TestMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
     copy_or_move_file_validator_factory_ = factory.Pass();
 }
 
-FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
+FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
@@ -152,7 +152,7 @@ FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
-TestMountPointProvider::CreateFileStreamReader(
+TestFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -163,7 +163,7 @@ TestMountPointProvider::CreateFileStreamReader(
 }
 
 scoped_ptr<fileapi::FileStreamWriter>
-TestMountPointProvider::CreateFileStreamWriter(
+TestFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
@@ -171,16 +171,16 @@ TestMountPointProvider::CreateFileStreamWriter(
       new SandboxFileStreamWriter(context, url, offset, update_observers_));
 }
 
-FileSystemQuotaUtil* TestMountPointProvider::GetQuotaUtil() {
+FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
   return quota_util_.get();
 }
 
-const UpdateObserverList* TestMountPointProvider::GetUpdateObservers(
+const UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
   return &update_observers_;
 }
 
-void TestMountPointProvider::AddFileChangeObserver(
+void TestFileSystemBackend::AddFileChangeObserver(
     FileChangeObserver* observer) {
   ChangeObserverList::Source source = change_observers_.source();
   source.AddObserver(observer, task_runner_.get());

@@ -5,7 +5,7 @@
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 
 #include "base/bind.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "content/public/browser/browser_thread.h"

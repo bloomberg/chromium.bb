@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/isolated_mount_point_provider.h"
+#include "webkit/browser/fileapi/isolated_file_system_backend.h"
 
 #include <string>
 
@@ -31,16 +31,16 @@
 
 namespace fileapi {
 
-IsolatedMountPointProvider::IsolatedMountPointProvider()
+IsolatedFileSystemBackend::IsolatedFileSystemBackend()
     : isolated_file_util_(new AsyncFileUtilAdapter(new IsolatedFileUtil())),
       dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())),
       transient_file_util_(new AsyncFileUtilAdapter(new TransientFileUtil())) {
 }
 
-IsolatedMountPointProvider::~IsolatedMountPointProvider() {
+IsolatedFileSystemBackend::~IsolatedFileSystemBackend() {
 }
 
-bool IsolatedMountPointProvider::CanHandleType(FileSystemType type) const {
+bool IsolatedFileSystemBackend::CanHandleType(FileSystemType type) const {
   switch (type) {
     case kFileSystemTypeIsolated:
     case kFileSystemTypeDragged:
@@ -56,7 +56,7 @@ bool IsolatedMountPointProvider::CanHandleType(FileSystemType type) const {
   }
 }
 
-void IsolatedMountPointProvider::OpenFileSystem(
+void IsolatedFileSystemBackend::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
     OpenFileSystemMode mode,
@@ -67,7 +67,7 @@ void IsolatedMountPointProvider::OpenFileSystem(
       base::Bind(callback, base::PLATFORM_FILE_ERROR_SECURITY));
 }
 
-FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
+FileSystemFileUtil* IsolatedFileSystemBackend::GetFileUtil(
     FileSystemType type) {
   switch (type) {
     case kFileSystemTypeNativeLocal:
@@ -82,7 +82,7 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
   return NULL;
 }
 
-AsyncFileUtil* IsolatedMountPointProvider::GetAsyncFileUtil(
+AsyncFileUtil* IsolatedFileSystemBackend::GetAsyncFileUtil(
     FileSystemType type) {
   switch (type) {
     case kFileSystemTypeNativeLocal:
@@ -98,14 +98,14 @@ AsyncFileUtil* IsolatedMountPointProvider::GetAsyncFileUtil(
 }
 
 CopyOrMoveFileValidatorFactory*
-IsolatedMountPointProvider::GetCopyOrMoveFileValidatorFactory(
+IsolatedFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
   return NULL;
 }
 
-FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
+FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
@@ -114,7 +114,7 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
-IsolatedMountPointProvider::CreateFileStreamReader(
+IsolatedFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
@@ -125,7 +125,7 @@ IsolatedMountPointProvider::CreateFileStreamReader(
           url.path(), offset, expected_modification_time));
 }
 
-scoped_ptr<FileStreamWriter> IsolatedMountPointProvider::CreateFileStreamWriter(
+scoped_ptr<FileStreamWriter> IsolatedFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
@@ -133,7 +133,7 @@ scoped_ptr<FileStreamWriter> IsolatedMountPointProvider::CreateFileStreamWriter(
       context->task_runners()->file_task_runner(), url.path(), offset));
 }
 
-FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {
+FileSystemQuotaUtil* IsolatedFileSystemBackend::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }

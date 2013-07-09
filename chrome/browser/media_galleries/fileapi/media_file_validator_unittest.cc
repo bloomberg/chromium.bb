@@ -9,19 +9,19 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/browser/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace {
@@ -88,10 +88,10 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     base::FilePath src_path = base.AppendASCII("src_fs");
     ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
-    ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
-    additional_providers.push_back(new fileapi::TestMountPointProvider(
+    ScopedVector<fileapi::FileSystemBackend> additional_providers;
+    additional_providers.push_back(new fileapi::TestFileSystemBackend(
         base::MessageLoopProxy::current().get(), src_path));
-    additional_providers.push_back(new MediaFileSystemMountPointProvider(
+    additional_providers.push_back(new MediaFileSystemBackend(
         base, base::MessageLoopProxy::current().get()));
     file_system_context_ =
         fileapi::CreateFileSystemContextWithAdditionalProvidersForTesting(

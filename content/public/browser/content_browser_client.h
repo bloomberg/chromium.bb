@@ -68,7 +68,7 @@ class SelectFilePolicy;
 
 namespace fileapi {
 class ExternalMountPoints;
-class FileSystemMountPointProvider;
+class FileSystemBackend;
 }
 
 namespace quota {
@@ -561,19 +561,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) {}
 
-  // Returns additional MountPointProviders for FileSystem API.
+  // Returns additional file system backends for FileSystem API.
   // |special_storage_policy| and |external_mount_points| are needed in the
-  // additional MountPointProviders. |special_storage_policy| is used to grant
+  // additional FileSystemBackends. |special_storage_policy| is used to grant
   // permissions. |external_mount_points| has mount points to create objects
-  // returned by additional MountPointProviders. (Note: although it is named
-  // "provider", it acts creating objects based on mount points provided by
-  // |external_mount_points|).
-  virtual void GetAdditionalFileSystemMountPointProviders(
+  // returned by additional FileSystemBackends.
+  virtual void GetAdditionalFileSystemBackends(
       const base::FilePath& storage_partition_path,
       quota::SpecialStoragePolicy* special_storage_policy,
       fileapi::ExternalMountPoints* external_mount_points,
-      ScopedVector<fileapi::FileSystemMountPointProvider>*
-          additional_providers) {}
+      ScopedVector<fileapi::FileSystemBackend>* additional_backends) {}
 
   // Allows an embedder to return its own LocationProvider implementation.
   // Return NULL to use the default one for the platform to be created.

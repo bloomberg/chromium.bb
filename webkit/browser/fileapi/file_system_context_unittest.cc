@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
@@ -64,7 +64,7 @@ class FileSystemContextTest : public testing::Test {
                                  external_mount_points,
                                  storage_policy_.get(),
                                  mock_quota_manager_->proxy(),
-                                 ScopedVector<FileSystemMountPointProvider>(),
+                                 ScopedVector<FileSystemBackend>(),
                                  data_dir_.path(),
                                  CreateAllowFileAccessOptions());
   }

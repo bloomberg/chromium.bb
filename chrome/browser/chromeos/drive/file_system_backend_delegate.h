@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_MOUNT_POINT_PROVIDER_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_MOUNT_POINT_PROVIDER_DELEGATE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_BACKEND_DELEGATE_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_BACKEND_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider_delegate.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
 namespace fileapi {
 class ExternalMountPoints;
@@ -15,16 +15,15 @@ class ExternalMountPoints;
 
 namespace drive {
 
-// Delegate implementation of the some methods in CrosMountPointProvider
+// Delegate implementation of the some methods in chromeos::FileSystemBackend
 // for Drive file system.
-class MountPointProviderDelegate
-    : public chromeos::CrosMountPointProviderDelegate {
+class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
  public:
-  explicit MountPointProviderDelegate(
+  explicit FileSystemBackendDelegate(
       fileapi::ExternalMountPoints* mount_points);
-  virtual ~MountPointProviderDelegate();
+  virtual ~FileSystemBackendDelegate();
 
-  // CrosMountPointProvider::Delegate overrides.
+  // FileSystemBackend::Delegate overrides.
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
@@ -44,9 +43,9 @@ class MountPointProviderDelegate
  private:
   scoped_refptr<fileapi::ExternalMountPoints> mount_points_;
 
-  DISALLOW_COPY_AND_ASSIGN(MountPointProviderDelegate);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemBackendDelegate);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOUNT_POINT_PROVIDER_DELEGATE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_BACKEND_DELEGATE_H_

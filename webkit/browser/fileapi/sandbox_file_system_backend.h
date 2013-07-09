@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_BROWSER_FILEAPI_SANDBOX_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_H_
+#define WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_H_
 
 #include <set>
 #include <string>
@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
@@ -49,8 +49,8 @@ class SandboxQuotaObserver;
 // profile directory in a sandboxed way.
 // This interface also lets one enumerate and remove storage for the origins
 // that use the filesystem.
-class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
-    : public FileSystemMountPointProvider,
+class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
+    : public FileSystemBackend,
       public FileSystemQuotaUtil {
  public:
   // Origin enumerator interface.
@@ -71,15 +71,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
 
   // |file_task_runner| is used to validate the root directory and delete the
   // obfuscated file util.
-  SandboxMountPointProvider(
+  SandboxFileSystemBackend(
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* file_task_runner,
       const base::FilePath& profile_path,
       const FileSystemOptions& file_system_options,
       quota::SpecialStoragePolicy* special_storage_policy);
-  virtual ~SandboxMountPointProvider();
+  virtual ~SandboxFileSystemBackend();
 
-  // FileSystemMountPointProvider overrides.
+  // FileSystemBackend overrides.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
   virtual void OpenFileSystem(
       const GURL& origin_url,
@@ -106,7 +106,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
       FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
-  // Returns an origin enumerator of this provider.
+  // Returns an origin enumerator of this backend.
   // This method can only be called on the file thread.
   OriginEnumerator* CreateOriginEnumerator();
 
@@ -168,8 +168,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
  private:
   friend class SandboxQuotaObserver;
   friend class SandboxFileSystemTestHelper;
-  friend class SandboxMountPointProviderMigrationTest;
-  friend class SandboxMountPointProviderOriginEnumeratorTest;
+  friend class SandboxFileSystemBackendMigrationTest;
+  friend class SandboxFileSystemBackendOriginEnumeratorTest;
 
   // Returns a path to the usage cache file.
   base::FilePath GetUsageCachePathForOriginAndType(
@@ -239,11 +239,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
-  base::WeakPtrFactory<SandboxMountPointProvider> weak_factory_;
+  base::WeakPtrFactory<SandboxFileSystemBackend> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SandboxMountPointProvider);
+  DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackend);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_H_

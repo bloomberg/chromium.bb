@@ -383,7 +383,7 @@ FileSystemProxy::CreateFileStreamReader(
 }
 
 FileSystemProxy::~FileSystemProxy() {
-  // Should be deleted from the CrosMountPointProvider on UI thread.
+  // Should be deleted from the FileSystemBackend on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

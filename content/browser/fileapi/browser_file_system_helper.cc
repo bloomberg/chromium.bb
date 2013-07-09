@@ -19,7 +19,7 @@
 #include "content/public/common/url_constants.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
@@ -64,8 +64,8 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
           file_task_runner.get()));
 
   // Setting up additional mount point providers.
-  ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
-  GetContentClient()->browser()->GetAdditionalFileSystemMountPointProviders(
+  ScopedVector<fileapi::FileSystemBackend> additional_providers;
+  GetContentClient()->browser()->GetAdditionalFileSystemBackends(
       profile_path,
       special_storage_policy,
       external_mount_points,
@@ -105,8 +105,8 @@ bool CheckFileSystemPermissionsForProcess(
     return false;
   }
 
-  fileapi::FileSystemMountPointProvider* mount_point_provider =
-      context->GetMountPointProvider(url.type());
+  fileapi::FileSystemBackend* mount_point_provider =
+      context->GetFileSystemBackend(url.type());
   if (!mount_point_provider) {
     *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
     return false;

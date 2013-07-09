@@ -40,7 +40,7 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using fileapi::FileSystemFileUtil;
-using fileapi::FileSystemMountPointProvider;
+using fileapi::FileSystemBackend;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;
 using fileapi::FileUpdateObserver;

@@ -13,8 +13,8 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
@@ -68,14 +68,14 @@ class CopyOrMoveOperationTestHelper {
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 
     // Prepare the origin's root directory.
-    FileSystemMountPointProvider* mount_point_provider =
-        file_system_context_->GetMountPointProvider(src_type_);
+    FileSystemBackend* mount_point_provider =
+        file_system_context_->GetFileSystemBackend(src_type_);
     mount_point_provider->OpenFileSystem(
         origin_, src_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
     mount_point_provider =
-        file_system_context_->GetMountPointProvider(dest_type_);
+        file_system_context_->GetFileSystemBackend(dest_type_);
     mount_point_provider->OpenFileSystem(
         origin_, dest_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,

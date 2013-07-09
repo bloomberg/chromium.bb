@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_SYSTEM_BACKEND_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_SYSTEM_BACKEND_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -23,22 +23,21 @@ class MediaPathFilter;
 
 class DeviceMediaAsyncFileUtil;
 
-class MediaFileSystemMountPointProvider
-    : public fileapi::FileSystemMountPointProvider {
+class MediaFileSystemBackend : public fileapi::FileSystemBackend {
  public:
   static const char kMediaTaskRunnerName[];
   static const char kMediaPathFilterKey[];
   static const char kMTPDeviceDelegateURLKey[];
 
-  MediaFileSystemMountPointProvider(
+  MediaFileSystemBackend(
       const base::FilePath& profile_path,
       base::SequencedTaskRunner* media_task_runner);
-  virtual ~MediaFileSystemMountPointProvider();
+  virtual ~MediaFileSystemBackend();
 
   static bool CurrentlyOnMediaTaskRunnerThread();
   static scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner();
 
-  // FileSystemMountPointProvider implementation.
+  // FileSystemBackend implementation.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
   virtual void OpenFileSystem(
       const GURL& origin_url,
@@ -85,9 +84,9 @@ class MediaFileSystemMountPointProvider
   scoped_ptr<fileapi::AsyncFileUtil> itunes_file_util_;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-  DISALLOW_COPY_AND_ASSIGN(MediaFileSystemMountPointProvider);
+  DISALLOW_COPY_AND_ASSIGN(MediaFileSystemBackend);
 };
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_FILE_SYSTEM_BACKEND_H_

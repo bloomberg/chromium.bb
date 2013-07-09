@@ -23,7 +23,7 @@ namespace fileapi {
 class FileSystemOperationContext;
 class FileSystemURL;
 
-// An instance of this class is created and owned by *MountPointProvider.
+// An instance of this class is created and owned by *FileSystemBackend.
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileUtil
     : public FileSystemFileUtil {
  public:

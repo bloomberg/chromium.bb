@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 
 #include <set>
 
@@ -33,18 +33,18 @@ FileSystemURL CreateFileSystemURL(const std::string& extension,
       base::FilePath::FromUTF8Unsafe(path));
 }
 
-TEST(CrosMountPointProviderTest, DefaultMountPoints) {
+TEST(ChromeOSFileSystemBackendTest, DefaultMountPoints) {
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
       new quota::MockSpecialStoragePolicy();
   scoped_refptr<fileapi::ExternalMountPoints> mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
-  chromeos::CrosMountPointProvider provider(
+  chromeos::FileSystemBackend backend(
       NULL,  // drive_delegate
       storage_policy,
       mount_points.get(),
       fileapi::ExternalMountPoints::GetSystemInstance());
-  provider.AddSystemMountPoints();
-  std::vector<base::FilePath> root_dirs = provider.GetRootDirectories();
+  backend.AddSystemMountPoints();
+  std::vector<base::FilePath> root_dirs = backend.GetRootDirectories();
   std::set<base::FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
 
   // By default there should be 4 mount points (in system mount points):
@@ -60,7 +60,7 @@ TEST(CrosMountPointProviderTest, DefaultMountPoints) {
   EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/usr/share/oem"))));
 }
 
-TEST(CrosMountPointProviderTest, GetRootDirectories) {
+TEST(ChromeOSFileSystemBackendTest, GetRootDirectories) {
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
       new quota::MockSpecialStoragePolicy();
   scoped_refptr<fileapi::ExternalMountPoints> mount_points(
@@ -69,13 +69,13 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
 
-  chromeos::CrosMountPointProvider provider(
+  chromeos::FileSystemBackend backend(
       NULL,  // drive_delegate
       storage_policy,
       mount_points.get(),
       system_mount_points.get());
 
-  const size_t initial_root_dirs_size = provider.GetRootDirectories().size();
+  const size_t initial_root_dirs_size = backend.GetRootDirectories().size();
 
   // Register 'local' test mount points.
   mount_points->RegisterFileSystem("c",
@@ -93,7 +93,7 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
                                           fileapi::kFileSystemTypeNativeLocal,
                                           base::FilePath(FPL("/g/d/e")));
 
-  std::vector<base::FilePath> root_dirs = provider.GetRootDirectories();
+  std::vector<base::FilePath> root_dirs = backend.GetRootDirectories();
   std::set<base::FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
   EXPECT_EQ(initial_root_dirs_size + 4, root_dirs.size());
   EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/a/b/c"))));
@@ -102,7 +102,7 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
   EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/g/d/e"))));
 }
 
-TEST(CrosMountPointProviderTest, AccessPermissions) {
+TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
   url_util::AddStandardScheme("chrome-extension");
 
   scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy =
@@ -111,7 +111,7 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
       fileapi::ExternalMountPoints::CreateRefCounted());
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
-  chromeos::CrosMountPointProvider provider(
+  chromeos::FileSystemBackend backend(
       NULL,  // drive_delegate
       storage_policy,
       mount_points.get(),
@@ -135,47 +135,47 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
       fileapi::kFileSystemTypeRestrictedNativeLocal,
       base::FilePath(FPL("/usr/share/oem"))));
 
-  // Provider specific mount point access.
-  EXPECT_FALSE(provider.IsAccessAllowed(
+  // Backend specific mount point access.
+  EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
 
-  provider.GrantFileAccessToExtension(extension,
+  backend.GrantFileAccessToExtension(extension,
                                       base::FilePath(FPL("removable/foo")));
-  EXPECT_TRUE(provider.IsAccessAllowed(
+  EXPECT_TRUE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
-  EXPECT_FALSE(provider.IsAccessAllowed(
+  EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo1", mount_points.get())));
 
   // System mount point access.
-  EXPECT_FALSE(provider.IsAccessAllowed(
+  EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
 
-  provider.GrantFileAccessToExtension(extension,
+  backend.GrantFileAccessToExtension(extension,
                                       base::FilePath(FPL("system/foo")));
-  EXPECT_TRUE(provider.IsAccessAllowed(
+  EXPECT_TRUE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
-  EXPECT_FALSE(provider.IsAccessAllowed(
+  EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "system/foo1",
                           system_mount_points.get())));
 
   // oem is restricted file system.
-  provider.GrantFileAccessToExtension(
+  backend.GrantFileAccessToExtension(
       extension, base::FilePath(FPL("oem/foo")));
   // The extension should not be able to access the file even if
   // GrantFileAccessToExtension was called.
-  EXPECT_FALSE(provider.IsAccessAllowed(
+  EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
 
-  provider.GrantFullAccessToExtension(extension);
+  backend.GrantFullAccessToExtension(extension);
   // The extension should be able to access restricted file system after it was
   // granted full access.
-  EXPECT_TRUE(provider.IsAccessAllowed(
+  EXPECT_TRUE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
   // The extension which was granted full access should be able to access any
   // path on current file systems.
-  EXPECT_TRUE(provider.IsAccessAllowed(
+  EXPECT_TRUE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo1", mount_points.get())));
-  EXPECT_TRUE(provider.IsAccessAllowed(
+  EXPECT_TRUE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "system/foo1",
                           system_mount_points.get())));
 
@@ -185,11 +185,11 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
       "test",
       fileapi::kFileSystemTypeNativeLocal,
       base::FilePath(FPL("/foo/test"))));
-  EXPECT_FALSE(provider.IsAccessAllowed(
+  EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "test_/foo", mount_points.get())));
 
-  provider.RevokeAccessForExtension(extension);
-  EXPECT_FALSE(provider.IsAccessAllowed(
+  backend.RevokeAccessForExtension(extension);
+  EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
 
   fileapi::FileSystemURL internal_url = FileSystemURL::CreateForTest(
@@ -197,17 +197,17 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
       fileapi::kFileSystemTypeExternal,
       base::FilePath(FPL("removable/")));
   // Internal WebUI should have full access.
-  EXPECT_TRUE(provider.IsAccessAllowed(internal_url));
+  EXPECT_TRUE(backend.IsAccessAllowed(internal_url));
 }
 
-TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
+TEST(ChromeOSFileSystemBackendTest, GetVirtualPathConflictWithSystemPoints) {
   scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy =
       new quota::MockSpecialStoragePolicy();
   scoped_refptr<fileapi::ExternalMountPoints> mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
-  chromeos::CrosMountPointProvider provider(
+  chromeos::FileSystemBackend backend(
       NULL,  // drive_delegate
       storage_policy,
       mount_points.get(),
@@ -215,7 +215,7 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
 
   const fileapi::FileSystemType type = fileapi::kFileSystemTypeNativeLocal;
 
-  // Provider specific mount points.
+  // Backend specific mount points.
   ASSERT_TRUE(
       mount_points->RegisterFileSystem("b", type, base::FilePath(FPL("/a/b"))));
   ASSERT_TRUE(
@@ -256,7 +256,7 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
     base::FilePath virtual_path(FPL("/mount"));
     base::FilePath local_path(kTestCases[i].local_path);
     EXPECT_EQ(kTestCases[i].success,
-              provider.GetVirtualPath(local_path, &virtual_path))
+              backend.GetVirtualPath(local_path, &virtual_path))
         << "Resolving " << kTestCases[i].local_path;
 
     // There are no guarantees for |virtual_path| value if |GetVirtualPath|

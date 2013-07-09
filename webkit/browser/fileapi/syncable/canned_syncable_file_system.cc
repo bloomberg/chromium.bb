@@ -16,13 +16,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
@@ -239,7 +239,7 @@ void CannedSyncableFileSystem::SetUp() {
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
       storage_policy.get(),
       quota_manager_->proxy(),
-      ScopedVector<fileapi::FileSystemMountPointProvider>(),
+      ScopedVector<fileapi::FileSystemBackend>(),
       data_dir_.path(), options);
 
   is_filesystem_set_up_ = true;

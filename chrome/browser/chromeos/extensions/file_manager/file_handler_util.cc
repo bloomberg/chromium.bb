@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
-#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
+#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -187,10 +187,10 @@ bool FileBrowserHasAccessPermissionForFiles(
     const GURL& source_url,
     const std::string& file_browser_id,
     const std::vector<FileSystemURL>& files) {
-  fileapi::ExternalFileSystemMountPointProvider* external_provider =
+  fileapi::ExternalFileSystemBackend* backend =
       GetFileSystemContextForExtension(profile, file_browser_id)->
-      external_provider();
-  if (!external_provider)
+      external_backend();
+  if (!backend)
     return false;
 
   for (size_t i = 0; i < files.size(); ++i) {
@@ -198,8 +198,8 @@ bool FileBrowserHasAccessPermissionForFiles(
     if (source_url.GetOrigin() != files[i].origin())
       return false;
 
-    if (!chromeos::CrosMountPointProvider::CanHandleURL(files[i]) ||
-        !external_provider->IsAccessAllowed(files[i])) {
+    if (!chromeos::FileSystemBackend::CanHandleURL(files[i]) ||
+        !backend->IsAccessAllowed(files[i])) {
       return false;
     }
   }
@@ -629,8 +629,8 @@ ExtensionTaskExecutor::SetupFileAccessPermissions(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(handler_extension.get());
 
-  fileapi::ExternalFileSystemMountPointProvider* external_provider_handler =
-      file_system_context_handler->external_provider();
+  fileapi::ExternalFileSystemBackend* backend =
+      file_system_context_handler->external_backend();
 
   FileDefinitionList file_list;
   for (size_t i = 0; i < file_urls.size(); ++i) {
@@ -658,7 +658,7 @@ ExtensionTaskExecutor::SetupFileAccessPermissions(
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
-    external_provider_handler->GrantFileAccessToExtension(
+    backend->GrantFileAccessToExtension(
         handler_extension->id(), virtual_path);
 
     // Output values.

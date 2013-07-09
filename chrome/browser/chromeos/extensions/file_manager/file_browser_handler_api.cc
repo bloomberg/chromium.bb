@@ -21,7 +21,7 @@
 //  - The function grants permissions needed to read/write/create file under the
 //    selected path. To grant permissions to the caller, caller's extension ID
 //    has to be allowed to access the files virtual path (e.g. /Downloads/foo)
-//    in ExternalFileSystemMountPointProvider. Additionally, the callers render
+//    in ExternalFileSystemBackend. Additionally, the callers render
 //    process ID has to be granted read, write and create permissions for the
 //    selected file's full filesystem path (e.g.
 //    /home/chronos/user/Downloads/foo) in ChildProcessSecurityPolicy.
@@ -48,8 +48,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -367,18 +367,18 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
 
 void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  fileapi::ExternalFileSystemMountPointProvider* external_provider =
+  fileapi::ExternalFileSystemBackend* external_backend =
       BrowserContext::GetStoragePartition(profile_, site_instance)->
-      GetFileSystemContext()->external_provider();
-  DCHECK(external_provider);
+      GetFileSystemContext()->external_backend();
+  DCHECK(external_backend);
 
-  external_provider->GetVirtualPath(full_path_, &virtual_path_);
+  external_backend->GetVirtualPath(full_path_, &virtual_path_);
   DCHECK(!virtual_path_.empty());
 
   // Grant access to this particular file to target extension. This will
   // ensure that the target extension can access only this FS entry and
   // prevent from traversing FS hierarchy upward.
-  external_provider->GrantFileAccessToExtension(extension_id(), virtual_path_);
+  external_backend->GrantFileAccessToExtension(extension_id(), virtual_path_);
 
   // Grant access to the selected file to target extensions render view process.
   content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
