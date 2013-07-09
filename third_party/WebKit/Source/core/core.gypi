@@ -1916,6 +1916,8 @@
             'dom/Text.cpp',
             'dom/TextEvent.cpp',
             'dom/TextEvent.h',
+            'dom/TextLinkColors.cpp',
+            'dom/TextLinkColors.h',
             'dom/Touch.cpp',
             'dom/Touch.h',
             'dom/TouchEvent.cpp',

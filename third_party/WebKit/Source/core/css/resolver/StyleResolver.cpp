@@ -1132,6 +1132,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     document()->didAccessStyleResolver();
 
+    if (element->hasTagName(bodyTag))
+        document()->textLinkColors().setTextColor(state.style()->visitedDependentColor(CSSPropertyColor));
+
     // Now return the style.
     return state.takeStyle();
 }

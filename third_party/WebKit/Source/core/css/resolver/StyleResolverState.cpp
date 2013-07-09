@@ -147,11 +147,11 @@ Color StyleResolverState::resolveColorFromPrimitiveValue(CSSPrimitiveValue* valu
     case 0:
         return Color();
     case CSSValueWebkitText:
-        return document()->textColor();
+        return document()->textLinkColors().textColor();
     case CSSValueWebkitLink:
-        return (element()->isLink() && forVisitedLink) ? document()->visitedLinkColor() : document()->linkColor();
+        return (element()->isLink() && forVisitedLink) ? document()->textLinkColors().visitedLinkColor() : document()->textLinkColors().linkColor();
     case CSSValueWebkitActivelink:
-        return document()->activeLinkColor();
+        return document()->textLinkColors().activeLinkColor();
     case CSSValueWebkitFocusRingColor:
         return RenderTheme::focusRingColor();
     case CSSValueCurrentcolor:

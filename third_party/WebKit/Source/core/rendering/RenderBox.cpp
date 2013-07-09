@@ -282,10 +282,6 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     bool isBodyRenderer = isBody();
     bool isRootRenderer = isRoot();
 
-    // Set the text color if we're the body.
-    if (isBodyRenderer)
-        document()->setTextColor(newStyle->visitedDependentColor(CSSPropertyColor));
-
     if (isRootRenderer || isBodyRenderer) {
         // Propagate the new writing mode and direction up to the RenderView.
         RenderView* viewRenderer = view();

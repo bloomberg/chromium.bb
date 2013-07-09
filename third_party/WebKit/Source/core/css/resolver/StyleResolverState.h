@@ -65,6 +65,8 @@ public:
     void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
 
+    // FIXME: This function should live on TextLinkColors (or be passed a TextLinkColors),
+    // but it has dependencies that need to be untangled first.
     // This method might change an internal state, i.e. m_isMatchedPropertiesCachable.
     Color resolveColorFromPrimitiveValue(CSSPrimitiveValue*, bool forVisitedLink = false);
 

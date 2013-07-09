@@ -37,6 +37,7 @@
 #include "core/dom/MutationObserver.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/TextLinkColors.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportArguments.h"
@@ -45,7 +46,6 @@
 #include "core/page/PageVisibilityState.h"
 #include "weborigin/ReferrerPolicy.h"
 #include "core/platform/Timer.h"
-#include "core/platform/graphics/Color.h"
 #include "core/platform/text/StringWithDirection.h"
 #include "core/rendering/HitTestRequest.h"
 #include "wtf/Deque.h"
@@ -612,19 +612,8 @@ public:
     bool shouldScheduleLayout();
     bool isLayoutTimerActive();
     int elapsedTime() const;
-    
-    void setTextColor(const Color& color) { m_textColor = color; }
-    Color textColor() const { return m_textColor; }
 
-    const Color& linkColor() const { return m_linkColor; }
-    const Color& visitedLinkColor() const { return m_visitedLinkColor; }
-    const Color& activeLinkColor() const { return m_activeLinkColor; }
-    void setLinkColor(const Color& c) { m_linkColor = c; }
-    void setVisitedLinkColor(const Color& c) { m_visitedLinkColor = c; }
-    void setActiveLinkColor(const Color& c) { m_activeLinkColor = c; }
-    void resetLinkColor();
-    void resetVisitedLinkColor();
-    void resetActiveLinkColor();
+    TextLinkColors& textLinkColors() { return m_textLinkColors; }
     VisitedLinkState* visitedLinkState() const { return m_visitedLinkState.get(); }
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const LayoutPoint&, const PlatformMouseEvent&);
@@ -1204,8 +1193,6 @@ private:
     CompatibilityMode m_compatibilityMode;
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
-    Color m_textColor;
-
     bool m_didPostCheckFocusedNodeTask;
     RefPtr<Node> m_focusedNode;
     RefPtr<Node> m_hoverNode;
@@ -1228,9 +1215,7 @@ private:
 
     OwnPtr<FormController> m_formController;
 
-    Color m_linkColor;
-    Color m_visitedLinkColor;
-    Color m_activeLinkColor;
+    TextLinkColors m_textLinkColors;
     OwnPtr<VisitedLinkState> m_visitedLinkState;
 
     bool m_loadingSheet;

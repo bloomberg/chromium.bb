@@ -391,7 +391,6 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_ignoreAutofocus(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
-    , m_textColor(Color::black)
     , m_didPostCheckFocusedNodeTask(false)
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_listenerTypes(0)
@@ -476,10 +475,6 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     // FIXME: Can/should we unify this behavior?
     if ((m_frame && m_frame->ownerElement()) || !url.isEmpty())
         setURL(url);
-
-    resetLinkColor();
-    resetVisitedLinkColor();
-    resetActiveLinkColor();
 
     initSecurityContext();
     initDNSPrefetch();
@@ -683,21 +678,6 @@ void Document::setCompatibilityMode(CompatibilityMode mode)
 String Document::compatMode() const
 {
     return inQuirksMode() ? "BackCompat" : "CSS1Compat";
-}
-
-void Document::resetLinkColor()
-{
-    m_linkColor = Color(0, 0, 238);
-}
-
-void Document::resetVisitedLinkColor()
-{
-    m_visitedLinkColor = Color(85, 26, 139);
-}
-
-void Document::resetActiveLinkColor()
-{
-    m_activeLinkColor.setNamedColor("red");
 }
 
 void Document::setDocType(PassRefPtr<DocumentType> docType)
