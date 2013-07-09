@@ -236,9 +236,8 @@ crbug.com/24182 [ Debug ] fast/js/toString-and-valueOf-override.html [ Timeout ]
 
 crbug.com/249707 [ Debug ] fast/dom/StyleSheet/gc-rule-children-wrappers.html [ Timeout Pass ]
 
-# Needs rebaseline.
-crbug.com/82280 fast/forms/select/listbox-appearance-basic.html [ Failure ]
-crbug.com/82280 fast/forms/disabled-select-change-index.html [ ImageOnlyFailure Pass ]
+crbug.com/82280 fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/82280 fast/forms/disabled-select-change-index.html [ NeedsRebaseline ]
 
 crbug.com/254971 [ Mac ] fast/css/input-search-padding.html [ ImageOnlyFailure Pass ]
 crbug.com/254971 [ Mac ] fast/css/text-overflow-input.html [ ImageOnlyFailure Pass ]
