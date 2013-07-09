@@ -389,6 +389,45 @@ void V8Promise::catchMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
     v8SetReturnValue(args, promise);
 }
 
+void V8Promise::fulfillMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
+    if (args.Length() > 0)
+        result = args[0];
+
+    v8::Local<v8::Object> promise, resolver;
+    V8PromiseCustom::createPromise(args.Holder(), &promise, &resolver, isolate);
+    V8PromiseCustom::fulfillResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);
+    v8SetReturnValue(args, promise);
+}
+
+void V8Promise::resolveMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
+    if (args.Length() > 0)
+        result = args[0];
+
+    v8::Local<v8::Object> promise, resolver;
+    V8PromiseCustom::createPromise(args.Holder(), &promise, &resolver, isolate);
+    V8PromiseCustom::resolveResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);
+    v8SetReturnValue(args, promise);
+}
+
+void V8Promise::rejectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
+    if (args.Length() > 0)
+        result = args[0];
+
+    v8::Local<v8::Object> promise, resolver;
+    V8PromiseCustom::createPromise(args.Holder(), &promise, &resolver, isolate);
+    V8PromiseCustom::rejectResolver(resolver, result, V8PromiseCustom::Asynchronous, isolate);
+    v8SetReturnValue(args, promise);
+}
+
 void V8Promise::anyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Isolate* isolate = args.GetIsolate();
