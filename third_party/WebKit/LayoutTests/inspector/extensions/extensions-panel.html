@@ -63,6 +63,12 @@ function initialize_extensionsPanelTest()
         for (var i = 0; i < panels.length; ++i)
             InspectorTest.addSniffer(WebInspector.panel(panels[i]), "showAnchorLocation", showAnchorLocationHook, true);
     }
+
+    InspectorTest.switchToLastPanel = function()
+    {
+        var lastPanelName = WebInspector.inspectorView._panelOrder.peekLast();
+        WebInspector.showPanel(lastPanelName);
+    }
 }
 
 function extension_testCreatePanel(nextTest)
@@ -229,6 +235,49 @@ function extension_testOpenResource(nextTest)
         var url = urls[urlIndex++];
         output("Showing " + trimURL(url));
         webInspector.panels.openResource(url, 1000 + urlIndex, showNextURL);
+    }
+}
+
+function extension_testGlobalShortcuts(nextTest)
+{
+    var platform;
+    var testPanel;
+    evaluateOnFrontend("reply(WebInspector.platform())", function(result) {
+        platform = result;
+        var basePath = location.pathname.replace(/\/[^/]*$/, "/");
+        webInspector.panels.create("Shortcuts Test Panel", basePath + "extension-panel.png", basePath + "extension-panel.html", onPanelCreated);
+    });
+    function dispatchKeydownEvent(attributes)
+    {
+        var event = new KeyboardEvent("keydown", attributes);
+        document.dispatchEvent(event);
+    }
+    function onPanelCreated(panel)
+    {
+        testPanel = panel;
+        testPanel.onShown.addListener(onPanelShown);
+        testPanel.onHidden.addListener(onPanelHidden);
+        evaluateOnFrontend("InspectorTest.switchToLastPanel();");
+    }
+    function onPanelShown(window)
+    {
+        testPanel.onShown.removeListener(onPanelShown);
+        output("Panel shown, now toggling console...");
+        window.addEventListener("resize", onPanelResized);
+        dispatchKeydownEvent({ keyIdentifier: "U+001B" });
+    }
+    function onPanelResized()
+    {
+        window.removeEventListener("resize", onPanelResized);
+        output("Panel resized, switching away...");
+        var isMac = platform === "mac";
+        dispatchKeydownEvent({ ctrlKey: !isMac, metaKey: isMac, keyIdentifier: "U+005D" });
+    }
+    function onPanelHidden()
+    {
+        output("Panel hidden, test passed.");
+        testPanel.onShown.removeListener(onPanelHidden);
+        nextTest();
     }
 }
 

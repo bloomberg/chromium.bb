@@ -24,6 +24,10 @@ Panel created
 Panel shown
 Extension panel size correct
 Panel hidden
+RUNNING TEST: extension_testGlobalShortcuts
+Panel shown, now toggling console...
+Panel resized, switching away...
+Panel hidden, test passed.
 RUNNING TEST: extension_testOpenResource
 Showing .../extensions-panel.html
 Showing resource .../inspector/extensions/extensions-panel.html in panel scripts (scripts), line: 1001
