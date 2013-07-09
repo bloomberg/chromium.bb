@@ -121,7 +121,10 @@ void FileAPIMessageFilter::OnChannelClosing() {
 
   for (OnCloseCallbackMap::iterator itr(&on_close_callbacks_);
        !itr.IsAtEnd(); itr.Advance()) {
-    itr.GetCurrentValue()->Run();
+    const base::Closure* callback = itr.GetCurrentValue();
+    DCHECK(callback);
+    if (!callback->is_null())
+      callback->Run();
   }
 
   on_close_callbacks_.Clear();

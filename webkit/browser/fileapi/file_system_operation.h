@@ -69,7 +69,7 @@ class FileSystemOperation {
 
   // Used for OpenFile(). |result| is the return code of the operation.
   // |on_close_callback| will be called after the file is closed in the child
-  // process.
+  // process. It can be null, if no operation is needed on closing a file.
   typedef base::Callback<
       void(base::PlatformFileError result,
            base::PlatformFile file,
