@@ -216,21 +216,11 @@ protected:
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
         EXPECT_EQ(0, fakeLayer.m_flushCount);
 
-        // Verify that a flush is triggered every two frames when they are stale.
+        // Verify that a flush is triggered when queue is accumulating a multi-frame backlog.
         WebKit::Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, &fakeLayer, false));
         WebKit::Platform::current()->currentThread()->enterRunLoop();
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
         EXPECT_EQ(1, fakeLayer.m_flushCount);
-
-        WebKit::Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, &fakeLayer, false));
-        WebKit::Platform::current()->currentThread()->enterRunLoop();
-        EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
-        EXPECT_EQ(1, fakeLayer.m_flushCount);
-
-        WebKit::Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, &fakeLayer, false));
-        WebKit::Platform::current()->currentThread()->enterRunLoop();
-        EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
-        EXPECT_EQ(2, fakeLayer.m_flushCount);
 
         WebKit::Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, &fakeLayer, false));
         WebKit::Platform::current()->currentThread()->enterRunLoop();
