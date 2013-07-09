@@ -1,0 +1,35 @@
+<html>
+<head>
+<script>
+function addCss() {
+    var cssNode = document.createElement('style');
+    cssNode.type = 'text/css';
+    var head = document.getElementsByTagName('head')[0];
+    head.appendChild(cssNode);
+    var cssTextNode = document.createTextNode('p { font-weight: bold; }');
+    cssNode.appendChild(cssTextNode);
+}
+
+if (window.testRunner)
+    testRunner.dumpAsText();
+</script>
+<style>
+@font-face {
+    font-family: 'family'; src: url('data:text/html,<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>this is not SVG</title></head></html>') format('svg');
+}
+span {
+    font-family: 'family';
+}
+</style>
+</head>
+<body>
+<p>
+This test verifies that loading a HTML document as SVG webfont does not crash the renderer.
+</p>
+<span id="s">PASS - This test did not crash</span>
+<script>
+    document.getElementById('s').offsetWidth;
+    addCss();
+</script>
+</body>
+</html>

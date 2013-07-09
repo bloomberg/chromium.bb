@@ -87,7 +87,7 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
     CSSFontSelector* fontSelector = (*m_segmentedFontFaces.begin())->fontSelector();
     fontSelector->fontLoaded();
 
-    if (m_loadState == Loading) {
+    if (fontSelector->document() && m_loadState == Loading) {
         if (source->ensureFontData())
             setLoadState(Loaded);
         else if (!isValid())
