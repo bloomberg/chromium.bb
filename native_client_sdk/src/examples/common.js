@@ -19,9 +19,9 @@ var common = (function () {
    * @param {string} path Directory name where .nmf file can be found.
    * @param {number} width The width to create the plugin.
    * @param {number} height The height to create the plugin.
-   * @param {Object} optional dictionary of args to send to DidCreateInstance
+   * @param {Object} attrs Dictionary of attributes to set on the module.
    */
-  function createNaClModule(name, tool, path, width, height, args) {
+  function createNaClModule(name, tool, path, width, height, attrs) {
     var moduleEl = document.createElement('embed');
     moduleEl.setAttribute('name', 'nacl_module');
     moduleEl.setAttribute('id', 'nacl_module');
@@ -31,9 +31,9 @@ var common = (function () {
     moduleEl.setAttribute('src', path + '/' + name + '.nmf');
 
     // Add any optional arguments
-    if (args) {
-      for (var key in args) {
-        moduleEl.setAttribute(key, args[key])
+    if (attrs) {
+      for (var key in attrs) {
+        moduleEl.setAttribute(key, attrs[key])
       }
     }
 
@@ -212,8 +212,9 @@ var common = (function () {
    * @param {string} path Directory name where .nmf file can be found.
    * @param {number} width The width to create the plugin.
    * @param {number} height The height to create the plugin.
+   * @param {Object} attrs Optional dictionary of additional attributes.
    */
-  function domContentLoaded(name, tool, path, width, height) {
+  function domContentLoaded(name, tool, path, width, height, attrs) {
     // If the page loads before the Native Client module loads, then set the
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
@@ -226,7 +227,7 @@ var common = (function () {
       width = typeof width !== 'undefined' ? width : 200;
       height = typeof height !== 'undefined' ? height : 200;
       attachDefaultListeners();
-      createNaClModule(name, tool, path, width, height);
+      createNaClModule(name, tool, path, width, height, attrs);
     } else {
       // It's possible that the Native Client module onload event fired
       // before the page's onload event.  In this case, the status message
@@ -300,6 +301,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loadFunction) {
       var toolchains = body.dataset.tools.split(' ');
       var configs = body.dataset.configs.split(' ');
+      var attr_list = body.dataset.attrs.split(' ');
+      var atts = {}
+      for (var key in attr_list) {
+        var attr = attr_list[key].split('=');
+        var key = attr[0];
+        var value = attr[1];
+        attrs[key] = value;
+      }
 
       var tc = toolchains.indexOf(searchVars.tc) !== -1 ?
           searchVars.tc : toolchains[0];
@@ -309,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var path = pathFormat.replace('{tc}', tc).replace('{config}', config);
 
       loadFunction(body.dataset.name, tc, path, body.dataset.width,
-                   body.dataset.height);
+                   body.dataset.height, attrs);
     }
   }
 });

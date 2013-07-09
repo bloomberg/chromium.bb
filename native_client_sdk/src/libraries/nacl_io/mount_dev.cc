@@ -196,7 +196,6 @@ Error ConsoleNode::Write(size_t offs,
 }
 
 TtyNode::TtyNode(Mount* mount) : NullNode(mount) {
-  prefix_ = "_default_:";
   pthread_cond_init(&is_readable_, NULL);
 }
 
