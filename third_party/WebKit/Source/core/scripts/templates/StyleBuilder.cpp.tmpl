@@ -12,7 +12,7 @@
 //   test other variations for performance once we have more properties here.
 
 {%- macro set_value(property) -%}
-    styleResolver->style()->{{property.setter}}
+    state.style()->{{property.setter}}
 {%- endmacro %}
 
 namespace WebCore {
@@ -48,13 +48,13 @@ namespace WebCore {
 {%- endif %}
 
     if (primitiveValue->isLength()) {
-        Length length = primitiveValue->computeLength<Length>(styleResolver->style(), styleResolver->rootElementStyle(), styleResolver->style()->effectiveZoom());
+        Length length = primitiveValue->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
         length.setQuirk(primitiveValue->isQuirkValue());
         {{ set_value(property) }}(length);
     } else if (primitiveValue->isPercentage())
         {{ set_value(property) }}(Length(primitiveValue->getDoubleValue(), Percent));
     else if (primitiveValue->isCalculatedPercentageWithLength())
-        {{ set_value(property) }}(Length(primitiveValue->cssCalcValue()->toCalcValue(styleResolver->style(), styleResolver->rootElementStyle(), styleResolver->style()->effectiveZoom())));
+        {{ set_value(property) }}(Length(primitiveValue->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
     else if (primitiveValue->isViewportPercentageLength())
         {{ set_value(property) }}(primitiveValue->viewportPercentageLength());
 {%- endmacro %}
@@ -64,21 +64,21 @@ namespace WebCore {
 {%- set apply_type = property.apply_type %}
 
 {%- if not property.custom_initial %}
-void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver)
+void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {
     {{ set_value(property) }}(RenderStyle::{{property.initial}}());
 }
 {% endif %}
 
 {%- if not property.custom_inherit %}
-void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver)
+void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {
-    {{ set_value(property) }}(styleResolver->parentStyle()->{{property.getter}}());
+    {{ set_value(property) }}(state.parentStyle()->{{property.getter}}());
 }
 {% endif %}
 
 {%- if not property.custom_value %}
-void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, CSSValue* value)
+void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
 {
 {%- if apply_type == "length" %}
     {{ apply_value_length(property) }}
@@ -91,7 +91,7 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolv
 {%- endcall %}
 {%- endfor %}
 
-bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleResolver, CSSValue* value, bool isInitial, bool isInherit) {
+bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
 {%- for property_id, property in properties.items() %}
 {%- set used_property = properties[property.use_handlers_for] or property %}
@@ -99,11 +99,11 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleRes
 {%- call wrap_with_condition(used_property.condition) %}
     case {{ property_id }}:
         if (isInitial)
-            StyleBuilderFunctions::applyInitial{{ used_property_id }}(styleResolver);
+            StyleBuilderFunctions::applyInitial{{ used_property_id }}(styleResolver, state);
         else if (isInherit)
-            StyleBuilderFunctions::applyInherit{{ used_property_id }}(styleResolver);
+            StyleBuilderFunctions::applyInherit{{ used_property_id }}(styleResolver, state);
         else
-            StyleBuilderFunctions::applyValue{{ used_property_id }}(styleResolver, value);
+            StyleBuilderFunctions::applyValue{{ used_property_id }}(styleResolver, state, value);
         return true;
 {%- endcall %}
 {% endfor %}

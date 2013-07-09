@@ -16,19 +16,19 @@
 #include "core/css/resolver/StyleResolver.h"
 
 {%- macro apply_initial(property_id) -%}
-void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver)
+void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {%- endmacro %}
 
 {%- macro apply_inherit(property_id) -%}
-void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver)
+void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {%- endmacro %}
 
 {%- macro apply_value(property_id) -%}
-void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, CSSValue* value)
+void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
 {%- endmacro %}
 
 {%- macro set_value(property) -%}
-    styleResolver->style()->{{property.setter}}
+    state.style()->{{property.setter}}
 {%- endmacro %}
 
 namespace WebCore {
@@ -36,7 +36,7 @@ namespace WebCore {
 {%- macro apply_animation(property_id, attribute, animation) %}
 {{ apply_initial(property_id) }}
 {
-    CSSAnimationDataList* list = styleResolver->style()->access{{animation}}();
+    CSSAnimationDataList* list = state.style()->access{{animation}}();
     if (list->isEmpty())
         list->append(CSSAnimationData::create());
     list->animation(0)->set{{attribute}}(CSSAnimationData::initialAnimation{{attribute}}());
@@ -49,8 +49,8 @@ namespace WebCore {
 
 {{ apply_inherit(property_id) }}
 {
-    CSSAnimationDataList* list = styleResolver->style()->access{{animation}}();
-    const CSSAnimationDataList* parentList = styleResolver->parentStyle()->{{animation|lower}}();
+    CSSAnimationDataList* list = state.style()->access{{animation}}();
+    const CSSAnimationDataList* parentList = state.parentStyle()->{{animation|lower}}();
     size_t i = 0, parentSize = parentList ? parentList->size() : 0;
     for ( ; i < parentSize && parentList->animation(i)->is{{attribute}}Set(); ++i) {
         if (list->size() <= i)
@@ -66,7 +66,7 @@ namespace WebCore {
 
 {{ apply_value(property_id) }}
 {
-    CSSAnimationDataList* list = styleResolver->style()->access{{animation}}();
+    CSSAnimationDataList* list = state.style()->access{{animation}}();
     size_t childIndex = 0;
     if (value->isValueList()) {
         // Walk each value and put it into an animation, creating new animations as needed.
@@ -108,15 +108,15 @@ namespace WebCore {
 {%- set auto_setter = auto_setter or "setHasAuto" + property.camel_case_name %}
 {{ apply_initial(property_id) }}
 {
-    styleResolver->style()->{{auto_setter}}();
+    state.style()->{{auto_setter}}();
 }
 
 {{ apply_inherit(property_id) }}
 {
-    if (styleResolver->parentStyle()->{{auto_getter}}())
-        styleResolver->style()->{{auto_setter}}();
+    if (state.parentStyle()->{{auto_getter}}())
+        state.style()->{{auto_setter}}();
     else
-        {{ set_value(property) }}(styleResolver->parentStyle()->{{property.getter}}());
+        {{ set_value(property) }}(state.parentStyle()->{{property.getter}}());
 }
 
 {{ apply_value(property_id) }}
@@ -126,10 +126,10 @@ namespace WebCore {
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == {{auto_identity}})
-        styleResolver->style()->{{auto_setter}}();
+        state.style()->{{auto_setter}}();
     else
     {%- if compute_length %}
-        {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(styleResolver->style(), styleResolver->rootElementStyle(), styleResolver->style()->effectiveZoom()));
+        {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom()));
     {%- else %}
         {{ set_value(property) }}(*primitiveValue);
     {%- endif %}
@@ -166,22 +166,22 @@ namespace WebCore {
 {{ apply_initial(property_id) }}
 {
     Color color = {{ initial_color or "Color" -}}();
-    if (styleResolver->applyPropertyToRegularStyle())
+    if (state.applyPropertyToRegularStyle())
         {{ set_value(property) }}(color);
-    if (styleResolver->applyPropertyToVisitedLinkStyle())
-        styleResolver->style()->{{visited_link_setter}}(color);
+    if (state.applyPropertyToVisitedLinkStyle())
+        state.style()->{{visited_link_setter}}(color);
 }
 
 {{ apply_inherit(property_id) }}
 {
     // Visited link style can never explicitly inherit from parent visited link style so no separate getters are needed.
-    Color color = styleResolver->parentStyle()->{{property.getter}}();
+    Color color = state.parentStyle()->{{property.getter}}();
     if (!color.isValid())
-        color = styleResolver->parentStyle()->{{default_getter}}();
-    if (styleResolver->applyPropertyToRegularStyle())
+        color = state.parentStyle()->{{default_getter}}();
+    if (state.applyPropertyToRegularStyle())
         {{ set_value(property) }}(color);
-    if (styleResolver->applyPropertyToVisitedLinkStyle())
-        styleResolver->style()->{{visited_link_setter}}(color);
+    if (state.applyPropertyToVisitedLinkStyle())
+        state.style()->{{visited_link_setter}}(color);
 }
 
 {{ apply_value(property_id) }}
@@ -193,15 +193,15 @@ namespace WebCore {
 
 {%- if inherit_color %}
     if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
-        applyInherit{{property_id}}(styleResolver);
+        applyInherit{{property_id}}(styleResolver, state);
         return;
     }
 {%- endif %}
 
-    if (styleResolver->applyPropertyToRegularStyle())
+    if (state.applyPropertyToRegularStyle())
         {{ set_value(property) }}(styleResolver->resolveColorFromPrimitiveValue(primitiveValue));
-    if (styleResolver->applyPropertyToVisitedLinkStyle())
-        styleResolver->style()->{{visited_link_setter}}(styleResolver->resolveColorFromPrimitiveValue(primitiveValue, /* forVisitedLink */ true));
+    if (state.applyPropertyToVisitedLinkStyle())
+        state.style()->{{visited_link_setter}}(styleResolver->resolveColorFromPrimitiveValue(primitiveValue, /* forVisitedLink */ true));
 }
 {%- endcall %}
 {%- endmacro %}
@@ -226,7 +226,7 @@ namespace WebCore {
 {%- set map_fill = "mapFill" + fill_type %}
 {{ apply_initial(property_id) }}
 {
-    FillLayer* currChild = styleResolver->style()->{{access_layers}}();
+    FillLayer* currChild = state.style()->{{access_layers}}();
     currChild->set{{fill_type}}(FillLayer::initialFill{{fill_type}}({{fill_layer_type}}));
     for (currChild = currChild->next(); currChild; currChild = currChild->next())
         currChild->clear{{fill_type}}();
@@ -234,9 +234,9 @@ namespace WebCore {
 
 {{ apply_inherit(property_id) }}
 {
-    FillLayer* currChild = styleResolver->style()->{{access_layers}}();
+    FillLayer* currChild = state.style()->{{access_layers}}();
     FillLayer* prevChild = 0;
-    const FillLayer* currParent = styleResolver->parentStyle()->{{layer_type|lower}}Layers();
+    const FillLayer* currParent = state.parentStyle()->{{layer_type|lower}}Layers();
     while (currParent && currParent->is{{fill_type}}Set()) {
         if (!currChild) {
             /* Need to make a new layer.*/
@@ -258,7 +258,7 @@ namespace WebCore {
 
 {{ apply_value(property_id) }}
 {
-    FillLayer* currChild = styleResolver->style()->{{access_layers}}();
+    FillLayer* currChild = state.style()->{{access_layers}}();
     FillLayer* prevChild = 0;
     if (value->isValueList() && !value->isImageSetValue()) {
         /* Walk each value and put it into a layer, creating new layers as needed. */
@@ -355,21 +355,21 @@ namespace WebCore {
     if (primitiveValue->getValueID()) {
         switch (primitiveValue->getValueID()) {
         case CSSValueSmall:
-            styleResolver->style()->setMarqueeIncrement(Length(1, Fixed)); // 1px.
+            state.style()->setMarqueeIncrement(Length(1, Fixed)); // 1px.
             break;
         case CSSValueNormal:
-            styleResolver->style()->setMarqueeIncrement(Length(6, Fixed)); // 6px. The WinIE default.
+            state.style()->setMarqueeIncrement(Length(6, Fixed)); // 6px. The WinIE default.
             break;
         case CSSValueLarge:
-            styleResolver->style()->setMarqueeIncrement(Length(36, Fixed)); // 36px.
+            state.style()->setMarqueeIncrement(Length(36, Fixed)); // 36px.
             break;
         default:
             break;
         }
     } else {
-        Length marqueeLength = styleResolver->convertToIntLength(primitiveValue, styleResolver->style(), styleResolver->rootElementStyle());
+        Length marqueeLength = styleResolver->convertToIntLength(primitiveValue, state.style(), state.rootElementStyle());
         if (!marqueeLength.isUndefined())
-            styleResolver->style()->setMarqueeIncrement(marqueeLength);
+            state.style()->setMarqueeIncrement(marqueeLength);
     }
 }
 

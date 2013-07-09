@@ -37,10 +37,11 @@ namespace WebCore {
 
 class CSSValue;
 class StyleResolver;
+class StyleResolverState;
 
 class StyleBuilder {
 public:
-    static bool applyProperty(CSSPropertyID, StyleResolver*, CSSValue*, bool isInitial, bool isInherit);
+    static bool applyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
 };
 
 }

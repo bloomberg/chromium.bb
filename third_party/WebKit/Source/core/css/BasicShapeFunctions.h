@@ -37,10 +37,10 @@ namespace WebCore {
 class BasicShape;
 class CSSBasicShape;
 class CSSValue;
-class StyleResolver;
+class StyleResolverState;
 
 PassRefPtr<CSSValue> valueForBasicShape(const BasicShape*);
-PassRefPtr<BasicShape> basicShapeForValue(const StyleResolver*, const CSSBasicShape*);
+PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&, const CSSBasicShape*);
 
 }
 #endif

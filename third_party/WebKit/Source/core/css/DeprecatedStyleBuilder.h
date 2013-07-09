@@ -33,17 +33,18 @@ namespace WebCore {
 class CSSValue;
 class DeprecatedStyleBuilder;
 class StyleResolver;
+class StyleResolverState;
 
 class PropertyHandler {
 public:
-    typedef void (*InheritFunction)(CSSPropertyID, StyleResolver*);
-    typedef void (*InitialFunction)(CSSPropertyID, StyleResolver*);
-    typedef void (*ApplyFunction)(CSSPropertyID, StyleResolver*, CSSValue*);
+    typedef void (*InheritFunction)(CSSPropertyID, StyleResolver*, StyleResolverState&);
+    typedef void (*InitialFunction)(CSSPropertyID, StyleResolver*, StyleResolverState&);
+    typedef void (*ApplyFunction)(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*);
     PropertyHandler() : m_inherit(0), m_initial(0), m_apply(0) { }
     PropertyHandler(InheritFunction inherit, InitialFunction initial, ApplyFunction apply) : m_inherit(inherit), m_initial(initial), m_apply(apply) { }
-    void applyInheritValue(CSSPropertyID propertyID, StyleResolver* styleResolver) const { ASSERT(m_inherit); (*m_inherit)(propertyID, styleResolver); }
-    void applyInitialValue(CSSPropertyID propertyID, StyleResolver* styleResolver) const { ASSERT(m_initial); (*m_initial)(propertyID, styleResolver); }
-    void applyValue(CSSPropertyID propertyID, StyleResolver* styleResolver, CSSValue* value) const { ASSERT(m_apply); (*m_apply)(propertyID, styleResolver, value); }
+    void applyInheritValue(CSSPropertyID propertyID, StyleResolver* styleResolver, StyleResolverState& state) const { ASSERT(m_inherit); (*m_inherit)(propertyID, styleResolver, state); }
+    void applyInitialValue(CSSPropertyID propertyID, StyleResolver* styleResolver, StyleResolverState& state) const { ASSERT(m_initial); (*m_initial)(propertyID, styleResolver, state); }
+    void applyValue(CSSPropertyID propertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value) const { ASSERT(m_apply); (*m_apply)(propertyID, styleResolver, state, value); }
     bool isValid() const { return m_inherit && m_initial && m_apply; }
     InheritFunction inheritFunction() const { return m_inherit; }
     InitialFunction initialFunction() { return m_initial; }

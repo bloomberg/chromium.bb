@@ -32,51 +32,51 @@
 
 #include "CSSValueKeywords.h"
 #include "StyleBuilderFunctions.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverState.h"
 
 namespace WebCore {
 
-static void resetEffectiveZoom(StyleResolver* styleResolver)
+static void resetEffectiveZoom(StyleResolverState& state)
 {
     // Reset the zoom in effect. This allows the setZoom method to accurately compute a new zoom in effect.
-    styleResolver->setEffectiveZoom(styleResolver->parentStyle() ? styleResolver->parentStyle()->effectiveZoom() : RenderStyle::initialZoom());
+    state.setEffectiveZoom(state.parentStyle() ? state.parentStyle()->effectiveZoom() : RenderStyle::initialZoom());
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyZoom(StyleResolver* styleResolver)
+void StyleBuilderFunctions::applyInitialCSSPropertyZoom(StyleResolver*, StyleResolverState& state)
 {
-    resetEffectiveZoom(styleResolver);
-    styleResolver->setZoom(RenderStyle::initialZoom());
+    resetEffectiveZoom(state);
+    state.setZoom(RenderStyle::initialZoom());
 }
 
-void StyleBuilderFunctions::applyInheritCSSPropertyZoom(StyleResolver* styleResolver)
+void StyleBuilderFunctions::applyInheritCSSPropertyZoom(StyleResolver*, StyleResolverState& state)
 {
-    resetEffectiveZoom(styleResolver);
-    styleResolver->setZoom(styleResolver->parentStyle()->zoom());
+    resetEffectiveZoom(state);
+    state.setZoom(state.parentStyle()->zoom());
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolver* styleResolver, CSSValue* value)
+void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolver*, StyleResolverState& state, CSSValue* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(value->isPrimitiveValue());
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (primitiveValue->getValueID() == CSSValueNormal) {
-        resetEffectiveZoom(styleResolver);
-        styleResolver->setZoom(RenderStyle::initialZoom());
+        resetEffectiveZoom(state);
+        state.setZoom(RenderStyle::initialZoom());
     } else if (primitiveValue->getValueID() == CSSValueReset) {
-        styleResolver->setEffectiveZoom(RenderStyle::initialZoom());
-        styleResolver->setZoom(RenderStyle::initialZoom());
+        state.setEffectiveZoom(RenderStyle::initialZoom());
+        state.setZoom(RenderStyle::initialZoom());
     } else if (primitiveValue->getValueID() == CSSValueDocument) {
-        float docZoom = styleResolver->rootElementStyle() ? styleResolver->rootElementStyle()->zoom() : RenderStyle::initialZoom();
-        styleResolver->setEffectiveZoom(docZoom);
-        styleResolver->setZoom(docZoom);
+        float docZoom = state.rootElementStyle() ? state.rootElementStyle()->zoom() : RenderStyle::initialZoom();
+        state.setEffectiveZoom(docZoom);
+        state.setZoom(docZoom);
     } else if (primitiveValue->isPercentage()) {
-        resetEffectiveZoom(styleResolver);
+        resetEffectiveZoom(state);
         if (float percent = primitiveValue->getFloatValue())
-            styleResolver->setZoom(percent / 100.0f);
+            state.setZoom(percent / 100.0f);
     } else if (primitiveValue->isNumber()) {
-        resetEffectiveZoom(styleResolver);
+        resetEffectiveZoom(state);
         if (float number = primitiveValue->getFloatValue())
-            styleResolver->setZoom(number);
+            state.setZoom(number);
     }
 }
 

@@ -2433,16 +2433,16 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     const PropertyHandler& handler = m_styleBuilder.propertyHandler(id);
     if (handler.isValid()) {
         if (isInherit)
-            handler.applyInheritValue(id, this);
+            handler.applyInheritValue(id, this, m_state);
         else if (isInitial)
-            handler.applyInitialValue(id, this);
+            handler.applyInitialValue(id, this, m_state);
         else
-            handler.applyValue(id, this, value);
+            handler.applyValue(id, this, m_state, value);
         return;
     }
 
     // Use the new StyleBuilder.
-    if (StyleBuilder::applyProperty(id, this, value, isInitial, isInherit))
+    if (StyleBuilder::applyProperty(id, this, m_state, value, isInitial, isInherit))
         return;
 
     CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;

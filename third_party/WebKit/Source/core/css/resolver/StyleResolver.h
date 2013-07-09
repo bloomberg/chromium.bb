@@ -163,12 +163,12 @@ public:
     {
         return m_state.resolveColorFromPrimitiveValue(value, forVisitedLink);
     }
+
+    // FIXME: style() and rootElementStyle() only exist for CSSToStyleMap and should be removed.
     RenderStyle* style() const { return m_state.style(); }
-    RenderStyle* parentStyle() const { return m_state.parentStyle(); }
     RenderStyle* rootElementStyle() const { return m_state.rootElementStyle(); }
-    Element* element() { return m_state.element(); }
+
     Document* document() { return m_document; }
-    bool hasParentNode() const { return m_state.parentNode(); }
 
     // FIXME: It could be better to call m_ruleSets.appendAuthorStyleSheets() directly after we factor StyleRsolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
@@ -353,11 +353,7 @@ public:
 
     CSSToStyleMap* styleMap() { return &m_styleMap; }
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
-    const FontDescription& fontDescription() { return m_state.fontDescription(); }
-    const FontDescription& parentFontDescription() { return m_state.parentFontDescription(); }
     void setFontDescription(const FontDescription& fontDescription) { m_state.setFontDescription(fontDescription); }
-    void setZoom(float f) { m_state.setZoom(f); }
-    void setEffectiveZoom(float f) { m_state.setEffectiveZoom(f); }
     void setWritingMode(WritingMode writingMode) { m_state.setWritingMode(writingMode); }
     void setTextOrientation(TextOrientation textOrientation) { m_state.setTextOrientation(textOrientation); }
 
