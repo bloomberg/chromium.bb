@@ -45,9 +45,9 @@ def platform_options(use_globs=False):
             const=('chromium*' if use_globs else 'chromium'),
             help=('Alias for --platform=chromium*' if use_globs else 'Alias for --platform=chromium')),
 
-        optparse.make_option('--chromium-android', action='store_const', dest='platform',
-            const=('chromium-android*' if use_globs else 'chromium-android'),
-            help=('Alias for --platform=chromium-android*' if use_globs else 'Alias for --platform=chromium')),
+        optparse.make_option('--android', action='store_const', dest='platform',
+            const=('android*' if use_globs else 'android'),
+            help=('Alias for --platform=android*' if use_globs else 'Alias for --platform=android')),
         ]
 
 
