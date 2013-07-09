@@ -22,13 +22,13 @@ set -o errexit
 
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=11507
+ARCHIVED_PEXE_TRANSLATOR_REV=11698
 
 # The frontend from this rev will generate pexes for the archived frontend
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-ARCHIVED_TOOLCHAIN_REV=11284
+ARCHIVED_TOOLCHAIN_REV=11698
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
@@ -274,29 +274,21 @@ archived-pexe-translator-test() {
       ${ARCHIVED_PEXE_TRANSLATOR_REV} ${tarball}
   tar jxf ${tarball} --directory ${dir}
 
-  # Note, the archive provides both unstripped (ext="") and stripped
-  #       (ext=".strip-all") versions of the pexes ("ld", "llc").
-  #       We do not want to strip them here as the "translator"
-  #       package and the toolchain package maybe out of sync and
-  #       strip does more than just stripping, it also upgrades
-  #       bitcode versions if there was a format change.
-  #       We only run with ext="" to save time, but if any bugs show up
-  #       we can switch to ext=".strip-all" and diagnose the bugs.
   local ld_ext=""
   local llc_ext=""
   # Pexes are arch specific.
   case ${arch} in
     arm)
-      ld_ext=".armv7.pexe"
-      llc_ext=".armv7.pexe"
+      ld_ext=".armv7.final.pexe"
+      llc_ext=".armv7.final.pexe"
       ;;
     x86-32)
-      ld_ext=".i686.pexe"
-      llc_ext=".i686.pexe"
+      ld_ext=".i686.final.pexe"
+      llc_ext=".i686.final.pexe"
       ;;
     x86-64)
-      ld_ext=".x86_64.pexe"
-      llc_ext=".i686.pexe" # One llc pexe handles both x86-32 and x86-64.
+      ld_ext=".x86_64.final.pexe"
+      llc_ext=".i686.final.pexe" # One llc pexe handles both x86-32 and x86-64.
       ;;
     *) echo "unknown arch!" && handle-error ;;
   esac
@@ -305,10 +297,11 @@ archived-pexe-translator-test() {
   # 1) it selects the target arch for the translator
   # 2) combined with --pnacl-sb it selects the host arch for the
   #    sandboxed translators
-  local flags="-arch ${arch} --pnacl-sb --pnacl-driver-verbose"
+  local flags="-arch ${arch} --pnacl-sb --pnacl-driver-verbose \
+      -pnaclabi-allow-dev-intrinsics"
   if [[ ${arch} = arm ]] ; then
-      # We need to enable qemu magic for arm
-      flags="${flags} --pnacl-use-emulator"
+    # We need to enable qemu magic for arm
+    flags="${flags} --pnacl-use-emulator"
   fi
   local fast_trans_flags="${flags} -translate-fast"
 
