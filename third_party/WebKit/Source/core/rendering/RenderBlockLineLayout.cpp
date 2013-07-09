@@ -2505,7 +2505,10 @@ inline void TrailingObjects::setTrailingWhitespace(RenderText* whitespace)
 inline void TrailingObjects::clear()
 {
     m_whitespace = 0;
-    m_boxes.clear();
+    // Using resize(0) rather than clear() here saves 2% on
+    // PerformanceTests/Layout/line-layout.html because we avoid freeing and
+    // re-allocating the underlying buffer repeatedly.
+    m_boxes.resize(0);
 }
 
 inline void TrailingObjects::appendBoxIfNeeded(RenderBox* box)
