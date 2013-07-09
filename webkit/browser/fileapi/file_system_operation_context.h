@@ -32,6 +32,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemOperationContext
   explicit FileSystemOperationContext(FileSystemContext* context);
 
   // Specifies |task_runner| which the operation is performed on.
+  // The backend of |task_runner| must outlive the IO thread.
   FileSystemOperationContext(FileSystemContext* context,
                              base::SequencedTaskRunner* task_runner);
 

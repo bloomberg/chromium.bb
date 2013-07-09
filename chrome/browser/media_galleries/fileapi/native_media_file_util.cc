@@ -135,7 +135,7 @@ base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
-bool NativeMediaFileUtil::CreateOrOpen(
+void NativeMediaFileUtil::CreateOrOpen(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     int file_flags,
@@ -143,24 +143,19 @@ bool NativeMediaFileUtil::CreateOrOpen(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   // Only called by NaCl, which should not have access to media file systems.
   base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
-  if (!callback.is_null()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
-                 base::PassPlatformFile(&invalid_file));
-  }
-  return true;
+  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
+                base::PassPlatformFile(&invalid_file));
 }
 
-bool NativeMediaFileUtil::EnsureFileExists(
+void NativeMediaFileUtil::EnsureFileExists(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, false);
-  return true;
+  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, false);
 }
 
-bool NativeMediaFileUtil::CreateDirectory(
+void NativeMediaFileUtil::CreateDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     bool exclusive,
@@ -168,149 +163,149 @@ bool NativeMediaFileUtil::CreateDirectory(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  url, exclusive, recursive, callback));
+  DCHECK(success);
 }
 
-bool NativeMediaFileUtil::GetFileInfo(
+void NativeMediaFileUtil::GetFileInfo(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  url, callback));
+  DCHECK(success);
 }
 
-bool NativeMediaFileUtil::ReadDirectory(
+void NativeMediaFileUtil::ReadDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  url, callback));
+  DCHECK(success);
 }
 
-bool NativeMediaFileUtil::Touch(
+void NativeMediaFileUtil::Touch(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
-  return true;
+  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
-bool NativeMediaFileUtil::Truncate(
+void NativeMediaFileUtil::Truncate(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
-  return true;
+  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
-bool NativeMediaFileUtil::CopyFileLocal(
+void NativeMediaFileUtil::CopyFileLocal(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& src_url,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CopyOrMoveFileLocalOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  src_url, dest_url, true /* copy */, callback));
+  DCHECK(success);
 }
 
-bool NativeMediaFileUtil::MoveFileLocal(
+void NativeMediaFileUtil::MoveFileLocal(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& src_url,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CopyOrMoveFileLocalOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  src_url, dest_url, false /* copy */, callback));
+  DCHECK(success);
 }
 
-bool NativeMediaFileUtil::CopyInForeignFile(
+void NativeMediaFileUtil::CopyInForeignFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CopyInForeignFileOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  src_file_path, dest_url, callback));
+  DCHECK(success);
 }
 
-bool NativeMediaFileUtil::DeleteFile(
+void NativeMediaFileUtil::DeleteFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
-  return true;
+  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
 // This is needed to support Copy and Move.
-bool NativeMediaFileUtil::DeleteDirectory(
+void NativeMediaFileUtil::DeleteDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::DeleteDirectoryOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  url, callback));
+  DCHECK(success);
 }
 
-bool NativeMediaFileUtil::DeleteRecursively(
+void NativeMediaFileUtil::DeleteRecursively(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-  return true;
+  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
 }
 
-bool NativeMediaFileUtil::CreateSnapshotFile(
+void NativeMediaFileUtil::CreateSnapshotFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   fileapi::FileSystemOperationContext* context_ptr = context.get();
-  return context_ptr->task_runner()->PostTask(
+  const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread,
                  weak_factory_.GetWeakPtr(), base::Passed(&context),
                  url, callback));
+  DCHECK(success);
 }
 
 void NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread(
@@ -322,8 +317,6 @@ void NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread(
   DCHECK(IsOnTaskRunnerThread(context.get()));
   base::PlatformFileError error =
       CreateDirectorySync(context.get(), url, exclusive, recursive);
-  if (callback.is_null())
-    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -340,8 +333,6 @@ void NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(
   base::FilePath platform_path;
   base::PlatformFileError error =
       GetFileInfoSync(context.get(), url, &file_info, &platform_path);
-  if (callback.is_null())
-    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -356,8 +347,6 @@ void NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(
   EntryList entry_list;
   base::PlatformFileError error =
       ReadDirectorySync(context.get(), url, &entry_list);
-  if (callback.is_null())
-    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -373,8 +362,6 @@ void NativeMediaFileUtil::CopyOrMoveFileLocalOnTaskRunnerThread(
   DCHECK(IsOnTaskRunnerThread(context.get()));
   base::PlatformFileError error =
       CopyOrMoveFileSync(context.get(), src_url, dest_url, copy);
-  if (callback.is_null())
-    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -389,8 +376,6 @@ void NativeMediaFileUtil::CopyInForeignFileOnTaskRunnerThread(
   DCHECK(IsOnTaskRunnerThread(context.get()));
   base::PlatformFileError error =
       CopyInForeignFileSync(context.get(), src_file_path, dest_url);
-  if (callback.is_null())
-    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -403,8 +388,6 @@ void NativeMediaFileUtil::DeleteDirectoryOnTaskRunnerThread(
     const StatusCallback& callback) {
   DCHECK(IsOnTaskRunnerThread(context.get()));
   base::PlatformFileError error = DeleteDirectorySync(context.get(), url);
-  if (callback.is_null())
-    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -422,8 +405,6 @@ void NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(
   base::PlatformFileError error =
       CreateSnapshotFileSync(context.get(), url, &file_info, &platform_path,
                              &file_ref);
-  if (callback.is_null())
-    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

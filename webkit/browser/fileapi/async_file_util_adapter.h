@@ -38,68 +38,68 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE AsyncFileUtilAdapter
   }
 
   // AsyncFileUtil overrides.
-  virtual bool CreateOrOpen(
+  virtual void CreateOrOpen(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback) OVERRIDE;
-  virtual bool EnsureFileExists(
+  virtual void EnsureFileExists(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const EnsureFileExistsCallback& callback) OVERRIDE;
-  virtual bool CreateDirectory(
+  virtual void CreateDirectory(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool GetFileInfo(
+  virtual void GetFileInfo(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
-  virtual bool ReadDirectory(
+  virtual void ReadDirectory(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual bool Touch(
+  virtual void Touch(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool Truncate(
+  virtual void Truncate(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       int64 length,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool CopyFileLocal(
+  virtual void CopyFileLocal(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool MoveFileLocal(
+  virtual void MoveFileLocal(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool CopyInForeignFile(
+  virtual void CopyInForeignFile(
       scoped_ptr<FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool DeleteFile(
+  virtual void DeleteFile(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool DeleteDirectory(
+  virtual void DeleteDirectory(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool DeleteRecursively(
+  virtual void DeleteRecursively(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool CreateSnapshotFile(
+  virtual void CreateSnapshotFile(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;

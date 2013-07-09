@@ -34,68 +34,68 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   static DeviceMediaAsyncFileUtil* Create(const base::FilePath& profile_path);
 
   // AsyncFileUtil overrides.
-  virtual bool CreateOrOpen(
+  virtual void CreateOrOpen(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback) OVERRIDE;
-  virtual bool EnsureFileExists(
+  virtual void EnsureFileExists(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const EnsureFileExistsCallback& callback) OVERRIDE;
-  virtual bool CreateDirectory(
+  virtual void CreateDirectory(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool GetFileInfo(
+  virtual void GetFileInfo(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
-  virtual bool ReadDirectory(
+  virtual void ReadDirectory(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual bool Touch(
+  virtual void Touch(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool Truncate(
+  virtual void Truncate(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       int64 length,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool CopyFileLocal(
+  virtual void CopyFileLocal(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool MoveFileLocal(
+  virtual void MoveFileLocal(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool CopyInForeignFile(
+  virtual void CopyInForeignFile(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool DeleteFile(
+  virtual void DeleteFile(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool DeleteDirectory(
+  virtual void DeleteDirectory(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool DeleteRecursively(
+  virtual void DeleteRecursively(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool CreateSnapshotFile(
+  virtual void CreateSnapshotFile(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;

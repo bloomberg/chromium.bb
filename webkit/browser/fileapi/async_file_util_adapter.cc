@@ -36,8 +36,7 @@ class EnsureFileExistsHelper {
   }
 
   void Reply(const AsyncFileUtil::EnsureFileExistsCallback& callback) {
-    if (!callback.is_null())
-      callback.Run(error_, created_);
+    callback.Run(error_, created_);
   }
 
  private:
@@ -65,15 +64,13 @@ class GetFileInfoHelper {
   }
 
   void ReplyFileInfo(const AsyncFileUtil::GetFileInfoCallback& callback) {
-    if (!callback.is_null())
-      callback.Run(error_, file_info_);
+    callback.Run(error_, file_info_);
   }
 
   void ReplySnapshotFile(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback) {
-    if (!callback.is_null())
-      callback.Run(error_, file_info_, platform_path_,
-                   ShareableFileReference::GetOrCreate(scoped_file_.Pass()));
+    callback.Run(error_, file_info_, platform_path_,
+                  ShareableFileReference::GetOrCreate(scoped_file_.Pass()));
   }
 
  private:
@@ -120,8 +117,7 @@ class ReadDirectoryHelper {
   }
 
   void Reply(const AsyncFileUtil::ReadDirectoryCallback& callback) {
-    if (!callback.is_null())
-      callback.Run(error_, entries_, false /* has_more */);
+    callback.Run(error_, entries_, false /* has_more */);
   }
 
  private:
@@ -149,191 +145,202 @@ AsyncFileUtilAdapter::AsyncFileUtilAdapter(
 AsyncFileUtilAdapter::~AsyncFileUtilAdapter() {
 }
 
-bool AsyncFileUtilAdapter::CreateOrOpen(
+void AsyncFileUtilAdapter::CreateOrOpen(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::FileUtilProxy::RelayCreateOrOpen(
+  const bool success = base::FileUtilProxy::RelayCreateOrOpen(
       context_ptr->task_runner(),
       Bind(&FileSystemFileUtil::CreateOrOpen, Unretained(sync_file_util_.get()),
            context_ptr, url, file_flags),
       Bind(&FileSystemFileUtil::Close, Unretained(sync_file_util_.get()),
            base::Owned(context_ptr)),
       Bind(&RunCreateOrOpenCallback, callback));
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::EnsureFileExists(
+void AsyncFileUtilAdapter::EnsureFileExists(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   EnsureFileExistsHelper* helper = new EnsureFileExistsHelper;
   FileSystemOperationContext* context_ptr = context.release();
-  return context_ptr->task_runner()->PostTaskAndReply(
+  const bool success = context_ptr->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&EnsureFileExistsHelper::RunWork, Unretained(helper),
              sync_file_util_.get(), base::Owned(context_ptr), url),
         Bind(&EnsureFileExistsHelper::Reply, Owned(helper), callback));
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::CreateDirectory(
+void AsyncFileUtilAdapter::CreateDirectory(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CreateDirectory,
            Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), url, exclusive, recursive),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::GetFileInfo(
+void AsyncFileUtilAdapter::GetFileInfo(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
   GetFileInfoHelper* helper = new GetFileInfoHelper;
-  return context_ptr->task_runner()->PostTaskAndReply(
+  const bool success = context_ptr->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&GetFileInfoHelper::GetFileInfo, Unretained(helper),
              sync_file_util_.get(), base::Owned(context_ptr), url),
         Bind(&GetFileInfoHelper::ReplyFileInfo, Owned(helper), callback));
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::ReadDirectory(
+void AsyncFileUtilAdapter::ReadDirectory(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
   ReadDirectoryHelper* helper = new ReadDirectoryHelper;
-  return context_ptr->task_runner()->PostTaskAndReply(
+  const bool success = context_ptr->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&ReadDirectoryHelper::RunWork, Unretained(helper),
              sync_file_util_.get(), base::Owned(context_ptr), url),
         Bind(&ReadDirectoryHelper::Reply, Owned(helper), callback));
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::Touch(
+void AsyncFileUtilAdapter::Touch(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Touch, Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), url,
            last_access_time, last_modified_time),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::Truncate(
+void AsyncFileUtilAdapter::Truncate(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Truncate, Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), url, length),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::CopyFileLocal(
+void AsyncFileUtilAdapter::CopyFileLocal(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CopyOrMoveFile,
            Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), src_url, dest_url, true /* copy */),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::MoveFileLocal(
+void AsyncFileUtilAdapter::MoveFileLocal(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CopyOrMoveFile,
            Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), src_url, dest_url, false /* copy */),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::CopyInForeignFile(
+void AsyncFileUtilAdapter::CopyInForeignFile(
       scoped_ptr<FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const FileSystemURL& dest_url,
       const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CopyInForeignFile,
            Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), src_file_path, dest_url),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::DeleteFile(
+void AsyncFileUtilAdapter::DeleteFile(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::DeleteFile,
            Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), url),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::DeleteDirectory(
+void AsyncFileUtilAdapter::DeleteDirectory(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  return base::PostTaskAndReplyWithResult(
+  const bool success = base::PostTaskAndReplyWithResult(
       context_ptr->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::DeleteDirectory,
            Unretained(sync_file_util_.get()),
            base::Owned(context_ptr), url),
       callback);
+  DCHECK(success);
 }
 
-bool AsyncFileUtilAdapter::DeleteRecursively(
+void AsyncFileUtilAdapter::DeleteRecursively(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-  return true;
+  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
 }
 
-bool AsyncFileUtilAdapter::CreateSnapshotFile(
+void AsyncFileUtilAdapter::CreateSnapshotFile(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
   GetFileInfoHelper* helper = new GetFileInfoHelper;
-  return context_ptr->task_runner()->PostTaskAndReply(
+  const bool success = context_ptr->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&GetFileInfoHelper::CreateSnapshotFile, Unretained(helper),
              sync_file_util_.get(), base::Owned(context_ptr), url),
         Bind(&GetFileInfoHelper::ReplySnapshotFile, Owned(helper), callback));
+  DCHECK(success);
 }
 
 }  // namespace fileapi
