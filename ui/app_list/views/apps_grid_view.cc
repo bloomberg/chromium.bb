@@ -322,26 +322,6 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
     return;
 
   drag_view_ = view;
-
-  // When a drag and drop host is given, the item can be dragged out of the app
-  // list window. In that case a proxy widget needs to be used.
-  // Note: This code has very likely to be changed for Windows (non metro mode)
-  // when a |drag_and_drop_host_| gets implemented.
-  if (drag_and_drop_host_) {
-    // Determine the mouse offset to the center of the icon so that the drag and
-    // drop host follows this layer.
-    gfx::Vector2d delta = event.root_location() -
-                          drag_view_->GetBoundsInScreen().CenterPoint();
-    delta.set_y(delta.y() + drag_view_->title()->size().height() / 2);
-    // We have to hide the original item since the drag and drop host will do
-    // the OS dependent code to "lift off the dragged item".
-    drag_and_drop_host_->CreateDragIconProxy(event.root_location(),
-                                             view->model()->icon(),
-                                             drag_view_,
-                                             delta,
-                                             kDragAndDropProxyScale);
-    HideView(drag_view_, true);
-  }
   drag_view_offset_ = event.location();
   ExtractDragLocation(event, &drag_start_grid_view_);
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
@@ -392,6 +372,8 @@ void AppsGridView::UpdateDragFromItem(Pointer pointer,
   gfx::Point drag_point_in_grid_view;
   ExtractDragLocation(event, &drag_point_in_grid_view);
   UpdateDrag(pointer, drag_point_in_grid_view);
+  if (!dragging())
+    return;
 
   // If a drag and drop host is provided, see if the drag operation needs to be
   // forwarded.
@@ -415,6 +397,7 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
     ReorderChildView(drag_view_, -1);
     bounds_animator_.StopAnimatingView(drag_view_);
     StartSettingUpSynchronousDrag();
+    StartDragAndDropHostDrag(point);
   }
 
   if (drag_pointer_ != pointer)
@@ -944,6 +927,33 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
         (view_model_.view_size() - 1) % tiles_per_page(),
         drop_target_.slot);
   }
+}
+
+void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
+  // When a drag and drop host is given, the item can be dragged out of the app
+  // list window. In that case a proxy widget needs to be used.
+  // Note: This code has very likely to be changed for Windows (non metro mode)
+  // when a |drag_and_drop_host_| gets implemented.
+  if (!drag_view_ || !drag_and_drop_host_)
+    return;
+
+  gfx::Point screen_location = grid_location;
+  views::View::ConvertPointToScreen(this, &screen_location);
+
+  // Determine the mouse offset to the center of the icon so that the drag and
+  // drop host follows this layer.
+  gfx::Vector2d delta = drag_view_offset_ -
+                        drag_view_->GetLocalBounds().CenterPoint();
+  delta.set_y(delta.y() + drag_view_->title()->size().height() / 2);
+
+  // We have to hide the original item since the drag and drop host will do
+  // the OS dependent code to "lift off the dragged item".
+  drag_and_drop_host_->CreateDragIconProxy(screen_location,
+                                           drag_view_->model()->icon(),
+                                           drag_view_,
+                                           delta,
+                                           kDragAndDropProxyScale);
+  HideView(drag_view_, true);
 }
 
 void AppsGridView::DispatchDragEventToDragAndDropHost(

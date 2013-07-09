@@ -202,6 +202,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void CalculateDropTarget(const gfx::Point& drag_point,
                            bool use_page_button_hovering);
 
+  // Prepares |drag_and_drop_host_| for dragging. |grid_location| contains
+  // the drag point in this grid view's coordinates.
+  void StartDragAndDropHostDrag(const gfx::Point& grid_location);
+
   // Dispatch the drag and drop update event to the dnd host (if needed).
   void DispatchDragEventToDragAndDropHost(const gfx::Point& point);
 
