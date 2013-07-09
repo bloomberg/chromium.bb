@@ -195,7 +195,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       device_scale_factor_(1.f),
       overdraw_bottom_height_(0.f),
       animation_registrar_(AnimationRegistrar::Create()),
-      rendering_stats_instrumentation_(rendering_stats_instrumentation) {
+      rendering_stats_instrumentation_(rendering_stats_instrumentation),
+      need_check_for_completed_tile_uploads_before_draw_(false) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
@@ -945,6 +946,11 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
                                       gfx::Rect device_viewport_damage_rect) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::PrepareToDraw");
 
+  if (need_check_for_completed_tile_uploads_before_draw_) {
+    DCHECK(tile_manager_);
+    tile_manager_->CheckForCompletedTileUploads();
+  }
+
   active_tree_->UpdateDrawProperties();
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
@@ -1032,8 +1038,10 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
-  if (pending_tree_)
+  if (pending_tree_) {
+    need_check_for_completed_tile_uploads_before_draw_ = true;
     ActivatePendingTree();
+  }
 }
 
 bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
@@ -1364,6 +1372,8 @@ void LayerTreeHostImpl::CheckForCompletedTileUploads() {
       "spurious redraws.";
   if (tile_manager_)
     tile_manager_->CheckForCompletedTileUploads();
+
+  need_check_for_completed_tile_uploads_before_draw_ = false;
 }
 
 void LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {

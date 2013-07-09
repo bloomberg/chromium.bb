@@ -533,6 +533,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
+  bool need_check_for_completed_tile_uploads_before_draw_;
+
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
 
