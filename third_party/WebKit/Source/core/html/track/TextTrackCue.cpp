@@ -479,11 +479,8 @@ void TextTrackCue::setText(const String& text)
 
 int TextTrackCue::cueIndex()
 {
-    if (m_cueIndex == invalidCueIndex) {
-        TextTrackCueList* cues = track()->cues();
-        if (cues)
-            m_cueIndex = cues->getCueIndex(this);
-    }
+    if (m_cueIndex == invalidCueIndex)
+        m_cueIndex = track()->cues()->getCueIndex(this);
 
     return m_cueIndex;
 }
@@ -1191,4 +1188,3 @@ bool TextTrackCue::operator==(const TextTrackCue& cue) const
 }
 
 } // namespace WebCore
-

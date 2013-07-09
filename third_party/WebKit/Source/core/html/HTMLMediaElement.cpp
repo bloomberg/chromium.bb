@@ -1269,9 +1269,11 @@ void HTMLMediaElement::endIgnoringTrackDisplayUpdateRequests()
         updateActiveTextTrackCues(currentTime());
 }
 
-void HTMLMediaElement::textTrackAddCues(TextTrack*, const TextTrackCueList* cues)
+void HTMLMediaElement::textTrackAddCues(TextTrack* track, const TextTrackCueList* cues)
 {
     LOG(Media, "HTMLMediaElement::textTrackAddCues");
+    if (track->mode() == TextTrack::disabledKeyword())
+        return;
 
     TrackDisplayUpdateScope scope(this);
     for (size_t i = 0; i < cues->length(); ++i)
@@ -1287,8 +1289,11 @@ void HTMLMediaElement::textTrackRemoveCues(TextTrack*, const TextTrackCueList* c
         textTrackRemoveCue(cues->item(i)->track(), cues->item(i));
 }
 
-void HTMLMediaElement::textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue> cue)
+void HTMLMediaElement::textTrackAddCue(TextTrack* track, PassRefPtr<TextTrackCue> cue)
 {
+    if (track->mode() == TextTrack::disabledKeyword())
+        return;
+
     // Negative duration cues need be treated in the interval tree as
     // zero-length cues.
     double endTime = max(cue->startTime(), cue->endTime());
