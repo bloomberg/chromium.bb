@@ -152,15 +152,16 @@ TimelineTraceEventProcessor::TimelineTraceEventProcessor(WeakPtr<InspectorTimeli
     , m_timeConverter(timelineAgent.get()->timeConverter())
     , m_inspectorClient(client)
     , m_pageId(reinterpret_cast<unsigned long long>(m_timelineAgent.get()->page()))
+    , m_layerTreeId(m_timelineAgent.get()->layerTreeId())
     , m_layerId(0)
     , m_paintSetupStart(0)
     , m_paintSetupEnd(0)
 {
     registerHandler(InstrumentationEvents::BeginFrame, TracePhaseInstant, &TimelineTraceEventProcessor::onBeginFrame);
+    registerHandler(InstrumentationEvents::UpdateLayer, TracePhaseBegin, &TimelineTraceEventProcessor::onUpdateLayerBegin);
+    registerHandler(InstrumentationEvents::UpdateLayer, TracePhaseEnd, &TimelineTraceEventProcessor::onUpdateLayerEnd);
     registerHandler(InstrumentationEvents::PaintSetup, TracePhaseBegin, &TimelineTraceEventProcessor::onPaintSetupBegin);
     registerHandler(InstrumentationEvents::PaintSetup, TracePhaseEnd, &TimelineTraceEventProcessor::onPaintSetupEnd);
-    registerHandler(InstrumentationEvents::PaintLayer, TracePhaseBegin, &TimelineTraceEventProcessor::onPaintLayerBegin);
-    registerHandler(InstrumentationEvents::PaintLayer, TracePhaseEnd, &TimelineTraceEventProcessor::onPaintLayerEnd);
     registerHandler(InstrumentationEvents::RasterTask, TracePhaseBegin, &TimelineTraceEventProcessor::onRasterTaskBegin);
     registerHandler(InstrumentationEvents::RasterTask, TracePhaseEnd, &TimelineTraceEventProcessor::onRasterTaskEnd);
     registerHandler(InstrumentationEvents::ImageDecodeTask, TracePhaseBegin, &TimelineTraceEventProcessor::onImageDecodeTaskBegin);
@@ -230,6 +231,23 @@ void TimelineTraceEventProcessor::onBeginFrame(const TraceEvent&)
     processBackgroundEvents();
 }
 
+void TimelineTraceEventProcessor::onUpdateLayerBegin(const TraceEvent& event)
+{
+    unsigned long long layerTreeId = event.asUInt(InstrumentationEventArguments::LayerTreeId);
+    if (layerTreeId != m_layerTreeId)
+        return;
+    m_layerId = event.asUInt(InstrumentationEventArguments::LayerId);
+    // We don't know the node yet. For content layers, the node will be updated
+    // by paint. For others, let it remain 0 -- we just need the fact that
+    // the layer belongs to the page (see cookie check).
+    m_layerToNodeMap.add(m_layerId, 0);
+}
+
+void TimelineTraceEventProcessor::onUpdateLayerEnd(const TraceEvent& event)
+{
+    m_layerId = 0;
+}
+
 void TimelineTraceEventProcessor::onPaintSetupBegin(const TraceEvent& event)
 {
     ASSERT(!m_paintSetupStart);
@@ -240,17 +258,6 @@ void TimelineTraceEventProcessor::onPaintSetupEnd(const TraceEvent& event)
 {
     ASSERT(m_paintSetupStart);
     m_paintSetupEnd = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
-}
-
-void TimelineTraceEventProcessor::onPaintLayerBegin(const TraceEvent& event)
-{
-    m_layerId = event.asUInt(InstrumentationEventArguments::LayerId);
-    ASSERT(m_layerId);
-}
-
-void TimelineTraceEventProcessor::onPaintLayerEnd(const TraceEvent&)
-{
-    m_layerId = 0;
 }
 
 void TimelineTraceEventProcessor::onRasterTaskBegin(const TraceEvent& event)
@@ -329,11 +336,10 @@ void TimelineTraceEventProcessor::onPaint(const TraceEvent& event)
 {
     double paintSetupStart = m_paintSetupStart;
     m_paintSetupStart = 0;
-    if (!m_layerId)
-        return;
     unsigned long long pageId = event.asUInt(InstrumentationEventArguments::PageId);
     if (pageId != m_pageId)
         return;
+    ASSERT(m_layerId);
     long long nodeId = event.asInt(InstrumentationEventArguments::NodeId);
     ASSERT(nodeId);
     m_layerToNodeMap.set(m_layerId, nodeId);

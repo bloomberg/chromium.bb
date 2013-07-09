@@ -50,6 +50,7 @@ class InspectorFrontend;
 class InspectorFrontendChannel;
 class InspectorFrontendClient;
 class InspectorMemoryAgent;
+class InspectorTimelineAgent;
 class InspectorOverlay;
 class InspectorState;
 class InstrumentingAgents;
@@ -85,6 +86,7 @@ public:
     void reconnectFrontend();
     void reuseFrontend(InspectorFrontendChannel*, const String& inspectorStateCookie);
     void setProcessId(long);
+    void setLayerTreeId(int);
     void webViewResized(const IntSize&);
 
     void inspect(Node*);
@@ -129,6 +131,7 @@ private:
     OwnPtr<InspectorOverlay> m_overlay;
 
     InspectorMemoryAgent* m_memoryAgent;
+    InspectorTimelineAgent* m_timelineAgent;
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontendClient> m_inspectorFrontendClient;
