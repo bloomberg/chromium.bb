@@ -1,3 +1,5 @@
+#!/usr/bin/python
+#
 # Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,11 +35,21 @@ import re
 import string
 
 
+class IdlBadFilenameError(Exception):
+    """Raised if an IDL filename disagrees with the interface name in the file."""
+    pass
+
+
+class IdlInterfaceFileNotFoundError(Exception):
+    """Raised if the IDL file implementing an interface cannot be found."""
+    pass
+
+
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--event-names-file', help='output file')
     parser.add_option('--idl-files-list', help='file listing all IDLs')
-    parser.add_option('--supplemental-dependency-file', help='output file')
+    parser.add_option('--interface-dependencies-file', help='output file')
     parser.add_option('--window-constructors-file', help='output file')
     parser.add_option('--workerglobalscope-constructors-file', help='output file')
     parser.add_option('--sharedworkerglobalscope-constructors-file', help='output file')
@@ -46,8 +58,8 @@ def parse_options():
     options, args = parser.parse_args()
     if options.event_names_file is None:
         parser.error('Must specify an output file using --event-names-file.')
-    if options.supplemental_dependency_file is None:
-        parser.error('Must specify an output file using --supplemental-dependency-file.')
+    if options.interface_dependencies_file is None:
+        parser.error('Must specify an output file using --interface-dependencies-file.')
     if options.window_constructors_file is None:
         parser.error('Must specify an output file using --window-constructors-file.')
     if options.workerglobalscope_constructors_file is None:
@@ -95,10 +107,11 @@ def get_implemented_interfaces_from_idl(file_contents, interface_name):
     implemented_interfaces = []
     for match in re.finditer(r'^\s*(\w+)\s+implements\s+(\w+)\s*;', file_contents, re.MULTILINE):
         # identifier-A must be the current interface
-        assert match.group(1) == interface_name, \
-"Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, match.group(1))
+        if match.group(1) != interface_name:
+            raise IdlBadFilenameError("Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, match.group(1)))
         implemented_interfaces.append(match.group(2))
     return implemented_interfaces
+
 
 def is_callback_interface_from_idl(file_contents):
     match = re.search(r'callback\s+interface\s+\w+', file_contents)
@@ -111,19 +124,18 @@ def get_parent_interface(file_contents):
         return match.group(1)
     return None
 
+
 def get_interface_extended_attributes_from_idl(file_contents):
     extended_attributes = {}
-    match = re.search(r'\[(.*)\]\s+(interface|exception)\s+(\w+)',
+    match = re.search(r'\[(.*)\]\s+(callback\s+)?(interface|exception)\s+(\w+)',
                       file_contents, flags=re.DOTALL)
     if match:
         parts = string.split(match.group(1), ',')
         for part in parts:
-            # Match 'key = value'
-            match = re.match(r'([^=\s]*)(?:\s*=\s*(.*))?', part.strip())
-            key = match.group(1)
-            value = match.group(2) or 'VALUE_IS_MISSING'
+            key, _, value = map(string.strip, part.partition('='))
             if not key:
                 continue
+            value = value or 'VALUE_IS_MISSING'
             extended_attributes[key] = value
     return extended_attributes
 
@@ -159,14 +171,13 @@ def generate_constructor_attribute_list(interface_name, extended_attributes):
     return attributes_list
 
 
-def generate_event_names_file(destination_filename, event_names, only_if_changed=False):
+def generate_event_names_file(destination_filename, event_names, only_if_changed):
     source_dir, _ = os.path.split(os.getcwd())
     lines = []
     lines.append('namespace="Event"\n')
     lines.append('\n')
-    for filename in event_names:
+    for filename, extended_attributes in sorted(event_names.iteritems()):
         attributes = []
-        extended_attributes = event_names[filename]
         for key in ('ImplementedAs', 'Conditional', 'EnabledAtRuntime'):
             suffix = ''
             if key == 'EnabledAtRuntime':
@@ -178,7 +189,7 @@ def generate_event_names_file(destination_filename, event_names, only_if_changed
     write_file(lines, destination_filename, only_if_changed)
 
 
-def generate_global_constructors_partial_interface(interface_name, destination_filename, constructor_attributes_list, only_if_changed=False):
+def generate_global_constructors_partial_interface(interface_name, destination_filename, constructor_attributes_list, only_if_changed):
     lines = []
     lines.append('partial interface %s {\n' % interface_name)
     for constructor_attribute in constructor_attributes_list:
@@ -187,124 +198,138 @@ def generate_global_constructors_partial_interface(interface_name, destination_f
     write_file(lines, destination_filename, only_if_changed)
 
 
-def parse_idl_files(idl_files, window_constructors_filename, workerglobalscope_constructors_filename, sharedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructors_filename, event_names_file, only_if_changed=False):
-    interface_name_to_idl_file = {}
-    idl_file_to_interface_name = {}
-    supplemental_dependencies = {}
-    supplementals = {}
-    event_names = {}
-    window_constructor_attributes_list = []
-    workerglobalscope_constructor_attributes_list = []
-    sharedworkerglobalscope_constructor_attributes_list = []
-    dedicatedworkerglobalscope_constructor_attributes_list = []
+def parse_idl_files(idl_files, global_constructors_filenames):
+    """Returns dependencies between IDL files, constructors on global objects, and events.
 
+    Returns:
+        interfaces:
+            set of all interfaces
+        dependencies:
+            dict of main IDL filename (for a given interface) -> list of partial IDL filenames (for that interface)
+            The keys (main IDL files) are the files for which bindings are
+            generated. This does not include IDL files for interfaces
+            implemented by another interface.
+        global_constructors:
+            dict of global objects -> list of constructors on that object
+        event_names:
+            dict of interfaces that inherit from Event -> list of extended attributes for the interface
+    """
+    interfaces = set()
+    dependencies = {}
+    partial_interface_files = {}
+    implements_interfaces = {}
+    implemented_somewhere = set()
+
+    global_constructors = {}
+    for global_object in global_constructors_filenames.keys():
+        global_constructors[global_object] = []
+
+    # Parents and extended attributes (of interfaces with parents) are
+    # used in generating event names
     parent_interface = {}
     interface_extended_attribute = {}
-    interface_to_file = {}
 
-    # Populate interface_name_to_idl_file first
+    interface_name_to_idl_file = {}
     for idl_file_name in idl_files:
         full_path = os.path.realpath(idl_file_name)
         interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
         interface_name_to_idl_file[interface_name] = full_path
+        partial_interface_files[interface_name] = []
 
     for idl_file_name in idl_files:
-        full_path = os.path.realpath(idl_file_name)
         interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
+        full_path = interface_name_to_idl_file[interface_name]
         idl_file_contents = get_file_contents(full_path)
-
-        if interface_name == 'Event':
-            event_names[idl_file_name] = get_interface_extended_attributes_from_idl(idl_file_contents)
-        else:
-            parent = get_parent_interface(idl_file_contents)
-            if parent:
-                parent_interface[interface_name] = parent
-                interface_extended_attribute[interface_name] = get_interface_extended_attributes_from_idl(idl_file_contents)
-                interface_to_file[interface_name] = idl_file_name
 
         # Handle partial interfaces
         partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
         if partial_interface_name:
-            supplemental_dependencies[full_path] = [partial_interface_name]
+            partial_interface_files[partial_interface_name].append(full_path)
             continue
 
-        # Parse 'identifier-A implements identifier-B; statements
-        implemented_interfaces = get_implemented_interfaces_from_idl(idl_file_contents, interface_name)
-        for implemented_interface in implemented_interfaces:
-            assert implemented_interface in interface_name_to_idl_file, \
-"Could not find a the IDL file where the following implemented interface is defined: %s" % implemented_interface
-            supplemental_dependencies.setdefault(interface_name_to_idl_file[implemented_interface], []).append(interface_name)
-        # Handle [NoInterfaceObject]
-        if not is_callback_interface_from_idl(idl_file_contents):
-            extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
-            if 'NoInterfaceObject' not in extended_attributes:
-                global_contexts = extended_attributes.get('GlobalContext', 'Window').split('&')
-                constructor_list = generate_constructor_attribute_list(interface_name, extended_attributes)
-                if 'Window' in global_contexts:
-                    window_constructor_attributes_list.extend(constructor_list)
-                if 'WorkerGlobalScope' in global_contexts:
-                    workerglobalscope_constructor_attributes_list.extend(constructor_list)
-                if 'SharedWorkerGlobalScope' in global_contexts:
-                    sharedworkerglobalscope_constructor_attributes_list.extend(constructor_list)
-                if 'DedicatedWorkerGlobalScope' in global_contexts:
-                    dedicatedworkerglobalscope_constructor_attributes_list.extend(constructor_list)
-        idl_file_to_interface_name[full_path] = interface_name
-        supplementals[full_path] = []
+        interfaces.add(interface_name)
+        # Non-partial interfaces default to having bindings generated
+        dependencies[full_path] = []
+        extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
 
-    for interface in parent_interface:
-        parent = parent_interface[interface]
+        # Parse 'identifier-A implements identifier-B;' statements
+        implemented_interfaces = get_implemented_interfaces_from_idl(idl_file_contents, interface_name)
+        implements_interfaces[interface_name] = implemented_interfaces
+        implemented_somewhere |= set(implemented_interfaces)
+
+        # Record global constructors
+        if not is_callback_interface_from_idl(idl_file_contents) and 'NoInterfaceObject' not in extended_attributes:
+            global_contexts = extended_attributes.get('GlobalContext', 'Window').split('&')
+            new_constructor_list = generate_constructor_attribute_list(interface_name, extended_attributes)
+            for global_object in global_contexts:
+                global_constructors[global_object].extend(new_constructor_list)
+
+        # Record parents and extended attributes for generating event names
+        if interface_name == 'Event':
+            interface_extended_attribute[interface_name] = extended_attributes
+        parent = get_parent_interface(idl_file_contents)
+        if parent:
+            parent_interface[interface_name] = parent
+            interface_extended_attribute[interface_name] = extended_attributes
+
+    # Add constructors on global objects to partial interfaces
+    for global_object, filename in global_constructors_filenames.iteritems():
+        if global_object in interfaces:
+            partial_interface_files[global_object].append(filename)
+
+    # Interfaces that are implemented by another interface do not have
+    # their own bindings generated, as this would be redundant with the
+    # actual implementation.
+    for implemented_interface in implemented_somewhere:
+        full_path = interface_name_to_idl_file[implemented_interface]
+        del dependencies[full_path]
+
+    # An IDL file's dependencies are partial interface files that extend it,
+    # and files for other interfaces that this interfaces implements.
+    for idl_file_path, others in dependencies.iteritems():
+        interface_name, _ = os.path.splitext(os.path.basename(idl_file_path))
+        implemented_interfaces = implements_interfaces[interface_name]
+        try:
+            interface_paths = map(lambda x: interface_name_to_idl_file[x], implemented_interfaces)
+        except KeyError, key_name:
+            raise IdlInterfaceFileNotFoundError('Could not find the IDL file where the following implemented interface is defined: %s' % key_name)
+        dependencies[idl_file_path] = sorted(partial_interface_files[interface_name] + interface_paths)
+
+    # Generate event names for all interfaces that inherit from Event,
+    # including Event itself.
+    event_names = {}
+    if 'Event' in interfaces:
+        event_names[interface_name_to_idl_file['Event']] = interface_extended_attribute['Event']
+    for interface, parent in parent_interface.iteritems():
         while parent in parent_interface:
             parent = parent_interface[parent]
         if parent == 'Event':
-            event_names[interface_to_file[interface]] = interface_extended_attribute[interface]
-    generate_event_names_file(event_names_file, event_names, only_if_changed=only_if_changed)
+            event_names[interface_name_to_idl_file[interface]] = interface_extended_attribute[interface]
 
-    # Generate Global constructors
-    if 'Window' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list, only_if_changed=only_if_changed)
-        supplemental_dependencies[window_constructors_filename] = ['Window']
-    if 'WorkerGlobalScope' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("WorkerGlobalScope", workerglobalscope_constructors_filename, workerglobalscope_constructor_attributes_list, only_if_changed=only_if_changed)
-        supplemental_dependencies[workerglobalscope_constructors_filename] = ['WorkerGlobalScope']
-    if 'SharedWorkerGlobalScope' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("SharedWorkerGlobalScope", sharedworkerglobalscope_constructors_filename, sharedworkerglobalscope_constructor_attributes_list, only_if_changed=only_if_changed)
-        supplemental_dependencies[sharedworkerglobalscope_constructors_filename] = ['SharedWorkerGlobalScope']
-    if 'DedicatedWorkerGlobalScope' in interface_name_to_idl_file:
-        generate_global_constructors_partial_interface("DedicatedWorkerGlobalScope", dedicatedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructor_attributes_list, only_if_changed=only_if_changed)
-        supplemental_dependencies[dedicatedworkerglobalscope_constructors_filename] = ['DedicatedWorkerGlobalScope']
-
-    # Resolve partial interfaces dependencies
-    for idl_file, base_files in supplemental_dependencies.iteritems():
-        for base_file in base_files:
-            target_idl_file = interface_name_to_idl_file[base_file]
-            supplementals[target_idl_file].append(idl_file)
-            if idl_file in supplementals:
-                # Should never occur. Might be needed in corner cases.
-                del supplementals[idl_file]
-    return supplementals
+    return interfaces, dependencies, global_constructors, event_names
 
 
-def write_dependency_file(filename, supplementals, only_if_changed=False):
-    """Outputs the dependency file.
+def write_dependency_file(filename, dependencies, only_if_changed):
+    """Writes the interface dependencies file.
 
-    The format of a supplemental dependency file:
+    The format is as follows:
 
-    Window.idl P.idl Q.idl R.idl
-    Document.idl S.idl
+    Document.idl P.idl
     Event.idl
+    Window.idl Q.idl R.idl S.idl
     ...
 
     The above indicates that:
-    Window.idl is supplemented by P.idl, Q.idl and R.idl,
-    Document.idl is supplemented by S.idl, and
-    Event.idl is supplemented by no IDLs.
+    Document.idl depends on P.idl,
+    Event.idl depends on no other IDL files, and
+    Window.idl depends on Q.idl, R.idl, and S.idl.
 
-    An IDL that supplements another IDL (e.g. P.idl) does not have its own
-    lines in the dependency file.
+    An IDL that is a dependency of another IDL (e.g. P.idl) does not have its
+    own line in the dependency file.
     """
     lines = []
-    for idl_file, supplemental_files in sorted(supplementals.iteritems()):
-        lines.append('%s %s\n' % (idl_file, ' '.join(supplemental_files)))
+    for idl_file, dependency_files in sorted(dependencies.iteritems()):
+        lines.append('%s %s\n' % (idl_file, ' '.join(sorted(dependency_files))))
     write_file(lines, filename, only_if_changed)
 
 
@@ -314,8 +339,21 @@ def main():
     with open(options.idl_files_list) as idl_files_list_file:
         for line in idl_files_list_file:
             idl_files.append(string.rstrip(line, '\n'))
-    resolved_supplementals = parse_idl_files(idl_files, options.window_constructors_file, options.workerglobalscope_constructors_file, options.sharedworkerglobalscope_constructors_file, options.dedicatedworkerglobalscope_constructors_file, options.event_names_file, only_if_changed=options.write_file_only_if_changed)
-    write_dependency_file(options.supplemental_dependency_file, resolved_supplementals, only_if_changed=options.write_file_only_if_changed)
+    only_if_changed = options.write_file_only_if_changed
+    global_constructors_filenames = {
+        'Window': options.window_constructors_file,
+        'WorkerGlobalScope': options.workerglobalscope_constructors_file,
+        'SharedWorkerGlobalScope': options.sharedworkerglobalscope_constructors_file,
+        'DedicatedWorkerGlobalScope': options.dedicatedworkerglobalscope_constructors_file,
+        }
+
+    interfaces, dependencies, global_constructors, event_names = parse_idl_files(idl_files, global_constructors_filenames)
+
+    write_dependency_file(options.interface_dependencies_file, dependencies, only_if_changed)
+    for interface_name, filename in global_constructors_filenames.iteritems():
+        if interface_name in interfaces:
+            generate_global_constructors_partial_interface(interface_name, filename, global_constructors[interface_name], only_if_changed)
+    generate_event_names_file(options.event_names_file, event_names, only_if_changed)
 
 
 if __name__ == '__main__':

@@ -120,7 +120,7 @@ my $idlDirectories;
 my $preprocessor;
 my $defines;
 my $verbose;
-my $dependentIdlFiles;
+my $interfaceIdlFiles;
 my $writeFileOnlyIfChanged;
 my $sourceRoot;
 
@@ -263,7 +263,7 @@ sub new
     $preprocessor = shift;
     $defines = shift;
     $verbose = shift;
-    $dependentIdlFiles = shift;
+    $interfaceIdlFiles = shift;
     $writeFileOnlyIfChanged = shift;
 
     $sourceRoot = getcwd();
@@ -282,7 +282,7 @@ sub IDLFileForInterface
         push(@directories, ".");
 
         $idlFiles = { };
-        foreach my $idlFile (@$dependentIdlFiles) {
+        foreach my $idlFile (@$interfaceIdlFiles) {
             $idlFiles->{fileparse(basename($idlFile), ".idl")} = $idlFile;
         }
 

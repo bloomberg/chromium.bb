@@ -46,7 +46,7 @@ my $defines;
 my $filename;
 my $preprocessor;
 my $verbose;
-my $supplementalDependencyFile;
+my $interfaceDependenciesFile;
 my $additionalIdlFiles;
 my $idlAttributesFile;
 my $writeFileOnlyIfChanged;
@@ -57,7 +57,7 @@ GetOptions('include=s@' => \@idlDirectories,
            'filename=s' => \$filename,
            'preprocessor=s' => \$preprocessor,
            'verbose' => \$verbose,
-           'supplementalDependencyFile=s' => \$supplementalDependencyFile,
+           'interfaceDependenciesFile=s' => \$interfaceDependenciesFile,
            'additionalIdlFiles=s' => \$additionalIdlFiles,
            'idlAttributesFile=s' => \$idlAttributesFile,
            'write-file-only-if-changed=s' => \$writeFileOnlyIfChanged);
@@ -75,33 +75,34 @@ if ($verbose) {
 my $targetInterfaceName = fileparse(basename($targetIdlFile), ".idl");
 
 my $idlFound = 0;
-my @supplementedIdlFiles;
-if ($supplementalDependencyFile) {
-    # The format of a supplemental dependency file:
+my @dependencyIdlFiles;
+if ($interfaceDependenciesFile) {
+    # The format of the interface dependencies file:
     #
     # Window.idl P.idl Q.idl R.idl
     # Document.idl S.idl
     # Event.idl
     # ...
     #
-    # The above indicates that Window.idl is supplemented by P.idl, Q.idl and R.idl,
-    # Document.idl is supplemented by S.idl, and Event.idl is supplemented by no IDLs.
-    # The IDL that supplements another IDL (e.g. P.idl) never appears in the dependency file.
-    open FH, "< $supplementalDependencyFile" or die "Cannot open $supplementalDependencyFile\n";
+    # The above indicates that Window.idl depends on P.idl, Q.idl, and R.idl,
+    # Document.idl depends on S.idl, and Event.idl depends on no IDLs.
+    # A dependency IDL file (one that is depended on by another IDL, e.g. P.idl
+    # in the above) does not have its own entry in the dependency file.
+    open FH, "< $interfaceDependenciesFile" or die "Cannot open $interfaceDependenciesFile\n";
     while (my $line = <FH>) {
         my ($idlFile, @followingIdlFiles) = split(/\s+/, $line);
         if ($idlFile and basename($idlFile) eq basename($targetIdlFile)) {
             $idlFound = 1;
-            # We sort the supplemental IDL files so that the corresponding code is generated
+            # We sort the dependency IDL files so that the corresponding code is generated
             # in a consistent order. This is important for the bindings tests.
-            @supplementedIdlFiles = sort @followingIdlFiles;
+            @dependencyIdlFiles = sort @followingIdlFiles;
         }
     }
     close FH;
 
     # $additionalIdlFiles is list of IDL files which should not be included in
-    # DerivedSources*.cpp (i.e. they are not described in the supplemental
-    # dependency file) but should generate .h and .cpp files.
+    # DerivedSources*.cpp (i.e. they are not described in the interface
+    # dependencies file) but should generate .h and .cpp files.
     if (!$idlFound and $additionalIdlFiles) {
         my @idlFiles = shellwords($additionalIdlFiles);
         $idlFound = grep { $_ and basename($_) eq basename($targetIdlFile) } @idlFiles;
@@ -123,7 +124,7 @@ if ($idlAttributesFile) {
     checkIDLAttributes($idlAttributes, $targetDocument, basename($targetIdlFile));
 }
 
-foreach my $idlFile (@supplementedIdlFiles) {
+foreach my $idlFile (@dependencyIdlFiles) {
     next if $idlFile eq $targetIdlFile;
 
     my $interfaceName = fileparse(basename($idlFile), ".idl");
@@ -174,7 +175,7 @@ foreach my $idlFile (@supplementedIdlFiles) {
                 push(@{$targetDataNode->constants}, $constant);
             }
         } else {
-            die "$idlFile is not a supplemental dependency of $targetIdlFile. There maybe a bug in the the supplemental dependency generator (preprocess_idls.py).\n";
+            die "$idlFile is not a dependency of $targetIdlFile. There maybe a bug in the dependency computer (compute_dependencies.py).\n";
         }
     }
 }
@@ -184,8 +185,8 @@ foreach my $idlFile (@supplementedIdlFiles) {
 $targetDocument = deserializeJSON(serializeJSON($targetDocument));
 
 # Generate desired output for the target IDL file.
-my @dependentIdlFiles = ($targetDocument->fileName(), @supplementedIdlFiles);
-my $codeGenerator = CodeGeneratorV8->new($targetDocument, \@idlDirectories, $preprocessor, $defines, $verbose, \@dependentIdlFiles, $writeFileOnlyIfChanged);
+my @interfaceIdlFiles = ($targetDocument->fileName(), @dependencyIdlFiles);
+my $codeGenerator = CodeGeneratorV8->new($targetDocument, \@idlDirectories, $preprocessor, $defines, $verbose, \@interfaceIdlFiles, $writeFileOnlyIfChanged);
 my $interfaces = $targetDocument->interfaces;
 foreach my $interface (@$interfaces) {
     print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;
