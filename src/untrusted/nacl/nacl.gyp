@@ -131,12 +131,13 @@
       ],
     },
     {
-      'target_name': 'nacl_dynacode_private_lib',
+      'target_name': 'nacl_dyncode_private_lib',
       'type': 'none',
       'variables': {
         'nlib_target': 'libnacl_dyncode_private.a',
         'build_glibc': 0,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'sources': ['dyncode_private.c'],
       'dependencies': [
