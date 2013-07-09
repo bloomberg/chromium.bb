@@ -348,9 +348,6 @@ public:
     static Length convertToFloatLength(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, double multiplier = 1);
 
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
-    void setFontDescription(const FontDescription& fontDescription) { m_state.setFontDescription(fontDescription); }
-    void setWritingMode(WritingMode writingMode) { m_state.setWritingMode(writingMode); }
-    void setTextOrientation(TextOrientation textOrientation) { m_state.setTextOrientation(textOrientation); }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 

@@ -91,6 +91,11 @@ public:
     void setElementAffectedByClassRules(bool isAffected) { m_elementAffectedByClassRules = isAffected; }
     bool elementAffectedByClassRules() const { return m_elementAffectedByClassRules; }
 
+    // FIXME: These are effectively side-channel "out parameters" for the various
+    // map functions. When we map from CSS to style objects we use this state object
+    // to track various meta-data about that mapping (e.g. if it's cache-able).
+    // We need to move this data off of StyleResolverState and closer to the
+    // objects it applies to. Possibly separating (immutable) inputs from (mutable) outputs.
     void setApplyPropertyToRegularStyle(bool isApply) { m_applyPropertyToRegularStyle = isApply; }
     void setApplyPropertyToVisitedLinkStyle(bool isApply) { m_applyPropertyToVisitedLinkStyle = isApply; }
     bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
@@ -99,8 +104,6 @@ public:
 
     void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
     CSSValue* lineHeightValue() { return m_lineHeightValue; }
-    void setFontDirty(bool isDirty) { m_fontDirty = isDirty; }
-    bool fontDirty() const { return m_fontDirty; }
 
     void cacheBorderAndBackground();
     bool hasUAAppearance() const { return m_hasUAAppearance; }
@@ -110,6 +113,11 @@ public:
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
     CSSToStyleMap& styleMap() { return m_styleMap; }
 
+    // FIXME: These exist as a primative way to track mutations to font-related properties
+    // on a RenderStyle. As designed, these are very error-prone, as some callers
+    // set these directly on the RenderStyle w/o telling us. Presumably we'll
+    // want to design a better wrapper around RenderStyle for tracking these mutations
+    // and separate it from StyleResolverState.
     const FontDescription& fontDescription() { return m_style->fontDescription(); }
     const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
     void setFontDescription(const FontDescription& fontDescription) { m_fontDirty |= m_style->setFontDescription(fontDescription); }
@@ -117,6 +125,8 @@ public:
     void setEffectiveZoom(float f) { m_fontDirty |= m_style->setEffectiveZoom(f); }
     void setWritingMode(WritingMode writingMode) { m_fontDirty |= m_style->setWritingMode(writingMode); }
     void setTextOrientation(TextOrientation textOrientation) { m_fontDirty |= m_style->setTextOrientation(textOrientation); }
+    void setFontDirty(bool isDirty) { m_fontDirty = isDirty; }
+    bool fontDirty() const { return m_fontDirty; }
 
     // SVG handles zooming in a different way compared to CSS. The whole document is scaled instead
     // of each individual length value in the render style / tree. CSSPrimitiveValue::computeLength*()

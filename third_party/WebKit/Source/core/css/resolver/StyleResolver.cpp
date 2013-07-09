@@ -2579,7 +2579,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             FontDescription fontDescription = state.parentStyle()->fontDescription();
             state.style()->setLineHeight(state.parentStyle()->specifiedLineHeight());
             state.setLineHeightValue(0);
-            setFontDescription(fontDescription);
+            state.setFontDescription(fontDescription);
         } else if (isInitial) {
             Settings* settings = documentSettings();
             ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
@@ -2604,7 +2604,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
 
                 // Handle the zoom factor.
                 fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), m_state.useSVGZoomRules()));
-                setFontDescription(fontDescription);
+                state.setFontDescription(fontDescription);
             }
         } else if (value->isFontValue()) {
             FontValue* font = static_cast<FontValue*>(value);
@@ -2749,7 +2749,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             state.style()->setLocale(primitiveValue->getStringValue());
         FontDescription fontDescription = state.style()->fontDescription();
         fontDescription.setScript(localeToScriptCodeForFontSelection(state.style()->locale()));
-        setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
         return;
     }
     case CSSPropertyWebkitAppRegion: {
@@ -2882,7 +2882,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         HANDLE_INHERIT_AND_INITIAL(writingMode, WritingMode);
 
         if (primitiveValue)
-            setWritingMode(*primitiveValue);
+            state.setWritingMode(*primitiveValue);
 
         // FIXME: It is not ok to modify document state while applying style.
         if (state.element() && state.element() == state.document()->documentElement())
@@ -2894,7 +2894,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         HANDLE_INHERIT_AND_INITIAL(textOrientation, TextOrientation);
 
         if (primitiveValue)
-            setTextOrientation(*primitiveValue);
+            state.setTextOrientation(*primitiveValue);
 
         return;
     }
@@ -2917,7 +2917,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     // CSS Fonts Module Level 3
     case CSSPropertyWebkitFontFeatureSettings: {
         if (primitiveValue && primitiveValue->getValueID() == CSSValueNormal) {
-            setFontDescription(state.style()->fontDescription().makeNormalFeatureSettings());
+            state.setFontDescription(state.style()->fontDescription().makeNormalFeatureSettings());
             return;
         }
 
@@ -2936,7 +2936,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             settings->append(FontFeature(feature->tag(), feature->value()));
         }
         fontDescription.setFeatureSettings(settings.release());
-        setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
         return;
     }
 
@@ -3365,7 +3365,7 @@ void StyleResolver::initializeFontStyle(Settings* settings)
     setFontSize(fontDescription, FontSize::fontSizeForKeyword(document(), CSSValueMedium, false));
     m_state.style()->setLineHeight(RenderStyle::initialLineHeight());
     m_state.setLineHeightValue(0);
-    setFontDescription(fontDescription);
+    m_state.setFontDescription(fontDescription);
 }
 
 void StyleResolver::setFontSize(FontDescription& fontDescription, float size)

@@ -364,14 +364,14 @@ public:
     {
         FontDescription fontDescription = state.fontDescription();
         (fontDescription.*setterFunction)((state.parentFontDescription().*getterFunction)());
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
     }
 
     static void applyInitialValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
     {
         FontDescription fontDescription = state.fontDescription();
         (fontDescription.*setterFunction)(initialValue);
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
     }
 
     static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
@@ -381,7 +381,7 @@ public:
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         FontDescription fontDescription = state.fontDescription();
         (fontDescription.*setterFunction)(*primitiveValue);
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
     }
 
     static PropertyHandler createHandler() { return PropertyHandler(&applyInheritValue, &applyInitialValue, &applyValue); }
@@ -397,7 +397,7 @@ public:
         fontDescription.setGenericFamily(parentFontDescription.genericFamily());
         fontDescription.setFamily(parentFontDescription.firstFamily());
         fontDescription.setIsSpecifiedFont(parentFontDescription.isSpecifiedFont());
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
         return;
     }
 
@@ -413,7 +413,7 @@ public:
         if (!initialDesc.firstFamily().familyIsEmpty())
             fontDescription.setFamily(initialDesc.firstFamily());
 
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
         return;
     }
 
@@ -495,7 +495,7 @@ public:
             if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize() != oldFamilyUsedFixedDefaultSize)
                 styleResolver->setFontSize(fontDescription, FontSize::fontSizeForKeyword(styleResolver->document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
 
-            styleResolver->setFontDescription(fontDescription);
+            state.setFontDescription(fontDescription);
         }
         return;
     }
@@ -532,7 +532,7 @@ public:
         FontDescription fontDescription = state.style()->fontDescription();
         fontDescription.setKeywordSize(state.parentStyle()->fontDescription().keywordSize());
         styleResolver->setFontSize(fontDescription, size);
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
         return;
     }
 
@@ -546,7 +546,7 @@ public:
 
         fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
         styleResolver->setFontSize(fontDescription, size);
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
         return;
     }
 
@@ -616,7 +616,7 @@ public:
         size = min(maximumAllowedFontSize, size);
 
         styleResolver->setFontSize(fontDescription, size);
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
         return;
     }
 
@@ -644,7 +644,7 @@ public:
         default:
             fontDescription.setWeight(*primitiveValue);
         }
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
     }
     static PropertyHandler createHandler()
     {
@@ -664,7 +664,7 @@ public:
         fontDescription.setDiscretionaryLigaturesState(parentFontDescription.discretionaryLigaturesState());
         fontDescription.setHistoricalLigaturesState(parentFontDescription.historicalLigaturesState());
 
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
     }
 
     static void applyInitialValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
@@ -675,7 +675,7 @@ public:
         fontDescription.setDiscretionaryLigaturesState(FontDescription::NormalLigaturesState);
         fontDescription.setHistoricalLigaturesState(FontDescription::NormalLigaturesState);
 
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
     }
 
     static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
@@ -728,7 +728,7 @@ public:
         fontDescription.setCommonLigaturesState(commonLigaturesState);
         fontDescription.setDiscretionaryLigaturesState(discretionaryLigaturesState);
         fontDescription.setHistoricalLigaturesState(historicalLigaturesState);
-        styleResolver->setFontDescription(fontDescription);
+        state.setFontDescription(fontDescription);
     }
 
     static PropertyHandler createHandler()
