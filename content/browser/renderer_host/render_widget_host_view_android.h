@@ -18,6 +18,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -58,7 +59,8 @@ class RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public BrowserAccessibilityDelegate,
       public cc::TextureLayerClient,
-      public cc::DelegatedRendererLayerClient {
+      public cc::DelegatedRendererLayerClient,
+      public ImageTransportFactoryAndroidObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -181,6 +183,9 @@ class RenderWidgetHostViewAndroid
 
   // cc::DelegatedRendererLayerClient implementation.
   virtual void DidCommitFrameData() OVERRIDE;
+
+  // ImageTransportFactoryAndroidObserver implementation.
+  virtual void OnLostResources() OVERRIDE;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);

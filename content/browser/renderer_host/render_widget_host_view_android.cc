@@ -116,9 +116,11 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
   host_->SetView(this);
   SetContentViewCore(content_view_core);
+  ImageTransportFactoryAndroid::AddObserver(this);
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
+  ImageTransportFactoryAndroid::RemoveObserver(this);
   SetContentViewCore(NULL);
   DCHECK(ack_callbacks_.empty());
   if (texture_id_in_layer_) {
@@ -1088,6 +1090,14 @@ WebKit::WebGraphicsContext3D* RenderWidgetHostViewAndroid::Context3d() {
 bool RenderWidgetHostViewAndroid::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox) {
   return false;
+}
+
+void RenderWidgetHostViewAndroid::OnLostResources() {
+  if (texture_layer_)
+    texture_layer_->SetIsDrawable(false);
+  texture_id_in_layer_ = 0;
+  current_mailbox_ = gpu::Mailbox();
+  RunAckCallbacks();
 }
 
 // static
