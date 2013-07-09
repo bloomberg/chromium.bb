@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

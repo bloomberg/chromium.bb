@@ -25,14 +25,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
-#include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_host_messages.h"
 #include "chrome/common/nacl_messages.h"
-#include "chrome/common/render_messages.h"
+#include "components/nacl/common/nacl_browser_delegate.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -46,6 +42,7 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "net/base/net_util.h"
 #include "net/socket/tcp_listen_socket.h"
+#include "ppapi/host/host_factory.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
@@ -257,7 +254,9 @@ NaClProcessHost::~NaClProcessHost() {
 
 // This is called at browser startup.
 // static
-void NaClProcessHost::EarlyStartup() {
+void NaClProcessHost::EarlyStartup(NaClBrowserDelegate* delegate) {
+  NaClBrowser::SetDelegate(delegate);
+  NaClBrowser::GetInstance()->EarlyStartup();
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Open the IRT file early to make sure that it isn't replaced out from
   // under us by autoupdate.
@@ -440,7 +439,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  if (logging::DialogsAreSuppressed())
+  if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   if (!nacl_loader_prefix.empty())
@@ -596,7 +595,7 @@ bool NaClProcessHost::StartNaClExecution() {
   nacl::NaClStartParams params;
   params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
   params.validation_cache_key = nacl_browser->GetValidationCacheKey();
-  params.version = chrome::VersionInfo().CreateVersionString();
+  params.version = NaClBrowser::GetDelegate()->GetVersionString();
   params.enable_exception_handling = enable_exception_handling_;
   params.enable_debug_stub = enable_debug_stub_ &&
       NaClBrowser::GetInstance()->URLMatchesDebugPatterns(manifest_url_);
@@ -712,7 +711,8 @@ void NaClProcessHost::OnPpapiChannelCreated(
 
     ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
         scoped_ptr<ppapi::host::HostFactory>(
-            new chrome::ChromeBrowserPepperHostFactory(ppapi_host_.get())));
+            NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
+                ppapi_host_.get())));
 
     // Send a message to create the NaCl-Renderer channel. The handle is just
     // a place holder.

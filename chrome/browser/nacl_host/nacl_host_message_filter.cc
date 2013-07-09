@@ -10,8 +10,8 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_file_host.h"
-#include "chrome/browser/nacl_host/nacl_infobar.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/nacl_host_messages.h"
@@ -109,7 +109,8 @@ void NaClHostMessageFilter::OnNaClErrorStatus(int render_view_id,
                                               int error_id) {
   // Currently there is only one kind of error status, for which
   // we want to show the user an infobar.
-  ShowNaClInfobar(render_process_id_, render_view_id, error_id);
+  NaClBrowser::GetDelegate()->ShowNaClInfobar(render_process_id_,
+                                              render_view_id, error_id);
 }
 
 void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,

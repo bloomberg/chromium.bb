@@ -21,8 +21,10 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
 
-class NaClHostMessageFilter;
 class CommandLine;
+class ExtensionInfoMap;
+class NaClBrowserDelegate;
+class NaClHostMessageFilter;
 
 namespace content {
 class BrowserChildProcessHost;
@@ -58,7 +60,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   virtual ~NaClProcessHost();
 
   // Do any minimal work that must be done at browser startup.
-  static void EarlyStartup();
+  static void EarlyStartup(NaClBrowserDelegate* delegate);
 
   // Initialize the new NaCl process. Result is returned by sending ipc
   // message reply_msg.

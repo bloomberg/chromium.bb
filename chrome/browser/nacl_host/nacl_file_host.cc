@@ -16,9 +16,9 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/nacl_host_messages.h"
+#include "components/nacl/common/nacl_browser_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -107,7 +107,7 @@ void DoOpenPnaclFile(
 
   // PNaCl must be installed.
   base::FilePath pnacl_dir;
-  if (!PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_dir) ||
+  if (!NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
       !file_util::PathExists(pnacl_dir)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -331,7 +331,7 @@ bool PnaclCanOpenFile(const std::string& filename,
 
   // PNaCl must be installed.
   base::FilePath pnacl_dir;
-  if (!PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_dir) ||
+  if (!NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
       pnacl_dir.empty())
     return false;
 

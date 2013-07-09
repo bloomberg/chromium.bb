@@ -2500,6 +2500,8 @@
             'browser/nacl_host/nacl_broker_service_win.h',
             'browser/nacl_host/nacl_browser.cc',
             'browser/nacl_host/nacl_browser.h',
+            'browser/nacl_host/nacl_browser_delegate_impl.cc',
+            'browser/nacl_host/nacl_browser_delegate_impl.h',
             'browser/nacl_host/nacl_file_host.cc',
             'browser/nacl_host/nacl_file_host.h',
             'browser/nacl_host/nacl_host_message_filter.cc',

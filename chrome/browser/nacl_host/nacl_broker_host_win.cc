@@ -4,13 +4,12 @@
 
 #include "chrome/browser/nacl_host/nacl_broker_host_win.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "ipc/ipc_switches.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 
 namespace {
@@ -62,7 +62,7 @@ bool NaClBrokerHost::Init() {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClBrokerProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  if (logging::DialogsAreSuppressed())
+  if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate, cmd_line);

@@ -9,11 +9,56 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
-#include "chrome/common/chrome_paths.h"
-
+#include "chrome/browser/nacl_host/nacl_browser.h"
+#include "components/nacl/common/nacl_browser_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using nacl_file_host::PnaclCanOpenFile;
+
+class DummyNaClBrowserDelegate : public NaClBrowserDelegate {
+ public:
+  virtual void ShowNaClInfobar(int render_process_id,
+                               int render_view_id,
+                               int error_id) OVERRIDE {
+  }
+
+  virtual bool DialogsAreSuppressed() OVERRIDE {
+    return false;
+  }
+
+  virtual bool GetCacheDirectory(base::FilePath* cache_dir) OVERRIDE {
+    return false;
+  }
+
+  virtual bool GetPluginDirectory(base::FilePath* plugin_dir) OVERRIDE {
+    return false;
+  }
+
+  virtual bool GetPnaclDirectory(base::FilePath* pnacl_dir) OVERRIDE {
+    *pnacl_dir = pnacl_path_;
+    return true;
+  }
+
+  virtual bool GetUserDirectory(base::FilePath* user_dir) OVERRIDE {
+    return false;
+  }
+
+  virtual std::string GetVersionString() const OVERRIDE {
+    return std::string();
+  }
+
+  virtual ppapi::host::HostFactory* CreatePpapiHostFactory(
+      content::BrowserPpapiHost* ppapi_host) OVERRIDE {
+    return NULL;
+  }
+
+  void SetPnaclDirectory(const base::FilePath& pnacl_dir) {
+    pnacl_path_ = pnacl_dir;
+  }
+
+ private:
+  base::FilePath pnacl_path_;
+};
 
 // Try to pass a few funny filenames with a dummy pnacl directory set.
 TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
@@ -21,10 +66,12 @@ TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
   ASSERT_TRUE(scoped_tmp_dir.CreateUniqueTempDir());
 
   base::FilePath kDummyPnaclPath = scoped_tmp_dir.path();
-  base::ScopedPathOverride pnach_dir_override(chrome::DIR_PNACL_COMPONENT,
-                                              kDummyPnaclPath);
-  ASSERT_TRUE(PathService::Get(chrome::DIR_PNACL_COMPONENT,
-                               &kDummyPnaclPath));
+
+  DummyNaClBrowserDelegate* nacl_browser_delegate =
+      new DummyNaClBrowserDelegate;
+  nacl_browser_delegate->SetPnaclDirectory(kDummyPnaclPath);
+  NaClBrowser::SetDelegate(nacl_browser_delegate);
+  ASSERT_TRUE(NaClBrowser::GetDelegate()->GetPnaclDirectory(&kDummyPnaclPath));
 
   // Check allowed strings, and check that the expected prefix is added.
   base::FilePath out_path;
@@ -70,4 +117,5 @@ TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
   EXPECT_FALSE(PnaclCanOpenFile("$HOME", &out_path));
   EXPECT_FALSE(PnaclCanOpenFile("$HOME/.bashrc", &out_path));
 #endif
+  NaClBrowser::SetDelegate(NULL);
 }

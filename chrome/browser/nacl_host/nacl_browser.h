@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/nacl_host/nacl_validation_cache.h"
+#include "components/nacl/common/nacl_browser_delegate.h"
 
 class URLPattern;
 class GURL;
@@ -115,6 +116,9 @@ class NaClBrowser {
   bool GetNaCl64ExePath(base::FilePath* exe_path);
 #endif
 
+  void EarlyStartup();
+  static void SetDelegate(NaClBrowserDelegate* delegate);
+  static NaClBrowserDelegate* GetDelegate();
  private:
   friend struct DefaultSingletonTraits<NaClBrowser>;
 
@@ -172,6 +176,7 @@ class NaClBrowser {
   // A list of pending tasks to start NaCl processes.
   std::vector<base::Closure> waiting_;
 
+  NaClBrowserDelegate* browser_delegate_;
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };
 

@@ -68,6 +68,7 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
@@ -1486,7 +1487,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                           parsed_command_line().GetSwitchValuePath(
                               switches::kPnaclDir));
   }
-  NaClProcessHost::EarlyStartup();
+  NaClProcessHost::EarlyStartup(new NaClBrowserDelegateImpl);
 #endif
 
   PreBrowserStart();
