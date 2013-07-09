@@ -32,7 +32,6 @@
   # The following defines turn WebKit features on and off.
   'variables': {
     'feature_defines': [
-      'ENABLE_CANVAS_USES_MAILBOX=1',
       'ENABLE_CSS3_TEXT=0',
       'ENABLE_CSS_EXCLUSIONS=1',
       'ENABLE_CSS_REGIONS=1',

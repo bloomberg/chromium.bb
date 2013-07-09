@@ -49,26 +49,11 @@ public:
     // Clears texture from the layer.
     virtual void clearTexture() = 0;
 
-    // Sets the texture id that represents the layer, in the namespace of the
-    // compositor context.
-    virtual void setTextureId(unsigned) = 0;
-
-    // Sets whether or not the texture should be flipped in the Y direction when
-    // rendered.
-    virtual void setFlipped(bool) = 0;
-
-    // Sets the rect in UV space of the texture that is mapped to the layer
-    // bounds.
-    virtual void setUVRect(const WebFloatRect&) = 0;
-
     // Sets whether every pixel in this layer is opaque. Defaults to false.
     virtual void setOpaque(bool) = 0;
 
     // Sets whether this layer's texture has premultiplied alpha or not. Defaults to true.
     virtual void setPremultipliedAlpha(bool) = 0;
-
-    // Indicates that the most recently provided texture ID is about to be modified externally.
-    virtual void willModifyTexture() = 0;
 
     // Sets whether this context should be rate limited by the compositor. Rate limiting works by blocking
     // invalidate() and invalidateRect() calls if the compositor is too many frames behind.

@@ -45,6 +45,7 @@ protected:
 
 class WebExternalTextureLayerClient {
 public:
+    // FIXME: Following methods is deprecated.
     virtual unsigned prepareTexture(WebTextureUpdater&) = 0;
     virtual WebGraphicsContext3D* context() = 0;
 

@@ -64,7 +64,8 @@ public:
     virtual ~Canvas2DLayerBridge();
 
     // WebKit::WebExternalTextureLayerClient implementation.
-    virtual unsigned prepareTexture(WebKit::WebTextureUpdater&) OVERRIDE;
+    // FIXME: Following method is deprecated.
+    virtual unsigned prepareTexture(WebKit::WebTextureUpdater&);
     virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
     virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;
@@ -101,7 +102,6 @@ protected:
     Canvas2DLayerBridge* m_next;
     Canvas2DLayerBridge* m_prev;
 
-#if ENABLE(CANVAS_USES_MAILBOX)
     enum MailboxStatus {
         MailboxInUse,
         MailboxReleased,
@@ -120,7 +120,6 @@ protected:
 
     uint32_t m_lastImageId;
     Vector<MailboxInfo> m_mailboxes;
-#endif
 };
 
 }

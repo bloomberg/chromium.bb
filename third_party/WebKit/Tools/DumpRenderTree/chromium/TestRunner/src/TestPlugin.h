@@ -28,6 +28,7 @@
 
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
+#include "public/platform/WebExternalTextureMailbox.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginContainer.h"
 #include <memory>
@@ -78,10 +79,11 @@ public:
     virtual bool isPlaceholder() { return false; }
 
     // WebExternalTextureLayerClient methods:
-    virtual unsigned prepareTexture(WebKit::WebTextureUpdater&) { return m_colorTexture; }
-    virtual WebKit::WebGraphicsContext3D* context() { return m_context; }
-    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) { return false; };
-    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) { }
+    // FIXME: following 2 methods are deprecated.
+    virtual unsigned prepareTexture(WebKit::WebTextureUpdater&) { return 0; }
+    virtual WebKit::WebGraphicsContext3D* context() { return 0; }
+    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*);
+    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&);
 
 private:
     TestPlugin(WebKit::WebFrame*, const WebKit::WebPluginParams&, WebTestDelegate*);
@@ -138,6 +140,8 @@ private:
     WebKit::WebRect m_rect;
     WebKit::WebGraphicsContext3D* m_context;
     unsigned m_colorTexture;
+    WebKit::WebExternalTextureMailbox m_mailbox;
+    bool m_mailboxChanged;
     unsigned m_framebuffer;
     Scene m_scene;
     std::auto_ptr<WebKit::WebExternalTextureLayer> m_layer;

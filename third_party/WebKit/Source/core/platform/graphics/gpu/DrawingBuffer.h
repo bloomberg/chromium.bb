@@ -124,7 +124,8 @@ public:
     void paintCompositedResultsToCanvas(ImageBuffer*);
 
     // WebExternalTextureLayerClient implementation.
-    virtual unsigned prepareTexture(WebKit::WebTextureUpdater& updater) OVERRIDE;
+    // FIXME: Following method is deprecated.
+    virtual unsigned prepareTexture(WebKit::WebTextureUpdater&);
     virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
     virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;
@@ -135,8 +136,6 @@ private:
 
     void initialize(const IntSize&);
 
-    void prepareBackBuffer();
-    bool requiresCopyFromBackToFrontBuffer() const;
     Platform3DObject frontColorBuffer() const;
     Platform3DObject colorBuffer() const { return m_colorBuffer; }
 

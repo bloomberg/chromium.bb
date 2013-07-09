@@ -153,6 +153,9 @@ TestPlugin::TestPlugin(WebFrame* frame, const WebPluginParams& params, WebTestDe
     , m_delegate(delegate)
     , m_container(0)
     , m_context(0)
+    , m_colorTexture(0)
+    , m_mailboxChanged(false)
+    , m_framebuffer(0)
     , m_touchEventRequest(WebPluginContainer::TouchEventRequestTypeNone)
     , m_reRequestTouchEvents(false)
     , m_printEventDetails(false)
@@ -213,7 +216,7 @@ bool TestPlugin::initialize(WebPluginContainer* container)
     if (!initScene())
         return false;
 
-    m_layer = auto_ptr<WebExternalTextureLayer>(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+    m_layer = auto_ptr<WebExternalTextureLayer>(Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
     m_container = container;
     m_container->setWebLayer(m_layer->layer());
     if (m_reRequestTouchEvents) {
@@ -227,6 +230,8 @@ bool TestPlugin::initialize(WebPluginContainer* container)
 
 void TestPlugin::destroy()
 {
+    if (m_layer.get())
+        m_layer->clearTexture();
     if (m_container)
         m_container->setWebLayer(0);
     m_layer.reset();
@@ -263,8 +268,25 @@ void TestPlugin::updateGeometry(const WebRect& frameRect, const WebRect& clipRec
 
     drawScene();
 
+    m_context->genMailboxCHROMIUM(m_mailbox.name);
+    m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
+
     m_context->flush();
     m_layer->layer()->invalidate();
+    m_mailboxChanged = true;
+}
+
+bool TestPlugin::prepareMailbox(WebKit::WebExternalTextureMailbox* mailbox, WebKit::WebExternalBitmap*)
+{
+    if (!m_mailboxChanged)
+        return false;
+    *mailbox = m_mailbox;
+    m_mailboxChanged = false;
+    return true;
+}
+
+void TestPlugin::mailboxReleased(const WebKit::WebExternalTextureMailbox&)
+{
 }
 
 TestPlugin::Primitive TestPlugin::parsePrimitive(const WebString& string)
