@@ -228,12 +228,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       bound_fbo_(0),
       weak_ptr_factory_(this),
       initialized_(false),
-      command_buffer_(NULL),
-      gles2_helper_(NULL),
-      transfer_buffer_(NULL),
       gl_(NULL),
-      real_gl_(NULL),
-      trace_gl_(NULL),
       frame_number_(0),
       bind_generates_resources_(false),
       use_echo_for_swap_ack_(true),
@@ -393,7 +388,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
         g_all_shared_contexts.Pointer()->empty() ?
             NULL : *g_all_shared_contexts.Pointer()->begin();
     share_group = share_group_context ?
-        share_group_context->command_buffer_ : NULL;
+        share_group_context->command_buffer_.get() : NULL;
   }
 
   std::vector<int32> attribs;
@@ -411,21 +406,21 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
 
   // Create a proxy to a command buffer in the GPU process.
   if (onscreen) {
-    command_buffer_ = host_->CreateViewCommandBuffer(
+    command_buffer_.reset(host_->CreateViewCommandBuffer(
         surface_id_,
         share_group,
         allowed_extensions,
         attribs,
         active_url_,
-        gpu_preference_);
+        gpu_preference_));
   } else {
-    command_buffer_ = host_->CreateOffscreenCommandBuffer(
+    command_buffer_.reset(host_->CreateOffscreenCommandBuffer(
         gfx::Size(1, 1),
         share_group,
         allowed_extensions,
         attribs,
         active_url_,
-        gpu_preference_);
+        gpu_preference_));
   }
 
   if (!command_buffer_)
@@ -449,7 +444,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   }
 
   // Create the GLES2 helper, which writes the command buffer protocol.
-  gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
+  gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
   if (!gles2_helper_->Initialize(command_buffer_size_))
     return false;
 
@@ -458,22 +453,22 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
 
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
-  transfer_buffer_ = new gpu::TransferBuffer(gles2_helper_);
+  transfer_buffer_ .reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
   WebGraphicsContext3DCommandBufferImpl* share_group_context =
       g_all_shared_contexts.Pointer()->empty() ?
           NULL : *g_all_shared_contexts.Pointer()->begin();
 
   // Create the object exposing the OpenGL API.
-  real_gl_ = new gpu::gles2::GLES2Implementation(
-      gles2_helper_,
+  real_gl_.reset(new gpu::gles2::GLES2Implementation(
+      gles2_helper_.get(),
       share_group_context ?
           share_group_context->GetImplementation()->share_group() : NULL,
-      transfer_buffer_,
+      transfer_buffer_.get(),
       attributes_.shareResources,
       bind_generates_resources_,
-      NULL);
-  gl_ = real_gl_;
+      NULL));
+  gl_ = real_gl_.get();
 
   if (!real_gl_->Initialize(
       start_transfer_buffer_size_,
@@ -484,8 +479,8 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGpuClientTracing)) {
-    trace_gl_ = new gpu::gles2::GLES2TraceImplementation(gl_);
-    gl_ = trace_gl_;
+    trace_gl_.reset(new gpu::gles2::GLES2TraceImplementation(gl_));
+    gl_ = trace_gl_.get();
   }
 
   return true;
@@ -522,30 +517,16 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
     gl_ = NULL;
   }
 
-  if (trace_gl_) {
-    delete trace_gl_;
-    trace_gl_ = NULL;
-  }
-
-  if (real_gl_) {
-    delete real_gl_;
-    real_gl_ = NULL;
-  }
-
-  if (transfer_buffer_) {
-    delete transfer_buffer_;
-    transfer_buffer_ = NULL;
-  }
-
-  delete gles2_helper_;
-  gles2_helper_ = NULL;
+  trace_gl_.reset();
+  real_gl_.reset();
+  transfer_buffer_.reset();
+  gles2_helper_.reset();
+  real_gl_.reset();
 
   if (command_buffer_) {
     if (host_.get())
-      host_->DestroyCommandBuffer(command_buffer_);
-    else
-      delete command_buffer_;
-    command_buffer_ = NULL;
+      host_->DestroyCommandBuffer(command_buffer_.release());
+    command_buffer_.reset();
   }
 
   host_ = NULL;

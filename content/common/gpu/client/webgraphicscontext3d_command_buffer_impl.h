@@ -106,9 +106,13 @@ class WebGraphicsContext3DCommandBufferImpl
   // Gets the context ID (relative to the channel).
   int GetContextID();
 
-  CommandBufferProxyImpl* GetCommandBufferProxy() { return command_buffer_; }
+  CommandBufferProxyImpl* GetCommandBufferProxy() {
+    return command_buffer_.get();
+  }
 
-  gpu::gles2::GLES2Implementation* GetImplementation() { return real_gl_; }
+  gpu::gles2::GLES2Implementation* GetImplementation() {
+    return real_gl_.get();
+  }
 
   // Return true if GPU process reported context lost or there was a
   // problem communicating with the GPU process.
@@ -751,12 +755,12 @@ class WebGraphicsContext3DCommandBufferImpl
                       unsigned int height);
 
   bool initialized_;
-  CommandBufferProxyImpl* command_buffer_;
-  gpu::gles2::GLES2CmdHelper* gles2_helper_;
-  gpu::TransferBuffer* transfer_buffer_;
+  scoped_ptr<CommandBufferProxyImpl> command_buffer_;
+  scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
+  scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   gpu::gles2::GLES2Interface* gl_;
-  gpu::gles2::GLES2Implementation* real_gl_;
-  gpu::gles2::GLES2Interface* trace_gl_;
+  scoped_ptr<gpu::gles2::GLES2Implementation> real_gl_;
+  scoped_ptr<gpu::gles2::GLES2Interface> trace_gl_;
   Error last_error_;
   int frame_number_;
   bool bind_generates_resources_;
