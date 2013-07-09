@@ -161,10 +161,6 @@ class GpuPixelBrowserTest : public ContentBrowserTest {
                     int64 ref_img_update_revision,
                     const ReferencePixel* ref_pixels,
                     size_t ref_pixel_count) {
-    // http://crbug.com/255146
-    if (gpu::GPUTestBotConfig::CurrentConfigMatches("LINUX NVIDIA"))
-      return;
-
     if (ref_img_option_ == kReferenceImageLocal) {
       ref_img_revision_no_older_than_ = ref_img_update_revision;
       ObtainLocalRefImageRevision();
