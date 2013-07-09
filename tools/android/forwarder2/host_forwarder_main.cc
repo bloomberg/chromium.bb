@@ -134,6 +134,18 @@ class ServerDelegate : public Daemon::ServerDelegate {
       SendMessage("ERROR: missing host port", client_socket.get());
       return;
     }
+    const bool use_dynamic_port_allocation = device_port == 0;
+    if (!use_dynamic_port_allocation) {
+      const std::string controller_key = MakeHostControllerMapKey(
+          adb_port, device_port);
+      LOG(INFO) << "Already forwarding device port " << device_port
+                << " to host port " << host_port;
+      if (controllers_.find(controller_key) != controllers_.end()) {
+        SendMessage(base::StringPrintf("%d:%d", device_port, host_port),
+                    client_socket.get());
+        return;
+      }
+    }
     // Create a new host controller.
     scoped_ptr<HostController> host_controller(
         new HostController(device_port, "127.0.0.1", host_port, adb_port,
