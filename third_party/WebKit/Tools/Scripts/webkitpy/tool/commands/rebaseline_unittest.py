@@ -252,6 +252,25 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win7"}]}\n')
 
 
+class TestAbstractParallelRebaselineCommand(_BaseTestCase):
+    command_constructor = AbstractParallelRebaselineCommand
+
+    def test_builders_to_fetch_from(self):
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK XP": {"port_name": "test-win-xp"},
+                "MOCK Win7": {"port_name": "test-win-win7"},
+                "MOCK Win7 (dbg)(1)": {"port_name": "test-win-win7"},
+                "MOCK Win7 (dbg)(2)": {"port_name": "test-win-win7"},
+            }
+
+            builders_to_fetch = self.command._builders_to_fetch_from(["MOCK XP", "MOCK Win7 (dbg)(1)", "MOCK Win7 (dbg)(2)", "MOCK Win7"])
+            self.assertEqual(builders_to_fetch, ["MOCK XP", "MOCK Win7"])
+        finally:
+            builders._exact_matches = old_exact_matches
+
+
 class TestRebaselineJson(_BaseTestCase):
     command_constructor = RebaselineJson
 

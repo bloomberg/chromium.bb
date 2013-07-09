@@ -304,7 +304,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         builders_to_fallback_paths = {}
         for builder in builders_to_check:
             port = self._tool.port_factory.get_from_builder_name(builder)
-            if port.test_configuration().build_type == 'Release':
+            if port.test_configuration().build_type == 'release':
                 release_builders.add(builder)
             else:
                 debug_builders.add(builder)
