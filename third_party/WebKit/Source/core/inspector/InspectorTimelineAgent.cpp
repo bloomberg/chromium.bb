@@ -231,8 +231,10 @@ void InspectorTimelineAgent::stop(ErrorString*)
     if (!m_state->getBoolean(TimelineAgentState::timelineAgentEnabled))
         return;
 
-    m_traceEventProcessor->shutdown();
-    m_traceEventProcessor.clear();
+    if (m_traceEventProcessor) {
+        m_traceEventProcessor->shutdown();
+        m_traceEventProcessor.clear();
+    }
     m_weakFactory.revokeAll();
     m_instrumentingAgents->setInspectorTimelineAgent(0);
     ScriptGCEvent::removeEventListener(this);
