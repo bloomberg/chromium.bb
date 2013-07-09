@@ -122,7 +122,14 @@ TEST(CrosDisksClientTest, DiskInfo) {
   EXPECT_EQ(kDeviceFile, result.device_path());
   EXPECT_EQ(kDeviceIsDrive, result.is_drive());
   EXPECT_EQ(kDeviceIsReadOnly, result.is_read_only());
-  EXPECT_EQ(kDevicePresentationHide, result.is_hidden());
+  // Use EXPECT_TRUE(kDevicePresentationHide == result.is_hidden()) instead of
+  // EXPECT_EQ(kDevicePresentationHide, result.is_hidden()) as gcc 4.7 issues
+  // the following warning on EXPECT_EQ(false, x), which is turned into an error
+  // with -Werror=conversion-null:
+  //
+  //   converting 'false' to pointer type for argument 1 of
+  //   'char testing::internal::IsNullLiteralHelper(testing::internal::Secret*)'
+  EXPECT_TRUE(kDevicePresentationHide == result.is_hidden());
   EXPECT_EQ(kDeviceIsMediaAvailable, result.has_media());
   EXPECT_EQ(kDeviceIsOnBootDevice, result.on_boot_device());
   EXPECT_EQ(kNativePath, result.system_path());
