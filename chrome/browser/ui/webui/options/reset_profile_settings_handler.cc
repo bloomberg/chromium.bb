@@ -10,6 +10,8 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
+#include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -57,21 +59,59 @@ void ResetProfileSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("performResetProfileSettings",
       base::Bind(&ResetProfileSettingsHandler::HandleResetProfileSettings,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("onShowResetProfileDialog",
+      base::Bind(&ResetProfileSettingsHandler::OnShowResetProfileDialog,
+                 base::Unretained(this)));
 }
 
 void ResetProfileSettingsHandler::HandleResetProfileSettings(
     const ListValue* /*value*/) {
-  DCHECK(resetter_);
-  DCHECK(!resetter_->IsActive());
-
-  resetter_->Reset(
-      ProfileResetter::ALL,
-      base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
-                 AsWeakPtr()));
+  DCHECK(config_fetcher_);
+  if (config_fetcher_->IsActive()) {
+    // Reset once the prefs are fetched.
+    config_fetcher_->SetCallback(
+        base::Bind(&ResetProfileSettingsHandler::ResetProfile,
+                   Unretained(this)));
+  } else {
+    ResetProfile();
+  }
 }
 
 void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
   web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
+}
+
+void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
+  // TODO(vasilii): use a real request.
+  config_fetcher_.reset(new BrandcodeConfigFetcher(
+      base::Bind(&ResetProfileSettingsHandler::OnSettingsFetched,
+                 Unretained(this)),
+      GURL("https://tools.google.com/service/update2")));
+}
+
+void ResetProfileSettingsHandler::OnSettingsFetched() {
+  DCHECK(config_fetcher_);
+  DCHECK(!config_fetcher_->IsActive());
+  // The master prefs is fetched. We are waiting for user pressing 'Reset'.
+}
+
+void ResetProfileSettingsHandler::ResetProfile() {
+  DCHECK(resetter_);
+  DCHECK(!resetter_->IsActive());
+  DCHECK(config_fetcher_);
+  DCHECK(!config_fetcher_->IsActive());
+
+  scoped_ptr<BrandcodedDefaultSettings> default_settings =
+      config_fetcher_->GetSettings();
+  config_fetcher_.reset();
+  // If we failed to fetch BrandcodedDefaultSettings, use default settings.
+  if (!default_settings)
+    default_settings.reset(new BrandcodedDefaultSettings);
+  resetter_->Reset(
+      ProfileResetter::ALL,
+      default_settings.Pass(),
+      base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
+                 AsWeakPtr()));
 }
 
 }  // namespace options

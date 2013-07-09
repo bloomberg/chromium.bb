@@ -14,6 +14,7 @@ class DictionaryValue;
 class ListValue;
 }  // namespace base
 
+class BrandcodeConfigFetcher;
 class ProfileResetter;
 
 namespace options {
@@ -41,7 +42,17 @@ class ResetProfileSettingsHandler
   // Closes the dialog once all requested settings has been reset.
   void OnResetProfileSettingsDone();
 
+  // Called when the confirmation box appears.
+  void OnShowResetProfileDialog(const base::ListValue* value);
+
+  // Called when BrandcodeConfigFetcher completed fetching settings.
+  void OnSettingsFetched();
+
+  void ResetProfile();
+
   scoped_ptr<ProfileResetter> resetter_;
+
+  scoped_ptr<BrandcodeConfigFetcher> config_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetProfileSettingsHandler);
 };

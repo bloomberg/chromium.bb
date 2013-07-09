@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_TEST_BASE_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_TEST_BASE_H_
 
+#include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-class ProfileResetter;
 
 // The ProfileResetterMockObject is used to block the thread until
 // ProfileResetter::Reset has completed:
 
 // ProfileResetterMockObject mock_object;
 // resetter_->Reset(ProfileResetter::ALL,
+//                  pointer,
 //                  base::Bind(&ProfileResetterMockObject::StopLoop,
 //                             base::Unretained(&mock_object)));
 // mock_object.RunLoop();
@@ -40,6 +40,9 @@ class ProfileResetterTestBase {
   ProfileResetterTestBase();
   ~ProfileResetterTestBase();
 
+  void ResetAndWait(ProfileResetter::ResettableFlags resettable_flags);
+  void ResetAndWait(ProfileResetter::ResettableFlags resettable_flags,
+                    const std::string& prefs);
  protected:
   testing::StrictMock<ProfileResetterMockObject> mock_object_;
   scoped_ptr<ProfileResetter> resetter_;

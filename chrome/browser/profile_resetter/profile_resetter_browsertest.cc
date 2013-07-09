@@ -166,10 +166,7 @@ IN_PROC_BROWSER_TEST_F(ProfileResetTest, ResetCookiesAndSiteData) {
   tester.AddCookie(kCookieHostname, kCookieDefinition);
   ASSERT_EQ(kCookieDefinition, tester.GetCookie(kCookieHostname));
 
-  resetter_->Reset(ProfileResetter::COOKIES_AND_SITE_DATA,
-                   base::Bind(&ProfileResetterMockObject::StopLoop,
-                              base::Unretained(&mock_object_)));
-  mock_object_.RunLoop();
+  ResetAndWait(ProfileResetter::COOKIES_AND_SITE_DATA);
 
   EXPECT_EQ("", tester.GetCookie(kCookieHostname));
 }

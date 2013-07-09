@@ -971,7 +971,8 @@ void ExtensionService::DisableExtension(
   SyncExtensionChangeIfNeeded(*extension);
 }
 
-void ExtensionService::DisableUserExtensions() {
+void ExtensionService::DisableUserExtensions(
+    const std::vector<std::string>& except_ids) {
   extensions::ManagementPolicy* management_policy =
       system_->management_policy();
   extensions::ExtensionList to_disable;
@@ -989,8 +990,9 @@ void ExtensionService::DisableUserExtensions() {
 
   for (extensions::ExtensionList::const_iterator extension = to_disable.begin();
       extension != to_disable.end(); ++extension) {
-    DisableExtension((*extension)->id(),
-                     extensions::Extension::DISABLE_USER_ACTION);
+    const std::string& id = (*extension)->id();
+    if (except_ids.end() == std::find(except_ids.begin(), except_ids.end(), id))
+      DisableExtension(id, extensions::Extension::DISABLE_USER_ACTION);
   }
 }
 

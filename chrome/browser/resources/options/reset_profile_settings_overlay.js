@@ -37,6 +37,11 @@ cr.define('options', function() {
         chrome.send('performResetProfileSettings');
       };
     },
+
+    /** @override */
+    didShowPage: function() {
+      chrome.send('onShowResetProfileDialog');
+    },
   };
 
   /**

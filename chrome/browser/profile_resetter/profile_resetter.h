@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -47,9 +48,10 @@ class ProfileResetter : public base::NonThreadSafe,
   virtual ~ProfileResetter();
 
   // Resets |resettable_flags| and calls |callback| on the UI thread on
-  // completion. If |resettable_flags| contains EXTENSIONS, these are handled
-  // according to |extension_handling|.
+  // completion. |default_settings| allows the caller to specify some default
+  // settings. |default_settings| shouldn't be NULL.
   void Reset(ResettableFlags resettable_flags,
+             scoped_ptr<BrandcodedDefaultSettings> master_settings,
              const base::Closure& callback);
 
   bool IsActive() const;
@@ -75,7 +77,8 @@ class ProfileResetter : public base::NonThreadSafe,
   // BrowsingDataRemover::Observer:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
-  Profile* profile_;
+  Profile* const profile_;
+  scoped_ptr<BrandcodedDefaultSettings> master_settings_;
   TemplateURLService* template_url_service_;
 
   // Flags of a Resetable indicating which reset operations we are still waiting

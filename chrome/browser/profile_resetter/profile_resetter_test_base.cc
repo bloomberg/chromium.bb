@@ -4,7 +4,7 @@
 
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
 
-#include "chrome/browser/profile_resetter/profile_resetter.h"
+#include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 
 ProfileResetterMockObject::ProfileResetterMockObject() {}
 
@@ -25,3 +25,26 @@ void ProfileResetterMockObject::StopLoop() {
 ProfileResetterTestBase::ProfileResetterTestBase() {}
 
 ProfileResetterTestBase::~ProfileResetterTestBase() {}
+
+void ProfileResetterTestBase::ResetAndWait(
+    ProfileResetter::ResettableFlags resettable_flags) {
+  scoped_ptr<BrandcodedDefaultSettings> master_settings(
+      new BrandcodedDefaultSettings);
+  resetter_->Reset(resettable_flags,
+                   master_settings.Pass(),
+                   base::Bind(&ProfileResetterMockObject::StopLoop,
+                              base::Unretained(&mock_object_)));
+  mock_object_.RunLoop();
+}
+
+void ProfileResetterTestBase::ResetAndWait(
+    ProfileResetter::ResettableFlags resettable_flags,
+    const std::string& prefs) {
+  scoped_ptr<BrandcodedDefaultSettings> master_settings(
+      new BrandcodedDefaultSettings(prefs));
+  resetter_->Reset(resettable_flags,
+                   master_settings.Pass(),
+                   base::Bind(&ProfileResetterMockObject::StopLoop,
+                              base::Unretained(&mock_object_)));
+  mock_object_.RunLoop();
+}

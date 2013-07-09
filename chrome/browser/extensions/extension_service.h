@@ -350,8 +350,9 @@ class ExtensionService
   virtual void DisableExtension(const std::string& extension_id,
       extensions::Extension::DisableReason disable_reason);
 
-  // Disable non-builtin and non-managed extensions.
-  void DisableUserExtensions();
+  // Disable non-builtin and non-managed extensions with ids not in
+  // |except_ids|.
+  void DisableUserExtensions(const std::vector<std::string>& except_ids);
 
   // Updates the |extension|'s granted permissions lists to include all
   // permissions in the |extension|'s manifest and re-enables the

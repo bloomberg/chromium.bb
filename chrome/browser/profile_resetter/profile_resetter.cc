@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -39,9 +40,14 @@ ProfileResetter::~ProfileResetter() {
     cookies_remover_->RemoveObserver(this);
 }
 
-void ProfileResetter::Reset(ProfileResetter::ResettableFlags resettable_flags,
-                            const base::Closure& callback) {
+void ProfileResetter::Reset(
+    ProfileResetter::ResettableFlags resettable_flags,
+    scoped_ptr<BrandcodedDefaultSettings> master_settings,
+    const base::Closure& callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(master_settings);
+
+  master_settings_.swap(master_settings);
 
   // We should never be called with unknown flags.
   CHECK_EQ(static_cast<ResettableFlags>(0), resettable_flags & ~ALL);
@@ -95,6 +101,7 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      callback_);
     callback_.Reset();
+    master_settings_.reset();
   }
 }
 
@@ -105,12 +112,20 @@ void ProfileResetter::ResetDefaultSearchEngine() {
   // If TemplateURLServiceFactory is ready we can clean it right now.
   // Otherwise, load it and continue from ProfileResetter::Observe.
   if (template_url_service_->loaded()) {
+    PrefService* prefs = profile_->GetPrefs();
+    DCHECK(prefs);
     TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(profile_);
+    scoped_ptr<ListValue> search_engines(
+        master_settings_->GetSearchProviderOverrides());
+    if (search_engines) {
+      // This Chrome distribution channel provides a custom search engine. We
+      // must reset to it.
+      ListPrefUpdate update(prefs, prefs::kSearchProviderOverrides);
+      update->Swap(search_engines.get());
+    }
     template_url_service_->ResetNonExtensionURLs();
 
     // Reset Google search URL.
-    PrefService* prefs = profile_->GetPrefs();
-    DCHECK(prefs);
     prefs->ClearPref(prefs::kLastPromptedGoogleURL);
     const TemplateURL* default_search_provider =
         template_url_service_->GetDefaultSearchProvider();
@@ -128,9 +143,23 @@ void ProfileResetter::ResetHomepage() {
   DCHECK(CalledOnValidThread());
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
-  prefs->ClearPref(prefs::kHomePageIsNewTabPage);
-  prefs->ClearPref(prefs::kHomePage);
-  prefs->ClearPref(prefs::kShowHomeButton);
+  std::string homepage;
+  bool homepage_is_ntp, show_home_button;
+
+  if (master_settings_->GetHomepage(&homepage))
+    prefs->SetString(prefs::kHomePage, homepage);
+  else
+    prefs->ClearPref(prefs::kHomePage);
+
+  if (master_settings_->GetHomepageIsNewTab(&homepage_is_ntp))
+    prefs->SetBoolean(prefs::kHomePageIsNewTabPage, homepage_is_ntp);
+  else
+    prefs->ClearPref(prefs::kHomePageIsNewTabPage);
+
+  if (master_settings_->GetShowHomeButton(&show_home_button))
+    prefs->SetBoolean(prefs::kShowHomeButton, show_home_button);
+  else
+    prefs->ClearPref(prefs::kShowHomeButton);
   MarkAsDone(HOMEPAGE);
 }
 
@@ -169,9 +198,13 @@ void ProfileResetter::ResetCookiesAndSiteData() {
 
 void ProfileResetter::ResetExtensions() {
   DCHECK(CalledOnValidThread());
+
+  std::vector<std::string> brandcode_extensions;
+  master_settings_->GetExtensions(&brandcode_extensions);
+
   ExtensionService* extension_service = profile_->GetExtensionService();
   DCHECK(extension_service);
-  extension_service->DisableUserExtensions();
+  extension_service->DisableUserExtensions(brandcode_extensions);
 
   MarkAsDone(EXTENSIONS);
 }
@@ -180,8 +213,18 @@ void ProfileResetter::ResetStartupPages() {
   DCHECK(CalledOnValidThread());
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
-  prefs->ClearPref(prefs::kRestoreOnStartup);
-  prefs->ClearPref(prefs::kURLsToRestoreOnStartup);
+  scoped_ptr<ListValue> url_list(master_settings_->GetUrlsToRestoreOnStartup());
+  if (url_list)
+    ListPrefUpdate(prefs, prefs::kURLsToRestoreOnStartup)->Swap(url_list.get());
+  else
+    prefs->ClearPref(prefs::kURLsToRestoreOnStartup);
+
+  int restore_on_startup;
+  if (master_settings_->GetRestoreOnStartup(&restore_on_startup))
+    prefs->SetInteger(prefs::kRestoreOnStartup, restore_on_startup);
+  else
+    prefs->ClearPref(prefs::kRestoreOnStartup);
+
   prefs->SetBoolean(prefs::kRestoreOnStartupMigrated, true);
   MarkAsDone(STARTUP_PAGES);
 }
