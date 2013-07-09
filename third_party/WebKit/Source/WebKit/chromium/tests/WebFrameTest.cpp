@@ -60,6 +60,8 @@
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -3377,7 +3379,8 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
 
     RefPtr<WebCore::Event> event = WebCore::MouseEvent::create(WebCore::eventNames().clickEvent, false, false,
         document->defaultView(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, 0, 0);
-    webViewImpl->page()->mainFrame()->loader()->urlSelected(destination, "", event.release(), false, WebCore::MaybeSendReferrer);
+    WebCore::FrameLoadRequest frameRequest(document->securityOrigin(), WebCore::ResourceRequest(destination));
+    webViewImpl->page()->mainFrame()->loader()->loadFrameRequest(frameRequest, false, event.release(), 0, WebCore::MaybeSendReferrer);
 
     m_webView->close();
     m_webView = 0;
