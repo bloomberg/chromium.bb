@@ -111,7 +111,7 @@
                     },
                     'postbuild_name': 'Copy ASan runtime dylib',
                     'action': [
-                      '<(copy_asan_dylib_path)',
+                      '>(copy_asan_dylib_path)',
                     ],
                   },
                 ],
