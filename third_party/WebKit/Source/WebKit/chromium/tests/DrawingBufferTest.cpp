@@ -47,11 +47,6 @@ using testing::_;
 
 namespace {
 
-class MockWebTextureUpdater : public WebTextureUpdater {
-public:
-    MOCK_METHOD3(appendCopy, void(unsigned, unsigned, WebSize));
-};
-
 class FakeContextEvictionManager : public ContextEvictionManager {
 public:
     void forciblyLoseOldestContext(const String& reason) { }
@@ -74,19 +69,6 @@ protected:
 };
 
 namespace {
-
-TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithTextures)
-{
-    // Tell the buffer its contents changed and context was lost.
-    m_drawingBuffer->markContentsChanged();
-    m_drawingBuffer->releaseResources();
-
-    MockWebTextureUpdater updater;
-    EXPECT_CALL(updater, appendCopy(_, _, _)).Times(0);
-
-    unsigned zeroTexture = 0;
-    EXPECT_EQ(zeroTexture, m_drawingBuffer->prepareTexture(updater));
-}
 
 TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithMailboxes)
 {
