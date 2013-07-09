@@ -276,14 +276,14 @@ class AutocheckoutStepProgressView : public views::View {
     const int kColumnSetId = 0;
     views::ColumnSet* columns = layout->AddColumnSet(kColumnSetId);
     columns->AddColumn(views::GridLayout::LEADING,
-                       views::GridLayout::LEADING,
+                       views::GridLayout::CENTER,
                        0,
                        views::GridLayout::USE_PREF,
                        0,
                        0);
     columns->AddPaddingColumn(0, 8);
     columns->AddColumn(views::GridLayout::LEADING,
-                       views::GridLayout::LEADING,
+                       views::GridLayout::CENTER,
                        0,
                        views::GridLayout::USE_PREF,
                        0,
@@ -1656,11 +1656,21 @@ void AutofillDialogViews::InitChildViews() {
   button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_);
 
   autocheckout_progress_bar_view_ = new views::View();
-  autocheckout_progress_bar_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 15, 0));
+  views::GridLayout* progress_bar_layout =
+      new views::GridLayout(autocheckout_progress_bar_view_);
+  autocheckout_progress_bar_view_->SetLayoutManager(progress_bar_layout);
+  const int kColumnSetId = 0;
+  views::ColumnSet* columns = progress_bar_layout->AddColumnSet(kColumnSetId);
+  columns->AddColumn(views::GridLayout::LEADING,
+                     views::GridLayout::CENTER,
+                     0,
+                     views::GridLayout::USE_PREF,
+                     0,
+                     0);
+  progress_bar_layout->StartRow(1.0, kColumnSetId);
 
   autocheckout_progress_bar_ = new AutocheckoutProgressBar();
-  autocheckout_progress_bar_view_->AddChildView(autocheckout_progress_bar_);
+  progress_bar_layout->AddView(autocheckout_progress_bar_);
 
   button_strip_extra_view_->AddChildView(autocheckout_progress_bar_view_);
   autocheckout_progress_bar_view_->SetVisible(false);
