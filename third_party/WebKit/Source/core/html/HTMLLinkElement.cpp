@@ -406,6 +406,8 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         ASSERT(restoredSheet->isCacheable());
         ASSERT(!restoredSheet->isLoading());
 
+        if (m_sheet)
+            clearSheet();
         m_sheet = CSSStyleSheet::create(restoredSheet, m_owner);
         m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
         m_sheet->setTitle(m_owner->title());
@@ -418,6 +420,8 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     RefPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
 
+    if (m_sheet)
+        clearSheet();
     m_sheet = CSSStyleSheet::create(styleSheet, m_owner);
     m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
     m_sheet->setTitle(m_owner->title());
