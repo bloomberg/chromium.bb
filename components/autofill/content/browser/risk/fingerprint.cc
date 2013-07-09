@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/cpu.h"
 #include "base/logging.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -231,6 +232,10 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   // Weak reference because the GpuDataManager class is a singleton.
   content::GpuDataManager* const gpu_data_manager_;
 
+  // Ensures that any observer registratiosn for the GPU data are cleaned up by
+  // the time this object is destroyed.
+  ScopedObserver<content::GpuDataManager, FingerprintDataLoader> gpu_observer_;
+
   // The callback used as an "observer" of the GeolocationProvider.  Accessed
   // only on the IO thread.
   content::GeolocationProvider::LocationUpdateCallback geolocation_callback_;
@@ -275,6 +280,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
+      gpu_observer_(this),
       obfuscated_gaia_id_(obfuscated_gaia_id),
       window_bounds_(window_bounds),
       content_bounds_(content_bounds),
@@ -290,7 +296,7 @@ FingerprintDataLoader::FingerprintDataLoader(
 
   // Load GPU data if needed.
   if (!gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
-    gpu_data_manager_->AddObserver(this);
+    gpu_observer_.Add(gpu_data_manager_);
     gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
   }
 
@@ -317,7 +323,7 @@ void FingerprintDataLoader::OnGpuInfoUpdate() {
   if (!gpu_data_manager_->IsCompleteGpuInfoAvailable())
     return;
 
-  gpu_data_manager_->RemoveObserver(this);
+  gpu_observer_.Remove(gpu_data_manager_);
   MaybeFillFingerprint();
 }
 
