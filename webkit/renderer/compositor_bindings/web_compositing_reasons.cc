@@ -8,10 +8,7 @@
 #include "third_party/WebKit/public/platform/WebCompositingReasons.h"
 
 #define COMPILE_ASSERT_MATCHING_UINT64(cc_name, webkit_name)                  \
-    COMPILE_ASSERT(                                                           \
-        static_cast<uint64>(cc_name) ==                                       \
-            (static_cast<uint64>(webkit_name) & GG_UINT64_C(0xffffffff)),     \
-        mismatching_uint64)
+    COMPILE_ASSERT(cc_name == webkit_name, mismatching_uint64)
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonUnknown,
