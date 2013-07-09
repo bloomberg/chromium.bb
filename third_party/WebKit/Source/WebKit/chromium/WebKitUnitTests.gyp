@@ -61,6 +61,7 @@
             ],
             'include_dirs': [
                 '../../../public/web',
+                '../../web',
                 'src',
             ],
             'conditions': [

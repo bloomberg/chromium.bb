@@ -33,6 +33,7 @@
         'WinPrecompile.gypi',
         '../../wtf/wtf.gypi',
         '../../core/core.gypi',
+        '../../web/web.gypi',
         'WebKit.gypi',
         '../../core/features.gypi',
     ],
@@ -60,6 +61,7 @@
             'include_dirs': [
                 '../../../public/web',
                 'src',
+                '../../web',
                 '<(angle_path)/include',
                 '<(DEPTH)/third_party/skia/include/utils',
             ],
@@ -69,6 +71,7 @@
             ],
             'sources': [
                 '<@(webcore_platform_support_files)',
+                '<@(web_files)',
                 'src/ApplicationCacheHost.cpp',
                 'src/ApplicationCacheHostInternal.h',
                 'src/AssertMatchingEnums.cpp',
@@ -243,8 +246,6 @@
                 'src/WebFontImpl.h',
                 'src/WebFormControlElement.cpp',
                 'src/WebFormElement.cpp',
-                'src/WebFrameImpl.cpp',
-                'src/WebFrameImpl.h',
                 'src/WebGeolocationController.cpp',
                 'src/WebGeolocationClientMock.cpp',
                 'src/WebGeolocationError.cpp',
