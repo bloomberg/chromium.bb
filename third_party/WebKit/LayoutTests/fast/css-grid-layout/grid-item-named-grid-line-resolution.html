@@ -36,6 +36,26 @@ if (window.testRunner)
     grid-column: 1 / -1 "nonexistent";
     grid-row: span 2 / -10 "nonexistent";
 }
+
+.gridItemAToSpanC {
+    grid-column: 'a' / span 'c';
+    grid-row: 1;
+}
+
+.gridItemFToSpanH {
+    grid-column: 1;
+    grid-row: 'f' span / 'h';
+}
+
+.gridItem2BSpan2B {
+    grid-column: 2 'b' / span 2 'b';
+    grid-row: 1;
+}
+
+.gridItemSpan2GNegativeG {
+    grid-column: 1;
+    grid-row: span 2 'g' / -1 'g';
+}
 </style>
 <script src="../../resources/check-layout.js"></script>
 </head>
@@ -81,6 +101,60 @@ if (window.testRunner)
         <div class="sizedToGridArea gridItemInvalidNegativeGridLine" data-offset-x="0" data-offset-y="50" data-expected-width="350" data-expected-height="300"></div>
     </div>
 </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithoutRepeat">
+        <div class="sizedToGridArea gridItemAToSpanC" data-offset-x="0" data-offset-y="0" data-expected-width="150" data-expected-height="50"></div>
+    </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithoutRepeat">
+        <div class="sizedToGridArea gridItemFToSpanH" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="300"></div>
+    </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithoutRepeat">
+        <!-- There is only one 'b' so we should pick this one. Also span 2 'b' should resolve to the same 'b'.
+            Thus being actually 'b' / span 1. -->
+        <div class="sizedToGridArea gridItem2BSpan2B" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+    </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithoutRepeat">
+        <!-- There is only one 'g' so we should pick this one. Also both initial and final position are equal so
+            this is resolved as span 1 / 'g'. -->
+        <div class="sizedToGridArea gridItemSpan2GNegativeG" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
+    </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithRepeat">
+        <!-- There is no 'a' or 'c' so it should default to auto / auto. -->
+        <div class="sizedToGridArea gridItemAToSpanC" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithRepeat">
+        <!-- There is no 'f' or 'h' so it should default to auto / auto. -->
+        <div class="sizedToGridArea gridItemFToSpanH" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithRepeat">
+        <div class="sizedToGridArea gridItem2BSpan2B" data-offset-x="50" data-offset-y="0" data-expected-width="300" data-expected-height="50"></div>
+    </div>
+</div>
+
+<div style="position: relative">
+    <div class="grid gridWithRepeat">
+        <div class="sizedToGridArea gridItemSpan2GNegativeG" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="300"></div>
+    </div>
 </div>
 
 </body>

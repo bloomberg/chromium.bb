@@ -884,11 +884,16 @@ PassOwnPtr<GridSpan> RenderGrid::resolveGridPositionsFromStyle(const RenderBox* 
     return adoptPtr(new GridSpan(resolvedInitialPosition, resolvedFinalPosition));
 }
 
+inline static size_t adjustGridPositionForAfterEndSide(size_t resolvedPosition)
+{
+    return resolvedPosition ? resolvedPosition - 1 : 0;
+}
+
 static size_t adjustGridPositionForSide(size_t resolvedPosition, GridPositionSide side)
 {
     // An item finishing on the N-th line belongs to the N-1-th cell.
     if (side == ColumnEndSide || side == RowEndSide)
-        return resolvedPosition ? resolvedPosition - 1 : 0;
+        return adjustGridPositionForAfterEndSide(resolvedPosition);
 
     return resolvedPosition;
 }
@@ -958,6 +963,11 @@ PassOwnPtr<GridSpan> RenderGrid::resolveGridPositionAgainstOppositePosition(size
     ASSERT(position.isSpan());
     ASSERT(position.spanPosition() > 0);
 
+    if (!position.namedGridLine().isNull()) {
+        // span 2 'c' -> we need to find the appropriate grid line before / after our opposite position.
+        return resolveNamedGridLinePositionAgainstOppositePosition(resolvedOppositePosition, position, side);
+    }
+
     // 'span 1' is contained inside a single grid track regardless of the direction.
     // That's why the CSS span value is one more than the offset we apply.
     size_t positionOffset = position.spanPosition() - 1;
@@ -967,6 +977,55 @@ PassOwnPtr<GridSpan> RenderGrid::resolveGridPositionAgainstOppositePosition(size
     }
 
     return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition + positionOffset);
+}
+
+PassOwnPtr<GridSpan> RenderGrid::resolveNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side) const
+{
+    ASSERT(position.isSpan());
+    ASSERT(!position.namedGridLine().isNull());
+    // Negative positions are not allowed per the specification and should have been handled during parsing.
+    ASSERT(position.spanPosition() > 0);
+
+    const NamedGridLinesMap& gridLinesNames = (side == ColumnStartSide || side == ColumnEndSide) ? style()->namedGridColumnLines() : style()->namedGridRowLines();
+    NamedGridLinesMap::const_iterator it = gridLinesNames.find(position.namedGridLine());
+
+    // If there is no named grid line of that name, we resolve the position to 'auto' (which is equivalent to 'span 1' in this case).
+    // See http://lists.w3.org/Archives/Public/www-style/2013Jun/0394.html.
+    if (it == gridLinesNames.end())
+        return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition);
+
+    if (side == RowStartSide || side == ColumnStartSide)
+        return resolveBeforeStartNamedGridLinePositionAgainstOppositePosition(resolvedOppositePosition, position, it->value);
+
+    return resolveAfterEndNamedGridLinePositionAgainstOppositePosition(resolvedOppositePosition, position, it->value);
+}
+
+PassOwnPtr<GridSpan> RenderGrid::resolveBeforeStartNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines) const
+{
+    // The grid line inequality needs to be strict (which doesn't match the after / end case) because |resolvedOppositePosition|
+    // is already converted to an index in our grid representation (ie one was removed from the grid line to account for the side).
+    // FIXME: This could be a binary search as |gridLines| is ordered.
+    int firstLineBeforeOppositePositionIndex = gridLines.size() - 1;
+    for (; firstLineBeforeOppositePositionIndex >= 0 && gridLines[firstLineBeforeOppositePositionIndex] > resolvedOppositePosition; --firstLineBeforeOppositePositionIndex) { }
+
+    size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition() + 1);
+    size_t resolvedGridLinePosition = gridLines[gridLineIndex];
+    if (resolvedGridLinePosition > resolvedOppositePosition)
+        resolvedGridLinePosition = resolvedOppositePosition;
+    return GridSpan::create(resolvedGridLinePosition, resolvedOppositePosition);
+}
+
+PassOwnPtr<GridSpan> RenderGrid::resolveAfterEndNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines) const
+{
+    // FIXME: This could be a binary search as |gridLines| is ordered.
+    size_t firstLineAfterOppositePositionIndex = 0;
+    for (; firstLineAfterOppositePositionIndex < gridLines.size() && gridLines[firstLineAfterOppositePositionIndex] <= resolvedOppositePosition; ++firstLineAfterOppositePositionIndex) { }
+
+    size_t gridLineIndex = std::min(gridLines.size() - 1, firstLineAfterOppositePositionIndex + position.spanPosition() - 1);
+    size_t resolvedGridLinePosition = adjustGridPositionForAfterEndSide(gridLines[gridLineIndex]);
+    if (resolvedGridLinePosition < resolvedOppositePosition)
+        resolvedGridLinePosition = resolvedOppositePosition;
+    return GridSpan::create(resolvedOppositePosition, resolvedGridLinePosition);
 }
 
 LayoutUnit RenderGrid::gridAreaBreadthForChild(const RenderBox* child, TrackSizingDirection direction, const Vector<GridTrack>& tracks) const

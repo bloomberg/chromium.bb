@@ -108,6 +108,9 @@ private:
     size_t resolveNamedGridLinePositionFromStyle(const GridPosition&, GridPositionSide) const;
     size_t resolveGridPositionFromStyle(const GridPosition&, GridPositionSide) const;
     PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
+    PassOwnPtr<GridSpan> resolveNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
+    PassOwnPtr<GridSpan> resolveBeforeStartNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, const Vector<size_t>&) const;
+    PassOwnPtr<GridSpan> resolveAfterEndNamedGridLinePositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, const Vector<size_t>&) const;
 
     LayoutUnit gridAreaBreadthForChild(const RenderBox* child, TrackSizingDirection, const Vector<GridTrack>&) const;
 
