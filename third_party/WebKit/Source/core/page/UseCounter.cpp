@@ -640,6 +640,10 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedDocumentRegister:
         return "The document.webkitRegister method is deprecated. Use the document.register method instead.";
 
+    // HTML Media Capture
+    case CaptureAttributeAsEnum:
+        return "Using the 'capture' attribute as an enum is deprecated. Please use it as a boolean and specify the media types that should be accepted in the 'accept' attribute.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

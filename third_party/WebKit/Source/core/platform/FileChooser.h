@@ -56,7 +56,6 @@ struct FileChooserSettings {
     Vector<String> acceptFileExtensions;
     Vector<String> selectedFiles;
 #if ENABLE(MEDIA_CAPTURE)
-    String capture;
     bool useMediaCapture;
 #endif
 

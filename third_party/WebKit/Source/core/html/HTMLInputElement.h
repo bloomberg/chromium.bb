@@ -260,8 +260,7 @@ public:
     String defaultToolTip() const;
 
 #if ENABLE(MEDIA_CAPTURE)
-    String capture() const;
-    void setCapture(const String& value);
+    bool capture() const;
 #endif
 
     static const int maximumLength;
