@@ -208,7 +208,7 @@ class GclientTest(trial_dir.TestCase):
     # Invalid urls causes pain when specifying requirements. Make sure it's
     # auto-fixed.
     d = gclient.Dependency(
-        None, 'name', 'proto://host/path/@revision', None, None, None,
+        None, 'name', 'proto://host/path/@revision', None, None, None, None,
         None, '', True)
     self.assertEquals('proto://host/path@revision', d.url)
 
@@ -219,24 +219,24 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
         [
           gclient.Dependency(
-            obj, 'foo', 'url', None, None, None, None, 'DEPS', True),
+            obj, 'foo', 'url', None, None, None, None, None, 'DEPS', True),
           gclient.Dependency(
-            obj, 'bar', 'url', None, None, None, None, 'DEPS', True),
+            obj, 'bar', 'url', None, None, None, None, None, 'DEPS', True),
         ],
         [])
     obj.dependencies[0].add_dependencies_and_close(
         [
           gclient.Dependency(
             obj.dependencies[0], 'foo/dir1', 'url', None, None, None, None,
-            'DEPS', True),
+            None, 'DEPS', True),
           gclient.Dependency(
             obj.dependencies[0], 'foo/dir2',
             gclient.GClientKeywords.FromImpl('bar'), None, None, None, None,
-            'DEPS', True),
+            None, 'DEPS', True),
           gclient.Dependency(
             obj.dependencies[0], 'foo/dir3',
             gclient.GClientKeywords.FileImpl('url'), None, None, None, None,
-            'DEPS', True),
+            None, 'DEPS', True),
         ],
         [])
     # Make sure __str__() works fine.
@@ -274,6 +274,56 @@ class GclientTest(trial_dir.TestCase):
       work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=options)
     self.assertEqual(client.GetHooks(options), [x['action'] for x in hooks])
+
+  def testCustomHooks(self):
+    topdir = self.root_dir
+    gclient_fn = os.path.join(topdir, '.gclient')
+    fh = open(gclient_fn, 'w')
+    extra_hooks = [{'name': 'append', 'pattern':'.', 'action':['supercmd']}]
+    print >> fh, ('solutions = [{"name":"top","url":"svn://svn.top.com/top",'
+        '"custom_hooks": %s},' ) % repr(extra_hooks + [{'name': 'skip'}])
+    print >> fh, '{"name":"bottom","url":"svn://svn.top.com/bottom"}]'
+    fh.close()
+    subdir_fn = os.path.join(topdir, 'top')
+    os.mkdir(subdir_fn)
+    deps_fn = os.path.join(subdir_fn, 'DEPS')
+    fh = open(deps_fn, 'w')
+    hooks = [{'pattern':'.', 'action':['cmd1', 'arg1', 'arg2']}]
+    hooks.append({'pattern':'.', 'action':['cmd2', 'arg1', 'arg2']})
+    skip_hooks = [
+        {'name': 'skip', 'pattern':'.', 'action':['cmd3', 'arg1', 'arg2']}]
+    skip_hooks.append(
+        {'name': 'skip', 'pattern':'.', 'action':['cmd4', 'arg1', 'arg2']})
+    print >> fh, 'hooks = %s' % repr(hooks + skip_hooks)
+    fh.close()
+
+    # Make sure the custom hooks for that project don't affect the next one.
+    subdir_fn = os.path.join(topdir, 'bottom')
+    os.mkdir(subdir_fn)
+    deps_fn = os.path.join(subdir_fn, 'DEPS')
+    fh = open(deps_fn, 'w')
+    sub_hooks = [{'pattern':'.', 'action':['response1', 'yes1', 'yes2']}]
+    sub_hooks.append(
+        {'name': 'skip', 'pattern':'.', 'action':['response2', 'yes', 'sir']})
+    print >> fh, 'hooks = %s' % repr(sub_hooks)
+    fh.close()
+
+    fh = open(os.path.join(subdir_fn, 'fake.txt'), 'w')
+    print >> fh, 'bogus content'
+    fh.close()
+
+    os.chdir(topdir)
+
+    parser = gclient.Parser()
+    options, _ = parser.parse_args([])
+    options.force = True
+    client = gclient.GClient.LoadCurrentConfig(options)
+    work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
+    for s in client.dependencies:
+      work_queue.enqueue(s)
+    work_queue.flush({}, None, [], options=options)
+    self.assertEqual(client.GetHooks(options),
+                     [x['action'] for x in hooks + extra_hooks + sub_hooks])
 
   def testTargetOS(self):
     """Verifies that specifying a target_os pulls in all relevant dependencies.

@@ -10,8 +10,9 @@ Files
                   Format is a Python script defining 'solutions', a list whose
                   entries each are maps binding the strings "name" and "url"
                   to strings specifying the name and location of the client
-                  module, as well as "custom_deps" to a map similar to the DEPS
-                  file below.
+                  module, as well as "custom_deps" to a map similar to the deps
+                  section of the DEPS file below, as well as "custom_hooks" to
+                  a list similar to the hooks sections of the DEPS file below.
   .gclient_entries : A cache constructed by 'update' command.  Format is a
                   Python script defining 'entries', a list of the names
                   of all modules in the client
@@ -24,8 +25,8 @@ Hooks
   working copy as a result of a "sync"/"update" or "revert" operation.  This
   can be prevented by using --nohooks (hooks run by default). Hooks can also
   be forced to run with the "runhooks" operation.  If "sync" is run with
-  --force, all known hooks will run regardless of the state of the working
-  copy.
+  --force, all known but not suppressed hooks will run regardless of the state
+  of the working copy.
 
   Each item in a "hooks" list is a dict, containing these two keys:
     "pattern"  The associated value is a string containing a regular
@@ -41,11 +42,16 @@ Hooks
                to run the command. If the list contains string "$matching_files"
                it will be removed from the list and the list will be extended
                by the list of matching files.
+    "name"     An optional string specifying the group to which a hook belongs
+               for overriding and organizing.
 
   Example:
     hooks = [
       { "pattern": "\\.(gif|jpe?g|pr0n|png)$",
         "action":  ["python", "image_indexer.py", "--all"]},
+      { "pattern": ".",
+        "name": "gyp",
+        "action":  ["python", "src/build/gyp_chromium"]},
     ]
 
 Specifying a target OS
@@ -159,7 +165,7 @@ class DependencySettings(GClientKeywords):
   """Immutable configuration settings."""
   def __init__(
       self, parent, url, safesync_url, managed, custom_deps, custom_vars,
-      deps_file, should_process):
+      custom_hooks, deps_file, should_process):
     GClientKeywords.__init__(self)
 
     # These are not mutable:
@@ -186,6 +192,7 @@ class DependencySettings(GClientKeywords):
     # These are only set in .gclient and not in DEPS files.
     self._custom_vars = custom_vars or {}
     self._custom_deps = custom_deps or {}
+    self._custom_hooks = custom_hooks or []
 
     # TODO(iannucci): Remove this when all masters are correctly substituting
     # the new blink url.
@@ -247,6 +254,10 @@ class DependencySettings(GClientKeywords):
     return self._custom_deps.copy()
 
   @property
+  def custom_hooks(self):
+    return self._custom_hooks[:]
+
+  @property
   def url(self):
     return self._url
 
@@ -276,11 +287,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
   def __init__(self, parent, name, url, safesync_url, managed, custom_deps,
-               custom_vars, deps_file, should_process):
+               custom_vars, custom_hooks, deps_file, should_process):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
         self, parent, url, safesync_url, managed, custom_deps, custom_vars,
-        deps_file, should_process)
+        custom_hooks, deps_file, should_process)
 
     # This is in both .gclient and DEPS files:
     self._deps_hooks = []
@@ -528,10 +539,23 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for name, url in deps.iteritems():
       should_process = self.recursion_limit and self.should_process
       deps_to_add.append(Dependency(
-          self, name, url, None, None, None, None,
+          self, name, url, None, None, None, None, None,
           self.deps_file, should_process))
     deps_to_add.sort(key=lambda x: x.name)
-    self.add_dependencies_and_close(deps_to_add, local_scope.get('hooks', []))
+
+    # override named sets of hooks by the custom hooks
+    hooks_to_run = []
+    hook_names_to_suppress = [c.get('name', '') for c in self.custom_hooks]
+    for hook in local_scope.get('hooks', []):
+      if hook.get('name', '') not in hook_names_to_suppress:
+        hooks_to_run.append(hook)
+
+    # add the replacements and any additions
+    for hook in self.custom_hooks:
+      if 'action' in hook:
+        hooks_to_run.append(hook)
+
+    self.add_dependencies_and_close(deps_to_add, hooks_to_run)
     logging.info('ParseDepsFile(%s) done' % self.name)
 
   def add_dependencies_and_close(self, deps_to_add, hooks):
@@ -923,7 +947,7 @@ solutions = [
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    Dependency.__init__(self, None, None, None, None, True, None, None,
+    Dependency.__init__(self, None, None, None, None, True, None, None, None,
                         'unused', True)
     self._options = options
     if options.deps_os:
@@ -967,6 +991,7 @@ solutions = [
             s.get('managed', True),
             s.get('custom_deps', {}),
             s.get('custom_vars', {}),
+            s.get('custom_hooks', []),
             s.get('deps_file', 'DEPS'),
             True))
       except KeyError:
