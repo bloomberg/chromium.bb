@@ -6,15 +6,5 @@
   "background": {
     "scripts": ["reply.js"]
   },
-  "omnibox": { "keyword" : "hello" },
-  "options_page": "options.html",
-  "permissions": ["cookies", "storage", "tabs", "webRequest",
-                  "webRequestBlocking", "http://*/*", "https://*/*"],
-  "content_scripts": [
-    {
-      "matches": ["http://www.google.com.bo/*"],
-      "js": ["google_cs.js"],
-      "run_at": "document_start"
-    }
-  ]
+  "permissions": ["cookies", "https://www.cnn.com/"]
 }

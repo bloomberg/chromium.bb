@@ -1,8 +1,12 @@
 {
-  "name": "Prerender Test Extension",
+  "name": "Activity Log Test Extension",
   "version": "0.1",
-  "description": "Testing the prerender",
+  "description": "Testing the Activity Log",
+  "permissions": [ "cookies", "tabs", "webRequest", "webRequestBlocking",
+                   "http://*/*", "https://*/*", "storage" ],
+  "options_page": "options.html",
   "manifest_version": 2,
+  "omnibox": { "keyword" : "hello" },
   "content_scripts": [
     {
       "matches": ["http://www.google.com.bo/*"],
