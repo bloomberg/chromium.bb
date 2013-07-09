@@ -139,7 +139,6 @@ void ScriptLoader::dispatchErrorEvent()
 
 void ScriptLoader::dispatchLoadEvent()
 {
-    ASSERT(!haveFiredLoadEvent());
     if (ScriptLoaderClient* client = this->client())
         client->dispatchLoadEvent();
     setHaveFiredLoadEvent(true);

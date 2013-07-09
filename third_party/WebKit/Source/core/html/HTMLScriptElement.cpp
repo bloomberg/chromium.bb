@@ -166,6 +166,7 @@ bool HTMLScriptElement::hasSourceAttribute() const
 
 void HTMLScriptElement::dispatchLoadEvent()
 {
+    ASSERT(!m_loader->haveFiredLoadEvent());
     dispatchEvent(Event::create(eventNames().loadEvent, false, false));
 }
 
