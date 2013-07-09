@@ -162,8 +162,8 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/url/url.gyp:url_lib',
+        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
         'glue_common',
-        'webkit_common',
       ],
 
       'sources': [
@@ -209,6 +209,7 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
+        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
         '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/storage_browser.gyp:webkit_storage_browser',
@@ -217,7 +218,6 @@
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
         'glue_common',
         'plugins',
-        'webkit_common',
         'webkit_media',
       ],
       'include_dirs': [

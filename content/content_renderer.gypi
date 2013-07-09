@@ -17,6 +17,7 @@
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
     '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
+    '../webkit/common/webkit_common.gyp:webkit_common',
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
     '../webkit/plugins/webkit_plugins.gyp:plugins_common',
@@ -27,7 +28,6 @@
     '../webkit/support/webkit_support.gyp:glue_common',
     '../webkit/support/webkit_support.gyp:glue_renderer',
     '../webkit/support/webkit_support.gyp:plugins',
-    '../webkit/support/webkit_support.gyp:webkit_common',
     '../webkit/support/webkit_support.gyp:webkit_media',
   ],
   'include_dirs': [

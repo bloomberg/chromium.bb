@@ -3,11 +3,14 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'enable_wexit_time_destructors': 1,
+    'chromium_code': 1
+  },
   'targets': [
     {
       'target_name': 'webkit_common',
       'type': '<(component)',
-      'variables': { 'enable_wexit_time_destructors': 1, },
       'defines': [
         'WEBKIT_COMMON_IMPLEMENTATION',
       ],
