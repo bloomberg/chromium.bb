@@ -357,7 +357,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
         visitor.notifyFinished();
 
         V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
-        TRACE_EVENT_SET_SAMPLING_STATE("Blink", "MinorGC");
+        TRACE_EVENT_SET_SAMPLING_STATE("V8", "MinorGC");
     }
 }
 
