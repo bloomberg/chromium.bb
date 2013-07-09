@@ -59,4 +59,9 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
     public View getVideoLoadingProgressView() {
         return null;
     }
+
+    @Override
+    public ContentVideoViewControls createControls() {
+        return null;
+    }
 }

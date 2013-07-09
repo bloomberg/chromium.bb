@@ -25,6 +25,7 @@ import android.webkit.WebChromeClient;
 
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentVideoViewClient;
+import org.chromium.content.browser.ContentVideoViewControls;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
@@ -157,6 +158,11 @@ public abstract class AwContentsClient {
 
         @Override
         public void keepScreenOn(boolean screenOn) {
+        }
+
+        @Override
+        public ContentVideoViewControls createControls() {
+            return null;
         }
     }
 
