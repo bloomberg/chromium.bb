@@ -463,8 +463,6 @@ void GpuCommandBufferStub::OnInitialize(
       DLOG(ERROR) << "Failed to initialize virtual GL context.";
       OnInitializeFailed(reply_message);
       return;
-    } else {
-      LOG(INFO) << "Created virtual GL context.";
     }
   }
   if (!context.get()) {
