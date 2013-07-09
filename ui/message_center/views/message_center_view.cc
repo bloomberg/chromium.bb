@@ -174,20 +174,23 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   quiet_mode_button_ = new NotificationCenterButton(
       this,
-      IDR_NOTIFICATION_PAUSE,
-      IDR_NOTIFICATION_PAUSE_HOVER,
-      IDR_NOTIFICATION_PAUSE_PRESSED,
+      IDR_NOTIFICATION_DO_NOT_DISTURB,
+      IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER,
+      IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED,
       IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP);
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   quiet_mode_button_->SetToggledImage(
       views::Button::STATE_NORMAL,
-      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_PAUSE_PRESSED));
+      resource_bundle.GetImageSkiaNamed(
+          IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED));
   quiet_mode_button_->SetToggledImage(
       views::Button::STATE_HOVERED,
-      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_PAUSE_PRESSED));
+      resource_bundle.GetImageSkiaNamed(
+          IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED));
   quiet_mode_button_->SetToggledImage(
       views::Button::STATE_PRESSED,
-      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_PAUSE_PRESSED));
+      resource_bundle.GetImageSkiaNamed(
+          IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED));
   quiet_mode_button_->SetToggled(message_center->IsQuietMode());
   button_container->AddChildView(quiet_mode_button_);
 

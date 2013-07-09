@@ -235,12 +235,12 @@ const CGFloat kTrayBottomMargin = 75;
     messageCenter_->SetQuietMode(false);
     [pauseButton_ setTrackingEnabled:YES];
     [pauseButton_ setDefaultImage:
-        rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE).ToNSImage()];
+        rb.GetNativeImageNamed(IDR_NOTIFICATION_DO_NOT_DISTURB).ToNSImage()];
   } else {
     messageCenter_->EnterQuietModeWithExpire(base::TimeDelta::FromDays(1));
     [pauseButton_ setTrackingEnabled:NO];
-    [pauseButton_ setDefaultImage:
-        rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE_PRESSED).ToNSImage()];
+    [pauseButton_ setDefaultImage: rb.GetNativeImageNamed(
+        IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED).ToNSImage()];
   }
 }
 
@@ -489,16 +489,17 @@ const CGFloat kTrayBottomMargin = 75;
   [view addSubview:clearAllButton_];
 
   // Create the pause button.
-  defaultImage = rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE).ToNSImage();
+  defaultImage = rb.GetNativeImageNamed(
+      IDR_NOTIFICATION_DO_NOT_DISTURB).ToNSImage();
   NSRect pauseButtonFrame = getButtonFrame(
       NSMinX(clearAllButtonFrame) - kButtonXMargin,
       defaultImage);
   pauseButton_.reset([[HoverImageButton alloc] initWithFrame:pauseButtonFrame]);
   [pauseButton_ setDefaultImage:defaultImage];
-  [pauseButton_ setHoverImage:
-      rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE_HOVER).ToNSImage()];
-  [pauseButton_ setPressedImage:
-      rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE_PRESSED).ToNSImage()];
+  [pauseButton_ setHoverImage: rb.GetNativeImageNamed(
+      IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER).ToNSImage()];
+  [pauseButton_ setPressedImage: rb.GetNativeImageNamed(
+      IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED).ToNSImage()];
   [pauseButton_ setToolTip:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP)];
   [[pauseButton_ cell]

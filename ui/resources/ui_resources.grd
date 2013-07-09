@@ -358,9 +358,9 @@
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND" file="common/notification_expand.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_HOVER" file="common/notification_expand_hover.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EXPAND_PRESSED" file="common/notification_expand_pressed.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PAUSE" file="common/notification_pause.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PAUSE_HOVER" file="common/notification_pause_hover.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PAUSE_PRESSED" file="common/notification_pause_pressed.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB" file="common/notification_do_not_disturb.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER" file="common/notification_do_not_disturb_hover.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED" file="common/notification_do_not_disturb_pressed.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS" file="common/notification_settings.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_HOVER" file="common/notification_settings_hover.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_PRESSED" file="common/notification_settings_pressed.png"/>
