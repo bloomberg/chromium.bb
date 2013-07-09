@@ -304,8 +304,13 @@ class InspectUI::WorkerCreationDestructionListener
     : public WorkerServiceObserver,
       public base::RefCountedThreadSafe<WorkerCreationDestructionListener> {
  public:
-  explicit WorkerCreationDestructionListener(InspectUI* workers_ui)
-      : discovery_ui_(workers_ui) {
+  WorkerCreationDestructionListener()
+      : discovery_ui_(NULL) {}
+
+  void Init(InspectUI* workers_ui) {
+    DCHECK(workers_ui);
+    DCHECK(!discovery_ui_);
+    discovery_ui_ = workers_ui;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&WorkerCreationDestructionListener::RegisterObserver,
@@ -313,6 +318,7 @@ class InspectUI::WorkerCreationDestructionListener
   }
 
   void InspectUIDestroyed() {
+    DCHECK(discovery_ui_);
     discovery_ui_ = NULL;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -360,8 +366,9 @@ class InspectUI::WorkerCreationDestructionListener
 
 InspectUI::InspectUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      observer_(new WorkerCreationDestructionListener(this)),
+      observer_(new WorkerCreationDestructionListener()),
       weak_factory_(this) {
+  observer_->Init(this);
   Profile* profile = Profile::FromWebUI(web_ui);
   adb_bridge_.reset(new DevToolsAdbBridge(profile));
   web_ui->AddMessageHandler(new InspectMessageHandler(adb_bridge_.get()));
