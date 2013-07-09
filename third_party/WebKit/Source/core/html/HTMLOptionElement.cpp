@@ -31,7 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/ScriptElement.h"
+#include "core/dom/ScriptLoader.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLSelectElement.h"
@@ -370,7 +370,7 @@ String HTMLOptionElement::collectOptionInnerText() const
         if (node->isTextNode())
             text.append(node->nodeValue());
         // Text nodes inside script elements are not part of the option text.
-        if (node->isElementNode() && toScriptElementIfPossible(toElement(node)))
+        if (node->isElementNode() && toScriptLoaderIfPossible(toElement(node)))
             node = NodeTraversal::nextSkippingChildren(node, this);
         else
             node = NodeTraversal::next(node, this);

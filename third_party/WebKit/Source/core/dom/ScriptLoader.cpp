@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/dom/ScriptElement.h"
+#include "core/dom/ScriptLoader.h"
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
+#include "core/dom/ScriptLoaderClient.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/Text.h"
@@ -51,7 +52,7 @@
 
 namespace WebCore {
 
-ScriptElement::ScriptElement(Element* element, bool parserInserted, bool alreadyStarted)
+ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadyStarted)
     : m_element(element)
     , m_cachedScript(0)
     , m_startLineNumber(WTF::OrdinalNumber::beforeFirst())
@@ -70,24 +71,24 @@ ScriptElement::ScriptElement(Element* element, bool parserInserted, bool already
         m_startLineNumber = element->document()->scriptableDocumentParser()->lineNumber();
 }
 
-ScriptElement::~ScriptElement()
+ScriptLoader::~ScriptLoader()
 {
     stopLoadRequest();
 }
 
-void ScriptElement::insertedInto(ContainerNode* insertionPoint)
+void ScriptLoader::insertedInto(ContainerNode* insertionPoint)
 {
     if (insertionPoint->inDocument() && !m_parserInserted)
         prepareScript(); // FIXME: Provide a real starting line number here.
 }
 
-void ScriptElement::childrenChanged()
+void ScriptLoader::childrenChanged()
 {
     if (!m_parserInserted && m_element->inDocument())
         prepareScript(); // FIXME: Provide a real starting line number here.
 }
 
-void ScriptElement::handleSourceAttribute(const String& sourceUrl)
+void ScriptLoader::handleSourceAttribute(const String& sourceUrl)
 {
     if (ignoresLoadRequest() || sourceUrl.isEmpty())
         return;
@@ -95,7 +96,7 @@ void ScriptElement::handleSourceAttribute(const String& sourceUrl)
     prepareScript(); // FIXME: Provide a real starting line number here.
 }
 
-void ScriptElement::handleAsyncAttribute()
+void ScriptLoader::handleAsyncAttribute()
 {
     m_forceAsync = false;
 }
@@ -131,20 +132,20 @@ static bool isLegacySupportedJavaScriptLanguage(const String& language)
     return languages.contains(language);
 }
 
-void ScriptElement::dispatchErrorEvent()
+void ScriptLoader::dispatchErrorEvent()
 {
     m_element->dispatchEvent(Event::create(eventNames().errorEvent, false, false));
 }
 
-void ScriptElement::dispatchLoadEvent()
+void ScriptLoader::dispatchLoadEvent()
 {
     ASSERT(!haveFiredLoadEvent());
-    if (ScriptElementClient* client = this->client())
+    if (ScriptLoaderClient* client = this->client())
         client->dispatchLoadEvent();
     setHaveFiredLoadEvent(true);
 }
 
-bool ScriptElement::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) const
+bool ScriptLoader::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) const
 {
     // FIXME: isLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used here to maintain backwards compatibility with existing layout tests. The specific violations are:
     // - Allowing type=javascript. type= should only support MIME types, such as text/javascript.
@@ -158,25 +159,28 @@ bool ScriptElement::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) 
         type = "text/" + language.lower();
         if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(type) || isLegacySupportedJavaScriptLanguage(language))
             return true;
-    } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(type.stripWhiteSpace().lower()) || (supportLegacyTypes == AllowLegacyTypeInTypeAttribute && isLegacySupportedJavaScriptLanguage(type)))
+    } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(type.stripWhiteSpace().lower()) || (supportLegacyTypes == AllowLegacyTypeInTypeAttribute && isLegacySupportedJavaScriptLanguage(type))) {
         return true;
+    }
+
     return false;
 }
 
 // http://dev.w3.org/html5/spec/Overview.html#prepare-a-script
-bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, LegacyTypeSupport supportLegacyTypes)
+bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, LegacyTypeSupport supportLegacyTypes)
 {
     if (m_alreadyStarted)
         return false;
 
-    ScriptElementClient* client = this->client();
+    ScriptLoaderClient* client = this->client();
 
     bool wasParserInserted;
     if (m_parserInserted) {
         wasParserInserted = true;
         m_parserInserted = false;
-    } else
+    } else {
         wasParserInserted = false;
+    }
 
     if (wasParserInserted && !client->asyncAttributeValue())
         m_forceAsync = true;
@@ -218,16 +222,17 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, Legac
     else
         m_characterEncoding = document->charset();
 
-    if (client->hasSourceAttribute())
+    if (client->hasSourceAttribute()) {
         if (!requestScript(client->sourceAttributeValue()))
             return false;
+    }
 
     if (client->hasSourceAttribute() && client->deferAttributeValue() && m_parserInserted && !client->asyncAttributeValue()) {
         m_willExecuteWhenDocumentFinishedParsing = true;
         m_willBeParserExecuted = true;
-    } else if (client->hasSourceAttribute() && m_parserInserted && !client->asyncAttributeValue())
+    } else if (client->hasSourceAttribute() && m_parserInserted && !client->asyncAttributeValue()) {
         m_willBeParserExecuted = true;
-    else if (!client->hasSourceAttribute() && m_parserInserted && !document->haveStylesheetsAndImportsLoaded()) {
+    } else if (!client->hasSourceAttribute() && m_parserInserted && !document->haveStylesheetsAndImportsLoaded()) {
         m_willBeParserExecuted = true;
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
@@ -247,7 +252,7 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, Legac
     return true;
 }
 
-bool ScriptElement::requestScript(const String& sourceUrl)
+bool ScriptLoader::requestScript(const String& sourceUrl)
 {
     ASSERT(m_element);
 
@@ -284,17 +289,17 @@ bool ScriptElement::requestScript(const String& sourceUrl)
     return false;
 }
 
-bool isHTMLScriptElement(Element* element)
+bool isHTMLScriptLoader(Element* element)
 {
     return element->hasTagName(HTMLNames::scriptTag);
 }
 
-bool isSVGScriptElement(Element* element)
+bool isSVGScriptLoader(Element* element)
 {
     return element->hasTagName(SVGNames::scriptTag);
 }
 
-void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
+void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
 {
     ASSERT(m_alreadyStarted);
 
@@ -315,26 +320,24 @@ void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
     }
 
     if (frame) {
-        {
-            IgnoreDestructiveWriteCountIncrementer ignoreDesctructiveWriteCountIncrementer(m_isExternalScript ? document.get() : 0);
+        IgnoreDestructiveWriteCountIncrementer ignoreDesctructiveWriteCountIncrementer(m_isExternalScript ? document.get() : 0);
 
-            if (isHTMLScriptElement(m_element))
-                document->pushCurrentScript(toHTMLScriptElement(m_element));
+        if (isHTMLScriptLoader(m_element))
+            document->pushCurrentScript(toHTMLScriptElement(m_element));
 
-            // Create a script from the script element node, using the script
-            // block's source and the script block's type.
-            // Note: This is where the script is compiled and actually executed.
-            frame->script()->executeScriptInMainWorld(sourceCode);
+        // Create a script from the script element node, using the script
+        // block's source and the script block's type.
+        // Note: This is where the script is compiled and actually executed.
+        frame->script()->executeScriptInMainWorld(sourceCode);
 
-            if (isHTMLScriptElement(m_element)) {
-                ASSERT(document->currentScript() == m_element);
-                document->popCurrentScript();
-            }
+        if (isHTMLScriptLoader(m_element)) {
+            ASSERT(document->currentScript() == m_element);
+            document->popCurrentScript();
         }
     }
 }
 
-void ScriptElement::stopLoadRequest()
+void ScriptLoader::stopLoadRequest()
 {
     if (m_cachedScript) {
         if (!m_willBeParserExecuted)
@@ -343,25 +346,25 @@ void ScriptElement::stopLoadRequest()
     }
 }
 
-void ScriptElement::execute(CachedScript* cachedScript)
+void ScriptLoader::execute(CachedScript* cachedScript)
 {
     ASSERT(!m_willBeParserExecuted);
     ASSERT(cachedScript);
-    if (cachedScript->errorOccurred())
+    if (cachedScript->errorOccurred()) {
         dispatchErrorEvent();
-    else if (!cachedScript->wasCanceled()) {
+    } else if (!cachedScript->wasCanceled()) {
         executeScript(ScriptSourceCode(cachedScript));
         dispatchLoadEvent();
     }
     cachedScript->removeClient(this);
 }
 
-void ScriptElement::notifyFinished(CachedResource* resource)
+void ScriptLoader::notifyFinished(CachedResource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
 
     // CachedResource possibly invokes this notifyFinished() more than
-    // once because ScriptElement doesn't unsubscribe itself from
+    // once because ScriptLoader doesn't unsubscribe itself from
     // CachedResource here and does it in execute() instead.
     // We use m_cachedScript to check if this function is already called.
     ASSERT_UNUSED(resource, resource == m_cachedScript);
@@ -380,12 +383,12 @@ void ScriptElement::notifyFinished(CachedResource* resource)
     m_cachedScript = 0;
 }
 
-bool ScriptElement::ignoresLoadRequest() const
+bool ScriptLoader::ignoresLoadRequest() const
 {
     return m_alreadyStarted || m_isExternalScript || m_parserInserted || !element() || !element()->inDocument();
 }
 
-bool ScriptElement::isScriptForEventSupported() const
+bool ScriptLoader::isScriptForEventSupported() const
 {
     String eventAttribute = client()->eventAttributeValue();
     String forAttribute = client()->forAttributeValue();
@@ -401,30 +404,30 @@ bool ScriptElement::isScriptForEventSupported() const
     return true;
 }
 
-String ScriptElement::scriptContent() const
+String ScriptLoader::scriptContent() const
 {
     return m_element->textFromChildren();
 }
 
-ScriptElementClient* ScriptElement::client() const
+ScriptLoaderClient* ScriptLoader::client() const
 {
-    if (isHTMLScriptElement(m_element))
+    if (isHTMLScriptLoader(m_element))
         return toHTMLScriptElement(m_element);
 
-    if (isSVGScriptElement(m_element))
+    if (isSVGScriptLoader(m_element))
         return toSVGScriptElement(m_element);
 
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-ScriptElement* toScriptElementIfPossible(Element* element)
+ScriptLoader* toScriptLoaderIfPossible(Element* element)
 {
-    if (isHTMLScriptElement(element))
-        return toHTMLScriptElement(element)->scriptElement();
+    if (isHTMLScriptLoader(element))
+        return toHTMLScriptElement(element)->loader();
 
-    if (isSVGScriptElement(element))
-        return toSVGScriptElement(element)->scriptElement();
+    if (isSVGScriptLoader(element))
+        return toSVGScriptElement(element)->loader();
 
     return 0;
 }

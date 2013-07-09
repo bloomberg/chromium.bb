@@ -31,7 +31,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/Microtask.h"
-#include "core/dom/ScriptElement.h"
+#include "core/dom/ScriptLoader.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
@@ -130,14 +130,14 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
 
     // Clear the pending script before possible rentrancy from executeScript()
     RefPtr<Element> element = pendingScript.releaseElementAndClear();
-    if (ScriptElement* scriptElement = toScriptElementIfPossible(element.get())) {
+    if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element.get())) {
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
         IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_document);
         if (errorOccurred)
-            scriptElement->dispatchErrorEvent();
+            scriptLoader->dispatchErrorEvent();
         else {
             ASSERT(isExecutingScript());
-            scriptElement->executeScript(sourceCode);
+            scriptLoader->executeScript(sourceCode);
             element->dispatchEvent(createScriptLoadEvent());
         }
     }
@@ -259,7 +259,7 @@ bool HTMLScriptRunner::requestPendingScript(PendingScript& pendingScript, Elemen
     ASSERT(!pendingScript.element());
     pendingScript.setElement(script);
     // This should correctly return 0 for empty or invalid srcValues.
-    CachedScript* cachedScript = toScriptElementIfPossible(script)->cachedScript().get();
+    CachedScript* cachedScript = toScriptLoaderIfPossible(script)->cachedScript().get();
     if (!cachedScript) {
         notImplemented(); // Dispatch error event.
         return false;
@@ -275,14 +275,14 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
     ASSERT(m_document);
     ASSERT(!hasParserBlockingScript());
     {
-        ScriptElement* scriptElement = toScriptElementIfPossible(script);
+        ScriptLoader* scriptLoader = toScriptLoaderIfPossible(script);
 
         // This contains both and ASSERTION and a null check since we should not
         // be getting into the case of a null script element, but seem to be from
         // time to time. The assertion is left in to help find those cases and
         // is being tracked by <https://bugs.webkit.org/show_bug.cgi?id=60559>.
-        ASSERT(scriptElement);
-        if (!scriptElement)
+        ASSERT(scriptLoader);
+        if (!scriptLoader)
             return;
 
         // FIXME: This may be too agressive as we always deliver mutations at
@@ -295,23 +295,24 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
 
-        scriptElement->prepareScript(scriptStartPosition);
+        scriptLoader->prepareScript(scriptStartPosition);
 
-        if (!scriptElement->willBeParserExecuted())
+        if (!scriptLoader->willBeParserExecuted())
             return;
 
-        if (scriptElement->willExecuteWhenDocumentFinishedParsing())
+        if (scriptLoader->willExecuteWhenDocumentFinishedParsing()) {
             requestDeferredScript(script);
-        else if (scriptElement->readyToBeParserExecuted()) {
+        } else if (scriptLoader->readyToBeParserExecuted()) {
             if (m_scriptNestingLevel == 1) {
                 m_parserBlockingScript.setElement(script);
                 m_parserBlockingScript.setStartingPosition(scriptStartPosition);
             } else {
                 ScriptSourceCode sourceCode(script->textContent(), documentURLForScriptExecution(m_document), scriptStartPosition);
-                scriptElement->executeScript(sourceCode);
+                scriptLoader->executeScript(sourceCode);
             }
-        } else
+        } else {
             requestParsingBlockingScript(script);
+        }
     }
 }
 

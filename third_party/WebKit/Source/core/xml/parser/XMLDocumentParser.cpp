@@ -45,7 +45,7 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/dom/ScriptElement.h"
+#include "core/dom/ScriptLoader.h"
 #include "core/dom/TransformSource.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTemplateElement.h"
@@ -444,17 +444,17 @@ void XMLDocumentParser::notifyFinished(CachedResource* unusedResource)
     RefPtr<Element> e = m_scriptElement;
     m_scriptElement = 0;
 
-    ScriptElement* scriptElement = toScriptElementIfPossible(e.get());
-    ASSERT(scriptElement);
+    ScriptLoader* scriptLoader = toScriptLoaderIfPossible(e.get());
+    ASSERT(scriptLoader);
 
     // JavaScript can detach this parser, make sure it's kept alive even if detached.
     RefPtr<XMLDocumentParser> protect(this);
 
     if (errorOccurred)
-        scriptElement->dispatchErrorEvent();
+        scriptLoader->dispatchErrorEvent();
     else if (!wasCanceled) {
-        scriptElement->executeScript(sourceCode);
-        scriptElement->dispatchLoadEvent();
+        scriptLoader->executeScript(sourceCode);
+        scriptLoader->dispatchLoadEvent();
     }
 
     m_scriptElement = 0;
@@ -955,8 +955,8 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
 
     newElement->beginParsingChildren();
 
-    ScriptElement* scriptElement = toScriptElementIfPossible(newElement.get());
-    if (scriptElement)
+    ScriptLoader* scriptLoader = toScriptLoaderIfPossible(newElement.get());
+    if (scriptLoader)
         m_scriptStartPosition = textPosition();
 
     m_currentNode->parserAppendChild(newElement.get());
@@ -996,7 +996,7 @@ void XMLDocumentParser::endElementNs()
     RefPtr<ContainerNode> n = m_currentNode;
     n->finishParsingChildren();
 
-    if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptElementIfPossible(toElement(n.get()))) {
+    if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptLoaderIfPossible(toElement(n.get()))) {
         popCurrentNode();
         n->remove(IGNORE_EXCEPTION);
         return;
@@ -1016,8 +1016,8 @@ void XMLDocumentParser::endElementNs()
         return;
     }
 
-    ScriptElement* scriptElement = toScriptElementIfPossible(element);
-    if (!scriptElement) {
+    ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element);
+    if (!scriptLoader) {
         popCurrentNode();
         return;
     }
@@ -1026,22 +1026,23 @@ void XMLDocumentParser::endElementNs()
     ASSERT(!m_pendingScript);
     m_requestingScript = true;
 
-    if (scriptElement->prepareScript(m_scriptStartPosition, ScriptElement::AllowLegacyTypeInTypeAttribute)) {
+    if (scriptLoader->prepareScript(m_scriptStartPosition, ScriptLoader::AllowLegacyTypeInTypeAttribute)) {
         // FIXME: Script execution should be shared between
         // the libxml2 and Qt XMLDocumentParser implementations.
 
-        if (scriptElement->readyToBeParserExecuted())
-            scriptElement->executeScript(ScriptSourceCode(scriptElement->scriptContent(), document()->url(), m_scriptStartPosition));
-        else if (scriptElement->willBeParserExecuted()) {
-            m_pendingScript = scriptElement->cachedScript();
+        if (scriptLoader->readyToBeParserExecuted()) {
+            scriptLoader->executeScript(ScriptSourceCode(scriptLoader->scriptContent(), document()->url(), m_scriptStartPosition));
+        } else if (scriptLoader->willBeParserExecuted()) {
+            m_pendingScript = scriptLoader->cachedScript();
             m_scriptElement = element;
             m_pendingScript->addClient(this);
 
             // m_pendingScript will be 0 if script was already loaded and addClient() executed it.
             if (m_pendingScript)
                 pauseParsing();
-        } else
+        } else {
             m_scriptElement = 0;
+        }
 
         // JavaScript may have detached the parser
         if (isDetached())

@@ -22,7 +22,7 @@
 #define SVGScriptElement_h
 
 #include "SVGNames.h"
-#include "core/dom/ScriptElement.h"
+#include "core/dom/ScriptLoaderClient.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
@@ -31,18 +31,20 @@
 
 namespace WebCore {
 
+class ScriptLoader;
+
 class SVGScriptElement FINAL
     : public SVGElement
     , public SVGURIReference
     , public SVGExternalResourcesRequired
-    , public ScriptElementClient {
+    , public ScriptLoaderClient {
 public:
     static PassRefPtr<SVGScriptElement> create(const QualifiedName&, Document*, bool wasInsertedByParser);
 
     String type() const;
     void setType(const String&);
 
-    ScriptElement* scriptElement() const { return m_scriptElement.get(); }
+    ScriptLoader* loader() const { return m_loader.get(); }
 
 private:
     SVGScriptElement(const QualifiedName&, Document*, bool wasInsertedByParser, bool alreadyStarted);
@@ -87,7 +89,7 @@ private:
 
     String m_type;
     Timer<SVGElement> m_svgLoadEventTimer;
-    OwnPtr<ScriptElement> m_scriptElement;
+    OwnPtr<ScriptLoader> m_loader;
 };
 
 inline SVGScriptElement* toSVGScriptElement(Node* node)

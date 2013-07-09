@@ -18,43 +18,27 @@
  *
  */
 
-#ifndef ScriptElement_h
-#define ScriptElement_h
+#ifndef ScriptLoader_h
+#define ScriptLoader_h
 
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class CachedScript;
 class ContainerNode;
 class Element;
-class ScriptElement;
+class ScriptLoaderClient;
 class ScriptSourceCode;
 
-class ScriptElementClient {
+
+class ScriptLoader : private CachedResourceClient {
 public:
-    virtual ~ScriptElementClient() { }
-
-    virtual void dispatchLoadEvent() = 0;
-
-    virtual String sourceAttributeValue() const = 0;
-    virtual String charsetAttributeValue() const = 0;
-    virtual String typeAttributeValue() const = 0;
-    virtual String languageAttributeValue() const = 0;
-    virtual String forAttributeValue() const = 0;
-    virtual String eventAttributeValue() const = 0;
-    virtual bool asyncAttributeValue() const = 0;
-    virtual bool deferAttributeValue() const = 0;
-    virtual bool hasSourceAttribute() const = 0;
-};
-
-class ScriptElement : private CachedResourceClient {
-public:
-    static PassOwnPtr<ScriptElement> create(Element*, bool createdByParser, bool isEvaluated);
-    virtual ~ScriptElement();
+    static PassOwnPtr<ScriptLoader> create(Element*, bool createdByParser, bool isEvaluated);
+    virtual ~ScriptLoader();
 
     Element* element() const { return m_element; }
 
@@ -89,7 +73,7 @@ public:
     void handleAsyncAttribute();
 
 private:
-    ScriptElement(Element*, bool createdByParser, bool isEvaluated);
+    ScriptLoader(Element*, bool createdByParser, bool isEvaluated);
 
     bool ignoresLoadRequest() const;
     bool isScriptForEventSupported() const;
@@ -97,7 +81,7 @@ private:
     bool requestScript(const String& sourceUrl);
     void stopLoadRequest();
 
-    ScriptElementClient* client() const;
+    ScriptLoaderClient* client() const;
 
     // CachedResourceClient
     virtual void notifyFinished(CachedResource*) OVERRIDE;
@@ -118,11 +102,11 @@ private:
     String m_fallbackCharacterEncoding;
 };
 
-ScriptElement* toScriptElementIfPossible(Element*);
+ScriptLoader* toScriptLoaderIfPossible(Element*);
 
-inline PassOwnPtr<ScriptElement> ScriptElement::create(Element* element, bool createdByParser, bool isEvaluated)
+inline PassOwnPtr<ScriptLoader> ScriptLoader::create(Element* element, bool createdByParser, bool isEvaluated)
 {
-    return adoptPtr(new ScriptElement(element, createdByParser, isEvaluated));
+    return adoptPtr(new ScriptLoader(element, createdByParser, isEvaluated));
 }
 
 }
