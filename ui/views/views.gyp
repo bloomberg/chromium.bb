@@ -339,8 +339,6 @@
         'view_model.h',
         'view_model_utils.cc',
         'view_model_utils.h',
-        'view_text_utils.cc',
-        'view_text_utils.h',
         'view_win.cc',
         'views_delegate.cc',
         'views_delegate.h',
