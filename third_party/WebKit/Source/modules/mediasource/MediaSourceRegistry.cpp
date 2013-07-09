@@ -66,10 +66,15 @@ void MediaSourceRegistry::unregisterURL(const KURL& url)
     source->removedFromRegistry();
 }
 
-MediaSourceBase* MediaSourceRegistry::lookupMediaSource(const String& url)
+URLRegistrable* MediaSourceRegistry::lookup(const String& url)
 {
     ASSERT(isMainThread());
     return m_mediaSources.get(url);
+}
+
+MediaSourceRegistry::MediaSourceRegistry()
+{
+    HTMLMediaSource::setRegistry(this);
 }
 
 } // namespace WebCore

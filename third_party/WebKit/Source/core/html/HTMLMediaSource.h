@@ -28,30 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebMediaSourceImpl.h"
+#ifndef HTMLMediaSource_h
+#define HTMLMediaSource_h
 
-#include "MediaSourcePrivateImpl.h"
-#include "WebMediaSourceClient.h"
-#include "wtf/PassOwnPtr.h"
+#include "core/html/URLRegistry.h"
+#include "wtf/Forward.h"
 
-namespace WebKit {
+namespace WebCore {
 
+class MediaSourcePrivate;
 
-WebMediaSourceImpl::WebMediaSourceImpl(PassRefPtr<WebCore::HTMLMediaSource> mediaSource)
-{
-    m_mediaSource = mediaSource;
+class HTMLMediaSource : public URLRegistrable {
+public:
+    static void setRegistry(URLRegistry*);
+    static HTMLMediaSource* lookup(const String& url) { return s_registry ? static_cast<HTMLMediaSource*>(s_registry->lookup(url)) : 0; }
+
+    void ref() { refHTMLMediaSource(); }
+    void deref() { derefHTMLMediaSource(); }
+
+    // Called when an HTMLMediaElement is attempting to attach to this object,
+    // and helps enforce attachment to at most one element at a time.
+    // If already attached, returns false. Otherwise, must be in
+    // 'closed' state, and returns true to indicate attachment success.
+    // Reattachment allowed by first calling close() (even if already in 'closed').
+    virtual bool attachToElement() = 0;
+    virtual void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>) = 0;
+    virtual void close() = 0;
+    virtual bool isClosed() const = 0;
+    virtual double duration() const = 0;
+    virtual void refHTMLMediaSource() = 0;
+    virtual void derefHTMLMediaSource() = 0;
+
+    // URLRegistrable
+    virtual URLRegistry& registry() const OVERRIDE { return *s_registry; }
+
+private:
+    static URLRegistry* s_registry;
+};
+
 }
 
-WebMediaSourceImpl::~WebMediaSourceImpl()
-{
-}
-
-
-void WebMediaSourceImpl::open(WebMediaSourceClient* client)
-{
-    ASSERT(client);
-    m_mediaSource->setPrivateAndOpen(adoptPtr(new MediaSourcePrivateImpl(adoptPtr(client))));
-}
-
-}
+#endif

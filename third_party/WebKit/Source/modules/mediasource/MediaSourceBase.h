@@ -33,6 +33,7 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
+#include "core/html/HTMLMediaSource.h"
 #include "core/html/URLRegistry.h"
 #include "core/platform/graphics/MediaSourcePrivate.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,7 +43,7 @@ namespace WebCore {
 
 class GenericEventQueue;
 
-class MediaSourceBase : public RefCounted<MediaSourceBase>, public ActiveDOMObject, public EventTarget, public URLRegistrable {
+class MediaSourceBase : public RefCounted<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTarget {
 public:
     static const AtomicString& openKeyword();
     static const AtomicString& closedKeyword();
@@ -50,22 +51,20 @@ public:
 
     virtual ~MediaSourceBase();
 
-    void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>);
     void addedToRegistry();
     void removedFromRegistry();
     void openIfInEndedState();
     bool isOpen() const;
-    bool isClosed() const;
-    void close();
 
-    // Called when an HTMLMediaElement is attempting to attach to this object,
-    // and helps enforce attachment to at most one element at a time.
-    // If already attached, returns false. Otherwise, must be in
-    // 'closed' state, and returns true to indicate attachment success.
-    // Reattachment allowed by first calling close() (even if already in 'closed').
-    bool attachToElement();
+    // HTMLMediaSource
+    virtual bool attachToElement() OVERRIDE;
+    virtual void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>) OVERRIDE;
+    virtual void close() OVERRIDE;
+    virtual bool isClosed() const OVERRIDE;
+    virtual double duration() const OVERRIDE;
+    virtual void refHTMLMediaSource() OVERRIDE { ref(); }
+    virtual void derefHTMLMediaSource() OVERRIDE { deref(); }
 
-    double duration() const;
     void setDuration(double, ExceptionCode&);
     const AtomicString& readyState() const { return m_readyState; }
     void setReadyState(const AtomicString&);

@@ -2207,6 +2207,8 @@
             'html/MediaKeyError.h',
             'html/MediaKeyEvent.cpp',
             'html/MediaKeyEvent.h',
+            'html/HTMLMediaSource.cpp',
+            'html/HTMLMediaSource.h',
             'html/MonthInputType.cpp',
             'html/MonthInputType.h',
             'html/NumberInputType.cpp',

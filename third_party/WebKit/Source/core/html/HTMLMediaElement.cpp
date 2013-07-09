@@ -41,6 +41,7 @@
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/MediaController.h"
@@ -67,8 +68,6 @@
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/rendering/RenderVideo.h"
-#include "modules/mediasource/MediaSourceBase.h"
-#include "modules/mediasource/MediaSourceRegistry.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "public/platform/Platform.h"
 #include "weborigin/SecurityOrigin.h"
@@ -894,7 +893,7 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
     ASSERT(!m_mediaSource);
 
     if (url.protocolIs(mediaSourceBlobProtocol))
-        m_mediaSource = MediaSourceRegistry::registry().lookupMediaSource(url.string());
+        m_mediaSource = HTMLMediaSource::lookup(url.string());
 
     if (m_mediaSource) {
         if (m_mediaSource->attachToElement()) {

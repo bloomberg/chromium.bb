@@ -48,7 +48,7 @@
 
 namespace WebCore {
 class AudioSourceProviderClient;
-class MediaSourceBase;
+class HTMLMediaSource;
 }
 
 namespace WebKit {
@@ -92,7 +92,7 @@ public:
 
     // MediaPlayer methods:
     virtual void load(const WTF::String& url) OVERRIDE;
-    virtual void load(const WTF::String& url, PassRefPtr<WebCore::MediaSourceBase>) OVERRIDE;
+    virtual void load(const WTF::String& url, PassRefPtr<WebCore::HTMLMediaSource>) OVERRIDE;
 
     virtual WebKit::WebLayer* platformLayer() const OVERRIDE;
     virtual void play() OVERRIDE;
@@ -224,7 +224,7 @@ private:
     AudioSourceProviderImpl m_audioSourceProvider;
 #endif
 
-    RefPtr<WebCore::MediaSourceBase> m_mediaSource;
+    RefPtr<WebCore::HTMLMediaSource> m_mediaSource;
 };
 
 } // namespace WebKit

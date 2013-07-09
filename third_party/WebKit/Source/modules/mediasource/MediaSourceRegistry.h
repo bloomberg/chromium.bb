@@ -49,10 +49,10 @@ public:
     // Registers a blob URL referring to the specified media source.
     virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) OVERRIDE;
     virtual void unregisterURL(const KURL&) OVERRIDE;
-
-    MediaSourceBase* lookupMediaSource(const String& url);
+    virtual URLRegistrable* lookup(const String&) OVERRIDE;
 
 private:
+    MediaSourceRegistry();
     HashMap<String, RefPtr<MediaSourceBase> > m_mediaSources;
 };
 

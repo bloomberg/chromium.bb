@@ -29,29 +29,16 @@
  */
 
 #include "config.h"
-#include "WebMediaSourceImpl.h"
+#include "core/html/HTMLMediaSource.h"
 
-#include "MediaSourcePrivateImpl.h"
-#include "WebMediaSourceClient.h"
-#include "wtf/PassOwnPtr.h"
+namespace WebCore {
 
-namespace WebKit {
+URLRegistry* HTMLMediaSource::s_registry = 0;
 
-
-WebMediaSourceImpl::WebMediaSourceImpl(PassRefPtr<WebCore::HTMLMediaSource> mediaSource)
+void HTMLMediaSource::setRegistry(URLRegistry* registry)
 {
-    m_mediaSource = mediaSource;
-}
-
-WebMediaSourceImpl::~WebMediaSourceImpl()
-{
-}
-
-
-void WebMediaSourceImpl::open(WebMediaSourceClient* client)
-{
-    ASSERT(client);
-    m_mediaSource->setPrivateAndOpen(adoptPtr(new MediaSourcePrivateImpl(adoptPtr(client))));
+    ASSERT(!s_registry);
+    s_registry = registry;
 }
 
 }
