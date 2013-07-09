@@ -263,6 +263,7 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
   DCHECK(panel_container);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       AddObserver(this);
+  Shell::GetInstance()->display_controller()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -274,6 +275,7 @@ PanelLayoutManager::~PanelLayoutManager() {
   Shutdown();
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       RemoveObserver(this);
+  Shell::GetInstance()->display_controller()->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
@@ -480,6 +482,13 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
     UpdateStacking(gained_active);
     UpdateCallouts();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PanelLayoutManager, DisplayController::Observer implementation:
+
+void PanelLayoutManager::OnDisplayConfigurationChanged() {
+  Relayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
