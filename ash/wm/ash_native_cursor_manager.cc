@@ -119,10 +119,4 @@ void AshNativeCursorManager::SetMouseEventsEnabled(
   NotifyMouseEventsEnableStateChange(enabled);
 }
 
-void AshNativeCursorManager::SetCursorResourceModule(
-    const base::string16& module_name) {
-  image_cursors_->SetCursorResourceModule(module_name);
-}
-
-
 }  // namespace ash

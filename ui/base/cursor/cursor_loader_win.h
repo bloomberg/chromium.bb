@@ -6,7 +6,6 @@
 #define UI_BASE_CURSOR_CURSOR_LOADER_WIN_H_
 
 #include "base/compiler_specific.h"
-#include "base/strings/string16.h"
 #include "ui/base/cursor/cursor_loader.h"
 
 namespace ui {
@@ -26,11 +25,12 @@ class UI_EXPORT CursorLoaderWin : public CursorLoader {
                                   int frame_delay_ms) OVERRIDE;
   virtual void UnloadAll() OVERRIDE;
   virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
-  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE;
+
+  // Used to pass the cursor resource module name to the cursor loader. This is
+  // typically used to load non system cursors.
+  static void SetCursorResourceModule(const string16& module_name);
 
  private:
-  string16 cursor_resource_module_name_;
-
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderWin);
 };
 

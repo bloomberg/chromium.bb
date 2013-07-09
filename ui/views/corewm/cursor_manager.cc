@@ -172,10 +172,6 @@ void CursorManager::UnlockCursor() {
   }
 }
 
-void CursorManager::SetCursorResourceModule(const string16& module_name) {
-  delegate_->SetCursorResourceModule(module_name);
-}
-
 void CursorManager::AddObserver(
     aura::client::CursorClientObserver* observer) {
   observers_.AddObserver(observer);
