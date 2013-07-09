@@ -779,7 +779,7 @@ cr.define('options', function() {
         if (cr.isChromeOS && syncData.hasError)
           SyncSetupOverlay.doSignOutOnAuthError();
         else
-          SyncSetupOverlay.showErrorUI();
+          SyncSetupOverlay.showSetupUI();
       };
 
       if (syncData.hasError)

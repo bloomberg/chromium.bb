@@ -512,7 +512,7 @@ cr.define('options', function() {
       // between its drop-down menu items as follows:
       // "Sync everything": Show encryption and passphrase sections, and disable
       // and check all data type checkboxes.
-      // "Sync everything": Hide encryption and passphrase sections, and disable
+      // "Sync nothing": Hide encryption and passphrase sections, and disable
       // and uncheck all data type checkboxes.
       // "Choose what to sync": Show encryption and passphrase sections, enable
       // data type checkboxes, and restore their checked state to the last time
@@ -812,14 +812,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Steps into the appropriate Sync Setup error UI.
-     * @private
-     */
-    showErrorUI_: function() {
-      chrome.send('SyncSetupShowErrorUI');
-    },
-
-    /**
      * Determines the appropriate page to show in the Sync Setup UI based on
      * the state of the Sync backend. Does nothing if the user is not signed in.
      * @private
@@ -849,10 +841,6 @@ cr.define('options', function() {
   // These methods are for general consumption.
   SyncSetupOverlay.closeOverlay = function() {
     SyncSetupOverlay.getInstance().closeOverlay_();
-  };
-
-  SyncSetupOverlay.showErrorUI = function() {
-    SyncSetupOverlay.getInstance().showErrorUI_();
   };
 
   SyncSetupOverlay.showSetupUI = function() {

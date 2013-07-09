@@ -525,10 +525,6 @@ void SyncSetupHandler::RegisterMessages() {
       base::Bind(&SyncSetupHandler::HandleConfigure,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "SyncSetupShowErrorUI",
-      base::Bind(&SyncSetupHandler::HandleShowErrorUI,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "SyncSetupShowSetupUI",
       base::Bind(&SyncSetupHandler::HandleShowSetupUI,
                  base::Unretained(this)));
@@ -551,7 +547,7 @@ void SyncSetupHandler::RegisterMessages() {
 }
 
 #if !defined(OS_CHROMEOS)
-void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
+void SyncSetupHandler::DisplayGaiaLogin() {
   DCHECK(!sync_startup_tracker_);
   // Advanced options are no longer being configured if the login screen is
   // visible. If the user exits the signin wizard after this without
@@ -838,18 +834,10 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
 }
 
-void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
-  DCHECK(!configuring_sync_);
-
+void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
 
-  // Bring up the existing wizard, or just display it on this page.
-  if (!FocusExistingWizardIfPresent())
-    OpenSyncSetup();
-}
-
-void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(GetProfile());
   if (signin->GetAuthenticatedUsername().empty()) {
@@ -862,7 +850,10 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
     CloseOverlay();
     return;
   }
-  OpenSyncSetup();
+
+  // Bring up the existing wizard, or just display it on this page.
+  if (!FocusExistingWizardIfPresent())
+    OpenSyncSetup();
 }
 
 #if defined(OS_CHROMEOS)
@@ -986,11 +977,22 @@ void SyncSetupHandler::OpenSyncSetup() {
 #if !defined(OS_CHROMEOS)
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(GetProfile());
-  if (signin->GetAuthenticatedUsername().empty() ||
-      signin->signin_global_error()->HasMenuItem()) {
-    // User is not logged in, or login has been specially requested - need to
-    // display login UI (cases 1-3).
-    DisplayGaiaLogin(false);
+
+  if (signin->GetAuthenticatedUsername().empty()) {
+    // User is not logged in (cases 1-2). Display login UI.
+    DisplayGaiaLogin();
+    return;
+  }
+
+  if (signin->signin_global_error()->HasMenuItem()) {
+    // Login has been specially requested because previously working credentials
+    // have expired (case 3). Load the sync setup page with a spinner dialog,
+    // and then display the gaia auth page. The user may abandon re-auth by
+    // clicking cancel on the spinner dialog or closing the gaia login tab.
+    StringValue page("spinner");
+    web_ui()->CallJavascriptFunction("SyncSetupOverlay.showSyncSetupPage",
+                                     page);
+    DisplayGaiaLogin();
     return;
   }
 #endif

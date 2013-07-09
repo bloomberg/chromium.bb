@@ -131,18 +131,14 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandleConfigure(const base::ListValue* args);
   void HandlePassphraseEntry(const base::ListValue* args);
   void HandlePassphraseCancel(const base::ListValue* args);
-  // TODO(atwilson): Not sure if HandleShowErrorUI() is still required.
-  // May be able to combine with HandleShowSetupUI().
-  void HandleShowErrorUI(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
   void HandleStartSignin(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
   void HandleCloseTimeout(const base::ListValue* args);
 #if !defined(OS_CHROMEOS)
-  // Displays the GAIA login form. If |fatal_error| is true, displays the fatal
-  // error UI.
-  void DisplayGaiaLogin(bool fatal_error);
+  // Displays the GAIA login form.
+  void DisplayGaiaLogin();
 
   // When web-flow is enabled, displays the Gaia login form in a new tab.
   // This function is virtual so that tests can override.

@@ -147,33 +147,6 @@ void CheckString(const DictionaryValue* dictionary,
   }
 }
 
-// Validates that the expected args are being passed off to javascript.
-void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
-                            std::string error_message,
-                            bool fatal_error,
-                            int error,
-                            std::string user,
-                            bool user_is_editable,
-                            std::string captcha_url) {
-  // showSyncSetupPage() expects to be passed a dictionary with the following
-  // named values set:
-  //   error_message: custom error message to display.
-  //   fatalError: true if there was a fatal error while logging in.
-  //   error: GoogleServiceAuthError from previous login attempt (0 if none).
-  //   user: The email the user most recently entered.
-  //   editable_user: Whether the username field should be editable.
-  //   captchaUrl: The captcha image to display to the user (empty if none).
-  //
-  // The code below validates these arguments.
-
-  CheckString(dictionary, "errorMessage", error_message, true);
-  CheckString(dictionary, "user", user, false);
-  CheckString(dictionary, "captchaUrl", captcha_url, false);
-  CheckInt(dictionary, "error", error);
-  CheckBool(dictionary, "fatalError", fatal_error, true);
-  CheckBool(dictionary, "editableUser", user_is_editable);
-}
-
 // Checks to make sure that the values stored in |dictionary| match the values
 // expected by the showSyncSetupPage() JS function for a given set of data
 // types.
