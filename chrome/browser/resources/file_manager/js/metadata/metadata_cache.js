@@ -83,10 +83,6 @@ function MetadataCache() {
    * @private
    */
   this.lastBatchStart_ = new Date();
-
-  // Holds the directories known to contain files with stale metadata
-  // as URL to bool map.
-  this.directoriesWithStaleMetadata_ = {};
 }
 
 /**
@@ -578,27 +574,6 @@ MetadataCache.prototype.mergeProperties_ = function(url, data) {
       this.notifyObservers_(url, type);
     }
   }
-};
-
-/**
- * Ask the Drive service to re-fetch the metadata. Ignores sequential requests.
- * @param {string} url Directory URL.
- */
-MetadataCache.prototype.refreshDirectory = function(url) {
-  // Skip if the current directory is now being refreshed.
-  if (this.directoriesWithStaleMetadata_[url] || !FileType.isOnDrive(url))
-    return;
-
-  this.directoriesWithStaleMetadata_[url] = true;
-  chrome.fileBrowserPrivate.requestDirectoryRefresh(url);
-};
-
-/**
- * Resumes refreshes by resreshDirectory.
- * @param {string} url Directory URL.
- */
-MetadataCache.prototype.resumeRefresh = function(url) {
-  delete this.directoriesWithStaleMetadata_[url];
 };
 
 /**

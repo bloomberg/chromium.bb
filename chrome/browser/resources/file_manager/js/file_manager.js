@@ -293,7 +293,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.MetadataFileWatcher.prototype.onFileInWatchedDirectoryChanged =
       function() {
     FileWatcher.prototype.onFileInWatchedDirectoryChanged.apply(this);
-    this.metadataCache_.resumeRefresh(this.getWatchedDirectoryEntry().toURL());
   };
 
   FileManager.prototype.initPreferences_ = function(callback) {
