@@ -116,7 +116,7 @@ float ViewportStyleResolver::getViewportArgumentValue(CSSPropertyID id) const
         return primitiveValue->getFloatValue();
 
     if (primitiveValue->isFontRelativeLength())
-        return primitiveValue->getFloatValue() * m_document->documentElement()->renderStyle()->fontDescription().computedSize();
+        return primitiveValue->getFloatValue() * m_document->renderStyle()->fontDescription().computedSize();
 
     if (primitiveValue->isPercentage()) {
         float percentValue = primitiveValue->getFloatValue() / 100.0f;
