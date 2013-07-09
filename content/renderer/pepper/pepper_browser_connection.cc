@@ -45,7 +45,11 @@ void PepperBrowserConnection::SendBrowserCreate(
   ppapi::proxy::ResourceMessageCallParams params(0, sequence_number);
   plugin_delegate_->render_view()->Send(
       new PpapiHostMsg_CreateResourceHostFromHost(
-          child_process_id, params, instance, nested_msg));
+          plugin_delegate_->GetRoutingID(),
+          child_process_id,
+          params,
+          instance,
+          nested_msg));
 }
 
 void PepperBrowserConnection::SendBrowserFileRefGetInfo(

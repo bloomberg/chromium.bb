@@ -35,6 +35,7 @@ class PepperRendererConnection : public BrowserMessageFilter {
   virtual ~PepperRendererConnection();
 
   void OnMsgCreateResourceHostFromHost(
+      int routing_id,
       int child_process_id,
       const ppapi::proxy::ResourceMessageCallParams& params,
       PP_Instance instance,

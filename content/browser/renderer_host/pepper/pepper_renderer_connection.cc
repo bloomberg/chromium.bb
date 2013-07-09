@@ -62,6 +62,7 @@ bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
 }
 
 void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
+    int routing_id,
     int child_process_id,
     const ppapi::proxy::ResourceMessageCallParams& params,
     PP_Instance instance,
@@ -81,7 +82,7 @@ void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
   }
 
   Send(new PpapiHostMsg_CreateResourceHostFromHostReply(
-      params.sequence(), pending_resource_host_id));
+       routing_id, params.sequence(), pending_resource_host_id));
 }
 
 void PepperRendererConnection::OnMsgFileRefGetInfoForRenderer(
@@ -105,11 +106,11 @@ void PepperRendererConnection::OnMsgFileRefGetInfoForRenderer(
     }
   }
   Send(new PpapiHostMsg_FileRef_GetInfoForRendererReply(
-      routing_id,
-      params.sequence(),
-      fs_type,
-      file_system_url_spec,
-      external_path));
+       routing_id,
+       params.sequence(),
+       fs_type,
+       file_system_url_spec,
+       external_path));
 }
 
 }  // namespace content
