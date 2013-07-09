@@ -56,11 +56,20 @@ test(function () {
     assert_array_equals(invocations, ['id: x => null'], 'removing an attribute should invoke the attributeChangedCallback');
 
     invocations = [];
-    b.setAttribute('data-x', 'y');
-    assert_array_equals(invocations, ['data-x: null => y'], 'setAttribute should invoke the attributeChangedCallback');
+    b.setAttribute('data-s', 't');
+    assert_array_equals(invocations, ['data-s: null => t'], 'adding an attribute with setAttribute should invoke the attributeChangedCallback');
 
     invocations = [];
-    b.classList.toggle('z');
-    assert_array_equals(invocations, ['class: null => z'], 'changing the class attribute through classList should invoke the attributeChangedCallback');
+    b.classList.toggle('u');
+    assert_array_equals(invocations, ['class: null => u'], 'adding a class attribute through classList should invoke the attributeChangedCallback');
+
+    b.setAttribute('data-v', 'w');
+    invocations = [];
+    b.setAttribute('data-v', 'x');
+    assert_array_equals(invocations, ['data-v: w => x'], 'changing an attribute with setAttribute should invoke the attributeChangedCallback');
+
+    invocations = [];
+    b.setAttribute('data-v', 'x');
+    assert_array_equals(invocations, [], 'setting an attribute to the existing value with setAttribute should not invoke the attributeChangedCallback');
 }, 'add, change and remove an attribute');
 </script>

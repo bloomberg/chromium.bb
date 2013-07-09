@@ -2812,17 +2812,17 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     if (oldValue != newValue) {
         if (attached() && document()->styleResolver() && document()->styleResolver()->hasSelectorForAttribute(name.localName()))
            setNeedsStyleRecalc();
+
+        if (isUpgradedCustomElement()) {
+            RefPtr<CustomElementDefinition> definition = document()->registry()->findFor(this);
+            CustomElementCallbackDispatcher::instance().enqueueAttributeChangedCallback(definition->callbacks(), this, name.localName(), oldValue, newValue);
+        }
     }
 
     if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
     InspectorInstrumentation::willModifyDOMAttr(document(), this, oldValue, newValue);
-
-    if (isUpgradedCustomElement()) {
-        RefPtr<CustomElementDefinition> definition = document()->registry()->findFor(this);
-        CustomElementCallbackDispatcher::instance().enqueueAttributeChangedCallback(definition->callbacks(), this, name.localName(), oldValue, newValue);
-    }
 }
 
 void Element::didAddAttribute(const QualifiedName& name, const AtomicString& value)
