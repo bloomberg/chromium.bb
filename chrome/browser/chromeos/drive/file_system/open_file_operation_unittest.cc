@@ -28,7 +28,7 @@ class OpenFileOperationTest : public OperationTestBase {
         temp_dir(), &open_files_));
   }
 
-  std::set<base::FilePath> open_files_;
+  std::map<base::FilePath, int> open_files_;
   scoped_ptr<OpenFileOperation> operation_;
 };
 
@@ -53,16 +53,22 @@ TEST_F(OpenFileOperationTest, OpenFile) {
   EXPECT_EQ(file_size, local_file_size);
 
   // The file_path should be added into the set.
-  EXPECT_EQ(1U, open_files_.count(file_in_root));
+  EXPECT_EQ(1, open_files_[file_in_root]);
 
-  // Open the same file should be failed.
+  // Open again.
   error = FILE_ERROR_FAILED;
-  file_path.clear();
   operation_->OpenFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_IN_USE, error);
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(file_util::PathExists(file_path));
+  ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
+  EXPECT_EQ(file_size, local_file_size);
+
+  // The file_path should be added into the set.
+  EXPECT_EQ(2, open_files_[file_in_root]);
 }
 
 TEST_F(OpenFileOperationTest, NotFound) {

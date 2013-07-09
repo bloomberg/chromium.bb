@@ -343,8 +343,9 @@ class FileSystem : public FileSystemInterface,
   // True if hosted documents should be hidden.
   bool hide_hosted_docs_;
 
-  // The set of paths opened by OpenFile but not yet closed by CloseFile.
-  std::set<base::FilePath> open_files_;
+  // Map from opened file paths to the number how many the file is opened.
+  // The value should be incremented by OpenFile, and decremented by CloseFile.
+  std::map<base::FilePath, int> open_files_;
 
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 

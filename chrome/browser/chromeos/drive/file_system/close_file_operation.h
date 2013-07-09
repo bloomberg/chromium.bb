@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_CLOSE_FILE_OPERATION_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_CLOSE_FILE_OPERATION_H_
 
-#include <set>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -34,7 +34,7 @@ class CloseFileOperation {
   CloseFileOperation(base::SequencedTaskRunner* blocking_task_runner,
                      OperationObserver* observer,
                      internal::ResourceMetadata* metadata,
-                     std::set<base::FilePath>* open_files);
+                     std::map<base::FilePath, int>* open_files);
   ~CloseFileOperation();
 
   // Closes the currently opened file |file_path|.
@@ -53,9 +53,10 @@ class CloseFileOperation {
   OperationObserver* observer_;
   internal::ResourceMetadata* metadata_;
 
-  // Set of paths for opened files. This is owned by FileSystem, and shared
-  // with OpenFileOperation.
-  std::set<base::FilePath>* open_files_;
+  // The map from paths for opened file to the number how many the file is
+  // opened. The instance is owned by FileSystem and shared with
+  // OpenFileOperation.
+  std::map<base::FilePath, int>* open_files_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

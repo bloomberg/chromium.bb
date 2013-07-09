@@ -773,15 +773,6 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/root")),
             mock_directory_observer_->changed_directories()[0]);
 
-  // Try to open the already opened file.
-  file_system_->OpenFile(
-      kFileInRoot,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  // It must fail.
-  EXPECT_EQ(FILE_ERROR_IN_USE, error);
-
   // Verify that the file contents match the expected contents.
   const std::string kExpectedContent = "This is some test content.";
   std::string cache_file_data;

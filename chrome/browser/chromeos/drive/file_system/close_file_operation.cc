@@ -22,7 +22,7 @@ CloseFileOperation::CloseFileOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
     internal::ResourceMetadata* metadata,
-    std::set<base::FilePath>* open_files)
+    std::map<base::FilePath, int>* open_files)
     : blocking_task_runner_(blocking_task_runner),
       observer_(observer),
       metadata_(metadata),
@@ -68,13 +68,12 @@ void CloseFileOperation::CloseFileAfterGetResourceEntry(
   if (error == FILE_ERROR_OK && entry->file_info().is_directory())
     error = FILE_ERROR_NOT_FOUND;
 
-  if (error == FILE_ERROR_OK)
+  DCHECK_GT((*open_files_)[file_path], 0);
+  if (--(*open_files_)[file_path] == 0) {
+    // All clients closes this file, so notify to upload the file.
+    open_files_->erase(file_path);
     observer_->OnCacheFileUploadNeededByOperation(entry->resource_id());
-
-  // All the invocation of |callback| from operations initiated from CloseFile
-  // must go through here. Removes the |file_path| from the remembered set so
-  // that subsequent operations can open the file again.
-  open_files_->erase(file_path);
+  }
 
   // Then invokes the user-supplied callback function.
   callback.Run(error);

@@ -42,7 +42,7 @@ OpenFileOperation::OpenFileOperation(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const base::FilePath& temporary_file_directory,
-    std::set<base::FilePath>* open_files)
+    std::map<base::FilePath, int>* open_files)
     : blocking_task_runner_(blocking_task_runner),
       cache_(cache),
       download_operation_(new DownloadOperation(
@@ -61,18 +61,6 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // If the file is already opened, it cannot be opened again before closed.
-  // This is for avoiding simultaneous modification to the file, and moreover
-  // to avoid an inconsistent cache state (suppose an operation sequence like
-  // Open->Open->modify->Close->modify->Close; the second modify may not be
-  // synchronized to the server since it is already Closed on the cache).
-  if (!open_files_->insert(file_path).second) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, FILE_ERROR_IN_USE, base::FilePath()));
-    return;
-  }
-
   download_operation_->EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
@@ -80,12 +68,11 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
       google_apis::GetContentCallback(),
       base::Bind(
           &OpenFileOperation::OpenFileAfterFileDownloaded,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Bind(&OpenFileOperation::FinalizeOpenFile,
-                     weak_ptr_factory_.GetWeakPtr(), file_path, callback)));
+          weak_ptr_factory_.GetWeakPtr(), file_path, callback));
 }
 
 void OpenFileOperation::OpenFileAfterFileDownloaded(
+    const base::FilePath& file_path,
     const OpenFileCallback& callback,
     FileError error,
     const base::FilePath& local_file_path,
@@ -119,35 +106,22 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
                  new_local_file_path),
       base::Bind(&OpenFileOperation::OpenFileAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
+                 file_path,
                  callback,
                  base::Owned(new_local_file_path)));
 }
 
 void OpenFileOperation::OpenFileAfterUpdateLocalState(
+    const base::FilePath& file_path,
     const OpenFileCallback& callback,
     const base::FilePath* local_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (error == FILE_ERROR_OK)
+    ++(*open_files_)[file_path];
   callback.Run(error, *local_file_path);
-}
-
-void OpenFileOperation::FinalizeOpenFile(
-    const base::FilePath& drive_file_path,
-    const OpenFileCallback& callback,
-    FileError result,
-    const base::FilePath& local_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // All the invocation of |callback| from operations initiated from OpenFile
-  // must go through here. Removes the |drive_file_path| from the remembered
-  // set when the file was not successfully opened.
-  if (result != FILE_ERROR_OK)
-    open_files_->erase(drive_file_path);
-
-  callback.Run(result, local_file_path);
 }
 
 }  // namespace file_system

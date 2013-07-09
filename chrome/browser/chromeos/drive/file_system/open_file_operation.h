@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPEN_FILE_OPERATION_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPEN_FILE_OPERATION_H_
 
-#include <set>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -42,7 +42,7 @@ class OpenFileOperation {
                     internal::ResourceMetadata* metadata,
                     internal::FileCache* cache,
                     const base::FilePath& temporary_file_directory,
-                    std::set<base::FilePath>* open_files);
+                    std::map<base::FilePath, int>* open_files);
   ~OpenFileOperation();
 
   // Opens the file at |file_path|. If not found, failed to open.
@@ -54,31 +54,27 @@ class OpenFileOperation {
 
  private:
   // Part of OpenFile(). Called after file downloading is completed.
-  void OpenFileAfterFileDownloaded(const OpenFileCallback& callback,
+  void OpenFileAfterFileDownloaded(const base::FilePath& file_path,
+                                   const OpenFileCallback& callback,
                                    FileError error,
                                    const base::FilePath& local_file_path,
                                    scoped_ptr<ResourceEntry> entry);
 
   // Part of OpenFile(). Called after the updating of the local state.
-  void OpenFileAfterUpdateLocalState(const OpenFileCallback& callback,
+  void OpenFileAfterUpdateLocalState(const base::FilePath& file_path,
+                                     const OpenFileCallback& callback,
                                      const base::FilePath* local_file_path,
                                      FileError error);
-
-  // Part of OpenFile(). Called at the end of OpenFile() regardless of whether
-  // it is successfully done or not.
-  void FinalizeOpenFile(const base::FilePath& drive_file_path,
-                        const OpenFileCallback& callback,
-                        FileError result,
-                        const base::FilePath& local_file_path);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   internal::FileCache* cache_;
 
   scoped_ptr<DownloadOperation> download_operation_;
 
-  // The set of paths for opened files. The instance is owned by FileSystem
-  // and it is shared with CloseFileOperation.
-  std::set<base::FilePath>* open_files_;
+  // The map from paths for opened file to the number how many the file is
+  // opened. The instance is owned by FileSystem and shared with
+  // CloseFileOperation.
+  std::map<base::FilePath, int>* open_files_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
