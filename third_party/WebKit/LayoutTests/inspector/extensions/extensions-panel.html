@@ -259,16 +259,18 @@ function extension_testGlobalShortcuts(nextTest)
         testPanel.onHidden.addListener(onPanelHidden);
         evaluateOnFrontend("InspectorTest.switchToLastPanel();");
     }
-    function onPanelShown(window)
+    var panelWindow;
+    function onPanelShown(win)
     {
+        panelWindow = win;
         testPanel.onShown.removeListener(onPanelShown);
         output("Panel shown, now toggling console...");
-        window.addEventListener("resize", onPanelResized);
+        panelWindow.addEventListener("resize", onPanelResized);
         dispatchKeydownEvent({ keyIdentifier: "U+001B" });
     }
     function onPanelResized()
     {
-        window.removeEventListener("resize", onPanelResized);
+        panelWindow.removeEventListener("resize", onPanelResized);
         output("Panel resized, switching away...");
         var isMac = platform === "mac";
         dispatchKeydownEvent({ ctrlKey: !isMac, metaKey: isMac, keyIdentifier: "U+005D" });
