@@ -172,6 +172,10 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
         abs_path = os.path.normpath(os.path.join(out_dir, flag[2:]))
         chrome_flags.append('-I' + abs_path)
     elif flag.startswith('-') and flag[1] in 'DWFfmO':
+      if flag == '-Wno-deprecated-register':
+        # This flag causes libclang (3.3) to crash. Remove it until things
+        # are fixed.
+        continue
       chrome_flags.append(flag)
 
   return chrome_flags
@@ -192,9 +196,6 @@ def FlagsForFile(filename):
   chrome_flags = GetClangCommandFromNinjaForFilename(chrome_root,
                                                      filename)
   final_flags = flags + chrome_flags
-
-  # This causes libclang (3.3) to crash. Remove it until things are fixed.
-  final_flags.remove('-Wno-deprecated-register')
 
   return {
     'flags': final_flags,
