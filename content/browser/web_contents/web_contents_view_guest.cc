@@ -29,11 +29,11 @@ namespace content {
 WebContentsViewGuest::WebContentsViewGuest(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* guest,
-    WebContentsViewPort* platform_view,
+    scoped_ptr<WebContentsViewPort> platform_view,
     RenderViewHostDelegateView* platform_view_delegate_view)
     : web_contents_(web_contents),
       guest_(guest),
-      platform_view_(platform_view),
+      platform_view_(platform_view.Pass()),
       platform_view_delegate_view_(platform_view_delegate_view) {
 }
 

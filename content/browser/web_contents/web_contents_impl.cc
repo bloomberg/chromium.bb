@@ -1222,13 +1222,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
         GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
     if (browser_plugin_guest_) {
-      // |render_view_host_delegate_view_| is a WebContentsView* and its
-      // lifetime is managed by its associated WebContentsImpl.
-      WebContentsViewPort* platform_view = CreateWebContentsView(
-          this, delegate, &render_view_host_delegate_view_);
+      scoped_ptr<WebContentsViewPort> platform_view(CreateWebContentsView(
+          this, delegate, &render_view_host_delegate_view_));
 
       WebContentsViewGuest* rv = new WebContentsViewGuest(
-          this, browser_plugin_guest_.get(), platform_view,
+          this, browser_plugin_guest_.get(), platform_view.Pass(),
           render_view_host_delegate_view_);
       render_view_host_delegate_view_ = rv;
       view_.reset(rv);
