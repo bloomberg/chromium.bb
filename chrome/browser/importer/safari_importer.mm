@@ -322,7 +322,7 @@ void SafariImporter::ImportHistory() {
   ParseHistoryItems(&rows);
 
   if (!rows.empty() && !cancelled()) {
-    bridge_->SetHistoryItems(rows, history::SOURCE_SAFARI_IMPORTED);
+    bridge_->SetHistoryItems(rows, importer::VISIT_SOURCE_SAFARI_IMPORTED);
   }
 }
 

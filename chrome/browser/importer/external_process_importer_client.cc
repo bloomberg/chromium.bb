@@ -168,7 +168,7 @@ void ExternalProcessImporterClient::OnHistoryImportGroup(
                        history_rows_group.end());
   if (history_rows_.size() == total_history_rows_count_)
     bridge_->SetHistoryItems(history_rows_,
-                             static_cast<history::VisitSource>(visit_source));
+                             static_cast<importer::VisitSource>(visit_source));
 }
 
 void ExternalProcessImporterClient::OnHomePageImportReady(

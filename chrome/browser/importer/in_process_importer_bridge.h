@@ -49,7 +49,7 @@ class InProcessImporterBridge : public ImporterBridge {
       const std::vector<ImportedFaviconUsage>& favicons) OVERRIDE;
 
   virtual void SetHistoryItems(const std::vector<ImporterURLRow>& rows,
-                               history::VisitSource visit_source) OVERRIDE;
+                               importer::VisitSource visit_source) OVERRIDE;
 
   virtual void SetKeywords(
       const std::vector<importer::URLKeywordInfo>& url_keywords,

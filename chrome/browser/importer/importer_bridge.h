@@ -51,7 +51,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
       const std::vector<ImportedFaviconUsage>& favicons) = 0;
 
   virtual void SetHistoryItems(const std::vector<ImporterURLRow>& rows,
-                               history::VisitSource visit_source) = 0;
+                               importer::VisitSource visit_source) = 0;
 
   virtual void SetKeywords(
       const std::vector<importer::URLKeywordInfo>& url_keywords,

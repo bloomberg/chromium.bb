@@ -105,7 +105,7 @@ void ExternalProcessImporterBridge::SetFavicons(
 
 void ExternalProcessImporterBridge::SetHistoryItems(
     const std::vector<ImporterURLRow>& rows,
-    history::VisitSource visit_source) {
+    importer::VisitSource visit_source) {
   Send(new ProfileImportProcessHostMsg_NotifyHistoryImportStart(rows.size()));
 
   // |rows_left| is required for the checks below as Windows has a

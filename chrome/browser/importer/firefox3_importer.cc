@@ -170,7 +170,7 @@ void Firefox3Importer::ImportHistory() {
   }
 
   if (!rows.empty() && !cancelled())
-    bridge_->SetHistoryItems(rows, history::SOURCE_FIREFOX_IMPORTED);
+    bridge_->SetHistoryItems(rows, importer::VISIT_SOURCE_FIREFOX_IMPORTED);
 }
 
 void Firefox3Importer::ImportBookmarks() {

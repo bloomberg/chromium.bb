@@ -68,6 +68,14 @@ struct ImporterIE7PasswordInfo {
 };
 #endif
 
+// Mapped to history::VisitSource after import in the browser.
+enum VisitSource {
+  VISIT_SOURCE_BROWSED = 0,
+  VISIT_SOURCE_FIREFOX_IMPORTED = 1,
+  VISIT_SOURCE_IE_IMPORTED = 2,
+  VISIT_SOURCE_SAFARI_IMPORTED = 3,
+};
+
 }  // namespace importer
 
 #endif  // CHROME_COMMON_IMPORTER_IMPORTER_DATA_TYPES_H_
