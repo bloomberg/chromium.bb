@@ -191,6 +191,7 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
     context.label = media_stream_manager_->MakeMediaAccessRequest(
         context.render_process_id,
         context.render_view_id,
+        context.request_id,
         StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_NO_SERVICE),
         GURL(context.context_name),
         base::Bind(

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
 
-#include <queue>
+#include <deque>
+#include <map>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -109,6 +110,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   virtual void OnMediaRequestStateChanged(
       int render_process_id,
       int render_view_id,
+      int page_request_id,
       const content::MediaStreamDevice& device,
       content::MediaRequestState state) OVERRIDE;
   virtual void OnAudioStreamPlayingChanged(
@@ -132,7 +134,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
     content::MediaStreamRequest request;
     content::MediaResponseCallback callback;
   };
-  typedef std::queue<PendingAccessRequest> RequestsQueue;
+  typedef std::deque<PendingAccessRequest> RequestsQueue;
+  typedef std::map<content::WebContents*, RequestsQueue> RequestsQueues;
 
   MediaCaptureDevicesDispatcher();
   virtual ~MediaCaptureDevicesDispatcher();
@@ -167,6 +170,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void UpdateMediaRequestStateOnUIThread(
       int render_process_id,
       int render_view_id,
+      int page_request_id,
       const content::MediaStreamDevice& device,
       content::MediaRequestState state);
 
@@ -186,7 +190,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // Flag used by unittests to disable device enumeration.
   bool is_device_enumeration_disabled_;
 
-  std::map<content::WebContents*, RequestsQueue> pending_requests_;
+  RequestsQueues pending_requests_;
 
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
 

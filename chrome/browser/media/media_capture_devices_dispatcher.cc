@@ -297,7 +297,7 @@ void MediaCaptureDevicesDispatcher::ProcessRegularMediaAccessRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RequestsQueue& queue = pending_requests_[web_contents];
-  queue.push(PendingAccessRequest(request, callback));
+  queue.push_back(PendingAccessRequest(request, callback));
 
   // If this is the only request then show the infobar.
   if (queue.size() == 1)
@@ -338,8 +338,11 @@ void MediaCaptureDevicesDispatcher::OnAccessRequestResponse(
   }
 
   RequestsQueue& queue(it->second);
+  if (queue.empty())
+    return;
+
   content::MediaResponseCallback callback = queue.front().callback;
-  queue.pop();
+  queue.pop_front();
 
   if (!queue.empty()) {
     // Post a task to process next queued request. It has to be done
@@ -434,6 +437,7 @@ void MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged(
 void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
     int render_process_id,
     int render_view_id,
+    int page_request_id,
     const content::MediaStreamDevice& device,
     content::MediaRequestState state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -441,8 +445,8 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread,
-          base::Unretained(this), render_process_id, render_view_id, device,
-          state));
+          base::Unretained(this), render_process_id, render_view_id,
+          page_request_id, device, state));
 
 }
 
@@ -476,8 +480,30 @@ void MediaCaptureDevicesDispatcher::UpdateVideoDevicesOnUIThread(
 void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
     int render_process_id,
     int render_view_id,
+    int page_request_id,
     const content::MediaStreamDevice& device,
     content::MediaRequestState state) {
+  // Cancel the request.
+  if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
+    bool found = false;
+    for (RequestsQueues::iterator rqs_it = pending_requests_.begin();
+         rqs_it != pending_requests_.end(); ++rqs_it) {
+      RequestsQueue& queue = rqs_it->second;
+      for (RequestsQueue::iterator it = queue.begin();
+           it != queue.end(); ++it) {
+        if (it->request.render_process_id == render_process_id &&
+            it->request.render_view_id == render_view_id &&
+            it->request.page_request_id == page_request_id) {
+          queue.erase(it);
+          found = true;
+          break;
+        }
+      }
+      if (found)
+        break;
+    }
+  }
+
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnRequestUpdate(render_process_id,
                                     render_view_id,

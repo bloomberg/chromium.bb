@@ -143,7 +143,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << security_origin.spec() << ")";
 
   const std::string& label = media_stream_manager_->GenerateStream(
-      this, render_process_id_, render_view_id, components, security_origin);
+      this, render_process_id_, render_view_id, page_request_id,
+      components, security_origin);
   if (label.empty()) {
     Send(new MediaStreamMsg_StreamGenerationFailed(render_view_id,
                                                    page_request_id));
@@ -191,7 +192,8 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
            << security_origin.spec() << ")";
 
   const std::string& label = media_stream_manager_->EnumerateDevices(
-      this, render_process_id_, render_view_id, type, security_origin);
+      this, render_process_id_, render_view_id, page_request_id,
+      type, security_origin);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
 }
@@ -210,7 +212,7 @@ void MediaStreamDispatcherHost::OnOpenDevice(
            << security_origin.spec() << ")";
 
   const std::string& label = media_stream_manager_->OpenDevice(
-      this, render_process_id_, render_view_id,
+      this, render_process_id_, render_view_id, page_request_id,
       device_id, type, security_origin);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);

@@ -98,6 +98,7 @@ struct CONTENT_EXPORT MediaStreamRequest {
   MediaStreamRequest(
       int render_process_id,
       int render_view_id,
+      int page_request_id,
       const GURL& security_origin,
       MediaStreamRequestType request_type,
       const std::string& requested_device_id,
@@ -111,6 +112,10 @@ struct CONTENT_EXPORT MediaStreamRequest {
 
   // The render view id generating this request.
   int render_view_id;
+
+  // The unique id combined with render_process_id and render_view_id for
+  // identifying this request. This is used for cancelling request.
+  int page_request_id;
 
   // The WebKit security origin for the current request (e.g. "html5rocks.com").
   GURL security_origin;

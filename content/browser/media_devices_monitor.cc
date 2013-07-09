@@ -13,7 +13,7 @@ namespace {
 void EnsureMonitorCaptureDevicesInternal(
     MediaStreamManager* media_stream_manager) {
   media_stream_manager->EnumerateDevices(
-      NULL, -1, -1, MEDIA_DEVICE_AUDIO_CAPTURE, GURL());
+      NULL, -1, -1, -1, MEDIA_DEVICE_AUDIO_CAPTURE, GURL());
 }
 }
 

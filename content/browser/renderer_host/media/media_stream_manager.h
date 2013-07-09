@@ -85,6 +85,7 @@ class CONTENT_EXPORT MediaStreamManager
   std::string MakeMediaAccessRequest(
       int render_process_id,
       int render_view_id,
+      int page_request_id,
       const StreamOptions& components,
       const GURL& security_origin,
       const MediaRequestResponseCallback& callback);
@@ -96,6 +97,7 @@ class CONTENT_EXPORT MediaStreamManager
   std::string GenerateStream(MediaStreamRequester* requester,
                              int render_process_id,
                              int render_view_id,
+                             int page_request_id,
                              const StreamOptions& components,
                              const GURL& security_origin);
 
@@ -114,6 +116,7 @@ class CONTENT_EXPORT MediaStreamManager
   std::string EnumerateDevices(MediaStreamRequester* requester,
                                int render_process_id,
                                int render_view_id,
+                               int page_request_id,
                                MediaStreamType type,
                                const GURL& security_origin);
 
@@ -123,6 +126,7 @@ class CONTENT_EXPORT MediaStreamManager
   std::string OpenDevice(MediaStreamRequester* requester,
                          int render_process_id,
                          int render_view_id,
+                         int page_request_id,
                          const std::string& device_id,
                          MediaStreamType type,
                          const GURL& security_origin);

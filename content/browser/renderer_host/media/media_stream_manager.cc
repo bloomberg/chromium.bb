@@ -74,10 +74,18 @@ class MediaStreamManager::DeviceRequest {
 
   // Update the request state and notify observers.
   void SetState(MediaStreamType stream_type, MediaRequestState new_state) {
-    state_[stream_type] = new_state;
+    if (stream_type == NUM_MEDIA_TYPES) {
+      for (int i = MEDIA_NO_SERVICE + 1; i < NUM_MEDIA_TYPES; ++i) {
+        const MediaStreamType stream_type = static_cast<MediaStreamType>(i);
+        state_[stream_type] = new_state;
+      }
+    } else {
+      state_[stream_type] = new_state;
+    }
 
     if (request.video_type != MEDIA_TAB_VIDEO_CAPTURE &&
-        request.audio_type != MEDIA_TAB_AUDIO_CAPTURE) {
+        request.audio_type != MEDIA_TAB_AUDIO_CAPTURE &&
+        new_state != MEDIA_REQUEST_STATE_CLOSING) {
       return;
     }
 
@@ -95,6 +103,7 @@ class MediaStreamManager::DeviceRequest {
 
     media_observer->OnMediaRequestStateChanged(
         request.render_process_id, request.render_view_id,
+        request.page_request_id,
         MediaStreamDevice(stream_type, device_id, device_id), new_state);
   }
 
@@ -168,13 +177,14 @@ AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
 std::string MediaStreamManager::MakeMediaAccessRequest(
     int render_process_id,
     int render_view_id,
+    int page_request_id,
     const StreamOptions& options,
     const GURL& security_origin,
     const MediaRequestResponseCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Create a new request based on options.
   MediaStreamRequest stream_request(
-      render_process_id, render_view_id, security_origin,
+      render_process_id, render_view_id, page_request_id, security_origin,
       MEDIA_DEVICE_ACCESS, std::string(),
       options.audio_type, options.video_type);
   DeviceRequest* request = new DeviceRequest(NULL, stream_request);
@@ -191,6 +201,7 @@ std::string MediaStreamManager::GenerateStream(
     MediaStreamRequester* requester,
     int render_process_id,
     int render_view_id,
+    int page_request_id,
     const StreamOptions& options,
     const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -249,8 +260,8 @@ std::string MediaStreamManager::GenerateStream(
 
   // Create a new request based on options.
   MediaStreamRequest stream_request(
-      target_render_process_id, target_render_view_id, security_origin,
-      MEDIA_GENERATE_STREAM, requested_device_id,
+      target_render_process_id, target_render_view_id, page_request_id,
+      security_origin, MEDIA_GENERATE_STREAM, requested_device_id,
       options.audio_type, options.video_type);
   DeviceRequest* request = new DeviceRequest(requester, stream_request);
   const std::string& label = AddRequest(request);
@@ -273,7 +284,8 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
         MediaStreamProvider* device_manager = GetDeviceManager(stream_type);
         if (!device_manager)
           continue;
-        if (request->state(stream_type) != MEDIA_REQUEST_STATE_OPENING) {
+        if (request->state(stream_type) != MEDIA_REQUEST_STATE_OPENING &&
+            request->state(stream_type) != MEDIA_REQUEST_STATE_DONE) {
           continue;
         }
         for (StreamDeviceInfoArray::const_iterator device_it =
@@ -284,6 +296,8 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
           }
         }
       }
+      // Cancel the request if still pending at UI side.
+      request->SetState(NUM_MEDIA_TYPES, MEDIA_REQUEST_STATE_CLOSING);
     } else {
       StopGeneratedStream(label);
     }
@@ -326,6 +340,7 @@ std::string MediaStreamManager::EnumerateDevices(
     MediaStreamRequester* requester,
     int render_process_id,
     int render_view_id,
+    int page_request_id,
     MediaStreamType type,
     const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -356,7 +371,7 @@ std::string MediaStreamManager::EnumerateDevices(
   }
 
   MediaStreamRequest stream_request(
-      render_process_id, render_view_id, security_origin,
+      render_process_id, render_view_id, page_request_id, security_origin,
       MEDIA_ENUMERATE_DEVICES, std::string(),
       options.audio_type, options.video_type);
   DeviceRequest* request = new DeviceRequest(requester, stream_request);
@@ -395,6 +410,7 @@ std::string MediaStreamManager::OpenDevice(
     MediaStreamRequester* requester,
     int render_process_id,
     int render_view_id,
+    int page_request_id,
     const std::string& device_id,
     MediaStreamType type,
     const GURL& security_origin) {
@@ -414,7 +430,7 @@ std::string MediaStreamManager::OpenDevice(
   }
 
   MediaStreamRequest stream_request(
-      render_process_id, render_view_id, security_origin,
+      render_process_id, render_view_id, page_request_id, security_origin,
       MEDIA_OPEN_DEVICE, device_id,
       options.audio_type, options.video_type);
   DeviceRequest* request = new DeviceRequest(requester, stream_request);

@@ -50,6 +50,7 @@ MediaStreamDevice::~MediaStreamDevice() {}
 MediaStreamRequest::MediaStreamRequest(
     int render_process_id,
     int render_view_id,
+    int page_request_id,
     const GURL& security_origin,
     MediaStreamRequestType request_type,
     const std::string& requested_device_id,
@@ -57,6 +58,7 @@ MediaStreamRequest::MediaStreamRequest(
     MediaStreamType video_type)
     : render_process_id(render_process_id),
       render_view_id(render_view_id),
+      page_request_id(page_request_id),
       security_origin(security_origin),
       request_type(request_type),
       requested_device_id(requested_device_id),
