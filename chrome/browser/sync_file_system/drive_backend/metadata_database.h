@@ -5,17 +5,20 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DATABASE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DATABASE_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace leveldb {
@@ -34,18 +37,31 @@ namespace drive_backend {
 
 class ServiceMetadata;
 class DriveFileMetadata;
-struct InitializeInfo;
+struct DatabaseContents;
 
 // This class holds a snapshot of the server side metadata.
 class MetadataDatabase {
- public:
-  explicit MetadataDatabase(base::SequencedTaskRunner* task_runner);
-  ~MetadataDatabase();
+ private:
+  struct FileIDComparator {
+    bool operator()(DriveFileMetadata* left, DriveFileMetadata* right);
+  };
 
-  // Initializes the internal database and loads its content to memory.
-  // This function works asynchronously.
-  void Initialize(const base::FilePath& database_path,
-                  const SyncStatusCallback& callback);
+ public:
+  typedef std::set<DriveFileMetadata*, FileIDComparator> FileSet;
+  typedef std::map<std::string, DriveFileMetadata*> FileByFileID;
+  typedef std::map<std::string, FileSet> FilesByParent;
+  typedef std::map<std::pair<std::string, std::string>, DriveFileMetadata*>
+      FileByParentAndTitle;
+  typedef std::map<std::string, DriveFileMetadata*> FileByAppID;
+
+  typedef base::Callback<
+      void(SyncStatusCode status, scoped_ptr<MetadataDatabase> instance)>
+      CreateCallback;
+
+  static void Create(base::SequencedTaskRunner* task_runner,
+                     const base::FilePath& database_path,
+                     const CreateCallback& callback);
+  ~MetadataDatabase();
 
   int64 GetLargestChangeID() const;
 
@@ -109,8 +125,8 @@ class MetadataDatabase {
 
   // Looks up FilePath from FileID.  Returns true on success.
   // |path| must be non-NULL.
-  bool ConstructPathForFile(const std::string& file_id,
-                            base::FilePath* path) const;
+  bool BuildPathForFile(const std::string& file_id,
+                        base::FilePath* path) const;
 
   // Updates database by |changes|.
   // Marks dirty for each changed file if the file has the metadata in the
@@ -126,6 +142,31 @@ class MetadataDatabase {
                       const SyncStatusCallback& callback);
 
  private:
+  friend class MetadataDatabaseTest;
+
+  explicit MetadataDatabase(base::SequencedTaskRunner* task_runner);
+  static void CreateOnTaskRunner(base::SingleThreadTaskRunner* callback_runner,
+                                 base::SequencedTaskRunner* task_runner,
+                                 const base::FilePath& database_path,
+                                 const CreateCallback& callback);
+  SyncStatusCode InitializeOnTaskRunner(const base::FilePath& database_path);
+  void BuildIndexes(DatabaseContents* contents);
+
+  void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
+                       const SyncStatusCallback& callback);
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_ptr<leveldb::DB> db_;
+
+  scoped_ptr<ServiceMetadata> service_metadata_;
+  FileByFileID file_by_file_id_;  // Owned.
+
+  FilesByParent files_by_parent_;  // Not owned.
+  FileByAppID app_root_by_app_id_;  // Not owned.
+  FileByParentAndTitle active_file_by_parent_and_title_;  // Not owned.
+
+  base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabase);
 };
 

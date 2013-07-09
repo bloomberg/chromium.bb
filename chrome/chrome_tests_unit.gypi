@@ -1277,6 +1277,7 @@
         'browser/sync_file_system/drive_backend/fake_drive_service_helper.cc',
         'browser/sync_file_system/drive_backend/fake_drive_service_helper.h',
         'browser/sync_file_system/drive_backend/local_sync_operation_resolver_unittest.cc',
+        'browser/sync_file_system/drive_backend/metadata_database_unittest.cc',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util_unittest.cc',
         'browser/sync_file_system/drive_backend/remote_sync_operation_resolver_unittest.cc',
         'browser/sync_file_system/fake_remote_change_processor.cc',

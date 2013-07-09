@@ -17,7 +17,7 @@ enum FileKind {
 }
 
 message ServiceMetadata {
-  optional int64 largest_change_id = 1 [default = 0];
+  optional int64 largest_change_id = 1;
   optional string sync_root_folder_id = 2;
 }
 
