@@ -1,0 +1,67 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <winresrc.h>
+#include "remoting/host/win/core_resource.h"
+#ifdef IDC_STATIC
+#undef IDC_STATIC
+#endif
+#define IDC_STATIC (-1)
+
+{% for lang in languages %}
+  {% do SelectLanguage(lang) %}
+
+LANGUAGE {{ lang | GetPrimaryLanguage }}, {{ lang | GetSublanguage }}
+
+#if (BINARY == BINARY_CORE)
+
+STRINGTABLE
+BEGIN
+  IDS_DISPLAY_SERVICE_NAME "{% trans %}DISPLAY_SERVICE_NAME{% endtrans %}"
+  IDS_SERVICE_DESCRIPTION "{% trans %}SERVICE_DESCRIPTION{% endtrans %}"
+  IDS_CONTROLLER_NAME "{% trans %}CONTROLLER_NAME{% endtrans %}"
+END
+
+#endif  // (BINARY == BINARY_CORE)
+
+IDD_VERIFY_CONFIG_DIALOG    ICON    "remoting/resources/chromoting.ico"
+
+IDD_VERIFY_CONFIG_DIALOG DIALOGEX 0, 0, 221, 106
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUPWINDOW | WS_CAPTION
+EXSTYLE 0 {% if IsRtlLanguage(lang) %} | WS_EX_LAYOUTRTL {% endif %}
+CAPTION "{% trans %}PRODUCT_NAME{% endtrans %}"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "{% trans %}VERIFY_PIN_DIALOG_MESSAGE{% endtrans %}",IDC_MESSAGE,7,7,207,30
+    LTEXT           "{% trans %}VERIFY_PIN_DIALOG_EMAIL_LABEL{% endtrans %}",IDC_EMAIL_LABEL,7,38,50,30
+    LTEXT           "",IDC_EMAIL,60,38,110,30
+    LTEXT           "{% trans %}ASK_PIN_DIALOG_LABEL{% endtrans %}",IDC_PIN_LABEL,7,55,50,30
+    EDITTEXT        IDC_PIN,60,55,100,15,WS_TABSTOP | ES_PASSWORD | ES_NUMBER
+    DEFPUSHBUTTON   "{% trans %}OK{% endtrans %}",IDOK,68,86,68,14,WS_TABSTOP
+    PUSHBUTTON      "{% trans %}CANCEL{% endtrans %}",IDCANCEL,146,86,68,14,WS_TABSTOP
+END
+
+IDD_DISCONNECT DIALOGEX 0, 0, 145, 24
+STYLE DS_SETFONT | WS_POPUP
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW {% if IsRtlLanguage(lang) %} | WS_EX_LAYOUTRTL {% endif %}
+FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "{% trans %}DISCONNECT_OTHER_BUTTON{% endtrans %}",IDC_DISCONNECT,68,5,70,14
+    LTEXT           "{% trans %}MESSAGE_SHARED{% endtrans %}",IDC_DISCONNECT_SHARINGWITH,18,7,43,8
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,6,6,1,12
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,8,6,1,12
+END
+
+IDD_CONTINUE DIALOGEX 0, 0, 221, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW {% if IsRtlLanguage(lang) %} | WS_EX_LAYOUTRTL {% endif %}
+CAPTION "kTitle"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "{% trans %}CONTINUE_BUTTON{% endtrans %}",IDC_CONTINUE_DEFAULT,116,38,98,14
+    LTEXT           "{% trans %}CONTINUE_PROMPT{% endtrans %}",IDC_CONTINUE_MESSAGE,7,7,207,30
+    PUSHBUTTON      "{% trans %}STOP_SHARING_BUTTON{% endtrans %}",IDC_CONTINUE_CANCEL,7,38,98,14
+END
+
+{% endfor %}

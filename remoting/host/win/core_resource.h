@@ -8,18 +8,18 @@
 //
 
 // N.B. Values of |IDS_DISPLAY_SERVICE_NAME|, |IDS_SERVICE_DESCRIPTION|,
-//      |IDS_CONTROLLER| and |IDD_VERIFY_CONFIG_DIALOG| are hardcoded in
+//      |IDS_CONTROLLER_NAME| and |IDD_VERIFY_CONFIG_DIALOG| are hardcoded in
 //      remoting/host/install/chromoting.wxs. Make sure the values below and in
 //      the installation script match.
 #define IDS_DISPLAY_SERVICE_NAME        101
 #define IDS_SERVICE_DESCRIPTION         102
-#define IDS_CONTROLLER 103
-#define IDD_VERIFY_CONFIG_DIALOG 104
-#define IDC_MESSAGE 105
-#define IDC_EMAIL 106
-#define IDC_PIN 107
-#define IDC_EMAIL_LABEL 108
-#define IDC_PIN_LABEL 109
+#define IDS_CONTROLLER_NAME             103
+#define IDD_VERIFY_CONFIG_DIALOG        104
+#define IDC_MESSAGE                     105
+#define IDC_EMAIL                       106
+#define IDC_PIN                         107
+#define IDC_EMAIL_LABEL                 108
+#define IDC_PIN_LABEL                   109
 
 #define IDD_DISCONNECT                  110
 #define IDD_CONTINUE                    111

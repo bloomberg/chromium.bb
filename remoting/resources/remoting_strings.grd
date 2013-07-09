@@ -199,6 +199,24 @@
         <message name="IDR_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chrome Remote Desktop">
           Want to help improve Chrome Remote Desktop? <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://goo.gl/njH2q&gt;</ex></ph>Take the survey.<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>
         </message>
+        <message name="IDR_COMPANY_NAME" desc="The company name specified in the version information of each Chrome Remote Desktop Host executable.">
+          Google Inc.
+        </message>
+        <message name="IDR_COPYRIGHT" desc="The copyright message specified in the version information of each Chrome Remote Desktop Host executable. It should be updated every year.">
+          Copyright 2013 Google Inc. All Rights Reserved.
+        </message>
+        <message name="IDR_DISPLAY_SERVICE_NAME" desc="The name of the Windows service installed by Chrome Remote Desktop.">
+          Chrome Remote Desktop Service
+        </message>
+        <message name="IDR_SERVICE_DESCRIPTION" desc="The description of the Windows service installed by Chrome Remote Desktop.">
+          This service enables incoming connections from Chrome Remote Desktop clients.
+        </message>
+        <message name="IDR_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chrome Remote Desktop Host.">
+          Chrome Remote Desktop Host Controller
+        </message>
+        <message name="IDR_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
+          Please confirm your account and PIN below to allow access by Chrome Remote Desktop.
+        </message>
       </if>
 
       <if expr="not pp_ifdef('_google_chrome')">
@@ -264,6 +282,24 @@
         </message>
         <message  name="IDR_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chromoting">
           Want to help improve Chromoting? <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://goo.gl/njH2q&gt;</ex></ph>Take the survey.<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>
+        </message>
+        <message name="IDR_COMPANY_NAME" desc="The company name specified in the version information of each Chromoting Host executable.">
+          The Chromium Authors
+        </message>
+        <message name="IDR_COPYRIGHT" desc="The copyright message specified in the version information of each Chromoting Host executable. It should be updated every year.">
+          Copyright 2013 The Chromium Authors. All Rights Reserved.
+        </message>
+        <message name="IDR_DISPLAY_SERVICE_NAME" desc="The name of the Windows service installed by Chromoting.">
+          Chromoting Service
+        </message>
+        <message name="IDR_SERVICE_DESCRIPTION" desc="The description of the Windows service installed by Chromoting.">
+          This service enables incoming connections from Chromoting clients.
+        </message>
+        <message name="IDR_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chromoting Host.">
+          Chromoting Host Controller
+        </message>
+        <message name="IDR_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
+          Please confirm your account and PIN below to allow access by Chromoting.
         </message>
       </if>
 
@@ -554,6 +590,39 @@
       </message>
       <message name="IDR_HANGOUTS_INVITATION" desc="Text for the invitation to try Remote Desktop app in Hangouts.">
         Want to help someone while having a video chat with them too? Try <ph name="LINK_BEGIN">$1<ex>&lt;a href=https://plus.google.com/hangouts&gt;</ex></ph> Remote Desktop in Google Hangouts<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
+      </message>
+      <message name="IDR_REMOTING_CORE_DESCRIPTION" desc="The file description specified in the version information of remoting_core.dll.">
+        Core Library
+      </message>
+      <message name="IDR_REMOTING_DESKTOP_DESCRIPTION" desc="The file description specified in the version information of remoting_desktop.exe.">
+        Desktop Integration Process
+      </message>
+      <message name="IDR_REMOTING_HOST_DESCRIPTION" desc="The file description specified in the version information of remoting_host.exe.">
+        Host Process
+      </message>
+      <message name="IDR_REMOTING_HOST_PLUGIN_DESCRIPTION" desc="The file description specified in the version information of remoting_host_plugin.dll.">
+        Allow another user to access your computer securely over the Internet.
+      </message>
+      <message name="IDR_VERIFY_PIN_DIALOG_EMAIL_LABEL" desc="The message displayed by the PIN verification dialog.">
+        Account
+      </message>
+      <message name="IDR_HOST_CATEGORY" desc="Name of the message category assigned to all messages written to the EventLog by Chromoting Host.">
+        Host
+      </message>
+      <message name="IDR_HOST_CLIENT_CONNECTED" desc="The message reported to the EventLog by Chromoting Host every time a client connects.">
+        Client connected: <ph name="CLIENT_USERNAME">%1<ex>client@email.com</ex></ph>.
+      </message>
+      <message name="IDR_HOST_CLIENT_DISCONNECTED" desc="The message reported to the EventLog by Chromoting Host every time a client disconnects.">
+        Client disconnected: <ph name="CLIENT_USERNAME">%1<ex>client@email.com</ex></ph>.
+      </message>
+      <message name="IDR_HOST_CLIENT_ACCESS_DENIED" desc="The message reported to the EventLog by Chromoting Host every time the host denies access to a client.">
+        Access denied for client: <ph name="CLIENT_USERNAME">%1<ex>client@email.com</ex></ph>.
+      </message>
+      <message name="IDR_HOST_CLIENT_ROUTING_CHANGED" desc="The message reported to the EventLog by Chromoting Host every time a channel (a logical connection) between the client and the host is established. Multiple channels can be multiplexed over the same underlying protocol connection. The IP addresses and connection type of the underlying connection are reported. The channel and connection types are reported as opaque strings which should not be translated.">
+        Channel IP for client: <ph name="CLIENT_GAIA_IDENTIFIER">%1<ex>client@email.com/TalkGadgetABCDABCD</ex></ph> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT">%2<ex>127.0.0.1:1000</ex></ph>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT">%3<ex>127.0.0.1:2000</ex></ph>' channel='<ph name="CHANNEL_TYPE">%4<ex>mux</ex></ph>' connection='<ph name="CONNECTION_TYPE">%5<ex>direct</ex></ph>'.
+      </message>
+      <message name="IDR_HOST_STARTED" desc="The message reported to the EventLog by Chromoting Host every time it is started.">
+        Host started for user: <ph name="HOST_USERNAME">%1<ex>host@email.com</ex></ph>.
       </message>
     </messages>
   </release>
