@@ -10,16 +10,12 @@
 
 #include <string.h>
 #include <stdlib.h>
-#if NACL_ANDROID
 /*
- * We need this for PAGE_SIZE on Android, and cannot
- * include unconditionally, due to
- * https://code.google.com/p/nativeclient/issues/detail?id=677,
- * and PAGE_SIZE is what PTHREAD_STACK_MIN defined to.
- * So Android's pthread.h is somewhat buggy in that regard.
+ * We need sys/mman.h for PAGE_SIZE on Android.  PAGE_SIZE is what
+ * PTHREAD_STACK_MIN defined to, so Android's pthread.h is somewhat
+ * buggy in that regard.
  */
 #include <sys/mman.h>
-#endif
 #include <sys/types.h>
 #include <signal.h>
 #include <pthread.h>

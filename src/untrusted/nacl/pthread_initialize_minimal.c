@@ -4,9 +4,7 @@
  * found in the LICENSE file.
  */
 
-/* <sys/types.h> must come before <sys/mman.h> due to a bug in the headers. */
 #include <stdlib.h>
-#include <sys/types.h>
 #include <sys/mman.h>
 #include <unistd.h>
 

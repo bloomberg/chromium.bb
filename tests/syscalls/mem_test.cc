@@ -3,11 +3,6 @@
 // be found in the LICENSE file.
 
 #include <errno.h>
-// Note: our version of <sys/mman.h> does not include <sys/types.h>, even
-// though it requires off_t from there.  See this issue:
-//    http://code.google.com/p/nativeclient/issues/detail?id=838
-// I include <sys/types.h> here out of order as a work-around.
-#include <sys/types.h>  // NOLINT
 #include <sys/mman.h>
 
 #include <cstdlib>

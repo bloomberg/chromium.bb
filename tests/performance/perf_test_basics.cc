@@ -5,9 +5,6 @@
  */
 
 #include <setjmp.h>
-// We need <sys/types.h> first to work around a nacl-newlib bug.
-// See https://code.google.com/p/nativeclient/issues/detail?id=677
-#include <sys/types.h>
 #include <sys/mman.h>
 
 #if NACL_LINUX
