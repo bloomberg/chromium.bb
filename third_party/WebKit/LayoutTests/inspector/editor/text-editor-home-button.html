@@ -11,7 +11,6 @@ function foo()
     return 42;
 }
     var textEditor = InspectorTest.createTestEditor();
-    textEditor.overrideViewportForTest(0, undefined, 3);
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();

@@ -34,18 +34,6 @@ function test()
     InspectorTest.runTestSuite([
         function testHighlightedText(next)
         {
-            WebInspector.TextEditorHighlighter._MaxLineCount = 1000;
-            var textEditor = InspectorTest.createTestEditor();
-            textEditor.setMimeType("text/javascript");
-            textEditor.setText(text.join("\n"));
-            testTokenAtPosition(textEditor);
-            next();
-        },
-
-        function testUnhighlightedText(next)
-        {
-            // switch highlight off
-            WebInspector.TextEditorHighlighter._MaxLineCount = 0;
             var textEditor = InspectorTest.createTestEditor();
             textEditor.setMimeType("text/javascript");
             textEditor.setText(text.join("\n"));
