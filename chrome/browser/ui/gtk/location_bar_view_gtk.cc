@@ -316,6 +316,11 @@ void ContentSettingImageViewGtk::BubbleClosing(
   content_setting_bubble_ = NULL;
 }
 
+gfx::Rect AllocationToRect(const GtkAllocation& allocation) {
+  return gfx::Rect(allocation.x, allocation.y,
+                   allocation.width, allocation.height);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,7 +634,9 @@ WebContents* LocationBarViewGtk::GetWebContents() const {
 }
 
 gfx::Rect LocationBarViewGtk::GetOmniboxBounds() const {
-  return gfx::Rect();
+  GtkAllocation hbox_allocation;
+  gtk_widget_get_allocation(hbox_.get(), &hbox_allocation);
+  return AllocationToRect(hbox_allocation);
 }
 
 void LocationBarViewGtk::SetPreviewEnabledPageAction(
@@ -1459,6 +1466,10 @@ void LocationBarViewGtk::OnHboxSizeAllocate(GtkWidget* sender,
   if (hbox_width_ != allocation->width) {
     hbox_width_ = allocation->width;
     UpdateEVCertificateLabelSize();
+  }
+  if (browser_ && browser_->instant_controller()) {
+    browser_->instant_controller()->
+        SetOmniboxBounds(AllocationToRect(*allocation));
   }
 }
 

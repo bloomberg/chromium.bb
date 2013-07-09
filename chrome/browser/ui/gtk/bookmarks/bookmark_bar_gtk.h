@@ -265,6 +265,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // GtkButton callbacks for folder buttons.
   CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnFolderClicked);
 
+  // GtkButton callback for apps button.
+  CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnAppsButtonClicked);
+
   // GtkToolbar callbacks.
   CHROMEGTK_CALLBACK_4(BookmarkBarGtk, gboolean, OnToolbarDragMotion,
                        GdkDragContext*, gint, gint, guint);
@@ -296,6 +299,10 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // Overriden from chrome::BookmarkBarInstructionsDelegate:
   virtual void ShowImportDialog() OVERRIDE;
+
+  // Updates the visibility of the apps shortcut button |apps_shortcut_visible_|
+  // changes.
+  void OnAppsPageShortcutVisibilityChanged();
 
   // Updates the drag&drop state when |edit_bookmarks_enabled_| changes.
   void OnEditBookmarksEnabledChanged();
@@ -333,6 +340,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // BookmarkBarInstructionsGtk that holds the label and the link for importing
   // bookmarks when there are no bookmarks on the bookmark bar.
   scoped_ptr<BookmarkBarInstructionsGtk> instructions_gtk_;
+
+  // The apps page shortcut button.
+  GtkWidget* apps_shortcut_button_;
 
   // GtkToolbar which contains all the bookmark buttons.
   ui::OwnedWidgetGtk bookmark_toolbar_;
@@ -399,6 +409,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // The currently throbbing widget. This is NULL if no widget is throbbing.
   // We track it because we only want to allow one widget to throb at a time.
   GtkWidget* throbbing_widget_;
+
+  // Tracks whether the apps shortcut button should be shown.
+  BooleanPrefMember apps_shortcut_visible_;
 
   // Tracks whether bookmarks can be modified.
   BooleanPrefMember edit_bookmarks_enabled_;

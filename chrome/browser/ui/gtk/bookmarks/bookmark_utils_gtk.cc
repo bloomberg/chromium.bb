@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
@@ -251,6 +253,15 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 
   g_object_set_data(G_OBJECT(button), bookmark_utils::kBookmarkNode,
                     AsVoid(node));
+}
+
+void ConfigureAppsShortcutButton(GtkWidget* button, GtkThemeService* provider) {
+  GdkPixbuf* pixbuf = ui::ResourceBundle::GetSharedInstance().
+      GetNativeImageNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT,
+                          ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf();
+  const string16& label = l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME);
+  PackButton(pixbuf, label, false, provider, button);
 }
 
 std::string BuildTooltipFor(const BookmarkNode* node) {

@@ -45,6 +45,10 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
                             GtkWidget* button, GtkThemeService* provider);
 
+// Helper function to set the visual properties for the apps page shortcut
+// |button|.
+void ConfigureAppsShortcutButton(GtkWidget* button, GtkThemeService* provider);
+
 // Returns the tooltip.
 std::string BuildTooltipFor(const BookmarkNode* node);
 

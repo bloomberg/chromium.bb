@@ -425,10 +425,17 @@ void OmniboxViewGtk::HandleHierarchyChanged(GtkWidget* sender,
 void OmniboxViewGtk::SetFocus() {
   DCHECK(text_view_);
   gtk_widget_grab_focus(text_view_);
+  // Restore caret visibility if focus is explicitly requested. This is
+  // necessary because if we already have invisible focus, the RequestFocus()
+  // call above will short-circuit, preventing us from reaching
+  // OmniboxEditModel::OnSetFocus(), which handles restoring visibility when the
+  // omnibox regains focus after losing focus.
+  model()->SetCaretVisibility(true);
 }
 
 void OmniboxViewGtk::ApplyCaretVisibility() {
-  // TODO(mathp): implement for Linux.
+  gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(text_view_),
+                                   model()->is_caret_visible());
 }
 
 void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
@@ -1044,6 +1051,13 @@ gboolean OmniboxViewGtk::HandleViewButtonPress(GtkWidget* sender,
     return FALSE;
 
   DCHECK(text_view_);
+
+  // Restore caret visibility whenever the user clicks in the omnibox in a way
+  // that would give it focus.  We must handle this case separately here because
+  // if the omnibox currently has invisible focus, the mouse event won't trigger
+  // either SetFocus() or OmniboxEditModel::OnSetFocus().
+  if (event->button == 1 || event->button == 2)
+    model()->SetCaretVisibility(true);
 
   if (event->button == 1) {
     button_1_pressed_ = true;
