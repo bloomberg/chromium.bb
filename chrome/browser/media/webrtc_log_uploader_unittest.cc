@@ -86,7 +86,10 @@ class WebRtcLogUploaderTest : public testing::Test {
 };
 
 TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
+  // Get a temporary filename. We don't want the file to exist to begin with
+  // since that's the normal use case, hence the delete.
   ASSERT_TRUE(file_util::CreateTemporaryFile(&test_list_path_));
+  EXPECT_TRUE(Delete(test_list_path_, false));
   scoped_ptr<WebRtcLogUploader> webrtc_log_uploader_(
       new WebRtcLogUploader());
   webrtc_log_uploader_->SetUploadPathForTesting(test_list_path_);

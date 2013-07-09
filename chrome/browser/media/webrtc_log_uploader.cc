@@ -225,22 +225,25 @@ void WebRtcLogUploader::DecreaseLogCount() {
 void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
     const std::string& report_id) {
   std::string contents;
-  bool read_ok = file_util::ReadFileToString(upload_list_path_, &contents);
-  DPCHECK(read_ok);
 
-  // Limit the number of log entries to |kLogListLimitLines| - 1, to make room
-  // for the new entry. Each line including the last ends with a '\n', so hit
-  // n will be before line n-1 (from the back).
-  int lf_count = 0;
-  int i = contents.size() - 1;
-  for (; i >= 0 && lf_count < kLogListLimitLines; --i) {
-    if (contents[i] == '\n')
-      ++lf_count;
-  }
-  if (lf_count >= kLogListLimitLines) {
-    // + 1 to compensate for the for loop decrease before the conditional
-    // check and + 1 to get the length.
-    contents.erase(0, i + 2);
+  if (file_util::PathExists(upload_list_path_)) {
+    bool read_ok = file_util::ReadFileToString(upload_list_path_, &contents);
+    DPCHECK(read_ok);
+
+    // Limit the number of log entries to |kLogListLimitLines| - 1, to make room
+    // for the new entry. Each line including the last ends with a '\n', so hit
+    // n will be before line n-1 (from the back).
+    int lf_count = 0;
+    int i = contents.size() - 1;
+    for (; i >= 0 && lf_count < kLogListLimitLines; --i) {
+      if (contents[i] == '\n')
+        ++lf_count;
+    }
+    if (lf_count >= kLogListLimitLines) {
+      // + 1 to compensate for the for loop decrease before the conditional
+      // check and + 1 to get the length.
+      contents.erase(0, i + 2);
+    }
   }
 
   // Write the Unix time and report ID to the log list file.
