@@ -55,7 +55,6 @@ static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> customEvent, v8::
 void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     CustomEvent* event = V8CustomEvent::toNative(info.Holder());
-    ASSERT(!event->serializedScriptValue().get());
 
     v8::Handle<v8::Value> result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::detail());
 
@@ -77,6 +76,7 @@ void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8:
 void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     CustomEvent* event = V8CustomEvent::toNative(args.Holder());
+    ASSERT(!event->serializedScriptValue());
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, args[0]);
     V8TRYCATCH_VOID(bool, canBubbleArg, args[1]->BooleanValue());
