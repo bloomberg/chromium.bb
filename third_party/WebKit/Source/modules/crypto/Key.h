@@ -48,7 +48,7 @@ public:
     String type() const;
     bool extractable() const;
     Algorithm* algorithm();
-    Vector<String> keyUsage() const;
+    Vector<String> usages() const;
 
 protected:
     explicit Key(const WebKit::WebCryptoKey&);

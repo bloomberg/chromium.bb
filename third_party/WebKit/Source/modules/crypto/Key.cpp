@@ -62,12 +62,12 @@ const char* keyUsageToString(WebKit::WebCryptoKeyUsage usage)
         return "sign";
     case WebKit::WebCryptoKeyUsageVerify:
         return "verify";
-    case WebKit::WebCryptoKeyUsageDerive:
-        return "derive";
-    case WebKit::WebCryptoKeyUsageWrap:
-        return "wrap";
-    case WebKit::WebCryptoKeyUsageUnwrap:
-        return "unwrap";
+    case WebKit::WebCryptoKeyUsageDeriveKey:
+        return "deriveKey";
+    case WebKit::WebCryptoKeyUsageWrapKey:
+        return "wrapKey";
+    case WebKit::WebCryptoKeyUsageUnwrapKey:
+        return "unwrapKey";
     case WebKit::EndOfWebCryptoKeyUsage:
         break;
     }
@@ -104,14 +104,14 @@ Algorithm* Key::algorithm()
 //        instead is return the same (immutable) array. (Javascript callers can
 //        distinguish this by doing an == test on the arrays and seeing they are
 //        different).
-Vector<String> Key::keyUsage() const
+Vector<String> Key::usages() const
 {
     Vector<String> result;
 
     // The WebCryptoKeyUsage values are consecutive powers of 2. Test each one in order.
     for (int i = 0; (1 << i) < WebKit::EndOfWebCryptoKeyUsage; ++i) {
         WebKit::WebCryptoKeyUsage usage = static_cast<WebKit::WebCryptoKeyUsage>(1 << i);
-        if (m_key.keyUsage() & usage)
+        if (m_key.usages() & usage)
             result.append(ASCIILiteral(keyUsageToString(usage)));
     }
     return result;

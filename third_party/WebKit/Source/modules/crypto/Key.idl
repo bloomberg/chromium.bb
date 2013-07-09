@@ -39,9 +39,9 @@ enum KeyUsage {
     "decrypt",
     "sign",
     "verify",
-    "derive",
-    "wrap",
-    "unwrap"
+    "deriveKey",
+    "wrapKey",
+    "unwrapKey"
 };
 
 [
@@ -50,5 +50,5 @@ enum KeyUsage {
     readonly attribute KeyType type;
     readonly attribute boolean extractable;
     readonly attribute Algorithm algorithm;
-    readonly attribute KeyUsage[] keyUsage;
+    readonly attribute KeyUsage[] usages;
 };

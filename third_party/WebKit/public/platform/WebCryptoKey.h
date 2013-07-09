@@ -47,9 +47,9 @@ enum WebCryptoKeyUsage {
     WebCryptoKeyUsageDecrypt = 1 << 1,
     WebCryptoKeyUsageSign = 1 << 2,
     WebCryptoKeyUsageVerify = 1 << 3,
-    WebCryptoKeyUsageDerive = 1 << 4,
-    WebCryptoKeyUsageWrap = 1 << 5,
-    WebCryptoKeyUsageUnwrap = 1 << 6,
+    WebCryptoKeyUsageDeriveKey = 1 << 4,
+    WebCryptoKeyUsageWrapKey = 1 << 5,
+    WebCryptoKeyUsageUnwrapKey = 1 << 6,
 #if WEBKIT_IMPLEMENTATION
     EndOfWebCryptoKeyUsage,
 #endif
@@ -106,7 +106,7 @@ public:
     WEBKIT_EXPORT WebCryptoKeyType type() const;
     WEBKIT_EXPORT bool extractable() const;
     WEBKIT_EXPORT const WebCryptoAlgorithm& algorithm() const;
-    WEBKIT_EXPORT WebCryptoKeyUsageMask keyUsage() const;
+    WEBKIT_EXPORT WebCryptoKeyUsageMask usages() const;
 
 private:
     WebCryptoKey() { }

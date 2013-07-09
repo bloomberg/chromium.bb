@@ -39,12 +39,12 @@ namespace WebKit {
 
 class WebCryptoKeyPrivate : public ThreadSafeRefCounted<WebCryptoKeyPrivate> {
 public:
-    WebCryptoKeyPrivate(PassOwnPtr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoAlgorithm& algorithm, WebCryptoKeyUsageMask keyUsage)
+    WebCryptoKeyPrivate(PassOwnPtr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
         : handle(handle)
         , type(type)
         , extractable(extractable)
         , algorithm(algorithm)
-        , keyUsage(keyUsage)
+        , usages(usages)
     {
     }
 
@@ -52,13 +52,13 @@ public:
     const WebCryptoKeyType type;
     const bool extractable;
     const WebCryptoAlgorithm algorithm;
-    const WebCryptoKeyUsageMask keyUsage;
+    const WebCryptoKeyUsageMask usages;
 };
 
-WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle, WebCryptoKeyType type, bool extractable, const WebCryptoAlgorithm& algorithm, WebCryptoKeyUsageMask keyUsage)
+WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle, WebCryptoKeyType type, bool extractable, const WebCryptoAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
 {
     WebCryptoKey key;
-    key.m_private = adoptRef(new WebCryptoKeyPrivate(adoptPtr(handle), type, extractable, algorithm, keyUsage));
+    key.m_private = adoptRef(new WebCryptoKeyPrivate(adoptPtr(handle), type, extractable, algorithm, usages));
     return key;
 }
 
@@ -82,9 +82,9 @@ const WebCryptoAlgorithm& WebCryptoKey::algorithm() const
     return m_private->algorithm;
 }
 
-WebCryptoKeyUsageMask WebCryptoKey::keyUsage() const
+WebCryptoKeyUsageMask WebCryptoKey::usages() const
 {
-    return m_private->keyUsage;
+    return m_private->usages;
 }
 
 void WebCryptoKey::assign(const WebCryptoKey& other)
