@@ -34,6 +34,13 @@ class CRYPTO_EXPORT SignatureCreator {
   // instance outlives the created SignatureCreator.
   static SignatureCreator* Create(RSAPrivateKey* key);
 
+  // Signs the precomputed SHA-1 digest |data| using private |key| as
+  // specified in PKCS #1 v1.5.
+  static bool Sign(RSAPrivateKey* key,
+                   const uint8* data,
+                   int data_len,
+                   std::vector<uint8>* signature);
+
   // Update the signature with more data.
   bool Update(const uint8* data_part, int data_part_len);
 
