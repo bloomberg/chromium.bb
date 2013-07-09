@@ -228,6 +228,10 @@ void ListFlagStatus(ListValue* list, const std::string& flag_label,
 
 void NaClDomHandler::HandleRequestNaClInfo(const ListValue* args) {
   page_has_requested_data_ = true;
+  // Force re-validation of pnacl's path in the next call to
+  // MaybeRespondToPage(), in case PNaCl went from not-installed
+  // to installed since the request.
+  pnacl_path_validated_ = false;
   MaybeRespondToPage();
 }
 
