@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/touch_event_queue.h"
 
+#include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -90,7 +91,8 @@ class CoalescedWebTouchEvent {
 };
 
 TouchEventQueue::TouchEventQueue(RenderWidgetHostImpl* host)
-    : render_widget_host_(host) {
+    : render_widget_host_(host),
+      dispatching_touch_ack_(false) {
 }
 
 TouchEventQueue::~TouchEventQueue() {
@@ -99,7 +101,9 @@ TouchEventQueue::~TouchEventQueue() {
 }
 
 void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
-  if (touch_queue_.empty()) {
+  // If the queueing of |event| was triggered by an ack dispatch, defer
+  // processing the event until the dispatch has finished.
+  if (touch_queue_.empty() && !dispatching_touch_ack_) {
     // There is no touch event in the queue. Forward it to the renderer
     // immediately.
     touch_queue_.push_back(new CoalescedWebTouchEvent(event));
@@ -121,6 +125,7 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
 }
 
 void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
+  DCHECK(!dispatching_touch_ack_);
   if (touch_queue_.empty())
     return;
 
@@ -160,6 +165,7 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
 }
 
 void TouchEventQueue::FlushQueue() {
+  DCHECK(!dispatching_touch_ack_);
   while (!touch_queue_.empty())
     PopTouchEventToView(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 }
@@ -184,7 +190,9 @@ void TouchEventQueue::PopTouchEventToView(InputEventAckState ack_result) {
   touch_queue_.pop_front();
 
   // Note that acking the touch-event may result in multiple gestures being sent
-  // to the renderer.
+  // to the renderer, or touch-events being queued.
+  base::AutoReset<bool> dispatching_touch_ack(&dispatching_touch_ack_, true);
+
   RenderWidgetHostViewPort* view = RenderWidgetHostViewPort::FromRWHV(
       render_widget_host_->GetView());
   for (WebTouchEventWithLatencyList::const_iterator iter = acked_event->begin(),

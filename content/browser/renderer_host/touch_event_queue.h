@@ -72,6 +72,9 @@ class TouchEventQueue {
   typedef std::map<int, InputEventAckState> TouchPointAckStates;
   TouchPointAckStates touch_ack_states_;
 
+  // Used to defer touch forwarding when ack dispatch triggers |QueueEvent()|.
+  bool dispatching_touch_ack_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };
 

@@ -746,10 +746,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 return true;
             }
             // Avoid flooding the renderer process with move events: if the previous pending
-            // command is also a move (common case), skip sending this event to the webkit
-            // side and collapse it into the pending event.
+            // command is also a move (common case) that has not yet been forwarded, skip sending
+            //  this event to the webkit side and collapse it into the pending event.
             MotionEvent previousEvent = mPendingMotionEvents.peekLast();
             if (previousEvent != null
+                    && previousEvent != mPendingMotionEvents.peekFirst()
                     && previousEvent.getActionMasked() == MotionEvent.ACTION_MOVE
                     && previousEvent.getPointerCount() == event.getPointerCount()) {
                 MotionEvent.PointerCoords[] coords =

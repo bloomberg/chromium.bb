@@ -12,6 +12,8 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.MotionEvent.PointerCoords;
+import android.view.MotionEvent.PointerProperties;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.test.util.Feature;
@@ -1226,4 +1228,79 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertTrue("Should not have confirmed a single tap yet",
                 mMockListener.mLastSingleTap == null);
     }
+
+    /**
+     * Verify that touch move events are properly coalesced.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testTouchMoveCoalescing() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        MotionEvent event = MotionEvent.obtain(
+                downTime, eventTime + 5, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertFalse("Should not have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
+        assertEquals("Initial move events should offered to javascript and added to the queue",
+                1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertEquals(TouchPoint.TOUCH_EVENT_TYPE_MOVE, mMockMotionEventDelegate.mLastTouchAction);
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("Move events already sent to javascript should not be coalesced",
+                2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 15, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 15, FAKE_COORD_Y * 15, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("Similar pending move events should be coalesced",
+                2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        PointerProperties pp1 = new PointerProperties();
+        pp1.id = 0;
+        pp1.toolType = MotionEvent.TOOL_TYPE_FINGER;
+        PointerProperties pp2 = new PointerProperties();
+        pp2.id = 1;
+        pp2.toolType = MotionEvent.TOOL_TYPE_FINGER;
+        PointerProperties[] properties = new PointerProperties[] { pp1, pp2 };
+
+        PointerCoords pc1 = new PointerCoords();
+        pc1.x = FAKE_COORD_X * 10;
+        pc1.y = FAKE_COORD_Y * 10;
+        pc1.pressure = 1;
+        pc1.size = 1;
+        PointerCoords pc2 = new PointerCoords();
+        pc2.x = FAKE_COORD_X * 15;
+        pc2.y = FAKE_COORD_Y * 15;
+        pc2.pressure = 1;
+        pc2.size = 1;
+        PointerCoords[] coords = new PointerCoords[] { pc1, pc2 };
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 20, MotionEvent.ACTION_MOVE,
+                2, properties, coords, 0, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("Move events with different pointer counts should not be coalesced",
+                3, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 25, MotionEvent.ACTION_MOVE,
+                2, properties, coords, 0, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("Move events with similar pointer counts should be coalesced",
+                3, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("Move events should not be coalesced with other events",
+                4, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+   }
 }
