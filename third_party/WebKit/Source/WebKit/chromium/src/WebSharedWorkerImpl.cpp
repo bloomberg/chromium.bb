@@ -49,6 +49,7 @@
 #include "core/dom/MessagePortChannel.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -132,7 +133,7 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     CString content("");
     int length = static_cast<int>(content.length());
     RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), length));
-    webFrame->frame()->loader()->load(FrameLoadRequest(webFrame->frame(), ResourceRequest(url), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
+    webFrame->frame()->loader()->loadFrameRequest(FrameLoadRequest(0, ResourceRequest(url), SubstituteData(buffer, "text/html", "UTF-8", KURL())), false, 0, 0, MaybeSendReferrer);
 
     // This document will be used as 'loading context' for the worker.
     m_loadingDocument = webFrame->frame()->document();

@@ -947,7 +947,7 @@ void WebFrameImpl::loadRequest(const WebURLRequest& request)
         return;
     }
 
-    frame()->loader()->load(FrameLoadRequest(frame(), resourceRequest));
+    frame()->loader()->loadFrameRequest(FrameLoadRequest(0, resourceRequest), false, 0, 0, MaybeSendReferrer);
 }
 
 void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item)
@@ -978,9 +978,9 @@ void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, cons
         request = frame()->loader()->originalRequest();
     request.setURL(baseURL);
 
-    FrameLoadRequest frameRequest(frame(), request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
+    FrameLoadRequest frameRequest(0, request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
     ASSERT(frameRequest.substituteData().isValid());
-    frame()->loader()->load(frameRequest);
+    frame()->loader()->loadFrameRequest(frameRequest, false, 0, 0, MaybeSendReferrer);
     if (replace) {
         // Do this to force WebKit to treat the load as replacing the currently
         // loaded page.
