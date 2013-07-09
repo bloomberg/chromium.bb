@@ -6,6 +6,7 @@
 import copy
 import datetime
 import hashlib
+import logging
 import os
 import posixpath
 import subprocess
@@ -224,10 +225,6 @@ class TestDelegate(update_nacl_manifest.Delegate):
         raise subprocess.CalledProcessError(1, 'gsutil cp %s %s' % (src, dest))
       self.files[dest_path] = self.files[src_path]
 
-  def Print(self, *args):
-    # eat all informational messages
-    pass
-
   def SendMail(self, subject, text):
     self.called_sendmail = True
 
@@ -266,6 +263,8 @@ class TestUpdateManifest(unittest.TestCase):
     self.delegate = None
     self.uploaded_manifest = None
     self.manifest = None
+    # Ignore logging warnings, etc.
+    logging.getLogger('update_nacl_manifest').setLevel(logging.CRITICAL)
 
   def _MakeDelegate(self):
     self.delegate = TestDelegate(self.manifest, self.history.history,
