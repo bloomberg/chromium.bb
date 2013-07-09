@@ -715,10 +715,6 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
 
 void Shell::OnLoginStateChanged(user::LoginStatus status) {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter)
-    (*iter)->OnLoginStateChanged(status);
 }
 
 void Shell::UpdateAfterLoginStatusChange(user::LoginStatus status) {
@@ -854,16 +850,9 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
   if (is_touch_hud_projection_enabled_ == enabled)
     return;
 
-  RootWindowList roots = GetInstance()->GetAllRootWindows();
-  for (RootWindowList::iterator iter = roots.begin(); iter != roots.end();
-      ++iter) {
-    internal::RootWindowController* controller = GetRootWindowController(*iter);
-    if (enabled)
-      controller->EnableTouchHudProjection();
-    else
-      controller->DisableTouchHudProjection();
-  }
   is_touch_hud_projection_enabled_ = enabled;
+  FOR_EACH_OBSERVER(ShellObserver, observers_,
+                    OnTouchHudProjectionToggled(enabled));
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {

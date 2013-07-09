@@ -32,6 +32,9 @@ class ASH_EXPORT ShellObserver {
   // Invoked when the shelf alignment in |root_window| is changed.
   virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) {}
 
+  // Invoked when the projection touch HUD is toggled.
+  virtual void OnTouchHudProjectionToggled(bool enabled) {}
+
  protected:
   virtual ~ShellObserver() {}
 };

@@ -315,6 +315,7 @@ extern const char kTermsOfServiceURL[];
 extern const char kUsedPolicyCertificatesOnce[];
 extern const char kAttestationEnabled[];
 extern const char kAttestationExtensionWhitelist[];
+extern const char kTouchHudProjectionEnabled[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

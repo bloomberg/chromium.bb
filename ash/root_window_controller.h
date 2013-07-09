@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shell_observer.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -68,10 +69,10 @@ class WorkspaceController;
 // deleted upon the deletion of the root window.  The RootWindowController
 // for particular root window is stored as a property and can be obtained
 // using |GetRootWindowController(aura::RootWindow*)| function.
-class ASH_EXPORT RootWindowController {
+class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
   explicit RootWindowController(aura::RootWindow* root_window);
-  ~RootWindowController();
+  virtual ~RootWindowController();
 
   // Returns a RootWindowController that has a launcher for given
   // |window|. This returns the RootWindowController for the |window|'s
@@ -122,12 +123,6 @@ class ASH_EXPORT RootWindowController {
     touch_hud_projection_ = hud;
   }
 
-  // Enables projection touch HUD.
-  void EnableTouchHudProjection();
-
-  // Disables projection touch HUD.
-  void DisableTouchHudProjection();
-
   DesktopBackgroundWidgetController* wallpaper_controller() {
     return wallpaper_controller_.get();
   }
@@ -172,9 +167,6 @@ class ASH_EXPORT RootWindowController {
 
   // Called when the launcher associated with this root window is created.
   void OnLauncherCreated();
-
-  // Called when the user logs in.
-  void OnLoginStateChanged(user::LoginStatus status);
 
   // Called when the login status changes after login (such as lock/unlock).
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
@@ -227,6 +219,16 @@ class ASH_EXPORT RootWindowController {
 
   // Initializes the virtual keyboard.
   void InitKeyboard();
+
+  // Enables projection touch HUD.
+  void EnableTouchHudProjection();
+
+  // Disables projection touch HUD.
+  void DisableTouchHudProjection();
+
+  // Overridden from ShellObserver.
+  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
+  virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
 
   scoped_ptr<aura::RootWindow> root_window_;
   RootWindowLayoutManager* root_window_layout_;

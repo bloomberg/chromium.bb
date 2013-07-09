@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -31,7 +32,8 @@ class InputMethodManager;
 // is first initialized, it will initialize the OS settings to what's stored in
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
-class Preferences : public PrefServiceSyncableObserver {
+class Preferences : public PrefServiceSyncableObserver,
+                    public ash::ShellObserver {
  public:
   Preferences();
   explicit Preferences(
@@ -106,6 +108,9 @@ class Preferences : public PrefServiceSyncableObserver {
   // PrefServiceSyncableObserver implementation.
   virtual void OnIsSyncingChanged() OVERRIDE;
 
+  // Overriden from ash::ShellObserver.
+  virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
+
   PrefServiceSyncable* prefs_;
 
   input_method::InputMethodManager* input_method_manager_;
@@ -131,6 +136,7 @@ class Preferences : public PrefServiceSyncableObserver {
   FilePathPrefMember download_default_directory_;
   FilePathPrefMember select_file_last_directory_;
   FilePathPrefMember save_file_default_directory_;
+  BooleanPrefMember touch_hud_projection_enabled_;
 
   // Input method preferences.
   StringPrefMember preferred_languages_;

@@ -209,18 +209,6 @@ RootWindowController* RootWindowController::ForActiveRootWindow() {
   return GetRootWindowController(Shell::GetActiveRootWindow());
 }
 
-void RootWindowController::EnableTouchHudProjection() {
-  if (touch_hud_projection_)
-    return;
-  set_touch_hud_projection(new TouchHudProjection(root_window_.get()));
-}
-
-void RootWindowController::DisableTouchHudProjection() {
-  if (!touch_hud_projection_)
-    return;
-  touch_hud_projection_->Remove();
-}
-
 void RootWindowController::SetWallpaperController(
     DesktopBackgroundWidgetController* controller) {
   wallpaper_controller_.reset(controller);
@@ -234,6 +222,8 @@ void RootWindowController::SetAnimatingWallpaperController(
 }
 
 void RootWindowController::Shutdown() {
+  Shell::GetInstance()->RemoveShellObserver(this);
+
   if (animating_wallpaper_controller_.get())
     animating_wallpaper_controller_->StopAnimating();
   wallpaper_controller_.reset();
@@ -298,6 +288,8 @@ void RootWindowController::Init(bool first_run_after_boot) {
       GetSystemModalLayoutManager(NULL)->has_modal_background()) {
     GetSystemModalLayoutManager(NULL)->CreateModalBackground();
   }
+
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 void RootWindowController::ShowLauncher() {
@@ -312,10 +304,6 @@ void RootWindowController::OnLauncherCreated() {
     panel_layout_manager_->SetLauncher(shelf_->launcher());
   if (docked_layout_manager_)
     docked_layout_manager_->SetLauncher(shelf_->launcher());
-}
-
-void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
-  shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(
@@ -706,6 +694,29 @@ void RootWindowController::CreateContainersInRootWindow(
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
                   "PowerButtonAnimationContainer", root_window) ;
+}
+
+void RootWindowController::EnableTouchHudProjection() {
+  if (touch_hud_projection_)
+    return;
+  set_touch_hud_projection(new TouchHudProjection(root_window_.get()));
+}
+
+void RootWindowController::DisableTouchHudProjection() {
+  if (!touch_hud_projection_)
+    return;
+  touch_hud_projection_->Remove();
+}
+
+void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
+  shelf_->shelf_layout_manager()->UpdateVisibilityState();
+}
+
+void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {
+  if (enabled)
+    EnableTouchHudProjection();
+  else
+    DisableTouchHudProjection();
 }
 
 }  // namespace internal

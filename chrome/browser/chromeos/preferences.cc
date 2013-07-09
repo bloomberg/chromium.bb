@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 
 #include "ash/magnifier/magnifier_constants.h"
-#include "ash/shell_delegate.h"
+#include "ash/shell.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -51,15 +51,27 @@ static const char kEnableTouchpadThreeFingerSwipe[] =
 Preferences::Preferences()
     : prefs_(NULL),
       input_method_manager_(input_method::InputMethodManager::Get()) {
+  // Do not observe shell, if there is no shell instance; e.g., in some unit
+  // tests.
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
     : prefs_(NULL),
       input_method_manager_(input_method_manager) {
+  // Do not observe shell, if there is no shell instance; e.g., in some unit
+  // tests.
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
 Preferences::~Preferences() {
   prefs_->RemoveObserver(this);
+  // If shell instance is destoryed before this preferences instance, there is
+  // no need to remove this shell observer.
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 // static
@@ -412,6 +424,11 @@ void Preferences::RegisterProfilePrefs(
       kEnableTouchpadThreeFingerSwipe,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterBooleanPref(
+      prefs::kTouchHudProjectionEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
@@ -449,6 +466,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
                                    prefs, callback);
   save_file_default_directory_.Init(prefs::kSaveFileDefaultDirectory,
                                     prefs, callback);
+  touch_hud_projection_enabled_.Init(prefs::kTouchHudProjectionEnabled,
+                                     prefs, callback);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
   preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
@@ -701,6 +720,10 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       prefs_->SetFilePath(prefs::kSaveFileDefaultDirectory,
                           drive::util::ConvertToMyDriveNamespace(pref_path));
     }
+  }
+  if (!pref_name || *pref_name == prefs::kTouchHudProjectionEnabled) {
+    const bool enabled = touch_hud_projection_enabled_.GetValue();
+    ash::Shell::GetInstance()->SetTouchHudProjectionEnabled(enabled);
   }
 
   if (!pref_name || *pref_name == prefs::kLanguagePreferredLanguages) {
@@ -1025,6 +1048,13 @@ void Preferences::UpdateAutoRepeatRate() {
   DCHECK(rate.initial_delay_in_ms > 0);
   DCHECK(rate.repeat_interval_in_ms > 0);
   input_method::XKeyboard::SetAutoRepeatRate(rate);
+}
+
+void Preferences::OnTouchHudProjectionToggled(bool enabled) {
+  if (touch_hud_projection_enabled_.GetValue() == enabled)
+    return;
+
+  touch_hud_projection_enabled_.SetValue(enabled);
 }
 
 }  // namespace chromeos

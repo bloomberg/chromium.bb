@@ -879,6 +879,9 @@ const char kAttestationEnabled[] = "attestation.enabled";
 // The list of extensions allowed to use the platformKeysPrivate API for
 // remote attestation.
 const char kAttestationExtensionWhitelist[] = "attestation.extension_whitelist";
+
+// A boolean pref indicating whether the projection touch HUD is enabled or not.
+const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
