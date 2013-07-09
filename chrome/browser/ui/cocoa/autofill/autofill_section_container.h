@@ -8,7 +8,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
 namespace autofill {
@@ -25,14 +27,18 @@ namespace autofill {
 // describing the section as well as associated inputs and controls. Built
 // dynamically based on data retrieved from AutofillDialogController.
 @interface AutofillSectionContainer :
-    NSViewController<AutofillLayout> {
+    NSViewController<AutofillLayout, AutofillInputDelegate> {
  @private
   base::scoped_nsobject<LayoutView> inputs_;
   base::scoped_nsobject<MenuButton> suggestButton_;
   base::scoped_nsobject<AutofillSuggestionContainer> suggestContainer_;
   base::scoped_nsobject<NSTextField> label_;
-  base::scoped_nsobject<AutofillSectionView> view_;  // The view for the
-                                                     // container.
+
+  // The view for the container.
+  base::scoped_nsobject<AutofillSectionView> view_;
+
+  // List of weak pointers, which constitute unique field IDs.
+  std::vector<const autofill::DetailInput*> detailInputs_;
 
   base::scoped_nsobject<MenuController> menuController_;
   autofill::DialogSection section_;
@@ -55,10 +61,13 @@ namespace autofill {
 // Called when the contents of a section have changed.
 - (void)update;
 
+// Validate this section. Validation rules depend on |validationType|.
+- (BOOL)validateFor:(autofill::ValidationType)validationType;
+
 @end
 
 @interface AutofillSectionContainer (ForTesting)
-- (NSControl*)getField:(autofill::AutofillFieldType)type;
+- (NSControl<AutofillInputField>*)getField:(autofill::AutofillFieldType)type;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_SECTION_CONTAINER_H_

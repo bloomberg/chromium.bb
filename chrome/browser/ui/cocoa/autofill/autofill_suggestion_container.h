@@ -34,6 +34,9 @@ namespace autofill {
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
 
+// Auxiliary textfield. See showTextfield: for details.
+@property (readonly, nonatomic) AutofillTextField* inputField;
+
 // Set the icon for the suggestion.
 - (void)setIcon:(NSImage*)iconImage;
 
@@ -42,8 +45,9 @@ namespace autofill {
                     line2:(NSString*)line2
                  withFont:(NSFont*)font;
 
-// Turns editable textfield on, setting the field's placeholder text and icon.
-- (void)showTextfield:(NSString*)text withIcon:(NSImage*)icon;
+// Shows an auxiliary textfield to the right of the suggestion icon and
+// text. This is currently only used to show a CVC field for the CC section.
+- (void)showInputField:(NSString*)text withIcon:(NSImage*)icon;
 
 @end
 

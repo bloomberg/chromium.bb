@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
@@ -10,9 +11,26 @@ namespace autofill {
 MockAutofillDialogController::MockAutofillDialogController() {
   testing::DefaultValue<const DetailInputs&>::Set(default_inputs_);
   testing::DefaultValue<ui::ComboboxModel*>::Set(NULL);
+  testing::DefaultValue<ValidityData>::Set(ValidityData());
+
+  // SECTION_CC *must* have a CREDIT_CARD_VERIFICATION_CODE field.
+  const DetailInput kCreditCardInputs[] = {
+    { 2, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC }
+  };
+  cc_default_inputs_.push_back(kCreditCardInputs[0]);
+  ON_CALL(*this, RequestedFieldsForSection(SECTION_CC))
+      .WillByDefault(testing::ReturnRef(cc_default_inputs_));
+
+  // Activate all sections but CC_BILLING - default for the real
+  // controller implementation, too.
+  ON_CALL(*this, SectionIsActive(testing::_))
+      .WillByDefault(testing::Return(true));
+  ON_CALL(*this, SectionIsActive(SECTION_CC_BILLING))
+      .WillByDefault(testing::Return(false));
 }
 
 MockAutofillDialogController::~MockAutofillDialogController() {
+  testing::DefaultValue<ValidityData>::Clear();
   testing::DefaultValue<ui::ComboboxModel*>::Clear();
   testing::DefaultValue<const DetailInputs&>::Clear();
 }
@@ -91,11 +109,6 @@ const std::vector<ui::Range>&
   return range_;
 }
 
-bool MockAutofillDialogController::SectionIsActive(
-    DialogSection section) const {
-  return false;
-}
-
 string16 MockAutofillDialogController::LabelForSection(
     DialogSection section) const {
   return string16();
@@ -126,13 +139,6 @@ string16 MockAutofillDialogController::InputValidityMessage(
     AutofillFieldType type,
     const string16& value) {
   return string16();
-}
-
-ValidityData MockAutofillDialogController::InputsAreValid(
-     DialogSection section,
-     const DetailOutputMap& inputs,
-     ValidationType validation_type) {
-  return ValidityData();
 }
 
 void MockAutofillDialogController::UserEditedOrActivatedInput(

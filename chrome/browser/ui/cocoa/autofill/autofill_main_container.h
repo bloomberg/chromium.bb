@@ -64,6 +64,9 @@ namespace autofill {
 // Called when there are changes to the notification area.
 - (void)updateNotificationArea;
 
+// Validates form input data.
+- (BOOL)validate;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_MAIN_CONTAINER_H_

@@ -9,10 +9,14 @@
 
 #include "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 
-@interface AutofillPopUpButton : NSPopUpButton<AutofillInputField>
+@interface AutofillPopUpButton : NSPopUpButton<AutofillInputField> {
+ @private
+  id<AutofillInputDelegate> delegate_;
+}
+
 @end
 
-@interface AutofillPopUpCell : NSPopUpButtonCell<AutofillInputField> {
+@interface AutofillPopUpCell : NSPopUpButtonCell<AutofillInputCell> {
  @private
   BOOL invalid_;
 }

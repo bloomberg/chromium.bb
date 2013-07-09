@@ -249,4 +249,8 @@
   [notificationContainer_ setAnchorView:anchorView];
 }
 
+- (BOOL)validate {
+  return [detailsContainer_ validate];
+}
+
 @end

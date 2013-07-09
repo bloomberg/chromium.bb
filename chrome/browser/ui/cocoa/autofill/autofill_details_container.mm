@@ -78,4 +78,13 @@
     [details modelChanged];
 }
 
+- (BOOL)validate {
+  bool allValid = true;
+  for (AutofillSectionContainer* details in details_.get()) {
+    if (![[details view] isHidden])
+      allValid = [details validateFor:autofill::VALIDATE_FINAL] && allValid;
+  }
+  return allValid;
+}
+
 @end

@@ -36,6 +36,10 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
 @implementation AutofillSuggestionContainer
 
+- (AutofillTextField*)inputField {
+  return inputField_.get();
+}
+
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
   base::scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
   [label setFont:
@@ -93,7 +97,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   [label2_ sizeToFit];
 }
 
-- (void)showTextfield:(NSString*)text withIcon:(NSImage*)icon {
+- (void)showInputField:(NSString*)text withIcon:(NSImage*)icon {
   [[inputField_ cell] setPlaceholderString:text];
   [[inputField_ cell] setIcon:icon];
   [inputField_ setHidden:NO];

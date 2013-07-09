@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
@@ -65,7 +66,20 @@ void BreakSuggestionText(const string16& text,
 
 }
 
-@interface AutofillSectionContainer (Internal)
+@interface AutofillSectionContainer ()
+
+// Convenience method to retrieve a field type via the control's tag.
+- (autofill::AutofillFieldType)fieldTypeForControl:(NSControl*)control;
+
+// Find the DetailInput* associated with a field type.
+- (const autofill::DetailInput*)detailInputForType:
+    (autofill::AutofillFieldType)type;
+
+// Takes an NSArray of controls and builds a DetailOutputMap from them.
+// Translates between Cocoa code and controller, essentially.
+// All controls must inherit from NSControl and conform to AutofillInputView.
+- (void)fillDetailOutputs:(autofill::DetailOutputMap*)outputs
+             fromControls:(NSArray*)controls;
 
 // Create properly styled label for section. Autoreleased.
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText;
@@ -92,14 +106,7 @@ void BreakSuggestionText(const string16& text,
 }
 
 - (void)getInputs:(autofill::DetailOutputMap*)output {
-  for (NSControl<AutofillInputField>* input in [inputs_ subviews]) {
-    const autofill::DetailInput* detailInput =
-        reinterpret_cast<autofill::DetailInput*>([input tag]);
-    DCHECK(detailInput);
-    NSString* value = [input fieldValue];
-    output->insert(
-        std::make_pair(detailInput,base::SysNSStringToUTF16(value)));
-  }
+  [self fillDetailOutputs:output fromControls:[inputs_ subviews]];
 }
 
 - (void)modelChanged {
@@ -117,6 +124,9 @@ void BreakSuggestionText(const string16& text,
 
   // TODO(groby): "Save in Chrome" handling.
 
+  if (![[self view] isHidden])
+    [self validateFor:autofill::VALIDATE_EDIT];
+
   // Always request re-layout on state change.
   id controller = [[view_ window] windowController];
   if ([controller respondsToSelector:@selector(requestRelayout)])
@@ -124,6 +134,13 @@ void BreakSuggestionText(const string16& text,
 }
 
 - (void)loadView {
+  // Keep a list of weak pointers to DetailInputs.
+  const autofill::DetailInputs& inputs =
+      controller_->RequestedFieldsForSection(section_);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    detailInputs_.push_back(&(inputs[i]));
+  }
+
   inputs_.reset([[self makeInputControls] retain]);
   string16 labelText = controller_->LabelForSection(section_);
   label_.reset([[self makeDetailSectionLabel:
@@ -132,11 +149,20 @@ void BreakSuggestionText(const string16& text,
   suggestButton_.reset([[self makeSuggestionButton] retain]);
   suggestContainer_.reset([[AutofillSuggestionContainer alloc] init]);
 
-  [self modelChanged];
   view_.reset([[AutofillSectionView alloc] initWithFrame:NSZeroRect]);
   [self setView:view_];
   [[self view] setSubviews:
       @[label_, inputs_, [suggestContainer_ view], suggestButton_]];
+
+  if (section_ == autofill::SECTION_CC) {
+    // SECTION_CC *MUST* have a CREDIT_CARD_VERIFICATION_CODE input.
+    DCHECK([self detailInputForType:autofill::CREDIT_CARD_VERIFICATION_CODE]);
+    [[suggestContainer_ inputField] setTag:
+        autofill::CREDIT_CARD_VERIFICATION_CODE];
+    [[suggestContainer_ inputField] setDelegate:self];
+  }
+
+  [self modelChanged];
 }
 
 - (NSSize)preferredSize {
@@ -202,6 +228,138 @@ void BreakSuggestionText(const string16& text,
   [view_ setFrameSize:viewFrame.size];
 }
 
+- (void)didChange:(id)sender {
+  // TODO(groby): This is part of TextfieldEditedOrActivated. Combine once that
+  // is implemented.
+  AutofillTextField* textfield =
+      base::mac::ObjCCastStrict<AutofillTextField>(sender);
+  autofill::AutofillFieldType type = [self fieldTypeForControl:textfield];
+  string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
+
+  // If the field is marked as invalid, check if the text is now valid.
+  // Many fields (i.e. CC#) are invalid for most of the duration of editing,
+  // so flagging them as invalid prematurely is not helpful. However,
+  // correcting a minor mistake (i.e. a wrong CC digit) should immediately
+  // result in validation - positive user feedback.
+  if ([textfield invalid]) {
+    string16 message = controller_->InputValidityMessage(section_,
+                                                         type,
+                                                         fieldValue);
+    [textfield setInvalid:!message.empty()];
+
+    // If the field transitioned from invalid to valid, re-validate the group,
+    // since inter-field checks become meaningful with valid fields.
+    if (![textfield invalid])
+      [self validateFor:autofill::VALIDATE_EDIT];
+  }
+
+  // Update the icon for the textfield.
+  gfx::Image icon = controller_->IconForField(type, fieldValue);
+  if (!icon.IsEmpty()) {
+    [[textfield cell] setIcon:icon.ToNSImage()];
+  }
+}
+
+- (void)didEndEditing:(id)sender {
+  [self validateFor:autofill::VALIDATE_EDIT];
+}
+
+- (void)updateSuggestionState {
+  const autofill::SuggestionState& suggestionState =
+      controller_->SuggestionStateForSection(section_);
+  bool showSuggestions = !suggestionState.text.empty();
+
+  [[suggestContainer_ view] setHidden:!showSuggestions];
+  [inputs_ setHidden:showSuggestions];
+
+  string16 line1;
+  string16 line2;
+  BreakSuggestionText(suggestionState.text, &line1, &line2);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::Font font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(
+      0, suggestionState.text_style);
+  [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(line1)
+                                 line2:base::SysUTF16ToNSString(line2)
+                              withFont:font.GetNativeFont()];
+  [suggestContainer_ setIcon:suggestionState.icon.AsNSImage()];
+  if (!suggestionState.extra_text.empty()) {
+    NSString* extraText =
+        base::SysUTF16ToNSString(suggestionState.extra_text);
+    NSImage* extraIcon = suggestionState.extra_icon.AsNSImage();
+    [suggestContainer_ showInputField:extraText withIcon:extraIcon];
+  }
+  [view_ setShouldHighlightOnHover:showSuggestions];
+  [view_ setHidden:!controller_->SectionIsActive(section_)];
+}
+
+- (void)update {
+  // TODO(groby): Will need to update input fields/support clobbering.
+  // cf. AutofillDialogViews::UpdateSectionImpl.
+  [self modelChanged];
+}
+
+- (void)editLinkClicked {
+  controller_->EditClickedForSection(section_);
+}
+
+- (NSString*)editLinkTitle {
+  return base::SysUTF16ToNSString(controller_->EditSuggestionText());
+}
+
+- (BOOL)validateFor:(autofill::ValidationType)validationType {
+  DCHECK(![[self view] isHidden]);
+
+  NSArray* fields = nil;
+  if (![inputs_ isHidden]) {
+    fields = [inputs_ subviews];
+  } else if (section_ == autofill::SECTION_CC) {
+    fields = @[[suggestContainer_ inputField]];
+  }
+
+  autofill::DetailOutputMap detailOutputs;
+  [self fillDetailOutputs:&detailOutputs fromControls:fields];
+  autofill::ValidityData invalidInputs = controller_->InputsAreValid(
+      section_, detailOutputs, validationType);
+
+  for (NSControl<AutofillInputField>* input in fields) {
+    const autofill::AutofillFieldType type = [self fieldTypeForControl:input];
+    BOOL isInvalid = invalidInputs.count(type) != 0;
+    [input setInvalid:isInvalid];
+  }
+
+  return invalidInputs.empty();
+}
+
+#pragma mark Internal API for AutofillSectionContainer.
+
+- (autofill::AutofillFieldType)fieldTypeForControl:(NSControl*)control {
+  DCHECK([control tag]);
+  return static_cast<autofill::AutofillFieldType>([control tag]);
+}
+
+- (const autofill::DetailInput*)detailInputForType:
+    (autofill::AutofillFieldType)type {
+  for (size_t i = 0; i < detailInputs_.size(); ++i) {
+    if (detailInputs_[i]->type == type)
+      return detailInputs_[i];
+  }
+  NOTREACHED();
+  return NULL;
+}
+
+- (void)fillDetailOutputs:(autofill::DetailOutputMap*)outputs
+             fromControls:(NSArray*)controls {
+  for (NSControl<AutofillInputField>* input in controls) {
+    DCHECK([input isKindOfClass:[NSControl class]]);
+    DCHECK([input conformsToProtocol:@protocol(AutofillInputField)]);
+    autofill::AutofillFieldType fieldType = [self fieldTypeForControl:input];
+    DCHECK([self detailInputForType:fieldType]);
+    NSString* value = [input fieldValue];
+    outputs->insert(std::make_pair([self detailInputForType:fieldType],
+                                   base::SysNSStringToUTF16(value)));
+  }
+}
+
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
   base::scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
   [label setFont:
@@ -246,23 +404,19 @@ void BreakSuggestionText(const string16& text,
 // TODO(estade): we should be using Chrome-style constrained window padding
 // values.
 - (LayoutView*)makeInputControls {
-  const autofill::DetailInputs& inputs =
-      controller_->RequestedFieldsForSection(section_);
-
   base::scoped_nsobject<LayoutView> view([[LayoutView alloc] init]);
   [view setLayoutManager:
       scoped_ptr<SimpleGridLayout>(new SimpleGridLayout(view))];
   SimpleGridLayout* layout = [view layoutManager];
 
-  for (autofill::DetailInputs::const_iterator it = inputs.begin();
-       it != inputs.end(); ++it) {
-    const autofill::DetailInput& input = *it;
+  for (size_t i = 0; i < detailInputs_.size(); ++i) {
+    const autofill::DetailInput& input = *detailInputs_[i];
     int kColumnSetId = input.row_id;
     ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
     if (!column_set) {
       // Create a new column set and row.
       column_set = layout->AddColumnSet(kColumnSetId);
-      if (it != inputs.begin())
+      if (i != 0)
         layout->AddPaddingRow(kRelatedControlVerticalSpacing);
       layout->StartRow(0, kColumnSetId);
     } else {
@@ -297,69 +451,22 @@ void BreakSuggestionText(const string16& text,
       control.reset(field.release());
     }
     [control setFieldValue:base::SysUTF16ToNSString(input.initial_value)];
-    [control setInvalid:YES];
     [control sizeToFit];
-    [control setTag:reinterpret_cast<NSInteger>(&input)];
+    [control setTag:input.type];
+    [control setDelegate:self];
     layout->AddView(control);
   }
 
   return view.autorelease();
 }
 
-- (void)updateSuggestionState {
-  const autofill::SuggestionState& suggestionState =
-      controller_->SuggestionStateForSection(section_);
-  bool showSuggestions = !suggestionState.text.empty();
-
-  [[suggestContainer_ view] setHidden:!showSuggestions];
-  [inputs_ setHidden:showSuggestions];
-
-  string16 line1, line2;
-  BreakSuggestionText(suggestionState.text, &line1, &line2);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::Font font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(
-      0, suggestionState.text_style);
-  [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(line1)
-                                 line2:base::SysUTF16ToNSString(line2)
-                              withFont:font.GetNativeFont()];
-  [suggestContainer_ setIcon:suggestionState.icon.AsNSImage()];
-  if (!suggestionState.extra_text.empty()) {
-    NSString* extraText =
-        base::SysUTF16ToNSString(suggestionState.extra_text);
-    NSImage* extraIcon = suggestionState.extra_icon.AsNSImage();
-    [suggestContainer_ showTextfield:extraText withIcon:extraIcon];
-  }
-  [view_ setShouldHighlightOnHover:showSuggestions];
-  [view_ setHidden:!controller_->SectionIsActive(section_)];
-}
-
-- (void)update {
-  // TODO(groby): Will need to update input fields/support clobbering.
-  // cf. AutofillDialogViews::UpdateSectionImpl.
-  [self modelChanged];
-}
-
-- (void)editLinkClicked {
-  controller_->EditClickedForSection(section_);
-}
-
-- (NSString*)editLinkTitle {
-  return base::SysUTF16ToNSString(controller_->EditSuggestionText());
-}
-
 @end
+
 
 @implementation AutofillSectionContainer (ForTesting)
 
 - (NSControl*)getField:(autofill::AutofillFieldType)type {
-  for (NSControl* control in [inputs_ subviews]) {
-    const autofill::DetailInput* detailInput =
-        reinterpret_cast<autofill::DetailInput*>([control tag]);
-    DCHECK(detailInput);
-    if (detailInput->type == type)
-      return control;
-  }
-  return nil;
+  return [inputs_ viewWithTag:type];
 }
 
 @end

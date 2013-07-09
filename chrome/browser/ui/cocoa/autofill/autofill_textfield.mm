@@ -23,8 +23,26 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
 
 @implementation AutofillTextField
 
+@synthesize delegate = delegate_;
+
 + (Class)cellClass {
   return [AutofillTextFieldCell class];
+}
+
+- (id)initWithFrame:(NSRect)frame {
+  if (self = [super initWithFrame:frame])
+    [super setDelegate:self];
+  return self;
+}
+
+- (void)controlTextDidEndEditing:(NSNotification*)notification {
+  if (delegate_)
+    [delegate_ didEndEditing:self];
+}
+
+- (void)controlTextDidChange:(NSNotification*)aNotification {
+  if (delegate_)
+    [delegate_ didChange:self];
 }
 
 - (BOOL)invalid {
@@ -33,6 +51,7 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
 
 - (void)setInvalid:(BOOL)invalid {
   [[self cell] setInvalid:invalid];
+  [self setNeedsDisplay:YES];
 }
 
 - (NSString*)fieldValue {

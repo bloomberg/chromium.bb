@@ -281,8 +281,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 }
 
 - (IBAction)accept:(id)sender {
-  // TODO(groby): Validation goes here.
-  autofillDialog_->controller()->OnAccept();
+  if ([mainContainer_ validate])
+    autofillDialog_->controller()->OnAccept();
 }
 
 - (IBAction)cancel:(id)sender {

@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/utf_string_conversions.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -33,4 +35,33 @@ TEST_F(AutofillDetailsContainerTest, BasicProperties) {
   EXPECT_GT([[[container_ view] subviews] count], 0U);
   EXPECT_GT(NSHeight([[container_ view] frame]), 0);
   EXPECT_GT(NSWidth([[container_ view] frame]), 0);
+}
+
+TEST_F(AutofillDetailsContainerTest, ValidateAllSections) {
+  using namespace autofill;
+  using namespace testing;
+
+  DetailOutputMap output;
+  ValidityData validity;
+
+  EXPECT_CALL(controller_, InputsAreValid(_, _, VALIDATE_FINAL))
+      .Times(4)
+      .WillOnce(Return(validity))
+      .WillOnce(Return(validity))
+      .WillOnce(Return(validity))
+      .WillOnce(Return(validity));
+
+  EXPECT_TRUE([container_ validate]);
+
+  ValidityData invalid;
+  invalid[ADDRESS_HOME_ZIP] = ASCIIToUTF16("Some error message");
+
+  EXPECT_CALL(controller_, InputsAreValid(_, _, VALIDATE_FINAL))
+      .Times(4)
+      .WillOnce(Return(validity))
+      .WillOnce(Return(validity))
+      .WillOnce(Return(invalid))
+      .WillOnce(Return(validity));
+
+  EXPECT_FALSE([container_ validate]);
 }

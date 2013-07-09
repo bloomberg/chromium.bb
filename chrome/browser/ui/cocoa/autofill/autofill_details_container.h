@@ -34,6 +34,9 @@ class AutofillDialogController;
 // Called when the controller-maintained suggestions model has changed.
 - (void)modelChanged;
 
+// Validate every visible details section.
+- (BOOL)validate;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DETAILS_CONTAINER_H_
