@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -25,6 +26,8 @@
 #include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/favorite_state.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -40,6 +43,7 @@
 #include "ui/views/widget/widget.h"
 
 using chromeos::DeviceState;
+using chromeos::FavoriteState;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -146,6 +150,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       turn_on_wifi_(NULL),
       other_mobile_(NULL),
       other_vpn_(NULL),
+      toggle_debug_preferred_networks_(NULL),
       settings_(NULL),
       proxy_settings_(NULL),
       scanning_view_(NULL),
@@ -168,9 +173,16 @@ void NetworkStateListDetailedView::ManagerChanged() {
 }
 
 void NetworkStateListDetailedView::NetworkListChanged() {
-  NetworkStateHandler::NetworkStateList network_list;
-  NetworkHandler::Get()->network_state_handler()->GetNetworkList(&network_list);
-  UpdateNetworks(network_list);
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  if (list_type_ == LIST_TYPE_DEBUG_PREFERRED) {
+    NetworkStateHandler::FavoriteStateList favorite_list;
+    handler->GetFavoriteList(&favorite_list);
+    UpdatePreferred(favorite_list);
+  } else {
+    NetworkStateHandler::NetworkStateList network_list;
+    handler->GetNetworkList(&network_list);
+    UpdateNetworks(network_list);
+  }
   UpdateNetworkList();
   UpdateHeaderButtons();
   UpdateNetworkExtra();
@@ -191,17 +203,30 @@ void NetworkStateListDetailedView::NetworkIconChanged() {
 // Overridden from NetworkDetailedView:
 
 void NetworkStateListDetailedView::Init() {
+  Reset();
+  network_map_.clear();
+  service_path_map_.clear();
+  info_icon_ = NULL;
+  button_wifi_ = NULL;
+  button_mobile_ = NULL;
+  other_wifi_ = NULL;
+  turn_on_wifi_ = NULL;
+  other_mobile_ = NULL;
+  other_vpn_ = NULL;
+  toggle_debug_preferred_networks_ = NULL;
+  settings_ = NULL;
+  proxy_settings_ = NULL;
+  scanning_view_ = NULL;
+  no_wifi_networks_view_ = NULL;
+  no_cellular_networks_view_ = NULL;
+
   CreateScrollableList();
   CreateNetworkExtra();
   CreateHeaderEntry();
   CreateHeaderButtons();
 
-  NetworkStateHandler::NetworkStateList network_list;
-  NetworkHandler::Get()->network_state_handler()->GetNetworkList(&network_list);
-  UpdateNetworks(network_list);
-  UpdateNetworkList();
-  UpdateHeaderButtons();
-  UpdateNetworkExtra();
+  NetworkListChanged();
+
   CallRequestScan();
 }
 
@@ -242,6 +267,13 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
     delegate->ChangeProxySettings();
   } else if (sender == other_mobile_) {
     delegate->ShowOtherCellular();
+  } else if (sender == toggle_debug_preferred_networks_) {
+    list_type_ = (list_type_ == LIST_TYPE_NETWORK)
+        ? LIST_TYPE_DEBUG_PREFERRED : LIST_TYPE_NETWORK;
+    // Re-initialize this after processing the event.
+    base::MessageLoopForUI::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&NetworkStateListDetailedView::Init, AsWeakPtr()));
   } else if (sender == other_wifi_) {
     delegate->ShowOtherWifi();
   } else if (sender == other_vpn_) {
@@ -266,23 +298,29 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
 
   std::map<views::View*, std::string>::iterator found =
       network_map_.find(sender);
-  if (found != network_map_.end()) {
-    const std::string& service_path = found->second;
-    const NetworkState* network = NetworkHandler::Get()->
-        network_state_handler()->GetNetworkState(service_path);
-    if (!network ||
-        network->IsConnectedState() || network->IsConnectingState()) {
-      Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
-          service_path);
-    } else {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kUseNewNetworkConnectionHandler)) {
-        ash::network_connect::ConnectToNetwork(service_path);
-      } else {
-        Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
-            service_path);
-      }
-    }
+  if (found == network_map_.end())
+    return;
+
+  const std::string& service_path = found->second;
+  if (list_type_ == LIST_TYPE_DEBUG_PREFERRED) {
+    NetworkHandler::Get()->network_configuration_handler()->
+        RemoveConfiguration(service_path,
+                            base::Bind(&base::DoNothing),
+                            chromeos::network_handler::ErrorCallback());
+    return;
+  }
+
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  if (!network || network->IsConnectedState() || network->IsConnectingState()) {
+    Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
+        service_path);
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kUseNewNetworkConnectionHandler)) {
+    ash::network_connect::ConnectToNetwork(service_path);
+  } else {
+    Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
+        service_path);
   }
 }
 
@@ -293,7 +331,7 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
 }
 
 void NetworkStateListDetailedView::CreateHeaderButtons() {
-  if (list_type_ == LIST_TYPE_NETWORK) {
+  if (list_type_ != LIST_TYPE_VPN) {
     button_wifi_ = new TrayPopupHeaderButton(
         this,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED,
@@ -348,7 +386,7 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
   layout->set_spread_blank_space(true);
   bottom_row->SetLayoutManager(layout);
 
-  if (list_type_ == LIST_TYPE_NETWORK) {
+  if (list_type_ != LIST_TYPE_VPN) {
     other_wifi_ = new TrayPopupLabelButton(
         this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_WIFI));
     bottom_row->AddChildView(other_wifi_);
@@ -360,7 +398,17 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
     other_mobile_ = new TrayPopupLabelButton(
         this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
     bottom_row->AddChildView(other_mobile_);
-  } else if (list_type_ == LIST_TYPE_VPN) {
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshDebugShowPreferredNetworks)) {
+      // Debugging UI to view and remove favorites from the status area.
+      std::string toggle_debug_preferred_label =
+          (list_type_ == LIST_TYPE_DEBUG_PREFERRED) ? "Visible" : "Preferred";
+      toggle_debug_preferred_networks_ = new TrayPopupLabelButton(
+          this, UTF8ToUTF16(toggle_debug_preferred_label));
+      bottom_row->AddChildView(toggle_debug_preferred_networks_);
+    }
+  } else {
     other_vpn_ = new TrayPopupLabelButton(
         this,
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
@@ -419,6 +467,7 @@ void NetworkStateListDetailedView::UpdateTechnologyButton(
 
 void NetworkStateListDetailedView::UpdateNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
+  DCHECK(list_type_ == LIST_TYPE_NETWORK);
   network_list_.clear();
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
@@ -433,6 +482,18 @@ void NetworkStateListDetailedView::UpdateNetworks(
   }
 }
 
+void NetworkStateListDetailedView::UpdatePreferred(
+    const NetworkStateHandler::FavoriteStateList& favorites) {
+  DCHECK(list_type_ == LIST_TYPE_DEBUG_PREFERRED);
+  network_list_.clear();
+  for (NetworkStateHandler::FavoriteStateList::const_iterator iter =
+           favorites.begin(); iter != favorites.end(); ++iter) {
+    const FavoriteState* favorite = *iter;
+    NetworkInfo* info = new NetworkInfo(favorite->path());
+    network_list_.push_back(info);
+  }
+}
+
 void NetworkStateListDetailedView::UpdateNetworkList() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
@@ -442,18 +503,29 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
     NetworkInfo* info = network_list_[i];
     const NetworkState* network =
         handler->GetNetworkState(info->service_path);
-    if (!network)
-      continue;
-    info->image = network_icon::GetImageForNetwork(
-        network, network_icon::ICON_TYPE_LIST);
-    info->label = network_icon::GetLabelForNetwork(
-        network, network_icon::ICON_TYPE_LIST);
-    info->highlight =
-        network->IsConnectedState() || network->IsConnectingState();
-    info->disable =
-        network->activation_state() == flimflam::kActivationStateActivating;
-    if (!animating && network->IsConnectingState())
-      animating = true;
+    if (network) {
+      info->image = network_icon::GetImageForNetwork(
+          network, network_icon::ICON_TYPE_LIST);
+      info->label = network_icon::GetLabelForNetwork(
+          network, network_icon::ICON_TYPE_LIST);
+      info->highlight =
+          network->IsConnectedState() || network->IsConnectingState();
+      info->disable =
+          network->activation_state() == flimflam::kActivationStateActivating;
+      if (!animating && network->IsConnectingState())
+        animating = true;
+    } else if (list_type_ == LIST_TYPE_DEBUG_PREFERRED) {
+      // Favorites that are visible will use the same display info as the
+      // visible network. Non visible favorites will show the disconnected
+      // icon and the name of the network.
+      const FavoriteState* favorite =
+          handler->GetFavoriteState(info->service_path);
+      if (favorite) {
+        info->image = network_icon::GetImageForDisconnectedNetwork(
+            network_icon::ICON_TYPE_LIST, favorite->type());
+        info->label = UTF8ToUTF16(favorite->name());
+      }
+    }
   }
   if (animating)
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
@@ -511,8 +583,8 @@ bool NetworkStateListDetailedView::CreateOrUpdateInfoLabel(
   }
 }
 
-bool NetworkStateListDetailedView::UpdateNetworkChild(
-    int index, const NetworkInfo* info) {
+bool NetworkStateListDetailedView::UpdateNetworkChild(int index,
+                                                      const NetworkInfo* info) {
   bool needs_relayout = false;
   HoverHighlightView* container = NULL;
   ServicePathMap::const_iterator found =
@@ -737,12 +809,12 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   container->set_border(views::Border::CreateEmptyBorder(0, 5, 0, 5));
 
   std::string ethernet_address, wifi_address, vpn_address;
-  if (list_type_ == LIST_TYPE_NETWORK) {
+  if (list_type_ != LIST_TYPE_VPN) {
     ethernet_address =
         handler->FormattedHardwareAddressForType(flimflam::kTypeEthernet);
     wifi_address =
         handler->FormattedHardwareAddressForType(flimflam::kTypeWifi);
-  } else if (list_type_ == LIST_TYPE_VPN) {
+  } else {
     vpn_address =
         handler->FormattedHardwareAddressForType(flimflam::kTypeVPN);
   }

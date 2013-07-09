@@ -29,6 +29,10 @@ const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
+// UI to show preferred networks in the status area (for testing).
+const char kAshDebugShowPreferredNetworks[] =
+    "ash-debug-show-preferred-networks";
+
 // Default wallpaper to use in guest mode (as paths to trusted,
 // non-user-writable JPEG files).
 const char kAshDefaultGuestWallpaperLarge[] =

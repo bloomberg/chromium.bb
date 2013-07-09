@@ -10450,6 +10450,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_ABOUT_NETWORK_NETWORKS" desc="The section title for all networks in the chrome://network page.">
         Networks:
       </message>
+      <message name="IDS_ABOUT_NETWORK_FAVORITES" desc="The section title for favorite networks in the chrome://network page.">
+        Favorites:
+      </message>
       <message name="IDS_ABOUT_NETWORK_ETHERNET" desc="The section title for ethernet networks in the chrome://network page.">
         Ethernet Networks:
       </message>

@@ -10,6 +10,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/about_ui.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -83,6 +84,7 @@ std::string NetworkStateToHtmlTableHeader() {
       WrapWithTH("Type") +
       WrapWithTH("State") +
       WrapWithTH("Path") +
+      WrapWithTH("Profile") +
       WrapWithTH("Connect") +
       WrapWithTH("Error") +
       WrapWithTH("IP Addr") +
@@ -104,6 +106,7 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
       WrapWithTD(network->type()) +
       WrapWithTD(network->connection_state()) +
       WrapWithTD(network->path()) +
+      WrapWithTD(network->profile_path()) +
       WrapWithTD(base::IntToString(network->connectable())) +
       WrapWithTD(network->error()) +
       WrapWithTD(network->ip_address()) +
@@ -116,6 +119,24 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
       WrapWithTD(base::IntToString(network->auto_connect())) +
       WrapWithTD(base::IntToString(network->favorite())) +
       WrapWithTD(base::IntToString(network->priority()));
+  return WrapWithTR(str);
+}
+
+std::string FavoriteStateToHtmlTableHeader() {
+  std::string str =
+      WrapWithTH("Name") +
+      WrapWithTH("Type") +
+      WrapWithTH("Path") +
+      WrapWithTH("Profile");
+  return WrapWithTR(str);
+}
+
+std::string FavoriteStateToHtmlTableRow(const FavoriteState* favorite) {
+  std::string str =
+      WrapWithTD(favorite->name()) +
+      WrapWithTD(favorite->type()) +
+      WrapWithTD(favorite->path()) +
+      WrapWithTD(favorite->profile_path());
   return WrapWithTR(str);
 }
 
@@ -133,6 +154,25 @@ std::string GetNetworkStateHtmlInfo() {
            network_list.begin(); iter != network_list.end(); ++iter) {
     const NetworkState* network = *iter;
     output.append(NetworkStateToHtmlTableRow(network));
+  }
+  output.append("</table>");
+  return output;
+}
+
+std::string GetFavoriteStateHtmlInfo() {
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  NetworkStateHandler::FavoriteStateList favorite_list;
+  handler->GetFavoriteList(&favorite_list);
+
+  std::string output;
+  output.append(WrapWithH3(
+      l10n_util::GetStringUTF8(IDS_ABOUT_NETWORK_FAVORITES)));
+  output.append("<table border=1>");
+  output.append(FavoriteStateToHtmlTableHeader());
+  for (NetworkStateHandler::FavoriteStateList::iterator iter =
+           favorite_list.begin(); iter != favorite_list.end(); ++iter) {
+    const FavoriteState* favorite = *iter;
+    output.append(FavoriteStateToHtmlTableRow(favorite));
   }
   output.append("</table>");
   return output;
@@ -157,6 +197,7 @@ std::string AboutNetwork(const std::string& query) {
   if (network_event_log::IsInitialized())
     output += GetEventLogSection(debug);
   output += GetNetworkStateHtmlInfo();
+  output += GetFavoriteStateHtmlInfo();
   return output;
 }
 
