@@ -10,11 +10,11 @@
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SigninGlobalErrorTest : public testing::Test {
@@ -27,11 +27,12 @@ class SigninGlobalErrorTest : public testing::Test {
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), FakeSigninManagerBase::Build));
     profile_->GetPrefs()->SetString(
-          prefs::kGoogleServicesUsername, "testuser@test.com");
+        prefs::kGoogleServicesUsername, "testuser@test.com");
     manager->Initialize(profile_.get(), NULL);
-    global_error_ = manager->signin_global_error();
+    global_error_ = SigninGlobalError::GetForProfile(profile_.get());
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   SigninGlobalError* global_error_;
 };

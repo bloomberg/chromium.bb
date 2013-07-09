@@ -20,8 +20,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -639,21 +639,22 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 
 IdentityAPI::IdentityAPI(Profile* profile)
     : profile_(profile),
-      signin_manager_(NULL),
-      error_(GoogleServiceAuthError::NONE) {
+      error_(GoogleServiceAuthError::NONE),
+      initialized_(false) {
 }
 
 IdentityAPI::~IdentityAPI() {
 }
 
 void IdentityAPI::Initialize() {
-  signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
-  signin_manager_->signin_global_error()->AddProvider(this);
+  SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
 
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
                  content::Source<TokenService>(token_service));
+
+  initialized_ = true;
 }
 
 IdentityMintRequestQueue* IdentityAPI::mint_queue() {
@@ -702,16 +703,18 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
-  if (!signin_manager_)
-    Initialize();
-
   error_ = error;
-  signin_manager_->signin_global_error()->AuthStatusChanged();
+  SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
 }
 
 void IdentityAPI::Shutdown() {
-  if (signin_manager_)
-    signin_manager_->signin_global_error()->RemoveProvider(this);
+  if (!initialized_)
+    return;
+
+  registrar_.RemoveAll();
+  SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
+
+  initialized_ = false;
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >
@@ -735,15 +738,17 @@ void IdentityAPI::Observe(int type,
   if (token_details->service() ==
       GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
     error_ = GoogleServiceAuthError::AuthErrorNone();
-    signin_manager_->signin_global_error()->AuthStatusChanged();
+    SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
   }
 }
 
 template <>
 void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionSystemFactory::GetInstance());
+  // Need dependency on ProfileOAuth2TokenServiceFactory because it owns
+  // the SigninGlobalError instance.
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 IdentityAPI::TokenCacheKey::TokenCacheKey(const std::string& extension_id,

@@ -159,7 +159,9 @@ scoped_ptr<OAuth2TokenService::Request>
 
 static BrowserContextKeyedService* CreateOAuth2TokenService(
     content::BrowserContext* profile) {
-  return new MockProfileOAuth2TokenService();
+  MockProfileOAuth2TokenService* mock = new MockProfileOAuth2TokenService();
+  mock->Initialize(static_cast<Profile*>(profile));
+  return mock;
 }
 
 class ProfileOAuth2TokenServiceRequestTest : public testing::Test {

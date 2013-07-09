@@ -6,8 +6,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 #if defined(OS_ANDROID)
@@ -18,7 +18,7 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "ProfileOAuth2TokenService",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
 }
 

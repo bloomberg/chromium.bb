@@ -224,6 +224,7 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
 
  protected:
   TestingProfile* profile_;
+  GoogleServiceAuthError no_error_;
 
  private:
   // The ID of the signin process the test will assume to be trusted.
@@ -236,6 +237,7 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
 
 OneClickSigninHelperTest::OneClickSigninHelperTest()
     : profile_(NULL),
+      no_error_(GoogleServiceAuthError::NONE),
       trusted_signin_process_id_(-1) {
 }
 
@@ -306,13 +308,17 @@ OneClickSigninHelperTest::CreateProfileSyncServiceMock() {
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_,
           ProfileSyncServiceMock::BuildMockProfileSyncService));
-  sync_service->Initialize();
   EXPECT_CALL(*sync_service, SetSetupInProgress(true));
   EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
   EXPECT_CALL(*sync_service, FirstSetupInProgress()).WillRepeatedly(
       Return(false));
   EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
   EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
+  EXPECT_CALL(*sync_service, GetAuthError()).
+      WillRepeatedly(::testing::ReturnRef(no_error_));
+  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
+  sync_service->Initialize();
+  EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
   return sync_service;
 }
 

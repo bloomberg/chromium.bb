@@ -15,13 +15,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/sync_prefs.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -39,18 +36,12 @@ SigninManagerBase::SigninManagerBase()
 }
 
 SigninManagerBase::~SigninManagerBase() {
-  DCHECK(!signin_global_error_.get()) <<
-      "SigninManagerBase::Initialize called but not "
-      "SigninManagerBase::Shutdown";
 }
 
 void SigninManagerBase::Initialize(Profile* profile, PrefService* local_state) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;
-  signin_global_error_.reset(new SigninGlobalError(this, profile));
-  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-      signin_global_error_.get());
 
   // If the user is clearing the token service from the command line, then
   // clear their login info also (not valid to be logged in without any
@@ -118,11 +109,6 @@ bool SigninManagerBase::AuthInProgress() const {
 }
 
 void SigninManagerBase::Shutdown() {
-  if (signin_global_error_.get()) {
-    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
-        signin_global_error_.get());
-    signin_global_error_.reset();
-  }
 }
 
 void SigninManagerBase::AddSigninDiagnosticsObserver(

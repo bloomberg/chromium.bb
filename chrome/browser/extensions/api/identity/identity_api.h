@@ -26,7 +26,6 @@
 class GoogleServiceAuthError;
 class MockGetAuthTokenFunction;
 class Profile;
-class SigninManagerBase;
 
 namespace extensions {
 
@@ -288,8 +287,8 @@ class IdentityAPI : public ProfileKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
 
   Profile* profile_;
-  SigninManagerBase* signin_manager_;
   GoogleServiceAuthError error_;
+  bool initialized_;
   // Used to listen to notifications from the TokenService.
   content::NotificationRegistrar registrar_;
   IdentityMintRequestQueue mint_queue_;

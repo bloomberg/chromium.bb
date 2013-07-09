@@ -151,11 +151,13 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     }
 
     // No auth in progress check for an auth error.
-    AuthError auth_error = signin.signin_global_error()->GetLastAuthError();
+    AuthError auth_error =
+          SigninGlobalError::GetForProfile(service->profile())->
+              GetLastAuthError();
     if (auth_error.state() != AuthError::NONE) {
       if (status_label && link_label)
         signin_ui_util::GetStatusLabelsForAuthError(
-            signin, status_label, link_label);
+            service->profile(), signin, status_label, link_label);
       return SYNC_ERROR;
     }
 
@@ -215,7 +217,9 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       result_type = PRE_SYNCED;
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
-      AuthError auth_error = signin.signin_global_error()->GetLastAuthError();
+      AuthError auth_error =
+          SigninGlobalError::GetForProfile(
+              service->profile())->GetLastAuthError();
       if (status_label) {
         status_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
@@ -230,7 +234,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
         if (status_label && link_label) {
           status_label->clear();
           signin_ui_util::GetStatusLabelsForAuthError(
-              signin, status_label, link_label);
+              service->profile(), signin, status_label, link_label);
         }
         result_type = SYNC_ERROR;
       }

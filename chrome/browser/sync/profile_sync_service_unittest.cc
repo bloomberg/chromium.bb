@@ -63,6 +63,8 @@ class ProfileSyncServiceTestHarness {
     profile->CreateRequestContext();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile.get(), FakeOAuth2TokenService::BuildTokenService);
   }
 
   void TearDown() {
@@ -126,8 +128,6 @@ class ProfileSyncServiceTestHarness {
   }
 
   void IssueTestTokens() {
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile.get(), FakeOAuth2TokenService::BuildTokenService);
     TokenService* token_service =
         TokenServiceFactory::GetForProfile(profile.get());
     token_service->IssueAuthTokenForTest(

@@ -9,12 +9,13 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -28,6 +29,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -305,18 +307,21 @@ class SyncSetupHandlerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     error_ = GoogleServiceAuthError::AuthErrorNone();
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
+
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
             ProfileSyncServiceMock::BuildMockProfileSyncService));
-    mock_pss_->Initialize();
-
+    EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
     ON_CALL(*mock_pss_, GetPassphraseType()).WillByDefault(
         Return(syncer::IMPLICIT_PASSPHRASE));
     ON_CALL(*mock_pss_, GetPassphraseTime()).WillByDefault(
         Return(base::Time()));
     ON_CALL(*mock_pss_, GetExplicitPassphraseTime()).WillByDefault(
         Return(base::Time()));
+
+    mock_pss_->Initialize();
+
 #if defined(OS_CHROMEOS)
     mock_signin_ = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -357,7 +362,6 @@ class SyncSetupHandlerTest : public testing::Test {
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
     EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(true));
   }
 
@@ -405,11 +409,10 @@ class SyncSetupHandlerTest : public testing::Test {
       handler_->sync_startup_tracker_->OnStateChanged();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<Profile> profile_;
   ProfileSyncServiceMock* mock_pss_;
   GoogleServiceAuthError error_;
-  // MessageLoop instance is required to work with OneShotTimer.
-  base::MessageLoop message_loop_;
   SigninManagerBase* mock_signin_;
   TestWebUI web_ui_;
   scoped_ptr<TestingSyncSetupHandler> handler_;
@@ -424,8 +427,6 @@ TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(false));
-  const GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   handler_->HandleStartSignin(NULL);
@@ -473,7 +474,6 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
 
   // We're simulating a user setting up sync, which would cause the backend to
@@ -503,7 +503,6 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   // Sync backend is stopped initially, and will start up.
   EXPECT_CALL(*mock_pss_, sync_initialized())
       .WillRepeatedly(Return(false));
@@ -563,7 +562,6 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   EXPECT_CALL(*mock_pss_, sync_initialized())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
@@ -594,7 +592,6 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
 
   handler_->OpenSyncSetup();
@@ -907,7 +904,8 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
 
   SetupInitializedProfileSyncService();
   mock_signin_->SetAuthenticatedUsername(kTestUser);
-  FakeAuthStatusProvider provider(mock_signin_->signin_global_error());
+  FakeAuthStatusProvider provider(
+      SigninGlobalError::GetForProfile(profile_.get()));
   provider.SetAuthError(error_);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
@@ -917,7 +915,6 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
 
 #if defined(OS_CHROMEOS)

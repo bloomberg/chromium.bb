@@ -984,7 +984,7 @@ void SyncSetupHandler::OpenSyncSetup() {
     return;
   }
 
-  if (signin->signin_global_error()->HasMenuItem()) {
+  if (SigninGlobalError::GetForProfile(GetProfile())->HasMenuItem()) {
     // Login has been specially requested because previously working credentials
     // have expired (case 3). Load the sync setup page with a spinner dialog,
     // and then display the gaia auth page. The user may abandon re-auth by

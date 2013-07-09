@@ -196,8 +196,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     sync_service_url_ = GURL(kSyncServerUrl);
   }
-  if (signin_)
-    signin_->signin_global_error()->AddProvider(this);
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -235,6 +233,9 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
 }
 
 void ProfileSyncService::Initialize() {
+  if (profile_)
+    SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
+
   InitSettings();
 
   // We clear this here (vs Shutdown) because we want to remember that an error
@@ -689,8 +690,8 @@ void ProfileSyncService::OnGetTokenFailure(
 }
 
 void ProfileSyncService::Shutdown() {
-  if (signin_)
-    signin_->signin_global_error()->RemoveProvider(this);
+  if (profile_)
+    SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
 
   ShutdownImpl(false);
 }
@@ -1034,8 +1035,9 @@ void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
   // Fan the notification out to interested UI-thread components. Notify the
   // SigninGlobalError first so it reflects the latest auth state before we
   // notify observers.
-  if (signin())
-    signin()->signin_global_error()->AuthStatusChanged();
+  if (profile_)
+    SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
+
   NotifyObservers();
 }
 

@@ -28,7 +28,8 @@ std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile);
 // "Sign in to Chromium", "Signin Error...", etc).
 string16 GetSigninMenuLabel(Profile* profile);
 
-void GetStatusLabelsForAuthError(const SigninManagerBase& signin_manager,
+void GetStatusLabelsForAuthError(Profile* profile,
+                                 const SigninManagerBase& signin_manager,
                                  string16* status_label,
                                  string16* link_label);
 

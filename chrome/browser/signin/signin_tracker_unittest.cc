@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -59,8 +59,7 @@ class MockObserver : public SigninTracker::Observer {
 
 class SigninTrackerTest : public testing::Test {
  public:
-  SigninTrackerTest()
-    : ui_thread_(content::BrowserThread::UI, &ui_loop_) {}
+  SigninTrackerTest() {}
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
     mock_token_service_ = static_cast<MockTokenService*>(
@@ -87,13 +86,12 @@ class SigninTrackerTest : public testing::Test {
         content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<SigninTracker> tracker_;
   scoped_ptr<TestingProfile> profile_;
   FakeSigninManagerBase* mock_signin_manager_;
   MockTokenService* mock_token_service_;
   MockObserver observer_;
-  base::MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(SigninTrackerTest, GaiaSignInFailed) {

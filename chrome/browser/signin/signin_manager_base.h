@@ -39,7 +39,6 @@
 class CookieSettings;
 class ProfileIOData;
 class PrefService;
-class SigninGlobalError;
 
 // Details for the Notification type GOOGLE_SIGNIN_SUCCESSFUL.
 // A listener might use this to make note of a username / password
@@ -91,14 +90,6 @@ class SigninManagerBase : public BrowserContextKeyedService {
   // Returns true if there's a signin in progress.
   virtual bool AuthInProgress() const;
 
-  SigninGlobalError* signin_global_error() {
-    return signin_global_error_.get();
-  }
-
-  const SigninGlobalError* signin_global_error() const {
-    return signin_global_error_.get();
-  }
-
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -120,11 +111,6 @@ class SigninManagerBase : public BrowserContextKeyedService {
   // Pointer to parent profile (protected so FakeSigninManager can access
   // it).
   Profile* profile_;
-
-  // Used to show auth errors in the wrench menu. The SigninGlobalError is
-  // different than most GlobalErrors in that its lifetime is controlled by
-  // SigninManager (so we can expose a reference for use in the wrench menu).
-  scoped_ptr<SigninGlobalError> signin_global_error_;
 
   // Helper methods to notify all registered diagnostics observers with.
   void NotifyDiagnosticsObservers(

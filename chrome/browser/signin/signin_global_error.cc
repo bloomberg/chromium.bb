@@ -5,24 +5,27 @@
 #include "chrome/browser/signin/signin_global_error.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SigninGlobalError::SigninGlobalError(SigninManagerBase* manager,
-                                     Profile* profile)
-    : auth_error_(GoogleServiceAuthError::AuthErrorNone()),
-      signin_manager_(manager),
-      profile_(profile) {
+SigninGlobalError::SigninGlobalError(Profile* profile)
+    : auth_error_(GoogleServiceAuthError::AuthErrorNone()), profile_(profile) {
 }
 
 SigninGlobalError::~SigninGlobalError() {
@@ -84,7 +87,12 @@ int SigninGlobalError::MenuItemCommandID() {
 }
 
 string16 SigninGlobalError::MenuItemLabel() {
-  if (signin_manager_->GetAuthenticatedUsername().empty() ||
+  std::string username;
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(profile_);
+  if (signin_manager)
+    username = signin_manager->GetAuthenticatedUsername();
+  if (username.empty() ||
       auth_error_.state() == GoogleServiceAuthError::NONE ||
       auth_error_.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
     // If the user isn't signed in, or there's no auth error worth elevating to
@@ -128,9 +136,14 @@ string16 SigninGlobalError::GetBubbleViewTitle() {
 
 std::vector<string16> SigninGlobalError::GetBubbleViewMessages() {
   std::vector<string16> messages;
+
   // If the user isn't signed in, no need to display an error bubble.
-  if (signin_manager_->GetAuthenticatedUsername().empty()) {
-    return messages;
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(profile_);
+  if (signin_manager) {
+    std::string username = signin_manager->GetAuthenticatedUsername();
+    if (username.empty())
+      return messages;
   }
 
   switch (auth_error_.state()) {
@@ -189,4 +202,10 @@ void SigninGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
 
 void SigninGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
   NOTREACHED();
+}
+
+// static
+SigninGlobalError* SigninGlobalError::GetForProfile(Profile* profile) {
+  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+      signin_global_error();
 }

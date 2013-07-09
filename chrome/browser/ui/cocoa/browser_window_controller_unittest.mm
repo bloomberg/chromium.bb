@@ -707,10 +707,10 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemAuthError) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
   signin->SetAuthenticatedUsername(username);
   ProfileSyncService* sync =
-    ProfileSyncServiceFactory::GetForProfile(profile());
+      ProfileSyncServiceFactory::GetForProfile(profile());
   sync->SetSyncSetupCompleted();
   // Force an auth error.
-  FakeAuthStatusProvider provider(signin->signin_global_error());
+  FakeAuthStatusProvider provider(SigninGlobalError::GetForProfile(profile()));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   provider.SetAuthError(error);

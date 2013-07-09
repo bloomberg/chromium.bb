@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -159,8 +160,10 @@ TEST_F(WrenchMenuModelTest, Basics) {
 
 // Tests global error menu items in the wrench menu.
 TEST_F(WrenchMenuModelTest, GlobalError) {
+  // Make sure services required for tests are initialized.
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
+  ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
   const int command1 = 1234567;
   // AddGlobalError takes ownership of error1.
   MenuError* error1 = new MenuError(command1);

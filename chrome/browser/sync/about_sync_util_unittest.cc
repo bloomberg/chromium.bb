@@ -18,7 +18,7 @@ using content::BrowserThread;
 namespace sync_ui_util {
 namespace {
 
-TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
+TEST(SyncUIUtilTestAbout, ConstructAboutInformationWithUnrecoverableErrorTest) {
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   scoped_ptr<Profile> profile(

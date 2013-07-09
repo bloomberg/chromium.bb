@@ -6,6 +6,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,12 +38,15 @@ class SyncStartupTrackerTest : public testing::Test {
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
             ProfileSyncServiceMock::BuildMockProfileSyncService));
-    mock_pss_->Initialize();
 
     // Make gmock not spam the output with information about these uninteresting
     // calls.
     EXPECT_CALL(*mock_pss_, AddObserver(_)).Times(AnyNumber());
     EXPECT_CALL(*mock_pss_, RemoveObserver(_)).Times(AnyNumber());
+    EXPECT_CALL(*mock_pss_, GetAuthError()).
+        WillRepeatedly(ReturnRef(no_error_));
+
+    mock_pss_->Initialize();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -59,6 +63,7 @@ class SyncStartupTrackerTest : public testing::Test {
         .WillRepeatedly(Return(true));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   GoogleServiceAuthError no_error_;
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncServiceMock* mock_pss_;
