@@ -100,7 +100,7 @@ def RebootDevices():
 
 
 def RunTestSuites(options, suites):
-  """Manages an invocation of run_tests.py.
+  """Manages an invocation of test_runner.py for gtests.
 
   Args:
     options: options object.
@@ -113,13 +113,13 @@ def RunTestSuites(options, suites):
     args.append('--tool=asan')
   for suite in suites:
     buildbot_report.PrintNamedStep(suite.name)
-    cmd = ['build/android/run_tests.py', '-s', suite.name] + args
+    cmd = ['build/android/test_runner.py', 'gtest', '-s', suite.name] + args
     if suite.is_suite_exe:
       cmd.append('--exe')
     RunCmd(cmd)
 
 def RunBrowserTestSuite(options):
-  """Manages an invocation of run_browser_tests.py.
+  """Manages an invocation of test_runner.py for content_browsertests.
 
   Args:
     options: options object.
@@ -130,7 +130,7 @@ def RunBrowserTestSuite(options):
   if options.asan:
     args.append('--tool=asan')
   buildbot_report.PrintNamedStep(constants.BROWSERTEST_SUITE_NAME)
-  RunCmd(['build/android/run_browser_tests.py'] + args)
+  RunCmd(['build/android/test_runner.py', 'content_browsertests'] + args)
 
 def RunChromeDriverTests(_):
   """Run all the steps for running chromedriver tests."""
@@ -156,7 +156,7 @@ def InstallApk(options, test, print_step=False):
 
 
 def RunInstrumentationSuite(options, test):
-  """Manages an invocation of run_instrumentaiton_tests.py.
+  """Manages an invocation of test_runner.py for instrumentation tests.
 
   Args:
     options: options object
@@ -183,7 +183,7 @@ def RunInstrumentationSuite(options, test):
   if test.extra_flags:
     args.extend(test.extra_flags)
 
-  RunCmd(['build/android/run_instrumentation_tests.py'] + args)
+  RunCmd(['build/android/test_runner.py', 'instrumentation'] + args)
 
 
 def RunWebkitLint(target):

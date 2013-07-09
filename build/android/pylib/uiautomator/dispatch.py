@@ -10,6 +10,7 @@ import os
 from pylib import android_commands
 from pylib.base import base_test_result
 from pylib.base import shard
+from pylib.utils import report_results
 
 import test_package
 import test_runner
@@ -25,7 +26,7 @@ def Dispatch(options):
     options: Command line options.
 
   Returns:
-    A TestRunResults object holding the results of the Java tests.
+    Test results in a base_test_result.TestRunResults object.
 
   Raises:
     Exception: when there are no attached devices.
@@ -42,13 +43,14 @@ def Dispatch(options):
   if not attached_devices:
     raise Exception('There are no devices online.')
 
-  if options.device:
-    assert options.device in attached_devices
-    attached_devices = [options.device]
+  if options.test_device:
+    assert options.test_device in attached_devices
+    attached_devices = [options.test_device]
 
   def TestRunnerFactory(device, shard_index):
     return test_runner.TestRunner(
         options, device, shard_index, test_pkg, [])
 
-  return shard.ShardAndRunTests(TestRunnerFactory, attached_devices, tests,
-                                options.build_type)
+  return shard.ShardAndRunTests(TestRunnerFactory, attached_devices,
+                                tests, options.build_type,
+                                num_retries=options.num_retries)

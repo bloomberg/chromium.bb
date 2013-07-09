@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Dispatches GTests."""
+
 import copy
 import fnmatch
 import logging
@@ -65,6 +67,8 @@ def GetTestsFromDevice(runner):
 
   Args:
     runner: a TestRunner.
+  Returns:
+    All non-disabled tests on the device.
   """
   # The executable/apk needs to be copied before we can call GetAllTests.
   runner.test_package.StripAndCopyExecutable()
@@ -155,8 +159,8 @@ def _RunATestSuite(options, suite_name):
         constants.GTEST_COMMAND_LINE_FILE)
 
   # Get tests and split them up based on the number of devices.
-  if options.gtest_filter:
-    all_tests = [t for t in options.gtest_filter.split(':') if t]
+  if options.test_filter:
+    all_tests = [t for t in options.test_filter.split(':') if t]
   else:
     all_tests = GetAllEnabledTests(RunnerFactory, attached_devices)
   num_devices = len(attached_devices)
@@ -210,7 +214,7 @@ def Dispatch(options):
     framebuffer.Start()
 
   all_test_suites = _FullyQualifiedTestSuites(options.exe, options.test_suite,
-                                             options.build_type)
+                                              options.build_type)
   failures = 0
   for suite_name, suite_path in all_test_suites:
     # Give each test suite its own copy of options.
