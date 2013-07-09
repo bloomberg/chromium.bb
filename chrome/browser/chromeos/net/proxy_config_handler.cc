@@ -19,20 +19,6 @@
 
 namespace chromeos {
 
-namespace {
-
-void LogError(const std::string& network,
-              const std::string& error_name,
-              const std::string& error_message) {
-  network_handler::ShillErrorCallbackFunction(
-      network,
-      network_handler::ErrorCallback(),
-      "Could not clear or set ProxyConfig",
-      error_message);
-}
-
-}  // namespace
-
 namespace proxy_config {
 
 scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
@@ -56,7 +42,9 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
         dbus::ObjectPath(network.path()),
         flimflam::kProxyConfigProperty,
         base::Bind(&base::DoNothing),
-        base::Bind(&LogError, network.path()));
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   "SetProxyConfig.ClearProperty Failed",
+                   network.path(), network_handler::ErrorCallback()));
   } else {
     std::string proxy_config_str;
     base::JSONWriter::Write(&proxy_config.GetDictionary(), &proxy_config_str);
@@ -65,7 +53,9 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
         flimflam::kProxyConfigProperty,
         base::StringValue(proxy_config_str),
         base::Bind(&base::DoNothing),
-        base::Bind(&LogError, network.path()));
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   "SetProxyConfig.SetProperty Failed",
+                   network.path(), network_handler::ErrorCallback()));
   }
 
   if (NetworkHandler::IsInitialized()) {

@@ -170,8 +170,8 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   void EnableTechnologyFailed(
       const std::string& technology,
       const network_handler::ErrorCallback& error_callback,
-      const std::string& error_name,
-      const std::string& error_message);
+      const std::string& dbus_error_name,
+      const std::string& dbus_error_message);
 
   // Called when Shill returns the properties for a service or device.
   void GetPropertiesCallback(ManagedState::ManagedType type,

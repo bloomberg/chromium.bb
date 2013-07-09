@@ -25,17 +25,6 @@ const char kShillErrorFailure[] = "org.chromium.flimflam.Error.Failure";
 const char kShillErrorNotSupported[] =
     "org.chromium.flimflam.Error.NotSupported";
 
-base::DictionaryValue* CreateDeviceErrorData(const std::string& device_path,
-                                             const std::string& error_name,
-                                             const std::string& error_message) {
-  // Create error data with no 'servicePath' entry.
-  base::DictionaryValue* error_data =
-      network_handler::CreateErrorData("", error_name, error_message);
-  if (!device_path.empty())
-    error_data->SetString(kDevicePath, device_path);
-  return error_data;
-}
-
 std::string GetErrorNameForShillError(const std::string& shill_error_name) {
   // TODO(armansito): Use the new SIM error names once the ones below get
   // deprecated (crbug.com/256855)
@@ -52,41 +41,17 @@ std::string GetErrorNameForShillError(const std::string& shill_error_name) {
   return NetworkDeviceHandler::kErrorUnknown;
 }
 
-void NetworkErrorCallbackFunction(
-    const std::string& path,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& error_name,
-    const std::string& error_description) {
-  NET_LOG_ERROR(error_description, path);
-  if (error_callback.is_null())
-    return;
-  scoped_ptr<base::DictionaryValue> error_data(
-      CreateDeviceErrorData(path, error_name, error_description));
-  error_callback.Run(error_name, error_data.Pass());
-}
-
-void ShillErrorCallbackFunction(
-    const std::string& path,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& error_name,
-    const std::string& shill_error_name,
-    const std::string& shill_error_message) {
-  std::string description = "Shill Error: name=" + shill_error_name +
-                            ", message=\"" + shill_error_message + "\"";
-  NetworkErrorCallbackFunction(path, error_callback, error_name, description);
-}
-
 void InvokeShillErrorCallback(
     const std::string& path,
     const network_handler::ErrorCallback& error_callback,
     const std::string& shill_error_name,
     const std::string& shill_error_message) {
-  std::string error_name = GetErrorNameForShillError(shill_error_name);
-  ShillErrorCallbackFunction(path,
-                             error_callback,
-                             error_name,
-                             shill_error_name,
-                             shill_error_message);
+  network_handler::ShillErrorCallbackFunction(
+      GetErrorNameForShillError(shill_error_name),
+      path,
+      error_callback,
+      shill_error_name,
+      shill_error_message);
 }
 
 }  // namespace

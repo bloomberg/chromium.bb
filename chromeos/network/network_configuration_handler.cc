@@ -107,6 +107,17 @@ std::string StripQuotations(const std::string& in_str) {
   return in_str;
 }
 
+void InvokeErrorCallback(const std::string& error,
+                         const std::string& path,
+                         const network_handler::ErrorCallback& error_callback) {
+  NET_LOG_ERROR(error, path);
+  if (error_callback.is_null())
+    return;
+  scoped_ptr<base::DictionaryValue> error_data(
+      network_handler::CreateErrorData(path, error, ""));
+  error_callback.Run(error, error_data.Pass());
+}
+
 }  // namespace
 
 // Helper class to request from Shill the profile entries associated with a
@@ -139,9 +150,8 @@ class NetworkConfigurationHandler::ProfileEntryDeleter
       DBusMethodCallStatus call_status,
       const base::DictionaryValue& profile_entries) {
     if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-      network_handler::ShillErrorCallbackFunction(
-          service_path_, error_callback_, "GetLoadableProfileEntries Failed",
-          "Failed to get Profile Entries for " + service_path_);
+      InvokeErrorCallback(
+          "GetLoadableProfileEntries Failed", service_path_, error_callback_);
       owner_->ProfileEntryDeleterCompleted(service_path_);  // Deletes this.
       return;
     }
@@ -195,8 +205,8 @@ class NetworkConfigurationHandler::ProfileEntryDeleter
                           const std::string& dbus_error_message) {
     // Any Shill Error triggers a failure / error.
     network_handler::ShillErrorCallbackFunction(
-        profile_path, error_callback_, "GetLoadableProfileEntries Shill Error",
-        base::StringPrintf("Shill Error for Entry: %s", entry.c_str()));
+        "GetLoadableProfileEntries Failed", profile_path, error_callback_,
+        dbus_error_name, dbus_error_message);
     // Delete this even if there are pending deletions; any callbacks will
     // safely become no-ops (by invalidating the WeakPtrs).
     owner_->ProfileEntryDeleterCompleted(service_path_);  // Deletes this.
@@ -236,6 +246,7 @@ void NetworkConfigurationHandler::SetProperties(
       properties,
       base::Bind(&IgnoreObjectPathCallback, callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 "Config.SetProperties Failed",
                  service_path, error_callback));
   network_state_handler_->RequestUpdateForNetwork(service_path);
 }
@@ -254,6 +265,7 @@ void NetworkConfigurationHandler::ClearProperties(
                  callback,
                  error_callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 "Config.ClearProperties Failed",
                  service_path, error_callback));
 }
 
@@ -280,14 +292,14 @@ void NetworkConfigurationHandler::CreateConfiguration(
         base::Bind(&NetworkConfigurationHandler::RunCreateNetworkCallback,
                    AsWeakPtr(), callback),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "", error_callback));
+                   "Config.CreateConfiguration Failed", "", error_callback));
   } else {
     manager->ConfigureService(
         properties,
         base::Bind(&NetworkConfigurationHandler::RunCreateNetworkCallback,
                    AsWeakPtr(), callback),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "", error_callback));
+                   "Config.CreateConfiguration Failed", "", error_callback));
   }
 }
 
@@ -298,10 +310,8 @@ void NetworkConfigurationHandler::RemoveConfiguration(
   // Service.Remove is not reliable. Instead, request the profile entries
   // for the service and remove each entry.
   if (profile_entry_deleters_.count(service_path)) {
-    network_handler::ShillErrorCallbackFunction(
-        service_path, error_callback, "RemoveConfiguration",
-        base::StringPrintf("RemoveConfiguration In-Progress for %s",
-                           service_path.c_str()));
+    InvokeErrorCallback(
+        "RemoveConfiguration In-Progress", service_path, error_callback);
     return;
   }
   NET_LOG_USER("Remove Configuration", service_path);

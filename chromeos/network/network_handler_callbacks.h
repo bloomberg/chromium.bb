@@ -31,19 +31,30 @@ typedef base::Callback<
 typedef base::Callback<
   void(const std::string& service_path)> StringResultCallback;
 
-// Create a DictionaryValue for passing to ErrorCallback
+// Create a DictionaryValue for passing to ErrorCallback.
 CHROMEOS_EXPORT base::DictionaryValue* CreateErrorData(
-    const std::string& service_path,
+    const std::string& path,
     const std::string& error_name,
-    const std::string& error_message);
+    const std::string& error_detail);
 
-// Callback for Shill errors. |path| may be blank if not relevant.
+CHROMEOS_EXPORT base::DictionaryValue* CreateDBusErrorData(
+    const std::string& path,
+    const std::string& error_name,
+    const std::string& error_detail,
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message);
+
+// Callback for Shill errors.
+// |error_name| is the error name passed to |error_callback|.
+// |path| is the associated object path or blank if not relevant.
+// |dbus_error_name| and |dbus_error_message| are provided by the DBus handler.
 // Logs an error and calls |error_callback| if not null.
 CHROMEOS_EXPORT void ShillErrorCallbackFunction(
+    const std::string& error_name,
     const std::string& path,
     const ErrorCallback& error_callback,
-    const std::string& error_name,
-    const std::string& error_message);
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message);
 
 }  // namespace network_handler
 }  // namespace chromeos

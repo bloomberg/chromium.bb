@@ -133,6 +133,8 @@ const char NetworkConnectionHandler::kErrorConfigurationRequired[] =
     "configuration-required";
 const char NetworkConnectionHandler::kErrorShillError[] = "shill-error";
 const char NetworkConnectionHandler::kErrorConnectFailed[] = "connect-failed";
+const char NetworkConnectionHandler::kErrorDisconnectFailed[] =
+    "disconnect-failed";
 const char NetworkConnectionHandler::kErrorUnknown[] = "unknown-error";
 
 struct NetworkConnectionHandler::ConnectRequest {
@@ -478,15 +480,15 @@ void NetworkConnectionHandler::HandleShillConnectSuccess(
 
 void NetworkConnectionHandler::HandleShillConnectFailure(
     const std::string& service_path,
-    const std::string& error_name,
-    const std::string& error_message) {
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message) {
   ConnectRequest* request = pending_request(service_path);
   DCHECK(request);
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
-  std::string error = "Connect Failure: " + error_name + ": " + error_message;
   network_handler::ShillErrorCallbackFunction(
-      service_path, error_callback, error_name, error_message);
+      kErrorConnectFailed, service_path, error_callback,
+      dbus_error_name, dbus_error_message);
 }
 
 void NetworkConnectionHandler::CheckPendingRequest(
@@ -582,8 +584,8 @@ void NetworkConnectionHandler::CallShillDisconnect(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConnectionHandler::HandleShillDisconnectSuccess,
                  AsWeakPtr(), service_path, success_callback),
-      base::Bind(&NetworkConnectionHandler::HandleShillDisconnectFailure,
-                 AsWeakPtr(), service_path, error_callback));
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 kErrorDisconnectFailed, service_path, error_callback));
 }
 
 void NetworkConnectionHandler::HandleShillDisconnectSuccess(
@@ -591,17 +593,6 @@ void NetworkConnectionHandler::HandleShillDisconnectSuccess(
     const base::Closure& success_callback) {
   NET_LOG_EVENT("Disconnect Request Sent", service_path);
   success_callback.Run();
-}
-
-void NetworkConnectionHandler::HandleShillDisconnectFailure(
-    const std::string& service_path,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& error_name,
-    const std::string& error_message) {
-  std::string error =
-      "Disconnect Failure: " + error_name + ": " + error_message;
-  network_handler::ShillErrorCallbackFunction(
-      service_path, error_callback, error_name, error_message);
 }
 
 }  // namespace chromeos
