@@ -873,8 +873,10 @@ read_events(struct wl_display *display)
 	if (display->reader_count == 0) {
 		total = wl_connection_read(display->connection);
 		if (total == -1) {
-			if (errno != EAGAIN)
-				display_fatal_error(display, errno);
+			if (errno == EAGAIN)
+				return 0;
+
+			display_fatal_error(display, errno);
 			return -1;
 		} else if (total == 0) {
 			/* The compositor has closed the socket. This
