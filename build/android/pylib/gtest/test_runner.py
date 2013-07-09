@@ -234,6 +234,11 @@ def _GetDataFilesForTestSuite(product_dir, test_suite_basename):
         'content/test/data/media',
         'third_party/webgl_conformance',
     ]
+  elif test_suite_basename == 'modules_unittests':
+    return [
+        'resources',
+        'data',
+    ]
   return []
 
 
