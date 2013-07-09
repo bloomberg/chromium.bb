@@ -129,7 +129,7 @@ public class ImeAdapter {
     }
 
     @VisibleForTesting
-    protected void setInputMethodManagerWrapper(InputMethodManagerWrapper immw) {
+    public void setInputMethodManagerWrapper(InputMethodManagerWrapper immw) {
         mInputMethodManagerWrapper = immw;
     }
 

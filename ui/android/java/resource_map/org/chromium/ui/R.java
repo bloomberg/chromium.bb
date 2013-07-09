@@ -28,6 +28,7 @@ public final class R {
     }
     public static final class id {
         public static int autofill_label;
+        public static int autofill_popup_window;
         public static int autofill_sublabel;
         public static int selected_color_view;
         public static int title;

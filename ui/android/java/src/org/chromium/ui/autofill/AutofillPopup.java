@@ -82,6 +82,9 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         setOnItemClickListener(this);
 
         mAnchorView = mViewAndroidDelegate.acquireAnchorView();
+        mAnchorView.setId(R.id.autofill_popup_window);
+        mAnchorView.setTag(R.id.autofill_popup_window, this);
+
         mViewAndroidDelegate.setAnchorViewPosition(mAnchorView, mAnchorX, mAnchorY, mAnchorWidth,
                 mAnchorHeight);
 
@@ -158,6 +161,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     public void hide() {
         super.dismiss();
         mAnchorView.removeOnLayoutChangeListener(mLayoutChangeListener);
+        mAnchorView.setTag(R.id.autofill_popup_window, null);
         mViewAndroidDelegate.releaseAnchorView(mAnchorView);
     }
 
