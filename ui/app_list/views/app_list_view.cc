@@ -205,10 +205,12 @@ void AppListView::GetWidgetHitTestMask(gfx::Path* mask) const {
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // The accelerator is added by BubbleDelegateView.
   if (accelerator.key_code() == ui::VKEY_ESCAPE) {
-    if (app_list_main_view_->search_box_view()->HasSearch())
+    if (app_list_main_view_->search_box_view()->HasSearch()) {
       app_list_main_view_->search_box_view()->ClearSearch();
-    else
+    } else {
+      GetWidget()->Deactivate();
       Close();
+    }
     return true;
   }
 
