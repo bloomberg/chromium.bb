@@ -343,19 +343,6 @@ class FileSystemInterface {
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) = 0;
 
-  // Updates a file by the given |resource_id| on the Drive server by
-  // uploading an updated version. Used for uploading dirty files. The file
-  // should already be present in the cache.
-  //
-  // TODO(satorux): As of now, the function only handles files with the dirty
-  // bit committed. We should eliminate the restriction. crbug.com/134558.
-  //
-  // |callback| must not be null.
-  virtual void UpdateFileByResourceId(
-      const std::string& resource_id,
-      const ClientContext& context,
-      const FileOperationCallback& callback) = 0;
-
   // Finds an entry (a file or a directory) by |file_path|. This call will also
   // retrieve and refresh file system content from server and disk cache.
   //

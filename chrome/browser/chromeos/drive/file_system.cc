@@ -737,15 +737,6 @@ void FileSystem::RefreshDirectoryAfterGetResourceEntry(
       callback);
 }
 
-void FileSystem::UpdateFileByResourceId(
-    const std::string& resource_id,
-    const ClientContext& context,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  update_operation_->UpdateFileByResourceId(resource_id, context, callback);
-}
-
 void FileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

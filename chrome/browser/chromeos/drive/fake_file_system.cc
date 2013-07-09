@@ -173,13 +173,6 @@ void FakeFileSystem::GetFileContentByPath(
                  completion_callback));
 }
 
-void FakeFileSystem::UpdateFileByResourceId(
-    const std::string& resource_id,
-    const ClientContext& context,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeFileSystem::GetResourceEntryByPath(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback) {
