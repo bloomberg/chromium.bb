@@ -98,16 +98,17 @@ def ErrorIfStyleResourceExistsInDir(input_dir):
     if HasStyleResource(dom):
       raise Exception('error: style file ' + input_filename +
                       ' should be under ' + input_dir +
-                      '-v17 directory. Please refer to crbug.com/243952 '
-                      'for the details.')
+                      '-v17 directory. Please refer to '
+                      'http://crbug.com/243952 for the details.')
 
 
-def GenerateV14LayoutResourceDom(dom, filename):
+def GenerateV14LayoutResourceDom(dom, filename_for_warning):
   """Convert layout resource to API 14 compatible layout resource.
 
   Args:
     dom: parsed minidom object to be modified.
-    filename: file name to display in case we print warnings.
+    filename_for_warning: file name to display in case we print warnings.
+                          If None, do not print warning.
   Returns:
     True if dom is modified, False otherwise.
   """
@@ -125,27 +126,35 @@ def GenerateV14LayoutResourceDom(dom, filename):
         element.setAttribute(ATTRIBUTES_TO_MAP[name], value)
         del element.attributes[name]
         is_modified = True
-      else:
-        WarnIfDeprecatedAttribute(name, value, filename)
+      elif filename_for_warning:
+        WarnIfDeprecatedAttribute(name, value, filename_for_warning)
 
   return is_modified
 
 
-def GenerateV14StyleResourceDom(dom, filename):
+def GenerateV14StyleResourceDom(dom, filename_for_warning):
   """Convert style resource to API 14 compatible style resource.
 
   Args:
     dom: parsed minidom object to be modified.
-    filename: file name to display in case we print warnings.
+    filename_for_warning: file name to display in case we print warnings.
+                          If None, do not print warning.
+  Returns:
+    True if dom is modified, False otherwise.
   """
+  is_modified = False
+
   for style_element in dom.getElementsByTagName('style'):
     for item_element in style_element.getElementsByTagName('item'):
       name = item_element.attributes['name'].value
       value = item_element.childNodes[0].nodeValue
       if name in ATTRIBUTES_TO_MAP:
         item_element.attributes['name'].value = ATTRIBUTES_TO_MAP[name]
-      else:
-        WarnIfDeprecatedAttribute(name, value, filename)
+        is_modified = True
+      elif filename_for_warning:
+        WarnIfDeprecatedAttribute(name, value, filename_for_warning)
+
+  return is_modified
 
 
 def GenerateV14LayoutResource(input_filename, output_v14_filename,
@@ -202,6 +211,36 @@ def GenerateV14StyleResourcesInDir(input_dir, output_v14_dir):
     GenerateV14StyleResource(input_filename, output_v14_filename)
 
 
+def VerifyV14ResourcesInDir(input_dir, resource_type):
+  """Verify that the resources in input_dir is compatible with v14, i.e., they
+  don't use attributes that cause crashes on certain devices. Print an error if
+  they have."""
+  for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
+    exception_message = ('error : ' + input_filename + ' has an RTL attribute, '
+                        'i.e., attribute that has "start" or "end" in its name.'
+                        ' Pre-v17 resources should not include it because it '
+                        'can cause crashes on certain devices. Please refer to '
+                        'http://crbug.com/243952 for the details.')
+    dom = minidom.parse(input_filename)
+    if resource_type in ('layout', 'xml'):
+      if GenerateV14LayoutResourceDom(dom, None):
+        raise Exception(exception_message)
+    elif resource_type == 'values':
+      if GenerateV14StyleResourceDom(dom, None):
+        raise Exception(exception_message)
+
+
+def WarnIfDeprecatedAttributeInDir(input_dir, resource_type):
+  """Print warning if resources in input_dir have deprecated attributes, e.g.,
+  paddingLeft, PaddingRight"""
+  for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
+    dom = minidom.parse(input_filename)
+    if resource_type in ('layout', 'xml'):
+      GenerateV14LayoutResourceDom(dom, input_filename)
+    elif resource_type == 'values':
+      GenerateV14StyleResourceDom(dom, input_filename)
+
+
 def ParseArgs():
   """Parses command line options.
 
@@ -216,6 +255,10 @@ def ParseArgs():
                     help='output directory into which '
                          'v14 compatible resources will be generated')
   parser.add_option('--stamp', help='File to touch on success')
+  parser.add_option('--verify-only', action="store_true", help='Do not generate'
+      ' v14 resources. Instead, just verify that the resources are already '
+      "compatible with v14, i.e. they don't use attributes that cause crashes "
+      'on certain devices.')
 
   options, args = parser.parse_args()
 
@@ -254,29 +297,36 @@ def main(argv):
     if 'ldrtl' in qualifiers:
       continue
 
-    # We also need to copy the original v17 resource to *-v17 directory
-    # because the generated v14 resource will hide the original resource.
-    input_dir = os.path.join(options.res_dir, name)
-    output_v14_dir = os.path.join(options.res_v14_compatibility_dir, name)
-    output_v17_dir = os.path.join(options.res_v14_compatibility_dir, name +
-                                                                     '-v17')
+    input_dir = os.path.abspath(os.path.join(options.res_dir, name))
 
-    # We only convert layout resources under layout*/, xml*/,
-    # and style resources under values*/.
-    if resource_type in ('layout', 'xml'):
-      if not api_level_qualifier:
-        GenerateV14LayoutResourcesInDir(input_dir, output_v14_dir,
-                                        output_v17_dir)
-    elif resource_type == 'values':
-      if api_level_qualifier == 'v17':
-        output_qualifiers = qualifiers[:]
-        del output_qualifiers[api_level_qualifier_index]
-        output_v14_dir = os.path.join(options.res_v14_compatibility_dir,
-                                      '-'.join([resource_type] +
-                                               output_qualifiers))
-        GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
-      elif not api_level_qualifier:
-        ErrorIfStyleResourceExistsInDir(input_dir)
+    if options.verify_only:
+      if not api_level_qualifier or int(api_level_qualifier[1:]) < 17:
+        VerifyV14ResourcesInDir(input_dir, resource_type)
+      else:
+        WarnIfDeprecatedAttributeInDir(input_dir, resource_type)
+    else:
+      # We also need to copy the original v17 resource to *-v17 directory
+      # because the generated v14 resource will hide the original resource.
+      output_v14_dir = os.path.join(options.res_v14_compatibility_dir, name)
+      output_v17_dir = os.path.join(options.res_v14_compatibility_dir, name +
+                                                                       '-v17')
+
+      # We only convert layout resources under layout*/, xml*/,
+      # and style resources under values*/.
+      if resource_type in ('layout', 'xml'):
+        if not api_level_qualifier:
+          GenerateV14LayoutResourcesInDir(input_dir, output_v14_dir,
+                                          output_v17_dir)
+      elif resource_type == 'values':
+        if api_level_qualifier == 'v17':
+          output_qualifiers = qualifiers[:]
+          del output_qualifiers[api_level_qualifier_index]
+          output_v14_dir = os.path.join(options.res_v14_compatibility_dir,
+                                        '-'.join([resource_type] +
+                                                 output_qualifiers))
+          GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
+        elif not api_level_qualifier:
+          ErrorIfStyleResourceExistsInDir(input_dir)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

@@ -65,6 +65,7 @@
     'java_strings_grd%': '',
     'res_extra_dirs': [],
     'res_extra_files': [],
+    'res_v14_verify_only%': 0,
     'resource_input_paths': ['>@(res_extra_files)'],
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'classes_dir': '<(intermediate_dir)/classes',
@@ -185,6 +186,16 @@
         {
           'action_name': 'generate_api_14_resources_<(_target_name)',
           'message': 'Generating Android API 14 resources <(_target_name)',
+          'variables' : {
+            'res_v14_additional_options': [],
+          },
+          'conditions': [
+            ['res_v14_verify_only == 1', {
+              'variables': {
+                'res_v14_additional_options': ['--verify-only']
+              },
+            }],
+          ],
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/generate_v14_compatible_resources.py',
@@ -198,6 +209,7 @@
             '--res-dir=<(res_dir)',
             '--res-v14-compatibility-dir=<(res_v14_compatibility_dir)',
             '--stamp', '<(res_v14_compatibility_stamp)',
+            '<@(res_v14_additional_options)',
           ]
         },
       ],
