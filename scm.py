@@ -98,9 +98,12 @@ class GIT(object):
 
   @staticmethod
   def Capture(args, cwd, **kwargs):
+    env = os.environ.copy()
+    # 'cat' is a magical git string that disables pagers on all platforms.
+    env['GIT_PAGER'] = 'cat'
     return subprocess2.check_output(
-        ['git', '--no-pager'] + args,
-        cwd=cwd, stderr=subprocess2.PIPE, **kwargs).strip()
+        ['git'] + args,
+        cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs).strip()
 
   @staticmethod
   def CaptureStatus(files, cwd, upstream_branch):

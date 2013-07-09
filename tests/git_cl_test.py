@@ -122,59 +122,59 @@ class TestGitCl(TestCase):
   def _git_base_calls(cls, similarity, find_copies):
     if similarity is None:
       similarity = '50'
-      similarity_call = ((['git', '--no-pager', 'config', '--int', '--get',
+      similarity_call = ((['git', 'config', '--int', '--get',
                          'branch.master.git-cl-similarity'],), '')
     else:
-      similarity_call = ((['git', '--no-pager', 'config', '--int',
+      similarity_call = ((['git', 'config', '--int',
                          'branch.master.git-cl-similarity', similarity],), '')
 
     if find_copies is None:
       find_copies = True
-      find_copies_call = ((['git', '--no-pager', 'config', '--int', '--get',
+      find_copies_call = ((['git', 'config', '--int', '--get',
                           'branch.master.git-find-copies'],), '')
     else:
       val = str(int(find_copies))
-      find_copies_call = ((['git', '--no-pager', 'config', '--int',
+      find_copies_call = ((['git', 'config', '--int',
                           'branch.master.git-find-copies', val],), '')
 
     if find_copies:
-      stat_call = ((['git', '--no-pager', 'diff', '--no-ext-diff', '--stat',
+      stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
                    '--find-copies-harder', '-l100000', '-C'+similarity,
                    'fake_ancestor_sha', 'HEAD'],), '+dat')
     else:
-      stat_call = ((['git', '--no-pager', 'diff', '--no-ext-diff', '--stat',
+      stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
                    '-M'+similarity, 'fake_ancestor_sha', 'HEAD'],), '+dat')
 
     return [
-      ((['git', '--no-pager', 'config', 'rietveld.server'],),
+      ((['git', 'config', 'rietveld.server'],),
        'codereview.example.com'),
-      ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       similarity_call,
-      ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       find_copies_call,
-      ((['git', '--no-pager', 'update-index', '--refresh', '-q'],), ''),
-      ((['git', '--no-pager', 'diff-index', '--name-status', 'HEAD'],), ''),
-      ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', '--no-pager', 'config', 'branch.master.merge'],), 'master'),
-      ((['git', '--no-pager', 'config', 'branch.master.remote'],), 'origin'),
-      ((['git', '--no-pager', 'merge-base', 'master', 'HEAD'],),
+      ((['git', 'update-index', '--refresh', '-q'],), ''),
+      ((['git', 'diff-index', '--name-status', 'HEAD'],), ''),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'merge-base', 'master', 'HEAD'],),
        'fake_ancestor_sha'),
       ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
-      ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), ''),
-      ((['git', '--no-pager', 'rev-parse', 'HEAD'],), '12345'),
-      ((['git', '--no-pager', 'diff', '--name-status', '--no-renames', '-r',
+      ((['git', 'rev-parse', '--show-cdup'],), ''),
+      ((['git', 'rev-parse', 'HEAD'],), '12345'),
+      ((['git', 'diff', '--name-status', '--no-renames', '-r',
          'fake_ancestor_sha...', '.'],),
         'M\t.gitignore\n'),
-      ((['git', '--no-pager', 'config', 'branch.master.rietveldissue'],), ''),
-      ((['git', '--no-pager', 'config', 'branch.master.rietveldpatchset'],),
+      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
+      ((['git', 'config', 'branch.master.rietveldpatchset'],),
        ''),
-      ((['git', '--no-pager', 'log', '--pretty=format:%s%n%n%b',
+      ((['git', 'log', '--pretty=format:%s%n%n%b',
          'fake_ancestor_sha...'],),
        'foo'),
-      ((['git', '--no-pager', 'config', 'user.email'],), 'me@example.com'),
+      ((['git', 'config', 'user.email'],), 'me@example.com'),
       stat_call,
-      ((['git', '--no-pager', 'config', 'gerrit.host'],), ''),
-      ((['git', '--no-pager', 'log', '--pretty=format:%s\n\n%b',
+      ((['git', 'config', 'gerrit.host'],), ''),
+      ((['git', 'log', '--pretty=format:%s\n\n%b',
          'fake_ancestor_sha..HEAD'],),
        'desc\n'),
     ]
@@ -182,7 +182,7 @@ class TestGitCl(TestCase):
   @classmethod
   def _git_upload_no_rev_calls(cls):
     return [
-      ((['git', '--no-pager', 'config', 'core.editor'],), ''),
+      ((['git', 'config', 'core.editor'],), ''),
     ]
 
   @classmethod
@@ -191,27 +191,27 @@ class TestGitCl(TestCase):
       private_call = []
     else:
       private_call = [
-          ((['git', '--no-pager', 'config', 'rietveld.private'],), '')]
+          ((['git', 'config', 'rietveld.private'],), '')]
 
     return [
-        ((['git', '--no-pager', 'config', 'core.editor'],), ''),
-        ((['git', '--no-pager', 'config', 'rietveld.cc'],), '')
+        ((['git', 'config', 'core.editor'],), ''),
+        ((['git', 'config', 'rietveld.cc'],), '')
     ] + private_call + [
-        ((['git', '--no-pager', 'config', 'branch.master.base-url'],), ''),
-        ((['git', '--no-pager',
+        ((['git', 'config', 'branch.master.base-url'],), ''),
+        ((['git',
            'config', '--local', '--get-regexp', '^svn-remote\\.'],),
          (('', None), 0)),
-        ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), ''),
-        ((['git', '--no-pager', 'svn', 'info'],), ''),
-        ((['git', '--no-pager',
+        ((['git', 'rev-parse', '--show-cdup'],), ''),
+        ((['git', 'svn', 'info'],), ''),
+        ((['git',
            'config', 'branch.master.rietveldissue', '1'],), ''),
-        ((['git', '--no-pager', 'config', 'branch.master.rietveldserver',
+        ((['git', 'config', 'branch.master.rietveldserver',
            'https://codereview.example.com'],), ''),
-        ((['git', '--no-pager',
+        ((['git',
            'config', 'branch.master.rietveldpatchset', '2'],), ''),
-        ((['git', '--no-pager', 'rev-parse', 'HEAD'],), 'hash'),
-        ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'hash'),
-        ((['git', '--no-pager',
+        ((['git', 'rev-parse', 'HEAD'],), 'hash'),
+        ((['git', 'symbolic-ref', 'HEAD'],), 'hash'),
+        ((['git',
            'config', 'branch.hash.last-upload-hash', 'hash'],), ''),
     ]
 
@@ -221,61 +221,61 @@ class TestGitCl(TestCase):
     fake_cl = 'fake_cl_for_patch'
     return [
       # Calls to verify branch point is ancestor
-      ((['git', '--no-pager',
+      ((['git',
          'rev-parse', '--verify', diff_base],), fake_ancestor),
-      ((['git', '--no-pager',
+      ((['git',
          'merge-base', fake_ancestor, 'HEAD'],), fake_ancestor),
-      ((['git', '--no-pager',
+      ((['git',
          'rev-list', '^' + fake_ancestor, 'HEAD'],), fake_cl),
       # Mock a config miss (error code 1)
-      ((['git', '--no-pager',
+      ((['git',
          'config', 'gitcl.remotebranch'],), (('', None), 1)),
       # Call to GetRemoteBranch()
-      ((['git', '--no-pager',
+      ((['git',
          'config', 'branch.%s.merge' % working_branch],),
        'refs/heads/master'),
-      ((['git', '--no-pager',
+      ((['git',
          'config', 'branch.%s.remote' % working_branch],), 'origin'),
-      ((['git', '--no-pager', 'rev-list', '^' + fake_ancestor,
+      ((['git', 'rev-list', '^' + fake_ancestor,
          'refs/remotes/origin/master'],), ''),
        ]
 
   @classmethod
   def _dcommit_calls_1(cls):
     return [
-      ((['git', '--no-pager',
+      ((['git',
          'config', '--local', '--get-regexp', '^svn-remote\\.'],),
        ((('svn-remote.svn.url svn://svn.chromium.org/chrome\n'
           'svn-remote.svn.fetch trunk/src:refs/remotes/origin/master'),
          None),
         0)),
-      ((['git', '--no-pager',
+      ((['git',
          'config', 'rietveld.server'],), 'codereview.example.com'),
-      ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
-      ((['git', '--no-pager', 'config', '--int', '--get',
+      ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
+      ((['git', 'config', '--int', '--get',
         'branch.working.git-cl-similarity'],), ''),
-      ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
-      ((['git', '--no-pager', 'config', '--int', '--get',
+      ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
+      ((['git', 'config', '--int', '--get',
         'branch.working.git-find-copies'],), ''),
-      ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
-      ((['git', '--no-pager',
+      ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
+      ((['git',
          'config', 'branch.working.merge'],), 'refs/heads/master'),
-      ((['git', '--no-pager', 'config', 'branch.working.remote'],), 'origin'),
-      ((['git', '--no-pager', 'rev-list', '--merges',
+      ((['git', 'config', 'branch.working.remote'],), 'origin'),
+      ((['git', 'rev-list', '--merges',
          '--grep=^SVN changes up to revision [0-9]*$',
          'refs/remotes/origin/master^!'],), ''),
-      ((['git', '--no-pager', 'update-index', '--refresh', '-q'],), ''),
-      ((['git', '--no-pager', 'diff-index', '--name-status', 'HEAD'],), ''),
-      ((['git', '--no-pager', 'rev-list', '^refs/heads/working',
+      ((['git', 'update-index', '--refresh', '-q'],), ''),
+      ((['git', 'diff-index', '--name-status', 'HEAD'],), ''),
+      ((['git', 'rev-list', '^refs/heads/working',
          'refs/remotes/origin/master'],),
          ''),
-      ((['git', '--no-pager',
+      ((['git',
          'log', '--grep=^git-svn-id:', '-1', '--pretty=format:%H'],),
          '3fc18b62c4966193eb435baabe2d18a3810ec82e'),
-      ((['git', '--no-pager',
+      ((['git',
          'rev-list', '^3fc18b62c4966193eb435baabe2d18a3810ec82e',
          'refs/remotes/origin/master'],), ''),
-      ((['git', '--no-pager',
+      ((['git',
          'merge-base', 'refs/remotes/origin/master', 'HEAD'],),
        'fake_ancestor_sha'),
     ]
@@ -283,29 +283,29 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_normal(cls):
     return [
-      ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), ''),
-      ((['git', '--no-pager', 'rev-parse', 'HEAD'],),
+      ((['git', 'rev-parse', '--show-cdup'],), ''),
+      ((['git', 'rev-parse', 'HEAD'],),
           '00ff397798ea57439712ed7e04ab96e13969ef40'),
-      ((['git', '--no-pager',
+      ((['git',
          'diff', '--name-status', '--no-renames', '-r', 'fake_ancestor_sha...',
          '.'],),
         'M\tPRESUBMIT.py'),
-      ((['git', '--no-pager',
+      ((['git',
          'config', 'branch.working.rietveldissue'],), '12345'),
-      ((['git', '--no-pager',
+      ((['git',
          'config', 'branch.working.rietveldpatchset'],), '31137'),
-      ((['git', '--no-pager', 'config', 'branch.working.rietveldserver'],),
+      ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
-      ((['git', '--no-pager', 'config', 'user.email'],), 'author@example.com'),
-      ((['git', '--no-pager', 'config', 'rietveld.tree-status-url'],), ''),
+      ((['git', 'config', 'user.email'],), 'author@example.com'),
+      ((['git', 'config', 'rietveld.tree-status-url'],), ''),
   ]
 
   @classmethod
   def _dcommit_calls_bypassed(cls):
     return [
-      ((['git', '--no-pager',
+      ((['git',
          'config', 'branch.working.rietveldissue'],), '12345'),
-      ((['git', '--no-pager', 'config', 'branch.working.rietveldserver'],),
+      ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
       (('GitClHooksBypassedCommit',
         'Issue https://codereview.example.com/12345 bypassed hook when '
@@ -315,31 +315,31 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_3(cls):
     return [
-      ((['git', '--no-pager',
+      ((['git',
          'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
          '-l100000', '-C50', 'fake_ancestor_sha',
          'refs/heads/working'],),
        (' PRESUBMIT.py |    2 +-\n'
         ' 1 files changed, 1 insertions(+), 1 deletions(-)\n')),
       (('About to commit; enter to confirm.',), None),
-      ((['git', '--no-pager', 'show-ref', '--quiet', '--verify',
+      ((['git', 'show-ref', '--quiet', '--verify',
          'refs/heads/git-cl-commit'],),
        (('', None), 0)),
-      ((['git', '--no-pager', 'branch', '-D', 'git-cl-commit'],), ''),
-      ((['git', '--no-pager', 'show-ref', '--quiet', '--verify',
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'show-ref', '--quiet', '--verify',
          'refs/heads/git-cl-cherry-pick'],), ''),
-      ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), '\n'),
-      ((['git', '--no-pager', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
-      ((['git', '--no-pager', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
-      ((['git', '--no-pager', 'commit', '-m',
+      ((['git', 'rev-parse', '--show-cdup'],), '\n'),
+      ((['git', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
+      ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
+      ((['git', 'commit', '-m',
          'Issue: 12345\n\nR=john@chromium.org\n\n'
          'Review URL: https://codereview.example.com/12345'],),
        ''),
-      ((['git', '--no-pager',
+      ((['git',
          'svn', 'dcommit', '-C50', '--no-rebase', '--rmdir'],),
        (('', None), 0)),
-      ((['git', '--no-pager', 'checkout', '-q', 'working'],), ''),
-      ((['git', '--no-pager', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'checkout', '-q', 'working'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
   ]
 
   @staticmethod
@@ -514,36 +514,36 @@ class TestGitCl(TestCase):
   @classmethod
   def _gerrit_base_calls(cls):
     return [
-        ((['git', '--no-pager',
+        ((['git',
            'config', 'rietveld.server'],), 'codereview.example.com'),
-        ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', '--no-pager', 'config', '--int', '--get',
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+        ((['git', 'config', '--int', '--get',
           'branch.master.git-cl-similarity'],), ''),
-        ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', '--no-pager', 'config', '--int', '--get',
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+        ((['git', 'config', '--int', '--get',
           'branch.master.git-find-copies'],), ''),
-        ((['git', '--no-pager', 'update-index', '--refresh', '-q'],), ''),
-        ((['git', '--no-pager', 'diff-index', '--name-status', 'HEAD'],), ''),
-        ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', '--no-pager', 'config', 'branch.master.merge'],), 'master'),
-        ((['git', '--no-pager', 'config', 'branch.master.remote'],), 'origin'),
-        ((['git', '--no-pager',
+        ((['git', 'update-index', '--refresh', '-q'],), ''),
+        ((['git', 'diff-index', '--name-status', 'HEAD'],), ''),
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+        ((['git', 'config', 'branch.master.merge'],), 'master'),
+        ((['git', 'config', 'branch.master.remote'],), 'origin'),
+        ((['git',
            'merge-base', 'master', 'HEAD'],), 'fake_ancestor_sha'),
         ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
-        ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), ''),
-        ((['git', '--no-pager', 'rev-parse', 'HEAD'],), '12345'),
-        ((['git', '--no-pager',
+        ((['git', 'rev-parse', '--show-cdup'],), ''),
+        ((['git', 'rev-parse', 'HEAD'],), '12345'),
+        ((['git',
            'diff', '--name-status', '--no-renames', '-r',
            'fake_ancestor_sha...', '.'],),
          'M\t.gitignore\n'),
-        ((['git', '--no-pager', 'config', 'branch.master.rietveldissue'],), ''),
-        ((['git', '--no-pager',
+        ((['git', 'config', 'branch.master.rietveldissue'],), ''),
+        ((['git',
            'config', 'branch.master.rietveldpatchset'],), ''),
-        ((['git', '--no-pager',
+        ((['git',
            'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),
          'foo'),
-        ((['git', '--no-pager', 'config', 'user.email'],), 'me@example.com'),
-        ((['git', '--no-pager',
+        ((['git', 'config', 'user.email'],), 'me@example.com'),
+        ((['git',
            'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
            '-l100000', '-C50', 'fake_ancestor_sha', 'HEAD'],),
          '+dat'),
@@ -552,25 +552,25 @@ class TestGitCl(TestCase):
   @staticmethod
   def _gerrit_upload_calls(description, reviewers):
     calls = [
-        ((['git', '--no-pager', 'config', 'gerrit.host'],),
+        ((['git', 'config', 'gerrit.host'],),
          'gerrit.example.com'),
-        ((['git', '--no-pager', 'log', '--pretty=format:%s\n\n%b',
+        ((['git', 'log', '--pretty=format:%s\n\n%b',
            'fake_ancestor_sha..HEAD'],),
          description)
         ]
     if git_cl.CHANGE_ID not in description:
       calls += [
-          ((['git', '--no-pager', 'log', '--pretty=format:%s\n\n%b',
+          ((['git', 'log', '--pretty=format:%s\n\n%b',
              'fake_ancestor_sha..HEAD'],),
            description),
-          ((['git', '--no-pager', 'commit', '--amend', '-m', description],),
+          ((['git', 'commit', '--amend', '-m', description],),
            ''),
-          ((['git', '--no-pager', 'log', '--pretty=format:%s\n\n%b',
+          ((['git', 'log', '--pretty=format:%s\n\n%b',
              'fake_ancestor_sha..HEAD'],),
            description)
           ]
     calls += [
-        ((['git', '--no-pager', 'config', 'rietveld.cc'],), '')
+        ((['git', 'config', 'rietveld.cc'],), '')
         ]
     receive_pack = '--receive-pack=git receive-pack '
     receive_pack += '--cc=joe@example.com'  # from watch list
@@ -580,7 +580,7 @@ class TestGitCl(TestCase):
           '--reviewer=' + email for email in sorted(reviewers))
     receive_pack += ''
     calls += [
-        ((['git', '--no-pager',
+        ((['git',
            'push', receive_pack, 'origin', 'HEAD:refs/for/master'],),
          '')
         ]
@@ -649,40 +649,40 @@ class TestGitCl(TestCase):
     self.mock(git_cl.os.path, 'exists', Exists)
     self.mock(git_cl, 'urlretrieve', self._mocked_call)
     self.calls = [
-        ((['git', '--no-pager', 'config', 'rietveld.server',
+        ((['git', 'config', 'rietveld.server',
            'gerrit.chromium.org'],), ''),
-        ((['git', '--no-pager', 'config', '--unset-all', 'rietveld.cc'],), ''),
-        ((['git', '--no-pager', 'config', '--unset-all',
+        ((['git', 'config', '--unset-all', 'rietveld.cc'],), ''),
+        ((['git', 'config', '--unset-all',
            'rietveld.private'],), ''),
-        ((['git', '--no-pager', 'config', '--unset-all',
+        ((['git', 'config', '--unset-all',
            'rietveld.tree-status-url'],), ''),
-        ((['git', '--no-pager', 'config', '--unset-all',
+        ((['git', 'config', '--unset-all',
            'rietveld.viewvc-url'],), ''),
-        ((['git', '--no-pager', 'config', 'gerrit.host',
+        ((['git', 'config', 'gerrit.host',
            'gerrit.chromium.org'],), ''),
-        ((['git', '--no-pager', 'config', 'gerrit.port', '29418'],), ''),
+        ((['git', 'config', 'gerrit.port', '29418'],), ''),
         # DownloadHooks(False)
-        ((['git', '--no-pager', 'config', 'gerrit.host'],),
+        ((['git', 'config', 'gerrit.host'],),
          'gerrit.chromium.org'),
-        ((['git', '--no-pager', 'config', 'rietveld.server'],),
+        ((['git', 'config', 'rietveld.server'],),
          'gerrit.chromium.org'),
-        ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), ''),
+        ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((commit_msg_path, os.X_OK,), False),
         (('https://gerrit.chromium.org/tools/hooks/commit-msg',
           commit_msg_path,), ''),
         ((commit_msg_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,), ''),
         # GetCodereviewSettingsInteractively
-        ((['git', '--no-pager', 'config', 'rietveld.server'],),
+        ((['git', 'config', 'rietveld.server'],),
          'gerrit.chromium.org'),
         (('Rietveld server (host[:port]) [https://gerrit.chromium.org]:',),
          ''),
-        ((['git', '--no-pager', 'config', 'rietveld.cc'],), ''),
+        ((['git', 'config', 'rietveld.cc'],), ''),
         (('CC list:',), ''),
-        ((['git', '--no-pager', 'config', 'rietveld.private'],), ''),
+        ((['git', 'config', 'rietveld.private'],), ''),
         (('Private flag (rietveld only):',), ''),
-        ((['git', '--no-pager', 'config', 'rietveld.tree-status-url'],), ''),
+        ((['git', 'config', 'rietveld.tree-status-url'],), ''),
         (('Tree status URL:',), ''),
-        ((['git', '--no-pager', 'config', 'rietveld.viewvc-url'],), ''),
+        ((['git', 'config', 'rietveld.viewvc-url'],), ''),
         (('ViewVC URL:',), ''),
         # DownloadHooks(True)
         ((commit_msg_path, os.X_OK,), True),

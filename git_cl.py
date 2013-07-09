@@ -69,13 +69,17 @@ def RunCommand(args, error_ok=False, error_message=None, **kwargs):
 
 def RunGit(args, **kwargs):
   """Returns stdout."""
-  return RunCommand(['git', '--no-pager'] + args, **kwargs)
+  return RunCommand(['git'] + args, **kwargs)
 
 
 def RunGitWithCode(args):
   """Returns return code and stdout."""
   try:
-    out, code = subprocess2.communicate(['git', '--no-pager'] + args,
+    env = os.environ.copy()
+    # 'cat' is a magical git string that disables pagers on all platforms.
+    env['GIT_PAGER'] = 'cat'
+    out, code = subprocess2.communicate(['git'] + args,
+                                        env=env,
                                         stdout=subprocess2.PIPE)
     return code, out[0]
   except ValueError:
@@ -225,6 +229,8 @@ def print_stats(similarity, find_copies, args):
   env = os.environ.copy()
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
+  # 'cat' is a magical git string that disables pagers on all platforms.
+  env['GIT_PAGER'] = 'cat'
 
   if find_copies:
     similarity_options = ['--find-copies-harder', '-l100000',
@@ -233,7 +239,7 @@ def print_stats(similarity, find_copies, args):
     similarity_options = ['-M%s' % similarity]
 
   return subprocess2.call(
-      ['git', '--no-pager',
+      ['git',
        'diff', '--no-ext-diff', '--stat'] + similarity_options + args,
       env=env)
 
@@ -301,11 +307,15 @@ class Settings(object):
       # regexp matching the git-svn line that contains the URL.
       git_svn_re = re.compile(r'^\s*git-svn-id: (\S+)@', re.MULTILINE)
 
+      env = os.environ.copy()
+      # 'cat' is a magical git string that disables pagers on all platforms.
+      env['GIT_PAGER'] = 'cat'
+
       # We don't want to go through all of history, so read a line from the
       # pipe at a time.
       # The -100 is an arbitrary limit so we don't search forever.
-      cmd = ['git', '--no-pager', 'log', '-100', '--pretty=medium']
-      proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE)
+      cmd = ['git', 'log', '-100', '--pretty=medium']
+      proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE, env=env)
       url = None
       for line in proc.stdout:
         match = git_svn_re.match(line)
@@ -684,13 +694,17 @@ or verify this branch is set up to track another (via the --track argument to
     if not self.GitSanityChecks(upstream_branch):
       DieWithError('\nGit sanity check failure')
 
-    root = RunCommand(['git', '--no-pager', 'rev-parse', '--show-cdup']).strip()
+    env = os.environ.copy()
+    # 'cat' is a magical git string that disables pagers on all platforms.
+    env['GIT_PAGER'] = 'cat'
+
+    root = RunCommand(['git', 'rev-parse', '--show-cdup'], env=env).strip()
     if not root:
       root = '.'
     absroot = os.path.abspath(root)
 
     # We use the sha1 of HEAD as a name of this change.
-    name = RunCommand(['git', '--no-pager', 'rev-parse', 'HEAD']).strip()
+    name = RunCommand(['git', 'rev-parse', 'HEAD'], env=env).strip()
     # Need to pass a relative path for msysgit.
     try:
       files = scm.GIT.CaptureStatus([root], '.', upstream_branch)
@@ -711,9 +725,10 @@ or verify this branch is set up to track another (via the --track argument to
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
       # with these log messages.
-      description = RunCommand(['git', '--no-pager',
+      description = RunCommand(['git',
                                 'log', '--pretty=format:%s%n%n%b',
-                                '%s...' % (upstream_branch)]).strip()
+                                '%s...' % (upstream_branch)],
+                               env=env).strip()
 
     if not author:
       author = RunGit(['config', 'user.email']).strip() or None
@@ -1751,14 +1766,19 @@ def CMDpatch(parser, args):
   except subprocess2.CalledProcessError:
     DieWithError('Git patch mungling failed.')
   logging.info(patch_data)
+  env = os.environ.copy()
+  # 'cat' is a magical git string that disables pagers on all platforms.
+  env['GIT_PAGER'] = 'cat'
+
   # We use "git apply" to apply the patch instead of "patch" so that we can
   # pick up file adds.
   # The --index flag means: also insert into the index (so we catch adds).
-  cmd = ['git', '--no-pager', 'apply', '--index', '-p0']
+  cmd = ['git', 'apply', '--index', '-p0']
   if options.reject:
     cmd.append('--reject')
   try:
-    subprocess2.check_call(cmd, stdin=patch_data, stdout=subprocess2.VOID)
+    subprocess2.check_call(cmd, env=env,
+                           stdin=patch_data, stdout=subprocess2.VOID)
   except subprocess2.CalledProcessError:
     DieWithError('Failed to apply the patch')
 
@@ -1780,7 +1800,11 @@ def CMDrebase(parser, args):
   # git svn dcommit.
   # It's the only command that doesn't use parser at all since we just defer
   # execution to git-svn.
-  return subprocess2.call(['git', '--no-pager', 'svn', 'rebase'] + args)
+  env = os.environ.copy()
+  # 'cat' is a magical git string that disables pagers on all platforms.
+  env['GIT_PAGER'] = 'cat'
+
+  return subprocess2.call(['git', 'svn', 'rebase'] + args, env=env)
 
 
 def GetTreeStatus():
