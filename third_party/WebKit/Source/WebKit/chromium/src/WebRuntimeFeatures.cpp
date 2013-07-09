@@ -67,76 +67,6 @@ bool WebRuntimeFeatures::isApplicationCacheEnabled()
     return RuntimeEnabledFeatures::applicationCacheEnabled();
 }
 
-void WebRuntimeFeatures::enableCanvasPath(bool enable)
-{
-    RuntimeEnabledFeatures::setCanvasPathEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isCanvasPathEnabled()
-{
-    return RuntimeEnabledFeatures::canvasPathEnabled();
-}
-
-void WebRuntimeFeatures::enableCSSCompositing(bool enable)
-{
-    RuntimeEnabledFeatures::setCSSCompositingEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isCSSCompositingEnabled()
-{
-    return RuntimeEnabledFeatures::cssCompositingEnabled();
-}
-
-void WebRuntimeFeatures::enableCSSExclusions(bool enable)
-{
-    RuntimeEnabledFeatures::setCSSExclusionsEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isCSSExclusionsEnabled()
-{
-    return RuntimeEnabledFeatures::cssExclusionsEnabled();
-}
-
-void WebRuntimeFeatures::enableCSSGridLayout(bool enable)
-{
-    RuntimeEnabledFeatures::setCSSGridLayoutEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isCSSGridLayoutEnabled()
-{
-    return RuntimeEnabledFeatures::cssGridLayoutEnabled();
-}
-
-void WebRuntimeFeatures::enableCSSRegions(bool enable)
-{
-    RuntimeEnabledFeatures::setCSSRegionsEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isCSSRegionsEnabled()
-{
-    return RuntimeEnabledFeatures::cssRegionsEnabled();
-}
-
-void WebRuntimeFeatures::enableCSSTouchAction(bool enable)
-{
-    RuntimeEnabledFeatures::setCSSTouchActionEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isCSSTouchActionEnabled()
-{
-    return RuntimeEnabledFeatures::cssTouchActionEnabled();
-}
-
-void WebRuntimeFeatures::enableCustomDOMElements(bool enable)
-{
-    RuntimeEnabledFeatures::setCustomDOMElementsEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isCustomDOMElementsEnabled()
-{
-    return RuntimeEnabledFeatures::customDOMElementsEnabled();
-}
-
 void WebRuntimeFeatures::enableDatabase(bool enable)
 {
     RuntimeEnabledFeatures::setDatabaseEnabled(enable);
@@ -165,26 +95,6 @@ void WebRuntimeFeatures::enableDeviceOrientation(bool enable)
 bool WebRuntimeFeatures::isDeviceOrientationEnabled()
 {
     return RuntimeEnabledFeatures::deviceOrientationEnabled();
-}
-
-void WebRuntimeFeatures::enableDialogElement(bool enable)
-{
-    RuntimeEnabledFeatures::setDialogElementEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isDialogElementEnabled()
-{
-    return RuntimeEnabledFeatures::dialogElementEnabled();
-}
-
-void WebRuntimeFeatures::enableDirectoryUpload(bool enable)
-{
-    RuntimeEnabledFeatures::setDirectoryUploadEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isDirectoryUploadEnabled()
-{
-    return RuntimeEnabledFeatures::directoryUploadEnabled();
 }
 
 void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
@@ -225,37 +135,6 @@ bool WebRuntimeFeatures::isExperimentalCanvasFeaturesEnabled()
     return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
 }
 
-void WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(bool enable)
-{
-    RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isExperimentalContentSecurityPolicyFeaturesEnabled()
-{
-    return RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled();
-}
-
-void WebRuntimeFeatures::enableExperimentalShadowDOM(bool enable)
-{
-    RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isExperimentalShadowDOMEnabled()
-{
-    return RuntimeEnabledFeatures::experimentalShadowDOMEnabled();
-}
-
-void WebRuntimeFeatures::enableExperimentalWebSocket(bool enable)
-{
-    // Do nothing. This flag will be deleted.
-}
-
-bool WebRuntimeFeatures::isExperimentalWebSocketEnabled()
-{
-    // This flag will be deleted.
-    return false;
-}
-
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
@@ -264,16 +143,6 @@ void WebRuntimeFeatures::enableFileSystem(bool enable)
 bool WebRuntimeFeatures::isFileSystemEnabled()
 {
     return RuntimeEnabledFeatures::fileSystemEnabled();
-}
-
-void WebRuntimeFeatures::enableFontLoadEvents(bool enable)
-{
-    RuntimeEnabledFeatures::setFontLoadEventsEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isFontLoadEventsEnabled()
-{
-    return RuntimeEnabledFeatures::fontLoadEventsEnabled();
 }
 
 void WebRuntimeFeatures::enableFullscreen(bool enable)
@@ -304,36 +173,6 @@ void WebRuntimeFeatures::enableGeolocation(bool enable)
 bool WebRuntimeFeatures::isGeolocationEnabled()
 {
     return RuntimeEnabledFeatures::geolocationEnabled();
-}
-
-void WebRuntimeFeatures::enableIMEAPI(bool enable)
-{
-    RuntimeEnabledFeatures::setIMEAPIEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isIMEAPIEnabled()
-{
-    return RuntimeEnabledFeatures::imeAPIEnabled();
-}
-
-void WebRuntimeFeatures::enableIndexedDB(bool enable)
-{
-    RuntimeEnabledFeatures::setIndexedDBEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isIndexedDBEnabled()
-{
-    return RuntimeEnabledFeatures::indexedDBEnabled();
-}
-
-void WebRuntimeFeatures::enableInputTypeWeek(bool enable)
-{
-    RuntimeEnabledFeatures::setInputTypeWeekEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isInputTypeWeekEnabled()
-{
-    return RuntimeEnabledFeatures::inputTypeWeekEnabled();
 }
 
 void WebRuntimeFeatures::enableJavaScriptI18NAPI(bool enable)
@@ -374,16 +213,6 @@ void WebRuntimeFeatures::enableMediaPlayer(bool enable)
 bool WebRuntimeFeatures::isMediaPlayerEnabled()
 {
     return RuntimeEnabledFeatures::mediaEnabled();
-}
-
-void WebRuntimeFeatures::enableMediaSource(bool enable)
-{
-    RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isMediaSourceEnabled()
-{
-    return RuntimeEnabledFeatures::mediaSourceEnabled();
 }
 
 void WebRuntimeFeatures::enableWebKitMediaSource(bool enable)
@@ -432,16 +261,6 @@ bool WebRuntimeFeatures::isPagePopupEnabled()
     return RuntimeEnabledFeatures::pagePopupEnabled();
 }
 
-void WebRuntimeFeatures::enableParseSVGAsHTML(bool enable)
-{
-    RuntimeEnabledFeatures::setParseSVGAsHTMLEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isParseSVGAsHTMLEnabled()
-{
-    return RuntimeEnabledFeatures::parseSVGAsHTMLEnabled();
-}
-
 void WebRuntimeFeatures::enablePeerConnection(bool enable)
 {
     RuntimeEnabledFeatures::setPeerConnectionEnabled(enable);
@@ -450,16 +269,6 @@ void WebRuntimeFeatures::enablePeerConnection(bool enable)
 bool WebRuntimeFeatures::isPeerConnectionEnabled()
 {
     return RuntimeEnabledFeatures::peerConnectionEnabled();
-}
-
-void WebRuntimeFeatures::enableQuota(bool enable)
-{
-    RuntimeEnabledFeatures::setQuotaEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isQuotaEnabled()
-{
-    return RuntimeEnabledFeatures::quotaEnabled();
 }
 
 void WebRuntimeFeatures::enableRequestAutocomplete(bool enable)
@@ -480,16 +289,6 @@ void WebRuntimeFeatures::enableScriptedSpeech(bool enable)
 bool WebRuntimeFeatures::isScriptedSpeechEnabled()
 {
     return RuntimeEnabledFeatures::scriptedSpeechEnabled();
-}
-
-void WebRuntimeFeatures::enableSeamlessIFrames(bool enable)
-{
-    RuntimeEnabledFeatures::setSeamlessIFramesEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isSeamlessIFramesEnabled()
-{
-    return RuntimeEnabledFeatures::seamlessIFramesEnabled();
 }
 
 void WebRuntimeFeatures::enableSessionStorage(bool enable)
@@ -522,16 +321,6 @@ bool WebRuntimeFeatures::isSpeechSynthesisEnabled()
     return RuntimeEnabledFeatures::speechSynthesisEnabled();
 }
 
-void WebRuntimeFeatures::enableStyleScoped(bool enable)
-{
-    RuntimeEnabledFeatures::setStyleScopedEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isStyleScopedEnabled()
-{
-    return RuntimeEnabledFeatures::styleScopedEnabled();
-}
-
 void WebRuntimeFeatures::enableTouch(bool enable)
 {
     RuntimeEnabledFeatures::setTouchEnabled(enable);
@@ -540,16 +329,6 @@ void WebRuntimeFeatures::enableTouch(bool enable)
 bool WebRuntimeFeatures::isTouchEnabled()
 {
     return RuntimeEnabledFeatures::touchEnabled();
-}
-
-void WebRuntimeFeatures::enableVideoTrack(bool enable)
-{
-    RuntimeEnabledFeatures::setVideoTrackEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isVideoTrackEnabled()
-{
-    return RuntimeEnabledFeatures::videoTrackEnabled();
 }
 
 void WebRuntimeFeatures::enableWebAudio(bool enable)
@@ -590,16 +369,6 @@ void WebRuntimeFeatures::enableDataListElement(bool enable)
 bool WebRuntimeFeatures::isDataListElementEnabled()
 {
     return RuntimeEnabledFeatures::dataListElementEnabled();
-}
-
-void WebRuntimeFeatures::enableInputTypeColor(bool enable)
-{
-    RuntimeEnabledFeatures::setInputTypeColorEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isInputTypeColorEnabled()
-{
-    return RuntimeEnabledFeatures::inputTypeColorEnabled();
 }
 
 } // namespace WebKit

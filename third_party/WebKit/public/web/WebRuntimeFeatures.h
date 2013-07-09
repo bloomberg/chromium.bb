@@ -45,33 +45,8 @@ public:
     WEBKIT_EXPORT static void enableExperimentalFeatures(bool);
     WEBKIT_EXPORT static void enableTestOnlyFeatures(bool);
 
-    // FIXME: Delete after removing all callers in Content.
-    static void enableFullScreenAPI(bool enable) { enableFullscreen(enable); }
-    static void enableIndexedDatabase(bool enable) { enableIndexedDB(enable); }
-
     WEBKIT_EXPORT static void enableApplicationCache(bool);
     WEBKIT_EXPORT static bool isApplicationCacheEnabled();
-
-    WEBKIT_EXPORT static void enableCanvasPath(bool);
-    WEBKIT_EXPORT static bool isCanvasPathEnabled();
-
-    WEBKIT_EXPORT static void enableCSSCompositing(bool);
-    WEBKIT_EXPORT static bool isCSSCompositingEnabled();
-
-    WEBKIT_EXPORT static void enableCSSExclusions(bool);
-    WEBKIT_EXPORT static bool isCSSExclusionsEnabled();
-
-    WEBKIT_EXPORT static void enableCSSGridLayout(bool);
-    WEBKIT_EXPORT static bool isCSSGridLayoutEnabled();
-
-    WEBKIT_EXPORT static void enableCSSRegions(bool);
-    WEBKIT_EXPORT static bool isCSSRegionsEnabled();
-
-    WEBKIT_EXPORT static void enableCSSTouchAction(bool);
-    WEBKIT_EXPORT static bool isCSSTouchActionEnabled();
-
-    WEBKIT_EXPORT static void enableCustomDOMElements(bool);
-    WEBKIT_EXPORT static bool isCustomDOMElementsEnabled();
 
     WEBKIT_EXPORT static void enableDatabase(bool);
     WEBKIT_EXPORT static bool isDatabaseEnabled();
@@ -82,12 +57,6 @@ public:
     WEBKIT_EXPORT static void enableDeviceOrientation(bool);
     WEBKIT_EXPORT static bool isDeviceOrientationEnabled();
 
-    WEBKIT_EXPORT static void enableDialogElement(bool);
-    WEBKIT_EXPORT static bool isDialogElementEnabled();
-
-    WEBKIT_EXPORT static void enableDirectoryUpload(bool);
-    WEBKIT_EXPORT static bool isDirectoryUploadEnabled();
-
     WEBKIT_EXPORT static void enableEncryptedMedia(bool);
     WEBKIT_EXPORT static bool isEncryptedMediaEnabled();
 
@@ -97,20 +66,8 @@ public:
     WEBKIT_EXPORT static void enableExperimentalCanvasFeatures(bool);
     WEBKIT_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
 
-    WEBKIT_EXPORT static void enableExperimentalContentSecurityPolicyFeatures(bool);
-    WEBKIT_EXPORT static bool isExperimentalContentSecurityPolicyFeaturesEnabled();
-
-    WEBKIT_EXPORT static void enableExperimentalShadowDOM(bool);
-    WEBKIT_EXPORT static bool isExperimentalShadowDOMEnabled();
-
-    WEBKIT_EXPORT static void enableExperimentalWebSocket(bool);
-    WEBKIT_EXPORT static bool isExperimentalWebSocketEnabled();
-
     WEBKIT_EXPORT static void enableFileSystem(bool);
     WEBKIT_EXPORT static bool isFileSystemEnabled();
-
-    WEBKIT_EXPORT static void enableFontLoadEvents(bool);
-    WEBKIT_EXPORT static bool isFontLoadEventsEnabled();
 
     WEBKIT_EXPORT static void enableFullscreen(bool);
     WEBKIT_EXPORT static bool isFullscreenEnabled();
@@ -120,15 +77,6 @@ public:
 
     WEBKIT_EXPORT static void enableGeolocation(bool);
     WEBKIT_EXPORT static bool isGeolocationEnabled();
-
-    WEBKIT_EXPORT static void enableIMEAPI(bool);
-    WEBKIT_EXPORT static bool isIMEAPIEnabled();
-
-    WEBKIT_EXPORT static void enableIndexedDB(bool);
-    WEBKIT_EXPORT static bool isIndexedDBEnabled();
-
-    WEBKIT_EXPORT static void enableInputTypeWeek(bool);
-    WEBKIT_EXPORT static bool isInputTypeWeekEnabled();
 
     WEBKIT_EXPORT static void enableJavaScriptI18NAPI(bool);
     WEBKIT_EXPORT static bool isJavaScriptI18NAPIEnabled();
@@ -142,9 +90,6 @@ public:
     WEBKIT_EXPORT static void enableMediaPlayer(bool);
     WEBKIT_EXPORT static bool isMediaPlayerEnabled();
 
-    WEBKIT_EXPORT static void enableMediaSource(bool);
-    WEBKIT_EXPORT static bool isMediaSourceEnabled();
-
     WEBKIT_EXPORT static void enableWebKitMediaSource(bool);
     WEBKIT_EXPORT static bool isWebKitMediaSourceEnabled();
 
@@ -157,23 +102,14 @@ public:
     WEBKIT_EXPORT static void enablePagePopup(bool);
     WEBKIT_EXPORT static bool isPagePopupEnabled();
 
-    WEBKIT_EXPORT static void enableParseSVGAsHTML(bool);
-    WEBKIT_EXPORT static bool isParseSVGAsHTMLEnabled();
-
     WEBKIT_EXPORT static void enablePeerConnection(bool);
     WEBKIT_EXPORT static bool isPeerConnectionEnabled();
-
-    WEBKIT_EXPORT static void enableQuota(bool);
-    WEBKIT_EXPORT static bool isQuotaEnabled();
 
     WEBKIT_EXPORT static void enableRequestAutocomplete(bool);
     WEBKIT_EXPORT static bool isRequestAutocompleteEnabled();
 
     WEBKIT_EXPORT static void enableScriptedSpeech(bool);
     WEBKIT_EXPORT static bool isScriptedSpeechEnabled();
-
-    WEBKIT_EXPORT static void enableSeamlessIFrames(bool);
-    WEBKIT_EXPORT static bool isSeamlessIFramesEnabled();
 
     WEBKIT_EXPORT static void enableSessionStorage(bool);
     WEBKIT_EXPORT static bool isSessionStorageEnabled();
@@ -184,14 +120,8 @@ public:
     WEBKIT_EXPORT static void enableSpeechSynthesis(bool);
     WEBKIT_EXPORT static bool isSpeechSynthesisEnabled();
 
-    WEBKIT_EXPORT static void enableStyleScoped(bool);
-    WEBKIT_EXPORT static bool isStyleScopedEnabled();
-
     WEBKIT_EXPORT static void enableTouch(bool);
     WEBKIT_EXPORT static bool isTouchEnabled();
-
-    WEBKIT_EXPORT static void enableVideoTrack(bool);
-    WEBKIT_EXPORT static bool isVideoTrackEnabled();
 
     WEBKIT_EXPORT static void enableWebAudio(bool);
     WEBKIT_EXPORT static bool isWebAudioEnabled();
@@ -204,9 +134,6 @@ public:
 
     WEBKIT_EXPORT static void enableDataListElement(bool);
     WEBKIT_EXPORT static bool isDataListElementEnabled();
-
-    WEBKIT_EXPORT static void enableInputTypeColor(bool);
-    WEBKIT_EXPORT static bool isInputTypeColorEnabled();
 
 private:
     WebRuntimeFeatures();
