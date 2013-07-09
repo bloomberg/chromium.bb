@@ -228,8 +228,17 @@
     INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name, arg1_name, arg1_val, \
         arg2_name, arg2_val)
 
-// Same as TRACE_EVENT except that they are not included in official builds.
-#ifdef OFFICIAL_BUILD
+// UNSHIPPED_TRACE_EVENT* are like TRACE_EVENT* except that they are not
+// included in official builds.
+
+#if OFFICIAL_BUILD
+#undef TRACING_IS_OFFICIAL_BUILD
+#define TRACING_IS_OFFICIAL_BUILD 1
+#elif !defined(TRACING_IS_OFFICIAL_BUILD)
+#define TRACING_IS_OFFICIAL_BUILD 0
+#endif
+
+#if TRACING_IS_OFFICIAL_BUILD
 #define UNSHIPPED_TRACE_EVENT0(category_group, name) (void)0
 #define UNSHIPPED_TRACE_EVENT1(category_group, name, arg1_name, arg1_val) \
     (void)0

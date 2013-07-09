@@ -207,6 +207,10 @@
       # Note: this setting is ignored if buildtype=="Official".
       'logging_like_official_build%': 0,
 
+      # Set to 1 to make a build that disables unshipped tracing events.
+      # Note: this setting is ignored if buildtype=="Official".
+      'tracing_like_official_build%': 0,
+
       # Disable file manager component extension by default.
       'file_manager_extension%': 0,
 
@@ -762,6 +766,7 @@
     'fastbuild%': '<(fastbuild)',
     'dcheck_always_on%': '<(dcheck_always_on)',
     'logging_like_official_build%': '<(logging_like_official_build)',
+    'tracing_like_official_build%': '<(tracing_like_official_build)',
     'python_ver%': '<(python_ver)',
     'arm_version%': '<(arm_version)',
     'armv7%': '<(armv7)',
@@ -2055,6 +2060,9 @@
       ['logging_like_official_build!=0', {
         'defines': ['LOGGING_IS_OFFICIAL_BUILD=1'],
       }],  # logging_like_official_build!=0
+      ['tracing_like_official_build!=0', {
+        'defines': ['TRACING_IS_OFFICIAL_BUILD=1'],
+      }],  # tracing_like_official_build!=0
       ['win_use_allocator_shim==0', {
         'conditions': [
           ['OS=="win"', {
