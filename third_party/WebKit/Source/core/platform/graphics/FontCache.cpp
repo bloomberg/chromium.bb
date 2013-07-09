@@ -554,4 +554,27 @@ void FontCache::invalidate()
     purgeInactiveFontData();
 }
 
+const FontPlatformData* FontCache::getFallbackFontData(const FontDescription& description)
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("Sans", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("Serif", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, monospaceStr, ("Monospace", AtomicString::ConstructFromLiteral));
+
+    FontPlatformData* fontPlatformData = 0;
+    switch (description.genericFamily()) {
+    case FontDescription::SerifFamily:
+        fontPlatformData = getCachedFontPlatformData(description, serifStr);
+        break;
+    case FontDescription::MonospaceFamily:
+        fontPlatformData = getCachedFontPlatformData(description, monospaceStr);
+        break;
+    case FontDescription::SansSerifFamily:
+    default:
+        fontPlatformData = getCachedFontPlatformData(description, sansStr);
+        break;
+    }
+
+    return fontPlatformData;
+}
+
 } // namespace WebCore

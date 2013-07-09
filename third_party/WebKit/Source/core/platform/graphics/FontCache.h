@@ -126,6 +126,7 @@ private:
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family);
 
     PassRefPtr<SimpleFontData> getCachedFontData(const FontPlatformData*, ShouldRetain = Retain);
+    const FontPlatformData* getFallbackFontData(const FontDescription&);
 
     // Don't purge if this count is > 0;
     int m_purgePreventCount;

@@ -122,24 +122,7 @@ PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& fon
 
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, serif, ("Serif", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, monospace, ("Monospace", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, sans, ("Sans", AtomicString::ConstructFromLiteral));
-
-    FontPlatformData* fontPlatformData = 0;
-    switch (description.genericFamily()) {
-    case FontDescription::SerifFamily:
-        fontPlatformData = getCachedFontPlatformData(description, serif);
-        break;
-    case FontDescription::MonospaceFamily:
-        fontPlatformData = getCachedFontPlatformData(description, monospace);
-        break;
-    case FontDescription::SansSerifFamily:
-    default:
-        fontPlatformData = getCachedFontPlatformData(description, sans);
-        break;
-    }
-
+    const FontPlatformData* fontPlatformData = getFallbackFontData(description);
     ASSERT(fontPlatformData);
     return getCachedFontData(fontPlatformData, shouldRetain);
 }

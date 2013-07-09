@@ -90,24 +90,7 @@ PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& fon
 
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("Sans", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("Serif", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, monospaceStr, ("Monospace", AtomicString::ConstructFromLiteral));
-
-    FontPlatformData* fontPlatformData = 0;
-    switch (description.genericFamily()) {
-    case FontDescription::SerifFamily:
-        fontPlatformData = getCachedFontPlatformData(description, serifStr);
-        break;
-    case FontDescription::MonospaceFamily:
-        fontPlatformData = getCachedFontPlatformData(description, monospaceStr);
-        break;
-    case FontDescription::SansSerifFamily:
-    default:
-        fontPlatformData = getCachedFontPlatformData(description, sansStr);
-        break;
-    }
-
+    const FontPlatformData* fontPlatformData = getFallbackFontData(description);
     if (!fontPlatformData) {
         // we should at least have Arial; this is the SkFontHost_fontconfig last resort fallback
         DEFINE_STATIC_LOCAL(const AtomicString, arialStr, ("Arial", AtomicString::ConstructFromLiteral));
