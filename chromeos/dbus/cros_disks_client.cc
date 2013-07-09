@@ -16,10 +16,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
+#include "base/values.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
+#include "dbus/values_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -45,7 +47,6 @@ const char kMountLabelOption[] = "mountlabel";
 bool IsValidMediaType(uint32 type) {
   return type < static_cast<uint32>(cros_disks::DEVICE_MEDIA_NUM_VALUES);
 }
-
 
 // Translates enum used in cros-disks to enum used in Chrome.
 // Note that we could just do static_cast, but this is less sensitive to
@@ -73,48 +74,6 @@ DeviceType DeviceMediaTypeToDeviceType(uint32 media_type_uint32) {
     default:
       return DEVICE_TYPE_UNKNOWN;
   }
-}
-
-// Pops a bool value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopBool(dbus::MessageReader* reader, bool* value) {
-  if (!reader)
-    return false;
-  return reader->PopBool(value);
-}
-
-// Pops a string value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopString(dbus::MessageReader* reader, std::string* value) {
-  if (!reader)
-    return false;
-  return reader->PopString(value);
-}
-
-// Pops a uint32 value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopUint32(dbus::MessageReader* reader, uint32* value) {
-  if (!reader)
-    return false;
-
-  return reader->PopUint32(value);
-}
-
-// Pops a uint64 value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopUint64(dbus::MessageReader* reader, uint64* value) {
-  if (!reader)
-    return false;
-  return reader->PopUint64(value);
-}
-
-// Pops an array of strings when |reader| is not NULL.
-// Returns true when an array is popped, false otherwise.
-bool MaybePopArrayOfStrings(dbus::MessageReader* reader,
-                            std::vector<std::string>* value) {
-  if (!reader)
-    return false;
-  return reader->PopArrayOfStrings(value);
 }
 
 // The CrosDisksClient implementation.
@@ -680,55 +639,56 @@ DiskInfo::~DiskInfo() {
 //   }
 // ]
 void DiskInfo::InitializeFromResponse(dbus::Response* response) {
-  dbus::MessageReader response_reader(response);
-  dbus::MessageReader array_reader(response);
-  if (!response_reader.PopArray(&array_reader)) {
-    LOG(ERROR) << "Invalid response: " << response->ToString();
+  dbus::MessageReader reader(response);
+  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  base::DictionaryValue* properties = NULL;
+  if (!value || !value->GetAsDictionary(&properties))
     return;
-  }
-  // TODO(satorux): Rework this code using Protocol Buffers. crosbug.com/22626
-  typedef std::map<std::string, dbus::MessageReader*> PropertiesMap;
-  PropertiesMap properties;
-  STLValueDeleter<PropertiesMap> properties_value_deleter(&properties);
-  while (array_reader.HasMoreData()) {
-    dbus::MessageReader* value_reader = new dbus::MessageReader(response);
-    dbus::MessageReader dict_entry_reader(response);
-    std::string key;
-    if (!array_reader.PopDictEntry(&dict_entry_reader) ||
-        !dict_entry_reader.PopString(&key) ||
-        !dict_entry_reader.PopVariant(value_reader)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      return;
-    }
-    properties[key] = value_reader;
-  }
-  MaybePopBool(properties[cros_disks::kDeviceIsDrive], &is_drive_);
-  MaybePopBool(properties[cros_disks::kDeviceIsReadOnly], &is_read_only_);
-  MaybePopBool(properties[cros_disks::kDevicePresentationHide], &is_hidden_);
-  MaybePopBool(properties[cros_disks::kDeviceIsMediaAvailable], &has_media_);
-  MaybePopBool(properties[cros_disks::kDeviceIsOnBootDevice],
-               &on_boot_device_);
-  MaybePopString(properties[cros_disks::kNativePath], &system_path_);
-  MaybePopString(properties[cros_disks::kDeviceFile], &file_path_);
-  MaybePopString(properties[cros_disks::kVendorId], &vendor_id_);
-  MaybePopString(properties[cros_disks::kVendorName], &vendor_name_);
-  MaybePopString(properties[cros_disks::kProductId], &product_id_);
-  MaybePopString(properties[cros_disks::kProductName], &product_name_);
-  MaybePopString(properties[cros_disks::kDriveModel], &drive_model_);
-  MaybePopString(properties[cros_disks::kIdLabel], &label_);
-  MaybePopString(properties[cros_disks::kIdUuid], &uuid_);
-  MaybePopUint64(properties[cros_disks::kDeviceSize], &total_size_in_bytes_);
 
-  uint32 media_type_uint32 = 0;
-  if (MaybePopUint32(properties[cros_disks::kDeviceMediaType],
-                     &media_type_uint32)) {
-    device_type_ = DeviceMediaTypeToDeviceType(media_type_uint32);
-  }
+  properties->GetBooleanWithoutPathExpansion(
+      cros_disks::kDeviceIsDrive, &is_drive_);
+  properties->GetBooleanWithoutPathExpansion(
+      cros_disks::kDeviceIsReadOnly, &is_read_only_);
+  properties->GetBooleanWithoutPathExpansion(
+      cros_disks::kDevicePresentationHide, &is_hidden_);
+  properties->GetBooleanWithoutPathExpansion(
+      cros_disks::kDeviceIsMediaAvailable, &has_media_);
+  properties->GetBooleanWithoutPathExpansion(
+      cros_disks::kDeviceIsOnBootDevice, &on_boot_device_);
+  properties->GetStringWithoutPathExpansion(
+      cros_disks::kNativePath, &system_path_);
+  properties->GetStringWithoutPathExpansion(
+      cros_disks::kDeviceFile, &file_path_);
+  properties->GetStringWithoutPathExpansion(cros_disks::kVendorId, &vendor_id_);
+  properties->GetStringWithoutPathExpansion(
+      cros_disks::kVendorName, &vendor_name_);
+  properties->GetStringWithoutPathExpansion(
+      cros_disks::kProductId, &product_id_);
+  properties->GetStringWithoutPathExpansion(
+      cros_disks::kProductName, &product_name_);
+  properties->GetStringWithoutPathExpansion(
+      cros_disks::kDriveModel, &drive_model_);
+  properties->GetStringWithoutPathExpansion(cros_disks::kIdLabel, &label_);
+  properties->GetStringWithoutPathExpansion(cros_disks::kIdUuid, &uuid_);
 
-  std::vector<std::string> mount_paths;
-  if (MaybePopArrayOfStrings(properties[cros_disks::kDeviceMountPaths],
-                             &mount_paths) && !mount_paths.empty())
-    mount_path_ = mount_paths[0];
+  // dbus::PopDataAsValue() pops uint64 as double.
+  // The top 11 bits of uint64 are dropped by the use of double. But, this works
+  // unless the size exceeds 8 PB.
+  double device_size_double = 0;
+  if (properties->GetDoubleWithoutPathExpansion(cros_disks::kDeviceSize,
+                                                &device_size_double))
+    total_size_in_bytes_ = device_size_double;
+
+  // dbus::PopDataAsValue() pops uint32 as double.
+  double media_type_double = 0;
+  if (properties->GetDoubleWithoutPathExpansion(cros_disks::kDeviceMediaType,
+                                                &media_type_double))
+    device_type_ = DeviceMediaTypeToDeviceType(media_type_double);
+
+  base::ListValue* mount_paths = NULL;
+  if (properties->GetListWithoutPathExpansion(cros_disks::kDeviceMountPaths,
+                                              &mount_paths))
+    mount_paths->GetString(0, &mount_path_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
