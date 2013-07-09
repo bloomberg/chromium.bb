@@ -37,7 +37,6 @@ class GeolocationPermissionContext;
 class IndexedDBContext;
 class ResourceContext;
 class SiteInstance;
-class SpeechRecognitionPreferences;
 class StoragePartition;
 
 // This class holds the context needed for a browsing session.
@@ -140,11 +139,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the geolocation permission context for this context. It's valid to
   // return NULL, in which case geolocation requests will always be allowed.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
-
-  // Returns the speech input preferences. SpeechRecognitionPreferences is a
-  // ref counted class, so callers should take a reference if needed. It's valid
-  // to return NULL.
-  virtual SpeechRecognitionPreferences* GetSpeechRecognitionPreferences() = 0;
 
   // Returns a special storage policy implementation, or NULL.
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() = 0;

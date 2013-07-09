@@ -18,7 +18,6 @@ struct InputTagSpeechHostMsg_StartRecognition_Params;
 namespace content {
 
 class SpeechRecognitionManager;
-class SpeechRecognitionPreferences;
 
 // InputTagSpeechDispatcherHost is a delegate for Speech API messages used by
 // RenderMessageFilter. Basically it acts as a proxy, relaying the events coming
@@ -31,8 +30,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   InputTagSpeechDispatcherHost(
       bool guest,
       int render_process_id,
-      net::URLRequestContextGetter* url_request_context_getter,
-      SpeechRecognitionPreferences* recognition_preferences);
+      net::URLRequestContextGetter* url_request_context_getter);
 
   // SpeechRecognitionEventListener methods.
   virtual void OnRecognitionStart(int session_id) OVERRIDE;
@@ -55,6 +53,9 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      BrowserThread::ID* thread) OVERRIDE;
 
  private:
   virtual ~InputTagSpeechDispatcherHost();
@@ -67,15 +68,12 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   void StartRecognitionOnIO(
       int render_process_id,
       int guest_render_view_id,
-      const InputTagSpeechHostMsg_StartRecognition_Params& params);
-  // Returns the speech recognition manager to forward events to, creating one
-  // if needed.
-  SpeechRecognitionManager* manager();
+      const InputTagSpeechHostMsg_StartRecognition_Params& params,
+      bool filter_profanities);
 
   bool guest_;
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_refptr<SpeechRecognitionPreferences> recognition_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(InputTagSpeechDispatcherHost);
 };

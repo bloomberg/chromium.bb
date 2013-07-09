@@ -187,11 +187,6 @@ GeolocationPermissionContext*
   return NULL;
 }
 
-SpeechRecognitionPreferences*
-    ShellBrowserContext::GetSpeechRecognitionPreferences() {
-  return NULL;
-}
-
 quota::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
   return NULL;
 }

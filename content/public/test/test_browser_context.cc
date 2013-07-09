@@ -110,11 +110,6 @@ GeolocationPermissionContext*
   return NULL;
 }
 
-SpeechRecognitionPreferences*
-    TestBrowserContext::GetSpeechRecognitionPreferences() {
-  return NULL;
-}
-
 quota::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
   return special_storage_policy_.get();
 }

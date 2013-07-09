@@ -93,6 +93,8 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   virtual void OnAudioLevelsChange(int session_id, float volume,
                                    float noise_volume) OVERRIDE;
 
+  SpeechRecognitionManagerDelegate* delegate() const { return delegate_.get(); }
+
  protected:
   // BrowserMainLoop is the only one allowed to istantiate and free us.
   friend class BrowserMainLoop;

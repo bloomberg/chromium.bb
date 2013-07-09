@@ -1875,8 +1875,6 @@
         'browser/speech/chrome_speech_recognition_manager_delegate.h',
         'browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui.cc',
         'browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui.h',
-        'browser/speech/chrome_speech_recognition_preferences.cc',
-        'browser/speech/chrome_speech_recognition_preferences.h',
         'browser/speech/extension_api/tts_extension_api_constants.cc',
         'browser/speech/extension_api/tts_extension_api_constants.h',
         'browser/speech/speech_recognition_bubble.cc',

@@ -216,12 +216,6 @@ AwBrowserContext::GetGeolocationPermissionContext() {
   return geolocation_permission_context_.get();
 }
 
-content::SpeechRecognitionPreferences*
-AwBrowserContext::GetSpeechRecognitionPreferences() {
-  // By default allows profanities in speech recognition if return NULL.
-  return NULL;
-}
-
 quota::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
   // TODO(boliu): Implement this so we are not relying on default behavior.
   NOTIMPLEMENTED();

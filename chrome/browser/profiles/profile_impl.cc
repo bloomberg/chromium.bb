@@ -67,7 +67,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -901,15 +900,6 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
 content::GeolocationPermissionContext*
     ProfileImpl::GetGeolocationPermissionContext() {
   return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
-}
-
-content::SpeechRecognitionPreferences*
-ProfileImpl::GetSpeechRecognitionPreferences() {
-#if defined(ENABLE_INPUT_SPEECH)
-  return ChromeSpeechRecognitionPreferences::GetForProfile(this).get();
-#else
-  return NULL;
-#endif
 }
 
 DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {

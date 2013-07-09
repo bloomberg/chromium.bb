@@ -83,7 +83,6 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -175,9 +174,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ChromeGeolocationPermissionContextFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   chromeos::NetworkingPrivateEventRouterFactory::GetInstance();
-#endif
-#if defined(ENABLE_INPUT_SPEECH)
-  ChromeSpeechRecognitionPreferences::InitializeFactory();
 #endif
 #if defined(ENABLE_PRINTING)
   CloudPrintProxyServiceFactory::GetInstance();

@@ -47,7 +47,6 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
-#include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -689,15 +688,6 @@ HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
 content::GeolocationPermissionContext*
 TestingProfile::GetGeolocationPermissionContext() {
   return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
-}
-
-content::SpeechRecognitionPreferences*
-    TestingProfile::GetSpeechRecognitionPreferences() {
-#if defined(ENABLE_INPUT_SPEECH)
-  return ChromeSpeechRecognitionPreferences::GetForProfile(this).get();
-#else
-  return NULL;
-#endif
 }
 
 std::wstring TestingProfile::GetName() {

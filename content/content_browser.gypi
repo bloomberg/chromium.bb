@@ -163,7 +163,6 @@
     'public/browser/speech_recognition_event_listener.h',
     'public/browser/speech_recognition_manager.h',
     'public/browser/speech_recognition_manager_delegate.h',
-    'public/browser/speech_recognition_preferences.h',
     'public/browser/speech_recognition_session_config.cc',
     'public/browser/speech_recognition_session_config.h',
     'public/browser/speech_recognition_session_context.cc',

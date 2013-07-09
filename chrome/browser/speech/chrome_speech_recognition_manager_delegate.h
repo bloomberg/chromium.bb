@@ -45,6 +45,7 @@ class ChromeSpeechRecognitionManagerDelegate
       int session_id,
       base::Callback<void(bool ask_user, bool is_allowed)> callback) OVERRIDE;
   virtual content::SpeechRecognitionEventListener* GetEventListener() OVERRIDE;
+  virtual bool FilterProfanities(int render_process_id) OVERRIDE;
 
   // Callback called by |tab_watcher_| on the IO thread to signal tab closure.
   virtual void TabClosedCallback(int render_process_id, int render_view_id);

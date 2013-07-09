@@ -54,7 +54,7 @@ class SpeechRecognitionBrowserTest : public ContentBrowserTest {
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
-    fake_speech_recognition_manager_.recognition_started_event().Wait();
+    fake_speech_recognition_manager_.WaitForRecognitionStarted();
 
     // We should wait for a navigation event, raised by the test page JS code
     // upon the onwebkitspeechchange event, in all cases except when the

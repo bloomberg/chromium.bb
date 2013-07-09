@@ -44,7 +44,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
@@ -1450,8 +1449,8 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 #if defined(ENABLE_INPUT_SPEECH)
   // Check box for menu item 'Block offensive words'.
   if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES) {
-    return ChromeSpeechRecognitionPreferences::GetForProfile(profile_)->
-        FilterProfanities();
+    return profile_->GetPrefs()->GetBoolean(
+        prefs::kSpeechRecognitionFilterProfanities);
   }
 #endif
 
@@ -1889,8 +1888,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
 #if defined(ENABLE_INPUT_SPEECH)
     case IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES: {
-      ChromeSpeechRecognitionPreferences::GetForProfile(profile_)->
-          ToggleFilterProfanities();
+      profile_->GetPrefs()->SetBoolean(
+          prefs::kSpeechRecognitionFilterProfanities,
+          !profile_->GetPrefs()->GetBoolean(
+              prefs::kSpeechRecognitionFilterProfanities));
       break;
     }
 #endif

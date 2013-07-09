@@ -321,11 +321,6 @@ content::GeolocationPermissionContext*
   return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
 }
 
-content::SpeechRecognitionPreferences*
-    OffTheRecordProfileImpl::GetSpeechRecognitionPreferences() {
-  return profile_->GetSpeechRecognitionPreferences();
-}
-
 quota::SpecialStoragePolicy*
     OffTheRecordProfileImpl::GetSpecialStoragePolicy() {
   return GetExtensionSpecialStoragePolicy();

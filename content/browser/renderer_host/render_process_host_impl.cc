@@ -651,12 +651,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new InputTagSpeechDispatcherHost(
-      IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext(),
-      browser_context->GetSpeechRecognitionPreferences()));
+      IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext()));
 #endif
   channel_->AddFilter(new SpeechRecognitionDispatcherHost(
-      GetID(), storage_partition_impl_->GetURLRequestContext(),
-      browser_context->GetSpeechRecognitionPreferences()));
+      GetID(), storage_partition_impl_->GetURLRequestContext()));
   channel_->AddFilter(new FileAPIMessageFilter(
       GetID(),
       storage_partition_impl_->GetURLRequestContext(),

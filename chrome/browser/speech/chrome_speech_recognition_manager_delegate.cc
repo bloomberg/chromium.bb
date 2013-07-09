@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -343,8 +342,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
       SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
 
   // Make sure that initiators (extensions/web pages) properly set the
-  // |render_process_id| field, which is needed later to retrieve the
-  // ChromeSpeechRecognitionPreferences associated to their profile.
+  // |render_process_id| field, which is needed later to retrieve the profile.
   DCHECK_NE(context.render_process_id, 0);
 
   // Check that the render view type is appropriate, and whether or not we
@@ -360,6 +358,17 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
 content::SpeechRecognitionEventListener*
 ChromeSpeechRecognitionManagerDelegate::GetEventListener() {
   return this;
+}
+
+bool ChromeSpeechRecognitionManagerDelegate::FilterProfanities(
+    int render_process_id) {
+  content::RenderProcessHost* rph =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!rph)  // Guard against race conditions on RPH lifetime.
+    return true;
+
+  return Profile::FromBrowserContext(rph->GetBrowserContext())->GetPrefs()->
+      GetBoolean(prefs::kSpeechRecognitionFilterProfanities);
 }
 
 void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(

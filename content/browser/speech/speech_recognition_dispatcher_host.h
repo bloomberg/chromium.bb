@@ -16,7 +16,6 @@ struct SpeechRecognitionHostMsg_StartRequest_Params;
 namespace content {
 
 class SpeechRecognitionManager;
-class SpeechRecognitionPreferences;
 struct SpeechRecognitionResult;
 
 // SpeechRecognitionDispatcherHost is a delegate for Speech API messages used by
@@ -29,8 +28,7 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
  public:
   SpeechRecognitionDispatcherHost(
       int render_process_id,
-      net::URLRequestContextGetter* context_getter,
-      SpeechRecognitionPreferences* recognition_preferences);
+      net::URLRequestContextGetter* context_getter);
 
   // SpeechRecognitionEventListener methods.
   virtual void OnRecognitionStart(int session_id) OVERRIDE;
@@ -53,26 +51,23 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
-
-  // Singleton manager setter useful for tests.
-  static void SetManagerForTests(SpeechRecognitionManager* manager);
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      BrowserThread::ID* thread) OVERRIDE;
 
  private:
   virtual ~SpeechRecognitionDispatcherHost();
 
   void OnStartRequest(
       const SpeechRecognitionHostMsg_StartRequest_Params& params);
+  void OnStartRequestOnIO(
+      const SpeechRecognitionHostMsg_StartRequest_Params& params,
+      bool filter_profanities);
   void OnAbortRequest(int render_view_id, int request_id);
   void OnStopCaptureRequest(int render_view_id, int request_id);
 
-  // Returns the speech recognition manager to forward requests to.
-  SpeechRecognitionManager* manager();
-
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  scoped_refptr<SpeechRecognitionPreferences> recognition_preferences_;
-
-  static SpeechRecognitionManager* manager_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionDispatcherHost);
 };
