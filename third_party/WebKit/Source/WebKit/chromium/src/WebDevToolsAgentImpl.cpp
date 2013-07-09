@@ -700,11 +700,6 @@ void WebDevToolsAgentImpl::setProcessId(long processId)
     inspectorController()->setProcessId(processId);
 }
 
-void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
-{
-    inspectorController()->setLayerTreeId(layerTreeId);
-}
-
 void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& script)
 {
     InspectorController* ic = inspectorController();

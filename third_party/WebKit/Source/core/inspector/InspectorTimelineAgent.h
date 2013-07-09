@@ -121,8 +121,6 @@ public:
     virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* includeDomCounters, const bool* includeNativeMemoryStatistics);
     virtual void stop(ErrorString*);
 
-    void setLayerTreeId(int layerTreeId) { m_layerTreeId = layerTreeId; }
-    int layerTreeId() const { return m_layerTreeId; }
     int id() const { return m_id; }
 
     void didCommitLoad();
@@ -287,7 +285,6 @@ private:
     WeakPtrFactory<InspectorTimelineAgent> m_weakFactory;
     RefPtr<TimelineTraceEventProcessor> m_traceEventProcessor;
     unsigned m_styleRecalcElementCounter;
-    int m_layerTreeId;
 };
 
 } // namespace WebCore

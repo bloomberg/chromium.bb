@@ -95,7 +95,6 @@ public:
     virtual void inspectElementAt(const WebPoint& point);
     virtual void evaluateInWebInspector(long callId, const WebString& script);
     virtual void setProcessId(long);
-    virtual void setLayerTreeId(int);
 
     // InspectorClient implementation.
     virtual void highlight();
