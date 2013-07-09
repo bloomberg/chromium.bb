@@ -20,7 +20,6 @@ TransientDeviceIds::~TransientDeviceIds() {}
 std::string TransientDeviceIds::GetTransientIdForDeviceId(
     const std::string& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(StorageInfo::IsRemovableDevice(device_id));
 
   if (!ContainsKey(device_id_map_, device_id)) {
     std::string transient_id;

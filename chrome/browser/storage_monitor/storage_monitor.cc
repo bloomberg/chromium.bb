@@ -156,7 +156,7 @@ void StorageMonitor::ProcessAttach(const StorageInfo& info) {
     storage_map_.insert(std::make_pair(info.device_id(), info));
   }
 
-  DVLOG(1) << "RemovableStorageAttached with name " << UTF16ToUTF8(info.name())
+  DVLOG(1) << "StorageAttached with name " << UTF16ToUTF8(info.name())
            << " and id " << info.device_id();
   if (StorageInfo::IsRemovableDevice(info.device_id())) {
     observer_list_->Notify(
@@ -175,7 +175,7 @@ void StorageMonitor::ProcessDetach(const std::string& id) {
     storage_map_.erase(it);
   }
 
-  DVLOG(1) << "RemovableStorageDetached for id " << id;
+  DVLOG(1) << "StorageDetached for id " << id;
   if (StorageInfo::IsRemovableDevice(info.device_id())) {
     observer_list_->Notify(
         &RemovableStorageObserver::OnRemovableStorageDetached, info);

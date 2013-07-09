@@ -24,7 +24,7 @@ class TransientDeviceIds {
   ~TransientDeviceIds();
 
   // Returns the transient ID for a given |device_id|.
-  // |device_id| must be for a removable device.
+  // |device_id| must be for a fixed or removable storage device.
   // If |device_id| has never been seen before, a new, unique transient id will
   // be assigned.
   std::string GetTransientIdForDeviceId(const std::string& device_id);
