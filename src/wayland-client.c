@@ -876,7 +876,15 @@ read_events(struct wl_display *display)
 			if (errno != EAGAIN)
 				display_fatal_error(display, errno);
 			return -1;
+		} else if (total == 0) {
+			/* The compositor has closed the socket. This
+			 * should be considered an error so we'll fake
+			 * an errno */
+			errno = EPIPE;
+			display_fatal_error(display, errno);
+			return -1;
 		}
+
 		for (rem = total; rem >= 8; rem -= size) {
 			size = queue_event(display, rem);
 			if (size == -1) {
