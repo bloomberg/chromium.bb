@@ -5,6 +5,7 @@
 #include "ui/gl/gl_image_egl.h"
 
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_surface_egl.h"
 
 namespace gfx {
 
@@ -24,7 +25,7 @@ bool GLImageEGL::Initialize(gfx::GpuMemoryBufferHandle buffer) {
     EGL_NONE,
   };
   egl_image_ = eglCreateImageKHR(
-      eglGetDisplay(EGL_DEFAULT_DISPLAY),
+      GLSurfaceEGL::GetHardwareDisplay(),
       EGL_NO_CONTEXT,
       EGL_NATIVE_BUFFER_ANDROID,
       cbuf,
@@ -63,7 +64,7 @@ void GLImageEGL::Destroy() {
     return;
 
   EGLBoolean success = eglDestroyImageKHR(
-      eglGetDisplay(EGL_DEFAULT_DISPLAY), egl_image_);
+      GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
 
   if (success == EGL_FALSE) {
     EGLint error = eglGetError();

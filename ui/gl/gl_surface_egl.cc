@@ -12,6 +12,7 @@
 #include <android/native_window_jni.h>
 #endif
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -21,6 +22,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/scoped_make_current.h"
 
 #if defined(USE_X11)
@@ -31,6 +33,12 @@ extern "C" {
 
 #if defined (USE_OZONE)
 #include "ui/base/ozone/surface_factory_ozone.h"
+#endif
+
+// From ANGLE's egl/eglext.h.
+#if !defined(EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE)
+#define EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE \
+    reinterpret_cast<EGLNativeDisplayType>(-2)
 #endif
 
 using ui::GetLastEGLErrorString;
@@ -98,6 +106,10 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
 #if defined(USE_X11)
   g_native_display = base::MessagePumpForUI::GetDefaultXDisplay();
+#elif defined(OS_WIN)
+  g_native_display = EGL_DEFAULT_DISPLAY;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableD3D11))
+    g_native_display = EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
 #else
   g_native_display = EGL_DEFAULT_DISPLAY;
 #endif
