@@ -285,6 +285,15 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
 class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     # not overriding execute() - pylint: disable=W0223
 
+    # The release builders cycle much faster than the debug ones and cover all the platforms.
+    def _release_builders(self):
+        release_builders = []
+        for builder_name in builders.all_builder_names():
+            port = self._tool.port_factory.get_from_builder_name(builder_name)
+            if port.test_configuration().build_type == 'release':
+                release_builders.append(builder_name)
+        return release_builders
+
     def _run_webkit_patch(self, args, verbose):
         try:
             verbose_args = ['--verbose'] if verbose else []
@@ -484,10 +493,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             ])
 
     def _builders_to_pull_from(self):
-        chromium_buildbot_builder_names = []
-        for name in builders.all_builder_names():
-            chromium_buildbot_builder_names.append(name)
-        chosen_names = self._tool.user.prompt_with_list("Which builder to pull results from:", chromium_buildbot_builder_names, can_choose_multiple=True)
+        chosen_names = self._tool.user.prompt_with_list("Which builder to pull results from:", self._release_builders(), can_choose_multiple=True)
         return [self._builder_with_name(name) for name in chosen_names]
 
     def _builder_with_name(self, name):
