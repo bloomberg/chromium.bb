@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_ANDROID_CONTENT_DETECTOR_H_
 #define CONTENT_RENDERER_ANDROID_CONTENT_DETECTOR_H_
 
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebRange.h"
+#include "url/gurl.h"
 
 namespace WebKit {
 class WebHitTestResult;

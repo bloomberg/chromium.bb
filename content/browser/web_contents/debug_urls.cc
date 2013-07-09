@@ -11,8 +11,8 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "url/gurl.h"
 #include "webkit/plugins/plugin_constants.h"
 
 namespace content {

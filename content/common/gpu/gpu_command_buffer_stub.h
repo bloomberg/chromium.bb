@@ -16,7 +16,6 @@
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_manager_client.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -29,6 +28,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
+#include "url/gurl.h"
 
 namespace gpu {
 struct Mailbox;

@@ -28,7 +28,7 @@
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/webkit_test_controller.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/common/webpreferences.h"
 
 #if defined(OS_ANDROID)

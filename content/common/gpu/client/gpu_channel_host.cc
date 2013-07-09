@@ -14,9 +14,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "content/public/common/sandbox_init.h"

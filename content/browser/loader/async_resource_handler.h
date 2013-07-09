@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/loader/resource_message_delegate.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequest;

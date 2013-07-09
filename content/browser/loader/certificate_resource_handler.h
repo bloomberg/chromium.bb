@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/resource_handler.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
+#include "url/gurl.h"
 
 namespace net {
 class IOBuffer;

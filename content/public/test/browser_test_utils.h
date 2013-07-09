@@ -17,9 +17,9 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"

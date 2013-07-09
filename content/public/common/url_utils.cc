@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "content/common/savable_url_schemes.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

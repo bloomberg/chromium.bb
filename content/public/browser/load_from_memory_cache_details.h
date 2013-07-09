@@ -7,8 +7,8 @@
 
 #include <string>
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
 #include "net/cert/cert_status_flags.h"
+#include "url/gurl.h"
 #include "webkit/glue/resource_type.h"
 
 namespace content {

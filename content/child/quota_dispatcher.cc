@@ -7,9 +7,9 @@
 #include "base/basictypes.h"
 #include "content/child/child_thread.h"
 #include "content/common/quota_messages.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/web/WebStorageQuotaType.h"
+#include "url/gurl.h"
 
 using quota::QuotaStatusCode;
 using quota::StorageType;

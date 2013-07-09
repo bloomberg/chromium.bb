@@ -12,8 +12,8 @@
 #include "base/message_loop.h"
 #include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/common/shell_switches.h"
-#include "googleurl/src/gurl.h"
 #include "jni/ShellLayoutTestUtils_jni.h"
+#include "url/gurl.h"
 
 namespace {
 

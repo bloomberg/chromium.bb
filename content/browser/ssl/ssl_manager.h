@@ -10,15 +10,15 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/ssl/ssl_policy_backend.h"
 #include "content/browser/ssl/ssl_error_handler.h"
+#include "content/browser/ssl/ssl_policy_backend.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
-#include "net/cert/cert_status_flags.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_status_flags.h"
+#include "url/gurl.h"
 
 namespace net {
 class SSLInfo;

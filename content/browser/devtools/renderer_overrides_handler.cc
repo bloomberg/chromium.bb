@@ -25,8 +25,8 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
-#include "googleurl/src/gurl.h"
 #include "ui/snapshot/snapshot.h"
+#include "url/gurl.h"
 
 namespace content {
 

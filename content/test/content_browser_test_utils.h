@@ -6,8 +6,8 @@
 #define CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 
 #include "base/memory/ref_counted.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;

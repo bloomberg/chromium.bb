@@ -17,8 +17,8 @@
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_log.h"
+#include "url/gurl.h"
 
 namespace content {
 

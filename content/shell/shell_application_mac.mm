@@ -8,7 +8,7 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 @implementation ShellCrApplication
 

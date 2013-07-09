@@ -13,8 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/win/shell.h"
+#include "url/gurl.h"
 
 namespace content {
 namespace {

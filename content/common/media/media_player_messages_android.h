@@ -11,11 +11,11 @@
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/media_keys.h"
 #include "ui/gfx/rect_f.h"
+#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

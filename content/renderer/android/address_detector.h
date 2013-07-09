@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/renderer/android/content_detector.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

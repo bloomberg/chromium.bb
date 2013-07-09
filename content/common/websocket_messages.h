@@ -19,8 +19,8 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/common/websocket.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

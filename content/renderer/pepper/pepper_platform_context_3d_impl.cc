@@ -9,12 +9,12 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/command_buffer_proxy.h"
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ui/gl/gpu_preference.h"
+#include "url/gurl.h"
 
 #ifdef ENABLE_GPU
 

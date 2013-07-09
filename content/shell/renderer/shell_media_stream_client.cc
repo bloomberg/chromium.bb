@@ -5,11 +5,11 @@
 #include "content/shell/renderer/shell_media_stream_client.h"
 
 #include "content/shell/renderer/shell_video_frame_provider.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
+#include "url/gurl.h"
 #include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 using namespace WebKit;

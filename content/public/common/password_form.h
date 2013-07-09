@@ -11,7 +11,7 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

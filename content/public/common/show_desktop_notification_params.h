@@ -6,8 +6,8 @@
 #define CONTENT_PUBLIC_COMMON_SHOW_DESKTOP_NOTIFICATION_PARAMS_H_
 
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
+#include "url/gurl.h"
 
 namespace content {
 

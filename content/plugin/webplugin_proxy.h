@@ -17,10 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
 #include "base/timer/timer.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "url/gurl.h"
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 #endif

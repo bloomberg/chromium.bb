@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/byte_stream.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 class IOBuffer;

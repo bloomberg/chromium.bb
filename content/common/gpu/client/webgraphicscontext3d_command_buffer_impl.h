@@ -14,11 +14,11 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "ui/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gpu_preference.h"
+#include "url/gurl.h"
 
 namespace gpu {
 

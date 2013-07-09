@@ -27,8 +27,8 @@
 #include "base/memory/singleton.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/download_item.h"
-#include "googleurl/src/gurl.h"
 #include "net/cookies/cookie_monster.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequest;

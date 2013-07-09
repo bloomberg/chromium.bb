@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "content/browser/download/save_types.h"
 #include "content/public/common/referrer.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 class SavePackage;

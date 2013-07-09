@@ -30,7 +30,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/url_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -39,6 +38,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "url/url_util.h"
 #include "webkit/browser/appcache/view_appcache_internals_job.h"
 
 using appcache::AppCacheService;

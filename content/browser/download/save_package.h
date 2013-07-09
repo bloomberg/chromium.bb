@@ -23,7 +23,7 @@
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class GURL;
 

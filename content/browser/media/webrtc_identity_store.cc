@@ -11,9 +11,9 @@
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
+#include "url/gurl.h"
 
 namespace content {
 

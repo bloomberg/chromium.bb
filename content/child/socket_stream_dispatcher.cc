@@ -17,8 +17,8 @@
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/socket_stream_messages.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
+#include "url/gurl.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 

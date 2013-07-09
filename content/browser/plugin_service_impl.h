@@ -24,8 +24,8 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/plugin_service.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/memory/scoped_ptr.h"

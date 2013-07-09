@@ -15,7 +15,7 @@
 #include "content/common/savable_url_schemes.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/url_util.h"
+#include "url/url_util.h"
 
 namespace {
 

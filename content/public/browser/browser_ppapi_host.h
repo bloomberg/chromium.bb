@@ -9,8 +9,8 @@
 #include "base/process.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_view_host.h"
-#include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_instance.h"
+#include "url/gurl.h"
 
 namespace IPC {
 class ChannelProxy;

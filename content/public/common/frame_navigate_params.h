@@ -12,8 +12,8 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/referrer.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
+#include "url/gurl.h"
 
 namespace content {
 

@@ -10,8 +10,8 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "googleurl/src/gurl.h"
 #include "media/video/capture/video_capture_proxy.h"
+#include "url/gurl.h"
 
 namespace content {
 

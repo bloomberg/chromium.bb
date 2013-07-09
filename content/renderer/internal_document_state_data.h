@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "url/gurl.h"
 
 namespace WebKit {
 class WebDataSource;

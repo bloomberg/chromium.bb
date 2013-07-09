@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
-#include "net/cert/cert_status_flags.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 #include "webkit/glue/resource_type.h"
 
 namespace net {

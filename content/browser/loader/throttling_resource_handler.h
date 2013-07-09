@@ -9,7 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/public/browser/resource_controller.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

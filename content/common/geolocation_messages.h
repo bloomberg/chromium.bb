@@ -6,8 +6,8 @@
 // Multiply-included message file, hence no include guard.
 
 #include "content/public/common/geoposition.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/gurl.h"
 
 #define IPC_MESSAGE_START GeolocationMsgStart
 

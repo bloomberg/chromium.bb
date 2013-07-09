@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 namespace content {
 

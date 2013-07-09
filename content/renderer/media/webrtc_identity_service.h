@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
+#include "url/gurl.h"
 
 namespace content {
 

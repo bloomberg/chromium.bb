@@ -9,13 +9,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "content/public/browser/web_contents.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "content/public/browser/web_contents.h"
-#include "content/shell/shell.h"
-#include "googleurl/src/gurl.h"
 #include "jni/ShellManager_jni.h"
+#include "url/gurl.h"
 
 using base::android::ScopedJavaLocalRef;
 

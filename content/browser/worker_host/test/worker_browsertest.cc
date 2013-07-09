@@ -22,9 +22,9 @@
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "url/gurl.h"
 
 namespace content {
 

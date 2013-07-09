@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_service.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;

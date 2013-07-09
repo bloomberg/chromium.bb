@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

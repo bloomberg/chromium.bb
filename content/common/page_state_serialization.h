@@ -9,9 +9,9 @@
 
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "ui/gfx/point.h"
+#include "url/gurl.h"
 
 namespace content {
 

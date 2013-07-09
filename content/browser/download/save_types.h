@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 typedef std::vector<std::pair<int, base::FilePath> > FinalNameList;

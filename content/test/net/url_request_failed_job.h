@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_job.h"
+#include "url/gurl.h"
 
 namespace content {
 

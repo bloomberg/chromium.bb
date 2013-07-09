@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_PEPPER_RENDERER_INSTANCE_DATA_H_
 #define CONTENT_COMMON_PEPPER_RENDERER_INSTANCE_DATA_H_
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

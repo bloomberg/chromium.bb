@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

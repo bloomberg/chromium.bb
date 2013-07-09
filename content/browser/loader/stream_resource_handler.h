@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/streams/stream_write_observer.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequest;

@@ -11,8 +11,8 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 namespace content {
 

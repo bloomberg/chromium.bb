@@ -11,7 +11,6 @@
 #include "content/public/common/drop_data.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/scoped_clipboard_writer_glue.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
@@ -22,6 +21,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "url/gurl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/clipboard_utils.h"
 

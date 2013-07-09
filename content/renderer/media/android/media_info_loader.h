@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
+#include "url/gurl.h"
 #include "webkit/renderer/media/active_loader.h"
 
 namespace WebKit {

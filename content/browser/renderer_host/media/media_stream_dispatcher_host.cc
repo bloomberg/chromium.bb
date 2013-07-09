@@ -8,7 +8,7 @@
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 

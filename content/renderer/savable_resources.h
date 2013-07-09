@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "url/gurl.h"
 
 namespace WebKit {
 class WebElement;

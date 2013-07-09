@@ -9,8 +9,8 @@
 #include "base/android/jni_string.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "jni/LoadUrlParams_jni.h"
+#include "url/gurl.h"
 
 namespace {
 

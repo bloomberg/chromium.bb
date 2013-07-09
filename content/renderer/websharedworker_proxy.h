@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
+#include "url/gurl.h"
 
 namespace content {
 

@@ -23,10 +23,10 @@
 #include "content/public/browser/media_request_state.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
-#include "googleurl/src/gurl.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"

@@ -15,9 +15,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
+#include "url/gurl.h"
 
 using net::FileStream;
 

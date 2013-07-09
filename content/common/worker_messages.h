@@ -14,10 +14,10 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
+#include "url/gurl.h"
 
 // Singly-included section, not converted.
 #ifndef CONTENT_COMMON_WORKER_MESSAGES_H_

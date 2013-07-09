@@ -19,11 +19,11 @@
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_net_log.h"
-#include "googleurl/src/gurl.h"
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"

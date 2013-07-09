@@ -21,9 +21,9 @@
 #include "content/public/browser/download_destination_observer.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "url/gurl.h"
 
 namespace content {
 class DownloadFile;

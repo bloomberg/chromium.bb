@@ -5,8 +5,8 @@
 #include "content/public/browser/content_browser_client.h"
 
 #include "base/files/file_path.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
 
 namespace content {
 

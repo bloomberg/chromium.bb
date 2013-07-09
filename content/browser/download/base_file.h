@@ -14,10 +14,10 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "url/gurl.h"
 
 namespace crypto {
 class SecureHash;

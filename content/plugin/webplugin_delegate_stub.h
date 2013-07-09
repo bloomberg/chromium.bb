@@ -10,12 +10,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/child/npobject_stub.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 struct PluginMsg_Init_Params;
 struct PluginMsg_DidReceiveResponseParams;

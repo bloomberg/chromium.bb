@@ -16,11 +16,11 @@
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/public/browser/render_view_host_observer.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
 #include "ui/gfx/rect_f.h"
+#include "url/gurl.h"
 
 namespace media {
 class MediaDrmBridge;

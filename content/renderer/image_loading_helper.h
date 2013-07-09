@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class SkBitmap;
 

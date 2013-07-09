@@ -5,8 +5,8 @@
 // IPC messages for requesting WebRTC identity.
 // Multiply-included message file, hence no include guard.
 
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/gurl.h"
 
 #define IPC_MESSAGE_START WebRTCIdentityMsgStart
 

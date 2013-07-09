@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "content/browser/download/file_metadata_linux.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 namespace {

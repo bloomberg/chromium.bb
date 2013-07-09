@@ -20,10 +20,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "url/gurl.h"
 
 class GURL;
 

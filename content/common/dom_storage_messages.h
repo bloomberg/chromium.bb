@@ -4,10 +4,10 @@
 
 // Multiply-included message file, no traditional include guard.
 #include "content/public/common/common_param_traits.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
+#include "url/gurl.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 
 #define IPC_MESSAGE_START DOMStorageMsgStart

@@ -7,10 +7,10 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "content/browser/histogram_synchronizer.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace content {
 

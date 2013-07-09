@@ -8,8 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/quota_messages.h"
 #include "content/public/browser/quota_permission_context.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 using quota::QuotaClient;

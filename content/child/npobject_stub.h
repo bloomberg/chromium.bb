@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/child/npobject_base.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "url/gurl.h"
 
 struct NPObject;
 

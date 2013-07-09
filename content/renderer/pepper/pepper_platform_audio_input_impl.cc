@@ -12,9 +12,9 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "googleurl/src/gurl.h"
 #include "media/audio/audio_manager_base.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "url/gurl.h"
 
 namespace content {
 

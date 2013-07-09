@@ -17,10 +17,10 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits_macros.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
+#include "url/gurl.h"
 
 class SkBitmap;
 

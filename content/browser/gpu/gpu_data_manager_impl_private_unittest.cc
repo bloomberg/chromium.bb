@@ -10,9 +10,9 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/gpu_feature_type.h"
 #include "content/public/common/gpu_info.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #define LONG_STRING_CONST(...) #__VA_ARGS__
 

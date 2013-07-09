@@ -4,8 +4,8 @@
 
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/public/test/test_browser_context.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 

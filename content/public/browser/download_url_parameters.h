@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/referrer.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
+#include "url/gurl.h"
 
 namespace content {
 

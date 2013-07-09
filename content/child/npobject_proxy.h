@@ -10,11 +10,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/child/npobject_base.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 struct NPObject;
 
