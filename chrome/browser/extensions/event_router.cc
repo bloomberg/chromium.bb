@@ -167,7 +167,6 @@ void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
 EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
     : profile_(profile),
       listeners_(this),
-      activity_log_(ActivityLog::GetInstance(profile)),
       dispatch_chrome_updated_event_(false) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
@@ -243,7 +242,7 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
     scoped_ptr<ListValue> args(new ListValue());
     if (listener->filter)
       args->Append(listener->filter->DeepCopy());
-    activity_log_->LogAPIAction(
+    ActivityLog::GetInstance(profile)->LogAPIAction(
         extension, event_name + ".addListener", args.get(), std::string());
   }
 #endif
@@ -273,7 +272,7 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
                                             ExtensionService::INCLUDE_ENABLED);
   if (extension) {
     scoped_ptr<ListValue> args(new ListValue());
-    activity_log_->LogAPIAction(
+    ActivityLog::GetInstance(profile)->LogAPIAction(
         extension, event_name + ".removeListener", args.get(), std::string());
   }
 #endif

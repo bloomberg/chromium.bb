@@ -53,10 +53,12 @@ class ActivityLogTest : public testing::Test {
         switches::kEnableExtensionActivityLogging);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
+    ActivityLog::RecomputeLoggingIsEnabled(true);  // Logging now enabled.
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_.get()))->CreateExtensionService
             (&command_line, base::FilePath(), false);
-    ActivityLog::RecomputeLoggingIsEnabled(false);
+    ActivityLog::GetInstance(profile_.get())->Init();
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual ~ActivityLogTest() {
@@ -68,7 +70,7 @@ class ActivityLogTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     // Restore the original command line and undo the affects of SetUp().
     *CommandLine::ForCurrentProcess() = saved_cmdline_;
-    ActivityLog::RecomputeLoggingIsEnabled(false);
+    ActivityLog::RecomputeLoggingIsEnabled(false);  // Logging now disabled.
   }
 
   static void RetrieveActions_LogAndFetchActions(
@@ -109,6 +111,14 @@ class ActivityLogTest : public testing::Test {
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
+  void SetPolicy(bool log_arguments) {
+    ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
+    if (log_arguments)
+      activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
+    else
+      activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_NOARGS);
+  }
+
  protected:
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
@@ -143,10 +153,12 @@ class RenderViewActivityLogTest : public ChromeRenderViewHostTestHarness {
         switches::kEnableExtensionActivityLogging);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
-    ActivityLog::RecomputeLoggingIsEnabled(false);
+    ActivityLog::RecomputeLoggingIsEnabled(true);  // Logging is now enabled.
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile()))->CreateExtensionService(
             &command_line, base::FilePath(), false);
+    ActivityLog::GetInstance(profile())->Init();
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -155,7 +167,7 @@ class RenderViewActivityLogTest : public ChromeRenderViewHostTestHarness {
 #endif
     ChromeRenderViewHostTestHarness::TearDown();
     *CommandLine::ForCurrentProcess() = saved_cmdline_;
-    ActivityLog::RecomputeLoggingIsEnabled(false);
+    ActivityLog::RecomputeLoggingIsEnabled(false);  // Logging is now disabled.
   }
 
   static void Arguments_Prerender(
@@ -235,9 +247,8 @@ TEST_F(ActivityLogTest, LogAndFetchPathActions) {
 
 TEST_F(ActivityLogTest, LogWithoutArguments) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
-  activity_log->SetArgumentLoggingForTesting(false);
   ASSERT_TRUE(activity_log->IsLogEnabled());
-  activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_NOARGS);
+  SetPolicy(false);
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
@@ -245,11 +256,11 @@ TEST_F(ActivityLogTest, LogWithoutArguments) {
       kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
   activity_log->GetActions(
       kExtensionId, 0, base::Bind(ActivityLogTest::Arguments_Missing));
+  SetPolicy(true);
 }
 
 TEST_F(ActivityLogTest, LogWithArguments) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
-  activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   ASSERT_TRUE(activity_log->IsLogEnabled());
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -273,7 +284,6 @@ TEST_F(RenderViewActivityLogTest, LogPrerender) {
           .Build();
   extension_service_->AddExtension(extension.get());
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   ASSERT_TRUE(activity_log->IsLogEnabled());
   GURL url("http://www.google.com");
 

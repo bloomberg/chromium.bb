@@ -268,8 +268,6 @@ class EventRouter : public content::NotificationObserver,
   typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
 
-  ActivityLog* activity_log_;
-
   // True if we should dispatch the event signalling that Chrome was updated
   // upon loading an extension.
   bool dispatch_chrome_updated_event_;

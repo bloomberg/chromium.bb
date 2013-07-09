@@ -66,6 +66,11 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual Blacklist* blacklist() OVERRIDE;
   virtual const OneShotEvent& ready() const OVERRIDE;
 
+  void SetReady() {
+    LOG(INFO) << "SetReady()";
+    ready_.Signal();
+  }
+
   // Factory method for tests to use with SetTestingProfile.
   static BrowserContextKeyedService* Build(content::BrowserContext* profile);
 

@@ -139,7 +139,6 @@ IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionPrerender) {
   ASSERT_TRUE(ext);
 
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   ASSERT_TRUE(activity_log);
 
   //Disable rate limiting in PrerenderManager
