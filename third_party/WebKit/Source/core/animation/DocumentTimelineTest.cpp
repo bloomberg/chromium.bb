@@ -32,6 +32,7 @@
 #include "core/animation/DocumentTimeline.h"
 
 #include "core/animation/Animation.h"
+#include "core/animation/KeyframeAnimationEffect.h"
 #include "core/animation/TimedItem.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -43,38 +44,26 @@ using namespace WebCore;
 
 namespace {
 
-class EmptyAnimationEffect : public AnimationEffect {
-public:
-    static PassRefPtr<EmptyAnimationEffect> create()
-    {
-        return adoptRef(new EmptyAnimationEffect);
-    }
-    virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const
-    {
-        return adoptPtr(new CompositableValueMap);
-    }
-private:
-    EmptyAnimationEffect() { }
-};
-
 class DocumentTimelineTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        d = Document::create(0, KURL());
-        e = Element::create(nullQName() , d.get());
-        timeline = DocumentTimeline::create(d.get());
+        document = Document::create(0, KURL());
+        element = Element::create(nullQName() , document.get());
+        timeline = DocumentTimeline::create(document.get());
     }
 
-    RefPtr<Document> d;
-    RefPtr<Element> e;
+    RefPtr<Document> document;
+    RefPtr<Element> element;
     RefPtr<DocumentTimeline> timeline;
     Timing timing;
 };
 
-TEST_F(DocumentTimelineTest, AddAnAnimation)
+TEST_F(DocumentTimelineTest, EmptyKeyframeAnimation)
 {
-    RefPtr<Animation> anim = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
+    RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector());
+    RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
+
     ASSERT_TRUE(isNull(timeline->currentTime()));
 
     timeline->play(anim.get());
@@ -85,20 +74,20 @@ TEST_F(DocumentTimelineTest, AddAnAnimation)
     ASSERT_TRUE(anim->compositableValues()->isEmpty());
 
     timeline->serviceAnimations(100);
-    ASSERT_EQ(100, timeline->currentTime());
+    ASSERT_FLOAT_EQ(100, timeline->currentTime());
 }
 
 TEST_F(DocumentTimelineTest, PauseForTesting)
 {
     double seekTime = 1;
-    RefPtr<Animation> anim1 = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
-    RefPtr<Animation> anim2  = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
-    RefPtr<Player> p1 = timeline->play(anim1.get());
-    RefPtr<Player> p2 = timeline->play(anim2.get());
+    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
+    RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
+    RefPtr<Player> player1 = timeline->play(anim1.get());
+    RefPtr<Player> player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
 
-    ASSERT_EQ(seekTime, p1->currentTime());
-    ASSERT_EQ(seekTime, p2->currentTime());
+    ASSERT_EQ(seekTime, player1->currentTime());
+    ASSERT_EQ(seekTime, player2->currentTime());
 }
 
 }

@@ -42,13 +42,17 @@ class AnimatableValue;
 
 class AnimationEffect : public RefCounted<AnimationEffect> {
 public:
+    enum CompositeOperation {
+        CompositeReplace,
+        CompositeAdd,
+    };
     // Encapsulates the value which results from applying a set of composition operations onto an
     // underlying value. It is used to represent the output of the effect phase of the Web
     // Animations model.
     class CompositableValue : public RefCounted<CompositableValue> {
     public:
         virtual ~CompositableValue() { }
-        virtual PassRefPtr<AnimatableValue> composite(const AnimatableValue*) const = 0;
+        virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue*) const = 0;
     };
 
     virtual ~AnimationEffect() { }

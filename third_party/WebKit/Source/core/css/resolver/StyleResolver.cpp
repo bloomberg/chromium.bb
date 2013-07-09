@@ -1816,7 +1816,7 @@ void StyleResolver::applyAnimatedProperties(const Element* target)
         for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
             CSSPropertyID property = iter->key;
             // FIXME: Composite onto the underlying value.
-            RefPtr<CSSValue> value = iter->value->composite(AnimatableValue::neutralValue())->toCSSValue();
+            RefPtr<CSSValue> value = iter->value->compositeOnto(AnimatableValue::neutralValue())->toCSSValue();
             switch (pass) {
             case VariableDefinitions:
                 ASSERT_NOT_REACHED();
