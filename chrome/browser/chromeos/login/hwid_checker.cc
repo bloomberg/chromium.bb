@@ -43,7 +43,11 @@ bool IsCorrectHWIDv2(const std::string& hwid) {
   return CalculateHWIDv2Checksum(body) == checksum;
 }
 
-std::string CalculateHWIDv3Checksum(const std::string& data) {
+bool IsExceptionalHWID(const std::string& hwid) {
+  return RE2::PartialMatch(hwid, "^(SPRING [A-D])|(FALCO A)");
+}
+
+std::string CalculateExceptionalHWIDChecksum(const std::string& data) {
   static const char base32_alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
   unsigned crc32 = CalculateCRC32(data);
   // We take 10 least significant bits of CRC-32 and encode them in 2 characters
@@ -54,7 +58,9 @@ std::string CalculateHWIDv3Checksum(const std::string& data) {
   return checksum;
 }
 
-bool IsCorrectHWIDv3(const std::string& hwid) {
+bool IsCorrectExceptionalHWID(const std::string& hwid) {
+  if (!IsExceptionalHWID(hwid))
+    return false;
   std::string bom;
   if (!RE2::FullMatch(hwid, "[A-Z0-9]+ ((?:[A-Z2-7]{4}-)*[A-Z2-7]{1,4})", &bom))
     return false;
@@ -67,6 +73,29 @@ bool IsCorrectHWIDv3(const std::string& hwid) {
       hwid_without_dashes.substr(0, hwid_without_dashes.length() - 2);
   std::string checksum =
       hwid_without_dashes.substr(hwid_without_dashes.length() - 2);
+  return CalculateExceptionalHWIDChecksum(not_checksum) == checksum;
+}
+
+std::string CalculateHWIDv3Checksum(const std::string& data) {
+  static const char base8_alphabet[] = "23456789";
+  static const char base32_alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  unsigned crc32 = CalculateCRC32(data);
+  // We take 8 least significant bits of CRC-32 and encode them in 2 characters.
+  std::string checksum;
+  checksum += base8_alphabet[(crc32 >> 5) & 0x7];
+  checksum += base32_alphabet[crc32 & 0x1f];
+  return checksum;
+}
+
+bool IsCorrectHWIDv3(const std::string& hwid) {
+  if (IsExceptionalHWID(hwid))
+    return false;
+  std::string regex =
+      "([A-Z0-9]+ (?:[A-Z2-7][2-9][A-Z2-7]-)*[A-Z2-7])([2-9][A-Z2-7])";
+  std::string not_checksum, checksum;
+  if (!RE2::FullMatch(hwid, regex, &not_checksum, &checksum))
+    return false;
+  RemoveChars(not_checksum, "-", &not_checksum);
   return CalculateHWIDv3Checksum(not_checksum) == checksum;
 }
 
@@ -75,7 +104,8 @@ bool IsCorrectHWIDv3(const std::string& hwid) {
 namespace chromeos {
 
 bool IsHWIDCorrect(const std::string& hwid) {
-  return IsCorrectHWIDv2(hwid) || IsCorrectHWIDv3(hwid);
+  return IsCorrectHWIDv2(hwid) || IsCorrectExceptionalHWID(hwid) ||
+      IsCorrectHWIDv3(hwid);
 }
 
 bool IsMachineHWIDCorrect() {
