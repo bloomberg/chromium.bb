@@ -310,17 +310,19 @@ bool StringIsUtf8(const char* data, size_t length) {
 }
 
 std::string GetUsername() {
-#if defined(OS_POSIX)
+#if defined(OS_ANDROID)
+  struct passwd* passwd = getpwuid(getuid());
+  return passwd ? passwd->pw_name : std::string();
+#elif defined(OS_POSIX)
   long buf_size = sysconf(_SC_GETPW_R_SIZE_MAX);
   if (buf_size <= 0)
     return std::string();
+
   scoped_ptr<char[]> buf(new char[buf_size]);
   struct passwd passwd;
   struct passwd* passwd_result = NULL;
   getpwuid_r(getuid(), &passwd, buf.get(), buf_size, &passwd_result);
-  if (!passwd_result)
-    return std::string();
-  return std::string(passwd_result->pw_name);
+  return passwd_result ? passwd_result->pw_name : std::string();
 #else  // !defined(OS_POSIX)
   return std::string();
 #endif  // defined(OS_POSIX)
