@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "jni/ChildProcessLauncher_jni.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
@@ -149,6 +150,10 @@ jobject GetViewSurface(JNIEnv* env, jclass clazz, jint surface_id) {
   // to deadlocks.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   return CompositorImpl::GetSurface(surface_id);
+}
+
+jboolean IsSingleProcess(JNIEnv* env, jclass clazz) {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
 
 bool RegisterChildProcessLauncher(JNIEnv* env) {

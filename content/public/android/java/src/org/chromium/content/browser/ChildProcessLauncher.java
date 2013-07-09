@@ -310,7 +310,7 @@ public class ChildProcessLauncher {
         Log.d(TAG, "stopping child connection: pid=" + pid);
         ChildProcessConnection connection = mServiceMap.remove(pid);
         if (connection == null) {
-            Log.w(TAG, "Tried to stop non-existent connection to pid: " + pid);
+            LogPidWarning(pid, "Tried to stop non-existent connection");
             return;
         }
         connection.stop();
@@ -325,7 +325,7 @@ public class ChildProcessLauncher {
     static void removeInitialBinding(int pid) {
         ChildProcessConnection connection = mServiceMap.get(pid);
         if (connection == null) {
-            Log.w(TAG, "Tried to remove a binding for a non-existent connection to pid: " + pid);
+            LogPidWarning(pid, "Tried to remove a binding for a non-existent connection");
             return;
         }
         connection.removeInitialBinding();
@@ -341,7 +341,7 @@ public class ChildProcessLauncher {
     static void bindAsHighPriority(int pid) {
         ChildProcessConnection connection = mServiceMap.get(pid);
         if (connection == null) {
-            Log.w(TAG, "Tried to bind a non-existent connection to pid: " + pid);
+            LogPidWarning(pid, "Tried to bind a non-existent connection");
             return;
         }
         connection.attachAsActive();
@@ -355,7 +355,7 @@ public class ChildProcessLauncher {
     static void unbindAsHighPriority(int pid) {
         ChildProcessConnection connection = mServiceMap.get(pid);
         if (connection == null) {
-            Log.w(TAG, "Tried to unbind non-existent connection to pid: " + pid);
+            LogPidWarning(pid, "Tried to unbind non-existent connection");
             return;
         }
         connection.detachAsActive();
@@ -398,8 +398,16 @@ public class ChildProcessLauncher {
         };
     };
 
+    private static void LogPidWarning(int pid, String message) {
+        // This class is effectively a no-op in single process mode, so don't log warnings there.
+        if (pid > 0 && !nativeIsSingleProcess()) {
+            Log.w(TAG, message + ", pid=" + pid);
+        }
+    }
+
     private static native void nativeOnChildProcessStarted(int clientContext, int pid);
     private static native Surface nativeGetViewSurface(int surfaceId);
     private static native void nativeEstablishSurfacePeer(
             int pid, Surface surface, int primaryID, int secondaryID);
+    private static native boolean nativeIsSingleProcess();
 }
