@@ -73,4 +73,12 @@ void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
         m_document->view()->scheduleAnimation();
 }
 
+void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
+{
+    for (size_t i = 0; i < m_players.size(); i++) {
+        m_players[i]->setPaused(true);
+        m_players[i]->setCurrentTime(pauseTime);
+    }
+}
+
 } // namespace

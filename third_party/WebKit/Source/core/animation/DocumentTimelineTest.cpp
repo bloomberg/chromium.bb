@@ -57,12 +57,23 @@ private:
     EmptyAnimationEffect() { }
 };
 
-TEST(DocumentTimeline, AddAnAnimation)
-{
-    RefPtr<Document> d = Document::create(0, KURL());
-    RefPtr<Element> e = Element::create(nullQName() , d.get());
-    RefPtr<DocumentTimeline> timeline = DocumentTimeline::create(d.get());
+class DocumentTimelineTest : public ::testing::Test {
+protected:
+    virtual void SetUp()
+    {
+        d = Document::create(0, KURL());
+        e = Element::create(nullQName() , d.get());
+        timeline = DocumentTimeline::create(d.get());
+    }
+
+    RefPtr<Document> d;
+    RefPtr<Element> e;
+    RefPtr<DocumentTimeline> timeline;
     Timing timing;
+};
+
+TEST_F(DocumentTimelineTest, AddAnAnimation)
+{
     RefPtr<Animation> anim = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
     ASSERT_TRUE(isNull(timeline->currentTime()));
 
@@ -75,6 +86,19 @@ TEST(DocumentTimeline, AddAnAnimation)
 
     timeline->serviceAnimations(100);
     ASSERT_EQ(100, timeline->currentTime());
+}
+
+TEST_F(DocumentTimelineTest, PauseForTesting)
+{
+    double seekTime = 1;
+    RefPtr<Animation> anim1 = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
+    RefPtr<Animation> anim2  = Animation::create(e.get(), EmptyAnimationEffect::create(), timing);
+    RefPtr<Player> p1 = timeline->play(anim1.get());
+    RefPtr<Player> p2 = timeline->play(anim2.get());
+    timeline->pauseAnimationsForTesting(seekTime);
+
+    ASSERT_EQ(seekTime, p1->currentTime());
+    ASSERT_EQ(seekTime, p2->currentTime());
 }
 
 }

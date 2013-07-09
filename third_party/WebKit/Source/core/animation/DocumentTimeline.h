@@ -49,6 +49,7 @@ public:
     void serviceAnimations(double);
     PassRefPtr<Player> play(TimedItem*);
     double currentTime() { return m_currentTime; }
+    void pauseAnimationsForTesting(double);
 
 private:
     DocumentTimeline(Document*);
