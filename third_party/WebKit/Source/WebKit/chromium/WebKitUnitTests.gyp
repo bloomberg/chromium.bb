@@ -35,6 +35,7 @@
         '../../wtf/wtf.gypi',
         '../../core/core.gypi',
         '../../modules/modules.gypi',
+        '../../bindings/bindings.gypi',
     ],
     'targets': [
         {
@@ -80,6 +81,7 @@
                     'sources': [
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
+                        '<@(bindings_unittest_files)',
                         '<@(webkit_unittest_files)',
                     ],
                     'conditions': [
