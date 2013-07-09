@@ -18,6 +18,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);
 
 InfoBarDelegate* InfoBarService::AddInfoBar(
     scoped_ptr<InfoBarDelegate> delegate) {
+  DCHECK(delegate);
   if (!infobars_enabled_)
     return NULL;
 
@@ -29,13 +30,18 @@ InfoBarDelegate* InfoBarService::AddInfoBar(
     }
   }
 
-  // TODO(pkasting): Consider removing InfoBarService arg from delegate
-  // constructors and instead using a setter from here.
+  // TODO(pkasting): Remove InfoBarService arg from delegate constructors and
+  // instead use a setter from here.
   InfoBarDelegate* delegate_ptr = delegate.release();
   infobars_.push_back(delegate_ptr);
+
   // Add ourselves as an observer for navigations the first time a delegate is
   // added. We use this notification to expire InfoBars that need to expire on
-  // page transitions.
+  // page transitions.  We must do this before calling Notify() below;
+  // otherwise, if that call causes a call to RemoveInfoBar(), we'll try to
+  // unregister for the NAV_ENTRY_COMMITTED notification, which we won't have
+  // yet registered here, and we'll fail the "was registered" DCHECK in
+  // NotificationRegistrar::Remove().
   if (infobars_.size() == 1) {
     registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -57,8 +63,10 @@ void InfoBarService::RemoveInfoBar(InfoBarDelegate* delegate) {
 InfoBarDelegate* InfoBarService::ReplaceInfoBar(
     InfoBarDelegate* old_delegate,
     scoped_ptr<InfoBarDelegate> new_delegate) {
+  DCHECK(old_delegate);
   if (!infobars_enabled_)
     return AddInfoBar(new_delegate.Pass());  // Deletes the delegate.
+  DCHECK(new_delegate);
 
   InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(),
                                  old_delegate));
@@ -67,6 +75,7 @@ InfoBarDelegate* InfoBarService::ReplaceInfoBar(
   InfoBarDelegate* new_delegate_ptr = new_delegate.release();
   i = infobars_.insert(i, new_delegate_ptr);
   InfoBarReplacedDetails replaced_details(old_delegate, new_delegate_ptr);
+
   // Remove the old delegate before notifying, so that if any observers call
   // back to AddInfoBar() or similar, we don't dupe-check against this delegate.
   infobars_.erase(++i);
@@ -150,6 +159,7 @@ void InfoBarService::Observe(int type,
 
 void InfoBarService::RemoveInfoBarInternal(InfoBarDelegate* delegate,
                                            bool animate) {
+  DCHECK(delegate);
   if (!infobars_enabled_) {
     DCHECK(infobars_.empty());
     return;
@@ -162,7 +172,13 @@ void InfoBarService::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   // Remove the delegate before notifying, so that if any observers call back to
   // AddInfoBar() or similar, we don't dupe-check against this delegate.
   infobars_.erase(i);
-  // Remove ourselves as an observer if we are tracking no more InfoBars.
+
+  // Remove ourselves as an observer if we are tracking no more InfoBars.  We
+  // must do this before calling Notify() below; otherwise, if that call
+  // causes a call to AddInfoBar(), we'll try to register for the
+  // NAV_ENTRY_COMMITTED notification, which we won't have yet unregistered
+  // here, and we'll fail the "not already registered" DCHECK in
+  // NotificationRegistrar::Add().
   if (infobars_.empty()) {
     registrar_.Remove(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,

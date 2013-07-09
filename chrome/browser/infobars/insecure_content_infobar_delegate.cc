@@ -14,7 +14,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::OpenURLParams;
 
 // static
 void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service,
@@ -108,9 +107,9 @@ string16 InsecureContentInfoBarDelegate::GetLinkText() const {
 
 bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  web_contents()->OpenURL(OpenURLParams(
-      google_util::AppendGoogleLocaleParam(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=1342714")),
+  web_contents()->OpenURL(content::OpenURLParams(
+      google_util::AppendGoogleLocaleParam(GURL("https://www.google.com/"
+          "support/chrome/bin/answer.py?answer=1342714")),
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false));

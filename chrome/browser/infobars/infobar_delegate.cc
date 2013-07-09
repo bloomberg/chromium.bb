@@ -100,10 +100,10 @@ gfx::Image InfoBarDelegate::GetIcon() const {
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(icon_id);
 }
 
-InfoBarDelegate::InfoBarDelegate(InfoBarService* infobar_service)
+InfoBarDelegate::InfoBarDelegate(InfoBarService* owner)
     : contents_unique_id_(0),
-      owner_(infobar_service) {
-  if (infobar_service)
+      owner_(owner) {
+  if (owner_)
     StoreActiveEntryUniqueID();
 }
 

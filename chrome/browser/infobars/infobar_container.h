@@ -68,10 +68,9 @@ class InfoBarContainer : public content::NotificationObserver,
   InfoBarContainer(Delegate* delegate, SearchModel* search_model);
   virtual ~InfoBarContainer();
 
-  // Changes the InfoBarService for which this container is showing
-  // infobars.  This will remove all current infobars from the container, add
-  // the infobars from |infobar_service|, and show them all.  |infobar_service|
-  // may be NULL.
+  // Changes the InfoBarService for which this container is showing infobars.
+  // This will remove all current infobars from the container, add the infobars
+  // from |infobar_service|, and show them all.  |infobar_service| may be NULL.
   void ChangeInfoBarService(InfoBarService* infobar_service);
 
   // Returns the amount by which to overlap the toolbar above, and, when

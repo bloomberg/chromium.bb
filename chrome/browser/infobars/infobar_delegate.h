@@ -113,7 +113,7 @@ class InfoBarDelegate {
  protected:
   // If |contents| is non-NULL, its active entry's unique ID will be stored
   // using StoreActiveEntryUniqueID automatically.
-  explicit InfoBarDelegate(InfoBarService* infobar_service);
+  explicit InfoBarDelegate(InfoBarService* owner);
 
   // Store the unique id for the active entry in our WebContents, to be used
   // later upon navigation to determine if this InfoBarDelegate should be
