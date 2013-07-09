@@ -36,8 +36,9 @@ namespace WebCore {
 
 class HTMLOptionElement;
 
-class HTMLSelectElement : public HTMLFormControlElementWithState, public TypeAheadDataSource {
+class HTMLSelectElement FINAL : public HTMLFormControlElementWithState, public TypeAheadDataSource {
 public:
+    static PassRefPtr<HTMLSelectElement> create(Document*);
     static PassRefPtr<HTMLSelectElement> create(const QualifiedName&, Document*, HTMLFormElement*, bool createdByParser);
 
     int selectedIndex() const;

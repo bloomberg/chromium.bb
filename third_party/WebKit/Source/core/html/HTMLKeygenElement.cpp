@@ -41,51 +41,31 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-class KeygenSelectElement FINAL : public HTMLSelectElement {
-public:
-    static PassRefPtr<KeygenSelectElement> create(Document* document)
-    {
-        return adoptRef(new KeygenSelectElement(document));
-    }
-
-protected:
-    KeygenSelectElement(Document* document)
-        : HTMLSelectElement(selectTag, document, 0, false)
-    {
-        DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
-        setPseudo(pseudoId);
-    }
-
-private:
-    virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren()
-    {
-        return create(document());
-    }
-};
-
-inline HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(tagName, document, form)
 {
     ASSERT(hasTagName(keygenTag));
     ScriptWrappable::init(this);
+    ensureUserAgentShadowRoot();
+}
 
-    // Create a select element with one option element for each key size.
+void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
+{
+    DEFINE_STATIC_LOCAL(AtomicString, keygenSelectPseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
+
     Vector<String> keys;
     getSupportedKeySizes(keys);
 
-    RefPtr<HTMLSelectElement> select = KeygenSelectElement::create(document);
+    // Create a select element with one option element for each key size.
+    RefPtr<HTMLSelectElement> select = HTMLSelectElement::create(document());
+    select->setPseudo(keygenSelectPseudoId);
     for (size_t i = 0; i < keys.size(); ++i) {
-        RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(document);
-        select->appendChild(option, IGNORE_EXCEPTION);
-        option->appendChild(Text::create(document, keys[i]), IGNORE_EXCEPTION);
+        RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(document());
+        option->appendChild(Text::create(document(), keys[i]), ASSERT_NO_EXCEPTION);
+        select->appendChild(option, ASSERT_NO_EXCEPTION);
     }
 
-    ensureUserAgentShadowRoot()->appendChild(select, IGNORE_EXCEPTION);
-}
-
-PassRefPtr<HTMLKeygenElement> HTMLKeygenElement::create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
-{
-    return adoptRef(new HTMLKeygenElement(tagName, document, form));
+    root->appendChild(select, ASSERT_NO_EXCEPTION);
 }
 
 void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -97,7 +77,7 @@ void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLFormControlElement::parseAttribute(name, value);
 }
 
-bool HTMLKeygenElement::appendFormData(FormDataList& encoded_values, bool)
+bool HTMLKeygenElement::appendFormData(FormDataList& encoding, bool)
 {
     // Only RSA is supported at this time.
     const AtomicString& keyType = fastGetAttribute(keytypeAttr);
@@ -106,7 +86,7 @@ bool HTMLKeygenElement::appendFormData(FormDataList& encoded_values, bool)
     String value = signedPublicKeyAndChallengeString(shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document()->baseURL());
     if (value.isNull())
         return false;
-    encoded_values.appendData(name(), value.utf8());
+    encoding.appendData(name(), value.utf8());
     return true;
 }
 
@@ -119,11 +99,6 @@ const AtomicString& HTMLKeygenElement::formControlType() const
 void HTMLKeygenElement::reset()
 {
     shadowSelect()->reset();
-}
-
-bool HTMLKeygenElement::shouldSaveAndRestoreFormControlState() const
-{
-    return false;
 }
 
 HTMLSelectElement* HTMLKeygenElement::shadowSelect() const

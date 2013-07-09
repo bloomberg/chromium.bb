@@ -32,28 +32,33 @@ class HTMLSelectElement;
 
 class HTMLKeygenElement FINAL : public HTMLFormControlElementWithState {
 public:
-    static PassRefPtr<HTMLKeygenElement> create(const QualifiedName&, Document*, HTMLFormElement*);
+    static PassRefPtr<HTMLKeygenElement> create(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
+    {
+        return adoptRef(new HTMLKeygenElement(tagName, document, form));
+    }
 
-    virtual bool willValidate() const { return false; }
+    virtual bool willValidate() const OVERRIDE { return false; }
 
 private:
     HTMLKeygenElement(const QualifiedName&, Document*, HTMLFormElement*);
 
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
-    virtual bool canStartSelection() const { return false; }
+    virtual bool canStartSelection() const OVERRIDE { return false; }
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
-    virtual bool appendFormData(FormDataList&, bool);
-    virtual const AtomicString& formControlType() const;
-    virtual bool isOptionalFormControl() const { return false; }
+    virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
+    virtual const AtomicString& formControlType() const OVERRIDE;
+    virtual bool isOptionalFormControl() const OVERRIDE { return false; }
 
-    virtual bool isEnumeratable() const { return true; }
+    virtual bool isEnumeratable() const OVERRIDE { return true; }
     virtual bool supportLabels() const OVERRIDE { return true; }
 
-    virtual void reset();
-    virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE;
+    virtual void reset() OVERRIDE;
+    virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE { return false; }
+
+    virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
 
     HTMLSelectElement* shadowSelect() const;
 };
