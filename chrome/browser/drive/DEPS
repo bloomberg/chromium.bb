@@ -1,0 +1,26 @@
+include_rules = [
+  "-chrome",
+  "-content",
+  "+chrome/browser/drive",
+  "+content/public/browser",
+  "+content/public/test",
+  # This should be changed to "+google_apis" once
+  # //chrome/browser/google_apis is moved to //google_apis. crbug.com/146989
+  "!chrome/browser/google_apis",
+]
+
+# The following dependencies should be removed to componentize this
+# directory. crbug.com/257943
+specific_include_rules = {
+  "drive_notification_manager_factory\.cc": [
+    "!chrome/browser/invalidation/invalidation_service_factory.h",
+    "!chrome/browser/profiles/profile.h",
+    "!chrome/browser/sync/profile_sync_service.h",
+    "!chrome/browser/sync/profile_sync_service_factory.h",
+  ],
+  "drive_notification_manager\.cc": [
+    "!chrome/browser/invalidation/invalidation_service.h",
+    "!chrome/browser/invalidation/invalidation_service_factory.h",
+    "!chrome/browser/profiles/profile.h",
+  ],
+}
