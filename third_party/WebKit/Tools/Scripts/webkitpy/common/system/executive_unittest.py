@@ -233,25 +233,6 @@ class ExecutiveTest(unittest.TestCase):
         pids = executive.running_pids()
         self.assertIn(os.getpid(), pids)
 
-    def serial_test_run_in_parallel(self):
-        # We run this test serially to avoid overloading the machine and throwing off the timing.
-
-        if sys.platform in ("win32", "cygwin"):
-            return  # This function isn't implemented properly on windows yet.
-        import multiprocessing
-
-        NUM_PROCESSES = 2
-        DELAY_SECS = 0.50
-        cmd_line = [sys.executable, '-c', 'import time; time.sleep(%f); print "hello"' % DELAY_SECS]
-        cwd = os.getcwd()
-        commands = [tuple([cmd_line, cwd])] * NUM_PROCESSES
-        start = time.time()
-        command_outputs = Executive().run_in_parallel(commands, processes=NUM_PROCESSES)
-        done = time.time()
-        self.assertTrue(done - start < NUM_PROCESSES * DELAY_SECS)
-        self.assertEqual([output[1] for output in command_outputs], ["hello\n"] * NUM_PROCESSES)
-        self.assertEqual([],  multiprocessing.active_children())
-
     def test_run_in_parallel_assert_nonempty(self):
         self.assertRaises(AssertionError, Executive().run_in_parallel, [])
 
