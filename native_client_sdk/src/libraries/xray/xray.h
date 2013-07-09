@@ -36,16 +36,21 @@ XRAY_NO_INSTRUMENT void __XRayAnnotateFiltered(const uint32_t filter,
 /* Ok if mapfilename is NULL, no symbols will be loaded.  On glibc builds,
  * XRay will also attempt to populate the symbol table with dladdr()
  */
-XRAY_NO_INSTRUMENT void XRayInit(int stack_size, int buffer_size,
-                                 int frame_count, const char* mapfilename);
-XRAY_NO_INSTRUMENT void XRayShutdown();
-XRAY_NO_INSTRUMENT void XRayStartFrame();
-XRAY_NO_INSTRUMENT void XRayEndFrame();
-XRAY_NO_INSTRUMENT void XRaySetAnnotationFilter(uint32_t filter);
-XRAY_NO_INSTRUMENT void XRaySaveReport(const char* filename,
+XRAY_NO_INSTRUMENT struct XRayTraceCapture* XRayInit(int stack_size,
+                                                     int buffer_size,
+                                                     int frame_count,
+                                                     const char* mapfilename);
+XRAY_NO_INSTRUMENT void XRayShutdown(struct XRayTraceCapture* capture);
+XRAY_NO_INSTRUMENT void XRayStartFrame(struct XRayTraceCapture* capture);
+XRAY_NO_INSTRUMENT void XRayEndFrame(struct XRayTraceCapture* capture);
+XRAY_NO_INSTRUMENT void XRaySetAnnotationFilter(
+    struct XRayTraceCapture* capture, uint32_t filter);
+XRAY_NO_INSTRUMENT void XRaySaveReport(struct XRayTraceCapture* capture,
+                                       const char* filename,
                                        float percent_cutoff,
                                        int cycle_cutoff);
-XRAY_NO_INSTRUMENT void XRayReport(FILE* f,
+XRAY_NO_INSTRUMENT void XRayReport(struct XRayTraceCapture* capture,
+                                   FILE* f,
                                    float percent_cutoff,
                                    int ticks_cutoff);
 #if defined(XRAY_ANNOTATE)
@@ -64,16 +69,23 @@ XRAY_NO_INSTRUMENT void XRayReport(FILE* f,
 #define XRayAnnotate(...)
 #define XRayAnnotateFiltered(...)
 
-inline void XRayInit(int stack_size, int buffer_size,
-                     int frame_count, const char* mapfilename) {}
-inline void XRayShutdown() {}
-inline void XRayStartFrame() {}
-inline void XRayEndFrame() {}
-inline void XRaySetAnnotationFilter(uint32_t filter) {}
-inline void XRaySaveReport(const char* filename,
+inline struct XRayTraceCapture* XRayInit(int stack_size,
+                                         int buffer_size,
+                                         int frame_count,
+                                         const char* mapfilename) {}
+inline void XRayShutdown(struct XRayTraceCapture* capture) {}
+inline void XRayStartFrame(struct XRayTraceCapture* capture) {}
+inline void XRayEndFrame(struct XRayTraceCapture* capture) {}
+inline void XRaySetAnnotationFilter(struct XRayTraceCapture* capture,
+                                    uint32_t filter) {}
+inline void XRaySaveReport(struct XRayTraceCapture* capture,
+                           const char* filename,
                            float percent_cutoff,
                            int cycle_cutoff) {}
-inline void XRayReport(FILE* f, float percent_cutoff, int ticks_cutoff);
+inline void XRayReport(struct XRayTraceCapture* capture,
+                       FILE* f,
+                       float percent_cutoff,
+                       int ticks_cutoff);
 #endif  /* defined(XRAY) */
 
 #ifdef __cplusplus
@@ -81,4 +93,3 @@ inline void XRayReport(FILE* f, float percent_cutoff, int ticks_cutoff);
 #endif
 
 #endif  /* LIBRARIES_XRAY_XRAY_H_ */
-

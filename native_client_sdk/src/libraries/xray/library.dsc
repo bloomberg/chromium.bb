@@ -10,6 +10,8 @@
       'SOURCES' : [
         'demangle.c',
         'hashtable.c',
+        'parsesymbols.c',
+        'report.c',
         'stringpool.c',
         'symtable.c',
         'xray.c'

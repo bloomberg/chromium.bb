@@ -6,7 +6,6 @@
 
 /* XRay -- a simple profiler for Native Client */
 
-#include <alloca.h>
 #include <assert.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -14,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include "xray/xray_priv.h"
 
@@ -21,20 +21,28 @@
 
 #define FORCE_INLINE  __attribute__((always_inline))
 
-#if defined(__amd64__)
+/* GTSC - Get Time Stamp Counter */
+#if defined(__amd64__) && !defined(XRAY_NO_RDTSC)
 FORCE_INLINE uint64_t RDTSC64() {
   uint64_t a, d;
   __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d));
   return ((uint64_t)a) | (((uint64_t)d) << 32);
 }
-#define RDTSC(_x) _x = RDTSC64()
+#define GTSC(_x) _x = RDTSC64()
+#elif defined(__i386__) && !defined(XRAY_NO_RDTSC)
+#define GTSC(_x)      __asm__ __volatile__ ("rdtsc" : "=A" (_x));
 #else
-#define RDTSC(_x)      __asm__ __volatile__ ("rdtsc" : "=A" (_x));
+FORCE_INLINE uint64_t GTOD() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec;
+}
+#define GTSC(_x) _x = GTOD();
 #endif
 
 
 /* Use a TLS variable for cheap thread uid. */
-volatile __thread int g_xray_thread_id;
+__thread struct XRayTraceCapture* g_xray_capture = NULL;
 
 
 struct XRayTraceStackEntry {
@@ -42,13 +50,6 @@ struct XRayTraceStackEntry {
   uint64_t tsc;
   uint32_t dest;
   uint32_t annotation_index;
-};
-
-
-struct XRayTraceBufferEntry {
-  uint32_t depth_addr;
-  uint32_t annotation_index;
-  uint64_t ticks;
 };
 
 
@@ -72,16 +73,9 @@ struct XRayTraceFrame {
 };
 
 
-struct XRayTotal {
-  int index;
-  int frame;
-  uint64_t ticks;
-};
-
-
 struct XRayTraceCapture {
   /* Common variables share cache line */
-  volatile void* recording;
+  bool recording;
   uint32_t stack_depth;
   uint32_t max_stack_depth;
   int buffer_index;
@@ -110,112 +104,138 @@ XRAY_NO_INSTRUMENT void __cyg_profile_func_enter(void* this_fn,
 XRAY_NO_INSTRUMENT void __cyg_profile_func_exit(void* this_fn,
                                                 void* call_site);
 XRAY_NO_INSTRUMENT void __xray_profile_append_annotation(
-    struct XRayTraceStackEntry* se, struct XRayTraceBufferEntry* be);
-XRAY_NO_INSTRUMENT int XRayTraceBufferGetTraceCountForFrame(int frame);
-XRAY_NO_INSTRUMENT int XRayTraceBufferIncrementIndex(int i);
-XRAY_NO_INSTRUMENT int XRayTraceBufferDecrementIndex(int i);
-XRAY_NO_INSTRUMENT bool XRayTraceBufferIsAnnotation(int index);
-XRAY_NO_INSTRUMENT void XRayTraceBufferAppendString(char* src);
-XRAY_NO_INSTRUMENT int XRayTraceBufferCopyToString(int index, char* dst);
-XRAY_NO_INSTRUMENT int XRayTraceBufferSkipAnnotation(int index);
-XRAY_NO_INSTRUMENT int XRayTraceBufferNextEntry(int index);
-XRAY_NO_INSTRUMENT void XRayCheckGuards();
-XRAY_NO_INSTRUMENT void XRayFrameMakeLabel(int counter, char* label);
-XRAY_NO_INSTRUMENT int XRayFrameFindTail();
+    struct XRayTraceCapture* capture,
+    struct XRayTraceStackEntry* se,
+    struct XRayTraceBufferEntry* be);
 
 #ifdef __cplusplus
 }
 #endif
 
 
-struct XRayTraceCapture g_xray = {
-  NULL, 0, 0, 0, 0, 0, 0, NULL, false, 0xFFFFFFFF
-};
+/* Asserts that the guard values haven't changed. */
+void XRayCheckGuards(struct XRayTraceCapture* capture) {
+  assert(capture->guard0 == XRAY_GUARD_VALUE);
+  assert(capture->guard1 == XRAY_GUARD_VALUE);
+  assert(capture->guard2 == XRAY_GUARD_VALUE);
+}
 
+/* Decrements the trace index, wrapping around if needed. */
+XRAY_FORCE_INLINE int XRayTraceDecrementIndexInline(
+    struct XRayTraceCapture* capture, int index) {
+  --index;
+  if (index < 0)
+    index = capture->buffer_size - 1;
+  return index;
+}
 
 /* Increments the trace index, wrapping around if needed. */
-XRAY_FORCE_INLINE int XRayTraceBufferIncrementIndex(int index) {
+XRAY_FORCE_INLINE int XRayTraceIncrementIndexInline(
+    struct XRayTraceCapture* capture, int index) {
   ++index;
-  if (index >= g_xray.buffer_size)
+  if (index >= capture->buffer_size)
     index = 0;
   return index;
 }
 
-
-/* Decrements the trace index, wrapping around if needed. */
-XRAY_FORCE_INLINE int XRayTraceBufferDecrementIndex(int index) {
-  --index;
-  if (index < 0)
-    index = g_xray.buffer_size - 1;
-  return index;
-}
-
-
 /* Returns true if the trace entry is an annotation string. */
-FORCE_INLINE bool XRayTraceBufferIsAnnotation(int index) {
-  struct XRayTraceBufferEntry* be = &g_xray.buffer[index];
+bool XRayTraceIsAnnotation(
+    struct XRayTraceCapture* capture, int index) {
+  struct XRayTraceBufferEntry* be = &capture->buffer[index];
   char* dst = (char*)be;
   return 0 == *dst;
 }
 
+int XRayTraceIncrementIndex(struct XRayTraceCapture* capture, int index) {
+  return XRayTraceIncrementIndexInline(capture, index);
+}
 
-/* Asserts that the guard values haven't changed. */
-void XRayCheckGuards() {
-  assert(g_xray.guard0 == XRAY_GUARD_VALUE);
-  assert(g_xray.guard1 == XRAY_GUARD_VALUE);
-  assert(g_xray.guard2 == XRAY_GUARD_VALUE);
+int XRayTraceDecrementIndex(struct XRayTraceCapture* capture, int index) {
+  return XRayTraceDecrementIndexInline(capture, index);
+}
+
+/* The entry in the tracebuffer at index is an annotation string. */
+/* Calculate the next index value representing the next trace entry. */
+int XRayTraceSkipAnnotation(struct XRayTraceCapture* capture, int index) {
+  /* Annotations are strings embedded in the trace buffer. */
+  /* An annotation string can span multiple trace entries. */
+  /* Skip over the string by looking for zero termination. */
+  assert(capture);
+  assert(XRayTraceIsAnnotation(capture, index));
+  bool done = false;
+  int start_index = 1;
+  int i;
+  while (!done) {
+    char* str = (char*) &capture->buffer[index];
+    const int num = sizeof(capture->buffer[index]);
+    for (i = start_index; i < num; ++i) {
+      if (0 == str[i]) {
+        done = true;
+        break;
+      }
+    }
+    index = XRayTraceIncrementIndexInline(capture, index);
+    start_index = 0;
+  }
+  return index;
 }
 
 
-/* Not very accurate, as the annotation strings will also
-** be counted as "entries" */
-int XRayTraceBufferGetTraceCountForFrame(int frame) {
-  assert(true == g_xray.initialized);
+struct XRayTraceBufferEntry* XRayTraceGetEntry(
+    struct XRayTraceCapture* capture, int index) {
+  return &capture->buffer[index];
+}
+
+/* Starting at index, return the index into the trace buffer */
+/* for the next trace entry.  Index can wrap (ringbuffer) */
+int XRayTraceNextEntry(struct XRayTraceCapture* capture, int index) {
+  if (XRayTraceIsAnnotation(capture, index))
+    index = XRayTraceSkipAnnotation(capture, index);
+  else
+    index = XRayTraceIncrementIndexInline(capture, index);
+  return index;
+}
+
+int XRayFrameGetTraceStartIndex(struct XRayTraceCapture* capture, int frame) {
+  assert(capture);
+  assert(capture->initialized);
+  assert(!capture->recording);
+  return capture->frame.entry[frame].start;
+}
+
+int XRayFrameGetTraceEndIndex(struct XRayTraceCapture* capture, int frame) {
+  assert(capture);
+  assert(capture->initialized);
+  assert(!capture->recording);
+  return capture->frame.entry[frame].end;
+}
+
+/* Not very accurate, annotation strings will also be counted as "entries" */
+int XRayFrameGetTraceCount(
+    struct XRayTraceCapture* capture, int frame) {
+  assert(true == capture->initialized);
   assert(frame >= 0);
-  assert(frame < g_xray.frame.count);
-  assert(NULL == g_xray.recording);
-  int start = g_xray.frame.entry[frame].start;
-  int end = g_xray.frame.entry[frame].end;
+  assert(frame < capture->frame.count);
+  assert(!capture->recording);
+  int start = capture->frame.entry[frame].start;
+  int end = capture->frame.entry[frame].end;
   int num;
   if (start < end)
     num = end - start;
   else
-    num = g_xray.buffer_size - (start - end);
+    num = capture->buffer_size - (start - end);
   return num;
 }
 
-
-/* Generic memory malloc for XRay */
-/* validates pointer returned by malloc */
-/* memsets memory block to zero */
-void* XRayMalloc(size_t t) {
-  void* data;
-  data = malloc(t);
-  if (NULL == data) {
-    printf("XRay: malloc(%d) failed, panic shutdown!\n", t);
-    exit(-1);
-  }
-  memset(data, 0, t);
-  return data;
-}
-
-
-/* Generic memory free for XRay */
-void XRayFree(void* data) {
-  assert(NULL != data);
-  free(data);
-}
-
-
 /* Append a string to trace buffer. */
-void XRayTraceBufferAppendString(char* src) {
-  int index = g_xray.buffer_index;
+void XRayTraceAppendString(struct XRayTraceCapture* capture, char* src) {
+  int index = capture->buffer_index;
   bool done = false;
   int start_index = 1;
   int s = 0;
   int i;
-  char* dst = (char*)&g_xray.buffer[index];
-  const int num = sizeof(g_xray.buffer[index]);
+  char* dst = (char*)&capture->buffer[index];
+  const int num = sizeof(capture->buffer[index]);
   dst[0] = 0;
   while (!done) {
     for (i = start_index; i < num; ++i) {
@@ -227,24 +247,24 @@ void XRayTraceBufferAppendString(char* src) {
       }
       ++s;
     }
-    index = XRayTraceBufferIncrementIndex(index);
-    dst = (char*)&g_xray.buffer[index];
+    index = XRayTraceIncrementIndexInline(capture, index);
+    dst = (char*)&capture->buffer[index];
     start_index = 0;
   }
-  g_xray.buffer_index = index;
+  capture->buffer_index = index;
 }
 
-
 /* Copies annotation from trace buffer to output string. */
-int XRayTraceBufferCopyToString(int index, char* dst) {
-  assert(XRayTraceBufferIsAnnotation(index));
+int XRayTraceCopyToString(
+    struct XRayTraceCapture* capture, int index, char* dst) {
+  assert(XRayTraceIsAnnotation(capture, index));
   bool done = false;
   int i;
   int d = 0;
   int start_index = 1;
   while (!done) {
-    char* src = (char*) &g_xray.buffer[index];
-    const int num = sizeof(g_xray.buffer[index]);
+    char* src = (char*) &capture->buffer[index];
+    const int num = sizeof(capture->buffer[index]);
     for (i = start_index; i < num; ++i) {
       dst[d] = src[i];
       if (0 == src[i]) {
@@ -253,30 +273,53 @@ int XRayTraceBufferCopyToString(int index, char* dst) {
       }
       ++d;
     }
-    index = XRayTraceBufferIncrementIndex(index);
+    index = XRayTraceIncrementIndexInline(capture, index);
     start_index = 0;
   }
   return index;
 }
 
 
+/* Generic memory malloc for XRay */
+/* validates pointer returned by malloc */
+/* memsets memory block to zero */
+void* XRayMalloc(size_t t) {
+  void* data;
+  data = calloc(1, t);
+  if (NULL == data) {
+    printf("XRay: malloc(%d) failed, panic shutdown!\n", t);
+    exit(-1);
+  }
+  return data;
+}
+
+
+/* Generic memory free for XRay */
+void XRayFree(void* data) {
+  assert(NULL != data);
+  free(data);
+}
+
+
+
 /* Main profile capture function that is called at the start */
 /* of every instrumented function.  This function is implicitly */
 /* called when code is compilied with the -finstrument-functions option */
 void __cyg_profile_func_enter(void* this_fn, void* call_site) {
-  if (&g_xray_thread_id == g_xray.recording) {
-    uint32_t depth = g_xray.stack_depth;
-    if (depth < g_xray.max_stack_depth) {
-      struct XRayTraceStackEntry* se = &g_xray.stack[depth];
+  struct XRayTraceCapture* capture = g_xray_capture;
+  if (capture && capture->recording) {
+    uint32_t depth = capture->stack_depth;
+    if (depth < capture->max_stack_depth) {
+      struct XRayTraceStackEntry* se = &capture->stack[depth];
       uint32_t addr = (uint32_t)this_fn;
       se->depth_addr = XRAY_PACK_DEPTH_ADDR(depth, addr);
-      se->dest = g_xray.buffer_index;
+      se->dest = capture->buffer_index;
       se->annotation_index = 0;
-      RDTSC(se->tsc);
-      g_xray.buffer_index =
-        XRayTraceBufferIncrementIndex(g_xray.buffer_index);
+      GTSC(se->tsc);
+      capture->buffer_index =
+        XRayTraceIncrementIndexInline(capture, capture->buffer_index);
     }
-    ++g_xray.stack_depth;
+    ++capture->stack_depth;
   }
 }
 
@@ -285,20 +328,21 @@ void __cyg_profile_func_enter(void* this_fn, void* call_site) {
 /* every instrumented function.  This function is implicity called */
 /* when the code is compiled with the -finstrument-functions option */
 void __cyg_profile_func_exit(void* this_fn, void* call_site) {
-  if (&g_xray_thread_id == g_xray.recording) {
-    --g_xray.stack_depth;
-    if (g_xray.stack_depth < g_xray.max_stack_depth) {
-      uint32_t depth = g_xray.stack_depth;
-      struct XRayTraceStackEntry* se = &g_xray.stack[depth];
+  struct XRayTraceCapture* capture = g_xray_capture;
+  if (capture && capture->recording) {
+    --capture->stack_depth;
+    if (capture->stack_depth < capture->max_stack_depth) {
+      uint32_t depth = capture->stack_depth;
+      struct XRayTraceStackEntry* se = &capture->stack[depth];
       uint32_t buffer_index = se->dest;
       uint64_t tsc;
-      struct XRayTraceBufferEntry* be = &g_xray.buffer[buffer_index];
-      RDTSC(tsc);
+      struct XRayTraceBufferEntry* be = &capture->buffer[buffer_index];
+      GTSC(tsc);
       be->depth_addr = se->depth_addr;
       be->ticks = tsc - se->tsc;
       be->annotation_index = 0;
       if (0 != se->annotation_index)
-        __xray_profile_append_annotation(se, be);
+        __xray_profile_append_annotation(capture, se, be);
     }
   }
 }
@@ -306,15 +350,16 @@ void __cyg_profile_func_exit(void* this_fn, void* call_site) {
 
 /* Special case appending annotation string to trace buffer */
 /* this function should only ever be called from __cyg_profile_func_exit() */
-void __xray_profile_append_annotation(struct XRayTraceStackEntry* se,
+void __xray_profile_append_annotation(struct XRayTraceCapture* capture,
+                                      struct XRayTraceStackEntry* se,
                                       struct XRayTraceBufferEntry* be) {
   struct XRayTraceStackEntry* parent = se - 1;
   int start = parent->annotation_index;
-  be->annotation_index = g_xray.buffer_index;
-  char* str = &g_xray.annotation[start];
-  XRayTraceBufferAppendString(str);
+  be->annotation_index = capture->buffer_index;
+  char* str = &capture->annotation[start];
+  XRayTraceAppendString(capture, str);
   *str = 0;
-  ++g_xray.annotation_count;
+  ++capture->annotation_count;
 }
 
 
@@ -322,10 +367,11 @@ void __xray_profile_append_annotation(struct XRayTraceStackEntry* se,
 /* Annotates the trace buffer. no filtering. */
 void __XRayAnnotate(const char* fmt, ...) {
   va_list args;
+  struct XRayTraceCapture* capture = g_xray_capture;
   /* Only annotate functions recorded in the trace buffer. */
-  if (true == g_xray.initialized) {
-    if (0 == g_xray.disabled) {
-      if (&g_xray_thread_id == g_xray.recording) {
+  if (capture && capture->initialized) {
+    if (0 == capture->disabled) {
+      if (capture->recording) {
         char buffer[1024];
         int r;
         va_start(args, fmt);
@@ -333,13 +379,13 @@ void __XRayAnnotate(const char* fmt, ...) {
         va_end(args);
         {
           /* Get current string ptr */
-          int depth = g_xray.stack_depth - 1;
-          struct XRayTraceStackEntry* se = &g_xray.stack[depth];
+          int depth = capture->stack_depth - 1;
+          struct XRayTraceStackEntry* se = &capture->stack[depth];
           if (0 == se->annotation_index) {
             struct XRayTraceStackEntry* parent = se - 1;
             se->annotation_index = parent->annotation_index;
           }
-          char* dst = &g_xray.annotation[se->annotation_index];
+          char* dst = &capture->annotation[se->annotation_index];
           strcpy(dst, buffer);
           int len = strlen(dst);
           se->annotation_index += len;
@@ -353,24 +399,25 @@ void __XRayAnnotate(const char* fmt, ...) {
 /* Annotates the trace buffer with user strings.  Can be filtered. */
 void __XRayAnnotateFiltered(const uint32_t filter, const char* fmt, ...) {
   va_list args;
-  if (true == g_xray.initialized) {
-    if (0 != (filter & g_xray.annotation_filter)) {
-      if (0 == g_xray.disabled) {
-        if (&g_xray_thread_id == g_xray.recording) {
-          char buffer[1024];
+  struct XRayTraceCapture* capture = g_xray_capture;
+  if (capture && capture->initialized) {
+    if (0 != (filter & capture->annotation_filter)) {
+      if (0 == capture->disabled) {
+        if (capture->recording) {
+          char buffer[XRAY_TRACE_ANNOTATION_LENGTH];
           int r;
           va_start(args, fmt);
           r = vsnprintf(buffer, sizeof(buffer), fmt, args);
           va_end(args);
           {
             /* get current string ptr */
-            int depth = g_xray.stack_depth - 1;
-            struct XRayTraceStackEntry* se = &g_xray.stack[depth];
+            int depth = capture->stack_depth - 1;
+            struct XRayTraceStackEntry* se = &capture->stack[depth];
             if (0 == se->annotation_index) {
               struct XRayTraceStackEntry* parent = se - 1;
               se->annotation_index = parent->annotation_index;
             }
-            char* dst = &g_xray.annotation[se->annotation_index];
+            char* dst = &capture->annotation[se->annotation_index];
             strcpy(dst, buffer);
             int len = strlen(dst);
             se->annotation_index += len;
@@ -383,159 +430,197 @@ void __XRayAnnotateFiltered(const uint32_t filter, const char* fmt, ...) {
 
 
 /* Allows user to specify annotation filter value, a 32 bit mask. */
-void XRaySetAnnotationFilter(uint32_t filter) {
-  g_xray.annotation_filter = filter;
+void XRaySetAnnotationFilter(struct XRayTraceCapture* capture,
+                             uint32_t filter) {
+  capture->annotation_filter = filter;
 }
 
 
 /* Reset xray profiler. */
-void XRayReset() {
-  assert(true == g_xray.initialized);
-  assert(NULL == g_xray.recording);
-  g_xray.buffer_index = 0;
-  g_xray.stack_depth = 0;
-  g_xray.disabled = 0;
-  g_xray.frame.head = 0;
-  g_xray.frame.tail = 0;
-  memset(g_xray.frame.entry, 0,
-    sizeof(g_xray.frame.entry[0]) * g_xray.frame.count);
-  memset(&g_xray.stack, 0,
-    sizeof(g_xray.stack[0]) * XRAY_TRACE_STACK_SIZE);
-  XRayCheckGuards();
+void XRayReset(struct XRayTraceCapture* capture) {
+  assert(capture);
+  assert(capture->initialized);
+  assert(!capture->recording);
+  capture->buffer_index = 0;
+  capture->stack_depth = 0;
+  capture->disabled = 0;
+  capture->frame.head = 0;
+  capture->frame.tail = 0;
+  memset(capture->frame.entry, 0,
+    sizeof(capture->frame.entry[0]) * capture->frame.count);
+  memset(&capture->stack, 0,
+    sizeof(capture->stack[0]) * XRAY_TRACE_STACK_SIZE);
+  XRayCheckGuards(capture);
 }
 
 
 /* Change the maximum stack depth captures are made. */
-void XRaySetMaxStackDepth(int stack_depth) {
-  assert(true == g_xray.initialized);
-  assert(NULL == g_xray.recording);
+void XRaySetMaxStackDepth(struct XRayTraceCapture* capture, int stack_depth) {
+  assert(capture);
+  assert(capture->initialized);
+  assert(!capture->recording);
   if (stack_depth < 1)
     stack_depth = 1;
   if (stack_depth >= XRAY_TRACE_STACK_SIZE)
     stack_depth = (XRAY_TRACE_STACK_SIZE - 1);
-  g_xray.max_stack_depth = stack_depth;
+  capture->max_stack_depth = stack_depth;
 }
 
 
-int XRayFramePrev(int i) {
+int XRayFrameGetCount(struct XRayTraceCapture* capture) {
+  return capture->frame.count;
+}
+
+int XRayFrameGetTail(struct XRayTraceCapture* capture) {
+  return capture->frame.tail;
+}
+
+int XRayFrameGetHead(struct XRayTraceCapture* capture) {
+  return capture->frame.head;
+}
+
+int XRayFrameGetPrev(struct XRayTraceCapture* capture, int i) {
   i = i - 1;
   if (i < 0)
-    i = g_xray.frame.count - 1;
+    i = capture->frame.count - 1;
   return i;
 }
 
-
-int XRayFrameNext(int i) {
+int XRayFrameGetNext(struct XRayTraceCapture* capture, int i) {
   i = i + 1;
-  if (i >= g_xray.frame.count)
+  if (i >= capture->frame.count)
     i = 0;
   return i;
 }
 
+bool XRayFrameIsValid(struct XRayTraceCapture* capture, int i) {
+  return capture->frame.entry[i].valid;
+}
 
-void XRayFrameMakeLabel(int counter, char* label) {
-  snprintf(label, XRAY_MAX_LABEL, "@@@frame%d", counter);
+int XRayFrameGetTotalTicks(struct XRayTraceCapture* capture, int i) {
+  return capture->frame.entry[i].total_ticks;
+}
+
+int XRayFrameGetAnnotationCount(struct XRayTraceCapture* capture, int i) {
+  return capture->frame.entry[i].annotation_count;
+}
+
+void XRayFrameMakeLabel(struct XRayTraceCapture* capture,
+                        int counter,
+                        char* label) {
+  snprintf(label, XRAY_MAX_LABEL, "@@@frame%d@@@", counter);
 }
 
 
 /* Scans the ring buffer going backwards to find last valid complete frame. */
-int XRayFrameFindTail() {
-  int head = g_xray.frame.head;
-  int index = XRayFramePrev(head);
+/* Will mark whether frames are valid or invalid during the traversal. */
+int XRayFrameFindTail(struct XRayTraceCapture* capture) {
+  int head = capture->frame.head;
+  int index = XRayFrameGetPrev(capture, head);
   int total_capture = 0;
   int last_valid_frame = index;
   /* Check for no captures */
-  if (g_xray.frame.head == g_xray.frame.tail)
-    return g_xray.frame.head;
+  if (capture->frame.head == capture->frame.tail)
+    return capture->frame.head;
   /* Go back and invalidate all captures that have been stomped. */
   while (index != head) {
-    bool valid = g_xray.frame.entry[index].valid;
+    bool valid = capture->frame.entry[index].valid;
     if (valid) {
-      total_capture += XRayTraceBufferGetTraceCountForFrame(index) + 1;
-      if (total_capture < g_xray.buffer_size) {
+      total_capture += XRayFrameGetTraceCount(capture, index) + 1;
+      if (total_capture < capture->buffer_size) {
         last_valid_frame = index;
-        g_xray.frame.entry[index].valid = true;
+        capture->frame.entry[index].valid = true;
       } else {
-        g_xray.frame.entry[index].valid = false;
+        capture->frame.entry[index].valid = false;
       }
     }
-    index = XRayFramePrev(index);
+    index = XRayFrameGetPrev(capture, index);
   }
   return last_valid_frame;
 }
 
 
-/* Starts a new frame and enables capturing, */
-/* must be paired with XRayEndFrame() */
-void XRayStartFrame() {
-  int i = g_xray.frame.head;
-  assert(true == g_xray.initialized);
-  assert(NULL == g_xray.recording);
-  XRayCheckGuards();
+/* Starts a new frame and enables capturing, and must be paired with */
+/* XRayEndFrame()  Trace capturing only occurs on the thread which called */
+/* XRayBeginFrame() and each instance of capture can only trace one thread */
+/* at a time. */
+void XRayStartFrame(struct XRayTraceCapture* capture) {
+  int i;
+  assert(NULL == g_xray_capture);
+  assert(capture->initialized);
+  assert(!capture->recording);
+  i = capture->frame.head;
+  XRayCheckGuards(capture);
   /* Add a trace entry marker so we can detect wrap around stomping */
-  struct XRayTraceBufferEntry* be = &g_xray.buffer[g_xray.buffer_index];
+  struct XRayTraceBufferEntry* be = &capture->buffer[capture->buffer_index];
   be->depth_addr = XRAY_FRAME_MARKER;
-  g_xray.buffer_index = XRayTraceBufferIncrementIndex(g_xray.buffer_index);
+  capture->buffer_index =
+      XRayTraceIncrementIndex(capture, capture->buffer_index);
   /* Set start of the frame we're about to trace */
-  g_xray.frame.entry[i].start = g_xray.buffer_index;
-  g_xray.disabled = 0;
-  g_xray.stack_depth = 1;
+  capture->frame.entry[i].start = capture->buffer_index;
+  capture->disabled = 0;
+  capture->stack_depth = 1;
   /* The trace stack[0] is reserved */
-  memset(&g_xray.stack[0], 0, sizeof(g_xray.stack[0]));
+  memset(&capture->stack[0], 0, sizeof(capture->stack[0]));
   /* Annotation index 0 is reserved to indicate no annotation */
-  g_xray.stack[0].annotation_index = 1;
-  g_xray.annotation[0] = 0;
-  g_xray.annotation[1] = 0;
-  g_xray.annotation_count = 0;
-  g_xray.recording = &g_xray_thread_id;
-  RDTSC(g_xray.frame.entry[i].start_tsc);
+  capture->stack[0].annotation_index = 1;
+  capture->annotation[0] = 0;
+  capture->annotation[1] = 0;
+  capture->annotation_count = 0;
+  capture->recording = true;
+  GTSC(capture->frame.entry[i].start_tsc);
+  g_xray_capture = capture;
 }
 
 
-/* Ends a frame and disables capturing. */
-/* Must be paired with XRayStartFrame() */
-/* Advances to the next frame. */
-void XRayEndFrame() {
-  int i = g_xray.frame.head;
-  assert(true == g_xray.initialized);
-  assert(NULL != g_xray.recording);
-  assert(0 == g_xray.disabled);
-  assert(1 == g_xray.stack_depth);
-  RDTSC(g_xray.frame.entry[i].end_tsc);
-  g_xray.frame.entry[i].total_ticks =
-    g_xray.frame.entry[i].end_tsc - g_xray.frame.entry[i].start_tsc;
-  g_xray.recording = NULL;
-  g_xray.frame.entry[i].end = g_xray.buffer_index;
-  g_xray.frame.entry[i].valid = true;
-  g_xray.frame.entry[i].annotation_count = g_xray.annotation_count;
-  g_xray.frame.head = XRayFrameNext(g_xray.frame.head);
+/* Ends a frame and disables capturing. Advances to the next frame. */
+/* Must be paired with XRayStartFrame(), and called from the same thread. */
+void XRayEndFrame(struct XRayTraceCapture* capture) {
+  int i;
+  assert(capture);
+  assert(capture->initialized);
+  assert(capture->recording);
+  assert(g_xray_capture == capture);
+  assert(0 == capture->disabled);
+  assert(1 == capture->stack_depth);
+  i = capture->frame.head;
+  GTSC(capture->frame.entry[i].end_tsc);
+  capture->frame.entry[i].total_ticks =
+    capture->frame.entry[i].end_tsc - capture->frame.entry[i].start_tsc;
+  capture->recording = NULL;
+  capture->frame.entry[i].end = capture->buffer_index;
+  capture->frame.entry[i].valid = true;
+  capture->frame.entry[i].annotation_count = capture->annotation_count;
+  capture->frame.head = XRayFrameGetNext(capture, capture->frame.head);
   /* If the table is filled, bump the tail. */
-  if (g_xray.frame.head == g_xray.frame.tail)
-    g_xray.frame.tail = XRayFrameNext(g_xray.frame.tail);
-  g_xray.frame.tail = XRayFrameFindTail();
+  if (capture->frame.head == capture->frame.tail)
+    capture->frame.tail = XRayFrameGetNext(capture, capture->frame.tail);
+  capture->frame.tail = XRayFrameFindTail(capture);
   /* Check that we didn't stomp over trace entry marker. */
-  int marker = XRayTraceBufferDecrementIndex(g_xray.frame.entry[i].start);
-  struct XRayTraceBufferEntry* be = &g_xray.buffer[marker];
+  int marker = XRayTraceDecrementIndex(capture, capture->frame.entry[i].start);
+  struct XRayTraceBufferEntry* be = &capture->buffer[marker];
   if (be->depth_addr != XRAY_FRAME_MARKER) {
     fprintf(stderr,
       "XRay: XRayStopFrame() detects insufficient trace buffer size!\n");
-    XRayReset();
+    XRayReset(capture);
   } else {
     /* Replace marker with an empty annotation string. */
     be->depth_addr = XRAY_NULL_ANNOTATION;
-    XRayCheckGuards();
+    XRayCheckGuards(capture);
   }
+  g_xray_capture = NULL;
 }
 
 
 /* Get the last frame captured.  Do not call while capturing. */
 /* (ie call outside of XRayStartFrame() / XRayStopFrame() pair) */
-int XRayGetLastFrame() {
-  assert(true == g_xray.initialized);
-  assert(NULL == g_xray.recording);
-  assert(0 == g_xray.disabled);
-  assert(1 == g_xray.stack_depth);
-  int last_frame = XRayFramePrev(g_xray.frame.head);
+int XRayGetLastFrame(struct XRayTraceCapture* capture) {
+  assert(capture);
+  assert(capture->initialized);
+  assert(!capture->recording);
+  assert(0 == capture->disabled);
+  assert(1 == capture->stack_depth);
+  int last_frame = XRayFrameGetPrev(capture, capture->frame.head);
   return last_frame;
 }
 
@@ -544,282 +629,89 @@ int XRayGetLastFrame() {
 /* This call can be nested, but must be paired with an enable */
 /* (If you need to just exclude a specific function and not its */
 /* children, the XRAY_NO_INSTRUMENT modifier might be better) */
-void XRayDisableCapture() {
-  assert(true == g_xray.initialized);
-  assert(NULL != g_xray.recording);
-  ++g_xray.disabled;
-  g_xray.recording = NULL;
+/* Must be called from same thread as XRayBeginFrame() / XRayEndFrame() */
+void XRayDisableCapture(struct XRayTraceCapture* capture) {
+  assert(capture);
+  assert(capture == g_xray_capture);
+  assert(capture->initialized);
+  ++capture->disabled;
+  capture->recording = false;
 }
 
 
 /* Re-enables capture.  Must be paired with XRayDisableCapture() */
-void XRayEnableCapture() {
-  assert(true == g_xray.initialized);
-  assert(NULL == g_xray.recording);
-  assert(0 < g_xray.disabled);
-  --g_xray.disabled;
-  if (0 == g_xray.disabled) {
-    g_xray.recording = &g_xray_thread_id;
+void XRayEnableCapture(struct XRayTraceCapture* capture) {
+  assert(capture);
+  assert(capture == g_xray_capture);
+  assert(capture->initialized);
+  assert(0 < capture->disabled);
+  --capture->disabled;
+  if (0 == capture->disabled) {
+    capture->recording = true;
   }
 }
 
 
-/* The entry in the tracebuffer at index is an annotation string. */
-/* Calculate the next index value representing the next trace entry. */
-int XRayTraceBufferSkipAnnotation(int index) {
-  /* Annotations are strings embedded in the trace buffer. */
-  /* An annotation string can span multiple trace entries. */
-  /* Skip over the string by looking for zero termination. */
-  assert(XRayTraceBufferIsAnnotation(index));
-  bool done = false;
-  int start_index = 1;
-  int i;
-  while (!done) {
-    char* str = (char*) &g_xray.buffer[index];
-    const int num = sizeof(g_xray.buffer[index]);
-    for (i = start_index; i < num; ++i) {
-      if (0 == str[i]) {
-        done = true;
-        break;
-      }
-    }
-    index = XRayTraceBufferIncrementIndex(index);
-    start_index = 0;
-  }
-  return index;
-}
 
-
-/* Starting at index, return the index into the trace buffer */
-/* for the next trace entry.  Index can wrap (ringbuffer) */
-int XRayTraceBufferNextEntry(int index) {
-  if (XRayTraceBufferIsAnnotation(index))
-    index = XRayTraceBufferSkipAnnotation(index);
-  else
-    index = XRayTraceBufferIncrementIndex(index);
-  return index;
-}
-
-
-/* Dumps the trace report for a given frame. */
-void XRayTraceReport(FILE* f, int frame, char* label,
-                     float percent_cutoff, int ticks_cutoff) {
-  int index;
-  int start;
-  int end;
-  float total;
-  char space[257];
-  memset(space, ' ', 256);
-  space[256] = 0;
-  if (NULL == f) {
-    f = stdout;
-  }
-  fprintf(f,
-  "======================================================================\n");
-  if (NULL != label)
-    fprintf(f, "label %s\n", label);
-  fprintf(f, "\n");
-  fprintf(f,
-  "   Address        Ticks   Percent      Function  <optional annotation>\n");
-  fprintf(f,
-  "----------------------------------------------------------------------\n");
-  start = g_xray.frame.entry[frame].start;
-  end = g_xray.frame.entry[frame].end;
-  total = (float)g_xray.frame.entry[frame].total_ticks;
-  index = start;
-  while (index != end) {
-    if (!XRayTraceBufferIsAnnotation(index)) {
-      const char* symbol_name;
-      char annotation[1024];
-      struct XRayTraceBufferEntry* e = &g_xray.buffer[index];
-      uint32_t depth = XRAY_EXTRACT_DEPTH(e->depth_addr);
-      uint32_t addr = XRAY_EXTRACT_ADDR(e->depth_addr);
-      uint32_t ticks = (e->ticks);
-      uint32_t annotation_index = (e->annotation_index);
-      float percent = 100.0f * (float)ticks / total;
-      if (percent >= percent_cutoff && ticks >= ticks_cutoff) {
-        struct XRaySymbol* symbol;
-        symbol = XRaySymbolTableLookup(g_xray.symbols, addr);
-        symbol_name = XRaySymbolGetName(symbol);
-        if (0 != annotation_index) {
-          XRayTraceBufferCopyToString(annotation_index, annotation);
-        } else {
-          strcpy(annotation, "");
-        }
-        fprintf(f, "0x%08X   %10ld     %5.1f     %s%s %s\n",
-                (unsigned int)addr, (int64_t)ticks, percent,
-                &space[256 - depth], symbol_name, annotation);
-      }
-    }
-    index = XRayTraceBufferNextEntry(index);
-  }
-}
-
-
-int qcompare(const void* a, const void* b) {
-  struct XRayTotal* ia = (struct XRayTotal*)a;
-  struct XRayTotal* ib = (struct XRayTotal*)b;
-  return ib->ticks - ia->ticks;
-}
-
-
-/* Dumps a frame report */
-void XRayFrameReport(FILE* f) {
-  int i;
-  int head;
-  int frame;
-  int counter = 0;
-  int total_capture = 0;
-  struct XRayTotal* totals;
-  totals = (struct XRayTotal*)
-    alloca(g_xray.frame.count * sizeof(struct XRayTotal));
-  frame = g_xray.frame.tail;
-  head = g_xray.frame.head;
-  fprintf(f, "\n");
-  fprintf(f,
-  "Frame#      Total Ticks      Capture size    Annotations   Label\n");
-  fprintf(f,
-  "----------------------------------------------------------------------\n");
-  while (frame != head) {
-    int64_t total_ticks = g_xray.frame.entry[frame].total_ticks;
-    int capture_size = XRayTraceBufferGetTraceCountForFrame(frame);
-    int annotation_count = g_xray.frame.entry[frame].annotation_count;
-    bool valid = g_xray.frame.entry[frame].valid;
-    char label[XRAY_MAX_LABEL];
-    XRayFrameMakeLabel(counter, label);
-    fprintf(f, "   %3d %s     %10ld        %10d     %10d   %s\n",
-      counter,
-      valid ? " " : "*",
-      (int64_t)total_ticks,
-      capture_size,
-      annotation_count,
-      label);
-    totals[counter].index = counter;
-    totals[counter].frame = frame;
-    totals[counter].ticks = total_ticks;
-    total_capture += capture_size;
-    frame = XRayFrameNext(frame);
-    ++counter;
-  }
-  fprintf(f,
-  "----------------------------------------------------------------------\n");
-  fprintf(f,
-  "XRay: %d frame(s)    %d total capture(s)\n", counter, total_capture);
-  fprintf(f, "\n");
-  /* Sort and take average of the median cut */
-  qsort(totals, counter, sizeof(struct XRayTotal), qcompare);
-  fprintf(f, "\n");
-  fprintf(f, "Sorted by total ticks (most expensive first):\n");
-  fprintf(f, "\n");
-  fprintf(f,
-  "Frame#      Total Ticks      Capture size    Annotations   Label\n");
-  fprintf(f,
-  "----------------------------------------------------------------------\n");
-  for (i = 0; i < counter; ++i) {
-    int index = totals[i].index;
-    int frame = totals[i].frame;
-    int64_t total_ticks = g_xray.frame.entry[frame].total_ticks;
-    int capture_size = XRayTraceBufferGetTraceCountForFrame(frame);
-    int annotation_count = g_xray.frame.entry[frame].annotation_count;
-    char label[XRAY_MAX_LABEL];
-    XRayFrameMakeLabel(index, label);
-    fprintf(f, "   %3d       %10ld        %10d     %10d   %s\n",
-        index,
-        (int64_t)total_ticks,
-        capture_size,
-        annotation_count,
-        label);
-  }
-}
-
-
-/* Dump a frame report followed by trace report(s) for each frame. */
-void XRayReport(FILE* f, float percent_cutoff, int ticks_cutoff) {
-  int head;
-  int index;
-  int counter = 0;
-  if (g_xray.symbols)
-    fprintf(f, "Number of symbols: %d\n", XRaySymbolCount(g_xray.symbols));
-  XRayFrameReport(f);
-  fprintf(f, "\n");
-  head = g_xray.frame.head;
-  index = g_xray.frame.tail;
-  while (index != head) {
-    char label[XRAY_MAX_LABEL];
-    fprintf(f, "\n");
-    XRayFrameMakeLabel(counter, label);
-    XRayTraceReport(f, index, label, percent_cutoff, ticks_cutoff);
-    index = XRayFrameNext(index);
-
-    ++counter;
-  }
-  fprintf(f,
-  "======================================================================\n");
-#if defined(XRAY_OUTPUT_HASH_COLLISIONS)
-  XRayHashTableHisto(f);
-#endif
-  fflush(f);
-}
-
-
-/* Write a profile report to text file. */
-void XRaySaveReport(const char* filename,
-                    float percent_cutoff,
-                    int ticks_cutoff) {
-  FILE* f;
-  f = fopen(filename, "wt");
-  if (NULL != f) {
-    XRayReport(f, percent_cutoff, ticks_cutoff);
-    fclose(f);
-  }
+struct XRaySymbolTable* XRayGetSymbolTable(struct XRayTraceCapture* capture) {
+  return capture->symbols;
 }
 
 
 /* Initialize XRay */
-void XRayInit(int stack_depth, int buffer_size, int frame_count,
-              const char* mapfilename) {
+struct XRayTraceCapture* XRayInit(int stack_depth,
+                                  int buffer_size,
+                                  int frame_count,
+                                  const char* mapfilename) {
+  struct XRayTraceCapture* capture;
+  capture = (struct XRayTraceCapture*)XRayMalloc(
+      sizeof(struct XRayTraceCapture));
   int adj_frame_count = frame_count + 1;
-  assert(false == g_xray.initialized);
   size_t buffer_size_in_bytes =
-      sizeof(g_xray.buffer[0]) * buffer_size;
+      sizeof(capture->buffer[0]) * buffer_size;
   size_t frame_size_in_bytes =
-      sizeof(g_xray.frame.entry[0]) * adj_frame_count;
-  g_xray.buffer =
+      sizeof(capture->frame.entry[0]) * adj_frame_count;
+  capture->buffer =
       (struct XRayTraceBufferEntry *)XRayMalloc(buffer_size_in_bytes);
-  g_xray.frame.entry =
+  capture->frame.entry =
       (struct XRayTraceFrameEntry *)XRayMalloc(frame_size_in_bytes);
-
-  g_xray.buffer_size = buffer_size;
-  g_xray.frame.count = adj_frame_count;
-  g_xray.frame.head = 0;
-  g_xray.frame.tail = 0;
-  g_xray.disabled = 0;
-  g_xray.annotation_filter = 0xFFFFFFFF;
-  g_xray.guard0 = XRAY_GUARD_VALUE;
-  g_xray.guard1 = XRAY_GUARD_VALUE;
-  g_xray.guard2 = XRAY_GUARD_VALUE;
-  g_xray.initialized = true;
-  XRaySetMaxStackDepth(stack_depth);
-  XRayReset();
+  capture->buffer_size = buffer_size;
+  capture->frame.count = adj_frame_count;
+  capture->frame.head = 0;
+  capture->frame.tail = 0;
+  capture->disabled = 0;
+  capture->annotation_filter = 0xFFFFFFFF;
+  capture->guard0 = XRAY_GUARD_VALUE;
+  capture->guard1 = XRAY_GUARD_VALUE;
+  capture->guard2 = XRAY_GUARD_VALUE;
+  capture->initialized = true;
+  capture->recording = false;
+  XRaySetMaxStackDepth(capture, stack_depth);
+  XRayReset(capture);
 
   /* Mapfile is optional; we don't need it for captures, only for reports. */
-  g_xray.symbols = XRaySymbolTableCreate(XRAY_DEFAULT_SYMBOL_TABLE_SIZE);
+  capture->symbols =
+      XRaySymbolTableCreate(XRAY_DEFAULT_SYMBOL_TABLE_SIZE);
   if (NULL != mapfilename)
-    XRaySymbolTableParseMapfile(g_xray.symbols, mapfilename);
+    XRaySymbolTableParseMapfile(capture->symbols, mapfilename);
+
+  return capture;
 }
 
 
 /* Shut down and free memory used by XRay. */
-void XRayShutdown() {
-  assert(true == g_xray.initialized);
-  assert(NULL == g_xray.recording);
-  XRayCheckGuards();
-  if (NULL != g_xray.symbols) {
-    XRaySymbolTableFree(g_xray.symbols);
+void XRayShutdown(struct XRayTraceCapture* capture) {
+  assert(capture);
+  assert(capture->initialized);
+  assert(!capture->recording);
+  XRayCheckGuards(capture);
+  if (NULL != capture->symbols) {
+    XRaySymbolTableFree(capture->symbols);
   }
-  XRayFree(g_xray.frame.entry);
-  XRayFree(g_xray.buffer);
-  g_xray.initialized = false;
+  XRayFree(capture->frame.entry);
+  XRayFree(capture->buffer);
+  capture->initialized = false;
+  XRayFree(capture);
 }
 
 #endif  /* XRAY */

@@ -107,8 +107,8 @@ void XRaySymbolPoolFree(struct XRaySymbolPool* pool) {
 }
 
 
-int XRaySymbolTableGetSize(struct XRaySymbolTable* symtab) {
-  return XRayHashTableGetSize(symtab->hash_table);
+int XRaySymbolTableGetCount(struct XRaySymbolTable* symtab) {
+  return XRayHashTableGetCount(symtab->hash_table);
 }
 
 
@@ -120,8 +120,10 @@ struct XRaySymbol* XRaySymbolTableAtIndex(struct XRaySymbolTable* symtab,
 struct XRaySymbol* XRaySymbolTableAdd(struct XRaySymbolTable* symtab,
                                       struct XRaySymbol* symbol,
                                       uint32_t addr) {
-  return (struct XRaySymbol*)
-    XRayHashTableInsert(symtab->hash_table, symbol, addr);
+  struct XRaySymbol* sym = (struct XRaySymbol*)
+      XRayHashTableInsert(symtab->hash_table, symbol, addr);
+  symtab->num_symbols = XRayHashTableGetCount(symtab->hash_table);
+  return sym;
 }
 
 struct XRaySymbol* XRaySymbolTableAddByName(struct XRaySymbolTable* symtab,
@@ -152,85 +154,6 @@ struct XRaySymbol* XRaySymbolTableLookup(struct XRaySymbolTable* symtab,
   }
 #endif
   return r;
-}
-
-struct XRaySymbol* XRaySymbolTableCreateEntry(struct XRaySymbolTable* symtab,
-                                              const char* line) {
-  uint32_t addr;
-  unsigned int uiaddr;
-  char symbol_text[XRAY_LINE_SIZE];
-  char* parsed_symbol;
-  char* newln;
-  sscanf(line,"%x %s", &uiaddr, symbol_text);
-  if (uiaddr > 0x07FFFFFF) {
-    printf("While parsing the mapfile, XRay encountered:\n");
-    printf("%s\n", line);
-    printf("XRay only works with code addresses 0x00000000 - 0x07FFFFFF\n");
-    printf("All functions must reside in this address space.\n");
-    exit(-1);
-  }
-  addr = (uint32_t)uiaddr;
-  parsed_symbol = strstr(line, symbol_text);
-  newln = strstr(parsed_symbol, "\n");
-  if (NULL != newln) {
-    *newln = 0;
-  }
-  return XRaySymbolTableAddByName(symtab, parsed_symbol, addr);
-}
-
-
-void XRaySymbolTableParseMapfile(struct XRaySymbolTable* symtab,
-                                 const char* mapfile)
-{
-  FILE* f;
-  char line[XRAY_LINE_SIZE];
-  bool in_text = false;
-  bool in_link_once = false;
-  int in_link_once_counter = 0;
-  int num_symbols = 0;
-
-  printf("XRay: opening mapfile %s\n", mapfile);
-  f = fopen(mapfile, "rt");
-  if (0 != f) {
-    printf("XRay: parsing...\n");
-    while(NULL != fgets(line, XRAY_LINE_SIZE, f)) {
-      if (line == strstr(line, " .text ")) {
-        in_text = true;
-        continue;
-      }
-      if (line == strstr(line, " .gnu.linkonce.t.")) {
-        in_link_once = true;
-        in_link_once_counter = 0;
-        continue;
-      }
-      if (line == strstr(line, " .text.")) {
-        in_link_once = true;
-        in_link_once_counter = 0;
-        continue;
-      }
-      if (line == strstr(line, "                0x")) {
-        if (in_text) {
-          XRaySymbolTableCreateEntry(symtab, line);
-          ++num_symbols;
-        } else if (in_link_once) {
-          if (in_link_once_counter != 0) {
-            XRaySymbolTableCreateEntry(symtab, line);
-            ++num_symbols;
-          } else {
-            ++in_link_once_counter;
-          }
-        }
-      } else {
-        in_text = false;
-        in_link_once = false;
-      }
-    }
-    fclose(f);
-    printf("XRay: loaded %d symbols into symbol table\n", num_symbols);
-  } else {
-    printf("XRay: failed to open %s\n", mapfile);
-  }
-  symtab->num_symbols += num_symbols;
 }
 
 

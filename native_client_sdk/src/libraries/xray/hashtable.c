@@ -21,7 +21,7 @@ struct XRayHashTableEntry {
 
 
 struct XRayHashTable {
-  int size;
+  int capacity;
   int count;
   struct XRayHashTableEntry* array;
 };
@@ -30,7 +30,7 @@ struct XRayHashTable {
 XRAY_NO_INSTRUMENT void XRayHashTableGrow(struct XRayHashTable* table);
 XRAY_NO_INSTRUMENT uint32_t XRayHashTableHashKey(uint32_t key);
 XRAY_NO_INSTRUMENT void XRayHashTableInit(struct XRayHashTable* table,
-    int32_t size);
+    int32_t capacity);
 
 #define HASH_HISTO 1024
 int g_hash_histo[HASH_HISTO];
@@ -52,15 +52,20 @@ uint32_t XRayHashTableHashKey(uint32_t x) {
 }
 
 
-int XRayHashTableGetSize(struct XRayHashTable* table) {
-  return table->size;
+int XRayHashTableGetCapacity(struct XRayHashTable* table) {
+  return table->capacity;
+}
+
+
+int XRayHashTableGetCount(struct XRayHashTable* table) {
+  return table->count;
 }
 
 
 /* Looks up key in hashtable and returns blind data. */
 void* XRayHashTableLookup(struct XRayHashTable* table, uint32_t key) {
   uint32_t h = XRayHashTableHashKey(key);
-  uint32_t m = table->size - 1;
+  uint32_t m = table->capacity - 1;
   uint32_t j = h & m;
   uint32_t i;
   int z = 1;
@@ -89,7 +94,7 @@ void* XRayHashTableLookup(struct XRayHashTable* table, uint32_t key) {
 void* XRayHashTableInsert(struct XRayHashTable* table,
                           void* data, uint32_t key) {
   uint32_t h = XRayHashTableHashKey(key);
-  uint32_t m = table->size - 1;
+  uint32_t m = table->capacity - 1;
   uint32_t j = h & m;
   uint32_t i;
   for (i = 0; i < m; ++i) {
@@ -102,8 +107,8 @@ void* XRayHashTableInsert(struct XRayHashTable* table,
       table->array[j].key = key;
       ++table->count;
       ret = data;
-      ratio = (float)table->count / (float)table->size;
-      /* Double the size of the symtable if we've hit the ratio. */
+      ratio = (float)table->count / (float)table->capacity;
+      /* Double the capacity of the symtable if we've hit the ratio. */
       if (ratio > XRAY_SYMBOL_TABLE_MAX_RATIO)
         XRayHashTableGrow(table);
       return ret;
@@ -120,22 +125,22 @@ void* XRayHashTableInsert(struct XRayHashTable* table,
 
 
 void* XRayHashTableAtIndex(struct XRayHashTable* table, int i) {
-  if ((i < 0) || (i >= table->size))
+  if ((i < 0) || (i >= table->capacity))
     return NULL;
   return table->array[i].data;
 }
 
 
-/* Grows the hash table by doubling its size, */
+/* Grows the hash table by doubling its capacity, */
 /* then re-inserts all the elements into the new table. */
 void XRayHashTableGrow(struct XRayHashTable* table) {
   struct XRayHashTableEntry* old_array = table->array;
-  int old_size = table->size;
-  int new_size = old_size * 2;
+  int old_capacity = table->capacity;
+  int new_capacity = old_capacity * 2;
   int i;
   printf("XRay: Growing a hash table...\n");
-  XRayHashTableInit(table, new_size);
-  for (i = 0; i < old_size; ++i) {
+  XRayHashTableInit(table, new_capacity);
+  for (i = 0; i < old_capacity; ++i) {
     void* data = old_array[i].data;
     if (NULL != data) {
       uint32_t key = old_array[i].key;
@@ -146,32 +151,32 @@ void XRayHashTableGrow(struct XRayHashTable* table) {
 }
 
 
-void XRayHashTableInit(struct XRayHashTable* table, int32_t size) {
+void XRayHashTableInit(struct XRayHashTable* table, int32_t capacity) {
   size_t bytes;
-  if (0 != (size & (size - 1))) {
-    printf("Xray: Hash table size should be a power of 2!\n");
-    /* Round size up to next power of 2 */
+  if (0 != (capacity & (capacity - 1))) {
+    printf("Xray: Hash table capacity should be a power of 2!\n");
+    /* Round capacity up to next power of 2 */
     /* see http://aggregate.org/MAGIC/  */
-    size--;
-    size |= size >> 1;
-    size |= size >> 2;
-    size |= size >> 4;
-    size |= size >> 8;
-    size |= size >> 16;
-    size++;
+    capacity--;
+    capacity |= capacity >> 1;
+    capacity |= capacity >> 2;
+    capacity |= capacity >> 4;
+    capacity |= capacity >> 8;
+    capacity |= capacity >> 16;
+    capacity++;
   }
-  bytes = sizeof(table->array[0]) * size;
-  table->size = size;
+  bytes = sizeof(table->array[0]) * capacity;
+  table->capacity = capacity;
   table->count = 0;
   table->array = (struct XRayHashTableEntry*)XRayMalloc(bytes);
 }
 
 
 /* Creates & inializes hash table. */
-struct XRayHashTable* XRayHashTableCreate(int size) {
+struct XRayHashTable* XRayHashTableCreate(int capacity) {
   struct XRayHashTable* table;
   table = (struct XRayHashTable*)XRayMalloc(sizeof(*table));
-  XRayHashTableInit(table, size);
+  XRayHashTableInit(table, capacity);
   memset(&g_hash_histo[0], 0, sizeof(g_hash_histo[0]) * HASH_HISTO);
   return table;
 }
@@ -191,7 +196,7 @@ void XRayHashTableHisto(FILE* f) {
 /* Note: Does not free what the hash table entries point to. */
 void XRayHashTableFree(struct XRayHashTable* table) {
   XRayFree(table->array);
-  table->size = 0;
+  table->capacity = 0;
   table->count = 0;
   table->array = NULL;
   XRayFree(table);
