@@ -21,5 +21,6 @@ void CursorLoaderNull::LoadAnimatedCursor(int id,
                                            int frame_delay_ms) {}
 void CursorLoaderNull::UnloadAll() {}
 void CursorLoaderNull::SetPlatformCursor(gfx::NativeCursor* cursor) {}
+void CursorLoaderNull::SetCursorResourceModule(const string16& module_name) {}
 
 }  // namespace ui

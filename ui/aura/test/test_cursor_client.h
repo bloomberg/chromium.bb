@@ -29,6 +29,7 @@ class TestCursorClient : public aura::client::CursorClient {
   virtual void SetDisplay(const gfx::Display& display) OVERRIDE;
   virtual void LockCursor() OVERRIDE;
   virtual void UnlockCursor() OVERRIDE;
+  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE;
   virtual void AddObserver(
       aura::client::CursorClientObserver* observer) OVERRIDE;
   virtual void RemoveObserver(

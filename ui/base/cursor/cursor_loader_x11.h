@@ -31,6 +31,8 @@ class UI_EXPORT CursorLoaderX11 : public CursorLoader {
                                   int frame_delay_ms) OVERRIDE;
   virtual void UnloadAll() OVERRIDE;
   virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
+  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE {
+  }
 
  private:
   // Returns true if we have an image resource loaded for the |native_cursor|.

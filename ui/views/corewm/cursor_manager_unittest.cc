@@ -44,6 +44,9 @@ class TestingCursorManager : public views::corewm::NativeCursorManager {
     delegate->CommitScale(scale);
   }
 
+  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE {
+  }
+
  private:
   gfx::NativeCursor cursor_;
 };

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/lazy_instance.h"
-#include "base/strings/string16.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "grit/ui_unscaled_resources.h"
 
@@ -12,8 +10,6 @@ namespace ui {
 #if defined(USE_AURA)
 
 namespace {
-
-base::LazyInstance<string16> g_cursor_resource_module_name;
 
 const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
   switch (native_cursor.native_type()) {
@@ -152,10 +148,9 @@ void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
     } else {
       const wchar_t* cursor_id = GetCursorId(*cursor);
       PlatformCursor platform_cursor = LoadCursor(NULL, cursor_id);
-      if (!platform_cursor && !g_cursor_resource_module_name.Get().empty()) {
+      if (!platform_cursor && !cursor_resource_module_name_.empty()) {
         platform_cursor = LoadCursor(
-            GetModuleHandle(g_cursor_resource_module_name.Get().c_str()),
-                            cursor_id);
+            GetModuleHandle(cursor_resource_module_name_.c_str()), cursor_id);
       }
       cursor->SetPlatformCursor(platform_cursor);
     }
@@ -163,9 +158,8 @@ void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
 #endif
 }
 
-// static
 void CursorLoaderWin::SetCursorResourceModule(const string16& module_name) {
-  g_cursor_resource_module_name.Get() = module_name;
+  cursor_resource_module_name_ = module_name;
 }
 
 }  // namespace ui

@@ -2904,6 +2904,13 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client) {
+#if defined(OS_WIN)
+    if (GetContentClient() && GetContentClient()->browser() &&
+        GetContentClient()->browser()->GetResourceDllName()) {
+      cursor_client->SetCursorResourceModule(
+          GetContentClient()->browser()->GetResourceDllName());
+    }
+#endif
     cursor_client->SetCursor(cursor);
   }
 }

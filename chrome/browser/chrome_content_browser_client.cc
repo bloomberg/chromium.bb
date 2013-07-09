@@ -143,9 +143,6 @@
 #if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor_loader_win.h"
-#endif
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
@@ -509,10 +506,6 @@ ChromeContentBrowserClient::ChromeContentBrowserClient() {
 
   permissions_policy_delegate_.reset(
       new extensions::BrowserPermissionsPolicyDelegate());
-
-#if defined(OS_WIN) && defined(USE_AURA)
-  ui::CursorLoaderWin::SetCursorResourceModule(GetResourceDllName());
-#endif
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
