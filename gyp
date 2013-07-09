@@ -4,4 +4,4 @@
 # found in the LICENSE file.
 
 BASE=`dirname $0`
-python $BASE/gyp_main.py
+python $BASE/gyp_main.py "$@"
