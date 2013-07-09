@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_
 
 #include "content/common/content_export.h"
-#include "content/public/browser/location_provider.h"
+#include "content/port/browser/location_provider.h"
 
 namespace content {
 

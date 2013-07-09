@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/common/content_export.h"
+#include "content/port/browser/location_provider.h"
 #include "content/public/browser/access_token_store.h"
-#include "content/public/browser/location_provider.h"
 #include "content/public/common/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
 
