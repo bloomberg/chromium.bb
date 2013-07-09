@@ -27,15 +27,6 @@ class ProfileSyncService;
 // This class should only be accessed from the UI thread.
 class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
  public:
-  // Callback from FetchOAuth2Token.
-  // Arguments:
-  // - the error, or NONE if the token fetch was successful.
-  // - the OAuth2 access token.
-  // - the expiry time of the token (may be null, indicating that the expiry
-  //   time is unknown.
-  typedef base::Callback<void(
-      const GoogleServiceAuthError&,const std::string&,const base::Time&)>
-          FetchOAuth2TokenCallback;
 
   ProfileSyncServiceAndroid(JNIEnv* env, jobject obj);
 
@@ -58,12 +49,8 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // Called from Java when the user manually disables sync
   void DisableSync(JNIEnv* env, jobject obj);
 
-  // Called from Java when the user signs in to Chrome. Starts up sync, and
-  // if auth credentials are required, uses the passed |auth_token|. If
-  // |auth_token| is empty, a new |auth_token| is requested from the UI thread
-  // via a call to InvalidateAuthToken().
-  void SignInSync(JNIEnv* env, jobject obj, jstring username,
-                  jstring auth_token);
+  // Called from Java when the user signs in to Chrome. Starts up sync.
+  void SignInSync(JNIEnv* env, jobject obj, jstring username);
 
   // Called from Java when the user signs out of Chrome
   void SignOutSync(JNIEnv* env, jobject obj);
@@ -199,25 +186,6 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // (GoogleServiceAuthError.State).
   jint GetAuthError(JNIEnv* env, jobject obj);
 
-  // Called by native to invalidate an OAuth2 token, e.g. after a 401 response
-  // from the server. This should be done before fetching a new token.
-  void InvalidateOAuth2Token(const std::string& scope,
-                             const std::string& invalid_auth_token);
-
-  // Called by native when an OAuth2 token is required. |invalid_auth_token|
-  // is an old auth token to be invalidated (may be empty). |callback| will be
-  // invoked asynchronously after a new token has been fetched.
-  void FetchOAuth2Token(const std::string& scope,
-                        const FetchOAuth2TokenCallback& callback);
-
-  // Called from Java when fetching of an OAuth2 token is finished. The
-  // |authToken| param is only valid when |result| is true.
-  void OAuth2TokenFetched(JNIEnv* env,
-                          jobject obj,
-                          int callback,
-                          jstring auth_token,
-                          jboolean result);
-
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged() OVERRIDE;
 
@@ -230,7 +198,6 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   virtual ~ProfileSyncServiceAndroid();
   // Remove observers to profile sync service.
   void RemoveObserver();
-  void InvalidateAuthToken();
   // Called from Java when we need to nudge native syncer. The |objectId|,
   // |version| and |payload| values should come from an invalidation.
   void SendNudgeNotification(const std::string& str_object_id,

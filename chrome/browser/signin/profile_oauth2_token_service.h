@@ -68,6 +68,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
     return signin_global_error_.get();
   }
 
+  Profile* profile() const { return profile_; }
+
  protected:
   friend class ProfileOAuth2TokenServiceFactory;
   explicit ProfileOAuth2TokenService(net::URLRequestContextGetter* getter);

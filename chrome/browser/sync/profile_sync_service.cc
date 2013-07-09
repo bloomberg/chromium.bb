@@ -111,14 +111,6 @@ const char* ProfileSyncService::kDevServerUrl =
 
 static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
 
-static const char* kOAuth2Scopes[] = {
-  GaiaConstants::kChromeSyncOAuth2Scope,
-};
-
-static const char* kManagedOAuth2Scopes[] = {
-  GaiaConstants::kChromeSyncManagedOAuth2Scope
-};
-
 static const char* kSyncUnrecoverableErrorHistogram =
     "Sync.UnrecoverableErrors";
 
@@ -1815,18 +1807,17 @@ void ProfileSyncService::RequestAccessToken() {
   is_managed = ManagedUserService::ProfileIsManaged(profile_);
 #endif
   if (is_managed) {
-    for (size_t i = 0; i < arraysize(kManagedOAuth2Scopes); i++)
-      oauth2_scopes.insert(kManagedOAuth2Scopes[i]);
+    oauth2_scopes.insert(GaiaConstants::kChromeSyncManagedOAuth2Scope);
   } else {
-    for (size_t i = 0; i < arraysize(kOAuth2Scopes); i++)
-      oauth2_scopes.insert(kOAuth2Scopes[i]);
+    oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   }
 
   OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   // Invalidate previous token, otherwise token service will return the same
   // token again.
-  token_service->InvalidateToken(oauth2_scopes, access_token_);
+  if (!access_token_.empty())
+    token_service->InvalidateToken(oauth2_scopes, access_token_);
   access_token_.clear();
   access_token_request_ = token_service->StartRequest(oauth2_scopes, this);
 }

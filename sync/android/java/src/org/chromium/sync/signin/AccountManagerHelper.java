@@ -323,7 +323,7 @@ public class AccountManagerHelper {
     /**
      * Removes an auth token from the AccountManager's cache.
      */
-    public void invalidateAuthToken(String accountType, String authToken) {
-        mAccountManager.invalidateAuthToken(accountType, authToken);
+    public void invalidateAuthToken(String authToken) {
+        mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
     }
 }

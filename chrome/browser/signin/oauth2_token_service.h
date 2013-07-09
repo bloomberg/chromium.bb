@@ -119,7 +119,7 @@ class OAuth2TokenService {
 
   // Returns true if a refresh token exists. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
-  bool RefreshTokenIsAvailable();
+  virtual bool RefreshTokenIsAvailable();
 
   // Mark an OAuth2 access token as invalid. This should be done if the token
   // was received from this class, but was not accepted by the server (e.g.,

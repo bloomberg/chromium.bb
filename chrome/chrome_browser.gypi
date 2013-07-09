@@ -3330,6 +3330,7 @@
             'android/java/src/org/chromium/chrome/browser/profiles/Profile.java',
             'android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java',
             'android/java/src/org/chromium/chrome/browser/search_engines/TemplateUrlService.java',
+            'android/java/src/org/chromium/chrome/browser/signin/AndroidProfileOAuth2TokenServiceHelper.java',
             'android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java',
             'android/java/src/org/chromium/chrome/browser/TabBase.java',
             'android/java/src/org/chromium/chrome/browser/TtsPlatformImpl.java',

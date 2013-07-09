@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.sync.internal_api.pub.SyncDecryptionPassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.SyncStatusHelper;
-import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.HashSet;
 import java.util.List;
@@ -113,21 +112,22 @@ public class ProfileSyncService {
      * Signs in to sync, using the existing auth token.
      */
     public void syncSignIn(String account) {
-        syncSignInWithAuthToken(account, "");
+        nativeSignInSync(mNativeProfileSyncServiceAndroid, account);
+        // Notify listeners right away that the sync state has changed (native side does not do
+        // this)
+        syncStateChanged();
     }
 
     /**
      * Signs in to sync.
      *
      * @param account   The username of the account that is signing in.
-     * @param authToken A chromiumsync auth token for sync to use, or empty if
-     *                  sync should use its existing auth token if available.
+     * @param authToken Not used. ProfileSyncService switched to OAuth2 tokens.
+     * Deprecated. Use syncSignIn instead.
      */
+    @Deprecated
     public void syncSignInWithAuthToken(String account, String authToken) {
-        nativeSignInSync(mNativeProfileSyncServiceAndroid, account, authToken);
-        // Notify listeners right away that the sync state has changed (native side does not do
-        // this)
-        syncStateChanged();
+        syncSignIn(account);
     }
 
     public void requestSyncFromNativeChrome(String objectId, long version, String payload) {
@@ -165,84 +165,6 @@ public class ProfileSyncService {
             Log.e(TAG, "Unable to write session sync tag. " +
                     "This may lead to unexpected tab sync behavior.");
         }
-    }
-
-    private Account getAccountOrNullFromUsername(String username) {
-        if (username == null) {
-            Log.e(TAG, "username is null");
-            return null;
-        }
-
-        final AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
-        final Account account = accountManagerHelper.getAccountFromName(username);
-        if (account == null) {
-            Log.e(TAG, "Account not found for provided username.");
-            return null;
-        }
-        return account;
-    }
-
-    /**
-     * Requests a new auth token from the AccountManager. Invalidates the old token
-     * if |invalidAuthToken| is not empty.
-     */
-    @CalledByNative
-    public void getNewAuthToken(final String username, final String invalidAuthToken) {
-        final Account account = getAccountOrNullFromUsername(username);
-        if (account == null) return;
-
-        AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
-        // Invalidate our old auth token and fetch a new one.
-        accountManagerHelper.getNewAuthTokenFromForeground(
-                account, invalidAuthToken, SyncStatusHelper.AUTH_TOKEN_TYPE_SYNC,
-                new AccountManagerHelper.GetAuthTokenCallback() {
-                    @Override
-                    public void tokenAvailable(String token) {
-                        if (token == null) {
-                            Log.d(TAG, "Auth token for sync was null.");
-                        } else {
-                            Log.d(TAG, "Successfully retrieved sync auth token.");
-                            nativeTokenAvailable(mNativeProfileSyncServiceAndroid, username, token);
-                        }
-                    }
-                });
-    }
-
-   /**
-    * Called by native to invalidate an OAuth2 token.
-    */
-    @CalledByNative
-    public void invalidateOAuth2AuthToken(String scope, String accessToken) {
-        AccountManagerHelper.get(mContext).invalidateAuthToken(scope, accessToken);
-    }
-
-    /**
-     * Called by native to retrieve OAuth2 tokens.
-     *
-     * @param username the native username (full address)
-     * @param scope the scope to get an auth token for (without Android-style 'oauth2:' prefix).
-     * @param oldAuthToken if provided, the token will be invalidated before getting a new token.
-     * @param nativeCallback the pointer to the native callback that should be run upon completion.
-     */
-    @CalledByNative
-    public void getOAuth2AuthToken(String username, String scope, final int nativeCallback) {
-        final Account account = getAccountOrNullFromUsername(username);
-        if (account == null) {
-            nativeOAuth2TokenFetched(
-                mNativeProfileSyncServiceAndroid, nativeCallback, null, false);
-            return;
-        }
-        final String oauth2Scope = "oauth2:" + scope;
-
-        AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
-        accountManagerHelper.getAuthTokenFromForeground(
-                null, account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
-                    @Override
-                    public void tokenAvailable(String token) {
-                        nativeOAuth2TokenFetched(
-                            mNativeProfileSyncServiceAndroid, nativeCallback, token, token != null);
-                    }
-                });
     }
 
     /**
@@ -563,7 +485,7 @@ public class ProfileSyncService {
     private native void nativeEnableSync(int nativeProfileSyncServiceAndroid);
     private native void nativeDisableSync(int nativeProfileSyncServiceAndroid);
     private native void nativeSignInSync(
-            int nativeProfileSyncServiceAndroid, String username, String authToken);
+            int nativeProfileSyncServiceAndroid, String username);
     private native void nativeSignOutSync(int nativeProfileSyncServiceAndroid);
     private native void nativeTokenAvailable(
             int nativeProfileSyncServiceAndroid, String username, String authToken);
@@ -606,7 +528,4 @@ public class ProfileSyncService {
     private native boolean nativeHasKeepEverythingSynced(int nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(int nativeProfileSyncServiceAndroid);
     private native String nativeGetAboutInfoForTest(int nativeProfileSyncServiceAndroid);
-    private native void nativeOAuth2TokenFetched(
-            int nativeProfileSyncServiceAndroid, int nativeCallback, String authToken,
-            boolean result);
 }
