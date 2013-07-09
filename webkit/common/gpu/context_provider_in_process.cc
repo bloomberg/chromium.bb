@@ -18,6 +18,10 @@ class ContextProviderInProcess::LostContextCallbackProxy
     provider_->context3d_->setContextLostCallback(this);
   }
 
+  virtual ~LostContextCallbackProxy() {
+    provider_->context3d_->setContextLostCallback(NULL);
+  }
+
   virtual void onContextLost() {
     provider_->OnLostContextInternal();
   }
@@ -33,6 +37,10 @@ class ContextProviderInProcess::MemoryAllocationCallbackProxy
   explicit MemoryAllocationCallbackProxy(ContextProviderInProcess* provider)
       : provider_(provider) {
     provider_->context3d_->setMemoryAllocationChangedCallbackCHROMIUM(this);
+  }
+
+  virtual ~MemoryAllocationCallbackProxy() {
+    provider_->context3d_->setMemoryAllocationChangedCallbackCHROMIUM(NULL);
   }
 
   virtual void onMemoryAllocationChanged(

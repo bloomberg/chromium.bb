@@ -280,6 +280,12 @@ void OutputSurface::SetExternalDrawConstraints(const gfx::Transform& transform,
 OutputSurface::~OutputSurface() {
   if (frame_rate_controller_)
     frame_rate_controller_->SetActive(false);
+
+  if (context3d_) {
+    context3d_->setSwapBuffersCompleteCallbackCHROMIUM(NULL);
+    context3d_->setContextLostCallback(NULL);
+    context3d_->setMemoryAllocationChangedCallbackCHROMIUM(NULL);
+  }
 }
 
 bool OutputSurface::ForcedDrawToSoftwareDevice() const {
