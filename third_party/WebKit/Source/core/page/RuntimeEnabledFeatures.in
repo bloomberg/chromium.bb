@@ -81,6 +81,8 @@ Touch status=stable
 Vibration status=test
 VideoTrack status=stable
 WebAnimations
+WebAnimationsCSS depends_on=WebAnimations
+WebAnimationsSVG depends_on=WebAnimations
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebMIDI status=test

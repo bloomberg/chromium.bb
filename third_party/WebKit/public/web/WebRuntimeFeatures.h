@@ -123,6 +123,9 @@ public:
     WEBKIT_EXPORT static void enableTouch(bool);
     WEBKIT_EXPORT static bool isTouchEnabled();
 
+    WEBKIT_EXPORT static void enableWebAnimationsCSS();
+    WEBKIT_EXPORT static void enableWebAnimationsSVG();
+
     WEBKIT_EXPORT static void enableWebAudio(bool);
     WEBKIT_EXPORT static bool isWebAudioEnabled();
 

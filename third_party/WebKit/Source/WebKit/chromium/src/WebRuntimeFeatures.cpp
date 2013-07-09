@@ -331,6 +331,18 @@ bool WebRuntimeFeatures::isTouchEnabled()
     return RuntimeEnabledFeatures::touchEnabled();
 }
 
+void WebRuntimeFeatures::enableWebAnimationsCSS()
+{
+    RuntimeEnabledFeatures::setWebAnimationsEnabled(true);
+    RuntimeEnabledFeatures::setWebAnimationsCSSEnabled(true);
+}
+
+void WebRuntimeFeatures::enableWebAnimationsSVG()
+{
+    RuntimeEnabledFeatures::setWebAnimationsEnabled(true);
+    RuntimeEnabledFeatures::setWebAnimationsSVGEnabled(true);
+}
+
 void WebRuntimeFeatures::enableWebAudio(bool enable)
 {
     RuntimeEnabledFeatures::setWebAudioEnabled(enable);
