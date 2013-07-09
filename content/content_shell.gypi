@@ -52,7 +52,7 @@
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:webkit_support',
-        '../webkit/webkit_resources.gyp:webkit_temp_resources',
+        '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',
@@ -174,7 +174,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
           'dependencies': [
-            '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
+            '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
           ],
           'configurations': {
             'Debug_Base': {
@@ -294,8 +294,8 @@
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
       ],
       'conditions': [
         ['OS!="android" and OS!="ios"', {

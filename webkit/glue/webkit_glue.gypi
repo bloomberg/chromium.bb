@@ -214,8 +214,8 @@
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/storage_browser.gyp:webkit_storage_browser',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
         'glue_common',
         'plugins',
         'webkit_media',
@@ -283,29 +283,6 @@
             }],
           ],
         }],
-      ],
-    },
-
-# TODO(jamesr): These temporary targets exist only for DumpRenderTree.gyp in the blink repo.
-    {
-      'target_name': 'webkit_resources',
-      'type': 'none',
-      'dependencies': [
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
-      ],
-    },
-
-    {
-      'target_name': 'webkit_strings',
-      'type': 'none',
-      'dependencies': [
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_strings',
       ],
     },
   ],

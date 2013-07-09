@@ -24,7 +24,7 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
       ],
 
       'include_dirs': [

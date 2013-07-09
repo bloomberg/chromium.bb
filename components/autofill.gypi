@@ -110,7 +110,7 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../ui/ui.gyp:ui',
             '../url/url.gyp:url_lib',
-            '../webkit/webkit_resources.gyp:webkit_temp_resources',
+            '../webkit/webkit_resources.gyp:webkit_resources',
 
             'component_strings.gyp:component_strings',
           ],
@@ -265,7 +265,7 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../ui/ui.gyp:ui',
             '../url/url.gyp:url_lib',
-            '../webkit/webkit_resources.gyp:webkit_temp_resources',
+            '../webkit/webkit_resources.gyp:webkit_resources',
 
             'component_strings.gyp:component_strings',
           ],

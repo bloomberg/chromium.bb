@@ -1175,8 +1175,8 @@
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        '../webkit/webkit_resources.gyp:webkit_temp_resources',
-        '../webkit/webkit_resources.gyp:webkit_temp_strings',
+        '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/webkit_resources.gyp:webkit_strings',
       ],
     }],
     ['OS!="mac" and OS!="ios"', {

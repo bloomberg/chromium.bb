@@ -32,7 +32,7 @@
         '../webkit/support/webkit_support.gyp:glue_renderer',
         '../webkit/support/webkit_support.gyp:plugins',
         '../webkit/support/webkit_support.gyp:webkit_media',
-        '../webkit/webkit_resources.gyp:webkit_temp_resources',
+        '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

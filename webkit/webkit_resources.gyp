@@ -4,17 +4,15 @@
 
 {
   'targets': [
-# TODO(jamesr): These targets should be called webkit_(resources|strings), but can't
-# until blink is updated.
     {
-      'target_name': 'webkit_temp_resources',
+      'target_name': 'webkit_resources',
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
       },
       'actions': [
         {
-          'action_name': 'webkit_temp_resources',
+          'action_name': 'webkit_resources',
           'variables': {
             'grit_grd_file': 'glue/resources/webkit_resources.grd',
           },
@@ -34,14 +32,14 @@
       },
     },
     {
-      'target_name': 'webkit_temp_strings',
+      'target_name': 'webkit_strings',
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
       },
       'actions': [
         {
-          'action_name': 'webkit_temp_strings',
+          'action_name': 'webkit_strings',
           'variables': {
             'grit_grd_file': 'glue/webkit_strings.grd',
           },
@@ -49,6 +47,19 @@
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
+    },
+# TODO(jamesr): Remove these once blink depends on the real targets.
+    {
+      'target_name': 'webkit_temp_resources',
+      'type': 'none',
+      'dependencies': [ 'webkit_resources' ],
+      'export_dependent_settings': [ 'webkit_resources' ],
+    },
+    {
+      'target_name': 'webkit_temp_strings',
+      'type': 'none',
+      'dependencies': [ 'webkit_strings' ],
+      'export_dependent_settings': [ 'webkit_strings' ],
     },
   ]
 }

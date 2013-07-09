@@ -31,7 +31,7 @@
         '<(DEPTH)/content/content_resources.gyp:content_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_temp_resources',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
       ],
       'variables': {
         'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
