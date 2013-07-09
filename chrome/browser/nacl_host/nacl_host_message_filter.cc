@@ -4,21 +4,14 @@
 
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 
-#include "base/bind.h"
-#include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_file_host.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/nacl_host_messages.h"
 #include "extensions/common/constants.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "url/gurl.h"
 
 static base::FilePath GetManifestPath(
     ExtensionInfoMap* extension_info_map, const std::string& manifest) {
@@ -107,8 +100,6 @@ void NaClHostMessageFilter::OnNaClCreateTemporaryFile(
 
 void NaClHostMessageFilter::OnNaClErrorStatus(int render_view_id,
                                               int error_id) {
-  // Currently there is only one kind of error status, for which
-  // we want to show the user an infobar.
   NaClBrowser::GetDelegate()->ShowNaClInfobar(render_process_id_,
                                               render_view_id, error_id);
 }

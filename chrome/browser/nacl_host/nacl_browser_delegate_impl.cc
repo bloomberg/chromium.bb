@@ -4,19 +4,24 @@
 
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 
-#include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "chrome/browser/nacl_host/nacl_infobar.h"
+#include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
+#include "content/public/browser/browser_thread.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 
 void NaClBrowserDelegateImpl::ShowNaClInfobar(int render_process_id,
                                               int render_view_id,
                                               int error_id) {
-  ::ShowNaClInfobar(render_process_id, render_view_id, error_id);
+  DCHECK_EQ(PP_NACL_MANIFEST_MISSING_ARCH, error_id);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&NaClInfoBarDelegate::Create, render_process_id,
+                 render_view_id));
 }
 
 bool NaClBrowserDelegateImpl::DialogsAreSuppressed() {
