@@ -721,13 +721,18 @@ def ValidateRegularInstruction(instruction, bitness):
     assert False, bitness
 
 
-def ValidateDirectJump(instruction):
+def ValidateDirectJump(instruction, bitness):
+  assert bitness in [32, 64]
   cond_jumps_re = re.compile(
       r'(data16 )?'
-      r'(?P<name>j%s|loop(n?)e)(?P<branch_hint>,p[nt])? %s$'
+      r'(?P<name>j%s|loop(n?)e|j[er]?cxz)(?P<branch_hint>,p[nt])? %s$'
       % (_CONDITION_SUFFIX_RE, _HexRE('destination')))
   m = cond_jumps_re.match(instruction.disasm)
   if m is not None:
+    if (m.group('name') == 'jcxz' or
+        (m.group('name') == 'jecxz' and bitness == 64)):
+      raise SandboxingError('disallowed form of jcxz instruction', instruction)
+
     if (m.group('name').startswith('loop') and
         m.group('branch_hint') is not None):
       raise SandboxingError(
@@ -766,7 +771,7 @@ def ValidateDirectJumpOrRegularInstruction(instruction, bitness):
   """
   assert bitness in [32, 64]
   try:
-    destination = ValidateDirectJump(instruction)
+    destination = ValidateDirectJump(instruction, bitness)
     return destination, Condition(), Condition()
   except DoNotMatchError:
     pass
