@@ -18,7 +18,6 @@
 AnimatedWebP status=experimental
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
-CanvasPath status=test
 Crypto status=test
 CSSCompositing status=experimental
 CSSExclusions status=experimental

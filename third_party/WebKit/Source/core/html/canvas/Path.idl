@@ -27,7 +27,7 @@
  */
 
 [
-    EnabledAtRuntime=canvasPath,
+    EnabledAtRuntime=experimentalCanvasFeatures,
     Constructor,
     Constructor(Path path),
     Constructor(DOMString text),
