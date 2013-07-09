@@ -12,10 +12,13 @@ description('Test Promise.');
 window.jsTestIsAsync = true;
 
 new Promise(function(resolver) {
-  resolver.fulfill('foo');
+  var anotherResolver;
+  resolver.resolve(new Promise(function(r) { anotherResolver = r; }));
   resolver.fulfill('fulfill');
   resolver.resolve('resolve');
   resolver.reject('reject');
+
+  anotherResolver.fulfill('foo');
 }).then(function(result) {
   window.result = result;
   shouldBeEqualToString('result', 'foo');

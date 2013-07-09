@@ -59,12 +59,6 @@ public:
         PrimitiveWrapperFieldCount, // This entry must always be at the bottom.
     };
 
-    enum PromiseAlgorithm {
-        FulfillAlgorithm,
-        ResolveAlgorithm,
-        RejectAlgorithm,
-    };
-
     enum PromiseState {
         Pending,
         Fulfilled,
