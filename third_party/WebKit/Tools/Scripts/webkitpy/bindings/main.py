@@ -52,7 +52,7 @@ class BindingsTests:
         self.reset_results = reset_results
         self.executive = executive
 
-    def generate_from_idl(self, idl_file, output_directory, supplemental_dependency_file):
+    def generate_from_idl(self, idl_file, output_directory, interface_dependencies_file):
         cmd = ['perl', '-w',
                '-Ibindings/scripts',
                '-Icore/scripts',
@@ -61,7 +61,7 @@ class BindingsTests:
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
                '--outputDir', output_directory,
-               '--supplementalDependencyFile', supplemental_dependency_file,
+               '--interfaceDependenciesFile', interface_dependencies_file,
                '--idlAttributesFile', 'bindings/scripts/IDLAttributes.txt',
                idl_file]
 
@@ -75,7 +75,7 @@ class BindingsTests:
             exit_code = e.exit_code
         return exit_code
 
-    def generate_supplemental_dependency(self, input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
+    def generate_interface_dependencies(self, input_directory, interface_dependencies_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
         idl_files_list = tempfile.mkstemp()
         for input_file in os.listdir(input_directory):
             (name, extension) = os.path.splitext(input_file)
@@ -85,9 +85,9 @@ class BindingsTests:
         os.close(idl_files_list[0])
 
         cmd = ['python',
-               'bindings/scripts/preprocess_idls.py',
+               'bindings/scripts/compute_dependencies.py',
                '--idl-files-list', idl_files_list[1],
-               '--supplemental-dependency-file', supplemental_dependency_file,
+               '--interface-dependencies-file', interface_dependencies_file,
                '--window-constructors-file', window_constructors_file,
                '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
                '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,
@@ -141,7 +141,7 @@ class BindingsTests:
                 changes_found = True
         return changes_found
 
-    def run_tests(self, input_directory, reference_directory, supplemental_dependency_file, event_names_file):
+    def run_tests(self, input_directory, reference_directory, interface_dependencies_file, event_names_file):
         work_directory = reference_directory
 
         passed = True
@@ -160,7 +160,7 @@ class BindingsTests:
 
             if self.generate_from_idl(os.path.join(input_directory, input_file),
                                       work_directory,
-                                      supplemental_dependency_file):
+                                      interface_dependencies_file):
                 passed = False
 
             if self.reset_results:
@@ -185,7 +185,7 @@ class BindingsTests:
         input_directory = os.path.join('bindings', 'tests', 'idls')
         reference_directory = os.path.join('bindings', 'tests', 'results')
 
-        supplemental_dependency_file = provider.newtempfile()
+        interface_dependencies_file = provider.newtempfile()
         window_constructors_file = provider.newtempfile()
         workerglobalscope_constructors_file = provider.newtempfile()
         sharedworkerglobalscope_constructors_file = provider.newtempfile()
@@ -196,11 +196,11 @@ class BindingsTests:
         else:
             event_names_file = provider.newtempfile()
 
-        if self.generate_supplemental_dependency(input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
-            print 'Failed to generate a supplemental dependency file.'
+        if self.generate_interface_dependencies(input_directory, interface_dependencies_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
+            print 'Failed to generate interface dependencies file.'
             return -1
 
-        if not self.run_tests(input_directory, reference_directory, supplemental_dependency_file, event_names_file):
+        if not self.run_tests(input_directory, reference_directory, interface_dependencies_file, event_names_file):
             all_tests_passed = False
 
         print ''
