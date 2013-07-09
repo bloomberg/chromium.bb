@@ -264,15 +264,42 @@ class MiscTests(Base):
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([IMAGE]))
+        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name))), set(['Bug(x)']))
 
         def bot_expectations():
             return {test_name: ['PASS', 'IMAGE']}
         self._port.bot_expectations = bot_expectations
-        self._port._options.ignore_flaky = 'very-flaky'
+        self._port._options.ignore_flaky_tests = 'very-flaky'
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([PASS, IMAGE]))
 
+        # The following line tests the actual behavior, which is not necessarily a usefull behavior.
+        # Existing modifiers from a test expectation file are overridden by the bot expectations.
+        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name))), set())
+
+    def test_bot_test_expectations_merge(self):
+        """Test that expectations are merged rather than overridden when using flaky option 'unexpected'."""
+        test_name1 = 'failures/expected/text.html'
+        test_name2 = 'passes/text.html'
+
+        expectations_dict = OrderedDict()
+        expectations_dict['expectations'] = "Bug(x) %s [ ImageOnlyFailure ]\nBug(x) %s [ Slow ]\n" % (test_name1, test_name2)
+        self._port.expectations_dict = lambda: expectations_dict
+
+        expectations = TestExpectations(self._port, self.get_basic_tests())
+        self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([IMAGE]))
+        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['SLOW', 'Bug(x)']))
+
+        def bot_expectations():
+            return {test_name1: ['PASS', 'TIMEOUT'], test_name2: ['CRASH']}
+        self._port.bot_expectations = bot_expectations
+        self._port._options.ignore_flaky_tests = 'unexpected'
+
+        expectations = TestExpectations(self._port, self.get_basic_tests())
+        self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([PASS, IMAGE, TIMEOUT]))
+        self.assertEqual(expectations.get_expectations(self.get_test(test_name2)), set([PASS, CRASH]))
+        self.assertEqual(expectations.get_modifiers(self.get_test(test_name2)), set(['SLOW', 'Bug(x)']))
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False):

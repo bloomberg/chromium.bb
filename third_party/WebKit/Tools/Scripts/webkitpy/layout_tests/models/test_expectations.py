@@ -432,6 +432,29 @@ class TestExpectationLine(object):
         expectation_line.matching_tests = [test]
         return expectation_line
 
+    @staticmethod
+    def merge_expectation_lines(line1, line2):
+        """Merges the expectations of line2 into line1 and returns a fresh object."""
+        if line1 is None:
+            return line2
+        if line2 is None:
+            return line1
+
+        # Don't merge original_string, filename, line_number or comment.
+        result = TestExpectationLine()
+        result.name = line1.name
+        result.path = line1.path
+        result.parsed_expectations = set(line1.parsed_expectations) | set(line2.parsed_expectations)
+        result.expectations = set(line1.expectations) | set(line2.expectations)
+        result.modifiers = set(line1.modifiers) | set(line2.modifiers)
+        result.parsed_modifiers = set(line1.parsed_modifiers) | set(line2.parsed_modifiers)
+        result.parsed_bug_modifiers = set(line1.parsed_bug_modifiers) | set(line2.parsed_bug_modifiers)
+        result.matching_configurations = set(line1.matching_configurations) | set(line2.matching_configurations)
+        result.matching_tests = list(set(line1.matching_tests) | set(line2.matching_tests))
+        result.warnings = list(set(line1.warnings) | set(line2.warnings))
+        result.is_skipped_outside_expectations_file = line1.is_skipped_outside_expectations_file or line2.is_skipped_outside_expectations_file
+        return result
+
     def to_string(self, test_configuration_converter, include_modifiers=True, include_expectations=True, include_comment=True):
         parsed_expectation_to_string = dict([[parsed_expectation, expectation_string] for expectation_string, parsed_expectation in TestExpectations.EXPECTATIONS.items()])
 
@@ -637,15 +660,22 @@ class TestExpectationsModel(object):
         self._clear_expectations_for_test(test)
         del self._test_to_expectation_line[test]
 
-    def add_expectation_line(self, expectation_line, override_existing_matches=False):
+    def add_expectation_line(self, expectation_line,
+                             override_existing_matches=False,
+                             merge_existing_matches=False):
         """Returns a list of warnings encountered while matching modifiers."""
 
         if expectation_line.is_invalid():
             return
 
         for test in expectation_line.matching_tests:
-            if not override_existing_matches and self._already_seen_better_match(test, expectation_line):
+            if (not (override_existing_matches or merge_existing_matches)
+                    and self._already_seen_better_match(test, expectation_line)):
                 continue
+
+            if merge_existing_matches:
+                merge = TestExpectationLine.merge_expectation_lines
+                expectation_line = merge(self.get_expectation_line(test), expectation_line)
 
             self._clear_expectations_for_test(test)
             self._test_to_expectation_line[test] = expectation_line
@@ -1073,7 +1103,10 @@ class TestExpectations(object):
         bot_expectations = self._port.bot_expectations()
         for test_name in bot_expectations:
             expectation_line = self._parser.expectation_line_for_test(test_name, bot_expectations[test_name])
-            self._model.add_expectation_line(expectation_line, override_existing_matches=True)
+
+            # Unexpected results are merged into existing expectations.
+            merge = self._port.get_option('ignore_flaky_tests') == 'unexpected'
+            self._model.add_expectation_line(expectation_line, override_existing_matches=True, merge_existing_matches=merge)
 
     def add_expectation_line(self, expectation_line):
         self._model.add_expectation_line(expectation_line)
