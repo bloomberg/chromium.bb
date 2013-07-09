@@ -113,11 +113,11 @@ def ExtractCPEList(deps_list):
   cpe_dump = []
   for cpv, record in deps_list.items():
     if record["cpes"]:
-      for cpe in record["cpes"]:
-        cpe_dump.append({"Name": cpv, "Target": cpe, "Repository": "cros"})
+      cpe_dump.append({"Name": cpv, "Targets": sorted(record["cpes"]),
+                       "Repository": "cros"})
     else:
       cros_build_lib.Warning("No CPE entry for %s", cpv)
-  return cpe_dump
+  return sorted(cpe_dump, key=lambda k: k["Name"])
 
 
 def main(argv):
