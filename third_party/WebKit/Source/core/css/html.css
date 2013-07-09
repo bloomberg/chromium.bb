@@ -469,42 +469,10 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 #if defined(ENABLE_INPUT_MULTIPLE_FIELDS_UI) && ENABLE_INPUT_MULTIPLE_FIELDS_UI
-input[type="date"] {
-    -webkit-align-items: center;
-    display: -webkit-inline-flex;
-    font-family: monospace;
-    overflow: hidden;
-    padding: 0;
-    -webkit-padding-start: 1px;
-}
-
-input[type="datetime-local"] {
-    -webkit-align-items: center;
-    display: -webkit-inline-flex;
-    font-family: monospace;
-    overflow: hidden;
-    padding: 0;
-    -webkit-padding-start: 1px;
-}
-
-input[type="month"] {
-    -webkit-align-items: center;
-    display: -webkit-inline-flex;
-    font-family: monospace;
-    overflow: hidden;
-    padding: 0;
-    -webkit-padding-start: 1px;
-}
-
-input[type="time"] {
-    -webkit-align-items: center;
-    display: -webkit-inline-flex;
-    font-family: monospace;
-    overflow: hidden;
-    padding: 0;
-    -webkit-padding-start: 1px;
-}
-
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
 input[type="week"] {
     -webkit-align-items: center;
     display: -webkit-inline-flex;
@@ -593,48 +561,10 @@ input[type="week"]::-webkit-inner-spin-button {
 }
 
 #else
-input[type="date"] {
-    -webkit-align-items: center;
-    -webkit-appearance: menulist-button;
-    display: -webkit-inline-flex;
-    overflow: hidden;
-    width: 10em;
-}
-
-#if defined(ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE) && ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE
-input[type="datetime"] {
-    -webkit-align-items: center;
-    -webkit-appearance: menulist-button;
-    display: -webkit-inline-flex;
-    overflow: hidden;
-    width: 10em;
-}
-#endif
-
-input[type="datetime-local"] {
-    -webkit-align-items: center;
-    -webkit-appearance: menulist-button;
-    display: -webkit-inline-flex;
-    overflow: hidden;
-    width: 10em;
-}
-
-input[type="month"] {
-    -webkit-align-items: center;
-    -webkit-appearance: menulist-button;
-    display: -webkit-inline-flex;
-    overflow: hidden;
-    width: 10em;
-}
-
-input[type="time"] {
-    -webkit-align-items: center;
-    -webkit-appearance: menulist-button;
-    display: -webkit-inline-flex;
-    overflow: hidden;
-    width: 10em;
-}
-
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
 input[type="week"] {
     -webkit-align-items: center;
     -webkit-appearance: menulist-button;
