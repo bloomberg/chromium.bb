@@ -58,14 +58,19 @@ class TestTranslatorPruned(unittest.TestCase):
 
   def test_didPrune(self):
     total = 0
-    for sym_regex in ['LLParser', 'LLLexer',
-                      'MCAsmParser', '::AsmParser',
-                      'ARMAsmParser', 'X86AsmParser',
-                      'ELFAsmParser', 'COFFAsmParser', 'DarwinAsmParser',
-                      'MCAsmLexer', '::AsmLexer',
-                      # Gigantic Asm MatchTable (globbed for all targets),
-                      'MatchTable',
-                      'PBQP']:
+    for sym_regex in [
+        'LLParser', 'LLLexer',
+        'MCAsmParser', '::AsmParser',
+        'ARMAsmParser', 'X86AsmParser',
+        'ELFAsmParser', 'COFFAsmParser', 'DarwinAsmParser',
+        'MCAsmLexer', '::AsmLexer',
+        # Gigantic Asm MatchTable (globbed for all targets),
+        'MatchTable',
+        'PBQP',
+        # Can only check *InstPrinter::print*, not *::getRegisterName():
+        # https://code.google.com/p/nativeclient/issues/detail?id=3326
+        'ARMInstPrinter::print', 'X86.*InstPrinter::print',
+        ]:
       unpruned = self.sizeOfMatchingSyms(sym_regex, self.unpruned_symbols)
       pruned = self.sizeOfMatchingSyms(sym_regex, self.pruned_symbols)
       self.assertNotEqual(unpruned, 0, 'Unpruned never had ' + sym_regex)
