@@ -229,9 +229,6 @@ public:
 
     virtual bool canContainRangeEndPoint() const { return true; }
 
-    Element* getElementByAccessKey(const String& key);
-    void invalidateAccessKeyMap();
-
     SelectorQueryCache* selectorQueryCache();
 
     // DOM methods & attributes for Document
@@ -1100,8 +1097,6 @@ private:
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
 
-    void buildAccessKeyMap(TreeScope* root);
-
     void createStyleResolver();
 
     void executeScriptsWaitingForResourcesIfNeeded();
@@ -1291,9 +1286,6 @@ private:
     HashMap<String, RefPtr<HTMLCanvasElement> > m_cssCanvasElements;
 
     Vector<IconURL> m_iconURLs;
-
-    HashMap<StringImpl*, Element*, CaseFoldingHash> m_elementsByAccessKey;
-    bool m_accessKeyMapValid;
 
     OwnPtr<SelectorQueryCache> m_selectorQueryCache;
 

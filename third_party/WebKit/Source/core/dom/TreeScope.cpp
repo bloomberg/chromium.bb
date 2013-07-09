@@ -35,6 +35,7 @@
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TreeScopeAdopter.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -492,6 +493,23 @@ bool TreeScope::isInclusiveAncestorOf(const TreeScope* scope) const
             return true;
     }
     return false;
+}
+
+Element* TreeScope::getElementByAccessKey(const String& key) const
+{
+    if (key.isEmpty())
+        return 0;
+    Element* result = 0;
+    Node* root = rootNode();
+    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element, root)) {
+        if (element->fastGetAttribute(accesskeyAttr) == key)
+            result = element;
+        for (ShadowRoot* shadowRoot = element->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
+            if (Element* shadowResult = shadowRoot->getElementByAccessKey(key))
+                result = shadowResult;
+        }
+    }
+    return result;
 }
 
 } // namespace WebCore

@@ -423,7 +423,6 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_designMode(inherit)
     , m_hasAnnotatedRegions(false)
     , m_annotatedRegionsDirty(false)
-    , m_accessKeyMapValid(false)
     , m_useSecureKeyboardEntryWhenActive(false)
     , m_documentClasses(documentClasses)
     , m_isViewSource(false)
@@ -614,37 +613,6 @@ void Document::dispose()
 Element* Document::getElementById(const AtomicString& id) const
 {
     return TreeScope::getElementById(id);
-}
-
-Element* Document::getElementByAccessKey(const String& key)
-{
-    if (key.isEmpty())
-        return 0;
-    if (!m_accessKeyMapValid) {
-        buildAccessKeyMap(this);
-        m_accessKeyMapValid = true;
-    }
-    return m_elementsByAccessKey.get(key.impl());
-}
-
-void Document::buildAccessKeyMap(TreeScope* scope)
-{
-    ASSERT(scope);
-    Node* rootNode = scope->rootNode();
-    for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(element, rootNode)) {
-        const AtomicString& accessKey = element->getAttribute(accesskeyAttr);
-        if (!accessKey.isEmpty())
-            m_elementsByAccessKey.set(accessKey.impl(), element);
-
-        for (ShadowRoot* root = element->youngestShadowRoot(); root; root = root->olderShadowRoot())
-            buildAccessKeyMap(root);
-    }
-}
-
-void Document::invalidateAccessKeyMap()
-{
-    m_accessKeyMapValid = false;
-    m_elementsByAccessKey.clear();
 }
 
 SelectorQueryCache* Document::selectorQueryCache()
@@ -1581,9 +1549,6 @@ void Document::scheduleStyleRecalc()
         return;
 
     ASSERT(childNeedsStyleRecalc() || m_pendingStyleRecalcShouldForce);
-
-    // FIXME: Why on earth is this here? This is clearly misplaced.
-    invalidateAccessKeyMap();
 
     m_styleRecalcTimer.startOneShot(0);
 
@@ -5060,7 +5025,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_annotatedRegions, "annotatedRegions");
     info.addMember(m_cssCanvasElements, "cssCanvasElements");
     info.addMember(m_iconURLs, "iconURLs");
-    info.addMember(m_elementsByAccessKey, "elementsByAccessKey");
     info.addMember(m_eventQueue, "eventQueue");
     info.addMember(m_pendingTasks, "pendingTasks");
     info.addMember(m_prerenderer, "prerenderer");

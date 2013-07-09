@@ -130,6 +130,8 @@ public:
     bool isInclusiveAncestorOf(const TreeScope*) const;
     unsigned short comparePosition(const TreeScope*) const;
 
+    Element* getElementByAccessKey(const String& key) const;
+
 protected:
     TreeScope(ContainerNode*, Document*);
     TreeScope(Document*);
