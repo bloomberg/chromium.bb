@@ -229,9 +229,11 @@ class CleanUpStage(bs.BuilderStage):
   def _DeleteChroot(self):
     chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if os.path.exists(chroot):
-      cros_build_lib.RunCommand(['cros_sdk', '--delete', '--chroot', chroot],
-                                self._build_root,
-                                cwd=self._build_root)
+      # At this stage, it's not safe to run the cros_sdk inside the buildroot
+      # itself because we haven't sync'd yet, and the version of the chromite
+      # in there might be broken. Since we've already unmounted everything in
+      # there, we can just remove it using rm -rf.
+      osutils.RmDir(chroot, ignore_missing=True, sudo=True)
 
   def _DeleteArchivedTrybotImages(self):
     """For trybots, clear all previus archive images to save space."""
@@ -267,13 +269,13 @@ class CleanUpStage(bs.BuilderStage):
           cros_build_lib.Warning("ManifestCheckout at %s is unusable: %s",
                                  self._build_root, e)
 
+    # Clean mount points first to be safe about deleting.
+    commands.CleanUpMountPoints(self._build_root)
+
     if manifest is None:
       self._DeleteChroot()
       repository.ClearBuildRoot(self._build_root, self._options.preserve_paths)
     else:
-      # Clean mount points first to be safe about deleting.
-      commands.CleanUpMountPoints(self._build_root)
-
       commands.BuildRootGitCleanup(self._build_root, self._options.debug)
       tasks = [functools.partial(commands.BuildRootGitCleanup,
                                  self._build_root, self._options.debug),
