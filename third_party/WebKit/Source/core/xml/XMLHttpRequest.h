@@ -105,9 +105,7 @@ public:
     String getResponseHeader(const AtomicString& name, ExceptionCode&) const;
     ScriptString responseText(ExceptionCode&);
     Document* responseXML(ExceptionCode&);
-    Document* optionalResponseXML() const { return m_responseDocument.get(); }
     Blob* responseBlob(ExceptionCode&);
-    Blob* optionalResponseBlob() const { return m_responseBlob.get(); }
     unsigned long timeout() const { return m_timeoutMilliseconds; }
     void setTimeout(unsigned long timeout, ExceptionCode&);
 
@@ -124,13 +122,11 @@ public:
     
     // response attribute has custom getter.
     ArrayBuffer* responseArrayBuffer(ExceptionCode&);
-    ArrayBuffer* optionalResponseArrayBuffer() const { return m_responseArrayBuffer.get(); }
 
     void setLastSendLineNumber(unsigned lineNumber) { m_lastSendLineNumber = lineNumber; }
     void setLastSendURL(const String& url) { m_lastSendURL = url; }
 
     XMLHttpRequestUpload* upload();
-    XMLHttpRequestUpload* optionalUpload() const { return m_upload.get(); }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
