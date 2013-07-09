@@ -35,6 +35,9 @@ public:
     virtual void decoderBeingDestroyed() = 0;
     virtual void frameBufferRequested() = 0;
     virtual ImageFrame::FrameStatus frameStatus() = 0;
+    virtual size_t frameCount() = 0;
+    virtual int repetitionCount() const = 0;
+    virtual float frameDuration() const = 0;
 };
 
 class MockImageDecoder : public ImageDecoder {
@@ -43,7 +46,6 @@ public:
 
     MockImageDecoder(MockImageDecoderClient* client)
         : ImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied)
-        , m_frameBufferRequestCount(0)
         , m_client(client)
     { }
 
@@ -62,19 +64,35 @@ public:
 
     virtual void setFrameHasAlpha(bool hasAlpha) { m_frameBufferCache[0].setHasAlpha(hasAlpha); }
 
+    virtual size_t frameCount()
+    {
+        return m_client->frameCount();
+    }
+
+    virtual int repetitionCount() const
+    {
+        return m_client->repetitionCount();
+    }
+
     virtual ImageFrame* frameBufferAtIndex(size_t)
     {
-        ++m_frameBufferRequestCount;
         m_client->frameBufferRequested();
 
         m_frameBufferCache[0].setStatus(m_client->frameStatus());
         return &m_frameBufferCache[0];
     }
 
-    int frameBufferRequestCount() const { return m_frameBufferRequestCount; }
+    virtual bool frameIsCompleteAtIndex(size_t) const
+    {
+        return m_client->frameStatus() == ImageFrame::FrameComplete;
+    }
+
+    virtual float frameDurationAtIndex(size_t) const
+    {
+        return m_client->frameDuration();
+    }
 
 private:
-    int m_frameBufferRequestCount;
     MockImageDecoderClient* m_client;
 };
 

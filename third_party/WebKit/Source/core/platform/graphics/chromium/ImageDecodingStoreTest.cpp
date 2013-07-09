@@ -68,6 +68,10 @@ public:
         return ImageFrame::FramePartial;
     }
 
+    virtual size_t frameCount() { return 1; }
+    virtual int repetitionCount() const { return cAnimationNone; }
+    virtual float frameDuration() const { return 0; }
+
 protected:
     PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size, bool discardable = false, size_t index = 0)
     {
