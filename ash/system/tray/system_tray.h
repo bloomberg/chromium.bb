@@ -157,6 +157,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
     return tray_accessibility_;
   }
 
+  // Overridden from TrayBackgroundView.
+  virtual bool IsPressed() OVERRIDE;
+
  private:
   // Creates the default set of items for the sytem tray.
   void CreateItems(SystemTrayDelegate* delegate);

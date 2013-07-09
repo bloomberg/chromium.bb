@@ -4,21 +4,28 @@
 
 #include "ash/system/tray/tray_background_view.h"
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
@@ -72,8 +79,65 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 
 class TrayBackground : public views::Background {
  public:
-  TrayBackground() {
+  const static int kImageTypeDefault = 0;
+  const static int kImageTypeOnBlack = 1;
+  const static int kImageTypePressed = 2;
+  const static int kNumStates = 3;
+
+  const static int kImageHorizontal = 0;
+  const static int kImageVertical = 1;
+  const static int kNumOrientations = 2;
+
+  explicit TrayBackground(TrayBackgroundView* tray_background_view) :
+      tray_background_view_(tray_background_view) {
     set_alpha(kTrayBackgroundAlpha);
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    leading_images_[kImageHorizontal][kImageTypeDefault] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_LEFT).ToImageSkia();
+    middle_images_[kImageHorizontal][kImageTypeDefault] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_CENTER).ToImageSkia();
+    trailing_images_[kImageHorizontal][kImageTypeDefault] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_RIGHT).ToImageSkia();
+
+    leading_images_[kImageHorizontal][kImageTypeOnBlack] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_LEFT_ONBLACK).ToImageSkia();
+    middle_images_[kImageHorizontal][kImageTypeOnBlack] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_CENTER_ONBLACK).ToImageSkia();
+    trailing_images_[kImageHorizontal][kImageTypeOnBlack] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_RIGHT_ONBLACK).ToImageSkia();
+
+    leading_images_[kImageHorizontal][kImageTypePressed] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_LEFT_PRESSED).ToImageSkia();
+    middle_images_[kImageHorizontal][kImageTypePressed] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_CENTER_PRESSED).ToImageSkia();
+    trailing_images_[kImageHorizontal][kImageTypePressed] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_HORIZ_RIGHT_PRESSED).ToImageSkia();
+
+    leading_images_[kImageVertical][kImageTypeDefault] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_VERTICAL_TOP).ToImageSkia();
+    middle_images_[kImageVertical][kImageTypeDefault] =
+        rb.GetImageNamed(
+            IDR_AURA_TRAY_BG_VERTICAL_CENTER).ToImageSkia();
+    trailing_images_[kImageVertical][kImageTypeDefault] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_VERTICAL_BOTTOM).ToImageSkia();
+
+    leading_images_[kImageVertical][kImageTypeOnBlack] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_VERTICAL_TOP_ONBLACK).ToImageSkia();
+    middle_images_[kImageVertical][kImageTypeOnBlack] =
+        rb.GetImageNamed(
+            IDR_AURA_TRAY_BG_VERTICAL_CENTER_ONBLACK).ToImageSkia();
+    trailing_images_[kImageVertical][kImageTypeOnBlack] =
+        rb.GetImageNamed(
+            IDR_AURA_TRAY_BG_VERTICAL_BOTTOM_ONBLACK).ToImageSkia();
+
+    leading_images_[kImageVertical][kImageTypePressed] =
+        rb.GetImageNamed(IDR_AURA_TRAY_BG_VERTICAL_TOP_PRESSED).ToImageSkia();
+    middle_images_[kImageVertical][kImageTypePressed] =
+        rb.GetImageNamed(
+            IDR_AURA_TRAY_BG_VERTICAL_CENTER_PRESSED).ToImageSkia();
+    trailing_images_[kImageVertical][kImageTypePressed] =
+        rb.GetImageNamed(
+            IDR_AURA_TRAY_BG_VERTICAL_BOTTOM_PRESSED).ToImageSkia();
   }
 
   virtual ~TrayBackground() {}
@@ -83,20 +147,93 @@ class TrayBackground : public views::Background {
   void set_alpha(int alpha) { color_ = SkColorSetARGB(alpha, 0, 0, 0); }
 
  private:
+  ShelfWidget* GetShelfWidget() const {
+    return RootWindowController::ForWindow(tray_background_view_->
+        status_area_widget()->GetNativeWindow())->shelf();
+  }
+
+  void PaintForAlternateShelf(gfx::Canvas* canvas, views::View* view) const {
+    int orientation = kImageHorizontal;
+    ShelfWidget* shelf_widget = GetShelfWidget();
+    if (shelf_widget &&
+        !shelf_widget->shelf_layout_manager()->IsHorizontalAlignment())
+      orientation = kImageVertical;
+
+    int state = kImageTypeDefault;
+    if (tray_background_view_->IsPressed())
+      state = kImageTypePressed;
+    else if (shelf_widget && shelf_widget->GetDimsShelf())
+      state = kImageTypeOnBlack;
+    else
+      state = kImageTypeDefault;
+
+    const gfx::ImageSkia* leading = leading_images_[orientation][state];
+    const gfx::ImageSkia* middle = middle_images_[orientation][state];
+    const gfx::ImageSkia* trailing = trailing_images_[orientation][state];
+
+    gfx::Rect bounds(view->GetLocalBounds());
+    gfx::Point leading_location, trailing_location;
+    gfx::Rect middle_bounds;
+
+    if (orientation == kImageHorizontal) {
+      leading_location = gfx::Point(0, 0);
+      trailing_location = gfx::Point(bounds.width() - trailing->width(), 0);
+      middle_bounds = gfx::Rect(
+          leading->width(),
+          0,
+          bounds.width() - (leading->width() + trailing->width()),
+          bounds.height());
+    } else {
+      leading_location = gfx::Point(0, 0);
+      trailing_location = gfx::Point(0, bounds.height() - trailing->height());
+      middle_bounds = gfx::Rect(
+          0,
+          leading->height(),
+          bounds.width(),
+          bounds.height() - (leading->height() + trailing->height()));
+    }
+
+    canvas->DrawImageInt(*leading,
+                         leading_location.x(),
+                         leading_location.y());
+
+    canvas->DrawImageInt(*trailing,
+                         trailing_location.x(),
+                         trailing_location.y());
+
+    canvas->TileImageInt(*middle,
+                         middle_bounds.x(),
+                         middle_bounds.y(),
+                         middle_bounds.width(),
+                         middle_bounds.height());
+  }
+
   // Overridden from views::Background.
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(color_);
-    SkPath path;
-    gfx::Rect bounds(view->GetLocalBounds());
-    SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
-    path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-    canvas->DrawPath(path, paint);
+    if (ash::switches::UseAlternateShelfLayout()) {
+      PaintForAlternateShelf(canvas, view);
+    } else {
+      SkPaint paint;
+      paint.setAntiAlias(true);
+      paint.setStyle(SkPaint::kFill_Style);
+      paint.setColor(color_);
+      SkPath path;
+      gfx::Rect bounds(view->GetLocalBounds());
+      SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
+      path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
+      canvas->DrawPath(path, paint);
+    }
   }
 
   SkColor color_;
+  // Reference to the TrayBackgroundView for which this is a background.
+  TrayBackgroundView* tray_background_view_;
+
+  // References to the images used as backgrounds, they are owned by the
+  // resource bundle class.
+  const gfx::ImageSkia* leading_images_[kNumOrientations][kNumStates];
+  const gfx::ImageSkia* middle_images_[kNumOrientations][kNumStates];
+  const gfx::ImageSkia* trailing_images_[kNumOrientations][kNumStates];
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
@@ -139,21 +276,35 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
   // empty border.
   if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
       alignment_ == SHELF_ALIGNMENT_TOP) {
+    int vertical_padding = kTrayContainerVerticalPaddingBottomAlignment;
+    int horizontal_padding = kTrayContainerHorizontalPaddingBottomAlignment;
+    if (ash::switches::UseAlternateShelfLayout()) {
+      vertical_padding += kPaddingFromEdgeOfShelf;
+      horizontal_padding += kPaddingFromEdgeOfShelf;
+    }
     set_border(views::Border::CreateEmptyBorder(
-        kTrayContainerVerticalPaddingBottomAlignment,
-        kTrayContainerHorizontalPaddingBottomAlignment,
-        kTrayContainerVerticalPaddingBottomAlignment,
-        kTrayContainerHorizontalPaddingBottomAlignment));
+          vertical_padding,
+          horizontal_padding,
+          horizontal_padding,
+          vertical_padding));
+
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     layout->set_spread_blank_space(true);
     views::View::SetLayoutManager(layout);
   } else {
+    int vertical_padding = kTrayContainerVerticalPaddingVerticalAlignment;
+    int horizontal_padding = kTrayContainerHorizontalPaddingVerticalAlignment;
+    if (ash::switches::UseAlternateShelfLayout()) {
+      vertical_padding += kPaddingFromEdgeOfShelf;
+      horizontal_padding += kPaddingFromEdgeOfShelf;
+    }
     set_border(views::Border::CreateEmptyBorder(
-        kTrayContainerVerticalPaddingVerticalAlignment,
-        kTrayContainerHorizontalPaddingVerticalAlignment,
-        kTrayContainerVerticalPaddingVerticalAlignment,
-        kTrayContainerHorizontalPaddingVerticalAlignment));
+        vertical_padding,
+        horizontal_padding,
+        vertical_padding,
+        horizontal_padding));
+
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
     layout->set_spread_blank_space(true);
@@ -272,7 +423,7 @@ void TrayBackgroundView::SetPaintsBackground(
 }
 
 void TrayBackgroundView::SetContentsBackground() {
-  background_ = new internal::TrayBackground;
+  background_ = new internal::TrayBackground(this);
   tray_container_->set_background(background_);
 }
 
@@ -288,31 +439,40 @@ void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
 
 void TrayBackgroundView::SetBorder() {
   views::View* parent = status_area_widget_->status_area_widget_delegate();
-  // Tray views are laid out right-to-left or bottom-to-top
-  int on_edge = (this == parent->child_at(0));
-  // Change the border padding for different shelf alignment.
-  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+
+  if (ash::switches::UseAlternateShelfLayout()) {
     set_border(views::Border::CreateEmptyBorder(
-        0, 0,
-        on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
-                  kPaddingFromBottomOfScreenBottomAlignment - 1,
-        on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
-  } else if (shelf_alignment() == SHELF_ALIGNMENT_TOP) {
-    set_border(views::Border::CreateEmptyBorder(
-        on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
-                  kPaddingFromBottomOfScreenBottomAlignment - 1,
-        0, 0,
-        on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
-  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-    set_border(views::Border::CreateEmptyBorder(
-        0, kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
-        on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
-        kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
+        0,
+        0,
+        ShelfLayoutManager::kAutoHideSize,
+        0));
   } else {
-    set_border(views::Border::CreateEmptyBorder(
-        0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
-        on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
-        kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
+    // Tray views are laid out right-to-left or bottom-to-top
+    int on_edge = (this == parent->child_at(0));
+    // Change the border padding for different shelf alignment.
+    if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      set_border(views::Border::CreateEmptyBorder(
+          0, 0,
+          on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
+                    kPaddingFromBottomOfScreenBottomAlignment - 1,
+          on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
+    } else if (shelf_alignment() == SHELF_ALIGNMENT_TOP) {
+      set_border(views::Border::CreateEmptyBorder(
+          on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
+                    kPaddingFromBottomOfScreenBottomAlignment - 1,
+          0, 0,
+          on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
+    } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+      set_border(views::Border::CreateEmptyBorder(
+          0, kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
+          on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
+          kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
+    } else {
+      set_border(views::Border::CreateEmptyBorder(
+          0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+          on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
+          kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
+    }
   }
 }
 
@@ -327,6 +487,10 @@ void TrayBackgroundView::InitializeBubbleAnimations(
   views::corewm::SetWindowVisibilityAnimationDuration(
       bubble_widget->GetNativeWindow(),
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
+}
+
+bool TrayBackgroundView::IsPressed() {
+  return pressed_;
 }
 
 aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {

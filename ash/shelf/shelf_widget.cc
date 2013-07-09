@@ -491,6 +491,7 @@ void ShelfWidget::SetDimsShelf(bool dimming) {
   delegate_view_->SetDimmed(dimming);
   if (launcher_)
     launcher_->GetAppListButtonView()->SchedulePaint();
+  status_area_widget_->GetContentsView()->SchedulePaint();
 }
 
 bool ShelfWidget::GetDimsShelf() const {

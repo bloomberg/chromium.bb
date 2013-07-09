@@ -138,6 +138,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Updates the arrow visibilty based on the launcher visibilty.
   void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
 
+  // Provides the background with a function to query for pressed state.
+  virtual bool IsPressed();
+
  private:
   class TrayWidgetObserver;
 

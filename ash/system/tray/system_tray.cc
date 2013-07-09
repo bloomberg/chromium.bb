@@ -315,6 +315,10 @@ bool SystemTray::HasNotificationBubble() const {
   return notification_bubble_.get() != NULL;
 }
 
+bool SystemTray::IsPressed() {
+  return HasSystemBubble();
+}
+
 internal::SystemTrayBubble* SystemTray::GetSystemBubble() {
   if (!system_bubble_)
     return NULL;

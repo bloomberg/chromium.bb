@@ -106,6 +106,9 @@ class ASH_EXPORT WebNotificationTray
   virtual void HidePopups() OVERRIDE;
   virtual bool ShowNotifierSettings() OVERRIDE;
 
+  // Overridden from TrayBackgroundView.
+  virtual bool IsPressed() OVERRIDE;
+
   message_center::MessageCenter* message_center();
 
  private:

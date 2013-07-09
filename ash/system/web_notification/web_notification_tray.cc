@@ -4,6 +4,7 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -55,6 +56,9 @@ namespace internal {
 namespace {
 
 const int kWebNotificationIconSize = 31;
+// Height of the art assets used in alternate shelf layout,
+// see ash/ash_switches.h:UseAlternateShelfLayout.
+const int kWebNotificationAlternateSize = 38;
 
 }
 
@@ -141,6 +145,9 @@ class WebNotificationButton : public views::CustomButton {
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
+    if (ash::switches::UseAlternateShelfLayout())
+      return gfx::Size(kWebNotificationAlternateSize,
+                       kWebNotificationAlternateSize);
     return gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize);
   }
 
@@ -434,6 +441,10 @@ bool WebNotificationTray::ShowNotifierSettings() {
     return true;
   }
   return ShowMessageCenterInternal(true /* show_settings */);
+}
+
+bool WebNotificationTray::IsPressed() {
+  return IsMessageCenterBubbleVisible();
 }
 
 void WebNotificationTray::ButtonPressed(views::Button* sender,
