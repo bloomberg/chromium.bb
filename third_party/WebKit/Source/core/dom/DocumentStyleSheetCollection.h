@@ -30,6 +30,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
+#include "core/dom/StyleSheetCollection.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
@@ -51,9 +52,8 @@ public:
 
     ~DocumentStyleSheetCollection();
 
-    const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
-
-    const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
+    const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList();
+    const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const;
 
     CSSStyleSheet* pageUserSheet();
     const Vector<RefPtr<CSSStyleSheet> >& documentUserStyleSheets() const { return m_userStyleSheets; }
@@ -108,18 +108,7 @@ public:
 private:
     DocumentStyleSheetCollection(Document*);
 
-    void collectStyleSheets(Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
-    enum StyleResolverUpdateType {
-        Reconstruct,
-        Reset,
-        Additive
-    };
-    void analyzeStyleSheetChange(StyleResolverUpdateMode, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, StyleResolverUpdateType&, bool& requiresFullStyleRecalc);
-
     Document* m_document;
-
-    Vector<RefPtr<StyleSheet> > m_styleSheetsForStyleSheetList;
-    Vector<RefPtr<CSSStyleSheet> > m_activeAuthorStyleSheets;
 
     // Track the number of currently loading top-level stylesheets needed for rendering.
     // Sheets loaded using the @import directive are not included in this count.
@@ -139,7 +128,7 @@ private:
     bool m_hadActiveLoadingStylesheet;
     bool m_needsUpdateActiveStylesheetsOnStyleRecalc;
 
-    DocumentOrderedList m_styleSheetCandidateNodes;
+    StyleSheetCollection m_collectionForDocument;
 
     String m_preferredStylesheetSetName;
     String m_selectedStylesheetSetName;
