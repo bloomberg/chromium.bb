@@ -42,25 +42,6 @@ LRESULT VerifyConfigWindowWin::OnInitDialog(HWND wparam, LPARAM lparam) {
 
   CenterWindow();
 
-  // TODO(simonmorris): l10n.
-  SetWindowText(L"Chrome Remote Desktop");
-
-  CWindow email_label(GetDlgItem(IDC_EMAIL_LABEL));
-  email_label.SetWindowText(L"Account:");
-
-  CWindow pin_label(GetDlgItem(IDC_PIN_LABEL));
-  pin_label.SetWindowText(L"PIN:");
-
-  CWindow ok_button(GetDlgItem(IDOK));
-  ok_button.SetWindowText(L"Confirm");
-
-  CWindow cancel_button(GetDlgItem(IDCANCEL));
-  cancel_button.SetWindowText(L"Cancel");
-
-  CWindow message_text(GetDlgItem(IDC_MESSAGE));
-  message_text.SetWindowText(L"Please confirm your account and PIN below to "
-                             L"allow access by Chrome Remote Desktop.");
-
   CWindow email_text(GetDlgItem(IDC_EMAIL));
   email_text.SetWindowText(UTF8ToUTF16(email_).c_str());
   return TRUE;

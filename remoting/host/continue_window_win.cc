@@ -36,7 +36,6 @@ class ContinueWindowWin : public ContinueWindow {
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
   void EndDialog();
-  void SetStrings();
 
   HWND hwnd_;
 
@@ -64,7 +63,6 @@ void ContinueWindowWin::ShowUi() {
     return;
   }
 
-  SetStrings();
   ShowWindow(hwnd_, SW_SHOW);
 }
 
@@ -126,24 +124,6 @@ void ContinueWindowWin::EndDialog() {
     ::DestroyWindow(hwnd_);
     hwnd_ = NULL;
   }
-}
-
-void ContinueWindowWin::SetStrings() {
-  DCHECK(CalledOnValidThread());
-
-  SetWindowText(hwnd_, ui_strings().product_name.c_str());
-
-  HWND hwndMessage = GetDlgItem(hwnd_, IDC_CONTINUE_MESSAGE);
-  CHECK(hwndMessage);
-  SetWindowText(hwndMessage, ui_strings().continue_prompt.c_str());
-
-  HWND hwndDefault = GetDlgItem(hwnd_, IDC_CONTINUE_DEFAULT);
-  CHECK(hwndDefault);
-  SetWindowText(hwndDefault, ui_strings().continue_button_text.c_str());
-
-  HWND hwndCancel = GetDlgItem(hwnd_, IDC_CONTINUE_CANCEL);
-  CHECK(hwndCancel);
-  SetWindowText(hwndCancel, ui_strings().stop_sharing_button_text.c_str());
 }
 
 }  // namespace

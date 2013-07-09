@@ -30,6 +30,9 @@ const size_t kMaxSharingWithTextLength = 100;
 const wchar_t kShellTrayWindowName[] = L"Shell_TrayWnd";
 const int kWindowBorderRadius = 14;
 
+// Margin between dialog controls (in dialog units).
+const int kWindowTextMargin = 8;
+
 class DisconnectWindowWin : public HostWindow {
  public:
   explicit DisconnectWindowWin(const UiStrings& ui_strings);
@@ -53,6 +56,9 @@ class DisconnectWindowWin : public HostWindow {
   // callback, if set.
   void EndDialog();
 
+  // Returns |control| rectangle in the dialog coordinates.
+  bool GetControlRect(HWND control, RECT* rect);
+
   // Trys to position the dialog window above the taskbar.
   void SetDialogPosition();
 
@@ -75,17 +81,30 @@ class DisconnectWindowWin : public HostWindow {
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowWin);
 };
 
-int GetControlTextWidth(HWND control) {
+// Returns the text for the given dialog control window.
+bool GetControlText(HWND control, string16* text) {
+  // GetWindowText truncates the text if it is longer than can fit into
+  // the buffer.
+  WCHAR buffer[256];
+  int result = GetWindowText(control, buffer, arraysize(buffer));
+  if (!result)
+    return false;
+
+  text->assign(buffer);
+  return true;
+}
+
+// Returns width |text| rendered in |control| window.
+bool GetControlTextWidth(HWND control, const string16& text, LONG* width) {
   RECT rect = {0, 0, 0, 0};
-  WCHAR text[256];
-  int result = GetWindowText(control, text, arraysize(text));
-  if (result) {
-    base::win::ScopedGetDC dc(control);
-    base::win::ScopedSelectObject font(
-        dc, (HFONT)SendMessage(control, WM_GETFONT, 0, 0));
-    DrawText(dc, text, -1, &rect, DT_CALCRECT | DT_SINGLELINE);
-  }
-  return rect.right;
+  base::win::ScopedGetDC dc(control);
+  base::win::ScopedSelectObject font(
+      dc, (HFONT)SendMessage(control, WM_GETFONT, 0, 0));
+  if (!DrawText(dc, text.c_str(), -1, &rect, DT_CALCRECT | DT_SINGLELINE))
+    return false;
+
+  *width = rect.right;
+  return true;
 }
 
 DisconnectWindowWin::DisconnectWindowWin(const UiStrings& ui_strings)
@@ -278,6 +297,19 @@ void DisconnectWindowWin::EndDialog() {
     client_session_control_->DisconnectSession();
 }
 
+// Returns |control| rectangle in the dialog coordinates.
+bool DisconnectWindowWin::GetControlRect(HWND control, RECT* rect) {
+  if (!GetWindowRect(control, rect))
+    return false;
+  SetLastError(ERROR_SUCCESS);
+  int result = MapWindowPoints(HWND_DESKTOP, hwnd_,
+                               reinterpret_cast<LPPOINT>(rect), 2);
+  if (!result && GetLastError() != ERROR_SUCCESS)
+    return false;
+
+  return true;
+}
+
 void DisconnectWindowWin::SetDialogPosition() {
   DCHECK(CalledOnValidThread());
 
@@ -301,66 +333,68 @@ void DisconnectWindowWin::SetDialogPosition() {
 bool DisconnectWindowWin::SetStrings() {
   DCHECK(CalledOnValidThread());
 
-  if (!SetWindowText(hwnd_, ui_strings_.product_name.c_str()))
-    return false;
-
   // Localize the disconnect button text and measure length of the old and new
   // labels.
-  HWND disconnect_button = GetDlgItem(hwnd_, IDC_DISCONNECT);
-  if (!disconnect_button)
+  HWND hwnd_button = GetDlgItem(hwnd_, IDC_DISCONNECT);
+  HWND hwnd_message = GetDlgItem(hwnd_, IDC_DISCONNECT_SHARINGWITH);
+  if (!hwnd_button || !hwnd_message)
     return false;
-  int button_old_required_width = GetControlTextWidth(disconnect_button);
-  if (!SetWindowText(disconnect_button,
-                     ui_strings_.disconnect_button_text.c_str())) {
+
+  string16 button_text;
+  string16 message_text;
+  if (!GetControlText(hwnd_button, &button_text) ||
+      !GetControlText(hwnd_message, &message_text)) {
     return false;
   }
-  int button_new_required_width = GetControlTextWidth(disconnect_button);
-  int button_width_delta =
-      button_new_required_width - button_old_required_width;
 
   // Format and truncate "Your desktop is shared with ..." message.
-  string16 text = ReplaceStringPlaceholders(ui_strings_.disconnect_message,
-                                            UTF8ToUTF16(username_), NULL);
-  if (text.length() > kMaxSharingWithTextLength)
-    text.erase(kMaxSharingWithTextLength);
+  message_text = ReplaceStringPlaceholders(message_text, UTF8ToUTF16(username_),
+                                           NULL);
+  if (message_text.length() > kMaxSharingWithTextLength)
+    message_text.erase(kMaxSharingWithTextLength);
 
-  // Set localized and truncated "Your desktop is shared with ..." message and
-  // measure length of the old and new text.
-  HWND sharing_with_label = GetDlgItem(hwnd_, IDC_DISCONNECT_SHARINGWITH);
-  if (!sharing_with_label)
+  if (!SetWindowText(hwnd_message, message_text.c_str()))
     return false;
-  int label_old_required_width = GetControlTextWidth(sharing_with_label);
-  if (!SetWindowText(sharing_with_label, text.c_str()))
-    return false;
-  int label_new_required_width = GetControlTextWidth(sharing_with_label);
-  int label_width_delta = label_new_required_width - label_old_required_width;
 
-  // Reposition the controls such that the label lies to the left of the
-  // disconnect button (assuming LTR layout). The dialog template determines
-  // the controls' spacing; update their size to fit the localized content.
-  RECT label_rect;
-  if (!GetClientRect(sharing_with_label, &label_rect))
+  // Calculate the margin between controls in pixels.
+  RECT rect = {0};
+  rect.right = kWindowTextMargin;
+  if (!MapDialogRect(hwnd_, &rect))
     return false;
-  if (!SetWindowPos(sharing_with_label, NULL, 0, 0,
-                    label_rect.right + label_width_delta, label_rect.bottom,
-                    SWP_NOMOVE | SWP_NOZORDER)) {
+  int margin = rect.right;
+
+  // Resize |hwnd_message| so that the text is not clipped.
+  RECT message_rect;
+  if (!GetControlRect(hwnd_message, &message_rect))
+    return false;
+
+  LONG control_width;
+  if (!GetControlTextWidth(hwnd_message, message_text, &control_width))
+    return false;
+  message_rect.right = message_rect.left + control_width + margin;
+
+  if (!SetWindowPos(hwnd_message, NULL,
+                    message_rect.left, message_rect.top,
+                    message_rect.right - message_rect.left,
+                    message_rect.bottom - message_rect.top,
+                    SWP_NOZORDER)) {
     return false;
   }
 
-  // Reposition the disconnect button as well.
+  // Reposition and resize |hwnd_button| as well.
   RECT button_rect;
-  if (!GetWindowRect(disconnect_button, &button_rect))
+  if (!GetControlRect(hwnd_button, &button_rect))
     return false;
-  int button_width = button_rect.right - button_rect.left;
-  int button_height = button_rect.bottom - button_rect.top;
-  SetLastError(ERROR_SUCCESS);
-  int result = MapWindowPoints(HWND_DESKTOP, hwnd_,
-                               reinterpret_cast<LPPOINT>(&button_rect), 2);
-  if (!result && GetLastError() != ERROR_SUCCESS)
+
+  if (!GetControlTextWidth(hwnd_button, button_text, &control_width))
     return false;
-  if (!SetWindowPos(disconnect_button, NULL,
-                    button_rect.left + label_width_delta, button_rect.top,
-                    button_width + button_width_delta, button_height,
+
+  button_rect.left = message_rect.right;
+  button_rect.right = button_rect.left + control_width + margin * 2;
+  if (!SetWindowPos(hwnd_button, NULL,
+                    button_rect.left, button_rect.top,
+                    button_rect.right - button_rect.left,
+                    button_rect.bottom - button_rect.top,
                     SWP_NOZORDER)) {
     return false;
   }
@@ -369,8 +403,7 @@ bool DisconnectWindowWin::SetStrings() {
   RECT window_rect;
   if (!GetWindowRect(hwnd_, &window_rect))
     return false;
-  int width = (window_rect.right - window_rect.left) +
-      button_width_delta + label_width_delta;
+  int width = button_rect.right + margin;
   int height = window_rect.bottom - window_rect.top;
   if (!SetWindowPos(hwnd_, NULL, 0, 0, width, height,
                     SWP_NOMOVE | SWP_NOZORDER)) {
