@@ -901,6 +901,10 @@ bool GpuDataManagerImplPrivate::IsUsingAcceleratedSurface() const {
 }
 #endif
 
+bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
+  return !IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
+}
+
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(
     const GURL& url, GpuDataManagerImpl::DomainGuilt guilt) {
   BlockDomainFrom3DAPIsAtTime(url, guilt, base::Time::Now());

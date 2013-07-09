@@ -208,6 +208,11 @@ bool GpuDataManagerImpl::IsUsingAcceleratedSurface() const {
 }
 #endif
 
+bool GpuDataManagerImpl::CanUseGpuBrowserCompositor() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->CanUseGpuBrowserCompositor();
+}
+
 void GpuDataManagerImpl::BlockDomainFrom3DAPIs(
     const GURL& url, DomainGuilt guilt) {
   base::AutoLock auto_lock(lock_);

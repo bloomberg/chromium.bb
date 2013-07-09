@@ -89,6 +89,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool IsUsingAcceleratedSurface() const;
 #endif
 
+  bool CanUseGpuBrowserCompositor() const;
+
   void BlockDomainFrom3DAPIs(
       const GURL& url, GpuDataManagerImpl::DomainGuilt guilt);
   bool Are3DAPIsBlocked(const GURL& url,

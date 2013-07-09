@@ -141,6 +141,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   bool IsUsingAcceleratedSurface() const;
 #endif
 
+  bool CanUseGpuBrowserCompositor() const;
+
   // Maintenance of domains requiring explicit user permission before
   // using client-facing 3D APIs (WebGL, Pepper 3D), either because
   // the domain has caused the GPU to reset, or because too many GPU
