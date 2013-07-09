@@ -37,7 +37,7 @@ var SourceEntry = (function() {
         this.isInactive_ = true;
       }
 
-      // If we have a net error code, update |this.isError_| if apporpriate.
+      // If we have a net error code, update |this.isError_| if appropriate.
       if (logEntry.params) {
         var netErrorCode = logEntry.params.net_error;
         // Skip both cases where netErrorCode is undefined, and cases where it
@@ -291,6 +291,11 @@ var SourceEntry = (function() {
       return this.isError_;
     },
 
+    getStartTime: function() {
+      var startTicks = this.entries_[0].time;
+      return timeutil.convertTimeTicksToTime(startTicks);
+    },
+
     /**
      * Returns time of last event if inactive.  Returns current time otherwise.
      */
@@ -309,8 +314,7 @@ var SourceEntry = (function() {
      * last event.
      */
     getDuration: function() {
-      var startTicks = this.entries_[0].time;
-      var startTime = timeutil.convertTimeTicksToTime(startTicks);
+      var startTime = this.getStartTime();
       var endTime = this.getEndTime();
       return endTime - startTime;
     },
