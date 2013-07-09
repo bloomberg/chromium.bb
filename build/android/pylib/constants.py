@@ -93,7 +93,7 @@ def _GetADBPath():
       subprocess.call(['adb', 'version'], stdout=devnull, stderr=devnull)
     return 'adb'
   except OSError:
-    print 'No adb found in $PATH, fallback to checked in binary.'
+    print >> sys.stderr, 'No adb found in $PATH, fallback to checked in binary.'
     return os.path.join(ANDROID_SDK_ROOT, 'platform-tools', 'adb')
 
 
