@@ -18,7 +18,7 @@ If your app uses its own server to authenticate users, you will need to use the 
 <b>API Samples: </b>
 Want to play with the code?
 Check out the
-<a href="https://github.com/GoogleChrome/chrome-app-samples#authentication-and-user-identification">identity</a> samples.
+<a href="https://github.com/GoogleChrome/chrome-app-samples#authentication-and-user-identification">identity samples</a>.
 </p>
 
 <h2 id="how">How it works</h2>
@@ -153,7 +153,7 @@ $ref:identity.getAuthToken.
 </p>
 
 <pre>
-chrome.identity.getAuthToken({ interactive: true }, function(token) {
+chrome.identity.getAuthToken({ 'interactive': true }, function(token) {
   // Use the token.
 });
 </pre>
@@ -162,11 +162,17 @@ chrome.identity.getAuthToken({ interactive: true }, function(token) {
 
 <p>
 When calling <code>getAuthToken</code>, you can pass a flag
-(<code>interactive: true</code> in the example above) indicating
+(<code>'interactive': true</code> in the example above) indicating
 whether you want the API to be called in interactive mode or silent
 mode.  If you invoke the API in interactive mode, the user is shown
-sign in and/or approval UI when necessary.
+a sign in and/or approval UI when necessary, as shown in the
+screenshot below:
 </p>
+<img src="{{static}}/images/identity-api-ui.png"
+     width="853"
+     height="514"
+     alt="screenshot showing UI when an app uses the Identity API
+     to authenticate a Google account">
 
 <p>
 If you invoke the API in silent mode, the API will only return a token
@@ -232,7 +238,7 @@ function authenticatedXhr(method, url, callback) {
           // a fresh token.
           retry = false;
           chrome.identity.removeCachedAuthToken(
-              { token: access_token },
+              { 'token': access_token },
               getTokenAndXhr);
           return;
         }
@@ -298,12 +304,12 @@ To get the token:
 
 <pre>
 chrome.identity.launchWebAuthFlow(
-  {‘url’: ‘&lt;url-to-do-auth>’, ‘interactive’: true},
-  function(redirect_url) { // Extract token from redirect_url });
+  {'url': '&lt;url-to-do-auth&gt;', 'interactive': true},
+  function(redirect_url) { /* Extract token from redirect_url */ });
 </pre>
 
 <p>
-The &lt;url-to-do-auth> is whatever the URL is to do auth to the provider from a website.
+The &lt;url-to-do-auth&gt; is whatever the URL is to do auth to the provider from a website.
 For example, let us say that you are performing OAuth2 flow with a provider
 and have registered your app with client id 123456789012345 and
 you want access to user’s photos on the provider’s website:
@@ -327,7 +333,7 @@ The app should extract the token out of the URL.
 
 <p>
 When calling <code>launchWebAuthFlow</code>,
-you can pass a flag (‘interactive’: true in the example above)
+you can pass a flag (<code>'interactive': true</code> in the example above)
 indicating whether you want the API to be called
 in interactive mode or not (aka silent mode).
 If you invoke the API in interactive mode,
