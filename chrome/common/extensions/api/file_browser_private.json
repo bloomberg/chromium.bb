@@ -1203,18 +1203,6 @@
         ]
       },
       {
-        "name": "onDocumentFeedFetched",
-        "type": "function",
-        "description": "Fired when a document feed is fetched.",
-        "parameters": [
-          {
-            "type": "integer",
-            "name": "entriesFetched",
-            "description": "Number of entries fetched so far."
-          }
-        ]
-      },
-      {
         "name": "onPreferencesChanged",
         "type": "function",
         "description": "Fired when file manager preferences change. The preferences can be retrieved via 'getPreferences'.",
