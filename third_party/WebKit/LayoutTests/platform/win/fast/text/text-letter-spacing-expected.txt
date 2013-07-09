@@ -1,4 +1,4 @@
-layer at (0,0) size 163020x1820
+layer at (0,0) size 9600204x1820
   RenderView at (0,0) size 785x585
 layer at (0,0) size 785x1820
   RenderBlock {HTML} at (0,0) size 785x1820
@@ -37,10 +37,10 @@ layer at (0,0) size 785x1820
           text run at (0,0) width 767: "The next line tests a very large positive letter spacing, and should also be *very* spaced out. You may only see an 'H' and a 'w',"
           text run at (0,20) width 384: "perhaps on two different lines, unless you scroll way to the right."
       RenderBlock {P} at (0,408) size 769x40 [bgcolor=#EEEEEE]
-        RenderInline {SPAN} at (0,0) size 163012x39
-          RenderText {#text} at (160,0) size 163012x39
-            text run at (160,0) width 162852: "Hello,"
-            text run at (0,20) width 135715: "world"
+        RenderInline {SPAN} at (0,0) size 9600196x39
+          RenderText {#text} at (160,0) size 9600196x39
+            text run at (160,0) width 9600036: "Hello,"
+            text run at (0,20) width 8000035: "world"
       RenderBlock {P} at (0,464) size 769x20 [bgcolor=#FFFFFF]
         RenderText {#text} at (0,0) size 501x19
           text run at (0,0) width 501: "The next line tests a small negative line spacing, and should be crammed backwards"
@@ -155,11 +155,11 @@ layer at (8,896) size 19396x39
     RenderText {#text} at (160,0) size 19396x39
       text run at (160,0) width 19236: "Hello,"
       text run at (0,20) width 16035: "world"
-layer at (8,988) size 163012x39
-  RenderInline {SPAN} at (0,0) size 163012x39 [bgcolor=#CCCCFF]
-    RenderText {#text} at (160,0) size 163012x39
-      text run at (160,0) width 162852: "Hello,"
-      text run at (0,20) width 135715: "world"
+layer at (8,988) size 9600196x39
+  RenderInline {SPAN} at (0,0) size 9600196x39 [bgcolor=#CCCCFF]
+    RenderText {#text} at (160,0) size 9600196x39
+      text run at (160,0) width 9600036: "Hello,"
+      text run at (0,20) width 8000035: "world"
 layer at (8,1080) size 0x19
   RenderInline {SPAN} at (0,0) size 0x19 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 0x19

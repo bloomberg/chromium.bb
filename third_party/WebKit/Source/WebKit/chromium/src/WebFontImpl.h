@@ -40,7 +40,7 @@ namespace WebKit {
 
 class WebFontImpl : public WebFont {
 public:
-    WebFontImpl(const WebCore::FontDescription&, short letterSpacing, short wordSpacing);
+    WebFontImpl(const WebCore::FontDescription&, float letterSpacing, float wordSpacing);
 
     virtual WebFontDescription fontDescription() const;
 

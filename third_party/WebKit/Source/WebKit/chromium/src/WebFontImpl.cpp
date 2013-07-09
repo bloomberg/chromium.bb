@@ -52,7 +52,7 @@ WebFont* WebFont::create(const WebFontDescription& desc)
     return new WebFontImpl(desc, desc.letterSpacing, desc.wordSpacing);
 }
 
-WebFontImpl::WebFontImpl(const FontDescription& desc, short letterSpacing, short wordSpacing)
+WebFontImpl::WebFontImpl(const FontDescription& desc, float letterSpacing, float wordSpacing)
     : m_font(desc, letterSpacing, wordSpacing)
 {
     m_font.update(0);

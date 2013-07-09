@@ -32,21 +32,21 @@ layer at (0,0) size 785x1461
           text run at (264,160) width 0: " "
       RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #000000)]
       RenderBlock {P} at (0,243) size 769x80
-        RenderText {#text} at (0,0) size 687x79
-          text run at (0,0) width 663: "This letters in this"
-          text run at (0,20) width 687: "sentence should have"
-          text run at (0,40) width 656: "extra space between"
-          text run at (0,60) width 173: "them."
+        RenderText {#text} at (0,0) size 703x79
+          text run at (0,0) width 679: "This letters in this"
+          text run at (0,20) width 703: "sentence should have"
+          text run at (0,40) width 672: "extra space between"
+          text run at (0,60) width 177: "them."
       RenderBlock {P} at (0,339) size 769x60
-        RenderText {#text} at (0,0) size 757x59
-          text run at (0,0) width 681: "This letters in this sentence"
-          text run at (0,20) width 757: "should have extra space between"
-          text run at (0,40) width 123: "them."
+        RenderText {#text} at (0,0) size 708x59
+          text run at (0,0) width 708: "This letters in this sentence"
+          text run at (0,20) width 579: "should have extra space"
+          text run at (0,40) width 334: "between them."
       RenderBlock {P} at (0,415) size 769x60
-        RenderText {#text} at (0,0) size 757x59
-          text run at (0,0) width 681: "This letters in this sentence"
-          text run at (0,20) width 757: "should have extra space between"
-          text run at (0,40) width 123: "them."
+        RenderText {#text} at (0,0) size 708x59
+          text run at (0,0) width 708: "This letters in this sentence"
+          text run at (0,20) width 579: "should have extra space"
+          text run at (0,40) width 334: "between them."
       RenderBlock {P} at (0,491) size 769x20
         RenderText {#text} at (0,0) size 667x19
           text run at (0,0) width 667: "This letters in this sentence should have extra space between them."
@@ -75,8 +75,8 @@ layer at (0,0) size 785x1461
         RenderText {#text} at (0,0) size 755x19
           text run at (0,0) width 755: "This letters in this sentence should have normal space between them, since percentage values are not allowed on this property."
       RenderBlock {P} at (0,787) size 769x20
-        RenderText {#text} at (0,0) size 602x19
-          text run at (0,0) width 602: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."
+        RenderText {#text} at (0,0) size 530x19
+          text run at (0,0) width 530: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."
       RenderTable {TABLE} at (0,823) size 769x622 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 767x620
           RenderTableRow {TR} at (0,0) size 767x28
@@ -90,21 +90,21 @@ layer at (0,0) size 785x1461
                 text run at (4,4) width 4: " "
             RenderTableCell {TD} at (12,28) size 755x592 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {P} at (4,4) size 747x80
-                RenderText {#text} at (0,0) size 687x79
-                  text run at (0,0) width 663: "This letters in this"
-                  text run at (0,20) width 687: "sentence should have"
-                  text run at (0,40) width 656: "extra space between"
-                  text run at (0,60) width 173: "them."
+                RenderText {#text} at (0,0) size 703x79
+                  text run at (0,0) width 679: "This letters in this"
+                  text run at (0,20) width 703: "sentence should have"
+                  text run at (0,40) width 672: "extra space between"
+                  text run at (0,60) width 177: "them."
               RenderBlock {P} at (4,100) size 747x60
-                RenderText {#text} at (0,0) size 681x59
-                  text run at (0,0) width 681: "This letters in this sentence"
-                  text run at (0,20) width 558: "should have extra space"
-                  text run at (0,40) width 322: "between them."
+                RenderText {#text} at (0,0) size 708x59
+                  text run at (0,0) width 708: "This letters in this sentence"
+                  text run at (0,20) width 579: "should have extra space"
+                  text run at (0,40) width 334: "between them."
               RenderBlock {P} at (4,176) size 747x60
-                RenderText {#text} at (0,0) size 681x59
-                  text run at (0,0) width 681: "This letters in this sentence"
-                  text run at (0,20) width 558: "should have extra space"
-                  text run at (0,40) width 322: "between them."
+                RenderText {#text} at (0,0) size 708x59
+                  text run at (0,0) width 708: "This letters in this sentence"
+                  text run at (0,20) width 579: "should have extra space"
+                  text run at (0,40) width 334: "between them."
               RenderBlock {P} at (4,252) size 747x20
                 RenderText {#text} at (0,0) size 667x19
                   text run at (0,0) width 667: "This letters in this sentence should have extra space between them."
@@ -134,5 +134,5 @@ layer at (0,0) size 785x1461
                   text run at (0,0) width 695: "This letters in this sentence should have normal space between them, since percentage values are not allowed on this"
                   text run at (0,20) width 56: "property."
               RenderBlock {P} at (4,568) size 747x20
-                RenderText {#text} at (0,0) size 602x19
-                  text run at (0,0) width 602: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."
+                RenderText {#text} at (0,0) size 530x19
+                  text run at (0,0) width 530: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."

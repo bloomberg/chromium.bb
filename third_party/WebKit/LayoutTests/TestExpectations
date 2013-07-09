@@ -1774,6 +1774,17 @@ crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 crbug.com/230326 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 crbug.com/249021 [ Debug ] http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Crash Pass ]
 
+Bug(leviw) css1/text_properties/letter_spacing.html [ NeedsRebaseline ]
+Bug(leviw) css1/text_properties/word_spacing.html [ NeedsRebaseline ]
+Bug(leviw) fast/text/basic/013.html [ NeedsRebaseline ]
+Bug(leviw) fast/text/text-letter-spacing.html [ NeedsRebaseline ]
+Bug(leviw) svg/W3C-SVG-1.1/text-spacing-01-b.svg [ NeedsRebaseline ]
+Bug(leviw) svg/batik/text/textLayout.svg [ NeedsRebaseline ]
+Bug(leviw) svg/custom/text-letter-spacing.svg [ NeedsRebaseline ]
+Bug(leviw) svg/text/text-spacing-01-b.svg [ NeedsRebaseline ]
+Bug(leviw) fast/text/backslash-to-yen-sign-euc.html [ NeedsRebaseline ]
+Bug(leviw) svg/custom/svg-fonts-in-html.html [ NeedsRebaseline ]
+
 crbug.com/248407 [ Debug ] compositing/reflections/animation-inside-reflection.html [ Pass Timeout ]
 
 crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure Pass ]
