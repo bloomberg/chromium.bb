@@ -1633,8 +1633,7 @@ doCompbrl ()
   for (stringStart = src; stringStart >= 0; stringStart--)
     if (checkAttr (currentInput[stringStart], CTC_Space, 0))
       break;
-  if (stringStart > 0)
-    stringStart++;
+  stringStart++;
   for (stringEnd = src; stringEnd < srcmax; stringEnd++)
     if (checkAttr (currentInput[stringEnd], CTC_Space, 0))
       break;
