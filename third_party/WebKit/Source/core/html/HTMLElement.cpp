@@ -493,18 +493,32 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
 
     if (equalIgnoringCase(where, "beforeBegin")) {
         ContainerNode* parent = this->parentNode();
-        return (parent && parent->insertBefore(newChild, this, ec)) ? newChild : 0;
+        if (parent) {
+            parent->insertBefore(newChild, this, ec);
+            if (!ec)
+                return newChild;
+        }
+        return 0;
     }
 
-    if (equalIgnoringCase(where, "afterBegin"))
-        return insertBefore(newChild, firstChild(), ec) ? newChild : 0;
+    if (equalIgnoringCase(where, "afterBegin")) {
+        insertBefore(newChild, firstChild(), ec);
+        return ec ? 0 : newChild;
+    }
 
-    if (equalIgnoringCase(where, "beforeEnd"))
-        return appendChild(newChild, ec) ? newChild : 0;
+    if (equalIgnoringCase(where, "beforeEnd")) {
+        appendChild(newChild, ec);
+        return ec ? 0 : newChild;
+    }
 
     if (equalIgnoringCase(where, "afterEnd")) {
         ContainerNode* parent = this->parentNode();
-        return (parent && parent->insertBefore(newChild, nextSibling(), ec)) ? newChild : 0;
+        if (parent) {
+            parent->insertBefore(newChild, nextSibling(), ec);
+            if (!ec)
+                return newChild;
+        }
+        return 0;
     }
     
     // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.

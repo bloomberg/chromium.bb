@@ -540,40 +540,36 @@ Node* Node::pseudoAwareLastChild() const
     return lastChild();
 }
 
-bool Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec, AttachBehavior attachBehavior)
+void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
-    if (!isContainerNode()) {
+    if (isContainerNode())
+        toContainerNode(this)->insertBefore(newChild, refChild, ec, attachBehavior);
+    else
         ec = HierarchyRequestError;
-        return false;
-    }
-    return toContainerNode(this)->insertBefore(newChild, refChild, ec, attachBehavior);
 }
 
-bool Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec, AttachBehavior attachBehavior)
+void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
-    if (!isContainerNode()) {
+    if (isContainerNode())
+        toContainerNode(this)->replaceChild(newChild, oldChild, ec, attachBehavior);
+    else
         ec = HierarchyRequestError;
-        return false;
-    }
-    return toContainerNode(this)->replaceChild(newChild, oldChild, ec, attachBehavior);
 }
 
-bool Node::removeChild(Node* oldChild, ExceptionCode& ec)
+void Node::removeChild(Node* oldChild, ExceptionCode& ec)
 {
-    if (!isContainerNode()) {
+    if (isContainerNode())
+        toContainerNode(this)->removeChild(oldChild, ec);
+    else
         ec = NotFoundError;
-        return false;
-    }
-    return toContainerNode(this)->removeChild(oldChild, ec);
 }
 
-bool Node::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec, AttachBehavior attachBehavior)
+void Node::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
-    if (!isContainerNode()) {
+    if (isContainerNode())
+        toContainerNode(this)->appendChild(newChild, ec, attachBehavior);
+    else
         ec = HierarchyRequestError;
-        return false;
-    }
-    return toContainerNode(this)->appendChild(newChild, ec, attachBehavior);
 }
 
 void Node::remove(ExceptionCode& ec)

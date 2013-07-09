@@ -67,12 +67,14 @@ public:
 
     virtual bool undo(ExceptionCode& ec)
     {
-        return m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), ec);
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), ec);
+        return !ec;
     }
 
     virtual bool redo(ExceptionCode& ec)
     {
-        return m_parentNode->removeChild(m_node.get(), ec);
+        m_parentNode->removeChild(m_node.get(), ec);
+        return !ec;
     }
 
 private:
@@ -99,12 +101,14 @@ public:
             if (!m_removeChildAction->perform(ec))
                 return false;
         }
-        return m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), ec);
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), ec);
+        return !ec;
     }
 
     virtual bool undo(ExceptionCode& ec)
     {
-        if (!m_parentNode->removeChild(m_node.get(), ec))
+        m_parentNode->removeChild(m_node.get(), ec);
+        if (ec)
             return false;
         if (m_removeChildAction)
             return m_removeChildAction->undo(ec);
@@ -115,7 +119,8 @@ public:
     {
         if (m_removeChildAction && !m_removeChildAction->redo(ec))
             return false;
-        return m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), ec);
+        m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), ec);
+        return !ec;
     }
 
 private:
@@ -301,12 +306,14 @@ public:
 
     virtual bool undo(ExceptionCode& ec)
     {
-        return m_parentNode->replaceChild(m_oldNode, m_newNode.get(), ec);
+        m_parentNode->replaceChild(m_oldNode, m_newNode.get(), ec);
+        return !ec;
     }
 
     virtual bool redo(ExceptionCode& ec)
     {
-        return m_parentNode->replaceChild(m_newNode, m_oldNode.get(), ec);
+        m_parentNode->replaceChild(m_newNode, m_oldNode.get(), ec);
+        return !ec;
     }
 
 private:

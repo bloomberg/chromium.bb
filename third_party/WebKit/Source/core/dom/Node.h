@@ -213,10 +213,10 @@ public:
     // These should all actually return a node, but this is only important for language bindings,
     // which will already know and hold a ref on the right node to return. Returning bool allows
     // these methods to be more efficient since they don't need to return a ref
-    bool insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode&, AttachBehavior = AttachNow);
-    bool replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode&, AttachBehavior = AttachNow);
-    bool removeChild(Node* child, ExceptionCode&);
-    bool appendChild(PassRefPtr<Node> newChild, ExceptionCode&, AttachBehavior = AttachNow);
+    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode&, AttachBehavior = AttachNow);
+    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode&, AttachBehavior = AttachNow);
+    void removeChild(Node* child, ExceptionCode&);
+    void appendChild(PassRefPtr<Node> newChild, ExceptionCode&, AttachBehavior = AttachNow);
 
     bool hasChildNodes() const { return firstChild(); }
     virtual PassRefPtr<Node> cloneNode(bool deep = true) = 0;
