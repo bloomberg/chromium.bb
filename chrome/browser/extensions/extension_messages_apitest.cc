@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,8 +25,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-using extensions::Extension;
-
+namespace extensions {
 namespace {
 
 class MessageSender : public content::NotificationObserver {
@@ -47,12 +47,10 @@ class MessageSender : public content::NotificationObserver {
     return arguments.Pass();
   }
 
-  static scoped_ptr<extensions::Event> BuildEvent(
-      scoped_ptr<base::ListValue> event_args,
-      Profile* profile,
-      GURL event_url) {
-    scoped_ptr<extensions::Event> event(new extensions::Event(
-        "test.onMessage", event_args.Pass()));
+  static scoped_ptr<Event> BuildEvent(scoped_ptr<base::ListValue> event_args,
+                                      Profile* profile,
+                                      GURL event_url) {
+    scoped_ptr<Event> event(new Event("test.onMessage", event_args.Pass()));
     event->restrict_to_profile = profile;
     event->event_url = event_url;
     return event.Pass();
@@ -61,9 +59,8 @@ class MessageSender : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    extensions::EventRouter* event_router =
-        extensions::ExtensionSystem::Get(
-            content::Source<Profile>(source).ptr())->event_router();
+    EventRouter* event_router = ExtensionSystem::Get(
+        content::Source<Profile>(source).ptr())->event_router();
 
     // Sends four messages to the extension. All but the third message sent
     // from the origin http://b.com/ are supposed to arrive.
@@ -87,8 +84,6 @@ class MessageSender : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 };
-
-}  // namespace
 
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Messaging) {
@@ -135,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(PanelMessagingTest, MessagingPanel) {
 class ExternallyConnectableMessagingTest : public ExtensionApiTest {
  protected:
   // Result codes from the test. These must match up with |results| in
-  // c/t/d/extensions/api_test/externally_connectable/sites/assertions.json.
+  // c/t/d/extensions/api_test/externally_connectable/assertions.json.
   enum Result {
     OK = 0,
     NAMESPACE_NOT_DEFINED = 1,
@@ -205,33 +200,72 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
   }
 
   GURL chromium_org_url() {
-    return GetURLForPath("www.chromium.org", "/sites/chromium.org.html");
+    return GetURLForPath("www.chromium.org", "/chromium.org.html");
   }
 
   GURL google_com_url() {
-    return GetURLForPath("www.google.com", "/sites/google.com.html");
+    return GetURLForPath("www.google.com", "/google.com.html");
   }
 
-  scoped_refptr<const Extension> LoadTestExtension(const std::string& name) {
-    return LoadExtension(test_data_dir_.AppendASCII(extension_dir())
-                                       .AppendASCII(name));
+  const Extension* LoadChromiumConnectableExtension() {
+    web_connectable_dir_.WriteManifest(base::StringPrintf(
+        "{"
+        "  \"name\": \"chromium_connectable\","
+        "  %s,"
+        "  \"externally_connectable\": {"
+        "    \"matches\": [\"*://*.chromium.org:*/*\"]"
+        "  }"
+        "}",
+        common_manifest()));
+    WriteBackgroundHtml(&web_connectable_dir_);
+    return LoadExtension(web_connectable_dir_.unpacked_path());
+  }
+
+  scoped_refptr<const Extension> LoadNotConnectableExtension() {
+    not_connectable_dir_.WriteManifest(base::StringPrintf(
+        "{"
+        "  \"name\": \"not_connectable\","
+        "  %s"
+        "}",
+        common_manifest()));
+    WriteBackgroundHtml(&not_connectable_dir_);
+    return LoadExtension(not_connectable_dir_.unpacked_path());
   }
 
   void InitializeTestServer() {
     base::FilePath test_data;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
-    embedded_test_server()->ServeFilesFromDirectory(
-        test_data.AppendASCII("extensions/api_test")
-                 .AppendASCII(extension_dir()));
+    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+    embedded_test_server()->ServeFilesFromDirectory(test_data.AppendASCII(
+        "extensions/api_test/messaging/externally_connectable/sites"));
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
     host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
   }
 
  private:
-  const char* extension_dir() {
-    return "messaging/externally_connectable";
+  void WriteBackgroundHtml(TestExtensionDir* extension_dir) {
+    extension_dir->WriteFile(FILE_PATH_LITERAL("background.js"),
+        "chrome.runtime.onMessageExternal.addListener(\n"
+        "    function(message, sender, reply) {\n"
+        "  reply({ message: message, sender: sender });\n"
+        "});\n"
+        "chrome.runtime.onConnectExternal.addListener(function(port) {\n"
+        "  port.onMessage.addListener(function(message) {\n"
+        "    port.postMessage({ message: message, sender: port.sender });\n"
+        "  });\n"
+        "});\n");
   }
+
+  const char* common_manifest() {
+    return "\"version\": \"1.0\","
+           "\"background\": {"
+           "    \"scripts\": [\"background.js\"],"
+           "    \"persistent\": false"
+           "},"
+           "\"manifest_version\": 2";
+  }
+
+  TestExtensionDir web_connectable_dir_;
+  TestExtensionDir not_connectable_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, NotInstalled) {
@@ -255,25 +289,25 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
 
   // Install the web connectable extension. chromium.org can connect to it,
   // google.com can't.
-  scoped_refptr<const Extension> web_connectable =
-      LoadTestExtension("web_connectable");
+  const Extension* chromium_connectable = LoadChromiumConnectableExtension();
+  ASSERT_TRUE(chromium_connectable);
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  EXPECT_EQ(OK, CanConnectAndSendMessages(web_connectable->id()));
+  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
 
   ui_test_utils::NavigateToURL(browser(), google_com_url());
   EXPECT_EQ(NAMESPACE_NOT_DEFINED,
-            CanConnectAndSendMessages(web_connectable->id()));
+            CanConnectAndSendMessages(chromium_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
 
   // Install the non-connectable extension. Nothing can connect to it.
-  scoped_refptr<const Extension> not_connectable =
-      LoadTestExtension("not_connectable");
+  const Extension* not_connectable = LoadNotConnectableExtension();
+  ASSERT_TRUE(not_connectable);
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  // Namespace will be defined here because |web_connectable| can connect to
-  // it - so this will be the "cannot establish connection" error.
+  // Namespace will be defined here because |chromium_connectable| can connect
+  // to it - so this will be the "cannot establish connection" error.
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
             CanConnectAndSendMessages(not_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
@@ -293,24 +327,27 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
                        EnablingAndDisabling) {
   InitializeTestServer();
 
-  scoped_refptr<const Extension> web_connectable =
-      LoadTestExtension("web_connectable");
-  scoped_refptr<const Extension> not_connectable =
-      LoadTestExtension("not_connectable");
+  const Extension* chromium_connectable = LoadChromiumConnectableExtension();
+  ASSERT_TRUE(chromium_connectable);
+  const Extension* not_connectable = LoadNotConnectableExtension();
+  ASSERT_TRUE(not_connectable);
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  EXPECT_EQ(OK, CanConnectAndSendMessages(web_connectable->id()));
+  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
             CanConnectAndSendMessages(not_connectable->id()));
 
   // Unloading the extension is the same as it never existing - so the bindings
   // will no longer exist.
-  DisableExtension(web_connectable->id());
+  DisableExtension(chromium_connectable->id());
   EXPECT_EQ(NAMESPACE_NOT_DEFINED,
-            CanConnectAndSendMessages(web_connectable->id()));
+            CanConnectAndSendMessages(chromium_connectable->id()));
 
-  EnableExtension(web_connectable->id());
-  EXPECT_EQ(OK, CanConnectAndSendMessages(web_connectable->id()));
+  EnableExtension(chromium_connectable->id());
+  EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
             CanConnectAndSendMessages(not_connectable->id()));
 }
+
+}  // namespace
+}  // namespace extensions

@@ -1,0 +1,68 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/extensions/test_extension_dir.h"
+
+#include "base/file_util.h"
+#include "base/json/json_writer.h"
+#include "base/safe_numerics.h"
+#include "base/test/values_test_util.h"
+#include "chrome/browser/extensions/extension_creator.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace extensions {
+
+TestExtensionDir::TestExtensionDir() {
+  EXPECT_TRUE(dir_.CreateUniqueTempDir());
+  EXPECT_TRUE(crx_dir_.CreateUniqueTempDir());
+}
+
+TestExtensionDir::~TestExtensionDir() {
+}
+
+void TestExtensionDir::WriteManifest(base::StringPiece manifest) {
+  // TODO(kalman): Write some more convenient way to specify a manifest than
+  // via JSON, which requires awkwardly escaping all quotes. E.g. add a feature
+  // to JSONReader that can parse '' literals rather than "".
+  WriteFile(FILE_PATH_LITERAL("manifest.json"), manifest);
+}
+
+void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
+                                 base::StringPiece contents) {
+  EXPECT_EQ(
+      base::checked_numeric_cast<int>(contents.size()),
+      file_util::WriteFile(
+          dir_.path().Append(filename), contents.data(), contents.size()));
+}
+
+// This function packs the extension into a .crx, and returns the path to that
+// .crx. Multiple calls to Pack() will produce extensions with the same ID.
+base::FilePath TestExtensionDir::Pack() {
+  ExtensionCreator creator;
+  base::FilePath crx_path =
+      crx_dir_.path().Append(FILE_PATH_LITERAL("ext.crx"));
+  base::FilePath pem_path =
+      crx_dir_.path().Append(FILE_PATH_LITERAL("ext.pem"));
+  base::FilePath pem_in_path, pem_out_path;
+  if (file_util::PathExists(pem_path))
+    pem_in_path = pem_path;
+  else
+    pem_out_path = pem_path;
+  if (!creator.Run(dir_.path(),
+                   crx_path,
+                   pem_in_path,
+                   pem_out_path,
+                   ExtensionCreator::kOverwriteCRX)) {
+    ADD_FAILURE()
+        << "ExtensionCreator::Run() failed: " << creator.error_message();
+    return base::FilePath();
+  }
+  if (!file_util::PathExists(crx_path)) {
+    ADD_FAILURE() << crx_path.value() << " was not created.";
+    return base::FilePath();
+  }
+  return crx_path;
+}
+
+}  // namespace extensions

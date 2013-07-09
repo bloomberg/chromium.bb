@@ -1,9 +1,0 @@
-{
-  "name": "not_connectable",
-  "version": "1.0",
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
-  "manifest_version": 2
-}
