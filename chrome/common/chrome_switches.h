@@ -82,6 +82,7 @@ extern const char kDebugPackedApps[];
 extern const char kDebugPrint[];
 extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];
+extern const char kDiagnosticsFormat[];
 extern const char kDisableAsyncDns[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackgroundMode[];

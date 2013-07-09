@@ -8,7 +8,9 @@
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Basic harness to adquire and release the Diagnostic model object.
+namespace diagnostics {
+
+// Basic harness to acquire and release the Diagnostic model object.
 class DiagnosticsModelTest : public testing::Test {
  protected:
   DiagnosticsModelTest()
@@ -36,27 +38,15 @@ class UTObserver: public DiagnosticsModel::Observer {
  public:
   UTObserver()
       : done_(false),
-        progress_called_(0),
         finished_(0),
         id_of_failed_stop_test(-1) {
   }
 
-  virtual void OnProgress(int id,
-                          int percent,
-                          DiagnosticsModel* model) OVERRIDE {
-    EXPECT_TRUE(model != NULL);
-    ++progress_called_;
-  }
-
-  virtual void OnSkipped(int id, DiagnosticsModel* model) OVERRIDE {
-    EXPECT_TRUE(model != NULL);
-  }
-
-  virtual void OnFinished(int id, DiagnosticsModel* model) OVERRIDE {
+  virtual void OnFinished(int index, DiagnosticsModel* model) OVERRIDE {
     EXPECT_TRUE(model != NULL);
     ++finished_;
-    if (model->GetTest(id).GetResult() == DiagnosticsModel::TEST_FAIL_STOP) {
-      id_of_failed_stop_test = id;
+    if (model->GetTest(index).GetResult() == DiagnosticsModel::TEST_FAIL_STOP) {
+      id_of_failed_stop_test = index;
       ASSERT_TRUE(false);
     }
   }
@@ -68,24 +58,25 @@ class UTObserver: public DiagnosticsModel::Observer {
 
   bool done() const { return done_; }
 
-  int progress_called() const { return progress_called_; }
-
   int finished() const { return finished_;}
 
  private:
   bool done_;
-  int progress_called_;
   int finished_;
   int id_of_failed_stop_test;
 };
 
-// We currently have more tests operational on windows.
+// This is the count of tests on each platform.
 #if defined(OS_WIN)
 const int kDiagnosticsTestCount = 19;
 #elif defined(OS_MACOSX)
 const int kDiagnosticsTestCount = 16;
 #elif defined(OS_POSIX)
+#if defined(OS_CHROMEOS)
+const int kDiagnosticsTestCount = 19;
+#else
 const int kDiagnosticsTestCount = 17;
+#endif
 #endif
 
 // Test that the initial state is correct.
@@ -103,7 +94,8 @@ TEST_F(DiagnosticsModelTest, RunAll) {
   EXPECT_FALSE(observer.done());
   model_->RunAll(&observer);
   EXPECT_TRUE(observer.done());
-  EXPECT_GT(observer.progress_called(), 0);
   EXPECT_EQ(kDiagnosticsTestCount, model_->GetTestRunCount());
   EXPECT_EQ(kDiagnosticsTestCount, observer.finished());
 }
+
+}  // namespace diagnostics

@@ -259,6 +259,9 @@ const char kDeviceManagementUrl[]           = "device-management-url";
 // Triggers a plethora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
+// Sets the output format for diagnostic modes enabled by diagnostics flag.
+const char kDiagnosticsFormat[]             = "diagnostics-format";
+
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.

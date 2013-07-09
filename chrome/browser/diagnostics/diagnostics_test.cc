@@ -9,45 +9,61 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 
-DiagnosticTest::DiagnosticTest(const string16& title)
-    : title_(title), result_(DiagnosticsModel::TEST_NOT_RUN) {
-}
+namespace diagnostics {
 
-DiagnosticTest::~DiagnosticTest() {
-}
+DiagnosticsTest::DiagnosticsTest(const std::string& id,
+                                 const std::string& title)
+    : id_(id),
+      title_(title),
+      outcome_code_(-1),
+      result_(DiagnosticsModel::TEST_NOT_RUN) {}
 
-bool DiagnosticTest::Execute(DiagnosticsModel::Observer* observer,
-                             DiagnosticsModel* model,
-                             size_t index) {
+DiagnosticsTest::~DiagnosticsTest() {}
+
+bool DiagnosticsTest::Execute(DiagnosticsModel::Observer* observer,
+                              DiagnosticsModel* model,
+                              size_t index) {
+  start_time_ = base::Time::Now();
   result_ = DiagnosticsModel::TEST_RUNNING;
-  observer->OnProgress(index, 0, model);
   bool keep_going = ExecuteImpl(observer);
-  observer->OnFinished(index, model);
+  if (observer)
+    observer->OnFinished(index, model);
   return keep_going;
 }
 
-string16 DiagnosticTest::GetTitle() {
-  return title_;
-}
-
-DiagnosticsModel::TestResult DiagnosticTest::GetResult() {
-  return result_;
-}
-
-string16 DiagnosticTest::GetAdditionalInfo() {
-  return additional_info_;
-}
-
-void DiagnosticTest::RecordOutcome(const string16& additional_info,
-                                   DiagnosticsModel::TestResult result) {
+void DiagnosticsTest::RecordOutcome(int outcome_code,
+                                    const std::string& additional_info,
+                                    DiagnosticsModel::TestResult result) {
+  end_time_ = base::Time::Now();
+  outcome_code_ = outcome_code;
   additional_info_ = additional_info;
   result_ = result;
 }
 
 // static
-base::FilePath DiagnosticTest::GetUserDefaultProfileDir() {
+base::FilePath DiagnosticsTest::GetUserDefaultProfileDir() {
   base::FilePath path;
   if (!PathService::Get(chrome::DIR_USER_DATA, &path))
     return base::FilePath();
   return path.AppendASCII(chrome::kInitialProfile);
 }
+
+std::string DiagnosticsTest::GetId() const { return id_; }
+
+std::string DiagnosticsTest::GetTitle() const { return title_; }
+
+DiagnosticsModel::TestResult DiagnosticsTest::GetResult() const {
+  return result_;
+}
+
+int DiagnosticsTest::GetOutcomeCode() const { return outcome_code_; }
+
+std::string DiagnosticsTest::GetAdditionalInfo() const {
+  return additional_info_;
+}
+
+base::Time DiagnosticsTest::GetStartTime() const { return start_time_; }
+
+base::Time DiagnosticsTest::GetEndTime() const { return end_time_; }
+
+}  // namespace diagnostics

@@ -1,0 +1,66 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_WRITER_H_
+#define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_WRITER_H_
+
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/diagnostics/diagnostics_model.h"
+
+namespace diagnostics {
+
+// Console base class used internally.
+class SimpleConsole;
+
+class DiagnosticsWriter : public DiagnosticsModel::Observer {
+ public:
+  // The type of formatting done by this writer.
+  enum FormatType {
+    MACHINE,
+    LOG,
+    HUMAN
+  };
+
+  explicit DiagnosticsWriter(FormatType format);
+  virtual ~DiagnosticsWriter();
+
+  // How many tests reported failure.
+  int failures() { return failures_; }
+
+  // What format are we writing things in.
+  FormatType format() const { return format_; }
+
+  // Write an informational line of text in white over black. String must be
+  // UTF8 encoded. A newline will be added for non-LOG output formats.
+  bool WriteInfoLine(const std::string& info_text);
+
+  // DiagnosticsModel::Observer overrides
+  virtual void OnFinished(int id, DiagnosticsModel* model) OVERRIDE;
+  virtual void OnDoneAll(DiagnosticsModel* model) OVERRIDE;
+
+ private:
+  // Write a result block. For humans, it consists of two lines. The first line
+  // has [PASS] or [FAIL] with |name| and the second line has the text in
+  // |extra|. For machine and log formats, we just have [PASS] or [FAIL],
+  // followed by the exact error code and the id. Name and extra strings must be
+  // UTF8 encoded, as they are user-facing strings.
+  bool WriteResult(bool success,
+                   const std::string& id,
+                   const std::string& name,
+                   int outcome_code,
+                   const std::string& extra);
+
+  scoped_ptr<SimpleConsole> console_;
+
+  // Keeps track of how many tests reported failure.
+  int failures_;
+  FormatType format_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiagnosticsWriter);
+};
+
+}  // namespace diagnostics
+
+#endif  // CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_WRITER_H_

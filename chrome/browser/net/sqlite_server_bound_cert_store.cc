@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_util.h"

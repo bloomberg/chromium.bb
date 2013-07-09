@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
-#include "ui/base/text/bytes_formatting.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -31,9 +30,24 @@
 // diagnostic tests. Here we check for the existence of critical files.
 // TODO(cpu): Define if it makes sense to localize strings.
 
-// TODO(cpu): There are a few maximum file sizes hardcoded in this file
+// TODO(cpu): There are a few maximum file sizes hard-coded in this file
 // that have little or no theoretical or experimental ground. Find a way
 // to justify them.
+
+namespace diagnostics {
+
+const char kConflictingDllsTest[] = "ConflictingDlls";
+const char kDiskSpaceTest[] = "DiskSpace";
+const char kInstallTypeTest[] = "InstallType";
+const char kJSONBookmarksTest[] = "JSONBookmarks";
+const char kJSONLocalStateTest[] = "JSONLocalState";
+const char kJSONProfileTest[] = "JSONProfile";
+const char kOperatingSystemTest[] = "OperatingSystem";
+const char kPathDictionariesTest[] = "PathDictionaries";
+const char kPathLocalStateTest[] = "PathLocalState";
+const char kPathResourcesTest[] = "PathResources";
+const char kPathUserDataTest[] = "PathUserData";
+const char kVersionTest[] = "Version";
 
 namespace {
 
@@ -41,11 +55,10 @@ class InstallTypeTest;
 InstallTypeTest* g_install_type = 0;
 
 // Check that the flavor of the operating system is supported.
-class OperatingSystemTest : public DiagnosticTest {
+class OperatingSystemTest : public DiagnosticsTest {
  public:
-  OperatingSystemTest() : DiagnosticTest(ASCIIToUTF16("Operating System")) {}
-
-  virtual int GetId() OVERRIDE { return 0; }
+  OperatingSystemTest()
+      : DiagnosticsTest(kOperatingSystemTest, "Operating System") {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
@@ -53,16 +66,17 @@ class OperatingSystemTest : public DiagnosticTest {
     if ((version < base::win::VERSION_XP) ||
         ((version == base::win::VERSION_XP) &&
          (base::win::OSInfo::GetInstance()->service_pack().major < 2))) {
-      RecordFailure(ASCIIToUTF16("Must have Windows XP SP2 or later"));
+      RecordFailure(DIAG_RECON_PRE_WINDOW_XP_SP2,
+                    "Must have Windows XP SP2 or later");
       return false;
     }
 #else
-    // TODO(port): define the OS criteria for Linux and Mac.
+// TODO(port): define the OS criteria for Linux and Mac.
 #endif  // defined(OS_WIN)
-    RecordSuccess(ASCIIToUTF16(base::StringPrintf(
-        "%s %s",
-        base::SysInfo::OperatingSystemName().c_str(),
-        base::SysInfo::OperatingSystemVersion().c_str())));
+    RecordSuccess(
+        base::StringPrintf("%s %s",
+                           base::SysInfo::OperatingSystemName().c_str(),
+                           base::SysInfo::OperatingSystemVersion().c_str()));
     return true;
   }
 
@@ -71,11 +85,10 @@ class OperatingSystemTest : public DiagnosticTest {
 };
 
 // Check if any conflicting DLLs are loaded.
-class ConflictingDllsTest : public DiagnosticTest {
+class ConflictingDllsTest : public DiagnosticsTest {
  public:
-  ConflictingDllsTest() : DiagnosticTest(ASCIIToUTF16("Conflicting modules")) {}
-
-  virtual int GetId() OVERRIDE { return 0; }
+  ConflictingDllsTest()
+      : DiagnosticsTest(kConflictingDllsTest, "Conflicting modules") {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
@@ -85,38 +98,40 @@ class ConflictingDllsTest : public DiagnosticTest {
     scoped_ptr<ListValue> list(model->GetModuleList());
     if (!model->confirmed_bad_modules_detected() &&
         !model->suspected_bad_modules_detected()) {
-      RecordSuccess(ASCIIToUTF16("No conflicting modules found"));
+      RecordSuccess("No conflicting modules found");
       return true;
     }
 
-    string16 failures = ASCIIToUTF16("Possibly conflicting modules:");
+    std::string failures = "Possibly conflicting modules:";
     DictionaryValue* dictionary;
     for (size_t i = 0; i < list->GetSize(); ++i) {
       if (!list->GetDictionary(i, &dictionary))
-        RecordFailure(ASCIIToUTF16("Dictionary lookup failed"));
+        RecordFailure(DIAG_RECON_DICTIONARY_LOOKUP_FAILED,
+                      "Dictionary lookup failed");
       int status;
-      string16 location;
-      string16 name;
+      std::string location;
+      std::string name;
       if (!dictionary->GetInteger("status", &status))
-        RecordFailure(ASCIIToUTF16("No 'status' field found"));
+        RecordFailure(DIAG_RECON_NO_STATUS_FIELD, "No 'status' field found");
       if (status < ModuleEnumerator::SUSPECTED_BAD)
         continue;
 
       if (!dictionary->GetString("location", &location)) {
-        RecordFailure(ASCIIToUTF16("No 'location' field found"));
+        RecordFailure(DIAG_RECON_NO_LOCATION_FIELD,
+                      "No 'location' field found");
         return true;
       }
       if (!dictionary->GetString("name", &name)) {
-        RecordFailure(ASCIIToUTF16("No 'name' field found"));
+        RecordFailure(DIAG_RECON_NO_NAME_FIELD, "No 'name' field found");
         return true;
       }
 
-      failures += ASCIIToUTF16("\n") + location + name;
+      failures += "\n" + location + name;
     }
-    RecordFailure(failures);
+    RecordFailure(DIAG_RECON_CONFLICTING_MODULES, failures);
     return true;
 #else
-    RecordFailure(ASCIIToUTF16("Not implemented"));
+    RecordFailure(DIAG_RECON_NOT_IMPLEMENTED, "Not implemented");
     return true;
 #endif  // defined(OS_WIN)
   }
@@ -126,25 +141,23 @@ class ConflictingDllsTest : public DiagnosticTest {
 };
 
 // Check if it is system install or per-user install.
-class InstallTypeTest : public DiagnosticTest {
+class InstallTypeTest : public DiagnosticsTest {
  public:
-  InstallTypeTest() : DiagnosticTest(ASCIIToUTF16("Install Type")),
-                      user_level_(false) {}
-
-  virtual int GetId() OVERRIDE { return 0; }
+  InstallTypeTest()
+      : DiagnosticsTest(kInstallTypeTest, "Install Type"), user_level_(false) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
 #if defined(OS_WIN)
     base::FilePath chrome_exe;
     if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-      RecordFailure(ASCIIToUTF16("Path provider failure"));
+      RecordFailure(DIAG_RECON_INSTALL_PATH_PROVIDER, "Path provider failure");
       return false;
     }
     user_level_ = InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());
     const char* type = user_level_ ? "User Level" : "System Level";
-    string16 install_type(ASCIIToUTF16(type));
+    std::string install_type(type);
 #else
-    string16 install_type(ASCIIToUTF16("System Level"));
+    std::string install_type("System Level");
 #endif  // defined(OS_WIN)
     RecordSuccess(install_type);
     g_install_type = this;
@@ -159,21 +172,19 @@ class InstallTypeTest : public DiagnosticTest {
 };
 
 // Check the version of Chrome.
-class VersionTest : public DiagnosticTest {
+class VersionTest : public DiagnosticsTest {
  public:
-  VersionTest() : DiagnosticTest(ASCIIToUTF16("Browser Version")) {}
-
-  virtual int GetId() OVERRIDE { return 0; }
+  VersionTest() : DiagnosticsTest(kVersionTest, "Browser Version") {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     chrome::VersionInfo version_info;
     if (!version_info.is_valid()) {
-      RecordFailure(ASCIIToUTF16("No Version"));
+      RecordFailure(DIAG_RECON_NO_VERSION, "No Version");
       return true;
     }
     std::string current_version = version_info.Version();
     if (current_version.empty()) {
-      RecordFailure(ASCIIToUTF16("Empty Version"));
+      RecordFailure(DIAG_RECON_EMPTY_VERSION, "Empty Version");
       return true;
     }
     std::string version_modifier =
@@ -183,7 +194,7 @@ class VersionTest : public DiagnosticTest {
 #if defined(GOOGLE_CHROME_BUILD)
     current_version += " GCB";
 #endif  // defined(GOOGLE_CHROME_BUILD)
-    RecordSuccess(ASCIIToUTF16(current_version));
+    RecordSuccess(current_version);
     return true;
   }
 
@@ -193,51 +204,51 @@ class VersionTest : public DiagnosticTest {
 
 struct TestPathInfo {
   const char* test_name;
-  int  path_id;
+  const char* test_id;
+  int path_id;
   bool is_directory;
   bool is_optional;
   bool test_writable;
   int64 max_size;
 };
 
-const int64 kOneKilo = 1024;
-const int64 kOneMeg = 1024 * kOneKilo;
+const int64 kOneKilobyte = 1024;
+const int64 kOneMegabyte = 1024 * kOneKilobyte;
 
 const TestPathInfo kPathsToTest[] = {
-  {"User data Directory", chrome::DIR_USER_DATA,
-      true, false, true, 850 * kOneMeg},
-  {"Local state file", chrome::FILE_LOCAL_STATE,
-      false, false, true, 500 * kOneKilo},
-  {"Dictionaries Directory", chrome::DIR_APP_DICTIONARIES,
-      true, true, false, 0},
-  {"Resources file", chrome::FILE_RESOURCES_PACK,
-      false, false, false, 0}
+  {"User data Directory", kPathUserDataTest, chrome::DIR_USER_DATA, true, false,
+   true, 850 * kOneMegabyte},
+  {"Local state file", kPathLocalStateTest, chrome::FILE_LOCAL_STATE, false,
+   false, true, 500 * kOneKilobyte},
+  {"Dictionaries Directory", kPathDictionariesTest,
+   chrome::DIR_APP_DICTIONARIES, true, true, false, 0},
+  {"Resources file", kPathResourcesTest, chrome::FILE_RESOURCES_PACK, false,
+   false, false, 0}
 };
 
 // Check that the user's data directory exists and the paths are writable.
-// If it is a systemwide install some paths are not expected to be writable.
+// If it is a system-wide install some paths are not expected to be writable.
 // This test depends on |InstallTypeTest| having run successfully.
-class PathTest : public DiagnosticTest {
+class PathTest : public DiagnosticsTest {
  public:
   explicit PathTest(const TestPathInfo& path_info)
-      : DiagnosticTest(ASCIIToUTF16(path_info.test_name)),
+      : DiagnosticsTest(path_info.test_id, path_info.test_name),
         path_info_(path_info) {}
-
-  virtual int GetId() OVERRIDE { return 0; }
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     if (!g_install_type) {
-      RecordStopFailure(ASCIIToUTF16("dependency failure"));
+      RecordStopFailure(DIAG_RECON_DEPENDENCY, "Install dependency failure");
       return false;
     }
     base::FilePath dir_or_file;
     if (!PathService::Get(path_info_.path_id, &dir_or_file)) {
-      RecordStopFailure(ASCIIToUTF16("Path provider failure"));
+      RecordStopFailure(DIAG_RECON_PATH_PROVIDER, "Path provider failure");
       return false;
     }
     if (!file_util::PathExists(dir_or_file)) {
-      RecordFailure(ASCIIToUTF16("Path not found: ") +
-                    dir_or_file.LossyDisplayName());
+      RecordFailure(
+          DIAG_RECON_PATH_NOT_FOUND,
+          "Path not found: " + UTF16ToUTF8(dir_or_file.LossyDisplayName()));
       return true;
     }
 
@@ -248,32 +259,32 @@ class PathTest : public DiagnosticTest {
       file_util::GetFileSize(dir_or_file, &dir_or_file_size);
     }
     if (!dir_or_file_size && !path_info_.is_optional) {
-      RecordFailure(ASCIIToUTF16("Cannot obtain size for: ") +
-                    dir_or_file.LossyDisplayName());
+      RecordFailure(DIAG_RECON_CANNOT_OBTAIN_SIZE,
+                    "Cannot obtain size for: " +
+                        UTF16ToUTF8(dir_or_file.LossyDisplayName()));
       return true;
     }
-    string16 printable_size = ui::FormatBytes(dir_or_file_size);
+    std::string printable_size = base::Int64ToString(dir_or_file_size);
 
     if (path_info_.max_size > 0) {
       if (dir_or_file_size > path_info_.max_size) {
-        RecordFailure(ASCIIToUTF16("Path contents too large (") +
-                      printable_size +
-                      ASCIIToUTF16(") for: ") +
-                      dir_or_file.LossyDisplayName());
+        RecordFailure(DIAG_RECON_FILE_TOO_LARGE,
+                      "Path contents too large (" + printable_size + ") for: " +
+                          UTF16ToUTF8(dir_or_file.LossyDisplayName()));
         return true;
       }
     }
     if (g_install_type->system_level() && !path_info_.test_writable) {
-      RecordSuccess(ASCIIToUTF16("Path exists"));
+      RecordSuccess("Path exists");
       return true;
     }
     if (!file_util::PathIsWritable(dir_or_file)) {
-      RecordFailure(ASCIIToUTF16("Path is not writable: ") +
-                    dir_or_file.LossyDisplayName());
+      RecordFailure(DIAG_RECON_NOT_WRITABLE,
+                    "Path is not writable: " +
+                        UTF16ToUTF8(dir_or_file.LossyDisplayName()));
       return true;
     }
-    RecordSuccess(ASCIIToUTF16("Path exists and is writable: ")
-                  + printable_size);
+    RecordSuccess("Path exists and is writable: " + printable_size);
     return true;
   }
 
@@ -282,13 +293,11 @@ class PathTest : public DiagnosticTest {
   DISALLOW_COPY_AND_ASSIGN(PathTest);
 };
 
-// Check that the disk space in the volume where the user data dir normally
-// lives is not dangerously low.
-class DiskSpaceTest : public DiagnosticTest {
+// Check that the disk space in the volume where the user data directory
+// normally lives is not dangerously low.
+class DiskSpaceTest : public DiagnosticsTest {
  public:
-  DiskSpaceTest() : DiagnosticTest(ASCIIToUTF16("Disk Space")) {}
-
-  virtual int GetId() OVERRIDE { return 0; }
+  DiskSpaceTest() : DiagnosticsTest(kDiskSpaceTest, "Disk Space") {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     base::FilePath data_dir;
@@ -296,15 +305,16 @@ class DiskSpaceTest : public DiagnosticTest {
       return false;
     int64 disk_space = base::SysInfo::AmountOfFreeDiskSpace(data_dir);
     if (disk_space < 0) {
-      RecordFailure(ASCIIToUTF16("Unable to query free space"));
+      RecordFailure(DIAG_RECON_UNABLE_TO_QUERY, "Unable to query free space");
       return true;
     }
-    string16 printable_size = ui::FormatBytes(disk_space);
-    if (disk_space < 80 * kOneMeg) {
-      RecordFailure(ASCIIToUTF16("Low disk space : ") + printable_size);
+    std::string printable_size = base::Int64ToString(disk_space);
+    if (disk_space < 80 * kOneMegabyte) {
+      RecordFailure(DIAG_RECON_LOW_DISK_SPACE,
+                    "Low disk space: " + printable_size);
       return true;
     }
-    RecordSuccess(ASCIIToUTF16("Free space : ") + printable_size);
+    RecordSuccess("Free space: " + printable_size);
     return true;
   }
 
@@ -313,36 +323,35 @@ class DiskSpaceTest : public DiagnosticTest {
 };
 
 // Checks that a given json file can be correctly parsed.
-class JSONTest : public DiagnosticTest {
+class JSONTest : public DiagnosticsTest {
  public:
   JSONTest(const base::FilePath& path,
-           const string16& name,
+           const std::string& id,
+           const std::string& name,
            int64 max_file_size)
-      : DiagnosticTest(name), path_(path), max_file_size_(max_file_size) {
-  }
-
-  virtual int GetId() OVERRIDE { return 0; }
+      : DiagnosticsTest(id, name), path_(path), max_file_size_(max_file_size) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     if (!file_util::PathExists(path_)) {
-      RecordFailure(ASCIIToUTF16("File not found"));
+      RecordFailure(DIAG_RECON_FILE_NOT_FOUND, "File not found");
       return true;
     }
     int64 file_size;
     if (!file_util::GetFileSize(path_, &file_size)) {
-      RecordFailure(ASCIIToUTF16("Cannot obtain file size"));
+      RecordFailure(DIAG_RECON_CANNOT_OBTAIN_FILE_SIZE,
+                    "Cannot obtain file size");
       return true;
     }
 
     if (file_size > max_file_size_) {
-      RecordFailure(ASCIIToUTF16("File too big"));
+      RecordFailure(DIAG_RECON_FILE_TOO_BIG, "File too big");
       return true;
     }
     // Being small enough, we can process it in-memory.
     std::string json_data;
     if (!file_util::ReadFileToString(path_, &json_data)) {
-      RecordFailure(ASCIIToUTF16(
-          "Could not open file. Possibly locked by other process"));
+      RecordFailure(DIAG_RECON_UNABLE_TO_OPEN_FILE,
+                    "Could not open file. Possibly locked by another process");
       return true;
     }
 
@@ -354,11 +363,11 @@ class JSONTest : public DiagnosticTest {
       if (error_message.empty()) {
         error_message = "Parse error " + base::IntToString(error_code);
       }
-      RecordFailure(UTF8ToUTF16(error_message));
+      RecordFailure(DIAG_RECON_PARSE_ERROR, error_message);
       return true;
     }
 
-    RecordSuccess(ASCIIToUTF16("File parsed OK"));
+    RecordSuccess("File parsed OK");
     return true;
   }
 
@@ -370,57 +379,50 @@ class JSONTest : public DiagnosticTest {
 
 }  // namespace
 
-DiagnosticTest* MakeUserDirTest() {
-  return new PathTest(kPathsToTest[0]);
-}
+DiagnosticsTest* MakeUserDirTest() { return new PathTest(kPathsToTest[0]); }
 
-DiagnosticTest* MakeLocalStateFileTest() {
+DiagnosticsTest* MakeLocalStateFileTest() {
   return new PathTest(kPathsToTest[1]);
 }
 
-DiagnosticTest* MakeDictonaryDirTest() {
+DiagnosticsTest* MakeDictonaryDirTest() {
   return new PathTest(kPathsToTest[2]);
 }
 
-DiagnosticTest* MakeResourcesFileTest() {
+DiagnosticsTest* MakeResourcesFileTest() {
   return new PathTest(kPathsToTest[3]);
 }
 
-DiagnosticTest* MakeVersionTest() {
-  return new VersionTest();
-}
+DiagnosticsTest* MakeVersionTest() { return new VersionTest(); }
 
-DiagnosticTest* MakeDiskSpaceTest() {
-  return new DiskSpaceTest();
-}
+DiagnosticsTest* MakeDiskSpaceTest() { return new DiskSpaceTest(); }
 
-DiagnosticTest* MakeOperatingSystemTest() {
-  return new OperatingSystemTest();
-}
+DiagnosticsTest* MakeOperatingSystemTest() { return new OperatingSystemTest(); }
 
-DiagnosticTest* MakeConflictingDllsTest() {
-  return new ConflictingDllsTest();
-}
+DiagnosticsTest* MakeConflictingDllsTest() { return new ConflictingDllsTest(); }
 
-DiagnosticTest* MakeInstallTypeTest() {
-  return new InstallTypeTest();
-}
+DiagnosticsTest* MakeInstallTypeTest() { return new InstallTypeTest(); }
 
-DiagnosticTest* MakePreferencesTest() {
-  base::FilePath path = DiagnosticTest::GetUserDefaultProfileDir();
+DiagnosticsTest* MakePreferencesTest() {
+  base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
   path = path.Append(chrome::kPreferencesFilename);
-  return new JSONTest(path, ASCIIToUTF16("Profile JSON"), 100 * kOneKilo);
+  return new JSONTest(
+      path, kJSONProfileTest, "Profile JSON", 100 * kOneKilobyte);
 }
 
-DiagnosticTest* MakeBookMarksTest() {
-  base::FilePath path = DiagnosticTest::GetUserDefaultProfileDir();
+DiagnosticsTest* MakeBookMarksTest() {
+  base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
   path = path.Append(chrome::kBookmarksFileName);
-  return new JSONTest(path, ASCIIToUTF16("BookMarks JSON"), 2 * kOneMeg);
+  return new JSONTest(
+      path, kJSONBookmarksTest, "Bookmarks JSON", 2 * kOneMegabyte);
 }
 
-DiagnosticTest* MakeLocalStateTest() {
+DiagnosticsTest* MakeLocalStateTest() {
   base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.Append(chrome::kLocalStateFilename);
-  return new JSONTest(path, ASCIIToUTF16("Local State JSON"), 50 * kOneKilo);
+  return new JSONTest(
+      path, kJSONLocalStateTest, "Local State JSON", 50 * kOneKilobyte);
 }
+
+}  // namespace diagnostics

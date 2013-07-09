@@ -19,30 +19,31 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 
+namespace diagnostics {
+
 namespace {
 
 // Embodies the commonalities of the model across platforms. It manages the
 // list of tests and can loop over them. The main job of the platform specific
 // code becomes:
-// 1- Inserting the appropiate tests into |tests_|
-// 2- Overriding RunTest() to wrap it with the appropiate fatal exception
+// 1- Inserting the appropriate tests into |tests_|
+// 2- Overriding RunTest() to wrap it with the appropriate fatal exception
 //    handler for the OS.
 // This class owns the all the tests and will only delete them upon
 // destruction.
 class DiagnosticsModelImpl : public DiagnosticsModel {
  public:
-  DiagnosticsModelImpl() : tests_run_(0) {
-  }
+  DiagnosticsModelImpl() : tests_run_(0) {}
 
   virtual ~DiagnosticsModelImpl() {
     STLDeleteElements(&tests_);
   }
 
-  virtual int GetTestRunCount() OVERRIDE {
+  virtual int GetTestRunCount() const OVERRIDE {
     return tests_run_;
   }
 
-  virtual int GetTestAvailableCount() OVERRIDE {
+  virtual int GetTestAvailableCount() const OVERRIDE {
     return tests_.size();
   }
 
@@ -54,20 +55,23 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
       if (!do_next)
         break;
     }
-    observer->OnDoneAll(this);
+    if (observer)
+      observer->OnDoneAll(this);
   }
 
-  virtual TestInfo& GetTest(size_t id) OVERRIDE {
-    return *tests_[id];
+  virtual const TestInfo& GetTest(size_t index) OVERRIDE {
+    return *tests_[index];
   }
 
  protected:
   // Run a particular test. Return false if no other tests should be run.
-  virtual bool RunTest(DiagnosticTest* test, Observer* observer, size_t index) {
+  virtual bool RunTest(DiagnosticsTest* test,
+                       Observer* observer,
+                       size_t index) {
     return test->Execute(observer, this, index);
   }
 
-  typedef std::vector<DiagnosticTest*> TestArray;
+  typedef std::vector<DiagnosticsTest*> TestArray;
   TestArray tests_;
   int tests_run_;
 
@@ -153,6 +157,10 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteThumbnailsDbTest());
     tests_.push_back(MakeSqliteAppCacheDbTest());
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
+#if defined(OS_CHROMEOS)
+    tests_.push_back(MakeSqliteNssCertDbTest());
+    tests_.push_back(MakeSqliteNssKeyDbTest());
+#endif
   }
 
  private:
@@ -176,3 +184,5 @@ DiagnosticsModel* MakeDiagnosticsModel(const CommandLine& cmdline) {
   return new DiagnosticsModelPosix();
 #endif
 }
+
+}  // namespace diagnostics

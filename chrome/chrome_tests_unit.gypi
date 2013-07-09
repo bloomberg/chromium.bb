@@ -2443,6 +2443,7 @@
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/chrome_to_mobile'],
+            ['exclude', '^browser/diagnostics/'],
             ['exclude', '^browser/first_run/'],
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/lifetime/'],
