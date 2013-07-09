@@ -415,7 +415,7 @@ static void
 tablet_shell_unlock(struct wl_listener *listener, void *data)
 {
 	struct tablet_shell *shell =
-		container_of(listener, struct tablet_shell, lock_listener);
+		container_of(listener, struct tablet_shell, unlock_listener);
 
 	weston_compositor_wake(shell->compositor);
 }
