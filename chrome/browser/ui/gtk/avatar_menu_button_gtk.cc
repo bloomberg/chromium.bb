@@ -75,8 +75,13 @@ void AvatarMenuButtonGtk::UpdateButtonIcon() {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget(), &allocation);
   old_height_ = allocation.height;
-  gfx::Image icon = profiles::GetAvatarIconForTitleBar(*icon_, is_gaia_picture_,
-      profiles::kAvatarIconWidth, old_height_);
+
+  // GAIA images are square; use kWidth for both destination height and width
+  // since old_height_ is often not usable (typically a value of 1 which, after
+  // subtracting border, tries to resize the profile image to a size of -1).
+  gfx::Image icon = profiles::GetAvatarIconForTitleBar(
+      *icon_, is_gaia_picture_,
+      profiles::kAvatarIconWidth, profiles::kAvatarIconWidth);
   gtk_image_set_from_pixbuf(GTK_IMAGE(image_), icon.ToGdkPixbuf());
   gtk_misc_set_alignment(GTK_MISC(image_), 0.0, 1.0);
   gtk_widget_set_size_request(image_, -1, 0);
