@@ -34,9 +34,26 @@ class Element;
 class ScriptElement;
 class ScriptSourceCode;
 
+class ScriptElementClient {
+public:
+    virtual ~ScriptElementClient() { }
+
+    virtual void dispatchLoadEvent() = 0;
+
+    virtual String sourceAttributeValue() const = 0;
+    virtual String charsetAttributeValue() const = 0;
+    virtual String typeAttributeValue() const = 0;
+    virtual String languageAttributeValue() const = 0;
+    virtual String forAttributeValue() const = 0;
+    virtual String eventAttributeValue() const = 0;
+    virtual bool asyncAttributeValue() const = 0;
+    virtual bool deferAttributeValue() const = 0;
+    virtual bool hasSourceAttribute() const = 0;
+};
+
 class ScriptElement : private CachedResourceClient {
 public:
-    ScriptElement(Element*, bool createdByParser, bool isEvaluated);
+    static PassOwnPtr<ScriptElement> create(Element*, bool createdByParser, bool isEvaluated);
     virtual ~ScriptElement();
 
     Element* element() const { return m_element; }
@@ -50,7 +67,7 @@ public:
     void execute(CachedScript*);
 
     // XML parser calls these
-    virtual void dispatchLoadEvent() = 0;
+    void dispatchLoadEvent();
     void dispatchErrorEvent();
     bool isScriptTypeSupported(LegacyTypeSupport) const;
 
@@ -60,7 +77,6 @@ public:
     bool willExecuteWhenDocumentFinishedParsing() const { return m_willExecuteWhenDocumentFinishedParsing; }
     CachedResourceHandle<CachedScript> cachedScript() { return m_cachedScript; }
 
-protected:
     void setHaveFiredLoadEvent(bool haveFiredLoad) { m_haveFiredLoad = haveFiredLoad; }
     bool isParserInserted() const { return m_parserInserted; }
     bool alreadyStarted() const { return m_alreadyStarted; }
@@ -73,23 +89,18 @@ protected:
     void handleAsyncAttribute();
 
 private:
+    ScriptElement(Element*, bool createdByParser, bool isEvaluated);
+
     bool ignoresLoadRequest() const;
     bool isScriptForEventSupported() const;
 
     bool requestScript(const String& sourceUrl);
     void stopLoadRequest();
 
-    virtual void notifyFinished(CachedResource*);
+    ScriptElementClient* client() const;
 
-    virtual String sourceAttributeValue() const = 0;
-    virtual String charsetAttributeValue() const = 0;
-    virtual String typeAttributeValue() const = 0;
-    virtual String languageAttributeValue() const = 0;
-    virtual String forAttributeValue() const = 0;
-    virtual String eventAttributeValue() const = 0;
-    virtual bool asyncAttributeValue() const = 0;
-    virtual bool deferAttributeValue() const = 0;
-    virtual bool hasSourceAttribute() const = 0;
+    // CachedResourceClient
+    virtual void notifyFinished(CachedResource*) OVERRIDE;
 
     Element* m_element;
     CachedResourceHandle<CachedScript> m_cachedScript;
@@ -109,6 +120,12 @@ private:
 
 ScriptElement* toScriptElementIfPossible(Element*);
 
+inline PassOwnPtr<ScriptElement> ScriptElement::create(Element* element, bool createdByParser, bool isEvaluated)
+{
+    return adoptPtr(new ScriptElement(element, createdByParser, isEvaluated));
 }
+
+}
+
 
 #endif

@@ -44,8 +44,8 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGScriptElement::SVGScriptElement(const QualifiedName& tagName, Document* document, bool wasInsertedByParser, bool alreadyStarted)
     : SVGElement(tagName, document)
-    , ScriptElement(this, wasInsertedByParser, alreadyStarted)
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
+    , m_scriptElement(ScriptElement::create(this, wasInsertedByParser, alreadyStarted))
 {
     ASSERT(hasTagName(SVGNames::scriptTag));
     ScriptWrappable::init(this);
@@ -107,7 +107,7 @@ void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
-        handleSourceAttribute(href());
+        m_scriptElement->handleSourceAttribute(href());
         return;
     }
 
@@ -120,7 +120,7 @@ void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName)
 Node::InsertionNotificationRequest SVGScriptElement::insertedInto(ContainerNode* rootParent)
 {
     SVGElement::insertedInto(rootParent);
-    ScriptElement::insertedInto(rootParent);
+    m_scriptElement->insertedInto(rootParent);
     if (rootParent->inDocument())
         SVGExternalResourcesRequired::insertedIntoDocument(this);
     return InsertionDone;
@@ -129,7 +129,7 @@ Node::InsertionNotificationRequest SVGScriptElement::insertedInto(ContainerNode*
 void SVGScriptElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    ScriptElement::childrenChanged();
+    m_scriptElement->childrenChanged();
 }
 
 bool SVGScriptElement::isURLAttribute(const Attribute& attribute) const
@@ -207,7 +207,27 @@ bool SVGScriptElement::hasSourceAttribute() const
 
 PassRefPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRef(new SVGScriptElement(tagQName(), document(), false, alreadyStarted()));
+    return adoptRef(new SVGScriptElement(tagQName(), document(), false, m_scriptElement->alreadyStarted()));
+}
+
+void SVGScriptElement::setHaveFiredLoadEvent(bool haveFiredLoadEvent)
+{
+    m_scriptElement->setHaveFiredLoadEvent(haveFiredLoadEvent);
+}
+
+bool SVGScriptElement::isParserInserted() const
+{
+    return m_scriptElement->isParserInserted();
+}
+
+bool SVGScriptElement::haveFiredLoadEvent() const
+{
+    return m_scriptElement->haveFiredLoadEvent();
+}
+
+Timer<SVGElement>* SVGScriptElement::svgLoadEventTimer()
+{
+    return &m_svgLoadEventTimer;
 }
 
 }

@@ -37,7 +37,7 @@ using namespace HTMLNames;
 
 inline HTMLScriptElement::HTMLScriptElement(const QualifiedName& tagName, Document* document, bool wasInsertedByParser, bool alreadyStarted)
     : HTMLElement(tagName, document)
-    , ScriptElement(this, wasInsertedByParser, alreadyStarted)
+    , m_scriptElement(ScriptElement::create(this, wasInsertedByParser, alreadyStarted))
 {
     ASSERT(hasTagName(scriptTag));
     ScriptWrappable::init(this);
@@ -56,15 +56,15 @@ bool HTMLScriptElement::isURLAttribute(const Attribute& attribute) const
 void HTMLScriptElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    ScriptElement::childrenChanged();
+    m_scriptElement->childrenChanged();
 }
 
 void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == srcAttr)
-        handleSourceAttribute(value);
+        m_scriptElement->handleSourceAttribute(value);
     else if (name == asyncAttr)
-        handleAsyncAttribute();
+        m_scriptElement->handleAsyncAttribute();
     else if (name == onbeforeloadAttr)
         setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, name, value));
     else
@@ -74,7 +74,7 @@ void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicSt
 Node::InsertionNotificationRequest HTMLScriptElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    ScriptElement::insertedInto(insertionPoint);
+    m_scriptElement->insertedInto(insertionPoint);
     return InsertionDone;
 }
 
@@ -98,12 +98,12 @@ void HTMLScriptElement::setText(const String &value)
 void HTMLScriptElement::setAsync(bool async)
 {
     setBooleanAttribute(asyncAttr, async);
-    handleAsyncAttribute();
+    m_scriptElement->handleAsyncAttribute();
 }
 
 bool HTMLScriptElement::async() const
 {
-    return fastHasAttribute(asyncAttr) || forceAsync();
+    return fastHasAttribute(asyncAttr) || (m_scriptElement->forceAsync());
 }
 
 KURL HTMLScriptElement::src() const
@@ -165,15 +165,12 @@ bool HTMLScriptElement::hasSourceAttribute() const
 
 void HTMLScriptElement::dispatchLoadEvent()
 {
-    ASSERT(!haveFiredLoadEvent());
-    setHaveFiredLoadEvent(true);
-
     dispatchEvent(Event::create(eventNames().loadEvent, false, false));
 }
 
 PassRefPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRef(new HTMLScriptElement(tagQName(), document(), false, alreadyStarted()));
+    return adoptRef(new HTMLScriptElement(tagQName(), document(), false, m_scriptElement->alreadyStarted()));
 }
 
 }

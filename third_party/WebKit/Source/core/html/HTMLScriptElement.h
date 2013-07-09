@@ -29,17 +29,19 @@
 
 namespace WebCore {
 
-class HTMLScriptElement FINAL : public HTMLElement, public ScriptElement {
+class HTMLScriptElement FINAL : public HTMLElement, public ScriptElementClient {
 public:
     static PassRefPtr<HTMLScriptElement> create(const QualifiedName&, Document*, bool wasInsertedByParser, bool alreadyStarted = false);
 
-    String text() const { return scriptContent(); }
+    String text() { return textFromChildren(); }
     void setText(const String&);
 
     KURL src() const;
 
     void setAsync(bool);
     bool async() const;
+
+    ScriptElement* scriptElement() const { return m_scriptElement.get(); }
 
 private:
     HTMLScriptElement(const QualifiedName&, Document*, bool wasInsertedByParser, bool alreadyStarted);
@@ -65,6 +67,8 @@ private:
     virtual void dispatchLoadEvent();
 
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
+
+    OwnPtr<ScriptElement> m_scriptElement;
 };
 
 inline HTMLScriptElement* toHTMLScriptElement(Node* node)

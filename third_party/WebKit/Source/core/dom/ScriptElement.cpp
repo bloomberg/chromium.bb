@@ -66,8 +66,8 @@ ScriptElement::ScriptElement(Element* element, bool parserInserted, bool already
     , m_willExecuteInOrder(false)
 {
     ASSERT(m_element);
-    if (parserInserted && m_element->document()->scriptableDocumentParser() && !m_element->document()->isInDocumentWrite())
-        m_startLineNumber = m_element->document()->scriptableDocumentParser()->lineNumber();
+    if (parserInserted && element->document()->scriptableDocumentParser() && !element->document()->isInDocumentWrite())
+        m_startLineNumber = element->document()->scriptableDocumentParser()->lineNumber();
 }
 
 ScriptElement::~ScriptElement()
@@ -136,14 +136,22 @@ void ScriptElement::dispatchErrorEvent()
     m_element->dispatchEvent(Event::create(eventNames().errorEvent, false, false));
 }
 
+void ScriptElement::dispatchLoadEvent()
+{
+    ASSERT(!haveFiredLoadEvent());
+    if (ScriptElementClient* client = this->client())
+        client->dispatchLoadEvent();
+    setHaveFiredLoadEvent(true);
+}
+
 bool ScriptElement::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) const
 {
     // FIXME: isLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used here to maintain backwards compatibility with existing layout tests. The specific violations are:
     // - Allowing type=javascript. type= should only support MIME types, such as text/javascript.
     // - Allowing a different set of languages for language= and type=. language= supports Javascript 1.1 and 1.4-1.6, but type= does not.
 
-    String type = typeAttributeValue();
-    String language = languageAttributeValue();
+    String type = client()->typeAttributeValue();
+    String language = client()->languageAttributeValue();
     if (type.isEmpty() && language.isEmpty())
         return true; // Assume text/javascript.
     if (type.isEmpty()) {
@@ -161,6 +169,8 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, Legac
     if (m_alreadyStarted)
         return false;
 
+    ScriptElementClient* client = this->client();
+
     bool wasParserInserted;
     if (m_parserInserted) {
         wasParserInserted = true;
@@ -168,11 +178,11 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, Legac
     } else
         wasParserInserted = false;
 
-    if (wasParserInserted && !asyncAttributeValue())
+    if (wasParserInserted && !client->asyncAttributeValue())
         m_forceAsync = true;
 
     // FIXME: HTML5 spec says we should check that all children are either comments or empty text nodes.
-    if (!hasSourceAttribute() && !m_element->firstChild())
+    if (!client->hasSourceAttribute() && !m_element->firstChild())
         return false;
 
     if (!m_element->inDocument())
@@ -203,29 +213,29 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, Legac
     if (!isScriptForEventSupported())
         return false;
 
-    if (!charsetAttributeValue().isEmpty())
-        m_characterEncoding = charsetAttributeValue();
+    if (!client->charsetAttributeValue().isEmpty())
+        m_characterEncoding = client->charsetAttributeValue();
     else
         m_characterEncoding = document->charset();
 
-    if (hasSourceAttribute())
-        if (!requestScript(sourceAttributeValue()))
+    if (client->hasSourceAttribute())
+        if (!requestScript(client->sourceAttributeValue()))
             return false;
 
-    if (hasSourceAttribute() && deferAttributeValue() && m_parserInserted && !asyncAttributeValue()) {
+    if (client->hasSourceAttribute() && client->deferAttributeValue() && m_parserInserted && !client->asyncAttributeValue()) {
         m_willExecuteWhenDocumentFinishedParsing = true;
         m_willBeParserExecuted = true;
-    } else if (hasSourceAttribute() && m_parserInserted && !asyncAttributeValue())
+    } else if (client->hasSourceAttribute() && m_parserInserted && !client->asyncAttributeValue())
         m_willBeParserExecuted = true;
-    else if (!hasSourceAttribute() && m_parserInserted && !document->haveStylesheetsAndImportsLoaded()) {
+    else if (!client->hasSourceAttribute() && m_parserInserted && !document->haveStylesheetsAndImportsLoaded()) {
         m_willBeParserExecuted = true;
         m_readyToBeParserExecuted = true;
-    } else if (hasSourceAttribute() && !asyncAttributeValue() && !m_forceAsync) {
+    } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
         m_willExecuteInOrder = true;
         document->scriptRunner()->queueScriptForExecution(this, m_cachedScript, ScriptRunner::IN_ORDER_EXECUTION);
         m_cachedScript->addClient(this);
-    } else if (hasSourceAttribute()) {
-        m_element->document()->scriptRunner()->queueScriptForExecution(this, m_cachedScript, ScriptRunner::ASYNC_EXECUTION);
+    } else if (client->hasSourceAttribute()) {
+        document->scriptRunner()->queueScriptForExecution(this, m_cachedScript, ScriptRunner::ASYNC_EXECUTION);
         m_cachedScript->addClient(this);
     } else {
         // Reset line numbering for nested writes.
@@ -239,6 +249,8 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition, Legac
 
 bool ScriptElement::requestScript(const String& sourceUrl)
 {
+    ASSERT(m_element);
+
     RefPtr<Document> originalDocument = m_element->document();
     if (!m_element->dispatchBeforeLoadEvent(sourceUrl))
         return false;
@@ -247,7 +259,7 @@ bool ScriptElement::requestScript(const String& sourceUrl)
 
     ASSERT(!m_cachedScript);
     if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
-        CachedResourceRequest request(ResourceRequest(m_element->document()->completeURL(sourceUrl)), element()->localName());
+        CachedResourceRequest request(ResourceRequest(m_element->document()->completeURL(sourceUrl)), m_element->localName());
 
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {
@@ -370,13 +382,13 @@ void ScriptElement::notifyFinished(CachedResource* resource)
 
 bool ScriptElement::ignoresLoadRequest() const
 {
-    return m_alreadyStarted || m_isExternalScript || m_parserInserted || !m_element->inDocument();
+    return m_alreadyStarted || m_isExternalScript || m_parserInserted || !element() || !element()->inDocument();
 }
 
 bool ScriptElement::isScriptForEventSupported() const
 {
-    String eventAttribute = eventAttributeValue();
-    String forAttribute = forAttributeValue();
+    String eventAttribute = client()->eventAttributeValue();
+    String forAttribute = client()->forAttributeValue();
     if (!eventAttribute.isEmpty() && !forAttribute.isEmpty()) {
         forAttribute = forAttribute.stripWhiteSpace();
         if (!equalIgnoringCase(forAttribute, "window"))
@@ -394,13 +406,25 @@ String ScriptElement::scriptContent() const
     return m_element->textFromChildren();
 }
 
+ScriptElementClient* ScriptElement::client() const
+{
+    if (isHTMLScriptElement(m_element))
+        return toHTMLScriptElement(m_element);
+
+    if (isSVGScriptElement(m_element))
+        return toSVGScriptElement(m_element);
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 ScriptElement* toScriptElementIfPossible(Element* element)
 {
     if (isHTMLScriptElement(element))
-        return toHTMLScriptElement(element);
+        return toHTMLScriptElement(element)->scriptElement();
 
     if (isSVGScriptElement(element))
-        return toSVGScriptElement(element);
+        return toSVGScriptElement(element)->scriptElement();
 
     return 0;
 }

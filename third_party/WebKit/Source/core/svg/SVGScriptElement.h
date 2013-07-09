@@ -31,15 +31,18 @@
 
 namespace WebCore {
 
-class SVGScriptElement FINAL : public SVGElement
-                             , public SVGURIReference
-                             , public SVGExternalResourcesRequired
-                             , public ScriptElement {
+class SVGScriptElement FINAL
+    : public SVGElement
+    , public SVGURIReference
+    , public SVGExternalResourcesRequired
+    , public ScriptElementClient {
 public:
     static PassRefPtr<SVGScriptElement> create(const QualifiedName&, Document*, bool wasInsertedByParser);
 
     String type() const;
     void setType(const String&);
+
+    ScriptElement* scriptElement() const { return m_scriptElement.get(); }
 
 private:
     SVGScriptElement(const QualifiedName&, Document*, bool wasInsertedByParser, bool alreadyStarted);
@@ -72,10 +75,10 @@ private:
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     // SVGExternalResourcesRequired
-    virtual void setHaveFiredLoadEvent(bool haveFiredLoadEvent) { ScriptElement::setHaveFiredLoadEvent(haveFiredLoadEvent); }
-    virtual bool isParserInserted() const { return ScriptElement::isParserInserted(); }
-    virtual bool haveFiredLoadEvent() const { return ScriptElement::haveFiredLoadEvent(); }
-    virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
+    virtual void setHaveFiredLoadEvent(bool) OVERRIDE;
+    virtual bool isParserInserted() const OVERRIDE;
+    virtual bool haveFiredLoadEvent() const OVERRIDE;
+    virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGScriptElement)
         DECLARE_ANIMATED_STRING(Href, href)
@@ -84,6 +87,7 @@ private:
 
     String m_type;
     Timer<SVGElement> m_svgLoadEventTimer;
+    OwnPtr<ScriptElement> m_scriptElement;
 };
 
 inline SVGScriptElement* toSVGScriptElement(Node* node)
