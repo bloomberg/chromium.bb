@@ -338,8 +338,25 @@ def _ValidateSpecialStackInstruction(instruction):
       'and %s,%%rsp$' % _ImmediateRE(),
       instruction.disasm)
   if m is not None:
-    # TODO(shcherbina): check that immediate is negative (we'd have to look at
-    # bytes to do it).
+    # We only allow 1-byte immediate, so we have to look at machine code.
+    if (len(instruction.bytes) == 4 and
+        0x48 <= instruction.bytes[0] <= 0x4f and
+        instruction.bytes[1:3] == [0x83, 0xe4]):
+      # We extract mask from bytes, not from textual representation, because
+      # objdump and RDFA decoder print it differently
+      # (-1 is displayed as '0xffffffffffffffff' by objdump and as '0xff' by
+      # RDFA decoder).
+      # See https://code.google.com/p/nativeclient/issues/detail?id=3164
+      mask = instruction.bytes[3]
+      assert mask == int(m.group('immediate_value'), 16) & 0xff
+      if mask < 0x80:
+        raise SandboxingError(
+            'mask should be negative to ensure that higher '
+            'bits of %rsp do not change',
+            instruction)
+    else:
+      raise SandboxingError(
+          'unsupported form of "and <mask>,%rsp" instruction', instruction)
     return Condition(), Condition()
 
   if (instruction.disasm in ['add %r15,%rbp', 'add %r15,%rbp'] or
