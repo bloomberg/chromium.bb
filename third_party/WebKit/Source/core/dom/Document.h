@@ -1097,7 +1097,7 @@ private:
     virtual String nodeName() const;
     virtual NodeType nodeType() const;
     virtual bool childTypeAllowed(NodeType) const;
-    virtual PassRefPtr<Node> cloneNode(bool deep);
+    virtual PassRefPtr<Node> cloneNode(bool deep = true);
 
     virtual void refScriptExecutionContext() { ref(); }
     virtual void derefScriptExecutionContext() { deref(); }

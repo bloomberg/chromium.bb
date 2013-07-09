@@ -48,7 +48,7 @@ protected:
 
 private:
     virtual NodeType nodeType() const;
-    virtual PassRefPtr<Node> cloneNode(bool deep);
+    virtual PassRefPtr<Node> cloneNode(bool deep = true);
     virtual bool childTypeAllowed(NodeType) const;
 };
 

@@ -66,7 +66,7 @@ protected:
 
 private:
     virtual String nodeName() const OVERRIDE;
-    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE FINAL;
+    virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
     virtual bool childTypeAllowed(NodeType) const OVERRIDE;
 
     virtual PassRefPtr<Text> cloneWithData(const String&);

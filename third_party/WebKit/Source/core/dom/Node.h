@@ -219,7 +219,7 @@ public:
     bool appendChild(PassRefPtr<Node> newChild, ExceptionCode&, AttachBehavior = AttachNow);
 
     bool hasChildNodes() const { return firstChild(); }
-    virtual PassRefPtr<Node> cloneNode(bool deep) = 0;
+    virtual PassRefPtr<Node> cloneNode(bool deep = true) = 0;
     virtual const AtomicString& localName() const;
     virtual const AtomicString& namespaceURI() const;
     virtual const AtomicString& prefix() const;

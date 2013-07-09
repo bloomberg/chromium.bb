@@ -44,7 +44,7 @@ public:
     DocumentFragment* content() const;
 
 private:
-    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;
+    virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE;
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
 
     HTMLTemplateElement(const QualifiedName&, Document*);

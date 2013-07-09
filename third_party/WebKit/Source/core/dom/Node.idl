@@ -59,7 +59,7 @@
 
     boolean            hasChildNodes();
     [DeliverCustomElementCallbacks, PerWorldBindings]
-    Node               cloneNode([Default=Undefined] optional boolean deep);
+    Node               cloneNode(optional boolean deep);
     void               normalize();
 
     // Introduced in DOM Level 2:

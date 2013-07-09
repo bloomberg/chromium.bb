@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+
+var div = document.createElement('div');
+div.innerHTML = '<a></a>';
+shouldBeTrue('div.cloneNode().hasChildNodes()');
+shouldBe('div.cloneNode().childNodes.length', '1');
+
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

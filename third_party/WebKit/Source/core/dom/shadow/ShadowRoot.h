@@ -96,6 +96,7 @@ public:
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 
     PassRefPtr<Node> cloneNode(bool, ExceptionCode&);
+    PassRefPtr<Node> cloneNode(ExceptionCode& ec) { return cloneNode(true, ec); }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
