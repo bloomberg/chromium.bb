@@ -657,6 +657,13 @@ bool UniscribeHelper::shape(const UChar* input,
                                           &shaping.m_logs[0], &charProps[0],
                                           &shaping.m_glyphs[0], &glyphProps[0],
                                           &generatedGlyphs);
+            if (SUCCEEDED(hr)) {
+                // If we use ScriptShapeOpenType(), visual attributes
+                // information for each characters are stored in
+                // |glyphProps[i].sva|.
+                for (int i = 0; i < generatedGlyphs; ++i)
+                    memcpy(&shaping.m_visualAttributes[i], &glyphProps[i].sva, sizeof(SCRIPT_VISATTR));
+            }
         } else {
             hr = ScriptShape(m_cachedDC, scriptCache, input, itemLength,
                              numGlyphs, &run.a,
@@ -754,12 +761,6 @@ bool UniscribeHelper::shape(const UChar* input,
   cleanup:
     shaping.m_glyphs.resize(generatedGlyphs);
     shaping.m_visualAttributes.resize(generatedGlyphs);
-    // If we use ScriptShapeOpenType(), visual attributes information for each
-    // characters are stored in |glyphProps[i].sva|.
-    if (gScriptShapeOpenTypeFunc) {
-        for (int i = 0; i < generatedGlyphs; ++i)
-            memcpy(&shaping.m_visualAttributes[i], &glyphProps[i].sva, sizeof(SCRIPT_VISATTR));
-    }
     shaping.m_advance.resize(generatedGlyphs);
     shaping.m_offsets.resize(generatedGlyphs);
 
@@ -1026,13 +1027,19 @@ bool UniscribeHelper::containsMissingGlyphs(const Shaping& shaping,
 {
     for (int i = 0; i < shaping.charLength(); i++) {
         UChar c = m_input[run.iCharPos + i];
-        // Skip zero-width space characters because they're not considered to be missing in a font.
+        // Skip zero-width space characters because they're not considered to
+        // be missing in a font.
         if (Font::treatAsZeroWidthSpaceInComplexScript(c))
             continue;
         int glyphIndex = shaping.m_logs[i];
         WORD glyph = shaping.m_glyphs[glyphIndex];
+        // Note on the thrid condition: Windows Vista sometimes returns glyphs
+        // equal to wgBlank (instead of wgDefault), with fZeroWidth set. Treat
+        // such cases as having missing glyphs if the corresponding character
+        // is not a zero width whitespace.
         if (glyph == properties->wgDefault
-            || (glyph == properties->wgInvalid && glyph != properties->wgBlank))
+            || (glyph == properties->wgInvalid && glyph != properties->wgBlank)
+            || (glyph == properties->wgBlank && shaping.m_visualAttributes[glyphIndex].fZeroWidth))
             return true;
     }
     return false;
