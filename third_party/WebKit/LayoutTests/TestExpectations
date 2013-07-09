@@ -1433,9 +1433,6 @@ crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Ski
 
 crbug.com/241576 [ Win ] http/tests/appcache [ Pass Timeout ]
 
-# IDB backend migration fixes this test; will need rebasing after that lands.
-crbug.com/234278 storage/indexeddb/transaction-error.html [ Failure Pass ]
-
 crbug.com/241481 http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_attributes_order.html [ Failure Pass ]
 
 crbug.com/241665 fast/events/touch/emulate-touch-events.html [ Failure Pass ]

@@ -55,10 +55,10 @@ trans.objectStore('storeName').createIndex(indexName, 'id', {unique: true})
 Transaction received abort event.
 PASS trans.error is non-null.
 PASS trans.error.name is 'ConstraintError'
-trans.error.message = Unable to add key to index 'Also test utf8: æ¼¢': at least one key does not satisfy the uniqueness requirements.
+trans.error.message = Unable to add key to index 'Also test utf8: 漢': at least one key does not satisfy the uniqueness requirements.
 PASS trans.error.message is non-null.
 Note: This fails because of http://wkb.ug/37327
-FAIL trans.error.message.indexOf(indexName) should not be -1.
+PASS trans.error.message.indexOf(indexName) is not -1
 
 PASS successfullyParsed is true
 
