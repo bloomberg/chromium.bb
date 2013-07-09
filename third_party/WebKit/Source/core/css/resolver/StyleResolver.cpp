@@ -2468,12 +2468,12 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                         state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSImageGeneratorValue*>(item)), didSet);
                     didSet = true;
                 } else if (item->isImageSetValue()) {
-                    state.style()->setContent(setOrPendingFromValue(CSSPropertyContent, static_cast<CSSImageSetValue*>(item)), didSet);
+                    state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, static_cast<CSSImageSetValue*>(item)), didSet);
                     didSet = true;
                 }
 
                 if (item->isImageValue()) {
-                    state.style()->setContent(cachedOrPendingFromValue(CSSPropertyContent, toCSSImageValue(item)), didSet);
+                    state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(CSSPropertyContent, toCSSImageValue(item)), didSet);
                     didSet = true;
                     continue;
                 }
@@ -3291,55 +3291,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
 
 PassRefPtr<StyleImage> StyleResolver::styleImage(CSSPropertyID property, CSSValue* value)
 {
-    if (value->isImageValue())
-        return cachedOrPendingFromValue(property, toCSSImageValue(value));
-
-    if (value->isImageGeneratorValue()) {
-        if (value->isGradientValue())
-            return generatedOrPendingFromValue(property, static_cast<CSSGradientValue*>(value)->gradientWithStylesResolved(m_state).get());
-        return generatedOrPendingFromValue(property, static_cast<CSSImageGeneratorValue*>(value));
-    }
-
-    if (value->isImageSetValue())
-        return setOrPendingFromValue(property, static_cast<CSSImageSetValue*>(value));
-
-    if (value->isCursorImageValue())
-        return cursorOrPendingFromValue(property, static_cast<CSSCursorImageValue*>(value));
-
-    return 0;
-}
-
-PassRefPtr<StyleImage> StyleResolver::cachedOrPendingFromValue(CSSPropertyID property, CSSImageValue* value)
-{
-    RefPtr<StyleImage> image = value->cachedOrPendingImage();
-    if (image && image->isPendingImage())
-        m_state.elementStyleResources().addPendingImageProperty(property, value);
-    return image.release();
-}
-
-PassRefPtr<StyleImage> StyleResolver::generatedOrPendingFromValue(CSSPropertyID property, CSSImageGeneratorValue* value)
-{
-    if (value->isPending()) {
-        m_state.elementStyleResources().addPendingImageProperty(property, value);
-        return StylePendingImage::create(value);
-    }
-    return StyleGeneratedImage::create(value);
-}
-
-PassRefPtr<StyleImage> StyleResolver::setOrPendingFromValue(CSSPropertyID property, CSSImageSetValue* value)
-{
-    RefPtr<StyleImage> image = value->cachedOrPendingImageSet(m_state.elementStyleResources().deviceScaleFactor());
-    if (image && image->isPendingImage())
-        m_state.elementStyleResources().addPendingImageProperty(property, value);
-    return image.release();
-}
-
-PassRefPtr<StyleImage> StyleResolver::cursorOrPendingFromValue(CSSPropertyID property, CSSCursorImageValue* value)
-{
-    RefPtr<StyleImage> image = value->cachedOrPendingImage(m_state.elementStyleResources().deviceScaleFactor());
-    if (image && image->isPendingImage())
-        m_state.elementStyleResources().addPendingImageProperty(property, value);
-    return image.release();
+    return m_state.elementStyleResources().styleImage(m_state, property, value);
 }
 
 void StyleResolver::checkForZoomChange(RenderStyle* style, RenderStyle* parentStyle)

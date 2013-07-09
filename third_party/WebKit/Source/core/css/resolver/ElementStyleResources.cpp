@@ -23,7 +23,12 @@
 #include "config.h"
 #include "core/css/resolver/ElementStyleResources.h"
 
+#include "core/css/CSSGradientValue.h"
+#include "core/css/CSSSVGDocumentValue.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
+#include "core/rendering/style/StyleGeneratedImage.h"
+#include "core/rendering/style/StyleImage.h"
+#include "core/rendering/style/StylePendingImage.h"
 
 namespace WebCore {
 
@@ -33,9 +38,57 @@ ElementStyleResources::ElementStyleResources()
 {
 }
 
-void ElementStyleResources::addPendingImageProperty(const CSSPropertyID& property, CSSValue* value)
+PassRefPtr<StyleImage> ElementStyleResources::styleImage(StyleResolverState& state, CSSPropertyID property, CSSValue* value)
 {
-    m_pendingImageProperties.set(property, value);
+    if (value->isImageValue())
+        return cachedOrPendingFromValue(property, toCSSImageValue(value));
+
+    if (value->isImageGeneratorValue()) {
+        if (value->isGradientValue())
+            return generatedOrPendingFromValue(property, static_cast<CSSGradientValue*>(value)->gradientWithStylesResolved(state).get());
+        return generatedOrPendingFromValue(property, static_cast<CSSImageGeneratorValue*>(value));
+    }
+
+    if (value->isImageSetValue())
+        return setOrPendingFromValue(property, static_cast<CSSImageSetValue*>(value));
+
+    if (value->isCursorImageValue())
+        return cursorOrPendingFromValue(property, static_cast<CSSCursorImageValue*>(value));
+
+    return 0;
+}
+
+PassRefPtr<StyleImage> ElementStyleResources::generatedOrPendingFromValue(CSSPropertyID property, CSSImageGeneratorValue* value)
+{
+    if (value->isPending()) {
+        m_pendingImageProperties.set(property, value);
+        return StylePendingImage::create(value);
+    }
+    return StyleGeneratedImage::create(value);
+}
+
+PassRefPtr<StyleImage> ElementStyleResources::setOrPendingFromValue(CSSPropertyID property, CSSImageSetValue* value)
+{
+    RefPtr<StyleImage> image = value->cachedOrPendingImageSet(m_deviceScaleFactor);
+    if (image && image->isPendingImage())
+        m_pendingImageProperties.set(property, value);
+    return image.release();
+}
+
+PassRefPtr<StyleImage> ElementStyleResources::cachedOrPendingFromValue(CSSPropertyID property, CSSImageValue* value)
+{
+    RefPtr<StyleImage> image = value->cachedOrPendingImage();
+    if (image && image->isPendingImage())
+        m_pendingImageProperties.set(property, value);
+    return image.release();
+}
+
+PassRefPtr<StyleImage> ElementStyleResources::cursorOrPendingFromValue(CSSPropertyID property, CSSCursorImageValue* value)
+{
+    RefPtr<StyleImage> image = value->cachedOrPendingImage(m_deviceScaleFactor);
+    if (image && image->isPendingImage())
+        m_pendingImageProperties.set(property, value);
+    return image.release();
 }
 
 void ElementStyleResources::addPendingSVGDocument(FilterOperation* filterOperation, CSSSVGDocumentValue* cssSVGDocumentValue)

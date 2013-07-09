@@ -24,13 +24,20 @@
 #define ElementStyleResources_h
 
 #include "CSSPropertyNames.h"
-#include "core/css/CSSSVGDocumentValue.h"
-#include "core/css/CSSValue.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
+class CSSCursorImageValue;
+class CSSImageValue;
+class CSSImageGeneratorValue;
+class CSSImageSetValue;
+class CSSSVGDocumentValue;
+class CSSValue;
 class FilterOperation;
+class StyleImage;
+class StyleResolverState;
 
 typedef HashMap<FilterOperation*, RefPtr<CSSSVGDocumentValue> > PendingSVGDocumentMap;
 typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
@@ -45,6 +52,16 @@ WTF_MAKE_NONCOPYABLE(ElementStyleResources);
 public:
     ElementStyleResources();
 
+    // FIXME: Passing StyleResolverState here is unfortunate, since ElementStyleResolver is a member of
+    // StyleResolverState. However, we need to resolve colors here, and color resolution involves
+    // flipping bits on StyleResolverState.
+    PassRefPtr<StyleImage> styleImage(StyleResolverState&, CSSPropertyID, CSSValue*);
+
+    PassRefPtr<StyleImage> generatedOrPendingFromValue(CSSPropertyID, CSSImageGeneratorValue*);
+    PassRefPtr<StyleImage> cachedOrPendingFromValue(CSSPropertyID, CSSImageValue*);
+    PassRefPtr<StyleImage> setOrPendingFromValue(CSSPropertyID, CSSImageSetValue*);
+    PassRefPtr<StyleImage> cursorOrPendingFromValue(CSSPropertyID, CSSCursorImageValue*);
+
     const PendingImagePropertyMap& pendingImageProperties() const { return m_pendingImageProperties; }
     const PendingSVGDocumentMap& pendingSVGDocuments() const { return m_pendingSVGDocuments; }
 
@@ -54,7 +71,6 @@ public:
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float deviceScaleFactor) { m_deviceScaleFactor = deviceScaleFactor; }
 
-    void addPendingImageProperty(const CSSPropertyID&, CSSValue*);
     void addPendingSVGDocument(FilterOperation*, CSSSVGDocumentValue*);
 
     void clear();
