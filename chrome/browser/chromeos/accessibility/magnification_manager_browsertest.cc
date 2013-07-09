@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -91,7 +93,19 @@ bool GetScreenMagnifierEnabledFromPref() {
   return prefs()->GetBoolean(prefs::kScreenMagnifierEnabled);
 }
 
-}  // anonymouse namespace
+// Creates and logs into a profile with account |name|, and makes sure that
+// the profile is regarded as "non new" in the next login. This is used in
+// PRE_XXX cases so that in the main XXX case we can test non new profiles.
+void PrepareNonNewProfile(const std::string& name) {
+  UserManager::Get()->UserLoggedIn(name, name, true);
+  // To prepare a non-new profile for tests, we must ensure the profile
+  // directory and the preference files are created, because that's what
+  // Profile::IsNewProfile() checks. UserLoggedIn(), however, does not yet
+  // create the profile directory until GetDefaultProfile() is called.
+  ProfileManager::GetDefaultProfile();
+}
+
+}  // namespace
 
 class MagnificationManagerTest : public CrosInProcessBrowserTest,
                                  public content::NotificationObserver {
@@ -144,7 +158,7 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginOffToOff) {
   // Create a new profile once, to run the test with non-new profile.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  PrepareNonNewProfile(kTestUserName);
 
   // Sets pref to explicitly disable the magnifier.
   SetScreenMagnifierEnabledPref(false);
@@ -179,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginOffToOff) {
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginFullToOff) {
   // Create a new profile once, to run the test with non-new profile.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  PrepareNonNewProfile(kTestUserName);
 
   // Sets pref to explicitly disable the magnifier.
   SetScreenMagnifierEnabledPref(false);
@@ -213,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToOff) {
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginOffToFull) {
   // Create a new profile once, to run the test with non-new profile.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  PrepareNonNewProfile(kTestUserName);
 
   // Sets prefs to explicitly enable the magnifier.
   SetScreenMagnifierEnabledPref(true);
@@ -244,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginOffToFull) {
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginFullToFull) {
   // Create a new profile once, to run the test with non-new profile.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  PrepareNonNewProfile(kTestUserName);
 
   // Sets prefs to explicitly enable the magnifier.
   SetScreenMagnifierEnabledPref(true);
@@ -280,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToFull) {
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, PRE_LoginFullToUnset) {
   // Creates a new profile once, to run the test with non-new profile.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  PrepareNonNewProfile(kTestUserName);
 }
 
 IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToUnset) {
