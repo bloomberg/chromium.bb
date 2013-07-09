@@ -69,6 +69,11 @@ void _NPN_RegisterObjectOwner(NPP);
 // are objects owned by this identifier then they are released.
 void _NPN_UnregisterObjectOwner(NPP);
 
+// Returns true if the specified NPP identifier is a registered object owner.
+bool _NPN_IsObjectOwner(NPP);
+
+// Returns the NPP identifier of the specified object's owner, or null if the
+// object is not alive.
 NPP _NPN_GetObjectOwner(NPObject*);
 
 // Check to see if an object is registered with the runtime.

@@ -141,8 +141,6 @@ public:
 
     void updateSecurityOrigin();
     void clearScriptObjects();
-    void allowScriptObjectsForPlugin(Widget*);
-    void cleanupScriptObjectsForPlugin(Widget*);
 
     void clearForClose();
     void clearForOutOfMemory();
@@ -177,9 +175,6 @@ private:
 
     NPObject* m_windowScriptNPObject;
     OwnPtr<NPP_t> m_frameNPP;
-
-    typedef HashSet<NPP> PluginInstances;
-    PluginInstances m_pluginNPPs;
 };
 
 } // namespace WebCore

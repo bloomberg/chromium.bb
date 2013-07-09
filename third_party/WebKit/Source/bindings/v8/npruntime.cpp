@@ -422,7 +422,7 @@ void _NPN_RegisterObjectOwner(NPP owner)
 
 void _NPN_UnregisterObjectOwner(NPP owner)
 {
-    ASSERT(objectOwnerMap().find(owner) != objectOwnerMap().end());
+    ASSERT(_NPN_IsObjectOwner(owner));
     OwnPtr<NPObjectSet> set = objectOwnerMap().take(owner);
 
     for (NPObjectSet::iterator iter = set->begin(); iter != set->end(); ++iter) {
@@ -434,13 +434,18 @@ void _NPN_UnregisterObjectOwner(NPP owner)
         // Script objects hold a reference to their DOMWindow*, which is going
         // away if we're unregistering the associated owner NPObject. Clear it
         // out.
-        // TODO(wez): If the object is no longer "alive", why do we need this?
+        // FIXME: If the object is no longer "alive", why do we need this?
         if (V8NPObject* v8NpObject = npObjectToV8NPObject(npObject))
             v8NpObject->rootObject = 0;
 
         // Remove the JS references to the object.
         forgetV8ObjectForNPObject(npObject);
     }
+}
+
+bool _NPN_IsObjectOwner(NPP owner)
+{
+    return objectOwnerMap().find(owner) != objectOwnerMap().end();
 }
 
 NPP _NPN_GetObjectOwner(NPObject* npObject)

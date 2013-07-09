@@ -49,6 +49,7 @@
 #include "HTMLNames.h"
 #include "WebPrintParams.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/npruntime_priv.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/GestureEvent.h"
 #include "core/dom/KeyboardEvent.h"
@@ -406,18 +407,13 @@ void WebPluginContainerImpl::reportGeometry()
 
 void WebPluginContainerImpl::allowScriptObjects()
 {
-    ASSERT(m_element);
-    Frame* frame = m_element->document()->frame();
-    ASSERT(frame);
-    frame->script()->allowScriptObjectsForPlugin(this);
+    _NPN_RegisterObjectOwner(pluginNPP());
 }
 
 void WebPluginContainerImpl::clearScriptObjects()
 {
-    ASSERT(m_element);
-    Frame* frame = m_element->document()->frame();
-    ASSERT(frame);
-    frame->script()->cleanupScriptObjectsForPlugin(this);
+    if (_NPN_IsObjectOwner(pluginNPP()))
+        _NPN_UnregisterObjectOwner(pluginNPP());
 }
 
 NPObject* WebPluginContainerImpl::scriptableObjectForElement()

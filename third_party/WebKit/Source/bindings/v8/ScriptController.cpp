@@ -105,8 +105,6 @@ ScriptController::~ScriptController()
         _NPN_UnregisterObjectOwner(m_frameNPP.get());
         m_frameNPP.clear();
     }
-
-    ASSERT(m_pluginNPPs.isEmpty());
 }
 
 void ScriptController::clearScriptObjects()
@@ -421,26 +419,6 @@ PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widge
     _NPN_ReleaseObject(npObject);
 
     return V8ScriptInstance::create(wrapper);
-}
-
-void ScriptController::allowScriptObjectsForPlugin(Widget* widget)
-{
-    ASSERT(widget->isPluginView());
-    ASSERT(toPluginView(widget)->pluginNPP());
-
-    // Register the plugin as an object owner.
-    _NPN_RegisterObjectOwner(toPluginView(widget)->pluginNPP());
-    m_pluginNPPs.add(toPluginView(widget)->pluginNPP());
-}
-
-void ScriptController::cleanupScriptObjectsForPlugin(Widget* widget)
-{
-    ASSERT(widget->isPluginView());
-    NPP instance = toPluginView(widget)->pluginNPP();
-    if (m_pluginNPPs.find(instance) == m_pluginNPPs.end())
-        return;
-    _NPN_UnregisterObjectOwner(instance);
-    m_pluginNPPs.remove(instance);
 }
 
 V8Extensions& ScriptController::registeredExtensions()
