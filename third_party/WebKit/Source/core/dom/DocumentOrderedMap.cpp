@@ -36,6 +36,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"
 #include <wtf/MemoryInstrumentationHashCountedSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -61,7 +62,7 @@ inline bool keyMatchesLowercasedMapName(AtomicStringImpl* key, Element* element)
 
 inline bool keyMatchesLabelForAttribute(AtomicStringImpl* key, Element* element)
 {
-    return element->hasTagName(labelTag) && element->getAttribute(forAttr).impl() == key;
+    return isHTMLLabelElement(element) && element->getAttribute(forAttr).impl() == key;
 }
 
 void DocumentOrderedMap::clear()

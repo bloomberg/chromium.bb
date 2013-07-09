@@ -58,7 +58,7 @@ WebLabelElement& WebLabelElement::operator=(const PassRefPtr<HTMLLabelElement>& 
 
 WebLabelElement::operator PassRefPtr<HTMLLabelElement>() const
 {
-    return static_cast<HTMLLabelElement*>(m_private.get());
+    return toHTMLLabelElement(m_private.get());
 }
 
 } // namespace WebKit

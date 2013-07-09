@@ -208,7 +208,7 @@ AccessibilityRole AccessibilityNodeObject::determineAccessibilityRole()
         return DivRole;
     if (node()->hasTagName(pTag))
         return ParagraphRole;
-    if (node()->hasTagName(labelTag))
+    if (isHTMLLabelElement(node()))
         return LabelRole;
     if (node()->isFocusable())
         return GroupRole;
@@ -350,8 +350,8 @@ HTMLLabelElement* AccessibilityNodeObject::labelForElement(Element* element) con
     }
 
     for (Element* parent = element->parentElement(); parent; parent = parent->parentElement()) {
-        if (parent->hasTagName(labelTag))
-            return static_cast<HTMLLabelElement*>(parent);
+        if (isHTMLLabelElement(parent))
+            return toHTMLLabelElement(parent);
     }
 
     return 0;
