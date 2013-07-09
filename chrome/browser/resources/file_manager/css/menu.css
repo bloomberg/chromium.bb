@@ -18,6 +18,7 @@ menu > * {
   box-sizing: border-box;
   display: block;
   text-align: start;
+  width: 100%;
 }
 
 menu > hr {
