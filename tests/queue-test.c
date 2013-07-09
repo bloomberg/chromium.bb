@@ -266,8 +266,9 @@ TEST(queue)
 	}
 
 	for (i = 0; i < ARRAY_LENGTH(dummy_interfaces); i++)
-		wl_display_add_global(display.display, dummy_interfaces[i],
-				      NULL, dummy_bind);
+		wl_global_create(display.display, dummy_interfaces[i],
+				 dummy_interfaces[i]->version,
+				 NULL, dummy_bind);
 
 	ret = wl_display_add_socket(display.display, SOCKET_NAME);
 	assert(ret == 0);

@@ -258,7 +258,7 @@ bind_shm(struct wl_client *client,
 WL_EXPORT int
 wl_display_init_shm(struct wl_display *display)
 {
-	if (!wl_display_add_global(display, &wl_shm_interface, NULL, bind_shm))
+	if (!wl_global_create(display, &wl_shm_interface, 1, NULL, bind_shm))
 		return -1;
 
 	return 0;
