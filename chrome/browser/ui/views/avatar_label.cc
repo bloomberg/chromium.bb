@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -27,32 +28,33 @@ class AvatarLabelBorder: public views::TextButtonBorder {
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
 
  private:
-  scoped_ptr<views::Painter> hot_painter_;
   scoped_ptr<views::Painter> painter_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarLabelBorder);
 };
 
 AvatarLabelBorder::AvatarLabelBorder(ui::ThemeProvider* theme_provider) {
-  const int kHorizontalInset = 10;
-  const int kVerticalInset = 2;
-  SetInsets(gfx::Insets(
-      kVerticalInset, kHorizontalInset, kVerticalInset, kHorizontalInset));
-  SkColor color = theme_provider->GetColor(
-      ThemeProperties::COLOR_MANAGED_USER_LABEL_BACKGROUND);
-  SkColor color2 = color_utils::BlendTowardOppositeLuminance(color, 0x20);
-  painter_.reset(views::Painter::CreateVerticalGradient(color, color2));
-  hot_painter_.reset(views::Painter::CreateVerticalGradient(color2, color));
+  const int kHorizontalInsetRight = 10;
+  const int kHorizontalInsetLeft = 43;
+  const int kVerticalInsetTop = 3;
+  const int kVerticalInsetBottom = 3;
+  // We want to align with the top of the tab. This works if the BaseFont size
+  // is 13. If it is smaller, we need to increase the TopInset accordingly.
+  gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont);
+  int difference = (font.GetFontSize() < 13) ? 13 - font.GetFontSize() : 0;
+  int addToTop = difference / 2;
+  int addToBottom = difference - addToTop;
+  SetInsets(gfx::Insets(kVerticalInsetTop + addToTop,
+                        kHorizontalInsetLeft,
+                        kVerticalInsetBottom + addToBottom,
+                        kHorizontalInsetRight));
+  const int kImages[] = IMAGE_GRID(IDR_MANAGED_USER_LABEL);
+  painter_.reset(views::Painter::CreateImageGridPainter(kImages));
 }
 
 void AvatarLabelBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
-  const views::TextButton* button =
-      static_cast<const views::TextButton*>(&view);
-  if (button->state() == views::TextButton::STATE_HOVERED ||
-      button->state() == views::TextButton::STATE_PRESSED)
-    hot_painter_->Paint(canvas, view.size());
-  else
-    painter_->Paint(canvas, view.size());
+  painter_->Paint(canvas, view.size());
 }
 
 }  // namespace
@@ -64,7 +66,7 @@ AvatarLabel::AvatarLabel(BrowserView* browser_view,
       browser_view_(browser_view),
       theme_provider_(theme_provider) {
   SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::SmallFont));
+      ui::ResourceBundle::BaseFont));
   ClearMaxTextSize();
   set_border(new AvatarLabelBorder(theme_provider));
   UpdateLabelStyle();

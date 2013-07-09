@@ -235,12 +235,17 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     return gfx::Rect();
 
   gfx::Rect bounds = GetBoundsForTabStripAndAvatarArea(tabstrip);
-  int space_left_of_tabstrip = browser_view()->ShouldShowAvatar() ?
-      (kAvatarLeftSpacing + avatar_bounds_.width() + kAvatarRightSpacing) :
-      kTabStripIndent;
-  if (avatar_label() && avatar_label()->bounds().width()) {
-    space_left_of_tabstrip += views::kRelatedControlHorizontalSpacing +
-                              avatar_label()->bounds().width();
+  int space_left_of_tabstrip = kTabStripIndent;
+  if (browser_view()->ShouldShowAvatar()) {
+    if (avatar_label() && avatar_label()->bounds().width()) {
+      // Space between the right edge of the avatar label and the tabstrip.
+      const int kAvatarLabelRightSpacing = -10;
+      space_left_of_tabstrip =
+          avatar_label()->bounds().right() + kAvatarLabelRightSpacing;
+    } else {
+      space_left_of_tabstrip =
+          kAvatarLeftSpacing + avatar_bounds_.width() + kAvatarRightSpacing;
+    }
   }
   bounds.Inset(space_left_of_tabstrip, 0, 0, 0);
   return bounds;
@@ -1030,13 +1035,17 @@ void OpaqueBrowserFrameView::LayoutAvatar() {
     avatar_button()->SetBoundsRect(avatar_bounds_);
 
   if (avatar_label()) {
-    gfx::Size size = avatar_label()->GetPreferredSize();
-    int label_height = std::min(avatar_bounds_.height(), size.height());
+    // Space between the bottom of the avatar and the bottom of the avatar
+    // label.
+    const int kAvatarLabelBottomSpacing = 3;
+    // Space between the frame border and the left edge of the avatar label.
+    const int kAvatarLabelLeftSpacing = -1;
+    gfx::Size label_size = avatar_label()->GetPreferredSize();
     gfx::Rect label_bounds(
-        avatar_bounds_.right() + views::kRelatedControlHorizontalSpacing,
-        avatar_y + (avatar_bounds_.height() - label_height) / 2,
-        size.width(),
-        browser_view()->ShouldShowAvatar() ? size.height() : 0);
+        FrameBorderThickness(false) + kAvatarLabelLeftSpacing,
+        avatar_bottom - kAvatarLabelBottomSpacing - label_size.height(),
+        label_size.width(),
+        browser_view()->ShouldShowAvatar() ? label_size.height() : 0);
     avatar_label()->SetBoundsRect(label_bounds);
   }
 }

@@ -56,9 +56,6 @@ void BrowserNonClientFrameView::OnThemeChanged() {
 void BrowserNonClientFrameView::UpdateAvatarInfo() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
-      avatar_button_ = new AvatarMenuButton(browser_view_->browser(),
-                                            browser_view_->IsOffTheRecord());
-      AddChildView(avatar_button_);
 #if defined(ENABLE_MANAGED_USERS)
       Profile* profile = browser_view_->browser()->profile();
       ManagedUserService* service =
@@ -69,6 +66,9 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
         AddChildView(avatar_label_);
       }
 #endif
+      avatar_button_ = new AvatarMenuButton(browser_view_->browser(),
+                                            browser_view_->IsOffTheRecord());
+      AddChildView(avatar_button_);
       frame_->GetRootView()->Layout();
     }
   } else if (avatar_button_) {
