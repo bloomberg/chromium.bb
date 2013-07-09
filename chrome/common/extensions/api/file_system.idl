@@ -91,7 +91,10 @@ namespace fileSystem {
 
     // Returns an id that can be passed to restoreEntry to regain access to a
     // given file entry. Only the 500 most recently used entries are retained,
-    // where calls to retainEntry and restoreEntry count as use.
+    // where calls to retainEntry and restoreEntry count as use. If the app has
+    // the 'retainEntries' permission under 'fileSystem', entries are retained
+    // indefinitely. Otherwise, entries are retained only while the app is
+    // running and across restarts.
     static DOMString retainEntry([instanceOf=FileEntry] object fileEntry);
   };
 };
