@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_
 #define CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -12,38 +13,35 @@
 #include "base/strings/string16.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
 
-// This namespace provides various helpers that extend the functionality around
+// This file provides various helpers that extend the functionality around
 // base::FieldTrial.
 //
-// This includes a simple API used to handle getting and setting
-// data related to Google-specific variations in the browser. This is meant to
-// be an extension to the base::FieldTrial for Google-specific functionality.
+// This includes several simple APIs to handle getting and setting additional
+// data related to Chrome variations, such as parameters and Google variation
+// IDs. These APIs are meant to extend the base::FieldTrial APIs to offer extra
+// functionality that is not offered by the simpler base::FieldTrial APIs.
 //
-// These calls are meant to be made directly after appending all your groups to
-// a FieldTrial (for associating IDs) and any time after the group selection has
-// been done (for retrieving IDs).
+// The AssociateGoogleVariationID and AssociateVariationParams functions are
+// generally meant to be called by the VariationsService based on server-side
+// variation configs, but may also be used for client-only field trials by
+// invoking them directly after appending all the groups to a FieldTrial.
 //
-// Typical usage looks like this:
+// Experiment code can then use the getter APIs to retrieve variation parameters
+// or IDs:
 //
-// // Set up your trial and groups as usual.
-// FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-//     "trial", 1000, "default", 2012, 12, 31, NULL);
-// const int kHighMemGroup = trial->AppendGroup("HighMem", 20);
-// const int kLowMemGroup = trial->AppendGroup("LowMem", 20);
-// // All groups are now created. We want to associate
-// // chrome_variation::VariationIDs with them, so do that now.
-// AssociateGoogleVariationID("trial", "default", chrome_variations::kValueA);
-// AssociateGoogleVariationID("trial", "HighMem", chrome_variations::kValueB);
-// AssociateGoogleVariationID("trial", "LowMem",  chrome_variations::kValueC);
+//  std::map<std::string, std::string> params;
+//  if (GetVariationParams("trial", &params)) {
+//    // use |params|
+//  }
 //
-// // Elsewhere, we are interested in retrieving the VariationID associated
-// // with |trial|.
-// chrome_variations::VariationID id =
-//     GetGoogleVariationID(trial->name(), trial->group_name());
-// // Do stuff with |id|...
+//  std::string value = GetVariationParamValue("trial", "param_x");
+//  // use |value|, which will be "" if it does not exist
 //
-// The AssociateGoogleVariationID and GetGoogleVariationID API methods are
-// thread safe.
+// VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial",
+//                                       "group1");
+// if (id != chrome_variations::kEmptyID) {
+//   // use |id|
+// }
 
 namespace chrome_variations {
 
@@ -85,8 +83,7 @@ struct ActiveGroupIdCompare {
 // with unique ActiveGroupIds for each Field Trial that has a chosen group.
 // Field Trials for which a group has not been chosen yet are NOT returned in
 // this list.
-void GetFieldTrialActiveGroupIds(
-    std::vector<ActiveGroupId>* name_group_ids);
+void GetFieldTrialActiveGroupIds(std::vector<ActiveGroupId>* name_group_ids);
 
 // Fills the supplied vector |output| (which must be empty when called) with
 // unique string representations of ActiveGroupIds for each Field Trial that
@@ -101,28 +98,55 @@ void GetFieldTrialActiveGroupIdsAsStrings(std::vector<string16>* output);
 // |group_name|. This must be called whenever a FieldTrial is prepared (create
 // the trial and append groups) and needs to have a
 // chrome_variations::VariationID associated with it so Google servers can
-// recognize the FieldTrial.
+// recognize the FieldTrial. Thread safe.
 void AssociateGoogleVariationID(IDCollectionKey key,
                                 const std::string& trial_name,
                                 const std::string& group_name,
-                                chrome_variations::VariationID id);
+                                VariationID id);
 
-// As above, but overwrites any previously set id.
+// As above, but overwrites any previously set id. Thread safe.
 void AssociateGoogleVariationIDForce(IDCollectionKey key,
                                      const std::string& trial_name,
                                      const std::string& group_name,
-                                     chrome_variations::VariationID id);
+                                     VariationID id);
 
 // Retrieve the chrome_variations::VariationID associated with a FieldTrial
 // group for collection |key|. The group is denoted by |trial_name| and
 // |group_name|. This will return chrome_variations::kEmptyID if there is
 // currently no associated ID for the named group. This API can be nicely
 // combined with FieldTrial::GetActiveFieldTrialGroups() to enumerate the
-// variation IDs for all active FieldTrial groups.
-chrome_variations::VariationID GetGoogleVariationID(
-    IDCollectionKey key,
-    const std::string& trial_name,
-    const std::string& group_name);
+// variation IDs for all active FieldTrial groups. Thread safe.
+VariationID GetGoogleVariationID(IDCollectionKey key,
+                                 const std::string& trial_name,
+                                 const std::string& group_name);
+
+// Associates the specified set of key-value |params| with the variation
+// specified by |trial_name| and |group_name|. Fails and returns false if the
+// specified variation already has params associated with it or the field trial
+// is already active (group() has been called on it). Thread safe.
+bool AssociateVariationParams(const std::string& trial_name,
+                              const std::string& group_name,
+                              const std::map<std::string, std::string>& params);
+
+// Retrieves the set of key-value |params| for the variation associated with
+// the specified field trial, based on its selected group. If the field trial
+// does not exist or its selected group does not have any parameters associated
+// with it, returns false and does not modify |params|. Calling this function
+// will result in the field trial being marked as active if found (i.e. group()
+// will be called on it), if it wasn't already. Currently, this information is
+// only available from the browser process. Thread safe.
+bool GetVariationParams(const std::string& trial_name,
+                        std::map<std::string, std::string>* params);
+
+// Retrieves a specific parameter value corresponding to |param_name| for the
+// variation associated with the specified field trial, based on its selected
+// group. If the field trial does not exist or the specified parameter does not
+// exist, returns an empty string. Calling this function will result in the
+// field trial being marked as active if found (i.e. group() will be called on
+// it), if it wasn't already. Currently, this information is only available from
+// the browser process. Thread safe.
+std::string GetVariationParamValue(const std::string& trial_name,
+                                   const std::string& param_name);
 
 // Generates variation chunks from |variation_strings| that are suitable for
 // crash reporting.
@@ -137,7 +161,7 @@ void SetChildProcessLoggingVariationList();
 // Google Update VariationID associated with them. This will return an empty
 // string if there are no such groups.
 string16 BuildGoogleUpdateExperimentLabel(
-    base::FieldTrial::ActiveGroups& active_groups);
+    const base::FieldTrial::ActiveGroups& active_groups);
 
 // Creates a final combined experiment labels string with |variation_labels|
 // and |other_labels|, appropriately appending a separator based on their

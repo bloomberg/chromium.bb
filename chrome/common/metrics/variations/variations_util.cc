@@ -103,6 +103,72 @@ class GroupMapAccessor {
   DISALLOW_COPY_AND_ASSIGN(GroupMapAccessor);
 };
 
+// Singleton helper class that keeps track of the parameters of all variations
+// and ensures access to these is thread-safe.
+class VariationsParamAssociator {
+ public:
+  typedef std::pair<std::string, std::string> VariationKey;
+  typedef std::map<std::string, std::string> VariationParams;
+
+  // Retrieve the singleton.
+  static VariationsParamAssociator* GetInstance() {
+    return Singleton<VariationsParamAssociator>::get();
+  }
+
+  bool AssociateVariationParams(const std::string& trial_name,
+                                const std::string& group_name,
+                                const VariationParams& params) {
+    base::AutoLock scoped_lock(lock_);
+
+    if (IsFieldTrialActive(trial_name))
+      return false;
+
+    const VariationKey key = VariationKey(trial_name, group_name);
+    if (ContainsKey(variation_params_, key))
+      return false;
+
+    variation_params_[key] = params;
+    return true;
+  }
+
+  bool GetVariationParams(const std::string& trial_name,
+                          VariationParams* params) {
+    base::AutoLock scoped_lock(lock_);
+
+    const std::string group_name =
+        base::FieldTrialList::FindFullName(trial_name);
+    const VariationKey key = VariationKey(trial_name, group_name);
+    if (!ContainsKey(variation_params_, key))
+      return false;
+
+    *params = variation_params_[key];
+    return true;
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<VariationsParamAssociator>;
+
+  VariationsParamAssociator() {}
+  ~VariationsParamAssociator() {}
+
+  // Tests whether a field trial is active (i.e. group() has been called on it).
+  // TODO(asvitkine): Expose this as an API on base::FieldTrial.
+  bool IsFieldTrialActive(const std::string& trial_name) {
+    base::FieldTrial::ActiveGroups active_groups;
+    base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+    for (size_t i = 0; i < active_groups.size(); ++i) {
+      if (active_groups[i].trial_name == trial_name)
+        return true;
+    }
+    return false;
+  }
+
+  base::Lock lock_;
+  std::map<VariationKey, VariationParams> variation_params_;
+
+  DISALLOW_COPY_AND_ASSIGN(VariationsParamAssociator);
+};
+
 ActiveGroupId MakeActiveGroupId(const std::string& trial_name,
                                 const std::string& group_name) {
   ActiveGroupId id;
@@ -171,7 +237,7 @@ void GetFieldTrialActiveGroupIdsAsStrings(
 void AssociateGoogleVariationID(IDCollectionKey key,
                                 const std::string& trial_name,
                                 const std::string& group_name,
-                                chrome_variations::VariationID id) {
+                                VariationID id) {
   GroupMapAccessor::GetInstance()->AssociateID(
       key, MakeActiveGroupId(trial_name, group_name), id, false);
 }
@@ -179,17 +245,42 @@ void AssociateGoogleVariationID(IDCollectionKey key,
 void AssociateGoogleVariationIDForce(IDCollectionKey key,
                                      const std::string& trial_name,
                                      const std::string& group_name,
-                                     chrome_variations::VariationID id) {
+                                     VariationID id) {
   GroupMapAccessor::GetInstance()->AssociateID(
       key, MakeActiveGroupId(trial_name, group_name), id, true);
 }
 
-chrome_variations::VariationID GetGoogleVariationID(
-    IDCollectionKey key,
-    const std::string& trial_name,
-    const std::string& group_name) {
+VariationID GetGoogleVariationID(IDCollectionKey key,
+                                 const std::string& trial_name,
+                                 const std::string& group_name) {
   return GroupMapAccessor::GetInstance()->GetID(
       key, MakeActiveGroupId(trial_name, group_name));
+}
+
+
+bool AssociateVariationParams(
+    const std::string& trial_name,
+    const std::string& group_name,
+    const std::map<std::string, std::string>& params) {
+  return VariationsParamAssociator::GetInstance()->AssociateVariationParams(
+      trial_name, group_name, params);
+}
+
+bool GetVariationParams(const std::string& trial_name,
+                        std::map<std::string, std::string>* params) {
+  return VariationsParamAssociator::GetInstance()->GetVariationParams(
+      trial_name, params);
+}
+
+std::string GetVariationParamValue(const std::string& trial_name,
+                                   const std::string& param_name) {
+  std::map<std::string, std::string> params;
+  if (GetVariationParams(trial_name, &params)) {
+    std::map<std::string, std::string>::iterator it = params.find(param_name);
+    if (it != params.end())
+      return it->second;
+  }
+  return std::string();
 }
 
 void GenerateVariationChunks(const std::vector<string16>& experiments,
@@ -218,7 +309,7 @@ void SetChildProcessLoggingVariationList() {
 }
 
 string16 BuildGoogleUpdateExperimentLabel(
-    base::FieldTrial::ActiveGroups& active_groups) {
+    const base::FieldTrial::ActiveGroups& active_groups) {
   string16 experiment_labels;
   int counter = 0;
 

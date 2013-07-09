@@ -745,6 +745,15 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
 
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);
+
+    std::map<std::string, std::string> params;
+    for (int j = 0; j < experiment.param_size(); j++) {
+      if (experiment.param(j).has_name() && experiment.param(j).has_value())
+        params[experiment.param(j).name()] = experiment.param(j).value();
+    }
+    if (!params.empty())
+      AssociateVariationParams(study.name(), experiment.name(), params);
+
     // Groups with flags can't be selected randomly, so we don't add them to
     // the field trial.
     if (experiment.has_forcing_flag())

@@ -99,6 +99,7 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceGroupWithFlag2);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ForceFirstGroupWithFlag);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DontChooseGroupWithFlag);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, VariationParams);
 
   // Creates the VariationsService with the given |local_state| prefs service.
   // Use the |Create| factory method to create a VariationsService.

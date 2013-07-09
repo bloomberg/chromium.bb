@@ -43,8 +43,19 @@ message Study {
 
   // An experiment within the study.
   //
-  // Next tag: 6
+  // Next tag: 7
   message Experiment {
+    // A named parameter value for this experiment.
+    //
+    // Next tag: 3
+    message Param {
+      // The name of the parameter.
+      optional string name = 1;
+
+      // The value of the parameter.
+      optional string value = 2;
+    }
+
     // The name of the experiment within the study.
     // Ex: "bucketA"
     required string name = 1;
@@ -65,6 +76,9 @@ message Study {
     // assigned to this experiment unless that flag is present in Chrome's
     // command line.
     optional string forcing_flag = 5;
+
+    // Parameter values for this experiment.
+    repeated Param param = 6; 
   }
 
   // List of experiments in this study. This list should include the default /

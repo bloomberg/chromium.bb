@@ -15,6 +15,7 @@
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/web_resource/resource_request_allowed_notifier_test_util.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
@@ -156,7 +157,7 @@ const base::Time kReferenceTime = base::Time::FromDoubleT(1368428400);
 
 }  // namespace
 
-class VariationsServiceTest : public testing::Test {
+class VariationsServiceTest : public ::testing::Test {
  protected:
   VariationsServiceTest() {}
 
@@ -781,13 +782,11 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
 TEST_F(VariationsServiceTest, ForceGroupWithFlag1) {
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
 
-  base::FieldTrialList field_trial_list_(NULL);
-
-  TestVariationsService variations_service(new TestRequestAllowedNotifier,
-                                           NULL);
+  base::FieldTrialList field_trial_list(NULL);
+  TestVariationsService service(new TestRequestAllowedNotifier, NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+  service.CreateTrialFromStudy(study, kReferenceTime);
 
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
@@ -797,13 +796,11 @@ TEST_F(VariationsServiceTest, ForceGroupWithFlag1) {
 TEST_F(VariationsServiceTest, ForceGroupWithFlag2) {
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
 
-  base::FieldTrialList field_trial_list_(NULL);
-
-  TestVariationsService variations_service(new TestRequestAllowedNotifier,
-                                           NULL);
+  base::FieldTrialList field_trial_list(NULL);
+  TestVariationsService service(new TestRequestAllowedNotifier, NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+  service.CreateTrialFromStudy(study, kReferenceTime);
 
   EXPECT_EQ(kFlagGroup2Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
@@ -814,31 +811,56 @@ TEST_F(VariationsServiceTest, ForceFirstGroupWithFlag) {
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
 
-  base::FieldTrialList field_trial_list_(NULL);
-
-  TestVariationsService variations_service(new TestRequestAllowedNotifier,
-                                           NULL);
+  base::FieldTrialList field_trial_list(NULL);
+  TestVariationsService service(new TestRequestAllowedNotifier, NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+  service.CreateTrialFromStudy(study, kReferenceTime);
 
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
 TEST_F(VariationsServiceTest, DontChooseGroupWithFlag) {
-  base::FieldTrialList field_trial_list_(NULL);
-
-  TestVariationsService variations_service(new TestRequestAllowedNotifier,
-                                           NULL);
+  base::FieldTrialList field_trial_list(NULL);
+  TestVariationsService service(new TestRequestAllowedNotifier, NULL);
 
   // The two flag groups are given high probability, which would normaly make
   // them very likely to be choosen. They won't be chosen since flag groups are
   // never chosen when their flag isn't preasent.
   Study study = CreateStudyWithFlagGroups(1, 999, 999);
-  variations_service.CreateTrialFromStudy(study, kReferenceTime);
+  service.CreateTrialFromStudy(study, kReferenceTime);
   EXPECT_EQ(kNonFlagGroupName,
             base::FieldTrialList::FindFullName(kFlagStudyName));
+}
+
+TEST_F(VariationsServiceTest, VariationParams) {
+  base::FieldTrialList field_trial_list(NULL);
+  TestVariationsService service(new TestRequestAllowedNotifier, NULL);
+
+  Study study;
+  study.set_name("Study1");
+  study.set_default_experiment_name("B");
+
+  Study_Experiment* experiment1 = study.add_experiment();
+  experiment1->set_name("A");
+  experiment1->set_probability_weight(1);
+  Study_Experiment_Param* param = experiment1->add_param();
+  param->set_name("x");
+  param->set_value("y");
+
+  Study_Experiment* experiment2 = study.add_experiment();
+  experiment2->set_name("B");
+  experiment2->set_probability_weight(0);
+
+  service.CreateTrialFromStudy(study, kReferenceTime);
+  EXPECT_EQ("y", GetVariationParamValue("Study1", "x"));
+
+  study.set_name("Study2");
+  experiment1->set_probability_weight(0);
+  experiment2->set_probability_weight(1);
+  service.CreateTrialFromStudy(study, kReferenceTime);
+  EXPECT_EQ(std::string(), GetVariationParamValue("Study2", "x"));
 }
 
 }  // namespace chrome_variations
