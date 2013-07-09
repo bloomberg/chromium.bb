@@ -58,7 +58,7 @@ private:
     bool fillBMPGlyphs(SVGFontElement*, GlyphPage* , unsigned offset, unsigned length, UChar* buffer, const SimpleFontData*) const;
     bool fillNonBMPGlyphs(SVGFontElement*, GlyphPage* , unsigned offset, unsigned length, UChar* buffer, const SimpleFontData*) const;
 
-    String createStringWithMirroredCharacters(const UChar* characters, unsigned length) const;
+    String createStringWithMirroredCharacters(const String&) const;
 
     // Ths SVGFontFaceElement is kept alive --
     // 1) in the external font case: by the CSSFontFaceSource, which holds a reference to the external SVG document
