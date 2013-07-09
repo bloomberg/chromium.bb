@@ -96,6 +96,33 @@ struct ComposedCallback<void(T1, scoped_ptr<T2, D2>, T3, T4)> {
   }
 };
 
+// GetDefaultValue returns a value constructed by the default constructor.
+template<typename T> struct DefaultValueCreator {
+  static T GetDefaultValue() { return T(); }
+};
+template<typename T> struct DefaultValueCreator<const T&> {
+  static T GetDefaultValue() { return T(); }
+};
+
+// Helper of CreateErrorRunCallback implementation.
+// Provides:
+// - ResultType; the type of the Callback which should be returned by
+//     CreateErrorRunCallback.
+// - Run(): a static function which takes the original |callback| and |error|,
+//     and runs the |callback|.Run() with the error code and default values
+//     for remaining arguments.
+template<typename CallbackType> struct CreateErrorRunCallbackHelper;
+
+// CreateErrorRunCallback with two arguments.
+template<typename ErrorType, typename P1>
+struct CreateErrorRunCallbackHelper<void(ErrorType, P1)> {
+  typedef base::Callback<void(ErrorType)> ResultType;
+  static void Run(
+      const base::Callback<void(ErrorType, P1)>& callback, ErrorType error) {
+    callback.Run(error, DefaultValueCreator<P1>::GetDefaultValue());
+  }
+};
+
 }  // namespace internal
 
 // Returns callback that takes arguments (arg1, arg2, ...), create a closure
@@ -119,6 +146,15 @@ CallbackType CreateRelayCallback(const CallbackType& callback) {
   return CreateComposedCallback(
       base::Bind(&RunTaskOnThread, base::MessageLoopProxy::current()),
       callback);
+}
+
+// Returns a callback with the tail parameter bound to its default value.
+// In other words, returned_callback.Run(error) runs callback.Run(error, T()).
+template<typename CallbackType>
+typename internal::CreateErrorRunCallbackHelper<CallbackType>::ResultType
+CreateErrorRunCallback(const base::Callback<CallbackType>& callback) {
+  return base::Bind(
+      &internal::CreateErrorRunCallbackHelper<CallbackType>::Run, callback);
 }
 
 }  // namespace google_apis
