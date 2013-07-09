@@ -172,6 +172,13 @@ void initializeWithoutV8(Platform* platform)
 
 void shutdown()
 {
+    shutdownWithoutV8();
+    // FIXME: shutdown V8 once all callsites that use initializeWithoutV8 are
+    // updated to use shutdownWithoutV8.
+}
+
+void shutdownWithoutV8()
+{
     // WebKit might have been initialized without V8, so be careful not to invoke
     // V8 specific functions, if V8 was not properly initialized.
     if (s_endOfTaskRunner) {
