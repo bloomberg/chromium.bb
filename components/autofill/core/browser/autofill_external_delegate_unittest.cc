@@ -42,6 +42,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   // Mock methods to enable testability.
   MOCK_METHOD1(SetRendererActionOnFormDataReception,
                void(RendererFormDataAction action));
+  MOCK_METHOD0(RendererShouldClearForm, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
@@ -390,6 +391,17 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
   external_delegate_->DidAcceptSuggestion(
       suggestions[0],
       WebAutofillClient::MenuItemIDPasswordEntry);
+}
+
+// Test that the driver is directed to clear the form after being notified that
+// the user accepted the suggestion to clear the form.
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearForm) {
+  EXPECT_CALL(manager_delegate_, HideAutofillPopup());
+  EXPECT_CALL(*autofill_driver_, RendererShouldClearForm());
+
+  external_delegate_->DidAcceptSuggestion(
+      base::string16(),
+      WebAutofillClient::MenuItemIDClearForm);
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {

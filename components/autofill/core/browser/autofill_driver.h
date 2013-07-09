@@ -54,6 +54,9 @@ class AutofillDriver {
   // command-line flag is not set.
   virtual void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) = 0;
+
+  // Tells the renderer to clear the currently displayed Autofill results.
+  virtual void RendererShouldClearForm() = 0;
 };
 
 }  // namespace autofill

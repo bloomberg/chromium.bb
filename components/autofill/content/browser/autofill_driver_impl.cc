@@ -133,6 +133,13 @@ void AutofillDriverImpl::SendAutofillTypePredictionsToRenderer(
                                                     type_predictions));
 }
 
+void AutofillDriverImpl::RendererShouldClearForm() {
+  if (!RendererIsAvailable())
+    return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
+}
+
 bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillDriverImpl, message)

@@ -31,6 +31,7 @@ class TestAutofillDriver : public AutofillDriver,
                                       const FormData& data) OVERRIDE;
   virtual void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) OVERRIDE;
+  virtual void RendererShouldClearForm() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);

@@ -198,7 +198,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     autofill_manager_->OnShowAutofillDialog();
   } else if (identifier == WebAutofillClient::MenuItemIDClearForm) {
     // User selected 'Clear form'.
-    host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
+    autofill_driver_->RendererShouldClearForm();
   } else if (identifier == WebAutofillClient::MenuItemIDPasswordEntry) {
     bool success = password_autofill_manager_.DidAcceptAutofillSuggestion(
         autofill_query_field_, value);

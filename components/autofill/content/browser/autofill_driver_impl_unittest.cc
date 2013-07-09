@@ -150,6 +150,19 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
     return true;
   }
 
+  // Searches for an |AutofillMsg_ClearForm| message in the queue of sent IPC
+  // messages. If none is present, returns false. Otherwise, clears the queue
+  // of sent messages and returns true.
+  bool GetClearFormMessage() {
+    const uint32 kMsgID = AutofillMsg_ClearForm::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    if (!message)
+      return false;
+    process()->sink().ClearMessages();
+    return true;
+  }
+
   scoped_ptr<TestAutofillManagerDelegate> test_manager_delegate_;
   scoped_ptr<TestAutofillDriverImpl> driver_;
 };
@@ -223,6 +236,11 @@ TEST_F(AutofillDriverImplTest, FillActionSentToRenderer) {
   driver_->SetRendererActionOnFormDataReception(
       AutofillDriver::FORM_DATA_ACTION_FILL);
   EXPECT_TRUE(GetSetAutofillActionFillMessage());
+}
+
+TEST_F(AutofillDriverImplTest, ClearFormSentToRenderer) {
+  driver_->RendererShouldClearForm();
+  EXPECT_TRUE(GetClearFormMessage());
 }
 
 }  // namespace autofill

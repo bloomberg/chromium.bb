@@ -31,4 +31,7 @@ void TestAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
 }
 
+void TestAutofillDriver::RendererShouldClearForm() {
+}
+
 }  // namespace autofill
