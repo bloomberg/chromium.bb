@@ -32,6 +32,7 @@
 namespace WebKit {
 
 class WebGraphicsContext3D;
+class WebExternalBitmap;
 struct WebExternalTextureMailbox;
 
 class WebTextureUpdater {
@@ -47,9 +48,10 @@ public:
     virtual unsigned prepareTexture(WebTextureUpdater&) = 0;
     virtual WebGraphicsContext3D* context() = 0;
 
-    // Returns true and provides a mailbox if a new frame is available.
-    // Returns false if no new data is available and the old mailbox is to be reused.
-    virtual bool prepareMailbox(WebExternalTextureMailbox*) = 0;
+    // Returns true and provides a mailbox if a new frame is available. If the WebExternalBitmap
+    // isn't 0, then it should also be filled in with the contents of this frame.
+    // Returns false if no new data is available and the old mailbox and bitmap are to be reused.
+    virtual bool prepareMailbox(WebExternalTextureMailbox*, WebExternalBitmap* = 0) = 0;
 
     // Notifies the client when a mailbox is no longer in use by the compositor and provides
     // a sync point to wait on before the mailbox could be consumes again by the client.

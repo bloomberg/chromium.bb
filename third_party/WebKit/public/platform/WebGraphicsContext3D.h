@@ -188,13 +188,6 @@ public:
     // WebGraphicsContext3D implementation.
     virtual void signalSyncPoint(unsigned syncPoint, WebGraphicsSyncPointCallback* callback) { delete callback; }
 
-    // Helper for software compositing path. Reads back the frame buffer into
-    // the memory region pointed to by "pixels" with size "bufferSize". It is
-    // expected that the storage for "pixels" covers (4 * width * height) bytes.
-    // The RGBA channels are packed into "pixels" using SkBitmap's byte
-    // ordering. Returns true on success.
-    virtual bool readBackFramebuffer(unsigned char* pixels, size_t bufferSize, WebGLId framebuffer, int width, int height) = 0;
-
     // Copies the contents of the off-screen render target used by the WebGL
     // context to the corresponding texture used by the compositor.
     virtual void prepareTexture() = 0;

@@ -170,9 +170,10 @@ WebGraphicsContext3D* Canvas2DLayerBridge::context()
     return m_context->webContext();
 }
 
-bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)
+bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox, WebKit::WebExternalBitmap* bitmap)
 {
 #if ENABLE(CANVAS_USES_MAILBOX)
+    ASSERT(!bitmap);
     // Release to skia textures that were previouosly released by the
     // compositor. We do this before acquiring the next snapshot in
     // order to cap maximum gpu memory consumption.

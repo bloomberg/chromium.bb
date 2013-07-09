@@ -95,7 +95,7 @@ TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithMailboxes)
     m_drawingBuffer->releaseResources();
 
     WebKit::WebExternalTextureMailbox mailbox;
-    EXPECT_FALSE(m_drawingBuffer->prepareMailbox(&mailbox));
+    EXPECT_FALSE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
 }
 
 } // namespace

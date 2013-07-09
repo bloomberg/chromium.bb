@@ -47,8 +47,6 @@ public:
 
     virtual void reshape(int width, int height) { }
 
-    virtual bool readBackFramebuffer(unsigned char* pixels, size_t bufferSize, WebGLId framebuffer, int width, int height) { return false; }
-
     virtual void prepareTexture() { }
 
     virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) { }

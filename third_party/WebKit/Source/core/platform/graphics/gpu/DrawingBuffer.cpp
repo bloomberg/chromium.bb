@@ -39,6 +39,7 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebGraphicsContext3D.h"
 
@@ -176,7 +177,7 @@ WebKit::WebGraphicsContext3D* DrawingBuffer::context()
     return m_context->webContext();
 }
 
-bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)
+bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox, WebKit::WebExternalBitmap* bitmap)
 {
     if (!m_context || !m_contentsChanged || !m_lastColorBuffer)
         return false;
@@ -186,6 +187,16 @@ bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox
     // Resolve the multisampled buffer into the texture referenced by m_lastColorBuffer mailbox.
     if (multisample())
         commit();
+
+    if (bitmap) {
+        bitmap->setSize(size());
+
+        unsigned char* pixels = bitmap->pixels();
+        bool needPremultiply = m_attributes.alpha && !m_attributes.premultipliedAlpha;
+        GraphicsContext3D::AlphaOp op = needPremultiply ? GraphicsContext3D::AlphaDoPremultiply : GraphicsContext3D::AlphaDoNothing;
+        if (pixels)
+            m_context->readBackFramebuffer(pixels, size().width(), size().height(), GraphicsContext3D::ReadbackSkia, op);
+    }
 
     // We must restore the texture binding since creating new textures,
     // consuming and producing mailboxes changes it.

@@ -42,6 +42,7 @@
 #include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
+class WebExternalBitmap;
 class WebExternalTextureLayer;
 class WebGraphicsContext3D;
 class WebLayer;
@@ -125,7 +126,7 @@ public:
     // WebExternalTextureLayerClient implementation.
     virtual unsigned prepareTexture(WebKit::WebTextureUpdater& updater) OVERRIDE;
     virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
-    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*) OVERRIDE;
+    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;
 
 private:
