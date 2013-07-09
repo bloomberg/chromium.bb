@@ -8,8 +8,8 @@
 #include <iterator>
 #include <string>
 
+#include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
@@ -271,19 +271,11 @@ PermissionMessages PermissionSet::GetPermissionMessages(
           PermissionMessage::kHostsAll,
           l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
     } else {
-      for (URLPatternSet::const_iterator i = effective_hosts_.begin();
-           i != effective_hosts_.end(); ++i) {
-        if (i->scheme() != chrome::kChromeUIScheme)
-          continue;
-        // chrome://favicon is the only URL for chrome:// scheme that we
-        // want to support. We want to deprecate the "chrome" scheme.
-        // We should not add any additional "host" here.
-        if (GURL(chrome::kChromeUIFaviconURL).host() != i->host())
-          continue;
-        messages.push_back(PermissionMessage(
-            PermissionMessage::kFavicon,
-            l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FAVICON)));
-      }
+      PermissionMessages additional_warnings =
+          GetChromeSchemePermissionWarnings(effective_hosts_);
+      for (size_t i = 0; i < additional_warnings.size(); ++i)
+        messages.push_back(additional_warnings[i]);
+
       std::set<std::string> hosts = GetDistinctHostsForDisplay();
       if (!hosts.empty())
         messages.push_back(PermissionMessage::CreateFromHostList(hosts));
@@ -429,8 +421,7 @@ bool PermissionSet::HasEffectiveAccessToAllHosts() const {
   return false;
 }
 
-bool PermissionSet::HasEffectiveAccessToURL(
-    const GURL& url) const {
+bool PermissionSet::HasEffectiveAccessToURL(const GURL& url) const {
   return effective_hosts().MatchesURL(url);
 }
 

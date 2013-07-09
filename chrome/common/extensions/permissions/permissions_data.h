@@ -64,6 +64,10 @@ class PermissionsData {
       const Extension* extension);
   static APIPermissionSet* GetInitialAPIPermissions(Extension* extension);
 
+  // Set the scriptable hosts for the given |extension| during initialization.
+  static void SetInitialScriptableHosts(Extension* extension,
+                                        const URLPatternSet& scriptable_hosts);
+
   // Return the active (runtime) permissions for the given |extension|.
   static scoped_refptr<const PermissionSet> GetActivePermissions(
       const Extension* extension);

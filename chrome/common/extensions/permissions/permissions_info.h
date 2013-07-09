@@ -17,8 +17,6 @@
 
 namespace extensions {
 
-class ChromeAPIPermissions;
-
 // A global object that holds the extension permission instances and provides
 // methods for accessing them.
 class PermissionsInfo {

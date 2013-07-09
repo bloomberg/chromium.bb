@@ -416,6 +416,9 @@ bool ContentScriptsHandler::Parse(Extension* extension, string16* error) {
   }
   extension->SetManifestData(keys::kContentScripts,
                              content_scripts_info.release());
+  PermissionsData::SetInitialScriptableHosts(
+      extension,
+      ContentScriptsInfo::GetScriptableHosts(extension));
   return true;
 }
 

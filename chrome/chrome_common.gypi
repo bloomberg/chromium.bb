@@ -291,6 +291,8 @@
         'common/extensions/permissions/bluetooth_permission_data.h',
         'common/extensions/permissions/chrome_api_permissions.cc',
         'common/extensions/permissions/chrome_api_permissions.h',
+        'common/extensions/permissions/chrome_scheme_hosts.cc',
+        'common/extensions/permissions/chrome_scheme_hosts.h',
         'common/extensions/permissions/media_galleries_permission.cc',
         'common/extensions/permissions/media_galleries_permission.h',
         'common/extensions/permissions/media_galleries_permission_data.cc',
