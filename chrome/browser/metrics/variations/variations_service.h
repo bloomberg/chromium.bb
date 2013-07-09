@@ -117,10 +117,8 @@ class VariationsService
   // Store the given seed data to the given local prefs. Note that |seed_data|
   // is assumed to be the raw serialized protobuf data stored in a string. It
   // will be Base64Encoded for storage. If the string is invalid or the encoding
-  // fails, the |local_prefs| is left as is and the function returns false.
-  bool StoreSeedData(const std::string& seed_data,
-                     const base::Time& seed_date,
-                     PrefService* local_prefs);
+  // fails, the existing prefs are left as is and the function returns false.
+  bool StoreSeedData(const std::string& seed_data, const base::Time& seed_date);
 
   // Returns whether |study| should be disabled according to its restriction
   // parameters. Uses |version_info| for min / max version checks,
@@ -160,11 +158,10 @@ class VariationsService
       const Study& study,
       base::FieldTrial::Probability* total_probability);
 
-  // Loads the Variations seed data from the given local prefs into |seed|. If
-  // there is a problem with loading, the pref value is cleared and false is
-  // returned. If successful, |seed| will contain the loaded data and true is
-  // returned.
-  bool LoadTrialsSeedFromPref(PrefService* local_prefs, TrialsSeed* seed);
+  // Loads the Variations seed data from local state into |seed|. If there is a
+  // problem with loading, the pref value is cleared and false is returned. If
+  // successful, |seed| will contain the loaded data and true is returned.
+  bool LoadTrialsSeedFromPref(TrialsSeed* seed);
 
   // Creates and registers a field trial from the |study| data. Disables the
   // trial if IsStudyExpired(study, reference_date) is true.

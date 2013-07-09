@@ -467,6 +467,7 @@ extern const char kVariationsLastFetchTime[];
 extern const char kVariationsRestrictParameter[];
 extern const char kVariationsSeed[];
 extern const char kVariationsSeedDate[];
+extern const char kVariationsSeedHash[];
 
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];

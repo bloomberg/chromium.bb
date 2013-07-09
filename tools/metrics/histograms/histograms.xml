@@ -12523,7 +12523,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Variations.SeedEmpty" enum="BooleanEmpty">
+<histogram name="Variations.SeedEmpty" enum="VariationsSeedEmpty">
   <summary>
     Records whether the variations seed in local state is empty (does not exist)
     on startup.
@@ -13592,11 +13592,6 @@ other types of suffix sets.
 <enum name="BooleanDuplicate" type="int">
   <int value="0" label="Not Duplicate"/>
   <int value="1" label="Duplicate"/>
-</enum>
-
-<enum name="BooleanEmpty" type="int">
-  <int value="0" label="Not Empty"/>
-  <int value="1" label="Empty"/>
 </enum>
 
 <enum name="BooleanEnabled" type="int">
@@ -19620,6 +19615,12 @@ other types of suffix sets.
   <int value="0" label="Resource requests allowed"/>
   <int value="1" label="Resource requests not allowed"/>
   <int value="2" label="Notified that requests became allowed"/>
+</enum>
+
+<enum name="VariationsSeedEmpty" type="int">
+  <int value="0" label="Seed Not Empty"/>
+  <int value="1" label="Seed Empty"/>
+  <int value="2" label="Seed Corrupt"/>
 </enum>
 
 <enum name="VAVDAH264DecoderFailure" type="int">

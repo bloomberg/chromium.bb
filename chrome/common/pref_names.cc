@@ -1333,6 +1333,9 @@ const char kVariationsSeed[] = "variations_seed";
 // 64-bit integer serialization of the base::Time from the last seed received.
 const char kVariationsSeedDate[] = "variations_seed_date";
 
+// SHA-1 hash of the serialized variations seed data.
+const char kVariationsSeedHash[] = "variations_seed_hash";
+
 // Where profile specific metrics are placed.
 const char kProfileMetrics[] = "user_experience_metrics.profiles";
 

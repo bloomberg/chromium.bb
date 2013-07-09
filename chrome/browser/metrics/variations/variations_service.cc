@@ -15,6 +15,8 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
@@ -157,6 +159,12 @@ std::string GetRestrictParameterPref(PrefService* local_state) {
   return parameter;
 }
 
+// Computes a hash of the serialized variations seed data.
+std::string HashSeed(const std::string& seed_data) {
+  const std::string sha1 = base::SHA1HashString(seed_data);
+  return base::HexEncode(sha1.data(), sha1.size());
+}
+
 enum ResourceRequestsAllowedState {
   RESOURCE_REQUESTS_ALLOWED,
   RESOURCE_REQUESTS_NOT_ALLOWED,
@@ -168,6 +176,18 @@ enum ResourceRequestsAllowedState {
 void RecordRequestsAllowedHistogram(ResourceRequestsAllowedState state) {
   UMA_HISTOGRAM_ENUMERATION("Variations.ResourceRequestsAllowed", state,
                             RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE);
+}
+
+enum VariationSeedEmptyState {
+  VARIATIONS_SEED_NOT_EMPTY,
+  VARIATIONS_SEED_EMPTY,
+  VARIATIONS_SEED_CORRUPT,
+  VARIATIONS_SEED_EMPTY_ENUM_SIZE,
+};
+
+void RecordVariationSeedEmptyHistogram(VariationSeedEmptyState state) {
+  UMA_HISTOGRAM_ENUMERATION("Variations.SeedEmpty", state,
+                            VARIATIONS_SEED_EMPTY_ENUM_SIZE);
 }
 
 }  // namespace
@@ -199,7 +219,7 @@ bool VariationsService::CreateTrialsFromSeed() {
   create_trials_from_seed_called_ = true;
 
   TrialsSeed seed;
-  if (!LoadTrialsSeedFromPref(local_state_, &seed))
+  if (!LoadTrialsSeedFromPref(&seed))
     return false;
 
   const int64 date_value = local_state_->GetInt64(prefs::kVariationsSeedDate);
@@ -297,6 +317,7 @@ std::string VariationsService::GetDefaultVariationsServerURLForTesting() {
 // static
 void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
+  registry->RegisterStringPref(prefs::kVariationsSeedHash, std::string());
   registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
                               base::Time().ToInternalValue());
   registry->RegisterInt64Pref(prefs::kVariationsLastFetchTime, 0);
@@ -419,7 +440,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   bool success = request->GetResponseAsString(&seed_data);
   DCHECK(success);
 
-  StoreSeedData(seed_data, response_date, local_state_);
+  StoreSeedData(seed_data, response_date);
 }
 
 void VariationsService::OnResourceRequestsAllowed() {
@@ -439,8 +460,7 @@ void VariationsService::OnResourceRequestsAllowed() {
 }
 
 bool VariationsService::StoreSeedData(const std::string& seed_data,
-                                      const base::Time& seed_date,
-                                      PrefService* local_prefs) {
+                                      const base::Time& seed_date) {
   if (seed_data.empty()) {
     VLOG(1) << "Variations Seed data from server is empty, rejecting the seed.";
     return false;
@@ -461,9 +481,10 @@ bool VariationsService::StoreSeedData(const std::string& seed_data,
     return false;
   }
 
-  local_prefs->SetString(prefs::kVariationsSeed, base64_seed_data);
-  local_prefs->SetInt64(prefs::kVariationsSeedDate,
-                        seed_date.ToInternalValue());
+  local_state_->SetString(prefs::kVariationsSeed, base64_seed_data);
+  local_state_->SetString(prefs::kVariationsSeedHash, HashSeed(seed_data));
+  local_state_->SetInt64(prefs::kVariationsSeedDate,
+                         seed_date.ToInternalValue());
   variations_serial_number_ = seed.serial_number();
 
   RecordLastFetchTime();
@@ -658,23 +679,31 @@ bool VariationsService::ValidateStudyAndComputeTotalProbability(
   return true;
 }
 
-bool VariationsService::LoadTrialsSeedFromPref(PrefService* local_prefs,
-                                               TrialsSeed* seed) {
-  std::string base64_seed_data = local_prefs->GetString(prefs::kVariationsSeed);
-  UMA_HISTOGRAM_BOOLEAN("Variations.SeedEmpty", base64_seed_data.empty());
-  if (base64_seed_data.empty())
+bool VariationsService::LoadTrialsSeedFromPref(TrialsSeed* seed) {
+  const std::string base64_seed_data =
+      local_state_->GetString(prefs::kVariationsSeed);
+  if (base64_seed_data.empty()) {
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_EMPTY);
     return false;
+  }
 
+  const std::string hash_from_pref =
+      local_state_->GetString(prefs::kVariationsSeedHash);
   // If the decode process fails, assume the pref value is corrupt and clear it.
   std::string seed_data;
   if (!base::Base64Decode(base64_seed_data, &seed_data) ||
+      (!hash_from_pref.empty() && HashSeed(seed_data) != hash_from_pref) ||
       !seed->ParseFromString(seed_data)) {
-    VLOG(1) << "Variations Seed data in local pref is corrupt, clearing the "
+    VLOG(1) << "Variations seed data in local pref is corrupt, clearing the "
             << "pref.";
-    local_prefs->ClearPref(prefs::kVariationsSeed);
+    local_state_->ClearPref(prefs::kVariationsSeed);
+    local_state_->ClearPref(prefs::kVariationsSeedDate);
+    local_state_->ClearPref(prefs::kVariationsSeedHash);
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT);
     return false;
   }
   variations_serial_number_ = seed->serial_number();
+  RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_NOT_EMPTY);
   return true;
 }
 
