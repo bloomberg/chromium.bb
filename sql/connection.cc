@@ -18,6 +18,10 @@
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+#include "third_party/sqlite/src/ext/icu/sqliteicu.h"
+#endif
+
 namespace {
 
 // Spin for up to a second waiting for the lock to clear when setting
@@ -700,6 +704,13 @@ bool Connection::OpenInternal(const std::string& file_name) {
   // quickly notify someone if SQLite changes.
   err = sqlite3_extended_result_codes(db_, 1);
   DCHECK_EQ(err, SQLITE_OK) << "Could not enable extended result codes";
+
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  // The version of SQLite shipped with iOS doesn't enable ICU, which includes
+  // REGEXP support. Add it in dynamically.
+  err = sqlite3IcuInit(db_);
+  DCHECK_EQ(err, SQLITE_OK) << "Could not enable ICU support";
+#endif  // OS_IOS && USE_SYSTEM_SQLITE
 
   // If indicated, lock up the database before doing anything else, so
   // that the following code doesn't have to deal with locking.

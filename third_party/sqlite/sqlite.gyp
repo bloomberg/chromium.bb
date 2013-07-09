@@ -45,6 +45,9 @@
 
           'conditions': [
             ['OS == "ios"', {
+              'dependencies': [
+                'sqlite_regexp',
+              ],
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/usr/lib/libsqlite3.dylib',
@@ -181,6 +184,21 @@
           },
         },
       ],
-    },]
+    },],
+    ['OS == "ios"', {
+      'targets': [
+        {
+          'target_name': 'sqlite_regexp',
+          'type': 'static_library',
+          'dependencies': [
+            '../icu/icu.gyp:icui18n',
+            '../icu/icu.gyp:icuuc',
+          ],
+          'sources': [
+            'src/ext/icu/icu.c',
+          ],
+        },
+      ],
+    }],
   ],
 }
