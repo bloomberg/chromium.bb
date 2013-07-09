@@ -1541,9 +1541,8 @@ ListValue* SummarizeCookieModifications(
 }
 
 // Converts an EventResponseDelta object to a dictionary value suitable for the
-// activity log.  The caller takes ownership of the returned DictionaryValue
-// object.
-DictionaryValue* SummarizeResponseDelta(
+// activity log.
+scoped_ptr<DictionaryValue> SummarizeResponseDelta(
     const std::string& event_name,
     const helpers::EventResponseDelta& delta) {
   scoped_ptr<DictionaryValue> details(new DictionaryValue());
@@ -1590,15 +1589,14 @@ DictionaryValue* SummarizeResponseDelta(
         SummarizeCookieModifications(delta.response_cookie_modifications));
   }
 
-  return details.release();
+  return details.Pass();
 }
 
 void LogExtensionActivity(Profile* profile,
                           const std::string& extension_id,
                           const GURL& url,
                           const std::string& api_call,
-                          DictionaryValue* details_raw) {
-  scoped_ptr<DictionaryValue> details(details_raw);
+                          scoped_ptr<DictionaryValue> details) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
@@ -1607,7 +1605,7 @@ void LogExtensionActivity(Profile* profile,
                                        extension_id,
                                        url,
                                        api_call,
-                                       details.release()));
+                                       base::Passed(&details)));
   } else {
     extensions::ActivityLog::GetInstance(profile)->LogWebRequestAction(
         extension_id,
