@@ -728,8 +728,6 @@ TEST_F(SequencedWorkerPoolTest, IsRunningOnCurrentThread) {
 
   scoped_refptr<SequencedWorkerPool> unused_pool =
       new SequencedWorkerPool(2, "unused_pool");
-  EXPECT_TRUE(token1.Equals(unused_pool->GetSequenceToken()));
-  EXPECT_TRUE(token2.Equals(unused_pool->GetSequenceToken()));
 
   EXPECT_FALSE(pool()->RunsTasksOnCurrentThread());
   EXPECT_FALSE(pool()->IsRunningSequenceOnCurrentThread(token1));
