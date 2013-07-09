@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+
 #include <set>
 #include <string>
 #include <utility>
@@ -12,7 +14,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -337,18 +338,13 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_0,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_0, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_1,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
-
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_1, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
@@ -393,17 +389,13 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   // Ensure the persisted permissions are ok.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
       profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_0,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+          requesting_frame_0, requesting_frame_0,
+          CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
       profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_1,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+          requesting_frame_1, requesting_frame_0,
+          CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 }
 
 TEST_F(GeolocationPermissionContextTests, PermissionForFileScheme) {
@@ -435,19 +427,14 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_0,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_0, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_1,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
-
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_1, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
@@ -487,18 +474,14 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   // Ensure the persisted permissions are ok.
   EXPECT_EQ(CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_0,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_0, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_1,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_1, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 }
 
 TEST_F(GeolocationPermissionContextTests, InvalidURL) {
@@ -615,21 +598,15 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
 TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_0,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_0, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      profile()->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame_1,
-          requesting_frame_0,
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            profile()->GetHostContentSettingsMap()->GetContentSetting(
+                requesting_frame_1, requesting_frame_0,
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());

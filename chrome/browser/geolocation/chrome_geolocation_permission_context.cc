@@ -182,7 +182,7 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
 }
 
 GeolocationInfoBarQueueController*
-ChromeGeolocationPermissionContext::QueueController() {
+    ChromeGeolocationPermissionContext::QueueController() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!shutting_down_);
   if (!geolocation_infobar_queue_controller_)
@@ -191,7 +191,7 @@ ChromeGeolocationPermissionContext::QueueController() {
 }
 
 GeolocationInfoBarQueueController*
-ChromeGeolocationPermissionContext::CreateQueueController() {
+    ChromeGeolocationPermissionContext::CreateQueueController() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return new GeolocationInfoBarQueueController(profile());
 }

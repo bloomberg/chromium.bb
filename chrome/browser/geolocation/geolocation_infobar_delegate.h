@@ -33,6 +33,7 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
                              const GeolocationPermissionRequestID& id,
                              const GURL& requesting_frame,
                              const std::string& display_languages);
+  virtual ~GeolocationInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual bool Accept() OVERRIDE;

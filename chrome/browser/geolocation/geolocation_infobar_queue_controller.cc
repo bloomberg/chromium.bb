@@ -99,7 +99,6 @@ void GeolocationInfoBarQueueController::PendingInfoBarRequest::
   infobar_delegate_ = GeolocationInfoBarDelegate::Create(
       GetInfoBarService(id_), controller, id_, requesting_frame_,
       display_languages);
-
 }
 
 
@@ -269,10 +268,12 @@ void GeolocationInfoBarQueueController::ClearPendingInfoBarRequestsForTab(
     const GeolocationPermissionRequestID& id) {
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {
-    if (i->id().IsForSameTabAs(id))
+    if (i->id().IsForSameTabAs(id)) {
+      DCHECK(!i->has_infobar_delegate());
       i = pending_infobar_requests_.erase(i);
-    else
+    } else {
       ++i;
+    }
   }
 }
 

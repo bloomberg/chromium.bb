@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
+
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

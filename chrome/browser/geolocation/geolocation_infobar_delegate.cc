@@ -52,6 +52,9 @@ GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
    contents_unique_id_ = committed_entry ? committed_entry->GetUniqueID() : 0;
 }
 
+GeolocationInfoBarDelegate::~GeolocationInfoBarDelegate() {
+}
+
 bool GeolocationInfoBarDelegate::Accept() {
   SetPermission(true, true);
   return true;
@@ -112,11 +115,10 @@ bool GeolocationInfoBarDelegate::LinkClicked(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
 #endif
 
-  content::OpenURLParams params(
+  web_contents()->OpenURL(content::OpenURLParams(
       google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;  // Do not dismiss the info bar.
 }
