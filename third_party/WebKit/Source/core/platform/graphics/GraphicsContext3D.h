@@ -828,10 +828,10 @@ private:
 
     OwnPtr<WebKit::WebGraphicsContext3DProvider> m_provider;
     WebKit::WebGraphicsContext3D* m_impl;
-    OwnPtr<WebKit::WebGraphicsContext3D> m_ownedWebContext;
-    OwnPtr<Extensions3D> m_extensions;
     OwnPtr<GraphicsContext3DContextLostCallbackAdapter> m_contextLostCallbackAdapter;
     OwnPtr<GraphicsContext3DErrorMessageCallbackAdapter> m_errorMessageCallbackAdapter;
+    OwnPtr<WebKit::WebGraphicsContext3D> m_ownedWebContext;
+    OwnPtr<Extensions3D> m_extensions;
     OwnPtr<GrMemoryAllocationChangedCallbackAdapter> m_grContextMemoryAllocationCallbackAdapter;
     bool m_initializedAvailableExtensions;
     HashSet<String> m_enabledExtensions;
