@@ -704,19 +704,6 @@ class ClearDriveCacheFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.reloadDrive method,
-// which is used to reload the file system metadata from the server.
-class ReloadDriveFunction: public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.reloadDrive",
-                             FILEBROWSERPRIVATE_RELOADDRIVE)
-
- protected:
-  virtual ~ReloadDriveFunction() {}
-
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Implements the chrome.fileBrowserPrivate.getDriveConnectionState method.
 class GetDriveConnectionStateFunction : public SyncExtensionFunction {
  public:

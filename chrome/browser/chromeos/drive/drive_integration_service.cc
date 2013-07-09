@@ -275,6 +275,11 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
   DCHECK(!callback.is_null());
 
   RemoveDriveMountPoint();
+  // Reloading the file system will clear the resource metadata.
+  file_system_->Reload();
+  // Reload the Drive app registry too.
+  drive_app_registry_->Update();
+
   cache_->ClearAllOnUIThread(base::Bind(
       &DriveIntegrationService::AddBackDriveMountPoint,
       weak_ptr_factory_.GetWeakPtr(),
@@ -297,18 +302,6 @@ void DriveIntegrationService::AddBackDriveMountPoint(
   AddDriveMountPoint();
 
   callback.Run(true);
-}
-
-void DriveIntegrationService::ReloadAndRemountFileSystem() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  RemoveDriveMountPoint();
-  file_system_->Reload();
-  drive_app_registry_->Update();
-
-  // Reload() is asynchronous. But we can add back the mount point right away
-  // because every operation waits until loading is complete.
-  AddDriveMountPoint();
 }
 
 void DriveIntegrationService::AddDriveMountPoint() {

@@ -1047,12 +1047,7 @@
       },
       {
         "name": "clearDriveCache",
-        "description": "Clear all Drive local caches.",
-        "parameters": []
-      },
-      {
-        "name": "reloadDrive",
-        "description": "Reload the filesystem metadata from the server immediately.",
+        "description": "Clear all Drive local caches including locally cached user files and filesystem metadata. The file system metadata will be reloaded from the server immediately.",
         "parameters": []
       },
       {

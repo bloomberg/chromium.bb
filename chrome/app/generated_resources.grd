@@ -13097,9 +13097,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_DRIVE_CLEAR_LOCAL_CACHE" desc="In the Google Drive settings menu, menu item to clear the local cache of Google Drive">
         Clean local cache
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_RELOAD" desc="In the Google Drive settings menu, menu item to reload the metadata of the file system from the server">
-        Reload
-      </message>
       <message name="IDS_FILE_BROWSER_DRIVE_MENU_HELP" desc="In the Google Drive settings menu, name of the Help item.">
         Help
       </message>

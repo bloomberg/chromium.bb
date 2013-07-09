@@ -105,15 +105,12 @@ class DriveIntegrationService
   DriveAppRegistry* drive_app_registry() { return drive_app_registry_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
 
-  // Clears all the local cache files and in-memory data, and remounts the
-  // file system. |callback| is called with true when this operation is done
-  // successfully. Otherwise, |callback| is called with false.
-  // |callback| must not be null.
+  // Clears all the local cache file, the local resource metadata, and
+  // in-memory Drive app registry, and remounts the file system. |callback|
+  // is called with true when this operation is done successfully. Otherwise,
+  // |callback| is called with false. |callback| must not be null.
   void ClearCacheAndRemountFileSystem(
       const base::Callback<void(bool)>& callback);
-
-  // Reloads and remounts the file system.
-  void ReloadAndRemountFileSystem();
 
  private:
   // Returns true if Drive is enabled.

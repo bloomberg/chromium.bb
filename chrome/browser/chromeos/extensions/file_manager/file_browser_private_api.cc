@@ -446,7 +446,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<SearchDriveFunction>();
   registry->RegisterFunction<SearchDriveMetadataFunction>();
   registry->RegisterFunction<ClearDriveCacheFunction>();
-  registry->RegisterFunction<ReloadDriveFunction>();
   registry->RegisterFunction<GetDriveConnectionStateFunction>();
   registry->RegisterFunction<RequestDirectoryRefreshFunction>();
   registry->RegisterFunction<SetLastModifiedFunction>();
@@ -2064,7 +2063,6 @@ bool FileDialogStringsFunction::RunImpl() {
              IDS_FILE_BROWSER_DRIVE_MOBILE_CONNECTION_OPTION);
   SET_STRING("DRIVE_CLEAR_LOCAL_CACHE",
              IDS_FILE_BROWSER_DRIVE_CLEAR_LOCAL_CACHE);
-  SET_STRING("DRIVE_RELOAD", IDS_FILE_BROWSER_DRIVE_RELOAD);
   SET_STRING("DRIVE_SPACE_AVAILABLE_LONG",
              IDS_FILE_BROWSER_DRIVE_SPACE_AVAILABLE_LONG);
   SET_STRING("DRIVE_BUY_MORE_SPACE", IDS_FILE_BROWSER_DRIVE_BUY_MORE_SPACE);
@@ -2879,19 +2877,6 @@ bool ClearDriveCacheFunction::RunImpl() {
   // ClearCacheAndRemountFileSystem(). http://crbug.com/140511
   integration_service->ClearCacheAndRemountFileSystem(
       base::Bind(&DoNothingWithBool));
-
-  SendResponse(true);
-  return true;
-}
-
-bool ReloadDriveFunction::RunImpl() {
-  // |integration_service| is NULL if Drive is disabled.
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  if (!integration_service)
-    return false;
-
-  integration_service->ReloadAndRemountFileSystem();
 
   SendResponse(true);
   return true;

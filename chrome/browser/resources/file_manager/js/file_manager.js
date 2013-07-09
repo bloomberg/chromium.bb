@@ -663,9 +663,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(doc, 'drive-clear-local-cache',
         Commands.driveClearCacheCommand, this);
 
-    CommandUtil.registerCommand(doc, 'drive-reload',
-        Commands.driveReloadCommand, this);
-
     CommandUtil.registerCommand(doc, 'drive-go-to-drive',
         Commands.driveGoToDriveCommand, this);
 
@@ -3848,6 +3845,5 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.setCtrlKeyPressed_ = function(flag) {
     this.ctrlKeyPressed_ = flag;
     this.document_.querySelector('#drive-clear-local-cache').canExecuteChange();
-    this.document_.querySelector('#drive-reload').canExecuteChange();
   };
 })();

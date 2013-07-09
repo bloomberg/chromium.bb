@@ -357,16 +357,6 @@ Commands.driveClearCacheCommand = {
 };
 
 /**
- * Reload the metadata of the file system from the server
- */
-Commands.driveReloadCommand = {
-  execute: function() {
-    chrome.fileBrowserPrivate.reloadDrive();
-  },
-  canExecute: CommandUtil.canExecuteVisibleOnDriveWithCtrlKeyOnly
-};
-
-/**
  * Opens drive.google.com.
  */
 Commands.driveGoToDriveCommand = {
