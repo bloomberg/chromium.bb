@@ -34,6 +34,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/GenericEventQueue.h"
+#include "core/platform/Logging.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "wtf/text/WTFString.h"
@@ -44,6 +45,7 @@ MediaSourceBase::MediaSourceBase(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_readyState(closedKeyword())
     , m_asyncEventQueue(GenericEventQueue::create(this))
+    , m_attached(false)
 {
 }
 
@@ -73,6 +75,7 @@ void MediaSourceBase::setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate> mediaSour
 {
     ASSERT(mediaSourcePrivate);
     ASSERT(!m_private);
+    ASSERT(m_attached);
     m_private = mediaSourcePrivate;
     setReadyState(openKeyword());
 }
@@ -106,12 +109,24 @@ void MediaSourceBase::setDuration(double duration, ExceptionCode& ec)
 }
 
 
-void MediaSourceBase::setReadyState(const AtomicString& readyState)
+void MediaSourceBase::setReadyState(const AtomicString& state)
 {
-    m_readyState = readyState;
+    ASSERT(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
 
-    if (isClosed())
+    AtomicString oldState = readyState();
+    LOG(Media, "MediaSourceBase::setReadyState() %p : %s -> %s", this, oldState.string().ascii().data(), state.string().ascii().data());
+
+    if (state == closedKeyword()) {
         m_private.clear();
+        m_attached = false;
+    }
+
+    if (oldState == state)
+        return;
+
+    m_readyState = state;
+
+    onReadyStateChange(oldState, state);
 }
 
 void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionCode& ec)
@@ -158,6 +173,17 @@ bool MediaSourceBase::isClosed() const
 void MediaSourceBase::close()
 {
     setReadyState(closedKeyword());
+}
+
+bool MediaSourceBase::attachToElement()
+{
+    if (m_attached)
+        return false;
+
+    ASSERT(isClosed());
+
+    m_attached = true;
+    return true;
 }
 
 void MediaSourceBase::openIfInEndedState()

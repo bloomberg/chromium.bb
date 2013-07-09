@@ -896,12 +896,20 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
     if (url.protocolIs(mediaSourceBlobProtocol))
         m_mediaSource = MediaSourceRegistry::registry().lookupMediaSource(url.string());
 
-    if (m_mediaSource)
-        m_player->load(url, m_mediaSource);
-    else if (canLoadURL(url, contentType, keySystem))
+    if (m_mediaSource) {
+        if (m_mediaSource->attachToElement()) {
+            m_player->load(url, m_mediaSource);
+        } else {
+            // Forget our reference to the MediaSource, so we leave it alone
+            // while processing remainder of load failure.
+            m_mediaSource = 0;
+            mediaLoadingFailed(MediaPlayer::FormatError);
+        }
+    } else if (canLoadURL(url, contentType, keySystem)) {
         m_player->load(url);
-    else
+    } else {
         mediaLoadingFailed(MediaPlayer::FormatError);
+    }
 
     // If there is no poster to display, allow the media engine to render video frames as soon as
     // they are available.

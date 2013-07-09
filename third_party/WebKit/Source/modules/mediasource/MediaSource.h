@@ -63,7 +63,7 @@ private:
     explicit MediaSource(ScriptExecutionContext*);
 
     // MediaSourceBase interface
-    virtual void setReadyState(const AtomicString&) OVERRIDE;
+    virtual void onReadyStateChange(const AtomicString&, const AtomicString&) OVERRIDE;
 
     RefPtr<SourceBufferList> m_sourceBuffers;
     RefPtr<SourceBufferList> m_activeSourceBuffers;

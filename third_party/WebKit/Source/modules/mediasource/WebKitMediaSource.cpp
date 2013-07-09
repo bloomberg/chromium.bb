@@ -143,15 +143,8 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
     // FIXME(91649): support track selection
 }
 
-void WebKitMediaSource::setReadyState(const AtomicString& state)
+void WebKitMediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicString& newState)
 {
-    ASSERT(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
-    String oldState = readyState();
-    if (oldState == state)
-        return;
-
-    MediaSourceBase::setReadyState(state);
-
     if (isClosed()) {
         m_sourceBuffers->clear();
         m_activeSourceBuffers->clear();
@@ -159,7 +152,7 @@ void WebKitMediaSource::setReadyState(const AtomicString& state)
         return;
     }
 
-    if (oldState == openKeyword() && state == endedKeyword()) {
+    if (oldState == openKeyword() && newState == endedKeyword()) {
         scheduleEvent(eventNames().webkitsourceendedEvent);
         return;
     }

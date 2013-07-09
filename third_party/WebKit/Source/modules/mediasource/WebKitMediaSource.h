@@ -63,7 +63,7 @@ private:
     explicit WebKitMediaSource(ScriptExecutionContext*);
 
     // MediaSourceBase interface
-    virtual void setReadyState(const AtomicString&) OVERRIDE;
+    virtual void onReadyStateChange(const AtomicString&, const AtomicString&) OVERRIDE;
 
     RefPtr<WebKitSourceBufferList> m_sourceBuffers;
     RefPtr<WebKitSourceBufferList> m_activeSourceBuffers;

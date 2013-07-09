@@ -147,23 +147,14 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionCode& ec)
     buffer->removedFromMediaSource();
 }
 
-void MediaSource::setReadyState(const AtomicString& state)
+void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicString& newState)
 {
-    ASSERT(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
-    AtomicString oldState = readyState();
-    if (oldState == state)
-        return;
-
-    LOG(Media, "MediaSource::setReadyState() %p : %s -> %s", this, oldState.string().ascii().data(), state.string().ascii().data());
-
-    MediaSourceBase::setReadyState(state);
-
     if (isOpen()) {
         scheduleEvent(eventNames().sourceopenEvent);
         return;
     }
 
-    if (oldState == openKeyword() && state == endedKeyword()) {
+    if (oldState == openKeyword() && newState == endedKeyword()) {
         scheduleEvent(eventNames().sourceendedEvent);
         return;
     }

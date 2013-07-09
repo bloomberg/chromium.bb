@@ -58,10 +58,17 @@ public:
     bool isClosed() const;
     void close();
 
+    // Called when an HTMLMediaElement is attempting to attach to this object,
+    // and helps enforce attachment to at most one element at a time.
+    // If already attached, returns false. Otherwise, must be in
+    // 'closed' state, and returns true to indicate attachment success.
+    // Reattachment allowed by first calling close() (even if already in 'closed').
+    bool attachToElement();
+
     double duration() const;
     void setDuration(double, ExceptionCode&);
     const AtomicString& readyState() const { return m_readyState; }
-    virtual void setReadyState(const AtomicString&);
+    void setReadyState(const AtomicString&);
     void endOfStream(const AtomicString& error, ExceptionCode&);
 
 
@@ -87,6 +94,7 @@ public:
 protected:
     explicit MediaSourceBase(ScriptExecutionContext*);
 
+    virtual void onReadyStateChange(const AtomicString& oldState, const AtomicString& newState) = 0;
     PassOwnPtr<SourceBufferPrivate> createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray&, ExceptionCode&);
     void scheduleEvent(const AtomicString& eventName);
     GenericEventQueue* asyncEventQueue() const { return m_asyncEventQueue.get(); }
@@ -96,6 +104,7 @@ private:
     EventTargetData m_eventTargetData;
     AtomicString m_readyState;
     OwnPtr<GenericEventQueue> m_asyncEventQueue;
+    bool m_attached;
 };
 
 }

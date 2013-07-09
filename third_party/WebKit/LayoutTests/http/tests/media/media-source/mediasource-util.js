@@ -1,5 +1,6 @@
 (function(window) {
-    EventExpectationsManager = function(test) {
+    EventExpectationsManager = function(test)
+    {
         this.test_ = test;
         this.eventTargetList_ = [];
         this.waitCallbacks_ = [];
@@ -172,14 +173,21 @@
     };
 
     window['MediaSourceUtil'] = MediaSourceUtil;
-    window['mediasource_test'] = function(testFunction, description, options)
+    window['media_test'] = function(testFunction, description, options)
     {
         options = options || {};
-        return async_test(function(test) {
+        return async_test(function(test)
+        {
+            addExtraTestMethods(test);
+            testFunction(test);
+        }, description, options);
+    };
+    window['mediasource_test'] = function(testFunction, description, options)
+    {
+        return media_test(function(test)
+        {
             var mediaTag = document.createElement("video");
             document.body.appendChild(mediaTag);
-
-            addExtraTestMethods(test);
 
             // Overload done() so that element added to the document can be removed.
             test.removeMediaElement_ = true;
