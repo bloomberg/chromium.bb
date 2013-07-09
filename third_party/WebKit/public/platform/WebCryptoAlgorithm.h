@@ -84,8 +84,8 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT WebCryptoAlgorithmId algorithmId() const;
-    WEBKIT_EXPORT const char* algorithmName() const;
+    WEBKIT_EXPORT WebCryptoAlgorithmId id() const;
+    WEBKIT_EXPORT const char* name() const;
 
     WEBKIT_EXPORT WebCryptoAlgorithmParamsType paramsType() const;
 
