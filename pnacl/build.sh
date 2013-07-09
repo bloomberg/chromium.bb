@@ -1274,6 +1274,9 @@ llvm-install() {
   spopd
 
   llvm-install-links
+
+  # This is really part of libgcc_eh, but gets blown away by the ninja build.
+  install-unwind-header
 }
 
 llvm-install-links() {
