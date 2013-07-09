@@ -19,6 +19,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  6: ('addr prefixes are not allowed', Instruction(0x6: 67 ff 05 a4 76 39 00  addr32 incl 0x3976a4(%eip) # 0x3976b1))
 ----------------------------------------------------------------------
 @hex:
   49 89 d1

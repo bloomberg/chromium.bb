@@ -63,25 +63,6 @@ def _ValidateNop(instruction):
   raise DoNotMatchError(instruction)
 
 
-def _ValidateOperandlessInstruction(instruction, bitness):
-  assert bitness in [32, 64]
-
-  if instruction.disasm in [
-      'cpuid',
-      'hlt',
-      'lahf',
-      'sahf',
-      ]:
-    return
-
-  if bitness == 32 and instruction.disasm in [
-      'leave',
-      ]:
-    return
-
-  raise DoNotMatchError(instruction)
-
-
 def _ValidateStringInstruction(instruction):
   prefix_re = r'(rep |repz |repnz )?'
   lods_re = r'lods %ds:\(%esi\),(%al|%ax|%eax)'
@@ -510,12 +491,6 @@ def ValidateRegularInstruction(instruction, bitness):
   # Report error on duplicate prefixes (note that they are allowed in nops).
   _GetLegacyPrefixes(instruction)
 
-  try:
-    _ValidateOperandlessInstruction(instruction, bitness)
-    return Condition(), Condition()
-  except DoNotMatchError:
-    pass
-
   if bitness == 32:
     try:
       _ValidateStringInstruction(instruction)
@@ -561,17 +536,20 @@ def ValidateRegularInstruction(instruction, bitness):
          'shl', 'shr', 'sar', 'rol', 'ror', 'rcl', 'rcr',
          'pop',
          'lea',
-         'adc', 'bsf', 'bsr', 'lzcnt',
+         'adc', 'sbb', 'bsf', 'bsr', 'lzcnt',
          'btc', 'btr', 'bts', 'bt',
-         'cmp',
+         'cmp', 'test',
          'imul', 'mul', 'div', 'idiv', 'push',
         ]):
       return Condition(), Condition()
 
     elif name in [
-        'cmc',
+        'cpuid', 'hlt', 'lahf', 'sahf', 'rdtsc',
+        'leave',
+        'cmc', 'clc', 'cld', 'stc', 'std',
         'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
         'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
+        'ud2a',
         ]:
       return Condition(), Condition()
 
@@ -585,7 +563,7 @@ def ValidateRegularInstruction(instruction, bitness):
             instruction)
       return Condition(), Condition()
 
-    elif re.match(r'cmov%s$' % _CONDITION_SUFFIX_RE, name):
+    elif re.match(r'(cmov|set)%s$' % _CONDITION_SUFFIX_RE, name):
       return Condition(), Condition()
 
     else:
@@ -637,7 +615,7 @@ def ValidateRegularInstruction(instruction, bitness):
 
     elif _InstructionNameIn(
         name,
-        ['adc', 'bsf', 'bsr', 'lzcnt']):
+        ['adc', 'sbb', 'bsf', 'bsr', 'lzcnt']):
       # Note: some versions of objdump (including one that is currently used
       # in targeted tests) decode 'tzcnt' as 'repz bsf'
       # (see validator_ragel/testdata/32/tzcnt.test)
@@ -666,7 +644,7 @@ def ValidateRegularInstruction(instruction, bitness):
       else:
         write_ops = [ops[1]]
 
-    elif _InstructionNameIn(name, ['cmp']):
+    elif _InstructionNameIn(name, ['cmp', 'test']):
       assert len(ops) == 2
       write_ops = []
 
@@ -679,9 +657,11 @@ def ValidateRegularInstruction(instruction, bitness):
       write_ops = ops
 
     elif name in [
-        'cmc',
+        'cpuid', 'hlt', 'lahf', 'sahf', 'rdtsc',
+        'cmc', 'clc', 'cld', 'stc', 'std',
         'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
         'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
+        'ud2a',
         ]:
       assert len(ops) == 0
       write_ops = []
@@ -705,6 +685,10 @@ def ValidateRegularInstruction(instruction, bitness):
     elif re.match(r'cmov%s$' % _CONDITION_SUFFIX_RE, name):
       assert len(ops) == 2
       write_ops = [ops[1]]
+
+    elif re.match(r'set%s$' % _CONDITION_SUFFIX_RE, name):
+      assert len(ops) == 1
+      write_ops = ops
 
     else:
       raise DoNotMatchError(instruction)

@@ -5,3 +5,5 @@
      0:	0f 0b                                        	ud2a   
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
