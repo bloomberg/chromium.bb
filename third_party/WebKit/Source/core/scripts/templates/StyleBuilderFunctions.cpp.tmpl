@@ -73,13 +73,13 @@ namespace WebCore {
         for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
             if (childIndex <= list->size())
                 list->append(CSSAnimationData::create());
-            styleResolver->styleMap()->mapAnimation{{attribute}}(list->animation(childIndex), i.value());
+            state.styleMap().mapAnimation{{attribute}}(list->animation(childIndex), i.value());
             ++childIndex;
         }
     } else {
         if (list->isEmpty())
             list->append(CSSAnimationData::create());
-        styleResolver->styleMap()->mapAnimation{{attribute}}(list->animation(childIndex), value);
+        state.styleMap().mapAnimation{{attribute}}(list->animation(childIndex), value);
         childIndex = 1;
     }
     for ( ; childIndex < list->size(); ++childIndex) {
@@ -151,7 +151,7 @@ namespace WebCore {
     {%- if property_id == "CSSPropertyWebkitMaskBoxImage" %}
     image.setMaskDefaults();
     {%- endif %}
-    styleResolver->styleMap()->mapNinePieceImage({{property_id}}, value, image);
+    state.styleMap().mapNinePieceImage({{property_id}}, value, image);
     {{ set_value(property) }}(image);
 }
 {%- endmacro %}
@@ -269,12 +269,12 @@ namespace WebCore {
                 currChild = new FillLayer({{fill_layer_type}});
                 prevChild->setNext(currChild);
             }
-            styleResolver->styleMap()->{{map_fill}}({{property_id}}, currChild, valueList->itemWithoutBoundsCheck(i));
+            state.styleMap().{{map_fill}}({{property_id}}, currChild, valueList->itemWithoutBoundsCheck(i));
             prevChild = currChild;
             currChild = currChild->next();
         }
     } else {
-        styleResolver->styleMap()->{{map_fill}}({{property_id}}, currChild, value);
+        state.styleMap().{{map_fill}}({{property_id}}, currChild, value);
         currChild = currChild->next();
     }
     while (currChild) {

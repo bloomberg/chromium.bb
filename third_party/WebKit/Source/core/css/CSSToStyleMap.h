@@ -24,7 +24,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/platform/LengthBox.h"
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
@@ -33,15 +33,21 @@ class CSSValue;
 class CSSAnimationData;
 class RenderStyle;
 class StyleImage;
-class StyleResolver;
+class StyleResolverState;
 class NinePieceImage;
+
+// CSSToStyleMap is a short-lived helper object which
+// given the current StyleResolverState can map
+// CSSValue objects into their RenderStyle equivalents.
 
 class CSSToStyleMap {
     WTF_MAKE_NONCOPYABLE(CSSToStyleMap);
-    WTF_MAKE_FAST_ALLOCATED;
-
 public:
-    CSSToStyleMap(StyleResolver* resolver) : m_resolver(resolver) { }
+    // FIXME: This could be const StyleResolverState
+    // except styleImage can include a gradient, which
+    // may resolve a color and may need to flip bits
+    // on StyleResolverState.
+    CSSToStyleMap(StyleResolverState& state) : m_state(state) { }
 
     void mapFillAttachment(CSSPropertyID, FillLayer*, CSSValue*);
     void mapFillClip(CSSPropertyID, FillLayer*, CSSValue*);
@@ -71,19 +77,15 @@ public:
     void mapNinePieceImageRepeat(CSSValue*, NinePieceImage&);
 
 private:
-    // FIXME: These accessors should be replaced by a ResolveState object
-    // similar to how PaintInfo/LayoutState cache values needed for
-    // the current paint/layout.
     RenderStyle* style() const;
     RenderStyle* rootElementStyle() const;
     bool useSVGZoomRules() const;
 
-    // FIXME: This should be part of some sort of StyleImageCache object which
-    // is held by the StyleResolver, and likely provided to this object
-    // during the resolve.
     PassRefPtr<StyleImage> styleImage(CSSPropertyID, CSSValue*);
 
-    StyleResolver* m_resolver;
+    // FIXME: Consider passing a StyleResolverState (or ElementResolveState)
+    // as an argument instead of caching it on this object.
+    StyleResolverState& m_state;
 };
 
 }

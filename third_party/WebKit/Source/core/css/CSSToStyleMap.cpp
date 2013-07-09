@@ -35,7 +35,7 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverState.h"
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/FillLayer.h"
 
@@ -43,22 +43,22 @@ namespace WebCore {
 
 RenderStyle* CSSToStyleMap::style() const
 {
-    return m_resolver->style();
+    return m_state.style();
 }
     
 RenderStyle* CSSToStyleMap::rootElementStyle() const
 {
-    return m_resolver->rootElementStyle();
+    return m_state.rootElementStyle();
 }
 
 bool CSSToStyleMap::useSVGZoomRules() const
 {
-    return m_resolver->useSVGZoomRules();
+    return m_state.useSVGZoomRules();
 }
     
 PassRefPtr<StyleImage> CSSToStyleMap::styleImage(CSSPropertyID propertyId, CSSValue* value)
 {
-    return m_resolver->styleImage(propertyId, value);
+    return m_state.elementStyleResources().styleImage(m_state, propertyId, value);
 }
 
 void CSSToStyleMap::mapFillAttachment(CSSPropertyID, FillLayer* layer, CSSValue* value)

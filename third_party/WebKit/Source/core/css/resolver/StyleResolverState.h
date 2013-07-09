@@ -25,6 +25,7 @@
 #include "CSSPropertyNames.h"
 
 #include "core/css/CSSSVGDocumentValue.h"
+#include "core/css/CSSToStyleMap.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/dom/Element.h"
 #include "core/platform/graphics/Color.h"
@@ -59,7 +60,9 @@ public:
     , m_lineHeightValue(0)
     , m_fontDirty(false)
     , m_hasUAAppearance(false)
-    , m_backgroundData(BackgroundFillLayer) { }
+    , m_backgroundData(BackgroundFillLayer)
+    , m_styleMap(*this)
+    { }
 
 public:
     void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
@@ -105,6 +108,7 @@ public:
     FillLayer backgroundData() const { return m_backgroundData; }
     Color backgroundColor() const { return m_backgroundColor; }
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
+    CSSToStyleMap& styleMap() { return m_styleMap; }
 
     const FontDescription& fontDescription() { return m_style->fontDescription(); }
     const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
@@ -155,6 +159,9 @@ private:
     FillLayer m_backgroundData;
     Color m_backgroundColor;
     ElementStyleResources m_elementStyleResources;
+    // CSSToStyleMap is a pure-logic class and only contains
+    // a back-pointer to this object.
+    CSSToStyleMap m_styleMap;
 };
 
 } // namespace WebCore

@@ -745,7 +745,7 @@ private:
     static inline const NinePieceImage& getValue(RenderStyle* style) { return type == BorderImage ? style->borderImage() : style->maskBoxImage(); }
     static inline void setValue(RenderStyle* style, const NinePieceImage& value) { return type == BorderImage ? style->setBorderImage(value) : style->setMaskBoxImage(value); }
 public:
-    static void applyInheritValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInheritValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         NinePieceImage image(getValue(state.style()));
         switch (modifier) {
@@ -765,7 +765,7 @@ public:
         setValue(state.style(), image);
     }
 
-    static void applyInitialValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInitialValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         NinePieceImage image(getValue(state.style()));
         switch (modifier) {
@@ -789,21 +789,21 @@ public:
         setValue(state.style(), image);
     }
 
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         NinePieceImage image(getValue(state.style()));
         switch (modifier) {
         case Outset:
-            image.setOutset(styleResolver->styleMap()->mapNinePieceImageQuad(value));
+            image.setOutset(state.styleMap().mapNinePieceImageQuad(value));
             break;
         case Repeat:
-            styleResolver->styleMap()->mapNinePieceImageRepeat(value, image);
+            state.styleMap().mapNinePieceImageRepeat(value, image);
             break;
         case Slice:
-            styleResolver->styleMap()->mapNinePieceImageSlice(value, image);
+            state.styleMap().mapNinePieceImageSlice(value, image);
             break;
         case Width:
-            image.setBorderSlices(styleResolver->styleMap()->mapNinePieceImageQuad(value));
+            image.setBorderSlices(state.styleMap().mapNinePieceImageQuad(value));
             break;
         }
         setValue(state.style(), image);
@@ -815,7 +815,10 @@ public:
 template <CSSPropertyID id, StyleImage* (RenderStyle::*getterFunction)() const, void (RenderStyle::*setterFunction)(PassRefPtr<StyleImage>), StyleImage* (*initialFunction)()>
 class ApplyPropertyBorderImageSource {
 public:
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value) { (state.style()->*setterFunction)(styleResolver->styleImage(id, value)); }
+    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    {
+        (state.style()->*setterFunction)(styleResolver->styleImage(id, value));
+    }
     static PropertyHandler createHandler()
     {
         PropertyHandler handler = ApplyPropertyDefaultBase<StyleImage*, getterFunction, PassRefPtr<StyleImage>, setterFunction, StyleImage*, initialFunction>::createHandler();
@@ -828,7 +831,7 @@ template <CounterBehavior counterBehavior>
 class ApplyPropertyCounter {
 public:
     static void emptyFunction(CSSPropertyID, StyleResolver*, StyleResolverState&) { }
-    static void applyInheritValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInheritValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         CounterDirectiveMap& map = state.style()->accessCounterDirectives();
         CounterDirectiveMap& parentMap = state.parentStyle()->accessCounterDirectives();
@@ -837,14 +840,13 @@ public:
         Iterator end = parentMap.end();
         for (Iterator it = parentMap.begin(); it != end; ++it) {
             CounterDirectives& directives = map.add(it->key, CounterDirectives()).iterator->value;
-            if (counterBehavior == Reset) {
+            if (counterBehavior == Reset)
                 directives.inheritReset(it->value);
-            } else {
+            else
                 directives.inheritIncrement(it->value);
-            }
         }
     }
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         if (!value->isValueList())
             return;
@@ -887,13 +889,13 @@ public:
 
 class ApplyPropertyCursor {
 public:
-    static void applyInheritValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInheritValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         state.style()->setCursor(state.parentStyle()->cursor());
         state.style()->setCursorList(state.parentStyle()->cursors());
     }
 
-    static void applyInitialValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInitialValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         state.style()->clearCursorList();
         state.style()->setCursor(RenderStyle::initialCursor());
@@ -931,7 +933,7 @@ public:
 
 class ApplyPropertyTextAlign {
 public:
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         if (!value->isPrimitiveValue())
             return;
@@ -956,7 +958,7 @@ public:
 
 class ApplyPropertyTextDecoration {
 public:
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         TextDecoration t = RenderStyle::initialTextDecoration();
         for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
@@ -974,7 +976,7 @@ public:
 
 class ApplyPropertyMarqueeSpeed {
 public:
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         if (!value->isPrimitiveValue())
             return;
@@ -1010,7 +1012,7 @@ public:
 #if ENABLE(CSS3_TEXT)
 class ApplyPropertyTextUnderlinePosition {
 public:
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         // This is true if value is 'auto' or 'alphabetic'.
         if (value->isPrimitiveValue()) {
@@ -1151,7 +1153,7 @@ private:
 public:
     static void applyInheritValue(CSSPropertyID, StyleResolver*, StyleResolverState&) { }
     static void applyInitialValue(CSSPropertyID, StyleResolver*, StyleResolverState&) { }
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         state.style()->resetPageSizeType();
         Length width;
@@ -1222,21 +1224,21 @@ public:
 
 class ApplyPropertyTextEmphasisStyle {
 public:
-    static void applyInheritValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInheritValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         state.style()->setTextEmphasisFill(state.parentStyle()->textEmphasisFill());
         state.style()->setTextEmphasisMark(state.parentStyle()->textEmphasisMark());
         state.style()->setTextEmphasisCustomMark(state.parentStyle()->textEmphasisCustomMark());
     }
 
-    static void applyInitialValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInitialValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         state.style()->setTextEmphasisFill(RenderStyle::initialTextEmphasisFill());
         state.style()->setTextEmphasisMark(RenderStyle::initialTextEmphasisMark());
         state.style()->setTextEmphasisCustomMark(RenderStyle::initialTextEmphasisCustomMark());
     }
 
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
     {
         if (value->isValueList()) {
             CSSValueList* list = toCSSValueList(value);
@@ -1411,7 +1413,7 @@ public:
         state.style()->setDisplay(display);
     }
 
-    static void applyInitialValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state)
+    static void applyInitialValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
     {
         state.style()->setDisplay(RenderStyle::initialDisplay());
     }
@@ -1476,12 +1478,10 @@ public:
             else if (primitiveValue->getValueID() == CSSValueOutsideShape)
                 setValue(state.style(), ShapeValue::createOutsideValue());
             else if (primitiveValue->isShape()) {
-                RefPtr<ShapeValue> shape = ShapeValue::createShapeValue(basicShapeForValue(state, primitiveValue->getShapeValue()));
-                setValue(state.style(), shape.release());
+                setValue(state.style(), ShapeValue::createShapeValue(basicShapeForValue(state, primitiveValue->getShapeValue())));
             }
         } else if (value->isImageValue()) {
-            RefPtr<ShapeValue> shape = ShapeValue::createImageValue(styleResolver->styleImage(property, value));
-            setValue(state.style(), shape.release());
+            setValue(state.style(), ShapeValue::createImageValue(styleResolver->styleImage(property, value)));
         }
     }
     static PropertyHandler createHandler()

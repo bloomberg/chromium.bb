@@ -180,7 +180,6 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     , m_fontSelector(CSSFontSelector::create(document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
     , m_styleBuilder(DeprecatedStyleBuilder::sharedStyleBuilder())
-    , m_styleMap(this)
     , m_styleResourceLoader(document->cachedResourceLoader())
 {
     Element* root = document->documentElement();
@@ -2730,7 +2729,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             reflection->setOffset(reflectValue->offset()->convertToLength<FixedIntegerConversion | PercentConversion | CalculatedConversion>(state.style(), state.rootElementStyle(), zoomFactor));
         NinePieceImage mask;
         mask.setMaskDefaults();
-        m_styleMap.mapNinePieceImage(id, reflectValue->mask(), mask);
+        state.styleMap().mapNinePieceImage(id, reflectValue->mask(), mask);
         reflection->setMask(mask);
 
         state.style()->setBoxReflect(reflection.release());

@@ -164,10 +164,6 @@ public:
         return m_state.resolveColorFromPrimitiveValue(value, forVisitedLink);
     }
 
-    // FIXME: style() and rootElementStyle() only exist for CSSToStyleMap and should be removed.
-    RenderStyle* style() const { return m_state.style(); }
-    RenderStyle* rootElementStyle() const { return m_state.rootElementStyle(); }
-
     Document* document() { return m_document; }
 
     // FIXME: It could be better to call m_ruleSets.appendAuthorStyleSheets() directly after we factor StyleRsolver further.
@@ -351,7 +347,6 @@ public:
     static Length convertToIntLength(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, double multiplier = 1);
     static Length convertToFloatLength(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, double multiplier = 1);
 
-    CSSToStyleMap* styleMap() { return &m_styleMap; }
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
     void setFontDescription(const FontDescription& fontDescription) { m_state.setFontDescription(fontDescription); }
     void setWritingMode(WritingMode writingMode) { m_state.setWritingMode(writingMode); }
@@ -415,7 +410,6 @@ private:
     OwnPtr<RuleSet> m_siblingRuleSet;
     OwnPtr<RuleSet> m_uncommonAttributeRuleSet;
 
-    CSSToStyleMap m_styleMap;
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 
     StyleResolverState m_state;
