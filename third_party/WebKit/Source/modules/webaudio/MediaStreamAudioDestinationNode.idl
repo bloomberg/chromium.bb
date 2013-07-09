@@ -24,6 +24,6 @@
 
 [
     Conditional=WEB_AUDIO
-] interface MediaStreamAudioDestinationNode : AudioSourceNode {
+] interface MediaStreamAudioDestinationNode : AudioNode {
     readonly attribute MediaStream stream;
 };

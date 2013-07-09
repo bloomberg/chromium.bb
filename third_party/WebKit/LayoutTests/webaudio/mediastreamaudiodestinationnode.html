@@ -13,7 +13,8 @@
 <script>
 description("Basic tests for MediaStreamAudioDestinationNode API.");
 
-var context = 0;
+var context;
+var mediaStreamDestination;
 
 function runTest() {
     if (window.testRunner) {
@@ -22,7 +23,10 @@ function runTest() {
 
     context = new webkitAudioContext();
 
-    var mediaStreamDestination = context.createMediaStreamDestination();
+    mediaStreamDestination = context.createMediaStreamDestination();
+
+    // MediaStreamAudioDestinationNode should inherit AudioNode.
+    shouldBe('mediaStreamDestination.__proto__.__proto__', 'AudioNode.prototype');
 
     // Check number of inputs and outputs.
     if (mediaStreamDestination.numberOfInputs == 1)
