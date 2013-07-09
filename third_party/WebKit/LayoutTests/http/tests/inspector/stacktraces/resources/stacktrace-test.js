@@ -2,9 +2,9 @@ function test() {
     InspectorTest.addConsoleSniffer(addMessage);
 
     function addMessage(message) {
-        var messages = WebInspector.consoleView._visibleMessages;
-        for (var i = 0; i < messages.length; ++i) {
-            var m = messages[i];
+        var indices = WebInspector.consoleView._visibleMessagesIndices;
+        for (var i = 0; i < indices.length; ++i) {
+            var m = WebInspector.consoleView._messages[indices[i]];
             InspectorTest.addResult("Message[" + i + "]: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
             var trace = m.stackTrace;
             if (!trace) {

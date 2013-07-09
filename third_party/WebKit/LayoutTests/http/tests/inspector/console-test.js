@@ -9,9 +9,10 @@ InspectorTest.showConsolePanel = function()
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames)
 {
     var result = [];
-    var messages = WebInspector.consoleView._visibleMessages;
-    for (var i = 0; i < messages.length; ++i) {
-        var element = messages[i].toMessageElement();
+    var visibleMessagesIndices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < visibleMessagesIndices.length; ++i) {
+        var message = WebInspector.consoleView._messages[visibleMessagesIndices[i]];
+        var element = message.toMessageElement();
 
         if (dumpClassNames) {
             var classNames = [];
@@ -22,8 +23,8 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
         }
 
         InspectorTest.addResult(element.textContent.replace(/\u200b/g, "") + (dumpClassNames ? " " + classNames.join(" > ") : ""));
-        if (printOriginatingCommand && messages[i].originatingCommand) {
-            var originatingElement = messages[i].originatingCommand.toMessageElement();
+        if (printOriginatingCommand && message.originatingCommand) {
+            var originatingElement = message.originatingCommand.toMessageElement();
             InspectorTest.addResult("Originating from: " + originatingElement.textContent.replace(/\u200b/g, ""));
         }
     }
@@ -33,9 +34,9 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
     var result = [];
-    var messages = WebInspector.consoleView._visibleMessages;
-    for (var i = 0; i < messages.length; ++i) {
-        var element = messages[i].toMessageElement();
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = WebInspector.consoleView._messages[indices[i]].toMessageElement();
         InspectorTest.addResult(element.textContent.replace(/\u200b/g, ""));
         var spans = element.querySelectorAll(".console-message-text > span > span");
         for (var j = 0; j < spans.length; j++)
@@ -45,22 +46,22 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
-    var messages = WebInspector.consoleView._visibleMessages;
-    for (var i = 0; i < messages.length; ++i) {
-        var element = messages[i].toMessageElement();
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = WebInspector.consoleView._messages[indices[i]].toMessageElement();
         result.push(element.textContent.replace(/\u200b/g, "") + " " + element.getAttribute("class"));
     }
     if (sortMessages)
         result.sort();
-    for (var i = 0; i < messages.length; ++i)
+    for (var i = 0; i < result.length; ++i)
         InspectorTest.addResult(result[i]);
 }
 
 InspectorTest.expandConsoleMessages = function()
 {
-    var messages = WebInspector.consoleView._visibleMessages;
-    for (var i = 0; i < messages.length; ++i) {
-        var element = messages[i].toMessageElement();
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = WebInspector.consoleView._messages[indices[i]].toMessageElement();
         var node = element;
         while (node) {
             if (node.treeElementForTest)
@@ -72,9 +73,9 @@ InspectorTest.expandConsoleMessages = function()
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
-    var messages = WebInspector.consoleView._visibleMessages;
-    for (var i = 0; i < messages.length; ++i) {
-        var m = messages[i];
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var m = WebInspector.consoleView._messages[indices[i]];
         InspectorTest.addResult("Message[" + i + "]:");
         InspectorTest.addResult("Message: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
         if ("_parameters" in m) {
