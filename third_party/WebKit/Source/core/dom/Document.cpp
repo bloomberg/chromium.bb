@@ -967,7 +967,6 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
     return 0;
 }
 
-
 PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
 {
     if (!source) {
@@ -1829,24 +1828,18 @@ void Document::updateLayoutIgnorePendingStylesheets()
 PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
     ASSERT_ARG(element, element->document() == this);
-
-    bool oldIgnore = m_ignorePendingStylesheets;
-    m_ignorePendingStylesheets = true;
-    RefPtr<RenderStyle> style = styleResolver()->styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
-    m_ignorePendingStylesheets = oldIgnore;
-    return style.release();
+    TemporaryChange<bool> ignoreStyleSheets(m_ignorePendingStylesheets, true);
+    return styleResolver()->styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
 }
 
 PassRefPtr<RenderStyle> Document::styleForPage(int pageIndex)
 {
-    RefPtr<RenderStyle> style = styleResolver()->styleForPage(pageIndex);
-    return style.release();
+    return styleResolver()->styleForPage(pageIndex);
 }
 
 bool Document::isPageBoxVisible(int pageIndex)
 {
-    RefPtr<RenderStyle> style = styleForPage(pageIndex);
-    return style->visibility() != HIDDEN; // display property doesn't apply to @page.
+    return styleForPage(pageIndex)->visibility() != HIDDEN; // display property doesn't apply to @page.
 }
 
 void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
