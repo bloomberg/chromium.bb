@@ -987,6 +987,7 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
   base::Callback<void(google_apis::GDataErrorCode)> callback =
       job->abort_callback;
   queue_[GetJobQueueType(job->job_info.job_type)]->Remove(job->job_info.job_id);
+  NotifyJobDone(job->job_info, error);
   job_map_.Remove(job->job_info.job_id);
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
                                               base::Bind(callback, error));
