@@ -7,10 +7,6 @@
 
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 
-namespace content {
-class WebContents;
-}
-
 class NaClInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a NaCl delegate and adds it to the infobar service corresponding to
@@ -18,15 +14,13 @@ class NaClInfoBarDelegate : public ConfirmInfoBarDelegate {
   static void Create(int render_process_id, int render_view_id);
 
  private:
-  NaClInfoBarDelegate(content::WebContents* wc, InfoBarService* ibs) :
-      ConfirmInfoBarDelegate(ibs), wc_(wc) {}
+  explicit NaClInfoBarDelegate(InfoBarService* infobar_service);
+  virtual ~NaClInfoBarDelegate();
 
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
-  content::WebContents* wc_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClInfoBarDelegate);
 };
