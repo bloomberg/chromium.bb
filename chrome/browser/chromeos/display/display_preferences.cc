@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
 #include "ash/shell.h"
@@ -82,7 +83,8 @@ ash::DisplayController* GetDisplayController() {
 
 void LoadDisplayLayouts() {
   PrefService* local_state = g_browser_process->local_state();
-  ash::DisplayController* display_controller = GetDisplayController();
+  ash::internal::DisplayLayoutStore* layout_store =
+      GetDisplayManager()->layout_store();
 
   const base::DictionaryValue* layouts = local_state->GetDictionary(
       prefs::kSecondaryDisplays);
@@ -104,7 +106,7 @@ void LoadDisplayLayouts() {
           id2 == gfx::Display::kInvalidDisplayID) {
         continue;
       }
-      display_controller->RegisterLayoutForDisplayIdPair(id1, id2, layout);
+      layout_store->RegisterLayoutForDisplayIdPair(id1, id2, layout);
     }
   }
 }
@@ -165,10 +167,9 @@ void StoreCurrentDisplayLayoutPrefs() {
   if (!IsValidUser() || GetDisplayManager()->num_connected_displays() < 2)
     return;
 
-  ash::DisplayController* display_controller = GetDisplayController();
-  ash::DisplayIdPair pair = display_controller->GetCurrentDisplayIdPair();
+  ash::DisplayIdPair pair = GetDisplayController()->GetCurrentDisplayIdPair();
   ash::DisplayLayout display_layout =
-      display_controller->GetRegisteredDisplayLayout(pair);
+      GetDisplayManager()->layout_store()->GetRegisteredDisplayLayout(pair);
   StoreDisplayLayoutPref(pair, display_layout);
 }
 

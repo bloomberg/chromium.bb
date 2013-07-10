@@ -34,6 +34,7 @@ class DisplayManagerTestApi;
 class SystemGestureEventFilterTest;
 }
 namespace internal {
+class DisplayLayoutStore;
 
 // DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
@@ -60,6 +61,10 @@ class ASH_EXPORT DisplayManager :
       const DisplayLayout& layout,
       const gfx::Display& primary_display,
       gfx::Display* secondary_display);
+
+  DisplayLayoutStore* layout_store() {
+    return layout_store_.get();
+  }
 
   // When set to true, the MonitorManager calls OnDisplayBoundsChanged
   // even if the display's bounds didn't change. Used to swap primary
@@ -237,6 +242,8 @@ private:
   // value, or false otherwise.
   bool UpdateSecondaryDisplayBoundsForLayout(DisplayList* display_list,
                                              size_t* updated_index) const;
+
+  scoped_ptr<DisplayLayoutStore> layout_store_;
 
   int64 first_display_id_;
 

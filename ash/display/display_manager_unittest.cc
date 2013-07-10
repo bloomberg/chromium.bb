@@ -5,6 +5,7 @@
 #include "ash/display/display_manager.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/display/display_layout_store.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -647,11 +648,11 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
     return;
 
   // Set the 2nd display on the left.
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
-  DisplayLayout layout = display_controller->default_display_layout();
+  DisplayLayoutStore* layout_store =
+      Shell::GetInstance()->display_manager()->layout_store();
+  DisplayLayout layout = layout_store->default_display_layout();
   layout.position = DisplayLayout::LEFT;
-  display_controller->SetDefaultDisplayLayout(layout);
+  layout_store->SetDefaultDisplayLayout(layout);
 
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();

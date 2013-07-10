@@ -94,6 +94,8 @@
         'display/display_info.cc',
         'display/display_layout.h',
         'display/display_layout.cc',
+        'display/display_layout_store.h',
+        'display/display_layout_store.cc',
         'display/display_manager.cc',
         'display/display_manager.h',
         'display/display_pref_util.h',

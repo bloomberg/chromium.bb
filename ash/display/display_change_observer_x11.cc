@@ -12,8 +12,8 @@
 #include <X11/extensions/Xrandr.h>
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
+#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -130,8 +130,8 @@ chromeos::OutputState DisplayChangeObserverX11::GetStateForDisplayIds(
 
   CHECK_EQ(2U, display_ids.size());
   DisplayIdPair pair = std::make_pair(display_ids[0], display_ids[1]);
-  DisplayLayout layout = Shell::GetInstance()->display_controller()->
-      GetRegisteredDisplayLayout(pair);
+  DisplayLayout layout = Shell::GetInstance()->display_manager()->
+      layout_store()->GetRegisteredDisplayLayout(pair);
   return layout.mirrored ?
       chromeos::STATE_DUAL_MIRROR : chromeos::STATE_DUAL_EXTENDED;
 }

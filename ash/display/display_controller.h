@@ -127,15 +127,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   gfx::Insets GetOverscanInsets(int64 display_id) const;
   void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
 
-  const DisplayLayout& default_display_layout() const {
-    return default_display_layout_;
-  }
-  void SetDefaultDisplayLayout(const DisplayLayout& layout);
-
-  // Registeres the display layout info for the specified display(s).
-  void RegisterLayoutForDisplayIdPair(int64 id1,
-                                      int64 id2,
-                                      const DisplayLayout& layout);
   // Sets the layout for the current display pair. The |layout| specifies
   // the locaion of the secondary display relative to the primary.
   void SetLayoutForCurrentDisplays(const DisplayLayout& layout);
@@ -145,11 +136,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
   // Returns the current display pair.
   DisplayIdPair GetCurrentDisplayIdPair() const;
-
-  // Returns the display layout registered for the given display id |pair|.
-  // If no layout is registered, it creatas new layout using
-  // |default_display_layout_|.
-  DisplayLayout GetRegisteredDisplayLayout(const DisplayIdPair& pair);
 
   // Checks if the mouse pointer is on one of displays, and moves to
   // the center of the nearest display if it's outside of all displays.
@@ -183,24 +169,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   void SetLayoutForDisplayIdPair(const DisplayIdPair& display_pair,
                                  const DisplayLayout& layout);
 
-  void RegisterLayoutForDisplayIdPairInternal(
-      int64 id1,
-      int64 id2,
-      const DisplayLayout& layout,
-      bool override);
-
   void OnFadeOutForSwapDisplayFinished();
 
-  // Returns the display layout for the display id pair
-  // with display swapping applied.  That is, this returns
-  // flipped layout if the displays are swapped.
-  DisplayLayout ComputeDisplayLayoutForDisplayIdPair(
-      const DisplayIdPair& display_pair);
-
   void UpdateHostWindowNames();
-
-  // Creates new layout for display pair from |default_display_layout_|.
-  DisplayLayout CreateDisplayLayout(const DisplayIdPair& display_pair);
 
   bool in_bootstrap() const { return in_bootstrap_; }
 
@@ -226,12 +197,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
   // The mapping from display ID to its root window.
   std::map<int64, aura::RootWindow*> root_windows_;
-
-  // The default display layout.
-  DisplayLayout default_display_layout_;
-
-  // Display layout per pair of devices.
-  std::map<DisplayIdPair, DisplayLayout> paired_layouts_;
 
   ObserverList<Observer> observers_;
 

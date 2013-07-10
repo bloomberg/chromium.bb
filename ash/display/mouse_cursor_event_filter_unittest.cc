@@ -8,6 +8,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/display/display_controller.h"
+#include "ash/display/display_layout_store.h"
+#include "ash/display/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
@@ -43,8 +45,8 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
       Shell::GetInstance()->mouse_cursor_filter();
   ASSERT_EQ(
       DisplayLayout::RIGHT,
-      Shell::GetInstance()->
-          display_controller()->default_display_layout().position);
+      Shell::GetInstance()->display_manager()->layout_store()->
+          default_display_layout().position);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   bool is_warped = event_filter->WarpMouseCursorIfNecessary(root_windows[0],

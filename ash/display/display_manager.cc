@@ -11,6 +11,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
+#include "ash/display/display_layout_store.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -137,7 +138,8 @@ DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey,
                            gfx::Display::kInvalidDisplayID);
 
 DisplayManager::DisplayManager()
-    : first_display_id_(gfx::Display::kInvalidDisplayID),
+    : layout_store_(new DisplayLayoutStore),
+      first_display_id_(gfx::Display::kInvalidDisplayID),
       num_connected_displays_(0),
       force_bounds_changed_(false),
       change_display_upon_host_resize_(false),
@@ -919,7 +921,6 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
   if (displays->size() != 2U)
     return false;
 
-  DisplayController* controller = Shell::GetInstance()->display_controller();
   int64 id_at_zero = displays->at(0).id();
   DisplayIdPair pair =
       (id_at_zero == first_display_id_ ||
@@ -927,7 +928,7 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
       std::make_pair(id_at_zero, displays->at(1).id()) :
       std::make_pair(displays->at(1).id(), id_at_zero) ;
   DisplayLayout layout =
-      controller->ComputeDisplayLayoutForDisplayIdPair(pair);
+      layout_store_->ComputeDisplayLayoutForDisplayIdPair(pair);
 
   // Ignore if a user has a old format (should be extremely rare)
   // and this will be replaced with DCHECK.

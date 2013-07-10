@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -130,7 +131,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     ash::DisplayIdPair pair;
     pair.first = id1;
     pair.second = id2;
-    return ash::Shell::GetInstance()->display_controller()->
+    return ash::Shell::GetInstance()->display_manager()->layout_store()->
         GetRegisteredDisplayLayout(pair).ToString();
   }
 

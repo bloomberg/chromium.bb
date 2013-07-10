@@ -9,6 +9,7 @@
 #include <map>
 
 #include "ash/ash_switches.h"
+#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/root_window_host_factory.h"
@@ -223,23 +224,6 @@ DisplayController::DisplayController()
       base::chromeos::IsRunningOnChromeOS())
     limiter_.reset(new DisplayChangeLimiter);
 #endif
-  if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
-    std::string value = command_line->GetSwitchValueASCII(
-        switches::kAshSecondaryDisplayLayout);
-    char layout;
-    int offset = 0;
-    if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
-      if (layout == 't')
-        default_display_layout_.position = DisplayLayout::TOP;
-      else if (layout == 'b')
-        default_display_layout_.position = DisplayLayout::BOTTOM;
-      else if (layout == 'r')
-        default_display_layout_.position = DisplayLayout::RIGHT;
-      else if (layout == 'l')
-        default_display_layout_.position = DisplayLayout::LEFT;
-      default_display_layout_.offset = offset;
-    }
-  }
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = gfx::Display::kInvalidDisplayID;
@@ -389,19 +373,6 @@ DisplayController::GetAllRootWindowControllers() {
   return controllers;
 }
 
-void DisplayController::SetDefaultDisplayLayout(const DisplayLayout& layout) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kAshSecondaryDisplayLayout))
-    default_display_layout_ = layout;
-}
-
-void DisplayController::RegisterLayoutForDisplayIdPair(
-    int64 id1,
-    int64 id2,
-    const DisplayLayout& layout) {
-  RegisterLayoutForDisplayIdPairInternal(id1, id2, layout, true);
-}
-
 void DisplayController::SetLayoutForCurrentDisplays(
     const DisplayLayout& layout_relative_to_primary) {
   DCHECK_EQ(2U, GetDisplayManager()->GetNumDisplays());
@@ -413,11 +384,15 @@ void DisplayController::SetLayoutForCurrentDisplays(
   DisplayLayout to_set = pair.first == primary.id() ?
       layout_relative_to_primary : layout_relative_to_primary.Invert();
 
-  const DisplayLayout& current_layout = paired_layouts_[pair];
+  internal::DisplayLayoutStore* layout_store =
+      GetDisplayManager()->layout_store();
+  DisplayLayout current_layout =
+      layout_store->GetRegisteredDisplayLayout(pair);
   if (to_set.position != current_layout.position ||
       to_set.offset != current_layout.offset) {
     to_set.primary_id = primary.id();
-    paired_layouts_[pair] = to_set;
+    layout_store->RegisterLayoutForDisplayIdPair(
+        pair.first, pair.second, to_set);
     NotifyDisplayConfigurationChanging();
     // TODO(oshima): Call UpdateDisplays instead.
     UpdateDisplayBoundsForLayout();
@@ -430,10 +405,13 @@ DisplayLayout DisplayController::GetCurrentDisplayLayout() {
   // Invert if the primary was swapped.
   if (GetDisplayManager()->num_connected_displays() > 1) {
     DisplayIdPair pair = GetCurrentDisplayIdPair();
-    return ComputeDisplayLayoutForDisplayIdPair(pair);
+    return GetDisplayManager()->layout_store()->
+        ComputeDisplayLayoutForDisplayIdPair(pair);
   }
+  NOTREACHED() << "DisplayLayout is requested for single display";
   // On release build, just fallback to default instead of blowing up.
-  DisplayLayout layout = default_display_layout_;
+  DisplayLayout layout =
+      GetDisplayManager()->layout_store()->default_display_layout();
   layout.primary_id = primary_display_id;
   return layout;
 }
@@ -454,14 +432,6 @@ DisplayIdPair DisplayController::GetCurrentDisplayIdPair() const {
     // Display has been Swapped.
     return std::make_pair(secondary.id(), primary.id());
   }
-}
-
-DisplayLayout DisplayController::GetRegisteredDisplayLayout(
-    const DisplayIdPair& pair) {
-  std::map<DisplayIdPair, DisplayLayout>::const_iterator iter =
-      paired_layouts_.find(pair);
-  return
-      iter != paired_layouts_.end() ? iter->second : CreateDisplayLayout(pair);
 }
 
 void DisplayController::ToggleMirrorMode() {
@@ -559,7 +529,8 @@ void DisplayController::SetPrimaryDisplay(
                                 old_primary_display.id());
 
   primary_display_id = new_primary_display.id();
-  paired_layouts_[GetCurrentDisplayIdPair()].primary_id = primary_display_id;
+  GetDisplayManager()->layout_store()->UpdatePrimaryDisplayId(
+      GetCurrentDisplayIdPair(), primary_display_id);
 
   display_manager->UpdateWorkAreaOfDisplayNearestWindow(
       primary_root, old_primary_display.GetWorkAreaInsets());
@@ -794,13 +765,14 @@ void DisplayController::NotifyDisplayConfigurationChanged() {
   focus_activation_store_->Restore();
 
   internal::DisplayManager* display_manager = GetDisplayManager();
+  internal::DisplayLayoutStore* layout_store = display_manager->layout_store();
   if (display_manager->num_connected_displays() > 1) {
     DisplayIdPair pair = GetCurrentDisplayIdPair();
-    if (paired_layouts_.find(pair) == paired_layouts_.end())
-      CreateDisplayLayout(pair);
-    paired_layouts_[pair].mirrored = display_manager->IsMirrored();
+    layout_store->UpdateMirrorStatus(pair, display_manager->IsMirrored());
+    DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(pair);
+
     if (Shell::GetScreen()->GetNumDisplays() > 1 ) {
-      int64 primary_id = paired_layouts_[pair].primary_id;
+      int64 primary_id = layout.primary_id;
       SetPrimaryDisplayId(
           primary_id == gfx::Display::kInvalidDisplayID ?
           pair.first : primary_id);
@@ -808,21 +780,11 @@ void DisplayController::NotifyDisplayConfigurationChanged() {
       // ignored. Happens when a) default layout's primary id
       // doesn't exist, or b) the primary_id has already been
       // set to the same and didn't update it.
-      paired_layouts_[pair].primary_id = GetPrimaryDisplay().id();
+      layout_store->UpdatePrimaryDisplayId(pair, GetPrimaryDisplay().id());
     }
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
   UpdateHostWindowNames();
-}
-
-void DisplayController::RegisterLayoutForDisplayIdPairInternal(
-    int64 id1,
-    int64 id2,
-    const DisplayLayout& layout,
-    bool override) {
-  DisplayIdPair pair = std::make_pair(id1, id2);
-  if (override || paired_layouts_.find(pair) == paired_layouts_.end())
-    paired_layouts_[pair] = layout;
 }
 
 void DisplayController::OnFadeOutForSwapDisplayFinished() {
@@ -830,18 +792,6 @@ void DisplayController::OnFadeOutForSwapDisplayFinished() {
   SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
   Shell::GetInstance()->output_configurator_animation()->StartFadeInAnimation();
 #endif
-}
-
-DisplayLayout DisplayController::ComputeDisplayLayoutForDisplayIdPair(
-    const DisplayIdPair& pair) {
-  DisplayLayout layout = GetRegisteredDisplayLayout(pair);
-  int64 primary_id = layout.primary_id;
-  // TODO(oshima): replace this with DCHECK.
-  if (primary_id == gfx::Display::kInvalidDisplayID)
-    primary_id = GetPrimaryDisplay().id();
-  // Invert if the primary was swapped. If mirrored, first is always
-  // primary.
-  return pair.first == primary_id ? layout : layout.Invert();
 }
 
 void DisplayController::UpdateHostWindowNames() {
@@ -858,14 +808,6 @@ void DisplayController::UpdateHostWindowNames() {
     XStoreName(ui::GetXDisplay(), xwindow, name.c_str());
   }
 #endif
-}
-
-DisplayLayout DisplayController::CreateDisplayLayout(
-    const DisplayIdPair& pair) {
-  DisplayLayout layout = default_display_layout_;
-  layout.primary_id = pair.first;
-  paired_layouts_[pair] = layout;
-  return layout;
 }
 
 }  // namespace ash
