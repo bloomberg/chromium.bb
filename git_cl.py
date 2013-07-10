@@ -8,6 +8,7 @@
 """A git-command for integrating reviews on Rietveld."""
 
 import difflib
+from distutils.version import LooseVersion
 import json
 import logging
 import optparse
@@ -86,6 +87,13 @@ def RunGitWithCode(args):
     # When the subprocess fails, it returns None.  That triggers a ValueError
     # when trying to unpack the return value into (out, code).
     return 1, ''
+
+
+def IsGitVersionAtLeast(min_version):
+  PREFIX='git version '
+  version = RunGit(['--version']).strip()
+  return (version.startswith(PREFIX) and
+      LooseVersion(version[len(PREFIX):]) >= LooseVersion(min_version))
 
 
 def usage(more):
@@ -1714,7 +1722,8 @@ def CMDpatch(parser, args):
   parser.add_option('-f', action='store_true', dest='force',
                     help='with -b, clobber any existing branch')
   parser.add_option('--reject', action='store_true', dest='reject',
-                    help='allow failed patches and spew .rej files')
+                    help='failed patches spew .rej files rather than '
+                        'attempting a 3-way merge')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
                     help="don't commit after patch applies")
   (options, args) = parser.parse_args(args)
@@ -1776,6 +1785,8 @@ def CMDpatch(parser, args):
   cmd = ['git', 'apply', '--index', '-p0']
   if options.reject:
     cmd.append('--reject')
+  elif IsGitVersionAtLeast('1.7.12'):
+    cmd.append('--3way')
   try:
     subprocess2.check_call(cmd, env=env,
                            stdin=patch_data, stdout=subprocess2.VOID)
