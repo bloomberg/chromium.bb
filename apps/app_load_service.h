@@ -16,6 +16,10 @@
 
 class Profile;
 
+namespace extensions {
+struct UnloadedExtensionInfo;
+}
+
 namespace apps {
 
 // Monitors apps being reloaded and performs app specific actions (like launch
@@ -59,6 +63,11 @@ class AppLoadService : public BrowserContextKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  bool HasShellWindows(const std::string& extension_id);
+  bool WasUnloadedForReload(
+      const extensions::UnloadedExtensionInfo& unload_info);
+  bool HasPostReloadAction(const std::string& extension_id);
 
   // Map of extension id to reload action. Absence from the map implies
   // no action.
