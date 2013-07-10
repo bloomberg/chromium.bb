@@ -289,9 +289,13 @@ def SetupBuild(options):
 
   Log('Building for %s' % options.board)
 
-  # Separate out board_variant string: "peach_pit" becomes "peach", "pit"
+  # Separate out board_variant string: "peach_pit" becomes "peach", "pit".
+  # But don't mess up upstream boards which use _ in their name.
   parts = options.board.split('_')
-  board = parts[0]
+  if parts[0] in ['daisy', 'peach']:
+    board = parts[0]
+  else:
+    board = options.board
 
   # To allow this to be run from 'cros_sdk'
   if in_chroot:
@@ -391,8 +395,7 @@ def SetupBuild(options):
         'QUIET=1',
         'CFLAGS_EXTRA_VBOOT=-DUNROLL_LOOPS',
         'VBOOT_SOURCE=%s/platform/vboot_reference' % src_root]
-    if not options.small:
-      base.append('VBOOT_DEBUG=1')
+    base.append('VBOOT_DEBUG=1')
 
   # Handle the Chrome OS USE_STDINT workaround. Vboot needs <stdint.h> due
   # to a recent change, the need for which I didn't fully understand. But
