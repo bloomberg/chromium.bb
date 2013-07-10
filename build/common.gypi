@@ -421,6 +421,7 @@
       'spdy_proxy_auth_origin%' : '',
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
+      'enable_mdns%' : 0,
 
       'conditions': [
         # A flag for POSIX platforms
@@ -684,6 +685,9 @@
         }, {
           'use_openmax_dl_fft%': 0,
         }],
+        ['OS=="win" or OS=="linux"', {
+            'enable_mdns%' : 1,
+        }]
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses
@@ -834,6 +838,7 @@
     'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
+    'enable_mdns%' : '<(enable_mdns)',
 
     # Use system mesa instead of bundled one.
     'use_system_mesa%': 0,
@@ -1097,9 +1102,6 @@
     # Whether we are using the rlz library or not.  Platforms like Android send
     # rlz codes for searches but do not use the library.
     'enable_rlz%': 0,
-
-    # MDNS is disabled by default.
-    'enable_mdns%' : 0,
 
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
