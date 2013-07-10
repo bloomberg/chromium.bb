@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/google_apis/auth_service_interface.h"
 #include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/drive_common_callbacks.h"
 
@@ -58,6 +59,10 @@ class DriveServiceInterface {
 
   // True if OAuth2 access token is retrieved and believed to be fresh.
   virtual bool HasAccessToken() const = 0;
+
+  // Gets the cached OAuth2 access token or if empty, then fetches a new one.
+  virtual void RequestAccessToken(
+      const google_apis::AuthStatusCallback& callback) = 0;
 
   // True if OAuth2 refresh token is present.
   virtual bool HasRefreshToken() const = 0;

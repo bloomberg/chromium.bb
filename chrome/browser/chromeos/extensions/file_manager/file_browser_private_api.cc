@@ -451,6 +451,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<ZipSelectionFunction>();
   registry->RegisterFunction<ValidatePathNameLengthFunction>();
   registry->RegisterFunction<ZoomFunction>();
+  registry->RegisterFunction<RequestAccessTokenFunction>();
   event_router_->ObserveFileSystemEvents();
 }
 
@@ -3060,4 +3061,39 @@ bool ZoomFunction::RunImpl() {
   }
   view_host->Zoom(zoom_type);
   return true;
+}
+
+RequestAccessTokenFunction::RequestAccessTokenFunction() {
+}
+
+RequestAccessTokenFunction::~RequestAccessTokenFunction() {
+}
+
+bool RequestAccessTokenFunction::RunImpl() {
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
+  bool refresh;
+  args_->GetBoolean(0, &refresh);
+
+  if (!integration_service) {
+    SetResult(new base::StringValue(""));
+    SendResponse(true);
+    return true;
+  }
+
+  // If refreshing is requested, then clear the token to refetch it.
+  if (refresh)
+    integration_service->drive_service()->ClearAccessToken();
+
+  // Retrieve the cached auth token (if available), otherwise the AuthService
+  // instance will try to refetch it.
+  integration_service->drive_service()->RequestAccessToken(
+      base::Bind(&RequestAccessTokenFunction::OnAccessTokenFetched, this));
+  return true;
+}
+
+void RequestAccessTokenFunction::OnAccessTokenFetched(
+    google_apis::GDataErrorCode code, const std::string& access_token) {
+  SetResult(new base::StringValue(access_token));
+  SendResponse(true);
 }

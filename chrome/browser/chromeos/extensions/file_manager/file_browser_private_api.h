@@ -766,4 +766,23 @@ class ZoomFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+// Implements the chrome.fileBrowserPrivate.requestAccessToken method.
+class RequestAccessTokenFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestAccessToken",
+                             FILEBROWSERPRIVATE_REQUESTACCESSTOKEN)
+
+  RequestAccessTokenFunction();
+
+ protected:
+  virtual ~RequestAccessTokenFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+  // Received the cached auth token (if available) or the fetched one.
+  void OnAccessTokenFetched(google_apis::GDataErrorCode code,
+                            const std::string& access_token);
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_H_

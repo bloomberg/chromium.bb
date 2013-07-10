@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/auth_service_interface.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 
@@ -61,6 +62,8 @@ class DriveAPIService : public DriveServiceInterface,
   virtual std::string CanonicalizeResourceId(
       const std::string& resource_id) const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
+  virtual void RequestAccessToken(
+      const google_apis::AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;

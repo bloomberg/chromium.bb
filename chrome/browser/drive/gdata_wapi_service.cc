@@ -13,6 +13,7 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
@@ -24,6 +25,7 @@ using google_apis::AboutResource;
 using google_apis::AccountMetadata;
 using google_apis::AddResourceToDirectoryRequest;
 using google_apis::AppList;
+using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::AuthorizeAppRequest;
 using google_apis::AuthService;
@@ -578,20 +580,33 @@ bool GDataWapiService::HasAccessToken() const {
   return sender_->auth_service()->HasAccessToken();
 }
 
+void GDataWapiService::RequestAccessToken(const AuthStatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  const std::string access_token = sender_->auth_service()->access_token();
+  if (!access_token.empty()) {
+    callback.Run(google_apis::HTTP_NOT_MODIFIED, access_token);
+    return;
+  }
+
+  // Retrieve the new auth token.
+  sender_->auth_service()->StartAuthentication(callback);
+}
+
 bool GDataWapiService::HasRefreshToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   return sender_->auth_service()->HasRefreshToken();
 }
 
 void GDataWapiService::ClearAccessToken() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return sender_->auth_service()->ClearAccessToken();
+  sender_->auth_service()->ClearAccessToken();
 }
 
 void GDataWapiService::ClearRefreshToken() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return sender_->auth_service()->ClearRefreshToken();
+  sender_->auth_service()->ClearRefreshToken();
 }
 
 void GDataWapiService::OnOAuth2RefreshTokenChanged() {

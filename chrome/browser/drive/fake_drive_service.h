@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/auth_service_interface.h"
 
 namespace drive {
 
@@ -85,6 +86,8 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& resource_id) const OVERRIDE;
   virtual std::string GetRootResourceId() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
+  virtual void RequestAccessToken(
+      const google_apis::AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;

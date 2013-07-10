@@ -28,6 +28,7 @@ using content::BrowserThread;
 using google_apis::AboutResource;
 using google_apis::AccountMetadata;
 using google_apis::AppList;
+using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
 using google_apis::DownloadActionCallback;
@@ -268,6 +269,12 @@ std::string FakeDriveService::CanonicalizeResourceId(
 bool FakeDriveService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return true;
+}
+
+void FakeDriveService::RequestAccessToken(const AuthStatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  callback.Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
 }
 
 bool FakeDriveService::HasRefreshToken() const {

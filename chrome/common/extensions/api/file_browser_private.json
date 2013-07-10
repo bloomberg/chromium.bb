@@ -991,7 +991,7 @@
           }
         ]
       },
-{
+      {
         "name": "searchDriveMetadata",
         "type": "function",
         "description": "Performs drive metadata search.",
@@ -1143,7 +1143,30 @@
           {
             "name": "operation",
             "type": "string",
+            "description": "Zooming mode.",
             "enum": ["in", "out", "reset"]
+          }
+        ]
+      },
+      {
+        "name": "requestAccessToken",
+        "description": "Requests a Drive API OAuth2 access token.",
+        "parameters": [
+          {
+            "name": "refresh",
+            "type": "boolean",
+            "description": "Whether the token should be refetched instead of using the cached one."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name" : "accessToken",
+                "type": "string",
+                "description": "OAuth2 access token, or an empty string if failed to fetch."
+              }
+            ]
           }
         ]
       }
