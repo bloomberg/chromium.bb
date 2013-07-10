@@ -9,6 +9,7 @@
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace {
 
@@ -85,6 +86,12 @@ void StackTrace::PrintBacktrace() const {
 void StackTrace::OutputToStream(std::ostream* os) const {
   std::string proc_maps;
   std::vector<MappedMemoryRegion> regions;
+  // Allow IO to read /proc/self/maps. Reading this file doesn't hit the disk
+  // since it lives in procfs, and this is currently used to print a stack trace
+  // on fatal log messages in debug builds only. If the restriction is enabled
+  // then it will recursively trigger fatal failures when this enters on the
+  // UI thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (!ReadProcMaps(&proc_maps)) {
     __android_log_write(
         ANDROID_LOG_ERROR, "chromium", "Failed to read /proc/self/maps");
