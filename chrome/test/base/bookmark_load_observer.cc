@@ -4,12 +4,12 @@
 
 #include "chrome/test/base/bookmark_load_observer.h"
 
-#include "chrome/test/base/ui_test_utils.h"
-
 BookmarkLoadObserver::BookmarkLoadObserver(const base::Closure& quit_task)
     : quit_task_(quit_task) {}
 
 BookmarkLoadObserver::~BookmarkLoadObserver() {}
+
+void BookmarkLoadObserver::BookmarkModelChanged() {}
 
 void BookmarkLoadObserver::Loaded(BookmarkModel* model, bool ids_reassigned) {
   quit_task_.Run();
