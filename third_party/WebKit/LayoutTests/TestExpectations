@@ -92,6 +92,8 @@ crbug.com/229435 [ Debug ] editing/selection/caret-at-bidi-boundary.html [ Slow 
 crbug.com/248078 [ Win ] compositing/culling/filter-occlusion-blur.html [ Slow ]
 crbug.com/248078 [ Win ] compositing/tiny-layer-rotated.html [ Slow ]
 crbug.com/248081 [ Win7 ] css3/calc/simple-calcs.html [ Slow ]
+crbug.com/258602 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/258602 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
 crbug.com/248081 [ Win7 ] css3/filters/filter-change-repaint-composited.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] fast/filesystem/file-writer-abort.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] fast/filesystem/file-writer-abort-continue.html [ Slow ]

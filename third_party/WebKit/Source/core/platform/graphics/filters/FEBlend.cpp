@@ -35,7 +35,7 @@
 #include <wtf/Uint8ClampedArray.h>
 
 #include "SkBitmapSource.h"
-#include "SkBlendImageFilter.h"
+#include "SkXfermodeImageFilter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 
@@ -187,21 +187,21 @@ void FEBlend::applySoftware()
 #endif
 }
 
-static SkBlendImageFilter::Mode toSkiaMode(BlendModeType mode)
+static SkXfermode::Mode toSkiaMode(BlendModeType mode)
 {
     switch (mode) {
     case FEBLEND_MODE_NORMAL:
-        return SkBlendImageFilter::kNormal_Mode;
+        return SkXfermode::kSrcOver_Mode;
     case FEBLEND_MODE_MULTIPLY:
-        return SkBlendImageFilter::kMultiply_Mode;
+        return SkXfermode::kMultiply_Mode;
     case FEBLEND_MODE_SCREEN:
-        return SkBlendImageFilter::kScreen_Mode;
+        return SkXfermode::kScreen_Mode;
     case FEBLEND_MODE_DARKEN:
-        return SkBlendImageFilter::kDarken_Mode;
+        return SkXfermode::kDarken_Mode;
     case FEBLEND_MODE_LIGHTEN:
-        return SkBlendImageFilter::kLighten_Mode;
+        return SkXfermode::kLighten_Mode;
     default:
-        return SkBlendImageFilter::kNormal_Mode;
+        return SkXfermode::kSrcOver_Mode;
     }
 }
 
@@ -234,8 +234,8 @@ bool FEBlend::applySkia()
     SkBitmap backgroundBitmap = backgroundNativeImage->bitmap();
 
     SkAutoTUnref<SkImageFilter> backgroundSource(new SkBitmapSource(backgroundBitmap));
-    SkBlendImageFilter::Mode mode = toSkiaMode(m_mode);
-    SkAutoTUnref<SkImageFilter> blend(new SkBlendImageFilter(mode, backgroundSource));
+    SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toSkiaMode(m_mode)));
+    SkAutoTUnref<SkImageFilter> blend(new SkXfermodeImageFilter(mode, backgroundSource));
     SkPaint paint;
     paint.setImageFilter(blend);
     resultImage->context()->drawBitmap(foregroundBitmap, 0, 0, &paint);
@@ -246,8 +246,8 @@ SkImageFilter* FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
     SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
-    SkBlendImageFilter::Mode mode = toSkiaMode(m_mode);
-    return new SkBlendImageFilter(mode, background, foreground);
+    SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toSkiaMode(m_mode)));
+    return new SkXfermodeImageFilter(mode, background, foreground);
 }
 
 static TextStream& operator<<(TextStream& ts, const BlendModeType& type)
