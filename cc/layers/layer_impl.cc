@@ -422,11 +422,10 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 }
 
 base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
-  base::ListValue* list;
   base::DictionaryValue* result = new base::DictionaryValue;
   result->SetString("LayerType", LayerTypeAsString());
 
-  list = new base::ListValue;
+  base::ListValue* list = new base::ListValue;
   list->AppendInteger(bounds().width());
   list->AppendInteger(bounds().height());
   result->Set("Bounds", list);
@@ -446,6 +445,7 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
 
   result->SetBoolean("DrawsContent", draws_content_);
   result->SetDouble("Opacity", opacity());
+  result->SetBoolean("ContentsOpaque", contents_opaque_);
 
   if (scrollable_)
     result->SetBoolean("Scrollable", scrollable_);

@@ -77,6 +77,10 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
   if (dict->GetDouble("Opacity", &opacity))
     new_layer->SetOpacity(opacity);
 
+  bool contents_opaque;
+  if (dict->GetBoolean("ContentsOpaque", &contents_opaque))
+    new_layer->SetContentsOpaque(contents_opaque);
+
   bool scrollable;
   if (dict->GetBoolean("Scrollable", &scrollable))
     new_layer->SetScrollable(scrollable);
