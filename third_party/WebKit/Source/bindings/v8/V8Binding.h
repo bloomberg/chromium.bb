@@ -579,6 +579,12 @@ namespace WebCore {
         return *handle;
     }
 
+    // Attaches |environment| to |function| and returns it.
+    inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Handle<v8::Value> environment)
+    {
+        return v8::FunctionTemplate::New(function, environment)->GetFunction();
+    }
+
 } // namespace WebCore
 
 #endif // V8Binding_h

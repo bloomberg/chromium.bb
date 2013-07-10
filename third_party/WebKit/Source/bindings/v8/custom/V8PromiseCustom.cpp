@@ -51,11 +51,6 @@ namespace WebCore {
 
 namespace {
 
-v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Handle<v8::Value> environment)
-{
-    return v8::FunctionTemplate::New(function, environment)->GetFunction();
-}
-
 class PromiseTask : public ScriptExecutionContext::Task {
 public:
     PromiseTask(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> result)
