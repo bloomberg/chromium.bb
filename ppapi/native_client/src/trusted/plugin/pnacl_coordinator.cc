@@ -846,7 +846,12 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
       int32_t nexe_fd_err =
           plugin_->nacl_interface()->GetNexeFd(
               plugin_->pp_instance(),
-              pnacl_options_.GetCacheKey().c_str(),
+              streaming_downloader_->url().c_str(),
+              // TODO(dschuff): use the right abi version here.
+              0,
+              pnacl_options_.opt_level(),
+              parser.GetHeader("last-modified").c_str(),
+              parser.GetHeader("etag").c_str(),
               &is_cache_hit_,
               &nexe_handle_,
               cb.pp_completion_callback());

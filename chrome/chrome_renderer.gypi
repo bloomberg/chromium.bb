@@ -254,6 +254,8 @@
         'renderer/pepper/pepper_pdf_host.h',
         'renderer/pepper/pepper_shared_memory_message_filter.cc',
         'renderer/pepper/pepper_shared_memory_message_filter.h',
+        'renderer/pepper/pnacl_translation_resource_host.cc',
+        'renderer/pepper/pnacl_translation_resource_host.h',
         'renderer/pepper/ppb_nacl_private_impl.cc',
         'renderer/pepper/ppb_nacl_private_impl.h',
         'renderer/pepper/ppb_pdf_impl.cc',

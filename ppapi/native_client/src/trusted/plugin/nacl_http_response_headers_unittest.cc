@@ -18,10 +18,12 @@ TEST(NaClHttpResponseHeadersTest, TestGetValidators) {
                               "Accept-Ranges: bytes\n"
                               "ETag: w\"abcdefg\"\n"
                               "Content-Length: 2912652\n");
-  std::string one_val_expected("ETag:w\"abcdefg\"");
+  std::string one_val_expected("etag:w\"abcdefg\"");
   plugin::NaClHttpResponseHeaders parser_1;
   parser_1.Parse(one_val_headers);
-  EXPECT_EQ(parser_1.GetCacheValidators(), one_val_expected);
+  EXPECT_EQ(one_val_expected, parser_1.GetCacheValidators());
+  EXPECT_EQ(std::string("w\"abcdefg\""), parser_1.GetHeader("etag"));
+  EXPECT_EQ(std::string(), parser_1.GetHeader("last-modified"));
 
   // Test a Last-Modified Header.
   std::string mod_val_headers("Date: Wed, 15 Nov 1995 06:25:24 GMT\n"
@@ -31,10 +33,12 @@ TEST(NaClHttpResponseHeadersTest, TestGetValidators) {
                               "Accept-Ranges: bytes\n"
                               "Last-Modified: Wed, 15 Nov 1995 04:58:08 GMT\n"
                               "Content-Length: 2912652\n");
-  std::string mod_val_expected("Last-Modified:Wed, 15 Nov 1995 04:58:08 GMT");
+  std::string mod_val_expected("last-modified:Wed, 15 Nov 1995 04:58:08 GMT");
   plugin::NaClHttpResponseHeaders parser_1b;
   parser_1b.Parse(mod_val_headers);
-  EXPECT_EQ(parser_1b.GetCacheValidators(), mod_val_expected);
+  EXPECT_EQ(mod_val_expected, parser_1b.GetCacheValidators());
+  EXPECT_EQ(std::string("Wed, 15 Nov 1995 04:58:08 GMT"),
+            parser_1b.GetHeader("last-modified"));
 
   // Test both (strong) ETag and Last-Modified, with some whitespace.
   std::string two_val_headers("Date: Wed, 15 Nov 1995 06:25:24 GMT\n"
@@ -47,20 +51,24 @@ TEST(NaClHttpResponseHeadersTest, TestGetValidators) {
                               "Accept-Ranges: bytes\n"
                               "Content-Length: 2912652\n");
   // Note that the value can still have white-space.
-  std::string two_val_expected("Last-modified:Wed, 15 Nov 1995 04:58:08 GMT&"
-                               "etag:\"/abcdefg:A-Z0-9+/==\"");
+  std::string two_val_expected("etag:\"/abcdefg:A-Z0-9+/==\"&"
+                               "last-modified:Wed, 15 Nov 1995 04:58:08 GMT");
   plugin::NaClHttpResponseHeaders parser_2;
   parser_2.Parse(two_val_headers);
-  EXPECT_EQ(parser_2.GetCacheValidators(), two_val_expected);
+  EXPECT_EQ(two_val_expected, parser_2.GetCacheValidators());
+  EXPECT_EQ(std::string("\"/abcdefg:A-Z0-9+/==\""),
+            parser_2.GetHeader("etag"));
 
   // Some etag generators like python HTTP server use ' instead of "
   std::string single_q_headers("Date: Wed, 15 Nov 1995 06:25:24 GMT\n"
                                "Server: BaseHTTP/0.3 Python/2.7.3\n"
                                "ETag: '/usr/local/some_file.nmf'\n");
-  std::string single_q_expected("ETag:'/usr/local/some_file.nmf'");
+  std::string single_q_expected("etag:'/usr/local/some_file.nmf'");
   plugin::NaClHttpResponseHeaders parser_3;
   parser_3.Parse(single_q_headers);
-  EXPECT_EQ(parser_3.GetCacheValidators(), single_q_expected);
+  EXPECT_EQ(single_q_expected, parser_3.GetCacheValidators());
+  EXPECT_EQ(std::string("'/usr/local/some_file.nmf'"),
+            parser_3.GetHeader("etag"));
 
   // Keys w/ leading whitespace are invalid.
   // See: HttpResponseHeadersTest.NormalizeHeadersLeadingWhitespace.
@@ -70,7 +78,8 @@ TEST(NaClHttpResponseHeadersTest, TestGetValidators) {
   std::string bad_expected("");
   plugin::NaClHttpResponseHeaders parser_4;
   parser_4.Parse(bad_headers);
-  EXPECT_EQ(parser_4.GetCacheValidators(), bad_expected);
+  EXPECT_EQ(bad_expected, parser_4.GetCacheValidators());
+  EXPECT_EQ(bad_expected, parser_4.GetHeader("etag"));
 }
 
 // Test that we are able to determine when there is a no-store

@@ -64,7 +64,7 @@ struct NaClStartParams {
 // Parameters sent to the browser process to have it launch a NaCl process.
 //
 // If you change this, you will also need to update the IPC serialization in
-// renderer_messages.h.
+// nacl_host_messages.h.
 struct NaClLaunchParams {
   NaClLaunchParams();
   NaClLaunchParams(const std::string& u, int r, uint32 p, bool uses_irt,

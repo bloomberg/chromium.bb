@@ -40,6 +40,9 @@ class NaClHttpResponseHeaders {
   // Invalid header lines are skipped.
   void Parse(const std::string& headers_str);
 
+  // Get the value of the header named |name|
+  std::string GetHeader(const std::string& name);
+
   // Return a concatenated string of HTTP caching validators.
   // E.g., Last-Modified time and ETags.
   std::string GetCacheValidators();

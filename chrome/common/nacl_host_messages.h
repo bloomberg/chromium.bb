@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/nacl_types.h"
+#include "chrome/common/pnacl_types.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -26,6 +27,14 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchParams)
   IPC_STRUCT_TRAITS_MEMBER(uses_irt)
   IPC_STRUCT_TRAITS_MEMBER(enable_dyncode_syscalls)
   IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(nacl::PnaclCacheInfo)
+  IPC_STRUCT_TRAITS_MEMBER(pexe_url)
+  IPC_STRUCT_TRAITS_MEMBER(abi_version)
+  IPC_STRUCT_TRAITS_MEMBER(opt_level)
+  IPC_STRUCT_TRAITS_MEMBER(last_modified)
+  IPC_STRUCT_TRAITS_MEMBER(etag)
 IPC_STRUCT_TRAITS_END()
 
 // A renderer sends this to the browser process when it wants to start
@@ -50,7 +59,26 @@ IPC_SYNC_MESSAGE_CONTROL1_1(NaClHostMsg_GetReadonlyPnaclFD,
 IPC_SYNC_MESSAGE_CONTROL0_1(NaClHostMsg_NaClCreateTemporaryFile,
                             IPC::PlatformFileForTransit /* out file */)
 
-// A renderer sends this to the browser process to display infobar
+// A renderer sends this to the browser to request a file descriptor for
+// a translated nexe.
+IPC_MESSAGE_CONTROL2(NaClHostMsg_NexeTempFileRequest,
+                     int /* render_view_id */,
+                     nacl::PnaclCacheInfo /* cache info */)
+
+// The browser replies to a renderer's temp file request with output_file,
+// which is either a writeable temp file to use for translation, or a
+// read-only file containing the translated nexe from the cache.
+IPC_MESSAGE_CONTROL3(NaClViewMsg_NexeTempFileReply,
+                     int /* render_view_id */,
+                     bool /* is_cache_hit */,
+                     IPC::PlatformFileForTransit /* output file */)
+
+// A renderer sends this to the browser to report that its translation has
+// finished and its temp file contains the translated nexe.
+IPC_MESSAGE_CONTROL1(NaClHostMsg_ReportTranslationFinished,
+                     int /* render_view_id */)
+
+// A renderer sends this to the browser process to report an error.
 IPC_MESSAGE_CONTROL2(NaClHostMsg_NaClErrorStatus,
                      int /* render_view_id */,
                      int /* Error ID */)

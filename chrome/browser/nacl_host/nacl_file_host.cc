@@ -145,16 +145,13 @@ void DoOpenPnaclFile(
   nacl_host_message_filter->Send(reply_msg);
 }
 
-void DoCreateTemporaryFile(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    IPC::Message* reply_msg) {
+IPC::PlatformFileForTransit GetTemporaryFile(
+    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   base::FilePath file_path;
-  if (!file_util::CreateTemporaryFile(&file_path)) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-    return;
-  }
+  if (!file_util::CreateTemporaryFile(&file_path))
+    return IPC::InvalidPlatformFileForTransit();
 
   base::PlatformFileError error;
   base::PlatformFile file_handle = base::CreatePlatformFile(
@@ -164,25 +161,20 @@ void DoCreateTemporaryFile(
       base::PLATFORM_FILE_DELETE_ON_CLOSE,
       NULL, &error);
 
-  if (error != base::PLATFORM_FILE_OK) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-    return;
-  }
+  if (error != base::PLATFORM_FILE_OK)
+    return IPC::InvalidPlatformFileForTransit();
 
-  // Send the reply!
   // Do any DuplicateHandle magic that is necessary first.
-  IPC::PlatformFileForTransit target_desc =
-      IPC::GetFileHandleForProcess(file_handle,
-                                   nacl_host_message_filter->PeerHandle(),
-                                   true);
-  if (target_desc == IPC::InvalidPlatformFileForTransit()) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-    return;
-  }
+  return IPC::GetFileHandleForProcess(file_handle,
+                                      nacl_host_message_filter->PeerHandle(),
+                                      true);
+}
 
-  NaClHostMsg_NaClCreateTemporaryFile::WriteReplyParams(
-      reply_msg, target_desc);
-  nacl_host_message_filter->Send(reply_msg);
+void ReturnTemporaryFileOnIOThread(
+    nacl_file_host::TempFileCallback cb,
+    IPC::PlatformFileForTransit fd) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  cb.Run(fd);
 }
 
 void DoRegisterOpenedNaClExecutableFile(
@@ -344,13 +336,14 @@ bool PnaclCanOpenFile(const std::string& filename,
 
 void CreateTemporaryFile(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    IPC::Message* reply_msg) {
-  if (!BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&DoCreateTemporaryFile,
-                 nacl_host_message_filter,
-                 reply_msg))) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
+    TempFileCallback cb) {
+    if (!base::PostTaskAndReplyWithResult(
+            BrowserThread::GetBlockingPool(),
+            FROM_HERE,
+            base::Bind(&GetTemporaryFile, nacl_host_message_filter),
+            base::Bind(&ReturnTemporaryFileOnIOThread, cb))) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    cb.Run(IPC::InvalidPlatformFileForTransit());
   }
 }
 

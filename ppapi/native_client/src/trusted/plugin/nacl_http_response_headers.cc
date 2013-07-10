@@ -71,19 +71,27 @@ void NaClHttpResponseHeaders::Parse(const std::string& headers_str) {
   }
 }
 
-std::string NaClHttpResponseHeaders::GetCacheValidators() {
-  std::string result;
+std::string NaClHttpResponseHeaders::GetHeader(const std::string& name) {
   for (size_t i = 0; i < header_entries_.size(); ++i) {
     const Entry& entry = header_entries_[i];
     std::string key = entry.first;
     // TODO(jvoung): replace with LowerCaseEqualsASCII later.
     std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-    if (key.compare("etag") == 0 || key.compare("last-modified") == 0) {
-      if (!result.empty())
-        result += "&";
-      // Return the original headers, not the tolower ones.
-      result += entry.first + ":" + entry.second;
-    }
+    if (key.compare(name) == 0)
+      return entry.second;
+  }
+  return std::string();
+}
+
+std::string NaClHttpResponseHeaders::GetCacheValidators() {
+  std::string result = GetHeader("etag");
+  if (!result.empty())
+    result = "etag:" + result;
+  std::string lm = GetHeader("last-modified");
+  if (!lm.empty()) {
+    if (!result.empty())
+      result += "&";
+    result += "last-modified:" + lm;
   }
   return result;
 }

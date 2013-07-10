@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "ipc/ipc_platform_file.h"
 
 class ExtensionInfoMap;
 class GURL;
@@ -24,6 +26,7 @@ class Message;
 // Opens NaCl Files in the Browser process, on behalf of the NaCl plugin.
 
 namespace nacl_file_host {
+typedef base::Callback<void(IPC::PlatformFileForTransit)> TempFileCallback;
 
 // Open a Pnacl file (readonly) on behalf of the NaCl plugin.
 void GetReadonlyPnaclFd(
@@ -40,7 +43,7 @@ bool PnaclCanOpenFile(const std::string& filename,
 // is closed, or earlier.
 void CreateTemporaryFile(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    IPC::Message* reply_msg);
+    TempFileCallback cb);
 
 // Opens a NaCl executable file for reading and executing.
 void OpenNaClExecutable(

@@ -400,6 +400,8 @@
         'common/pepper_flash.h',
         'common/pepper_permission_util.cc',
         'common/pepper_permission_util.h',
+        'common/pnacl_types.cc',
+        'common/pnacl_types.h',
         'common/pref_names_util.cc',
         'common/pref_names_util.h',
         'common/print_messages.cc',

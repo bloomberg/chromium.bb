@@ -54,6 +54,10 @@ bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnGetReadonlyPnaclFd)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_NaClCreateTemporaryFile,
                                     OnNaClCreateTemporaryFile)
+    IPC_MESSAGE_HANDLER(NaClHostMsg_NexeTempFileRequest,
+                        OnGetNexeFd)
+    IPC_MESSAGE_HANDLER(NaClHostMsg_ReportTranslationFinished,
+                        OnTranslationFinished)
     IPC_MESSAGE_HANDLER(NaClHostMsg_NaClErrorStatus, OnNaClErrorStatus)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_OpenNaClExecutable,
                                     OnOpenNaClExecutable)
@@ -93,9 +97,53 @@ void NaClHostMessageFilter::OnGetReadonlyPnaclFd(
   nacl_file_host::GetReadonlyPnaclFd(this, filename, reply_msg);
 }
 
+// Return the temporary file via a reply to the
+// NaClHostMsg_NaClCreateTemporaryFile sync message.
+void NaClHostMessageFilter::SyncReturnTemporaryFile(
+    IPC::Message* reply_msg,
+    IPC::PlatformFileForTransit fd) {
+  if (fd == IPC::InvalidPlatformFileForTransit()) {
+    reply_msg->set_reply_error();
+  } else {
+    NaClHostMsg_NaClCreateTemporaryFile::WriteReplyParams(
+        reply_msg, fd);
+  }
+  Send(reply_msg);
+}
+
 void NaClHostMessageFilter::OnNaClCreateTemporaryFile(
     IPC::Message* reply_msg) {
-  nacl_file_host::CreateTemporaryFile(this, reply_msg);
+  nacl_file_host::CreateTemporaryFile(
+      this,
+      base::Bind(&NaClHostMessageFilter::SyncReturnTemporaryFile,
+                 this,
+                 reply_msg));
+}
+
+// For now, GetNexeFd cache requests always set is_hit to false and returns
+// a new temporary file via a NaClViewMsg_NexeTempFileReply message.
+// A future CL will implement the cache lookup logic.
+// See also https://code.google.com/p/nativeclient/issues/detail?id=3372
+void NaClHostMessageFilter::AsyncReturnTemporaryFile(
+    int render_view_id,
+    IPC::PlatformFileForTransit fd) {
+  Send(new NaClViewMsg_NexeTempFileReply(render_view_id, false, fd));
+}
+
+void NaClHostMessageFilter::OnGetNexeFd(
+    int render_view_id,
+    const nacl::PnaclCacheInfo& cache_info) {
+  nacl_file_host::CreateTemporaryFile(
+      this,
+      base::Bind(&NaClHostMessageFilter::AsyncReturnTemporaryFile,
+                 this,
+                 render_view_id));
+}
+
+// For now, ignore translation finished messages. A future CL will implement
+// the logic of reading the nexe from the temp file and storing it in the cache.
+// See also https://code.google.com/p/nativeclient/issues/detail?id=3372
+void NaClHostMessageFilter::OnTranslationFinished(int render_view_id) {
 }
 
 void NaClHostMessageFilter::OnNaClErrorStatus(int render_view_id,
