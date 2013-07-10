@@ -320,7 +320,8 @@ class COMPOSITOR_EXPORT Layer
   // TextureLayerClient
   virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
-  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox) OVERRIDE;
+  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
+                                     bool use_shared_memory) OVERRIDE;
 
   float device_scale_factor() const { return device_scale_factor_; }
 

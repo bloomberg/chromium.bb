@@ -662,7 +662,8 @@ WebKit::WebGraphicsContext3D* Layer::Context3d() {
   return NULL;
 }
 
-bool Layer::PrepareTextureMailbox(cc::TextureMailbox* mailbox) {
+bool Layer::PrepareTextureMailbox(cc::TextureMailbox* mailbox,
+                                  bool use_shared_memory) {
   return false;
 }
 

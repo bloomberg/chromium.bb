@@ -1088,7 +1088,8 @@ WebKit::WebGraphicsContext3D* RenderWidgetHostViewAndroid::Context3d() {
 }
 
 bool RenderWidgetHostViewAndroid::PrepareTextureMailbox(
-    cc::TextureMailbox* mailbox) {
+    cc::TextureMailbox* mailbox,
+    bool use_shared_memory) {
   return false;
 }
 

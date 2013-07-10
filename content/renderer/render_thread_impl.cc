@@ -106,6 +106,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/child/worker_task_runner.h"
 #include "webkit/renderer/appcache/appcache_frontend_impl.h"
+#include "webkit/renderer/compositor_bindings/web_external_bitmap_impl.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -215,6 +216,10 @@ void* CreateHistogram(
 void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
+}
+
+scoped_ptr<base::SharedMemory> AllocateSharedMemoryFunction(size_t size) {
+  return RenderThreadImpl::Get()->HostAllocateSharedMemoryBuffer(size);
 }
 
 }  // namespace
@@ -731,6 +736,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
+
+  webkit::SetSharedMemoryAllocationFunction(AllocateSharedMemoryFunction);
 }
 
 void RenderThreadImpl::RegisterSchemes() {

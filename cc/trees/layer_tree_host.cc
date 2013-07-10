@@ -52,7 +52,8 @@ RendererCapabilities::RendererCapabilities()
       using_offscreen_context3d(false),
       max_texture_size(0),
       avoid_pow2_textures(false),
-      using_map_image(false) {}
+      using_map_image(false),
+      using_shared_memory_resources(false) {}
 
 RendererCapabilities::~RendererCapabilities() {}
 
@@ -681,6 +682,10 @@ void LayerTreeHost::CalculateLCDTextMetricsCallback(Layer* layer) {
     if (layer->contents_opaque())
       lcd_text_metrics_.total_num_cc_layers_will_use_lcd_text++;
   }
+}
+
+bool LayerTreeHost::UsingSharedMemoryResources() {
+  return GetRendererCapabilities().using_shared_memory_resources;
 }
 
 bool LayerTreeHost::UpdateLayers(Layer* root_layer,

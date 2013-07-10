@@ -15,6 +15,8 @@
       'web_compositing_reasons.cc',
       'web_content_layer_impl.cc',
       'web_content_layer_impl.h',
+      'web_external_bitmap_impl.cc',
+      'web_external_bitmap_impl.h',
       'web_external_texture_layer_impl.cc',
       'web_external_texture_layer_impl.h',
       'web_filter_operations_impl.cc',

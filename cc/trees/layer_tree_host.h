@@ -80,6 +80,7 @@ struct CC_EXPORT RendererCapabilities {
   int max_texture_size;
   bool avoid_pow2_textures;
   bool using_map_image;
+  bool using_shared_memory_resources;
 };
 
 class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
@@ -254,6 +255,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   scoped_ptr<base::Value> AsValue() const;
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
+
+  bool UsingSharedMemoryResources();
 
  protected:
   LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings);

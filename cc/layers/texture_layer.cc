@@ -172,7 +172,8 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
   if (client_) {
     if (uses_mailbox_) {
       TextureMailbox mailbox;
-      if (client_->PrepareTextureMailbox(&mailbox)) {
+      if (client_->PrepareTextureMailbox(
+              &mailbox, layer_tree_host()->UsingSharedMemoryResources())) {
         SetTextureMailbox(mailbox);
         updated = true;
       }

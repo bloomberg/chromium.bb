@@ -179,7 +179,8 @@ class RenderWidgetHostViewAndroid
   // cc::TextureLayerClient implementation.
   virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
-  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox) OVERRIDE;
+  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
+                                     bool use_shared_memory) OVERRIDE;
 
   // cc::DelegatedRendererLayerClient implementation.
   virtual void DidCommitFrameData() OVERRIDE;

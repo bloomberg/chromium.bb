@@ -706,7 +706,8 @@ class TextureLayerClientTest
     return context_;
   }
 
-  virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox) OVERRIDE {
+  virtual bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox, bool use_shared_memory) OVERRIDE {
     return false;
   }
 

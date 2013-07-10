@@ -76,6 +76,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   capabilities_.using_partial_swap = true;
 
   capabilities_.using_map_image = Settings().use_map_image;
+  capabilities_.using_shared_memory_resources = true;
 }
 
 SoftwareRenderer::~SoftwareRenderer() {}
