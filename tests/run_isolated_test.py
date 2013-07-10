@@ -76,13 +76,27 @@ class ThreadPoolTest(unittest.TestCase):
   MIN_THREADS = 0
   MAX_THREADS = 32
 
+  # Append custom assert messages to default ones (works with python >= 2.7).
+  longMessage = True
+
   @staticmethod
-  def sleep_task(duration):
+  def sleep_task(duration=0.01):
     """Returns function that sleeps |duration| sec and returns its argument."""
     def task(arg):
       time.sleep(duration)
       return arg
     return task
+
+  def retrying_sleep_task(self, duration=0.01):
+    """Returns function that adds sleep_task to the thread pool."""
+    def task(arg):
+      self.thread_pool.add_task(0, self.sleep_task(duration), arg)
+    return task
+
+  @staticmethod
+  def none_task():
+    """Returns function that returns None."""
+    return lambda _arg: None
 
   def setUp(self):
     super(ThreadPoolTest, self).setUp()
@@ -93,6 +107,37 @@ class ThreadPoolTest(unittest.TestCase):
   def tearDown(self):
     super(ThreadPoolTest, self).tearDown()
     self.thread_pool.close()
+
+  def get_results_via_join(self, _expected):
+    return self.thread_pool.join()
+
+  def get_results_via_get_one_result(self, expected):
+    return [self.thread_pool.get_one_result() for _ in expected]
+
+  def get_results_via_iter_results(self, _expected):
+    return list(self.thread_pool.iter_results())
+
+  def run_results_test(self, task, results_getter, args=None, expected=None):
+    """Template function for tests checking that pool returns all results.
+
+    Will add multiple instances of |task| to the thread pool, then call
+    |results_getter| to get back all results and compare them to expected ones.
+    """
+    args = range(0, 100) if args is None else args
+    expected = args if expected is None else expected
+    msg = 'Using \'%s\' to get results.' % (results_getter.__name__,)
+
+    for i in args:
+      self.thread_pool.add_task(0, task, i)
+    results = results_getter(expected)
+
+    # Check that got all results back (exact same set, no duplicates).
+    self.assertEqual(set(expected), set(results), msg)
+    self.assertEqual(len(expected), len(results), msg)
+
+    # Queue is empty, result request should fail.
+    with self.assertRaises(run_isolated.ThreadPoolEmpty):
+      self.thread_pool.get_one_result()
 
   @timeout(1)
   def test_get_one_result_ok(self):
@@ -105,39 +150,85 @@ class ThreadPoolTest(unittest.TestCase):
     with self.assertRaises(run_isolated.ThreadPoolEmpty):
       self.thread_pool.get_one_result()
 
-  @timeout(1)
-  def test_get_many_results(self):
-    args = range(0, 100)
-    for i in args:
-      self.thread_pool.add_task(0, self.sleep_task(0.01), i)
-    results = [self.thread_pool.get_one_result() for _ in args]
-    # Check that got all results back (exact same set, no duplicates).
-    self.assertEqual(set(args), set(results))
-    self.assertEqual(len(args), len(results))
-    # Queue is empty, result request should fail.
+  @timeout(5)
+  def test_join(self):
+    self.run_results_test(self.sleep_task(),
+                          self.get_results_via_join)
+
+  @timeout(5)
+  def test_get_one_result(self):
+    self.run_results_test(self.sleep_task(),
+                          self.get_results_via_get_one_result)
+
+  @timeout(5)
+  def test_iter_results(self):
+    self.run_results_test(self.sleep_task(),
+                          self.get_results_via_iter_results)
+
+  @timeout(5)
+  def test_retry_and_join(self):
+    self.run_results_test(self.retrying_sleep_task(),
+                          self.get_results_via_join)
+
+  @timeout(5)
+  def test_retry_and_get_one_result(self):
+    self.run_results_test(self.retrying_sleep_task(),
+                          self.get_results_via_get_one_result)
+
+  @timeout(5)
+  def test_retry_and_iter_results(self):
+    self.run_results_test(self.retrying_sleep_task(),
+                          self.get_results_via_iter_results)
+
+  @timeout(5)
+  def test_none_task_and_join(self):
+    self.run_results_test(self.none_task(),
+                          self.get_results_via_join,
+                          expected=[])
+
+  @timeout(5)
+  def test_none_task_and_get_one_result(self):
+    self.thread_pool.add_task(0, self.none_task(), 0)
     with self.assertRaises(run_isolated.ThreadPoolEmpty):
       self.thread_pool.get_one_result()
 
   @timeout(5)
-  def test_iter_results(self):
-    args = range(0, 100)
-    for i in args:
-      self.thread_pool.add_task(0, self.sleep_task(0.01), i)
-    results = list(self.thread_pool.iter_results())
-    # Check that got all results back (exact same set, no duplicates).
-    self.assertEqual(set(args), set(results))
-    self.assertEqual(len(args), len(results))
-    # Queue is empty, result request should fail.
-    with self.assertRaises(run_isolated.ThreadPoolEmpty):
-      self.thread_pool.get_one_result()
+  def test_none_task_and_and_iter_results(self):
+    self.run_results_test(self.none_task(),
+                          self.get_results_via_iter_results,
+                          expected=[])
+
+  @timeout(5)
+  def test_generator_task(self):
+    MULTIPLIER = 1000
+    COUNT = 10
+
+    # Generator that yields [i * MULTIPLIER, i * MULTIPLIER + COUNT).
+    def generator_task(i):
+      for j in xrange(COUNT):
+        time.sleep(0.001)
+        yield i * MULTIPLIER + j
+
+    # Arguments for tasks and expected results.
+    args = range(0, 10)
+    expected = [i * MULTIPLIER + j for i in args for j in xrange(COUNT)]
+
+    # Test all possible ways to pull results from the thread pool.
+    getters = (self.get_results_via_join,
+               self.get_results_via_iter_results,
+               self.get_results_via_get_one_result,)
+    for results_getter in getters:
+      self.run_results_test(generator_task, results_getter, args, expected)
 
   @timeout(5)
   def test_concurrent_iter_results(self):
     def poller_proc(result):
       result.extend(self.thread_pool.iter_results())
+
     args = range(0, 100)
     for i in args:
-      self.thread_pool.add_task(0, self.sleep_task(0.01), i)
+      self.thread_pool.add_task(0, self.sleep_task(), i)
+
     # Start a bunch of threads, all calling iter_results in parallel.
     pollers = []
     for _ in xrange(0, 4):
@@ -145,27 +236,16 @@ class ThreadPoolTest(unittest.TestCase):
       poller = threading.Thread(target=poller_proc, args=(result,))
       poller.start()
       pollers.append((poller, result))
+
     # Collects results from all polling threads.
     all_results = []
     for poller, results in pollers:
       poller.join()
       all_results.extend(results)
+
     # Check that got all results back (exact same set, no duplicates).
     self.assertEqual(set(args), set(all_results))
     self.assertEqual(len(args), len(all_results))
-
-  @timeout(5)
-  def test_join(self):
-    args = range(0, 100)
-    for i in args:
-      self.thread_pool.add_task(0, self.sleep_task(0.01), i)
-    results = self.thread_pool.join()
-    # Check that got all results back (exact same set, no duplicates).
-    self.assertEqual(set(args), set(results))
-    self.assertEqual(len(args), len(results))
-    # Queue is empty, result request should fail.
-    with self.assertRaises(run_isolated.ThreadPoolEmpty):
-      self.thread_pool.get_one_result()
 
   @timeout(1)
   def test_adding_tasks_after_close(self):

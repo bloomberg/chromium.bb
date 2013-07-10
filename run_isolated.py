@@ -829,21 +829,25 @@ class ThreadPool(object):
     self._max_threads = max_threads
     self._prefix = prefix
 
-    # Mutables.
+    # Used to assign indexes to tasks.
     self._num_of_added_tasks_lock = threading.Lock()
     self._num_of_added_tasks = 0
-    self._outputs_exceptions_cond = threading.Condition()
+
+    # Lock that protected everything below (including conditional variable).
+    self._lock = threading.Lock()
+
+    # Condition 'bool(_outputs) or bool(_exceptions) or _pending_count == 0'.
+    self._outputs_exceptions_cond = threading.Condition(self._lock)
     self._outputs = []
     self._exceptions = []
 
-    # List of threads, number of threads in wait state, number of terminated and
-    # starting threads. All protected by _workers_lock.
-    self._workers_lock = threading.Lock()
+    # Number of pending tasks (queued or being processed now).
+    self._pending_count = 0
+
+    # List of threads.
     self._workers = []
+    # Number of threads that are waiting for new tasks.
     self._ready = 0
-    # Number of terminated threads, used to handle some edge cases in
-    # _is_task_queue_empty.
-    self._dead = 0
     # Number of threads already added to _workers, but not yet running the loop.
     self._starting = 0
     # True if close was called. Forbids adding new tasks.
@@ -854,7 +858,7 @@ class ThreadPool(object):
 
   def _add_worker(self):
     """Adds one worker thread if there isn't too many. Thread-safe."""
-    with self._workers_lock:
+    with self._lock:
       if len(self._workers) >= self._max_threads or self._is_closed:
         return False
       worker = threading.Thread(
@@ -880,7 +884,7 @@ class ThreadPool(object):
     """
     assert isinstance(priority, int)
     assert callable(func)
-    with self._workers_lock:
+    with self._lock:
       if self._is_closed:
         raise ThreadPoolClosed('Can not add a task to a closed ThreadPool')
       start_new_worker = (
@@ -889,6 +893,7 @@ class ThreadPool(object):
         # Enough slots.
         len(self._workers) < self._max_threads
       )
+      self._pending_count += 1
     with self._num_of_added_tasks_lock:
       self._num_of_added_tasks += 1
       index = self._num_of_added_tasks
@@ -899,23 +904,19 @@ class ThreadPool(object):
 
   def _run(self):
     """Worker thread loop. Runs until a None task is queued."""
-    started = False
+    # Thread has started, adjust counters.
+    with self._lock:
+      self._starting -= 1
+      self._ready += 1
     while True:
       try:
-        with self._workers_lock:
-          self._ready += 1
-          if not started:
-            self._starting -= 1
-            started = True
         task = self.tasks.get()
       finally:
-        with self._workers_lock:
+        with self._lock:
           self._ready -= 1
       try:
         if task is None:
           # We're done.
-          with self._workers_lock:
-            self._dead += 1
           return
         _priority, _index, func, args, kwargs = task
         if inspect.isgeneratorfunction(func):
@@ -928,14 +929,19 @@ class ThreadPool(object):
         logging.warning('Caught exception: %s', e)
         exc_info = sys.exc_info()
         logging.info(''.join(traceback.format_tb(exc_info[2])))
-        self._outputs_exceptions_cond.acquire()
-        try:
+        with self._outputs_exceptions_cond:
           self._exceptions.append(exc_info)
           self._outputs_exceptions_cond.notifyAll()
-        finally:
-          self._outputs_exceptions_cond.release()
       finally:
         try:
+          # Mark thread as ready again, mark task as processed. Do it before
+          # waking up threads waiting on self.tasks.join(). Otherwise they might
+          # find ThreadPool still 'busy' and perform unnecessary wait on CV.
+          with self._outputs_exceptions_cond:
+            self._ready += 1
+            self._pending_count -= 1
+            if self._pending_count == 0:
+              self._outputs_exceptions_cond.notifyAll()
           self.tasks.task_done()
         except Exception as e:
           # We need to catch and log this error here because this is the root
@@ -945,12 +951,9 @@ class ThreadPool(object):
 
   def _output_append(self, out):
     if out is not None:
-      self._outputs_exceptions_cond.acquire()
-      try:
+      with self._outputs_exceptions_cond:
         self._outputs.append(out)
         self._outputs_exceptions_cond.notifyAll()
-      finally:
-        self._outputs_exceptions_cond.release()
 
   def join(self):
     """Extracts all the results from each threads unordered.
@@ -962,15 +965,12 @@ class ThreadPool(object):
     """
     # TODO(maruel): Stop waiting as soon as an exception is caught.
     self.tasks.join()
-    self._outputs_exceptions_cond.acquire()
-    try:
+    with self._outputs_exceptions_cond:
       if self._exceptions:
         e = self._exceptions.pop(0)
         raise e[0], e[1], e[2]
       out = self._outputs
       self._outputs = []
-    finally:
-      self._outputs_exceptions_cond.release()
     return out
 
   def get_one_result(self):
@@ -991,8 +991,7 @@ class ThreadPool(object):
     while True:
       # Check for pending results.
       result = None
-      self._outputs_exceptions_cond.acquire()
-      try:
+      with self._outputs_exceptions_cond:
         if self._exceptions:
           e = self._exceptions.pop(0)
           raise e[0], e[1], e[2]
@@ -1000,41 +999,21 @@ class ThreadPool(object):
           # Remember the result to yield it outside of the lock.
           result = self._outputs.pop(0)
         else:
-          # No pending results and no pending tasks -> all tasks are done.
-          if self._is_task_queue_empty():
+          # No pending tasks -> all tasks are done.
+          if not self._pending_count:
             return
           # Some task is queued, wait for its result to appear.
           # Use non-None timeout so that process reacts to Ctrl+C and other
           # signals, see http://bugs.python.org/issue8844.
           self._outputs_exceptions_cond.wait(timeout=5)
           continue
-      finally:
-        self._outputs_exceptions_cond.release()
       yield result
-
-  def _is_task_queue_empty(self):
-    """True if task queue is empty and all workers are idle.
-
-    Doesn't check for pending results from already finished tasks.
-
-    Note: this property is not reliable in case tasks are still being
-    enqueued by concurrent threads.
-    """
-    # Some pending tasks?
-    if not self.tasks.empty():
-      return False
-    # Some workers are busy?
-    with self._workers_lock:
-      idle = self._ready + self._dead + self._starting
-      if idle != len(self._workers):
-        return False
-    return True
 
   def close(self):
     """Closes all the threads."""
     # Ensure no new threads can be started, self._workers is effectively
     # a constant after that and can be accessed outside the lock.
-    with self._workers_lock:
+    with self._lock:
       if self._is_closed:
         raise ThreadPoolClosed('Can not close already closed ThreadPool')
       self._is_closed = True
