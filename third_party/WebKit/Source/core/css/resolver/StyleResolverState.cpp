@@ -70,7 +70,6 @@ void StyleResolverState::initElement(Element* element)
 
 void StyleResolverState::initForStyleResolve(Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
 {
-    ASSERT(!e || e->document() == document);
     initElement(e);
 
     m_regionForStyling = regionForStyling;
