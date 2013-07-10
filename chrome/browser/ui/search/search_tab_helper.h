@@ -37,10 +37,6 @@ class SearchTabHelper : public content::NotificationObserver,
     return &model_;
   }
 
-  const SearchModel* model() const {
-    return &model_;
-  }
-
   // Sets up the initial state correctly for a preloaded NTP.
   void InitForPreloadedNTP();
 

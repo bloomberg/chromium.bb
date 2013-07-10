@@ -404,11 +404,6 @@ void InstantController::InstantPageRenderViewCreated(
 
 void InstantController::InstantSupportChanged(
     InstantSupportState instant_support) {
-  // Instant support determined. Update location bar contents to reflect the
-  // page Instant support state.
-  if (instant_support != INSTANT_SUPPORT_UNKNOWN)
-    browser_->UpdateLocationBar();
-
   // Handle INSTANT_SUPPORT_YES here because InstantPage is not hooked up to the
   // active tab. Search model changed listener in InstantPage will handle other
   // cases.

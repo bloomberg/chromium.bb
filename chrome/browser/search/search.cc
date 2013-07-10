@@ -21,8 +21,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/search/search_model.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -187,7 +185,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
 
 string16 GetSearchTermsImpl(const content::WebContents* contents,
                             const content::NavigationEntry* entry) {
-  if (!contents || !IsQueryExtractionEnabled())
+  if (!IsQueryExtractionEnabled())
     return string16();
 
   // For security reasons, don't extract search terms if the page is not being
@@ -286,15 +284,6 @@ string16 GetSearchTerms(const content::WebContents* contents) {
   if (!entry)
     return string16();
 
-  // Return immediately if the page does not support Instant.
-  const SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(contents);
-  if (search_tab_helper) {
-    const SearchModel* search_model = search_tab_helper->model();
-    if (search_model && search_model->instant_support() == INSTANT_SUPPORT_NO)
-      return string16();
-  }
-
   return GetSearchTermsImpl(contents, entry);
 }
 
@@ -320,17 +309,11 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
     return false;
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  bool is_instant_url = IsInstantURL(entry->GetVirtualURL(), profile);
-  bool is_local_ntp = entry->GetVirtualURL() == GetLocalInstantURL(profile);
-  if (!IsInstantExtendedAPIEnabled() ||
-      !IsRenderedInInstantProcess(contents, profile) ||
-      !(is_instant_url || is_local_ntp)) {
-    return false;
-  }
-
-  bool has_search_terms = !GetSearchTermsImpl(contents, entry).empty();
-  bool is_online_ntp = is_instant_url && !has_search_terms;
-  return is_online_ntp || is_local_ntp;
+  return IsInstantExtendedAPIEnabled() &&
+         IsRenderedInInstantProcess(contents, profile) &&
+         (IsInstantURL(entry->GetVirtualURL(), profile) ||
+          entry->GetVirtualURL() == GetLocalInstantURL(profile)) &&
+         GetSearchTermsImpl(contents, entry).empty();
 }
 
 bool IsSuggestPrefEnabled(Profile* profile) {

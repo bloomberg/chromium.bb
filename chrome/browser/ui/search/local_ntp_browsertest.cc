@@ -42,8 +42,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LocalNTPJavascriptTest) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(chrome::ShouldAssignURLToInstantRenderer(active_tab->GetURL(),
-                                                       browser()->profile()));
+  ASSERT_TRUE(chrome::IsInstantNTP(active_tab));
   bool success = false;
   ASSERT_TRUE(GetBoolFromJS(active_tab, "!!runTests()", &success));
   EXPECT_TRUE(success);

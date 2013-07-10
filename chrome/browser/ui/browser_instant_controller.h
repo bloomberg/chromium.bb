@@ -79,10 +79,6 @@ class BrowserInstantController
   // Sets the stored omnibox bounds.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
-  // Updates the location bar to reflect the active page contents Instant
-  // support state.
-  void UpdateLocationBar();
-
   // Notifies |instant_| to toggle voice search.
   void ToggleVoiceSearch();
 
