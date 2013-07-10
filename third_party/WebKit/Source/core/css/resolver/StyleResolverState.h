@@ -121,7 +121,7 @@ public:
         return m_elementStyleResources.styleImage(*this, propertyId, value);
     }
 
-    // FIXME: These exist as a primative way to track mutations to font-related properties
+    // FIXME: These exist as a primitive way to track mutations to font-related properties
     // on a RenderStyle. As designed, these are very error-prone, as some callers
     // set these directly on the RenderStyle w/o telling us. Presumably we'll
     // want to design a better wrapper around RenderStyle for tracking these mutations
