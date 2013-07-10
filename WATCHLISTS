@@ -280,6 +280,7 @@
       'filepath': 'instant|searchbox|'\
                   'chrome/browser/search/|'\
                   'chrome/browser/ui/search/|'\
+                  'chrome/browser/resources/local_ntp/|'\
                   'chrome/common/search_types.*',
     },
     'ipc': {
