@@ -67,7 +67,11 @@ const VideoCaptureCapabilityWin& CapabilityList::GetBestMatchedCapability(
     diff.capability = &(*it);
     diff.diff_width = it->width - requested_width;
     diff.diff_height = it->height - requested_height;
-    diff.diff_frame_rate = it->frame_rate - requested_frame_rate;
+    // The 1000 allows using integer arithmetic for f.i. 29.971 fps.
+    diff.diff_frame_rate =
+        1000 * ((static_cast<float>(it->frame_rate_numerator) /
+                 it->frame_rate_denominator) -
+                requested_frame_rate);
     diff_list.push_back(diff);
   }
 

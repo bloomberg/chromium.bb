@@ -576,6 +576,10 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
         capability.frame_rate = (time_per_frame > 0) ?
             static_cast<int>(kSecondsToReferenceTime / time_per_frame) : 0;
       }
+      // DirectShow works at the moment only on integer frame_rate but the
+      // best capability matching class works on rational frame rates.
+      capability.frame_rate_numerator = capability.frame_rate;
+      capability.frame_rate_denominator = 1;
 
       // We can't switch MEDIATYPE :~(.
       if (media_type->subtype == kMediaSubTypeI420) {

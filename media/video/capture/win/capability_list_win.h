@@ -17,8 +17,15 @@
 namespace media {
 
 struct VideoCaptureCapabilityWin : public VideoCaptureCapability {
-  explicit VideoCaptureCapabilityWin(int index) : stream_index(index) {}
+  explicit VideoCaptureCapabilityWin(int index)
+      : stream_index(index),
+        frame_rate_numerator(0),
+        frame_rate_denominator(1) {}
   int stream_index;
+  // Internally to Media Foundation Api type devices we use rational framerates
+  // so framerates can be properly represented, f.i. 29.971fps= 30000/1001.
+  int frame_rate_numerator;
+  int frame_rate_denominator;
 };
 
 class CapabilityList : public base::NonThreadSafe {

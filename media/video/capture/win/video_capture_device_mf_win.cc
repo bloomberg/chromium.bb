@@ -97,30 +97,37 @@ bool GetFrameSize(IMFMediaType* type, int* width, int* height) {
   return true;
 }
 
-bool GetFrameRate(IMFMediaType* type, int* frame_rate) {
+bool GetFrameRate(IMFMediaType* type,
+                  int* frame_rate_numerator,
+                  int* frame_rate_denominator) {
   UINT32 numerator, denominator;
   if (FAILED(MFGetAttributeRatio(type, MF_MT_FRAME_RATE, &numerator,
-                                 &denominator))) {
+                                 &denominator))||
+      !denominator) {
     return false;
   }
-
-  *frame_rate = denominator ? numerator / denominator : 0;
-
+  *frame_rate_numerator = numerator;
+  *frame_rate_denominator = denominator;
   return true;
 }
 
 bool FillCapabilitiesFromType(IMFMediaType* type,
-                              VideoCaptureCapability* capability) {
+                              VideoCaptureCapabilityWin* capability) {
   GUID type_guid;
   if (FAILED(type->GetGUID(MF_MT_SUBTYPE, &type_guid)) ||
       !FormatFromGuid(type_guid, &capability->color) ||
       !GetFrameSize(type, &capability->width, &capability->height) ||
-      !GetFrameRate(type, &capability->frame_rate)) {
+      !GetFrameRate(type,
+                    &capability->frame_rate_numerator,
+                    &capability->frame_rate_denominator)) {
     return false;
   }
+  // Keep the integer version of the frame_rate for (potential) returns.
+  capability->frame_rate =
+      capability->frame_rate_numerator / capability->frame_rate_denominator;
 
   capability->expected_capture_delay = 0;  // Currently not used.
-  capability->interlaced = false;  // Currently not used.
+  capability->interlaced = false;          // Currently not used.
 
   return true;
 }
@@ -332,6 +339,10 @@ void VideoCaptureDeviceMFWin::Allocate(
 
   const VideoCaptureCapabilityWin& found_capability =
       capabilities.GetBestMatchedCapability(width, height, frame_rate);
+  DLOG(INFO) << "Chosen capture format= (" << found_capability.width << "x"
+             << found_capability.height << ")@("
+             << found_capability.frame_rate_numerator << "/"
+             << found_capability.frame_rate_denominator << ")fps";
 
   ScopedComPtr<IMFMediaType> type;
   if (FAILED(hr = reader_->GetNativeMediaType(
