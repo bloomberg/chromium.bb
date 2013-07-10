@@ -38,7 +38,7 @@ TEST_F(TouchOperationTest, TouchFile) {
       base::Time::FromUTCExploded(kLastAccessTime),
       base::Time::FromUTCExploded(kLastModifiedTime),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   ResourceEntry entry;

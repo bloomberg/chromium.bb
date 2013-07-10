@@ -42,7 +42,7 @@ TEST_F(TruncateOperationTest, Truncate) {
       file_in_root,
       1,  // Truncate to 1 byte.
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath local_path;
@@ -50,7 +50,7 @@ TEST_F(TruncateOperationTest, Truncate) {
   cache()->GetFileOnUIThread(
       src_entry.resource_id(), src_entry.file_specific_info().md5(),
       google_apis::test_util::CreateCopyResultCallback(&error, &local_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
 
   // The local file should be truncated.
@@ -73,7 +73,7 @@ TEST_F(TruncateOperationTest, NegativeSize) {
       file_in_root,
       -1,  // Truncate to "-1" byte.
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
 }
 
@@ -86,7 +86,7 @@ TEST_F(TruncateOperationTest, HostedDocument) {
       file_in_root,
       1,  // Truncate to 1 byte.
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
 }
 
@@ -101,7 +101,7 @@ TEST_F(TruncateOperationTest, Extend) {
       file_in_root,
       file_size + 10,  // Extend to 10 bytes.
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath local_path;
@@ -109,7 +109,7 @@ TEST_F(TruncateOperationTest, Extend) {
   cache()->GetFileOnUIThread(
       src_entry.resource_id(), src_entry.file_specific_info().md5(),
       google_apis::test_util::CreateCopyResultCallback(&error, &local_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
 
   // The local file should be truncated.

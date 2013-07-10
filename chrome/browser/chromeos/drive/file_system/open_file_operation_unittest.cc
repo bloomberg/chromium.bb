@@ -44,7 +44,7 @@ TEST_F(OpenFileOperationTest, OpenFile) {
   operation_->OpenFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(file_util::PathExists(file_path));
@@ -60,7 +60,7 @@ TEST_F(OpenFileOperationTest, OpenFile) {
   operation_->OpenFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(file_util::PathExists(file_path));
@@ -80,7 +80,7 @@ TEST_F(OpenFileOperationTest, NotFound) {
   operation_->OpenFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   // The file shouldn't be in the set of opened files.

@@ -133,7 +133,7 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
         base::Bind(&ResourceMetadataStorage::Initialize,
                    base::Unretained(metadata_storage_.get())),
         google_apis::test_util::CreateCopyResultCallback(&success));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     ASSERT_TRUE(success);
 
     resource_metadata_.reset(new ResourceMetadata(metadata_storage_.get(),
@@ -146,14 +146,14 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
         base::Bind(&ResourceMetadata::Initialize,
                    base::Unretained(resource_metadata_.get())),
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     ASSERT_EQ(FILE_ERROR_OK, error);
 
     blocking_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SetUpEntries,
                    base::Unretained(resource_metadata_.get())));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -170,7 +170,7 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
     resource_metadata_->GetResourceEntryByPathOnUIThread(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     EXPECT_TRUE(error == FILE_ERROR_OK || !entry);
     return entry.Pass();
   }
@@ -184,7 +184,7 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
     resource_metadata_->ReadDirectoryByPathOnUIThread(
         directory_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entries));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     EXPECT_TRUE(error == FILE_ERROR_OK || !entries);
     return entries.Pass();
   }
@@ -204,13 +204,13 @@ TEST_F(ResourceMetadataTestOnUIThread, LargestChangestamp) {
   resource_metadata_->SetLargestChangestampOnUIThread(
       in_changestamp,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   int64 out_changestamp = 0;
   resource_metadata_->GetLargestChangestampOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&out_changestamp));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   DCHECK_EQ(in_changestamp, out_changestamp);
 }
 
@@ -221,7 +221,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById_RootDirectory) {
   resource_metadata_->GetResourceEntryByIdOnUIThread(
       util::kDriveGrandRootSpecialResourceId,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("drive", entry->base_name());
@@ -234,7 +234,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById) {
   resource_metadata_->GetResourceEntryByIdOnUIThread(
       "resource_id:file4",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file4", entry->base_name());
@@ -245,7 +245,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById) {
   resource_metadata_->GetResourceEntryByIdOnUIThread(
       "file:non_existing",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry.get());
 }
@@ -257,7 +257,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   resource_metadata_->GetResourceEntryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file4", entry->base_name());
@@ -268,7 +268,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   resource_metadata_->GetResourceEntryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existing"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry.get());
 
@@ -278,7 +278,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   resource_metadata_->GetResourceEntryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(entry.get());
 
@@ -288,7 +288,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   resource_metadata_->GetResourceEntryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("non_existing"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry.get());
 
@@ -298,7 +298,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   resource_metadata_->GetResourceEntryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("non_existing/root"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry.get());
 }
@@ -310,7 +310,7 @@ TEST_F(ResourceMetadataTestOnUIThread, ReadDirectoryByPath) {
   resource_metadata_->ReadDirectoryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entries.get());
   ASSERT_EQ(3U, entries->size());
@@ -326,7 +326,7 @@ TEST_F(ResourceMetadataTestOnUIThread, ReadDirectoryByPath) {
   resource_metadata_->ReadDirectoryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/non_existing"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entries.get());
 
@@ -336,7 +336,7 @@ TEST_F(ResourceMetadataTestOnUIThread, ReadDirectoryByPath) {
   resource_metadata_->ReadDirectoryByPathOnUIThread(
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
   EXPECT_FALSE(entries.get());
 }
@@ -348,7 +348,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryPairByPaths) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file5"),
       google_apis::test_util::CreateCopyResultCallback(&pair_result));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   // The first entry should be found.
   EXPECT_EQ(FILE_ERROR_OK, pair_result->first.error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
@@ -368,7 +368,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryPairByPaths) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file5"),
       google_apis::test_util::CreateCopyResultCallback(&pair_result));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   // The first entry should not be found.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, pair_result->first.error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
@@ -385,7 +385,7 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryPairByPaths) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/non_existent"),
       google_apis::test_util::CreateCopyResultCallback(&pair_result));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   // The first entry should be found.
   EXPECT_EQ(FILE_ERROR_OK, pair_result->first.error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
@@ -410,7 +410,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1"),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/file8"),
             drive_file_path);
@@ -419,7 +419,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
   resource_metadata_->GetResourceEntryByIdOnUIThread(
       "resource_id:file8",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Move non-existent file to drive/dir1. This should fail.
@@ -428,7 +428,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1"),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
@@ -438,7 +438,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir4"),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
@@ -448,7 +448,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
@@ -458,7 +458,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root"),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/file8"),
             drive_file_path);
@@ -469,7 +469,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir2"),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir2/file8"),
             drive_file_path);
@@ -478,7 +478,7 @@ TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
   resource_metadata_->GetResourceEntryByIdOnUIThread(
       "resource_id:file8",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 }
 
@@ -493,7 +493,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
       "file11",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir2/file11"),
             drive_file_path);
@@ -502,7 +502,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
   resource_metadata_->GetResourceEntryByIdOnUIThread(
       "resource_id:file8",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Rename to file7 to force a duplicate name.
@@ -511,7 +511,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
       "file7",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir2/file7 (1)"),
             drive_file_path);
@@ -522,7 +522,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
       "file7 (1)",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
   EXPECT_EQ(base::FilePath(), drive_file_path);
 
@@ -532,7 +532,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
       "file11",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_EQ(base::FilePath(), drive_file_path);
 }
@@ -568,7 +568,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_EmtpyMap) {
       DirectoryFetchInfo(dir1_proto->resource_id(), kNewChangestamp),
       entry_map,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(kDirectoryPath, file_path);
 
@@ -659,7 +659,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_NonEmptyMap) {
       DirectoryFetchInfo(dir1_proto->resource_id(), kNewChangestamp),
       entry_map,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(kDirectoryPath, file_path);
 
@@ -754,7 +754,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_WrongParentResourceId) {
       DirectoryFetchInfo(dir1_proto->resource_id(), kNewChangestamp),
       entry_map,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(kDirectoryPath, file_path);
 
@@ -775,7 +775,7 @@ TEST_F(ResourceMetadataTestOnUIThread, AddEntry) {
       file_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"),
             drive_file_path);
@@ -786,7 +786,7 @@ TEST_F(ResourceMetadataTestOnUIThread, AddEntry) {
       dir_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir101"),
             drive_file_path);
@@ -797,7 +797,7 @@ TEST_F(ResourceMetadataTestOnUIThread, AddEntry) {
       file_entry3,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   // Add an existing file.
@@ -805,7 +805,7 @@ TEST_F(ResourceMetadataTestOnUIThread, AddEntry) {
       file_entry,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 }
 
@@ -821,7 +821,7 @@ TEST_F(ResourceMetadataTestOnUIThread, Reset) {
   FileError error = FILE_ERROR_FAILED;
   resource_metadata_->ResetOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath drive_file_path;
@@ -831,7 +831,7 @@ TEST_F(ResourceMetadataTestOnUIThread, Reset) {
   int64 changestamp = -1;
   resource_metadata_->GetLargestChangestampOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&changestamp));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(0, changestamp);
 
   // root should continue to exist.

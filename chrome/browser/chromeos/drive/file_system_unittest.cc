@@ -152,7 +152,7 @@ class FileSystemTest : public testing::Test {
     file_system_->change_list_loader()->LoadIfNeeded(
         DirectoryFetchInfo(),
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     return error == FILE_ERROR_OK;
   }
 
@@ -164,7 +164,7 @@ class FileSystemTest : public testing::Test {
     file_system_->GetResourceEntryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     return entry.Pass();
   }
@@ -178,7 +178,7 @@ class FileSystemTest : public testing::Test {
         file_path,
         google_apis::test_util::CreateCopyResultCallback(
             &error, &entries));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     return entries.Pass();
   }
@@ -542,7 +542,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   // it should change its state to "loaded", which admits periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
   file_system_->CheckForUpdates();
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 }
 
@@ -587,7 +587,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
 
   file_system_->CheckForUpdates();
 
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
 
@@ -643,7 +643,7 @@ TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
       true,  // is_exclusive
       false,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   // It should fail because is_exclusive is set to true.
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
@@ -662,7 +662,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   FileError error = FILE_ERROR_FAILED;
   file_system_->Pin(file_path,
                     google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   FileCacheEntry cache_entry;
@@ -675,7 +675,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   error = FILE_ERROR_FAILED;
   file_system_->Unpin(file_path,
                       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_TRUE(cache_->GetCacheEntry(
@@ -708,7 +708,7 @@ TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error_unpin));
 
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error_pin);
   EXPECT_EQ(FILE_ERROR_OK, error_unpin);
 
@@ -725,7 +725,7 @@ TEST_F(FileSystemTest, GetAvailableSpace) {
   file_system_->GetAvailableSpace(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &bytes_total, &bytes_used));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(GG_LONGLONG(6789012345), bytes_used);
   EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
 }
@@ -737,7 +737,7 @@ TEST_F(FileSystemTest, RefreshDirectory) {
   file_system_->RefreshDirectory(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // We'll notify the directory change to the observer.
@@ -760,7 +760,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   file_system_->OpenFile(
       kFileInRoot,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   const base::FilePath opened_file_path = file_path;
 
   // Verify that the file was properly opened.
@@ -798,7 +798,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   file_system_->CloseFile(
       kFileInRoot,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   // Verify that the file was properly closed.
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -810,7 +810,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
       file_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &gdata_error, &gdata_entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(gdata_error, google_apis::HTTP_SUCCESS);
   ASSERT_TRUE(gdata_entry);
   EXPECT_EQ(static_cast<int>(kNewContent.size()), gdata_entry->file_size());
@@ -825,7 +825,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   file_system_->CloseFile(
       kFileInRoot,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   // It must fail.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -853,7 +853,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   file_system_->MarkCacheFileAsMounted(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Cannot remove a cache entry while it's being mounted.
@@ -864,7 +864,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   file_system_->MarkCacheFileAsUnmounted(
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Now able to remove the cache entry.

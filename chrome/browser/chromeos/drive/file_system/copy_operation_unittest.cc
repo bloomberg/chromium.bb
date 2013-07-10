@@ -49,7 +49,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
       local_src_path,
       remote_dest_path,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // TransferFileFromLocalToRemote stores a copy of the local file in the cache,
@@ -62,7 +62,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   cache()->GetCacheEntryOnUIThread(
       entry.resource_id(), std::string(),
       google_apis::test_util::CreateCopyResultCallback(&found, &cache_entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_TRUE(found);
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
@@ -94,7 +94,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
       local_src_path,
       remote_dest_path,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
@@ -119,7 +119,7 @@ TEST_F(CopyOperationTest, TransferFileFromRemoteToLocal_RegularFile) {
       remote_src_path,
       local_dest_path,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // The content is "x"s of the file size.
@@ -128,7 +128,7 @@ TEST_F(CopyOperationTest, TransferFileFromRemoteToLocal_RegularFile) {
                              entry.file_specific_info().md5(),
                              google_apis::test_util::CreateCopyResultCallback(
                                  &error, &cache_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   const std::string kExpectedContent = "This is some test content.";
@@ -157,7 +157,7 @@ TEST_F(CopyOperationTest, TransferFileFromRemoteToLocal_HostedDocument) {
       remote_src_path,
       local_dest_path,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   ResourceEntry entry;
@@ -180,7 +180,7 @@ TEST_F(CopyOperationTest, CopyNotExistingFile) {
   operation_->Copy(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &entry));
@@ -201,7 +201,7 @@ TEST_F(CopyOperationTest, CopyFileToNonExistingDirectory) {
   operation_->Copy(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
@@ -226,7 +226,7 @@ TEST_F(CopyOperationTest, CopyFileToInvalidPath) {
   operation_->Copy(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));

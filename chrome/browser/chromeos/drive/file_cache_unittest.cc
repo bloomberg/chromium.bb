@@ -86,7 +86,7 @@ class FileCacheTestOnUIThread : public testing::Test {
         base::Bind(&ResourceMetadataStorage::Initialize,
                    base::Unretained(metadata_storage_.get())),
         google_apis::test_util::CreateCopyResultCallback(&success));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     ASSERT_TRUE(success);
 
     cache_.reset(new FileCache(
@@ -101,7 +101,7 @@ class FileCacheTestOnUIThread : public testing::Test {
         FROM_HERE,
         base::Bind(&FileCache::Initialize, base::Unretained(cache_.get())),
         google_apis::test_util::CreateCopyResultCallback(&success));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     ASSERT_TRUE(success);
   }
 
@@ -115,7 +115,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_->GetFileOnUIThread(resource_id, md5,
                               google_apis::test_util::CreateCopyResultCallback(
                                   &error, &cache_file_path));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     EXPECT_EQ(expected_error, error);
     if (error == FILE_ERROR_OK) {
@@ -145,7 +145,7 @@ class FileCacheTestOnUIThread : public testing::Test {
         resource_id, md5, source_path,
         FileCache::FILE_OPERATION_COPY,
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);
   }
 
@@ -157,7 +157,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_->RemoveOnUIThread(
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     VerifyRemoveFromCache(error, resource_id, "");
   }
 
@@ -200,7 +200,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_->PinOnUIThread(
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, std::string());
   }
 
@@ -214,7 +214,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_->UnpinOnUIThread(
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, std::string());
   }
 
@@ -229,7 +229,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_->MarkDirtyOnUIThread(
         resource_id, md5,
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     VerifyCacheFileState(error, resource_id, md5);
 
@@ -240,7 +240,7 @@ class FileCacheTestOnUIThread : public testing::Test {
           resource_id, md5,
           google_apis::test_util::CreateCopyResultCallback(
               &error, &cache_file_path));
-      google_apis::test_util::RunBlockingPoolTask();
+      test_util::RunBlockingPoolTask();
 
       EXPECT_EQ(FILE_ERROR_OK, error);
       base::FilePath base_name = cache_file_path.BaseName();
@@ -267,7 +267,7 @@ class FileCacheTestOnUIThread : public testing::Test {
                    resource_id,
                    md5),
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);
   }
 
@@ -287,7 +287,7 @@ class FileCacheTestOnUIThread : public testing::Test {
         resource_id,
         google_apis::test_util::CreateCopyResultCallback(
             &error, &cache_file_path));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     EXPECT_TRUE(file_util::PathExists(cache_file_path));
     EXPECT_EQ(cache_file_path,
@@ -307,14 +307,14 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_->MarkAsUnmountedOnUIThread(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     base::FilePath cache_file_path;
     cache_->GetFileOnUIThread(
         resource_id, md5,
         google_apis::test_util::CreateCopyResultCallback(
             &error, &cache_file_path));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
 
     EXPECT_TRUE(file_util::PathExists(cache_file_path));
@@ -370,7 +370,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_->GetCacheEntryOnUIThread(
         resource_id, md5,
         google_apis::test_util::CreateCopyResultCallback(&result, cache_entry));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
     return result;
   }
 
@@ -676,7 +676,7 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
   cache_->GetFileOnUIThread(
       resource_id, md5,
       google_apis::test_util::CreateCopyResultCallback(&error, &dirty_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 
@@ -788,7 +788,7 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
   cache_->GetFileOnUIThread(
       resource_id, md5,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   TestMarkAsUnmounted(resource_id, md5, file_path, FILE_ERROR_OK,
@@ -811,7 +811,7 @@ TEST_F(FileCacheTestOnUIThread, Iterate) {
   cache_->IterateOnUIThread(
       base::Bind(&OnIterate, &resource_ids, &cache_entries),
       base::Bind(&OnIterateCompleted, &completed));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   ASSERT_TRUE(completed);
 
@@ -842,7 +842,7 @@ TEST_F(FileCacheTestOnUIThread, ClearAll) {
   bool success = false;
   cache_->ClearAllOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&success));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_TRUE(success);
 
   // Verify that all the cache is removed.

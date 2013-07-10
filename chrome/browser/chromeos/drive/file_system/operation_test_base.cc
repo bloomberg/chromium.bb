@@ -73,7 +73,7 @@ void OperationTestBase::SetUp() {
       base::Bind(&internal::ResourceMetadataStorage::Initialize,
                  base::Unretained(metadata_storage_.get())),
       google_apis::test_util::CreateCopyResultCallback(&success));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
 
   metadata_.reset(new internal::ResourceMetadata(metadata_storage_.get(),
@@ -86,7 +86,7 @@ void OperationTestBase::SetUp() {
       base::Bind(&internal::ResourceMetadata::Initialize,
                  base::Unretained(metadata_.get())),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
 
   fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
@@ -101,7 +101,7 @@ void OperationTestBase::SetUp() {
       base::Bind(&internal::FileCache::Initialize,
                  base::Unretained(cache_.get())),
       google_apis::test_util::CreateCopyResultCallback(&success));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
 
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
@@ -111,7 +111,7 @@ void OperationTestBase::SetUp() {
   change_list_loader.LoadIfNeeded(
       DirectoryFetchInfo(),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
 }
 
@@ -124,7 +124,7 @@ FileError OperationTestBase::GetLocalResourceEntry(const base::FilePath& path,
       base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
                  base::Unretained(metadata()), path, entry),
       base::Bind(google_apis::test_util::CreateCopyResultCallback(&error)));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   return error;
 }
 

@@ -32,7 +32,7 @@ class DriveIntegrationServiceTest : public testing::Test {
 
 TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
   integration_service_->Initialize();
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   integration_service_->Shutdown();
 }
 

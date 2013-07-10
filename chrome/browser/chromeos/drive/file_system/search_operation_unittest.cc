@@ -44,7 +44,7 @@ TEST_F(SearchOperationTest, ContentSearch) {
   operation.Search("Directory", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_url, &results));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(GURL(), next_url);
@@ -67,7 +67,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
       "New Directory 1!",
       google_apis::test_util::CreateCopyResultCallback(
           &gdata_error, &resource_entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_EQ(google_apis::HTTP_CREATED, gdata_error);
 
   // As the result of the first Search(), only entries in the current file
@@ -85,7 +85,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_url, &results));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(GURL(), next_url);
@@ -102,7 +102,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
       blocking_task_runner(), metadata(), scheduler());
   change_list_loader.CheckForUpdates(
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   // Now the new entry must be reported to be in the right directory.
   const SearchResultPair kExpectedResultsAfterLoad[] = {
@@ -113,7 +113,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_url, &results));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(GURL(), next_url);
@@ -136,7 +136,7 @@ TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
   operation.Search("\"no-match query\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_url, &results));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(GURL(), next_url);

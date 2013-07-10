@@ -85,7 +85,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
   file_write_helper.PrepareWritableFileAndRun(
       base::FilePath(kDrivePath),
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(kLocalPath, path.value());
@@ -100,7 +100,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {
   file_write_helper.PrepareWritableFileAndRun(
       base::FilePath(kInvalidPath),
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, error);
   EXPECT_TRUE(path.empty());
@@ -127,7 +127,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingOpenFail) {
   file_write_helper.PrepareWritableFileAndRun(
       base::FilePath(kDrivePath),
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_IN_USE, error);
   EXPECT_TRUE(path.empty());

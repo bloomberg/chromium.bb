@@ -28,6 +28,15 @@ namespace test_util {
 // Disk space size used by FakeFreeDiskSpaceGetter.
 const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 
+// Runs a task posted to the blocking pool, including subsequent tasks posted
+// to the UI message loop and the blocking pool.
+//
+// A task is often posted to the blocking pool with PostTaskAndReply(). In
+// that case, a task is posted back to the UI message loop, which can again
+// post a task to the blocking pool. This function processes these tasks
+// repeatedly.
+void RunBlockingPoolTask();
+
 // Test data type of file cache
 struct TestCacheResource {
   TestCacheResource(const std::string& source_file,
@@ -55,7 +64,7 @@ struct DestroyHelperForTests {
   void operator()(T* object) const {
     if (object) {
       object->Destroy();
-      google_apis::test_util::RunBlockingPoolTask();  // Finish destruction.
+      test_util::RunBlockingPoolTask();  // Finish destruction.
     }
   }
 };

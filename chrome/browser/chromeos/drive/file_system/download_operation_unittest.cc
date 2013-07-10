@@ -50,7 +50,7 @@ TEST_F(DownloadOperationTest,
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -87,7 +87,7 @@ TEST_F(DownloadOperationTest,
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
 }
@@ -121,7 +121,7 @@ TEST_F(DownloadOperationTest,
       "<resource_id>", "<md5>", tmp_file,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath file_path;
@@ -133,7 +133,7 @@ TEST_F(DownloadOperationTest,
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -151,7 +151,7 @@ TEST_F(DownloadOperationTest,
       "<resource_id>", "<md5>",
       google_apis::test_util::CreateCopyResultCallback(&result,
                                                        &cache_entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   ASSERT_FALSE(result);
 }
 
@@ -181,7 +181,7 @@ TEST_F(DownloadOperationTest,
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
 }
@@ -202,7 +202,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
       temp_file,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath file_path;
@@ -214,7 +214,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -235,7 +235,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_HostedDocument) {
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -263,7 +263,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId) {
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -296,7 +296,7 @@ TEST_F(DownloadOperationTest,
         get_content_callback.callback(),
         google_apis::test_util::CreateCopyResultCallback(
             &completion_error, &local_path_dontcare, &entry_dontcare));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     // For the first time, file is downloaded from the remote server.
     // In this case, |local_path| is empty while |cancel_download| is not.
@@ -333,7 +333,7 @@ TEST_F(DownloadOperationTest,
         get_content_callback.callback(),
         google_apis::test_util::CreateCopyResultCallback(
             &completion_error, &local_path_dontcare, &entry_dontcare));
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::RunBlockingPoolTask();
 
     // Try second download. In this case, the file should be cached, so
     // |local_path| should not be empty while |cancel_download| is empty.
@@ -366,7 +366,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
       temp_file,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // The file is obtained from the cache.
@@ -383,7 +383,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -410,13 +410,13 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
       dirty_file,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   cache()->MarkDirtyOnUIThread(
       src_entry.resource_id(),
       src_entry.file_specific_info().md5(),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Record values passed to GetFileContentInitializedCallback().
@@ -435,7 +435,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   // Check that the result of local modification is propagated.

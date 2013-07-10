@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -61,9 +62,7 @@ TEST_F(BaseRequestsTest, ParseValidJson) {
   ParseJson(message_loop_.message_loop_proxy(),
             kValidJsonString,
             base::Bind(test_util::CreateCopyResultCallback(&json)));
-  // Should wait for a blocking pool task, as the JSON parsing is done in the
-  // blocking pool.
-  test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   DictionaryValue* root_dict = NULL;
   ASSERT_TRUE(json);
@@ -80,9 +79,7 @@ TEST_F(BaseRequestsTest, ParseInvalidJson) {
   ParseJson(message_loop_.message_loop_proxy(),
             kInvalidJsonString,
             base::Bind(test_util::CreateCopyResultCallback(&json)));
-  // Should wait for a blocking pool task, as the JSON parsing is done in the
-  // blocking pool.
-  test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(json);
 }
@@ -96,9 +93,7 @@ TEST_F(BaseRequestsTest, GetDataRequestParseValidResponse) {
           base::Bind(test_util::CreateCopyResultCallback(&error, &value)));
 
   get_data_request->ParseResponse(HTTP_SUCCESS, kValidJsonString);
-  // Should wait for a blocking pool task, as the JSON parsing is done in the
-  // blocking pool.
-  test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_TRUE(value);
@@ -113,9 +108,7 @@ TEST_F(BaseRequestsTest, GetDataRequestParseInvalidResponse) {
           base::Bind(test_util::CreateCopyResultCallback(&error, &value)));
 
   get_data_request->ParseResponse(HTTP_SUCCESS, kInvalidJsonString);
-  // Should wait for a blocking pool task, as the JSON parsing is done in the
-  // blocking pool.
-  test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, error);
   EXPECT_FALSE(value);

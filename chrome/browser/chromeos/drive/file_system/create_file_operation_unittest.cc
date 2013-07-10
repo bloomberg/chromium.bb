@@ -35,7 +35,7 @@ TEST_F(CreateFileOperationTest, CreateFile) {
       kExistingFile,
       true,  // is_exclusive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 
   // Create succeeds if is_exclusive = false and a file exists.
@@ -43,7 +43,7 @@ TEST_F(CreateFileOperationTest, CreateFile) {
       kExistingFile,
       false,  // is_exclusive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Create fails if a directory existed even when is_exclusive = false.
@@ -51,7 +51,7 @@ TEST_F(CreateFileOperationTest, CreateFile) {
       kExistingDirectory,
       false,  // is_exclusive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 
   // Create succeeds if no entry exists.
@@ -59,7 +59,7 @@ TEST_F(CreateFileOperationTest, CreateFile) {
       kNonExistingFile,
       true,   // is_exclusive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Create fails if the parent directory does not exist.
@@ -67,7 +67,7 @@ TEST_F(CreateFileOperationTest, CreateFile) {
       kFileInNonExistingDirectory,
       false,  // is_exclusive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 }
 

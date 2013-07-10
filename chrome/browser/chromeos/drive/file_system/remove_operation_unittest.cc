@@ -33,7 +33,7 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   operation.Remove(file_in_root,
                    false,  // is_recursive
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(file_in_root, &entry));
 
@@ -43,7 +43,7 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   operation.Remove(file_in_subdir,
                    false,  // is_recursive
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(file_in_subdir, &entry));
@@ -55,7 +55,7 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   operation.Remove(base::FilePath::FromUTF8Unsafe("drive/root/Dummy file.txt"),
                    false,  // is_recursive
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   // Verify observer notifications.
@@ -81,7 +81,7 @@ TEST_F(RemoveOperationTest, RemoveDirectory) {
   operation.Remove(empty_dir,
                    false,  // is_recursive
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(empty_dir, &entry));
@@ -92,7 +92,7 @@ TEST_F(RemoveOperationTest, RemoveDirectory) {
   operation.Remove(non_empty_dir,
                    false,  // is_recursive
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_EMPTY, error);
   EXPECT_EQ(FILE_ERROR_OK,
             GetLocalResourceEntry(non_empty_dir, &entry));
@@ -105,7 +105,7 @@ TEST_F(RemoveOperationTest, RemoveDirectory) {
   operation.Remove(non_empty_dir,
                    true,  // is_recursive
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(non_empty_dir, &entry));

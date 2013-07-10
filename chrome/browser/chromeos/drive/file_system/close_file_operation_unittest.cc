@@ -40,7 +40,7 @@ TEST_F(CloseFileOperationTest, CloseFile) {
   operation_->CloseFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(open_files_.empty());
@@ -58,7 +58,7 @@ TEST_F(CloseFileOperationTest, NotOpenedFile) {
   operation_->CloseFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   // Even if the file is actually exists, NOT_FOUND should be returned if the
   // file is not opened.
@@ -78,7 +78,7 @@ TEST_F(CloseFileOperationTest, CloseFileTwice) {
   operation_->CloseFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(1, open_files_[file_in_root]);
@@ -91,7 +91,7 @@ TEST_F(CloseFileOperationTest, CloseFileTwice) {
   operation_->CloseFile(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(open_files_.empty());

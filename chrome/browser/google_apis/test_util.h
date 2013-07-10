@@ -37,15 +37,6 @@ struct HttpRequest;
 namespace google_apis {
 namespace test_util {
 
-// Runs a task posted to the blocking pool, including subsequent tasks posted
-// to the UI message loop and the blocking pool.
-//
-// A task is often posted to the blocking pool with PostTaskAndReply(). In
-// that case, a task is posted back to the UI message loop, which can again
-// post a task to the blocking pool. This function processes these tasks
-// repeatedly.
-void RunBlockingPoolTask();
-
 // Runs the closure, and then quits the |run_loop|.
 void RunAndQuit(base::RunLoop* run_loop, const base::Closure& closure);
 
@@ -129,7 +120,8 @@ bool ParseContentRangeHeader(const std::string& value,
 //   PerformAsynchronousTask(
 //       param1, param2, ...,
 //       CreateCopyResultCallback(&result1, &result2, ...));
-//   RunBlockingPoolTask();  // Run message loop to complete the async task.
+//   base::RunLoop().RunUntilIdle();  // Run message loop to complete
+//                                    // the async task.
 //
 //   // Hereafter, we can write expectation with results.
 //   EXPECT_EQ(expected_result1, result1);
