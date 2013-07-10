@@ -1184,10 +1184,10 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if successful.
     """
-    if depot == 'chromium':
-      return self.RunGClientHooks()
-    elif depot == 'cros':
+    if depot == 'cros':
       return self.CreateCrosChroot()
+    else:
+      return self.RunGClientHooks()
     return True
 
   def ShouldSkipRevision(self, depot, revision):
