@@ -605,33 +605,6 @@ bool Dispatcher::IsExtensionActive(
   return is_active;
 }
 
-bool Dispatcher::AllowScriptExtension(
-    WebFrame* frame,
-    const std::string& v8_extension_name,
-    int extension_group) {
-  return AllowScriptExtension(frame, v8_extension_name, extension_group, 0);
-}
-
-namespace {
-
-// This is what the extension_group variable will be when DidCreateScriptContext
-// is called. We know because it's the same as what AllowScriptExtension gets
-// passed, and the two functions are called sequentially from WebKit.
-//
-// TODO(koz): Plumb extension_group through to AllowScriptExtension() from
-// WebKit.
-static int g_hack_extension_group = 0;
-
-}  // namespace
-
-bool Dispatcher::AllowScriptExtension(WebFrame* frame,
-                                      const std::string& v8_extension_name,
-                                      int extension_group,
-                                      int world_id) {
-  g_hack_extension_group = extension_group;
-  return true;
-}
-
 v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
     v8::Handle<v8::Object> object,
     const std::string& field) {
@@ -1017,10 +990,6 @@ void Dispatcher::DidCreateScriptContext(
   return;
 #endif
 
-  // TODO(koz): If the caller didn't pass extension_group, use the last value.
-  if (extension_group == -1)
-    extension_group = g_hack_extension_group;
-
   std::string extension_id = GetExtensionID(frame, world_id);
 
   const Extension* extension = extensions_.GetByID(extension_id);
@@ -1401,6 +1370,7 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
     const std::string& extension_id,
     int extension_group,
     const ExtensionURLInfo& url_info) {
+  DCHECK_GE(extension_group, 0);
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS) {
     return extensions_.Contains(extension_id) ?
         Feature::CONTENT_SCRIPT_CONTEXT : Feature::UNSPECIFIED_CONTEXT;

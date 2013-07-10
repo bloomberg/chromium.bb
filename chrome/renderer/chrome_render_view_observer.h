@@ -91,13 +91,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool allowScriptFromSource(WebKit::WebFrame* frame,
                                      bool enabled_per_settings,
                                      const WebKit::WebURL& script_url) OVERRIDE;
-  virtual bool allowScriptExtension(WebKit::WebFrame* frame,
-                                    const WebKit::WebString& extension_name,
-                                    int extension_group) OVERRIDE;
-  virtual bool allowScriptExtension(WebKit::WebFrame* frame,
-                                    const WebKit::WebString& extension_name,
-                                    int extension_group,
-                                    int world_id);
   virtual bool allowStorage(WebKit::WebFrame* frame, bool local) OVERRIDE;
   virtual bool allowReadFromClipboard(WebKit::WebFrame* frame,
                                       bool default_value) OVERRIDE;

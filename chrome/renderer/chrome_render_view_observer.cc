@@ -383,19 +383,6 @@ bool ChromeRenderViewObserver::allowScriptFromSource(
                                                   script_url);
 }
 
-bool ChromeRenderViewObserver::allowScriptExtension(
-    WebFrame* frame, const WebString& extension_name, int extension_group) {
-  return extension_dispatcher_->AllowScriptExtension(
-      frame, extension_name.utf8(), extension_group);
-}
-
-bool ChromeRenderViewObserver::allowScriptExtension(
-    WebFrame* frame, const WebString& extension_name, int extension_group,
-    int world_id) {
-  return extension_dispatcher_->AllowScriptExtension(
-      frame, extension_name.utf8(), extension_group, world_id);
-}
-
 bool ChromeRenderViewObserver::allowStorage(WebFrame* frame, bool local) {
   return content_settings_->AllowStorage(frame, local);
 }

@@ -85,18 +85,6 @@ class Dispatcher : public content::RenderProcessObserver {
   // JavaScript context isn't from an extension, returns empty string.
   std::string GetExtensionID(const WebKit::WebFrame* frame, int world_id);
 
-  // See WebKit::WebPermissionClient::allowScriptExtension
-  // TODO(koz): Remove once WebKit no longer calls this.
-  bool AllowScriptExtension(WebKit::WebFrame* frame,
-                            const std::string& v8_extension_name,
-                            int extension_group);
-
-  // TODO(koz): Remove once WebKit no longer calls this.
-  bool AllowScriptExtension(WebKit::WebFrame* frame,
-                            const std::string& v8_extension_name,
-                            int extension_group,
-                            int world_id);
-
   void DidCreateScriptContext(WebKit::WebFrame* frame,
                               v8::Handle<v8::Context> context,
                               int extension_group,
