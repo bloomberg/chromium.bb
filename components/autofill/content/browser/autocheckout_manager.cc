@@ -203,7 +203,11 @@ void AutocheckoutManager::FillForms() {
 }
 
 void AutocheckoutManager::OnClickFailed(AutocheckoutStatus status) {
-  DCHECK(in_autocheckout_flow_);
+  // |in_autocheckout_flow_| get reset in |OnLoadedPageMetaData| for the last
+  // page, so when click failed on the last page, the value is already 'false'.
+  // This check stops crashing, a better solution should be sending an IPC
+  // message to browser when the renderer completes a step.
+  DCHECK(page_meta_data_->IsEndOfAutofillableFlow() || in_autocheckout_flow_);
   DCHECK_NE(MISSING_FIELDMAPPING, status);
 
   SendAutocheckoutStatus(status);
