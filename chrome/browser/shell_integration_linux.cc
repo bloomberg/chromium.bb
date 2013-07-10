@@ -29,6 +29,7 @@
 #include "base/process_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -648,6 +649,9 @@ base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
       .append("-")
       .append(profile_path.BaseName().value());
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
+  // Spaces in filenames break xdg-desktop-menu
+  // (see https://bugs.freedesktop.org/show_bug.cgi?id=66605).
+  ReplaceChars(filename, " ", "_", &filename);
   return base::FilePath(filename.append(".desktop"));
 }
 

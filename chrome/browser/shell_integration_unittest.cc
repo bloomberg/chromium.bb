@@ -72,9 +72,9 @@ class MockEnvironment : public base::Environment {
 }  // namespace
 
 TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
-  base::FilePath kProfilePath("Default");
+  base::FilePath kProfilePath("Profile 1");
   const char kExtensionId[] = "test_extension";
-  const char kTemplateFilename[] = "chrome-test_extension-Default.desktop";
+  const char kTemplateFilename[] = "chrome-test_extension-Profile_1.desktop";
   base::FilePath kTemplateFilepath(kTemplateFilename);
   const char kNoDisplayDesktopFile[] = "[Desktop Entry]\nNoDisplay=true";
 
