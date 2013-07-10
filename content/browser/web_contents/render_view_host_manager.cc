@@ -87,7 +87,10 @@ void RenderViewHostManager::Init(BrowserContext* browser_context,
           GetControllerForRenderManager().GetSessionStorageNamespace(
               site_instance)));
 
-  // Keep track of renderer processes as they start to shut down.
+  // Keep track of renderer processes as they start to shut down or are
+  // crashed/killed.
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllSources());
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSING,
                  NotificationService::AllSources());
 }
@@ -397,6 +400,7 @@ void RenderViewHostManager::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type) {
+    case NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case NOTIFICATION_RENDERER_PROCESS_CLOSING:
       RendererProcessClosing(
           Source<RenderProcessHost>(source).ptr());

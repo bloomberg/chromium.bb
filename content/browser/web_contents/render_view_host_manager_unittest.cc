@@ -11,8 +11,10 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/javascript_message_type.h"
@@ -937,6 +939,43 @@ TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
                    rvh3->GetSiteInstance()));
   EXPECT_FALSE(opener2_manager->GetSwappedOutRenderViewHost(
                    rvh3->GetSiteInstance()));
+}
+
+// Test that we clean up swapped out RenderViewHosts when a process hosting
+// those associated RenderViews crashes. http://crbug.com/258993
+TEST_F(RenderViewHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
+  const GURL kUrl1("http://www.google.com/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderViewHost* rvh1 = test_rvh();
+
+  // Create a new tab as an opener for the main tab.
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), rvh1->GetSiteInstance()));
+  RenderViewHostManager* opener1_manager =
+      opener1->GetRenderManagerForTesting();
+  contents()->SetOpener(opener1.get());
+
+  EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
+      rvh1->GetSiteInstance()));
+  opener1->CreateSwappedOutRenderView(rvh1->GetSiteInstance());
+  EXPECT_TRUE(opener1_manager->GetSwappedOutRenderViewHost(
+      rvh1->GetSiteInstance()));
+
+  // Fake a process crash.
+  RenderProcessHost::RendererClosedDetails details(
+      rvh1->GetProcess()->GetHandle(),
+      base::TERMINATION_STATUS_PROCESS_CRASHED,
+      0);
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      Source<RenderProcessHost>(rvh1->GetProcess()),
+      Details<RenderProcessHost::RendererClosedDetails>(&details));
+
+  // Ensure that the swapped out RenderViewHost has been deleted.
+  EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
+      rvh1->GetSiteInstance()));
 }
 
 // Test that RenderViewHosts created for WebUI navigations are properly
