@@ -445,12 +445,12 @@ class TestExpectationLine(object):
         result.name = line1.name
         result.path = line1.path
         result.parsed_expectations = set(line1.parsed_expectations) | set(line2.parsed_expectations)
-        result.expectations = set(line1.expectations) | set(line2.expectations)
-        result.modifiers = set(line1.modifiers) | set(line2.modifiers)
-        result.parsed_modifiers = set(line1.parsed_modifiers) | set(line2.parsed_modifiers)
-        result.parsed_bug_modifiers = set(line1.parsed_bug_modifiers) | set(line2.parsed_bug_modifiers)
+        result.expectations = list(set(line1.expectations) | set(line2.expectations))
+        result.modifiers = list(set(line1.modifiers) | set(line2.modifiers))
+        result.parsed_modifiers = list(set(line1.parsed_modifiers) | set(line2.parsed_modifiers))
+        result.parsed_bug_modifiers = list(set(line1.parsed_bug_modifiers) | set(line2.parsed_bug_modifiers))
         result.matching_configurations = set(line1.matching_configurations) | set(line2.matching_configurations)
-        result.matching_tests = list(set(line1.matching_tests) | set(line2.matching_tests))
+        result.matching_tests = list(list(set(line1.matching_tests) | set(line2.matching_tests)))
         result.warnings = list(set(line1.warnings) | set(line2.warnings))
         result.is_skipped_outside_expectations_file = line1.is_skipped_outside_expectations_file or line2.is_skipped_outside_expectations_file
         return result

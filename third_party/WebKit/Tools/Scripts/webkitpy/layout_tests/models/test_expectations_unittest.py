@@ -264,7 +264,7 @@ class MiscTests(Base):
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([IMAGE]))
-        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name))), set(['Bug(x)']))
+        self.assertEqual(expectations.get_modifiers(self.get_test(test_name)), ['Bug(x)'])
 
         def bot_expectations():
             return {test_name: ['PASS', 'IMAGE']}
@@ -276,7 +276,7 @@ class MiscTests(Base):
 
         # The following line tests the actual behavior, which is not necessarily a usefull behavior.
         # Existing modifiers from a test expectation file are overridden by the bot expectations.
-        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name))), set())
+        self.assertEqual(expectations.get_modifiers(self.get_test(test_name)), [])
 
     def test_bot_test_expectations_merge(self):
         """Test that expectations are merged rather than overridden when using flaky option 'unexpected'."""
@@ -289,7 +289,7 @@ class MiscTests(Base):
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([IMAGE]))
-        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['SLOW', 'Bug(x)']))
+        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['Bug(x)', 'SLOW']))
 
         def bot_expectations():
             return {test_name1: ['PASS', 'TIMEOUT'], test_name2: ['CRASH']}
@@ -299,7 +299,7 @@ class MiscTests(Base):
         expectations = TestExpectations(self._port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([PASS, IMAGE, TIMEOUT]))
         self.assertEqual(expectations.get_expectations(self.get_test(test_name2)), set([PASS, CRASH]))
-        self.assertEqual(expectations.get_modifiers(self.get_test(test_name2)), set(['SLOW', 'Bug(x)']))
+        self.assertEqual(set(expectations.get_modifiers(self.get_test(test_name2))), set(['Bug(x)', 'SLOW']))
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False):
