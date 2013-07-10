@@ -1819,6 +1819,4 @@ crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li
 
 Bug(cbiesinger) [ Win ] fast/forms/button-default-title.html [ Failure ]
 
-crbug.com/229120 virtual/deferred/fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
-
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
