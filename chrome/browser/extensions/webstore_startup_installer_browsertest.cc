@@ -151,14 +151,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, FindLink) {
   RunTest("runTest");
 }
 
-// Crashes at random intervals on MacOS: http://crbug.com/95713.
-// Flakes on Windows: http://crbug.com/229947
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define Maybe_ArgumentValidation DISABLED_ArgumentValidation
-#else
-#define Maybe_ArgumentValidation ArgumentValidation
-#endif
-IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Maybe_ArgumentValidation) {
+// Flakes on all platforms: http://crbug.com/95713, http://crbug.com/229947
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
+                       DISABLED_ArgumentValidation) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
 
