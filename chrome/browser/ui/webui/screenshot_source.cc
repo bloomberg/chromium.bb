@@ -184,7 +184,7 @@ void ScreenshotSource::SendScreenshot(
     using content::BrowserThread;
 
     std::string filename =
-                       path.substr(strlen(ScreenshotSource::kScreenshotSaved));
+        path.substr(strlen(ScreenshotSource::kScreenshotSaved));
 
     url_canon::RawCanonOutputT<char16> decoded;
     url_util::DecodeURLEscapeSequences(
@@ -199,12 +199,10 @@ void ScreenshotSource::SendScreenshot(
       drive::FileSystemInterface* file_system =
           drive::DriveIntegrationServiceFactory::GetForProfile(
               profile_)->file_system();
-      file_system->GetFileByResourceId(
-          decoded_filename,
-          drive::ClientContext(drive::USER_INITIATED),
+      file_system->GetFileByPath(
+          drive::util::ExtractDrivePath(download_path).Append(decoded_filename),
           base::Bind(&ScreenshotSource::GetSavedScreenshotCallback,
-                     base::Unretained(this), screenshot_path, callback),
-          google_apis::GetContentCallback());
+                     base::Unretained(this), screenshot_path, callback));
     } else {
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,

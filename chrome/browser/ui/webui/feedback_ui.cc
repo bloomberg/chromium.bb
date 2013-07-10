@@ -145,7 +145,7 @@ void ReadDirectoryCallback(size_t max_saved,
     saved_screenshots->push_back(
         std::string(ScreenshotSource::kScreenshotUrlRoot) +
         std::string(ScreenshotSource::kScreenshotSaved) +
-        entry.resource_id());
+        entry.base_name());
   }
   callback.Run();
 }
