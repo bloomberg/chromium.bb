@@ -444,6 +444,12 @@ public:
     // Called when one or more stylesheets in the document may have been added, removed, or changed.
     void styleResolverChanged(StyleResolverUpdateType, StyleResolverUpdateMode = FullStyleUpdate);
 
+    // FIXME: Switch all callers of styleResolverChanged to these or better ones and then make them
+    // do something smarter.
+    void removedStyleSheet(StyleSheet*, StyleResolverUpdateType type = DeferRecalcStyle) { styleResolverChanged(type); }
+    void addedStyleSheet(StyleSheet*, StyleResolverUpdateType type = DeferRecalcStyle) { styleResolverChanged(type); }
+    void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateType type = DeferRecalcStyle) { styleResolverChanged(type); }
+
     void didAccessStyleResolver();
 
     void evaluateMediaQueryList();

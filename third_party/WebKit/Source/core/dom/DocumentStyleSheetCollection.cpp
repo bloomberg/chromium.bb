@@ -133,16 +133,18 @@ CSSStyleSheet* DocumentStyleSheetCollection::pageUserSheet()
 void DocumentStyleSheetCollection::clearPageUserSheet()
 {
     if (m_pageUserSheet) {
+        RefPtr<StyleSheet> removedSheet = m_pageUserSheet;
         m_pageUserSheet = 0;
-        m_document->styleResolverChanged(DeferRecalcStyle);
+        m_document->removedStyleSheet(removedSheet.get());
     }
 }
 
 void DocumentStyleSheetCollection::updatePageUserSheet()
 {
     clearPageUserSheet();
-    if (pageUserSheet())
-        m_document->styleResolverChanged(RecalcStyleImmediately);
+    // FIXME: Why is this immediately and not defer?
+    if (StyleSheet* addedSheet = pageUserSheet())
+        m_document->addedStyleSheet(addedSheet, RecalcStyleImmediately);
 }
 
 const Vector<RefPtr<CSSStyleSheet> >& DocumentStyleSheetCollection::injectedUserStyleSheets() const
@@ -191,6 +193,8 @@ void DocumentStyleSheetCollection::updateInjectedStyleSheetCache() const
 void DocumentStyleSheetCollection::invalidateInjectedStyleSheetCache()
 {
     m_injectedStyleSheetCacheValid = false;
+    // FIXME: updateInjectedStyleSheetCache is called inside StyleSheetCollection::updateActiveStyleSheets
+    // and batch updates lots of sheets so we can't call addedStyleSheet() or removedStyleSheet().
     m_document->styleResolverChanged(DeferRecalcStyle);
 }
 
@@ -198,14 +202,14 @@ void DocumentStyleSheetCollection::addAuthorSheet(PassRefPtr<StyleSheetContents>
 {
     ASSERT(!authorSheet->isUserStyleSheet());
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
-    m_document->styleResolverChanged(RecalcStyleImmediately);
+    m_document->addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);
 }
 
 void DocumentStyleSheetCollection::addUserSheet(PassRefPtr<StyleSheetContents> userSheet)
 {
     ASSERT(userSheet->isUserStyleSheet());
     m_userStyleSheets.append(CSSStyleSheet::create(userSheet, m_document));
-    m_document->styleResolverChanged(RecalcStyleImmediately);
+    m_document->addedStyleSheet(m_userStyleSheets.last().get(), RecalcStyleImmediately);
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
@@ -223,7 +227,9 @@ void DocumentStyleSheetCollection::removePendingSheet(RemovePendingSheetNotifica
         m_document->setNeedsNotifyRemoveAllPendingStylesheet();
         return;
     }
-    
+
+    // FIXME: We can't call addedStyleSheet or removedStyleSheet here because we don't know
+    // what's new. We should track that to tell the style system what changed.
     m_document->didRemoveAllPendingStylesheet();
 }
 

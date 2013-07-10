@@ -71,12 +71,14 @@ void StyleElement::removedFromDocument(Document* document, Element* element)
     ASSERT(element);
     document->styleSheetCollection()->removeStyleSheetCandidateNode(element);
 
+    RefPtr<StyleSheet> removedSheet = m_sheet;
+
     if (m_sheet)
         clearSheet();
 
     // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
     if (document->renderer())
-        document->styleResolverChanged(DeferRecalcStyle);
+        document->removedStyleSheet(removedSheet.get());
 }
 
 void StyleElement::clearDocumentData(Document* document, Element* element)

@@ -291,6 +291,8 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
     
     document()->styleSheetCollection()->removeStyleSheetCandidateNode(this);
 
+    RefPtr<StyleSheet> removedSheet = m_sheet;
+
     if (m_sheet) {
         ASSERT(m_sheet->ownerNode() == this);
         m_sheet->clearOwnerNode();
@@ -299,7 +301,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 
     // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
     if (document()->renderer())
-        document()->styleResolverChanged(DeferRecalcStyle);
+        document()->removedStyleSheet(removedSheet.get());
 }
 
 void ProcessingInstruction::finishParsingChildren()

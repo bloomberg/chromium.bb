@@ -70,15 +70,17 @@ PassRefPtr<HTMLStyleElement> HTMLStyleElement::create(const QualifiedName& tagNa
 
 void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == titleAttr && m_sheet)
+    if (name == titleAttr && m_sheet) {
         m_sheet->setTitle(value);
-    else if (name == scopedAttr && ContextFeatures::styleScopedEnabled(document()))
+    } else if (name == scopedAttr && ContextFeatures::styleScopedEnabled(document())) {
         scopedAttributeChanged(!value.isNull());
-    else if (name == mediaAttr && inDocument() && document()->renderer() && m_sheet) {
+    } else if (name == mediaAttr && inDocument() && document()->renderer() && m_sheet) {
         m_sheet->setMediaQueries(MediaQuerySet::create(value));
-        document()->styleResolverChanged(RecalcStyleImmediately);
-    } else
+        // FIXME: This shold be DeferRecalcStyle.
+        document()->modifiedStyleSheet(m_sheet.get(), RecalcStyleImmediately);
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLStyleElement::scopedAttributeChanged(bool scoped)
@@ -103,7 +105,7 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
         }
 
         if (scopedValueChanged)
-            document()->styleResolverChanged(DeferRecalcStyle);
+            document()->modifiedStyleSheet(sheet());
         return;
     }
 
@@ -122,7 +124,7 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
     }
 
     if (scopedValueChanged)
-        document()->styleResolverChanged(DeferRecalcStyle);
+        document()->modifiedStyleSheet(sheet());
 }
 
 void HTMLStyleElement::finishParsingChildren()

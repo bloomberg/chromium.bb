@@ -164,7 +164,7 @@ void CSSStyleSheet::didMutate()
     Document* owner = ownerDocument();
     if (!owner)
         return;
-    owner->styleResolverChanged(DeferRecalcStyle);
+    owner->modifiedStyleSheet(this);
 }
 
 void CSSStyleSheet::reattachChildRuleCSSOMWrappers()
