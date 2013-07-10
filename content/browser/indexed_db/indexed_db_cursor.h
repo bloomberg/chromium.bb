@@ -42,8 +42,8 @@ class CONTENT_EXPORT IndexedDBCursor
 
   // IndexedDBCursor
   void Advance(uint32 count, scoped_refptr<IndexedDBCallbacks> callbacks);
-  void ContinueFunction(scoped_ptr<IndexedDBKey> key,
-                        scoped_refptr<IndexedDBCallbacks> callbacks);
+  void Continue(scoped_ptr<IndexedDBKey> key,
+                scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchContinue(int number_to_fetch,
                         scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchReset(int used_prefetches, int unused_prefetches);

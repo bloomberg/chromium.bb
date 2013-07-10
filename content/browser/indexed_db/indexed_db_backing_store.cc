@@ -1867,19 +1867,19 @@ bool IndexedDBBackingStore::Cursor::FirstSeek() {
   else
     iterator_->Seek(cursor_options_.high_key);
 
-  return ContinueFunction(0, READY);
+  return Continue(0, READY);
 }
 
 bool IndexedDBBackingStore::Cursor::Advance(uint32 count) {
   while (count--) {
-    if (!ContinueFunction())
+    if (!Continue())
       return false;
   }
   return true;
 }
 
-bool IndexedDBBackingStore::Cursor::ContinueFunction(const IndexedDBKey* key,
-                                                     IteratorState next_state) {
+bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
+                                             IteratorState next_state) {
   // TODO(alecflett): avoid a copy here?
   IndexedDBKey previous_key = current_key_ ? *current_key_ : IndexedDBKey();
 

@@ -810,7 +810,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
   if (!idb_cursor)
     return;
 
-  idb_cursor->ContinueFunction(
+  idb_cursor->Continue(
       make_scoped_ptr(new IndexedDBKey(key)),
       IndexedDBCallbacks::Create(
           parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));

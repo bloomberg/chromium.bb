@@ -1328,7 +1328,7 @@ void CountOperation::Perform(IndexedDBTransaction* transaction) {
 
   do {
     ++count;
-  } while (backing_store_cursor->ContinueFunction());
+  } while (backing_store_cursor->Continue());
 
   callbacks_->OnSuccess(count);
 }
@@ -1370,7 +1370,7 @@ void DeleteRangeOperation::Perform(IndexedDBTransaction* transaction) {
                                    "Internal error deleting data in range"));
         return;
       }
-    } while (backing_store_cursor->ContinueFunction());
+    } while (backing_store_cursor->Continue());
   }
 
   callbacks_->OnSuccess();

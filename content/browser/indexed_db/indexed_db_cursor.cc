@@ -76,9 +76,8 @@ IndexedDBCursor::~IndexedDBCursor() {
   transaction_->UnregisterOpenCursor(this);
 }
 
-void IndexedDBCursor::ContinueFunction(
-    scoped_ptr<IndexedDBKey> key,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+void IndexedDBCursor::Continue(scoped_ptr<IndexedDBKey> key,
+                               scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBCursor::Continue");
 
   transaction_->ScheduleTask(
@@ -110,8 +109,8 @@ void IndexedDBCursor::CursorIterationOperation::Perform(
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("CursorIterationOperation");
   if (!cursor_->cursor_ ||
-      !cursor_->cursor_->ContinueFunction(
-          key_.get(), IndexedDBBackingStore::Cursor::SEEK)) {
+      !cursor_->cursor_->Continue(key_.get(),
+                                  IndexedDBBackingStore::Cursor::SEEK)) {
     cursor_->cursor_.reset();
     callbacks_->OnSuccess(static_cast<std::string*>(NULL));
     return;
@@ -145,7 +144,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
   size_t size_estimate = 0;
 
   for (int i = 0; i < number_to_fetch_; ++i) {
-    if (!cursor_->cursor_ || !cursor_->cursor_->ContinueFunction()) {
+    if (!cursor_->cursor_ || !cursor_->cursor_->Continue()) {
       cursor_->cursor_.reset();
       break;
     }
@@ -192,7 +191,7 @@ void IndexedDBCursor::PrefetchReset(int used_prefetches, int) {
     return;
   if (cursor_) {
     for (int i = 0; i < used_prefetches; ++i) {
-      bool ok = cursor_->ContinueFunction();
+      bool ok = cursor_->Continue();
       DCHECK(ok);
     }
   }

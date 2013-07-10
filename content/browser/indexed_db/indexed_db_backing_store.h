@@ -213,8 +213,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
     };
 
     const IndexedDBKey& key() const { return *current_key_; }
-    bool ContinueFunction() { return ContinueFunction(NULL, SEEK); }
-    bool ContinueFunction(const IndexedDBKey* key, IteratorState state);
+    bool Continue() { return Continue(NULL, SEEK); }
+    bool Continue(const IndexedDBKey* key, IteratorState state);
     bool Advance(uint32 count);
     bool FirstSeek();
 
