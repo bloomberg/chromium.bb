@@ -6188,7 +6188,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
 }
 
 // Test that installing multiple external extensions works.
-TEST_F(ExtensionServiceTest, ExternalInstallMultiple) {
+TEST_F(ExtensionServiceTest, DISABLED_ExternalInstallMultiple) {
   FeatureSwitch::ScopedOverride prompt(
       FeatureSwitch::prompt_for_external_extensions(), true);
 
