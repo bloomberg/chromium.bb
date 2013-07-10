@@ -447,7 +447,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<SearchDriveMetadataFunction>();
   registry->RegisterFunction<ClearDriveCacheFunction>();
   registry->RegisterFunction<GetDriveConnectionStateFunction>();
-  registry->RegisterFunction<RequestDirectoryRefreshFunction>();
   registry->RegisterFunction<SetLastModifiedFunction>();
   registry->RegisterFunction<ZipSelectionFunction>();
   registry->RegisterFunction<ValidatePathNameLengthFunction>();
@@ -2917,34 +2916,6 @@ bool GetDriveConnectionStateFunction::RunImpl() {
   SetResult(value.release());
 
   drive::util::Log("%s succeeded.", name().c_str());
-  return true;
-}
-
-bool RequestDirectoryRefreshFunction::RunImpl() {
-  std::string file_url_as_string;
-  if (!args_->GetString(0, &file_url_as_string))
-    return false;
-
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  // |integration_service| is NULL if Drive is disabled.
-  if (!integration_service || !integration_service->file_system())
-    return false;
-
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  base::FilePath directory_path =
-      drive::util::ExtractDrivePathFromFileSystemUrl(
-          file_system_context->CrackURL(GURL(file_url_as_string)));
-  if (directory_path.empty())
-    return false;
-
-  integration_service->file_system()->RefreshDirectory(
-      directory_path,
-      base::Bind(&drive::util::EmptyFileOperationCallback));
   return true;
 }
 

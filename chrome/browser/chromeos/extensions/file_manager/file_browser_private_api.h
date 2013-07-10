@@ -717,19 +717,6 @@ class GetDriveConnectionStateFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.requestDirectoryRefresh method.
-class RequestDirectoryRefreshFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileBrowserPrivate.requestDirectoryRefresh",
-      FILEBROWSERPRIVATE_REQUESTDIRECTORYREFRESH);
-
- protected:
-  virtual ~RequestDirectoryRefreshFunction() {}
-
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Create a zip file for the selected files.
 class ZipSelectionFunction : public FileBrowserFunction,
                              public extensions::ZipFileCreator::Observer {
