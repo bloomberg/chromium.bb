@@ -69,11 +69,11 @@
 #include "core/rendering/style/StyleTransformData.h"
 #include "core/rendering/style/StyleVisualData.h"
 #include "core/svg/SVGPaint.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 template<typename T, typename U> inline bool compareEqual(const T& t, const U& u) { return t == static_cast<T>(u); }
 
@@ -118,7 +118,8 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class RenderTreeAsText; // FIXME: Only needed so the render tree can keep lying and dump the wrong colors.  Rebaselining would allow this to be yanked.
     friend class StyleBuilderFunctions; // Sets color styles
     friend class StyleResolver; // Sets members directly.
-    friend class StyleResolverState; // Sets members directly.
+    friend class StyleResolverState; // Needs to read color() to compute currentColor.
+    friend class CachedUAStyle; // Saves Border/Background information for later comparison.
 protected:
 
     // non-inherited attributes

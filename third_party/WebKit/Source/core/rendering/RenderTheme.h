@@ -23,15 +23,16 @@
 #ifndef RenderTheme_h
 #define RenderTheme_h
 
+#include "core/platform/ScrollTypes.h"
 #if USE(NEW_THEME)
 #include "core/platform/Theme.h"
 #else
 #include "core/platform/ThemeTypes.h"
 #endif
-#include "core/platform/ScrollTypes.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "core/rendering/style/CachedUAStyle.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -43,6 +44,7 @@ class PopupMenu;
 class RenderMenuList;
 class RenderMeter;
 class RenderProgress;
+
 
 class RenderTheme : public RefCounted<RenderTheme> {
 protected:
@@ -69,8 +71,7 @@ public:
     // metrics and defaults given the contents of the style.  This includes sophisticated operations like
     // selection of control size based off the font, the disabling of appearance when certain other properties like
     // "border" are set, or if the appearance is not supported by the theme.
-    void adjustStyle(RenderStyle*, Element*,  bool UAHasAppearance,
-                     const BorderData&, const FillLayer&, const Color& backgroundColor);
+    void adjustStyle(RenderStyle*, Element*,  const CachedUAStyle&);
 
     // This method is called to paint the widget as a background of the RenderObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates
@@ -102,7 +103,7 @@ public:
     virtual bool controlSupportsTints(const RenderObject*) const { return false; }
 
     // Whether or not the control has been styled enough by the author to disable the native appearance.
-    virtual bool isControlStyled(const RenderStyle*, const BorderData&, const FillLayer&, const Color& backgroundColor) const;
+    virtual bool isControlStyled(const RenderStyle*, const CachedUAStyle&) const;
 
     // A general method asking if any control tinting is supported at all.
     virtual bool supportsControlTints() const { return false; }

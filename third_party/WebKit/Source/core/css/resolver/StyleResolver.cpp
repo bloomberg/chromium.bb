@@ -1633,7 +1633,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
     // Let the theme also have a crack at adjusting the style.
     if (style->hasAppearance())
-        RenderTheme::defaultTheme()->adjustStyle(style, e, m_state.hasUAAppearance(), m_state.borderData(), m_state.backgroundData(), m_state.backgroundColor());
+        RenderTheme::defaultTheme()->adjustStyle(style, e, m_state.cachedUAStyle());
 
     // If we have first-letter pseudo style, do not share this style.
     if (style->hasPseudoStyle(FIRST_LETTER))
@@ -2080,8 +2080,8 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     // Now do the normal priority UA properties.
     applyMatchedProperties<LowPriorityProperties>(matchResult, false, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    // Cache our border and background so that we can examine them later.
-    state.cacheBorderAndBackground();
+    // Cache the UA properties to pass them to RenderTheme in adjustRenderStyle.
+    state.cacheUserAgentBorderAndBackground();
 
     // Now do the author and user normal priority properties and all the !important properties.
     applyMatchedProperties<LowPriorityProperties>(matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);

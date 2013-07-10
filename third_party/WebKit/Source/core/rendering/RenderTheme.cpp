@@ -92,7 +92,7 @@ RenderTheme::RenderTheme()
 {
 }
 
-void RenderTheme::adjustStyle(RenderStyle* style, Element* e, bool UAHasAppearance, const BorderData& border, const FillLayer& background, const Color& backgroundColor)
+void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyle& uaStyle)
 {
     // Force inline and table display styles to be inline-block (except for table- which is block)
     ControlPart part = style->appearance();
@@ -104,7 +104,7 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, bool UAHasAppearan
     else if (style->display() == COMPACT || style->display() == RUN_IN || style->display() == LIST_ITEM || style->display() == TABLE)
         style->setDisplay(BLOCK);
 
-    if (UAHasAppearance && isControlStyled(style, border, background, backgroundColor)) {
+    if (uaStyle.hasAppearance && isControlStyled(style, uaStyle)) {
         if (part == MenulistPart) {
             style->setAppearance(MenulistButtonPart);
             part = MenulistButtonPart;
@@ -646,22 +646,22 @@ bool RenderTheme::isControlContainer(ControlPart appearance) const
     return appearance != CheckboxPart && appearance != RadioPart;
 }
 
-static bool isBackgroundOrBorderStyled(const RenderStyle& style, const BorderData& border, const FillLayer& background, const Color& backgroundColor)
+static bool isBackgroundOrBorderStyled(const RenderStyle& style, const CachedUAStyle& uaStyle)
 {
     // Code below excludes the background-repeat from comparison by resetting it
-    FillLayer backgroundCopy = background;
+    FillLayer backgroundCopy = uaStyle.backgroundLayers;
     FillLayer backgroundLayersCopy = *style.backgroundLayers();
     backgroundCopy.setRepeatX(NoRepeatFill);
     backgroundCopy.setRepeatY(NoRepeatFill);
     backgroundLayersCopy.setRepeatX(NoRepeatFill);
     backgroundLayersCopy.setRepeatY(NoRepeatFill);
     // Test the style to see if the UA border and background match.
-    return style.border() != border
+    return style.border() != uaStyle.border
         || backgroundLayersCopy != backgroundCopy
-        || style.visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor;
+        || style.visitedDependentColor(CSSPropertyBackgroundColor) != uaStyle.backgroundColor;
 }
 
-bool RenderTheme::isControlStyled(const RenderStyle* style, const BorderData& border, const FillLayer& background, const Color& backgroundColor) const
+bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle& uaStyle) const
 {
     switch (style->appearance()) {
     case PushButtonPart:
@@ -673,14 +673,14 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const BorderData& bo
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
-        return isBackgroundOrBorderStyled(*style, border, background, backgroundColor);
+        return isBackgroundOrBorderStyled(*style, uaStyle);
 
     case ListboxPart:
     case MenulistPart:
     case SearchFieldPart:
     case TextAreaPart:
     case TextFieldPart:
-        return isBackgroundOrBorderStyled(*style, border, background, backgroundColor) || style->boxShadow();
+        return isBackgroundOrBorderStyled(*style, uaStyle) || style->boxShadow();
 
     case SliderHorizontalPart:
     case SliderVerticalPart:

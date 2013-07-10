@@ -504,11 +504,10 @@ Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
     return color;
 }
 
-bool RenderThemeChromiumMac::isControlStyled(const RenderStyle* style, const BorderData& border,
-                                     const FillLayer& background, const Color& backgroundColor) const
+bool RenderThemeChromiumMac::isControlStyled(const RenderStyle* style, const CachedUAStyle& uaStyle) const
 {
     if (style->appearance() == TextFieldPart || style->appearance() == TextAreaPart || style->appearance() == ListboxPart)
-        return style->border() != border || style->boxShadow();
+        return style->border() != uaStyle.border || style->boxShadow();
 
     // FIXME: This is horrible, but there is not much else that can be done.  Menu lists cannot draw properly when
     // scaled.  They can't really draw properly when transformed either.  We can't detect the transform case at style
@@ -520,7 +519,7 @@ bool RenderThemeChromiumMac::isControlStyled(const RenderStyle* style, const Bor
     if (style->appearance() == SearchFieldPart && style->effectiveZoom() != 1)
         return true;
 
-    return RenderTheme::isControlStyled(style, border, background, backgroundColor);
+    return RenderTheme::isControlStyled(style, uaStyle);
 }
 
 const int sliderThumbShadowBlur = 1;

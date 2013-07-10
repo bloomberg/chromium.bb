@@ -32,16 +32,6 @@
 
 namespace WebCore {
 
-void StyleResolverState::cacheBorderAndBackground()
-{
-    m_hasUAAppearance = m_style->hasAppearance();
-    if (m_hasUAAppearance) {
-        m_borderData = m_style->border();
-        m_backgroundData = *m_style->backgroundLayers();
-        m_backgroundColor = m_style->backgroundColor();
-    }
-}
-
 void StyleResolverState::clear()
 {
     m_element = 0;

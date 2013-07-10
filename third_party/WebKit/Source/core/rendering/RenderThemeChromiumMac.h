@@ -37,62 +37,62 @@ public:
     static PassRefPtr<RenderTheme> create();
 
     // A method asking if the control changes its tint when the window has focus or not.
-    virtual bool controlSupportsTints(const RenderObject*) const;
+    virtual bool controlSupportsTints(const RenderObject*) const OVERRIDE;
 
     // A general method asking if any control tinting is supported at all.
-    virtual bool supportsControlTints() const { return true; }
+    virtual bool supportsControlTints() const OVERRIDE { return true; }
 
     virtual void adjustRepaintRect(const RenderObject*, IntRect&) OVERRIDE;
 
-    virtual bool isControlStyled(const RenderStyle*, const BorderData&, const FillLayer&, const Color& backgroundColor) const;
+    virtual bool isControlStyled(const RenderStyle*, const CachedUAStyle&) const OVERRIDE;
 
-    virtual Color platformActiveSelectionBackgroundColor() const;
-    virtual Color platformInactiveSelectionBackgroundColor() const;
-    virtual Color platformActiveListBoxSelectionBackgroundColor() const;
-    virtual Color platformActiveListBoxSelectionForegroundColor() const;
-    virtual Color platformInactiveListBoxSelectionBackgroundColor() const;
-    virtual Color platformInactiveListBoxSelectionForegroundColor() const;
-    virtual Color platformFocusRingColor() const;
+    virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE;
+    virtual Color platformInactiveSelectionBackgroundColor() const OVERRIDE;
+    virtual Color platformActiveListBoxSelectionBackgroundColor() const OVERRIDE;
+    virtual Color platformActiveListBoxSelectionForegroundColor() const OVERRIDE;
+    virtual Color platformInactiveListBoxSelectionBackgroundColor() const OVERRIDE;
+    virtual Color platformInactiveListBoxSelectionForegroundColor() const OVERRIDE;
+    virtual Color platformFocusRingColor() const OVERRIDE;
 
-    virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) { return SmallScrollbar; }
+    virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) OVERRIDE { return SmallScrollbar; }
 
-    virtual void platformColorsDidChange();
+    virtual void platformColorsDidChange() OVERRIDE;
 
     // System fonts.
-    virtual void systemFont(CSSValueID, FontDescription&) const;
+    virtual void systemFont(CSSValueID, FontDescription&) const OVERRIDE;
 
-    virtual int minimumMenuListSize(RenderStyle*) const;
+    virtual int minimumMenuListSize(RenderStyle*) const OVERRIDE;
 
-    virtual void adjustSliderThumbSize(RenderStyle*, Element*) const;
+    virtual void adjustSliderThumbSize(RenderStyle*, Element*) const OVERRIDE;
 
     virtual IntSize sliderTickSize() const OVERRIDE;
     virtual int sliderTickOffsetFromTrackCenter() const OVERRIDE;
 
-    virtual int popupInternalPaddingLeft(RenderStyle*) const;
-    virtual int popupInternalPaddingRight(RenderStyle*) const;
-    virtual int popupInternalPaddingTop(RenderStyle*) const;
-    virtual int popupInternalPaddingBottom(RenderStyle*) const;
+    virtual int popupInternalPaddingLeft(RenderStyle*) const OVERRIDE;
+    virtual int popupInternalPaddingRight(RenderStyle*) const OVERRIDE;
+    virtual int popupInternalPaddingTop(RenderStyle*) const OVERRIDE;
+    virtual int popupInternalPaddingBottom(RenderStyle*) const OVERRIDE;
 
     virtual bool paintCapsLockIndicator(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
     virtual bool popsMenuByArrowKeys() const OVERRIDE { return true; }
 
     virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const OVERRIDE;
-    virtual bool paintMeter(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual bool supportsMeter(ControlPart) const;
+    virtual bool paintMeter(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool supportsMeter(ControlPart) const OVERRIDE;
 
     // Returns the repeat interval of the animation for the progress bar.
-    virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const;
+    virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const OVERRIDE;
     // Returns the duration of the animation for the progress bar.
-    virtual double animationDurationForProgressBar(RenderProgress*) const;
+    virtual double animationDurationForProgressBar(RenderProgress*) const OVERRIDE;
 
-    virtual Color systemColor(CSSValueID) const;
+    virtual Color systemColor(CSSValueID) const OVERRIDE;
 
 protected:
     RenderThemeChromiumMac();
     virtual ~RenderThemeChromiumMac();
 
-    virtual bool supportsSelectionForegroundColors() const { return false; }
+    virtual bool supportsSelectionForegroundColors() const OVERRIDE { return false; }
 
     virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&);
     virtual void adjustTextFieldStyle(RenderStyle*, Element*) const;

@@ -29,15 +29,13 @@
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/dom/Element.h"
 #include "core/platform/graphics/Color.h"
-#include "core/rendering/style/BorderData.h"
-#include "core/rendering/style/FillLayer.h"
+#include "core/rendering/style/CachedUAStyle.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {
 
-class FillLayer;
 class FontDescription;
 class RenderRegion;
 
@@ -59,8 +57,6 @@ public:
     , m_isMatchedPropertiesCacheable(true)
     , m_lineHeightValue(0)
     , m_fontDirty(false)
-    , m_hasUAAppearance(false)
-    , m_backgroundData(BackgroundFillLayer)
     , m_styleMap(*this)
     { }
 
@@ -105,11 +101,15 @@ public:
     void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
     CSSValue* lineHeightValue() { return m_lineHeightValue; }
 
-    void cacheBorderAndBackground();
-    bool hasUAAppearance() const { return m_hasUAAppearance; }
-    BorderData borderData() const { return m_borderData; }
-    FillLayer backgroundData() const { return m_backgroundData; }
-    Color backgroundColor() const { return m_backgroundColor; }
+    void cacheUserAgentBorderAndBackground() { m_cachedUAStyle = CachedUAStyle(style()); }
+    const CachedUAStyle& cachedUAStyle() const
+    {
+        // We should only ever be asking for these cached values
+        // if the style being resolved has appearance.
+        ASSERT(style()->hasAppearance());
+        return m_cachedUAStyle;
+    }
+
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
     CSSToStyleMap& styleMap() { return m_styleMap; }
 
@@ -172,10 +172,7 @@ private:
     CSSValue* m_lineHeightValue;
     bool m_fontDirty;
 
-    bool m_hasUAAppearance;
-    BorderData m_borderData;
-    FillLayer m_backgroundData;
-    Color m_backgroundColor;
+    CachedUAStyle m_cachedUAStyle;
     ElementStyleResources m_elementStyleResources;
     // CSSToStyleMap is a pure-logic class and only contains
     // a back-pointer to this object.
