@@ -1484,9 +1484,11 @@ bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
 }
 
 void NativeTextfieldViews::CreateTouchSelectionControllerAndNotifyIt() {
-  touch_selection_controller_.reset(
-      ui::TouchSelectionController::create(this));
-  if (touch_selection_controller_.get())
+  if (!touch_selection_controller_) {
+    touch_selection_controller_.reset(
+        ui::TouchSelectionController::create(this));
+  }
+  if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();
 }
 

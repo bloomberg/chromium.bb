@@ -137,12 +137,14 @@ class TouchSelectionControllerImpl::EditingHandleView
     event->SetHandled();
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
+        widget_->SetCapture(this);
         controller_->SetDraggingHandle(this);
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
         controller_->SelectionHandleDragged(event->location());
         break;
       case ui::ET_GESTURE_SCROLL_END:
+        widget_->ReleaseCapture();
         controller_->SetDraggingHandle(NULL);
         break;
       default:
@@ -227,6 +229,12 @@ void TouchSelectionControllerImpl::SelectionChanged() {
   client_view_->ConvertPointToScreen(&screen_pos_2);
   gfx::Rect screen_rect_1(screen_pos_1, r1.size());
   gfx::Rect screen_rect_2(screen_pos_2, r2.size());
+  if (screen_rect_1 == selection_end_point_1 &&
+      screen_rect_2 == selection_end_point_2)
+    return;
+
+  selection_end_point_1 = screen_rect_1;
+  selection_end_point_2 = screen_rect_2;
 
   if (client_view_->DrawsHandles()) {
     UpdateContextMenu(r1.origin(), r2.origin());
@@ -302,8 +310,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
 
   gfx::Size image_size = GetHandleImageSize();
   gfx::Point offset_drag_pos(drag_pos.x(),
-      drag_pos.y() - dragging_handle_->cursor_height() / 2 -
-      image_size.height() / 2);
+      drag_pos.y() - image_size.height() - kSelectionHandlePadding - 1);
   ConvertPointToClientView(dragging_handle_, &offset_drag_pos);
   if (dragging_handle_ == cursor_handle_.get()) {
     client_view_->MoveCaretTo(offset_drag_pos);

@@ -92,6 +92,9 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Pointer to the SelectionHandleView being dragged during a drag session.
   EditingHandleView* dragging_handle_;
 
+  gfx::Rect selection_end_point_1;
+  gfx::Rect selection_end_point_2;
+
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImpl);
 };
 
