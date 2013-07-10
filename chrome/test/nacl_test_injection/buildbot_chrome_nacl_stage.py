@@ -13,6 +13,8 @@ import shutil
 import subprocess
 import sys
 
+import find_chrome
+
 
 # Copied from buildbot/buildbot_lib.py
 def TryToCleanContents(path, file_name_filter=lambda fn: True):
@@ -43,51 +45,6 @@ def TryToCleanPath(path, file_name_filter=lambda fn: True):
           pass
     else:
       print 'Skipping %s' % path
-
-
-def FindChrome(src_dir, options):
-  if options.browser_path:
-    return options.browser_path
-
-  # List of places that chrome could live.
-  # In theory we should be more careful about what platform we're actually
-  # building for.
-  # As currently constructed, this will also hork people who have debug and
-  # release builds sitting side by side who build locally.
-  mode = options.mode
-  chrome_locations = [
-      'build/%s/chrome.exe' % mode,
-      'chrome/%s/chrome.exe' % mode,
-      # For Linux buildbots.  scripts/slave/extract_build.py extracts builds
-      # to src/sconsbuild/ rather than src/out/.
-      'sconsbuild/%s/chrome' % mode,
-      # Windows Chromium ninja builder
-      'out/%s/chrome.exe' % mode,
-      'out/%s/chrome' % mode,
-      # Mac Chromium make builder
-      'out/%s/Chromium.app/Contents/MacOS/Chromium' % mode,
-      # Mac release make builder
-      'out/%s/Google Chrome.app/Contents/MacOS/Google Chrome' % mode,
-      # Mac Chromium xcode builder
-      'xcodebuild/%s/Chromium.app/Contents/MacOS/Chromium' % mode,
-      # Mac release xcode builder
-      'xcodebuild/%s/Google Chrome.app/Contents/MacOS/Google Chrome' % mode,
-  ]
-
-  # Pick the one with the newest timestamp.
-  latest_mtime = 0
-  latest_path = None
-  for chrome in chrome_locations:
-    chrome_filename = os.path.join(src_dir, chrome)
-    if os.path.exists(chrome_filename):
-      mtime = os.path.getmtime(chrome_filename)
-      if mtime > latest_mtime:
-        latest_mtime = mtime
-        latest_path = chrome_filename
-  if latest_path is not None:
-    return latest_path
-  raise Exception('Cannot find a chome binary - specify one with '
-                  '--browser_path?')
 
 
 # TODO(ncbray): this is somewhat unsafe.  We should fix the underlying problem.
@@ -191,7 +148,13 @@ def BuildAndTest(options):
     # the entire build step rather than each test (browser_headless=1).
     scons = ['xvfb-run', '--auto-servernum', python, 'scons.py']
 
-  chrome_filename = FindChrome(src_dir, options)
+  if options.browser_path:
+    chrome_filename = options.browser_path
+  else:
+    chrome_filename = find_chrome.FindChrome(src_dir, [options.mode])
+    if chrome_filename is None:
+      raise Exception('Cannot find a chome binary - specify one with '
+                      '--browser_path?')
 
   if options.jobs > 1:
     scons.append('-j%d' % options.jobs)

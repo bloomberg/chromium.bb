@@ -39,6 +39,21 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       full_path = os.path.join(extra_dir, os.path.basename(path))
       if os.path.isfile(full_path):
         return full_path
+
+      # Try the complete relative path, not just a basename. This allows the
+      # user to serve everything recursively under extra_dir, not just one
+      # level deep.
+      #
+      # One use case for this is the Native Client SDK examples. The examples
+      # expect to be able to access files as relative paths from the root of
+      # the example directory.
+      # Sometimes two subdirectories contain files with the same name, so
+      # including all subdirectories in self.server.serving_dirs will not do
+      # the correct thing; (i.e. the wrong file will be chosen, even though the
+      # correct path was given).
+      full_path = os.path.join(extra_dir, path)
+      if os.path.isfile(full_path):
+        return full_path
     if not path.endswith('favicon.ico') and not self.server.allow_404:
       self.server.listener.ServerError('Cannot find file \'%s\'' % path)
     return path

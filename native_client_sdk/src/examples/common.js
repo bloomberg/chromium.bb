@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Set to true when the Document is loaded IFF "test=true" is in the query
+// string.
+var isTest = false;
+
 // Javascript module pattern:
 //   see http://en.wikipedia.org/wiki/Unobtrusive_JavaScript#Namespaces
 // In essence, we define an anonymous function which is immediately called and
 // returns a new object. The new object contains only the exported definitions;
 // all other definitions in the anonymous function are inaccessible to external
 // code.
-var common = (function () {
+var common = (function() {
 
   /**
    * Create the Native Client <embed> element as a child of the DOM element
@@ -26,7 +30,7 @@ var common = (function () {
     moduleEl.setAttribute('name', 'nacl_module');
     moduleEl.setAttribute('id', 'nacl_module');
     moduleEl.setAttribute('width', width);
-    moduleEl.setAttribute('height',height);
+    moduleEl.setAttribute('height', height);
     moduleEl.setAttribute('path', path);
     moduleEl.setAttribute('src', path + '/' + name + '.nmf');
 
@@ -62,11 +66,43 @@ var common = (function () {
 
     // Host plugins don't send a moduleDidLoad message. We'll fake it here.
     if (isHost) {
-      window.setTimeout(function () {
+      window.setTimeout(function() {
         var evt = document.createEvent('Event');
         evt.initEvent('load', true, true);  // bubbles, cancelable
         moduleEl.dispatchEvent(evt);
       }, 100);  // 100 ms
+    }
+
+    // This is code that is only used to test the SDK.
+    if (isTest) {
+      var scriptEl = document.createElement('script');
+      scriptEl.type = 'text/javascript';
+      scriptEl.src = 'nacltest.js';
+      document.head.appendChild(scriptEl);
+
+      scriptEl.onload = function() {
+        common.tester = new Tester();
+
+        // All NaCl SDK examples are OK if the example exits cleanly; (i.e. the
+        // NaCl module returns 0 or calls exit(0)).
+        //
+        // Without this exception, the browser_tester thinks that the module
+        // has crashed.
+        common.tester.exitCleanlyIsOK();
+
+        common.tester.addAsyncTest('loaded', function(test) {
+          test.pass();
+        });
+
+        if (typeof window.addTests !== 'undefined') {
+          window.addTests();
+        }
+
+        if (!isHost) {
+          common.tester.waitFor(moduleEl);
+        }
+        common.tester.run();
+      };
     }
   }
 
@@ -131,7 +167,7 @@ var common = (function () {
   function hideModule() {
     // Setting common.naclModule.style.display = "None" doesn't work; the
     // module will no longer be able to receive postMessages.
-    common.naclModule.style.height = "0";
+    common.naclModule.style.height = '0';
   }
 
   /**
@@ -165,7 +201,7 @@ var common = (function () {
       logMessageArray.shift();
 
     document.getElementById('log').textContent = logMessageArray.join('');
-    console.log(message)
+    console.log(message);
   }
 
   /**
@@ -220,7 +256,7 @@ var common = (function () {
     // do not change the status message.
     updateStatus('Page loaded.');
     if (common.naclModule == null) {
-      updateStatus('Creating embed: ' + tool)
+      updateStatus('Creating embed: ' + tool);
 
       // We use a non-zero sized embed to give Chrome space to place the bad
       // plug-in graphic, if there is a problem.
@@ -276,7 +312,7 @@ var common = (function () {
 // Listen for the DOM content to be loaded. This event is fired when parsing of
 // the page's document has finished.
 document.addEventListener('DOMContentLoaded', function() {
-  var body = document.querySelector('body');
+  var body = document.body;
 
   // The data-* attributes on the body can be referenced via body.dataset.
   if (body.dataset) {
@@ -290,11 +326,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // From https://developer.mozilla.org/en-US/docs/DOM/window.location
     var searchVars = {};
     if (window.location.search.length > 1) {
-      var pairs = window.location.search.substr(1).split("&");
+      var pairs = window.location.search.substr(1).split('&');
       for (var key_ix = 0; key_ix < pairs.length; key_ix++) {
-        var keyValue = pairs[key_ix].split("=");
+        var keyValue = pairs[key_ix].split('=');
         searchVars[unescape(keyValue[0])] =
-            keyValue.length > 1 ? unescape(keyValue[1]) : "";
+            keyValue.length > 1 ? unescape(keyValue[1]) : '';
       }
     }
 
@@ -316,6 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
           searchVars.config : configs[0];
       var pathFormat = body.dataset.path;
       var path = pathFormat.replace('{tc}', tc).replace('{config}', config);
+
+      isTest = searchVars.test === 'true';
 
       loadFunction(body.dataset.name, tc, path, body.dataset.width,
                    body.dataset.height, attrs);

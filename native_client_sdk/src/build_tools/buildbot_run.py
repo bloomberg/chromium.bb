@@ -58,7 +58,14 @@ def StepBuildSDK(args):
 
 
 def StepTestSDK():
-  Run([sys.executable, 'test_sdk.py'], cwd=SCRIPT_DIR)
+  cmd = []
+  if getos.GetPlatform() == 'linux':
+    # Run all of test_sdk.py under xvfb-run; it's startup time leaves something
+    # to be desired, so only start it up once.
+    cmd.extend(['xvfb-run', '--auto-servernum'])
+
+  cmd.extend([sys.executable, 'test_sdk.py'])
+  Run(cmd, cwd=SCRIPT_DIR)
 
 
 def main(args):

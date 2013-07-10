@@ -597,7 +597,8 @@ function NaClWaiter(body_element) {
 }
 
 
-function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
+function logLoadStatus(rpc, load_errors_are_test_errors,
+                       exit_cleanly_is_an_error, loaded, waiting) {
   for (var i = 0; i < loaded.length; i++) {
     rpc.log(embed_name(loaded[i]) + ' loaded');
   }
@@ -640,6 +641,28 @@ function logLoadStatus(rpc, load_errors_are_test_errors, loaded, waiting) {
     var last = getCarefully(function(){
         return toString(waiting[j].lastError);
       });
+    if (!exit_cleanly_is_an_error) {
+      // For some tests (e.g. the NaCl SDK examples) it is OK if the test
+      // exits cleanly when we are waiting for it to load.
+      //
+      // In this case, "exiting cleanly" means returning 0 from main, or
+      // calling exit(0). When this happens, the module "crashes" by posting
+      // the "crash" message, but it also assigns an exitStatus.
+      //
+      // A real crash produces an exitStatus of -1, and if the module is still
+      // running its exitStatus will be undefined.
+      var exitStatus = getCarefully(function() {
+        if (ready === 'DONE') {
+          return waiting[j].exitStatus;
+        } else {
+          return -1;
+        }
+      });
+
+      if (exitStatus === 0) {
+        continue;
+      }
+    }
     var msg = (name + ' did not load. Status: ' + ready + ' / ' + last);
     if (load_errors_are_test_errors) {
       rpc.client_error(msg);
@@ -821,6 +844,7 @@ function Tester(body_element) {
   this.waiter = new NaClWaiter(body_element);
 
   var load_errors_are_test_errors = true;
+  var exit_cleanly_is_an_error = true;
 
   var parallel = false;
 
@@ -831,6 +855,10 @@ function Tester(body_element) {
   this.loadErrorsAreOK = function() {
     load_errors_are_test_errors = false;
   }
+
+  this.exitCleanlyIsOK = function() {
+    exit_cleanly_is_an_error = false;
+  };
 
   this.log = function(message) {
     this.rpc.log(message);
@@ -852,6 +880,7 @@ function Tester(body_element) {
     this.waiter.run(
       function(loaded, waiting) {
         var errored = logLoadStatus(this_.rpc, load_errors_are_test_errors,
+                                    exit_cleanly_is_an_error,
                                     loaded, waiting);
         if (errored) {
           this_.rpc.blankLine();
