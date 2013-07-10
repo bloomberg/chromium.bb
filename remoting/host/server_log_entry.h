@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "remoting/host/host_exit_codes.h"
+#include "remoting/host/host_status_sender.h"
 #include "remoting/protocol/transport.h"
 
 namespace buzz {
@@ -36,6 +38,10 @@ class ServerLogEntry {
 
   // Constructs a log entry for a heartbeat.
   static scoped_ptr<ServerLogEntry> MakeForHeartbeat();
+
+  // Constructs a log entry for a host status message.
+  static scoped_ptr<ServerLogEntry> MakeForHostStatus(
+      HostStatusSender::HostStatus host_status, HostExitCodes exit_code);
 
   ~ServerLogEntry();
 

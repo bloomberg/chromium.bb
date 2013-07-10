@@ -26,6 +26,7 @@ const char kLogEntry[] = "entry";
 const char kKeyEventName[] = "event-name";
 const char kValueEventNameSessionState[] = "session-state";
 const char kValueEventNameHeartbeat[] = "heartbeat";
+const char kValueEventNameHostStatus[] = "host-status";
 
 const char kKeyRole[] = "role";
 const char kValueRoleHost[] = "host";
@@ -37,6 +38,9 @@ const char kValueModeMe2Me[] = "me2me";
 const char kKeySessionState[] = "session-state";
 const char kValueSessionStateConnected[] = "connected";
 const char kValueSessionStateClosed[] = "closed";
+
+const char kStatusName[] = "status";
+const char kExitCodeName[] = "exit-code";
 
 const char kKeyOsName[] = "os-name";
 const char kValueOsNameWindows[] = "Windows";
@@ -81,6 +85,18 @@ scoped_ptr<ServerLogEntry> ServerLogEntry::MakeForHeartbeat() {
   scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->Set(kKeyRole, kValueRoleHost);
   entry->Set(kKeyEventName, kValueEventNameHeartbeat);
+  return entry.Pass();
+}
+
+// static
+scoped_ptr<ServerLogEntry> ServerLogEntry::MakeForHostStatus(
+    HostStatusSender::HostStatus host_status, HostExitCodes exit_code) {
+  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
+  entry->Set(kKeyRole, kValueRoleHost);
+  entry->Set(kKeyEventName, kValueEventNameHostStatus);
+  entry->Set(kStatusName, HostStatusSender::HostStatusToString(host_status));
+  if (host_status == HostStatusSender::OFFLINE)
+    entry->Set(kExitCodeName, ExitCodeToString(exit_code));
   return entry.Pass();
 }
 

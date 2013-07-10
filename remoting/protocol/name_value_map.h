@@ -4,6 +4,10 @@
 //
 // Helper functions that allow to map enum values to strings.
 
+#include <stddef.h>
+
+#include "base/logging.h"
+
 namespace remoting {
 namespace protocol {
 

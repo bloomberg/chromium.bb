@@ -33,6 +33,7 @@ enum HostExitCodes {
   kMaxPermanentErrorExitCode = kUsernameMismatchExitCode
 };
 
+const char* ExitCodeToString(HostExitCodes exit_code);
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_HOST_EXIT_CODES_H_
