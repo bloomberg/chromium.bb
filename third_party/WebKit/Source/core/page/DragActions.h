@@ -46,7 +46,6 @@ namespace WebCore {
         DragSourceActionImage        = 2,
         DragSourceActionLink         = 4,
         DragSourceActionSelection    = 8,
-        DragSourceActionAny          = UINT_MAX
     } DragSourceAction;
     
     //matches NSDragOperation

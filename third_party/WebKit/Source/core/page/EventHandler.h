@@ -139,7 +139,6 @@ public:
     bool logicalScrollRecursively(ScrollLogicalDirection, ScrollGranularity, Node* startingNode = 0);
 
     bool mouseMoved(const PlatformMouseEvent&);
-    bool passMouseMovedEventToScrollbars(const PlatformMouseEvent&);
 
     void lostMouseCapture();
 
@@ -250,6 +249,7 @@ private:
     void freeClipboard();
 
     bool handleDrag(const MouseEventWithHitTestResults&, CheckDragHysteresis);
+    bool tryStartDrag(const MouseEventWithHitTestResults&);
     bool handleMouseUp(const MouseEventWithHitTestResults&);
     void clearDragState();
 
@@ -299,7 +299,7 @@ private:
     bool panScrollInProgress() const;
     void setLastKnownMousePosition(const PlatformMouseEvent&);
 
-    Frame* m_frame;
+    Frame* const m_frame;
 
     bool m_mousePressed;
     bool m_capturesDragging;

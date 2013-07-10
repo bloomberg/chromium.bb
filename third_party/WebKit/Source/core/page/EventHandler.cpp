@@ -874,22 +874,6 @@ bool EventHandler::panScrollInProgress() const
     return page && page->panScrollInProgress();
 }
 
-DragSourceAction EventHandler::updateDragSourceActionsAllowed() const
-{
-    if (!m_frame)
-        return DragSourceActionNone;
-
-    Page* page = m_frame->page();
-    if (!page)
-        return DragSourceActionNone;
-
-    FrameView* view = m_frame->view();
-    if (!view)
-        return DragSourceActionNone;
-
-    return page->dragController()->delegateDragSourceAction();
-}
-
 HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType, const LayoutSize& padding)
 {
     // We always send hitTestResultAtPoint to the main frame if we have one,
@@ -1450,12 +1434,6 @@ bool EventHandler::mouseMoved(const PlatformMouseEvent& event)
     return result;
 }
 
-bool EventHandler::passMouseMovedEventToScrollbars(const PlatformMouseEvent& event)
-{
-    HitTestResult hoveredNode;
-    return handleMouseMoveEvent(event, &hoveredNode, true);
-}
-
 static Cursor& syntheticTouchCursor()
 {
     DEFINE_STATIC_LOCAL(Cursor, c, (Image::loadPlatformResource("syntheticTouchCursor").get(), IntPoint(10, 10)));
@@ -1464,13 +1442,8 @@ static Cursor& syntheticTouchCursor()
 
 bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, HitTestResult* hoveredNode, bool onlyUpdateScrollbars)
 {
-    // in Radar 3703768 we saw frequent crashes apparently due to the
-    // part being null here, which seems impossible, so check for nil
-    // but also assert so that we can try to figure this out in debug
-    // builds, if it happens.
     ASSERT(m_frame);
-    if (!m_frame)
-        return false;
+    ASSERT(m_frame->view());
 
     bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
     if (defaultPrevented) {
@@ -1478,8 +1451,11 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
         return true;
     }
 
+    // FIXME: Both mouseMoved() and handleMouseMoveEvent() are publicly exposed. Fix eternal
+    // callers to use mouseMoved() instead, and remove the need to double-protect FrameView
+    // when handleMouseMoveEvent() is called by mouseMoved().
     RefPtr<FrameView> protector(m_frame->view());
-    
+
     setLastKnownMousePosition(mouseEvent);
 
     if (m_hoverTimer.isActive())
@@ -1811,7 +1787,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
                 accept = targetFrame->eventHandler()->updateDragAndDrop(event, clipboard);
         } else if (newTarget) {
             // As per section 7.9.4 of the HTML 5 spec., we must always fire a drag event before firing a dragenter, dragleave, or dragover event.
-            if (dragState().m_dragSrc && dragState().shouldDispatchEvents()) {
+            if (dragState().m_dragSrc) {
                 // for now we don't care if event handler cancels default behavior, since there is none
                 dispatchDragSrcEvent(eventNames().dragEvent, event);
             }
@@ -1838,7 +1814,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
                 accept = targetFrame->eventHandler()->updateDragAndDrop(event, clipboard);
         } else if (newTarget) {
             // Note, when dealing with sub-frames, we may need to fire only a dragover event as a drag event may have been fired earlier.
-            if (!m_shouldOnlyFireDragOverEvent && dragState().m_dragSrc && dragState().shouldDispatchEvents()) {
+            if (!m_shouldOnlyFireDragOverEvent && dragState().m_dragSrc) {
                 // for now we don't care if event handler cancels default behavior, since there is none
                 dispatchDragSrcEvent(eventNames().dragEvent, event);
             }
@@ -1860,7 +1836,7 @@ void EventHandler::cancelDragAndDrop(const PlatformMouseEvent& event, Clipboard*
         if (targetFrame)
             targetFrame->eventHandler()->cancelDragAndDrop(event, clipboard);
     } else if (m_dragTarget.get()) {
-        if (dragState().m_dragSrc && dragState().shouldDispatchEvents())
+        if (dragState().m_dragSrc)
             dispatchDragSrcEvent(eventNames().dragEvent, event);
         dispatchDragEvent(eventNames().dragleaveEvent, m_dragTarget.get(), event, clipboard);
     }
@@ -2388,6 +2364,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
         m_mouseDownMayStartDrag = true;
         dragState().m_dragSrc = 0;
         m_mouseDownPos = m_frame->view()->windowToContents(mouseDragEvent.position());
+        RefPtr<FrameView> protector(m_frame->view());
         handleDrag(mev, DontCheckDragHysteresis);
         if (m_didStartDrag) {
             m_longTapShouldInvokeContextMenu = true;
@@ -3125,7 +3102,6 @@ bool EventHandler::dragHysteresisExceeded(const FloatPoint& dragViewportLocation
     case DragSourceActionDHTML:
         break;
     case DragSourceActionNone:
-    case DragSourceActionAny:
         ASSERT_NOT_REACHED();
     }
     
@@ -3144,7 +3120,7 @@ void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperat
     HitTestRequest request(HitTestRequest::Release | HitTestRequest::DisallowShadowContent);
     prepareMouseEvent(request, event);
 
-    if (dragState().m_dragSrc && dragState().shouldDispatchEvents()) {
+    if (dragState().m_dragSrc) {
         dragState().m_dragClipboard->setDestinationOperation(operation);
         // for now we don't care if event handler cancels default behavior, since there is none
         dispatchDragSrcEvent(eventNames().dragendEvent, event);
@@ -3169,13 +3145,20 @@ bool EventHandler::dispatchDragSrcEvent(const AtomicString& eventType, const Pla
     return !dispatchDragEvent(eventType, dragState().m_dragSrc.get(), event, dragState().m_dragClipboard.get());
 }
     
-static bool ExactlyOneBitSet(DragSourceAction n)
+static bool exactlyOneBitSet(DragSourceAction n)
 {
     return n && !(n & (n - 1));
 }
 
 bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDragHysteresis checkDragHysteresis)
 {
+    // Callers must protect the reference to FrameView, since this function may dispatch DOM
+    // events, causing Frame/FrameView to go away.
+    ASSERT(m_frame);
+    ASSERT(m_frame->view());
+    if (!m_frame->page())
+        return false;
+
     if (event.event().button() != LeftButton || event.event().type() != PlatformEvent::MouseMoved) {
         // If we allowed the other side of the bridge to handle a drag
         // last time, then m_mousePressed might still be set. So we
@@ -3186,14 +3169,12 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     }
 
     if (m_mouseDownMayStartDrag && !dragState().m_dragSrc) {
-        dragState().m_eventDispatchPolicy = (updateDragSourceActionsAllowed() & DragSourceActionDHTML) ? DragState::DispatchEvents: DragState::DoNotDispatchEvents;
-
         // try to find an element that wants to be dragged
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);
         HitTestResult result(m_mouseDownPos);
         m_frame->contentRenderer()->hitTest(request, result);
         Node* node = result.innerNode();
-        if (node && m_frame->page())
+        if (node)
             dragState().m_dragSrc = m_frame->page()->dragController()->draggableNode(m_frame, node, m_mouseDownPos, dragState());
         else
             dragState().m_dragSrc = 0;
@@ -3231,7 +3212,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     if (!m_mouseDownMayStartDrag)
         return !mouseDownMayStartSelect() && !m_mouseDownMayStartAutoscroll;
     
-    if (!ExactlyOneBitSet(dragState().m_dragType)) {
+    if (!exactlyOneBitSet(dragState().m_dragType)) {
         ASSERT((dragState().m_dragType & DragSourceActionSelection));
         ASSERT((dragState().m_dragType & ~DragSourceActionSelection) == DragSourceActionDHTML
                 || (dragState().m_dragType & ~DragSourceActionSelection) == DragSourceActionImage
@@ -3240,10 +3221,8 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     }
 
     // We are starting a text/image/url drag, so the cursor should be an arrow
-    if (FrameView* view = m_frame->view()) {
-        // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and drop (default to pointer).
-        view->setCursor(pointerCursor());
-    }
+    // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and drop (default to pointer).
+    m_frame->view()->setCursor(pointerCursor());
 
     if (checkDragHysteresis == ShouldCheckDragHysteresis && !dragHysteresisExceeded(event.event().position()))
         return true;
@@ -3251,81 +3230,73 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     // Once we're past the hysteresis point, we don't want to treat this gesture as a click
     invalidateClick();
     
+    if (!tryStartDrag(event)) {
+        // Something failed to start the drag, clean up.
+        freeClipboard();
+        dragState().m_dragSrc = 0;
+    }
+
+    m_mouseDownMayStartDrag = false;
+    // Whether or not the drag actually started, no more default handling (like selection).
+    return true;
+}
+
+bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
+{
     DragOperation srcOp = DragOperationNone;      
     
     freeClipboard(); // would only happen if we missed a dragEnd.  Do it anyway, just
                      // to make sure it gets numbified
     dragState().m_dragClipboard = createDraggingClipboard();  
     
-    if (dragState().shouldDispatchEvents()) {
-        // Check to see if the is a DOM based drag, if it is get the DOM specified drag 
-        // image and offset
-        if (dragState().m_dragType == DragSourceActionDHTML) {
-            if (RenderObject* renderer = dragState().m_dragSrc->renderer()) {
-                // FIXME: This doesn't work correctly with transforms.
-                FloatPoint absPos = renderer->localToAbsolute();
-                IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
-                dragState().m_dragClipboard->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
-            } else {
-                // The renderer has disappeared, this can happen if the onStartDrag handler has hidden
-                // the element in some way.  In this case we just kill the drag.
-                m_mouseDownMayStartDrag = false;
-                goto cleanupDrag;
-            }
-        } 
-        
-        Page* page = m_frame->page();
-        DragController* dragController = page ? page->dragController() : 0;
-        if (!dragController || !dragController->populateDragClipboard(m_frame, dragState(), m_mouseDownPos)) {
-            m_mouseDownMayStartDrag = false;
-            goto cleanupDrag;
-        }
-        m_mouseDownMayStartDrag = dispatchDragSrcEvent(eventNames().dragstartEvent, m_mouseDown)
-            && !m_frame->selection()->isInPasswordField();
-        
-        // Invalidate clipboard here against anymore pasteboard writing for security.  The drag
-        // image can still be changed as we drag, but not the pasteboard data.
-        dragState().m_dragClipboard->setAccessPolicy(ClipboardImageWritable);
-        
-        if (m_mouseDownMayStartDrag) {
-            // gather values from DHTML element, if it set any
-            srcOp = dragState().m_dragClipboard->sourceOperation();
-            
-            // Yuck, a draggedImage:moveTo: message can be fired as a result of kicking off the
-            // drag with dragImage!  Because of that dumb reentrancy, we may think we've not
-            // started the drag when that happens.  So we have to assume it's started before we
-            // kick it off.
-            dragState().m_dragClipboard->setDragHasStarted();
+    // Check to see if this a DOM based drag, if it is get the DOM specified drag
+    // image and offset
+    if (dragState().m_dragType == DragSourceActionDHTML) {
+        if (RenderObject* renderer = dragState().m_dragSrc->renderer()) {
+            // FIXME: This doesn't work correctly with transforms.
+            FloatPoint absPos = renderer->localToAbsolute();
+            IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
+            dragState().m_dragClipboard->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
+        } else {
+            // The renderer has disappeared, this can happen if the onStartDrag handler has hidden
+            // the element in some way. In this case we just kill the drag.
+            return false;
         }
     }
+
+    DragController* dragController = m_frame->page()->dragController();
+    ASSERT(dragController);
+    if (!dragController->populateDragClipboard(m_frame, dragState(), m_mouseDownPos))
+        return false;
+    m_mouseDownMayStartDrag = dispatchDragSrcEvent(eventNames().dragstartEvent, m_mouseDown)
+        && !m_frame->selection()->isInPasswordField();
+
+    // Invalidate clipboard here against anymore pasteboard writing for security. The drag
+    // image can still be changed as we drag, but not the pasteboard data.
+    dragState().m_dragClipboard->setAccessPolicy(ClipboardImageWritable);
     
     if (m_mouseDownMayStartDrag) {
-        Page* page = m_frame->page();
-        DragController* dragController = page ? page->dragController() : 0;
-        m_didStartDrag = dragController && dragController->startDrag(m_frame, dragState(), srcOp, event.event(), m_mouseDownPos);
-        // In WebKit2 we could reenter this code and start another drag.
-        // On OS X this causes problems with the ownership of the pasteboard
-        // and the promised types.
-        if (m_didStartDrag) {
-            m_mouseDownMayStartDrag = false;
-            return true;
-        }
-        if (dragState().shouldDispatchEvents()) {
-            // Drag was canned at the last minute - we owe m_dragSrc a DRAGEND event
-            dispatchDragSrcEvent(eventNames().dragendEvent, event.event());
-            m_mouseDownMayStartDrag = false;
-        }
-    } 
+        // gather values from DHTML element, if it set any
+        srcOp = dragState().m_dragClipboard->sourceOperation();
 
-cleanupDrag:
-    if (!m_mouseDownMayStartDrag) {
-        // something failed to start the drag, cleanup
-        freeClipboard();
-        dragState().m_dragSrc = 0;
+        // Yuck, a draggedImage:moveTo: message can be fired as a result of kicking off the
+        // drag with dragImage! Because of that dumb reentrancy, we may think we've not
+        // started the drag when that happens. So we have to assume it's started before we
+        // kick it off.
+        dragState().m_dragClipboard->setDragHasStarted();
+
+        // Dispatching the event could cause Page to go away. Make sure it's still valid before trying to use DragController.
+        m_didStartDrag = m_frame->page() && dragController->startDrag(m_frame, dragState(), srcOp, event.event(), m_mouseDownPos);
+        // FIXME: This seems pretty useless now. The gesture code uses this as a signal for
+        // whether or not the drag started, but perhaps it can simply use the return value from
+        // handleDrag(), even though it doesn't mean exactly the same thing.
+        if (m_didStartDrag)
+            return true;
+        // Drag was canned at the last minute - we owe m_dragSrc a DRAGEND event
+        dispatchDragSrcEvent(eventNames().dragendEvent, event.event());
     }
-    
-    // No more default handling (like selection), whether we're past the hysteresis bounds or not
-    return true;
+
+    return false;
 }
 
 bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEvent, TextEventInputType inputType)

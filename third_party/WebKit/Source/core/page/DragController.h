@@ -70,11 +70,9 @@ namespace WebCore {
         void setDidInitiateDrag(bool initiated) { m_didInitiateDrag = initiated; } 
         bool didInitiateDrag() const { return m_didInitiateDrag; }
         DragOperation sourceDragOperation() const { return m_sourceDragOperation; }
-        DragSourceAction dragSourceAction() const { return m_dragSourceAction; }
 
         Document* documentUnderMouse() const { return m_documentUnderMouse.get(); }
         DragDestinationAction dragDestinationAction() const { return m_dragDestinationAction; }
-        DragSourceAction delegateDragSourceAction();
         
         Node* draggableNode(const Frame*, Node*, const IntPoint&, DragState&) const;
         void dragEnded();
@@ -105,9 +103,7 @@ namespace WebCore {
         void mouseMovedIntoDocument(Document*);
 
         IntRect selectionDraggingRect(Frame*);
-        bool doDrag(Frame* src, Clipboard*, DragImage*, const KURL& linkURL, const KURL& imageURL, Node*, IntPoint& dragLoc, IntPoint& dragImageOffset);
-        void doImageDrag(Element*, const IntPoint&, const IntRect&, Clipboard*, Frame*, IntPoint&);
-        void doSystemDrag(DragImage*, const IntPoint&, const IntPoint&, Clipboard*, Frame*, bool forLink);
+        void doSystemDrag(DragImage*, const IntPoint& dragLocation, const IntPoint& dragOrigin, Clipboard*, Frame*, bool forLink);
         void cleanupAfterSystemDrag();
 
         Page* m_page;
@@ -119,7 +115,6 @@ namespace WebCore {
         bool m_documentIsHandlingDrag;
 
         DragDestinationAction m_dragDestinationAction;
-        DragSourceAction m_dragSourceAction;
         bool m_didInitiateDrag;
         DragOperation m_sourceDragOperation; // Set in startDrag when a drag starts from a mouse down within WebKit
     };

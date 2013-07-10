@@ -42,14 +42,8 @@ struct DragState {
     WTF_MAKE_NONCOPYABLE(DragState);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum EventDispatchPolicy {
-        DoNotDispatchEvents,
-        DispatchEvents,
-    };
     DragState() { }
-    bool shouldDispatchEvents() const { return m_eventDispatchPolicy == DispatchEvents; }
     RefPtr<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
-    EventDispatchPolicy m_eventDispatchPolicy;
     DragSourceAction m_dragType;
     RefPtr<Clipboard> m_dragClipboard; // used on only the source side of dragging
 };
