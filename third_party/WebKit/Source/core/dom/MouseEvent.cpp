@@ -57,9 +57,11 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRef
 {
     ASSERT(event.type() == PlatformEvent::MouseMoved || event.button() != NoButton);
 
-    bool isCancelable = eventType != eventNames().mousemoveEvent;
+    bool isMouseEnterOrLeave = eventType == eventNames().mouseenterEvent || eventType == eventNames().mouseleaveEvent;
+    bool isCancelable = eventType != eventNames().mousemoveEvent && !isMouseEnterOrLeave;
+    bool isBubbling = !isMouseEnterOrLeave;
 
-    return MouseEvent::create(eventType, true, isCancelable, view,
+    return MouseEvent::create(eventType, isBubbling, isCancelable, view,
         detail, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.button(),
@@ -189,18 +191,18 @@ int MouseEvent::which() const
 Node* MouseEvent::toElement() const
 {
     // MSIE extension - "the object toward which the user is moving the mouse pointer"
-    if (type() == eventNames().mouseoutEvent) 
+    if (type() == eventNames().mouseoutEvent || type() == eventNames().mouseleaveEvent)
         return relatedTarget() ? relatedTarget()->toNode() : 0;
-    
+
     return target() ? target()->toNode() : 0;
 }
 
 Node* MouseEvent::fromElement() const
 {
     // MSIE extension - "object from which activation or the mouse pointer is exiting during the event" (huh?)
-    if (type() != eventNames().mouseoutEvent)
+    if (type() != eventNames().mouseoutEvent && type() != eventNames().mouseleaveEvent)
         return relatedTarget() ? relatedTarget()->toNode() : 0;
-    
+
     return target() ? target()->toNode() : 0;
 }
 

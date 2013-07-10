@@ -145,6 +145,8 @@
     [NotEnumerable, PerWorldBindings] attribute EventListener onkeyup;
     [NotEnumerable, PerWorldBindings] attribute EventListener onload;
     [NotEnumerable, PerWorldBindings] attribute EventListener onmousedown;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmouseenter;
+    [NotEnumerable, PerWorldBindings] attribute EventListener onmouseleave;
     [NotEnumerable, PerWorldBindings] attribute EventListener onmousemove;
     [NotEnumerable, PerWorldBindings] attribute EventListener onmouseout;
     [NotEnumerable, PerWorldBindings] attribute EventListener onmouseover;

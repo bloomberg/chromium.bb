@@ -2790,7 +2790,7 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& r
     renderView()->hitTest(request, result);
 
     if (!request.readOnly())
-        updateHoverActiveState(request, result.innerElement());
+        updateHoverActiveState(request, result.innerElement(), &event);
 
     return MouseEventWithHitTestResults(event, result);
 }
@@ -4847,13 +4847,13 @@ static RenderObject* nearestCommonHoverAncestor(RenderObject* obj1, RenderObject
     return 0;
 }
 
-void Document::updateHoverActiveState(const HitTestRequest& request, Element* innerElement)
+void Document::updateHoverActiveState(const HitTestRequest& request, Element* innerElement, const PlatformMouseEvent* event)
 {
     ASSERT(!request.readOnly());
 
     Element* innerElementInDocument = innerElement;
     while (innerElementInDocument && innerElementInDocument->document() != this) {
-        innerElementInDocument->document()->updateHoverActiveState(request, innerElementInDocument);
+        innerElementInDocument->document()->updateHoverActiveState(request, innerElementInDocument, event);
         innerElementInDocument = innerElementInDocument->document()->ownerElement();
     }
 
@@ -4941,9 +4941,38 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             nodesToAddToChain.append(curr->node());
     }
 
+    // mouseenter and mouseleave events do not bubble, so they are dispatched iff there is a capturing
+    // event handler on an ancestor or a normal event handler on the element itself. This special
+    // handling is necessary to avoid O(n^2) capturing event handler checks. We'll check the previously
+    // hovered node's ancestor tree for 'mouseleave' handlers here, then check the newly hovered node's
+    // ancestor tree for 'mouseenter' handlers after dispatching the 'mouseleave' events (as the handler
+    // for 'mouseleave' might set a capturing 'mouseenter' handler, odd as that might be).
+    bool ancestorHasCapturingMouseleaveListener = false;
+    if (event && newHoverNode != oldHoverNode.get()) {
+        for (Node* node = oldHoverNode.get(); node; node = node->parentOrShadowHostNode()) {
+            if (node->hasCapturingEventListeners(eventNames().mouseleaveEvent)) {
+                ancestorHasCapturingMouseleaveListener = true;
+                break;
+            }
+        }
+    }
+
     size_t removeCount = nodesToRemoveFromChain.size();
-    for (size_t i = 0; i < removeCount; ++i)
+    for (size_t i = 0; i < removeCount; ++i) {
         nodesToRemoveFromChain[i]->setHovered(false);
+        if (event && (ancestorHasCapturingMouseleaveListener || nodesToRemoveFromChain[i]->hasEventListeners(eventNames().mouseleaveEvent)))
+            nodesToRemoveFromChain[i]->dispatchMouseEvent(*event, eventNames().mouseleaveEvent, 0, newHoverNode);
+    }
+
+    bool ancestorHasCapturingMouseenterListener = false;
+    if (event && newHoverNode != oldHoverNode.get()) {
+        for (Node* node = newHoverNode; node; node = node->parentOrShadowHostNode()) {
+            if (node->hasCapturingEventListeners(eventNames().mouseenterEvent)) {
+                ancestorHasCapturingMouseenterListener = true;
+                break;
+            }
+        }
+    }
 
     bool sawCommonAncestor = false;
     size_t addCount = nodesToAddToChain.size();
@@ -4953,8 +4982,11 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
             sawCommonAncestor = true;
         if (allowActiveChanges)
             nodesToAddToChain[i]->setActive(true);
-        if (!sawCommonAncestor)
+        if (!sawCommonAncestor) {
             nodesToAddToChain[i]->setHovered(true);
+            if (event && (ancestorHasCapturingMouseenterListener || nodesToAddToChain[i]->hasEventListeners(eventNames().mouseenterEvent)))
+                nodesToAddToChain[i]->dispatchMouseEvent(*event, eventNames().mouseenterEvent, 0, oldHoverNode.get());
+        }
     }
 
     updateStyleIfNeeded();
