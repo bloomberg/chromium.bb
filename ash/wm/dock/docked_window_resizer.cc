@@ -61,7 +61,7 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
   gfx::Point offset;
   gfx::Rect bounds(CalculateBoundsForDrag(details_, location));
-  MaybeSnapToSide(bounds, &offset);
+  MaybeSnapToEdge(bounds, &offset);
   gfx::Point modified_location(location.x() + offset.x(),
                                location.y() + offset.y());
   next_window_resizer_->Drag(modified_location, event_flags);
@@ -101,7 +101,7 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
       dock_container->layout_manager());
 }
 
-void DockedWindowResizer::MaybeSnapToSide(const gfx::Rect& bounds,
+void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
                                           gfx::Point* offset) {
   aura::Window* dock_container = Shell::GetContainer(
       wm::GetRootWindowAt(last_location_),

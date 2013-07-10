@@ -4,7 +4,6 @@
 
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
-#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
@@ -19,7 +18,6 @@
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

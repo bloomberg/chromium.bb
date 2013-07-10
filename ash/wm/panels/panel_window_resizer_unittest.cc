@@ -443,6 +443,9 @@ TEST_P(PanelWindowResizerTextDirectionTest, DragReordersPanelsHorizontal) {
 }
 
 TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
+  if (!SupportsHostWindowResize())
+    return;
+
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, shell->GetPrimaryRootWindow());
   DragAlongShelfReorder(0, -1);

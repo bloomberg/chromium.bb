@@ -133,6 +133,7 @@ PanelWindowResizer::PanelWindowResizer(WindowResizer* next_window_resizer,
     : details_(details),
       next_window_resizer_(next_window_resizer),
       panel_container_(NULL),
+      initial_panel_container_(NULL),
       did_move_or_resize_(false),
       was_attached_(GetTarget()->GetProperty(internal::kPanelAttachedKey)),
       should_attach_(was_attached_),
@@ -141,6 +142,7 @@ PanelWindowResizer::PanelWindowResizer(WindowResizer* next_window_resizer,
   panel_container_ = Shell::GetContainer(
       details.window->GetRootWindow(),
       internal::kShellWindowId_PanelContainer);
+  initial_panel_container_ = panel_container_;
 }
 
 bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
@@ -216,6 +218,12 @@ void PanelWindowResizer::FinishDragging() {
         GetTarget()->GetRootWindow(),
         gfx::Rect(last_location_, gfx::Size()));
   }
+
+  // If we started the drag in one root window and moved into another root
+  // but then canceled the drag we may need to inform the original layout
+  // manager that the drag is finished.
+  if (initial_panel_container_ != panel_container_)
+     GetPanelLayoutManager(initial_panel_container_)->FinishDragging();
   if (panel_container_)
     GetPanelLayoutManager(panel_container_)->FinishDragging();
 }

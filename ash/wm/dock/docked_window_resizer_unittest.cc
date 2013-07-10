@@ -524,7 +524,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
   // Undock and move to the right - enough to get it peeking at the other screen
   // but not enough to land in the other screen
   ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
-  DragMove(50, 0);
+  DragMove(70, 0);
   EXPECT_EQ(CorrectContainerIdDuringDrag(DOCKED), window->parent()->id());
   DragEnd();
   EXPECT_NE(window->GetRootWindow()->bounds().right(),
@@ -535,7 +535,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
 
   // Move back left - should dock again.
   ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
-  DragMove(-50, 0);
+  DragMove(-70, 0);
   EXPECT_EQ(CorrectContainerIdDuringDrag(UNDOCKED), window->parent()->id());
   DragEnd();
   EXPECT_EQ(window->GetRootWindow()->bounds().right(),

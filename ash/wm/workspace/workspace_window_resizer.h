@@ -133,7 +133,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void AdjustBoundsForMainWindow(int snap_size, gfx::Rect* bounds);
 
   // Stick the window bounds to the work area during a move.
-  void StickToWorkAreaOnMove(const gfx::Rect& work_area,
+  bool StickToWorkAreaOnMove(const gfx::Rect& work_area,
                              int sticky_size,
                              gfx::Rect* bounds) const;
 
