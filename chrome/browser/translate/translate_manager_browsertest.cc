@@ -44,7 +44,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/render_view_test.h"
 #include "content/public/test/test_renderer_host.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
@@ -52,7 +51,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
-#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/cld/languages/public/languages.h"
 
 using content::NavigationController;
@@ -225,7 +223,6 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
  protected:
   virtual void SetUp() {
-    WebKit::initialize(webkit_platform_support_.Get());
     // Access the TranslateManager singleton so it is created before we call
     // ChromeRenderViewHostTestHarness::SetUp() to match what's done in Chrome,
     // where the TranslateManager is created before the WebContents.  This
@@ -256,7 +253,6 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
         content::Source<InfoBarService>(infobar_service()));
 
     ChromeRenderViewHostTestHarness::TearDown();
-    WebKit::shutdown();
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
@@ -312,8 +308,6 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
  private:
   content::NotificationRegistrar notification_registrar_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
-      webkit_platform_support_;
 
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.
