@@ -249,57 +249,6 @@ public:
     }
 };
 
-template <LengthSize (RenderStyle::*getterFunction)() const, void (RenderStyle::*setterFunction)(LengthSize), LengthSize (*initialFunction)()>
-class ApplyPropertyBorderRadius {
-public:
-    static void setValue(RenderStyle* style, LengthSize value) { (style->*setterFunction)(value); }
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
-    {
-        if (!value->isPrimitiveValue())
-            return;
-
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        Pair* pair = primitiveValue->getPairValue();
-        if (!pair || !pair->first() || !pair->second())
-            return;
-
-        Length radiusWidth;
-        Length radiusHeight;
-        if (pair->first()->isPercentage())
-            radiusWidth = Length(pair->first()->getDoubleValue(), Percent);
-        else if (pair->first()->isViewportPercentageLength())
-            radiusWidth = pair->first()->viewportPercentageLength();
-        else if (pair->first()->isCalculatedPercentageWithLength())
-            radiusWidth = Length((pair->first()->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
-        else
-            radiusWidth = pair->first()->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-        if (pair->second()->isPercentage())
-            radiusHeight = Length(pair->second()->getDoubleValue(), Percent);
-        else if (pair->second()->isViewportPercentageLength())
-            radiusHeight = pair->second()->viewportPercentageLength();
-        else if (pair->second()->isCalculatedPercentageWithLength())
-            radiusHeight = Length((pair->second()->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
-        else
-            radiusHeight = pair->second()->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-        int width = radiusWidth.value();
-        int height = radiusHeight.value();
-        if (width < 0 || height < 0)
-            return;
-        if (!width)
-            radiusHeight = radiusWidth; // Null out the other value.
-        else if (!height)
-            radiusWidth = radiusHeight; // Null out the other value.
-
-        LengthSize size(radiusWidth, radiusHeight);
-        setValue(state.style(), size);
-    }
-    static PropertyHandler createHandler()
-    {
-        PropertyHandler handler = ApplyPropertyDefaultBase<LengthSize, getterFunction, LengthSize, setterFunction, LengthSize, initialFunction>::createHandler();
-        return PropertyHandler(handler.inheritFunction(), handler.initialFunction(), &applyValue);
-    }
-};
-
 enum ComputeLengthNormal {NormalDisabled = 0, NormalEnabled};
 enum ComputeLengthThickness {ThicknessDisabled = 0, ThicknessEnabled};
 enum ComputeLengthSVGZoom {SVGZoomDisabled = 0, SVGZoomEnabled};
@@ -734,95 +683,6 @@ public:
     static PropertyHandler createHandler()
     {
         return PropertyHandler(&applyInheritValue, &applyInitialValue, &applyValue);
-    }
-};
-
-enum BorderImageType { BorderImage = 0, BorderMask };
-enum BorderImageModifierType { Outset, Repeat, Slice, Width };
-template <BorderImageType type, BorderImageModifierType modifier>
-class ApplyPropertyBorderImageModifier {
-private:
-    static inline const NinePieceImage& getValue(RenderStyle* style) { return type == BorderImage ? style->borderImage() : style->maskBoxImage(); }
-    static inline void setValue(RenderStyle* style, const NinePieceImage& value) { return type == BorderImage ? style->setBorderImage(value) : style->setMaskBoxImage(value); }
-public:
-    static void applyInheritValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
-    {
-        NinePieceImage image(getValue(state.style()));
-        switch (modifier) {
-        case Outset:
-            image.copyOutsetFrom(getValue(state.parentStyle()));
-            break;
-        case Repeat:
-            image.copyRepeatFrom(getValue(state.parentStyle()));
-            break;
-        case Slice:
-            image.copyImageSlicesFrom(getValue(state.parentStyle()));
-            break;
-        case Width:
-            image.copyBorderSlicesFrom(getValue(state.parentStyle()));
-            break;
-        }
-        setValue(state.style(), image);
-    }
-
-    static void applyInitialValue(CSSPropertyID, StyleResolver*, StyleResolverState& state)
-    {
-        NinePieceImage image(getValue(state.style()));
-        switch (modifier) {
-        case Outset:
-            image.setOutset(LengthBox(0));
-            break;
-        case Repeat:
-            image.setHorizontalRule(StretchImageRule);
-            image.setVerticalRule(StretchImageRule);
-            break;
-        case Slice:
-            // Masks have a different initial value for slices. Preserve the value of 0 for backwards compatibility.
-            image.setImageSlices(type == BorderImage ? LengthBox(Length(100, Percent), Length(100, Percent), Length(100, Percent), Length(100, Percent)) : LengthBox());
-            image.setFill(false);
-            break;
-        case Width:
-            // Masks have a different initial value for widths. They use an 'auto' value rather than trying to fit to the border.
-            image.setBorderSlices(type == BorderImage ? LengthBox(Length(1, Relative), Length(1, Relative), Length(1, Relative), Length(1, Relative)) : LengthBox());
-            break;
-        }
-        setValue(state.style(), image);
-    }
-
-    static void applyValue(CSSPropertyID, StyleResolver*, StyleResolverState& state, CSSValue* value)
-    {
-        NinePieceImage image(getValue(state.style()));
-        switch (modifier) {
-        case Outset:
-            image.setOutset(state.styleMap().mapNinePieceImageQuad(value));
-            break;
-        case Repeat:
-            state.styleMap().mapNinePieceImageRepeat(value, image);
-            break;
-        case Slice:
-            state.styleMap().mapNinePieceImageSlice(value, image);
-            break;
-        case Width:
-            image.setBorderSlices(state.styleMap().mapNinePieceImageQuad(value));
-            break;
-        }
-        setValue(state.style(), image);
-    }
-
-    static PropertyHandler createHandler() { return PropertyHandler(&applyInheritValue, &applyInitialValue, &applyValue); }
-};
-
-template <CSSPropertyID id, StyleImage* (RenderStyle::*getterFunction)() const, void (RenderStyle::*setterFunction)(PassRefPtr<StyleImage>), StyleImage* (*initialFunction)()>
-class ApplyPropertyBorderImageSource {
-public:
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
-    {
-        (state.style()->*setterFunction)(state.styleImage(id, value));
-    }
-    static PropertyHandler createHandler()
-    {
-        PropertyHandler handler = ApplyPropertyDefaultBase<StyleImage*, getterFunction, PassRefPtr<StyleImage>, setterFunction, StyleImage*, initialFunction>::createHandler();
-        return PropertyHandler(handler.inheritFunction(), handler.initialFunction(), &applyValue);
     }
 };
 
@@ -1554,18 +1414,9 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
         m_propertyMap[i] = PropertyHandler();
 
     // Please keep CSS property list in alphabetical order.
-    setPropertyHandler(CSSPropertyBorderBottomLeftRadius, ApplyPropertyBorderRadius<&RenderStyle::borderBottomLeftRadius, &RenderStyle::setBorderBottomLeftRadius, &RenderStyle::initialBorderRadius>::createHandler());
-    setPropertyHandler(CSSPropertyBorderBottomRightRadius, ApplyPropertyBorderRadius<&RenderStyle::borderBottomRightRadius, &RenderStyle::setBorderBottomRightRadius, &RenderStyle::initialBorderRadius>::createHandler());
     setPropertyHandler(CSSPropertyBorderBottomWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderBottomWidth, &RenderStyle::setBorderBottomWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
-    setPropertyHandler(CSSPropertyBorderImageOutset, ApplyPropertyBorderImageModifier<BorderImage, Outset>::createHandler());
-    setPropertyHandler(CSSPropertyBorderImageRepeat, ApplyPropertyBorderImageModifier<BorderImage, Repeat>::createHandler());
-    setPropertyHandler(CSSPropertyBorderImageSlice, ApplyPropertyBorderImageModifier<BorderImage, Slice>::createHandler());
-    setPropertyHandler(CSSPropertyBorderImageSource, ApplyPropertyBorderImageSource<CSSPropertyBorderImageSource, &RenderStyle::borderImageSource, &RenderStyle::setBorderImageSource, &RenderStyle::initialBorderImageSource>::createHandler());
-    setPropertyHandler(CSSPropertyBorderImageWidth, ApplyPropertyBorderImageModifier<BorderImage, Width>::createHandler());
     setPropertyHandler(CSSPropertyBorderLeftWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderLeftWidth, &RenderStyle::setBorderLeftWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
     setPropertyHandler(CSSPropertyBorderRightWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderRightWidth, &RenderStyle::setBorderRightWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
-    setPropertyHandler(CSSPropertyBorderTopLeftRadius, ApplyPropertyBorderRadius<&RenderStyle::borderTopLeftRadius, &RenderStyle::setBorderTopLeftRadius, &RenderStyle::initialBorderRadius>::createHandler());
-    setPropertyHandler(CSSPropertyBorderTopRightRadius, ApplyPropertyBorderRadius<&RenderStyle::borderTopRightRadius, &RenderStyle::setBorderTopRightRadius, &RenderStyle::initialBorderRadius>::createHandler());
     setPropertyHandler(CSSPropertyBorderTopWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderTopWidth, &RenderStyle::setBorderTopWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
     setPropertyHandler(CSSPropertyClip, ApplyPropertyClip::createHandler());
     setPropertyHandler(CSSPropertyCounterIncrement, ApplyPropertyCounter<Increment>::createHandler());
@@ -1605,11 +1456,6 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
     setPropertyHandler(CSSPropertyWebkitFontSmoothing, ApplyPropertyFont<FontSmoothingMode, &FontDescription::fontSmoothing, &FontDescription::setFontSmoothing, AutoSmoothing>::createHandler());
     setPropertyHandler(CSSPropertyWebkitFontVariantLigatures, ApplyPropertyFontVariantLigatures::createHandler());
     setPropertyHandler(CSSPropertyWebkitMarqueeSpeed, ApplyPropertyMarqueeSpeed::createHandler());
-    setPropertyHandler(CSSPropertyWebkitMaskBoxImageOutset, ApplyPropertyBorderImageModifier<BorderMask, Outset>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitMaskBoxImageRepeat, ApplyPropertyBorderImageModifier<BorderMask, Repeat>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitMaskBoxImageSlice, ApplyPropertyBorderImageModifier<BorderMask, Slice>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitMaskBoxImageSource, ApplyPropertyBorderImageSource<CSSPropertyWebkitMaskBoxImageSource, &RenderStyle::maskBoxImageSource, &RenderStyle::setMaskBoxImageSource, &RenderStyle::initialMaskBoxImageSource>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitMaskBoxImageWidth, ApplyPropertyBorderImageModifier<BorderMask, Width>::createHandler());
     setPropertyHandler(CSSPropertyWebkitPerspectiveOrigin, ApplyPropertyExpanding<SuppressValue, CSSPropertyWebkitPerspectiveOriginX, CSSPropertyWebkitPerspectiveOriginY>::createHandler());
     setPropertyHandler(CSSPropertyWebkitTextEmphasisStyle, ApplyPropertyTextEmphasisStyle::createHandler());
     setPropertyHandler(CSSPropertyWebkitTransformOriginZ, ApplyPropertyComputeLength<float, &RenderStyle::transformOriginZ, &RenderStyle::setTransformOriginZ, &RenderStyle::initialTransformOriginZ>::createHandler());

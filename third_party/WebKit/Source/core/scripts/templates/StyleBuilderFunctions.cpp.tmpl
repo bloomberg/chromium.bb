@@ -13,6 +13,7 @@
 
 #include "CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolver.h"
 
 {%- macro apply_initial(property_id) -%}
@@ -158,6 +159,129 @@ namespace WebCore {
 
 {{ apply_value_border_image("CSSPropertyWebkitBorderImage") }}
 {{ apply_value_border_image("CSSPropertyWebkitMaskBoxImage") }}
+
+{%- macro apply_border_image_modifier(property_id, modifier_type) %}
+{%- set is_mask_box = "MaskBox" in property_id %}
+{%- set getter = "maskBoxImage" if is_mask_box else "borderImage" %}
+{%- set setter = "setMaskBoxImage" if is_mask_box else "setBorderImage" %}
+{{ apply_initial(property_id) }}
+{
+    NinePieceImage image(state.style()->{{getter}}());
+    {%- if modifier_type == "Outset" %}
+    image.setOutset(LengthBox(0));
+    {%- elif modifier_type == "Repeat" %}
+    image.setHorizontalRule(StretchImageRule);
+    image.setVerticalRule(StretchImageRule);
+    {%- elif modifier_type == "Slice" %}
+    // Masks have a different initial value for slices. Preserve the value of 0 for backwards compatibility.
+    image.setImageSlices(LengthBox({{ (["Length(100, Percent)"]*4) | join(", ") if not is_mask_box }}));
+    image.setFill(false);
+    {%- elif modifier_type == "Width" %}
+    // Masks have a different initial value for widths. Preserve the value of 0 for backwards compatibility.
+    image.setBorderSlices(LengthBox({{ (["Length(1, Relative)"]*4) | join(", ") if not is_mask_box }}));
+    {%- endif %}
+    state.style()->{{setter}}(image);
+}
+
+{{ apply_inherit(property_id) }}
+{
+    NinePieceImage image(state.style()->{{getter}}());
+    {%- if modifier_type == "Outset" %}
+    image.copyOutsetFrom(state.parentStyle()->{{getter}}());
+    {%- elif modifier_type == "Repeat" %}
+    image.copyRepeatFrom(state.parentStyle()->{{getter}}());
+    {%- elif modifier_type == "Slice" %}
+    image.copyImageSlicesFrom(state.parentStyle()->{{getter}}());
+    {%- elif modifier_type == "Width" %}
+    image.copyBorderSlicesFrom(state.parentStyle()->{{getter}}());
+    {%- endif %}
+    state.style()->{{setter}}(image);
+}
+
+{{ apply_value(property_id) }}
+{
+    NinePieceImage image(state.style()->{{getter}}());
+    {%- if modifier_type == "Outset" %}
+    image.setOutset(state.styleMap().mapNinePieceImageQuad(value));
+    {%- elif modifier_type == "Repeat" %}
+    state.styleMap().mapNinePieceImageRepeat(value, image);
+    {%- elif modifier_type == "Slice" %}
+    state.styleMap().mapNinePieceImageSlice(value, image);
+    {%- elif modifier_type == "Width" %}
+    image.setBorderSlices(state.styleMap().mapNinePieceImageQuad(value));
+    {%- endif %}
+    state.style()->{{setter}}(image);
+}
+{%- endmacro %}
+
+{{ apply_border_image_modifier("CSSPropertyBorderImageOutset", "Outset") }}
+{{ apply_border_image_modifier("CSSPropertyBorderImageRepeat", "Repeat") }}
+{{ apply_border_image_modifier("CSSPropertyBorderImageSlice", "Slice") }}
+{{ apply_border_image_modifier("CSSPropertyBorderImageWidth", "Width") }}
+{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageOutset", "Outset") }}
+{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageRepeat", "Repeat") }}
+{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageSlice", "Slice") }}
+{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageWidth", "Width") }}
+
+{%- macro apply_value_border_image_source(property_id) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    {{ set_value(property) }}(state.styleImage({{property_id}}, value));
+}
+{%- endmacro %}
+
+{{ apply_value_border_image_source("CSSPropertyBorderImageSource") }}
+{{ apply_value_border_image_source("CSSPropertyWebkitMaskBoxImageSource") }}
+
+{%- macro apply_value_border_radius(property_id) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Pair* pair = primitiveValue->getPairValue();
+    if (!pair || !pair->first() || !pair->second())
+        return;
+
+    Length radiusWidth;
+    Length radiusHeight;
+    if (pair->first()->isPercentage())
+        radiusWidth = Length(pair->first()->getDoubleValue(), Percent);
+    else if (pair->first()->isViewportPercentageLength())
+        radiusWidth = pair->first()->viewportPercentageLength();
+    else if (pair->first()->isCalculatedPercentageWithLength())
+        radiusWidth = Length((pair->first()->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
+    else
+        radiusWidth = pair->first()->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    if (pair->second()->isPercentage())
+        radiusHeight = Length(pair->second()->getDoubleValue(), Percent);
+    else if (pair->second()->isViewportPercentageLength())
+        radiusHeight = pair->second()->viewportPercentageLength();
+    else if (pair->second()->isCalculatedPercentageWithLength())
+        radiusHeight = Length((pair->second()->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
+    else
+        radiusHeight = pair->second()->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    int width = radiusWidth.value();
+    int height = radiusHeight.value();
+    if (width < 0 || height < 0)
+        return;
+    if (!width)
+        radiusHeight = radiusWidth; // Null out the other value.
+    else if (!height)
+        radiusWidth = radiusHeight; // Null out the other value.
+
+    LengthSize size(radiusWidth, radiusHeight);
+    {{ set_value(property) }}(size);
+}
+{%- endmacro %}
+
+{{ apply_value_border_radius("CSSPropertyBorderBottomLeftRadius") }}
+{{ apply_value_border_radius("CSSPropertyBorderBottomRightRadius") }}
+{{ apply_value_border_radius("CSSPropertyBorderTopLeftRadius") }}
+{{ apply_value_border_radius("CSSPropertyBorderTopRightRadius") }}
 
 {%- macro apply_color(property_id, default_getter="color", initial_color=none, inherit_color=false) %}
 {%- set property = properties[property_id] %}

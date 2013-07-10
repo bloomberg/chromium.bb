@@ -17,13 +17,22 @@ background-repeat-x custom_all
 background-repeat-y custom_all
 background-size custom_all
 border-bottom-color custom_all
+border-bottom-left-radius initial=initialBorderRadius, custom_value
+border-bottom-right-radius initial=initialBorderRadius, custom_value
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
 border-collapse
+border-image-outset custom_all
+border-image-repeat custom_all
+border-image-slice custom_all
+border-image-source custom_value
+border-image-width custom_all
 border-left-color custom_all
 border-left-style type_name=EBorderStyle, initial=initialBorderStyle
 border-right-color custom_all
 border-right-style type_name=EBorderStyle, initial=initialBorderStyle
 border-top-color custom_all
+border-top-left-radius initial=initialBorderRadius, custom_value
+border-top-right-radius initial=initialBorderRadius, custom_value
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
 bottom apply_type=length, initial=initialOffset, use_auto
 box-sizing
@@ -148,6 +157,11 @@ z-index type_name=int, custom_all
 -webkit-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
 -webkit-marquee-style name_for_methods=MarqueeBehavior
 -webkit-mask-box-image initial=initialNinePieceImage, custom_value
+-webkit-mask-box-image-outset custom_all
+-webkit-mask-box-image-repeat custom_all
+-webkit-mask-box-image-slice custom_all
+-webkit-mask-box-image-source custom_value
+-webkit-mask-box-image-width custom_all
 -webkit-mask-clip custom_all
 -webkit-mask-composite custom_all
 -webkit-mask-image custom_all
