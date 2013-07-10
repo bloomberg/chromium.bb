@@ -48,8 +48,6 @@ NetworkLibraryImplCros::~NetworkLibraryImplCros() {
 }
 
 void NetworkLibraryImplCros::Init() {
-  CHECK(CrosLibrary::Get()->libcros_loaded())
-      << "libcros must be loaded before NetworkLibraryImplCros::Init()";
   // First, get the currently available networks. This data is cached
   // on the connman side, so the call should be quick.
   VLOG(1) << "Requesting initial network manager info from libcros.";
@@ -201,7 +199,6 @@ void NetworkLibraryImplCros::NetworkConnectCallback(
     const std::string& service_path,
     NetworkMethodErrorType error,
     const std::string& error_message) {
-  DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkConnectStatus status;
   if (error == NETWORK_METHOD_ERROR_NONE) {
     status = CONNECT_SUCCESS;
@@ -347,7 +344,6 @@ void NetworkLibraryImplCros::PinOperationCallback(
     const std::string& path,
     NetworkMethodErrorType error,
     const std::string& error_message) {
-  DCHECK(CrosLibrary::Get()->libcros_loaded());
   PinOperationError pin_error;
   VLOG(1) << "PinOperationCallback, error: " << error
           << " error_msg: " << error_message;
@@ -394,7 +390,6 @@ void NetworkLibraryImplCros::CellularRegisterCallback(
     const std::string& path,
     NetworkMethodErrorType error,
     const std::string& error_message) {
-  DCHECK(CrosLibrary::Get()->libcros_loaded());
   // TODO(dpolukhin): Notify observers about network registration status
   // but not UI doesn't assume such notification so just ignore result.
 }
