@@ -388,8 +388,6 @@
           'sources': [
             'browser/chromeos/cros/cros_in_process_browser_test.cc',
             'browser/chromeos/cros/cros_in_process_browser_test.h',
-            'browser/chromeos/cros/cros_mock.cc',
-            'browser/chromeos/cros/cros_mock.h',
             'browser/chromeos/input_method/textinput_browsertest.cc',
             'browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc',
             'browser/chromeos/input_method/textinput_test_helper.cc',
@@ -1187,8 +1185,6 @@
         'browser/chromeos/app_mode/kiosk_app_update_service_browsertest.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.h',
-        'browser/chromeos/cros/cros_mock.cc',
-        'browser/chromeos/cros/cros_mock.h',
         'browser/chromeos/drive/drive_integration_service_browsertest.cc',
         'browser/chromeos/drive/test_util.cc',
         'browser/chromeos/drive/test_util.h',

@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -97,8 +96,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
     SetUpSessionManager();
 
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    cros_mock_->InitStatusAreaMocks();
-    cros_mock_->SetStatusAreaMocksExpectations();
 
     mock_login_utils_ = new MockLoginUtils();
     LoginUtils::Set(mock_login_utils_);

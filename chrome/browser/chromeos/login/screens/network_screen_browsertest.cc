@@ -40,6 +40,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
     MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager =
         new MockDBusThreadManagerWithoutGMock;
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
@@ -50,7 +52,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     ConnectivityStateHelper::SetForTest(mock_connectivity_state_helper_.get());
     SetDefaultMockConnectivityStateHelperExpectations();
 
-    cros_mock_->InitStatusAreaMocks();
     cellular_.reset(new NetworkDevice("cellular"));
 
     // Minimal set of expectations needed on NetworkScreen initialization.
@@ -59,8 +60,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
                 IsConnectedType(flimflam::kTypeWifi))
         .Times(1)
         .WillRepeatedly(Return(false));
-
-    cros_mock_->SetStatusAreaMocksExpectations();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

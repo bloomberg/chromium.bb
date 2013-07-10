@@ -40,9 +40,9 @@ class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
     mock_cryptohome_library_.reset(new chromeos::MockCryptohomeLibrary());
-    cros_mock_->InitStatusAreaMocks();
-    cros_mock_->SetStatusAreaMocksExpectations();
     EXPECT_CALL(*(mock_cryptohome_library_.get()), GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*(mock_cryptohome_library_.get()), InstallAttributesIsReady())
@@ -212,4 +212,4 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
   runner->Run();
 }
 
-}
+}  // namespace

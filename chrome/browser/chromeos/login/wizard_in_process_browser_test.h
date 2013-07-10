@@ -26,7 +26,7 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
  public:
   explicit WizardInProcessBrowserTest(const char* screen_name);
 
-  // Overriden from InProcessBrowserTest:
+  // Overridden from CrosInProcessBrowserTest:
   virtual void SetUp() OVERRIDE;
 
  protected:

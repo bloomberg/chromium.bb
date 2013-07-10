@@ -46,8 +46,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         new MockDBusThreadManagerWithoutGMock;
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    cros_mock_->InitStatusAreaMocks();
-    cros_mock_->SetStatusAreaMocksExpectations();
 
     fake_update_engine_client_
         = mock_dbus_thread_manager->fake_update_engine_client();

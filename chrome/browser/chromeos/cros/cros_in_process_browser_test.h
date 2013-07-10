@@ -5,31 +5,45 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
 
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/cros/cros_mock.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace chromeos {
 
+class MockNetworkLibrary;
+
 // Base class for Chromium OS tests wanting to bring up a browser in the
-// unit test process and mock some parts of CrosLibrary. Once you mock part of
-// CrosLibrary it will be considered as successfully loaded and libraries
-// that compose CrosLibrary will be created. Use CrosMock to specify minimum
-// set of mocks for you test to succeed.
-// See comments for InProcessBrowserTest base class too.
+// browser test process and provide MockNetworkLibrary with preset behaviors.
 class CrosInProcessBrowserTest : public InProcessBrowserTest {
  public:
   CrosInProcessBrowserTest();
   virtual ~CrosInProcessBrowserTest();
 
- protected:
-  scoped_ptr<CrosMock> cros_mock_;
-
-  // Overriden for things you would normally override TearDown for.
+  // InProcessBrowserTest overrides:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
  private:
+  // Sets up basic mocks that are used by status area items.
+  void InitStatusAreaMocks();
+
+  // Sets up corresponding expectations for basic mocks that
+  // are used by status area items.
+  // Make sure that InitStatusAreaMocks was called before.
+  // They are all configured with RetiresOnSaturation().
+  // Once such expectation is used it won't block expectations you've defined.
+  void SetStatusAreaMocksExpectations();
+
+  // Destroyed by CrosLibrary class.
+  MockNetworkLibrary* mock_network_library_;
+
+  // Stuff used for mock_network_library_.
+  WifiNetworkVector wifi_networks_;
+  WimaxNetworkVector wimax_networks_;
+  CellularNetworkVector cellular_networks_;
+  VirtualNetworkVector virtual_networks_;
+  std::string empty_string_;
+
   DISALLOW_COPY_AND_ASSIGN(CrosInProcessBrowserTest);
 };
 

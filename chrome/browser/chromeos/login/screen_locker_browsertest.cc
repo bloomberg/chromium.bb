@@ -121,9 +121,6 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     fake_session_manager_client_ =
         mock_dbus_thread_manager->fake_session_manager_client();
-    cros_mock_->InitStatusAreaMocks();
-    // Expectations for the status are on the screen lock window.
-    cros_mock_->SetStatusAreaMocksExpectations();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }
