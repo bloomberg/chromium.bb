@@ -11,7 +11,7 @@
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugin_installer_observer.h"
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+#endif
 
 class InfoBarService;
 class HostContentSettingsMap;
@@ -25,7 +25,6 @@ class WebContents;
 class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   PluginInfoBarDelegate(InfoBarService* infobar_service,
-                        const string16& name,
                         const std::string& identifier);
 
  protected:
@@ -37,8 +36,6 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual std::string GetLearnMoreURL() const = 0;
 
   void LoadBlockedPlugins();
-
-  string16 name_;
 
  private:
   // ConfirmInfoBarDelegate:
@@ -76,6 +73,7 @@ class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual std::string GetLearnMoreURL() const OVERRIDE;
 
   HostContentSettingsMap* content_settings_;
+  string16 name_;
 
   DISALLOW_COPY_AND_ASSIGN(UnauthorizedPluginInfoBarDelegate);
 };

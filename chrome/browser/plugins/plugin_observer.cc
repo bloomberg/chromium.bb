@@ -296,10 +296,8 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   // Find plugin to update.
   PluginInstaller* installer = NULL;
   scoped_ptr<PluginMetadata> plugin;
-  if (!finder->FindPluginWithIdentifier(identifier, &installer, &plugin)) {
-    NOTREACHED();
-    return;
-  }
+  bool ret = finder->FindPluginWithIdentifier(identifier, &installer, &plugin);
+  DCHECK(ret);
 
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id,
@@ -330,8 +328,7 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
   DCHECK(plugin_metadata.get());
 
   plugin_placeholders_[placeholder_id] =
-      new PluginPlaceholderHost(this, placeholder_id,
-                                plugin_metadata->name(),
+      new PluginPlaceholderHost(this, placeholder_id, plugin_metadata->name(),
                                 installer);
   PluginInstallerInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()), installer,
@@ -382,7 +379,7 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       IDR_INFOBAR_PLUGIN_CRASHED,
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
-      true  /* auto_expire */);
+      true);
 }
 
 void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
@@ -405,11 +402,9 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
     return;
 
   scoped_ptr<PluginMetadata> plugin;
-  if (!PluginFinder::GetInstance()->FindPluginWithIdentifier(
-          identifier, NULL, &plugin)) {
-    NOTREACHED();
-    return;
-  }
+  bool ret = PluginFinder::GetInstance()->FindPluginWithIdentifier(
+          identifier, NULL, &plugin);
+  DCHECK(ret);
 
   PluginMetroModeInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),

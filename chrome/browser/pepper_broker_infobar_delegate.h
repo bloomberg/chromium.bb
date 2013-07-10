@@ -33,20 +33,18 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
                      const base::Callback<void(bool)>& callback);
 
  private:
-  PepperBrokerInfoBarDelegate(
-      InfoBarService* infobar_service,
-      const GURL& url,
-      const base::FilePath& plugin_path,
-      const std::string& languages,
-      HostContentSettingsMap* content_settings,
-      TabSpecificContentSettings* tab_content_settings,
-      const base::Callback<void(bool)>& callback);
+  PepperBrokerInfoBarDelegate(InfoBarService* infobar_service,
+                              const GURL& url,
+                              const base::FilePath& plugin_path,
+                              const std::string& languages,
+                              HostContentSettingsMap* content_settings,
+                              TabSpecificContentSettings* tab_content_settings,
+                              const base::Callback<void(bool)>& callback);
   virtual ~PepperBrokerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;

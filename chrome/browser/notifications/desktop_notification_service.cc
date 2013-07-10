@@ -57,7 +57,6 @@ using WebKit::WebNotificationPresenter;
 using WebKit::WebTextDirection;
 using WebKit::WebSecurityOrigin;
 
-const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 
 // NotificationPermissionInfoBarDelegate --------------------------------------
 
@@ -294,7 +293,6 @@ std::string DesktopNotificationService::AddIconNotification(
     const string16& replace_id,
     NotificationDelegate* delegate,
     Profile* profile) {
-
   if (message_center::IsRichNotificationEnabled()) {
     // For message center create a non-HTML notification with |icon|.
     Notification notification(origin_url, icon, title, message,
@@ -465,11 +463,8 @@ void DesktopNotificationService::RequestPermission(
           infobar_service,
           DesktopNotificationServiceFactory::GetForProfile(
               Profile::FromBrowserContext(contents->GetBrowserContext())),
-          origin,
-          DisplayNameForOriginInProcessId(origin, process_id),
-          process_id,
-          route_id,
-          callback_context);
+          origin, DisplayNameForOriginInProcessId(origin, process_id),
+          process_id, route_id, callback_context);
       return;
     }
   }
@@ -613,16 +608,14 @@ void DesktopNotificationService::SetNotifierEnabled(
   }
   DCHECK(pref_name != NULL);
 
-  {
-    ListPrefUpdate update(profile_->GetPrefs(), pref_name);
-    base::ListValue* const list = update.Get();
-    if (add_new_item) {
-      // AppendIfNotPresent will delete |adding_value| when the same value
-      // already exists.
-      list->AppendIfNotPresent(id.release());
-    } else {
-      list->Remove(*id, NULL);
-    }
+  ListPrefUpdate update(profile_->GetPrefs(), pref_name);
+  base::ListValue* const list = update.Get();
+  if (add_new_item) {
+    // AppendIfNotPresent will delete |adding_value| when the same value
+    // already exists.
+    list->AppendIfNotPresent(id.release());
+  } else {
+    list->Remove(*id, NULL);
   }
 }
 

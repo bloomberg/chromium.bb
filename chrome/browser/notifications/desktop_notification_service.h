@@ -74,7 +74,9 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   // other parameters supplied by the worker or page.
   bool ShowDesktopNotification(
       const content::ShowDesktopNotificationHostMsgParams& params,
-      int process_id, int route_id, DesktopNotificationSource source);
+      int process_id,
+      int route_id,
+      DesktopNotificationSource source);
 
   // Cancels a notification.  If it has already been shown, it will be
   // removed from the screen.  If it hasn't been shown yet, it won't be
@@ -191,7 +193,7 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   // Called when the enabled_sync_notifier_id pref has been changed.
   void OnEnabledSyncNotifierIdsChanged();
 
-  // content::NotificationObserver override.
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;

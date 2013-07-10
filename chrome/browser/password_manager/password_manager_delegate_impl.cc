@@ -81,19 +81,16 @@ void SavePasswordInfoBarDelegate::Create(content::WebContents* web_contents,
                                          PasswordFormManager* form_to_save) {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // Don't show the password manager infobar if this form is for a google
-  // account and we are going to show the one-click singin infobar.
-  // For now, one-click signin is fully implemented only on windows.
+  // account and we are going to show the one-click signin infobar.
   GURL realm(form_to_save->realm());
   // TODO(mathp): Checking only against associated_username() causes a bug
   // referenced here: crbug.com/133275
-  if ((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
-       realm == GURL("https://www.google.com/")) &&
+  if (((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm())) ||
+       (realm == GURL("https://www.google.com/"))) &&
       OneClickSigninHelper::CanOffer(
-          web_contents,
-          OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-          UTF16ToUTF8(form_to_save->associated_username()), NULL)) {
+          web_contents, OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+          UTF16ToUTF8(form_to_save->associated_username()), NULL))
     return;
-  }
 #endif
 
   InfoBarService* infobar_service =

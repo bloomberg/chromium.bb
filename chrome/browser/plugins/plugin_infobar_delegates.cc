@@ -27,31 +27,26 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include <shellapi.h>
-#include "ui/base/win/shell.h"
-#endif
-
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #endif
 #include "chrome/browser/plugins/plugin_installer.h"
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+#endif
 
-using content::BrowserThread;
-using content::OpenURLParams;
-using content::Referrer;
+#if defined(OS_WIN)
+#include <shellapi.h>
+#include "ui/base/win/shell.h"
+#endif
+
 using content::UserMetricsAction;
 
 
 // PluginInfoBarDelegate ------------------------------------------------------
 
 PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarService* infobar_service,
-                                             const string16& name,
                                              const std::string& identifier)
     : ConfirmInfoBarDelegate(infobar_service),
-      name_(name),
       identifier_(identifier) {
 }
 
@@ -59,23 +54,19 @@ PluginInfoBarDelegate::~PluginInfoBarDelegate() {
 }
 
 bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  OpenURLParams params(
-      GURL(GetLearnMoreURL()), Referrer(),
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL(GetLearnMoreURL()), content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK,
-      false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 
 void PluginInfoBarDelegate::LoadBlockedPlugins() {
-  if (web_contents()) {
-    content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-    ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-        host->GetProcess()->GetID());
-    host->Send(new ChromeViewMsg_LoadBlockedPlugins(
-        host->GetRoutingID(), identifier_));
-  }
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
+      host->GetProcess()->GetID());
+  host->Send(new ChromeViewMsg_LoadBlockedPlugins(
+      host->GetRoutingID(), identifier_));
 }
 
 int PluginInfoBarDelegate::GetIconID() const {
@@ -93,38 +84,39 @@ string16 PluginInfoBarDelegate::GetLinkText() const {
 void UnauthorizedPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     HostContentSettingsMap* content_settings,
-    const string16& utf16_name,
+    const string16& name,
     const std::string& identifier) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new UnauthorizedPluginInfoBarDelegate(infobar_service, content_settings,
-                                            utf16_name, identifier)));
+                                            name, identifier)));
 
   content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
-  std::string name(UTF16ToUTF8(utf16_name));
-  if (name == PluginMetadata::kJavaGroupName)
-    content::RecordAction(
-        UserMetricsAction("BlockedPluginInfobar.Shown.Java"));
-  else if (name == PluginMetadata::kQuickTimeGroupName)
+  std::string utf8_name(UTF16ToUTF8(name));
+  if (utf8_name == PluginMetadata::kJavaGroupName) {
+    content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown.Java"));
+  } else if (utf8_name == PluginMetadata::kQuickTimeGroupName) {
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.QuickTime"));
-  else if (name == PluginMetadata::kShockwaveGroupName)
+  } else if (utf8_name == PluginMetadata::kShockwaveGroupName) {
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.Shockwave"));
-  else if (name == PluginMetadata::kRealPlayerGroupName)
+  } else if (utf8_name == PluginMetadata::kRealPlayerGroupName) {
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.RealPlayer"));
-  else if (name == PluginMetadata::kWindowsMediaPlayerGroupName)
+  } else if (utf8_name == PluginMetadata::kWindowsMediaPlayerGroupName) {
     content::RecordAction(
         UserMetricsAction("BlockedPluginInfobar.Shown.WindowsMediaPlayer"));
+  }
 }
 
 UnauthorizedPluginInfoBarDelegate::UnauthorizedPluginInfoBarDelegate(
     InfoBarService* infobar_service,
     HostContentSettingsMap* content_settings,
-    const string16& utf16_name,
+    const string16& name,
     const std::string& identifier)
-    : PluginInfoBarDelegate(infobar_service, utf16_name, identifier),
-      content_settings_(content_settings) {
+    : PluginInfoBarDelegate(infobar_service, identifier),
+      content_settings_(content_settings),
+      name_(name) {
 }
 
 UnauthorizedPluginInfoBarDelegate::~UnauthorizedPluginInfoBarDelegate() {
@@ -153,26 +145,21 @@ bool UnauthorizedPluginInfoBarDelegate::Accept() {
 }
 
 bool UnauthorizedPluginInfoBarDelegate::Cancel() {
-  content::RecordAction(
-      UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  content_settings_->AddExceptionForURL(web_contents()->GetURL(),
-                                        web_contents()->GetURL(),
-                                        CONTENT_SETTINGS_TYPE_PLUGINS,
-                                        std::string(),
-                                        CONTENT_SETTING_ALLOW);
+  content::RecordAction(UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
+  const GURL& url = web_contents()->GetURL();
+  content_settings_->AddExceptionForURL(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                        std::string(), CONTENT_SETTING_ALLOW);
   LoadBlockedPlugins();
   return true;
 }
 
 void UnauthorizedPluginInfoBarDelegate::InfoBarDismissed() {
-  content::RecordAction(
-      UserMetricsAction("BlockedPluginInfobar.Dismissed"));
+  content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Dismissed"));
 }
 
 bool UnauthorizedPluginInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  content::RecordAction(
-      UserMetricsAction("BlockedPluginInfobar.LearnMore"));
+  content::RecordAction(UserMetricsAction("BlockedPluginInfobar.LearnMore"));
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
@@ -185,20 +172,13 @@ void OutdatedPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata) {
-  string16 message;
-  switch (installer->state()) {
-    case PluginInstaller::INSTALLER_STATE_IDLE:
-      message = l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT,
-                                           plugin_metadata->name());
-      break;
-    case PluginInstaller::INSTALLER_STATE_DOWNLOADING:
-      message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
-                                           plugin_metadata->name());
-      break;
-  }
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new OutdatedPluginInfoBarDelegate(
-          infobar_service, installer, plugin_metadata.Pass(), message)));
+          infobar_service, installer, plugin_metadata.Pass(),
+          l10n_util::GetStringFUTF16(
+              (installer->state() == PluginInstaller::INSTALLER_STATE_IDLE) ?
+                  IDS_PLUGIN_OUTDATED_PROMPT : IDS_PLUGIN_DOWNLOADING,
+              plugin_metadata->name()))));
 }
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
@@ -206,33 +186,31 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata,
     const string16& message)
-    : PluginInfoBarDelegate(
-          infobar_service,
-          plugin_metadata->name(),
-          plugin_metadata->identifier()),
+    : PluginInfoBarDelegate(infobar_service, plugin_metadata->identifier()),
       WeakPluginInstallerObserver(installer),
       plugin_metadata_(plugin_metadata.Pass()),
       message_(message) {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(plugin_metadata_->name());
-  if (name == PluginMetadata::kJavaGroupName)
+  if (name == PluginMetadata::kJavaGroupName) {
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));
-  else if (name == PluginMetadata::kQuickTimeGroupName)
+  } else if (name == PluginMetadata::kQuickTimeGroupName) {
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.QuickTime"));
-  else if (name == PluginMetadata::kShockwaveGroupName)
+  } else if (name == PluginMetadata::kShockwaveGroupName) {
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Shockwave"));
-  else if (name == PluginMetadata::kRealPlayerGroupName)
+  } else if (name == PluginMetadata::kRealPlayerGroupName) {
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.RealPlayer"));
-  else if (name == PluginMetadata::kSilverlightGroupName)
+  } else if (name == PluginMetadata::kSilverlightGroupName) {
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Silverlight"));
-  else if (name == PluginMetadata::kAdobeReaderGroupName)
+  } else if (name == PluginMetadata::kAdobeReaderGroupName) {
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Reader"));
+  }
 }
 
 OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {
@@ -254,16 +232,11 @@ string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 }
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
+  DCHECK_EQ(PluginInstaller::INSTALLER_STATE_IDLE, installer()->state());
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
-  if (installer()->state() != PluginInstaller::INSTALLER_STATE_IDLE) {
-    NOTREACHED();
-    return false;
-  }
-
   // A call to any of |OpenDownloadURL()| or |StartInstalling()| will
   // result in deleting ourselves. Accordingly, we make sure to
   // not pass a reference to an object that can go away.
-  // http://crbug.com/54167
   GURL plugin_url(plugin_metadata_->plugin_url());
   if (plugin_metadata_->url_for_display())
     installer()->OpenDownloadURL(plugin_url, web_contents());
@@ -280,14 +253,12 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
 }
 
 void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
-  content::RecordAction(
-      UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
+  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
 bool OutdatedPluginInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  content::RecordAction(
-      UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
+  content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
@@ -297,9 +268,8 @@ void OutdatedPluginInfoBarDelegate::DownloadStarted() {
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadError(const std::string& message) {
-  ReplaceWithInfoBar(
-      l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
-                                 plugin_metadata_->name()));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
+                                                plugin_metadata_->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadCancelled() {
@@ -346,20 +316,15 @@ void PluginInstallerInfoBarDelegate::Create(
     return;
   }
 #endif
-  string16 message;
-  switch (installer->state()) {
-    case PluginInstaller::INSTALLER_STATE_IDLE:
-      message = l10n_util::GetStringFUTF16(
-          IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT, name);
-      break;
-    case PluginInstaller::INSTALLER_STATE_DOWNLOADING:
-      message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, name);
-      break;
-  }
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new PluginInstallerInfoBarDelegate(
           infobar_service, installer, plugin_metadata.Pass(), callback, true,
-          message)));
+          l10n_util::GetStringFUTF16(
+              (installer->state() == PluginInstaller::INSTALLER_STATE_IDLE) ?
+                  IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT :
+                  IDS_PLUGIN_DOWNLOADING,
+              name))));
+
 }
 
 void PluginInstallerInfoBarDelegate::Replace(
@@ -418,9 +383,9 @@ bool PluginInstallerInfoBarDelegate::Accept() {
 }
 
 string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(
-      new_install_ ? IDS_PLUGININSTALLER_PROBLEMSINSTALLING
-                   : IDS_PLUGININSTALLER_PROBLEMSUPDATING);
+  return l10n_util::GetStringUTF16(new_install_ ?
+      IDS_PLUGININSTALLER_PROBLEMSINSTALLING :
+      IDS_PLUGININSTALLER_PROBLEMSUPDATING);
 }
 
 bool PluginInstallerInfoBarDelegate::LinkClicked(
@@ -428,14 +393,13 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
   GURL url(plugin_metadata_->help_url());
   if (url.is_empty()) {
     url = google_util::AppendGoogleLocaleParam(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
+        "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
   }
 
-  OpenURLParams params(
-      url, Referrer(),
+  web_contents()->OpenURL(content::OpenURLParams(
+      url, content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 
@@ -450,14 +414,14 @@ void PluginInstallerInfoBarDelegate::DownloadCancelled() {
 }
 
 void PluginInstallerInfoBarDelegate::DownloadError(const std::string& message) {
-  ReplaceWithInfoBar(
-      l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
-                                 plugin_metadata_->name()));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
+                                                plugin_metadata_->name()));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadFinished() {
-  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(
-      new_install_ ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING,
+  ReplaceWithInfoBar(
+      l10n_util::GetStringFUTF16(
+          new_install_ ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING,
           plugin_metadata_->name()));
 }
 
@@ -526,30 +490,28 @@ string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
 }
 
 void LaunchDesktopInstanceHelper(const string16& url) {
-    base::FilePath exe_path;
-    base::FilePath shortcut_path;
+  base::FilePath exe_path;
+  if (!PathService::Get(base::FILE_EXE, &exe_path))
+    return;
+  base::FilePath shortcut_path(
+      ShellIntegration::GetStartMenuShortcut(exe_path));
 
-    if (!PathService::Get(base::FILE_EXE, &exe_path))
-      return;
-
-    shortcut_path = ShellIntegration::GetStartMenuShortcut(exe_path);
-
-    SHELLEXECUTEINFO sei = { sizeof(sei) };
-    sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
-    sei.nShow = SW_SHOWNORMAL;
-    sei.lpFile = shortcut_path.value().c_str();
-    sei.lpDirectory = L"";
-    sei.lpParameters = url.c_str();
-    ::ShellExecuteEx(&sei);
+  SHELLEXECUTEINFO sei = { sizeof(sei) };
+  sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+  sei.nShow = SW_SHOWNORMAL;
+  sei.lpFile = shortcut_path.value().c_str();
+  sei.lpDirectory = L"";
+  sei.lpParameters = url.c_str();
+  ShellExecuteEx(&sei);
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
 #if defined(USE_AURA) && defined(USE_ASH)
-    const string16 url = UTF8ToWide(web_contents()->GetURL().spec());
-    // We need to PostTask as there is some IO involved.
-    BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        base::Bind(&LaunchDesktopInstanceHelper,
-        url));
+  // We need to PostTask as there is some IO involved.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+      base::Bind(&LaunchDesktopInstanceHelper,
+                 UTF8ToUTF16(web_contents()->GetURL().spec())));
 #else
   chrome::AttemptRestartWithModeSwitch();
 #endif
@@ -558,17 +520,12 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
 
 bool PluginMetroModeInfoBarDelegate::Cancel() {
   DCHECK_EQ(DESKTOP_MODE_REQUIRED, mode_);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  HostContentSettingsMap* content_settings =
-      profile->GetHostContentSettingsMap();
-  GURL url = web_contents()->GetURL();
-  content_settings->SetContentSetting(
-      ContentSettingsPattern::FromURL(url),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP,
-      std::string(),
-      CONTENT_SETTING_BLOCK);
+  Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
+      GetHostContentSettingsMap()->SetContentSetting(
+          ContentSettingsPattern::FromURL(web_contents()->GetURL()),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP, std::string(),
+          CONTENT_SETTING_BLOCK);
   return true;
 }
 
@@ -578,14 +535,13 @@ string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
 
 bool PluginMetroModeInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  OpenURLParams params(
+  web_contents()->OpenURL(content::OpenURLParams(
       GURL((mode_ == MISSING_PLUGIN) ?
           "https://support.google.com/chrome/?p=ib_display_in_desktop" :
           "https://support.google.com/chrome/?p=ib_redirect_to_desktop"),
-      Referrer(),
+      content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 
