@@ -1,0 +1,15 @@
+Name: Android Platform engineering tools
+Short Name: android platform development
+URL: https://android.googlesource.com/platform/development
+Version: 0
+Date: 2013/07/03
+Revision: f56a37e
+License: Apache 2.0
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+Android Platform engineering tools, specifically stack symbolization scripts.
+
+Local Modifications:
+Only picked the few scripts needed by chrome.
