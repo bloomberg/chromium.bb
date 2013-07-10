@@ -411,6 +411,9 @@ void RenderThreadImpl::Init() {
   if (!media_path.empty())
     media::InitializeMediaLibrary(media_path);
 
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+      base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
+
   TRACE_EVENT_END_ETW("RenderThreadImpl::Init", 0, "");
 }
 
@@ -1227,6 +1230,21 @@ void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
 
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
   ToggleWebKitSharedTimer(suspend);
+}
+
+void RenderThreadImpl::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  base::allocator::ReleaseFreeMemory();
+
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL) {
+    // Trigger full v8 garbage collection on critical memory notification.
+    v8::V8::LowMemoryNotification();
+  } else {
+    // Otherwise trigger a couple of v8 GCs using IdleNotification.
+    if (!v8::V8::IdleNotification())
+      v8::V8::IdleNotification();
+  }
 }
 
 scoped_refptr<base::MessageLoopProxy>

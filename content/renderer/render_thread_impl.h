@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/memory_pressure_listener.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
@@ -362,6 +363,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
   void OnSetWebKitSharedTimersSuspended(bool suspend);
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   void IdleHandlerInForegroundTab();
 
@@ -466,6 +469,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<media::AudioHardwareConfig> audio_hardware_config_;
 
   HistogramCustomizer histogram_customizer_;
+
+  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
