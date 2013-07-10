@@ -69,7 +69,9 @@ static void nameAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbac
 
 static void nameAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestExceptionV8Internal::nameAttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 } // namespace TestExceptionV8Internal

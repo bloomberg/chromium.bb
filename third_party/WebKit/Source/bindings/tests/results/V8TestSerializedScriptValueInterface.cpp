@@ -72,7 +72,9 @@ static void valueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallba
 
 static void valueAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestSerializedScriptValueInterfaceV8Internal::valueAttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void valueAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -99,7 +101,9 @@ static void readonlyValueAttrGetter(v8::Local<v8::String> name, const v8::Proper
 
 static void readonlyValueAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestSerializedScriptValueInterfaceV8Internal::readonlyValueAttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void cachedValueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -120,7 +124,9 @@ static void cachedValueAttrGetter(v8::Local<v8::String> name, const v8::Property
 
 static void cachedValueAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestSerializedScriptValueInterfaceV8Internal::cachedValueAttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void cachedValueAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -157,7 +163,9 @@ static void cachedReadonlyValueAttrGetter(v8::Local<v8::String> name, const v8::
 
 static void cachedReadonlyValueAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestSerializedScriptValueInterfaceV8Internal::cachedReadonlyValueAttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 } // namespace TestSerializedScriptValueInterfaceV8Internal

@@ -71,7 +71,9 @@ static void attr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallba
 
 static void attr1AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestEventConstructorV8Internal::attr1AttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void attr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -83,7 +85,9 @@ static void attr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallba
 
 static void attr2AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestEventConstructorV8Internal::attr2AttrGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
