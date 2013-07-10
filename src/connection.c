@@ -419,6 +419,7 @@ get_next_argument(const char *signature, struct argument_details *details)
 			details->nullable = 1;
 		}
 	}
+	details->type = '\0';
 	return signature;
 }
 
