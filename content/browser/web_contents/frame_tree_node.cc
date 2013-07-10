@@ -16,7 +16,6 @@ FrameTreeNode::FrameTreeNode(int64 frame_id, const std::string& name)
 }
 
 FrameTreeNode::~FrameTreeNode() {
-  STLDeleteContainerPointers(children_.begin(), children_.end());
 }
 
 void FrameTreeNode::AddChild(FrameTreeNode* child) {
@@ -31,10 +30,8 @@ void FrameTreeNode::RemoveChild(int64 child_id) {
       break;
   }
 
-  if (iter != children_.end()) {
-    delete *iter;
+  if (iter != children_.end())
     children_.erase(iter);
-  }
 }
 
 }  // namespace content
