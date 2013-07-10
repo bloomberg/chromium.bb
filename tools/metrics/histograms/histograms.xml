@@ -21323,6 +21323,12 @@ other types of suffix sets.
   <affected-histogram name="Omnibox.QueryTime"/>
 </fieldtrial>
 
+<fieldtrial name="RemoteProcessWarmStartFast" separator="">
+  <group name="" label="Normal start."/>
+  <group name="Fast" label="Fast start by skipping normal chrome.dll startup."/>
+  <affected-histogram name="Startup.WarmStartTimeFromRemoteProcessStart"/>
+</fieldtrial>
+
 <fieldtrial name="SBInterstitial">
   <group name="V1" label="original interstitial"/>
   <group name="V2" label="version 2 (new interstitial)"/>
@@ -21333,6 +21339,12 @@ other types of suffix sets.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</fieldtrial>
+
+<fieldtrial name="ShowAppListWarmStartFast" separator="">
+  <group name="" label="Normal start."/>
+  <group name="Fast" label="Fast start by skipping normal chrome.dll startup."/>
+  <affected-histogram name="Startup.ShowAppListWarmStart"/>
 </fieldtrial>
 
 <fieldtrial name="SideloadWipeout">
