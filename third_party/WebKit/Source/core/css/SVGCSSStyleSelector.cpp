@@ -56,34 +56,30 @@ if (isInitial) { \
 
 namespace WebCore {
 
-static float roundToNearestGlyphOrientationAngle(float angle)
+static bool degreeToGlyphOrientation(CSSPrimitiveValue* primitiveValue, EGlyphOrientation& orientation)
 {
-    angle = fabsf(fmodf(angle, 360.0f));
+    if (!primitiveValue)
+        return false;
 
-    if (angle <= 45.0f || angle > 315.0f)
-        return 0.0f;
-    else if (angle > 45.0f && angle <= 135.0f)
-        return 90.0f;
-    else if (angle > 135.0f && angle <= 225.0f)
-        return 180.0f;
+    if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_DEG)
+        return false;
 
-    return 270.0f;
-}
+    float angle = fabsf(fmodf(primitiveValue->getFloatValue(), 360.0f));
 
-static int angleToGlyphOrientation(float angle)
-{
-    angle = roundToNearestGlyphOrientationAngle(angle);
-
-    if (angle == 0.0f)
-        return GO_0DEG;
-    else if (angle == 90.0f)
-        return GO_90DEG;
-    else if (angle == 180.0f)
-        return GO_180DEG;
-    else if (angle == 270.0f)
-        return GO_270DEG;
-
-    return -1;
+    if (angle <= 45.0f || angle > 315.0f) {
+        orientation = GO_0DEG;
+        return true;
+    }
+    if (angle > 45.0f && angle <= 135.0f) {
+        orientation = GO_90DEG;
+        return true;
+    }
+    if (angle > 135.0f && angle <= 225.0f) {
+        orientation = GO_180DEG;
+        return true;
+    }
+    orientation = GO_270DEG;
+    return true;
 }
 
 static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const Color& fgColor)
@@ -96,6 +92,16 @@ static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const Color& fgColor)
     return color;
 }
 
+static bool numberToFloat(const CSSPrimitiveValue* primitiveValue, float& out)
+{
+    if (!primitiveValue)
+        return false;
+    if (primitiveValue->primitiveType() != CSSPrimitiveValue::CSS_NUMBER)
+        return false;
+    out = primitiveValue->getFloatValue();
+    return true;
+}
+
 static bool percentageOrNumberToFloat(const CSSPrimitiveValue* primitiveValue, float& out)
 {
     if (!primitiveValue)
@@ -105,11 +111,7 @@ static bool percentageOrNumberToFloat(const CSSPrimitiveValue* primitiveValue, f
         out = primitiveValue->getFloatValue() / 100.0f;
         return true;
     }
-    if (type == CSSPrimitiveValue::CSS_NUMBER) {
-        out = primitiveValue->getFloatValue();
-        return true;
-    }
-    return false;
+    return numberToFloat(primitiveValue, out);
 }
 
 static String fragmentIdentifier(const CSSPrimitiveValue* primitiveValue, Document* document)
@@ -375,17 +377,9 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyStrokeMiterlimit:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(strokeMiterLimit, StrokeMiterLimit)
-            if (!primitiveValue)
-                return;
-
             float f = 0.0f;
-            int type = primitiveValue->primitiveType();
-            if (type == CSSPrimitiveValue::CSS_NUMBER)
-                f = primitiveValue->getFloatValue();
-            else
-                return;
-
-            style->accessSVGStyle()->setStrokeMiterLimit(f);
+            if (numberToFloat(primitiveValue, f))
+                style->accessSVGStyle()->setStrokeMiterLimit(f);
             break;
         }
         case CSSPropertyFilter:
@@ -455,31 +449,21 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyGlyphOrientationHorizontal:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(glyphOrientationHorizontal, GlyphOrientationHorizontal)
-            if (!primitiveValue)
-                return;
-
-            if (primitiveValue->primitiveType() == CSSPrimitiveValue::CSS_DEG) {
-                int orientation = angleToGlyphOrientation(primitiveValue->getFloatValue());
-                ASSERT(orientation != -1);
-
-                style->accessSVGStyle()->setGlyphOrientationHorizontal((EGlyphOrientation) orientation);
-            }
+            EGlyphOrientation orientation;
+            if (degreeToGlyphOrientation(primitiveValue, orientation))
+                style->accessSVGStyle()->setGlyphOrientationHorizontal(orientation);
             break;
         }
         case CSSPropertyGlyphOrientationVertical:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(glyphOrientationVertical, GlyphOrientationVertical)
-            if (!primitiveValue)
-                return;
-
-            if (primitiveValue->primitiveType() == CSSPrimitiveValue::CSS_DEG) {
-                int orientation = angleToGlyphOrientation(primitiveValue->getFloatValue());
-                ASSERT(orientation != -1);
-
-                style->accessSVGStyle()->setGlyphOrientationVertical(static_cast<EGlyphOrientation>(orientation));
-            } else if (primitiveValue->getValueID() == CSSValueAuto) {
+            if (primitiveValue->getValueID() == CSSValueAuto) {
                 style->accessSVGStyle()->setGlyphOrientationVertical(GO_AUTO);
+                break;
             }
+            EGlyphOrientation orientation;
+            if (degreeToGlyphOrientation(primitiveValue, orientation))
+                style->accessSVGStyle()->setGlyphOrientationVertical(orientation);
             break;
         }
         case CSSPropertyEnableBackground:
