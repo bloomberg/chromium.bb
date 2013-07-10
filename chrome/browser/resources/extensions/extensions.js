@@ -21,42 +21,47 @@ cr.define('extensions', function() {
 
   // Implements the DragWrapper handler interface.
   var dragWrapperHandler = {
-    // @inheritdoc
+    /** @override */
     shouldAcceptDrag: function(e) {
       // We can't access filenames during the 'dragenter' event, so we have to
       // wait until 'drop' to decide whether to do something with the file or
       // not.
       // See: http://www.w3.org/TR/2011/WD-html5-20110113/dnd.html#concept-dnd-p
-      return e.dataTransfer.types.indexOf('Files') > -1;
+      return (e.dataTransfer.types &&
+              e.dataTransfer.types.indexOf('Files') > -1);
     },
-    // @inheritdoc
+    /** @override */
     doDragEnter: function() {
       chrome.send('startDrag');
       ExtensionSettings.showOverlay(null);
       ExtensionSettings.showOverlay($('dropTargetOverlay'));
     },
-    // @inheritdoc
+    /** @override */
     doDragLeave: function() {
       ExtensionSettings.showOverlay(null);
       chrome.send('stopDrag');
     },
-    // @inheritdoc
+    /** @override */
     doDragOver: function(e) {
       e.preventDefault();
     },
-    // @inheritdoc
+    /** @override */
     doDrop: function(e) {
       ExtensionSettings.showOverlay(null);
 
-      // Only process files that look like extensions. Other files should
-      // navigate the browser normally.
-      if (!e.dataTransfer.files.length ||
-          !/\.(crx|user\.js)$/.test(e.dataTransfer.files[0].name)) {
-        return;
+      var items = e.dataTransfer.items;
+      if (items.length && items[0].webkitGetAsEntry().isDirectory) {
+        e.preventDefault();
+        chrome.send('installDroppedDirectory');
+      } else {
+        // Only process files that look like extensions. Other files should
+        // navigate the browser normally.
+        var files = e.dataTransfer.files;
+        if (files.length && /\.(crx|user\.js)$/i.test(files[0].name)) {
+          e.preventDefault();
+          chrome.send('installDroppedFile');
+        }
       }
-
-      chrome.send('installDroppedFile');
-      e.preventDefault();
     }
   };
 

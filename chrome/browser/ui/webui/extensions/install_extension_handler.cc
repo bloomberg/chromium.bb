@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/web_contents.h"
@@ -50,6 +51,10 @@ void InstallExtensionHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "installDroppedFile",
       base::Bind(&InstallExtensionHandler::HandleInstallMessage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "installDroppedDirectory",
+      base::Bind(&InstallExtensionHandler::HandleInstallDirectoryMessage,
                  base::Unretained(this)));
 }
 
@@ -114,4 +119,13 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
 
   file_to_install_.clear();
   file_display_name_.clear();
+}
+
+void InstallExtensionHandler::HandleInstallDirectoryMessage(
+    const ListValue* args) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  extensions::UnpackedInstaller::Create(
+      extensions::ExtensionSystem::Get(profile)->
+          extension_service())->Load(file_to_install_);
 }
