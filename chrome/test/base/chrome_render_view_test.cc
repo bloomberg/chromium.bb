@@ -70,8 +70,8 @@ void ChromeRenderViewTest::SetUp() {
 }
 
 void ChromeRenderViewTest::TearDown() {
-  content::RenderViewTest::TearDown();
-
   extension_dispatcher_->OnRenderProcessShutdown();
   extension_dispatcher_ = NULL;
+
+  content::RenderViewTest::TearDown();
 }

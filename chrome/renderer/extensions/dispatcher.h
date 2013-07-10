@@ -22,6 +22,7 @@
 #include "extensions/common/event_filter.h"
 #include "v8/include/v8.h"
 
+class ChromeRenderViewTest;
 class GURL;
 class ModuleSystem;
 class URLPattern;
@@ -68,7 +69,7 @@ class Dispatcher : public content::RenderProcessObserver {
     return user_script_slave_.get();
   }
   V8SchemaRegistry* v8_schema_registry() {
-    return &v8_schema_registry_;
+    return v8_schema_registry_.get();
   }
   ContentWatcher* content_watcher() {
     return content_watcher_.get();
@@ -131,7 +132,7 @@ class Dispatcher : public content::RenderProcessObserver {
       bool user_gesture);
 
  private:
-  friend class RenderViewTest;
+  friend class ::ChromeRenderViewTest;
   FRIEND_TEST_ALL_PREFIXES(RendererPermissionsPolicyDelegateTest,
                            CannotScriptWebstore);
   typedef void (*BindingInstaller)(ModuleSystem* module_system,
@@ -141,6 +142,7 @@ class Dispatcher : public content::RenderProcessObserver {
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void WebKitInitialized() OVERRIDE;
   virtual void IdleNotification() OVERRIDE;
+  virtual void OnRenderProcessShutdown() OVERRIDE;
 
   void OnSetChannel(int channel);
   void OnMessageInvoke(const std::string& extension_id,
@@ -280,7 +282,7 @@ class Dispatcher : public content::RenderProcessObserver {
   ResourceBundleSourceMap source_map_;
 
   // Cache for the v8 representation of extension API schemas.
-  V8SchemaRegistry v8_schema_registry_;
+  scoped_ptr<V8SchemaRegistry> v8_schema_registry_;
 
   // Bindings that are defined lazily and have BindingInstallers to install
   // them.

@@ -390,7 +390,8 @@ Dispatcher::Dispatcher()
       webrequest_adblock_(false),
       webrequest_adblock_plus_(false),
       webrequest_other_(false),
-      source_map_(&ResourceBundle::GetSharedInstance()) {
+      source_map_(&ResourceBundle::GetSharedInstance()),
+      v8_schema_registry_(new V8SchemaRegistry) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
@@ -479,6 +480,10 @@ void Dispatcher::IdleNotification() {
         base::TimeDelta::FromMilliseconds(forced_delay_ms),
         RenderThread::Get(), &RenderThread::IdleHandler);
   }
+}
+
+void Dispatcher::OnRenderProcessShutdown() {
+  v8_schema_registry_.reset();
 }
 
 void Dispatcher::OnSetFunctionNames(
@@ -1039,7 +1044,7 @@ void Dispatcher::DidCreateScriptContext(
   module_system->RegisterNativeHandler("logging",
       scoped_ptr<NativeHandler>(new LoggingNativeHandler(context)));
   module_system->RegisterNativeHandler("schema_registry",
-      v8_schema_registry_.AsNativeHandler());
+      v8_schema_registry_->AsNativeHandler());
   module_system->RegisterNativeHandler("v8_context",
       scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context, this)));
   module_system->RegisterNativeHandler("test_features",
