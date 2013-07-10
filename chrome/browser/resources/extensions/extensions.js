@@ -50,14 +50,16 @@ cr.define('extensions', function() {
       ExtensionSettings.showOverlay(null);
 
       var items = e.dataTransfer.items;
-      if (items.length && items[0].webkitGetAsEntry().isDirectory) {
+      // Set which item index holds the file we need to check.
+      var fileIndex = e.dataTransfer.types.indexOf('Files');
+      if (items.length && items[fileIndex].webkitGetAsEntry().isDirectory) {
         e.preventDefault();
         chrome.send('installDroppedDirectory');
       } else {
         // Only process files that look like extensions. Other files should
         // navigate the browser normally.
         var files = e.dataTransfer.files;
-        if (files.length && /\.(crx|user\.js)$/i.test(files[0].name)) {
+        if (files.length && /\.(crx|user\.js)$/i.test(files[fileIndex].name)) {
           e.preventDefault();
           chrome.send('installDroppedFile');
         }
