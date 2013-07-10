@@ -980,3 +980,12 @@
    fun:__RT_impl_Runtime_ParallelRecompile
    fun:v8::internal::Runtime_ParallelRecompile
 }
+{
+   bug_258917a
+   Heapcheck:Leak
+   ...
+   fun:net::CertVerifier::CreateDefault
+   fun:QuicStreamFactoryTest
+   fun:QuicStreamFactoryTest_*
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}
