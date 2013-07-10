@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/active_loader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "url/gurl.h"
-#include "webkit/renderer/media/active_loader.h"
 
 namespace WebKit {
 class WebFrame;
@@ -105,7 +105,7 @@ class CONTENT_EXPORT MediaInfoLoader : private WebKit::WebURLLoaderClient {
   scoped_ptr<WebKit::WebURLLoader> test_loader_;
 
   // Keeps track of an active WebURLLoader and associated state.
-  scoped_ptr<webkit_media::ActiveLoader> active_loader_;
+  scoped_ptr<ActiveLoader> active_loader_;
 
   bool loader_failed_;
   GURL url_;

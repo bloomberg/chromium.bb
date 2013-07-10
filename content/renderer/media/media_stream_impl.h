@@ -17,18 +17,15 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/renderer/media/media_stream_client.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
-#include "webkit/renderer/media/media_stream_client.h"
-
-namespace webkit_media {
-class MediaStreamAudioRenderer;
-}
 
 namespace content {
+class MediaStreamAudioRenderer;
 class MediaStreamDependencyFactory;
 class MediaStreamDispatcher;
 class WebRtcAudioRenderer;
@@ -43,7 +40,7 @@ class WebRtcLocalAudioRenderer;
 class CONTENT_EXPORT MediaStreamImpl
     : public RenderViewObserver,
       NON_EXPORTED_BASE(public WebKit::WebUserMediaClient),
-      NON_EXPORTED_BASE(public webkit_media::MediaStreamClient),
+      NON_EXPORTED_BASE(public MediaStreamClient),
       public MediaStreamDispatcherEventHandler,
       public base::SupportsWeakPtr<MediaStreamImpl>,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
@@ -60,13 +57,13 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void cancelUserMediaRequest(
       const WebKit::WebUserMediaRequest& user_media_request) OVERRIDE;
 
-  // webkit_media::MediaStreamClient implementation.
+  // MediaStreamClient implementation.
   virtual bool IsMediaStream(const GURL& url) OVERRIDE;
-  virtual scoped_refptr<webkit_media::VideoFrameProvider> GetVideoFrameProvider(
+  virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
       const GURL& url,
       const base::Closure& error_cb,
-      const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
-  virtual scoped_refptr<webkit_media::MediaStreamAudioRenderer>
+      const VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
+  virtual scoped_refptr<MediaStreamAudioRenderer>
       GetAudioRenderer(const GURL& url) OVERRIDE;
 
   // MediaStreamDispatcherEventHandler implementation.
@@ -145,11 +142,11 @@ class CONTENT_EXPORT MediaStreamImpl
   UserMediaRequestInfo* FindUserMediaRequestInfo(const std::string& label);
   void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
 
-  scoped_refptr<webkit_media::VideoFrameProvider>
+  scoped_refptr<VideoFrameProvider>
   CreateVideoFrameProvider(
       webrtc::MediaStreamInterface* stream,
       const base::Closure& error_cb,
-      const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb);
+      const VideoFrameProvider::RepaintCB& repaint_cb);
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
       webrtc::MediaStreamInterface* stream);
   scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(

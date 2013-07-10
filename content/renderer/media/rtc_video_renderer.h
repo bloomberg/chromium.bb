@@ -7,9 +7,9 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/video_frame_provider.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "ui/gfx/size.h"
-#include "webkit/renderer/media/video_frame_provider.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -17,7 +17,7 @@ class MessageLoopProxy;
 
 namespace content {
 
-// RTCVideoRenderer is a webkit_media::VideoFrameProvider designed for rendering
+// RTCVideoRenderer is a VideoFrameProvider designed for rendering
 // Video MediaStreamTracks,
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
 // RTCVideoRenderer implements webrtc::VideoRendererInterface in order to render
@@ -29,7 +29,7 @@ namespace content {
 // http://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_vi
 // deo_decoder_unittest.cc?revision=180591&view=markup
 class CONTENT_EXPORT RTCVideoRenderer
-    : NON_EXPORTED_BASE(public webkit_media::VideoFrameProvider),
+    : NON_EXPORTED_BASE(public VideoFrameProvider),
       NON_EXPORTED_BASE(public webrtc::VideoRendererInterface),
       NON_EXPORTED_BASE(public webrtc::ObserverInterface) {
  public:
@@ -38,7 +38,7 @@ class CONTENT_EXPORT RTCVideoRenderer
       const base::Closure& error_cb,
       const RepaintCB& repaint_cb);
 
-  // webkit_media::VideoFrameProvider implementation. Called on the main thread.
+  // VideoFrameProvider implementation. Called on the main thread.
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void Play() OVERRIDE;

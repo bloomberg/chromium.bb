@@ -7,27 +7,27 @@
 
 #include "base/callback_forward.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/renderer/media/media_stream_client.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/renderer/media/media_stream_client.h"
 
 namespace content {
 
-// TestMediaStreamClient is a mock implementation of
-// webkit_media::MediaStreamClient used when running layout tests.
+// TestMediaStreamClient is a mock implementation of MediaStreamClient used when
+// running layout tests.
 class TestMediaStreamClient : public RenderViewObserver,
-                              public webkit_media::MediaStreamClient {
+                              public MediaStreamClient {
  public:
   explicit TestMediaStreamClient(RenderView* render_view);
   virtual ~TestMediaStreamClient();
 
-  // webkit_media::MediaStreamClient implementation.
+  // MediaStreamClient implementation.
   virtual bool IsMediaStream(const GURL& url) OVERRIDE;
-  virtual scoped_refptr<webkit_media::VideoFrameProvider> GetVideoFrameProvider(
+  virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
       const GURL& url,
       const base::Closure& error_cb,
-      const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
-  virtual scoped_refptr<webkit_media::MediaStreamAudioRenderer>
-      GetAudioRenderer(const GURL& url) OVERRIDE;
+      const VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
+  virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
+      const GURL& url) OVERRIDE;
 };
 
 }  // namespace content

@@ -43,19 +43,15 @@ namespace webkit {
 class WebLayerImpl;
 }
 
-namespace webkit_media {
+namespace content {
 class WebMediaPlayerDelegate;
+class WebMediaPlayerManagerAndroid;
+class WebMediaPlayerProxyAndroid;
 
 #if defined(GOOGLE_TV)
 class MediaStreamAudioRenderer;
 class MediaStreamClient;
 #endif
-}
-
-namespace content {
-
-class WebMediaPlayerManagerAndroid;
-class WebMediaPlayerProxyAndroid;
 
 // This class implements WebKit::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
@@ -77,7 +73,7 @@ class WebMediaPlayerAndroid
   WebMediaPlayerAndroid(
       WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client,
-      base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
+      base::WeakPtr<WebMediaPlayerDelegate> delegate,
       WebMediaPlayerManagerAndroid* manager,
       WebMediaPlayerProxyAndroid* proxy,
       StreamTextureFactory* factory,
@@ -230,7 +226,7 @@ class WebMediaPlayerAndroid
                  int init_data_size);
 
 #if defined(GOOGLE_TV)
-  bool InjectMediaStream(webkit_media::MediaStreamClient* media_stream_client,
+  bool InjectMediaStream(MediaStreamClient* media_stream_client,
                          media::Demuxer* demuxer,
                          const base::Closure& destroy_demuxer_cb);
 #endif
@@ -289,7 +285,7 @@ class WebMediaPlayerAndroid
   // TODO(qinmin): Currently android mediaplayer takes care of the screen
   // lock. So this is only used for media source. Will apply this to regular
   // media tag once http://crbug.com/247892 is fixed.
-  base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate_;
+  base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   // Save the list of buffered time ranges.
   WebKit::WebTimeRanges buffered_;
@@ -391,8 +387,8 @@ class WebMediaPlayerAndroid
   // Media Stream related fields.
   media::Demuxer* demuxer_;
   base::Closure destroy_demuxer_cb_;
-  scoped_refptr<webkit_media::MediaStreamAudioRenderer> audio_renderer_;
-  webkit_media::MediaStreamClient* media_stream_client_;
+  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
+  MediaStreamClient* media_stream_client_;
 #endif
 
   scoped_ptr<MediaSourceDelegate,

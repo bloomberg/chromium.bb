@@ -8,11 +8,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/audio_renderer_sink.h"
-#include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 namespace media {
 class AudioOutputDevice;
@@ -26,7 +26,7 @@ class WebRtcAudioRendererSource;
 // for connecting WebRtc MediaStream with the audio pipeline.
 class CONTENT_EXPORT WebRtcAudioRenderer
     : NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
-      NON_EXPORTED_BASE(public webkit_media::MediaStreamAudioRenderer) {
+      NON_EXPORTED_BASE(public MediaStreamAudioRenderer) {
  public:
   explicit WebRtcAudioRenderer(int source_render_view_id);
 

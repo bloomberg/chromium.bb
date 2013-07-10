@@ -30,6 +30,7 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/hyphenator/hyphenator.h"
+#include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
@@ -60,7 +61,6 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/media/audio_decoder.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
 
 #if defined(OS_WIN)
@@ -846,10 +846,8 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(
     WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
-  return webkit_media::DecodeAudioFileData(destination_bus,
-                                           audio_file_data,
-                                           data_size,
-                                           sample_rate);
+  return DecodeAudioFileData(
+      destination_bus, audio_file_data, data_size, sample_rate);
 }
 #endif  // defined(OS_ANDROID)
 

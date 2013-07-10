@@ -18,7 +18,6 @@ using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderOptions;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
-using webkit_media::ActiveLoader;
 
 namespace content {
 

@@ -6,8 +6,8 @@
 #define CONTENT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
 
 #include "base/time/time.h"
+#include "content/renderer/media/video_frame_provider.h"
 #include "ui/gfx/size.h"
-#include "webkit/renderer/media/video_frame_provider.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -20,7 +20,7 @@ namespace content {
 // Since non-black pixel values are required in the layout test, e.g.,
 // media/video-capture-canvas.html, this class should generate frame with
 // only non-black pixels.
-class TestVideoFrameProvider : public webkit_media::VideoFrameProvider {
+class TestVideoFrameProvider : public VideoFrameProvider {
  public:
   TestVideoFrameProvider(
       const gfx::Size& size,
@@ -28,7 +28,7 @@ class TestVideoFrameProvider : public webkit_media::VideoFrameProvider {
       const base::Closure& error_cb,
       const RepaintCB& repaint_cb);
 
-  // webkit_media::VideoFrameProvider implementation.
+  // VideoFrameProvider implementation.
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void Play() OVERRIDE;

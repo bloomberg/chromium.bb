@@ -14,6 +14,8 @@
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/webmediaplayer_manager_android.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "content/renderer/media/webmediaplayer_delegate.h"
+#include "content/renderer/media/webmediaplayer_util.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_loop.h"
@@ -29,12 +31,10 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
-#include "webkit/renderer/media/webmediaplayer_delegate.h"
-#include "webkit/renderer/media/webmediaplayer_util.h"
 
 #if defined(GOOGLE_TV)
-#include "webkit/renderer/media/media_stream_audio_renderer.h"
-#include "webkit/renderer/media/media_stream_client.h"
+#include "content/public/renderer/media_stream_audio_renderer.h"
+#include "content/public/renderer/media_stream_client.h"
 #endif
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
@@ -47,11 +47,9 @@ using WebKit::WebTimeRanges;
 using WebKit::WebURL;
 using media::MediaPlayerAndroid;
 using media::VideoFrame;
-using webkit_media::ConvertSecondsToTimestamp;
 using webkit_media::IsSupportedKeySystem;
 using webkit_media::KeySystemNameForUMA;
 using webkit_media::ProxyDecryptor;
-using webkit_media::WebMediaPlayerDelegate;
 
 namespace {
 // Prefix for histograms related to Encrypted Media Extensions.
@@ -1142,7 +1140,7 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& session_id,
 
 #if defined(GOOGLE_TV)
 bool WebMediaPlayerAndroid::InjectMediaStream(
-    webkit_media::MediaStreamClient* media_stream_client,
+    MediaStreamClient* media_stream_client,
     media::Demuxer* demuxer,
     const base::Closure& destroy_demuxer_cb) {
   DCHECK(!demuxer);

@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_extra_data.h"
@@ -26,7 +27,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
-#include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 namespace content {
 namespace {
@@ -213,11 +213,11 @@ bool MediaStreamImpl::IsMediaStream(const GURL& url) {
       (!stream->GetVideoTracks().empty() || !stream->GetAudioTracks().empty()));
 }
 
-scoped_refptr<webkit_media::VideoFrameProvider>
+scoped_refptr<VideoFrameProvider>
 MediaStreamImpl::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
-    const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
+    const VideoFrameProvider::RepaintCB& repaint_cb) {
   DCHECK(CalledOnValidThread());
   WebKit::WebMediaStream descriptor(GetMediaStream(url));
 
@@ -234,7 +234,7 @@ MediaStreamImpl::GetVideoFrameProvider(
   return NULL;
 }
 
-scoped_refptr<webkit_media::MediaStreamAudioRenderer>
+scoped_refptr<MediaStreamAudioRenderer>
 MediaStreamImpl::GetAudioRenderer(const GURL& url) {
   DCHECK(CalledOnValidThread());
   WebKit::WebMediaStream descriptor(GetMediaStream(url));
@@ -502,11 +502,11 @@ void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
   }
 }
 
-scoped_refptr<webkit_media::VideoFrameProvider>
+scoped_refptr<VideoFrameProvider>
 MediaStreamImpl::CreateVideoFrameProvider(
     webrtc::MediaStreamInterface* stream,
     const base::Closure& error_cb,
-    const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
+    const VideoFrameProvider::RepaintCB& repaint_cb) {
   if (stream->GetVideoTracks().empty())
     return NULL;
 

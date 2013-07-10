@@ -4,13 +4,12 @@
 
 #include "content/test/test_media_stream_client.h"
 
+#include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/test/test_video_frame_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "url/gurl.h"
-#include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 using namespace WebKit;
 
@@ -47,11 +46,10 @@ bool TestMediaStreamClient::IsMediaStream(const GURL& url) {
   return IsMockMediaStreamWithVideo(url);
 }
 
-scoped_refptr<webkit_media::VideoFrameProvider>
-TestMediaStreamClient::GetVideoFrameProvider(
+scoped_refptr<VideoFrameProvider> TestMediaStreamClient::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
-    const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
+    const VideoFrameProvider::RepaintCB& repaint_cb) {
   if (!IsMockMediaStreamWithVideo(url))
     return NULL;
 
@@ -62,8 +60,8 @@ TestMediaStreamClient::GetVideoFrameProvider(
       repaint_cb);
 }
 
-scoped_refptr<webkit_media::MediaStreamAudioRenderer>
-TestMediaStreamClient::GetAudioRenderer(const GURL& url) {
+scoped_refptr<MediaStreamAudioRenderer> TestMediaStreamClient::GetAudioRenderer(
+    const GURL& url) {
   return NULL;
 }
 

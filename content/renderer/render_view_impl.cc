@@ -101,6 +101,9 @@
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/webmediaplayer_impl.h"
+#include "content/renderer/media/webmediaplayer_ms.h"
+#include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
@@ -212,9 +215,6 @@
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
-#include "webkit/renderer/media/webmediaplayer_impl.h"
-#include "webkit/renderer/media/webmediaplayer_ms.h"
-#include "webkit/renderer/media/webmediaplayer_params.h"
 #include "webkit/renderer/webpreferences_renderer.h"
 
 #if defined(OS_ANDROID)
@@ -2885,7 +2885,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
     UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
 #endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    return new webkit_media::WebMediaPlayerMS(
+    return new WebMediaPlayerMS(
         frame, client, AsWeakPtr(), media_stream_client_, new RenderMediaLog());
   }
 #endif  // !defined(GOOGLE_TV)
@@ -2964,7 +2964,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
         gpu_channel_host, factories_loop, context3d);
   }
 
-  webkit_media::WebMediaPlayerParams params(
+  WebMediaPlayerParams params(
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
@@ -2972,8 +2972,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       sink,
       gpu_factories,
       new RenderMediaLog());
-  return new webkit_media::WebMediaPlayerImpl(
-      frame, client, AsWeakPtr(), params);
+  return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
 }
 
 WebApplicationCacheHost* RenderViewImpl::createApplicationCacheHost(
@@ -6786,7 +6785,7 @@ void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
 }
 
 void RenderViewImpl::SetMediaStreamClientForTesting(
-  webkit_media::MediaStreamClient* media_stream_client) {
+    MediaStreamClient* media_stream_client) {
   DCHECK(!media_stream_client_);
   DCHECK(!web_user_media_client_);
   media_stream_client_ = media_stream_client;

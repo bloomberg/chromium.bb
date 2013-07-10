@@ -7,6 +7,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "content/renderer/media/webmediaplayer_util.h"
+#include "content/renderer/media/webmediasourceclient_impl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/demuxer_stream.h"
@@ -16,15 +18,10 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebMediaSource.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "webkit/renderer/media/webmediaplayer_util.h"
-#include "webkit/renderer/media/webmediasourceclient_impl.h"
 
 using media::DemuxerStream;
 using media::MediaPlayerHostMsg_DemuxerReady_Params;
 using media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params;
-using webkit_media::ConvertToWebTimeRanges;
-using webkit_media::PipelineErrorToNetworkState;
-using webkit_media::WebMediaSourceClientImpl;
 using WebKit::WebMediaPlayer;
 using WebKit::WebString;
 

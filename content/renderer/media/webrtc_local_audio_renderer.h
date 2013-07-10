@@ -10,9 +10,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
-#include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 namespace media {
 class AudioBus;
@@ -25,8 +25,8 @@ namespace content {
 
 class WebRtcAudioCapturer;
 
-// WebRtcLocalAudioRenderer is a webkit_media::MediaStreamAudioRenderer
-// designed for rendering local audio media stream tracks,
+// WebRtcLocalAudioRenderer is a MediaStreamAudioRenderer designed for rendering
+// local audio media stream tracks,
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
 // It also implements media::AudioRendererSink::RenderCallback to render audio
 // data provided from a WebRtcLocalAudioTrack source.
@@ -38,7 +38,7 @@ class WebRtcAudioCapturer;
 // deregisters itself when it is stopped.
 // Tracking this at http://crbug.com/164813.
 class CONTENT_EXPORT WebRtcLocalAudioRenderer
-    : NON_EXPORTED_BASE(public webkit_media::MediaStreamAudioRenderer),
+    : NON_EXPORTED_BASE(public MediaStreamAudioRenderer),
       NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
       NON_EXPORTED_BASE(public WebRtcAudioCapturerSink) {
  public:
@@ -48,7 +48,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   WebRtcLocalAudioRenderer(WebRtcLocalAudioTrack* audio_track,
                            int source_render_view_id);
 
-  // webkit_media::MediaStreamAudioRenderer implementation.
+  // MediaStreamAudioRenderer implementation.
   // Called on the main thread.
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
@@ -66,7 +66,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   virtual ~WebRtcLocalAudioRenderer();
 
  private:
-  // content::WebRtcAudioCapturerSink implementation.
+  // WebRtcAudioCapturerSink implementation.
 
   // Called on the AudioInputDevice worker thread.
   virtual void CaptureData(const int16* audio_data,

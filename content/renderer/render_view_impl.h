@@ -34,6 +34,7 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view.h"
+#include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_pepper_helper.h"
@@ -59,7 +60,6 @@
 #include "ui/surface/transport_dib.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
-#include "webkit/renderer/media/webmediaplayer_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/content_detector.h"
@@ -92,10 +92,6 @@ class PluginInstance;
 }  // namespace ppapi
 
 }  // namespace webkit
-
-namespace webkit_media {
-class MediaStreamClient;
-}
 
 namespace WebKit {
 class WebApplicationCacheHost;
@@ -150,6 +146,7 @@ class ImageResourceFetcher;
 class InputTagSpeechDispatcher;
 class JavaBridgeDispatcher;
 class LoadProgressTracker;
+class MediaStreamClient;
 class MediaStreamDispatcher;
 class MouseLockDispatcher;
 class NavigationState;
@@ -200,7 +197,7 @@ class CONTENT_EXPORT RenderViewImpl
       NON_EXPORTED_BASE(public WebKit::WebPageSerializerClient),
       public RenderView,
       NON_EXPORTED_BASE(public webkit::npapi::WebPluginPageDelegate),
-      NON_EXPORTED_BASE(public webkit_media::WebMediaPlayerDelegate),
+      NON_EXPORTED_BASE(public WebMediaPlayerDelegate),
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView. If this is a blocked popup or as a new tab,
@@ -393,8 +390,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Overrides the MediaStreamClient used when creating MediaStream players.
   // Must be called before any players are created.
-  void SetMediaStreamClientForTesting(
-      webkit_media::MediaStreamClient* media_stream_client);
+  void SetMediaStreamClientForTesting(MediaStreamClient* media_stream_client);
 
   // IPC::Listener implementation ----------------------------------------------
 
@@ -767,7 +763,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void DidStopLoadingForPlugin() OVERRIDE;
   virtual WebKit::WebCookieJar* GetCookieJar() OVERRIDE;
 
-  // webkit_media::WebMediaPlayerDelegate implementation -----------------------
+  // WebMediaPlayerDelegate implementation -----------------------
 
   virtual void DidPlay(WebKit::WebMediaPlayer* player) OVERRIDE;
   virtual void DidPause(WebKit::WebMediaPlayer* player) OVERRIDE;
@@ -1428,7 +1424,7 @@ class CONTENT_EXPORT RenderViewImpl
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 
   // MediaStreamClient attached to this view; lazily initialized.
-  webkit_media::MediaStreamClient* media_stream_client_;
+  MediaStreamClient* media_stream_client_;
   WebKit::WebUserMediaClient* web_user_media_client_;
 
   DevToolsAgent* devtools_agent_;
