@@ -201,6 +201,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE;
   virtual DialogType GetDialogType() const OVERRIDE;
   virtual std::string GetRiskData() const OVERRIDE;
+  virtual std::string GetWalletCookieValue() const OVERRIDE;
   virtual void OnDidAcceptLegalDocuments() OVERRIDE;
   virtual void OnDidAuthenticateInstrument(bool success) OVERRIDE;
   virtual void OnDidGetFullWallet(
@@ -248,6 +249,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void OnUserNameFetchSuccess(const std::string& username) OVERRIDE;
   virtual void OnUserNameFetchFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnDidFetchWalletCookieValue(
+      const std::string& cookie_value) OVERRIDE;
 
   DialogType dialog_type() const { return dialog_type_; }
 
@@ -707,6 +710,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // State of steps in the current Autocheckout flow, or empty if not an
   // Autocheckout use case.
   std::vector<DialogAutocheckoutStep> steps_;
+
+  // The Google Wallet cookie value, set as an authorization header on requests
+  // to Wallet.
+  std::string wallet_cookie_value_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

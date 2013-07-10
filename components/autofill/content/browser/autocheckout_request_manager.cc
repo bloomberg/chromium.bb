@@ -61,6 +61,10 @@ std::string AutocheckoutRequestManager::GetRiskData() const {
   return std::string();
 }
 
+std::string AutocheckoutRequestManager::GetWalletCookieValue() const {
+  return std::string();
+}
+
 void AutocheckoutRequestManager::OnDidAcceptLegalDocuments() {
   NOTREACHED();
 }

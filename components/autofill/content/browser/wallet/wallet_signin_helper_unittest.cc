@@ -6,23 +6,27 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_options.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using testing::_;
 
 namespace autofill {
@@ -54,6 +58,8 @@ class MockWalletSigninHelperDelegate : public WalletSigninHelperDelegate {
                void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnUserNameFetchFailure,
                void(const GoogleServiceAuthError& error));
+  MOCK_METHOD1(OnDidFetchWalletCookieValue,
+               void(const std::string& cookie_value));
 };
 
 class WalletSigninHelperForTesting : public WalletSigninHelper {
@@ -182,10 +188,11 @@ class WalletSigninHelperTest : public testing::Test {
 
   scoped_ptr<WalletSigninHelperForTesting> signin_helper_;
   MockWalletSigninHelperDelegate mock_delegate_;
+  content::TestBrowserContext browser_context_;
 
  private:
   net::TestURLFetcherFactory factory_;
-  content::TestBrowserContext browser_context_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(WalletSigninHelperTest, PassiveSigninSuccessful) {
@@ -261,6 +268,46 @@ TEST_F(WalletSigninHelperTest, AutomaticSigninFailedSigninNo) {
   MockSuccessfulGaiaUserInfoResponse("user@gmail.com");
   MockSuccessfulOAuthLoginResponse();
   MockFailedPassiveSignInResponseNo();
+}
+
+TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
+  EXPECT_CALL(mock_delegate_, OnDidFetchWalletCookieValue("gdToken"));
+  net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
+  net::CookieOptions httponly_options;
+  httponly_options.set_include_httponly();
+  scoped_ptr<net::CanonicalCookie> cookie(
+      net::CanonicalCookie::Create(GetPassiveAuthUrl().GetWithEmptyPath(),
+                                   "gdToken=gdToken; HttpOnly",
+                                   base::Time::Now(),
+                                   httponly_options));
+
+  net::CookieList cookie_list;
+  cookie_list.push_back(*cookie);
+  cookie_monster->InitializeFrom(cookie_list);
+  browser_context_.GetRequestContext()->GetURLRequestContext()
+      ->set_cookie_store(cookie_monster);
+  signin_helper_->StartWalletCookieValueFetch();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenMissing) {
+  EXPECT_CALL(mock_delegate_, OnDidFetchWalletCookieValue(std::string()));
+  net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
+  net::CookieOptions httponly_options;
+  httponly_options.set_include_httponly();
+  scoped_ptr<net::CanonicalCookie> cookie(
+      net::CanonicalCookie::Create(GetPassiveAuthUrl().GetWithEmptyPath(),
+                                   "fake_cookie=monkeys; HttpOnly",
+                                   base::Time::Now(),
+                                   httponly_options));
+
+  net::CookieList cookie_list;
+  cookie_list.push_back(*cookie);
+  cookie_monster->InitializeFrom(cookie_list);
+  browser_context_.GetRequestContext()->GetURLRequestContext()
+      ->set_cookie_store(cookie_monster);
+  signin_helper_->StartWalletCookieValueFetch();
+  base::RunLoop().RunUntilIdle();
 }
 
 // TODO(aruslan): http://crbug.com/188317 Need more tests.

@@ -62,6 +62,9 @@ class WalletSigninHelper : public GaiaAuthConsumer,
   // be called on the original thread.
   void StartUserNameFetch();
 
+  // Initiates the fetch of the user's Google Wallet cookie.
+  void StartWalletCookieValueFetch();
+
  protected:
   // Sign-in helper states (for tests).
   enum State {
@@ -118,6 +121,9 @@ class WalletSigninHelper : public GaiaAuthConsumer,
   bool ParseGetAccountInfoResponse(const net::URLFetcher* fetcher,
                                    std::string* email);
 
+  // Callback for when the Google Wallet cookie has been retrieved.
+  void ReturnWalletCookieValue(const std::string& cookie_value);
+
   // Should be valid throughout the lifetime of the instance.
   WalletSigninHelperDelegate* const delegate_;
 
@@ -141,6 +147,8 @@ class WalletSigninHelper : public GaiaAuthConsumer,
 
   // Current internal state of the helper.
   State state_;
+
+  base::WeakPtrFactory<WalletSigninHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WalletSigninHelper);
 };

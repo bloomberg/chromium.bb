@@ -14,14 +14,20 @@
 #include "base/values.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace autofill {
 namespace wallet {
@@ -32,6 +38,69 @@ namespace {
 const char kGetAccountInfoUrlFormat[] =
     "https://clients1.google.com/tbproxy/getaccountinfo?key=%d&rv=2";
 
+const char kWalletCookieName[] = "gdtoken";
+
+// Callback for retrieving Google Wallet cookies. |callback| is passed the
+// retrieved cookies and posted back to the UI thread. |cookies| is any Google
+// Wallet cookies.
+void GetGoogleCookiesCallback(
+    const base::Callback<void(const std::string&)>& callback,
+    const net::CookieList& cookies) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  std::string wallet_cookie;
+  for (size_t i = 0; i < cookies.size(); ++i) {
+    if (LowerCaseEqualsASCII(cookies[i].Name(), kWalletCookieName)) {
+      wallet_cookie = cookies[i].Value();
+      break;
+    }
+  }
+  content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                   FROM_HERE,
+                                   base::Bind(callback, wallet_cookie));
+}
+
+// Gets Google Wallet cookies. Must be called on the IO thread.
+// |request_context_getter| is a getter for the current request context.
+// |callback| is called when retrieving cookies is completed.
+void GetGoogleCookies(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    const base::Callback<void(const std::string&)>& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  net::URLRequestContext* url_request_context =
+      request_context_getter->GetURLRequestContext();
+  if (!url_request_context) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                     FROM_HERE,
+                                     base::Bind(callback, std::string()));
+    return;
+  }
+
+  net::CookieStore* cookie_store = url_request_context->cookie_store();
+  if (!cookie_store) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                     FROM_HERE,
+                                     base::Bind(callback, std::string()));
+    return;
+  }
+
+  net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
+  if (!cookie_monster) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                     FROM_HERE,
+                                     base::Bind(callback, std::string()));
+    return;
+  }
+
+  net::CookieOptions cookie_options;
+  cookie_options.set_include_httponly();
+  cookie_monster->GetAllCookiesForURLWithOptionsAsync(
+      wallet::GetPassiveAuthUrl().GetWithEmptyPath(),
+      cookie_options,
+      base::Bind(&GetGoogleCookiesCallback, callback));
+}
+
 }  // namespace
 
 WalletSigninHelper::WalletSigninHelper(
@@ -39,7 +108,8 @@ WalletSigninHelper::WalletSigninHelper(
     net::URLRequestContextGetter* getter)
     : delegate_(delegate),
       getter_(getter),
-      state_(IDLE) {
+      state_(IDLE),
+      weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
 
@@ -89,6 +159,21 @@ void WalletSigninHelper::StartUserNameFetch() {
   lsid_.clear();
   username_.clear();
   StartFetchingUserNameFromSession();
+}
+
+void WalletSigninHelper::StartWalletCookieValueFetch() {
+  scoped_refptr<net::URLRequestContextGetter> request_context(getter_);
+  if (!request_context.get()) {
+    ReturnWalletCookieValue(std::string());
+    return;
+  }
+
+  base::Callback<void(const std::string&)> callback = base::Bind(
+      &WalletSigninHelper::ReturnWalletCookieValue,
+      weak_ptr_factory_.GetWeakPtr());
+
+  base::Closure task = base::Bind(&GetGoogleCookies, request_context, callback);
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, task);
 }
 
 std::string WalletSigninHelper::GetGetAccountInfoUrlForTesting() const {
@@ -319,6 +404,13 @@ bool WalletSigninHelper::ParseGetAccountInfoResponse(
   }
 
   return !email->empty();
+}
+
+void WalletSigninHelper::ReturnWalletCookieValue(
+    const std::string& cookie_value) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  delegate_->OnDidFetchWalletCookieValue(cookie_value);
 }
 
 }  // namespace wallet

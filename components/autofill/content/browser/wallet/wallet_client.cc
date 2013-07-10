@@ -664,6 +664,10 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   request_->SetRequestContext(context_getter_.get());
   DVLOG(1) << "Making request to " << url << " with post_body=" << post_body;
   request_->SetUploadData(kJsonMimeType, post_body);
+  request_->AddExtraRequestHeader("Authorization: GoogleLogin auth=" +
+                                  delegate_->GetWalletCookieValue());
+  DVLOG(1) << "Setting authorization header value to "
+           << delegate_->GetWalletCookieValue();
   request_started_timestamp_ = base::Time::Now();
   request_->Start();
 

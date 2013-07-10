@@ -572,7 +572,9 @@ void AutofillDialogControllerImpl::Show() {
   // Try to see if the user is already signed-in. If signed-in, fetch the user's
   // Wallet data. Otherwise, see if the user could be signed in passively.
   // TODO(aruslan): UMA metrics for sign-in.
-  GetWalletItems();
+  signin_helper_.reset(new wallet::WalletSigninHelper(
+      this, profile_->GetRequestContext()));
+  signin_helper_->StartWalletCookieValueFetch();
 
   if (!account_chooser_model_.WalletIsSelected())
     LogDialogLatencyToShow();
@@ -1964,7 +1966,9 @@ void AutofillDialogControllerImpl::Observe(
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     should_show_wallet_promo_ = false;
     account_chooser_model_.SelectActiveWalletAccount();
-    GetWalletItems();
+    signin_helper_.reset(new wallet::WalletSigninHelper(
+        this, profile_->GetRequestContext()));
+    signin_helper_->StartWalletCookieValueFetch();
     HideSignIn();
   }
 }
@@ -2013,6 +2017,10 @@ DialogType AutofillDialogControllerImpl::GetDialogType() const {
 std::string AutofillDialogControllerImpl::GetRiskData() const {
   DCHECK(!risk_data_.empty());
   return risk_data_;
+}
+
+std::string AutofillDialogControllerImpl::GetWalletCookieValue() const {
+  return wallet_cookie_value_;
 }
 
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
@@ -2070,9 +2078,8 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
 void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
     const std::string& username) {
   const string16 username16 = UTF8ToUTF16(username);
-  signin_helper_.reset();
+  signin_helper_->StartWalletCookieValueFetch();
   account_chooser_model_.SetActiveWalletAccountName(username16);
-  GetWalletItems();
 }
 
 void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
@@ -2100,6 +2107,13 @@ void AutofillDialogControllerImpl::OnUserNameFetchFailure(
   // TODO(aruslan): report an error.
   LOG(ERROR) << "failed to fetch the user account name: " << error.ToString();
   OnWalletSigninError();
+}
+
+void AutofillDialogControllerImpl::OnDidFetchWalletCookieValue(
+    const std::string& cookie_value) {
+  wallet_cookie_value_ = cookie_value;
+  signin_helper_.reset();
+  GetWalletItems();
 }
 
 void AutofillDialogControllerImpl::OnAutomaticSigninFailure(

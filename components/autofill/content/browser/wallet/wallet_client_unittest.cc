@@ -21,6 +21,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -642,6 +643,10 @@ class MockWalletClientDelegate : public WalletClientDelegate {
     return "risky business";
   }
 
+  virtual std::string GetWalletCookieValue() const OVERRIDE {
+    return "gdToken";
+  }
+
   void ExpectLogWalletApiCallDuration(
       AutofillMetrics::WalletApiCallMetric metric,
       size_t times) {
@@ -780,6 +785,13 @@ class WalletClientTest : public testing::Test {
     net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     EXPECT_EQ(request_body, GetData(fetcher));
+    net::HttpRequestHeaders request_headers;
+    fetcher->GetExtraRequestHeaders(&request_headers);
+    std::string auth_header_value;
+    EXPECT_TRUE(request_headers.GetHeader(
+        net::HttpRequestHeaders::kAuthorization,
+        &auth_header_value));
+    EXPECT_EQ("GoogleLogin auth=gdToken", auth_header_value);
     fetcher->set_response_code(response_code);
     fetcher->SetResponseString(response_body);
     fetcher->delegate()->OnURLFetchComplete(fetcher);

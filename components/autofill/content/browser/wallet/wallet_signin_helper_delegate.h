@@ -40,6 +40,9 @@ class WalletSigninHelperDelegate {
   // Called on a failed fetch of the signed-in account name.
   // |error| described the error.
   virtual void OnUserNameFetchFailure(const GoogleServiceAuthError& error) = 0;
+
+  // Called when the Google Wallet cookie value has been retrieved.
+  virtual void OnDidFetchWalletCookieValue(const std::string& cookie_value) = 0;
 };
 
 }  // namespace wallet
