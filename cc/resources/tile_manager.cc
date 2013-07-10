@@ -86,6 +86,8 @@ TileManager::TileManager(
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(raster_worker_pool.Pass()),
+      all_tiles_required_for_activation_have_been_initialized_(true),
+      all_tiles_required_for_activation_have_memory_(true),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
@@ -97,13 +99,18 @@ TileManager::~TileManager() {
   // Reset global state and manage. This should cause
   // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
-  AssignGpuMemoryToTiles();
-  CleanUpUnusedImageDecodeTasks();
+
+  // Clear |sorted_tiles_| so that tiles kept alive by it can be freed.
+  sorted_tiles_.clear();
+  DCHECK_EQ(0u, tiles_.size());
+
+  TileVector empty;
+  ScheduleTasks(empty);
+
   // This should finish all pending tasks and release any uninitialized
   // resources.
   raster_worker_pool_->Shutdown();
   raster_worker_pool_->CheckForCompletedTasks();
-  DCHECK_EQ(0u, tiles_.size());
 }
 
 void TileManager::SetGlobalState(
@@ -115,25 +122,17 @@ void TileManager::SetGlobalState(
 }
 
 void TileManager::RegisterTile(Tile* tile) {
-  DCHECK(std::find(tiles_.begin(), tiles_.end(), tile) == tiles_.end());
   DCHECK(!tile->required_for_activation());
-  tiles_.push_back(tile);
+  DCHECK(tiles_.find(tile->id()) == tiles_.end());
+
+  tiles_[tile->id()] = tile;
 }
 
 void TileManager::UnregisterTile(Tile* tile) {
-  TileVector::iterator raster_iter =
-      std::find(tiles_that_need_to_be_rasterized_.begin(),
-                tiles_that_need_to_be_rasterized_.end(),
-                tile);
-  if (raster_iter != tiles_that_need_to_be_rasterized_.end())
-    tiles_that_need_to_be_rasterized_.erase(raster_iter);
-
-  tiles_that_need_to_be_initialized_for_activation_.erase(tile);
-  oom_tiles_that_need_to_be_initialized_for_activation_.erase(tile);
-
-  DCHECK(std::find(tiles_.begin(), tiles_.end(), tile) != tiles_.end());
   FreeResourcesForTile(tile);
-  tiles_.erase(std::remove(tiles_.begin(), tiles_.end(), tile));
+
+  DCHECK(tiles_.find(tile->id()) != tiles_.end());
+  tiles_.erase(tile->id());
 }
 
 bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
@@ -141,6 +140,8 @@ bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
 }
 
 void TileManager::DidFinishedRunningTasks() {
+  TRACE_EVENT0("cc", "TileManager::DidFinishedRunningTasks");
+
   // When OOM, keep re-assigning memory until we reach a steady state
   // where top-priority tiles are initialized.
   if (!memory_stats_from_last_assign_.bytes_over)
@@ -148,31 +149,39 @@ void TileManager::DidFinishedRunningTasks() {
 
   raster_worker_pool_->CheckForCompletedTasks();
 
-  AssignGpuMemoryToTiles();
+  TileVector tiles_that_need_to_be_rasterized;
+  TileSet oom_tiles_required_for_activation;
+  AssignGpuMemoryToTiles(sorted_tiles_,
+                         &tiles_that_need_to_be_rasterized,
+                         &oom_tiles_required_for_activation);
 
-  if (!oom_tiles_that_need_to_be_initialized_for_activation_.empty())
-    ReassignGpuMemoryToOOMTilesRequiredForActivation();
+  if (!oom_tiles_required_for_activation.empty()) {
+    ReassignGpuMemoryToOOMTilesRequiredForActivation(
+        sorted_tiles_,
+        &tiles_that_need_to_be_rasterized,
+        &oom_tiles_required_for_activation);
+  }
+  all_tiles_required_for_activation_have_memory_ =
+      oom_tiles_required_for_activation.empty();
 
-  // |tiles_that_need_to_be_rasterized_| will be empty when we reach a
+  // |tiles_that_need_to_be_rasterized| will be empty when we reach a
   // steady memory state. Keep scheduling tasks until we reach this state.
-  if (!tiles_that_need_to_be_rasterized_.empty()) {
-    ScheduleTasks();
+  if (!tiles_that_need_to_be_rasterized.empty()) {
+    ScheduleTasks(tiles_that_need_to_be_rasterized);
     return;
   }
 
   // Use on-demand raster for any tiles that have not been been assigned
   // memory after reaching a steady memory state.
-  for (TileSet::iterator it =
-           oom_tiles_that_need_to_be_initialized_for_activation_.begin();
-       it != oom_tiles_that_need_to_be_initialized_for_activation_.end();
+  for (TileSet::iterator it = oom_tiles_required_for_activation.begin();
+       it != oom_tiles_required_for_activation.end();
        ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
     mts.tile_versions[mts.raster_mode].set_rasterize_on_demand();
   }
-  oom_tiles_that_need_to_be_initialized_for_activation_.clear();
 
-  DCHECK_EQ(0u, tiles_that_need_to_be_initialized_for_activation_.size());
+  DCHECK(all_tiles_required_for_activation_have_been_initialized_);
   client_->NotifyReadyToActivate();
 }
 
@@ -182,7 +191,7 @@ void TileManager::DidFinishedRunningTasksRequiredForActivation() {
   // wait for DidFinishRunningTasks() to be called, try to re-assign
   // memory and in worst case use on-demand raster when tiles
   // required for activation are OOM.
-  if (!oom_tiles_that_need_to_be_initialized_for_activation_.empty())
+  if (!all_tiles_required_for_activation_have_memory_)
     return;
 
   client_->NotifyReadyToActivate();
@@ -190,7 +199,8 @@ void TileManager::DidFinishedRunningTasksRequiredForActivation() {
 
 class BinComparator {
  public:
-  bool operator() (const Tile* a, const Tile* b) const {
+  bool operator()(const scoped_refptr<Tile> a,
+                  const scoped_refptr<Tile> b) const {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
     if (ams.bin[HIGH_PRIORITY_BIN] != bms.bin[HIGH_PRIORITY_BIN])
@@ -222,7 +232,7 @@ class BinComparator {
   }
 };
 
-void TileManager::AssignBinsToTiles() {
+void TileManager::AssignBinsToTiles(TileRefVector* tiles) {
   const TreePriority tree_priority = global_state_.tree_priority;
 
   // Memory limit policy works by mapping some bin states to the NEVER bin.
@@ -250,10 +260,8 @@ void TileManager::AssignBinsToTiles() {
   }
 
   // For each tree, bin into different categories of tiles.
-  for (TileVector::iterator it = tiles_.begin();
-       it != tiles_.end();
-       ++it) {
-    Tile* tile = *it;
+  for (TileRefVector::iterator it = tiles->begin(); it != tiles->end(); ++it) {
+    Tile* tile = it->get();
     ManagedTileState& mts = tile->managed_state();
 
     TilePriority prio[NUM_BIN_PRIORITIES];
@@ -286,32 +294,51 @@ void TileManager::AssignBinsToTiles() {
     mts.gpu_memmgr_stats_bin =
         BinFromTilePriority(tile->combined_priority(), tree_priority);
 
-    DidTileTreeBinChange(tile,
-                         bin_map[BinFromTilePriority(
-                             tile->priority(ACTIVE_TREE), tree_priority)],
-                         ACTIVE_TREE);
-    DidTileTreeBinChange(tile,
-                         bin_map[BinFromTilePriority(
-                             tile->priority(PENDING_TREE), tree_priority)],
-                         PENDING_TREE);
+    mts.tree_bin[ACTIVE_TREE] = bin_map[
+        BinFromTilePriority(tile->priority(ACTIVE_TREE), tree_priority)];
+    mts.tree_bin[PENDING_TREE] = bin_map[
+        BinFromTilePriority(tile->priority(PENDING_TREE), tree_priority)];
 
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
       mts.bin[i] = bin_map[mts.bin[i]];
   }
 }
 
-void TileManager::SortTiles() {
+void TileManager::SortTiles(TileRefVector* tiles) {
   TRACE_EVENT0("cc", "TileManager::SortTiles");
 
   // Sort by bin, resolution and time until needed.
-  std::sort(tiles_.begin(), tiles_.end(), BinComparator());
+  std::sort(tiles->begin(), tiles->end(), BinComparator());
+}
+
+void TileManager::GetSortedTiles(TileRefVector* tiles) {
+  TRACE_EVENT0("cc", "TileManager::GetSortedTiles");
+
+  DCHECK_EQ(0u, tiles->size());
+
+  tiles->reserve(tiles_.size());
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    tiles->push_back(make_scoped_refptr(it->second));
+
+  AssignBinsToTiles(tiles);
+  SortTiles(tiles);
 }
 
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
-  AssignBinsToTiles();
-  SortTiles();
-  AssignGpuMemoryToTiles();
+
+  // Clear |sorted_tiles_| so that tiles kept alive by it can be freed.
+  sorted_tiles_.clear();
+
+  GetSortedTiles(&sorted_tiles_);
+
+  TileVector tiles_that_need_to_be_rasterized;
+  TileSet oom_tiles_required_for_activation;
+  AssignGpuMemoryToTiles(sorted_tiles_,
+                         &tiles_that_need_to_be_rasterized,
+                         &oom_tiles_required_for_activation);
+  all_tiles_required_for_activation_have_memory_ =
+      oom_tiles_required_for_activation.empty();
   CleanUpUnusedImageDecodeTasks();
 
   TRACE_EVENT_INSTANT1(
@@ -319,7 +346,7 @@ void TileManager::ManageTiles() {
       "state", TracedValue::FromValue(BasicStateAsValue().release()));
 
   // Finally, schedule rasterizer tasks.
-  ScheduleTasks();
+  ScheduleTasks(tiles_that_need_to_be_rasterized);
 }
 
 void TileManager::CheckForCompletedTileUploads() {
@@ -338,10 +365,10 @@ void TileManager::GetMemoryStats(
   *memory_required_bytes = 0;
   *memory_nice_to_have_bytes = 0;
   *memory_used_bytes = resource_pool_->acquired_memory_usage_bytes();
-  for (TileVector::const_iterator it = tiles_.begin();
+  for (TileMap::const_iterator it = tiles_.begin();
        it != tiles_.end();
        ++it) {
-    const Tile* tile = *it;
+    const Tile* tile = it->second;
     const ManagedTileState& mts = tile->managed_state();
 
     const ManagedTileState::TileVersion& tile_version =
@@ -368,10 +395,10 @@ scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
 
 scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
   scoped_ptr<base::ListValue> state(new base::ListValue());
-  for (TileVector::const_iterator it = tiles_.begin();
+  for (TileMap::const_iterator it = tiles_.begin();
        it != tiles_.end();
        it++) {
-    state->Append((*it)->AsValue().release());
+    state->Append(it->second->AsValue().release());
   }
   return state.PassAs<base::Value>();
 }
@@ -393,14 +420,6 @@ scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
   return requirements.PassAs<base::Value>();
 }
 
-void TileManager::AddRequiredTileForActivation(Tile* tile) {
-  DCHECK(std::find(tiles_that_need_to_be_initialized_for_activation_.begin(),
-                   tiles_that_need_to_be_initialized_for_activation_.end(),
-                   tile) ==
-         tiles_that_need_to_be_initialized_for_activation_.end());
-  tiles_that_need_to_be_initialized_for_activation_.insert(tile);
-}
-
 RasterMode TileManager::DetermineRasterMode(const Tile* tile) const {
   DCHECK(tile);
   DCHECK(tile->picture_pile());
@@ -420,20 +439,23 @@ RasterMode TileManager::DetermineRasterMode(const Tile* tile) const {
   return std::min(raster_mode, current_mode);
 }
 
-void TileManager::AssignGpuMemoryToTiles() {
+void TileManager::AssignGpuMemoryToTiles(
+    const TileRefVector& sorted_tiles,
+    TileVector* tiles_that_need_to_be_rasterized,
+    TileSet* oom_tiles_required_for_activation) {
   TRACE_EVENT0("cc", "TileManager::AssignGpuMemoryToTiles");
+
+  // Reset activation tiles flag, to ensure we can activate
+  // if we don't have any required-for-activation tiles here.
+  all_tiles_required_for_activation_have_been_initialized_ = true;
 
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
-  tiles_that_need_to_be_rasterized_.clear();
-  tiles_that_need_to_be_initialized_for_activation_.clear();
-  oom_tiles_that_need_to_be_initialized_for_activation_.clear();
-
   size_t bytes_releasable = 0;
-  for (TileVector::const_iterator it = tiles_.begin();
-       it != tiles_.end();
+  for (TileRefVector::const_iterator it = sorted_tiles.begin();
+       it != sorted_tiles.end();
        ++it) {
-    const Tile* tile = *it;
+    const Tile* tile = it->get();
     const ManagedTileState& mts = tile->managed_state();
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
       if (mts.tile_versions[mode].resource_)
@@ -454,10 +476,10 @@ void TileManager::AssignGpuMemoryToTiles() {
   size_t bytes_left = bytes_allocatable;
   size_t bytes_oom_tiles_that_need_to_be_initialized_for_activation = 0;
   bool higher_priority_tile_oomed = false;
-  for (TileVector::iterator it = tiles_.begin();
-       it != tiles_.end();
+  for (TileRefVector::const_iterator it = sorted_tiles.begin();
+       it != sorted_tiles.end();
        ++it) {
-    Tile* tile = *it;
+    Tile* tile = it->get();
     ManagedTileState& mts = tile->managed_state();
 
     mts.raster_mode = DetermineRasterMode(tile);
@@ -496,7 +518,7 @@ void TileManager::AssignGpuMemoryToTiles() {
         // memory limit.
         if (bytes_oom_tiles_that_need_to_be_initialized_for_activation <
             global_state_.memory_limit_in_bytes) {
-          oom_tiles_that_need_to_be_initialized_for_activation_.insert(tile);
+          oom_tiles_required_for_activation->insert(tile);
           bytes_oom_tiles_that_need_to_be_initialized_for_activation +=
               tile_bytes;
         } else {
@@ -522,11 +544,11 @@ void TileManager::AssignGpuMemoryToTiles() {
       continue;
 
     if (!tile_version.resource_)
-      tiles_that_need_to_be_rasterized_.push_back(tile);
+      tiles_that_need_to_be_rasterized->push_back(tile);
 
     if (!tile->IsReadyToDraw() &&
         tile->required_for_activation()) {
-      AddRequiredTileForActivation(tile);
+      all_tiles_required_for_activation_have_been_initialized_ = false;
     }
   }
 
@@ -546,16 +568,21 @@ void TileManager::AssignGpuMemoryToTiles() {
       bytes_that_exceeded_memory_budget;
 }
 
-void TileManager::ReassignGpuMemoryToOOMTilesRequiredForActivation() {
+void TileManager::ReassignGpuMemoryToOOMTilesRequiredForActivation(
+    const TileRefVector& sorted_tiles,
+    TileVector* tiles_that_need_to_be_rasterized,
+    TileSet* oom_tiles_required_for_activation) {
   TRACE_EVENT0(
       "cc", "TileManager::ReassignGpuMemoryToOOMTilesRequiredForActivation");
 
   size_t bytes_oom_for_required_tiles = 0;
   TileVector tiles_requiring_memory_but_oomed;
-  for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    Tile* tile = *it;
-    if (oom_tiles_that_need_to_be_initialized_for_activation_.find(tile) ==
-        oom_tiles_that_need_to_be_initialized_for_activation_.end())
+  for (TileRefVector::const_iterator it = sorted_tiles.begin();
+       it != sorted_tiles.end();
+       ++it) {
+    Tile* tile = it->get();
+    if (oom_tiles_required_for_activation->find(tile) ==
+        oom_tiles_required_for_activation->end())
       continue;
 
     tiles_requiring_memory_but_oomed.push_back(tile);
@@ -565,12 +592,13 @@ void TileManager::ReassignGpuMemoryToOOMTilesRequiredForActivation() {
   if (tiles_requiring_memory_but_oomed.empty())
     return;
 
-  // In OOM situation, we iterate tiles_, remove the memory for active tree
-  // and not the now bin. And give them to bytes_oom_for_required_tiles
+  // In OOM situation, we iterate sorted_tiles, remove the memory for active
+  // tree and not the now bin. And give them to bytes_oom_for_required_tiles
   size_t bytes_freed = 0;
-  for (TileVector::reverse_iterator it = tiles_.rbegin();
-       it != tiles_.rend(); ++it) {
-    Tile* tile = *it;
+  for (TileRefVector::const_reverse_iterator it = sorted_tiles.rbegin();
+       it != sorted_tiles.rend();
+       ++it) {
+    Tile* tile = it->get();
     ManagedTileState& mts = tile->managed_state();
     if (mts.tree_bin[PENDING_TREE] == NEVER_BIN &&
         mts.tree_bin[ACTIVE_TREE] != NOW_BIN) {
@@ -580,13 +608,13 @@ void TileManager::ReassignGpuMemoryToOOMTilesRequiredForActivation() {
       // If the tile is in the to-rasterize list, but it has no task,
       // then it means that we have assigned memory for it.
       TileVector::iterator raster_it =
-          std::find(tiles_that_need_to_be_rasterized_.begin(),
-                    tiles_that_need_to_be_rasterized_.end(),
+          std::find(tiles_that_need_to_be_rasterized->begin(),
+                    tiles_that_need_to_be_rasterized->end(),
                     tile);
-      if (raster_it != tiles_that_need_to_be_rasterized_.end() &&
+      if (raster_it != tiles_that_need_to_be_rasterized->end() &&
           tile_version.raster_task_.is_null()) {
         bytes_freed += tile->bytes_consumed_if_allocated();
-        tiles_that_need_to_be_rasterized_.erase(raster_it);
+        tiles_that_need_to_be_rasterized->erase(raster_it);
       }
 
       // Also consider all of the completed resources for freeing.
@@ -613,18 +641,18 @@ void TileManager::ReassignGpuMemoryToOOMTilesRequiredForActivation() {
       continue;
     mts.tile_versions[mts.raster_mode].set_use_resource();
     bytes_freed -= bytes_needed;
-    tiles_that_need_to_be_rasterized_.push_back(tile);
+    tiles_that_need_to_be_rasterized->push_back(tile);
     DCHECK(tile->required_for_activation());
-    AddRequiredTileForActivation(tile);
-    oom_tiles_that_need_to_be_initialized_for_activation_.erase(tile);
+    all_tiles_required_for_activation_have_been_initialized_ = false;
+    oom_tiles_required_for_activation->erase(tile);
   }
 }
 
 void TileManager::CleanUpUnusedImageDecodeTasks() {
   // Calculate a set of layers that are used by at least one tile.
   base::hash_set<int> used_layers;
-  for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    used_layers.insert((*it)->layer_id());
+  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    used_layers.insert(it->second->layer_id());
 
   // Now calculate the set of layers in |image_decode_tasks_| that are not used
   // by any tile.
@@ -675,15 +703,16 @@ void TileManager::FreeUnusedResourcesForTile(Tile* tile) {
   }
 }
 
-void TileManager::ScheduleTasks() {
+void TileManager::ScheduleTasks(
+    const TileVector& tiles_that_need_to_be_rasterized) {
   TRACE_EVENT1("cc", "TileManager::ScheduleTasks",
-               "count", tiles_that_need_to_be_rasterized_.size());
+               "count", tiles_that_need_to_be_rasterized.size());
   RasterWorkerPool::RasterTask::Queue tasks;
 
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
-  for (TileVector::iterator it = tiles_that_need_to_be_rasterized_.begin();
-       it != tiles_that_need_to_be_rasterized_.end();
+  for (TileVector::const_iterator it = tiles_that_need_to_be_rasterized.begin();
+       it != tiles_that_need_to_be_rasterized.end();
        ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
@@ -763,7 +792,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
       rendering_stats_instrumentation_,
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),
-                 make_scoped_refptr(tile),
+                 tile->id(),
                  base::Passed(&resource),
                  mts.raster_mode),
       &decode_tasks);
@@ -793,7 +822,7 @@ void TileManager::OnImageDecodeTaskCompleted(
 }
 
 void TileManager::OnRasterTaskCompleted(
-    scoped_refptr<Tile> tile,
+    Tile::Id tile_id,
     scoped_ptr<ResourcePool::Resource> resource,
     RasterMode raster_mode,
     const PicturePileImpl::Analysis& analysis,
@@ -801,6 +830,13 @@ void TileManager::OnRasterTaskCompleted(
   TRACE_EVENT1("cc", "TileManager::OnRasterTaskCompleted",
                "was_canceled", was_canceled);
 
+  TileMap::iterator it = tiles_.find(tile_id);
+  if (it == tiles_.end()) {
+    resource_pool_->ReleaseResource(resource.Pass());
+    return;
+  }
+
+  Tile* tile = it->second;
   ManagedTileState& mts = tile->managed_state();
   ManagedTileState::TileVersion& tile_version =
       mts.tile_versions[raster_mode];
@@ -820,26 +856,9 @@ void TileManager::OnRasterTaskCompleted(
     tile_version.resource_ = resource.Pass();
   }
 
-  FreeUnusedResourcesForTile(tile.get());
-  DidFinishTileInitialization(tile.get());
-}
-
-void TileManager::DidFinishTileInitialization(Tile* tile) {
+  FreeUnusedResourcesForTile(tile);
   if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0)
     did_initialize_visible_tile_ = true;
-  if (tile->required_for_activation()) {
-    // It's possible that a tile required for activation is not in this list
-    // if it was marked as being required after being dispatched for
-    // rasterization but before AssignGPUMemory was called again.
-    tiles_that_need_to_be_initialized_for_activation_.erase(tile);
-  }
-}
-
-void TileManager::DidTileTreeBinChange(Tile* tile,
-                                       ManagedTileBin new_tree_bin,
-                                       WhichTree tree) {
-  ManagedTileState& mts = tile->managed_state();
-  mts.tree_bin[tree] = new_tree_bin;
 }
 
 }  // namespace cc

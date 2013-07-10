@@ -453,12 +453,6 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       is_using_lcd_text_));
 }
 
-void PictureLayerImpl::DestroyTile(Tile* tile) {
-  WhichTree tree =
-      layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
-  tile->SetPriority(tree, TilePriority());
-}
-
 void PictureLayerImpl::UpdatePile(Tile* tile) {
   tile->set_picture_pile(pile_);
 }

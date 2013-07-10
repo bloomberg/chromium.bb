@@ -10,6 +10,8 @@
 
 namespace cc {
 
+Tile::Id Tile::s_next_id_ = 0;
+
 Tile::Tile(TileManager* tile_manager,
            PicturePileImpl* picture_pile,
            gfx::Size tile_size,
@@ -26,7 +28,8 @@ Tile::Tile(TileManager* tile_manager,
     opaque_rect_(opaque_rect),
     layer_id_(layer_id),
     source_frame_number_(source_frame_number),
-    can_use_lcd_text_(can_use_lcd_text) {
+    can_use_lcd_text_(can_use_lcd_text),
+    id_(s_next_id_++) {
   set_picture_pile(picture_pile);
   tile_manager_->RegisterTile(this);
 }

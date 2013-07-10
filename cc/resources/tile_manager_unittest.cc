@@ -158,7 +158,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(3, AssignedMemoryCount(active_now));
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
@@ -179,7 +179,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(3, AssignedMemoryCount(active_now));
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
@@ -200,7 +200,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(3, AssignedMemoryCount(active_now));
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
@@ -221,7 +221,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowNothing) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(0, AssignedMemoryCount(active_now));
   EXPECT_EQ(0, AssignedMemoryCount(pending_now));
@@ -241,7 +241,7 @@ TEST_F(TileManagerTest, PartialOOMMemoryToPending) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(5, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(3, AssignedMemoryCount(pending_tree_tiles));
@@ -263,7 +263,7 @@ TEST_F(TileManagerTest, PartialOOMMemoryToActive) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(5, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(3, AssignedMemoryCount(pending_tree_tiles));
@@ -281,7 +281,7 @@ TEST_F(TileManagerTest, TotalOOMMemoryToPending) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
@@ -304,7 +304,7 @@ TEST_F(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
@@ -326,7 +326,7 @@ TEST_F(TileManagerTest, TotalOOMMemoryToActive) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));

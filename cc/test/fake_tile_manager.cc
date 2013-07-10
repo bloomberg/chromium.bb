@@ -38,14 +38,27 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   NULL,
                   resource_provider->best_texture_format()) {}
 
+FakeTileManager::~FakeTileManager() {}
+
 void FakeTileManager::ReassignMemoryToOOMTilesRequiredForActivation() {
-  ReassignGpuMemoryToOOMTilesRequiredForActivation();
+  ReassignGpuMemoryToOOMTilesRequiredForActivation(
+      all_tiles, &tiles_for_raster, &oom_tiles_required_for_activation);
+}
+
+void FakeTileManager::AssignMemoryToTiles() {
+  tiles_for_raster.clear();
+  oom_tiles_required_for_activation.clear();
+  all_tiles.clear();
+
+  GetSortedTiles(&all_tiles);
+  AssignGpuMemoryToTiles(
+      all_tiles, &tiles_for_raster, &oom_tiles_required_for_activation);
 }
 
 bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
-  return std::find(tiles_that_need_to_be_rasterized().begin(),
-                   tiles_that_need_to_be_rasterized().end(),
-                   tile) != tiles_that_need_to_be_rasterized().end();
+  return std::find(tiles_for_raster.begin(),
+                   tiles_for_raster.end(),
+                   tile) != tiles_for_raster.end();
 }
 
 }  // namespace cc
