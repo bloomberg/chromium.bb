@@ -7072,6 +7072,15 @@ other types of suffix sets.
   <summary>Chrome OS connection manager service errors seen.</summary>
 </histogram>
 
+<histogram name="Network.Shill.Cellular.3GPPRegistrationDelayedDrop"
+    enum="NetworkCellular3GPPRegistrationDelayedDrop">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of cellular network
+    flakes. A network flake occurs when the signal strength goes below detection
+    level for a short duration.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Cellular.AutoConnectTotalTime"
     units="milliseconds">
   <summary>
@@ -17622,6 +17631,18 @@ other types of suffix sets.
   <int value="15" label="EAP-TLS"/>
   <int value="16" label="EAP-TNC"/>
   <int value="17" label="EAP-TTLS"/>
+</enum>
+
+<enum name="NetworkCellular3GPPRegistrationDelayedDrop" type="int">
+  <int value="0" label="Delayed drop posted">
+    A signal loss in the cellular service was detected and a delayed connection
+    drop request was posted. This request causes the cellular connection to be
+    dropped if it is not cancelled within the delay provided.
+  </int>
+  <int value="1" label="Delayed drop canceled">
+    Signal strength returned to normal soon after a delayed drop request was
+    made, causing the request to be canceled. This indicates a flaky network.
+  </int>
 </enum>
 
 <enum name="NetworkCellularOutOfCreditsReason" type="int">
