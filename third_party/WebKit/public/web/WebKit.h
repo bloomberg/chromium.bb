@@ -58,8 +58,7 @@ WEBKIT_EXPORT void shutdown();
 // called. Any background threads created by WebKit are promised to be
 // terminated by the time this function returns.
 //
-// If initializeWithoutV8() was used to initialize WebKit, shutdownWithoutV8
-// must be called to shut it down again.
+// This is a special variant of shutdown that does not shutdown V8.
 WEBKIT_EXPORT void shutdownWithoutV8();
 
 // Alters the rendering of content to conform to a fixed set of rules.
