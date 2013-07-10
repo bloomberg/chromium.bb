@@ -105,13 +105,13 @@ static inline PassOwnPtr<ShadowData> blendFunc(const AnimationBase* anim, const 
 {
     ASSERT(from && to);
     if (from->style() != to->style())
-        return adoptPtr(new ShadowData(*to));
+        return to->clone();
 
-    return adoptPtr(new ShadowData(blend(from->location(), to->location(), progress),
-                                   blend(from->blur(), to->blur(), progress),
-                                   blend(from->spread(), to->spread(), progress),
-                                   blendFunc(anim, from->style(), to->style(), progress),
-                                   blend(from->color(), to->color(), progress)));
+    return ShadowData::create(blend(from->location(), to->location(), progress),
+        blend(from->blur(), to->blur(), progress),
+        blend(from->spread(), to->spread(), progress),
+        blendFunc(anim, from->style(), to->style(), progress),
+        blend(from->color(), to->color(), progress));
 }
 
 static inline TransformOperations blendFunc(const AnimationBase* anim, const TransformOperations& from, const TransformOperations& to, double progress)
@@ -501,16 +501,16 @@ static inline size_t shadowListLength(const ShadowData* shadow)
 
 static inline const ShadowData* shadowForBlending(const ShadowData* srcShadow, const ShadowData* otherShadow)
 {
-    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (IntPoint(), 0, 0, Normal, Color::transparent));
-    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (IntPoint(), 0, 0, Inset, Color::transparent));
+    DEFINE_STATIC_LOCAL(OwnPtr<ShadowData>, defaultShadowData, (ShadowData::create(IntPoint(), 0, 0, Normal, Color::transparent)));
+    DEFINE_STATIC_LOCAL(OwnPtr<ShadowData>, defaultInsetShadowData, (ShadowData::create(IntPoint(), 0, 0, Inset, Color::transparent)));
 
     if (srcShadow)
         return srcShadow;
 
     if (otherShadow->style() == Inset)
-        return &defaultInsetShadowData;
+        return defaultInsetShadowData.get();
 
-    return &defaultShadowData;
+    return defaultShadowData.get();
 }
 
 class PropertyWrapperShadow : public AnimationPropertyWrapperBase {

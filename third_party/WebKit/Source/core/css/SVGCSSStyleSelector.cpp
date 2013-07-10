@@ -98,6 +98,8 @@ static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const Color& fgColor)
 
 static bool percentageOrNumberToFloat(const CSSPrimitiveValue* primitiveValue, float& out)
 {
+    if (!primitiveValue)
+        return false;
     int type = primitiveValue->primitiveType();
     if (type == CSSPrimitiveValue::CSS_PERCENTAGE) {
         out = primitiveValue->getFloatValue() / 100.0f;
@@ -143,10 +145,8 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyAlignmentBaseline:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(alignmentBaseline, AlignmentBaseline)
-            if (!primitiveValue)
-                break;
-
-            style->accessSVGStyle()->setAlignmentBaseline(*primitiveValue);
+            if (primitiveValue)
+                style->accessSVGStyle()->setAlignmentBaseline(*primitiveValue);
             break;
         }
         case CSSPropertyBaselineShift:
@@ -323,9 +323,6 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyFillOpacity:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(fillOpacity, FillOpacity)
-            if (!primitiveValue)
-                return;
-
             float f = 0.0f;
             if (percentageOrNumberToFloat(primitiveValue, f))
                 style->accessSVGStyle()->setFillOpacity(f);
@@ -334,9 +331,6 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyStrokeOpacity:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(strokeOpacity, StrokeOpacity)
-            if (!primitiveValue)
-                return;
-
             float f = 0.0f;
             if (percentageOrNumberToFloat(primitiveValue, f))
                 style->accessSVGStyle()->setStrokeOpacity(f);
@@ -345,9 +339,6 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyStopOpacity:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(stopOpacity, StopOpacity)
-            if (!primitiveValue)
-                return;
-
             float f = 0.0f;
             if (percentageOrNumberToFloat(primitiveValue, f))
                 style->accessSVGStyle()->setStopOpacity(f);
@@ -356,25 +347,22 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyMarkerStart:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(markerStartResource, MarkerStartResource)
-            if (!primitiveValue)
-                return;
-            style->accessSVGStyle()->setMarkerStartResource(fragmentIdentifier(primitiveValue, state.document()));
+            if (primitiveValue)
+                style->accessSVGStyle()->setMarkerStartResource(fragmentIdentifier(primitiveValue, state.document()));
             break;
         }
         case CSSPropertyMarkerMid:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(markerMidResource, MarkerMidResource)
-            if (!primitiveValue)
-                return;
-            style->accessSVGStyle()->setMarkerMidResource(fragmentIdentifier(primitiveValue, state.document()));
+            if (primitiveValue)
+                style->accessSVGStyle()->setMarkerMidResource(fragmentIdentifier(primitiveValue, state.document()));
             break;
         }
         case CSSPropertyMarkerEnd:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(markerEndResource, MarkerEndResource)
-            if (!primitiveValue)
-                return;
-            style->accessSVGStyle()->setMarkerEndResource(fragmentIdentifier(primitiveValue, state.document()));
+            if (primitiveValue)
+                style->accessSVGStyle()->setMarkerEndResource(fragmentIdentifier(primitiveValue, state.document()));
             break;
         }
         case CSSPropertyStrokeLinecap:
@@ -403,25 +391,22 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyFilter:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(filterResource, FilterResource)
-            if (!primitiveValue)
-                return;
-            style->accessSVGStyle()->setFilterResource(fragmentIdentifier(primitiveValue, state.document()));
+            if (primitiveValue)
+                style->accessSVGStyle()->setFilterResource(fragmentIdentifier(primitiveValue, state.document()));
             break;
         }
         case CSSPropertyMask:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(maskerResource, MaskerResource)
-            if (!primitiveValue)
-                return;
-            style->accessSVGStyle()->setMaskerResource(fragmentIdentifier(primitiveValue, state.document()));
+            if (primitiveValue)
+                style->accessSVGStyle()->setMaskerResource(fragmentIdentifier(primitiveValue, state.document()));
             break;
         }
         case CSSPropertyClipPath:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(clipperResource, ClipperResource)
-            if (!primitiveValue)
-                return;
-            style->accessSVGStyle()->setClipperResource(fragmentIdentifier(primitiveValue, state.document()));
+            if (primitiveValue)
+                style->accessSVGStyle()->setClipperResource(fragmentIdentifier(primitiveValue, state.document()));
             break;
         }
         case CSSPropertyTextAnchor:
@@ -455,9 +440,6 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         case CSSPropertyFloodOpacity:
         {
             HANDLE_SVG_INHERIT_AND_INITIAL(floodOpacity, FloodOpacity)
-            if (!primitiveValue)
-                return;
-
             float f = 0.0f;
             if (percentageOrNumberToFloat(primitiveValue, f))
                 style->accessSVGStyle()->setFloodOpacity(f);
@@ -482,7 +464,6 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
 
                 style->accessSVGStyle()->setGlyphOrientationHorizontal((EGlyphOrientation) orientation);
             }
-
             break;
         }
         case CSSPropertyGlyphOrientationVertical:
@@ -507,7 +488,7 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
             break;
         case CSSPropertyWebkitSvgShadow: {
             if (isInherit)
-                return style->accessSVGStyle()->setShadow(adoptPtr(state.parentStyle()->svgStyle()->shadow() ? new ShadowData(*state.parentStyle()->svgStyle()->shadow()) : 0));
+                return style->accessSVGStyle()->setShadow(cloneShadow(state.parentStyle()->svgStyle()->shadow()));
             if (isInitial || primitiveValue) // initial | none
                 return style->accessSVGStyle()->setShadow(nullptr);
 
@@ -533,32 +514,27 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
             ASSERT(!item->spread);
             ASSERT(!item->style);
 
-            OwnPtr<ShadowData> shadowData = adoptPtr(new ShadowData(location, blur, 0, Normal, color.isValid() ? color : Color::transparent));
-            style->accessSVGStyle()->setShadow(shadowData.release());
+            if (!color.isValid())
+                color = Color::transparent;
+            style->accessSVGStyle()->setShadow(ShadowData::create(location, blur, 0, Normal, color));
             return;
         }
         case CSSPropertyVectorEffect: {
             HANDLE_SVG_INHERIT_AND_INITIAL(vectorEffect, VectorEffect)
-            if (!primitiveValue)
-                break;
-
-            style->accessSVGStyle()->setVectorEffect(*primitiveValue);
+            if (primitiveValue)
+                style->accessSVGStyle()->setVectorEffect(*primitiveValue);
             break;
         }
         case CSSPropertyBufferedRendering: {
             HANDLE_SVG_INHERIT_AND_INITIAL(bufferedRendering, BufferedRendering)
-            if (!primitiveValue)
-                break;
-
-            style->accessSVGStyle()->setBufferedRendering(*primitiveValue);
+            if (primitiveValue)
+                style->accessSVGStyle()->setBufferedRendering(*primitiveValue);
             break;
         }
         case CSSPropertyMaskType: {
             HANDLE_SVG_INHERIT_AND_INITIAL(maskType, MaskType)
-            if (!primitiveValue)
-                break;
-
-            style->accessSVGStyle()->setMaskType(*primitiveValue);
+            if (primitiveValue)
+                style->accessSVGStyle()->setMaskType(*primitiveValue);
             break;
         }
         default:

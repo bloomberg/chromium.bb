@@ -103,7 +103,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_gridItem(o.m_gridItem)
     , m_content(o.m_content ? o.m_content->clone() : nullptr)
     , m_counterDirectives(o.m_counterDirectives ? clone(*o.m_counterDirectives) : nullptr)
-    , m_boxShadow(o.m_boxShadow ? adoptPtr(new ShadowData(*o.m_boxShadow)) : nullptr)
+    , m_boxShadow(cloneShadow(o.m_boxShadow))
     , m_boxReflect(o.m_boxReflect)
     , m_animations(o.m_animations ? adoptPtr(new CSSAnimationDataList(*o.m_animations)) : nullptr)
     , m_transitions(o.m_transitions ? adoptPtr(new CSSAnimationDataList(*o.m_transitions)) : nullptr)

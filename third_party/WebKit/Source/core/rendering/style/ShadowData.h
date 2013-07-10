@@ -36,33 +36,22 @@ namespace WebCore {
 enum ShadowStyle { Normal, Inset };
 
 // This class holds information about shadows for the text-shadow and box-shadow properties.
-
 class ShadowData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    ShadowData()
-        : m_blur(0)
-        , m_spread(0)
-        , m_style(Normal)
+    static PassOwnPtr<ShadowData> create() { return adoptPtr(new ShadowData); }
+    static PassOwnPtr<ShadowData> create(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
     {
+        return adoptPtr(new ShadowData(location, blur, spread, style, color));
+    }
+    // This clones the whole ShadowData linked list.
+    PassOwnPtr<ShadowData> clone() const
+    {
+        return adoptPtr(new ShadowData(*this));
     }
 
-    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
-        : m_location(location)
-        , m_blur(blur)
-        , m_spread(spread)
-        , m_color(color)
-        , m_style(style)
-    {
-    }
-
-    ShadowData(const ShadowData& o);
-
-    bool operator==(const ShadowData& o) const;
-    bool operator!=(const ShadowData& o) const
-    {
-        return !(*this == o);
-    }
+    bool operator==(const ShadowData&) const;
+    bool operator!=(const ShadowData& o) const { return !(*this == o); }
     
     int x() const { return m_location.x(); }
     int y() const { return m_location.y(); }
@@ -79,6 +68,24 @@ public:
     void adjustRectForShadow(FloatRect&, int additionalOutlineSize = 0) const;
 
 private:
+    ShadowData()
+        : m_blur(0)
+        , m_spread(0)
+        , m_style(Normal)
+    {
+    }
+
+    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
+        : m_location(location)
+        , m_blur(blur)
+        , m_spread(spread)
+        , m_color(color)
+        , m_style(style)
+    {
+    }
+
+    ShadowData(const ShadowData&);
+
     IntPoint m_location;
     int m_blur;
     int m_spread;
@@ -86,6 +93,17 @@ private:
     ShadowStyle m_style;
     OwnPtr<ShadowData> m_next;
 };
+
+// Helper method to handle nullptr, otherwise all callers need an ugly ternary.
+inline PassOwnPtr<ShadowData> cloneShadow(const ShadowData* shadow)
+{
+    return shadow ? shadow->clone() : nullptr;
+}
+
+inline PassOwnPtr<ShadowData> cloneShadow(const OwnPtr<ShadowData>& shadow)
+{
+    return cloneShadow(shadow.get());
+}
 
 } // namespace WebCore
 
