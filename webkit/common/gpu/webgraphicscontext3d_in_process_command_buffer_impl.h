@@ -563,7 +563,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   bool initialize_failed_;
 
   // The context we use for OpenGL rendering.
-  ::gpu::GLInProcessContext* context_;
+  scoped_ptr< ::gpu::GLInProcessContext> context_;
   // The GLES2Implementation we use for OpenGL rendering.
   ::gpu::gles2::GLES2Implementation* gl_;
 
