@@ -70,6 +70,8 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-chrome/browser/ui/views",
+  "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",
+  "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
 
   # Other libraries.
   "+chrome/third_party/mozilla_security_manager",

@@ -80,7 +80,6 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -201,6 +200,26 @@
 
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#endif
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
+#endif
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
+#endif
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/aura/chrome_browser_main_extra_parts_aura.h"
+#endif
+
+#if defined(USE_X11)
+#include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
 #endif
 
 using base::FileDescriptor;
@@ -574,19 +593,23 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.
 #if defined(TOOLKIT_GTK)
-  chrome::AddGtkToolkitExtraParts(main_parts);
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsGtk());
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  chrome::AddViewsToolkitExtraParts(main_parts);
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 #endif
 
 #if defined(USE_ASH)
-  chrome::AddAshToolkitExtraParts(main_parts);
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
 #endif
 
 #if defined(USE_AURA)
-  chrome::AddAuraToolkitExtraParts(main_parts);
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
+#endif
+
+#if defined(USE_X11)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsX11());
 #endif
 
   chrome::AddMetricsExtraParts(main_parts);

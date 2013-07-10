@@ -28,6 +28,10 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/storage_monitor/storage_monitor_win.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_constants.h"
@@ -87,19 +91,6 @@ class TranslationDelegate : public installer::TranslationDelegate {
 };
 
 }  // namespace
-
-void RecordBreakpadStatusUMA(MetricsService* metrics) {
-  metrics->RecordBreakpadHasDebugger(TRUE == ::IsDebuggerPresent());
-}
-
-void WarnAboutMinimumSystemRequirements() {
-  if (base::win::GetVersion() < base::win::VERSION_XP) {
-    chrome::ShowMessageBox(NULL,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP),
-        chrome::MESSAGE_BOX_TYPE_WARNING);
-  }
-}
 
 void ShowCloseBrowserFirstMessageBox() {
   int message_id = IDS_UNINSTALL_CLOSE_APP;
@@ -201,6 +192,40 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }
+}
+
+int ChromeBrowserMainPartsWin::PreCreateThreads() {
+  // TODO(viettrungluu): why don't we run this earlier?
+  if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&
+      base::win::GetVersion() < base::win::VERSION_XP) {
+    chrome::ShowMessageBox(NULL,
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP),
+        chrome::MESSAGE_BOX_TYPE_WARNING);
+  }
+
+  return ChromeBrowserMainParts::PreCreateThreads();
+}
+
+void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
+  // Log the search engine chosen on first run. Do this at shutdown, after any
+  // changes are made from the first run bubble link, etc.
+  if (do_first_run_tasks() && !profile()->IsOffTheRecord()) {
+    TemplateURLService* url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+    const TemplateURL* default_search_engine =
+        url_service->GetDefaultSearchProvider();
+    // The default engine can be NULL if the administrator has disabled
+    // default search.
+    SearchEngineType search_engine_type =
+        TemplateURLPrepopulateData::GetEngineType(default_search_engine ?
+            default_search_engine->url() : std::string());
+    // Record the search engine chosen.
+    UMA_HISTOGRAM_ENUMERATION("Chrome.SearchSelectExempt", search_engine_type,
+                              SEARCH_ENGINE_MAX);
+  }
+
+  ChromeBrowserMainParts::PostMainMessageLoopRun();
 }
 
 void ChromeBrowserMainPartsWin::PreProfileInit() {

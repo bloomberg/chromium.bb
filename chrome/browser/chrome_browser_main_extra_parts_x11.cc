@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
 
 #include "base/bind.h"
 #include "base/debug/debugger.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
-
-#if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linux.h"
-#endif
 
 using content::BrowserThread;
 
@@ -77,36 +72,29 @@ int X11EmptyIOErrorHandler(Display* d) {
 
 }  // namespace
 
-void RecordBreakpadStatusUMA(MetricsService* metrics) {
-#if defined(USE_LINUX_BREAKPAD)
-  metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
-#else
-  metrics->RecordBreakpadRegistration(false);
-#endif
-  metrics->RecordBreakpadHasDebugger(base::debug::BeingDebugged());
+ChromeBrowserMainExtraPartsX11::ChromeBrowserMainExtraPartsX11() {
 }
 
-void WarnAboutMinimumSystemRequirements() {
-  // Nothing to warn about on X11 right now.
+ChromeBrowserMainExtraPartsX11::~ChromeBrowserMainExtraPartsX11() {
 }
 
-// From browser_main_win.h, stubs until we figure out the right thing...
-
-int DoUninstallTasks(bool chrome_still_running) {
-  return content::RESULT_CODE_NORMAL_EXIT;
-}
-
-void SetBrowserX11ErrorHandlersPreEarlyInitialization() {
-  // Use default error handlers during startup.
+void ChromeBrowserMainExtraPartsX11::PreEarlyInitialization() {
+  // Installs the X11 error handlers for the browser process used during
+  // startup. They simply print error messages and exit because
+  // we can't shutdown properly while creating and initializing services.
   ui::SetX11ErrorHandlers(NULL, NULL);
 }
 
-void SetBrowserX11ErrorHandlersPostMainMessageLoopStart() {
-  // Set up error handlers to make sure profile gets written if X server
-  // goes away.
+void ChromeBrowserMainExtraPartsX11::PostMainMessageLoopStart() {
+  // Installs the X11 error handlers for the browser process after the
+  // main message loop has started. This will allow us to exit cleanly
+  // if X exits before us.
   ui::SetX11ErrorHandlers(BrowserX11ErrorHandler, BrowserX11IOErrorHandler);
 }
 
-void UnsetBrowserX11ErrorHandlers() {
+void ChromeBrowserMainExtraPartsX11::PostMainMessageLoopRun() {
+  // Unset the X11 error handlers. The X11 error handlers log the errors using a
+  // |PostTask()| on the message-loop. But since the message-loop is in the
+  // process of terminating, this can cause errors.
   ui::SetX11ErrorHandlers(X11EmptyErrorHandler, X11EmptyIOErrorHandler);
 }

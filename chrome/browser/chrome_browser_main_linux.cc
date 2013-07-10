@@ -16,6 +16,8 @@
 #include "base/linux_util.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/breakpad_linux.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
@@ -131,6 +133,17 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 #endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
+}
+
+void ChromeBrowserMainPartsLinux::PostProfileInit() {
+  ChromeBrowserMainPartsPosix::PostProfileInit();
+
+#if defined(USE_LINUX_BREAKPAD)
+  g_browser_process->metrics_service()->RecordBreakpadRegistration(
+      IsCrashReporterEnabled());
+#else
+  g_browser_process->metrics_service()->RecordBreakpadRegistration(false);
+#endif
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {

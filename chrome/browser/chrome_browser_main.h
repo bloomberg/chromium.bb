@@ -101,6 +101,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   }
 
   Profile* profile() { return profile_; }
+  bool do_first_run_tasks() const { return do_first_run_tasks_; }
 
   const PrefService* local_state() const { return local_state_; }
 
@@ -118,6 +119,15 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Returns true if the user opted in to sending metric reports.
   bool IsMetricsReportingEnabled();
+
+  // Record time from process startup to present time in an UMA histogram.
+  // |is_first_run| - is the current launch part of a first run.
+  void RecordBrowserStartupTime(bool is_first_run);
+
+  // Records a time value to an UMA histogram in the context of the
+  // PreReadExperiment field-trial. This also reports to the appropriate
+  // sub-histogram (_PreRead(Enabled|Disabled)).
+  void RecordPreReadExperimentTime(const char* name, base::TimeDelta time);
 
   // Methods for Main Message Loop -------------------------------------------
 
@@ -174,7 +184,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<ChromeProcessSingleton> process_singleton_;
 #endif
   scoped_ptr<first_run::MasterPrefs> master_prefs_;
-  bool record_search_engine_;
   TranslateManager* translate_manager_;
   Profile* profile_;
   bool run_message_loop_;
@@ -203,24 +212,5 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };
-
-// Records the conditions that can prevent Breakpad from generating and
-// sending crash reports.  The presence of a Breakpad handler (after
-// attempting to initialize crash reporting) and the presence of a debugger
-// are registered with the UMA metrics service.
-void RecordBreakpadStatusUMA(MetricsService* metrics);
-
-// Displays a warning message if some minimum level of OS support is not
-// present on the current platform.
-void WarnAboutMinimumSystemRequirements();
-
-// Record time from process startup to present time in an UMA histogram.
-// |is_first_run| - is the current launch part of a first run.
-void RecordBrowserStartupTime(bool is_first_run);
-
-// Records a time value to an UMA histogram in the context of the
-// PreReadExperiment field-trial. This also reports to the appropriate
-// sub-histogram (_PreRead(Enabled|Disabled)).
-void RecordPreReadExperimentTime(const char* name, base::TimeDelta time);
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_H_

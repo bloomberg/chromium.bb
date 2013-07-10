@@ -8,7 +8,6 @@
 #include <sys/sysctl.h>
 
 #include "base/command_line.h"
-#include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
@@ -17,6 +16,7 @@
 #include "base/path_service.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/browser_process.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/browser/mac/keychain_reauthorize.h"
@@ -150,21 +150,6 @@ void RecordCatSixtyFour() {
 
 }  // namespace
 
-void RecordBreakpadStatusUMA(MetricsService* metrics) {
-  metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
-  metrics->RecordBreakpadHasDebugger(base::debug::BeingDebugged());
-}
-
-void WarnAboutMinimumSystemRequirements() {
-  // Nothing to check for on Mac right now.
-}
-
-// From browser_main_win.h, stubs until we figure out the right thing...
-
-int DoUninstallTasks(bool chrome_still_running) {
-  return content::RESULT_CODE_NORMAL_EXIT;
-}
-
 // ChromeBrowserMainPartsMac ---------------------------------------------------
 
 ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
@@ -284,6 +269,12 @@ void ChromeBrowserMainPartsMac::PreProfileInit() {
   storage_monitor_.reset(new chrome::StorageMonitorMac());
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
+}
+
+void ChromeBrowserMainPartsMac::PostProfileInit() {
+  ChromeBrowserMainPartsPosix::PostProfileInit();
+  g_browser_process->metrics_service()->RecordBreakpadRegistration(
+      IsCrashReporterEnabled());
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {

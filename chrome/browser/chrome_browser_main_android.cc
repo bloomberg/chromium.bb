@@ -87,11 +87,3 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
 void ChromeBrowserMainPartsAndroid::ShowMissingLocaleMessageBox() {
   NOTREACHED();
 }
-
-void RecordBreakpadStatusUMA(MetricsService* metrics) {
-  // TODO: crbug.com/139023
-  NOTIMPLEMENTED();
-}
-
-void WarnAboutMinimumSystemRequirements() {
-}

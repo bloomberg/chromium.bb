@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -19,11 +18,3 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 }
-
-namespace chrome {
-
-void AddViewsToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
-}
-
-}  // namespace chrome

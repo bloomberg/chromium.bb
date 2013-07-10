@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/aura/chrome_browser_main_extra_parts_aura.h"
 
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/env.h"
@@ -73,11 +72,3 @@ void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
   // aura::Env instance is deleted in BrowserProcessImpl::StartTearDown
   // after the metrics service is deleted.
 }
-
-namespace chrome {
-
-void AddAuraToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
-}
-
-}  // namespace chrome

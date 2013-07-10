@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -79,11 +78,3 @@ void ChromeBrowserMainExtraPartsGtk::ShowMessageBox(const char* message) {
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 }
-
-namespace chrome {
-
-void AddGtkToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsGtk());
-}
-
-}  // namespace chrome

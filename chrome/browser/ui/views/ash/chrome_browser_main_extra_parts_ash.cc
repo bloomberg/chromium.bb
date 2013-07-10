@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
@@ -100,11 +99,3 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   chrome::CloseAsh();
 }
-
-namespace chrome {
-
-void AddAshToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
-}
-
-}  // namespace chrome
