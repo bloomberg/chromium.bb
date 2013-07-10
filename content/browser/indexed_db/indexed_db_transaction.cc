@@ -4,7 +4,9 @@
 
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
@@ -76,6 +78,7 @@ IndexedDBTransaction::IndexedDBTransaction(
       callbacks_(callbacks),
       database_(database),
       transaction_(database->BackingStore().get()),
+      should_process_queue_(false),
       pending_preemptive_events_(0) {
   database_->transaction_coordinator().DidCreateTransaction(this);
 }
@@ -103,13 +106,14 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
   if (abort_task)
     abort_task_stack_.push(abort_task);
 
-  if (state_ == UNUSED)
+  if (state_ == UNUSED) {
     Start();
-  else if (state_ == RUNNING && !task_timer_.IsRunning())
-    task_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromSeconds(0),
-                      this,
-                      &IndexedDBTransaction::TaskTimerFired);
+  } else if (state_ == RUNNING && !should_process_queue_) {
+    should_process_queue_ = true;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
+  }
 }
 
 void IndexedDBTransaction::Abort() {
@@ -130,7 +134,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   scoped_refptr<IndexedDBTransaction> protect(this);
 
   state_ = FINISHED;
-  task_timer_.Stop();
+  should_process_queue_ = false;
 
   if (was_running)
     transaction_.Rollback();
@@ -184,15 +188,14 @@ void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursor* cursor) {
 }
 
 void IndexedDBTransaction::Run() {
-  // TransactionCoordinator has started this transaction. Schedule a timer
-  // to process the first task.
+  // TransactionCoordinator has started this transaction.
   DCHECK(state_ == START_PENDING || state_ == RUNNING);
-  DCHECK(!task_timer_.IsRunning());
+  DCHECK(!should_process_queue_);
 
-  task_timer_.Start(FROM_HERE,
-                    base::TimeDelta::FromSeconds(0),
-                    this,
-                    &IndexedDBTransaction::TaskTimerFired);
+  should_process_queue_ = true;
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
 }
 
 void IndexedDBTransaction::Start() {
@@ -261,9 +264,15 @@ void IndexedDBTransaction::Commit() {
   database_ = NULL;
 }
 
-void IndexedDBTransaction::TaskTimerFired() {
-  IDB_TRACE("IndexedDBTransaction::TaskTimerFired");
+void IndexedDBTransaction::ProcessTaskQueue() {
+  IDB_TRACE("IndexedDBTransaction::ProcessTaskQueue");
+
+  // May have been aborted.
+  if (!should_process_queue_)
+    return;
+
   DCHECK(!IsTaskQueueEmpty());
+  should_process_queue_ = false;
 
   if (state_ == START_PENDING) {
     transaction_.Begin();
