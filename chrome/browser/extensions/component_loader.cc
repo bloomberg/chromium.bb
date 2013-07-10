@@ -69,7 +69,6 @@ std::string LookupWebstoreName() {
   const char kGetApps[] = "GetApps";
   const char kAddApps[] = "AddApps";
   const char kMoreApps[] = "MoreApps";
-  const char kAppStore[] = "AppStore";
 
   typedef std::map<std::string, int> NameMap;
   CR_DEFINE_STATIC_LOCAL(NameMap, names, ());
@@ -79,7 +78,6 @@ std::string LookupWebstoreName() {
     names.insert(std::make_pair(kGetApps, IDS_WEBSTORE_NAME_GET_APPS));
     names.insert(std::make_pair(kAddApps, IDS_WEBSTORE_NAME_ADD_APPS));
     names.insert(std::make_pair(kMoreApps, IDS_WEBSTORE_NAME_MORE_APPS));
-    names.insert(std::make_pair(kAppStore, IDS_WEBSTORE_NAME_APP_STORE));
   }
   std::string field_trial_name =
       base::FieldTrialList::FindFullName(kWebStoreNameFieldTrialName);

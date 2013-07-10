@@ -15595,9 +15595,6 @@ Do you accept?
     <message name="IDS_WEBSTORE_NAME_MORE_APPS" desc="Name for the WebStore app in the app launcher.">
       More Apps
     </message>
-    <message name="IDS_WEBSTORE_NAME_APP_STORE" desc="Name for the WebStore app in the app launcher.">
-      App Store
-    </message>
 
     </messages>
 
