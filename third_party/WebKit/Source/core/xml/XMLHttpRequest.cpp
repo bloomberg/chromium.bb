@@ -574,11 +574,7 @@ void XMLHttpRequest::send(Document* document, ExceptionCode& ec)
         String body = createMarkup(document);
 
         // FIXME: This should use value of document.inputEncoding to determine the encoding to use.
-        WTF::TextEncoding encoding = UTF8Encoding();
-        if (body.is8Bit())
-            m_requestEntityBody = FormData::create(body.characters8(), body.length());
-        else
-            m_requestEntityBody = FormData::create(encoding.encode(body, WTF::EntitiesForUnencodables));
+        m_requestEntityBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
         if (m_upload)
             m_requestEntityBody->setAlwaysStream(true);
     }
@@ -600,10 +596,7 @@ void XMLHttpRequest::send(const String& body, ExceptionCode& ec)
             m_requestHeaders.set("Content-Type", contentType);
         }
 
-        if (body.is8Bit())
-            m_requestEntityBody = FormData::create(body.characters8(), body.length());
-        else
-            m_requestEntityBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
+        m_requestEntityBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
         if (m_upload)
             m_requestEntityBody->setAlwaysStream(true);
     }
