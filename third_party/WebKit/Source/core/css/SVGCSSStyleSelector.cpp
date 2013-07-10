@@ -104,7 +104,10 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
     if (value->isPrimitiveValue())
         primitiveValue = toCSSPrimitiveValue(value);
 
-    const StyleResolverState& state = m_state;
+    // FIXME: This should be a const StyleResolverState, but
+    // unfortunately resolveColorFromPrimitiveValue
+    // has side-effects and is thus not const.
+    StyleResolverState& state = m_state;
     SVGRenderStyle* svgstyle = state.style()->accessSVGStyle();
 
     bool isInherit = state.parentNode() && value->isInheritedValue();
@@ -226,16 +229,16 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         {
             if (isInherit) {
                 const SVGRenderStyle* svgParentStyle = state.parentStyle()->svgStyle();
-                svgstyle->setFillPaint(svgParentStyle->fillPaintType(), svgParentStyle->fillPaintColor(), svgParentStyle->fillPaintUri(), applyPropertyToRegularStyle(), applyPropertyToVisitedLinkStyle());
+                svgstyle->setFillPaint(svgParentStyle->fillPaintType(), svgParentStyle->fillPaintColor(), svgParentStyle->fillPaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
                 return;
             }
             if (isInitial) {
-                svgstyle->setFillPaint(SVGRenderStyle::initialFillPaintType(), SVGRenderStyle::initialFillPaintColor(), SVGRenderStyle::initialFillPaintUri(), applyPropertyToRegularStyle(), applyPropertyToVisitedLinkStyle());
+                svgstyle->setFillPaint(SVGRenderStyle::initialFillPaintType(), SVGRenderStyle::initialFillPaintColor(), SVGRenderStyle::initialFillPaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
                 return;
             }
             if (value->isSVGPaint()) {
                 SVGPaint* svgPaint = static_cast<SVGPaint*>(value);
-                svgstyle->setFillPaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), applyPropertyToRegularStyle(), applyPropertyToVisitedLinkStyle());
+                svgstyle->setFillPaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
             }
             break;
         }
@@ -243,16 +246,16 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         {
             if (isInherit) {
                 const SVGRenderStyle* svgParentStyle = state.parentStyle()->svgStyle();
-                svgstyle->setStrokePaint(svgParentStyle->strokePaintType(), svgParentStyle->strokePaintColor(), svgParentStyle->strokePaintUri(), applyPropertyToRegularStyle(), applyPropertyToVisitedLinkStyle());
+                svgstyle->setStrokePaint(svgParentStyle->strokePaintType(), svgParentStyle->strokePaintColor(), svgParentStyle->strokePaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
                 return;
             }
             if (isInitial) {
-                svgstyle->setStrokePaint(SVGRenderStyle::initialStrokePaintType(), SVGRenderStyle::initialStrokePaintColor(), SVGRenderStyle::initialStrokePaintUri(), applyPropertyToRegularStyle(), applyPropertyToVisitedLinkStyle());
+                svgstyle->setStrokePaint(SVGRenderStyle::initialStrokePaintType(), SVGRenderStyle::initialStrokePaintColor(), SVGRenderStyle::initialStrokePaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
                 return;
             }
             if (value->isSVGPaint()) {
                 SVGPaint* svgPaint = static_cast<SVGPaint*>(value);
-                svgstyle->setStrokePaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), applyPropertyToRegularStyle(), applyPropertyToVisitedLinkStyle());
+                svgstyle->setStrokePaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
             }
             break;
         }
@@ -565,7 +568,7 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
             int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle()) : 0;
             Color color;
             if (item->color)
-                color = resolveColorFromPrimitiveValue(item->color.get());
+                color = state.resolveColorFromPrimitiveValue(item->color.get());
 
             // -webkit-svg-shadow does should not have a spread or style
             ASSERT(!item->spread);

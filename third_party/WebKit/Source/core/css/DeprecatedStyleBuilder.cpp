@@ -178,7 +178,7 @@ public:
 template <StyleImage* (RenderStyle::*getterFunction)() const, void (RenderStyle::*setterFunction)(PassRefPtr<StyleImage>), StyleImage* (*initialFunction)(), CSSPropertyID property>
 class ApplyPropertyStyleImage {
 public:
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value) { (state.style()->*setterFunction)(styleResolver->styleImage(property, value)); }
+    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value) { (state.style()->*setterFunction)(state.styleImage(property, value)); }
     static PropertyHandler createHandler()
     {
         PropertyHandler handler = ApplyPropertyDefaultBase<StyleImage*, getterFunction, PassRefPtr<StyleImage>, setterFunction, StyleImage*, initialFunction>::createHandler();
@@ -332,7 +332,7 @@ public:
         } else if (thicknessEnabled && valueID == CSSValueThick) {
             length = 5;
         } else if (valueID == CSSValueInvalid) {
-            float zoom = (svgZoomEnabled && styleResolver->useSVGZoomRules()) ? 1.0f : state.style()->effectiveZoom();
+            float zoom = (svgZoomEnabled && state.useSVGZoomRules()) ? 1.0f : state.style()->effectiveZoom();
 
             // Any original result that was >= 1 should not be allowed to fall below 1.
             // This keeps border lines from vanishing.
@@ -817,7 +817,7 @@ class ApplyPropertyBorderImageSource {
 public:
     static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
     {
-        (state.style()->*setterFunction)(styleResolver->styleImage(id, value));
+        (state.style()->*setterFunction)(state.styleImage(id, value));
     }
     static PropertyHandler createHandler()
     {
@@ -914,7 +914,7 @@ public:
                     CSSCursorImageValue* image = static_cast<CSSCursorImageValue*>(item);
                     if (image->updateIfSVGCursorIsUsed(state.element())) // Elements with SVG cursors are not allowed to share style.
                         state.style()->setUnique();
-                    state.style()->addCursor(styleResolver->styleImage(CSSPropertyCursor, image), image->hotSpot());
+                    state.style()->addCursor(state.styleImage(CSSPropertyCursor, image), image->hotSpot());
                 } else if (item->isPrimitiveValue()) {
                     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
                     if (primitiveValue->isValueID())
@@ -1481,7 +1481,7 @@ public:
                 setValue(state.style(), ShapeValue::createShapeValue(basicShapeForValue(state, primitiveValue->getShapeValue())));
             }
         } else if (value->isImageValue()) {
-            setValue(state.style(), ShapeValue::createImageValue(styleResolver->styleImage(property, value)));
+            setValue(state.style(), ShapeValue::createImageValue(state.styleImage(property, value)));
         }
     }
     static PropertyHandler createHandler()

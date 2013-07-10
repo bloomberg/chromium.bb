@@ -132,14 +132,14 @@ using namespace HTMLNames;
 
 #define HANDLE_INHERIT(prop, Prop) \
 if (isInherit) { \
-    m_state.style()->set##Prop(m_state.parentStyle()->prop()); \
+    state.style()->set##Prop(state.parentStyle()->prop()); \
     return; \
 }
 
 #define HANDLE_INHERIT_AND_INITIAL(prop, Prop) \
 HANDLE_INHERIT(prop, Prop) \
 if (isInitial) { \
-    m_state.style()->set##Prop(RenderStyle::initial##Prop()); \
+    state.style()->set##Prop(RenderStyle::initial##Prop()); \
     return; \
 }
 
@@ -1153,9 +1153,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(const RenderStyle* eleme
     if (keyframe->properties())
         result.addMatchedProperties(keyframe->properties());
 
-    ASSERT(!m_state.style());
-
     StyleResolverState& state = m_state;
+    ASSERT(!state.style());
 
     // Create the style
     state.setStyle(RenderStyle::clone(elementStyle));
@@ -1183,7 +1182,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(const RenderStyle* eleme
     updateFont();
 
     // Start loading resources referenced by this style.
-    m_styleResourceLoader.loadPendingResources(m_state.style(), m_state.elementStyleResources());
+    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
     // Add all the animating properties to the keyframe.
     if (const StylePropertySet* styleDeclaration = keyframe->properties()) {
@@ -1274,9 +1273,9 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     state.initForStyleResolve(document(), e, parentStyle);
 
-    if (pseudoStyleRequest.allowsInheritance(m_state.parentStyle())) {
+    if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());
-        state.style()->inheritFrom(m_state.parentStyle());
+        state.style()->inheritFrom(state.parentStyle());
     } else {
         state.setStyle(defaultStyleForElement());
         state.setParentStyle(RenderStyle::clone(state.style()));
@@ -2176,7 +2175,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     // Start loading resources referenced by this style.
-    m_styleResourceLoader.loadPendingResources(m_state.style(), m_state.elementStyleResources());
+    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
     ASSERT(!state.fontDirty());
 
@@ -2200,11 +2199,6 @@ void StyleResolver::applyPropertyToCurrentStyle(CSSPropertyID id, CSSValue* valu
 {
     if (value)
         applyProperty(id, value);
-}
-
-bool StyleResolver::useSVGZoomRules()
-{
-    return m_state.useSVGZoomRules();
 }
 
 static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const StyleResolverState& state, GridLength& workingLength)
@@ -2432,16 +2426,16 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     const PropertyHandler& handler = m_styleBuilder.propertyHandler(id);
     if (handler.isValid()) {
         if (isInherit)
-            handler.applyInheritValue(id, this, m_state);
+            handler.applyInheritValue(id, this, state);
         else if (isInitial)
-            handler.applyInitialValue(id, this, m_state);
+            handler.applyInitialValue(id, this, state);
         else
-            handler.applyValue(id, this, m_state, value);
+            handler.applyValue(id, this, state, value);
         return;
     }
 
     // Use the new StyleBuilder.
-    if (StyleBuilder::applyProperty(id, this, m_state, value, isInitial, isInherit))
+    if (StyleBuilder::applyProperty(id, this, state, value, isInitial, isInherit))
         return;
 
     CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
@@ -2965,13 +2959,13 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     }
     case CSSPropertyGridDefinitionColumns: {
         if (isInherit) {
-            m_state.style()->setGridDefinitionColumns(m_state.parentStyle()->gridDefinitionColumns());
-            m_state.style()->setNamedGridColumnLines(m_state.parentStyle()->namedGridColumnLines());
+            state.style()->setGridDefinitionColumns(state.parentStyle()->gridDefinitionColumns());
+            state.style()->setNamedGridColumnLines(state.parentStyle()->namedGridColumnLines());
             return;
         }
         if (isInitial) {
-            m_state.style()->setGridDefinitionColumns(RenderStyle::initialGridDefinitionColumns());
-            m_state.style()->setNamedGridColumnLines(RenderStyle::initialNamedGridColumnLines());
+            state.style()->setGridDefinitionColumns(RenderStyle::initialGridDefinitionColumns());
+            state.style()->setNamedGridColumnLines(RenderStyle::initialNamedGridColumnLines());
             return;
         }
 
@@ -2985,13 +2979,13 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     }
     case CSSPropertyGridDefinitionRows: {
         if (isInherit) {
-            m_state.style()->setGridDefinitionRows(m_state.parentStyle()->gridDefinitionRows());
-            m_state.style()->setNamedGridRowLines(m_state.parentStyle()->namedGridRowLines());
+            state.style()->setGridDefinitionRows(state.parentStyle()->gridDefinitionRows());
+            state.style()->setNamedGridRowLines(state.parentStyle()->namedGridRowLines());
             return;
         }
         if (isInitial) {
-            m_state.style()->setGridDefinitionRows(RenderStyle::initialGridDefinitionRows());
-            m_state.style()->setNamedGridRowLines(RenderStyle::initialNamedGridRowLines());
+            state.style()->setGridDefinitionRows(RenderStyle::initialGridDefinitionRows());
+            state.style()->setNamedGridRowLines(RenderStyle::initialNamedGridRowLines());
             return;
         }
 
@@ -3295,11 +3289,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         applySVGProperty(id, value);
         return;
     }
-}
-
-PassRefPtr<StyleImage> StyleResolver::styleImage(CSSPropertyID property, CSSValue* value)
-{
-    return m_state.elementStyleResources().styleImage(m_state, property, value);
 }
 
 void StyleResolver::checkForZoomChange(RenderStyle* style, RenderStyle* parentStyle)

@@ -113,6 +113,14 @@ public:
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
     CSSToStyleMap& styleMap() { return m_styleMap; }
 
+    // FIXME: Once styleImage can be made to not take a StyleResolverState
+    // this convenience function should be removed. As-is, without this, call
+    // sites are extremely verbose.
+    PassRefPtr<StyleImage> styleImage(CSSPropertyID propertyId, CSSValue* value)
+    {
+        return m_elementStyleResources.styleImage(*this, propertyId, value);
+    }
+
     // FIXME: These exist as a primative way to track mutations to font-related properties
     // on a RenderStyle. As designed, these are very error-prone, as some callers
     // set these directly on the RenderStyle w/o telling us. Presumably we'll

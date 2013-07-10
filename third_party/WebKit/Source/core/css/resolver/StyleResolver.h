@@ -159,11 +159,6 @@ public:
 
     static PassRefPtr<RenderStyle> styleForDocument(Document*, CSSFontSelector* = 0);
 
-    Color resolveColorFromPrimitiveValue(CSSPrimitiveValue* value, bool forVisitedLink = false)
-    {
-        return m_state.resolveColorFromPrimitiveValue(value, forVisitedLink);
-    }
-
     Document* document() { return m_document; }
 
     // FIXME: It could be better to call m_ruleSets.appendAuthorStyleSheets() directly after we factor StyleRsolver further.
@@ -218,8 +213,6 @@ public:
     void setFontSize(FontDescription&, float size);
 
 public:
-    bool useSVGZoomRules();
-
     bool hasSelectorForId(const AtomicString&) const;
     bool hasSelectorForClass(const AtomicString&) const;
     bool hasSelectorForAttribute(const AtomicString&) const;
@@ -337,12 +330,6 @@ private:
 
 public:
     static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
-
-    // FIXME: Remove this. It's just a StyleResolveState plumb-through.
-    PassRefPtr<StyleImage> styleImage(CSSPropertyID, CSSValue*);
-
-    bool applyPropertyToRegularStyle() const { return m_state.applyPropertyToRegularStyle(); }
-    bool applyPropertyToVisitedLinkStyle() const { return m_state.applyPropertyToVisitedLinkStyle(); }
 
     static Length convertToIntLength(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, double multiplier = 1);
     static Length convertToFloatLength(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, double multiplier = 1);

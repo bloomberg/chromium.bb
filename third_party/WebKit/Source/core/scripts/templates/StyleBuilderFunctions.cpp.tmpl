@@ -199,9 +199,9 @@ namespace WebCore {
 {%- endif %}
 
     if (state.applyPropertyToRegularStyle())
-        {{ set_value(property) }}(styleResolver->resolveColorFromPrimitiveValue(primitiveValue));
+        {{ set_value(property) }}(state.resolveColorFromPrimitiveValue(primitiveValue));
     if (state.applyPropertyToVisitedLinkStyle())
-        state.style()->{{visited_link_setter}}(styleResolver->resolveColorFromPrimitiveValue(primitiveValue, /* forVisitedLink */ true));
+        state.style()->{{visited_link_setter}}(state.resolveColorFromPrimitiveValue(primitiveValue, /* forVisitedLink */ true));
 }
 {%- endcall %}
 {%- endmacro %}
