@@ -684,10 +684,12 @@ function initialize() {
     // TODO(zturner): Get the value of isGeolocationEnabled from the settings
     // api and additionally make sure it is true.
     if (!items.toastState) {
-      chrome.identity.getAuthToken({interactive: false}, function(token) {
-        if (!chrome.runtime.lastError && token)
-          showWelcomeToast();
-      });
+      if (NOTIFICATION_CARDS_URL) {
+        chrome.identity.getAuthToken({interactive: false}, function(token) {
+          if (!chrome.runtime.lastError && token)
+            showWelcomeToast();
+        });
+      }
     } else if (items.toastState == ToastOptionResponse.CHOSE_YES) {
       startPollingCards();
     }
