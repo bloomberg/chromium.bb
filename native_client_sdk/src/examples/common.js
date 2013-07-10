@@ -337,13 +337,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loadFunction) {
       var toolchains = body.dataset.tools.split(' ');
       var configs = body.dataset.configs.split(' ');
-      var attr_list = body.dataset.attrs.split(' ');
+
       var attrs = {};
-      for (var key in attr_list) {
-        var attr = attr_list[key].split('=');
-        var key = attr[0];
-        var value = attr[1];
-        attrs[key] = value;
+      if (body.dataset.attrs) {
+        var attr_list = body.dataset.attrs.split(' ');
+        for (var key in attr_list) {
+          var attr = attr_list[key].split('=');
+          var key = attr[0];
+          var value = attr[1];
+          attrs[key] = value;
+        }
       }
 
       var tc = toolchains.indexOf(searchVars.tc) !== -1 ?
