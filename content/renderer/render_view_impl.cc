@@ -805,7 +805,8 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       device_orientation_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
-      media_stream_impl_(NULL),
+      media_stream_client_(NULL),
+      web_user_media_client_(NULL),
       devtools_agent_(NULL),
       accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
@@ -2876,22 +2877,16 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 #if defined(ENABLE_WEBRTC)
-  webkit_media::MediaStreamClient* media_stream_client =
-      GetContentClient()->renderer()->OverrideCreateMediaStreamClient();
-  if (!media_stream_client) {
-    EnsureMediaStreamImpl();
-    media_stream_client = media_stream_impl_;
-  }
-
+  EnsureMediaStreamClient();
 #if !defined(GOOGLE_TV)
-  if (media_stream_client->IsMediaStream(url)) {
+  if (media_stream_client_->IsMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     bool found_neon =
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
     UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
 #endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     return new webkit_media::WebMediaPlayerMS(
-        frame, client, AsWeakPtr(), media_stream_client, new RenderMediaLog());
+        frame, client, AsWeakPtr(), media_stream_client_, new RenderMediaLog());
   }
 #endif  // !defined(GOOGLE_TV)
 #endif  // defined(ENABLE_WEBRTC)
@@ -2927,13 +2922,13 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
               context_provider->Context3d(), gpu_channel_host, routing_id_),
           new RenderMediaLog()));
 #if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
-  if (media_stream_client->IsMediaStream(url)) {
+  if (media_stream_client_->IsMediaStream(url)) {
     RTCVideoDecoderFactoryTv* factory = RenderThreadImpl::current()
         ->GetMediaStreamDependencyFactory()->decoder_factory_tv();
     // |media_stream_client| and |factory| outlives |web_media_player_android|.
     if (!factory->AcquireDemuxer() ||
         !web_media_player_android->InjectMediaStream(
-            media_stream_client,
+            media_stream_client_,
             factory,
             base::Bind(
                 base::IgnoreResult(&RTCVideoDecoderFactoryTv::ReleaseDemuxer),
@@ -4280,7 +4275,7 @@ BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
   return browser_plugin_manager_.get();
 }
 
-void RenderViewImpl::EnsureMediaStreamImpl() {
+void RenderViewImpl::EnsureMediaStreamClient() {
   if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
     return;
 
@@ -4293,11 +4288,13 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 
-  if (!media_stream_impl_) {
-    media_stream_impl_ = new MediaStreamImpl(
+  if (!media_stream_client_) {
+    MediaStreamImpl* media_stream_impl = new MediaStreamImpl(
         this,
         media_stream_dispatcher_,
         RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
+    media_stream_client_ = media_stream_impl;
+    web_user_media_client_ = media_stream_impl;
   }
 #endif
 }
@@ -6518,8 +6515,8 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
 }
 
 WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
-  EnsureMediaStreamImpl();
-  return media_stream_impl_;
+  EnsureMediaStreamClient();
+  return web_user_media_client_;
 }
 
 void RenderViewImpl::draggableRegionsChanged() {
@@ -6786,6 +6783,13 @@ void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,
 
 void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   OnDisableAutoResize(new_size);
+}
+
+void RenderViewImpl::SetMediaStreamClientForTesting(
+  webkit_media::MediaStreamClient* media_stream_client) {
+  DCHECK(!media_stream_client_);
+  DCHECK(!web_user_media_client_);
+  media_stream_client_ = media_stream_client;
 }
 
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(

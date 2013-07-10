@@ -28,7 +28,6 @@ class MockWebClipboardImpl;
 
 namespace content {
 
-class ShellMediaStreamClient;
 class ShellRenderProcessObserver;
 
 class ShellContentRendererClient : public ContentRendererClient {
@@ -53,8 +52,6 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual WebKit::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
-  virtual webkit_media::MediaStreamClient* OverrideCreateMediaStreamClient()
-      OVERRIDE;
   virtual WebKit::WebMIDIAccessor* OverrideCreateMIDIAccessor(
       WebKit::WebMIDIAccessorClient* client) OVERRIDE;
   virtual WebKit::WebClipboard* OverrideWebClipboard() OVERRIDE;
@@ -67,7 +64,6 @@ class ShellContentRendererClient : public ContentRendererClient {
    void WebTestProxyCreated(RenderView* render_view,
                             WebTestRunner::WebTestProxyBase* proxy);
 
-  scoped_ptr<ShellMediaStreamClient> shell_media_stream_client_;
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
   scoped_ptr<MockWebClipboardImpl> clipboard_;
   scoped_ptr<webkit_glue::MockWebHyphenator> hyphenator_;

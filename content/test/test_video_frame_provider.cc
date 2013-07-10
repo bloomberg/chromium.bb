@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/shell_video_frame_provider.h"
+#include "content/test/test_video_frame_provider.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -11,7 +11,7 @@
 
 namespace content {
 
-ShellVideoFrameProvider::ShellVideoFrameProvider(
+TestVideoFrameProvider::TestVideoFrameProvider(
     const gfx::Size& size,
     const base::TimeDelta& frame_duration,
     const base::Closure& error_cb,
@@ -24,39 +24,39 @@ ShellVideoFrameProvider::ShellVideoFrameProvider(
       repaint_cb_(repaint_cb) {
 }
 
-ShellVideoFrameProvider::~ShellVideoFrameProvider() {}
+TestVideoFrameProvider::~TestVideoFrameProvider() {}
 
-void ShellVideoFrameProvider::Start() {
-  DVLOG(1) << "ShellVideoFrameProvider::Start";
+void TestVideoFrameProvider::Start() {
+  DVLOG(1) << "TestVideoFrameProvider::Start";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   state_ = kStarted;
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&ShellVideoFrameProvider::GenerateFrame, this));
+      base::Bind(&TestVideoFrameProvider::GenerateFrame, this));
 }
 
-void ShellVideoFrameProvider::Stop() {
-  DVLOG(1) << "ShellVideoFrameProvider::Stop";
+void TestVideoFrameProvider::Stop() {
+  DVLOG(1) << "TestVideoFrameProvider::Stop";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   state_ = kStopped;
 }
 
-void ShellVideoFrameProvider::Play() {
-  DVLOG(1) << "ShellVideoFrameProvider::Play";
+void TestVideoFrameProvider::Play() {
+  DVLOG(1) << "TestVideoFrameProvider::Play";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ == kPaused)
     state_ = kStarted;
 }
 
-void ShellVideoFrameProvider::Pause() {
-  DVLOG(1) << "ShellVideoFrameProvider::Pause";
+void TestVideoFrameProvider::Pause() {
+  DVLOG(1) << "TestVideoFrameProvider::Pause";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ == kStarted)
     state_ = kPaused;
 }
 
-void ShellVideoFrameProvider::GenerateFrame() {
-  DVLOG(1) << "ShellVideoFrameProvider::GenerateFrame";
+void TestVideoFrameProvider::GenerateFrame() {
+  DVLOG(1) << "TestVideoFrameProvider::GenerateFrame";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ == kStopped)
     return;
@@ -76,7 +76,7 @@ void ShellVideoFrameProvider::GenerateFrame() {
   current_time_ += frame_duration_;
   message_loop_proxy_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ShellVideoFrameProvider::GenerateFrame, this),
+      base::Bind(&TestVideoFrameProvider::GenerateFrame, this),
       frame_duration_);
 }
 

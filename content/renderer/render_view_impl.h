@@ -93,6 +93,10 @@ class PluginInstance;
 
 }  // namespace webkit
 
+namespace webkit_media {
+class MediaStreamClient;
+}
+
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -147,7 +151,6 @@ class InputTagSpeechDispatcher;
 class JavaBridgeDispatcher;
 class LoadProgressTracker;
 class MediaStreamDispatcher;
-class MediaStreamImpl;
 class MouseLockDispatcher;
 class NavigationState;
 class NotificationProvider;
@@ -387,6 +390,11 @@ class CONTENT_EXPORT RenderViewImpl
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
+
+  // Overrides the MediaStreamClient used when creating MediaStream players.
+  // Must be called before any players are created.
+  void SetMediaStreamClientForTesting(
+      webkit_media::MediaStreamClient* media_stream_client);
 
   // IPC::Listener implementation ----------------------------------------------
 
@@ -1097,7 +1105,8 @@ class CONTENT_EXPORT RenderViewImpl
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
 
-  void EnsureMediaStreamImpl();
+  // Initializes |media_stream_client_| if needed.
+  void EnsureMediaStreamClient();
 
   // This callback is triggered when DownloadFavicon completes, either
   // succesfully or with a failure. See DownloadFavicon for more
@@ -1418,8 +1427,9 @@ class CONTENT_EXPORT RenderViewImpl
   // BrowserPluginManager attached to this view; lazily initialized.
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 
-  // MediaStreamImpl attached to this view; lazily initialized.
-  MediaStreamImpl* media_stream_impl_;
+  // MediaStreamClient attached to this view; lazily initialized.
+  webkit_media::MediaStreamClient* media_stream_client_;
+  WebKit::WebUserMediaClient* web_user_media_client_;
 
   DevToolsAgent* devtools_agent_;
 

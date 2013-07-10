@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/shell_media_stream_client.h"
+#include "content/test/test_media_stream_client.h"
 
-#include "content/shell/renderer/shell_video_frame_provider.h"
+#include "content/test/test_video_frame_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -38,23 +38,24 @@ bool IsMockMediaStreamWithVideo(const WebURL& url) {
 
 namespace content {
 
-ShellMediaStreamClient::ShellMediaStreamClient() {}
+TestMediaStreamClient::TestMediaStreamClient(RenderView* render_view)
+    : RenderViewObserver(render_view) {}
 
-ShellMediaStreamClient::~ShellMediaStreamClient() {}
+TestMediaStreamClient::~TestMediaStreamClient() {}
 
-bool ShellMediaStreamClient::IsMediaStream(const GURL& url) {
+bool TestMediaStreamClient::IsMediaStream(const GURL& url) {
   return IsMockMediaStreamWithVideo(url);
 }
 
 scoped_refptr<webkit_media::VideoFrameProvider>
-ShellMediaStreamClient::GetVideoFrameProvider(
+TestMediaStreamClient::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
     const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
   if (!IsMockMediaStreamWithVideo(url))
     return NULL;
 
-  return new ShellVideoFrameProvider(
+  return new TestVideoFrameProvider(
       gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
       base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs),
       error_cb,
@@ -62,7 +63,7 @@ ShellMediaStreamClient::GetVideoFrameProvider(
 }
 
 scoped_refptr<webkit_media::MediaStreamAudioRenderer>
-ShellMediaStreamClient::GetAudioRenderer(const GURL& url) {
+TestMediaStreamClient::GetAudioRenderer(const GURL& url) {
   return NULL;
 }
 

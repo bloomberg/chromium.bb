@@ -53,11 +53,6 @@ class PpapiInterfaceFactoryManager;
 struct WebPluginInfo;
 }
 
-namespace webkit_media {
-class MediaLoadDelegate;
-class MediaStreamClient;
-}
-
 namespace content {
 
 class RenderView;
@@ -140,10 +135,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual WebKit::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client);
-
-  // Allows the embedder to override creating a MediaStreamClient. If it returns
-  // NULL the content layer will create the media stream client.
-  virtual webkit_media::MediaStreamClient* OverrideCreateMediaStreamClient();
 
   // Allows the embedder to override creating a WebMIDIAccessor.  If it
   // returns NULL the content layer will create the MIDI accessor.

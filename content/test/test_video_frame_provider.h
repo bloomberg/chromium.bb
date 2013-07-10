@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_SHELL_VIDEO_FRAME_PROVIDER_H_
-#define CONTENT_RENDERER_MEDIA_SHELL_VIDEO_FRAME_PROVIDER_H_
+#ifndef CONTENT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
+#define CONTENT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
 
 #include "base/time/time.h"
 #include "ui/gfx/size.h"
@@ -20,9 +20,9 @@ namespace content {
 // Since non-black pixel values are required in the layout test, e.g.,
 // media/video-capture-canvas.html, this class should generate frame with
 // only non-black pixels.
-class ShellVideoFrameProvider : public webkit_media::VideoFrameProvider {
+class TestVideoFrameProvider : public webkit_media::VideoFrameProvider {
  public:
-  ShellVideoFrameProvider(
+  TestVideoFrameProvider(
       const gfx::Size& size,
       const base::TimeDelta& frame_duration,
       const base::Closure& error_cb,
@@ -35,7 +35,7 @@ class ShellVideoFrameProvider : public webkit_media::VideoFrameProvider {
   virtual void Pause() OVERRIDE;
 
  protected:
-  virtual ~ShellVideoFrameProvider();
+  virtual ~TestVideoFrameProvider();
 
  private:
   enum State {
@@ -55,9 +55,9 @@ class ShellVideoFrameProvider : public webkit_media::VideoFrameProvider {
   base::Closure error_cb_;
   RepaintCB repaint_cb_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellVideoFrameProvider);
+  DISALLOW_COPY_AND_ASSIGN(TestVideoFrameProvider);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_SHELL_VIDEO_FRAME_PROVIDER_H_
+#endif  // CONTENT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
