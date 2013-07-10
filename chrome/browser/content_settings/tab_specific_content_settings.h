@@ -162,6 +162,9 @@ class TabSpecificContentSettings
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 
+  // Changes the |content_blocked_| entry for downloads.
+  void SetDownloadsBlocked(bool blocked);
+
   // Updates Geolocation settings on navigation.
   void GeolocationDidNavigate(
       const content::LoadCommittedDetails& details);

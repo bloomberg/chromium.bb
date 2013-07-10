@@ -100,6 +100,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
   {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
+  {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
 };
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
@@ -380,6 +381,15 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "ppapi_broker_allow", IDS_PPAPI_BROKER_ALLOW_RADIO },
     { "ppapi_broker_ask", IDS_PPAPI_BROKER_ASK_RADIO },
     { "ppapi_broker_block", IDS_PPAPI_BROKER_BLOCK_RADIO },
+    // Multiple automatic downloads
+    { "multiple-automatic-downloads_header",
+      IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL },
+    { "multiple-automatic-downloads_allow",
+      IDS_AUTOMATIC_DOWNLOADS_ALLOW_RADIO },
+    { "multiple-automatic-downloads_ask",
+      IDS_AUTOMATIC_DOWNLOADS_ASK_RADIO },
+    { "multiple-automatic-downloads_block",
+      IDS_AUTOMATIC_DOWNLOADS_BLOCK_RADIO },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -410,6 +420,8 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_MEDIA_STREAM_TAB_LABEL);
   RegisterTitle(localized_strings, "ppapi-broker",
                 IDS_PPAPI_BROKER_TAB_LABEL);
+  RegisterTitle(localized_strings, "multiple-automatic-downloads",
+                IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL);
 
   localized_strings->SetBoolean("newContentSettings",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kContentSettings2));
@@ -705,6 +717,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
@@ -1208,6 +1221,10 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       content::RecordAction(
           UserMetricsAction("Options_DefaultMediaStreamMicSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+      content::RecordAction(UserMetricsAction(
+          "Options_DefaultMultipleAutomaticDownloadsSettingChanged"));
       break;
     default:
       break;

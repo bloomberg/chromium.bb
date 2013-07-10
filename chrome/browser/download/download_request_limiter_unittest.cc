@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -36,6 +37,9 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         &DownloadRequestLimiterTest::FakeCreate, base::Unretained(this));
     DownloadRequestInfoBarDelegate::SetCallbackForTesting(
         &fake_create_callback_);
+    content_settings_ = new HostContentSettingsMap(profile_.GetPrefs(), false);
+    DownloadRequestLimiter::SetContentSettingsForTesting(
+        content_settings_.get());
   }
 
   void FakeCreate(
@@ -55,6 +59,8 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual void TearDown() {
+    content_settings_->ShutdownOnUIThread();
+    content_settings_ = NULL;
     UnsetDelegate();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -129,8 +135,11 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   // Number of times ShouldAllowDownload was invoked.
   int ask_allow_count_;
 
+  scoped_refptr<HostContentSettingsMap> content_settings_;
+
  private:
   DownloadRequestInfoBarDelegate::FakeCreateCallback fake_create_callback_;
+  TestingProfile profile_;
 };
 
 TEST_F(DownloadRequestLimiterTest,
@@ -218,7 +227,6 @@ TEST_F(DownloadRequestLimiterTest,
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
-
 }
 
 TEST_F(DownloadRequestLimiterTest,

@@ -13,10 +13,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
+class HostContentSettingsMap;
 class DownloadRequestInfoBarDelegate;
 
 namespace content {
@@ -115,12 +117,12 @@ class DownloadRequestLimiter
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callback.
     void PromptUserForDownload(
-        content::WebContents* tab,
         const DownloadRequestLimiter::Callback& callback);
 
     // Invoked from DownloadRequestDialogDelegate. Notifies the delegates and
     // changes the status appropriately. Virtual for testing.
     virtual void Cancel();
+    virtual void CancelOnce();
     virtual void Accept();
 
    protected:
@@ -138,9 +140,14 @@ class DownloadRequestLimiter
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) OVERRIDE;
 
+    // Remember to either block or allow automatic downloads from this origin.
+    void SetContentSetting(ContentSetting setting);
+
     // Notifies the callbacks as to whether the download is allowed or not.
     // Updates status_ appropriately.
     void NotifyCallbacks(bool allow);
+
+    content::WebContents* web_contents_;
 
     DownloadRequestLimiter* host_;
 
@@ -168,6 +175,8 @@ class DownloadRequestLimiter
 
     DISALLOW_COPY_AND_ASSIGN(TabDownloadState);
   };
+
+  static void SetContentSettingsForTesting(HostContentSettingsMap* settings);
 
   DownloadRequestLimiter();
 
@@ -234,6 +243,10 @@ class DownloadRequestLimiter
   // it. This has the effect of resetting the status for the tab to
   // ALLOW_ONE_DOWNLOAD.
   void Remove(TabDownloadState* state);
+
+  static HostContentSettingsMap* content_settings_;
+  static HostContentSettingsMap* GetContentSettings(
+      content::WebContents* contents);
 
   // Maps from tab to download state. The download state for a tab only exists
   // if the state is other than ALLOW_ONE_DOWNLOAD. Similarly once the state

@@ -210,8 +210,10 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
-      content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER)
+      content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
+      content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
     return content_blocked_[content_type];
+  }
 
   return false;
 }
@@ -229,12 +231,13 @@ void TabSpecificContentSettings::SetBlockageHasBeenIndicated(
 bool TabSpecificContentSettings::IsContentAllowed(
     ContentSettingsType content_type) const {
   // This method currently only returns meaningful values for the content type
-  // cookies, mediastream, and PPAPI broker.
+  // cookies, mediastream, PPAPI broker, and downloads.
   if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
-      content_type != CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
+      content_type != CONTENT_SETTINGS_TYPE_PPAPI_BROKER &&
+      content_type != CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
     return false;
   }
 
@@ -516,6 +519,17 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   content_blocked_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_allowed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<WebContents>(web_contents()),
+      content::NotificationService::NoDetails());
+}
+
+void TabSpecificContentSettings::SetDownloadsBlocked(bool blocked) {
+  content_blocked_[CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS] = blocked;
+  content_allowed_[CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS] = !blocked;
+  content_blockage_indicated_to_user_[
+    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS] = false;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),

@@ -39,6 +39,7 @@ const char* kTypeNames[] = {
   "media-stream-camera",
   "register-protocol-handler",
   "ppapi-broker",
+  "multiple-automatic-downloads",
 #if defined(OS_WIN)
   "metro-switch-to-desktop",
 #endif

@@ -52,7 +52,9 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
+  bool responded_;
   base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestInfoBarDelegate);

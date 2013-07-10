@@ -385,6 +385,7 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
     case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
       return setting == CONTENT_SETTING_ASK;
     default:
       return false;

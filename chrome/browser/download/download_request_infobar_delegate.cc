@@ -13,8 +13,8 @@ DownloadRequestInfoBarDelegate::FakeCreateCallback*
   DownloadRequestInfoBarDelegate::callback_ = NULL;
 
 DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
-  if (host_.get())
-    host_->Cancel();
+  if (!responded_ && host_)
+    host_->CancelOnce();
 }
 
 // static
@@ -45,11 +45,12 @@ void DownloadRequestInfoBarDelegate::SetCallbackForTesting(
     FakeCreateCallback* callback) {
   DownloadRequestInfoBarDelegate::callback_ = callback;
 }
-
+#
 DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
     InfoBarService* infobar_service,
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
     : ConfirmInfoBarDelegate(infobar_service),
+      responded_(false),
       host_(host) {
 }
 
@@ -68,11 +69,21 @@ string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
 }
 
 bool DownloadRequestInfoBarDelegate::Accept() {
-  if (host_.get()) {
-    // Accept() call will invalidate host_ weak pointer if no further
-    // prompts are required.
+  DCHECK(!responded_);
+  responded_ = true;
+  if (host_) {
+    // This may invalidate |host_|.
     host_->Accept();
   }
+  return !host_;
+}
 
-  return !host_.get();
+bool DownloadRequestInfoBarDelegate::Cancel() {
+  DCHECK(!responded_);
+  responded_ = true;
+  if (host_) {
+    // This may invalidate |host_|.
+    host_->Cancel();
+  }
+  return !host_;
 }

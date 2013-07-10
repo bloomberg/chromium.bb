@@ -42,6 +42,7 @@ const char* kPrefToManageType[] = {
   NULL,  // No policy for default value of media stream camera
   NULL,  // No policy for default value of protocol handlers
   NULL,  // No policy for default value of PPAPI broker
+  NULL,  // No policy for default value of multiple automatic downloads
 #if defined(OS_WIN)
   NULL,  // No policy for default value of "switch to desktop"
 #endif

@@ -219,6 +219,8 @@ MediaMenuParts::~MediaMenuParts() {}
       nibPath = @"ContentProtocolHandlers"; break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       nibPath = @"ContentBlockedMedia"; break;
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+      nibPath = @"ContentBlockedDownloads"; break;
     // These content types have no bubble:
     case CONTENT_SETTINGS_TYPE_DEFAULT:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:

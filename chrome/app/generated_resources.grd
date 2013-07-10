@@ -3192,6 +3192,43 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
 
       <!-- Content blocking strings -->
+      <message name="IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL" desc="Header for multiple automatic downloads page on Content Settings dialog">
+        Automatic Downloads
+      </message>
+      <message name="IDS_AUTOMATIC_DOWNLOADS_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to download multiple files automatically.">
+        Allow all sites to download multiple files automatically
+      </message>
+      <message name="IDS_AUTOMATIC_DOWNLOADS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure multiple automatic downloads per-site.">
+        Ask me when a site tries to download files automatically after the first file (recommended)
+      </message>
+      <message name="IDS_AUTOMATIC_DOWNLOADS_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to download multiple files automatically.">
+        Do not allow any site to download multiple files automatically
+      </message>
+      <message name="IDS_BLOCKED_DOWNLOAD_NO_ACTION" desc="Radio button to keep blocking automatic downloads">
+        Continue blocking automatic downloads of multiple files
+      </message>
+      <message name="IDS_BLOCKED_DOWNLOAD_UNBLOCK" desc="Radio button to unblock automatic downloads">
+        Always allow <ph name="HOST">$1<ex>example.com</ex></ph> to download multiple files
+      </message>
+      <message name="IDS_BLOCKED_DOWNLOADS_LINK" desc="Link to downloads section of content blocking management dialog, displayed in bubble when a page tries to download files automatically.">
+        Manage download settings...
+      </message>
+      <message name="IDS_BLOCKED_DOWNLOAD_TITLE" desc="Title for the page action when an automatic download was blocked">
+        This site attempted to download multiple files automatically.
+      </message>
+      <message name="IDS_BLOCKED_DOWNLOADS_EXPLANATION" desc="Explanatory animated text that appears (and then disappears) in the address line when a download is blocked">
+        Download blocked
+      </message>
+      <message name="IDS_ALLOWED_DOWNLOAD_TITLE" desc="Title for the page action when automatic downloads were allowed">
+        This site downloaded multiple files automatically.
+      </message>
+      <message name="IDS_ALLOWED_DOWNLOAD_NO_ACTION" desc="Radio button to keep allowing automatic downloads">
+        Continue allowing automatic downloads of multiple files
+      </message>
+      <message name="IDS_ALLOWED_DOWNLOAD_BLOCK" desc="Radio button to block automatic downloads">
+        Always block multiple automatic downloads on <ph name="HOST">$1<ex>example.com</ex></ph>
+      </message>
+
       <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to write cookies or other site data.">
         This page was prevented from setting cookies.
       </message>
