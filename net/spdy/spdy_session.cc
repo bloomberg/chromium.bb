@@ -444,6 +444,7 @@ Error SpdySession::InitializeWithSocket(
     SpdySessionPool* spdy_session_pool,
     bool is_secure,
     int certificate_error_code) {
+  DCHECK(!connection_);
   // TODO(akalin): Check connection->is_initialized() instead. This
   // requires re-working CreateFakeSpdySession(), though.
   DCHECK(connection->socket());

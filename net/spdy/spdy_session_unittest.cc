@@ -262,8 +262,7 @@ TEST_P(SpdySessionTest, GoAway) {
   session = NULL;
 
   // Delete the second session.
-  spdy_session_pool_->MakeSessionUnavailable(session2);
-  spdy_session_pool_->RemoveUnavailableSession(session2);
+  session2->CloseSessionOnError(ERR_ABORTED, std::string());
   session2 = NULL;
   EXPECT_EQ(NULL, spdy_stream2.get());
 }
@@ -402,6 +401,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
 
   SpdyHeaderBlock headers;
   spdy_util_.AddUrlToHeaderBlock("http://www.google.com/a.dat", &headers);
+
   session->OnSynStream(2, 1, 0, 0, true, false, headers);
 
   // Verify that there is one unclaimed push stream.
@@ -1411,37 +1411,8 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
   CreateDeterministicNetworkSession();
 
   scoped_refptr<SpdySession> session =
-      CreateFakeSpdySession(spdy_session_pool_, key_);
+      CreateSecureSpdySession(http_session_, key_, BoundNetLog());
 
-  SSLConfig ssl_config;
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair_,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          test_host_port_pair_,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair_.ToString(),
-                                 ssl_params, MEDIUM, CompletionCallback(),
-                                 http_session_->GetSSLSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-
-  EXPECT_EQ(OK,
-            session->InitializeWithSocket(
-                connection.Pass(), spdy_session_pool_, false, OK));
   EXPECT_TRUE(session->VerifyDomainAuthentication("www.example.org"));
   EXPECT_TRUE(session->VerifyDomainAuthentication("mail.example.org"));
   EXPECT_TRUE(session->VerifyDomainAuthentication("mail.example.com"));
@@ -1483,37 +1454,8 @@ TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
   CreateDeterministicNetworkSession();
 
   scoped_refptr<SpdySession> session =
-      CreateFakeSpdySession(spdy_session_pool_, key_);
+      CreateSecureSpdySession(http_session_, key_, BoundNetLog());
 
-  SSLConfig ssl_config;
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair_,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          test_host_port_pair_,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair_.ToString(),
-                                 ssl_params, MEDIUM, CompletionCallback(),
-                                 http_session_->GetSSLSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-
-  EXPECT_EQ(OK,
-            session->InitializeWithSocket(
-                connection.Pass(), spdy_session_pool_, false, OK));
   EXPECT_TRUE(session->VerifyDomainAuthentication("www.example.org"));
   EXPECT_TRUE(session->VerifyDomainAuthentication("mail.example.org"));
   EXPECT_FALSE(session->VerifyDomainAuthentication("mail.example.com"));
@@ -1610,7 +1552,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
                 session, url3, LOWEST, BoundNetLog(), callback3.callback()));
 
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(2u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(2u, session->pending_create_stream_queue_size(LOWEST));
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(url1.spec()));
@@ -1625,7 +1567,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   EXPECT_EQ(NULL, spdy_stream1.get());
   EXPECT_EQ(1u, delegate1.stream_id());
   EXPECT_EQ(2u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(LOWEST));
 
   base::WeakPtr<SpdyStream> stream2 = request2.ReleaseStream();
   test::StreamDelegateDoNothing delegate2(stream2);
@@ -1641,7 +1583,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   EXPECT_EQ(NULL, stream2.get());
   EXPECT_EQ(3u, delegate2.stream_id());
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(LOWEST));
 
   base::WeakPtr<SpdyStream> stream3 = request3.ReleaseStream();
   test::StreamDelegateDoNothing delegate3(stream3);
@@ -1656,7 +1598,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   EXPECT_EQ(NULL, stream3.get());
   EXPECT_EQ(5u, delegate3.stream_id());
   EXPECT_EQ(0u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(LOWEST));
 }
 
 TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
@@ -1711,7 +1653,7 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
                 callback3.callback()));
 
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(2u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(2u, session->pending_create_stream_queue_size(LOWEST));
 
   // Cancel the first stream, this will allow the second stream to be created.
   EXPECT_TRUE(spdy_stream1.get() != NULL);
@@ -1720,21 +1662,21 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
 
   callback2.WaitForResult();
   EXPECT_EQ(2u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(LOWEST));
 
   // Cancel the second stream, this will allow the third stream to be created.
   base::WeakPtr<SpdyStream> spdy_stream2 = request2.ReleaseStream();
   spdy_stream2->Cancel();
   EXPECT_EQ(NULL, spdy_stream2.get());
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(LOWEST));
 
   // Cancel the third stream.
   base::WeakPtr<SpdyStream> spdy_stream3 = request3.ReleaseStream();
   spdy_stream3->Cancel();
   EXPECT_EQ(NULL, spdy_stream3.get());
   EXPECT_EQ(0u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(LOWEST));
 }
 
 TEST_P(SpdySessionTest, NeedsCredentials) {
@@ -1759,45 +1701,14 @@ TEST_P(SpdySessionTest, NeedsCredentials) {
                      kPrivacyModeDisabled);
 
   scoped_refptr<SpdySession> session =
-      CreateFakeSpdySession(spdy_session_pool_, key);
-
-  SSLConfig ssl_config;
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          test_host_port_pair,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
-                                 ssl_params, MEDIUM, CompletionCallback(),
-                                 http_session_->GetSSLSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-
-  EXPECT_EQ(OK,
-            session->InitializeWithSocket(
-                connection.Pass(), spdy_session_pool_, true, OK));
+      CreateSecureSpdySession(http_session_, key, BoundNetLog());
 
   EXPECT_EQ(spdy_util_.spdy_version() >= SPDY3, session->NeedsCredentials());
 
   // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
-  spdy_session_pool_->MakeSessionUnavailable(session);
-  spdy_session_pool_->RemoveUnavailableSession(session);
+  session->CloseSessionOnError(ERR_ABORTED, std::string());
 }
 
 // Test that SpdySession::DoRead reads data from the socket without yielding.
@@ -2509,13 +2420,11 @@ TEST_P(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
 
-  spdy_session_pool_->MakeSessionUnavailable(session_privacy_enabled);
-  spdy_session_pool_->RemoveUnavailableSession(session_privacy_enabled);
+  session_privacy_enabled->CloseSessionOnError(ERR_ABORTED, std::string());
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
 
-  spdy_session_pool_->MakeSessionUnavailable(session_privacy_disabled);
-  spdy_session_pool_->RemoveUnavailableSession(session_privacy_disabled);
+  session_privacy_disabled->CloseSessionOnError(ERR_ABORTED, std::string());
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
 }
@@ -2554,44 +2463,13 @@ TEST_P(SpdySessionTest, SendCredentials) {
                      kPrivacyModeDisabled);
 
   scoped_refptr<SpdySession> session =
-      CreateFakeSpdySession(spdy_session_pool_, key);
-
-  SSLConfig ssl_config;
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          test_host_port_pair,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
-                                 ssl_params, MEDIUM, CompletionCallback(),
-                                 http_session_->GetSSLSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-
-  EXPECT_EQ(OK,
-            session->InitializeWithSocket(
-                connection.Pass(), spdy_session_pool_, true, OK));
+      CreateSecureSpdySession(http_session_, key, BoundNetLog());
   EXPECT_TRUE(session->NeedsCredentials());
 
   // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
-  spdy_session_pool_->MakeSessionUnavailable(session);
-  spdy_session_pool_->RemoveUnavailableSession(session);
+  session->CloseSessionOnError(ERR_ABORTED, std::string());
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key));
 }
 

@@ -384,7 +384,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   }
   size_t num_created_streams() const { return created_streams_.size(); }
 
-  size_t pending_create_stream_queues(int priority) {
+  size_t pending_create_stream_queue_size(int priority) const {
     DCHECK_LT(priority, NUM_PRIORITIES);
     return pending_create_stream_queues_[priority].size();
   }
