@@ -70,7 +70,6 @@ class ScopedRef : public ScopedRefBase {
   T& operator*() const { return *get(); }
   T* operator->() const { return get(); }
 
-#ifndef __llvm__
  private:
   typedef void (ScopedRef::*bool_as_func_ptr)() const;
   void bool_as_func_impl() const {};
@@ -79,13 +78,6 @@ class ScopedRef : public ScopedRefBase {
   operator bool_as_func_ptr() const {
     return (ptr_ != NULL) ? &ScopedRef::bool_as_func_impl : 0;
   }
-#else
-  /*
-   * TODO Remove when bug 3514 is fixed see:
-   * https://code.google.com/p/nativeclient/issues/detail?id=3514
-   */
-  operator T*() const { return get(); }
-#endif
 };
 
 #endif  // LIBRARIES_SDK_UTIL_SCOPED_REF_H_
