@@ -4,4 +4,6 @@ include_rules = [
   # TODO: this is temporary, this directory doesn't belong under renderer_host
   # since it depends on web_contents.
   "+content/browser/web_contents",
+  "+content/public/browser/web_contents.h",
+  "+content/public/browser/web_contents_view.h",
 ]
