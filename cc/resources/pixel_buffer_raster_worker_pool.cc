@@ -395,6 +395,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
   should_notify_client_if_no_tasks_are_pending_ &=
       !will_notify_client_that_no_tasks_are_pending;
 
+  scheduled_raster_task_count_ = 0;
   if (PendingRasterTaskCount())
     ScheduleMoreTasks();
 
