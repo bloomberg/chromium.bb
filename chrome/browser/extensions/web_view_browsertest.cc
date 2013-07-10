@@ -1246,6 +1246,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
         "platform_apps/web_view/geolocation/cancel_request")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationRequestGone) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest(
+        "platform_apps/web_view/geolocation/geolocation_request_gone"))
+            << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Navigation) {
   TestHelper("testNavigation",
              "DoneNavigationTest.PASSED",

@@ -919,64 +919,59 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   container()->element().dispatchEvent(event);
 }
 
-void BrowserPlugin::OnRequestObjectGarbageCollected(int request_id) {
+void BrowserPlugin::OnTrackedObjectGarbageCollected(int id) {
   // Remove from alive objects.
-  std::map<int, AliveV8PermissionRequestItem*>::iterator iter =
-      alive_v8_permission_request_objects_.find(request_id);
-  if (iter != alive_v8_permission_request_objects_.end())
-    alive_v8_permission_request_objects_.erase(iter);
+  std::map<int, TrackedV8ObjectID*>::iterator iter =
+      tracked_v8_objects_.find(id);
+  if (iter != tracked_v8_objects_.end())
+    tracked_v8_objects_.erase(iter);
 
-  // If a decision has not been made for this request yet, deny it.
-  RespondPermissionIfRequestIsPending(request_id, false /*allow*/);
+  std::map<std::string, base::Value*> props;
+  props[browser_plugin::kId] = new base::FundamentalValue(id);
+  TriggerEvent(browser_plugin::kEventInternalTrackedObjectGone, &props);
 }
 
-void BrowserPlugin::PersistRequestObject(
-    const NPVariant* request, const std::string& type, int id) {
-  CHECK(alive_v8_permission_request_objects_.find(id) ==
-        alive_v8_permission_request_objects_.end());
-  if (pending_permission_requests_.find(id) ==
-      pending_permission_requests_.end()) {
+void BrowserPlugin::TrackObjectLifetime(const NPVariant* request, int id) {
+  // An object of a given ID can only be tracked once.
+  if (tracked_v8_objects_.find(id) != tracked_v8_objects_.end())
     return;
-  }
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::Persistent<v8::Value> weak_request(
       isolate, WebKit::WebBindings::toV8Value(request));
 
-  AliveV8PermissionRequestItem* new_item =
+  TrackedV8ObjectID* new_item =
       new std::pair<int, base::WeakPtr<BrowserPlugin> >(
           id, weak_ptr_factory_.GetWeakPtr());
 
-  std::pair<std::map<int, AliveV8PermissionRequestItem*>::iterator, bool>
-      result = alive_v8_permission_request_objects_.insert(
+  std::pair<std::map<int, TrackedV8ObjectID*>::iterator, bool>
+      result = tracked_v8_objects_.insert(
           std::make_pair(id, new_item));
   CHECK(result.second);  // Inserted in the map.
-  AliveV8PermissionRequestItem* request_item = result.first->second;
+  TrackedV8ObjectID* request_item = result.first->second;
   weak_request.MakeWeak(static_cast<void*>(request_item),
-                        WeakCallbackForPersistObject);
+                        WeakCallbackForTrackedObject);
 }
 
 // static
-void BrowserPlugin::WeakCallbackForPersistObject(
+void BrowserPlugin::WeakCallbackForTrackedObject(
     v8::Isolate* isolate, v8::Persistent<v8::Value>* object, void* param) {
 
-  AliveV8PermissionRequestItem* item_ptr =
-      static_cast<AliveV8PermissionRequestItem*>(param);
-  int request_id = item_ptr->first;
+  TrackedV8ObjectID* item_ptr = static_cast<TrackedV8ObjectID*>(param);
+  int object_id = item_ptr->first;
   base::WeakPtr<BrowserPlugin> plugin = item_ptr->second;
   delete item_ptr;
 
   object->Dispose();
-
   if (plugin.get()) {
-    // Asynchronously remove item from |alive_v8_permission_request_objects_|.
+    // Asynchronously remove item from |tracked_v8_objects_|.
     // Note that we are using weak pointer for the following PostTask, so we
     // don't need to worry about BrowserPlugin going away.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&BrowserPlugin::OnRequestObjectGarbageCollected,
+        base::Bind(&BrowserPlugin::OnTrackedObjectGarbageCollected,
                    plugin,
-                   request_id));
+                   object_id));
   }
 }
 

@@ -126,12 +126,10 @@ class CONTENT_EXPORT BrowserPlugin :
   void Reload();
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
-  // A request from content client to track lifetime of a JavaScript object
-  // related to a permission request object.
-  // This is used to clean up hanging permission request objects.
-  void PersistRequestObject(const NPVariant* request,
-                            const std::string& type,
-                            int id);
+  // A request from content client to track lifetime of a JavaScript object.
+  // This is used to track permission request objects, and new window API
+  // window objects.
+  void TrackObjectLifetime(const NPVariant* request, int id);
 
   // Returns true if |point| lies within the bounds of the plugin rectangle.
   // Not OK to use this function for making security-sensitive decision since it
@@ -313,11 +311,12 @@ class CONTENT_EXPORT BrowserPlugin :
   // BrowserPlugin that the guest's permission request has been allowed or
   // denied by the embedder.
   void RespondPermissionIfRequestIsPending(int request_id, bool allow);
-  // Cleans up pending permission request once the associated event.request
-  // object goes out of scope in JavaScript.
-  void OnRequestObjectGarbageCollected(int request_id);
+
+  // Called when the tracked object of |id| ID becomes unreachable in
+  // JavaScript.
+  void OnTrackedObjectGarbageCollected(int id);
   // V8 garbage collection callback for |object|.
-  static void WeakCallbackForPersistObject(v8::Isolate* isolate,
+  static void WeakCallbackForTrackedObject(v8::Isolate* isolate,
                                            v8::Persistent<v8::Value>* object,
                                            void* param);
 
@@ -391,10 +390,8 @@ class CONTENT_EXPORT BrowserPlugin :
   typedef std::map<int, BrowserPluginPermissionType> PendingPermissionRequests;
   PendingPermissionRequests pending_permission_requests_;
 
-  typedef std::pair<int, base::WeakPtr<BrowserPlugin> >
-      AliveV8PermissionRequestItem;
-  std::map<int, AliveV8PermissionRequestItem*>
-      alive_v8_permission_request_objects_;
+  typedef std::pair<int, base::WeakPtr<BrowserPlugin> > TrackedV8ObjectID;
+  std::map<int, TrackedV8ObjectID*> tracked_v8_objects_;
 
   // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to
   // store the BrowserPlugin's BrowserPluginManager in a member variable to

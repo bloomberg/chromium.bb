@@ -12,10 +12,7 @@ embedder.setUp_ = function(config) {
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
   embedder.guestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/geolocation' +
-      '/cancel_request/pages/guest.html';
-  embedder.iframeURL = embedder.baseGuestURL +
-      '/extensions/platform_apps/web_view/geolocation' +
-      '/cancel_request/pages/iframe.html';
+      '/geolocation_request_gone/guest.html';
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };
 
@@ -42,10 +39,10 @@ embedder.setUpLoadStop_ = function(webview, testName, opt_iframeURL) {
     loadstopCalled = true;
     // Send post message to <webview> when it's ready to receive them.
     var msgArray = [
-      'test-cancel-geolocation',
-      '' + testName,
-      embedder.iframeURL
+      'request-geolocation',
+      '' + testName
     ];
+    console.log('sending guest geolocation request');
     webview.contentWindow.postMessage(JSON.stringify(msgArray), '*');
   };
   webview.addEventListener('loadstop', onWebviewLoadStop);
@@ -77,33 +74,29 @@ embedder.assertCorrectEvent_ = function(e) {
   chrome.test.assertFalse('userGesture' in e);
 };
 
-var g_requestObject;
-
 // Tests begin.
 
 // Tests CancelGeolocationPermission code path.
-function testCancelGeolocationInIFrame() {
+function testGeolocationRequestGone() {
   var webview = embedder.setUpGuest_();
 
   var onPermissionRequest = function(e) {
     chrome.test.log('Embedder notified on permissionRequest');
     embedder.assertCorrectEvent_(e);
     e.preventDefault();
-    // keep a reference to request object so the permission keeps hanging.
-    g_requestObject = e.request;
   };
   webview.addEventListener('permissionrequest', onPermissionRequest);
 
   embedder.setUpLoadStop_(webview, 'test1');
   embedder.registerAndWaitForPostMessage_(
-      webview, ['test1', 'PASSED']);
+      webview, ['test1', 'access-denied']);
 }
 
 onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.setUp_(config);
     chrome.test.runTests([
-      testCancelGeolocationInIFrame,
+      testGeolocationRequestGone,
     ]);
   });
 };

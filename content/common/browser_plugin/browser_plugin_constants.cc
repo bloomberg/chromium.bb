@@ -22,11 +22,13 @@ const char kMethodTerminate[] = "terminate";
 
 // Internal method bindings.
 const char kMethodInternalAttachWindowTo[] = "-internal-attachWindowTo";
-const char kMethodInternalPersistObject[] = "-internal-persistObject";
+const char kMethodInternalTrackObjectLifetime[] =
+    "-internal-trackObjectLifetime";
 const char kMethodInternalSetPermission[] = "-internal-setPermission";
 
 // Internal events.
 const char kEventInternalAttached[] = "attached";
+const char kEventInternalTrackedObjectGone[] = "trackedobjectgone";
 
 // Attributes.
 const char kAttributeApi[] = "api";
@@ -42,8 +44,6 @@ const char kAttributeSrc[] = "src";
 
 // Events.
 const char kEventExit[] = "exit";
-const char kEventLoadAbort[] = "loadabort";
-const char kEventLoadStart[] = "loadstart";
 const char kEventNewWindow[] = "newwindow";
 const char kEventRequestPermission[] = "permissionrequest";
 const char kEventResponsive[] = "responsive";
@@ -51,6 +51,7 @@ const char kEventSizeChanged[] = "sizechanged";
 const char kEventUnresponsive[] = "unresponsive";
 
 // Parameters/properties on events.
+const char kId[] = "id";
 const char kInitialHeight[] = "initialHeight";
 const char kInitialWidth[] = "initialWidth";
 const char kIsTopLevel[] = "isTopLevel";

@@ -412,8 +412,17 @@ WebView.prototype.setupNewWindowEvent_ = function() {
     'name'
   ];
 
+  var self = this;
   var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
+
+  var onTrackedObjectGone = function(requestId, e) {
+    var detail = e.detail ? JSON.parse(e.detail) : {};
+    if (detail.id != requestId)
+      return;
+    browserPluginNode['-internal-setPermission'](requestId, false);
+  }
+
   browserPluginNode.addEventListener('-internal-newwindow', function(e) {
     var evt = new Event('newwindow', { bubbles: true, cancelable: true });
     var detail = e.detail ? JSON.parse(e.detail) : {};
@@ -461,8 +470,11 @@ WebView.prototype.setupNewWindowEvent_ = function() {
     };
     evt.window = window;
     // Make browser plugin track lifetime of |window|.
-    browserPluginNode['-internal-persistObject'](
-        window, detail.permission, requestId);
+    var onTrackedObjectGoneWithRequestId =
+        $Function.bind(onTrackedObjectGone, self, requestId);
+    browserPluginNode.addEventListener('-internal-trackedobjectgone',
+        onTrackedObjectGoneWithRequestId);
+    browserPluginNode['-internal-trackObjectLifetime'](window, requestId);
 
     var defaultPrevented = !node.dispatchEvent(evt);
     if (!actionTaken && !defaultPrevented) {
@@ -528,9 +540,18 @@ WebView.prototype.setupPermissionEvent_ = function() {
   var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
       'Permission has already been decided for this "permissionrequest" event.';
 
+  var self = this;
   var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
   var internalevent = '-internal-permissionrequest';
+
+  var onTrackedObjectGone = function(requestId, e) {
+    var detail = e.detail ? JSON.parse(e.detail) : {};
+    if (detail.id != requestId)
+      return;
+    browserPluginNode['-internal-setPermission'](requestId, false);
+  }
+
   browserPluginNode.addEventListener(internalevent, function(e) {
     var evt = new Event('permissionrequest', {bubbles: true, cancelable: true});
     var detail = e.detail ? JSON.parse(e.detail) : {};
@@ -567,8 +588,11 @@ WebView.prototype.setupPermissionEvent_ = function() {
       evt.request = request;
 
       // Make browser plugin track lifetime of |request|.
-      browserPluginNode['-internal-persistObject'](
-          request, detail.permission, requestId);
+      var onTrackedObjectGoneWithRequestId =
+          $Function.bind(onTrackedObjectGone, self, requestId);
+      browserPluginNode.addEventListener('-internal-trackedobjectgone',
+          onTrackedObjectGoneWithRequestId);
+      browserPluginNode['-internal-trackObjectLifetime'](request, requestId);
 
       var defaultPrevented = !node.dispatchEvent(evt);
       if (!decisionMade && !defaultPrevented) {
