@@ -5,36 +5,20 @@
 
 Import('env')
 
-# PNaCl doesn't have -finstrument-for-thread-suspension currently
-# BUG http://code.google.com/p/nativeclient/issues/detail?id=2363
-# Neither does next-generation GCC, so far extant only for ARM (and the
-# only non-bitcode compiler for ARM).
-#
-# However, the nacl_irt_blockhook interface works everywhere and is
-# testable from ARM and PNaCl.
-#
-# TODO(mseaborn): Split this test into two parts that test
-# -finstrument-for-thread-suspension and nacl_irt_blockhook
-# separately, because these are independently-usable features.
-
-if env.Bit('bitcode') or env.Bit('target_arm'):
+# The nacl_irt_blockhook interface is deprecated and will be disabled
+# under PNaCl.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3539
+if env.Bit('bitcode'):
   Return()
 
 # TODO(mseaborn): Make this test build and run under nacl-glibc.
 if env.Bit('nacl_glibc'):
   Return()
 
-
-inputs = ['gc_noinst.c']
-
-# Compile gc_instrumentation.c with -finstrument-for-thread-suspension
-env_inst = env.Clone()
-env_inst.Append(CFLAGS=['-finstrument-for-thread-suspension'])
-env_inst.Append(CPPDEFINES=[['TESTS_USE_IRT',
-                             str(int(env.Bit('tests_use_irt')))]])
-inputs += env_inst.ComponentObject('gc_instrumentation.c')
-
-nexe = env.ComponentProgram('gc_instrumentation', inputs,
+env.Append(CPPDEFINES=[['TESTS_USE_IRT',
+                        str(int(env.Bit('tests_use_irt')))]])
+nexe = env.ComponentProgram('gc_instrumentation',
+                            ['gc_instrumentation.c'],
                             EXTRA_LIBS=['${DYNCODE_LIBS}',
                                         '${PTHREAD_LIBS}',
                                         '${NONIRT_LIBS}'])

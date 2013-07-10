@@ -3044,6 +3044,7 @@ irt_variant_tests = [
     'tests/callingconv_case_by_case/nacl.scons',
     'tests/clock/nacl.scons',
     'tests/common/nacl.scons',
+    'tests/compiler_thread_suspension/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
     'tests/dup/nacl.scons',

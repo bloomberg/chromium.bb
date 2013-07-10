@@ -22,7 +22,6 @@
 /* TODO(bradchen): fix this include once it is moved to the right place */
 #include "native_client/src/untrusted/nacl/gc_hooks.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
-#include "native_client/tests/gc_instrumentation/gc_instrumentation.h"
 
 
 
@@ -235,36 +234,11 @@ void test_syscall_wrappers(void) {
 #endif
 }
 
-/* Make sure the function doesn't inline so we still get a prologue */
-void check_func_instrumentation(unsigned int arg) __attribute__((noinline));
-
-void check_func_instrumentation(unsigned int arg) {
-  CHECK(arg < thread_suspend_if_needed_count);
-}
-
-void test_compiler_instrumentation(void) {
-  int i;
-  /* Test function prologue instrumentation */
-  unsigned int local_thread_suspend_count = thread_suspend_if_needed_count;
-  check_func_instrumentation(local_thread_suspend_count);
-  /* Check back-branch instrumentation */
-  local_thread_suspend_count = thread_suspend_if_needed_count;
-  i = 0;
-  while (1) {
-    /* Break after one iteration */
-    if (i > 0)
-      break;
-    i++;
-  }
-  CHECK(local_thread_suspend_count < thread_suspend_if_needed_count);
-}
-
 int main(int argcc, char *argv[]) {
   main_thread_id = &cheap_thread_id;
 
   nacl_register_gc_hooks(nacl_pre_gc_hook, nacl_post_gc_hook);
   test_syscall_wrappers();
-  test_compiler_instrumentation();
   /* test reregistering hooks */
   nacl_register_gc_hooks(nacl_pre_gc_hook, nacl_post_gc_hook);
 

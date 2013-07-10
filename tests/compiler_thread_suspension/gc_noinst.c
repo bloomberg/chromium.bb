@@ -8,6 +8,9 @@
  * gc_noinst.c : Functions that shouldn't be instrumented by the compiler
  */
 
+#include "native_client/tests/compiler_thread_suspension/gc_inst.h"
+
+
 __thread unsigned int thread_suspend_if_needed_count = 0;
 
 /* TODO(elijahtaylor): This will need to be changed
