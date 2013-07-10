@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/download_request_limiter.h"
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
-#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -311,7 +312,7 @@ TEST_F(DownloadRequestLimiterTest,
 TEST_F(DownloadRequestLimiterTest,
        DownloadRequestLimiter_RawWebContents) {
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
-  // DownloadRequestLimiter won't try to make an infobar if it doesn't have a
+  // DownloadRequestLimiter won't try to make an infobar if it doesn't have an
   // InfoBarService, and we want to test that it will Cancel() instead of
   // prompting when it doesn't have a InfoBarService, so unset the delegate.
   UnsetDelegate();

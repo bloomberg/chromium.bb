@@ -27,6 +27,7 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   RegisterProtocolHandlerInfoBarDelegate(InfoBarService* infobar_service,
                                          ProtocolHandlerRegistry* registry,
                                          const ProtocolHandler& handler);
+  virtual ~RegisterProtocolHandlerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;

@@ -19,8 +19,8 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   virtual void Cancel() OVERRIDE;
   virtual void Accept() OVERRIDE;
 
-  ConfirmInfoBarDelegate* infobar() { return infobar_.get(); }
-  void delete_infobar_delegate() { infobar_.reset(); }
+  ConfirmInfoBarDelegate* infobar_delegate() { return infobar_delegate_.get(); }
+  void delete_infobar_delegate() { infobar_delegate_.reset(); }
   bool responded() const { return responded_; }
   bool accepted() const { return accepted_; }
 
@@ -29,7 +29,7 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   base::WeakPtrFactory<DownloadRequestLimiter::TabDownloadState> factory_;
 
   // The actual infobar delegate we're listening to.
-  scoped_ptr<DownloadRequestInfoBarDelegate> infobar_;
+  scoped_ptr<DownloadRequestInfoBarDelegate> infobar_delegate_;
 
   // True if we have gotten some sort of response.
   bool responded_;
@@ -42,9 +42,11 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
 
 MockTabDownloadState::MockTabDownloadState()
     : factory_(this),
-      infobar_(DownloadRequestInfoBarDelegate::Create(factory_.GetWeakPtr())),
+      infobar_delegate_(
+          DownloadRequestInfoBarDelegate::Create(factory_.GetWeakPtr())),
       responded_(false),
-      accepted_(false) {}
+      accepted_(false) {
+}
 
 MockTabDownloadState::~MockTabDownloadState() {
   EXPECT_TRUE(responded_);
@@ -66,21 +68,21 @@ void MockTabDownloadState::Accept() {
 
 // Tests ----------------------------------------------------------------------
 
-TEST(DownloadRequestInfobarDelegate, AcceptTest) {
+TEST(DownloadRequestInfoBarDelegate, AcceptTest) {
   MockTabDownloadState state;
-  if (state.infobar()->Accept())
+  if (state.infobar_delegate()->Accept())
     state.delete_infobar_delegate();
   EXPECT_TRUE(state.accepted());
 }
 
-TEST(DownloadRequestInfobarDelegate, CancelTest) {
+TEST(DownloadRequestInfoBarDelegate, CancelTest) {
   MockTabDownloadState state;
-  if (state.infobar()->Cancel())
+  if (state.infobar_delegate()->Cancel())
     state.delete_infobar_delegate();
   EXPECT_FALSE(state.accepted());
 }
 
-TEST(DownloadRequestInfobarDelegate, CloseTest) {
+TEST(DownloadRequestInfoBarDelegate, CloseTest) {
   MockTabDownloadState state;
   state.delete_infobar_delegate();
   EXPECT_FALSE(state.accepted());

@@ -65,15 +65,11 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
     return;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
   // See PromptUserForDownload(): if there's no InfoBarService, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  if ((infobar_service &&
-       status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS &&
-       status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) ||
-      (!infobar_service &&
-       status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS)) {
+  if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
+      (!InfoBarService::FromWebContents(web_contents()) ||
+       (status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED))) {
     // Revert to default status.
     host_->Remove(this);
     // WARNING: We've been deleted.

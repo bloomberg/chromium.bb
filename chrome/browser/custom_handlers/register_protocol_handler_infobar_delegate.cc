@@ -13,10 +13,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::OpenURLParams;
-using content::Referrer;
-using content::UserMetricsAction;
-
 // static
 void RegisterProtocolHandlerInfoBarDelegate::Create(
     InfoBarService* infobar_service,
@@ -52,13 +48,17 @@ RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
       handler_(handler) {
 }
 
+RegisterProtocolHandlerInfoBarDelegate::
+    ~RegisterProtocolHandlerInfoBarDelegate() {
+}
+
 InfoBarDelegate::InfoBarAutomationType
     RegisterProtocolHandlerInfoBarDelegate::GetInfoBarAutomationType() const {
   return RPH_INFOBAR;
 }
 
 InfoBarDelegate::Type
-RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
+    RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
@@ -70,13 +70,13 @@ RegisterProtocolHandlerInfoBarDelegate*
 
 string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
   ProtocolHandler old_handler = registry_->GetHandlerFor(handler_.protocol());
-  return !old_handler.IsEmpty() ?
-      l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
-          handler_.title(), UTF8ToUTF16(handler_.url().host()),
-          GetProtocolName(handler_), old_handler.title()) :
+  return old_handler.IsEmpty() ?
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
           handler_.title(), UTF8ToUTF16(handler_.url().host()),
-          GetProtocolName(handler_));
+          GetProtocolName(handler_)) :
+      l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
+          handler_.title(), UTF8ToUTF16(handler_.url().host()),
+          GetProtocolName(handler_), old_handler.title());
 }
 
 string16 RegisterProtocolHandlerInfoBarDelegate::GetButtonLabel(
@@ -94,14 +94,14 @@ bool RegisterProtocolHandlerInfoBarDelegate::NeedElevation(
 
 bool RegisterProtocolHandlerInfoBarDelegate::Accept() {
   content::RecordAction(
-      UserMetricsAction("RegisterProtocolHandler.Infobar_Accept"));
+      content::UserMetricsAction("RegisterProtocolHandler.Infobar_Accept"));
   registry_->OnAcceptRegisterProtocolHandler(handler_);
   return true;
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
   content::RecordAction(
-      UserMetricsAction("RegisterProtocolHandler.InfoBar_Deny"));
+      content::UserMetricsAction("RegisterProtocolHandler.InfoBar_Deny"));
   registry_->OnIgnoreRegisterProtocolHandler(handler_);
   return true;
 }
@@ -113,14 +113,11 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
 bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   content::RecordAction(
-      UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
-  OpenURLParams params(
-      GURL(chrome::kLearnMoreRegisterProtocolHandlerURL),
-      Referrer(),
+      content::UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL(chrome::kLearnMoreRegisterProtocolHandlerURL), content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK,
-      false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 
