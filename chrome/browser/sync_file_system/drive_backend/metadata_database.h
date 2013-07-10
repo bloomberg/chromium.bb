@@ -43,7 +43,7 @@ struct DatabaseContents;
 class MetadataDatabase {
  private:
   struct FileIDComparator {
-    bool operator()(DriveFileMetadata* left, DriveFileMetadata* right);
+    bool operator()(DriveFileMetadata* left, DriveFileMetadata* right) const;
   };
 
  public:
@@ -83,7 +83,7 @@ class MetadataDatabase {
                  const SyncStatusCallback& callback);
 
   // Unregister the folder as the app-root for |app_id|.  If |app_id| does not
-  // exist, does nothing.
+  // exist, does nothing.  The folder is left as an inactive normal folder.
   void UnregisterApp(const std::string& app_id,
                      const SyncStatusCallback& callback);
 
@@ -149,8 +149,24 @@ class MetadataDatabase {
                                  base::SequencedTaskRunner* task_runner,
                                  const base::FilePath& database_path,
                                  const CreateCallback& callback);
+  static SyncStatusCode CreateForTesting(
+      scoped_ptr<leveldb::DB> db,
+      scoped_ptr<MetadataDatabase>* metadata_database_out);
   SyncStatusCode InitializeOnTaskRunner(const base::FilePath& database_path);
   void BuildIndexes(DatabaseContents* contents);
+
+  // Database manipulation methods.
+  void RegisterFolderAsAppRoot(const std::string& app_id,
+                               const std::string& folder,
+                               leveldb::WriteBatch* batch);
+  void MakeFileActive(const std::string& file,
+                      leveldb::WriteBatch* batch);
+  void MakeFileInactive(const std::string& file,
+                        leveldb::WriteBatch* batch);
+  void UnregisterFolderAsAppRoot(const std::string& app_id,
+                                 leveldb::WriteBatch* batch);
+  void RemoveFile(const std::string& file,
+                  leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
@@ -164,6 +180,7 @@ class MetadataDatabase {
   FilesByParent files_by_parent_;  // Not owned.
   FileByAppID app_root_by_app_id_;  // Not owned.
   FileByParentAndTitle active_file_by_parent_and_title_;  // Not owned.
+  FileSet dirty_files_;  // Not owned.
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 

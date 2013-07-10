@@ -60,6 +60,25 @@ void AdaptLevelDBStatusToSyncStatusCode(const SyncStatusCallback& callback,
   callback.Run(LevelDBStatusToSyncStatusCode(status));
 }
 
+void PutFileToBatch(const DriveFileMetadata& file, leveldb::WriteBatch* batch) {
+  std::string value;
+  bool success = file.SerializeToString(&value);
+  DCHECK(success);
+  batch->Put(kFileMetadataKeyPrefix + file.file_id(), value);
+}
+
+void PushChildrenToStack(const FilesByParent& files_by_parent,
+                         const std::string& folder_id,
+                         std::stack<std::string>* stack) {
+  FilesByParent::const_iterator found = files_by_parent.find(folder_id);
+  if (found == files_by_parent.end())
+    return;
+  const FileSet& children = found->second;
+  for (FileSet::const_iterator itr = children.begin();
+       itr != children.end(); ++itr)
+    stack->push((*itr)->file_id());
+}
+
 // Returns true if |db| has no content.
 bool IsDatabaseEmpty(leveldb::DB* db) {
   DCHECK(db);
@@ -272,16 +291,17 @@ bool FindItem(const Container& container, const Key& key, Value* value) {
   return true;
 }
 
-}  // namespace
-
-bool MetadataDatabase::FileIDComparator::operator()(DriveFileMetadata* left,
-                                                    DriveFileMetadata* right) {
-  return left->file_id() < right->file_id();
+void RunSoon(const tracked_objects::Location& from_here,
+             const base::Closure& closure) {
+  base::MessageLoopProxy::current()->PostTask(from_here, closure);
 }
 
-MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
-    : task_runner_(task_runner), weak_ptr_factory_(this) {
-  DCHECK(task_runner);
+}  // namespace
+
+bool MetadataDatabase::FileIDComparator::operator()(
+    DriveFileMetadata* left,
+    DriveFileMetadata* right) const {
+  return left->file_id() < right->file_id();
 }
 
 // static
@@ -295,6 +315,12 @@ void MetadataDatabase::Create(base::SequencedTaskRunner* task_runner,
       database_path, callback));
 }
 
+MetadataDatabase::~MetadataDatabase() {
+  task_runner_->DeleteSoon(FROM_HERE, db_.release());
+  STLDeleteContainerPairSecondPointers(
+      file_by_file_id_.begin(), file_by_file_id_.end());
+}
+
 int64 MetadataDatabase::GetLargestChangeID() const {
   return service_metadata_->largest_change_id();
 }
@@ -302,22 +328,70 @@ int64 MetadataDatabase::GetLargestChangeID() const {
 void MetadataDatabase::RegisterApp(const std::string& app_id,
                                    const std::string& folder_id,
                                    const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  if (FindAppRootFolder(app_id, NULL)) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return;
+  }
+
+  DriveFileMetadata folder;
+  if (!FindFileByFileID(folder_id, &folder)) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  DCHECK(!folder.active());
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  RegisterFolderAsAppRoot(app_id, folder.file_id(), batch.get());
+  WriteToDatabase(batch.Pass(), callback);
 }
 
 void MetadataDatabase::DisableApp(const std::string& app_id,
-                                 const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+                                  const SyncStatusCallback& callback) {
+  DriveFileMetadata folder;
+  if (!FindAppRootFolder(app_id, &folder)) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  if (!folder.active()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return;
+  }
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  MakeFileInactive(folder.file_id(), batch.get());
+  WriteToDatabase(batch.Pass(), callback);
 }
 
 void MetadataDatabase::EnableApp(const std::string& app_id,
                                  const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  DriveFileMetadata folder;
+  if (!FindAppRootFolder(app_id, &folder)) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  if (folder.active()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return;
+  }
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  MakeFileActive(folder.file_id(), batch.get());
+  WriteToDatabase(batch.Pass(), callback);
 }
 
 void MetadataDatabase::UnregisterApp(const std::string& app_id,
                                      const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  DriveFileMetadata folder;
+  if (!FindAppRootFolder(app_id, &folder)) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return;
+  }
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  UnregisterFolderAsAppRoot(app_id, batch.get());
+  WriteToDatabase(batch.Pass(), callback);
 }
 
 bool MetadataDatabase::FindAppRootFolder(const std::string& app_id,
@@ -391,31 +465,12 @@ void MetadataDatabase::PopulateFolder(
   NOTIMPLEMENTED();
 }
 
-void MetadataDatabase::BuildIndexes(DatabaseContents* contents) {
-  for (ScopedVector<DriveFileMetadata>::iterator itr =
-           contents->file_metadata.begin();
-       itr != contents->file_metadata.end();
-       ++itr) {
-    DriveFileMetadata* file = *itr;
-    file_by_file_id_[file->file_id()] = file;
-
-    if (file->is_app_root())
-      app_root_by_app_id_[file->app_id()] = file;
-
-    if (file->active() && file->has_synced_details()) {
-      FileByParentAndTitle::key_type key =
-          std::make_pair(file->parent_folder_id(),
-                         file->synced_details().title());
-      active_file_by_parent_and_title_[key] = file;
-    }
-
-    if (!file->parent_folder_id().empty())
-      files_by_parent_[file->parent_folder_id()].insert(file);
-  }
-
-  contents->file_metadata.weak_clear();
+MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
+    : task_runner_(task_runner), weak_ptr_factory_(this) {
+  DCHECK(task_runner);
 }
 
+// static
 void MetadataDatabase::CreateOnTaskRunner(
     base::SingleThreadTaskRunner* callback_runner,
     base::SequencedTaskRunner* task_runner,
@@ -432,6 +487,20 @@ void MetadataDatabase::CreateOnTaskRunner(
       callback, status, base::Passed(&metadata_database)));
 }
 
+// static
+SyncStatusCode MetadataDatabase::CreateForTesting(
+    scoped_ptr<leveldb::DB> db,
+    scoped_ptr<MetadataDatabase>* metadata_database_out) {
+  scoped_ptr<MetadataDatabase> metadata_database(
+      new MetadataDatabase(base::MessageLoopProxy::current()));
+  metadata_database->db_ = db.Pass();
+  SyncStatusCode status =
+      metadata_database->InitializeOnTaskRunner(base::FilePath());
+  if (status == SYNC_STATUS_OK)
+    *metadata_database_out = metadata_database.Pass();
+  return status;
+}
+
 SyncStatusCode MetadataDatabase::InitializeOnTaskRunner(
     const base::FilePath& database_path) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -439,9 +508,12 @@ SyncStatusCode MetadataDatabase::InitializeOnTaskRunner(
 
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;
   bool created = false;
-  status = OpenDatabase(database_path, &db_, &created);
-  if (status != SYNC_STATUS_OK)
-    return status;
+  // Open database unless |db_| is overridden for testing.
+  if (!db_) {
+    status = OpenDatabase(database_path, &db_, &created);
+    if (status != SYNC_STATUS_OK)
+      return status;
+  }
 
   if (created) {
     status = WriteVersionInfo(db_.get());
@@ -476,10 +548,151 @@ SyncStatusCode MetadataDatabase::InitializeOnTaskRunner(
   return status;
 }
 
-MetadataDatabase::~MetadataDatabase() {
-  task_runner_->DeleteSoon(FROM_HERE, db_.release());
-  STLDeleteContainerPairSecondPointers(
-      file_by_file_id_.begin(), file_by_file_id_.end());
+void MetadataDatabase::BuildIndexes(DatabaseContents* contents) {
+  for (ScopedVector<DriveFileMetadata>::iterator itr =
+           contents->file_metadata.begin();
+       itr != contents->file_metadata.end();
+       ++itr) {
+    DriveFileMetadata* file = *itr;
+    file_by_file_id_[file->file_id()] = file;
+
+    if (file->is_app_root())
+      app_root_by_app_id_[file->app_id()] = file;
+
+    if (file->active() && file->has_synced_details()) {
+      FileByParentAndTitle::key_type key(
+          file->parent_folder_id(), file->synced_details().title());
+      active_file_by_parent_and_title_[key] = file;
+    }
+
+    if (!file->parent_folder_id().empty())
+      files_by_parent_[file->parent_folder_id()].insert(file);
+
+    if (file->dirty())
+      dirty_files_.insert(file);
+  }
+
+  contents->file_metadata.weak_clear();
+}
+
+void MetadataDatabase::RegisterFolderAsAppRoot(
+    const std::string& app_id,
+    const std::string& folder_id,
+    leveldb::WriteBatch* batch) {
+  DriveFileMetadata* folder = file_by_file_id_[folder_id];
+  if (!folder || folder->active() || folder->is_app_root() ||
+      !folder->app_id().empty()) {
+    NOTREACHED();
+    return;
+  }
+
+  folder->set_is_app_root(true);
+  folder->set_app_id(app_id);
+  folder->set_active(true);
+  folder->set_dirty(true);
+  folder->set_needs_folder_listing(true);
+  PutFileToBatch(*folder, batch);
+
+  app_root_by_app_id_[app_id] = folder;
+  if (folder->has_synced_details()) {
+    FileByParentAndTitle::key_type key(
+        folder->parent_folder_id(), folder->synced_details().title());
+    DCHECK(!ContainsKey(active_file_by_parent_and_title_, key));
+    active_file_by_parent_and_title_[key] = folder;
+  }
+  dirty_files_.insert(folder);
+}
+
+void MetadataDatabase::UnregisterFolderAsAppRoot(
+    const std::string& app_id,
+    leveldb::WriteBatch* batch) {
+  DriveFileMetadata* folder = app_root_by_app_id_[app_id];
+  if (!folder || !folder->active() ||
+      folder->app_id() != app_id || !folder->is_app_root()) {
+    NOTREACHED();
+    return;
+  }
+
+  folder->set_active(false);
+  folder->set_is_app_root(false);
+  folder->set_app_id(std::string());
+  PutFileToBatch(*folder, batch);
+
+  // Remove child entries recursively.
+  std::stack<std::string> pending_files;
+  PushChildrenToStack(files_by_parent_, folder->file_id(), &pending_files);
+  while (!pending_files.empty()) {
+    std::string file_id = pending_files.top();
+    pending_files.pop();
+    PushChildrenToStack(files_by_parent_, file_id, &pending_files);
+    RemoveFile(file_id, batch);
+  }
+
+  app_root_by_app_id_.erase(app_id);
+  if (folder->has_synced_details()) {
+    FileByParentAndTitle::key_type key(
+        folder->parent_folder_id(), folder->synced_details().title());
+    active_file_by_parent_and_title_.erase(key);
+  }
+}
+
+void MetadataDatabase::MakeFileActive(const std::string& file_id,
+                                      leveldb::WriteBatch* batch) {
+  DriveFileMetadata* file = file_by_file_id_[file_id];
+  if (!file || file->active()) {
+    NOTREACHED();
+    return;
+  }
+
+  file->set_active(true);
+  if (file->has_synced_details() &&
+      file->synced_details().kind() == KIND_FOLDER)
+    file->set_needs_folder_listing(true);
+  PutFileToBatch(*file, batch);
+
+  if (file->has_synced_details()) {
+    FileByParentAndTitle::key_type key(
+        file->parent_folder_id(), file->synced_details().title());
+    DCHECK(!ContainsKey(active_file_by_parent_and_title_, key));
+    active_file_by_parent_and_title_[key] = file;
+  }
+}
+
+void MetadataDatabase::MakeFileInactive(const std::string& file_id,
+                                        leveldb::WriteBatch* batch) {
+  DriveFileMetadata* file = file_by_file_id_[file_id];
+  if (!file || !file->active()) {
+    NOTREACHED();
+    return;
+  }
+
+  file->set_active(false);
+  PutFileToBatch(*file, batch);
+
+  if (file->has_synced_details()) {
+    FileByParentAndTitle::key_type key(
+        file->parent_folder_id(), file->synced_details().title());
+    DCHECK(ContainsKey(active_file_by_parent_and_title_, key));
+    active_file_by_parent_and_title_.erase(key);
+  }
+}
+
+void MetadataDatabase::RemoveFile(const std::string& file_id,
+                                  leveldb::WriteBatch* batch) {
+  scoped_ptr<DriveFileMetadata> file(file_by_file_id_[file_id]);
+  file_by_file_id_.erase(file_id);
+
+  batch->Delete(file->file_id());
+
+  files_by_parent_[file->parent_folder_id()].erase(file.get());
+  if (file->is_app_root())
+    app_root_by_app_id_.erase(file->app_id());
+  if (file->active() && file->has_synced_details()) {
+    FileByParentAndTitle::key_type key(
+        file->parent_folder_id(), file->synced_details().title());
+    active_file_by_parent_and_title_.erase(key);
+  }
+  dirty_files_.erase(file.get());
 }
 
 void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
