@@ -130,6 +130,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableGestureTapHighlight);
     command_line.AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1.0");
 #if defined(OS_ANDROID)
+    command_line.AppendSwitch(
+        switches::kDisableGestureRequirementForMediaPlayback);
     // Capturing pixel results does not yet work when implementation-side
     // painting is enabled. See http://crbug.com/250777
     command_line.AppendSwitch(cc::switches::kDisableImplSidePainting);
