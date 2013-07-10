@@ -195,7 +195,7 @@ void AudioRendererHost::AudioEntry::OnDeviceChange(int new_buffer_size,
 void AudioRendererHost::DoCompleteCreation(AudioEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!peer_handle()) {
+  if (!PeerHandle()) {
     NOTREACHED() << "Renderer process handle is invalid.";
     ReportErrorAndClose(entry->stream_id());
     return;
@@ -204,7 +204,7 @@ void AudioRendererHost::DoCompleteCreation(AudioEntry* entry) {
   // Once the audio stream is created then complete the creation process by
   // mapping shared memory and sharing with the renderer process.
   base::SharedMemoryHandle foreign_memory_handle;
-  if (!entry->shared_memory()->ShareToProcess(peer_handle(),
+  if (!entry->shared_memory()->ShareToProcess(PeerHandle(),
                                               &foreign_memory_handle)) {
     // If we failed to map and share the shared memory then close the audio
     // stream and send an error message.
@@ -222,7 +222,7 @@ void AudioRendererHost::DoCompleteCreation(AudioEntry* entry) {
 
   // If we failed to prepare the sync socket for the renderer then we fail
   // the construction of audio stream.
-  if (!reader->PrepareForeignSocketHandle(peer_handle(),
+  if (!reader->PrepareForeignSocketHandle(PeerHandle(),
                                           &foreign_socket_handle)) {
     ReportErrorAndClose(entry->stream_id());
     return;

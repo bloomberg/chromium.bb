@@ -165,7 +165,7 @@ void WebRtcLoggingHandlerHost::DoOpenLog() {
     return;
   }
 
-  if (!shared_memory_->ShareToProcess(peer_handle(),
+  if (!shared_memory_->ShareToProcess(PeerHandle(),
                                      &foreign_memory_handle_)) {
     Send(new WebRtcLoggingMsg_OpenLogFailed());
     return;

@@ -10,6 +10,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 
+#if defined(OS_WIN)
+#include "base/synchronization/lock.h"
+#endif
+
 namespace base {
 class TaskRunner;
 }
@@ -62,7 +66,10 @@ class CONTENT_EXPORT BrowserMessageFilter
                                  bool* message_was_ok) = 0;
 
   // Can be called on any thread, after OnChannelConnected is called.
-  base::ProcessHandle peer_handle() { return peer_handle_; }
+  base::ProcessHandle PeerHandle();
+
+  // Can be called on any thread, after OnChannelConnected is called.
+  base::ProcessId peer_pid() const { return peer_pid_; }
 
   // Checks that the given message can be dispatched on the UI thread, depending
   // on the platform.  If not, returns false and an error ot the sender.
@@ -81,7 +88,12 @@ class CONTENT_EXPORT BrowserMessageFilter
   bool DispatchMessage(const IPC::Message& message);
 
   IPC::Channel* channel_;
+  base::ProcessId peer_pid_;
+
+#if defined(OS_WIN)
+  base::Lock peer_handle_lock_;
   base::ProcessHandle peer_handle_;
+#endif
 };
 
 }  // namespace content

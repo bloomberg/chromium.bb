@@ -39,7 +39,7 @@ void GamepadBrowserMessageFilter::OnGamepadStartPolling(
   if (!is_started_) {
     is_started_ = true;
     service->AddConsumer();
-    *renderer_handle = service->GetSharedMemoryHandleForProcess(peer_handle());
+    *renderer_handle = service->GetSharedMemoryHandleForProcess(PeerHandle());
   } else {
     // Currently we only expect the renderer to tell us once to start.
     NOTREACHED();

@@ -143,7 +143,7 @@ class OpenChannelToPpapiPluginCallback
 
   virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
                                    int* renderer_id) OVERRIDE {
-    *renderer_handle = filter()->peer_handle();
+    *renderer_handle = filter()->PeerHandle();
     *renderer_id = filter()->render_process_id();
   }
 
@@ -182,7 +182,7 @@ class OpenChannelToPpapiBrokerCallback
 
   virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
                                    int* renderer_id) OVERRIDE {
-    *renderer_handle = filter_->peer_handle();
+    *renderer_handle = filter_->PeerHandle();
     *renderer_id = filter_->render_process_id();
   }
 
@@ -345,7 +345,7 @@ void RenderMessageFilter::OnChannelClosing() {
 
 void RenderMessageFilter::OnChannelConnected(int32 peer_id) {
   BrowserMessageFilter::OnChannelConnected(peer_id);
-  base::ProcessHandle handle = peer_handle();
+  base::ProcessHandle handle = PeerHandle();
 #if defined(OS_MACOSX)
   process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle,
                                                                     NULL));
@@ -480,7 +480,7 @@ void RenderMessageFilter::OnCreateWindow(
 
   render_widget_helper_->CreateNewWindow(params,
                                          no_javascript_access,
-                                         peer_handle(),
+                                         PeerHandle(),
                                          route_id,
                                          main_frame_route_id,
                                          surface_id,
@@ -508,10 +508,10 @@ void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,
   using base::ProcessMetrics;
 #if !defined(OS_MACOSX) || defined(OS_IOS)
   scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-      peer_handle()));
+      PeerHandle()));
 #else
   scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-      peer_handle(), content::BrowserChildProcessHost::GetPortProvider()));
+      PeerHandle(), content::BrowserChildProcessHost::GetPortProvider()));
 #endif
   if (!metrics->GetMemoryBytes(private_bytes, shared_bytes)) {
     *private_bytes = 0;
@@ -856,7 +856,7 @@ void RenderMessageFilter::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
   ChildProcessHostImpl::AllocateSharedMemory(
-      buffer_size, peer_handle(), handle);
+      buffer_size, PeerHandle(), handle);
 }
 
 net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
@@ -1009,7 +1009,7 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const base::FilePath& path,
       path, flags, NULL, &error_code);
   IPC::PlatformFileForTransit file_for_transit =
       file != base::kInvalidPlatformFileValue ?
-          IPC::GetFileHandleForProcess(file, peer_handle(), true) :
+          IPC::GetFileHandleForProcess(file, PeerHandle(), true) :
           IPC::InvalidPlatformFileForTransit();
 
   IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(

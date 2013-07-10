@@ -232,7 +232,7 @@ void VideoCaptureHost::DoControllerAddedOnIOThread(
   }
 
   it->second->controller = controller;
-  controller->StartCapture(controller_id, this, peer_handle(), params);
+  controller->StartCapture(controller_id, this, PeerHandle(), params);
 }
 
 void VideoCaptureHost::OnStopCapture(int device_id) {

@@ -155,7 +155,7 @@ void IOThreadResponseCallback(
 
   CommonResponseCallback(ipc_sender.get(),
                          routing_id,
-                         ipc_sender->peer_handle(),
+                         ipc_sender->PeerHandle(),
                          request_id,
                          type,
                          results,

@@ -80,7 +80,7 @@ void FileUtilitiesMessageFilter::OnOpenFile(
 #if defined(OS_WIN)
   // Duplicate the file handle so that the renderer process can access the file.
   if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                       peer_handle(), result, 0, false,
+                       PeerHandle(), result, 0, false,
                        DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     // file_handle is closed whether or not DuplicateHandle succeeds.
     *result = INVALID_HANDLE_VALUE;

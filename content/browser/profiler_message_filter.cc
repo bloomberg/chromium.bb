@@ -50,7 +50,7 @@ void ProfilerMessageFilter::OnChildProfilerData(
 #if defined(USE_TCMALLOC)
 void ProfilerMessageFilter::OnTcmallocStats(const std::string& output) {
   AboutTcmallocOutputs::GetInstance()->OnStatsForChildProcess(
-        base::GetProcId(peer_handle()), process_type_, output);
+        peer_pid(), process_type_, output);
 }
 #endif
 

@@ -143,7 +143,7 @@ int64 IndexedDBDispatcherHost::HostTransactionId(int64 transaction_id) {
   // uniquely identify this transaction, and effectively bind it to
   // the renderer that initiated it. The lower 32 bits of
   // transaction_id are guaranteed to be unique within that renderer.
-  base::ProcessId pid = base::GetProcId(peer_handle());
+  base::ProcessId pid = peer_pid();
   DCHECK(!(transaction_id >> 32)) << "Transaction ids can only be 32 bits";
   COMPILE_ASSERT(sizeof(base::ProcessId) <= sizeof(int32),
                  Process_ID_must_fit_in_32_bits);
@@ -153,7 +153,7 @@ int64 IndexedDBDispatcherHost::HostTransactionId(int64 transaction_id) {
 
 int64 IndexedDBDispatcherHost::RendererTransactionId(
     int64 host_transaction_id) {
-  DCHECK(host_transaction_id >> 32 == base::GetProcId(peer_handle()))
+  DCHECK(host_transaction_id >> 32 == peer_pid())
       << "Invalid renderer target for transaction id";
   return host_transaction_id & 0xffffffff;
 }

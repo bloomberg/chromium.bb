@@ -440,7 +440,7 @@ void FileAPIMessageFilter::OnOpenFile(
   }
 
   operations_[request_id] = operation_runner()->OpenFile(
-      url, file_flags, peer_handle(),
+      url, file_flags, PeerHandle(),
       base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id,
                  quota_policy));
 }
@@ -552,7 +552,7 @@ void FileAPIMessageFilter::OnAppendSharedMemory(
     return;
   }
 #if defined(OS_WIN)
-  base::SharedMemory shared_memory(handle, true, peer_handle());
+  base::SharedMemory shared_memory(handle, true, PeerHandle());
 #else
   base::SharedMemory shared_memory(handle, true);
 #endif

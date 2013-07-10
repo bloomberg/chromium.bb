@@ -513,7 +513,7 @@ bool NaClProcessHost::ReplyToRenderer(
   if (!DuplicateHandle(base::GetCurrentProcessHandle(),
                        reinterpret_cast<HANDLE>(
                            internal_->socket_for_renderer),
-                       nacl_host_message_filter_->peer_handle(),
+                       nacl_host_message_filter_->PeerHandle(),
                        &handle_in_renderer,
                        0,  // Unused given DUPLICATE_SAME_ACCESS.
                        FALSE,

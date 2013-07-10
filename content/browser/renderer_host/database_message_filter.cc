@@ -157,7 +157,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
   // database tracker.
   bool auto_close = !db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name);
   IPC::PlatformFileForTransit target_handle =
-      IPC::GetFileHandleForProcess(file_handle, peer_handle(), auto_close);
+      IPC::GetFileHandleForProcess(file_handle, PeerHandle(), auto_close);
 
   DatabaseHostMsg_OpenFile::WriteReplyParams(reply_msg, target_handle);
   Send(reply_msg);

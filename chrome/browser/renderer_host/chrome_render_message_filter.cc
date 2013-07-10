@@ -299,8 +299,8 @@ void ChromeRenderMessageFilter::OnResourceTypeStats(
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(ENABLE_TASK_MANAGER)
-  TaskManager::GetInstance()->model()->NotifyResourceTypeStats(
-      base::GetProcId(peer_handle()), stats);
+  TaskManager::GetInstance()->model()->NotifyResourceTypeStats(peer_pid(),
+                                                               stats);
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -319,7 +319,7 @@ void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {
     return;
   }
 
-  base::ProcessId renderer_id = base::GetProcId(peer_handle());
+  base::ProcessId renderer_id = peer_pid();
 
 #if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyFPS(
@@ -344,7 +344,7 @@ void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
     return;
   }
 
-  base::ProcessId renderer_id = base::GetProcId(peer_handle());
+  base::ProcessId renderer_id = peer_pid();
 
 #if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyV8HeapStats(

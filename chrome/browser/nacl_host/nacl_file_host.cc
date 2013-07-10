@@ -134,7 +134,7 @@ void DoOpenPnaclFile(
   // Do any DuplicateHandle magic that is necessary first.
   IPC::PlatformFileForTransit target_desc =
       IPC::GetFileHandleForProcess(file_to_open,
-                                   nacl_host_message_filter->peer_handle(),
+                                   nacl_host_message_filter->PeerHandle(),
                                    true /* Close source */);
   if (target_desc == IPC::InvalidPlatformFileForTransit()) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
@@ -173,7 +173,7 @@ void DoCreateTemporaryFile(
   // Do any DuplicateHandle magic that is necessary first.
   IPC::PlatformFileForTransit target_desc =
       IPC::GetFileHandleForProcess(file_handle,
-                                   nacl_host_message_filter->peer_handle(),
+                                   nacl_host_message_filter->PeerHandle(),
                                    true);
   if (target_desc == IPC::InvalidPlatformFileForTransit()) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
@@ -200,7 +200,7 @@ void DoRegisterOpenedNaClExecutableFile(
 
   IPC::PlatformFileForTransit file_desc = IPC::GetFileHandleForProcess(
       file,
-      nacl_host_message_filter->peer_handle(),
+      nacl_host_message_filter->PeerHandle(),
       true /* close_source */);
 
   NaClHostMsg_OpenNaClExecutable::WriteReplyParams(

@@ -42,7 +42,7 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
     const PeerConnectionInfo& info) {
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
       render_process_id_,
-      base::GetProcId(peer_handle()),
+      peer_pid(),
       info.lid,
       info.url,
       info.servers,
@@ -50,14 +50,13 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
 }
 
 void PeerConnectionTrackerHost::OnRemovePeerConnection(int lid) {
-  WebRTCInternals::GetInstance()->OnRemovePeerConnection(
-      base::GetProcId(peer_handle()), lid);
+  WebRTCInternals::GetInstance()->OnRemovePeerConnection(peer_pid(), lid);
 }
 
 void PeerConnectionTrackerHost::OnUpdatePeerConnection(
     int lid, const std::string& type, const std::string& value) {
   WebRTCInternals::GetInstance()->OnUpdatePeerConnection(
-      base::GetProcId(peer_handle()),
+      peer_pid(),
       lid,
       type,
       value);
@@ -65,8 +64,7 @@ void PeerConnectionTrackerHost::OnUpdatePeerConnection(
 
 void PeerConnectionTrackerHost::OnAddStats(int lid,
                                            const base::ListValue& value) {
-  WebRTCInternals::GetInstance()->OnAddStats(
-      base::GetProcId(peer_handle()), lid, value);
+  WebRTCInternals::GetInstance()->OnAddStats(peer_pid(), lid, value);
 }
 
 }  // namespace content

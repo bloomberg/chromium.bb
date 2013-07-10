@@ -118,7 +118,7 @@ void AudioInputRendererHost::DoCompleteCreation(
   if (!entry)
     return;
 
-  if (!peer_handle()) {
+  if (!PeerHandle()) {
     NOTREACHED() << "Renderer process handle is invalid.";
     DeleteEntryOnError(entry);
     return;
@@ -133,7 +133,7 @@ void AudioInputRendererHost::DoCompleteCreation(
   // Once the audio stream is created then complete the creation process by
   // mapping shared memory and sharing with the renderer process.
   base::SharedMemoryHandle foreign_memory_handle;
-  if (!entry->shared_memory.ShareToProcess(peer_handle(),
+  if (!entry->shared_memory.ShareToProcess(PeerHandle(),
                                            &foreign_memory_handle)) {
     // If we failed to map and share the shared memory then close the audio
     // stream and send an error message.
@@ -152,7 +152,7 @@ void AudioInputRendererHost::DoCompleteCreation(
 
   // If we failed to prepare the sync socket for the renderer then we fail
   // the construction of audio input stream.
-  if (!writer->PrepareForeignSocketHandle(peer_handle(),
+  if (!writer->PrepareForeignSocketHandle(PeerHandle(),
                                           &foreign_socket_handle)) {
     DeleteEntryOnError(entry);
     return;

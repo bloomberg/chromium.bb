@@ -253,11 +253,11 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   if (!sent_first_data_msg_) {
     base::SharedMemoryHandle handle;
     int size;
-    if (!buffer_->ShareToProcess(filter_->peer_handle(), &handle, &size))
+    if (!buffer_->ShareToProcess(filter_->PeerHandle(), &handle, &size))
       return false;
     filter_->Send(
         new ResourceMsg_SetDataBuffer(routing_id_, request_id, handle, size,
-                                      base::GetProcId(filter_->peer_handle())));
+                                      filter_->peer_pid()));
     sent_first_data_msg_ = true;
   }
 
