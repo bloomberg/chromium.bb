@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/network_library.h"
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"
@@ -106,8 +107,8 @@ void WipeString(std::string* str) {
   str->clear();
 }
 
-bool EnsureCrosLoaded() {
-  if (!CrosLibrary::Get()->libcros_loaded()) {
+bool EnsureRunningOnChromeOS() {
+  if (!base::chromeos::IsRunningOnChromeOS()) {
     return false;
   } else {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
@@ -333,7 +334,7 @@ void Network::CopyCredentialsFromRemembered(Network* remembered) {
 
 void Network::SetValueProperty(const char* prop, const base::Value& value) {
   DCHECK(prop);
-  if (!EnsureCrosLoaded())
+  if (!EnsureRunningOnChromeOS())
     return;
   CrosSetNetworkServiceProperty(service_path_, prop, value);
   // Ensure NetworkStateHandler properties are up-to-date.
@@ -345,7 +346,7 @@ void Network::SetValueProperty(const char* prop, const base::Value& value) {
 
 void Network::ClearProperty(const char* prop) {
   DCHECK(prop);
-  if (!EnsureCrosLoaded())
+  if (!EnsureRunningOnChromeOS())
     return;
   CrosClearNetworkServiceProperty(service_path_, prop);
   // Ensure NetworkStateHandler properties are up-to-date.
@@ -495,7 +496,7 @@ std::string Network::GetErrorString() const {
 
 void Network::InitIPAddress() {
   ip_address_.clear();
-  if (!EnsureCrosLoaded())
+  if (!EnsureRunningOnChromeOS())
     return;
   // If connected, get IPConfig.
   if (connected() && !device_path_.empty()) {
@@ -860,7 +861,7 @@ CellularNetwork::~CellularNetwork() {
 }
 
 bool CellularNetwork::StartActivation() {
-  if (!EnsureCrosLoaded())
+  if (!EnsureRunningOnChromeOS())
     return false;
   if (!CrosActivateCellularModem(service_path(), ""))
     return false;
@@ -872,7 +873,7 @@ bool CellularNetwork::StartActivation() {
 }
 
 void CellularNetwork::CompleteActivation() {
-  if (!EnsureCrosLoaded())
+  if (!EnsureRunningOnChromeOS())
     return;
   CrosCompleteCellularActivation(service_path());
 }
