@@ -38,6 +38,7 @@ template<typename T> PassOwnArrayPtr<T> adoptArrayPtr(T*);
 template<typename T> void deleteOwnedArrayPtr(T* ptr);
 
 template<typename T> class PassOwnArrayPtr {
+    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(PassOwnArrayPtr);
 public:
     typedef T* PtrType;
 

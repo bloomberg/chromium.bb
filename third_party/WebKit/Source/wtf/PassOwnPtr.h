@@ -40,6 +40,7 @@ namespace WTF {
     template<typename T> PassOwnPtr<T> adoptPtr(T*);
 
     template<typename T> class PassOwnPtr {
+        WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(PassOwnPtr);
     public:
         typedef typename RemovePointer<T>::Type ValueType;
         typedef ValueType* PtrType;

@@ -53,4 +53,14 @@ extern std::nullptr_t nullptr;
 
 #endif
 
+#if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
+#define WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(ClassName) \
+    private: \
+        ClassName(int) = delete
+#else
+#define WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(ClassName) \
+    private: \
+        ClassName(int)
+#endif
+
 #endif
