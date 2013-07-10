@@ -16,9 +16,14 @@ libdrm_freedreno_la_SOURCES = \
 	freedreno_priv.h \
 	freedreno_ringbuffer.c \
 	freedreno_bo.c \
-	kgsl_drm.h \
-	list.h \
-	msm_kgsl.h
+	kgsl/kgsl_bo.c \
+	kgsl/kgsl_device.c \
+	kgsl/kgsl_drm.h \
+	kgsl/kgsl_pipe.c \
+	kgsl/kgsl_priv.h \
+	kgsl/kgsl_ringbuffer.c \
+	kgsl/msm_kgsl.h \
+	list.h
 
 libdrm_freedrenocommonincludedir = ${includedir}/freedreno
 libdrm_freedrenocommoninclude_HEADERS = freedreno_drmif.h freedreno_ringbuffer.h

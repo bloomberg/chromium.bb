@@ -36,35 +36,43 @@
 static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
 static void * dev_table;
 
+struct fd_device * kgsl_device_new(int fd);
+
 static struct fd_device * fd_device_new_impl(int fd)
 {
-	struct fd_device *dev = calloc(1, sizeof(*dev));
+	struct fd_device *dev;
+	drmVersionPtr version;
+
+	/* figure out if we are kgsl or msm drm driver: */
+	version = drmGetVersion(fd);
+	if (!version) {
+		ERROR_MSG("cannot get version: %s", strerror(errno));
+		return NULL;
+	}
+
+	if (!strcmp(version->name, "kgsl")) {
+		DEBUG_MSG("kgsl DRM device");
+		dev = kgsl_device_new(fd);
+	} else {
+		ERROR_MSG("unknown device: %s", version->name);
+		dev = NULL;
+	}
+
 	if (!dev)
 		return NULL;
+
 	atomic_set(&dev->refcnt, 1);
 	dev->fd = fd;
 	dev->handle_table = drmHashCreate();
 	dev->name_table = drmHashCreate();
-	return dev;
-}
 
-/* use inode for key into dev_table, rather than fd, to avoid getting
- * confused by multiple-opens:
- */
-static int devkey(int fd)
-{
-	struct stat s;
-	if (fstat(fd, &s)) {
-		ERROR_MSG("stat failed: %s", strerror(errno));
-		return -1;
-	}
-	return s.st_ino;
+	return dev;
 }
 
 struct fd_device * fd_device_new(int fd)
 {
 	struct fd_device *dev = NULL;
-	int key = devkey(fd);
+	int key = fd;
 
 	pthread_mutex_lock(&table_lock);
 
@@ -73,7 +81,8 @@ struct fd_device * fd_device_new(int fd)
 
 	if (drmHashLookup(dev_table, key, (void **)&dev)) {
 		dev = fd_device_new_impl(fd);
-		drmHashInsert(dev_table, key, dev);
+		if (dev)
+			drmHashInsert(dev_table, key, dev);
 	} else {
 		dev = fd_device_ref(dev);
 	}
@@ -96,7 +105,7 @@ void fd_device_del(struct fd_device *dev)
 	pthread_mutex_lock(&table_lock);
 	drmHashDestroy(dev->handle_table);
 	drmHashDestroy(dev->name_table);
-	drmHashDelete(dev_table, devkey(dev->fd));
+	drmHashDelete(dev_table, dev->fd);
 	pthread_mutex_unlock(&table_lock);
-	free(dev);
+	dev->funcs->destroy(dev);
 }

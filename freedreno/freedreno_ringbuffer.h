@@ -37,27 +37,16 @@
  * have a kernel driver that can deal w/ reloc's..
  */
 
-struct fd_rb_bo;
+struct fd_ringbuffer_funcs;
 struct fd_ringmarker;
 
 struct fd_ringbuffer {
 	int size;
 	uint32_t *cur, *end, *start, *last_start;
 	struct fd_pipe *pipe;
-	struct fd_rb_bo *bo;
+	struct fd_ringbuffer_funcs *funcs;
 	uint32_t last_timestamp;
 };
-
-/* ringbuffer flush flags:
- *   SAVE_GMEM - GMEM contents not preserved to system memory
- *       in cmds flushed so if there is a context switch after
- *       this flush and before the next one the kernel must
- *       save GMEM contents
- *   SUBMIT_IB_LIST - tbd..
- */
-#define DRM_FREEDRENO_CONTEXT_SAVE_GMEM       1
-#define DRM_FREEDRENO_CONTEXT_SUBMIT_IB_LIST  4
-
 
 struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);
@@ -72,12 +61,19 @@ static inline void fd_ringbuffer_emit(struct fd_ringbuffer *ring,
 	(*ring->cur++) = data;
 }
 
-void fd_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
-		struct fd_bo *bo, uint32_t offset, uint32_t or);
-void fd_ringbuffer_emit_reloc_shift(struct fd_ringbuffer *ring,
-		struct fd_bo *bo, uint32_t offset, uint32_t or, int32_t shift);
+struct fd_reloc {
+	struct fd_bo *bo;
+#define FD_RELOC_READ             0x0001
+#define FD_RELOC_WRITE            0x0002
+	uint32_t flags;
+	uint32_t offset;
+	uint32_t or;
+	int32_t  shift;
+};
+
+void fd_ringbuffer_reloc(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
 void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringmarker *target);
+		struct fd_ringmarker *target, struct fd_ringmarker *end);
 
 struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring);
 void fd_ringmarker_del(struct fd_ringmarker *marker);

@@ -29,8 +29,6 @@
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 
-#include <linux/fb.h>
-
 static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* set buffer name, and add to table, call w/ table_lock held: */
@@ -56,8 +54,9 @@ static struct fd_bo * lookup_bo(void *tbl, uint32_t key)
 static struct fd_bo * bo_from_handle(struct fd_device *dev,
 		uint32_t size, uint32_t handle)
 {
-	unsigned i;
-	struct fd_bo *bo = calloc(1, sizeof(*bo));
+	struct fd_bo *bo;
+
+	bo = dev->funcs->bo_from_handle(dev, size, handle);
 	if (!bo) {
 		struct drm_gem_close req = {
 				.handle = handle,
@@ -71,127 +70,37 @@ static struct fd_bo * bo_from_handle(struct fd_device *dev,
 	atomic_set(&bo->refcnt, 1);
 	/* add ourself into the handle table: */
 	drmHashInsert(dev->handle_table, handle, bo);
-	for (i = 0; i < ARRAY_SIZE(bo->list); i++)
-		list_inithead(&bo->list[i]);
 	return bo;
-}
-
-static int set_memtype(struct fd_bo *bo, uint32_t flags)
-{
-	struct drm_kgsl_gem_memtype req = {
-			.handle = bo->handle,
-			.type = flags & DRM_FREEDRENO_GEM_TYPE_MEM_MASK,
-	};
-
-	return drmCommandWrite(bo->dev->fd, DRM_KGSL_GEM_SETMEMTYPE,
-			&req, sizeof(req));
-}
-
-static int bo_alloc(struct fd_bo *bo)
-{
-	if (!bo->offset) {
-		struct drm_kgsl_gem_alloc req = {
-				.handle = bo->handle,
-		};
-		int ret;
-
-		/* if the buffer is already backed by pages then this
-		 * doesn't actually do anything (other than giving us
-		 * the offset)
-		 */
-		ret = drmCommandWriteRead(bo->dev->fd, DRM_KGSL_GEM_ALLOC,
-				&req, sizeof(req));
-		if (ret) {
-			ERROR_MSG("alloc failed: %s", strerror(errno));
-			return ret;
-		}
-
-		bo->offset = req.offset;
-	}
-	return 0;
 }
 
 struct fd_bo * fd_bo_new(struct fd_device *dev,
 		uint32_t size, uint32_t flags)
 {
-	struct drm_kgsl_gem_create req = {
-			.size = ALIGN(size, 4096),
-	};
 	struct fd_bo *bo = NULL;
+	uint32_t handle;
+	int ret;
 
-	if (drmCommandWriteRead(dev->fd, DRM_KGSL_GEM_CREATE,
-			&req, sizeof(req))) {
+	ret = dev->funcs->bo_new_handle(dev, ALIGN(size, 4096), flags, &handle);
+	if (ret)
 		return NULL;
-	}
 
 	pthread_mutex_lock(&table_lock);
-	bo = bo_from_handle(dev, size, req.handle);
+	bo = bo_from_handle(dev, size, handle);
 	pthread_mutex_unlock(&table_lock);
-	if (!bo) {
-		goto fail;
-	}
-
-	if (set_memtype(bo, flags)) {
-		goto fail;
-	}
 
 	return bo;
-fail:
-	if (bo)
-		fd_bo_del(bo);
-	return NULL;
 }
 
-/* don't use this... it is just needed to get a bo from the
- * framebuffer (pre-dmabuf)
- */
-struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe,
-		int fbfd, uint32_t size)
+struct fd_bo *fd_bo_from_handle(struct fd_device *dev,
+		uint32_t handle, uint32_t size)
 {
-	struct drm_kgsl_gem_create_fd req = {
-			.fd = fbfd,
-	};
-	struct fd_bo *bo;
-
-	if (drmCommandWriteRead(pipe->dev->fd, DRM_KGSL_GEM_CREATE_FD,
-			&req, sizeof(req))) {
-		return NULL;
-	}
+	struct fd_bo *bo = NULL;
 
 	pthread_mutex_lock(&table_lock);
-	bo = bo_from_handle(pipe->dev, size, req.handle);
-
-	/* this is fugly, but works around a bug in the kernel..
-	 * priv->memdesc.size never gets set, so getbufinfo ioctl
-	 * thinks the buffer hasn't be allocate and fails
-	 */
-	if (bo && !fd_bo_gpuaddr(bo, 0)) {
-		void *fbmem = mmap(NULL, size, PROT_READ | PROT_WRITE,
-				MAP_SHARED, fbfd, 0);
-		struct kgsl_map_user_mem req = {
-				.memtype = KGSL_USER_MEM_TYPE_ADDR,
-				.len     = size,
-				.offset  = 0,
-				.hostptr = (unsigned long)fbmem,
-		};
-		int ret;
-		ret = ioctl(pipe->fd, IOCTL_KGSL_MAP_USER_MEM, &req);
-		if (ret) {
-			ERROR_MSG("mapping user mem failed: %s",
-					strerror(errno));
-			goto fail;
-		}
-		bo->gpuaddr = req.gpuaddr;
-		bo->map = fbmem;
-	}
+	bo = bo_from_handle(dev, size, handle);
 	pthread_mutex_unlock(&table_lock);
 
 	return bo;
-fail:
-	pthread_mutex_unlock(&table_lock);
-	if (bo)
-		fd_bo_del(bo);
-	return NULL;
 }
 
 struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
@@ -235,6 +144,8 @@ struct fd_bo * fd_bo_ref(struct fd_bo *bo)
 
 void fd_bo_del(struct fd_bo *bo)
 {
+	struct fd_device *dev;
+
 	if (!atomic_dec_and_test(&bo->refcnt))
 		return;
 
@@ -253,8 +164,10 @@ void fd_bo_del(struct fd_bo *bo)
 		pthread_mutex_unlock(&table_lock);
 	}
 
-	fd_device_del(bo->dev);
-	free(bo);
+	dev = bo->dev;
+	bo->funcs->destroy(bo);
+
+	fd_device_del(dev);
 }
 
 int fd_bo_get_name(struct fd_bo *bo, uint32_t *name)
@@ -293,15 +206,16 @@ uint32_t fd_bo_size(struct fd_bo *bo)
 void * fd_bo_map(struct fd_bo *bo)
 {
 	if (!bo->map) {
+		uint64_t offset;
 		int ret;
 
-		ret = bo_alloc(bo);
+		ret = bo->funcs->offset(bo, &offset);
 		if (ret) {
 			return NULL;
 		}
 
 		bo->map = mmap(0, bo->size, PROT_READ | PROT_WRITE, MAP_SHARED,
-				bo->dev->fd, bo->offset);
+				bo->dev->fd, offset);
 		if (bo->map == MAP_FAILED) {
 			ERROR_MSG("mmap failed: %s", strerror(errno));
 			bo->map = NULL;
@@ -310,88 +224,13 @@ void * fd_bo_map(struct fd_bo *bo)
 	return bo->map;
 }
 
-uint32_t fd_bo_gpuaddr(struct fd_bo *bo, uint32_t offset)
+/* a bit odd to take the pipe as an arg, but it's a, umm, quirk of kgsl.. */
+int fd_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
 {
-	if (!bo->gpuaddr) {
-		struct drm_kgsl_gem_bufinfo req = {
-				.handle = bo->handle,
-		};
-		int ret;
-
-		ret = bo_alloc(bo);
-		if (ret) {
-			return ret;
-		}
-
-		ret = drmCommandWriteRead(bo->dev->fd, DRM_KGSL_GEM_GET_BUFINFO,
-				&req, sizeof(req));
-		if (ret) {
-			ERROR_MSG("get bufinfo failed: %s", strerror(errno));
-			return 0;
-		}
-
-		bo->gpuaddr = req.gpuaddr[0];
-	}
-	return bo->gpuaddr + offset;
+	return bo->funcs->cpu_prep(bo, pipe, op);
 }
 
-/*
- * Super-cheezy way to synchronization between mesa and ddx..  the
- * SET_ACTIVE ioctl gives us a way to stash a 32b # w/ a GEM bo, and
- * GET_BUFINFO gives us a way to retrieve it.  We use this to stash
- * the timestamp of the last ISSUEIBCMDS on the buffer.
- *
- * To avoid an obscene amount of syscalls, we:
- *  1) Only set the timestamp for buffers w/ an flink name, ie.
- *     only buffers shared across processes.  This is enough to
- *     catch the DRI2 buffers.
- *  2) Only set the timestamp for buffers submitted to the 3d ring
- *     and only check the timestamps on buffers submitted to the
- *     2d ring.  This should be enough to handle synchronizing of
- *     presentation blit.  We could do synchronization in the other
- *     direction too, but that would be problematic if we are using
- *     the 3d ring from DDX, since client side wouldn't know this.
- *
- * The waiting on timestamp happens before flush, and setting of
- * timestamp happens after flush.  It is transparent to the user
- * of libdrm_freedreno as all the tracking of buffers happens via
- * _emit_reloc()..
- */
-
-void fb_bo_set_timestamp(struct fd_bo *bo, uint32_t timestamp)
+void fd_bo_cpu_fini(struct fd_bo *bo)
 {
-	if (bo->name) {
-		struct drm_kgsl_gem_active req = {
-				.handle = bo->handle,
-				.active = timestamp,
-		};
-		int ret;
-
-		ret = drmCommandWrite(bo->dev->fd, DRM_KGSL_GEM_SET_ACTIVE,
-				&req, sizeof(req));
-		if (ret) {
-			ERROR_MSG("set active failed: %s", strerror(errno));
-		}
-	}
-}
-
-uint32_t fd_bo_get_timestamp(struct fd_bo *bo)
-{
-	uint32_t timestamp = 0;
-	if (bo->name) {
-		struct drm_kgsl_gem_bufinfo req = {
-				.handle = bo->handle,
-		};
-		int ret;
-
-		ret = drmCommandWriteRead(bo->dev->fd, DRM_KGSL_GEM_GET_BUFINFO,
-				&req, sizeof(req));
-		if (ret) {
-			ERROR_MSG("get bufinfo failed: %s", strerror(errno));
-			return 0;
-		}
-
-		timestamp = req.active;
-	}
-	return timestamp;
+	bo->funcs->cpu_fini(bo);
 }

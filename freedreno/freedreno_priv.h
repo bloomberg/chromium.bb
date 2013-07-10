@@ -38,6 +38,8 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <assert.h>
 
 #include "xf86drm.h"
 #include "xf86atomic.h"
@@ -45,8 +47,17 @@
 #include "list.h"
 
 #include "freedreno_drmif.h"
-#include "msm_kgsl.h"
-#include "kgsl_drm.h"
+#include "freedreno_ringbuffer.h"
+#include "drm/drm.h"
+
+struct fd_device_funcs {
+	int (*bo_new_handle)(struct fd_device *dev, uint32_t size,
+			uint32_t flags, uint32_t *handle);
+	struct fd_bo * (*bo_from_handle)(struct fd_device *dev,
+			uint32_t size, uint32_t handle);
+	struct fd_pipe * (*pipe_new)(struct fd_device *dev, enum fd_pipe_id id);
+	void (*destroy)(struct fd_device *dev);
+};
 
 struct fd_device {
 	int fd;
@@ -62,60 +73,57 @@ struct fd_device {
 	 * open in the process first, before calling gem-open.
 	 */
 	void *handle_table, *name_table;
+
+	struct fd_device_funcs *funcs;
+};
+
+struct fd_pipe_funcs {
+	struct fd_ringbuffer * (*ringbuffer_new)(struct fd_pipe *pipe, uint32_t size);
+	int (*get_param)(struct fd_pipe *pipe, enum fd_param_id param, uint64_t *value);
+	int (*wait)(struct fd_pipe *pipe, uint32_t timestamp);
+	void (*destroy)(struct fd_pipe *pipe);
 };
 
 struct fd_pipe {
 	struct fd_device *dev;
 	enum fd_pipe_id id;
-	int fd;
-	uint32_t drawctxt_id;
-
-	/* device properties: */
-	struct kgsl_version version;
-	struct kgsl_devinfo devinfo;
-
-	/* list of bo's that are referenced in ringbuffer but not
-	 * submitted yet:
-	 */
-	struct list_head submit_list;
-
-	/* list of bo's that have been submitted but timestamp has
-	 * not passed yet (so still ref'd in active cmdstream)
-	 */
-	struct list_head pending_list;
-
-	/* if we are the 2d pipe, and want to wait on a timestamp
-	 * from 3d, we need to also internally open the 3d pipe:
-	 */
-	struct fd_pipe *p3d;
+	struct fd_pipe_funcs *funcs;
 };
 
-void fd_pipe_add_submit(struct fd_pipe *pipe, struct fd_bo *bo);
-void fd_pipe_pre_submit(struct fd_pipe *pipe);
-void fd_pipe_post_submit(struct fd_pipe *pipe, uint32_t timestamp);
-void fd_pipe_process_pending(struct fd_pipe *pipe, uint32_t timestamp);
+struct fd_ringmarker {
+	struct fd_ringbuffer *ring;
+	uint32_t *cur;
+};
+
+struct fd_ringbuffer_funcs {
+	void * (*hostptr)(struct fd_ringbuffer *ring);
+	int (*flush)(struct fd_ringbuffer *ring, uint32_t *last_start);
+	void (*emit_reloc)(struct fd_ringbuffer *ring,
+			const struct fd_reloc *reloc);
+	void (*emit_reloc_ring)(struct fd_ringbuffer *ring,
+			struct fd_ringmarker *target, struct fd_ringmarker *end);
+	void (*destroy)(struct fd_ringbuffer *ring);
+};
+
+struct fd_bo_funcs {
+	int (*offset)(struct fd_bo *bo, uint64_t *offset);
+	int (*cpu_prep)(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op);
+	void (*cpu_fini)(struct fd_bo *bo);
+	void (*destroy)(struct fd_bo *bo);
+};
 
 struct fd_bo {
 	struct fd_device *dev;
 	uint32_t size;
 	uint32_t handle;
 	uint32_t name;
-	uint32_t gpuaddr;
 	void *map;
-	uint64_t offset;
-	/* timestamp (per pipe) for bo's in a pipe's pending_list: */
-	uint32_t timestamp[FD_PIPE_MAX];
-	/* list-node for pipe's submit_list or pending_list */
-	struct list_head list[FD_PIPE_MAX];
 	atomic_t refcnt;
+	struct fd_bo_funcs *funcs;
 };
 
-/* not exposed publicly, because won't be needed when we have
- * a proper kernel driver
- */
-uint32_t fd_bo_gpuaddr(struct fd_bo *bo, uint32_t offset);
-void fb_bo_set_timestamp(struct fd_bo *bo, uint32_t timestamp);
-uint32_t fd_bo_get_timestamp(struct fd_bo *bo);
+struct fd_bo *fd_bo_from_handle(struct fd_device *dev,
+		uint32_t handle, uint32_t size);
 
 #define ALIGN(v,a) (((v) + (a) - 1) & ~((a) - 1))
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -134,5 +142,8 @@ uint32_t fd_bo_get_timestamp(struct fd_bo *bo);
 #define ERROR_MSG(fmt, ...) \
 		do { drmMsg("[E] " fmt " (%s:%d)\n", \
 				##__VA_ARGS__, __FUNCTION__, __LINE__); } while (0)
+
+#define U642VOID(x) ((void *)(unsigned long)(x))
+#define VOID2U64(x) ((uint64_t)(unsigned long)(x))
 
 #endif /* FREEDRENO_PRIV_H_ */
