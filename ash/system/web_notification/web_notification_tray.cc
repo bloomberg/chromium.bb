@@ -18,13 +18,11 @@
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_strings.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_util.h"
@@ -36,6 +34,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/layout/fill_layout.h"
 
 #if defined(OS_CHROMEOS)
 
@@ -59,6 +58,8 @@ const int kWebNotificationIconSize = 31;
 // Height of the art assets used in alternate shelf layout,
 // see ash/ash_switches.h:UseAlternateShelfLayout.
 const int kWebNotificationAlternateSize = 38;
+const SkColor kWebNotificationColorNoUnread = SkColorSetA(SK_ColorWHITE, 128);
+const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
 
 }
 
@@ -105,17 +106,10 @@ class WebNotificationButton : public views::CustomButton {
       : views::CustomButton(listener),
         is_bubble_visible_(false),
         unread_count_(0) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-    icon_ = new views::ImageView();
-    icon_->SetImage(rb.GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ICON));
-    AddChildView(icon_);
-
+    SetLayoutManager(new views::FillLayout);
     unread_label_ = new views::Label();
     SetupLabelForTray(unread_label_);
     AddChildView(unread_label_);
-    unread_label_->SetVisible(false);
   }
 
   void SetBubbleVisible(bool visible) {
@@ -130,6 +124,8 @@ class WebNotificationButton : public views::CustomButton {
     // base::FormatNumber doesn't convert to arabic numeric characters.
     // TODO(mukai): use ICU to support conversion for such locales.
     unread_count_ = unread_count;
+    // TODO(mukai): move NINE_PLUS message to ui_strings, it doesn't need to be
+    // in ash_strings.
     unread_label_->SetText((unread_count > 9) ?
         l10n_util::GetStringUTF16(IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS) :
         base::FormatNumber(unread_count));
@@ -138,12 +134,6 @@ class WebNotificationButton : public views::CustomButton {
 
  protected:
   // Overridden from views::ImageButton:
-  virtual void Layout() OVERRIDE {
-    views::CustomButton::Layout();
-    icon_->SetBoundsRect(bounds());
-    unread_label_->SetBoundsRect(bounds());
-  }
-
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     if (ash::switches::UseAlternateShelfLayout())
       return gfx::Size(kWebNotificationAlternateSize,
@@ -153,21 +143,15 @@ class WebNotificationButton : public views::CustomButton {
 
  private:
   void UpdateIconVisibility() {
-    if (!is_bubble_visible_ && unread_count_ > 0) {
-      icon_->SetVisible(false);
-      unread_label_->SetVisible(true);
-    } else {
-      icon_->SetVisible(true);
-      unread_label_->SetVisible(false);
-    }
-    InvalidateLayout();
+    unread_label_->SetEnabledColor(
+        (!is_bubble_visible_ && unread_count_ > 0) ?
+        kWebNotificationColorWithUnread : kWebNotificationColorNoUnread);
     SchedulePaint();
   }
 
   bool is_bubble_visible_;
   int unread_count_;
 
-  views::ImageView* icon_;
   views::Label* unread_label_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
