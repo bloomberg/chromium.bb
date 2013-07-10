@@ -361,7 +361,7 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
     ioctl_message.buffer = message_str.data();
     int ret =
       ioctl(fd_tty_, TIOCNACLINPUT, reinterpret_cast<char*>(&ioctl_message));
-    if (ret != ENOTTY) {
+    if (ret != 0 && errno != ENOTTY) {
       Error("ioctl returned unexpected error: %d.\n", ret);
     }
 
