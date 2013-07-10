@@ -1797,23 +1797,25 @@ void StyleResolver::applyAnimatedProperties(const Element* target)
         const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
         for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
             CSSPropertyID property = iter->key;
-            // FIXME: Composite onto the underlying value.
-            RefPtr<CSSValue> value = iter->value->compositeOnto(AnimatableValue::neutralValue())->toCSSValue();
             switch (pass) {
             case VariableDefinitions:
                 ASSERT_NOT_REACHED();
                 continue;
             case HighPriorityProperties:
-                if (property < CSSPropertyLineHeight)
-                    applyProperty(property, value.get());
-                else if (property == CSSPropertyLineHeight)
-                    m_state.setLineHeightValue(value.get());
-                continue;
-            case LowPriorityProperties:
                 if (property > CSSPropertyLineHeight)
-                    applyProperty(property, value.get());
-                continue;
+                    continue;
+                break;
+            case LowPriorityProperties:
+                if (property <= CSSPropertyLineHeight)
+                    continue;
+                break;
             }
+            // FIXME: Composite onto the underlying value.
+            RefPtr<CSSValue> value = iter->value->compositeOnto(AnimatableValue::neutralValue())->toCSSValue();
+            if (property == CSSPropertyLineHeight)
+                m_state.setLineHeightValue(value.get());
+            else
+                applyProperty(property, value.get());
         }
     }
 }
