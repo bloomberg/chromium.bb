@@ -10,5 +10,5 @@ extern "C" {
 typedef int (*AVLockMgrOperation)(void**, enum AVLockOp);
 typedef int (*AVIOReadWriteOperation)(void*, uint8_t*, int);
 typedef int64_t (*AVIOSeekOperation)(void*, int64_t, int);
-
+typedef void (*AVFreeOperation)(void *, uint8_t *);
 }
