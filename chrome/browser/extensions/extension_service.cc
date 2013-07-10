@@ -697,10 +697,10 @@ void ExtensionService::ReloadExtension(const std::string extension_id) {
         manager->GetBackgroundHostForExtension(extension_id);
     if (host && DevToolsAgentHost::HasFor(host->render_view_host())) {
       // Look for an open inspector for the background page.
-      std::string devtools_cookie = DevToolsAgentHost::DisconnectRenderViewHost(
-          host->render_view_host());
-      if (devtools_cookie != std::string())
-        orphaned_dev_tools_[extension_id] = devtools_cookie;
+      scoped_refptr<DevToolsAgentHost> agent_host =
+          DevToolsAgentHost::GetOrCreateFor(host->render_view_host());
+      agent_host->DisconnectRenderViewHost();
+      orphaned_dev_tools_[extension_id] = agent_host;
     }
 
     path = current_extension->path();
@@ -2697,8 +2697,7 @@ void ExtensionService::DidCreateRenderViewForBackgroundPage(
   if (iter == orphaned_dev_tools_.end())
     return;
 
-  DevToolsAgentHost::ConnectRenderViewHost(iter->second,
-                                           host->render_view_host());
+  iter->second->ConnectRenderViewHost(host->render_view_host());
   orphaned_dev_tools_.erase(iter);
 }
 

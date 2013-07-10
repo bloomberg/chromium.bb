@@ -53,6 +53,10 @@ RenderViewHost* DevToolsAgentHostImpl::GetRenderViewHost() {
   return NULL;
 }
 
+void DevToolsAgentHostImpl::DisconnectRenderViewHost() {}
+
+void DevToolsAgentHostImpl::ConnectRenderViewHost(RenderViewHost* rvh) {}
+
 void DevToolsAgentHostImpl::NotifyCloseListener() {
   if (close_listener_) {
     scoped_refptr<DevToolsAgentHostImpl> protect(this);

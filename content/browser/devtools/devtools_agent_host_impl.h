@@ -49,6 +49,10 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
+  virtual void DisconnectRenderViewHost() OVERRIDE;
+
+  virtual void ConnectRenderViewHost(RenderViewHost* rvh) OVERRIDE;
+
  protected:
   DevToolsAgentHostImpl();
   virtual ~DevToolsAgentHostImpl();

@@ -38,6 +38,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual ~RenderViewDevToolsAgentHost();
 
   // DevTooolsAgentHost overrides.
+  virtual void DisconnectRenderViewHost() OVERRIDE;
+  virtual void ConnectRenderViewHost(RenderViewHost* rvh) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
   // IPCDevToolsAgentHost overrides.
@@ -51,8 +53,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
 
-  void ConnectRenderViewHost(RenderViewHost* rvh, bool reattach);
-  void DisconnectRenderViewHost();
+  void SetRenderViewHost(RenderViewHost* rvh);
 
   void RenderViewHostDestroyed(RenderViewHost* rvh);
   void RenderViewCrashed();

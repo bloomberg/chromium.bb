@@ -39,16 +39,6 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   static bool IsDebuggerAttached(WebContents* web_contents);
 
-  // Detaches given |rvh| from the agent host temporarily and returns the agent
-  // host id that allows to reattach another rvh to that agent host later.
-  // Returns empty string if there is no agent host associated with the |rvh|.
-  static std::string DisconnectRenderViewHost(RenderViewHost* rvh);
-
-  // Reattaches agent host detached with DisconnectRenderViewHost method above
-  // to |rvh|.
-  static void ConnectRenderViewHost(const std::string& agent_host_cookie,
-                                    RenderViewHost* rvh);
-
   // Returns a list of all existing RenderViewHost's that can be debugged.
   static std::vector<RenderViewHost*> GetValidRenderViewHosts();
 
@@ -63,6 +53,13 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns render view host instance for this host if any.
   virtual RenderViewHost* GetRenderViewHost() = 0;
+
+  // Temporarily detaches render view host from this host. Must be followed by
+  // a call to ConnectRenderViewHost (may leak the host instance otherwise).
+  virtual void DisconnectRenderViewHost() = 0;
+
+  // Attaches render view host to this host.
+  virtual void ConnectRenderViewHost(RenderViewHost* rvh) = 0;
 
  protected:
   friend class base::RefCounted<DevToolsAgentHost>;

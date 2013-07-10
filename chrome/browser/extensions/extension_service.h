@@ -35,6 +35,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/one_shot_event.h"
@@ -873,9 +874,10 @@ class ExtensionService
   // Store the ids of reloading extensions.
   std::set<std::string> reloading_extensions_;
 
-  // Map of inspector cookies that are detached, waiting for an extension to be
-  // reloaded.
-  typedef std::map<std::string, std::string> OrphanedDevTools;
+  // Map of DevToolsAgentHost instances that are detached,
+  // waiting for an extension to be reloaded.
+  typedef std::map<std::string, scoped_refptr<content::DevToolsAgentHost> >
+      OrphanedDevTools;
   OrphanedDevTools orphaned_dev_tools_;
 
   content::NotificationRegistrar registrar_;
