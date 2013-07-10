@@ -90,10 +90,10 @@ def RunGitWithCode(args):
 
 
 def IsGitVersionAtLeast(min_version):
-  PREFIX='git version '
+  prefix = 'git version '
   version = RunGit(['--version']).strip()
-  return (version.startswith(PREFIX) and
-      LooseVersion(version[len(PREFIX):]) >= LooseVersion(min_version))
+  return (version.startswith(prefix) and
+      LooseVersion(version[len(prefix):]) >= LooseVersion(min_version))
 
 
 def usage(more):
