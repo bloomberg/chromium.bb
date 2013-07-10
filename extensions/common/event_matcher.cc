@@ -12,8 +12,10 @@ const char kUrlFiltersKey[] = "url";
 
 namespace extensions {
 
-EventMatcher::EventMatcher(scoped_ptr<base::DictionaryValue> filter)
-    : filter_(filter.Pass()) {
+EventMatcher::EventMatcher(scoped_ptr<base::DictionaryValue> filter,
+                           int routing_id)
+    : filter_(filter.Pass()),
+      routing_id_(routing_id) {
 }
 
 EventMatcher::~EventMatcher() {
@@ -23,6 +25,7 @@ bool EventMatcher::MatchNonURLCriteria(
     const EventFilteringInfo& event_info) const {
   if (!event_info.has_instance_id())
     return true;
+
   return event_info.instance_id() == GetInstanceID();
 }
 
@@ -49,6 +52,10 @@ int EventMatcher::GetInstanceID() const {
   int instance_id = 0;
   filter_->GetInteger("instanceId", &instance_id);
   return instance_id;
+}
+
+int EventMatcher::GetRoutingID() const {
+  return routing_id_;
 }
 
 }  // namespace extensions

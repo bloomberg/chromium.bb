@@ -7,6 +7,7 @@
 #include "base/values.h"
 
 #include "chrome/browser/extensions/event_router.h"
+#include "ipc/ipc_message.h"
 
 namespace extensions {
 
@@ -72,7 +73,7 @@ bool EventListenerMap::AddListener(scoped_ptr<EventListener> listener) {
 scoped_ptr<EventMatcher> EventListenerMap::ParseEventMatcher(
     DictionaryValue* filter_dict) {
   return scoped_ptr<EventMatcher>(new EventMatcher(
-      scoped_ptr<DictionaryValue>(filter_dict->DeepCopy())));
+      scoped_ptr<DictionaryValue>(filter_dict->DeepCopy()), MSG_ROUTING_NONE));
 }
 
 bool EventListenerMap::RemoveListener(const EventListener* listener) {
@@ -188,7 +189,8 @@ std::set<const EventListener*> EventListenerMap::GetEventListeners(
   if (IsFilteredEvent(event)) {
     // Look up the interested listeners via the EventFilter.
     std::set<MatcherID> ids =
-        event_filter_.MatchEvent(event.event_name, event.filter_info);
+        event_filter_.MatchEvent(event.event_name, event.filter_info,
+            MSG_ROUTING_NONE);
     for (std::set<MatcherID>::iterator id = ids.begin(); id != ids.end();
          id++) {
       EventListener* listener = listeners_by_matcher_id_[*id];

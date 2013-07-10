@@ -5,6 +5,7 @@
 #include "extensions/common/event_filter.h"
 
 #include "extensions/common/matcher/url_matcher_factory.h"
+#include "ipc/ipc_message.h"
 
 namespace extensions {
 
@@ -126,8 +127,10 @@ std::string EventFilter::RemoveEventMatcher(MatcherID id) {
 }
 
 std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
-    const std::string& event_name, const EventFilteringInfo& event_info) {
+    const std::string& event_name, const EventFilteringInfo& event_info,
+    int routing_id) {
   std::set<MatcherID> matchers;
+
   EventMatcherMultiMap::iterator it = event_matchers_.find(event_name);
   if (it == event_matchers_.end())
     return matchers;
@@ -152,6 +155,12 @@ std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
       continue;
     }
     const EventMatcher* event_matcher = matcher_entry->second->event_matcher();
+    // The context that installed the event listener should be the same context
+    // as the one where the event listener is called.
+    if ((routing_id != MSG_ROUTING_NONE) &&
+        (event_matcher->GetRoutingID() != routing_id)) {
+      continue;
+    }
     if (event_matcher->MatchNonURLCriteria(event_info)) {
       CHECK(!event_matcher->HasURLFilters() || event_info.has_url());
       matchers.insert(id);

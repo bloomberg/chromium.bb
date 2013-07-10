@@ -44,7 +44,8 @@ class EventFilter {
   // event matchers that matched the event.
   // TODO(koz): Add a std::string* parameter for retrieving error messages.
   std::set<MatcherID> MatchEvent(const std::string& event_name,
-                                 const EventFilteringInfo& event_info);
+                                 const EventFilteringInfo& event_info,
+                                 int routing_id);
 
   int GetMatcherCountForEvent(const std::string& event_name);
 

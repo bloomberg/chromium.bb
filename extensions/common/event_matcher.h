@@ -18,7 +18,8 @@ class EventFilteringInfo;
 // MatchNonURLCriteria() - URL matching is handled by EventFilter.
 class EventMatcher {
  public:
-  explicit EventMatcher(scoped_ptr<base::DictionaryValue> filter);
+  EventMatcher(scoped_ptr<base::DictionaryValue> filter,
+               int routing_id);
   ~EventMatcher();
 
   // Returns true if |event_info| satisfies this matcher's criteria, not taking
@@ -32,6 +33,8 @@ class EventMatcher {
 
   int GetInstanceID() const;
 
+  int GetRoutingID() const;
+
   base::DictionaryValue* value() const {
     return filter_.get();
   }
@@ -43,6 +46,8 @@ class EventMatcher {
   //
   // The valid filter keys are event-specific.
   scoped_ptr<base::DictionaryValue> filter_;
+
+  int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(EventMatcher);
 };

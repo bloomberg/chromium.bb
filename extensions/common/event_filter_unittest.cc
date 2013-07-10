@@ -7,6 +7,7 @@
 #include "extensions/common/event_filter.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"
+#include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -35,7 +36,7 @@ class EventFilterUnittest : public testing::Test {
 
   scoped_ptr<EventMatcher> AllURLs() {
     return scoped_ptr<EventMatcher>(new EventMatcher(
-        scoped_ptr<DictionaryValue>(new DictionaryValue)));
+        scoped_ptr<DictionaryValue>(new DictionaryValue), MSG_ROUTING_NONE));
   }
 
   scoped_ptr<EventMatcher> HostSuffixMatcher(const std::string& host_suffix) {
@@ -46,7 +47,8 @@ class EventFilterUnittest : public testing::Test {
       scoped_ptr<ListValue> url_filter_list) {
     scoped_ptr<DictionaryValue> filter_dict(new DictionaryValue);
     filter_dict->Set("url", url_filter_list.release());
-    return scoped_ptr<EventMatcher>(new EventMatcher(filter_dict.Pass()));
+    return scoped_ptr<EventMatcher>(
+        new EventMatcher(filter_dict.Pass(), MSG_ROUTING_NONE));
   }
 
   EventFilter event_filter_;
@@ -59,7 +61,8 @@ class EventFilterUnittest : public testing::Test {
 
 TEST_F(EventFilterUnittest, NoMatchersMatchIfEmpty) {
   std::set<int> matches = event_filter_.MatchEvent("some-event",
-                                                   empty_event_);
+                                                   empty_event_,
+                                                   MSG_ROUTING_NONE);
   ASSERT_EQ(0u, matches.size());
 }
 
@@ -71,14 +74,15 @@ TEST_F(EventFilterUnittest,
     DontMatchAgainstMatchersForDifferentEvents) {
   event_filter_.AddEventMatcher("event1", AllURLs());
   std::set<int> matches = event_filter_.MatchEvent("event2",
-                                                   empty_event_);
+                                                   empty_event_,
+                                                   MSG_ROUTING_NONE);
   ASSERT_EQ(0u, matches.size());
 }
 
 TEST_F(EventFilterUnittest, DoMatchAgainstMatchersForSameEvent) {
   int id = event_filter_.AddEventMatcher("event1", AllURLs());
   std::set<int> matches = event_filter_.MatchEvent("event1",
-      google_event_);
+      google_event_, MSG_ROUTING_NONE);
   ASSERT_EQ(1u, matches.size());
   ASSERT_EQ(1u, matches.count(id));
 }
@@ -87,7 +91,8 @@ TEST_F(EventFilterUnittest, DontMatchUnlessMatcherMatches) {
   EventFilteringInfo info;
   info.SetURL(GURL("http://www.yahoo.com"));
   event_filter_.AddEventMatcher("event1", HostSuffixMatcher("google.com"));
-  std::set<int> matches = event_filter_.MatchEvent("event1", info);
+  std::set<int> matches = event_filter_.MatchEvent(
+      "event1", info, MSG_ROUTING_NONE);
   ASSERT_TRUE(matches.empty());
 }
 
@@ -95,7 +100,8 @@ TEST_F(EventFilterUnittest, RemovingAnEventMatcherStopsItMatching) {
   int id = event_filter_.AddEventMatcher("event1", AllURLs());
   event_filter_.RemoveEventMatcher(id);
   std::set<int> matches = event_filter_.MatchEvent("event1",
-                                                   empty_event_);
+                                                   empty_event_,
+                                                   MSG_ROUTING_NONE);
   ASSERT_TRUE(matches.empty());
 }
 
@@ -103,7 +109,7 @@ TEST_F(EventFilterUnittest, MultipleEventMatches) {
   int id1 = event_filter_.AddEventMatcher("event1", AllURLs());
   int id2 = event_filter_.AddEventMatcher("event1", AllURLs());
   std::set<int> matches = event_filter_.MatchEvent("event1",
-      google_event_);
+      google_event_, MSG_ROUTING_NONE);
   ASSERT_EQ(2u, matches.size());
   ASSERT_EQ(1u, matches.count(id1));
   ASSERT_EQ(1u, matches.count(id2));
@@ -114,7 +120,8 @@ TEST_F(EventFilterUnittest, TestURLMatching) {
   info.SetURL(GURL("http://www.google.com"));
   int id = event_filter_.AddEventMatcher("event1",
                                          HostSuffixMatcher("google.com"));
-  std::set<int> matches = event_filter_.MatchEvent("event1", info);
+  std::set<int> matches = event_filter_.MatchEvent(
+      "event1", info, MSG_ROUTING_NONE);
   ASSERT_EQ(1u, matches.size());
   ASSERT_EQ(1u, matches.count(id));
 }
@@ -129,19 +136,19 @@ TEST_F(EventFilterUnittest, TestMultipleURLFiltersMatchOnAny) {
 
   {
     std::set<int> matches = event_filter_.MatchEvent("event1",
-        google_event_);
+        google_event_, MSG_ROUTING_NONE);
     ASSERT_EQ(1u, matches.size());
     ASSERT_EQ(1u, matches.count(id));
   }
   {
     std::set<int> matches = event_filter_.MatchEvent("event1",
-        yahoo_event_);
+        yahoo_event_, MSG_ROUTING_NONE);
     ASSERT_EQ(1u, matches.size());
     ASSERT_EQ(1u, matches.count(id));
   }
   {
     std::set<int> matches = event_filter_.MatchEvent("event1",
-        random_url_event_);
+        random_url_event_, MSG_ROUTING_NONE);
     ASSERT_EQ(0u, matches.size());
   }
 }
@@ -153,7 +160,7 @@ TEST_F(EventFilterUnittest, TestStillMatchesAfterRemoval) {
   event_filter_.RemoveEventMatcher(id1);
   {
     std::set<int> matches = event_filter_.MatchEvent("event1",
-        google_event_);
+        google_event_, MSG_ROUTING_NONE);
     ASSERT_EQ(1u, matches.size());
     ASSERT_EQ(1u, matches.count(id2));
   }
@@ -165,7 +172,7 @@ TEST_F(EventFilterUnittest, TestMatchesOnlyAgainstPatternsForCorrectEvent) {
 
   {
     std::set<int> matches = event_filter_.MatchEvent("event1",
-        google_event_);
+        google_event_, MSG_ROUTING_NONE);
     ASSERT_EQ(1u, matches.size());
     ASSERT_EQ(1u, matches.count(id1));
   }
@@ -209,7 +216,7 @@ TEST_F(EventFilterUnittest, EmptyListOfURLFiltersMatchesAllURLs) {
       scoped_ptr<ListValue>(new ListValue)));
   int id = event_filter_.AddEventMatcher("event1", matcher.Pass());
   std::set<int> matches = event_filter_.MatchEvent("event1",
-      google_event_);
+      google_event_, MSG_ROUTING_NONE);
   ASSERT_EQ(1u, matches.size());
   ASSERT_EQ(1u, matches.count(id));
 }
@@ -226,7 +233,8 @@ TEST_F(EventFilterUnittest,
 
 TEST_F(EventFilterUnittest, EmptyURLsShouldBeMatchedByEmptyURLFilters) {
   int id = event_filter_.AddEventMatcher("event1", AllURLs());
-  std::set<int> matches = event_filter_.MatchEvent("event1", empty_url_event_);
+  std::set<int> matches = event_filter_.MatchEvent(
+      "event1", empty_url_event_, MSG_ROUTING_NONE);
   ASSERT_EQ(1u, matches.size());
   ASSERT_EQ(1u, matches.count(id));
 }
@@ -236,7 +244,8 @@ TEST_F(EventFilterUnittest,
   scoped_ptr<EventMatcher> matcher(MatcherFromURLFilterList(ValueAsList(
       scoped_ptr<Value>(new DictionaryValue()))));
   int id = event_filter_.AddEventMatcher("event1", matcher.Pass());
-  std::set<int> matches = event_filter_.MatchEvent("event1", empty_url_event_);
+  std::set<int> matches = event_filter_.MatchEvent(
+      "event1", empty_url_event_, MSG_ROUTING_NONE);
   ASSERT_EQ(1u, matches.size());
   ASSERT_EQ(1u, matches.count(id));
 }
