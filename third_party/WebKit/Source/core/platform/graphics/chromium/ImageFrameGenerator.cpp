@@ -47,9 +47,8 @@ skia::ImageOperations::ResizeMethod resizeMethod()
 
 } // namespace
 
-ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived, bool isMultiFrame)
+ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived)
     : m_fullSize(fullSize)
-    , m_isMultiFrame(isMultiFrame)
     , m_decodeFailedAndEmpty(false)
     , m_hasAlpha(true)
     , m_decodeCount(ScaledImageFragment::FirstPartialImage)
@@ -79,7 +78,7 @@ void ImageFrameGenerator::copyData(RefPtr<SharedBuffer>* data, bool* allDataRece
         *data = buffer->copy();
 }
 
-const ScaledImageFragment* ImageFrameGenerator::decodeAndScale(const SkISize& scaledSize, size_t index)
+const ScaledImageFragment* ImageFrameGenerator::decodeAndScale(const SkISize& scaledSize)
 {
     // Prevents concurrent decode or scale operations on the same image data.
     // Multiple LazyDecodingPixelRefs can call this method at the same time.
@@ -89,35 +88,35 @@ const ScaledImageFragment* ImageFrameGenerator::decodeAndScale(const SkISize& sc
 
     const ScaledImageFragment* cachedImage = 0;
 
-    cachedImage = tryToLockCompleteCache(scaledSize, index);
+    cachedImage = tryToLockCompleteCache(scaledSize);
     if (cachedImage)
         return cachedImage;
 
     TRACE_EVENT2("webkit", "ImageFrameGenerator::decodeAndScale", "generator", this, "decodeCount", static_cast<int>(m_decodeCount));
 
-    cachedImage = tryToScale(0, scaledSize, index);
+    cachedImage = tryToScale(0, scaledSize);
     if (cachedImage)
         return cachedImage;
 
-    cachedImage = tryToResumeDecodeAndScale(scaledSize, index);
+    cachedImage = tryToResumeDecodeAndScale(scaledSize);
     if (cachedImage)
         return cachedImage;
 
-    cachedImage = tryToDecodeAndScale(scaledSize, index);
+    cachedImage = tryToDecodeAndScale(scaledSize);
     if (cachedImage)
         return cachedImage;
     return 0;
 }
 
-const ScaledImageFragment* ImageFrameGenerator::tryToLockCompleteCache(const SkISize& scaledSize, size_t index)
+const ScaledImageFragment* ImageFrameGenerator::tryToLockCompleteCache(const SkISize& scaledSize)
 {
     const ScaledImageFragment* cachedImage = 0;
-    if (ImageDecodingStore::instance()->lockCache(this, scaledSize, index, &cachedImage))
+    if (ImageDecodingStore::instance()->lockCache(this, scaledSize, 0, &cachedImage))
         return cachedImage;
     return 0;
 }
 
-const ScaledImageFragment* ImageFrameGenerator::tryToScale(const ScaledImageFragment* fullSizeImage, const SkISize& scaledSize, size_t index)
+const ScaledImageFragment* ImageFrameGenerator::tryToScale(const ScaledImageFragment* fullSizeImage, const SkISize& scaledSize)
 {
     TRACE_EVENT0("webkit", "ImageFrameGenerator::tryToScale");
 
@@ -126,7 +125,7 @@ const ScaledImageFragment* ImageFrameGenerator::tryToScale(const ScaledImageFrag
     if (scaledSize == m_fullSize)
         return 0;
 
-    if (!fullSizeImage && !ImageDecodingStore::instance()->lockCache(this, m_fullSize, index, &fullSizeImage))
+    if (!fullSizeImage && !ImageDecodingStore::instance()->lockCache(this, m_fullSize, 0, &fullSizeImage))
         return 0;
 
     // This call allocates the DiscardablePixelRef and lock/unlocks it
@@ -144,9 +143,9 @@ const ScaledImageFragment* ImageFrameGenerator::tryToScale(const ScaledImageFrag
     return ImageDecodingStore::instance()->insertAndLockCache(this, scaledImage.release());
 }
 
-const ScaledImageFragment* ImageFrameGenerator::tryToResumeDecodeAndScale(const SkISize& scaledSize, size_t index)
+const ScaledImageFragment* ImageFrameGenerator::tryToResumeDecodeAndScale(const SkISize& scaledSize)
 {
-    TRACE_EVENT1("webkit", "ImageFrameGenerator::tryToResumeDecodeAndScale", "index", static_cast<int>(index));
+    TRACE_EVENT0("webkit", "ImageFrameGenerator::tryToResumeDecodeAndScale");
 
     ImageDecoder* cachedDecoder = 0;
 
@@ -155,28 +154,27 @@ const ScaledImageFragment* ImageFrameGenerator::tryToResumeDecodeAndScale(const 
     ASSERT(cachedDecoder);
 
     // Always generate a new image and insert it into cache.
-    OwnPtr<ScaledImageFragment> fullSizeImage = decode(index, &cachedDecoder);
+    OwnPtr<ScaledImageFragment> fullSizeImage = decode(&cachedDecoder);
     const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(this, fullSizeImage.release());
 
     // If the image generated is complete then there is no need to keep
-    // the decoder. The exception is multi-frame decoder which can generate
-    // multiple complete frames.
-    if (cachedImage->isComplete() && !m_isMultiFrame)
+    // the decoder.
+    if (cachedImage->isComplete())
         ImageDecodingStore::instance()->removeDecoder(this, cachedDecoder);
     else
         ImageDecodingStore::instance()->unlockDecoder(this, cachedDecoder);
 
     if (m_fullSize == scaledSize)
         return cachedImage;
-    return tryToScale(cachedImage, scaledSize, index);
+    return tryToScale(cachedImage, scaledSize);
 }
 
-const ScaledImageFragment* ImageFrameGenerator::tryToDecodeAndScale(const SkISize& scaledSize, size_t index)
+const ScaledImageFragment* ImageFrameGenerator::tryToDecodeAndScale(const SkISize& scaledSize)
 {
-    TRACE_EVENT1("webkit", "ImageFrameGenerator::tryToDecodeAndScale", "index", static_cast<int>(index));
+    TRACE_EVENT0("webkit", "ImageFrameGenerator::tryToDecodeAndScale");
 
     ImageDecoder* decoder = 0;
-    OwnPtr<ScaledImageFragment> fullSizeImage = decode(index, &decoder);
+    OwnPtr<ScaledImageFragment> fullSizeImage = decode(&decoder);
 
     if (!decoder)
         return 0;
@@ -193,17 +191,16 @@ const ScaledImageFragment* ImageFrameGenerator::tryToDecodeAndScale(const SkISiz
     const ScaledImageFragment* cachedImage = ImageDecodingStore::instance()->insertAndLockCache(this, fullSizeImage.release());
 
     // If image is complete then decoder is not needed in the future.
-    // Otherwise save the decoder for later use. The exception is
-    // multi-frame decoder which can generate multiple complete frames.
-    if (!cachedImage->isComplete() || m_isMultiFrame)
+    // Otherwise save the decoder for later use.
+    if (!cachedImage->isComplete())
         ImageDecodingStore::instance()->insertDecoder(this, decoderContainer.release(), DiscardablePixelRef::isDiscardable(cachedImage->bitmap().pixelRef()));
 
     if (m_fullSize == scaledSize)
         return cachedImage;
-    return tryToScale(cachedImage, scaledSize, index);
+    return tryToScale(cachedImage, scaledSize);
 }
 
-PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder)
+PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(ImageDecoder** decoder)
 {
     TRACE_EVENT2("webkit", "ImageFrameGenerator::decode", "width", m_fullSize.width(), "height", m_fullSize.height());
 
@@ -225,17 +222,15 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
 
     // TODO: this is very ugly. We need to refactor the way how we can pass a
     // memory allocator to image decoders.
-    if (!m_isMultiFrame)
-        (*decoder)->setMemoryAllocator(&m_allocator);
+    (*decoder)->setMemoryAllocator(&m_allocator);
     (*decoder)->setData(data, allDataReceived);
     // If this call returns a newly allocated DiscardablePixelRef, then
     // ImageFrame::m_bitmap and the contained DiscardablePixelRef are locked.
     // They will be unlocked when ImageDecoder is destroyed since ImageDecoder
     // owns the ImageFrame. Partially decoded SkBitmap is thus inserted into the
     // ImageDecodingStore while locked.
-    ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
+    ImageFrame* frame = (*decoder)->frameBufferAtIndex(0);
     (*decoder)->setData(0, false); // Unref SharedBuffer from ImageDecoder.
-    (*decoder)->clearCacheExceptFrame(index);
 
     if (!frame || frame->status() == ImageFrame::FrameEmpty)
         return nullptr;
@@ -249,13 +244,13 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     ASSERT(fullSizeBitmap.width() == m_fullSize.width() && fullSizeBitmap.height() == m_fullSize.height());
 
     if (isComplete)
-        return ScaledImageFragment::createComplete(m_fullSize, index, fullSizeBitmap);
+        return ScaledImageFragment::createComplete(m_fullSize, 0, fullSizeBitmap);
 
     // If the image is partial we need to return a copy. This is to avoid future
     // decode operations writing to the same bitmap.
     SkBitmap copyBitmap;
     fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), &m_allocator);
-    return ScaledImageFragment::createPartial(m_fullSize, index, nextGenerationId(), copyBitmap);
+    return ScaledImageFragment::createPartial(m_fullSize, 0, nextGenerationId(), copyBitmap);
 }
 
 bool ImageFrameGenerator::hasAlpha()

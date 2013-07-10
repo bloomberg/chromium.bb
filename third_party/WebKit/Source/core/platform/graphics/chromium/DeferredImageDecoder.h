@@ -30,9 +30,7 @@
 #include "core/platform/graphics/ImageSource.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
-#include "wtf/Forward.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/Vector.h"
+#include <wtf/Forward.h>
 
 namespace WebCore {
 
@@ -71,9 +69,7 @@ public:
 
 private:
     explicit DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder);
-    void prepareLazyDecodedFrames();
-    SkBitmap createLazyDecodingBitmap(size_t index);
-    void activateLazyDecoding();
+    SkBitmap createLazyDecodingBitmap();
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 
     RefPtr<SharedBuffer> m_data;
@@ -82,9 +78,8 @@ private:
 
     IntSize m_size;
     ImageOrientation m_orientation;
-    int m_repetitionCount;
 
-    Vector<OwnPtr<ImageFrame> > m_lazyDecodedFrames;
+    ImageFrame m_lazyDecodedFrame;
     RefPtr<ImageFrameGenerator> m_frameGenerator;
 
     static bool s_enabled;
