@@ -465,16 +465,6 @@ void ThreadData::TallyRunOnNamedThreadIfTracking(
   if (!current_thread_data)
     return;
 
-  // To avoid conflating our stats with the delay duration in a PostDelayedTask,
-  // we identify such tasks, and replace their post_time with the time they
-  // were scheduled (requested?) to emerge from the delayed task queue. This
-  // means that queueing delay for such tasks will show how long they went
-  // unserviced, after they *could* be serviced.  This is the same stat as we
-  // have for non-delayed tasks, and we consistently call it queueing delay.
-  TrackedTime effective_post_time = completed_task.delayed_run_time.is_null()
-      ? tracked_objects::TrackedTime(completed_task.time_posted)
-      : tracked_objects::TrackedTime(completed_task.delayed_run_time);
-
   // Watch out for a race where status_ is changing, and hence one or both
   // of start_of_run or end_of_run is zero.  In that case, we didn't bother to
   // get a time value since we "weren't tracking" and we were trying to be
@@ -483,7 +473,8 @@ void ThreadData::TallyRunOnNamedThreadIfTracking(
   int32 queue_duration = 0;
   int32 run_duration = 0;
   if (!start_of_run.is_null()) {
-    queue_duration = (start_of_run - effective_post_time).InMilliseconds();
+    queue_duration = (start_of_run - completed_task.EffectiveTimePosted())
+        .InMilliseconds();
     if (!end_of_run.is_null())
       run_duration = (end_of_run - start_of_run).InMilliseconds();
   }

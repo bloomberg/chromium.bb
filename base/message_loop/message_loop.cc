@@ -456,11 +456,17 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
 }
 
 void MessageLoop::RunTask(const PendingTask& pending_task) {
-  TRACE_EVENT_FLOW_END0("task", "MessageLoop::PostTask",
-      TRACE_ID_MANGLE(GetTaskTraceID(pending_task, this)));
+  tracked_objects::TrackedTime start_time =
+      tracked_objects::ThreadData::NowForStartOfRun(pending_task.birth_tally);
+
+  TRACE_EVENT_FLOW_END1("task", "MessageLoop::PostTask",
+      TRACE_ID_MANGLE(GetTaskTraceID(pending_task, this)),
+      "queue_duration",
+      (start_time - pending_task.EffectiveTimePosted()).InMilliseconds());
   TRACE_EVENT2("task", "MessageLoop::RunTask",
                "src_file", pending_task.posted_from.file_name(),
                "src_func", pending_task.posted_from.function_name());
+
   DCHECK(nestable_tasks_allowed_);
   // Execute the task and assume the worst: It is probably not reentrant.
   nestable_tasks_allowed_ = false;
@@ -475,9 +481,6 @@ void MessageLoop::RunTask(const PendingTask& pending_task) {
   debug::Alias(&program_counter);
 
   HistogramEvent(kTaskRunEvent);
-
-  tracked_objects::TrackedTime start_time =
-      tracked_objects::ThreadData::NowForStartOfRun(pending_task.birth_tally);
 
   FOR_EACH_OBSERVER(TaskObserver, task_observers_,
                     WillProcessTask(pending_task));
