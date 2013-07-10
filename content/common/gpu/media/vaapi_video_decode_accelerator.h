@@ -252,6 +252,10 @@ private:
   int num_frames_at_client_;
   int num_stream_bufs_at_decoder_;
 
+  // Whether we are waiting for any pending_output_cbs_ to be run before
+  // NotifyingFlushDone.
+  bool finish_flush_pending_;
+
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAccelerator);
 };
 
