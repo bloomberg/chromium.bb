@@ -61,12 +61,7 @@ static struct CoreException {
     { "InvalidNodeTypeError", "The supplied node is invalid or has an invalid ancestor for this operation.", 24 },
     { "DataCloneError", "An object could not be cloned.", 25 },
 
-    // These are IDB-specific errors.
-    // FIXME: NotFoundError is duplicated to have a more specific error message.
-    // https://code.google.com/p/chromium/issues/detail?id=252233
-    { "NotFoundError", "An operation failed because the requested database object could not be found.", 8 },
-
-    // More IDB-specific errors.
+    // Indexed DB
     { "UnknownError", "An unknown error occurred within Indexed Database.", 0 },
     { "ConstraintError", "A mutation operation in the transaction failed because a constraint was not satisfied.", 0 },
     { "DataError", "The data provided does not meet requirements.", 0 },
@@ -107,29 +102,20 @@ static const CoreException* getErrorEntry(ExceptionCode ec)
     return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
 }
 
-DOMException::DOMException(ExceptionCode ec)
+DOMException::DOMException(unsigned short code, const char* name, const char * message)
 {
-    const CoreException* entry = getErrorEntry(ec);
-    ASSERT(entry);
-    if (!entry) {
-        m_code = 0;
-        m_name = "UnknownError";
-        m_message = "Unknown Error";
-    } else {
-        m_code = entry->code;
-        if (entry->name)
-            m_name = entry->name;
-        else
-            m_name = "Error";
-        m_message = entry->message;
-    }
-
+    ASSERT(name);
+    m_code = code;
+    m_name = name;
+    m_message = message;
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DOMException> DOMException::create(ExceptionCode ec)
+PassRefPtr<DOMException> DOMException::create(ExceptionCode ec, const char* message)
 {
-    return adoptRef(new DOMException(ec));
+    const CoreException* entry = getErrorEntry(ec);
+    ASSERT(entry);
+    return adoptRef(new DOMException(entry->code, entry->name ? entry->name : "Error", message ? message : entry->message));
 }
 
 String DOMException::toString() const

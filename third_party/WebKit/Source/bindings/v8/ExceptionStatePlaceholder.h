@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,20 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseException_h
-#define WebIDBDatabaseException_h
+#ifndef ExceptionStatePlaceholder_h
+#define ExceptionStatePlaceholder_h
 
-namespace WebKit {
+#include "bindings/v8/ExceptionState.h"
+#include "wtf/Assertions.h"
 
-enum WebIDBDatabaseException {
-    WebIDBDatabaseExceptionUnknownError = 23,
-    WebIDBDatabaseExceptionConstraintError = 24,
-    WebIDBDatabaseExceptionDataError = 25,
-    WebIDBDatabaseExceptionVersionError = 28,
-    WebIDBDatabaseExceptionAbortError = 17,
-    WebIDBDatabaseExceptionQuotaError = 19,
+namespace WebCore {
+
+class ExceptionState;
+
+class IgnorableExceptionState : public ExceptionState {
+public:
+    IgnorableExceptionState(): ExceptionState(0) { }
+    ExceptionState& returnThis() { return *this; }
+    virtual void throwDOMException(const ExceptionCode&, const char* message = 0) OVERRIDE FINAL { };
+    virtual void throwTypeError(const char* message = 0) OVERRIDE FINAL { }
 };
 
-} // namespace WebKit
+#define IGNORE_EXCEPTION_STATE (::WebCore::IgnorableExceptionState().returnThis())
 
-#endif // WebIDBDatabaseException_h
+#if ASSERT_DISABLED
+
+#define ASSERT_NO_EXCEPTION_STATE (::WebCore::IgnorableExceptionState().returnThis())
+
+#else
+
+class NoExceptionStateAssertionChecker : public ExceptionState {
+public:
+    NoExceptionStateAssertionChecker(const char* file, int line);
+    ExceptionState& returnThis() { return *this; }
+    virtual void throwDOMException(const ExceptionCode&, const char* message = 0) OVERRIDE FINAL;
+    virtual void throwTypeError(const char* message = 0) OVERRIDE FINAL;
+
+private:
+    const char* m_file;
+    int m_line;
+};
+
+#define ASSERT_NO_EXCEPTION_STATE (::WebCore::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
+
+#endif
+
+} // namespace WebCore
+
+#endif // ExceptionStatePlaceholder_h

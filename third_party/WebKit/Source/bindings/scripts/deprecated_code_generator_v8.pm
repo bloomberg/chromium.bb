@@ -1458,8 +1458,8 @@ END
     my $useExceptions = 1 if $attribute->extendedAttributes->{"GetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
     my $isNullable = $attribute->isNullable;
     if ($useExceptions) {
-        AddToImplIncludes("core/dom/ExceptionCode.h");
-        $code .= "    ExceptionCode ec = 0;\n";
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
 
     if ($isNullable) {
@@ -1472,7 +1472,7 @@ END
     if ($getterStringUsesImp) {
         my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
         push(@arguments, "isNull") if $isNullable;
-        push(@arguments, "ec") if $useExceptions;
+        push(@arguments, "es") if $useExceptions;
         if ($attribute->extendedAttributes->{"ImplementedBy"}) {
             my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
             my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
@@ -1513,10 +1513,10 @@ END
         }
 
         if ($useExceptions) {
-            $code .= "    if (UNLIKELY(ec)) {\n";
-            $code .= "        setDOMException(ec, info.GetIsolate());\n";
-            $code .= "        return;\n";
-            $code .= "    };\n";
+            if ($useExceptions) {
+                $code .= "    if (UNLIKELY(es.throwIfNeeded()))\n";
+                $code .= "        return;\n";
+            }
 
             if (ExtendedAttributeContains($attribute->extendedAttributes->{"CallWith"}, "ScriptState")) {
                 $code .= "    if (state.hadException()) {\n";
@@ -1821,7 +1821,7 @@ sub GenerateNormalAttrSetter
     $svgNativeType* imp = ${v8ClassName}::toNative(info.Holder());
 END
         } else {
-            AddToImplIncludes("core/dom/ExceptionCode.h");
+            AddToImplIncludes("bindings/v8/ExceptionState.h");
             $code .= "    $svgNativeType* wrapper = ${v8ClassName}::toNative(info.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
             $code .= "        setDOMException(NoModificationAllowedError, info.GetIsolate());\n";
@@ -1894,8 +1894,8 @@ END
     my $useExceptions = 1 if $attribute->extendedAttributes->{"SetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
 
     if ($useExceptions) {
-        AddToImplIncludes("core/dom/ExceptionCode.h");
-        $code .= "    ExceptionCode ec = 0;\n";
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
 
     if ($interfaceName eq "SVGNumber") {
@@ -1918,7 +1918,7 @@ END
         } else {
             my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
             push(@arguments, $expression);
-            push(@arguments, "ec") if $useExceptions;
+            push(@arguments, "es") if $useExceptions;
             if ($attribute->extendedAttributes->{"ImplementedBy"}) {
                 my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
                 my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
@@ -1938,8 +1938,7 @@ END
     }
 
     if ($useExceptions) {
-        $code .= "    if (UNLIKELY(ec))\n";
-        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    es.throwIfNeeded();\n";
     }
 
     if (ExtendedAttributeContains($attribute->extendedAttributes->{"CallWith"}, "ScriptState")) {
@@ -1949,7 +1948,7 @@ END
 
     if ($svgNativeType) {
         if ($useExceptions) {
-            $code .= "    if (!ec)\n";
+            $code .= "    if (!es.hadException())\n";
             $code .= "        wrapper->commitChange();\n";
         } else {
             $code .= "    wrapper->commitChange();\n";
@@ -2227,6 +2226,7 @@ END
         if ($interfaceName =~ /List$/) {
             $code .= "    $nativeClassName imp = ${v8ClassName}::toNative(args.Holder());\n";
         } else {
+            AddToImplIncludes("bindings/v8/ExceptionState.h");
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8ClassName}::toNative(args.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
@@ -2266,13 +2266,13 @@ END
     }
 
     if ($raisesExceptions) {
-        AddToImplIncludes("core/dom/ExceptionCode.h");
-        $code .= "    ExceptionCode ec = 0;\n";
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState es(args.GetIsolate());\n";
     }
 
     if ($function->extendedAttributes->{"CheckSecurityForNode"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(ec))) {\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(es))) {\n";
         $code .= "        v8SetReturnValueNull(args);\n";
         $code .= "        return;\n";
         $code .= "    }\n";
@@ -2384,7 +2384,7 @@ sub GenerateParametersCheck
         }
 
         my $parameterName = $parameter->name;
-        AddToImplIncludes("core/dom/ExceptionCode.h");
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
         if (IsCallbackInterface($parameter->type)) {
             my $v8ClassName = "V8" . $parameter->type;
             AddToImplIncludes("$v8ClassName.h");
@@ -2482,6 +2482,7 @@ sub GenerateParametersCheck
         }
 
         if ($parameter->extendedAttributes->{"IsIndex"}) {
+            AddToImplIncludes("core/dom/ExceptionCode.h");
             $parameterCheckString .= "    if (UNLIKELY($parameterName < 0)) {\n";
             $parameterCheckString .= "        setDOMException(IndexSizeError, args.GetIsolate());\n";
             $parameterCheckString .= "        return;\n";
@@ -2564,8 +2565,8 @@ END
     }
 
     if ($raisesExceptions) {
-        AddToImplIncludes("core/dom/ExceptionCode.h");
-        $code .= "    ExceptionCode ec = 0;\n";
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState es(args.GetIsolate());\n";
     }
 
     # FIXME: Currently [Constructor(...)] does not yet support optional arguments without [Default=...]
@@ -2581,7 +2582,7 @@ END
     }
 
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
-        push(@afterArgumentList, "ec");
+        push(@afterArgumentList, "es");
     }
 
     my @argumentList;
@@ -2602,10 +2603,8 @@ END
     $code .= "    v8::Handle<v8::Object> wrapper = args.Holder();\n";
 
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
-        $code .= "    if (ec) {\n";
-        $code .= "        setDOMException(ec, args.GetIsolate());\n";
+        $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
-        $code .= "    }\n";
     }
 
     $code .= <<END;
@@ -2837,8 +2836,8 @@ END
     $code .= GenerateArgumentsCountCheck($function, $interface);
 
     if ($raisesExceptions) {
-        AddToImplIncludes("core/dom/ExceptionCode.h");
-        $code .= "    ExceptionCode ec = 0;\n";
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState es(args.GetIsolate());\n";
     }
 
     my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface);
@@ -2847,7 +2846,7 @@ END
     push(@beforeArgumentList, "document");
 
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
-        push(@afterArgumentList, "ec");
+        push(@afterArgumentList, "es");
     }
 
     my @argumentList;
@@ -2868,10 +2867,8 @@ END
     $code .= "    v8::Handle<v8::Object> wrapper = args.Holder();\n";
 
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
-        $code .= "    if (ec) {\n";
-        $code .= "        setDOMException(ec, args.GetIsolate());\n";
+        $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
-        $code .= "    }\n";
     }
 
     $code .= <<END;
@@ -3291,14 +3288,12 @@ sub GenerateImplementationIndexedPropertyGetter
     $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
     $getterCode .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     if ($raisesExceptions) {
-        $getterCode .= "    ExceptionCode ec = 0;\n";
+        $getterCode .= "    ExceptionState es(info.GetIsolate());\n";
     }
     $getterCode .= $methodCallCode . "\n";
     if ($raisesExceptions) {
-        $getterCode .= "    if (ec) {\n";
-        $getterCode .= "        setDOMException(ec, info.GetIsolate());\n";
+        $getterCode .= "    if (es.throwIfNeeded())\n";
         $getterCode .= "        return;\n";
-        $getterCode .= "    }\n";
     }
     if (IsUnionType($returnType)) {
         $getterCode .= "${returnJSValueCode}\n";
@@ -3391,8 +3386,8 @@ sub GenerateImplementationIndexedPropertySetter
 
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionCode ec = 0;\n";
-        $extraArguments = ", ec";
+        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $extraArguments = ", es";
     }
     my @conditions = ();
     my @statements = ();
@@ -3411,10 +3406,8 @@ sub GenerateImplementationIndexedPropertySetter
     $code .= "    if (!result)\n";
     $code .= "        return;\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec) {\n";
-        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
-        $code .= "    }\n";
     }
     $code .= "    v8SetReturnValue(info, value);\n";
     $code .= "}\n\n";
@@ -3602,7 +3595,7 @@ sub GenerateMethodCall
     my @arguments = ();
     push @arguments, $firstArgument;
     if ($raisesExceptions) {
-        push @arguments, "ec";
+        push @arguments, "es";
     }
 
     if (IsUnionType($returnType)) {
@@ -3658,14 +3651,12 @@ sub GenerateImplementationNamedPropertyGetter
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
     if ($raisesExceptions) {
-        $code .= "    ExceptionCode ec = 0;\n";
+        $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
     $code .= $methodCallCode . "\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec) {\n";
-        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
-        $code .= "    }\n";
     }
     if (IsUnionType($returnType)) {
         $code .= "${returnJSValueCode}\n";
@@ -3706,8 +3697,8 @@ sub GenerateImplementationNamedPropertySetter
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, "value", "propertyValue", "    ", "info.GetIsolate()");
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionCode ec = 0;\n";
-        $extraArguments = ", ec";
+        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $extraArguments = ", es";
     }
 
     my @conditions = ();
@@ -3727,10 +3718,8 @@ sub GenerateImplementationNamedPropertySetter
     $code .= "    if (!result)\n";
     $code .= "        return;\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec) {\n";
-        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
-        $code .= "    }\n";
     }
     $code .= "    v8SetReturnValue(info, value);\n";
     $code .= "}\n\n";
@@ -3752,15 +3741,13 @@ sub GenerateImplementationIndexedPropertyDeleter
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionCode ec = 0;\n";
-        $extraArguments = ", ec";
+        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $extraArguments = ", es";
     }
     $code .= "    bool result = collection->${methodName}(index$extraArguments);\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec) {\n";
-        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
-        $code .= "    }\n";
     }
     $code .= "    return v8SetReturnValueBool(info, result);\n";
     $code .= "}\n\n";
@@ -3783,15 +3770,13 @@ sub GenerateImplementationNamedPropertyDeleter
     $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionCode ec = 0;\n";
-        $extraArguments = ", ec";
+        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $extraArguments = ", es";
     }
     $code .= "    bool result = collection->${methodName}(propertyName$extraArguments);\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec) {\n";
-        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
-        $code .= "    }\n";
     }
     $code .= "    return v8SetReturnValueBool(info, result);\n";
     $code .= "}\n\n";
@@ -3807,14 +3792,12 @@ sub GenerateImplementationNamedPropertyEnumerator
     $implementation{nameSpaceInternal}->add(<<END);
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionCode ec = 0;
+    ExceptionState es(info.GetIsolate());
     ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
     Vector<String> names;
-    collection->namedPropertyEnumerator(names, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    collection->namedPropertyEnumerator(names, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8::Integer::New(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
@@ -3835,12 +3818,10 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionCode ec = 0;
-    bool result = collection->namedPropertyQuery(propertyName, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    bool result = collection->namedPropertyQuery(propertyName, es);
+    if (es.throwIfNeeded())
         return;
-    }
     if (!result)
         return;
     v8SetReturnValueInt(info, v8::None);
@@ -4923,6 +4904,7 @@ sub GenerateFunctionCallString
         } elsif ($parameter->type eq "NodeFilter" || $parameter->type eq "XPathNSResolver") {
             push @arguments, "$paramName.get()";
         } elsif (IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
+            AddToImplIncludes("core/dom/ExceptionCode.h");
             push @arguments, "$paramName->propertyReference()";
             $code .= $indent . "if (!$paramName) {\n";
             $code .= $indent . "    setDOMException(WebCore::TypeMismatchError, args.GetIsolate());\n";
@@ -4937,7 +4919,7 @@ sub GenerateFunctionCallString
     }
 
     if ($function->extendedAttributes->{"RaisesException"}) {
-        push @arguments, "ec";
+        push @arguments, "es";
     }
 
     my $functionString = "$functionName(" . join(", ", @arguments) . ")";
@@ -4960,10 +4942,8 @@ sub GenerateFunctionCallString
     }
 
     if ($function->extendedAttributes->{"RaisesException"}) {
-        $code .= $indent . "if (UNLIKELY(ec)) {\n";
-        $code .= $indent . "    setDOMException(ec, args.GetIsolate());\n";
+        $code .= $indent . "if (es.throwIfNeeded())\n";
         $code .= $indent . "    return;\n";
-        $code .= $indent . "}\n";
     }
 
     if (ExtendedAttributeContains($callWith, "ScriptState")) {

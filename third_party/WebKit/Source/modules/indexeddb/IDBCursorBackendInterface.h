@@ -35,8 +35,6 @@ class IDBCallbacks;
 class IDBKey;
 class IDBRequest;
 
-typedef int ExceptionCode;
-
 class IDBCursorBackendInterface : public RefCounted<IDBCursorBackendInterface> {
 public:
     virtual ~IDBCursorBackendInterface() {}

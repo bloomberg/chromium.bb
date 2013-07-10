@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,20 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseException_h
-#define WebIDBDatabaseException_h
+#include "config.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 
-namespace WebKit {
+namespace WebCore {
 
-enum WebIDBDatabaseException {
-    WebIDBDatabaseExceptionUnknownError = 23,
-    WebIDBDatabaseExceptionConstraintError = 24,
-    WebIDBDatabaseExceptionDataError = 25,
-    WebIDBDatabaseExceptionVersionError = 28,
-    WebIDBDatabaseExceptionAbortError = 17,
-    WebIDBDatabaseExceptionQuotaError = 19,
-};
+#if !ASSERT_DISABLED
 
-} // namespace WebKit
+NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(const char* file, int line)
+    : ExceptionState(0)
+    , m_file(file)
+    , m_line(line) { }
 
-#endif // WebIDBDatabaseException_h
+void NoExceptionStateAssertionChecker::throwDOMException(const ExceptionCode&, const char*)
+{
+    ASSERT_AT(false, m_file, m_line, "");
+}
+
+void NoExceptionStateAssertionChecker::throwTypeError(const char*)
+{
+    ASSERT_AT(false, m_file, m_line, "");
+}
+
+#endif
+
+} // namespace WebCore

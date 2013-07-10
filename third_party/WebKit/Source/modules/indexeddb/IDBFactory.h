@@ -37,12 +37,11 @@
 
 namespace WebCore {
 
+class ExceptionState;
+class IDBFactoryBackendInterface;
 class IDBKey;
 class IDBKeyRange;
-class IDBFactoryBackendInterface;
 class ScriptExecutionContext;
-
-typedef int ExceptionCode;
 
 class IDBFactory : public ScriptWrappable, public RefCounted<IDBFactory> {
 public:
@@ -52,18 +51,18 @@ public:
     }
     ~IDBFactory();
 
-    PassRefPtr<IDBRequest> getDatabaseNames(ScriptExecutionContext*, ExceptionCode&);
+    PassRefPtr<IDBRequest> getDatabaseNames(ScriptExecutionContext*, ExceptionState&);
 
-    PassRefPtr<IDBOpenDBRequest> open(ScriptExecutionContext*, const String& name, ExceptionCode&);
-    PassRefPtr<IDBOpenDBRequest> open(ScriptExecutionContext*, const String& name, unsigned long long version, ExceptionCode&);
-    PassRefPtr<IDBOpenDBRequest> deleteDatabase(ScriptExecutionContext*, const String& name, ExceptionCode&);
+    PassRefPtr<IDBOpenDBRequest> open(ScriptExecutionContext*, const String& name, ExceptionState&);
+    PassRefPtr<IDBOpenDBRequest> open(ScriptExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
+    PassRefPtr<IDBOpenDBRequest> deleteDatabase(ScriptExecutionContext*, const String& name, ExceptionState&);
 
-    short cmp(ScriptExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionCode&);
+    short cmp(ScriptExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
     IDBFactory(IDBFactoryBackendInterface*);
 
-    PassRefPtr<IDBOpenDBRequest> openInternal(ScriptExecutionContext*, const String& name, int64_t version, ExceptionCode&);
+    PassRefPtr<IDBOpenDBRequest> openInternal(ScriptExecutionContext*, const String& name, int64_t version, ExceptionState&);
 
     RefPtr<IDBFactoryBackendInterface> m_backend;
 };

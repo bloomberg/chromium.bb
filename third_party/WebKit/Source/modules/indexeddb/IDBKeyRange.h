@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class IDBKeyRange : public ScriptWrappable, public RefCounted<IDBKeyRange> {
 public:
@@ -63,12 +63,12 @@ public:
     bool lowerOpen() const { return m_lowerType == LowerBoundOpen; }
     bool upperOpen() const { return m_upperType == UpperBoundOpen; }
 
-    static PassRefPtr<IDBKeyRange> only(ScriptExecutionContext*, const ScriptValue& key, ExceptionCode&);
-    static PassRefPtr<IDBKeyRange> lowerBound(ScriptExecutionContext*, const ScriptValue& bound, bool open, ExceptionCode&);
-    static PassRefPtr<IDBKeyRange> upperBound(ScriptExecutionContext*, const ScriptValue& bound, bool open, ExceptionCode&);
-    static PassRefPtr<IDBKeyRange> bound(ScriptExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionCode&);
+    static PassRefPtr<IDBKeyRange> only(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> lowerBound(ScriptExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> upperBound(ScriptExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> bound(ScriptExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionState&);
 
-    static PassRefPtr<IDBKeyRange> only(PassRefPtr<IDBKey> value, ExceptionCode&);
+    static PassRefPtr<IDBKeyRange> only(PassRefPtr<IDBKey> value, ExceptionState&);
 
     bool isOnlyKey() const;
 

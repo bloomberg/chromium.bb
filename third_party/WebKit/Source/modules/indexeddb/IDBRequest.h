@@ -44,9 +44,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class IDBTransaction;
-
-typedef int ExceptionCode;
 
 class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTarget, public ActiveDOMObject {
 public:
@@ -54,8 +53,8 @@ public:
     static PassRefPtr<IDBRequest> create(ScriptExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
     virtual ~IDBRequest();
 
-    PassRefPtr<IDBAny> result(ExceptionCode&) const;
-    PassRefPtr<DOMError> error(ExceptionCode&) const;
+    PassRefPtr<IDBAny> result(ExceptionState&) const;
+    PassRefPtr<DOMError> error(ExceptionState&) const;
     PassRefPtr<IDBAny> source() const;
     PassRefPtr<IDBTransaction> transaction() const;
     void preventPropagation() { m_preventPropagation = true; }

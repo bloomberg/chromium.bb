@@ -39,6 +39,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class IDBObjectStore;
 
 class IDBIndex : public ScriptWrappable, public RefCounted<IDBIndex> {
@@ -58,16 +59,16 @@ public:
     bool multiEntry() const { return m_metadata.multiEntry; }
     int64_t id() const { return m_metadata.id; }
 
-    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, const String& direction, ExceptionCode&);
-    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, const ScriptValue& key, const String& direction, ExceptionCode&);
-    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionCode&);
-    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, const ScriptValue& key, ExceptionCode&);
-    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, const String& direction, ExceptionCode&);
-    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, const ScriptValue& key, const String& direction, ExceptionCode&);
-    PassRefPtr<IDBRequest> get(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionCode&);
-    PassRefPtr<IDBRequest> get(ScriptExecutionContext*, const ScriptValue& key, ExceptionCode&);
-    PassRefPtr<IDBRequest> getKey(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionCode&);
-    PassRefPtr<IDBRequest> getKey(ScriptExecutionContext*, const ScriptValue& key, ExceptionCode&);
+    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionState&);
+    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> get(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionState&);
+    PassRefPtr<IDBRequest> get(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> getKey(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, ExceptionState&);
+    PassRefPtr<IDBRequest> getKey(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const;

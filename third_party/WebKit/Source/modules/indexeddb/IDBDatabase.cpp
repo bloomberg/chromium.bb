@@ -26,10 +26,10 @@
 #include "config.h"
 #include "modules/indexeddb/IDBDatabase.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/EventQueue.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/HistogramSupport.h"
@@ -47,6 +47,8 @@
 #include "wtf/Atomics.h"
 
 namespace WebCore {
+
+const char IDBDatabase::notFoundErrorMessage[] = "An operation failed because the requested database object could not be found.";
 
 PassRefPtr<IDBDatabase> IDBDatabase::create(ScriptExecutionContext* context, PassRefPtr<IDBDatabaseBackendInterface> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
 {
@@ -151,7 +153,7 @@ PassRefPtr<IDBAny> IDBDatabase::version() const
     return IDBAny::create(intVersion);
 }
 
-PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionCode& ec)
+PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionState& es)
 {
     IDBKeyPath keyPath;
     bool autoIncrement = false;
@@ -166,34 +168,34 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
         options.get("autoIncrement", autoIncrement);
     }
 
-    return createObjectStore(name, keyPath, autoIncrement, ec);
+    return createObjectStore(name, keyPath, autoIncrement, es);
 }
 
-PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionCode& ec)
+PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return 0;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        ec = TransactionInactiveError;
+        es.throwDOMException(TransactionInactiveError);
         return 0;
     }
 
     if (containsObjectStore(name)) {
-        ec = ConstraintError;
+        es.throwDOMException(ConstraintError);
         return 0;
     }
 
     if (!keyPath.isNull() && !keyPath.isValid()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
     if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0;
     }
 
@@ -209,23 +211,22 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
     return objectStore.release();
 }
 
-void IDBDatabase::deleteObjectStore(const String& name, ExceptionCode& ec)
+void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::deleteObjectStore");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        ec = TransactionInactiveError;
+        es.throwDOMException(TransactionInactiveError);
         return;
     }
 
     int64_t objectStoreId = findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-        // FIXME: Should use (NotFoundError, "...").
-        ec = IDBNotFoundError;
+        es.throwDOMException(NotFoundError, IDBDatabase::notFoundErrorMessage);
         return;
     }
 
@@ -234,21 +235,21 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionCode& ec)
     m_metadata.objectStores.remove(objectStoreId);
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionCode& ec)
+PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::transaction");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
     if (!scope.size()) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0;
     }
 
-    IndexedDB::TransactionMode mode = IDBTransaction::stringToMode(modeString, ec);
-    if (ec)
+    IndexedDB::TransactionMode mode = IDBTransaction::stringToMode(modeString, es);
+    if (es.hadException())
         return 0;
 
     if (m_versionChangeTransaction || m_closePending) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return 0;
     }
 
@@ -256,8 +257,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     for (size_t i = 0; i < scope.size(); ++i) {
         int64_t objectStoreId = findObjectStoreId(scope[i]);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-            // FIXME: Should use (NotFoundError, "...").
-            ec = IDBNotFoundError;
+            es.throwDOMException(NotFoundError, IDBDatabase::notFoundErrorMessage);
             return 0;
         }
         objectStoreIds.append(objectStoreId);
@@ -270,17 +270,17 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     return transaction.release();
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* context, const String& storeName, const String& mode, ExceptionCode& ec)
+PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* context, const String& storeName, const String& mode, ExceptionState& es)
 {
     RefPtr<DOMStringList> storeNames = DOMStringList::create();
     storeNames->append(storeName);
-    return transaction(context, storeNames, mode, ec);
+    return transaction(context, storeNames, mode, es);
 }
 
 void IDBDatabase::forceClose()
 {
     for (TransactionMap::const_iterator::Values it = m_transactions.begin().values(), end = m_transactions.end().values(); it != end; ++it)
-        (*it)->abort(IGNORE_EXCEPTION);
+        (*it)->abort(IGNORE_EXCEPTION_STATE);
     this->close();
 }
 

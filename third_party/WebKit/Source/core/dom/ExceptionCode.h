@@ -64,7 +64,6 @@ namespace WebCore {
         DataCloneError,
 
         // These are IDB-specific.
-        IDBNotFoundError,
         UnknownError,
         ConstraintError,
         DataError,

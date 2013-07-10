@@ -29,13 +29,13 @@
 #include "config.h"
 #include "modules/indexeddb/IDBRequest.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventQueue.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
@@ -92,19 +92,19 @@ IDBRequest::~IDBRequest()
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !scriptExecutionContext());
 }
 
-PassRefPtr<IDBAny> IDBRequest::result(ExceptionCode& ec) const
+PassRefPtr<IDBAny> IDBRequest::result(ExceptionState& es) const
 {
     if (m_readyState != DONE) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return 0;
     }
     return m_result;
 }
 
-PassRefPtr<DOMError> IDBRequest::error(ExceptionCode& ec) const
+PassRefPtr<DOMError> IDBRequest::error(ExceptionState& es) const
 {
     if (m_readyState != DONE) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return 0;
     }
     return m_error;
@@ -488,7 +488,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
         // doesn't receive a second error) and before deactivating (which might trigger commit).
         if (event->type() == eventNames().errorEvent && dontPreventDefault && !m_requestAborted) {
             m_transaction->setError(m_error);
-            m_transaction->abort(IGNORE_EXCEPTION);
+            m_transaction->abort(IGNORE_EXCEPTION_STATE);
         }
 
         // If this was the last request in the transaction's list, it may commit here.
@@ -509,7 +509,7 @@ void IDBRequest::uncaughtExceptionInEventHandler()
 {
     if (m_transaction && !m_requestAborted) {
         m_transaction->setError(DOMError::create(AbortError, "Uncaught exception in event handler."));
-        m_transaction->abort(IGNORE_EXCEPTION);
+        m_transaction->abort(IGNORE_EXCEPTION_STATE);
     }
 }
 

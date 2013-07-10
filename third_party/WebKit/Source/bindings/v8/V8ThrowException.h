@@ -39,7 +39,11 @@ enum V8ErrorType {
 
 class V8ThrowException {
 public:
-    static v8::Handle<v8::Value> setDOMException(int, v8::Isolate*);
+    static v8::Handle<v8::Value> setDOMException(int ec, v8::Isolate* isolate)
+    {
+        return setDOMException(ec, 0, isolate);
+    }
+    static v8::Handle<v8::Value> setDOMException(int, const char*, v8::Isolate*);
 
     static v8::Handle<v8::Value> throwError(V8ErrorType, const char*, v8::Isolate* = 0);
     static v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate* = 0);

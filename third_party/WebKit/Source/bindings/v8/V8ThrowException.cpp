@@ -44,16 +44,16 @@ static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Va
     info.Data()->ToObject()->Set(v8::String::NewSymbol("stack"), value);
 }
 
-v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, const char* message, v8::Isolate* isolate)
 {
     if (ec <= 0 || v8::V8::IsExecutionTerminating())
         return v8Undefined();
 
     // FIXME: Handle other WebIDL exception types.
     if (ec == TypeError)
-        return V8ThrowException::throwTypeError(0, isolate);
+        return V8ThrowException::throwTypeError(message, isolate);
 
-    RefPtr<DOMException> domException = DOMException::create(ec);
+    RefPtr<DOMException> domException = DOMException::create(ec, message);
     v8::Handle<v8::Value> exception = toV8(domException, v8::Handle<v8::Object>(), isolate);
 
     if (exception.IsEmpty())

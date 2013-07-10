@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,20 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseException_h
-#define WebIDBDatabaseException_h
+#include "config.h"
+#include "bindings/v8/ExceptionState.h"
 
-namespace WebKit {
+#include "bindings/v8/V8ThrowException.h"
+#include "core/dom/ExceptionCode.h"
 
-enum WebIDBDatabaseException {
-    WebIDBDatabaseExceptionUnknownError = 23,
-    WebIDBDatabaseExceptionConstraintError = 24,
-    WebIDBDatabaseExceptionDataError = 25,
-    WebIDBDatabaseExceptionVersionError = 28,
-    WebIDBDatabaseExceptionAbortError = 17,
-    WebIDBDatabaseExceptionQuotaError = 19,
-};
+namespace WebCore {
 
-} // namespace WebKit
+void ExceptionState::throwDOMException(const ExceptionCode& ec,  const char* message)
+{
+    if (m_exceptionThrown)
+        return;
+    V8ThrowException::setDOMException(ec, message, m_isolate);
+    m_exceptionThrown = true;
+}
 
-#endif // WebIDBDatabaseException_h
+void ExceptionState::throwTypeError(const char* message)
+{
+    if (m_exceptionThrown)
+        return;
+    V8ThrowException::throwTypeError(message, m_isolate);
+    m_exceptionThrown = true;
+}
+
+NonThrowExceptionState::NonThrowExceptionState()
+    : ExceptionState(0) { }
+
+void NonThrowExceptionState::throwDOMException(const ExceptionCode& ec, const char*)
+{
+    m_code = ec;
+}
+
+void NonThrowExceptionState::throwTypeError(const char*)
+{
+    m_code = TypeError;
+}
+
+} // namespace WebCore
