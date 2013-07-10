@@ -336,9 +336,9 @@ const char kEnableDownloadResumption[]      = "enable-download-resumption";
 const char kEnableEncodedScreenCapture[]    = "enable-encoded-screen-capture";
 #endif
 
-// Enables WebKit features that are in development.
-const char kEnableExperimentalWebKitFeatures[] =
-    "enable-experimental-webkit-features";
+// Enables Web Platform features that are in development.
+const char kEnableExperimentalWebPlatformFeatures[] =
+    "enable-experimental-web-platform-features";
 
 // Enables the CSS multicol implementation that uses the regions implementation.
 const char kEnableRegionBasedColumns[] =

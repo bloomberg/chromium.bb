@@ -537,13 +537,13 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.fullscreen_enabled =
       !command_line.HasSwitch(switches::kDisableFullScreen);
   prefs.css_sticky_position_enabled =
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
+      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   prefs.css_shaders_enabled =
       command_line.HasSwitch(switches::kEnableCssShaders);
   prefs.css_grid_layout_enabled =
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
+      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   prefs.lazy_layout_enabled =
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
+      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   prefs.region_based_columns_enabled =
       command_line.HasSwitch(switches::kEnableRegionBasedColumns);
   prefs.threaded_html_parser =

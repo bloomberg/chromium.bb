@@ -114,7 +114,7 @@ CONTENT_EXPORT extern const char kDisableDelegatedRenderer[];
 CONTENT_EXPORT extern const char kEnableDelegatedRenderer[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kEnableDownloadResumption[];
-CONTENT_EXPORT extern const char kEnableExperimentalWebKitFeatures[];
+CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];
 CONTENT_EXPORT extern const char kDisableThreadedHTMLParser[];
 CONTENT_EXPORT extern const char kEnableFixedLayout[];

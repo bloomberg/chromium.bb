@@ -6980,11 +6980,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag to disable using a software renderer.">
         Don't fall back to a 3D software rasterizer when the GPU cannot be used.
       </message>
-      <message name="IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_NAME" desc="Name for the flag to enable experimental WebKit features.">
-        Enable experimental WebKit features.
+      <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME" desc="Name for the flag to enable experimental Web Platform features.">
+        Enable experimental Web Platform features.
       </message>
-      <message name="IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental WebKit features.">
-        Enable experimental WebKit features that are in development.
+      <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental Web Platform features.">
+        Enable experimental Web Platform features that are in development.
       </message>
       <message name="IDS_FLAGS_CSS_SHADERS_NAME" desc="Name for the flag to enable CSS Shaders.">
         Enable CSS Shaders.

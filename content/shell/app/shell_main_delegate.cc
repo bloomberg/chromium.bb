@@ -123,7 +123,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
     command_line.AppendSwitch(switches::kSkipGpuDataLoading);
     command_line.AppendSwitch(switches::kDisableGpuVsync);
-    command_line.AppendSwitch(switches::kEnableExperimentalWebKitFeatures);
+    command_line.AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
     command_line.AppendSwitch(switches::kEnableCssShaders);
     command_line.AppendSwitchASCII(switches::kTouchEvents,
                                    switches::kTouchEventsEnabled);

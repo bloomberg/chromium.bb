@@ -889,11 +889,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableSoftwareRasterizer)
   },
   {
-    "enable-experimental-webkit-features",
-    IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_NAME,
-    IDS_FLAGS_EXPERIMENTAL_WEBKIT_FEATURES_DESCRIPTION,
+    "enable-experimental-web-platform-features",
+    IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
+    IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebKitFeatures)
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)
   },
   {
     "enable-css-shaders",

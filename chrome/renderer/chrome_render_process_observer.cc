@@ -275,7 +275,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
 #endif
   WebRuntimeFeatures::enableRequestAutocomplete(
       enableAutofill ||
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
+      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures));
 #endif
 
   RenderThread* thread = RenderThread::Get();

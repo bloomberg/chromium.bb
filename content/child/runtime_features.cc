@@ -43,7 +43,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     const CommandLine& command_line) {
   WebRuntimeFeatures::enableStableFeatures(true);
 
-  if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures))
+  if (command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
     WebRuntimeFeatures::enableExperimentalFeatures(true);
 
   SetRuntimeFeatureDefaultsForPlatform();
