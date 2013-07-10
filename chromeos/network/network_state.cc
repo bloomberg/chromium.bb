@@ -12,7 +12,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_ui_data.h"
+#include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -108,10 +110,11 @@ bool NetworkState::PropertyChanged(const std::string& key,
   } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
     return GetStringValue(key, value, &ip_address_);
   } else if (key == IPConfigProperty(flimflam::kNameServersProperty)) {
-    dns_servers_.clear();
     const base::ListValue* dns_servers;
-    if (value.GetAsList(&dns_servers))
-      ConvertListValueToStringVector(*dns_servers, &dns_servers_);
+    if (!value.GetAsList(&dns_servers))
+      return false;
+    dns_servers_.clear();
+    ConvertListValueToStringVector(*dns_servers, &dns_servers_);
     return true;
   } else if (key == flimflam::kActivationStateProperty) {
     return GetStringValue(key, value, &activation_state_);
@@ -234,6 +237,8 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             error_);
   dictionary->SetStringWithoutPathExpansion(shill::kErrorDetailsProperty,
                                             error_details_);
+
+  // IPConfig properties
   base::DictionaryValue* ipconfig_properties = new base::DictionaryValue;
   ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kAddressProperty,
                                                      ip_address_);
