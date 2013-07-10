@@ -36,11 +36,7 @@ namespace WebCore {
 bool ShapeOutsideInfo::isEnabledFor(const RenderBox* box)
 {
     ShapeValue* value = box->style()->shapeOutside();
-    if (!box->isFloatingWithShapeOutside() || value->type() != ShapeValue::Shape)
-        return false;
-
-    BasicShape* shape = value->shape();
-    return shape && shape->type() != BasicShape::BasicShapeInsetRectangleType;
+    return box->isFloatingWithShapeOutside() && value->type() == ShapeValue::Shape && value->shape();
 }
 
 bool ShapeOutsideInfo::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
