@@ -464,6 +464,19 @@ Panel* BasePanelBrowserTest::CreateInactivePanel(const std::string& name) {
   return panel;
 }
 
+Panel* BasePanelBrowserTest::CreateInactiveDockedPanel(
+    const std::string& name, const gfx::Rect& bounds) {
+  // Create an active panel first, instead of inactive panel. This is because
+  // certain window managers on Linux, like icewm, will always activate the
+  // new window.
+  Panel* panel = CreateDockedPanel(name, bounds);
+
+  DeactivatePanel(panel);
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+
+  return panel;
+}
+
 Panel* BasePanelBrowserTest::CreateInactiveDetachedPanel(
     const std::string& name, const gfx::Rect& bounds) {
   // Create an active panel first, instead of inactive panel. This is because
@@ -475,6 +488,23 @@ Panel* BasePanelBrowserTest::CreateInactiveDetachedPanel(
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
   return panel;
+}
+
+void BasePanelBrowserTest::ActivatePanel(Panel* panel) {
+  // For certain window managers on Linux, the window activation/deactivation
+  // signals might not be sent. To work around this, we explicitly deactivate
+  // all other panels first.
+#if defined(OS_LINUX)
+  std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
+  for (std::vector<Panel*>::const_iterator iter = panels.begin();
+       iter != panels.end(); ++iter) {
+    Panel* current_panel = *iter;
+    if (panel != current_panel)
+      current_panel->Deactivate();
+  }
+#endif
+
+  panel->Activate();
 }
 
 void BasePanelBrowserTest::DeactivatePanel(Panel* panel) {

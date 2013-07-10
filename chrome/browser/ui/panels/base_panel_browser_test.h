@@ -87,9 +87,12 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
                             StackedPanelCollection* stack);
 
   Panel* CreateInactivePanel(const std::string& name);
+  Panel* CreateInactiveDockedPanel(const std::string& name,
+                                   const gfx::Rect& bounds);
   Panel* CreateInactiveDetachedPanel(const std::string& name,
                                      const gfx::Rect& bounds);
 
+  void ActivatePanel(Panel* panel);
   void DeactivatePanel(Panel* panel);
 
   static NativePanelTesting* CreateNativePanelTesting(Panel* panel);
