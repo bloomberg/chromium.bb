@@ -314,7 +314,8 @@ SyncBackendHost::SyncBackendHost(
       frontend_(NULL),
       cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE),
       invalidator_(
-          invalidation::InvalidationServiceFactory::GetForProfile(profile)) {
+          invalidation::InvalidationServiceFactory::GetForProfile(profile)),
+      invalidation_handler_registered_(false) {
 }
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
@@ -325,7 +326,8 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       name_("Unknown"),
       initialization_state_(NOT_ATTEMPTED),
       frontend_(NULL),
-      cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE) {
+      cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE),
+      invalidation_handler_registered_(false) {
 }
 
 SyncBackendHost::~SyncBackendHost() {
@@ -382,8 +384,6 @@ void SyncBackendHost::Initialize(
     factory_switches.backoff_override =
         InternalComponentsFactoryImpl::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
   }
-
-  invalidator_->RegisterInvalidationHandler(this);
 
   initialization_state_ = CREATING_SYNC_MANAGER;
   InitCore(DoInitializeOptions(
@@ -560,10 +560,16 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // called first.
   DCHECK(!frontend_);
 
-  if (sync_disabled)
-    invalidator_->UpdateRegisteredInvalidationIds(this, syncer::ObjectIdSet());
-  invalidator_->UnregisterInvalidationHandler(this);
-  invalidator_ = NULL;
+  if (invalidation_handler_registered_) {
+    if (sync_disabled) {
+      invalidator_->UpdateRegisteredInvalidationIds(
+          this,
+          syncer::ObjectIdSet());
+    }
+    invalidator_->UnregisterInvalidationHandler(this);
+    invalidator_ = NULL;
+  }
+  invalidation_handler_registered_ = false;
 
   // TODO(tim): DCHECK(registrar_->StoppedOnUIThread()) would be nice.
   if (sync_thread_.IsRunning()) {
@@ -838,6 +844,9 @@ void SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
 
   js_backend_ = js_backend;
   debug_info_listener_ = debug_info_listener;
+
+  invalidator_->RegisterInvalidationHandler(this);
+  invalidation_handler_registered_ = true;
 
   // Inform the registrar of those types that have been fully downloaded and
   // applied.

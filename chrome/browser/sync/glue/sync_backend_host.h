@@ -569,6 +569,7 @@ class SyncBackendHost
   syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
   invalidation::InvalidationService* invalidator_;
+  bool invalidation_handler_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };
