@@ -321,7 +321,6 @@ AC_ARG_ENABLE(colord,
               AS_HELP_STRING([--disable-colord],
                              [do not build colord CMS support]),,
 	      enable_colord=auto)
-AM_CONDITIONAL(ENABLE_COLORD, test "x$enable_colord" = "xyes")
 if test "x$enable_colord" != "xno"; then
 	PKG_CHECK_MODULES(COLORD,
 			  colord >= 0.1.27,
@@ -334,6 +333,7 @@ if test "x$enable_colord" != "xno"; then
 	     enable_colord=yes
 	fi
 fi
+AM_CONDITIONAL(ENABLE_COLORD, test "x$enable_colord" = "xyes")
 
 AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
 AM_CONDITIONAL(BUILD_WCAP_TOOLS, test x$enable_wcap_tools = xyes)
