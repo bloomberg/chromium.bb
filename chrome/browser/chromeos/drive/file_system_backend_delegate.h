@@ -9,6 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace fileapi {
 class ExternalMountPoints;
 }  // namespace fileapi
@@ -19,8 +23,9 @@ namespace drive {
 // for Drive file system.
 class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
  public:
+  // |browser_context| is currently used to take the ExternalMountPoints.
   explicit FileSystemBackendDelegate(
-      fileapi::ExternalMountPoints* mount_points);
+      content::BrowserContext* browser_context);
   virtual ~FileSystemBackendDelegate();
 
   // FileSystemBackend::Delegate overrides.

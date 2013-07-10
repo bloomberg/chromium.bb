@@ -2335,9 +2335,8 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 }
 
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
+    content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
-    quota::SpecialStoragePolicy* special_storage_policy,
-    fileapi::ExternalMountPoints* external_mount_points,
     ScopedVector<fileapi::FileSystemBackend>* additional_backends) {
 #if !defined(OS_ANDROID)
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
@@ -2347,11 +2346,13 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
           MediaFileSystemBackend::kMediaTaskRunnerName)).get()));
 #endif
 #if defined(OS_CHROMEOS)
+  fileapi::ExternalMountPoints* external_mount_points =
+      content::BrowserContext::GetMountPoints(browser_context);
   DCHECK(external_mount_points);
   chromeos::FileSystemBackend* backend =
       new chromeos::FileSystemBackend(
-          new drive::FileSystemBackendDelegate(external_mount_points),
-          special_storage_policy,
+          new drive::FileSystemBackendDelegate(browser_context),
+          browser_context->GetSpecialStoragePolicy(),
           external_mount_points,
           fileapi::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();

@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -48,10 +49,9 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
 }  // namespace
 
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
+    BrowserContext* browser_context,
     const base::FilePath& profile_path,
     bool is_incognito,
-    fileapi::ExternalMountPoints* external_mount_points,
-    quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy) {
 
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
@@ -66,16 +66,15 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
   // Setting up additional mount point providers.
   ScopedVector<fileapi::FileSystemBackend> additional_providers;
   GetContentClient()->browser()->GetAdditionalFileSystemBackends(
+      browser_context,
       profile_path,
-      special_storage_policy,
-      external_mount_points,
       &additional_providers);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       new fileapi::FileSystemContext(
           task_runners.Pass(),
-          external_mount_points,
-          special_storage_policy,
+          BrowserContext::GetMountPoints(browser_context),
+          browser_context->GetSpecialStoragePolicy(),
           quota_manager_proxy,
           additional_providers.Pass(),
           profile_path,

@@ -71,10 +71,6 @@ class ExternalMountPoints;
 class FileSystemBackend;
 }
 
-namespace quota {
-class SpecialStoragePolicy;
-}
-
 namespace content {
 
 class AccessTokenStore;
@@ -562,14 +558,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       std::vector<std::string>* additional_schemes) {}
 
   // Returns additional file system backends for FileSystem API.
-  // |special_storage_policy| and |external_mount_points| are needed in the
-  // additional FileSystemBackends. |special_storage_policy| is used to grant
-  // permissions. |external_mount_points| has mount points to create objects
-  // returned by additional FileSystemBackends.
+  // |browser_context| is needed in the additional FileSystemBackends.
+  // It has mount points to create objects returned by additional
+  // FileSystemBackends, and SpecialStoragePolicy for permission granting.
   virtual void GetAdditionalFileSystemBackends(
+      BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
-      quota::SpecialStoragePolicy* special_storage_policy,
-      fileapi::ExternalMountPoints* external_mount_points,
       ScopedVector<fileapi::FileSystemBackend>* additional_backends) {}
 
   // Allows an embedder to return its own LocationProvider implementation.

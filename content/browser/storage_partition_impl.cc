@@ -209,9 +209,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   // Each consumer is responsible for registering its QuotaClient during
   // its construction.
   scoped_refptr<fileapi::FileSystemContext> filesystem_context =
-      CreateFileSystemContext(partition_path, in_memory,
-                              BrowserContext::GetMountPoints(context),
-                              context->GetSpecialStoragePolicy(),
+      CreateFileSystemContext(context,
+                              partition_path, in_memory,
                               quota_manager->proxy());
 
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker =

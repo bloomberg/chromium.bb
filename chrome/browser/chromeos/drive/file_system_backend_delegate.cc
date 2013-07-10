@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/drive/remote_file_stream_writer.h"
 #include "chrome/browser/chromeos/fileapi/remote_file_system_operation.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -17,8 +18,8 @@ using content::BrowserThread;
 namespace drive {
 
 FileSystemBackendDelegate::FileSystemBackendDelegate(
-    fileapi::ExternalMountPoints* mount_points)
-    : mount_points_(mount_points) {
+    content::BrowserContext* browser_context)
+    : mount_points_(content::BrowserContext::GetMountPoints(browser_context)) {
 }
 
 FileSystemBackendDelegate::~FileSystemBackendDelegate() {
