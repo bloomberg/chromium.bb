@@ -309,15 +309,22 @@ PassRefPtr<SharedBuffer> SharedBuffer::copy() const
     RefPtr<SharedBuffer> clone(adoptRef(new SharedBuffer));
     if (m_purgeableBuffer) {
         clone->append(data(), size());
-        return clone;
+        return clone.release();
     }
 
     clone->m_size = m_size;
     clone->m_buffer.reserveCapacity(m_size);
     clone->m_buffer.append(m_buffer.data(), m_buffer.size());
-    for (unsigned i = 0; i < m_segments.size(); ++i)
-        clone->m_buffer.append(m_segments[i], segmentSize);
-    return clone;
+    if (!m_segments.isEmpty()) {
+        const char* segment = 0;
+        unsigned position = m_buffer.size();
+        while (unsigned segmentSize = getSomeData(segment, position)) {
+            clone->m_buffer.append(segment, segmentSize);
+            position += segmentSize;
+        }
+        ASSERT(position == clone->size());
+    }
+    return clone.release();
 }
 
 PassOwnPtr<PurgeableBuffer> SharedBuffer::releasePurgeableBuffer()

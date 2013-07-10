@@ -47,15 +47,15 @@ TEST(SharedBufferTest, getAsArrayBuffer)
     char testData1[] = "World";
     char testData2[] = "Goodbye";
 
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData0, sizeof(testData0) - 1);
-    sharedBuffer->append(testData1, sizeof(testData1) - 1);
-    sharedBuffer->append(testData2, sizeof(testData2) - 1);
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData0, strlen(testData0));
+    sharedBuffer->append(testData1, strlen(testData1));
+    sharedBuffer->append(testData2, strlen(testData2));
 
     RefPtr<ArrayBuffer> arrayBuffer = sharedBuffer->getAsArrayBuffer();
 
     char expectedConcatenation[] = "HelloWorldGoodbye";
-    ASSERT_EQ(sizeof(expectedConcatenation) - 1, arrayBuffer->byteLength());
-    EXPECT_EQ(0, memcmp(expectedConcatenation, arrayBuffer->data(), sizeof(expectedConcatenation) - 1));
+    ASSERT_EQ(strlen(expectedConcatenation), arrayBuffer->byteLength());
+    EXPECT_EQ(0, memcmp(expectedConcatenation, arrayBuffer->data(), strlen(expectedConcatenation)));
 }
 
 TEST(SharedBufferTest, getAsArrayBufferLargeSegments)
@@ -90,6 +90,42 @@ TEST(SharedBufferTest, getAsArrayBufferLargeSegments)
         EXPECT_EQ('c', static_cast<char*>(arrayBuffer->data())[position]);
         ++position;
     }
+}
+
+TEST(SharedBufferTest, copy)
+{
+    char testData[] = "Habitasse integer eros tincidunt a scelerisque! Enim elit? Scelerisque magnis,"
+        "et montes ultrices tristique a! Pid. Velit turpis, dapibus integer rhoncus sociis amet facilisis,"
+        "adipiscing pulvinar nascetur magnis tempor sit pulvinar, massa urna enim porttitor sociis sociis proin enim?"
+        "Lectus, platea dolor, integer a. A habitasse hac nunc, nunc, nec placerat vut in sit nunc nec, sed. Sociis,"
+        "vut! Hac, velit rhoncus facilisis. Rhoncus et, enim, sed et in tristique nunc montes,"
+        "natoque nunc sagittis elementum parturient placerat dolor integer? Pulvinar,"
+        "magnis dignissim porttitor ac pulvinar mid tempor. A risus sed mid! Magnis elit duis urna,"
+        "cras massa, magna duis. Vut magnis pid a! Penatibus aliquet porttitor nunc, adipiscing massa odio lundium,"
+        "risus elementum ac turpis massa pellentesque parturient augue. Purus amet turpis pid aliquam?"
+        "Dolor est tincidunt? Dolor? Dignissim porttitor sit in aliquam! Tincidunt, non nunc, rhoncus dictumst!"
+        "Porta augue etiam. Cursus augue nunc lacus scelerisque. Rhoncus lectus, integer hac, nec pulvinar augue massa,"
+        "integer amet nisi facilisis? A! A, enim velit pulvinar elit in non scelerisque in et ultricies amet est!"
+        "in porttitor montes lorem et, hac aliquet pellentesque a sed? Augue mid purus ridiculus vel dapibus,"
+        "sagittis sed, tortor auctor nascetur rhoncus nec, rhoncus, magna integer. Sit eu massa vut?"
+        "Porta augue porttitor elementum, enim, rhoncus pulvinar duis integer scelerisque rhoncus natoque,"
+        "mattis dignissim massa ac pulvinar urna, nunc ut. Sagittis, aliquet penatibus proin lorem, pulvinar lectus,"
+        "augue proin! Ac, arcu quis. Placerat habitasse, ridiculus ridiculus.";
+
+    unsigned length = strlen(testData);
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData, length);
+    sharedBuffer->append(testData, length);
+    sharedBuffer->append(testData, length);
+    sharedBuffer->append(testData, length);
+    // sharedBuffer must contain data more than segmentSize (= 0x1000) to check copy().
+    ASSERT_EQ(length * 4, sharedBuffer->size());
+
+    RefPtr<SharedBuffer> clone = sharedBuffer->copy();
+    ASSERT_EQ(length * 4, clone->size());
+    ASSERT_EQ(0, memcmp(clone->data(), sharedBuffer->data(), clone->size()));
+
+    clone->append(testData, length);
+    ASSERT_EQ(length * 5, clone->size());
 }
 
 } // namespace
