@@ -24,13 +24,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/unpacker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "content/public/common/common_param_traits.h"
 #include "crypto/signature_verifier.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/crx_file.h"
@@ -57,6 +58,7 @@ using content::UtilityProcessHost;
 #define UNPACK_RATE_HISTOGRAM(name, rate) \
     UMA_HISTOGRAM_CUSTOM_COUNTS(name, rate, 1, 100000, 100);
 
+namespace extensions {
 namespace {
 
 void RecordSuccessfulUnpackTimeHistograms(
@@ -173,9 +175,39 @@ bool FindWritableTempLocation(const base::FilePath& extensions_dir,
   return false;
 }
 
-}  // namespace
+// Read the decoded images back from the file we saved them to.
+// |extension_path| is the path to the extension we unpacked that wrote the
+// data. Returns true on success.
+bool ReadImagesFromFile(const base::FilePath& extension_path,
+                        DecodedImages* images) {
+  base::FilePath path =
+      extension_path.AppendASCII(extension_filenames::kDecodedImagesFilename);
+  std::string file_str;
+  if (!file_util::ReadFileToString(path, &file_str))
+    return false;
 
-namespace extensions {
+  IPC::Message pickle(file_str.data(), file_str.size());
+  PickleIterator iter(pickle);
+  return IPC::ReadParam(&pickle, &iter, images);
+}
+
+// Read the decoded message catalogs back from the file we saved them to.
+// |extension_path| is the path to the extension we unpacked that wrote the
+// data. Returns true on success.
+bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
+                                 base::DictionaryValue* catalogs) {
+  base::FilePath path = extension_path.AppendASCII(
+      extension_filenames::kDecodedMessageCatalogsFilename);
+  std::string file_str;
+  if (!file_util::ReadFileToString(path, &file_str))
+    return false;
+
+  IPC::Message pickle(file_str.data(), file_str.size());
+  PickleIterator iter(pickle);
+  return IPC::ReadParam(&pickle, &iter, catalogs);
+}
+
+}  // namespace
 
 SandboxedUnpacker::SandboxedUnpacker(
     const base::FilePath& crx_path,
@@ -605,8 +637,8 @@ DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
 }
 
 bool SandboxedUnpacker::RewriteImageFiles() {
-  Unpacker::DecodedImages images;
-  if (!Unpacker::ReadImagesFromFile(temp_dir_.path(), &images)) {
+  DecodedImages images;
+  if (!ReadImagesFromFile(temp_dir_.path(), &images)) {
     // Couldn't read image data from disk.
     ReportFailure(
         COULD_NOT_READ_IMAGE_DATA_FROM_DISK,
@@ -712,7 +744,7 @@ bool SandboxedUnpacker::RewriteImageFiles() {
 
 bool SandboxedUnpacker::RewriteCatalogFiles() {
   DictionaryValue catalogs;
-  if (!Unpacker::ReadMessageCatalogsFromFile(temp_dir_.path(), &catalogs)) {
+  if (!ReadMessageCatalogsFromFile(temp_dir_.path(), &catalogs)) {
     // Could not read catalog data from disk.
     ReportFailure(
         COULD_NOT_READ_CATALOG_DATA_FROM_DISK,

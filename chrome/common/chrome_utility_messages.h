@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/strings/string16.h"
+#include "base/tuple.h"
 #include "base/values.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/itunes_library.h"
@@ -24,6 +25,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #define IPC_MESSAGE_START ChromeUtilityMsgStart
+
+#ifndef CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
+#define CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
+
+typedef std::vector<Tuple2<SkBitmap, base::FilePath> > DecodedImages;
+
+#endif  // CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
   IPC_STRUCT_TRAITS_MEMBER(from)
@@ -177,8 +185,10 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParsePicasaPMPDatabase,
 // Reply when the utility process is done unpacking an extension.  |manifest|
 // is the parsed manifest.json file.
 // The unpacker should also have written out files containing the decoded
-// images and message catalogs from the extension. See extensions::Unpacker for
-// details.
+// images and message catalogs from the extension. The data is written into a
+// DecodedImages struct into a file named kDecodedImagesFilename in the
+// directory that was passed in. This is done because the data is too large to
+// pass over IPC.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
                      base::DictionaryValue /* manifest */)
 

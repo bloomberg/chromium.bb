@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -88,6 +89,10 @@ bool PathContainsParentDirectory(const base::FilePath& path) {
 
 namespace extensions {
 
+struct Unpacker::InternalData {
+  DecodedImages decoded_images;
+};
+
 Unpacker::Unpacker(const base::FilePath& extension_path,
                    const std::string& extension_id,
                    Manifest::Location location,
@@ -96,6 +101,7 @@ Unpacker::Unpacker(const base::FilePath& extension_path,
       extension_id_(extension_id),
       location_(location),
       creation_flags_(creation_flags) {
+  internal_data_.reset(new InternalData());
 }
 
 Unpacker::~Unpacker() {
@@ -220,7 +226,7 @@ bool Unpacker::Run() {
 
 bool Unpacker::DumpImagesToFile() {
   IPC::Message pickle;  // We use a Message so we can use WriteParam.
-  IPC::WriteParam(&pickle, decoded_images_);
+  IPC::WriteParam(&pickle, internal_data_->decoded_images);
 
   base::FilePath path = extension_path_.DirName().AppendASCII(
       filenames::kDecodedImagesFilename);
@@ -248,34 +254,6 @@ bool Unpacker::DumpMessageCatalogsToFile() {
   return true;
 }
 
-// static
-bool Unpacker::ReadImagesFromFile(const base::FilePath& extension_path,
-                                  DecodedImages* images) {
-  base::FilePath path =
-      extension_path.AppendASCII(filenames::kDecodedImagesFilename);
-  std::string file_str;
-  if (!file_util::ReadFileToString(path, &file_str))
-    return false;
-
-  IPC::Message pickle(file_str.data(), file_str.size());
-  PickleIterator iter(pickle);
-  return IPC::ReadParam(&pickle, &iter, images);
-}
-
-// static
-bool Unpacker::ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
-                                           base::DictionaryValue* catalogs) {
-  base::FilePath path = extension_path.AppendASCII(
-      filenames::kDecodedMessageCatalogsFilename);
-  std::string file_str;
-  if (!file_util::ReadFileToString(path, &file_str))
-    return false;
-
-  IPC::Message pickle(file_str.data(), file_str.size());
-  PickleIterator iter(pickle);
-  return IPC::ReadParam(&pickle, &iter, catalogs);
-}
-
 bool Unpacker::AddDecodedImage(const base::FilePath& path) {
   // Make sure it's not referencing a file outside the extension's subdir.
   if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
@@ -297,7 +275,7 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
     return false;
   }
 
-  decoded_images_.push_back(MakeTuple(image_bitmap, path));
+  internal_data_->decoded_images.push_back(MakeTuple(image_bitmap, path));
   return true;
 }
 

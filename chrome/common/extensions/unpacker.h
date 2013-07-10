@@ -10,7 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/tuple.h"
 #include "chrome/common/extensions/manifest.h"
 
 class SkBitmap;
@@ -27,8 +26,6 @@ namespace extensions {
 // and writes them back out to disk for later use.
 class Unpacker {
  public:
-  typedef std::vector< Tuple2<SkBitmap, base::FilePath> > DecodedImages;
-
   Unpacker(const base::FilePath& extension_path,
            const std::string& extension_id,
            Manifest::Location location,
@@ -49,23 +46,10 @@ class Unpacker {
   // success.
   bool DumpMessageCatalogsToFile();
 
-  // Read the decoded images back from the file we saved them to.
-  // |extension_path| is the path to the extension we unpacked that wrote the
-  // data. Returns true on success.
-  static bool ReadImagesFromFile(const base::FilePath& extension_path,
-                                 DecodedImages* images);
-
-  // Read the decoded message catalogs back from the file we saved them to.
-  // |extension_path| is the path to the extension we unpacked that wrote the
-  // data. Returns true on success.
-  static bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
-                                          base::DictionaryValue* catalogs);
-
   const string16& error_message() { return error_message_; }
   base::DictionaryValue* parsed_manifest() {
     return parsed_manifest_.get();
   }
-  const DecodedImages& decoded_images() { return decoded_images_; }
   base::DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
 
  private:
@@ -108,7 +92,8 @@ class Unpacker {
 
   // A list of decoded images and the paths where those images came from.  Paths
   // are relative to the manifest file.
-  DecodedImages decoded_images_;
+  struct InternalData;
+  scoped_ptr<InternalData> internal_data_;
 
   // Dictionary of relative paths and catalogs per path. Paths are in the form
   // of _locales/locale, without messages.json base part.
