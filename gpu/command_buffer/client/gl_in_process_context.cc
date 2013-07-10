@@ -124,6 +124,7 @@ class GLInProcessContextImpl
   bool IsCommandBufferContextLost();
   void PollQueryCallbacks();
   void CallQueryCallback(size_t index);
+  bool MakeCurrent();
 
   gles2::ImageManager* GetImageManager();
 
@@ -237,15 +238,25 @@ GLInProcessContextImpl::~GLInProcessContextImpl() {
   Destroy();
 }
 
+bool GLInProcessContextImpl::MakeCurrent() {
+  if (decoder_->MakeCurrent())
+    return true;
+  DLOG(ERROR) << "Context lost because MakeCurrent failed.";
+  command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+  command_buffer_->SetParseError(gpu::error::kLostContext);
+  return false;
+}
+
 void GLInProcessContextImpl::PumpCommands() {
-  if (!context_lost_) {
+  {
     AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
                                         g_all_shared_contexts.Get());
-    decoder_->MakeCurrent();
+    if (!MakeCurrent())
+      return;
     gpu_scheduler_->PutChanged();
     CommandBuffer::State state = command_buffer_->GetState();
-    if (error::IsError(state.error))
-      context_lost_ = true;
+    DCHECK((!error::IsError(state.error) && !context_lost_) ||
+           (error::IsError(state.error) && context_lost_));
   }
 
   if (!context_lost_ && !signal_sync_point_callback_.is_null()) {
