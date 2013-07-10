@@ -952,12 +952,14 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   // bring up the panel with the above alternatives.
   // When the user clicks on the minimized panel, the panel expansion will be
   // done when we process the mouse button pressed message.
+#if defined(OS_WIN)
   if (focused_ && panel_->IsMinimized() &&
       panel_->collection()->type() == PanelCollection::DOCKED &&
       gfx::Screen::GetScreenFor(widget->GetNativeWindow())->
           GetWindowAtCursorScreenPoint() != widget->GetNativeWindow()) {
     panel_->Restore();
   }
+#endif
 
   panel()->OnActiveStateChanged(focused);
 }

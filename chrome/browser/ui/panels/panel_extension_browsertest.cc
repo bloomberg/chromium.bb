@@ -102,17 +102,8 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, PanelAppIcon) {
 }
 #endif
 
-// Tests that icon loading might not be completed when the panel is closed.
-// (crbug.com/151484)
-//
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_ClosePanelBeforeIconLoadingCompleted DISABLED_ClosePanelBeforeIconLoadingCompleted
-#else
-#define MAYBE_ClosePanelBeforeIconLoadingCompleted ClosePanelBeforeIconLoadingCompleted
-#endif
 IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest,
-                       MAYBE_ClosePanelBeforeIconLoadingCompleted) {
+                       ClosePanelBeforeIconLoadingCompleted) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("test_extension"));
   Panel* panel = CreatePanelFromExtension(extension);
