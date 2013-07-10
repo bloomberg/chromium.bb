@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/browser/android/compositor.h"
@@ -31,7 +32,8 @@ class GraphicsContext;
 class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
-      public WebGraphicsContext3DSwapBuffersClient {
+      public WebGraphicsContext3DSwapBuffersClient,
+      public ImageTransportFactoryAndroidObserver {
  public:
   explicit CompositorImpl(Compositor::Client* client);
   virtual ~CompositorImpl();
@@ -90,6 +92,9 @@ class CONTENT_EXPORT CompositorImpl
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
   virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
   virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
+
+  // ImageTransportFactoryAndroidObserver implementation.
+  virtual void OnLostResources() OVERRIDE;
 
  private:
   WebKit::WebGLId BuildBasicTexture();

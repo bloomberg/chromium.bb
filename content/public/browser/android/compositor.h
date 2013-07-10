@@ -36,6 +36,9 @@ class CONTENT_EXPORT Compositor {
 
     // The compositor will eventually swap a frame.
     virtual void OnSwapBuffersPosted() {}
+
+    // Tells the client that GL resource were lost and need to be reinitialized.
+    virtual void DidLoseResources() {}
   };
 
   virtual ~Compositor() {}

@@ -139,9 +139,11 @@ CompositorImpl::CompositorImpl(Compositor::Client* client)
       client_(client),
       weak_factory_(this) {
   DCHECK(client);
+  ImageTransportFactoryAndroid::AddObserver(this);
 }
 
 CompositorImpl::~CompositorImpl() {
+  ImageTransportFactoryAndroid::RemoveObserver(this);
   // Clean-up any surface references.
   SetSurface(NULL);
 }
@@ -290,7 +292,6 @@ WebKit::WebGLId CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
                       type,
                       bitmap.pixels());
   context->shallowFlushCHROMIUM();
-  DCHECK(context->getError() == GL_NO_ERROR);
   return texture_id;
 }
 
@@ -312,7 +313,6 @@ WebKit::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
                                 data_size,
                                 data);
   context->shallowFlushCHROMIUM();
-  DCHECK(context->getError() == GL_NO_ERROR);
   return texture_id;
 }
 
@@ -323,7 +323,6 @@ void CompositorImpl::DeleteTexture(WebKit::WebGLId texture_id) {
     return;
   context->deleteTexture(texture_id);
   context->shallowFlushCHROMIUM();
-  DCHECK(context->getError() == GL_NO_ERROR);
 }
 
 bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
@@ -394,6 +393,10 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
   }
 }
 
+void CompositorImpl::OnLostResources() {
+  client_->DidLoseResources();
+}
+
 void CompositorImpl::DidCompleteSwapBuffers() {
   client_->OnSwapBuffersCompleted();
 }
@@ -447,7 +450,6 @@ WebKit::WebGLId CompositorImpl::BuildBasicTexture() {
   context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  DCHECK(context->getError() == GL_NO_ERROR);
   return texture_id;
 }
 
