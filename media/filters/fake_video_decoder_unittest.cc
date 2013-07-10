@@ -9,25 +9,23 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
-#include "media/filters/fake_demuxer_stream.h"
 #include "media/filters/fake_video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
 static const int kDecodingDelay = 9;
-static const int kNumConfigs = 3;
-static const int kNumBuffersInOneConfig = 9;
-static const int kNumInputBuffers = kNumConfigs * kNumBuffersInOneConfig;
+static const int kTotalBuffers = 12;
+static const int kDurationMs = 30;
 
 class FakeVideoDecoderTest : public testing::Test {
  public:
   FakeVideoDecoderTest()
       : decoder_(new FakeVideoDecoder(kDecodingDelay)),
-        demuxer_stream_(
-            new FakeDemuxerStream(kNumConfigs, kNumBuffersInOneConfig, false)),
+        num_input_buffers_(0),
         num_decoded_frames_(0),
-        is_read_pending_(false),
+        decode_status_(VideoDecoder::kNotEnoughData),
+        is_decode_pending_(false),
         is_reset_pending_(false),
         is_stop_pending_(false) {}
 
@@ -35,12 +33,17 @@ class FakeVideoDecoderTest : public testing::Test {
     StopAndExpect(OK);
   }
 
-  void Initialize() {
-    decoder_->Initialize(demuxer_stream_.get(),
+  void InitializeWithConfig(const VideoDecoderConfig& config) {
+    decoder_->Initialize(config,
                          NewExpectedStatusCB(PIPELINE_OK),
                          base::Bind(&MockStatisticsCB::OnStatistics,
                                     base::Unretained(&statistics_cb_)));
     message_loop_.RunUntilIdle();
+    current_config_ = config;
+  }
+
+  void Initialize() {
+    InitializeWithConfig(TestVideoConfig::Normal());
   }
 
   void EnterPendingInitState() {
@@ -56,19 +59,21 @@ class FakeVideoDecoderTest : public testing::Test {
   // Callback for VideoDecoder::Read().
   void FrameReady(VideoDecoder::Status status,
                   const scoped_refptr<VideoFrame>& frame) {
-    DCHECK(is_read_pending_);
-    ASSERT_EQ(VideoDecoder::kOk, status);
+    DCHECK(is_decode_pending_);
+    ASSERT_TRUE(status == VideoDecoder::kOk ||
+                status == VideoDecoder::kNotEnoughData);
+    is_decode_pending_ = false;
+    decode_status_ = status;
+    frame_decoded_ = frame;
 
-    is_read_pending_ = false;
-    frame_read_ = frame;
-
-    if (frame.get() && !frame->IsEndOfStream())
+    if (frame && !frame->IsEndOfStream())
       num_decoded_frames_++;
   }
 
   enum CallbackResult {
     PENDING,
     OK,
+    NOT_ENOUGH_DATA,
     ABROTED,
     EOS
   };
@@ -76,50 +81,86 @@ class FakeVideoDecoderTest : public testing::Test {
   void ExpectReadResult(CallbackResult result) {
     switch (result) {
       case PENDING:
-        EXPECT_TRUE(is_read_pending_);
-        ASSERT_FALSE(frame_read_.get());
+        EXPECT_TRUE(is_decode_pending_);
+        ASSERT_FALSE(frame_decoded_);
         break;
       case OK:
-        EXPECT_FALSE(is_read_pending_);
-        ASSERT_TRUE(frame_read_.get());
-        EXPECT_FALSE(frame_read_->IsEndOfStream());
+        EXPECT_FALSE(is_decode_pending_);
+        ASSERT_EQ(VideoDecoder::kOk, decode_status_);
+        ASSERT_TRUE(frame_decoded_);
+        EXPECT_FALSE(frame_decoded_->IsEndOfStream());
+        break;
+      case NOT_ENOUGH_DATA:
+        EXPECT_FALSE(is_decode_pending_);
+        ASSERT_EQ(VideoDecoder::kNotEnoughData, decode_status_);
+        ASSERT_FALSE(frame_decoded_);
         break;
       case ABROTED:
-        EXPECT_FALSE(is_read_pending_);
-        EXPECT_FALSE(frame_read_.get());
+        EXPECT_FALSE(is_decode_pending_);
+        ASSERT_EQ(VideoDecoder::kOk, decode_status_);
+        EXPECT_FALSE(frame_decoded_);
         break;
       case EOS:
-        EXPECT_FALSE(is_read_pending_);
-        ASSERT_TRUE(frame_read_.get());
-        EXPECT_TRUE(frame_read_->IsEndOfStream());
+        EXPECT_FALSE(is_decode_pending_);
+        ASSERT_EQ(VideoDecoder::kOk, decode_status_);
+        ASSERT_TRUE(frame_decoded_);
+        EXPECT_TRUE(frame_decoded_->IsEndOfStream());
         break;
     }
   }
 
-  void ReadOneFrame() {
-    frame_read_ = NULL;
-    is_read_pending_ = true;
-    decoder_->Read(
+  void Decode() {
+    scoped_refptr<DecoderBuffer> buffer;
+
+    if (num_input_buffers_ < kTotalBuffers) {
+      buffer = CreateFakeVideoBufferForTest(
+          current_config_,
+          base::TimeDelta::FromMilliseconds(kDurationMs * num_input_buffers_),
+          base::TimeDelta::FromMilliseconds(kDurationMs));
+      num_input_buffers_++;
+    } else {
+      buffer = DecoderBuffer::CreateEOSBuffer();
+    }
+
+    decode_status_ = VideoDecoder::kDecodeError;
+    frame_decoded_ = NULL;
+    is_decode_pending_ = true;
+
+    decoder_->Decode(
+        buffer,
         base::Bind(&FakeVideoDecoderTest::FrameReady, base::Unretained(this)));
     message_loop_.RunUntilIdle();
+  }
+
+  void ReadOneFrame() {
+    do {
+      Decode();
+    } while (decode_status_ == VideoDecoder::kNotEnoughData &&
+             !is_decode_pending_);
   }
 
   void ReadUntilEOS() {
     do {
       ReadOneFrame();
-    } while (frame_read_.get() && !frame_read_->IsEndOfStream());
+    } while (frame_decoded_ && !frame_decoded_->IsEndOfStream());
   }
 
   void EnterPendingReadState() {
+    // Pass the initial NOT_ENOUGH_DATA stage.
+    ReadOneFrame();
     decoder_->HoldNextRead();
     ReadOneFrame();
     ExpectReadResult(PENDING);
   }
 
-  void SatisfyRead() {
+  void SatisfyReadAndExpect(CallbackResult result) {
     decoder_->SatisfyRead();
     message_loop_.RunUntilIdle();
-    ExpectReadResult(OK);
+    ExpectReadResult(result);
+  }
+
+  void SatisfyRead() {
+    SatisfyReadAndExpect(OK);
   }
 
   // Callback for VideoDecoder::Reset().
@@ -198,49 +239,19 @@ class FakeVideoDecoderTest : public testing::Test {
     ExpectStopResult(OK);
   }
 
-  // Callback for DemuxerStream::Read so that we can skip frames to trigger a
-  // config change.
-  void BufferReady(bool* config_changed,
-                   DemuxerStream::Status status,
-                   const scoped_refptr<DecoderBuffer>& buffer) {
-    if (status == DemuxerStream::kConfigChanged)
-      *config_changed = true;
-  }
-
-  void ChangeConfig() {
-    bool config_changed = false;
-    while (!config_changed) {
-      demuxer_stream_->Read(base::Bind(&FakeVideoDecoderTest::BufferReady,
-                                       base::Unretained(this),
-                                       &config_changed));
-      message_loop_.RunUntilIdle();
-    }
-  }
-
-  void EnterPendingDemuxerReadState() {
-    demuxer_stream_->HoldNextRead();
-    ReadOneFrame();
-  }
-
-  void SatisfyDemuxerRead() {
-    demuxer_stream_->SatisfyRead();
-    message_loop_.RunUntilIdle();
-  }
-
-  void AbortDemuxerRead() {
-    demuxer_stream_->Reset();
-    message_loop_.RunUntilIdle();
-  }
-
   base::MessageLoop message_loop_;
+  VideoDecoderConfig current_config_;
+
   scoped_ptr<FakeVideoDecoder> decoder_;
-  scoped_ptr<FakeDemuxerStream> demuxer_stream_;
   MockStatisticsCB statistics_cb_;
+
+  int num_input_buffers_;
   int num_decoded_frames_;
 
   // Callback result/status.
-  scoped_refptr<VideoFrame> frame_read_;
-  bool is_read_pending_;
+  VideoDecoder::Status decode_status_;
+  scoped_refptr<VideoFrame> frame_decoded_;
+  bool is_decode_pending_;
   bool is_reset_pending_;
   bool is_stop_pending_;
 
@@ -255,24 +266,15 @@ TEST_F(FakeVideoDecoderTest, Initialize) {
 TEST_F(FakeVideoDecoderTest, Read_AllFrames) {
   Initialize();
   ReadUntilEOS();
-  EXPECT_EQ(kNumInputBuffers, num_decoded_frames_);
-}
-
-TEST_F(FakeVideoDecoderTest, Read_AbortedDemuxerRead) {
-  Initialize();
-  demuxer_stream_->HoldNextRead();
-  ReadOneFrame();
-  AbortDemuxerRead();
-  ExpectReadResult(ABROTED);
+  EXPECT_EQ(kTotalBuffers, num_decoded_frames_);
 }
 
 TEST_F(FakeVideoDecoderTest, Read_DecodingDelay) {
   Initialize();
 
-  while (demuxer_stream_->num_buffers_returned() < kNumInputBuffers) {
+  while (num_input_buffers_ < kTotalBuffers) {
     ReadOneFrame();
-    EXPECT_EQ(demuxer_stream_->num_buffers_returned(),
-              num_decoded_frames_ + kDecodingDelay);
+    EXPECT_EQ(num_input_buffers_, num_decoded_frames_ + kDecodingDelay);
   }
 }
 
@@ -280,25 +282,32 @@ TEST_F(FakeVideoDecoderTest, Read_ZeroDelay) {
   decoder_.reset(new FakeVideoDecoder(0));
   Initialize();
 
-  while (demuxer_stream_->num_buffers_returned() < kNumInputBuffers) {
+  while (num_input_buffers_ < kTotalBuffers) {
     ReadOneFrame();
-    EXPECT_EQ(demuxer_stream_->num_buffers_returned(), num_decoded_frames_);
+    EXPECT_EQ(num_input_buffers_, num_decoded_frames_);
   }
 }
 
-TEST_F(FakeVideoDecoderTest, Read_Pending) {
+TEST_F(FakeVideoDecoderTest, Read_Pending_NotEnoughData) {
   Initialize();
+  decoder_->HoldNextRead();
+  ReadOneFrame();
+  ExpectReadResult(PENDING);
+  SatisfyReadAndExpect(NOT_ENOUGH_DATA);
+}
+
+TEST_F(FakeVideoDecoderTest, Read_Pending_OK) {
+  Initialize();
+  ReadOneFrame();
   EnterPendingReadState();
-  SatisfyRead();
+  SatisfyReadAndExpect(OK);
 }
 
 TEST_F(FakeVideoDecoderTest, Reinitialize) {
   Initialize();
-  VideoDecoderConfig old_config = demuxer_stream_->video_decoder_config();
-  ChangeConfig();
-  VideoDecoderConfig new_config = demuxer_stream_->video_decoder_config();
-  EXPECT_FALSE(new_config.Matches(old_config));
-  Initialize();
+  ReadOneFrame();
+  InitializeWithConfig(TestVideoConfig::Large());
+  ReadOneFrame();
 }
 
 // Reinitializing the decoder during the middle of the decoding process can
@@ -308,29 +317,13 @@ TEST_F(FakeVideoDecoderTest, Reinitialize_FrameDropped) {
   ReadOneFrame();
   Initialize();
   ReadUntilEOS();
-  EXPECT_LT(num_decoded_frames_, kNumInputBuffers);
+  EXPECT_LT(num_decoded_frames_, kTotalBuffers);
 }
 
 TEST_F(FakeVideoDecoderTest, Reset) {
   Initialize();
   ReadOneFrame();
   ResetAndExpect(OK);
-}
-
-TEST_F(FakeVideoDecoderTest, Reset_DuringPendingDemuxerRead) {
-  Initialize();
-  EnterPendingDemuxerReadState();
-  ResetAndExpect(PENDING);
-  SatisfyDemuxerRead();
-  ExpectReadResult(ABROTED);
-}
-
-TEST_F(FakeVideoDecoderTest, Reset_DuringPendingDemuxerRead_Aborted) {
-  Initialize();
-  EnterPendingDemuxerReadState();
-  ResetAndExpect(PENDING);
-  AbortDemuxerRead();
-  ExpectReadResult(ABROTED);
 }
 
 TEST_F(FakeVideoDecoderTest, Reset_DuringPendingRead) {
@@ -366,25 +359,6 @@ TEST_F(FakeVideoDecoderTest, Stop_DuringPendingInitialization) {
   EnterPendingStopState();
   SatisfyInit();
   SatisfyStop();
-}
-
-TEST_F(FakeVideoDecoderTest, Stop_DuringPendingDemuxerRead) {
-  Initialize();
-  EnterPendingDemuxerReadState();
-  StopAndExpect(PENDING);
-  SatisfyDemuxerRead();
-  ExpectReadResult(ABROTED);
-}
-
-TEST_F(FakeVideoDecoderTest, Stop_DuringPendingDemuxerRead_Aborted) {
-  Initialize();
-  EnterPendingDemuxerReadState();
-  ResetAndExpect(PENDING);
-  StopAndExpect(PENDING);
-  SatisfyDemuxerRead();
-  ExpectReadResult(ABROTED);
-  ExpectResetResult(OK);
-  ExpectStopResult(OK);
 }
 
 TEST_F(FakeVideoDecoderTest, Stop_DuringPendingRead) {

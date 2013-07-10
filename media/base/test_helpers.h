@@ -21,6 +21,7 @@ class TimeDelta;
 namespace media {
 
 class AudioBuffer;
+class DecoderBuffer;
 
 // Return a callback that expects to be run once.
 base::Closure NewExpectedClosure();
@@ -129,6 +130,18 @@ scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
     int frames,
     base::TimeDelta start_time,
     base::TimeDelta duration);
+
+// Create a fake video DecoderBuffer for testing purpose. The buffer contains
+// part of video decoder config info embedded so that the testing code can do
+// some sanity check.
+scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
+    const VideoDecoderConfig& config,
+    base::TimeDelta timestamp,
+    base::TimeDelta duration);
+
+// Verify if a fake video DecoderBuffer is valid.
+bool VerifyFakeVideoBufferForTest(const scoped_refptr<DecoderBuffer>& buffer,
+                                  const VideoDecoderConfig& config);
 
 }  // namespace media
 

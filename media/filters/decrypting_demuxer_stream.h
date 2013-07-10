@@ -37,12 +37,6 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
                   const PipelineStatusCB& status_cb);
   void Reset(const base::Closure& closure);
 
-  // Creates and initializes either |audio_config_| or |video_config_| based on
-  // |demuxer_stream_|.
-  // TODO(xhwang): Make this private after the hack in VideoFrameStream is
-  // removed.
-  void InitializeDecoderConfig();
-
   // DemuxerStream implementation.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
@@ -86,6 +80,10 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   // Returns Decryptor::StreamType converted from |stream_type_|.
   Decryptor::StreamType GetDecryptorStreamType() const;
+
+  // Creates and initializes either |audio_config_| or |video_config_| based on
+  // |demuxer_stream_|.
+  void InitializeDecoderConfig();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<DecryptingDemuxerStream> weak_factory_;

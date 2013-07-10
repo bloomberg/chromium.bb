@@ -13,14 +13,16 @@
 
 namespace media {
 
-class DemuxerStream;
+class DecoderBuffer;
+class VideoDecoderConfig;
 class VideoFrame;
 
 class MEDIA_EXPORT VideoDecoder {
  public:
-  // Status codes for read operations on VideoDecoder.
+  // Status codes for decode operations on VideoDecoder.
   enum Status {
     kOk,  // Everything went as planned.
+    kNotEnoughData,  // Not enough data to produce a video frame.
     kDecodeError,  // Decoding error happened.
     kDecryptError  // Decrypting error happened.
   };
@@ -28,40 +30,38 @@ class MEDIA_EXPORT VideoDecoder {
   VideoDecoder();
   virtual ~VideoDecoder();
 
-  // Initializes a VideoDecoder with the given DemuxerStream, executing the
+  // Initializes a VideoDecoder with the given |config|, executing the
   // |status_cb| upon completion.
   // |statistics_cb| is used to update the global pipeline statistics.
   //
   // Note:
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
   //    Upon reinitialization, all internal buffered frames will be dropped.
-  // 2) This method should not be called during any pending read, reset or stop.
+  // 2) This method should not be called during pending decode, reset or stop.
   // 3) No VideoDecoder calls except for Stop() should be made before
   //    |status_cb| is executed.
-  // 4) DemuxerStream should not be accessed after the VideoDecoder is stopped.
-  //
-  // TODO(xhwang): Make all VideoDecoder implementations reinitializable.
-  // See http://crbug.com/233608
-  virtual void Initialize(DemuxerStream* stream,
+  virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;
 
-  // Requests a frame to be decoded. The status of the decoder and decoded frame
-  // are returned via the provided callback. Only one read may be in flight at
-  // any given time.
+  // Requests a |buffer| to be decoded. The status of the decoder and decoded
+  // frame are returned via the provided callback. Only one decode may be in
+  // flight at any given time.
   //
   // Implementations guarantee that the callback will not be called from within
   // this method.
   //
-  // If the returned status is not kOk, some error has occurred in the video
-  // decoder. In this case, the returned frame should always be NULL.
+  // If the returned status is kOk:
+  // - Non-EOS (end of stream) frame contains decoded video data.
+  // - EOS frame indicates the end of the stream.
+  // - NULL frame indicates an aborted decode. This can happen if Reset() or
+  //   Stop() is called during the decoding process.
+  // Otherwise the returned frame must be NULL.
   //
-  // Otherwise, the video decoder is in good shape. In this case, Non-NULL
-  // frames contain decoded video data or may indicate the end of the stream.
-  // NULL video frames indicate an aborted read. This can happen if the
-  // DemuxerStream gets flushed and doesn't have any more data to return.
+  // TODO(xhwang): Rename this to DecodeCB.
   typedef base::Callback<void(Status, const scoped_refptr<VideoFrame>&)> ReadCB;
-  virtual void Read(const ReadCB& read_cb) = 0;
+  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                      const ReadCB& read_cb) = 0;
 
   // Resets decoder state, fulfilling all pending ReadCB and dropping extra
   // queued decoded data. After this call, the decoder is back to an initialized

@@ -5,8 +5,6 @@
 #ifndef MEDIA_FILTERS_VIDEO_FRAME_STREAM_H_
 #define MEDIA_FILTERS_VIDEO_FRAME_STREAM_H_
 
-#include <list>
-
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -30,7 +28,7 @@ class VideoDecoderSelector;
 
 // Wraps a DemuxerStream and a list of VideoDecoders and provides decoded
 // VideoFrames to its client (e.g. VideoRendererBase).
-class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
+class MEDIA_EXPORT VideoFrameStream {
  public:
   // Indicates completion of VideoFrameStream initialization.
   typedef base::Callback<void(bool success, bool has_alpha)> InitCB;
@@ -50,6 +48,7 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
   // |read_cb| is always called asynchronously. This method should only be
   // called after initialization has succeeded and must not be called during
   // any pending Reset() and/or Stop().
+  // TODO(xhwang): Rename this back to Read().
   void ReadFrame(const VideoDecoder::ReadCB& read_cb);
 
   // Resets the decoder, flushes all decoded frames and/or internal buffers,
@@ -70,19 +69,13 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
   // a VideoFrame.
   bool CanReadWithoutStalling() const;
 
-  // DemuxerStream implementation.
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
-  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
-  virtual Type type() OVERRIDE;
-  virtual void EnableBitstreamConverter() OVERRIDE;
-
  private:
   enum State {
     STATE_UNINITIALIZED,
     STATE_INITIALIZING,
-    STATE_NORMAL,
+    STATE_NORMAL,  // Includes idle, pending decoder decode/reset/stop.
     STATE_FLUSHING_DECODER,
+    STATE_PENDING_DEMUXER_READ,
     STATE_REINITIALIZING_DECODER,
     STATE_STOPPED,
     STATE_ERROR
@@ -95,13 +88,29 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
       scoped_ptr<VideoDecoder> selected_decoder,
       scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
-  // Callback for VideoDecoder::Read().
+  // Satisfy pending |read_cb_| with |status| and |frame|.
+  void SatisfyRead(VideoDecoder::Status status,
+                   const scoped_refptr<VideoFrame>& frame);
+
+  // Abort pending |read_cb_|.
+  void AbortRead();
+
+  // Decodes |buffer| and returns the result via OnFrameReady().
+  void Decode(const scoped_refptr<DecoderBuffer>& buffer);
+
+  // Flushes the decoder with an EOS buffer to retrieve internally buffered
+  // video frames.
+  void FlushDecoder();
+
+  // Callback for VideoDecoder::Decode().
   void OnFrameReady(const VideoDecoder::Status status,
                     const scoped_refptr<VideoFrame>& frame);
 
+  // Reads a buffer from |stream_| and returns the result via OnBufferReady().
+  void ReadFromDemuxerStream();
+
   // Callback for DemuxerStream::Read().
-  void OnBufferReady(const DemuxerStream::ReadCB& demuxer_read_cb,
-                     DemuxerStream::Status status,
+  void OnBufferReady(DemuxerStream::Status status,
                      const scoped_refptr<DecoderBuffer>& buffer);
 
   void ReinitializeDecoder();

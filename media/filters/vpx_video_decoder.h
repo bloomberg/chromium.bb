@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
 struct vpx_codec_ctx;
@@ -31,10 +32,11 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   virtual ~VpxVideoDecoder();
 
   // VideoDecoder implementation.
-  virtual void Initialize(DemuxerStream* stream,
+  virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) OVERRIDE;
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                      const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
@@ -50,19 +52,13 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true when initialization was successful.
-  bool ConfigureDecoder();
+  bool ConfigureDecoder(const VideoDecoderConfig& config);
 
   void CloseDecoder();
-  void ReadFromDemuxerStream();
-
-  // Carries out the buffer processing operation scheduled by
-  // DecryptOrDecodeBuffer().
-  void DoDecryptOrDecodeBuffer(DemuxerStream::Status status,
-                               const scoped_refptr<DecoderBuffer>& buffer);
 
   void DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer);
-  bool Decode(const scoped_refptr<DecoderBuffer>& buffer,
-              scoped_refptr<VideoFrame>* video_frame);
+  bool VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
+                 scoped_refptr<VideoFrame>* video_frame);
 
   // Reset decoder and call |reset_cb_|.
   void DoReset();
@@ -81,8 +77,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   ReadCB read_cb_;
   base::Closure reset_cb_;
 
-  // Pointer to the demuxer stream that will feed us compressed buffers.
-  DemuxerStream* demuxer_stream_;
+  VideoDecoderConfig config_;
 
   vpx_codec_ctx* vpx_codec_;
   vpx_codec_ctx* vpx_codec_alpha_;

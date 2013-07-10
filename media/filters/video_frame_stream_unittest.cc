@@ -279,6 +279,8 @@ TEST_P(VideoFrameStreamTest, Read_AfterReset) {
   ReadFrame();
 }
 
+// No Reset() before initialization is successfully completed.
+
 TEST_P(VideoFrameStreamTest, Reset_AfterInitialization) {
   Initialize();
   Reset();
@@ -293,9 +295,18 @@ TEST_P(VideoFrameStreamTest, Reset_DuringReinitialization) {
   video_frame_stream_->Reset(
       base::Bind(&VideoFrameStreamTest::OnReset, base::Unretained(this)));
   SatisfyPendingCallback(DECODER_REINIT);
+  ReadFrame();
 }
 
-TEST_P(VideoFrameStreamTest, Reset_DuringNormalDemuxerRead) {
+TEST_P(VideoFrameStreamTest, Reset_AfterReinitialization) {
+  Initialize();
+  EnterPendingState(DECODER_REINIT);
+  SatisfyPendingCallback(DECODER_REINIT);
+  Reset();
+  ReadFrame();
+}
+
+TEST_P(VideoFrameStreamTest, Reset_DuringDemuxerRead_Normal) {
   Initialize();
   EnterPendingState(DEMUXER_READ_NORMAL);
   EnterPendingState(DECODER_RESET);
@@ -304,7 +315,7 @@ TEST_P(VideoFrameStreamTest, Reset_DuringNormalDemuxerRead) {
   ReadFrame();
 }
 
-TEST_P(VideoFrameStreamTest, Reset_DuringConfigChangeDemuxerRead) {
+TEST_P(VideoFrameStreamTest, Reset_DuringDemuxerRead_ConfigChange) {
   Initialize();
   EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
   EnterPendingState(DECODER_RESET);
@@ -329,7 +340,7 @@ TEST_P(VideoFrameStreamTest, Reset_AfterNormalRead) {
   ReadFrame();
 }
 
-TEST_P(VideoFrameStreamTest, Reset_AfterConfigChangeRead) {
+TEST_P(VideoFrameStreamTest, Reset_AfterDemuxerRead_ConfigChange) {
   Initialize();
   EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
   SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
@@ -364,7 +375,14 @@ TEST_P(VideoFrameStreamTest, Stop_DuringReinitialization) {
   SatisfyPendingCallback(DECODER_STOP);
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringNormalDemuxerRead) {
+TEST_P(VideoFrameStreamTest, Stop_AfterReinitialization) {
+  Initialize();
+  EnterPendingState(DECODER_REINIT);
+  SatisfyPendingCallback(DECODER_REINIT);
+  Stop();
+}
+
+TEST_P(VideoFrameStreamTest, Stop_DuringDemuxerRead_Normal) {
   Initialize();
   EnterPendingState(DEMUXER_READ_NORMAL);
   EnterPendingState(DECODER_STOP);
@@ -372,7 +390,7 @@ TEST_P(VideoFrameStreamTest, Stop_DuringNormalDemuxerRead) {
   SatisfyPendingCallback(DECODER_STOP);
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringConfigChangeDemuxerRead) {
+TEST_P(VideoFrameStreamTest, Stop_DuringDemuxerRead_ConfigChange) {
   Initialize();
   EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
   EnterPendingState(DECODER_STOP);

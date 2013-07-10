@@ -13,8 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/callback_holder.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/demuxer_stream.h"
-#include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -29,17 +27,18 @@ class MessageLoopProxy;
 
 namespace media {
 
-class MEDIA_EXPORT FakeVideoDecoder : public VideoDecoder {
+class FakeVideoDecoder : public VideoDecoder {
  public:
   // Constructs an object with a decoding delay of |decoding_delay| frames.
   explicit FakeVideoDecoder(int decoding_delay);
   virtual ~FakeVideoDecoder();
 
   // VideoDecoder implementation.
-  virtual void Initialize(DemuxerStream* stream,
+  virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) OVERRIDE;
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                      const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
 
@@ -62,12 +61,6 @@ class MEDIA_EXPORT FakeVideoDecoder : public VideoDecoder {
     NORMAL
   };
 
-  void ReadFromDemuxerStream();
-
-  // Callback for DemuxerStream::Read().
-  void BufferReady(DemuxerStream::Status status,
-                   const scoped_refptr<DecoderBuffer>& buffer);
-
   void DoReset();
   void DoStop();
 
@@ -85,9 +78,6 @@ class MEDIA_EXPORT FakeVideoDecoder : public VideoDecoder {
   CallbackHolder<ReadCB> read_cb_;
   CallbackHolder<base::Closure> reset_cb_;
   CallbackHolder<base::Closure> stop_cb_;
-
-  // Pointer to the demuxer stream that will feed us compressed buffers.
-  DemuxerStream* demuxer_stream_;
 
   VideoDecoderConfig current_config_;
 
