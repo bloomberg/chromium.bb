@@ -29,8 +29,8 @@
  */
 
 #include "config.h"
-#include "core/html/HTMLDimension.h"
 
+#include "core/platform/Length.h"
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
@@ -48,180 +48,169 @@ using namespace WebCore;
 
 namespace {
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsEmptyString)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsEmptyString)
 {
-    Vector<Length> result = parseListOfDimensions(String(""));
+    Vector<Length> result = parseFrameSetListOfDimensions(String(""));
     ASSERT_EQ(Vector<Length>(), result);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsNoNumberAbsolute)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsNoNumberAbsolute)
 {
-    Vector<Length> result = parseListOfDimensions(String(" \t"));
-    ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(0, Relative), result[0]);
+    Vector<Length> result = parseFrameSetListOfDimensions(String(" \t"));
+    ASSERT_EQ(Vector<Length>(), result);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsNoNumberPercent)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsNoNumberPercent)
 {
-    Vector<Length> result = parseListOfDimensions(String(" \t%"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String(" \t%"));
     ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(0, Percent), result[0]);
+    ASSERT_EQ(Length(1, Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsNoNumberRelative)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsNoNumberRelative)
 {
-    Vector<Length> result = parseListOfDimensions(String("\t *"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("\t *"));
     ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(0, Relative), result[0]);
+    ASSERT_EQ(Length(1, Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSingleAbsolute)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSingleAbsolute)
 {
-    Vector<Length> result = parseListOfDimensions(String("10"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(10, Fixed), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSinglePercentageWithSpaces)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSinglePercentageWithSpaces)
 {
-    Vector<Length> result = parseListOfDimensions(String("50  %"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("50  %"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(50, Percent), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSingleRelative)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSingleRelative)
 {
-    Vector<Length> result = parseListOfDimensions(String("25*"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("25*"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(25, Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsDoubleAbsolute)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsDoubleAbsolute)
 {
-    Vector<Length> result = parseListOfDimensions(String("10.054"));
-
-    ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(10.054, Fixed), result[0]);
-}
-
-TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpaceAbsolute)
-{
-    Vector<Length> result = parseListOfDimensions(String("\t \t 10"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10.054"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(10, Fixed), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpaceRelative)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsLeadingSpaceAbsolute)
 {
-    Vector<Length> result = parseListOfDimensions(String(" \r25*"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("\t \t 10"));
+
+    ASSERT_EQ(1U, result.size());
+    ASSERT_EQ(Length(10, Fixed), result[0]);
+}
+
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsLeadingSpaceRelative)
+{
+    Vector<Length> result = parseFrameSetListOfDimensions(String(" \r25*"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(25, Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpacePercentage)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsLeadingSpacePercentage)
 {
-    Vector<Length> result = parseListOfDimensions(String("\n 25%"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("\n 25%"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(25, Percent), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsDoublePercentage)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsDoublePercentage)
 {
-    Vector<Length> result = parseListOfDimensions(String("10.054%"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10.054%"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(10.054, Percent), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsDoubleRelative)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsDoubleRelative)
 {
-    Vector<Length> result = parseListOfDimensions(String("10.054*"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10.054*"));
 
     ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(10.054, Relative), result[0]);
+    ASSERT_EQ(Length(10, Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoubleAbsolute)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSpacesInIntegerDoubleAbsolute)
 {
-    Vector<Length> result = parseListOfDimensions(String("1\n0 .025%"));
-
-    ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(1, Fixed), result[0]);
-}
-
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoublePercent)
-{
-    Vector<Length> result = parseListOfDimensions(String("1\n0 .025%"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("1\n0 .025%"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(1, Fixed), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoubleRelative)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSpacesInIntegerDoublePercent)
 {
-    Vector<Length> result = parseListOfDimensions(String("1\n0 .025*"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("1\n0 .025%"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(1, Fixed), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInFractionAfterDotDoublePercent)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSpacesInIntegerDoubleRelative)
 {
-    Vector<Length> result = parseListOfDimensions(String("10.  0 25%"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("1\n0 .025*"));
 
     ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(10.025, Percent), result[0]);
+    ASSERT_EQ(Length(1, Fixed), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInFractionAfterDigitDoublePercent)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSpacesInFractionAfterDotDoublePercent)
 {
-    Vector<Length> result = parseListOfDimensions(String("10.05\r25%"));
-
-    ASSERT_EQ(1U, result.size());
-    ASSERT_EQ(Length(10.0525, Percent), result[0]);
-}
-
-TEST(WebCoreHTMLDimension, parseListOfDimensionsTrailingComma)
-{
-    Vector<Length> result = parseListOfDimensions(String("10,"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10.  0 25%"));
 
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(Length(10, Fixed), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsTwoDimensions)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsSpacesInFractionAfterDigitDoublePercent)
 {
-    Vector<Length> result = parseListOfDimensions(String("10*,25 %"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10.05\r25%"));
+
+    ASSERT_EQ(1U, result.size());
+    ASSERT_EQ(Length(10, Fixed), result[0]);
+}
+
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsTrailingComma)
+{
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10,"));
+
+    ASSERT_EQ(1U, result.size());
+    ASSERT_EQ(Length(10, Fixed), result[0]);
+}
+
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsTwoDimensions)
+{
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10*,25 %"));
 
     ASSERT_EQ(2U, result.size());
     ASSERT_EQ(Length(10, Relative), result[0]);
     ASSERT_EQ(Length(25, Percent), result[1]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsMultipleDimensionsWithSpaces)
+TEST(WebCoreHTMLDimension, parseFrameSetListOfDimensionsMultipleDimensionsWithSpaces)
 {
-    Vector<Length> result = parseListOfDimensions(String("10   *   ,\t25 , 10.05\n5%"));
+    Vector<Length> result = parseFrameSetListOfDimensions(String("10   *   ,\t25 , 10.05\n5%"));
 
     ASSERT_EQ(3U, result.size());
     ASSERT_EQ(Length(10, Relative), result[0]);
     ASSERT_EQ(Length(25, Fixed), result[1]);
-    ASSERT_EQ(Length(10.055, Percent), result[2]);
+    ASSERT_EQ(Length(10, Fixed), result[2]);
+
 }
-
-TEST(WebCoreHTMLDimension, parseListOfDimensionsMultipleDimensionsWithOneEmpty)
-{
-    Vector<Length> result = parseListOfDimensions(String("2*,,8.%"));
-
-    ASSERT_EQ(3U, result.size());
-    ASSERT_EQ(Length(2, Relative), result[0]);
-    ASSERT_EQ(Length(0, Relative), result[1]);
-    ASSERT_EQ(Length(8., Percent), result[2]);
-}
-
 }
