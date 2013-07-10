@@ -6,6 +6,7 @@
 
 import logging
 import os
+import sys
 import time
 
 
@@ -47,6 +48,6 @@ def SetLogLevel(verbose_count):
     log_level = logging.DEBUG
   logger = logging.getLogger()
   logger.setLevel(log_level)
-  custom_handler = logging.StreamHandler()
+  custom_handler = logging.StreamHandler(sys.stdout)
   custom_handler.setFormatter(CustomFormatter())
   logging.getLogger().addHandler(custom_handler)
