@@ -75,6 +75,7 @@ ErrorEvent
 EvalError
 Event
 EventSource
+EventTarget
 File
 FileError
 FileList

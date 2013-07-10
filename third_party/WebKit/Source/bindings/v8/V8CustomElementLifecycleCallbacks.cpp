@@ -120,7 +120,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     v8::Context::Scope scope(context);
     v8::Isolate* isolate = context->GetIsolate();
 
-    v8::Handle<v8::Object> receiver = DOMDataStore::current(isolate)->get(element);
+    v8::Handle<v8::Object> receiver = DOMDataStore::current(isolate)->get<V8Element>(element);
     if (!receiver.IsEmpty()) {
         // Swizzle the prototype of the existing wrapper. We don't need to
         // worry about non-existent wrappers; they will get the right

@@ -35,9 +35,8 @@ enum MIDIPortType {
 
 [
     NoInterfaceObject,
-    ActiveDOMObject,
-    EventTarget
-] interface MIDIPort {
+    ActiveDOMObject
+] interface MIDIPort : EventTarget {
     readonly attribute DOMString id;
     readonly attribute DOMString manufacturer;
     readonly attribute DOMString name;
@@ -45,13 +44,4 @@ enum MIDIPortType {
     readonly attribute DOMString version;
 
     attribute EventListener ondisconnect;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };

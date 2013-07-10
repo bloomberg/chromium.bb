@@ -24,12 +24,11 @@
 
 [
     NoInterfaceObject,
-    EventTarget,
     Constructor,
     Constructor(MediaStream stream),
     Constructor(MediaStreamTrack[] tracks),
     ConstructorCallWith=ScriptExecutionContext
-] interface MediaStream {
+] interface MediaStream : EventTarget {
     // DEPRECATED
     readonly attribute DOMString label;
 
@@ -48,14 +47,5 @@
     attribute EventListener onended;
     attribute EventListener onaddtrack;
     attribute EventListener onremovetrack;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };
 

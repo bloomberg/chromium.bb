@@ -26,9 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    EventTarget
-] interface XMLHttpRequestUpload {
+interface XMLHttpRequestUpload : EventTarget {
     // From XMLHttpRequestEventTarget
     // event handler attributes
     attribute EventListener onabort;
@@ -37,14 +35,5 @@
     attribute EventListener onloadend;
     attribute EventListener onloadstart;
     attribute EventListener onprogress;
-
-    // EventTarget interface
-    void addEventListener(DOMString type, 
-                          EventListener listener, 
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type, 
-                             EventListener listener, 
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };
 

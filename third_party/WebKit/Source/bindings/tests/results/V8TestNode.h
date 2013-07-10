@@ -36,13 +36,22 @@ public:
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static TestNode* toNative(v8::Handle<v8::Object> object)
     {
-        return reinterpret_cast<TestNode*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+    static inline void* toInternalPointer(TestNode* impl)
+    {
+        return V8Node::toInternalPointer(impl);
+    }
+
+    static inline TestNode* fromInternalPointer(void* object)
+    {
+        return static_cast<TestNode*>(V8Node::fromInternalPointer(object));
+    }
     static void installPerContextProperties(v8::Handle<v8::Object>, TestNode*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 private:
@@ -60,7 +69,7 @@ public:
 inline v8::Handle<v8::Object> wrap(TestNode* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    ASSERT(DOMDataStore::getWrapper<V8TestNode>(impl, isolate).IsEmpty());
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have
@@ -74,7 +83,7 @@ inline v8::Handle<v8::Value> toV8(TestNode* impl, v8::Handle<v8::Object> creatio
 {
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestNode>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -85,7 +94,7 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(TestNode* impl, v8::Handle<v8::Obj
     ASSERT(worldType(isolate) == MainWorld);
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<V8TestNode>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -96,7 +105,7 @@ inline v8::Handle<v8::Value> toV8Fast(TestNode* impl, const HolderContainer& con
 {
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8TestNode>(impl, container, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
@@ -108,7 +117,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(TestNode* impl, const HolderCo
     ASSERT(worldType(container.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<V8TestNode>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());

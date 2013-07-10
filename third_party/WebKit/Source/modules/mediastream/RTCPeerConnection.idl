@@ -33,9 +33,8 @@
     ActiveDOMObject,
     Constructor(Dictionary rtcIceServers, optional Dictionary mediaConstraints),
     ConstructorRaisesException,
-    ConstructorCallWith=ScriptExecutionContext,
-    EventTarget
-] interface RTCPeerConnection {
+    ConstructorCallWith=ScriptExecutionContext
+] interface RTCPeerConnection : EventTarget {
     [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 
     [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
@@ -77,14 +76,5 @@
     attribute EventListener onremovestream;
     attribute EventListener oniceconnectionstatechange;
     attribute EventListener ondatachannel;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };
 

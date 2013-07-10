@@ -32,10 +32,9 @@
     NoInterfaceObject,
     EnabledAtRuntime=webKitMediaSource,
     ActiveDOMObject,
-    EventTarget,
     Constructor,
     ConstructorCallWith=ScriptExecutionContext
-] interface WebKitMediaSource {
+] interface WebKitMediaSource : EventTarget {
     // All the source buffers created by this object.
     readonly attribute WebKitSourceBufferList sourceBuffers;
 
@@ -52,14 +51,5 @@
     [RaisesException] void endOfStream([Default=NullString] optional DOMString error);
 
     static boolean isTypeSupported (DOMString type);
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };
 

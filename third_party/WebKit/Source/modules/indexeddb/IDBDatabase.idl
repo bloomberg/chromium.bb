@@ -25,9 +25,8 @@
  */
 
 [
-    ActiveDOMObject,
-    EventTarget
-] interface IDBDatabase {
+    ActiveDOMObject
+] interface IDBDatabase : EventTarget {
     readonly attribute DOMString name;
     readonly attribute IDBAny version;
     readonly attribute DOMStringList objectStoreNames;
@@ -43,13 +42,4 @@
     [CallWith=ScriptExecutionContext, RaisesException] IDBTransaction transaction(DOMString storeName, [Default=NullString] optional DOMString mode);
 
     void close();
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };

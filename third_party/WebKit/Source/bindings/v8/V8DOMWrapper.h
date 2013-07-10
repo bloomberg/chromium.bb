@@ -49,7 +49,7 @@ struct WrapperTypeInfo;
 
         static v8::Local<v8::Object> createWrapper(v8::Handle<v8::Object> creationContext, WrapperTypeInfo*, void*, v8::Isolate*);
 
-        template<typename T>
+        template<typename V8T, typename T>
         static inline v8::Handle<v8::Object> associateObjectWithWrapper(PassRefPtr<T>, WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
         static inline void setNativeInfo(v8::Handle<v8::Object>, WrapperTypeInfo*, void*);
         static inline void clearNativeInfo(v8::Handle<v8::Object>, WrapperTypeInfo*);
@@ -75,13 +75,13 @@ struct WrapperTypeInfo;
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, 0);
     }
 
-    template<typename T>
+    template<typename V8T, typename T>
     inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(PassRefPtr<T> object, WrapperTypeInfo* type, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, WrapperConfiguration::Lifetime lifetime)
     {
-        setNativeInfo(wrapper, type, object.get());
+        setNativeInfo(wrapper, type, V8T::toInternalPointer(object.get()));
         ASSERT(maybeDOMWrapper(wrapper));
         WrapperConfiguration configuration = buildWrapperConfiguration(object.get(), lifetime);
-        DOMDataStore::setWrapper(object.leakRef(), wrapper, isolate, configuration);
+        DOMDataStore::setWrapper<V8T>(object.leakRef(), wrapper, isolate, configuration);
         return wrapper;
     }
 

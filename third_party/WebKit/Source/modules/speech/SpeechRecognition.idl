@@ -27,9 +27,8 @@
     NoInterfaceObject,
     ActiveDOMObject,
     Constructor,
-    ConstructorCallWith=ScriptExecutionContext,
-    EventTarget
-] interface SpeechRecognition {
+    ConstructorCallWith=ScriptExecutionContext
+] interface SpeechRecognition : EventTarget {
     attribute SpeechGrammarList grammars;
     attribute DOMString lang;
     attribute boolean continuous;
@@ -51,13 +50,4 @@
     attribute EventListener onerror;
     attribute EventListener onstart;
     attribute EventListener onend;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };

@@ -36,7 +36,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static Float64Array* toNative(v8::Handle<v8::Object> object)
     {
-        return reinterpret_cast<Float64Array*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
@@ -44,6 +44,15 @@ public:
     static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+    static inline void* toInternalPointer(Float64Array* impl)
+    {
+        return V8ArrayBufferView::toInternalPointer(impl);
+    }
+
+    static inline Float64Array* fromInternalPointer(void* object)
+    {
+        return static_cast<Float64Array*>(V8ArrayBufferView::fromInternalPointer(object));
+    }
     static void installPerContextProperties(v8::Handle<v8::Object>, Float64Array*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 private:
@@ -64,7 +73,7 @@ inline v8::Handle<v8::Value> toV8(Float64Array* impl, v8::Handle<v8::Object> cre
 {
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8Float64Array>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -75,7 +84,7 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(Float64Array* impl, v8::Handle<v8:
     ASSERT(worldType(isolate) == MainWorld);
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<V8Float64Array>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -86,7 +95,7 @@ inline v8::Handle<v8::Value> toV8Fast(Float64Array* impl, const HolderContainer&
 {
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8Float64Array>(impl, container, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
@@ -98,7 +107,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(Float64Array* impl, const Hold
     ASSERT(worldType(container.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<V8Float64Array>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());

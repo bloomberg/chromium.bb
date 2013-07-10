@@ -27,9 +27,8 @@
     NoInterfaceObject,
     Conditional=WEB_AUDIO,
     ActiveDOMObject,
-    CustomConstructor,
-    EventTarget
-] interface AudioContext {
+    CustomConstructor
+] interface AudioContext : EventTarget {
     // All rendered audio ultimately connects to destination, which represents the audio hardware.
     readonly attribute AudioDestinationNode destination;
 

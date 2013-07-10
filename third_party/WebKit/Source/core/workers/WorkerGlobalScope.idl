@@ -26,10 +26,9 @@
 
 [
     GlobalContext=WorkerGlobalScope,
-    EventTarget,
     CustomToV8,
     DoNotGenerateWrap
-] interface WorkerGlobalScope {
+] interface WorkerGlobalScope : EventTarget {
 
     // WorkerGlobalScope
     [Replaceable] readonly attribute WorkerGlobalScope self;
@@ -40,15 +39,6 @@
     // WorkerUtils
     [Custom] void importScripts(/*[Variadic] in DOMString urls */);
     [Replaceable] readonly attribute WorkerNavigator navigator;
-
-    // EventTarget interface
-    void addEventListener(DOMString type, 
-                          EventListener listener, 
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type, 
-                             EventListener listener, 
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 
     // Additional constructors
     attribute URLConstructor webkitURL; // FIXME: deprecate this.

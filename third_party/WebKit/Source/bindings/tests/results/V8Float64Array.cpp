@@ -210,10 +210,9 @@ bool V8Float64Array::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isol
 v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper(impl.get(), isolate).IsEmpty());
-    ASSERT(static_cast<void*>(static_cast<ArrayBufferView*>(impl.get())) == static_cast<void*>(impl.get()));
+    ASSERT(DOMDataStore::getWrapper<V8Float64Array>(impl.get(), isolate).IsEmpty());
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
     if (!impl->buffer()->hasDeallocationObserver()) {
@@ -221,12 +220,12 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
         impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
     }
     installPerContextProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8Float64Array>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8Float64Array::derefObject(void* object)
 {
-    static_cast<Float64Array*>(object)->deref();
+    fromInternalPointer(object)->deref();
 }
 
 } // namespace WebCore

@@ -39,7 +39,7 @@ void V8DataView::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& ar
         // 'new DataView()' and the call used to construct the cached DataView object.
         RefPtr<DataView> dataView = DataView::create(0);
         v8::Handle<v8::Object> wrapper = args.Holder();
-        V8DOMWrapper::associateObjectWithWrapper(dataView.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+        V8DOMWrapper::associateObjectWithWrapper<V8DataView>(dataView.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
         args.GetReturnValue().Set(wrapper);
         return;
     }
@@ -47,7 +47,7 @@ void V8DataView::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& ar
         throwTypeError(0, args.GetIsolate());
         return;
     }
-    constructWebGLArrayWithArrayBufferArgument<DataView, char>(args, &info, v8::kExternalByteArray, false);
+    constructWebGLArrayWithArrayBufferArgument<DataView, char, V8DataView>(args, &info, v8::kExternalByteArray, false);
 }
 
 // FIXME: Don't need this override.

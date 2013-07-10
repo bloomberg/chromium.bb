@@ -24,9 +24,8 @@
  */
 
 [
-    EnabledAtRuntime=videoTrack,
-    EventTarget
-] interface TextTrack {
+    EnabledAtRuntime=videoTrack
+] interface TextTrack : EventTarget {
     readonly attribute DOMString kind;
     readonly attribute DOMString label;
     readonly attribute DOMString language;
@@ -43,13 +42,4 @@
     [Conditional=WEBVTT_REGIONS] readonly attribute TextTrackRegionList regions;
     [Conditional=WEBVTT_REGIONS] void addRegion(TextTrackRegion region);
     [RaisesException, Conditional=WEBVTT_REGIONS] void removeRegion(TextTrackRegion region);
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };

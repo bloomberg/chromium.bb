@@ -35,11 +35,20 @@ public:
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static RealClass* toNative(v8::Handle<v8::Object> object)
     {
-        return reinterpret_cast<RealClass*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+    static inline void* toInternalPointer(RealClass* impl)
+    {
+        return impl;
+    }
+
+    static inline RealClass* fromInternalPointer(void* object)
+    {
+        return static_cast<RealClass*>(object);
+    }
     static void installPerContextProperties(v8::Handle<v8::Object>, RealClass*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 private:
@@ -57,7 +66,7 @@ public:
 inline v8::Handle<v8::Object> wrap(RealClass* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    ASSERT(DOMDataStore::getWrapper<V8TestInterfaceImplementedAs>(impl, isolate).IsEmpty());
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have
@@ -71,7 +80,7 @@ inline v8::Handle<v8::Value> toV8(RealClass* impl, v8::Handle<v8::Object> creati
 {
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterfaceImplementedAs>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -82,7 +91,7 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(RealClass* impl, v8::Handle<v8::Ob
     ASSERT(worldType(isolate) == MainWorld);
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<V8TestInterfaceImplementedAs>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -93,7 +102,7 @@ inline v8::Handle<v8::Value> toV8Fast(RealClass* impl, const HolderContainer& co
 {
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8TestInterfaceImplementedAs>(impl, container, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
@@ -105,7 +114,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(RealClass* impl, const HolderC
     ASSERT(worldType(container.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<V8TestInterfaceImplementedAs>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());

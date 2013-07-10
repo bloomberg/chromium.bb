@@ -30,8 +30,7 @@
 
 [
     NoInterfaceObject,
-    ActiveDOMObject,
-    EventTarget
+    ActiveDOMObject
 ] interface MIDIInput : MIDIPort {
     attribute EventListener onmidimessage;
 };

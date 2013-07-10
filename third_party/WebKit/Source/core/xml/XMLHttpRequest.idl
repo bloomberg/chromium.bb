@@ -41,9 +41,8 @@ enum XMLHttpRequestResponseType {
     ActiveDOMObject,
     Constructor,
     ConstructorCallWith=ScriptExecutionContext,
-    CustomConstructor(optional XMLHttpRequestOptions options),
-    EventTarget
-] interface XMLHttpRequest {
+    CustomConstructor(optional XMLHttpRequestOptions options)
+] interface XMLHttpRequest : EventTarget {
     // From XMLHttpRequestEventTarget
     // event handler attributes
     attribute EventListener onabort;
@@ -93,13 +92,4 @@ enum XMLHttpRequestResponseType {
 
     // Extension
     void overrideMimeType(DOMString override);
-
-    // EventTarget interface
-    void addEventListener(DOMString type, 
-                          EventListener listener, 
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type, 
-                             EventListener listener, 
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };

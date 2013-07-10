@@ -51,7 +51,7 @@ public:
 
     static DOMDataStore* current(v8::Isolate*);
 
-    template<typename T, typename HolderContainer, typename Wrappable>
+    template<typename V8T, typename T, typename HolderContainer, typename Wrappable>
     static v8::Handle<v8::Object> getWrapperFast(T* object, const HolderContainer& container, Wrappable* holder)
     {
         // What we'd really like to check here is whether we're in the
@@ -64,37 +64,37 @@ public:
             if (ScriptWrappable::wrapperCanBeStoredInObject(object)) {
                 v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
                 // Security: always guard against malicious tampering.
-                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == static_cast<void*>(object));
+                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
                 return result;
             }
-            return mainWorldStore()->m_wrapperMap.get(object);
+            return mainWorldStore()->m_wrapperMap.get(V8T::toInternalPointer(object));
         }
-        return current(container.GetIsolate())->get(object);
+        return current(container.GetIsolate())->template get<V8T>(object);
     }
 
-    template<typename T>
+    template<typename V8T, typename T>
     static v8::Handle<v8::Object> getWrapper(T* object, v8::Isolate* isolate)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && !canExistInWorker(object)) {
             if (LIKELY(!DOMWrapperWorld::isolatedWorldsExist())) {
                 v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
                 // Security: always guard against malicious tampering.
-                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == static_cast<void*>(object));
+                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
                 return result;
             }
         }
-        return current(isolate)->get(object);
+        return current(isolate)->template get<V8T>(object);
     }
 
-    template<typename T>
+    template<typename V8T, typename T>
     static v8::Handle<v8::Object> getWrapperForMainWorld(T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object))
             return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
-        return mainWorldStore()->get(object);
+        return mainWorldStore()->template get<V8T>(object);
     }
 
-    template<typename T>
+    template<typename V8T, typename T>
     static void setWrapper(T* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && !canExistInWorker(object)) {
@@ -103,21 +103,21 @@ public:
                 return;
             }
         }
-        return current(isolate)->set(object, wrapper, isolate, configuration);
+        return current(isolate)->template set<V8T>(object, wrapper, isolate, configuration);
     }
 
-    template<typename T>
+    template<typename V8T, typename T>
     inline v8::Handle<v8::Object> get(T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_type == MainWorld)
             return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
-        return m_wrapperMap.get(object);
+        return m_wrapperMap.get(V8T::toInternalPointer(object));
     }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    template<typename T>
+    template<typename V8T, typename T>
     inline void set(T* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)
     {
         ASSERT(!!object);
@@ -126,7 +126,7 @@ private:
             ScriptWrappable::setWrapperInObject(object, wrapper, isolate, configuration);
             return;
         }
-        m_wrapperMap.set(object, wrapper, configuration);
+        m_wrapperMap.set(V8T::toInternalPointer(object), wrapper, configuration);
     }
 
     static DOMDataStore* mainWorldStore();

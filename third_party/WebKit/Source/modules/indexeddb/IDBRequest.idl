@@ -28,9 +28,8 @@
  */
 
 [
-    ActiveDOMObject,
-    EventTarget
-] interface IDBRequest {
+    ActiveDOMObject
+] interface IDBRequest : EventTarget {
     [GetterRaisesException] readonly attribute IDBAny result;
     [GetterRaisesException] readonly attribute DOMError error;
 
@@ -43,13 +42,4 @@
     // Events
     attribute EventListener onsuccess;
     attribute EventListener onerror;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };

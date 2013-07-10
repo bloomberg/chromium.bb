@@ -23,9 +23,8 @@
  */
 
 [
-    NoInterfaceObject,
-    EventTarget
-] interface RTCDataChannel {
+    NoInterfaceObject
+] interface RTCDataChannel : EventTarget {
     readonly attribute DOMString label;
     readonly attribute boolean reliable;
     readonly attribute DOMString readyState;
@@ -44,13 +43,4 @@
     attribute EventListener onerror;
     attribute EventListener onclose;
     attribute EventListener onmessage;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };

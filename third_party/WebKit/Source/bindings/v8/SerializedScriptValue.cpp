@@ -2371,7 +2371,7 @@ inline void neuterBinding(ArrayBuffer* object)
 {
     Vector<DOMDataStore*>& allStores = V8PerIsolateData::current()->allStores();
     for (size_t i = 0; i < allStores.size(); i++) {
-        v8::Handle<v8::Object> wrapper = allStores[i]->get(object);
+        v8::Handle<v8::Object> wrapper = allStores[i]->get<V8ArrayBuffer>(object);
         if (!wrapper.IsEmpty()) {
             ASSERT(wrapper->IsArrayBuffer());
             v8::Handle<v8::ArrayBuffer>::Cast(wrapper)->Neuter();
@@ -2383,7 +2383,7 @@ inline void neuterBinding(ArrayBufferView* object)
 {
     Vector<DOMDataStore*>& allStores = V8PerIsolateData::current()->allStores();
     for (size_t i = 0; i < allStores.size(); i++) {
-        v8::Handle<v8::Object> wrapper = allStores[i]->get(object);
+        v8::Handle<v8::Object> wrapper = allStores[i]->get<V8ArrayBufferView>(object);
         if (!wrapper.IsEmpty())
             wrapper->SetIndexedPropertiesToExternalArrayData(0, v8::kExternalByteArray, 0);
     }

@@ -19,7 +19,6 @@
  */
 
 [
-    NoInterfaceObject,
     CustomToV8,
     DoNotGenerateWrap,
     EventTarget

@@ -31,9 +31,8 @@
 [
     NoInterfaceObject,
     ActiveDOMObject,
-    EventTarget,
     EnabledAtRuntime=mediaSource
-] interface SourceBuffer {
+] interface SourceBuffer : EventTarget {
 
     readonly attribute boolean updating;
   
@@ -49,14 +48,5 @@
 
     // Abort the current segment append sequence.
     [RaisesException] void abort();
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };
 

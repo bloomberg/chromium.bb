@@ -55,6 +55,17 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
     static void installPerContextProperties(v8::Handle<v8::Object>, ArrayBuffer*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+
+    static inline void* toInternalPointer(ArrayBuffer* impl)
+    {
+        return impl;
+    }
+
+    static inline ArrayBuffer* fromInternalPointer(void* impl)
+    {
+        return static_cast<ArrayBuffer*>(impl);
+    }
+
 private:
     friend v8::Handle<v8::Object> wrap(ArrayBuffer*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<ArrayBuffer>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -70,7 +81,7 @@ public:
 inline v8::Handle<v8::Object> wrap(ArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    ASSERT(DOMDataStore::getWrapper<V8ArrayBuffer>(impl, isolate).IsEmpty());
     return V8ArrayBuffer::createWrapper(impl, creationContext, isolate);
 }
 
@@ -78,7 +89,7 @@ inline v8::Handle<v8::Value> toV8(ArrayBuffer* impl, v8::Handle<v8::Object> crea
 {
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8ArrayBuffer>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -89,7 +100,7 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(ArrayBuffer* impl, v8::Handle<v8::
     ASSERT(worldType(isolate) == MainWorld);
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<V8ArrayBuffer>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -100,7 +111,7 @@ inline v8::Handle<v8::Value> toV8Fast(ArrayBuffer* impl, const HolderContainer& 
 {
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8ArrayBuffer>(impl, container, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
@@ -112,7 +123,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(ArrayBuffer* impl, const Holde
     ASSERT(worldType(container.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
         return v8Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<V8ArrayBuffer>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());

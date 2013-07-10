@@ -31,9 +31,8 @@
 
 [
     NoInterfaceObject,
-    ActiveDOMObject,
-    EventTarget
-] interface FileWriter {
+    ActiveDOMObject
+] interface FileWriter : EventTarget {
     // ready states
     const unsigned short INIT = 0;
     const unsigned short WRITING = 1;
@@ -57,13 +56,4 @@
              attribute EventListener onabort;
              attribute EventListener onerror;
              attribute EventListener onwriteend;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };

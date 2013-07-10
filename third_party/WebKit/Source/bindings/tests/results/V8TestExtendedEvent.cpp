@@ -113,19 +113,18 @@ bool V8TestExtendedEvent::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8:
 v8::Handle<v8::Object> V8TestExtendedEvent::createWrapper(PassRefPtr<Event> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper(impl.get(), isolate).IsEmpty());
-    ASSERT(static_cast<void*>(static_cast<Event*>(impl.get())) == static_cast<void*>(impl.get()));
+    ASSERT(DOMDataStore::getWrapper<V8TestExtendedEvent>(impl.get(), isolate).IsEmpty());
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
     installPerContextProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestExtendedEvent>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8TestExtendedEvent::derefObject(void* object)
 {
-    static_cast<Event*>(object)->deref();
+    fromInternalPointer(object)->deref();
 }
 
 } // namespace WebCore

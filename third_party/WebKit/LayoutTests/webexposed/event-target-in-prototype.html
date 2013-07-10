@@ -1,0 +1,18 @@
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Check that interfaces inherit from EventTarget");
+
+eventTargets = ['EventSource', 'MessagePort', 'Node', 'WebSocket', 'Window', 'XMLHttpRequest', 'XMLHttpRequestUpload', 'webkitAudioContext'];
+
+for (var i = 0; i < eventTargets.length; i++) {
+    shouldBe(eventTargets[i] + ".prototype.__proto__", "EventTarget.prototype");
+}
+
+</script>
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

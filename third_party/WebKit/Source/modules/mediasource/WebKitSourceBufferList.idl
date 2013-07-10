@@ -30,19 +30,9 @@
  
 [
     NoInterfaceObject,
-    EnabledAtRuntime=webKitMediaSource,
-    EventTarget,
-] interface WebKitSourceBufferList {
+    EnabledAtRuntime=webKitMediaSource
+] interface WebKitSourceBufferList : EventTarget {
     readonly attribute unsigned long length;
     getter WebKitSourceBuffer item(unsigned long index);
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };
 

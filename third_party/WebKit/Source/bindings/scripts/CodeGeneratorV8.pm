@@ -491,7 +491,7 @@ sub GenerateOpaqueRootForGC
     my $code = <<END;
 void* ${v8ClassName}::opaqueRootForGC(void* object, v8::Isolate* isolate)
 {
-    ${implClassName}* impl = static_cast<${implClassName}*>(object);
+    ${implClassName}* impl = fromInternalPointer(object);
 END
     my $isReachableMethod = $interface->extendedAttributes->{"GenerateIsReachable"};
     if ($isReachableMethod) {
@@ -669,7 +669,7 @@ END
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static ${nativeType}* toNative(v8::Handle<v8::Object> object)
     {
-        return reinterpret_cast<${nativeType}*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
@@ -747,6 +747,29 @@ END
     GenerateHeaderNamedAndIndexedPropertyAccessors($interface);
     GenerateHeaderLegacyCall($interface);
     GenerateHeaderCustomInternalFieldIndices($interface);
+
+    my $toWrappedType;
+    my $fromWrappedType;
+    if ($interface->parent) {
+        my $v8ParentClassName = "V8" . $interface->parent;
+        $toWrappedType = "${v8ParentClassName}::toInternalPointer(impl)";
+        $fromWrappedType = "static_cast<${nativeType}*>(${v8ParentClassName}::fromInternalPointer(object))";
+    } else {
+        $toWrappedType = "impl";
+        $fromWrappedType = "static_cast<${nativeType}*>(object)";
+    }
+
+    $header{classPublic}->add(<<END);
+    static inline void* toInternalPointer(${nativeType}* impl)
+    {
+        return $toWrappedType;
+    }
+
+    static inline ${nativeType}* fromInternalPointer(void* object)
+    {
+        return $fromWrappedType;
+    }
+END
 
     if ($interface->name eq "Window") {
         $header{classPublic}->add(<<END);
@@ -854,7 +877,7 @@ END
 inline v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    ASSERT(DOMDataStore::getWrapper<${v8ClassName}>(impl, isolate).IsEmpty());
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have
@@ -872,7 +895,7 @@ inline v8::Handle<v8::Value> toV8(${nativeType}* impl, v8::Handle<v8::Object> cr
 {
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<${v8ClassName}>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -883,7 +906,7 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}* impl, v8::Handle<v8
     ASSERT(worldType(isolate) == MainWorld);
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<${v8ClassName}>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
@@ -894,7 +917,7 @@ inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const HolderContainer
 {
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<${v8ClassName}>(impl, container, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
@@ -906,7 +929,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const Hol
     ASSERT(worldType(container.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
         return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<${v8ClassName}>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
@@ -1518,11 +1541,12 @@ END
         # Check for a wrapper in the wrapper cache. If there is one, we know that a hidden reference has already
         # been created. If we don't find a wrapper, we create both a wrapper and a hidden reference.
         my $nativeReturnType = GetNativeType($returnType);
+        my $v8ReturnType = "V8" . $returnType;
         $code .= "    $nativeReturnType result = ${getterString};\n";
         if ($forMainWorldSuffix) {
-          $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper${forMainWorldSuffix}(result.get())) : v8Undefined();\n";
+          $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper${forMainWorldSuffix}<${v8ReturnType}>(result.get())) : v8Undefined();\n";
         } else {
-          $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper(result.get(), info.GetIsolate())) : v8Undefined();\n";
+          $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<${v8ReturnType}>(result.get(), info.GetIsolate())) : v8Undefined();\n";
         }
         $code .= "    if (wrapper.IsEmpty()) {\n";
         $code .= "        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());\n"; # FIXME: Could use wrap here since the wrapper is empty.
@@ -2565,7 +2589,7 @@ END
 
     $code .= <<END;
 
-    V8DOMWrapper::associateObjectWithWrapper(impl.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(impl.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 
@@ -2673,7 +2697,7 @@ END
     RefPtr<${implClassName}> event = ${implClassName}::create(type, eventInit);
 
     v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper(event.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(event.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(args, wrapper);
 }
 END
@@ -2831,7 +2855,7 @@ END
 
     $code .= <<END;
 
-    V8DOMWrapper::associateObjectWithWrapper(impl.release(), &${v8ClassName}Constructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(impl.release(), &${v8ClassName}Constructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
 }
 
@@ -4494,7 +4518,7 @@ END
     $implementation{nameSpaceWebCore}->add(<<END);
 void ${v8ClassName}::derefObject(void* object)
 {
-    static_cast<${nativeType}*>(object)->deref();
+    fromInternalPointer(object)->deref();
 }
 
 END
@@ -4740,11 +4764,10 @@ sub GenerateToV8Converters
 v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper(impl.get(), isolate).IsEmpty());
+    ASSERT(DOMDataStore::getWrapper<${v8ClassName}>(impl.get(), isolate).IsEmpty());
 END
 
     $code .= <<END if ($baseType ne $interfaceName);
-    ASSERT(static_cast<void*>(static_cast<${baseType}*>(impl.get())) == static_cast<void*>(impl.get()));
 END
 
     if (InheritsInterface($interface, "Document")) {
@@ -4752,7 +4775,7 @@ END
     if (Frame* frame = impl->frame()) {
         if (frame->script()->initializeMainWorld()) {
             // initializeMainWorld may have created a wrapper for the object, retry from the start.
-            v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper(impl.get(), isolate);
+            v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<${v8ClassName}>(impl.get(), isolate);
             if (!wrapper.IsEmpty())
                 return wrapper;
         }
@@ -4762,7 +4785,7 @@ END
 
     $code .= <<END;
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 END
@@ -4778,7 +4801,7 @@ END
 
     $code .= <<END;
     installPerContextProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, $wrapperConfiguration);
+    V8DOMWrapper::associateObjectWithWrapper<$v8ClassName>(impl, &info, wrapper, isolate, $wrapperConfiguration);
     return wrapper;
 }
 END

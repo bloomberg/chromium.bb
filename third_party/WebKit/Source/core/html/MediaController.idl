@@ -26,9 +26,8 @@
 [
     EnabledAtRuntime=media,
     Constructor,
-    ConstructorCallWith=ScriptExecutionContext,
-    EventTarget
-] interface MediaController {
+    ConstructorCallWith=ScriptExecutionContext
+] interface MediaController : EventTarget {
     readonly attribute TimeRanges buffered;
     readonly attribute TimeRanges seekable;
 
@@ -47,13 +46,4 @@
 
     [SetterRaisesException] attribute double volume;
     attribute boolean muted;
-
-    // EventTarget interface
-    void addEventListener(DOMString type, 
-                          EventListener listener, 
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type, 
-                             EventListener listener, 
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };

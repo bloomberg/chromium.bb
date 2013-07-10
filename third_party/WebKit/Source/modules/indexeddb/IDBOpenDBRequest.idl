@@ -23,9 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    EventTarget
-] interface IDBOpenDBRequest : IDBRequest {
+interface IDBOpenDBRequest : IDBRequest {
     attribute EventListener onblocked;
     attribute EventListener onupgradeneeded;
 };

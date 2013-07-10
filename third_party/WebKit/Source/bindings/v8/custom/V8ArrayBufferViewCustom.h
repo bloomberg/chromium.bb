@@ -47,7 +47,7 @@ const char outOfRangeLengthAndOffset[] = "Index is out of range.";
 // Returns true if it succeeded, otherwise returns false.
 bool copyElements(v8::Handle<v8::Object> destArray, v8::Handle<v8::Object> srcArray, uint32_t length, uint32_t offset, v8::Isolate*);
 
-template<class ArrayClass>
+template<class JavaScriptWrapperArrayType, class ArrayClass>
 void wrapArrayBufferView(const v8::FunctionCallbackInfo<v8::Value>& args, WrapperTypeInfo* type, ArrayClass array, v8::ExternalArrayType arrayType, bool hasIndexer)
 {
     // Transform the holder into a wrapper object for the array.
@@ -55,12 +55,12 @@ void wrapArrayBufferView(const v8::FunctionCallbackInfo<v8::Value>& args, Wrappe
     if (hasIndexer)
         args.Holder()->SetIndexedPropertiesToExternalArrayData(array.get()->baseAddress(), arrayType, array.get()->length());
     v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper(array.release(), type, wrapper, args.GetIsolate(), WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<JavaScriptWrapperArrayType>(array.release(), type, wrapper, args.GetIsolate(), WrapperConfiguration::Independent);
     args.GetReturnValue().Set(wrapper);
 }
 
 // Template function used by the ArrayBufferView*Constructor callbacks.
-template<class ArrayClass, class ElementType>
+template<class ArrayClass, class ElementType, class JavaScriptWrapperArrayType>
 void constructWebGLArrayWithArrayBufferArgument(const v8::FunctionCallbackInfo<v8::Value>& args, WrapperTypeInfo* type, v8::ExternalArrayType arrayType, bool hasIndexer)
 {
     ArrayBuffer* buf = V8ArrayBuffer::toNative(args[0]->ToObject());
@@ -104,7 +104,7 @@ void constructWebGLArrayWithArrayBufferArgument(const v8::FunctionCallbackInfo<v
         return;
     }
 
-    wrapArrayBufferView(args, type, array, arrayType, hasIndexer);
+    wrapArrayBufferView<JavaScriptWrapperArrayType>(args, type, array, arrayType, hasIndexer);
 }
 
 // Template function used by the ArrayBufferView*Constructor callbacks.
@@ -135,7 +135,7 @@ void constructWebGLArray(const v8::FunctionCallbackInfo<v8::Value>& args, Wrappe
         // Do not call SetIndexedPropertiesToExternalArrayData on this
         // object. Not only is there no point from a performance
         // perspective, but doing so causes errors in the subset() case.
-        wrapArrayBufferView(args, type, array, arrayType, false);
+        wrapArrayBufferView<JavaScriptWrapperArrayType>(args, type, array, arrayType, false);
         return;
     }
 
@@ -157,7 +157,7 @@ void constructWebGLArray(const v8::FunctionCallbackInfo<v8::Value>& args, Wrappe
 
     // See whether the first argument is a ArrayBuffer.
     if (V8ArrayBuffer::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        constructWebGLArrayWithArrayBufferArgument<ArrayClass, ElementType>(args, type, arrayType, true);
+        constructWebGLArrayWithArrayBufferArgument<ArrayClass, ElementType, JavaScriptWrapperArrayType>(args, type, arrayType, true);
         return;
     }
 
@@ -183,7 +183,7 @@ void constructWebGLArray(const v8::FunctionCallbackInfo<v8::Value>& args, Wrappe
 
         memcpy(array->baseAddress(), source->baseAddress(), length * sizeof(ElementType));
 
-        wrapArrayBufferView(args, type, array, arrayType, true);
+        wrapArrayBufferView<JavaScriptWrapperArrayType>(args, type, array, arrayType, true);
         return;
     }
 
@@ -255,7 +255,7 @@ void constructWebGLArray(const v8::FunctionCallbackInfo<v8::Value>& args, Wrappe
     }
 
     v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper(array.release(), type, wrapper, args.GetIsolate(), WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<JavaScriptWrapperArrayType>(array.release(), type, wrapper, args.GetIsolate(), WrapperConfiguration::Independent);
     args.GetReturnValue().Set(wrapper);
 }
 

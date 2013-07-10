@@ -85,7 +85,7 @@ v8::Handle<v8::Object> createUpgradeCandidateWrapper(ElementType* element, v8::H
 template<typename ElementType>
 v8::Handle<v8::Object> CustomElementWrapper<ElementType>::wrap(PassRefPtr<ElementType> element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*))
 {
-    ASSERT(DOMDataStore::getWrapper(element.get(), isolate).IsEmpty());
+    ASSERT(DOMDataStore::getWrapper<V8Element>(element.get(), isolate).IsEmpty());
 
     // FIXME: creationContext.IsEmpty() should never happen. Remove
     // this when callers (like InspectorController::inspect) are fixed
@@ -109,7 +109,7 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType>::wrap(PassRefPtr<Elemen
 
     wrapper->SetPrototype(customElementBinding->prototype());
 
-    V8DOMWrapper::associateObjectWithWrapper(element, customElementBinding->wrapperType(), wrapper, isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8Element>(element, customElementBinding->wrapperType(), wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
 
