@@ -12,7 +12,8 @@
 
 OneClickSigninDialogController::OneClickSigninDialogController(
     content::WebContents* web_contents,
-    const BrowserWindow::StartSyncCallback& sync_callback) {
+    const BrowserWindow::StartSyncCallback& sync_callback,
+    const string16& email) {
   base::Closure close_callback = base::Bind(
       &OneClickSigninDialogController::PerformClose, base::Unretained(this));
   view_controller_.reset([[OneClickSigninViewController alloc]
@@ -21,6 +22,7 @@ OneClickSigninDialogController::OneClickSigninDialogController(
          syncCallback:sync_callback
         closeCallback:close_callback
          isSyncDialog:YES
+                email:email
          errorMessage:nil]);
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);

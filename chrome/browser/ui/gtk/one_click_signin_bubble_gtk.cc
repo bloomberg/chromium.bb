@@ -151,8 +151,7 @@ void OneClickSigninBubbleGtk::InitializeWidgets(
   // Main dialog/bubble message.
   std::string label_text;
   if (is_sync_dialog_) {
-    label_text = email_.empty() ?
-        l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE) :
+    label_text =
         l10n_util::GetStringFUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW,
                                   email_);
   } else {
@@ -206,8 +205,8 @@ void OneClickSigninBubbleGtk::InitializeWidgets(
 
   g_object_unref(size_group);
 
-  header_label_ = theme_provider->BuildLabel(email_.empty() ?
-      l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE) :
+  // The email is always set for the sync dialog.
+  header_label_ = theme_provider->BuildLabel(
       l10n_util::GetStringFUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW, email_),
       ui::kGdkBlack);
 

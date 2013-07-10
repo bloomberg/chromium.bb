@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -43,6 +44,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
         closeCallback:(const base::Closure&)closeCallback
          isSyncDialog:(BOOL)isSyncDialog
+                email:(const string16&)email
          errorMessage:(NSString*)errorMessage {
   if ((self = [super initWithNibName:nibName
                               bundle:base::mac::FrameworkBundle()])) {
@@ -51,6 +53,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
     closeCallback_ = closeCallback;
     isSyncDialog_ = isSyncDialog;
     clickedLearnMore_ = NO;
+    email_ = email;
     errorMessage_.reset([errorMessage retain]);
     if (isSyncDialog_)
       DCHECK(!startSyncCallback_.is_null());
@@ -90,7 +93,6 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
     base::ResetAndReturn(&startSyncCallback_).Run(
       OneClickSigninSyncStarter::UNDO_SYNC);
-
   }
   [self close];
 }
@@ -164,8 +166,12 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
   NSSize delta = NSMakeSize(0.0, totalYOffset);
 
-  if (!isSyncDialog_ && [errorMessage_ length] != 0)
+  if (isSyncDialog_) {
+    [messageTextField_ setStringValue:l10n_util::GetNSStringFWithFixup(
+        IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW, email_)];
+  } else if ([errorMessage_ length] != 0) {
     [messageTextField_ setStringValue:errorMessage_];
+  }
 
   // Resize bubble and window to hold the controls.
   [GTMUILocalizerAndLayoutTweaker
@@ -203,8 +209,8 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   // The non-modal bubble already has a text content and only needs the
   // Learn More link (in a smaller font).
   if (isSyncDialog_) {
-    messageText = l10n_util::GetNSStringWithFixup(
-      IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE);
+    messageText = l10n_util::GetNSStringFWithFixup(
+        IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW, email_);
     messageText = [messageText stringByAppendingString:@" "];
   } else {
     messageText = @"";

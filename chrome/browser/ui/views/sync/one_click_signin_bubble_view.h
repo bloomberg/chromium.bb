@@ -114,12 +114,13 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // Creates advanced link to be used at the bottom of the bubble.
   void InitAdvancedLink();
 
-  // The bubble/dialog will always outlive the web_content, so this is ok
+  // The bubble/dialog will always outlive the web_content, so this is ok.
   content::WebContents* web_contents_;
 
-  // Alternate error message to be displayed
+  // Alternate error message to be displayed.
   const string16 error_message_;
 
+  // The user's email address to be used for sync.
   const string16 email_;
 
   // This callback is nulled once its called, so that it is called only once.

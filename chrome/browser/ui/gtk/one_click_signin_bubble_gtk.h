@@ -61,8 +61,10 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
 
   BubbleGtk* bubble_;
 
+  // The user's email address to be used for sync.
   const string16 email_;
 
+  // Alternate error message to be displayed.
   const string16 error_message_;
 
   // This callback is nulled once its called, so that it is called only once.

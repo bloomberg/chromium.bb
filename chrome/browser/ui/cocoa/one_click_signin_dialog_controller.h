@@ -21,9 +21,13 @@ class WebContents;
 // signin confirmation dialog.
 class OneClickSigninDialogController : public ConstrainedWindowMacDelegate {
  public:
+  // Creates an OneClickSigninDialogController. |web_contents| is used to
+  // open links, |email| is the user's email address that is used for sync,
+  // and |sync_callback| is called to start sync.
   OneClickSigninDialogController(
       content::WebContents* web_contents,
-      const BrowserWindow::StartSyncCallback& sync_callback);
+      const BrowserWindow::StartSyncCallback& sync_callback,
+      const string16& email);
   virtual ~OneClickSigninDialogController();
 
   // ConstrainedWindowMacDelegate implementation.

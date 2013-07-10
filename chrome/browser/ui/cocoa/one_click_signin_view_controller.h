@@ -31,6 +31,10 @@ class WebContents;
   // This is YES if the user clicked the Learn More link before another action.
   BOOL clickedLearnMore_;
 
+  // The user's email address to be used for sync.
+  string16 email_;
+
+  // Alternate error message to be displayed.
   base::scoped_nsobject<NSString> errorMessage_;
 
   // Text fields don't work as well with embedded links as text views, but
@@ -44,15 +48,16 @@ class WebContents;
 }
 
 // Initializes the controller from a nib file, with an alternate |errorMessage|
-// that can be displayed in the case of an authentication error,
-// |syncCallback| is called to start sync if |isSyncDialog| is YES,
-// |webContents| is used to open the Learn More and Advanced links and
-// |callback| is called when the view is closing.
+// that can be displayed in the case of an authentication error.
+// |syncCallback| is called to start sync for the given |email|, if
+// |isSyncDialog| is YES. |webContents| is used to open the Learn More and
+// Advanced links and |callback| is called when the view is closing.
 - (id)initWithNibName:(NSString*)nibName
           webContents:(content::WebContents*)webContents
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
         closeCallback:(const base::Closure&)callback
          isSyncDialog:(BOOL)isSyncDialog
+                email:(const string16&)email
          errorMessage:(NSString*)errorMessage;
 
 // Called before the view is closed.

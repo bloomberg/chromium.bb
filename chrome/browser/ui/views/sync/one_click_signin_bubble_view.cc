@@ -207,8 +207,7 @@ void OneClickSigninBubbleView::InitDialogContent(views::GridLayout* layout) {
   {
     layout->StartRow(0, COLUMN_SET_TITLE_BAR);
 
-    views::Label* label = new views::Label(email_.empty() ?
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE) :
+    views::Label* label = new views::Label(
         l10n_util::GetStringFUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW,
                                    email_));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -231,8 +230,7 @@ void OneClickSigninBubbleView::InitDialogContent(views::GridLayout* layout) {
   {
     layout->StartRow(0, COLUMN_SET_FILL_ALIGN);
 
-    views::Label* label = new views::Label(email_.empty() ?
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE) :
+    views::Label* label = new views::Label(
         l10n_util::GetStringFUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW,
                                    email_));
     label->SetMultiLine(true);

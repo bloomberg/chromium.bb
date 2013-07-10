@@ -11237,9 +11237,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
 
       <!-- One click sign in bubble and dialog -->
-      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE" desc="The message of the one click sign in dialog.">
-        Now you can access your bookmarks, history, and other settings on all of your signed-in devices.
-      </message>
       <message name="IDS_ONE_CLICK_BUBBLE_UNDO" desc="The text for the undo button in the one click signin bubble.">
         Undo
       </message>

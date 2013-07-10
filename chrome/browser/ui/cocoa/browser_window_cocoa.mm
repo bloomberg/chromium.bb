@@ -520,7 +520,8 @@ void BrowserWindowCocoa::ShowOneClickSigninBubble(
     [bubble_controller showWindow:nil];
   } else {
     // Deletes itself when the dialog closes.
-    new OneClickSigninDialogController(web_contents, start_sync_callback);
+    new OneClickSigninDialogController(
+        web_contents, start_sync_callback, email);
   }
 }
 #endif
