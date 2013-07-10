@@ -253,6 +253,7 @@ bool VaapiWrapper::CreateSurfaces(gfx::Size size,
                                   size_t num_surfaces,
                                    std::vector<VASurfaceID>* va_surfaces) {
   base::AutoLock auto_lock(va_lock_);
+  DVLOG(2) << "Creating " << num_surfaces << " surfaces";
 
   DCHECK(va_surfaces->empty());
   DCHECK(va_surface_ids_.empty());
@@ -288,6 +289,7 @@ bool VaapiWrapper::CreateSurfaces(gfx::Size size,
 
 void VaapiWrapper::DestroySurfaces() {
   base::AutoLock auto_lock(va_lock_);
+  DVLOG(2) << "Destroying " << va_surface_ids_.size()  << " surfaces";
 
   if (va_context_id_ != VA_INVALID_ID) {
     VAStatus va_res = VAAPI_DestroyContext(va_display_, va_context_id_);

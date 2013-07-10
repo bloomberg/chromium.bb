@@ -1039,6 +1039,8 @@ bool VaapiH264Decoder::OutputAllRemainingPics() {
 }
 
 bool VaapiH264Decoder::Flush() {
+  DVLOG(2) << "Decoder flush";
+
   if (!OutputAllRemainingPics())
     return false;
 
@@ -1387,6 +1389,7 @@ static int LevelToMaxDpbMbs(int level) {
 bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   const H264SPS* sps = parser_.GetSPS(sps_id);
   DCHECK(sps);
+  DVLOG(4) << "Processing SPS";
 
   *need_new_buffers = false;
 
@@ -1410,26 +1413,20 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   int height_mb = (2 - sps->frame_mbs_only_flag) *
       (sps->pic_height_in_map_units_minus1 + 1);
 
-  int width = 16 * width_mb;
-  int height = 16 * height_mb;
-
-  if (width == 0 || height == 0) {
-    DVLOG(1) << "Invalid picture size!";
+  gfx::Size new_pic_size(16 * width_mb, 16 * height_mb);
+  if (new_pic_size.IsEmpty()) {
+    DVLOG(1) << "Invalid picture size: " << new_pic_size.ToString();
     return false;
   }
 
-  if (!pic_size_.IsEmpty()) {
-    if (width == pic_size_.width() && height == pic_size_.height()) {
-      return true;
-    } else {
-      DVLOG(1) << "Picture size changed mid-stream";
-      report_error_to_uma_cb_.Run(MID_STREAM_RESOLUTION_CHANGE);
-      return false;
-    }
+  if (!pic_size_.IsEmpty() && new_pic_size == pic_size_) {
+    // Already have surfaces and this SPS keeps the same resolution,
+    // no need to request a new set.
+    return true;
   }
 
-  pic_size_.SetSize(width, height);
-  DVLOG(1) << "New picture size: " << width << "x" << height;
+  pic_size_ = new_pic_size;
+  DVLOG(1) << "New picture size: " << pic_size_.ToString();
 
   max_pic_order_cnt_lsb_ = 1 << (sps->log2_max_pic_order_cnt_lsb_minus4 + 4);
   max_frame_num_ = 1 << (sps->log2_max_frame_num_minus4 + 4);
@@ -1588,9 +1585,13 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
 
         state_ = kDecoding;
 
-        if (need_new_buffers)
-          return kAllocateNewSurfaces;
+        if (need_new_buffers) {
+          if (!Flush())
+            return kDecodeError;
 
+          available_va_surfaces_.clear();
+          return kAllocateNewSurfaces;
+        }
         break;
       }
 

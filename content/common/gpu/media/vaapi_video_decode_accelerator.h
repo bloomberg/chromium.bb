@@ -144,6 +144,12 @@ private:
   // pool.
   void RecycleVASurfaceID(VASurfaceID va_surface_id);
 
+  // Initiate wait cycle for surfaces to be released before we release them
+  // and allocate new ones, as requested by the decoder.
+  void InitiateSurfaceSetChange(size_t num_pics, gfx::Size size);
+  // Check if the surfaces have been released or post ourselves for later.
+  void TryFinishSurfaceSetChange();
+
   // Client-provided X/GLX state.
   Display* x_display_;
   GLXContext glx_context_;
@@ -154,8 +160,6 @@ private:
   enum State {
     // Initialize() not called yet or failed.
     kUninitialized,
-    // Requested a new set of pictures and waiting for them.
-    kPicturesRequested,
     // DecodeTask running.
     kDecoding,
     // Resetting, waiting for decoder to finish current task and cleanup.
@@ -202,10 +206,6 @@ private:
 
   // Return a TFPPicture associated with given client-provided id.
   TFPPicture* TFPPictureById(int32 picture_buffer_id);
-
-  // Number/resolution of output picture buffers.
-  size_t num_pics_;
-  gfx::Size pic_size_;
 
   // VA Surfaces no longer in use that can be passed back to the decoder for
   // reuse, once it requests them.
@@ -255,6 +255,14 @@ private:
   // Whether we are waiting for any pending_output_cbs_ to be run before
   // NotifyingFlushDone.
   bool finish_flush_pending_;
+
+  // Decoder requested a new surface set and we are waiting for all the surfaces
+  // to be returned before we can free them.
+  bool awaiting_va_surfaces_recycle_;
+
+  // Last requested number/resolution of output picture buffers.
+  size_t requested_num_pics_;
+  gfx::Size requested_pic_size_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAccelerator);
 };

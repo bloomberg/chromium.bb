@@ -256,7 +256,9 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       decoder_thread_("VaapiDecoderThread"),
       num_frames_at_client_(0),
       num_stream_bufs_at_decoder_(0),
-      finish_flush_pending_(false) {
+      finish_flush_pending_(false),
+      awaiting_va_surfaces_recycle_(false),
+      requested_num_pics_(0) {
   DCHECK(client);
 }
 
@@ -338,6 +340,7 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
     int32 input_id,
     const scoped_refptr<VASurface>& va_surface) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
+  DCHECK(!awaiting_va_surfaces_recycle_);
 
   // Drop any requests to output if we are resetting or being destroyed.
   if (state_ == kResetting || state_ == kDestroying)
@@ -528,6 +531,9 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
   TRACE_EVENT0("Video Decoder", "VAVDA::DecodeTask");
   base::AutoLock auto_lock(lock_);
 
+  if (state_ != kDecoding)
+    return;
+
   // Main decode task.
   DVLOG(4) << "Decode task";
 
@@ -549,14 +555,11 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 
     switch (res) {
       case VaapiH264Decoder::kAllocateNewSurfaces:
-        state_ = kPicturesRequested;
-        num_pics_ = decoder_->GetRequiredNumOfPictures();
-        pic_size_ = decoder_->GetPicSize();
-        DVLOG(1) << "Requesting " << num_pics_ << " pictures of size: "
-                 << pic_size_.width() << "x" << pic_size_.height();
+        DVLOG(1) << "Decoder requesting a new set of surfaces";
         message_loop_->PostTask(FROM_HERE, base::Bind(
-            &Client::ProvidePictureBuffers, client_,
-            num_pics_, pic_size_, GL_TEXTURE_2D));
+            &VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange, weak_this_,
+                decoder_->GetRequiredNumOfPictures(),
+                decoder_->GetPicSize()));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
 
@@ -580,6 +583,67 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
   }
 }
 
+void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(size_t num_pics,
+                                                           gfx::Size size) {
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
+  DCHECK(!awaiting_va_surfaces_recycle_);
+
+  // At this point decoder has stopped running and has already posted onto our
+  // loop any remaining output request callbacks, which executed before we got
+  // here. Some of them might have been pended though, because we might not
+  // have had enough TFPictures to output surfaces to. Initiate a wait cycle,
+  // which will wait for client to return enough PictureBuffers to us, so that
+  // we can finish all pending output callbacks, releasing associated surfaces.
+  DVLOG(1) << "Initiating surface set change";
+  awaiting_va_surfaces_recycle_ = true;
+
+  requested_num_pics_ = num_pics;
+  requested_pic_size_ = size;
+
+  TryFinishSurfaceSetChange();
+}
+
+void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
+
+  if (!awaiting_va_surfaces_recycle_)
+    return;
+
+  if (!pending_output_cbs_.empty() ||
+      tfp_pictures_.size() != available_va_surfaces_.size()) {
+    // Either:
+    // 1. Not all pending pending output callbacks have been executed yet.
+    // Wait for the client to return enough pictures and retry later.
+    // 2. The above happened and all surface release callbacks have been posted
+    // as the result, but not all have executed yet. Post ourselves after them
+    // to let them release surfaces.
+    DVLOG(2) << "Awaiting pending output/surface release callbacks to finish";
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange, weak_this_));
+    return;
+  }
+
+  // All surfaces released, destroy them and dismiss all PictureBuffers.
+  awaiting_va_surfaces_recycle_ = false;
+  available_va_surfaces_.clear();
+  vaapi_wrapper_->DestroySurfaces();
+
+  for (TFPPictures::iterator iter = tfp_pictures_.begin();
+       iter != tfp_pictures_.end(); ++iter) {
+    DVLOG(2) << "Dismissing picture id: " << iter->first;
+    client_->DismissPictureBuffer(iter->first);
+  }
+  tfp_pictures_.clear();
+
+  // And ask for a new set as requested.
+  DVLOG(1) << "Requesting " << requested_num_pics_ << " pictures of size: "
+           << requested_pic_size_.ToString();
+
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &Client::ProvidePictureBuffers, client_,
+      requested_num_pics_, requested_pic_size_, GL_TEXTURE_2D));
+}
+
 void VaapiVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
@@ -599,8 +663,6 @@ void VaapiVideoDecodeAccelerator::Decode(
           base::Unretained(this)));
       break;
 
-    case kPicturesRequested:
-      // Waiting for pictures, fallthrough.
     case kDecoding:
       // Decoder already running, fallthrough.
     case kResetting:
@@ -613,14 +675,13 @@ void VaapiVideoDecodeAccelerator::Decode(
       RETURN_AND_NOTIFY_ON_FAILURE(false,
           "Decode request from client in invalid state: " << state_,
           PLATFORM_FAILURE, );
-      return;
+      break;
   }
 }
 
 void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
     VASurfaceID va_surface_id) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
-
   base::AutoLock auto_lock(lock_);
 
   available_va_surfaces_.push_back(va_surface_id);
@@ -632,17 +693,20 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   base::AutoLock auto_lock(lock_);
-  DCHECK_EQ(state_, kPicturesRequested);
   DCHECK(tfp_pictures_.empty());
 
+  while (!output_buffers_.empty())
+    output_buffers_.pop();
+
   RETURN_AND_NOTIFY_ON_FAILURE(
-      buffers.size() == num_pics_,
+      buffers.size() == requested_num_pics_,
       "Got an invalid number of picture buffers. (Got " << buffers.size()
-      << ", requested " << num_pics_ << ")", INVALID_ARGUMENT, );
+      << ", requested " << requested_num_pics_ << ")", INVALID_ARGUMENT, );
+  DCHECK(requested_pic_size_ == buffers[0].size());
 
   std::vector<VASurfaceID> va_surface_ids;
   RETURN_AND_NOTIFY_ON_FAILURE(
-      vaapi_wrapper_->CreateSurfaces(pic_size_,
+      vaapi_wrapper_->CreateSurfaces(requested_pic_size_,
                                      buffers.size(),
                                      &va_surface_ids),
       "Failed creating VA Surfaces", PLATFORM_FAILURE, );
@@ -656,7 +720,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     linked_ptr<TFPPicture> tfp_picture(
         TFPPicture::Create(make_context_current_, fb_config_, x_display_,
                            buffers[i].id(), buffers[i].texture_id(),
-                           pic_size_));
+                           requested_pic_size_));
 
     RETURN_AND_NOTIFY_ON_FAILURE(
         tfp_picture.get(), "Failed assigning picture buffer to a texture.",
@@ -747,6 +811,7 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
 
 void VaapiVideoDecodeAccelerator::ResetTask() {
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
+  DVLOG(1) << "ResetTask";
 
   // All the decoding tasks from before the reset request from client are done
   // by now, as this task was scheduled after them and client is expected not
@@ -790,18 +855,29 @@ void VaapiVideoDecodeAccelerator::Reset() {
 
 void VaapiVideoDecodeAccelerator::FinishReset() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
-
+  DVLOG(1) << "FinishReset";
   base::AutoLock auto_lock(lock_);
+
   if (state_ != kResetting) {
     DCHECK(state_ == kDestroying || state_ == kUninitialized) << state_;
     return;  // We could've gotten destroyed already.
   }
 
-  state_ = kIdle;
-  num_stream_bufs_at_decoder_ = 0;
-
-  while(!pending_output_cbs_.empty())
+  // Drop pending outputs.
+  while (!pending_output_cbs_.empty())
     pending_output_cbs_.pop();
+
+  if (awaiting_va_surfaces_recycle_) {
+    // Decoder requested a new surface set while we were waiting for it to
+    // finish the last DecodeTask, running at the time of Reset().
+    // Let the surface set change finish first before resetting.
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &VaapiVideoDecodeAccelerator::FinishReset, weak_this_));
+    return;
+  }
+
+  num_stream_bufs_at_decoder_ = 0;
+  state_ = kIdle;
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyResetDone, client_));
