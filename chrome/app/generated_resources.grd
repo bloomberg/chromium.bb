@@ -13530,21 +13530,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Sync Error: Please contact administrator to enable sync.
       </message>
 
-      <message name="IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE" desc="Message explaining that passwords are encrypted.">
-        For added security, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will encrypt your data.
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_OPT_GOOGLE" desc="Radio button label for using Google password.">
-        Use my Google Account password
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_OPT_EXPLICIT" desc="Radio button label for using explicit passphrase.">
-        Choose my own passphrase
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_MSG_GOOGLE" desc="Message when Google password is selected.">
-        You have chosen to encrypt data using your Google password; you can always change your mind later by changing your sync settings.
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT" desc="Message when explicit passphrase is selected.">
-        Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to reset sync.
-      </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX" desc="Message when explicit passphrase is selected.">
         Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to
       </message>
@@ -13715,18 +13700,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Encryption tab of the configure sync dialog -->
-      <message name="IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE" desc="Title of the section containing the data types to encrypt.">
-        Encrypted data types
-      </message>
-      <message name="IDS_SYNC_ENCRYPT_SENSITIVE_DATA" desc="Text of the radio that when selected causes sync to encrypt sensitive data.">
-        Encrypt passwords
-      </message>
-      <message name="IDS_SYNC_ENCRYPT_ALL_DATA" desc="Text of the radio that when selected causes sync to encrypt all data.">
-        Encrypt all synced data
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
-        Encryption passphrase
-      </message>
       <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt your data using either your Google password or your own passphrase.
       </message>
@@ -13758,9 +13731,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Passphrase dialog strings -->
-      <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
-        Enter your sync passphrase
-      </message>
       <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
         Your data is encrypted with your sync passphrase. Please enter it below.
       </message>
