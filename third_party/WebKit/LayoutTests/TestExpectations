@@ -55,7 +55,6 @@ crbug.com/239871 [ Win Mac Debug ] editing/selection/move-by-word-visually-multi
 crbug.com/24182 [ Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Slow ]
 webkit.org/b/82417 [ Linux ] fast/frames/set-unloaded-frame-location.html [ Slow ]
-webkit.org/b/84696 [ Release ] fast/workers/storage/interrupt-database.html [ Slow ]
 webkit.org/b/86909 [ Win ] compositing/geometry/object-clip-rects-assertion.html [ Slow ]
 webkit.org/b/86909 [ Win ] virtual/softwarecompositing/geometry/object-clip-rects-assertion.html [ Slow ]
 webkit.org/b/90488 [ Win ] inspector/extensions/extensions-reload.html [ Slow ]
@@ -170,6 +169,9 @@ crbug.com/243782 [ Win7 Mac Debug ] editing/selection/move-by-word-visually-sing
 crbug.com/243782 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/243782 [ Mac Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/244739 [ Win ] compositing/video-frame-size-change.html [ Slow ]
+
+crbug.com/24182 [ Release ] fast/workers/storage/interrupt-database.html [ Slow ]
+crbug.com/24182 [ Debug ] fast/workers/shared-worker-name.html [ Slow ]
 
 # -----------------------------------------------------------------
 # END SLOW
@@ -1550,6 +1552,7 @@ crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-rende
 crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-shadow.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/longhand-vs-shorthand-initial.html [ Pass Timeout ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-unprefixed-02.html [ Pass Failure ]
 
 crbug.com/255724 [ Mac Debug ] animations/animation-direction-normal.html [ Failure ]
 
