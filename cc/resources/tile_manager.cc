@@ -787,7 +787,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
       mts.tree_bin[PENDING_TREE] == NOW_BIN,
       mts.resolution,
       tile->layer_id(),
-      &tile,
+      static_cast<const void *>(tile),
       tile->source_frame_number(),
       rendering_stats_instrumentation_,
       base::Bind(&TileManager::OnRasterTaskCompleted,
