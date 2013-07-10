@@ -1,0 +1,91 @@
+<script>
+// This tests that we don't crash if a CachedResource load is cancelled due to the removal
+// of its last client, and it is deleted during cancellation. See crbug.com/258419
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var scripts = document.getElementsByTagName("script");
+for(var i = 0; i < scripts.length; i++) {
+    scripts[i].parentNode.removeChild(scripts[i]);
+}
+
+function rsc() {
+    document.execCommand("SelectAll", false)
+}
+document.addEventListener("readystatechange", rsc, false);
+
+var inSubtreeModified = false;
+var subtreeModifiedFiredCount = 0;
+function subtreeModified() {
+    if (subtreeModifiedFiredCount >= 20) {
+        if (window.testRunner)
+            testRunner.notifyDone();
+        return;
+    }
+    if (inSubtreeModified)
+        return;
+    subtreeModifiedFiredCount++;
+    inSubtreeModified = true;
+
+    document.execCommand("SelectAll", false)
+    window.getSelection().collapseToStart()
+    var targetElement = event.target;
+    if (targetElement.tagName != 'animateTransform')
+        targetElement.insertAdjacentText('afterbegin', '%')
+    var clonedNode = document.getElementsByTagName("*")[2].cloneNode(false);
+    try {
+        targetElement.insertAdjacentElement('afterend', clonedNode)
+    } catch(e) {
+    }
+    inSubtreeModified = false;
+}
+document.addEventListener("DOMSubtreeModified", subtreeModified, true);
+
+function load() {
+  var targetElement = event.target;
+  targetElement.insertAdjacentElement('afterend', document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform'));
+  targetElement.parentNode.removeChild(targetElement)
+  targetElement.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform'));
+
+  var all = document.getElementsByTagName("*");
+  all[70 % all.length].appendChild(targetElement)
+  targetElement.parentNode.removeChild(targetElement)
+
+  targetElement = document.importNode(targetElement, true)
+  var all = document.getElementsByTagName("*");
+  all[32 % all.length].appendChild(targetElement)
+  targetElement.insertAdjacentElement('beforeend', document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform'))
+  if (targetElement.outerHTML)
+      targetElement.outerHTML = ""
+  var all = document.getElementsByTagName("*");
+  var newParent = all[66 % all.length];
+  newParent.insertBefore(targetElement, newParent.childNodes[98 % newParent.childNodes.length])
+}
+document.addEventListener("load", load, true);
+</script>
+<style>
+*{zoom:5%;}
+.CLASS13{white-space:pre-wrap;background-image:url('?');</style>
+<link>
+<object>
+<table>
+<caption>
+<textarea></textarea>
+<button>
+<em></em>
+<div>
+<h1 class="CLASS13">
+<span></span>
+<form></svg>
+<ruby>
+<rb<select tabindex="-1">
+<optgroup>
+<option>
+<rt>
+<select>
+<optgroup></optgroup>
+<option>
+<option>

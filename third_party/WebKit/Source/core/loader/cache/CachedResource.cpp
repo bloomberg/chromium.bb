@@ -458,6 +458,7 @@ void CachedResource::cancelTimerFired(Timer<CachedResource>* timer)
     ASSERT_UNUSED(timer, timer == &m_cancelTimer);
     if (hasClients() || !m_loader)
         return;
+    CachedResourceHandle<CachedResource> protect(this);
     m_loader->cancelIfNotFinishing();
     if (m_status != Cached)
         memoryCache()->remove(this);
