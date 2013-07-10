@@ -1054,6 +1054,8 @@ void BrowserView::DestroyBrowser() {
   // the window now so that we are deleted immediately and aren't left holding
   // references to deleted objects.
   GetWidget()->RemoveObserver(this);
+  GetLocationBar()->GetLocationEntry()->model()->popup_model()->RemoveObserver(
+      this);
   frame_->CloseNow();
 }
 
@@ -1879,6 +1881,12 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// BrowserView, OmniboxPopupModelObserver overrides:
+void BrowserView::OnOmniboxPopupShownOrHidden() {
+  infobar_container_->SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight());
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // BrowserView, ImmersiveModeController::Delegate overrides:
 
 BookmarkBarView* BrowserView::GetBookmarkBar() {
@@ -2053,6 +2061,9 @@ void BrowserView::InitViews() {
     load_complete_listener_.reset(new LoadCompleteListener(this));
   }
 #endif
+
+  GetLocationBar()->GetLocationEntry()->model()->popup_model()->AddObserver(
+      this);
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
@@ -2722,8 +2733,10 @@ void BrowserView::MakeOverlayContentsActiveContents() {
 
 int BrowserView::GetMaxTopInfoBarArrowHeight() {
   int top_arrow_height = 0;
-  // Only show the arrows when not in fullscreen and when there's no overlay.
-  if (!IsFullscreen() && !overlay_container_->visible()) {
+  // Only show the arrows when not in fullscreen and when there's no overlay
+  // and no omnibox popup.
+  if (!IsFullscreen() && !overlay_container_->visible() &&
+      !GetLocationBar()->GetLocationEntry()->model()->popup_model()->IsOpen()) {
     const LocationIconView* location_icon_view =
         toolbar_->location_bar()->location_icon_view();
     // The +1 in the next line creates a 1-px gap between icon and arrow tip.

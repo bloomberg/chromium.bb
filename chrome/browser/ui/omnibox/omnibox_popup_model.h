@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 
+class OmniboxPopupModelObserver;
 class OmniboxPopupView;
 
 namespace gfx {
@@ -96,6 +98,10 @@ class OmniboxPopupModel {
   // changes.
   void OnResultChanged();
 
+  // Add and remove observers.
+  void AddObserver(OmniboxPopupModelObserver* observer);
+  void RemoveObserver(OmniboxPopupModelObserver* observer);
+
   // The token value for selected_line_, hover_line_ and functions dealing with
   // a "line number" that indicates "no line".
   static const size_t kNoMatch;
@@ -120,6 +126,9 @@ class OmniboxPopupModel {
 
   // The match the user has manually chosen, if any.
   AutocompleteResult::Selection manually_selected_match_;
+
+  // Observers.
+  ObserverList<OmniboxPopupModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModel);
 };

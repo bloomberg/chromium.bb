@@ -1297,6 +1297,7 @@
         'browser/ui/omnibox/omnibox_edit_model.h',
         'browser/ui/omnibox/omnibox_popup_model.cc',
         'browser/ui/omnibox/omnibox_popup_model.h',
+        'browser/ui/omnibox/omnibox_popup_model_observer.h',
         'browser/ui/omnibox/omnibox_popup_non_view.cc',
         'browser/ui/omnibox/omnibox_popup_non_view.h',
         'browser/ui/omnibox/omnibox_popup_view.h',
