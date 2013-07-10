@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
 import json
 import logging
 import os
@@ -174,6 +175,19 @@ def prepare_symbol_info(maps_path,
     if readelf_debug_decodedline_file:
       files[entry.name]['readelf-debug-decodedline-file'] = {
           'file': os.path.basename(readelf_debug_decodedline_file)}
+
+    files[entry.name]['size'] = os.stat(entry.name).st_size
+
+    with open(entry.name, 'rb') as entry_f:
+      md5 = hashlib.md5()
+      sha1 = hashlib.sha1()
+      chunk = entry_f.read(1024 * 1024)
+      while chunk:
+        md5.update(chunk)
+        sha1.update(chunk)
+        chunk = entry_f.read(1024 * 1024)
+      files[entry.name]['sha1'] = sha1.hexdigest()
+      files[entry.name]['md5'] = md5.hexdigest()
 
   with open(os.path.join(output_dir_path, 'files.json'), 'w') as f:
     json.dump(files, f, indent=2, sort_keys=True)
