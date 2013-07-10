@@ -47,9 +47,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   typedef base::Callback<
       void(base::PlatformFileError result)> StatusCallback;
 
+  // |on_close_callback| will be called after the |file| is closed in the
+  // child process. |on_close_callback|.is_null() can be true, if no operation
+  // is needed on closing the file.
   typedef base::Callback<
       void(base::PlatformFileError result,
-           base::PassPlatformFile file)> CreateOrOpenCallback;
+           base::PassPlatformFile file,
+           const base::Closure& on_close_callback)> CreateOrOpenCallback;
 
   typedef base::Callback<
       void(base::PlatformFileError result,

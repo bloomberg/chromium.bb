@@ -131,7 +131,7 @@ void RunCreateOrOpenCallback(
     base::PlatformFileError result,
     base::PassPlatformFile file,
     bool created) {
-  callback.Run(result, file);
+  callback.Run(result, file, base::Closure());
 }
 
 }  // namespace

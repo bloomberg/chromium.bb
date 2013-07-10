@@ -144,7 +144,8 @@ void NativeMediaFileUtil::CreateOrOpen(
   // Only called by NaCl, which should not have access to media file systems.
   base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
   callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
-                base::PassPlatformFile(&invalid_file));
+               base::PassPlatformFile(&invalid_file),
+               base::Closure());
 }
 
 void NativeMediaFileUtil::EnsureFileExists(

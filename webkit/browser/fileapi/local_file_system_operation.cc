@@ -32,10 +32,6 @@ using webkit_blob::ScopedFile;
 
 namespace fileapi {
 
-namespace {
-void NopCloseFileCallback() {}
-}
-
 LocalFileSystemOperation::LocalFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* file_system_context,
@@ -528,12 +524,11 @@ void LocalFileSystemOperation::DidWrite(
 void LocalFileSystemOperation::DidOpenFile(
     const OpenFileCallback& callback,
     base::PlatformFileError rv,
-    base::PassPlatformFile file) {
+    base::PassPlatformFile file,
+    const base::Closure& on_close_callback) {
   if (rv == base::PLATFORM_FILE_OK)
     CHECK_NE(base::kNullProcessHandle, peer_handle_);
-  callback.Run(rv, file.ReleaseValue(),
-               base::Bind(&NopCloseFileCallback),
-               peer_handle_);
+  callback.Run(rv, file.ReleaseValue(), on_close_callback, peer_handle_);
 }
 
 bool LocalFileSystemOperation::SetPendingOperationType(OperationType type) {

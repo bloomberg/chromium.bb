@@ -231,7 +231,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
                 FileWriterDelegate::WriteProgressStatus write_status);
   void DidOpenFile(const OpenFileCallback& callback,
                    base::PlatformFileError rv,
-                   base::PassPlatformFile file);
+                   base::PassPlatformFile file,
+                   const base::Closure& on_close_callback);
 
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
