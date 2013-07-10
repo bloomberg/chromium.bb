@@ -21,9 +21,7 @@ namespace mediaGalleries {
     // before returning the permitted set. Default is silent.  If the value
     // 'yes' is passed, or if the application has not been granted access to
     // any media galleries and the value 'if_needed' is passed, then the
-    // media gallery configuration dialog will be displayed. A user
-    // gesture is required for the display of the dialog. (i.e. making the call
-    // in the context of a button press)
+    // media gallery configuration dialog will be displayed.
     GetMediaFileSystemsInteractivity? interactive;
   };
 
