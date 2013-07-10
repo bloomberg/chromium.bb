@@ -260,7 +260,7 @@ void RenderMenuList::setText(const String& s)
 
 String RenderMenuList::text() const
 {
-    return m_buttonText ? m_buttonText->text() : 0;
+    return m_buttonText ? m_buttonText->text() : String();
 }
 
 LayoutRect RenderMenuList::controlClipRect(const LayoutPoint& additionalOffset) const

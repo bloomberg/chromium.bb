@@ -268,7 +268,9 @@ public:
 
     Vector<UChar> charactersWithNullTermination() const;
     unsigned copyTo(UChar* buffer, unsigned maxLength) const;
-    void appendTo(Vector<UChar>&) const;
+
+    template<size_t inlineCapacity>
+    void appendTo(Vector<UChar, inlineCapacity>&, unsigned pos = 0, unsigned len = UINT_MAX) const;
 
     UChar32 characterStartingAt(unsigned) const; // Ditto.
     
@@ -627,6 +629,23 @@ inline bool String::isAllSpecialCharacters() const
     if (is8Bit())
         return WTF::isAllSpecialCharacters<isSpecialCharacter, LChar>(characters8(), len);
     return WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(bloatedCharacters(), len);
+}
+
+template<size_t inlineCapacity>
+inline void String::appendTo(Vector<UChar, inlineCapacity>& result, unsigned pos, unsigned len) const
+{
+    unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
+    if (numberOfCharactersToCopy <= 0)
+        return;
+    result.reserveCapacity(result.size() + numberOfCharactersToCopy);
+    if (is8Bit()) {
+        const LChar* characters8 = m_impl->characters8();
+        for (size_t i = 0; i < numberOfCharactersToCopy; ++i)
+            result.uncheckedAppend(characters8[pos + i]);
+    } else {
+        const UChar* characters16 = m_impl->characters16();
+        result.append(characters16 + pos, numberOfCharactersToCopy);
+    }
 }
 
 // StringHash is the default hash for String
