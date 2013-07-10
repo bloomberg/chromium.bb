@@ -313,6 +313,9 @@ const char kDisableCompositingForTransition[] =
 // Enables CSS3 custom filters
 const char kEnableCssShaders[]              = "enable-css-shaders";
 
+// Disables delegated renderer.
+const char kDisableDelegatedRenderer[]      = "disable-delegated-renderer";
+
 // Enables delegated renderer.
 const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 

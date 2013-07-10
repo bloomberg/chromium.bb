@@ -624,7 +624,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   if (!context)
     return scoped_ptr<cc::OutputSurface>();
 
-  if (command_line.HasSwitch(switches::kEnableDelegatedRenderer)) {
+  if (command_line.HasSwitch(switches::kEnableDelegatedRenderer) &&
+      !command_line.HasSwitch(switches::kDisableDelegatedRenderer)) {
     DCHECK(is_threaded_compositing_enabled_);
     return scoped_ptr<cc::OutputSurface>(
         new DelegatedCompositorOutputSurface(routing_id(), context, NULL));

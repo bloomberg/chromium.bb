@@ -226,6 +226,14 @@ const Experiment::Choice kImplSidePaintingChoices[] = {
     cc::switches::kDisableImplSidePainting, ""}
 };
 
+const Experiment::Choice kDelegatedRendererChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableDelegatedRenderer, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableDelegatedRenderer, ""}
+};
+
 const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_SHORT,
@@ -1401,6 +1409,16 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION,
     kOsAndroid | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kImplSidePaintingChoices)
+  },
+  {
+    "delegated-renderer",
+    IDS_FLAGS_DELEGATED_RENDERER_NAME,
+    IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION,
+#ifdef USE_AURA
+    kOsWin | kOsLinux |
+#endif
+    kOsAndroid | kOsCrOS,
+    MULTI_VALUE_TYPE(kDelegatedRendererChoices)
   },
   {
     "enable-websocket-experimental-implementation",
