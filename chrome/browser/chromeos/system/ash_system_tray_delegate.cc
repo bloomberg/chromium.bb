@@ -279,9 +279,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_->Add(this,
                    chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::NotificationService::AllSources());
-    registrar_->Add(this,
-                   chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                   content::NotificationService::AllSources());
     registrar_->Add(
         this,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
@@ -384,11 +381,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     ash::Shell::GetInstance()->session_state_delegate()->
         RemoveSessionStateObserver(this);
 
-    // Stop observing gdata operations.
-    DriveIntegrationService* integration_service =
-        FindDriveIntegrationService();
-    if (integration_service)
-      integration_service->job_list()->RemoveObserver(this);
+    // Stop observing Drive operations.
+    UnobserveDriveUpdates();
 
     policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
         g_browser_process->browser_policy_connector()->
@@ -925,7 +919,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void SetProfile(Profile* profile) {
+    // Stop observing the current |user_profile_| on Drive integration status.
+    UnobserveDriveUpdates();
+
     user_profile_ = profile;
+
+    // Restart observation, now for the newly set |profile|.
+    ObserveDriveUpdates();
+
     PrefService* prefs = profile->GetPrefs();
     user_pref_registrar_.reset(new PrefChangeRegistrar);
     user_pref_registrar_->Init(prefs);
@@ -965,11 +966,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return true;
   }
 
-  void ObserveGDataUpdates() {
+  void ObserveDriveUpdates() {
     DriveIntegrationService* integration_service =
         FindDriveIntegrationService();
     if (integration_service)
       integration_service->job_list()->AddObserver(this);
+  }
+
+  void UnobserveDriveUpdates() {
+    DriveIntegrationService* integration_service =
+        FindDriveIntegrationService();
+    if (integration_service)
+      integration_service->job_list()->RemoveObserver(this);
   }
 
   void UpdateClockType() {
@@ -1103,11 +1111,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         }
         break;
       }
-      case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
-        // GData system service exists by the time if enabled.
-        ObserveGDataUpdates();
-        break;
-      }
       case chrome::NOTIFICATION_PROFILE_CREATED: {
         SetProfile(content::Source<Profile>(source).ptr());
         registrar_->Remove(this,
@@ -1182,8 +1185,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   DriveIntegrationService* FindDriveIntegrationService() {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    return DriveIntegrationServiceFactory::FindForProfile(profile);
+    return user_profile_ ?
+        DriveIntegrationServiceFactory::FindForProfile(user_profile_) : NULL;
   }
 
   // Overridden from system::TimezoneSettings::Observer.
