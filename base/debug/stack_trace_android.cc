@@ -5,48 +5,39 @@
 #include "base/debug/stack_trace.h"
 
 #include <android/log.h>
-#include <unwind.h>  // TODO(dmikurube): Remove.  See http://crbug.com/236855.
+#include <unwind.h>
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/strings/stringprintf.h"
 
-// TODO(dmikurube): Remove when Bionic's get_backtrace() gets popular.
-// See http://crbug.com/236855.
 namespace {
 
-/* depends how the system includes define this */
-#ifdef HAVE_UNWIND_CONTEXT_STRUCT
-typedef struct _Unwind_Context __unwind_context;
-#else
-typedef _Unwind_Context __unwind_context;
-#endif
+struct StackCrawlState {
+  StackCrawlState(uintptr_t* frames, size_t max_depth)
+      : frames(frames),
+        frame_count(0),
+        max_depth(max_depth),
+        have_skipped_self(false) {}
 
-struct stack_crawl_state_t {
   uintptr_t* frames;
   size_t frame_count;
   size_t max_depth;
   bool have_skipped_self;
-
-  stack_crawl_state_t(uintptr_t* frames, size_t max_depth)
-      : frames(frames),
-        frame_count(0),
-        max_depth(max_depth),
-        have_skipped_self(false) {
-  }
 };
 
-static _Unwind_Reason_Code tracer(__unwind_context* context, void* arg) {
-  stack_crawl_state_t* state = static_cast<stack_crawl_state_t*>(arg);
-
+// Clang's unwind.h doesn't provide _Unwind_GetIP on ARM, refer to
+// http://llvm.org/bugs/show_bug.cgi?id=16564 for details.
 #if defined(__clang__)
-  // Vanilla Clang's unwind.h doesn't have _Unwind_GetIP for ARM.
-  // See http://crbug.com/236855, too.
+uintptr_t _Unwind_GetIP(_Unwind_Context* context) {
   uintptr_t ip = 0;
   _Unwind_VRS_Get(context, _UVRSC_CORE, 15, _UVRSD_UINT32, &ip);
-  ip &= ~(uintptr_t)0x1;  // remove thumb mode bit
-#else
-  uintptr_t ip = _Unwind_GetIP(context);
+  return ip & ~static_cast<uintptr_t>(0x1);  // Remove thumb mode bit.
+}
 #endif
+
+_Unwind_Reason_Code TraceStackFrame(_Unwind_Context* context, void* arg) {
+  StackCrawlState* state = static_cast<StackCrawlState*>(arg);
+  uintptr_t ip = _Unwind_GetIP(context);
 
   // The first stack frame is this function itself.  Skip it.
   if (ip != 0 && !state->have_skipped_self) {
@@ -57,8 +48,7 @@ static _Unwind_Reason_Code tracer(__unwind_context* context, void* arg) {
   state->frames[state->frame_count++] = ip;
   if (state->frame_count >= state->max_depth)
     return _URC_END_OF_STACK;
-  else
-    return _URC_NO_REASON;
+  return _URC_NO_REASON;
 }
 
 }  // namespace
@@ -79,12 +69,9 @@ bool EnableInProcessStackDumping() {
 }
 
 StackTrace::StackTrace() {
-  // TODO(dmikurube): Replace it with Bionic's get_backtrace().
-  // See http://crbug.com/236855.
-  stack_crawl_state_t state(reinterpret_cast<uintptr_t*>(trace_), kMaxTraces);
-  _Unwind_Backtrace(tracer, &state);
+  StackCrawlState state(reinterpret_cast<uintptr_t*>(trace_), kMaxTraces);
+  _Unwind_Backtrace(&TraceStackFrame, &state);
   count_ = state.frame_count;
-  // TODO(dmikurube): Symbolize in Chrome.
 }
 
 void StackTrace::PrintBacktrace() const {
