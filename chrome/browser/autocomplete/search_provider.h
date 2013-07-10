@@ -527,6 +527,13 @@ class SearchProvider : public AutocompleteProvider,
   // Start margin of the omnibox. Used to construct search URLs.
   int omnibox_start_margin_;
 
+  // If true, search history query suggestions will score low enough that
+  // they will not be inlined.
+  bool prevent_search_history_inlining_;
+
+  // If true, no search history query suggestions will be offered.
+  bool disable_search_history_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };
 

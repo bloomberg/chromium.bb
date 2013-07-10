@@ -113,6 +113,18 @@ class OmniboxFieldTrial {
   // inlined.)
   static bool ShortcutsScoringMaxRelevance(int* max_relevance);
 
+  // ---------------------------------------------------------
+  // For the SearchHistory field trial.
+
+  // Returns true if the user is in the experiment group that scores
+  // search history query suggestions less aggressively so that they don't
+  // inline.
+  static bool SearchHistoryPreventInlining();
+
+  // Returns true if the user is in the experiment group that disables
+  // all query suggestions from search history.
+  static bool SearchHistoryDisable();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };

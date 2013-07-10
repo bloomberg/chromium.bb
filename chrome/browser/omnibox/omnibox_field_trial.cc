@@ -23,6 +23,7 @@ const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
 const char kShortcutsScoringFieldTrialName[] = "OmniboxShortcutsScoring";
+const char kSearchHistoryFieldTrialName[] = "OmniboxSearchHistory";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -257,4 +258,14 @@ bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(int* max_relevance) {
     return false;
   }
   return true;
+}
+
+bool OmniboxFieldTrial::SearchHistoryPreventInlining() {
+  return (base::FieldTrialList::FindFullName(kSearchHistoryFieldTrialName) ==
+          "PreventInlining");
+}
+
+bool OmniboxFieldTrial::SearchHistoryDisable() {
+  return (base::FieldTrialList::FindFullName(kSearchHistoryFieldTrialName) ==
+          "Disable");
 }

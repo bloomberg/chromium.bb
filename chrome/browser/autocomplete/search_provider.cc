@@ -251,7 +251,11 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
       suggest_results_pending_(0),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
-      omnibox_start_margin_(-1) {
+      omnibox_start_margin_(-1),
+      prevent_search_history_inlining_(
+          OmniboxFieldTrial::SearchHistoryPreventInlining()),
+      disable_search_history_(
+          OmniboxFieldTrial::SearchHistoryDisable()) {
 }
 
 // static
@@ -626,6 +630,9 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
 
   keyword_history_results_.clear();
   default_history_results_.clear();
+
+  if (disable_search_history_)
+    return;
 
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
@@ -1336,17 +1343,21 @@ int SearchProvider::CalculateRelevanceForHistory(
     bool prevent_inline_autocomplete) const {
   // The relevance of past searches falls off over time. There are two distinct
   // equations used. If the first equation is used (searches to the primary
-  // provider that we want to inline autocomplete), the score starts at 1399 and
-  // falls to 1300. If the second equation is used the relevance of a search 15
-  // minutes ago is discounted 50 points, while the relevance of a search two
-  // weeks ago is discounted 450 points.
+  // provider that we want to inline autocomplete), the score is in the range
+  // 1300-1599 (unless |prevent_search_history_inlining_|, in which case
+  // it's in the range 1200-1299). If the second equation is used the
+  // relevance of a search 15 minutes ago is discounted 50 points, while the
+  // relevance of a search two weeks ago is discounted 450 points.
   double elapsed_time = std::max((base::Time::Now() - time).InSecondsF(), 0.0);
   bool is_primary_provider = is_keyword || !providers_.has_keyword_provider();
   if (is_primary_provider && !prevent_inline_autocomplete) {
     // Searches with the past two days get a different curve.
     const double autocomplete_time = 2 * 24 * 60 * 60;
     if (elapsed_time < autocomplete_time) {
-      return (is_keyword ? 1599 : 1399) - static_cast<int>(99 *
+      int max_score = is_keyword ? 1599 : 1399;
+      if (prevent_search_history_inlining_)
+        max_score = 1299;
+      return max_score - static_cast<int>(99 *
           std::pow(elapsed_time / autocomplete_time, 2.5));
     }
     elapsed_time -= autocomplete_time;
