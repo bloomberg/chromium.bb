@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MANAGED_MODE_MANAGED_MODE_NAVIGATION_OBSERVER_H_
 
 #include <set>
+#include <vector>
 
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
@@ -27,10 +28,10 @@ class ManagedModeNavigationObserver
   virtual ~ManagedModeNavigationObserver();
 
   // Sets the specific infobar as dismissed.
-  void WarnInfobarDismissed();
+  void WarnInfoBarDismissed();
 
-  const std::vector<const content::NavigationEntry*>* blocked_navigations()
-      const {
+  const std::vector<const content::NavigationEntry*>*
+      blocked_navigations() const {
     return &blocked_navigations_.get();
   }
 

@@ -35,10 +35,9 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
   friend class WebrtcBrowserTest;
   friend class WebrtcVideoQualityBrowserTest;
 
-  // MediaStreamInfoBarDelegate takes the ownership of the |controller|.
   MediaStreamInfoBarDelegate(
       InfoBarService* infobar_service,
-      MediaStreamDevicesController* controller);
+      scoped_ptr<MediaStreamDevicesController> controller);
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
