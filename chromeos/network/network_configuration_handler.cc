@@ -237,6 +237,7 @@ void NetworkConfigurationHandler::SetProperties(
     const std::string& service_path,
     const base::DictionaryValue& properties,
     const base::Closure& callback,
+  NET_LOG_USER("SetProperties", service_path);
     const network_handler::ErrorCallback& error_callback) {
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
       dbus::ObjectPath(service_path),
@@ -252,6 +253,7 @@ void NetworkConfigurationHandler::ClearProperties(
     const std::vector<std::string>& names,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG_USER("ClearProperties", service_path);
   DBusThreadManager::Get()->GetShillServiceClient()->ClearProperties(
       dbus::ObjectPath(service_path),
       names,

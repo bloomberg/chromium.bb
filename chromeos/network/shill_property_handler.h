@@ -195,6 +195,9 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   void GetIPConfigCallback(const std::string& service_path,
                            DBusMethodCallStatus call_status,
                            const base::DictionaryValue& properties);
+  void UpdateIPConfigProperty(const std::string& service_path,
+                              const base::DictionaryValue& properties,
+                              const char* property);
 
   void NetworkDevicePropertyChangedCallback(const std::string& path,
                                             const std::string& key,

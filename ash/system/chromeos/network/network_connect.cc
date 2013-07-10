@@ -11,10 +11,14 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "grit/ash_strings.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
@@ -79,6 +83,75 @@ void ConnectToNetwork(const std::string& service_path) {
       base::Bind(&OnConnectSucceeded, service_path),
       base::Bind(&OnConnectFailed, service_path),
       false /* ignore_error_state */);
+}
+
+string16 ErrorString(const std::string& error) {
+  if (error.empty())
+    return string16();
+  if (error == flimflam::kErrorOutOfRange)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
+  if (error == flimflam::kErrorPinMissing)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING);
+  if (error == flimflam::kErrorDhcpFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED);
+  if (error == flimflam::kErrorConnectFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
+  if (error == flimflam::kErrorBadPassphrase)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE);
+  if (error == flimflam::kErrorBadWEPKey)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY);
+  if (error == flimflam::kErrorActivationFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
+  }
+  if (error == flimflam::kErrorNeedEvdo)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO);
+  if (error == flimflam::kErrorNeedHomeNetwork) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK);
+  }
+  if (error == flimflam::kErrorOtaspFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED);
+  if (error == flimflam::kErrorAaaFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED);
+  if (error == flimflam::kErrorInternal)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_INTERNAL);
+  if (error == flimflam::kErrorDNSLookupFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED);
+  }
+  if (error == flimflam::kErrorHTTPGetFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED);
+  }
+  if (error == flimflam::kErrorIpsecPskAuthFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED);
+  }
+  if (error == flimflam::kErrorIpsecCertAuthFailed ||
+      error == shill::kErrorEapAuthenticationFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
+  }
+  if (error == shill::kErrorEapLocalTlsFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_EAP_LOCAL_TLS_FAILED);
+  }
+  if (error == shill::kErrorEapRemoteTlsFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_EAP_REMOTE_TLS_FAILED);
+  }
+  if (error == flimflam::kErrorPppAuthFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
+  }
+
+  if (StringToLowerASCII(error) ==
+      StringToLowerASCII(std::string(flimflam::kUnknownString))) {
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
+  }
+  return l10n_util::GetStringFUTF16(IDS_NETWORK_UNRECOGNIZED_ERROR,
+                                    UTF8ToUTF16(error));
 }
 
 }  // network_connect
