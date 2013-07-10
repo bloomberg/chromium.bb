@@ -298,6 +298,8 @@ class SequencedWorkerPool::Inner {
 
   void Shutdown(int max_blocking_tasks_after_shutdown);
 
+  bool IsShutdownInProgress();
+
   // Runs the worker loop on the background thread.
   void ThreadLoop(Worker* this_worker);
 
@@ -693,6 +695,11 @@ void SequencedWorkerPool::Inner::Shutdown(
   UMA_HISTOGRAM_TIMES("SequencedWorkerPool.ShutdownDelayTime",
                       TimeTicks::Now() - shutdown_wait_begin);
 #endif
+}
+
+bool SequencedWorkerPool::Inner::IsShutdownInProgress() {
+    AutoLock lock(lock_);
+    return shutdown_called_;
 }
 
 void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
@@ -1267,6 +1274,10 @@ void SequencedWorkerPool::SignalHasWorkForTesting() {
 void SequencedWorkerPool::Shutdown(int max_new_blocking_tasks_after_shutdown) {
   DCHECK(constructor_message_loop_->BelongsToCurrentThread());
   inner_->Shutdown(max_new_blocking_tasks_after_shutdown);
+}
+
+bool SequencedWorkerPool::IsShutdownInProgress() {
+  return inner_->IsShutdownInProgress();
 }
 
 }  // namespace base

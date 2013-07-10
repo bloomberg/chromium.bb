@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -655,6 +656,16 @@ bool SandboxedUnpacker::RewriteImageFiles() {
 
   // Write our parsed images back to disk as well.
   for (size_t i = 0; i < images.size(); ++i) {
+    if (BrowserThread::GetBlockingPool()->IsShutdownInProgress()) {
+      // Abort package installation if shutdown was initiated, crbug.com/235525
+      ReportFailure(
+          ABORTED_DUE_TO_SHUTDOWN,
+          l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+              ASCIIToUTF16("ABORTED_DUE_TO_SHUTDOWN")));
+      return false;
+    }
+
     const SkBitmap& image = images[i].a;
     base::FilePath path_suffix = images[i].b;
     if (path_suffix.IsAbsolute() || path_suffix.ReferencesParent()) {

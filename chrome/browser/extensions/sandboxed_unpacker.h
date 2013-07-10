@@ -133,6 +133,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
     INVALID_PATH_FOR_BITMAP_IMAGE,
     ERROR_RE_ENCODING_THEME_IMAGE,
     ERROR_SAVING_THEME_IMAGE,
+    ABORTED_DUE_TO_SHUTDOWN,
 
     // SandboxedUnpacker::RewriteCatalogFiles()
     COULD_NOT_READ_CATALOG_DATA_FROM_DISK,
