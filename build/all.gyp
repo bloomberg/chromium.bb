@@ -458,6 +458,20 @@
             '../chrome/chrome.gyp:chromedriver2_unittests',
           ],
         },  # target_name: chromium_builder_chromedriver
+        {
+          'target_name': 'chromium_builder_asan',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/chrome.gyp:chrome',
+
+            # We refer to content_shell directly rather than all_webkit
+            # because we don't want the _unittests binaries.
+            '../content/content.gyp:content_browsertests',  
+            '../content/content.gyp:content_shell',  
+
+            '../net/net.gyp:dns_fuzz_stub',
+         ],
+       },
       ],  # targets
     }],
     ['OS=="mac"', {
@@ -555,12 +569,11 @@
           ],
         },
         {
+          # TODO(dpranke): Update the bots to refer to 'chromium_builder_asan'.
           'target_name': 'chromium_builder_asan_mac',
           'type': 'none',
           'dependencies': [
-            '../chrome/chrome.gyp:chrome',
-            '../net/net.gyp:dns_fuzz_stub',
-            'all_webkit',
+            'chromium_builder_asan'
           ],
         },
         {
