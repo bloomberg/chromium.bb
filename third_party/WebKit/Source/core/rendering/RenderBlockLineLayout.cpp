@@ -161,12 +161,36 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
     if (height < m_block->logicalTopForFloat(newFloat) || height >= m_block->logicalBottomForFloat(newFloat))
         return;
 
+    // When floats with shape outside are stacked, the floats are positioned based on the bounding box of the shape,
+    // not the shape's contour. Since we computed the width based on the shape contour when we added the float,
+    // when we add a subsequent float on the same line, we need to undo the shape delta in order to position
+    // based on the bounding box. In order to do this, we need to walk back through the floating object list to find
+    // the first previous float that is on the same side as our newFloat.
+    ShapeOutsideInfo* previousShapeOutsideInfo = 0;
+    const RenderBlock::FloatingObjectSet& floatingObjectSet = m_block->m_floatingObjects->set();
+    RenderBlock::FloatingObjectSetIterator it = floatingObjectSet.end();
+    RenderBlock::FloatingObjectSetIterator begin = floatingObjectSet.begin();
+    while (it != begin) {
+        --it;
+        RenderBlock::FloatingObject* previousFloat = *it;
+        if (previousFloat != newFloat && previousFloat->type() == newFloat->type()) {
+            previousShapeOutsideInfo = previousFloat->renderer()->shapeOutsideInfo();
+            if (previousShapeOutsideInfo) {
+                LayoutUnit lineTopInShapeCoordinates = m_block->logicalHeight() - m_block->logicalTopForFloat(previousFloat) + previousShapeOutsideInfo->shapeLogicalTop();
+                previousShapeOutsideInfo->computeSegmentsForLine(lineTopInShapeCoordinates, logicalHeightForLine(m_block, m_isFirstLine));
+            }
+            break;
+        }
+    }
+
     ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo();
     if (shapeOutsideInfo)
         shapeOutsideInfo->computeSegmentsForLine(m_block->logicalHeight() - m_block->logicalTopForFloat(newFloat) + shapeOutsideInfo->shapeLogicalTop(), logicalHeightForLine(m_block, m_isFirstLine));
 
     if (newFloat->type() == RenderBlock::FloatingObject::FloatLeft) {
         float newLeft = m_block->logicalRightForFloat(newFloat);
+        if (previousShapeOutsideInfo)
+            newLeft -= previousShapeOutsideInfo->rightSegmentShapeBoundingBoxDelta();
         if (shapeOutsideInfo)
             newLeft += shapeOutsideInfo->rightSegmentShapeBoundingBoxDelta();
 
@@ -175,6 +199,8 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
         m_left = max<float>(m_left, newLeft);
     } else {
         float newRight = m_block->logicalLeftForFloat(newFloat);
+        if (previousShapeOutsideInfo)
+            newRight -= previousShapeOutsideInfo->leftSegmentShapeBoundingBoxDelta();
         if (shapeOutsideInfo)
             newRight += shapeOutsideInfo->leftSegmentShapeBoundingBoxDelta();
 

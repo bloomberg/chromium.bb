@@ -4008,10 +4008,10 @@ LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* fl
     if (childBox->style()->floating() == LeftFloat) {
         LayoutUnit heightRemainingLeft = 1;
         LayoutUnit heightRemainingRight = 1;
-        floatLogicalLeft = logicalLeftOffsetForLine(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
-        while (logicalRightOffsetForLine(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight) - floatLogicalLeft < floatLogicalWidth) {
+        floatLogicalLeft = logicalLeftOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
+        while (logicalRightOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight) - floatLogicalLeft < floatLogicalWidth) {
             logicalTopOffset += min(heightRemainingLeft, heightRemainingRight);
-            floatLogicalLeft = logicalLeftOffsetForLine(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
+            floatLogicalLeft = logicalLeftOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
             if (insideFlowThread) {
                 // Have to re-evaluate all of our offsets, since they may have changed.
                 logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset); // Constant part of right offset.
@@ -4023,10 +4023,10 @@ LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* fl
     } else {
         LayoutUnit heightRemainingLeft = 1;
         LayoutUnit heightRemainingRight = 1;
-        floatLogicalLeft = logicalRightOffsetForLine(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
-        while (floatLogicalLeft - logicalLeftOffsetForLine(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft) < floatLogicalWidth) {
+        floatLogicalLeft = logicalRightOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
+        while (floatLogicalLeft - logicalLeftOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft) < floatLogicalWidth) {
             logicalTopOffset += min(heightRemainingLeft, heightRemainingRight);
-            floatLogicalLeft = logicalRightOffsetForLine(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
+            floatLogicalLeft = logicalRightOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
             if (insideFlowThread) {
                 // Have to re-evaluate all of our offsets, since they may have changed.
                 logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset); // Constant part of right offset.
@@ -4311,7 +4311,7 @@ LayoutUnit RenderBlock::logicalRightOffsetForContent(RenderRegion* region, Layou
     return logicalRightOffset - (logicalWidth() - (isHorizontalWritingMode() ? boxRect.maxX() : boxRect.maxY()));
 }
 
-LayoutUnit RenderBlock::logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit* heightRemaining, LayoutUnit logicalHeight) const
+LayoutUnit RenderBlock::logicalLeftFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
 {
     LayoutUnit left = fixedOffset;
     if (m_floatingObjects && m_floatingObjects->hasLeftObjects()) {
@@ -4321,13 +4321,21 @@ LayoutUnit RenderBlock::logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUn
         FloatIntervalSearchAdapter<FloatingObject::FloatLeft> adapter(this, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), left, heightRemaining);
         m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
 
-        if (const FloatingObject* lastFloat = adapter.lastFloat()) {
+        const FloatingObject* lastFloat = adapter.lastFloat();
+        if (offsetMode == ShapeOutsideFloatShapeOffset && lastFloat) {
             if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
                 shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat) + shapeOutside->shapeLogicalTop(), logicalHeight);
                 left += shapeOutside->rightSegmentShapeBoundingBoxDelta();
             }
         }
     }
+
+    return left;
+}
+
+LayoutUnit RenderBlock::adjustLogicalLeftOffsetForLine(LayoutUnit offsetFromFloats, bool applyTextIndent) const
+{
+    LayoutUnit left = offsetFromFloats;
 
     if (applyTextIndent && style()->isLeftToRightDirection())
         left += textIndentOffset();
@@ -4363,7 +4371,7 @@ LayoutUnit RenderBlock::logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUn
     return left;
 }
 
-LayoutUnit RenderBlock::logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit* heightRemaining, LayoutUnit logicalHeight) const
+LayoutUnit RenderBlock::logicalRightFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
 {
     LayoutUnit right = fixedOffset;
     if (m_floatingObjects && m_floatingObjects->hasRightObjects()) {
@@ -4374,7 +4382,8 @@ LayoutUnit RenderBlock::logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutU
         FloatIntervalSearchAdapter<FloatingObject::FloatRight> adapter(this, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), rightFloatOffset, heightRemaining);
         m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
 
-        if (const FloatingObject* lastFloat = adapter.lastFloat()) {
+        const FloatingObject* lastFloat = adapter.lastFloat();
+        if (offsetMode == ShapeOutsideFloatShapeOffset && lastFloat) {
             if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
                 shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat) + shapeOutside->shapeLogicalTop(), logicalHeight);
                 rightFloatOffset += shapeOutside->leftSegmentShapeBoundingBoxDelta();
@@ -4383,7 +4392,13 @@ LayoutUnit RenderBlock::logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutU
 
         right = min(right, rightFloatOffset);
     }
+    return right;
+}
     
+LayoutUnit RenderBlock::adjustLogicalRightOffsetForLine(LayoutUnit offsetFromFloats, bool applyTextIndent) const
+{
+    LayoutUnit right = offsetFromFloats;
+
     if (applyTextIndent && !style()->isLeftToRightDirection())
         right -= textIndentOffset();
     
