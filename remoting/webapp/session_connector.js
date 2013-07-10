@@ -128,7 +128,7 @@ remoting.SessionConnector.prototype.reset = function() {
    * @type {boolean}
    * @private
    */
-  this.refreshHostJidIfOffline_ = true;
+  this.refreshHostJidIfOffline_ = false;
 
   /**
    * @type {remoting.ClientSession}
@@ -187,18 +187,52 @@ remoting.SessionConnector.prototype.reset = function() {
 remoting.SessionConnector.prototype.connectMe2Me =
     function(host, fetchPin, fetchThirdPartyToken,
              clientPairingId, clientPairedSecret) {
+  this.connectMe2MeInternal_(
+      host.hostId, host.jabberId, host.publicKey, host.hostName,
+      fetchPin, fetchThirdPartyToken,
+      clientPairingId, clientPairedSecret, true);
+};
+
+/**
+ * Initiate a Me2Me connection.
+ *
+ * @param {string} hostId ID of the Me2Me host.
+ * @param {string} hostJid XMPP JID of the host.
+ * @param {string} hostPublicKey Public Key of the host.
+ * @param {string} hostDisplayName Display name (friendly name) of the host.
+ * @param {function(boolean, function(string):void):void} fetchPin Function to
+ *     interactively obtain the PIN from the user.
+ * @param {function(string, string, string,
+ *                  function(string, string): void): void}
+ *     fetchThirdPartyToken Function to obtain a token from a third party
+ *     authenticaiton server.
+ * @param {string} clientPairingId The client id issued by the host when
+ *     this device was paired, if it is already paired.
+ * @param {string} clientPairedSecret The shared secret issued by the host when
+ *     this device was paired, if it is already paired.
+ * @param {boolean} refreshHostJidIfOffline Whether to refresh the JID and retry
+ *     the connection if the current JID is offline.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.SessionConnector.prototype.connectMe2MeInternal_ =
+    function(hostId, hostJid, hostPublicKey, hostDisplayName,
+             fetchPin, fetchThirdPartyToken,
+             clientPairingId, clientPairedSecret,
+             refreshHostJidIfOffline) {
   // Cancel any existing connect operation.
   this.cancel();
 
-  this.hostId_ = host.hostId;
+  this.hostId_ = hostId;
   this.clientPairingId_ = clientPairingId;
   this.clientPairedSecret_ = clientPairedSecret;
-  this.hostJid_ = host.jabberId;
-  this.hostPublicKey_ = host.publicKey;
+  this.hostJid_ = hostJid;
+  this.hostPublicKey_ = hostPublicKey;
   this.fetchPin_ = fetchPin;
   this.fetchThirdPartyToken_ = fetchThirdPartyToken;
-  this.hostDisplayName_ = host.hostName;
+  this.hostDisplayName_ = hostDisplayName;
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
+  this.refreshHostJidIfOffline_ = refreshHostJidIfOffline;
   this.createSessionIfReady_();
 };
 
@@ -239,7 +273,10 @@ remoting.SessionConnector.prototype.reconnect = function() {
     console.error('reconnect not supported for IT2Me.');
     return;
   }
-  this.createSessionIfReady_();
+  this.connectMe2MeInternal_(
+      this.hostId_, this.hostJid_, this.hostPublicKey_, this.hostDisplayName_,
+      this.fetchPin_, this.fetchThirdPartyToken_,
+      this.clientPairingId_, this.clientPairedSecret_, true);
 };
 
 /**
@@ -423,9 +460,6 @@ remoting.SessionConnector.prototype.onStateChange_ =
       }
       if (error == remoting.Error.HOST_IS_OFFLINE &&
           this.refreshHostJidIfOffline_) {
-        this.refreshHostJidIfOffline_ = false;
-        this.clientSession_.removePlugin();
-        this.clientSession_ = null;
         remoting.hostList.refresh(this.onHostListRefresh_.bind(this));
       } else {
         this.onError_(error);
@@ -449,8 +483,10 @@ remoting.SessionConnector.prototype.onHostListRefresh_ = function(success) {
   if (success) {
     var host = remoting.hostList.getHostForId(this.hostId_);
     if (host) {
-      this.connectMe2Me(host, this.fetchPin_, this.fetchThirdPartyToken_,
-                        this.clientPairingId_, this.clientPairedSecret_);
+      this.connectMe2MeInternal_(
+          host.hostId, host.jabberId, host.publicKey, host.hostName,
+          this.fetchPin_, this.fetchThirdPartyToken_,
+          this.clientPairingId_, this.clientPairedSecret_, false);
       return;
     }
   }
