@@ -287,6 +287,7 @@ cr.define('ntp', function() {
     });
 
     preventDefaultOnPoundLinkClicks();  // From webui/js/util.js.
+    cr.ui.FocusManager.disableMouseFocusOnButtons();
   }
 
   /**

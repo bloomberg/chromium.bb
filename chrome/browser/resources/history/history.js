@@ -1528,6 +1528,8 @@ function load() {
   window.addEventListener('resize',
       historyView.positionNotificationBar.bind(historyView));
 
+  cr.ui.FocusManager.disableMouseFocusOnButtons();
+
   if (isMobileVersion()) {
     if (searchField) {
       // Move the search box out of the header.

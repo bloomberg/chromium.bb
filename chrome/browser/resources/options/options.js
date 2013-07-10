@@ -228,6 +228,7 @@ function load() {
                                 CertificateManager.getInstance());
   }
 
+  cr.ui.FocusManager.disableMouseFocusOnButtons();
   OptionsFocusManager.getInstance().initialize();
   Preferences.getInstance().initialize();
   OptionsPage.initialize();

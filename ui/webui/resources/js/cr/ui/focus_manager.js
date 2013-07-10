@@ -177,18 +177,33 @@ cr.define('cr.ui', function() {
           true);
       document.addEventListener('keydown', this.onDocumentKeyDown_.bind(this),
           true);
-
-      document.addEventListener('mousedown', function(event) {
-        var tagName = event.target.tagName;
-        if (tagName != 'BUTTON' && tagName != 'INPUT')
-          return;
-        var type = event.target.type;
-        if (type == 'button' || type == 'reset' || type == 'submit' ||
-            type == 'radio' || type == 'checkbox') {
-          event.preventDefault();
-        }
-      }, false);
     },
+  };
+
+  /**
+   * Disable mouse-focus for button controls.
+   * Button form controls are mouse-focusable since Chromium 30.  We want the
+   * old behavior in some WebUI pages.
+   */
+  FocusManager.disableMouseFocusOnButtons = function() {
+    document.addEventListener('mousedown', function(event) {
+      if (event.button != 0)
+        return;
+      var node = event.target;
+      var tagName = node.tagName;
+      if (tagName != 'BUTTON' && tagName != 'INPUT') {
+        do {
+          node = node.parentNode;
+          if (!node || node.nodeType != Node.ELEMENT_NODE)
+            return;
+        } while (node.tagName != 'BUTTON');
+      }
+      var type = node.type;
+      if (type == 'button' || type == 'reset' || type == 'submit' ||
+          type == 'radio' || type == 'checkbox') {
+        event.preventDefault();
+      }
+    }, false);
   };
 
   return {

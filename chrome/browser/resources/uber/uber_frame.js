@@ -26,6 +26,7 @@ cr.define('uber_frame', function() {
     uber.invokeMethodOnParent('navigationControlsLoaded');
 
     document.documentElement.addEventListener('mousewheel', onMouseWheel);
+    cr.ui.FocusManager.disableMouseFocusOnButtons();
   }
 
   /**
