@@ -13,7 +13,6 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -93,9 +92,6 @@ class ASH_EXPORT ShelfLayoutManager :
   }
 
   bool in_layout() const { return in_layout_; }
-
-  // Clears internal data for shutdown process.
-  void PrepareForShutdown();
 
   // Returns whether the shelf and its contents (launcher, status) are visible
   // on the screen.
@@ -221,7 +217,6 @@ class ASH_EXPORT ShelfLayoutManager :
   struct State {
     State() : visibility_state(SHELF_VISIBLE),
               auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
-              window_state(WORKSPACE_WINDOW_STATE_DEFAULT),
               is_screen_locked(false) {}
 
     // Returns true if the two states are considered equal. As
@@ -232,13 +227,11 @@ class ASH_EXPORT ShelfLayoutManager :
       return other.visibility_state == visibility_state &&
           (visibility_state != SHELF_AUTO_HIDE ||
            other.auto_hide_state == auto_hide_state) &&
-          other.window_state == window_state &&
           other.is_screen_locked == is_screen_locked;
     }
 
     ShelfVisibilityState visibility_state;
     ShelfAutoHideState auto_hide_state;
-    WorkspaceWindowState window_state;
     bool is_screen_locked;
   };
 
@@ -265,8 +258,8 @@ class ASH_EXPORT ShelfLayoutManager :
   // Updates the background of the shelf.
   void UpdateShelfBackground(BackgroundAnimator::ChangeType type);
 
-  // Returns how the shelf background is painted.
-  ShelfBackgroundType GetShelfBackgroundType() const;
+  // Returns whether the launcher should draw a background.
+  bool GetLauncherPaintsBackground() const;
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();

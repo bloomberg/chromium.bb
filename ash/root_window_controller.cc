@@ -358,7 +358,7 @@ void RootWindowController::CloseChildWindows() {
   shelf_->ShutdownStatusAreaWidget();
 
   if (shelf_->shelf_layout_manager())
-    shelf_->shelf_layout_manager()->PrepareForShutdown();
+    shelf_->shelf_layout_manager()->set_workspace_controller(NULL);
 
   // Close background widget first as it depends on tooltip.
   wallpaper_controller_.reset();

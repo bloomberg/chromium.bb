@@ -27,7 +27,6 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -45,7 +44,6 @@ const int kDimAlpha = 128;
 // The time to dim and un-dim.
 const int kTimeToDimMs = 3000;  // Slow in dimming.
 const int kTimeToUnDimMs = 200;  // Fast in activating.
-const int kTimeToSwitchBackgroundMs = 1000;
 
 // Class used to slightly dim shelf items when maximized and visible.
 class DimmerView : public views::View,
@@ -248,16 +246,12 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
     return focus_cycler_;
   }
 
-  ui::Layer* opaque_background() { return &opaque_background_; }
-
   // Set if the shelf area is dimmed (eg when a window is maximized).
   void SetDimmed(bool dimmed);
   bool GetDimmed() const;
 
   // Set the bounds of the widget.
   void SetWidgetBounds(const gfx::Rect bounds);
-
-  void SetParentLayer(ui::Layer* layer);
 
   // views::View overrides:
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
@@ -272,8 +266,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   virtual bool CanActivate() const OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds) OVERRIDE;
 
   // BackgroundAnimatorDelegate overrides:
   virtual void UpdateBackground(int alpha) OVERRIDE;
@@ -300,7 +292,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   scoped_ptr<views::Widget> dimmer_;
   internal::FocusCycler* focus_cycler_;
   int alpha_;
-  ui::Layer opaque_background_;
 
   // The view which does the dimming.
   DimmerView* dimmer_view_;
@@ -315,13 +306,9 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf)
     : shelf_(shelf),
       focus_cycler_(NULL),
       alpha_(0),
-      opaque_background_(ui::LAYER_SOLID_COLOR),
       dimmer_view_(NULL),
       disable_dimming_animations_for_test_(false) {
   set_allow_deactivate_on_esc(true);
-  opaque_background_.SetColor(SK_ColorBLACK);
-  opaque_background_.SetBounds(GetLocalBounds());
-  opaque_background_.SetOpacity(0.0f);
 }
 
 ShelfWidget::DelegateView::~DelegateView() {
@@ -362,11 +349,6 @@ bool ShelfWidget::DelegateView::GetDimmed() const {
 void ShelfWidget::DelegateView::SetWidgetBounds(const gfx::Rect bounds) {
   if (dimmer_)
     dimmer_->SetBounds(bounds);
-}
-
-void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
-  layer->Add(&opaque_background_);
-  ReorderLayers();
 }
 
 void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
@@ -423,15 +405,6 @@ void ShelfWidget::DelegateView::Layout() {
   }
 }
 
-void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
-  views::View::ReorderChildLayers(parent_layer);
-  parent_layer->StackAtBottom(&opaque_background_);
-}
-
-void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
-  opaque_background_.SetBounds(GetLocalBounds());
-}
-
 void ShelfWidget::DelegateView::ForceUndimming(bool force) {
   if (GetDimmed())
     dimmer_view_->ForceUndimming(force);
@@ -472,7 +445,6 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
   // The shelf should not take focus when initially shown.
   set_focus_on_creation(false);
   SetContentsView(delegate_view_);
-  delegate_view_->SetParentLayer(GetLayer());
 
   status_area_widget_ = new internal::StatusAreaWidget(status_container);
   status_area_widget_->CreateTrayViews();
@@ -499,34 +471,9 @@ ShelfWidget::~ShelfWidget() {
 }
 
 void ShelfWidget::SetPaintsBackground(
-    ShelfBackgroundType background_type,
+    bool value,
     internal::BackgroundAnimator::ChangeType change_type) {
-  ui::Layer* opaque_background = delegate_view_->opaque_background();
-  float target_opacity =
-      (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
-  scoped_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
-  if (change_type != internal::BackgroundAnimator::CHANGE_IMMEDIATE) {
-    opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
-        opaque_background->GetAnimator()));
-    opaque_background_animation->SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
-  }
-  opaque_background->SetOpacity(target_opacity);
-
-  // TODO(mukai): use ui::Layer on both opaque_background and normal background
-  // retire background_animator_ at all. It would be simpler.
-  background_animator_.SetPaintsBackground(
-      background_type != SHELF_BACKGROUND_DEFAULT,
-      change_type);
-}
-
-ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
-  if (delegate_view_->opaque_background()->GetTargetOpacity() == 1.0f)
-    return SHELF_BACKGROUND_MAXIMIZED;
-  if (background_animator_.paints_background())
-    return SHELF_BACKGROUND_OVERLAP;
-
-  return SHELF_BACKGROUND_DEFAULT;
+  background_animator_.SetPaintsBackground(value, change_type);
 }
 
 ShelfAlignment ShelfWidget::GetAlignment() const {
