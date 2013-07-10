@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef DOMWindow_h
@@ -31,12 +31,14 @@
 #include "core/dom/EventTarget.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/platform/Supplementable.h"
+
 #include "wtf/Forward.h"
 
 namespace WebCore {
     class BarProp;
     class CSSRuleList;
     class CSSStyleDeclaration;
+    class CanvasRenderingContext2D;
     class Console;
     class DOMApplicationCache;
     class DOMPoint;
@@ -50,8 +52,14 @@ namespace WebCore {
     class EventListener;
     class FloatRect;
     class Frame;
+    class HTMLCanvasElement;
+    class HTMLImageElement;
+    class HTMLVideoElement;
     class History;
     class IDBFactory;
+    class ImageBitmap;
+    class ImageBitmapCallback;
+    class ImageData;
     class Location;
     class MediaQueryList;
     class MessageEvent;
@@ -240,6 +248,20 @@ namespace WebCore {
         // Timers
         void clearTimeout(int timeoutId);
         void clearInterval(int timeoutId);
+
+        // Images
+        void createImageBitmap(HTMLImageElement* , PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
+        void createImageBitmap(HTMLImageElement* , PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
+        void createImageBitmap(HTMLVideoElement* , PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
+        void createImageBitmap(HTMLVideoElement* , PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
+        void createImageBitmap(CanvasRenderingContext2D* , PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
+        void createImageBitmap(CanvasRenderingContext2D* , PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
+        void createImageBitmap(HTMLCanvasElement* , PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
+        void createImageBitmap(HTMLCanvasElement* , PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
+        void createImageBitmap(ImageData* , PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
+        void createImageBitmap(ImageData* , PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
+        void createImageBitmap(ImageBitmap* , PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
+        void createImageBitmap(ImageBitmap* , PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
 
         // WebKit animation extensions
         int requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
@@ -437,7 +459,7 @@ namespace WebCore {
     inline String DOMWindow::defaultStatus() const
     {
         return m_defaultStatus;
-    } 
+    }
 
 } // namespace WebCore
 

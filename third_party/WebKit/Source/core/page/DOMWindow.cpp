@@ -53,10 +53,16 @@
 #include "core/dom/MessageEvent.h"
 #include "core/dom/PageTransitionEvent.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLVideoElement.h"
+#include "core/html/ImageData.h"
+#include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
@@ -75,6 +81,8 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/History.h"
+#include "core/page/ImageBitmap.h"
+#include "core/page/ImageBitmapCallback.h"
 #include "core/page/Location.h"
 #include "core/page/Navigator.h"
 #include "core/page/Page.h"
@@ -89,6 +97,7 @@
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/SuddenTermination.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/MediaPlayer.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
@@ -1393,6 +1402,192 @@ void DOMWindow::clearInterval(int timeoutId)
     if (!context)
         return;
     DOMTimer::removeById(context, timeoutId);
+}
+
+static LayoutSize size(HTMLImageElement* image)
+{
+    if (CachedImage* cachedImage = image->cachedImage())
+        return cachedImage->imageSizeForRenderer(image->renderer(), 1.0f); // FIXME: Not sure about this.
+    return IntSize();
+}
+
+static IntSize size(HTMLVideoElement* video)
+{
+    if (MediaPlayer* player = video->player())
+        return player->naturalSize();
+    return IntSize();
+}
+
+void DOMWindow::createImageBitmap(HTMLImageElement* image, PassRefPtr<ImageBitmapCallback> callback, ExceptionCode& ec)
+{
+    LayoutSize s = size(image);
+    createImageBitmap(image, callback, 0, 0, s.width(), s.height(), ec);
+}
+
+void DOMWindow::createImageBitmap(HTMLImageElement* image, PassRefPtr<ImageBitmapCallback> callback, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+{
+    if (!image) {
+        ec = TypeError;
+        return;
+    }
+    if (!image->cachedImage()) {
+        ec = InvalidStateError;
+        return;
+    }
+    if (image->cachedImage()->image()->isSVGImage()) {
+        ec = InvalidStateError;
+        return;
+    }
+    if (!sw || !sh) {
+        ec = IndexSizeError;
+        return;
+    }
+    if (!image->cachedImage()->image()->hasSingleSecurityOrigin()) {
+        ec = SecurityError;
+        return;
+    }
+    if (!image->cachedImage()->passesAccessControlCheck(document()->securityOrigin()) && document()->securityOrigin()->taintsCanvas(image->src())) {
+        ec = SecurityError;
+        return;
+    }
+
+    ec = 0;
+
+    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
+    RefPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image, IntRect(sx, sy, sw, sh));
+    RefPtr<ImageBitmapCallback> callbackLocal = callback;
+    scriptExecutionContext()->postTask(ImageBitmapCallback::CallbackTask::create(imageBitmap.release(), callbackLocal));
+}
+
+void DOMWindow::createImageBitmap(HTMLVideoElement* video, PassRefPtr<ImageBitmapCallback> callback, ExceptionCode& ec)
+{
+    IntSize s = size(video);
+    createImageBitmap(video, callback, 0, 0, s.width(), s.height(), ec);
+}
+
+void DOMWindow::createImageBitmap(HTMLVideoElement* video, PassRefPtr<ImageBitmapCallback> callback, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+{
+    if (!video) {
+        ec = TypeError;
+        return;
+    }
+    if (!video->player()) {
+        ec = InvalidStateError;
+        return;
+    }
+    if (video->networkState() == HTMLMediaElement::NETWORK_EMPTY) {
+        ec = InvalidStateError;
+        return;
+    }
+    if (video->player()->readyState() <= MediaPlayer::HaveMetadata) {
+        ec = InvalidStateError;
+        return;
+    }
+    if (!sw || !sh) {
+        ec = IndexSizeError;
+        return;
+    }
+    if (!video->hasSingleSecurityOrigin()) {
+        ec = SecurityError;
+        return;
+    }
+    if (!video->player()->didPassCORSAccessCheck() && document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
+        ec = SecurityError;
+        return;
+    }
+
+    ec = 0;
+
+    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
+    RefPtr<ImageBitmap> imageBitmap = ImageBitmap::create(video, IntRect(sx, sy, sw, sh));
+    RefPtr<ImageBitmapCallback> callbackLocal = callback;
+    scriptExecutionContext()->postTask(ImageBitmapCallback::CallbackTask::create(imageBitmap.release(), callbackLocal));
+}
+
+void DOMWindow::createImageBitmap(CanvasRenderingContext2D* context, PassRefPtr<ImageBitmapCallback> callback, ExceptionCode& ec)
+{
+    createImageBitmap(context->canvas(), callback, ec);
+}
+
+void DOMWindow::createImageBitmap(CanvasRenderingContext2D* context, PassRefPtr<ImageBitmapCallback> callback, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+{
+    createImageBitmap(context->canvas(), callback, sx, sy, sw, sh, ec);
+}
+
+void DOMWindow::createImageBitmap(HTMLCanvasElement* canvas, PassRefPtr<ImageBitmapCallback> callback, ExceptionCode& ec)
+{
+    createImageBitmap(canvas, callback, 0, 0, canvas->width(), canvas->height(), ec);
+}
+
+void DOMWindow::createImageBitmap(HTMLCanvasElement* canvas, PassRefPtr<ImageBitmapCallback> callback, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+{
+    if (!canvas) {
+        ec = TypeError;
+        return;
+    }
+    if (!canvas->originClean()) {
+        ec = InvalidStateError;
+        return;
+    }
+    if (!sw || !sh) {
+        ec = IndexSizeError;
+        return;
+    }
+
+    ec = 0;
+
+    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
+    RefPtr<ImageBitmap> imageBitmap = ImageBitmap::create(canvas, IntRect(sx, sy, sw, sh));
+    RefPtr<ImageBitmapCallback> callbackLocal = callback;
+    scriptExecutionContext()->postTask(ImageBitmapCallback::CallbackTask::create(imageBitmap.release(), callbackLocal));
+}
+
+void DOMWindow::createImageBitmap(ImageData* data, PassRefPtr<ImageBitmapCallback> callback, ExceptionCode& ec)
+{
+    createImageBitmap(data, callback, 0, 0, data->width(), data->height(), ec);
+}
+
+void DOMWindow::createImageBitmap(ImageData* data, PassRefPtr<ImageBitmapCallback> callback, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+{
+    if (!data) {
+        ec = TypeError;
+        return;
+    }
+    if (!sw || !sh) {
+        ec = IndexSizeError;
+        return;
+    }
+
+    ec = 0;
+
+    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
+    RefPtr<ImageBitmap> imageBitmap = ImageBitmap::create(data, IntRect(sx, sy, sw, sh));
+    RefPtr<ImageBitmapCallback> callbackLocal = callback;
+    scriptExecutionContext()->postTask(ImageBitmapCallback::CallbackTask::create(imageBitmap.release(), callbackLocal));
+}
+
+void DOMWindow::createImageBitmap(ImageBitmap* bitmap, PassRefPtr<ImageBitmapCallback> callback, ExceptionCode& ec)
+{
+    createImageBitmap(bitmap, callback, 0, 0, bitmap->width(), bitmap->height(), ec);
+}
+
+void DOMWindow::createImageBitmap(ImageBitmap* bitmap, PassRefPtr<ImageBitmapCallback> callback, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+{
+    if (!bitmap) {
+        ec = TypeError;
+        return;
+    }
+    if (!sw || !sh) {
+        ec = IndexSizeError;
+        return;
+    }
+
+    ec = 0;
+
+    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
+    RefPtr<ImageBitmap> imageBitmap = ImageBitmap::create(bitmap, IntRect(sx, sy, sw, sh));
+    RefPtr<ImageBitmapCallback> callbackLocal = callback;
+    scriptExecutionContext()->postTask(ImageBitmapCallback::CallbackTask::create(imageBitmap.release(), callbackLocal));
 }
 
 int DOMWindow::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)

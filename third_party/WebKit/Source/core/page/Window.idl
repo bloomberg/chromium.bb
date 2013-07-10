@@ -161,6 +161,20 @@
 
     [Replaceable] readonly attribute Performance performance;
 
+    // Images
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(HTMLImageElement image, ImageBitmapCallback callback);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(HTMLImageElement image, ImageBitmapCallback callback, long sx, long sy, long sw, long sh);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(HTMLVideoElement video, ImageBitmapCallback callback);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(HTMLVideoElement video, ImageBitmapCallback callback, long sx, long sy, long sw, long sh);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(CanvasRenderingContext2D context, ImageBitmapCallback callback);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(CanvasRenderingContext2D context, ImageBitmapCallback callback, long sx, long sy, long sw, long sh);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(HTMLCanvasElement canvas, ImageBitmapCallback callback);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(HTMLCanvasElement canvas, ImageBitmapCallback callback, long sx, long sy, long sw, long sh);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(ImageData data, ImageBitmapCallback callback);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(ImageData data, ImageBitmapCallback callback, long sx, long sy, long sw, long sh);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(ImageBitmap bitmap, ImageBitmapCallback callback);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void createImageBitmap(ImageBitmap bitmap, ImageBitmapCallback callback, long sx, long sy, long sw, long sh);
+
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(RequestAnimationFrameCallback callback);
     void cancelAnimationFrame(long id);
     [MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(RequestAnimationFrameCallback callback);
