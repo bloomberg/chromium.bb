@@ -115,12 +115,6 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE {}
 
-  // Called after a control frame has been compressed to allow the visitor
-  // to record compression statistics.
-  virtual void OnSynStreamCompressed(
-      size_t uncompressed_size,
-      size_t compressed_size) OVERRIDE {}
-
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
   virtual size_t ProcessWriteInput(const char* data, size_t len) OVERRIDE;

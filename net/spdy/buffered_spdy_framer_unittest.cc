@@ -92,11 +92,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
                         SpdyGoAwayStatus status) OVERRIDE {
   }
 
-  virtual void OnSynStreamCompressed(
-      size_t uncompressed_size,
-      size_t compressed_size) OVERRIDE {
-  }
-
   bool OnCredentialFrameData(const char*, size_t) {
     LOG(FATAL) << "Unexpected OnCredentialFrameData call.";
     return false;

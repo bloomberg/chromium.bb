@@ -219,14 +219,6 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) = 0;
 
-  // Called after a control frame has been compressed to allow the visitor
-  // to record compression statistics.
-  //
-  // TODO(akalin): Upstream this function.
-  virtual void OnSynStreamCompressed(
-      size_t uncompressed_size,
-      size_t compressed_size) = 0;
-
   // Called when a BLOCKED frame has been parsed.
   virtual void OnBlocked(SpdyStreamId stream_id) {}
 };
@@ -237,7 +229,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
 // operates.
 //
 // Most SPDY implementations need not bother with this interface at all.
-class SpdyFramerDebugVisitorInterface {
+class NET_EXPORT_PRIVATE SpdyFramerDebugVisitorInterface {
  public:
   virtual ~SpdyFramerDebugVisitorInterface() {}
 

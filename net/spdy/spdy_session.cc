@@ -488,6 +488,7 @@ Error SpdySession::InitializeWithSocket(
   buffered_spdy_framer_.reset(
       new BufferedSpdyFramer(NPNToSpdyVersion(protocol), enable_compression_));
   buffered_spdy_framer_->set_visitor(this);
+  buffered_spdy_framer_->set_debug_visitor(this);
   UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol, kProtoMaximumVersion);
 
   net_log_.AddEvent(
@@ -1677,15 +1678,25 @@ void SpdySession::OnSetting(SpdySettingsIds id,
                  id, static_cast<SpdySettingsFlags>(flags), value));
 }
 
-void SpdySession::OnSynStreamCompressed(
-    size_t uncompressed_size,
-    size_t compressed_size) {
-  // Make sure we avoid early decimal truncation.
-  int compression_pct = 100 - (100 * compressed_size) / uncompressed_size;
-  UMA_HISTOGRAM_PERCENTAGE("Net.SpdySynStreamCompressionPercentage",
-                           compression_pct);
-}
+void SpdySession::OnSendCompressedFrame(
+    SpdyStreamId stream_id,
+    SpdyFrameType type,
+    size_t payload_len,
+    size_t frame_len) {
+  if (type != SYN_STREAM)
+    return;
 
+  DCHECK(buffered_spdy_framer_.get());
+  size_t compressed_len =
+      frame_len - buffered_spdy_framer_->GetSynStreamMinimumSize();
+
+  if (payload_len) {
+    // Make sure we avoid early decimal truncation.
+    int compression_pct = 100 - (100 * compressed_len) / payload_len;
+    UMA_HISTOGRAM_PERCENTAGE("Net.SpdySynStreamCompressionPercentage",
+                             compression_pct);
+  }
+}
 
 int SpdySession::OnInitialResponseHeadersReceived(
     const SpdyHeaderBlock& response_headers,

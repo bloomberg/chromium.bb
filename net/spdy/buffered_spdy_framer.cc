@@ -29,6 +29,11 @@ void BufferedSpdyFramer::set_visitor(
   spdy_framer_.set_visitor(this);
 }
 
+void BufferedSpdyFramer::set_debug_visitor(
+    SpdyFramerDebugVisitorInterface* debug_visitor) {
+  spdy_framer_.set_debug_visitor(debug_visitor);
+}
+
 void BufferedSpdyFramer::OnError(SpdyFramer* spdy_framer) {
   DCHECK(spdy_framer);
   visitor_->OnError(spdy_framer->error_code());
@@ -185,12 +190,6 @@ void BufferedSpdyFramer::OnGoAway(SpdyStreamId last_accepted_stream_id,
 void BufferedSpdyFramer::OnWindowUpdate(SpdyStreamId stream_id,
                                         uint32 delta_window_size) {
   visitor_->OnWindowUpdate(stream_id, delta_window_size);
-}
-
-void BufferedSpdyFramer::OnSynStreamCompressed(
-    size_t uncompressed_size,
-    size_t compressed_size) {
-  visitor_->OnSynStreamCompressed(uncompressed_size, compressed_size);
 }
 
 int BufferedSpdyFramer::protocol_version() {

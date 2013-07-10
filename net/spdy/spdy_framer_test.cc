@@ -62,10 +62,19 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                               SpdyGoAwayStatus status));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
                                     uint32 delta_window_size));
-  MOCK_METHOD2(OnSynStreamCompressed,
-               void(size_t uncompressed_length,
-                    size_t compressed_length));
   MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));
+};
+
+class MockDebugVisitor : public SpdyFramerDebugVisitorInterface {
+ public:
+  MOCK_METHOD4(OnSendCompressedFrame, void(SpdyStreamId stream_id,
+                                           SpdyFrameType type,
+                                           size_t payload_len,
+                                           size_t frame_len));
+
+  MOCK_METHOD3(OnReceiveCompressedFrame, void(SpdyStreamId stream_id,
+                                              SpdyFrameType type,
+                                              size_t frame_len));
 };
 
 class SpdyFramerTestUtil {
@@ -215,10 +224,6 @@ class SpdyFramerTestUtil {
                            uint32 value) OVERRIDE {
       LOG(FATAL);
     }
-    virtual void OnSynStreamCompressed(
-        size_t uncompressed_size,
-        size_t compressed_size) OVERRIDE {
-    }
     virtual void OnPing(uint32 unique_id) OVERRIDE {
       LOG(FATAL);
     }
@@ -359,11 +364,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                          uint8 flags,
                          uint32 value) OVERRIDE {
     setting_count_++;
-  }
-
-  virtual void OnSynStreamCompressed(
-      size_t uncompressed_size,
-      size_t compressed_size) OVERRIDE {
   }
 
   virtual void OnPing(uint32 unique_id) OVERRIDE {
@@ -3769,10 +3769,12 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
     testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockDebugVisitor> debug_visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
+    framer.set_debug_visitor(&debug_visitor);
 
-    EXPECT_CALL(visitor, OnSynStreamCompressed(_, _));
+    EXPECT_CALL(debug_visitor, OnSendCompressedFrame(8, SYN_STREAM, _, _));
 
     SpdyHeaderBlock headers;
     headers["foo"] = "bar";
@@ -3783,6 +3785,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
     if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
+      EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(8, SYN_STREAM, _));
       EXPECT_CALL(visitor, OnSynStream(8, 3, 1, 0, flags & CONTROL_FLAG_FIN,
                                        flags & CONTROL_FLAG_UNIDIRECTIONAL));
       EXPECT_CALL(visitor, OnControlFrameHeaderData(8, _, _))
@@ -4064,10 +4067,13 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
   SpdyHeaderBlock headers;
 
   testing::StrictMock<test::MockVisitor> visitor;
+  testing::StrictMock<test::MockDebugVisitor> debug_visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
+  framer.set_debug_visitor(&debug_visitor);
 
-  EXPECT_CALL(visitor, OnSynStreamCompressed(_, _));
+  EXPECT_CALL(debug_visitor, OnSendCompressedFrame(1, SYN_STREAM, _, _));
+
   scoped_ptr<SpdyFrame>
       frame(framer.CreateSynStream(1, 0, 1, 0, CONTROL_FLAG_NONE, true,
                                    &headers));
@@ -4084,6 +4090,7 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
         spdy_version_);
   }
 
+  EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(1, SYN_STREAM, _));
   EXPECT_CALL(visitor, OnSynStream(1, 0, 1, 0, false, false));
   EXPECT_CALL(visitor, OnControlFrameHeaderData(1, NULL, 0));
 

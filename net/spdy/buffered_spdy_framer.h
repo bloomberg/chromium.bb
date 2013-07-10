@@ -82,12 +82,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) = 0;
 
-  // Called after a control frame has been compressed to allow the visitor
-  // to record compression statistics.
-  virtual void OnSynStreamCompressed(
-      size_t uncompressed_size,
-      size_t compressed_size) = 0;
-
  protected:
   virtual ~BufferedSpdyFramerVisitorInterface() {}
 
@@ -107,6 +101,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   // visitor to do nothing.  If this is called multiple times, only the last
   // visitor will be used.
   void set_visitor(BufferedSpdyFramerVisitorInterface* visitor);
+
+  // Set debug callbacks to be called from the framer. The debug visitor is
+  // completely optional and need not be set in order for normal operation.
+  // If this is called multiple times, only the last visitor will be used.
+  void set_debug_visitor(SpdyFramerDebugVisitorInterface* debug_visitor);
 
   // SpdyFramerVisitorInterface
   virtual void OnError(SpdyFramer* spdy_framer) OVERRIDE;
@@ -140,12 +139,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
                                  bool fin) OVERRIDE;
-
-  // Called after a syn stream control frame has been compressed to
-  // allow the visitor to record compression statistics.
-  virtual void OnSynStreamCompressed(
-      size_t uncompressed_size,
-      size_t compressed_size) OVERRIDE;
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);
@@ -200,6 +193,10 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
 
   size_t GetControlFrameHeaderSize() const {
     return spdy_framer_.GetControlFrameHeaderSize();
+  }
+
+  size_t GetSynStreamMinimumSize() const {
+    return spdy_framer_.GetSynStreamMinimumSize();
   }
 
   size_t GetFrameMinimumSize() const {

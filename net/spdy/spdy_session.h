@@ -29,6 +29,7 @@
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_credential_state.h"
+#include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -180,6 +181,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 
 class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                                public BufferedSpdyFramerVisitorInterface,
+                               public SpdyFramerDebugVisitorInterface,
                                public LayeredPool {
  public:
   // TODO(akalin): Use base::TickClock when it becomes available.
@@ -697,9 +699,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE;
-  virtual void OnSynStreamCompressed(
-      size_t uncompressed_size,
-      size_t compressed_size) OVERRIDE;
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
@@ -715,6 +714,17 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       SpdyStreamId stream_id,
       bool fin,
       const SpdyHeaderBlock& headers) OVERRIDE;
+
+  // SpdyFramerDebugVisitorInterface
+  virtual void OnSendCompressedFrame(
+      SpdyStreamId stream_id,
+      SpdyFrameType type,
+      size_t payload_len,
+      size_t frame_len) OVERRIDE;
+  virtual void OnReceiveCompressedFrame(
+      SpdyStreamId stream_id,
+      SpdyFrameType type,
+      size_t frame_len) OVERRIDE {}
 
   // Called when bytes are consumed from a SpdyBuffer for a DATA frame
   // that is to be written or is being written. Increases the send

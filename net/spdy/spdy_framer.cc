@@ -823,12 +823,6 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
     remaining_control_header_ = frame_size_without_variable_data -
         current_frame_buffer_length_;
 
-    if (debug_visitor_) {
-      debug_visitor_->OnReceiveCompressedFrame(current_frame_stream_id_,
-                                               current_frame_type_,
-                                               current_frame_length_);
-    }
-
     CHANGE_STATE(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK);
     return;
   }
@@ -1107,6 +1101,12 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           }
 
           DCHECK(reader.IsDoneReading());
+          if (debug_visitor_) {
+            debug_visitor_->OnReceiveCompressedFrame(
+                current_frame_stream_id_,
+                current_frame_type_,
+                current_frame_length_);
+          }
           visitor_->OnSynStream(
               current_frame_stream_id_,
               associated_to_stream_id,
@@ -1131,6 +1131,12 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             reader.Seek(2);
           }
           DCHECK(reader.IsDoneReading());
+          if (debug_visitor_) {
+            debug_visitor_->OnReceiveCompressedFrame(
+                current_frame_stream_id_,
+                current_frame_type_,
+                current_frame_length_);
+          }
           if (current_frame_type_ == SYN_REPLY) {
             visitor_->OnSynReply(
                 current_frame_stream_id_,
@@ -1582,9 +1588,6 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   builder.WriteUInt8(syn_stream.slot());
   DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
   SerializeNameValueBlock(&builder, syn_stream);
-
-  if (visitor_)
-    visitor_->OnSynStreamCompressed(size, builder.length());
 
   if (debug_visitor_) {
     const size_t payload_len = GetSerializedLength(
