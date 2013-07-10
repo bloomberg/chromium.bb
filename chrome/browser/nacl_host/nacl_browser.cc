@@ -146,7 +146,7 @@ void OpenNaClExecutableImpl(const base::FilePath& file_path,
   }
 }
 
-}
+} // namespace nacl
 
 NaClBrowser::NaClBrowser()
     : weak_factory_(this),
