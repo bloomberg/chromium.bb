@@ -214,6 +214,10 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   handler_->OnShimLaunch(&host_bb_, normal_launch);
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
 
+  // Activation when there is a registered shim finishes launch with success.
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
+  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+
   // Starting and closing a second host just focuses the app.
   EXPECT_CALL(*handler_, OnShimFocus(&host_aa_duplicate_,
                                      APP_SHIM_FOCUS_REOPEN));
@@ -239,15 +243,12 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
 
   // Normal shim launch adds an entry in the map.
-  // App should not be launched here.
+  // App should not be launched here, but return success to the shim.
   EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()))
       .Times(0);
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
   handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
-
-  // Activation when there is a registered shim finishes launch with success.
-  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
 
   // Closing all windows does not quit the shim.
   handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
@@ -284,9 +285,11 @@ TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
   const AppShimLaunchType register_only = APP_SHIM_LAUNCH_REGISTER_ONLY;
 
   // Launch shims, adding entries in the map.
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
   handler_->OnShimLaunch(&host_aa_, register_only);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
+  EXPECT_CALL(host_ab_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
   handler_->OnShimLaunch(&host_ab_, register_only);
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
 
@@ -311,6 +314,7 @@ TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {
   // For an APP_SHIM_LAUNCH_REGISTER_ONLY, don't launch the app.
   EXPECT_CALL(*delegate_, LaunchApp(_, _))
       .Times(0);
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
   handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
 

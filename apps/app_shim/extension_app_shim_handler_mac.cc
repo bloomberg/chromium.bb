@@ -207,6 +207,8 @@ void ExtensionAppShimHandler::OnProfileLoaded(Host* host,
   // life within a certain window.
   if (launch_type == APP_SHIM_LAUNCH_NORMAL)
     delegate_->LaunchApp(profile, extension);
+  else
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
 }
 
 void ExtensionAppShimHandler::OnShimClose(Host* host) {
