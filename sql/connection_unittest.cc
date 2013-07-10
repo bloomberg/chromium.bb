@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -11,6 +12,16 @@
 #include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
+
+namespace {
+
+// Helper to return the count of items in sqlite_master.  Return -1 in
+// case of error.
+int SqliteMasterCount(sql::Connection* db) {
+  const char* kMasterCount = "SELECT COUNT(*) FROM sqlite_master";
+  sql::Statement s(db->GetUniqueStatement(kMasterCount));
+  return s.Step() ? s.ColumnInt(0) : -1;
+}
 
 class SQLConnectionTest : public testing::Test {
  public:
@@ -29,6 +40,12 @@ class SQLConnectionTest : public testing::Test {
 
   base::FilePath db_path() {
     return temp_dir_.path().AppendASCII("SQLConnectionTest.db");
+  }
+
+  // Handle errors by blowing away the database.
+  void RazeErrorCallback(int expected_error, int error, sql::Statement* stmt) {
+    EXPECT_EQ(expected_error, error);
+    db_.RazeAndClose();
   }
 
  private:
@@ -193,10 +210,7 @@ TEST_F(SQLConnectionTest, Raze) {
     EXPECT_EQ(1, s.ColumnInt(0));
   }
 
-  {
-    sql::Statement s(db().GetUniqueStatement("SELECT * FROM sqlite_master"));
-    ASSERT_FALSE(s.Step());
-  }
+  ASSERT_EQ(0, SqliteMasterCount(&db()));
 
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA auto_vacuum"));
@@ -245,18 +259,12 @@ TEST_F(SQLConnectionTest, RazeMultiple) {
   ASSERT_TRUE(other_db.Open(db_path()));
 
   // Check that the second connection sees the table.
-  const char *kTablesQuery = "SELECT COUNT(*) FROM sqlite_master";
-  sql::Statement s(other_db.GetUniqueStatement(kTablesQuery));
-  ASSERT_TRUE(s.Step());
-  ASSERT_EQ(1, s.ColumnInt(0));
-  ASSERT_FALSE(s.Step());  // Releases the shared lock.
+  ASSERT_EQ(1, SqliteMasterCount(&other_db));
 
   ASSERT_TRUE(db().Raze());
 
   // The second connection sees the updated database.
-  s.Reset(true);
-  ASSERT_TRUE(s.Step());
-  ASSERT_EQ(0, s.ColumnInt(0));
+  ASSERT_EQ(0, SqliteMasterCount(&other_db));
 }
 
 TEST_F(SQLConnectionTest, RazeLocked) {
@@ -294,6 +302,136 @@ TEST_F(SQLConnectionTest, RazeLocked) {
   ASSERT_TRUE(db().Raze());
 }
 
+// Verify that Raze() can handle an empty file.  SQLite should treat
+// this as an empty database.
+TEST_F(SQLConnectionTest, RazeEmptyDB) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  db().Close();
+
+  {
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "r+"));
+    ASSERT_TRUE(file.get() != NULL);
+    ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
+    ASSERT_TRUE(file_util::TruncateFile(file.get()));
+  }
+
+  ASSERT_TRUE(db().Open(db_path()));
+  ASSERT_TRUE(db().Raze());
+  EXPECT_EQ(0, SqliteMasterCount(&db()));
+}
+
+// Verify that Raze() can handle a file of junk.
+TEST_F(SQLConnectionTest, RazeNOTADB) {
+  db().Close();
+  sql::Connection::Delete(db_path());
+  ASSERT_FALSE(file_util::PathExists(db_path()));
+
+  {
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "w"));
+    ASSERT_TRUE(file.get() != NULL);
+
+    const char* kJunk = "This is the hour of our discontent.";
+    fputs(kJunk, file.get());
+  }
+  ASSERT_TRUE(file_util::PathExists(db_path()));
+
+  // SQLite will successfully open the handle, but will fail with
+  // SQLITE_IOERR_SHORT_READ on pragma statemenets which read the
+  // header.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_IOERR_SHORT_READ);
+    EXPECT_TRUE(db().Open(db_path()));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+  EXPECT_TRUE(db().Raze());
+  db().Close();
+
+  // Now empty, the open should open an empty database.
+  EXPECT_TRUE(db().Open(db_path()));
+  EXPECT_EQ(0, SqliteMasterCount(&db()));
+}
+
+// Verify that Raze() can handle a database overwritten with garbage.
+TEST_F(SQLConnectionTest, RazeNOTADB2) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  ASSERT_EQ(1, SqliteMasterCount(&db()));
+  db().Close();
+
+  {
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "r+"));
+    ASSERT_TRUE(file.get() != NULL);
+    ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
+
+    const char* kJunk = "This is the hour of our discontent.";
+    fputs(kJunk, file.get());
+  }
+
+  // SQLite will successfully open the handle, but will fail with
+  // SQLITE_NOTADB on pragma statemenets which attempt to read the
+  // corrupted header.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_NOTADB);
+    EXPECT_TRUE(db().Open(db_path()));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+  EXPECT_TRUE(db().Raze());
+  db().Close();
+
+  // Now empty, the open should succeed with an empty database.
+  EXPECT_TRUE(db().Open(db_path()));
+  EXPECT_EQ(0, SqliteMasterCount(&db()));
+}
+
+// Test that a callback from Open() can raze the database.  This is
+// essential for cases where the Open() can fail entirely, so the
+// Raze() cannot happen later.
+//
+// Most corruptions seen in the wild seem to happen when two pages in
+// the database were not written transactionally (the transaction
+// changed both, but one wasn't successfully written for some reason).
+// A special case of that is when the header indicates that the
+// database contains more pages than are in the file.  This breaks
+// things at a very basic level, verify that Raze() can handle it.
+TEST_F(SQLConnectionTest, RazeOpenCallback) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  ASSERT_EQ(1, SqliteMasterCount(&db()));
+  int page_size = 0;
+  {
+    sql::Statement s(db().GetUniqueStatement("PRAGMA page_size"));
+    ASSERT_TRUE(s.Step());
+    page_size = s.ColumnInt(0);
+  }
+  db().Close();
+
+  // Trim a single page from the end of the file.
+  {
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "r+"));
+    ASSERT_TRUE(file.get() != NULL);
+    ASSERT_EQ(0, fseek(file.get(), -page_size, SEEK_END));
+    ASSERT_TRUE(file_util::TruncateFile(file.get()));
+  }
+
+  db().set_error_callback(base::Bind(&SQLConnectionTest::RazeErrorCallback,
+                                     base::Unretained(this),
+                                     SQLITE_CORRUPT));
+
+  // Open() will see SQLITE_CORRUPT due to size mismatch when
+  // attempting to run a pragma, and the callback will RazeAndClose().
+  // Later statements will fail, including the final secure_delete,
+  // which will fail the Open() itself.
+  ASSERT_FALSE(db().Open(db_path()));
+  db().Close();
+
+  // Now empty, the open should succeed with an empty database.
+  EXPECT_TRUE(db().Open(db_path()));
+  EXPECT_EQ(0, SqliteMasterCount(&db()));
+}
+
 // Basic test of RazeAndClose() operation.
 TEST_F(SQLConnectionTest, RazeAndClose) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
@@ -307,10 +445,7 @@ TEST_F(SQLConnectionTest, RazeAndClose) {
   ASSERT_FALSE(db().is_open());
   db().Close();
   ASSERT_TRUE(db().Open(db_path()));
-  {
-    sql::Statement s(db().GetUniqueStatement("SELECT * FROM sqlite_master"));
-    ASSERT_FALSE(s.Step());
-  }
+  ASSERT_EQ(0, SqliteMasterCount(&db()));
 
   // Test that RazeAndClose() can break transactions.
   ASSERT_TRUE(db().Execute(kCreateSql));
@@ -321,10 +456,7 @@ TEST_F(SQLConnectionTest, RazeAndClose) {
   ASSERT_FALSE(db().CommitTransaction());
   db().Close();
   ASSERT_TRUE(db().Open(db_path()));
-  {
-    sql::Statement s(db().GetUniqueStatement("SELECT * FROM sqlite_master"));
-    ASSERT_FALSE(s.Step());
-  }
+  ASSERT_EQ(0, SqliteMasterCount(&db()));
 }
 
 // Test that various operations fail without crashing after
@@ -426,3 +558,5 @@ TEST_F(SQLConnectionTest, Delete) {
   EXPECT_FALSE(file_util::PathExists(db_path()));
   EXPECT_FALSE(file_util::PathExists(journal));
 }
+
+}  // namespace

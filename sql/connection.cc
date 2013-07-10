@@ -68,6 +68,32 @@ class ScopedWritableSchema {
   sqlite3* db_;
 };
 
+// Helper to wrap the sqlite3_backup_*() step of Raze().  Return
+// SQLite error code from running the backup step.
+int BackupDatabase(sqlite3* src, sqlite3* dst, const char* db_name) {
+  DCHECK_NE(src, dst);
+  sqlite3_backup* backup = sqlite3_backup_init(dst, db_name, src, db_name);
+  if (!backup) {
+    // Since this call only sets things up, this indicates a gross
+    // error in SQLite.
+    DLOG(FATAL) << "Unable to start sqlite3_backup(): " << sqlite3_errmsg(dst);
+    return sqlite3_errcode(dst);
+  }
+
+  // -1 backs up the entire database.
+  int rc = sqlite3_backup_step(backup, -1);
+  int pages = sqlite3_backup_pagecount(backup);
+  sqlite3_backup_finish(backup);
+
+  // If successful, exactly one page should have been backed up.  If
+  // this breaks, check this function to make sure assumptions aren't
+  // being broken.
+  if (rc == SQLITE_DONE)
+    DCHECK_EQ(pages, 1);
+
+  return rc;
+}
+
 }  // namespace
 
 namespace sql {
@@ -317,32 +343,53 @@ bool Connection::Raze() {
   // page_size" can be used to query such a database.
   ScopedWritableSchema writable_schema(db_);
 
-  sqlite3_backup* backup = sqlite3_backup_init(db_, "main",
-                                               null_db.db_, "main");
-  if (!backup) {
-    DLOG(FATAL) << "Unable to start sqlite3_backup().";
-    return false;
-  }
-
-  // -1 backs up the entire database.
-  int rc = sqlite3_backup_step(backup, -1);
-  int pages = sqlite3_backup_pagecount(backup);
-  sqlite3_backup_finish(backup);
+  const char* kMain = "main";
+  int rc = BackupDatabase(null_db.db_, db_, kMain);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabase",rc);
 
   // The destination database was locked.
   if (rc == SQLITE_BUSY) {
     return false;
   }
 
+  // SQLITE_NOTADB can happen if page 1 of db_ exists, but is not
+  // formatted correctly.  SQLITE_IOERR_SHORT_READ can happen if db_
+  // isn't even big enough for one page.  Either way, reach in and
+  // truncate it before trying again.
+  // TODO(shess): Maybe it would be worthwhile to just truncate from
+  // the get-go?
+  if (rc == SQLITE_NOTADB || rc == SQLITE_IOERR_SHORT_READ) {
+    sqlite3_file* file = NULL;
+    rc = sqlite3_file_control(db_, "main", SQLITE_FCNTL_FILE_POINTER, &file);
+    if (rc != SQLITE_OK) {
+      DLOG(FATAL) << "Failure getting file handle.";
+      return false;
+    } else if (!file) {
+      DLOG(FATAL) << "File handle is empty.";
+      return false;
+    }
+
+    rc = file->pMethods->xTruncate(file, 0);
+    if (rc != SQLITE_OK) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabaseTruncate",rc);
+      DLOG(FATAL) << "Failed to truncate file.";
+      return false;
+    }
+
+    rc = BackupDatabase(null_db.db_, db_, kMain);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabase2",rc);
+
+    if (rc != SQLITE_DONE) {
+      DLOG(FATAL) << "Failed retrying Raze().";
+    }
+  }
+
   // The entire database should have been backed up.
   if (rc != SQLITE_DONE) {
+    // TODO(shess): Figure out which other cases can happen.
     DLOG(FATAL) << "Unable to copy entire null database.";
     return false;
   }
-
-  // Exactly one page should have been backed up.  If this breaks,
-  // check this function to make sure assumptions aren't being broken.
-  DCHECK_EQ(pages, 1);
 
   return true;
 }
@@ -667,6 +714,7 @@ bool Connection::OpenInternal(const std::string& file_name) {
   // TODO(shess): Revise is_open() to consider poisoned_, and review
   // to see if any non-testing code even depends on it.
   DLOG_IF(FATAL, poisoned_) << "sql::Connection is already open.";
+  poisoned_ = false;
 
   int err = sqlite3_open(file_name.c_str(), &db_);
   if (err != SQLITE_OK) {

@@ -11875,6 +11875,18 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite for the quota db.</summary>
 </histogram>
 
+<histogram name="Sqlite.RazeDatabase" enum="SqliteErrorCode">
+  <summary>Errors attempting to Raze() database.</summary>
+</histogram>
+
+<histogram name="Sqlite.RazeDatabase2" enum="SqliteErrorCode">
+  <summary>Errors on second attempt to Raze() database.</summary>
+</histogram>
+
+<histogram name="Sqlite.RazeDatabaseTruncate" enum="SqliteErrorCode">
+  <summary>Errors truncating database for Raze().</summary>
+</histogram>
+
 <histogram name="Sqlite.SizeKB" units="Kb">
   <summary>Size in kilobytes of pre-existing database at startup.</summary>
 </histogram>
