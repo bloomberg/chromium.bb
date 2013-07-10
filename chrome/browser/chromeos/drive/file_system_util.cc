@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
@@ -143,6 +145,17 @@ const base::FilePath& GetDriveMountPointPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mount_path,
       (base::FilePath::FromUTF8Unsafe(kDriveMountPointPath)));
   return drive_mount_path;
+}
+
+FileSystemInterface* GetFileSystemByProfileId(void* profile_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // |profile_id| needs to be checked with ProfileManager::IsValidProfile
+  // before using it.
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return NULL;
+  return GetFileSystem(profile);
 }
 
 bool IsSpecialResourceId(const std::string& resource_id) {
