@@ -172,24 +172,23 @@ void initializeWithoutV8(Platform* platform)
 
 void shutdown()
 {
+    ASSERT(s_endOfTaskRunner);
+#ifndef NDEBUG
+    v8::V8::RemoveCallCompletedCallback(&assertV8RecursionScope);
+#endif
+    ASSERT(Platform::current()->currentThread());
+    Platform::current()->currentThread()->removeTaskObserver(s_endOfTaskRunner);
+    delete s_endOfTaskRunner;
+    s_endOfTaskRunner = 0;
+    v8::V8::Dispose();
+
     shutdownWithoutV8();
-    // FIXME: shutdown V8 once all callsites that use initializeWithoutV8 are
-    // updated to use shutdownWithoutV8.
 }
 
 void shutdownWithoutV8()
 {
-    // WebKit might have been initialized without V8, so be careful not to invoke
-    // V8 specific functions, if V8 was not properly initialized.
-    if (s_endOfTaskRunner) {
-#ifndef NDEBUG
-        v8::V8::RemoveCallCompletedCallback(&assertV8RecursionScope);
-#endif
-        ASSERT(Platform::current()->currentThread());
-        Platform::current()->currentThread()->removeTaskObserver(s_endOfTaskRunner);
-        delete s_endOfTaskRunner;
-        s_endOfTaskRunner = 0;
-    }
+    ASSERT(!s_endOfTaskRunner);
+    ASSERT(Platform::current()->currentThread());
     WebCore::ImageDecodingStore::shutdown();
     WebCore::shutdown();
     Platform::shutdown();
