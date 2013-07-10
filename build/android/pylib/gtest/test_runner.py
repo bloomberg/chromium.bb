@@ -368,11 +368,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self.test_package.ClearApplicationState()
       self.test_package.CreateTestRunnerScript(test, self._test_arguments)
       test_results = self.test_package.RunTestsAndListResults()
-    except errors.DeviceUnresponsiveError as e:
-      # Make sure this device is not attached
-      logging.warning(e)
-      if android_commands.IsDeviceAttached(self.device):
-        raise
     finally:
       self.CleanupSpawningServerState()
     # Calculate unknown test results.

@@ -108,19 +108,6 @@ def AddCommonOptions(option_parser):
                            help=('Do not push dependencies to the device. '
                                  'Use this at own risk for speeding up test '
                                  'execution on local machine.'))
-  # TODO(gkanwar): This option is deprecated. Remove it in the future.
-  option_parser.add_option('--exit-code', action='store_true',
-                           help=('(DEPRECATED) If set, the exit code will be '
-                                 'total number of failures.'))
-  # TODO(gkanwar): This option is deprecated. It is currently used to run tests
-  # with the FlakyTest annotation to prevent the bots going red downstream. We
-  # should instead use exit codes and let the Buildbot scripts deal with test
-  # failures appropriately. See crbug.com/170477.
-  option_parser.add_option('--buildbot-step-failure',
-                           action='store_true',
-                           help=('(DEPRECATED) If present, will set the '
-                                 'buildbot status as STEP_FAILURE, otherwise '
-                                 'as STEP_WARNINGS when test(s) fail.'))
   option_parser.add_option('-d', '--device', dest='test_device',
                            help=('Target device for the test suite '
                                  'to run on.'))
@@ -376,25 +363,35 @@ def RunTestsCommand(command, options, args, option_parser):
 
   Returns:
     Integer indicated exit code.
+
+  Raises:
+    Exception: Unknown command name passed in, or an exception from an
+        individual test runner.
   """
 
   ProcessCommonOptions(options)
 
-  total_failed = 0
   if command == 'gtest':
     # TODO(gkanwar): See the emulator TODO above -- this call should either go
     # away or become generalized.
     ProcessEmulatorOptions(options)
-    total_failed = gtest_dispatch.Dispatch(options)
+    results, exit_code = gtest_dispatch.Dispatch(options)
   elif command == 'content_browsertests':
-    total_failed = browsertests_dispatch.Dispatch(options)
+    results, exit_code = browsertests_dispatch.Dispatch(options)
   elif command == 'instrumentation':
     ProcessInstrumentationOptions(options, option_parser.error)
     results = base_test_result.TestRunResults()
+    exit_code = 0
     if options.run_java_tests:
-      results.AddTestRunResults(instrumentation_dispatch.Dispatch(options))
+      test_results, exit_code = instrumentation_dispatch.Dispatch(options)
+      results.AddTestRunResults(test_results)
     if options.run_python_tests:
-      results.AddTestRunResults(python_dispatch.DispatchPythonTests(options))
+      test_results, test_exit_code = (python_dispatch.
+                                      DispatchPythonTests(options))
+      results.AddTestRunResults(test_results)
+      # Only allow exit code escalation
+      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+        exit_code = test_exit_code
     report_results.LogFull(
         results=results,
         test_type='Instrumentation',
@@ -402,14 +399,20 @@ def RunTestsCommand(command, options, args, option_parser):
         annotation=options.annotations,
         build_type=options.build_type,
         flakiness_server=options.flakiness_dashboard_server)
-    total_failed += len(results.GetNotPass())
   elif command == 'uiautomator':
     ProcessUIAutomatorOptions(options, option_parser.error)
     results = base_test_result.TestRunResults()
+    exit_code = 0
     if options.run_java_tests:
-      results.AddTestRunResults(uiautomator_dispatch.Dispatch(options))
+      test_results, exit_code = uiautomator_dispatch.Dispatch(options)
+      results.AddTestRunResults(test_results)
     if options.run_python_tests:
-      results.AddTestRunResults(python_dispatch.Dispatch(options))
+      test_results, test_exit_code = (python_dispatch.
+                                      DispatchPythonTests(options))
+      results.AddTestRunResults(test_results)
+      # Only allow exit code escalation
+      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+        exit_code = test_exit_code
     report_results.LogFull(
         results=results,
         test_type='UIAutomator',
@@ -417,11 +420,10 @@ def RunTestsCommand(command, options, args, option_parser):
         annotation=options.annotations,
         build_type=options.build_type,
         flakiness_server=options.flakiness_dashboard_server)
-    total_failed += len(results.GetNotPass())
   else:
     raise Exception('Unknown test type state')
 
-  return total_failed
+  return exit_code
 
 
 def HelpCommand(command, options, args, option_parser):
@@ -504,6 +506,7 @@ class CommandOptionParser(optparse.OptionParser):
       return '\nExample:\n  %s\n' % self.example
     return ''
 
+
 def main(argv):
   option_parser = CommandOptionParser(
       usage='Usage: %prog <command> [options]',
@@ -515,17 +518,8 @@ def main(argv):
   command = argv[1]
   VALID_COMMANDS[command].add_options_func(option_parser)
   options, args = option_parser.parse_args(argv)
-  exit_code = VALID_COMMANDS[command].run_command_func(
+  return VALID_COMMANDS[command].run_command_func(
       command, options, args, option_parser)
-
-  # Failures of individual test suites are communicated by printing a
-  # STEP_FAILURE message.
-  # Returning a success exit status also prevents the buildbot from incorrectly
-  # marking the last suite as failed if there were failures in other suites in
-  # the batch (this happens because the exit status is a sum of all failures
-  # from all suites, but the buildbot associates the exit status only with the
-  # most recent step).
-  return exit_code
 
 
 if __name__ == '__main__':

@@ -98,3 +98,7 @@ def _GetADBPath():
 
 
 ADB_PATH = _GetADBPath()
+
+# Exit codes
+ERROR_EXIT_CODE = 1
+WARNING_EXIT_CODE = 88

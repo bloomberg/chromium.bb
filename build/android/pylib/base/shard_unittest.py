@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 # Mock out android_commands.GetAttachedDevices().
 from pylib import android_commands
 android_commands.GetAttachedDevices = lambda: ['0', '1']
+from pylib import constants
 from pylib.utils import watchdog_timer
 
 import base_test_result
@@ -133,8 +134,9 @@ class TestThreadGroupFunctions(unittest.TestCase):
 
   def testRun(self):
     runners = [MockRunner('0'), MockRunner('1')]
-    results = shard._RunAllTests(runners, self.tests, 0)
+    results, exit_code = shard._RunAllTests(runners, self.tests, 0)
     self.assertEqual(len(results.GetPass()), len(self.tests))
+    self.assertEqual(exit_code, 0)
 
   def testTearDown(self):
     runners = [MockRunner('0'), MockRunner('1')]
@@ -144,8 +146,9 @@ class TestThreadGroupFunctions(unittest.TestCase):
 
   def testRetry(self):
     runners = shard._CreateRunners(MockRunnerFail, ['0', '1'])
-    results = shard._RunAllTests(runners, self.tests, 0)
+    results, exit_code = shard._RunAllTests(runners, self.tests, 0)
     self.assertEqual(len(results.GetFail()), len(self.tests))
+    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
   def testReraise(self):
     runners = shard._CreateRunners(MockRunnerException, ['0', '1'])
@@ -160,17 +163,20 @@ class TestShard(unittest.TestCase):
     return shard.ShardAndRunTests(runner_factory, ['0', '1'], ['a', 'b', 'c'])
 
   def testShard(self):
-    results = TestShard._RunShard(MockRunner)
+    results, exit_code = TestShard._RunShard(MockRunner)
     self.assertEqual(len(results.GetPass()), 3)
+    self.assertEqual(exit_code, 0)
 
   def testFailing(self):
-    results = TestShard._RunShard(MockRunnerFail)
+    results, exit_code = TestShard._RunShard(MockRunnerFail)
     self.assertEqual(len(results.GetPass()), 0)
     self.assertEqual(len(results.GetFail()), 3)
+    self.assertEqual(exit_code, 0)
 
   def testNoTests(self):
-    results = shard.ShardAndRunTests(MockRunner, ['0', '1'], [])
+    results, exit_code = shard.ShardAndRunTests(MockRunner, ['0', '1'], [])
     self.assertEqual(len(results.GetAll()), 0)
+    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
 
 if __name__ == '__main__':

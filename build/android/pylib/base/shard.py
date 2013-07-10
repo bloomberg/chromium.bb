@@ -8,6 +8,7 @@ import logging
 import threading
 
 from pylib import android_commands
+from pylib import constants
 from pylib import forwarder
 from pylib.utils import reraiser_thread
 from pylib.utils import watchdog_timer
@@ -92,7 +93,7 @@ class _TestCollection(object):
     """Add an test to the collection.
 
     Args:
-      item: A test to add.
+      test: A test to add.
     """
     with self._lock:
       self._tests.append(test)
@@ -117,7 +118,7 @@ class _TestCollection(object):
 
 
 def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
-    num_retries):
+                       num_retries):
   """Runs tests from the test_collection until empty using the given runner.
 
   Adds TestRunResults objects to the out_results list and may add tests to the
@@ -150,12 +151,6 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
       else:
         # All tests passed or retry limit reached. Either way, record results.
         out_results.append(result)
-    except android_commands.errors.DeviceUnresponsiveError:
-      # Device is unresponsive, stop handling tests on this device and ensure
-      # current test gets runs by another device. Don't reraise this exception
-      # on the main thread.
-      test_collection.add(test)
-      return
     except:
       # An unhandleable exception, ensure tests get run by another device and
       # reraise this exception on the main thread.
@@ -199,12 +194,13 @@ def _RunAllTests(runners, tests, num_retries, timeout=None):
     timeout: watchdog timeout in seconds, defaults to the default timeout.
 
   Returns:
-    A TestRunResults object.
+    A tuple of (TestRunResults object, exit code)
   """
   logging.warning('Running %s tests with %s test runners.' %
                   (len(tests), len(runners)))
   tests_collection = _TestCollection([_Test(t) for t in tests])
   results = []
+  exit_code = 0
   watcher = watchdog_timer.WatchdogTimer(timeout)
   workers = reraiser_thread.ReraiserThreadGroup(
       [reraiser_thread.ReraiserThread(
@@ -212,12 +208,21 @@ def _RunAllTests(runners, tests, num_retries, timeout=None):
           [r, tests_collection, results, watcher, num_retries],
           name=r.device[-4:])
        for r in runners])
-  workers.StartAll()
-  workers.JoinAll(watcher)
   run_results = base_test_result.TestRunResults()
+  workers.StartAll()
+
+  # Catch DeviceUnresponsiveErrors and set a warning exit code
+  try:
+    workers.JoinAll(watcher)
+  except android_commands.errors.DeviceUnresponsiveError as e:
+    logging.error(e)
+    exit_code = constants.WARNING_EXIT_CODE
+
   for r in results:
     run_results.AddTestRunResults(r)
-  return run_results
+  if not run_results.DidRunPass():
+    exit_code = constants.ERROR_EXIT_CODE
+  return (run_results, exit_code)
 
 
 def _CreateRunners(runner_factory, devices, timeout=None):
@@ -250,6 +255,7 @@ def _CreateRunners(runner_factory, devices, timeout=None):
 
 def _TearDownRunners(runners, timeout=None):
   """Calls TearDown() for each test runner in parallel.
+
   Args:
     runners: a list of TestRunner objects.
     timeout: watchdog timeout in seconds, defaults to the default timeout.
@@ -280,11 +286,11 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
     num_retries: number of retries for a test.
 
   Returns:
-    A base_test_result.TestRunResults object.
+    A tuple of (base_test_result.TestRunResults object, exit code).
   """
   if not tests:
-    logging.warning('No tests to run.')
-    return base_test_result.TestRunResults()
+    logging.error('No tests to run.')
+    return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
   logging.info('Will run %d tests: %s', len(tests), str(tests))
   forwarder.Forwarder.KillHost(build_type)

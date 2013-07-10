@@ -9,8 +9,10 @@ import pipes
 import subprocess
 import sys
 
+import bb_annotations
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pylib import buildbot_report
+from pylib import constants
 
 
 TESTING = 'BUILDBOT_TESTING' in os.environ
@@ -43,16 +45,16 @@ def SpawnCmd(command, stdout=None):
 
 
 def RunCmd(command, flunk_on_failure=True, halt_on_failure=False,
-           warning_code=88, stdout=None):
+           warning_code=constants.WARNING_EXIT_CODE, stdout=None):
   """Run a command relative to the chrome source root."""
   code = SpawnCmd(command, stdout).wait()
   print '<', CommandToString(command)
   if code != 0:
     print 'ERROR: process exited with code %d' % code
     if code != warning_code and flunk_on_failure:
-      buildbot_report.PrintError()
+      bb_annotations.PrintError()
     else:
-      buildbot_report.PrintWarning()
+      bb_annotations.PrintWarning()
     # Allow steps to have both halting (i.e. 1) and non-halting exit codes.
     if code != warning_code and halt_on_failure:
       print 'FATAL %d != %d' % (code, warning_code)

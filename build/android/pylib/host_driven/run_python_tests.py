@@ -105,7 +105,10 @@ def DispatchPythonTests(options):
   sharder = PythonTestSharder(attached_devices, available_tests, options)
   test_results = sharder.RunShardedTests()
 
-  return test_results
+  if not test_results.DidRunPass():
+    return (test_results, 1)
+
+  return (test_results, 0)
 
 
 def _GetTestModules(python_test_root, is_official_build):

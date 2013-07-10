@@ -7,9 +7,9 @@ import os
 import sys
 
 import bb_utils
+import bb_annotations
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pylib import buildbot_report
 from pylib import constants
 
 
@@ -26,7 +26,7 @@ def SrcPath(*path):
 
 
 def CheckWebViewLicenses(_):
-  buildbot_report.PrintNamedStep('check_licenses')
+  bb_annotations.PrintNamedStep('check_licenses')
   RunCmd([SrcPath('android_webview', 'tools', 'webview_licenses.py'), 'scan'],
          warning_code=1)
 
@@ -37,14 +37,14 @@ def RunHooks(build_type):
   landmine_path = os.path.join(build_path, '.landmines_triggered')
   clobber_env = os.environ.get('BUILDBOT_CLOBBER')
   if clobber_env or os.path.isfile(landmine_path):
-    buildbot_report.PrintNamedStep('Clobber')
+    bb_annotations.PrintNamedStep('Clobber')
     if not clobber_env:
       print 'Clobbering due to triggered landmines:'
       with open(landmine_path) as f:
         print f.read()
     RunCmd(['rm', '-rf', build_path])
 
-  buildbot_report.PrintNamedStep('runhooks')
+  bb_annotations.PrintNamedStep('runhooks')
   RunCmd(['gclient', 'runhooks'], halt_on_failure=True)
 
 
@@ -56,17 +56,17 @@ def Compile(options):
          '--target=%s' % options.target,
          '--goma-dir=%s' % bb_utils.GOMA_DIR]
   build_targets = options.build_targets.split(',')
-  buildbot_report.PrintNamedStep('compile')
+  bb_annotations.PrintNamedStep('compile')
   for build_target in build_targets:
     RunCmd(cmd + ['--build-args=%s' % build_target], halt_on_failure=True)
   if options.experimental:
     for compile_target in EXPERIMENTAL_TARGETS:
-      buildbot_report.PrintNamedStep('Experimental Compile %s' % compile_target)
+      bb_annotations.PrintNamedStep('Experimental Compile %s' % compile_target)
       RunCmd(cmd + ['--build-args=%s' % compile_target], flunk_on_failure=False)
 
 
 def ZipBuild(options):
-  buildbot_report.PrintNamedStep('zip_build')
+  bb_annotations.PrintNamedStep('zip_build')
   RunCmd([
       os.path.join(SLAVE_SCRIPTS_DIR, 'zip_build.py'),
       '--src-dir', constants.DIR_SOURCE_ROOT,
@@ -76,7 +76,7 @@ def ZipBuild(options):
 
 
 def ExtractBuild(options):
-  buildbot_report.PrintNamedStep('extract_build')
+  bb_annotations.PrintNamedStep('extract_build')
   RunCmd(
       [os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py'),
        '--build-dir', SrcPath('build'), '--build-output-dir',
@@ -85,7 +85,7 @@ def ExtractBuild(options):
 
 
 def FindBugs(options):
-  buildbot_report.PrintNamedStep('findbugs')
+  bb_annotations.PrintNamedStep('findbugs')
   build_type = []
   if options.target == 'Release':
     build_type = ['--release-build']
@@ -96,7 +96,7 @@ def FindBugs(options):
 
 
 def BisectPerfRegression(_):
-  buildbot_report.PrintNamedStep('Bisect Perf Regression')
+  bb_annotations.PrintNamedStep('Bisect Perf Regression')
   RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
           '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
   RunCmd([SrcPath('tools', 'run-bisect-perf-regression.py'),

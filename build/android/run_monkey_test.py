@@ -113,7 +113,11 @@ def DispatchPythonTests(options):
       test_type='Monkey',
       test_package='Monkey',
       build_type=options.build_type)
-  report_results.PrintAnnotation(results)
+  # TODO(gkanwar): After the host-driven tests have been refactored, they sould
+  # use the comment exit code system (part of pylib/base/shard.py)
+  if not results.DidRunPass():
+    return 1
+  return 0
 
 
 def main():

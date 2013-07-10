@@ -26,7 +26,7 @@ def Dispatch(options):
     options: Command line options.
 
   Returns:
-    Test results in a base_test_result.TestRunResults object.
+    A tuple of (base_test_result.TestRunResults object, exit code).
 
   Raises:
     Exception: when there are no attached devices.

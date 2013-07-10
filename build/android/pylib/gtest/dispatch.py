@@ -13,6 +13,7 @@ from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import ports
+from pylib.base import base_test_result
 from pylib.base import shard
 from pylib.utils import emulator
 from pylib.utils import report_results
@@ -35,6 +36,9 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
     Ex. ('content_unittests',
           '/tmp/chrome/src/out/Debug/content_unittests_apk/'
           'content_unittests-debug.apk')
+
+  Raises:
+    Exception: If test suite not found.
   """
   def GetQualifiedSuite(suite):
     if suite.is_suite_exe:
@@ -93,7 +97,8 @@ def GetAllEnabledTests(runner_factory, devices):
   Returns:
     List of all enabled tests.
 
-  Raises Exception if all devices failed.
+  Raises:
+    Exception: If no devices available.
   """
   for device in devices:
     try:
@@ -118,9 +123,12 @@ def _RunATestSuite(options, suite_name):
     suite_name: name of the test suite being run.
 
   Returns:
-    0 if successful, number of failing tests otherwise.
+    A tuple of (base_test_result.TestRunResult object, exit code).
+
+  Raises:
+    Exception: For various reasons including device failure or failing to reset
+        the test server port.
   """
-  step_name = os.path.basename(options.test_suite).replace('-debug.apk', '')
   attached_devices = []
   buildbot_emulators = []
 
@@ -168,9 +176,9 @@ def _RunATestSuite(options, suite_name):
   tests = [t for t in tests if t]
 
   # Run tests.
-  test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices, tests,
-                                        options.build_type, test_timeout=None,
-                                        num_retries=options.num_retries)
+  test_results, exit_code = shard.ShardAndRunTests(
+      RunnerFactory, attached_devices, tests, options.build_type,
+      test_timeout=None, num_retries=options.num_retries)
 
   report_results.LogFull(
       results=test_results,
@@ -178,12 +186,11 @@ def _RunATestSuite(options, suite_name):
       test_package=suite_name,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
-  report_results.PrintAnnotation(test_results)
 
   for buildbot_emulator in buildbot_emulators:
     buildbot_emulator.Shutdown()
 
-  return len(test_results.GetNotPass())
+  return (test_results, exit_code)
 
 
 def _ListTestSuites():
@@ -203,7 +210,7 @@ def Dispatch(options):
     options: options for running the tests.
 
   Returns:
-    0 if successful, number of failing tests otherwise.
+    base_test_result.TestRunResults object with the results of running the tests
   """
   if options.test_suite == 'help':
     _ListTestSuites()
@@ -215,13 +222,18 @@ def Dispatch(options):
 
   all_test_suites = _FullyQualifiedTestSuites(options.exe, options.test_suite,
                                               options.build_type)
-  failures = 0
+  results = base_test_result.TestRunResults()
+  exit_code = 0
   for suite_name, suite_path in all_test_suites:
     # Give each test suite its own copy of options.
     test_options = copy.deepcopy(options)
     test_options.test_suite = suite_path
-    failures += _RunATestSuite(test_options, suite_name)
+    test_results, test_exit_code = _RunATestSuite(test_options, suite_name)
+    results.AddTestRunResults(test_results)
+    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+      exit_code = test_exit_code
 
   if options.use_xvfb:
     framebuffer.Stop()
-  return failures
+
+  return (results, exit_code)

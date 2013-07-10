@@ -23,7 +23,15 @@ from common import unittest_util
 
 
 def Dispatch(options):
-  """Dispatches all content_browsertests."""
+  """Dispatches all content_browsertests.
+
+  Args:
+    options: optparse.Options object containing command-line options
+  Returns:
+    A tuple of (base_test_result.TestRunResults object, exit code).
+  Raises:
+    Exception: Failed to reset the test server port.
+  """
 
   attached_devices = []
   if options.test_device:
@@ -75,20 +83,18 @@ def Dispatch(options):
   # TODO(nileshagrawal): remove this abnormally long setup timeout once fewer
   # files are pushed to the devices for content_browsertests: crbug.com/138275
   setup_timeout = 20 * 60  # 20 minutes
-  test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices,
-                                        all_tests, options.build_type,
-                                        setup_timeout=setup_timeout,
-                                        test_timeout=None,
-                                        num_retries=options.num_retries)
+  test_results, exit_code = shard.ShardAndRunTests(
+      RunnerFactory, attached_devices, all_tests, options.build_type,
+      setup_timeout=setup_timeout, test_timeout=None,
+      num_retries=options.num_retries)
   report_results.LogFull(
       results=test_results,
       test_type='Unit test',
       test_package=constants.BROWSERTEST_SUITE_NAME,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
-  report_results.PrintAnnotation(test_results)
 
-  return len(test_results.GetNotPass())
+  return (test_results, exit_code)
 
 
 def _FilterTests(all_enabled_tests):

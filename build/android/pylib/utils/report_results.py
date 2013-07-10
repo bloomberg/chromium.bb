@@ -110,11 +110,3 @@ def LogFull(results, test_type, test_package, annotation=None,
     if flakiness_server:
       _LogToFlakinessDashboard(results, test_type, test_package,
                                flakiness_server)
-
-
-def PrintAnnotation(results):
-  """Print buildbot annotations for test results."""
-  if not results.DidRunPass():
-    buildbot_report.PrintError()
-  else:
-    print 'Step success!'  # No annotation needed
