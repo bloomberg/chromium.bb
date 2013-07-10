@@ -1130,8 +1130,8 @@ void Document::setContentLanguage(const String& language)
         return;
     m_contentLanguage = language;
 
-    // Recalculate style so language is used when selecting the initial font.
-    styleResolverChanged(DeferRecalcStyle);
+    // Document's style depends on the content language.
+    scheduleForcedStyleRecalc();
 }
 
 void Document::setXMLVersion(const String& version, ExceptionCode& ec)
