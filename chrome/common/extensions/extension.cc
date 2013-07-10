@@ -487,6 +487,10 @@ bool Extension::can_be_incognito_enabled() const {
   return !is_platform_app() || location() == Manifest::COMPONENT;
 }
 
+bool Extension::force_incognito_enabled() const {
+  return GetActivePermissions()->HasAnyAccessToAPI("proxy");
+}
+
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {
   extent_.AddPattern(pattern);
 }

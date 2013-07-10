@@ -1528,6 +1528,8 @@ bool ExtensionService::IsIncognitoEnabled(
   // work in incognito mode.
   if (extension && extension->location() == Manifest::COMPONENT)
     return true;
+  if (extension && extension->force_incognito_enabled())
+    return true;
 
   // Check the prefs.
   return extension_prefs_->IsIncognitoEnabled(extension_id);

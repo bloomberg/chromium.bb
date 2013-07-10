@@ -125,7 +125,7 @@ cr.define('options', function() {
 
       // The 'allow in incognito' checkbox.
       var incognito = node.querySelector('.incognito-control input');
-      incognito.disabled = !extension.incognitoCanBeEnabled;
+      incognito.disabled = !extension.incognitoCanBeToggled;
       incognito.checked = extension.enabledIncognito;
       if (!incognito.disabled) {
         incognito.addEventListener('change', function(e) {
