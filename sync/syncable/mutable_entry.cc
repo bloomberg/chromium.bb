@@ -261,6 +261,7 @@ bool MutableEntry::Put(StringField field, const string& value) {
 bool MutableEntry::Put(ProtoField field,
                        const sync_pb::EntitySpecifics& value) {
   DCHECK(kernel_);
+  CHECK(!value.password().has_client_only_encrypted_data());
   write_transaction_->SaveOriginal(kernel_);
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?

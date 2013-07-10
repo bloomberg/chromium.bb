@@ -10,9 +10,11 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
 #include "sync/api/fake_syncable_service.h"
+#include "sync/api/sync_change.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/read_node.h"
+#include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/public/write_node.h"
@@ -23,12 +25,12 @@ namespace browser_sync {
 
 namespace {
 
-class GenericChangeProcessorTest : public testing::Test {
+class SyncGenericChangeProcessorTest : public testing::Test {
  public:
   // It doesn't matter which type we use.  Just pick one.
   static const syncer::ModelType kType = syncer::PREFERENCES;
 
-  GenericChangeProcessorTest() :
+  SyncGenericChangeProcessorTest() :
       loop_(base::MessageLoop::TYPE_UI),
       sync_merge_result_(kType),
       merge_result_ptr_factory_(&sync_merge_result_),
@@ -37,7 +39,13 @@ class GenericChangeProcessorTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     test_user_share_.SetUp();
-    syncer::TestUserShare::CreateRoot(kType, test_user_share_.user_share());
+    syncer::ModelTypeSet types = syncer::ProtocolTypes();
+    for (syncer::ModelTypeSet::Iterator iter = types.First(); iter.Good();
+         iter.Inc()) {
+      syncer::TestUserShare::CreateRoot(iter.Get(),
+                                        test_user_share_.user_share());
+    }
+    test_user_share_.encryption_handler()->Init();
     change_processor_.reset(
         new GenericChangeProcessor(
             &data_type_error_handler_,
@@ -88,7 +96,7 @@ class GenericChangeProcessorTest : public testing::Test {
 // This test exercises GenericChangeProcessor's GetSyncDataForType function.
 // It's not a great test, but, by modifying some of the parameters, you could
 // turn it into a micro-benchmark for model association.
-TEST_F(GenericChangeProcessorTest, StressGetSyncDataForType) {
+TEST_F(SyncGenericChangeProcessorTest, StressGetSyncDataForType) {
   const int kNumChildNodes = 1000;
   const int kRepeatCount = 1;
 
@@ -100,6 +108,138 @@ TEST_F(GenericChangeProcessorTest, StressGetSyncDataForType) {
 
     // Start with a simple test.  We can add more in-depth testing later.
     EXPECT_EQ(static_cast<size_t>(kNumChildNodes), sync_data.size());
+  }
+}
+
+TEST_F(SyncGenericChangeProcessorTest, SetGetPasswords) {
+  const int kNumPasswords = 10;
+  sync_pb::PasswordSpecificsData password_data;
+  password_data.set_username_value("user");
+
+  sync_pb::EntitySpecifics password_holder;
+
+  syncer::SyncChangeList change_list;
+  for (int i = 0; i < kNumPasswords; ++i) {
+    password_data.set_password_value(
+        base::StringPrintf("password%i", i));
+    password_holder.mutable_password()->mutable_client_only_encrypted_data()->
+        CopyFrom(password_data);
+    change_list.push_back(
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_ADD,
+                           syncer::SyncData::CreateLocalData(
+                               base::StringPrintf("tag%i", i),
+                               base::StringPrintf("title%i", i),
+                               password_holder)));
+  }
+
+  ASSERT_FALSE(
+      change_processor()->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
+
+  syncer::SyncDataList password_list;
+  ASSERT_FALSE(
+      change_processor()->GetSyncDataForType(syncer::PASSWORDS, &password_list).
+          IsSet());
+
+  ASSERT_EQ(password_list.size(), change_list.size());
+  for (int i = 0; i < kNumPasswords; ++i) {
+    // Verify the password is returned properly.
+    ASSERT_TRUE(password_list[i].GetSpecifics().has_password());
+    ASSERT_TRUE(password_list[i].GetSpecifics().password().
+                    has_client_only_encrypted_data());
+    ASSERT_FALSE(password_list[i].GetSpecifics().password().has_encrypted());
+    const sync_pb::PasswordSpecificsData& sync_password =
+        password_list[i].GetSpecifics().password().client_only_encrypted_data();
+    const sync_pb::PasswordSpecificsData& change_password =
+        change_list[i].sync_data().GetSpecifics().password().
+            client_only_encrypted_data();
+    ASSERT_EQ(sync_password.password_value(), change_password.password_value());
+    ASSERT_EQ(sync_password.username_value(), change_password.username_value());
+
+    // Verify the raw sync data was stored securely.
+    syncer::ReadTransaction read_transaction(FROM_HERE, user_share());
+    syncer::ReadNode node(&read_transaction);
+    ASSERT_EQ(node.InitByClientTagLookup(syncer::PASSWORDS,
+                                         base::StringPrintf("tag%i", i)),
+              syncer::BaseNode::INIT_OK);
+    ASSERT_EQ(node.GetTitle(), "encrypted");
+    const sync_pb::EntitySpecifics& raw_specifics = node.GetEntitySpecifics();
+    ASSERT_TRUE(raw_specifics.has_password());
+    ASSERT_TRUE(raw_specifics.password().has_encrypted());
+    ASSERT_FALSE(raw_specifics.password().has_client_only_encrypted_data());
+  }
+}
+
+TEST_F(SyncGenericChangeProcessorTest, UpdatePasswords) {
+  const int kNumPasswords = 10;
+  sync_pb::PasswordSpecificsData password_data;
+  password_data.set_username_value("user");
+
+  sync_pb::EntitySpecifics password_holder;
+
+  syncer::SyncChangeList change_list;
+  syncer::SyncChangeList change_list2;
+  for (int i = 0; i < kNumPasswords; ++i) {
+    password_data.set_password_value(
+        base::StringPrintf("password%i", i));
+    password_holder.mutable_password()->mutable_client_only_encrypted_data()->
+        CopyFrom(password_data);
+    change_list.push_back(
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_ADD,
+                           syncer::SyncData::CreateLocalData(
+                               base::StringPrintf("tag%i", i),
+                               base::StringPrintf("title%i", i),
+                               password_holder)));
+    password_data.set_password_value(
+        base::StringPrintf("password_m%i", i));
+    password_holder.mutable_password()->mutable_client_only_encrypted_data()->
+        CopyFrom(password_data);
+    change_list2.push_back(
+        syncer::SyncChange(FROM_HERE,
+                           syncer::SyncChange::ACTION_UPDATE,
+                           syncer::SyncData::CreateLocalData(
+                               base::StringPrintf("tag%i", i),
+                               base::StringPrintf("title_m%i", i),
+                               password_holder)));
+  }
+
+  ASSERT_FALSE(
+      change_processor()->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
+  ASSERT_FALSE(
+      change_processor()->ProcessSyncChanges(FROM_HERE, change_list2).IsSet());
+
+  syncer::SyncDataList password_list;
+  ASSERT_FALSE(
+      change_processor()->GetSyncDataForType(syncer::PASSWORDS, &password_list).
+          IsSet());
+
+  ASSERT_EQ(password_list.size(), change_list2.size());
+  for (int i = 0; i < kNumPasswords; ++i) {
+    // Verify the password is returned properly.
+    ASSERT_TRUE(password_list[i].GetSpecifics().has_password());
+    ASSERT_TRUE(password_list[i].GetSpecifics().password().
+                    has_client_only_encrypted_data());
+    ASSERT_FALSE(password_list[i].GetSpecifics().password().has_encrypted());
+    const sync_pb::PasswordSpecificsData& sync_password =
+        password_list[i].GetSpecifics().password().client_only_encrypted_data();
+    const sync_pb::PasswordSpecificsData& change_password =
+        change_list2[i].sync_data().GetSpecifics().password().
+            client_only_encrypted_data();
+    ASSERT_EQ(sync_password.password_value(), change_password.password_value());
+    ASSERT_EQ(sync_password.username_value(), change_password.username_value());
+
+    // Verify the raw sync data was stored securely.
+    syncer::ReadTransaction read_transaction(FROM_HERE, user_share());
+    syncer::ReadNode node(&read_transaction);
+    ASSERT_EQ(node.InitByClientTagLookup(syncer::PASSWORDS,
+                                         base::StringPrintf("tag%i", i)),
+              syncer::BaseNode::INIT_OK);
+    ASSERT_EQ(node.GetTitle(), "encrypted");
+    const sync_pb::EntitySpecifics& raw_specifics = node.GetEntitySpecifics();
+    ASSERT_TRUE(raw_specifics.has_password());
+    ASSERT_TRUE(raw_specifics.password().has_encrypted());
+    ASSERT_FALSE(raw_specifics.password().has_client_only_encrypted_data());
   }
 }
 

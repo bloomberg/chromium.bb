@@ -24,6 +24,39 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
+namespace {
+
+void SetNodeSpecifics(const sync_pb::EntitySpecifics& entity_specifics,
+                      syncer::WriteNode* write_node) {
+  if (syncer::GetModelTypeFromSpecifics(entity_specifics) ==
+          syncer::PASSWORDS) {
+    write_node->SetPasswordSpecifics(
+        entity_specifics.password().client_only_encrypted_data());
+  } else {
+    write_node->SetEntitySpecifics(entity_specifics);
+  }
+}
+
+syncer::SyncData BuildRemoteSyncData(
+    int64 sync_id,
+    const syncer::BaseNode& read_node) {
+  // Use the specifics of non-password datatypes directly (encryption has
+  // already been handled).
+  if (read_node.GetModelType() != syncer::PASSWORDS) {
+    return syncer::SyncData::CreateRemoteData(sync_id,
+                                              read_node.GetEntitySpecifics());
+  }
+
+  // Passwords must be accessed differently, to account for their encryption,
+  // and stored into a temporary EntitySpecifics.
+  sync_pb::EntitySpecifics password_holder;
+  password_holder.mutable_password()->mutable_client_only_encrypted_data()->
+      CopyFrom(read_node.GetPasswordSpecifics());
+  return syncer::SyncData::CreateRemoteData(sync_id, password_holder);
+}
+
+}  // namespace
+
 GenericChangeProcessor::GenericChangeProcessor(
     DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
@@ -71,8 +104,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
           syncer::SyncChange(
               FROM_HERE,
               action,
-              syncer::SyncData::CreateRemoteData(
-                  it->id, read_node.GetEntitySpecifics())));
+              BuildRemoteSyncData(it->id, read_node)));
     }
   }
 }
@@ -136,8 +168,8 @@ syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
                               type);
       return error;
     }
-    current_sync_data->push_back(syncer::SyncData::CreateRemoteData(
-        sync_child_node.GetId(), sync_child_node.GetEntitySpecifics()));
+    current_sync_data->push_back(BuildRemoteSyncData(sync_child_node.GetId(),
+                                                     sync_child_node));
   }
   return syncer::SyncError();
 }
@@ -317,8 +349,8 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       }
       syncer::WriteNode::InitUniqueByCreationResult result =
           sync_node.InitUniqueByCreation(change.sync_data().GetDataType(),
-                                          root_node,
-                                          change.sync_data().GetTag());
+                                         root_node,
+                                         change.sync_data().GetTag());
       if (result != syncer::WriteNode::INIT_SUCCESS) {
         std::string error_prefix = "Failed to create " + type_str + " node: " +
             change.location().ToString() + ", ";
@@ -368,7 +400,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
         }
       }
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
-      sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
+      SetNodeSpecifics(change.sync_data().GetSpecifics(), &sync_node);
       if (merge_result_.get()) {
         merge_result_->set_num_items_added(merge_result_->num_items_added() +
                                            1);
@@ -461,7 +493,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       }
 
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
-      sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
+      SetNodeSpecifics(change.sync_data().GetSpecifics(), &sync_node);
       if (merge_result_.get()) {
         merge_result_->set_num_items_modified(
             merge_result_->num_items_modified() + 1);

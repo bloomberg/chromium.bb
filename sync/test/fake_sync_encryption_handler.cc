@@ -18,7 +18,9 @@ FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
 
 void FakeSyncEncryptionHandler::Init() {
-  // Do nothing.
+  // Set up a basic cryptographer.
+  KeyParams keystore_params = {"localhost", "dummy", "keystore_key"};
+  cryptographer_.AddKey(keystore_params);
 }
 
 void FakeSyncEncryptionHandler::ApplyNigoriUpdate(

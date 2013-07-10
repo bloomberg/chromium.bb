@@ -104,6 +104,7 @@ void SetEntrySpecifics(Entry* meta_entry,
   sync_entry->mutable_specifics()->CopyFrom(meta_entry->Get(SPECIFICS));
   sync_entry->set_folder(meta_entry->Get(syncable::IS_DIR));
 
+  CHECK(!sync_entry->specifics().password().has_client_only_encrypted_data());
   DCHECK_EQ(meta_entry->GetModelType(), GetModelType(*sync_entry));
 }
 }  // namespace
