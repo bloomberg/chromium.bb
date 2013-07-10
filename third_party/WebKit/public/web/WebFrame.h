@@ -231,6 +231,7 @@ public:
     // WebKit::registerExtension for the corresponding specifier.
     //
     // worldID must be > 0 (as 0 represents the main world).
+    // worldID must be < EmbedderWorldIdLimit, high number used internally.
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sources, unsigned numSources,
         int extensionGroup) = 0;
@@ -267,6 +268,7 @@ public:
         const WebScriptSource&) = 0;
 
     // worldID must be > 0 (as 0 represents the main world).
+    // worldID must be < EmbedderWorldIdLimit, high number used internally.
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
         int extensionGroup, WebVector<v8::Local<v8::Value> >* results) = 0;

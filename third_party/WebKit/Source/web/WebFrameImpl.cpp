@@ -557,7 +557,7 @@ WebFrame* WebFrame::frameForCurrentContext()
 }
 
 WebFrame* WebFrame::frameForContext(v8::Handle<v8::Context> context)
-{ 
+{
    return WebFrameImpl::fromFrame(toFrameIfNotDetached(context));
 }
 
@@ -787,7 +787,8 @@ void WebFrameImpl::executeScript(const WebScriptSource& source)
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup)
 {
     ASSERT(frame());
-    ASSERT(worldID > 0);
+    RELEASE_ASSERT(worldID > 0);
+    RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
     Vector<ScriptSourceCode> sources;
     for (unsigned i = 0; i < numSources; ++i) {
@@ -868,7 +869,8 @@ v8::Handle<v8::Value> WebFrameImpl::executeScriptAndReturnValue(const WebScriptS
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
 {
     ASSERT(frame());
-    ASSERT(worldID > 0);
+    RELEASE_ASSERT(worldID > 0);
+    RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
     Vector<ScriptSourceCode> sources;
 
@@ -2099,7 +2101,7 @@ WebString WebFrameImpl::layerTreeAsText(bool showDebugInfo) const
 {
     if (!frame())
         return WebString();
-    
+
     return WebString(frame()->layerTreeAsText(showDebugInfo ? LayerTreeIncludesDebugInfo : LayerTreeNormal));
 }
 
@@ -2224,14 +2226,14 @@ void WebFrameImpl::createFrameView()
     bool isMainFrame = webView->mainFrameImpl()->frame() == frame();
     if (isMainFrame)
         webView->suppressInvalidations(true);
- 
+
     frame()->createView(webView->size(), Color::white, webView->isTransparent(), webView->fixedLayoutSize(), isMainFrame ? webView->isFixedLayoutModeEnabled() : 0);
     if (webView->shouldAutoResize() && isMainFrame)
         frame()->view()->enableAutoSizeMode(true, webView->minAutoSize(), webView->maxAutoSize());
 
     if (isMainFrame)
         webView->suppressInvalidations(false);
- 
+
     if (isMainFrame && webView->devToolsAgentPrivate())
         webView->devToolsAgentPrivate()->mainFrameViewCreated(this);
 }
