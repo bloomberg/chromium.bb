@@ -329,7 +329,7 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
     if (!shadowRoot)
         shadowRoot = shadow->oldestShadowRoot();
 
-    StyleResolver::RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
+    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
     for (; shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
         if (RuleSet* ruleSet = atHostRuleSetFor(shadowRoot))
@@ -347,7 +347,7 @@ void ScopedStyleResolver::matchAuthorRules(ElementRuleCollector& collector, bool
 
         // Match author rules.
         MatchRequest matchRequest(m_authorStyle.get(), includeEmptyRules, m_scopingNode);
-        StyleResolver::RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
+        RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
         collector.setBehaviorAtBoundary(applyAuthorStyles ? SelectorChecker::DoesNotCrossBoundary : static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
         collector.collectMatchingRules(matchRequest, ruleRange);
         collector.collectMatchingRulesForRegion(matchRequest, ruleRange);

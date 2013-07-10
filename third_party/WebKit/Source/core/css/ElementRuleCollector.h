@@ -65,11 +65,11 @@ public:
     void setMatchingUARules(bool matchingUARules) { m_matchingUARules = matchingUARules; }
     bool hasAnyMatchingRules(RuleSet*);
 
-    StyleResolver::MatchResult& matchedResult();
+    MatchResult& matchedResult();
     PassRefPtr<CSSRuleList> matchedRuleList();
 
-    void collectMatchingRules(const MatchRequest&, StyleResolver::RuleRange&);
-    void collectMatchingRulesForRegion(const MatchRequest&, StyleResolver::RuleRange&);
+    void collectMatchingRules(const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForRegion(const MatchRequest&, RuleRange&);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
@@ -77,9 +77,9 @@ public:
 private:
     Document* document() { return m_state.document(); }
 
-    void collectRuleIfMatches(const RuleData&, const MatchRequest&, StyleResolver::RuleRange&);
-    void collectMatchingRulesForList(const Vector<RuleData>*, const MatchRequest&, StyleResolver::RuleRange&);
-    void collectMatchingRulesForList(const RuleData*, const MatchRequest&, StyleResolver::RuleRange&);
+    void collectRuleIfMatches(const RuleData&, const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForList(const Vector<RuleData>*, const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForList(const RuleData*, const MatchRequest&, RuleRange&);
     bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&);
 
     void sortMatchedRules();
@@ -105,7 +105,7 @@ private:
 
     // Output.
     RefPtr<StaticCSSRuleList> m_ruleList;
-    StyleResolver::MatchResult m_result;
+    MatchResult m_result;
 };
 
 } // namespace WebCore

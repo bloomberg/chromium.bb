@@ -115,6 +115,53 @@ enum RuleMatchingBehavior {
     MatchOnlyUserAgentRules,
 };
 
+// FIXME: Move to separate file.
+struct RuleRange {
+    RuleRange(int& firstRuleIndex, int& lastRuleIndex): firstRuleIndex(firstRuleIndex), lastRuleIndex(lastRuleIndex) { }
+    int& firstRuleIndex;
+    int& lastRuleIndex;
+};
+
+struct MatchRanges {
+    MatchRanges() : firstUARule(-1), lastUARule(-1), firstAuthorRule(-1), lastAuthorRule(-1), firstUserRule(-1), lastUserRule(-1) { }
+    int firstUARule;
+    int lastUARule;
+    int firstAuthorRule;
+    int lastAuthorRule;
+    int firstUserRule;
+    int lastUserRule;
+    RuleRange UARuleRange() { return RuleRange(firstUARule, lastUARule); }
+    RuleRange authorRuleRange() { return RuleRange(firstAuthorRule, lastAuthorRule); }
+    RuleRange userRuleRange() { return RuleRange(firstUserRule, lastUserRule); }
+};
+
+struct MatchedProperties {
+    MatchedProperties();
+    ~MatchedProperties();
+    void reportMemoryUsage(MemoryObjectInfo*) const;
+
+    RefPtr<StylePropertySet> properties;
+    union {
+        struct {
+            unsigned linkMatchType : 2;
+            unsigned whitelistType : 2;
+        };
+        // Used to make sure all memory is zero-initialized since we compute the hash over the bytes of this object.
+        void* possiblyPaddedMember;
+    };
+};
+
+struct MatchResult {
+    MatchResult() : isCacheable(true) { }
+    Vector<MatchedProperties, 64> matchedProperties;
+    Vector<StyleRule*, 64> matchedRules;
+    MatchRanges ranges;
+    bool isCacheable;
+
+    void addMatchedProperties(const StylePropertySet* properties, StyleRule* = 0, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
+};
+
+// FIXME: Move to separate file.
 class MatchRequest {
 public:
     MatchRequest(RuleSet* ruleSet, bool includeEmptyRules = false, const ContainerNode* scope = 0)
@@ -132,6 +179,39 @@ public:
     const ContainerNode* scope;
 };
 
+// FIXME: Move to separate file.
+struct CachedMatchedProperties {
+    void reportMemoryUsage(MemoryObjectInfo*) const;
+    Vector<MatchedProperties> matchedProperties;
+    MatchRanges ranges;
+    RefPtr<RenderStyle> renderStyle;
+    RefPtr<RenderStyle> parentRenderStyle;
+};
+
+class MatchedPropertiesCache {
+    WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
+public:
+    MatchedPropertiesCache();
+
+    const CachedMatchedProperties* find(unsigned hash, const StyleResolverState&, const MatchResult&);
+    void add(const RenderStyle*, const RenderStyle* parentStyle, unsigned hash, const MatchResult&);
+
+    void clear();
+
+    static bool isCacheable(const Element*, const RenderStyle*, const RenderStyle* parentStyle);
+
+private:
+    // Every N additions to the matched declaration cache trigger a sweep where entries holding
+    // the last reference to a style declaration are garbage collected.
+    void sweep(Timer<MatchedPropertiesCache>*);
+
+    unsigned m_additionsSinceLastSweep;
+
+    typedef HashMap<unsigned, CachedMatchedProperties> Cache;
+    Cache m_cache;
+
+    Timer<MatchedPropertiesCache> m_sweepTimer;
+};
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.
 class StyleResolver {
@@ -232,52 +312,8 @@ public:
     bool usesFirstLineRules() const { return m_features.usesFirstLineRules; }
     bool usesBeforeAfterRules() const { return m_features.usesBeforeAfterRules; }
 
+    // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
     void invalidateMatchedPropertiesCache();
-
-    struct RuleRange {
-        RuleRange(int& firstRuleIndex, int& lastRuleIndex): firstRuleIndex(firstRuleIndex), lastRuleIndex(lastRuleIndex) { }
-        int& firstRuleIndex;
-        int& lastRuleIndex;
-    };
-
-    struct MatchRanges {
-        MatchRanges() : firstUARule(-1), lastUARule(-1), firstAuthorRule(-1), lastAuthorRule(-1), firstUserRule(-1), lastUserRule(-1) { }
-        int firstUARule;
-        int lastUARule;
-        int firstAuthorRule;
-        int lastAuthorRule;
-        int firstUserRule;
-        int lastUserRule;
-        RuleRange UARuleRange() { return RuleRange(firstUARule, lastUARule); }
-        RuleRange authorRuleRange() { return RuleRange(firstAuthorRule, lastAuthorRule); }
-        RuleRange userRuleRange() { return RuleRange(firstUserRule, lastUserRule); }
-    };
-
-    struct MatchedProperties {
-        MatchedProperties();
-        ~MatchedProperties();
-        void reportMemoryUsage(MemoryObjectInfo*) const;
-
-        RefPtr<StylePropertySet> properties;
-        union {
-            struct {
-                unsigned linkMatchType : 2;
-                unsigned whitelistType : 2;
-            };
-            // Used to make sure all memory is zero-initialized since we compute the hash over the bytes of this object.
-            void* possiblyPaddedMember;
-        };
-    };
-
-    struct MatchResult {
-        MatchResult() : isCacheable(true) { }
-        Vector<MatchedProperties, 64> matchedProperties;
-        Vector<StyleRule*, 64> matchedRules;
-        MatchRanges ranges;
-        bool isCacheable;
-
-        void addMatchedProperties(const StylePropertySet* properties, StyleRule* = 0, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
-    };
 
 private:
     void matchUARules(ElementRuleCollector&, RuleSet*);
@@ -350,29 +386,10 @@ private:
 
     void applySVGProperty(CSSPropertyID, CSSValue*);
 
-    struct MatchedPropertiesCacheItem {
-        void reportMemoryUsage(MemoryObjectInfo*) const;
-        Vector<MatchedProperties> matchedProperties;
-        MatchRanges ranges;
-        RefPtr<RenderStyle> renderStyle;
-        RefPtr<RenderStyle> parentRenderStyle;
-    };
-    const MatchedPropertiesCacheItem* findFromMatchedPropertiesCache(unsigned hash, const MatchResult&);
-    void addToMatchedPropertiesCache(const RenderStyle*, const RenderStyle* parentStyle, unsigned hash, const MatchResult&);
-
-    // Every N additions to the matched declaration cache trigger a sweep where entries holding
-    // the last reference to a style declaration are garbage collected.
-    void sweepMatchedPropertiesCache(Timer<StyleResolver>*);
-
     bool classNamesAffectedByRules(const SpaceSplitString&) const;
     bool sharingCandidateHasIdenticalStyleAffectingAttributes(Element*) const;
 
-    unsigned m_matchedPropertiesCacheAdditionsSinceLastSweep;
-
-    typedef HashMap<unsigned, MatchedPropertiesCacheItem> MatchedPropertiesCache;
     MatchedPropertiesCache m_matchedPropertiesCache;
-
-    Timer<StyleResolver> m_matchedPropertiesCacheSweepTimer;
 
     OwnPtr<MediaQueryEvaluator> m_medium;
     RefPtr<RenderStyle> m_rootDefaultStyle;
@@ -400,10 +417,6 @@ private:
     StyleResourceLoader m_styleResourceLoader;
 
     friend class DeprecatedStyleBuilder;
-    friend bool operator==(const MatchedProperties&, const MatchedProperties&);
-    friend bool operator!=(const MatchedProperties&, const MatchedProperties&);
-    friend bool operator==(const MatchRanges&, const MatchRanges&);
-    friend bool operator!=(const MatchRanges&, const MatchRanges&);
 };
 
 inline bool StyleResolver::hasSelectorForAttribute(const AtomicString &attributeName) const

@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-StyleResolver::MatchResult& ElementRuleCollector::matchedResult()
+MatchResult& ElementRuleCollector::matchedResult()
 {
     return m_result;
 }
@@ -82,7 +82,7 @@ void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* pro
         m_result.isCacheable = false;
 }
 
-void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, StyleResolver::RuleRange& ruleRange)
+void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, RuleRange& ruleRange)
 {
     ASSERT(matchRequest.ruleSet);
     ASSERT(m_state.element());
@@ -126,7 +126,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     collectMatchingRulesForList(matchRequest.ruleSet->universalRules(), matchRequest, ruleRange);
 }
 
-void ElementRuleCollector::collectMatchingRulesForRegion(const MatchRequest& matchRequest, StyleResolver::RuleRange& ruleRange)
+void ElementRuleCollector::collectMatchingRulesForRegion(const MatchRequest& matchRequest, RuleRange& ruleRange)
 {
     if (!m_regionForStyling)
         return;
@@ -206,7 +206,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
     return true;
 }
 
-void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, const MatchRequest& matchRequest, StyleResolver::RuleRange& ruleRange)
+void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, const MatchRequest& matchRequest, RuleRange& ruleRange)
 {
     if (m_canUseFastReject && m_selectorFilter.fastRejectSelector(ruleData.selector()))
         return;
@@ -250,7 +250,7 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, const 
     InspectorInstrumentation::didMatchRule(cookie, false);
 }
 
-void ElementRuleCollector::collectMatchingRulesForList(const RuleData* rules, const MatchRequest& matchRequest, StyleResolver::RuleRange& ruleRange)
+void ElementRuleCollector::collectMatchingRulesForList(const RuleData* rules, const MatchRequest& matchRequest, RuleRange& ruleRange)
 {
     if (!rules)
         return;
@@ -259,7 +259,7 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleData* rules, co
     collectRuleIfMatches(*rules, matchRequest, ruleRange);
 }
 
-void ElementRuleCollector::collectMatchingRulesForList(const Vector<RuleData>* rules, const MatchRequest& matchRequest, StyleResolver::RuleRange& ruleRange)
+void ElementRuleCollector::collectMatchingRulesForList(const Vector<RuleData>* rules, const MatchRequest& matchRequest, RuleRange& ruleRange)
 {
     if (!rules)
         return;
@@ -291,7 +291,7 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
     // information about "scope".
     m_behaviorAtBoundary = SelectorChecker::StaysWithinTreeScope;
     int firstRuleIndex = -1, lastRuleIndex = -1;
-    StyleResolver::RuleRange ruleRange(firstRuleIndex, lastRuleIndex);
+    RuleRange ruleRange(firstRuleIndex, lastRuleIndex);
     collectMatchingRules(MatchRequest(ruleSet), ruleRange);
 
     return m_matchedRules && !m_matchedRules->isEmpty();

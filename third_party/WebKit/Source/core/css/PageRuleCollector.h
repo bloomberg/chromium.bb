@@ -34,7 +34,7 @@ public:
     PageRuleCollector(const StyleResolverState&, int pageIndex);
 
     void matchPageRules(RuleSet* rules);
-    StyleResolver::MatchResult& matchedResult() { return m_result; }
+    MatchResult& matchedResult() { return m_result; }
 
 private:
     bool isLeftPage(int pageIndex) const;
@@ -49,7 +49,7 @@ private:
     const bool m_isFirstPage;
     const String m_pageName;
 
-    StyleResolver::MatchResult m_result;
+    MatchResult m_result;
 };
 
 } // namespace WebCore

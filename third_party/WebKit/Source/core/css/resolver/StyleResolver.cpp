@@ -162,10 +162,10 @@ static StylePropertySet* rightToLeftDeclaration()
 }
 
 
-void StyleResolver::MatchResult::addMatchedProperties(const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
+void MatchResult::addMatchedProperties(const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
 {
     matchedProperties.grow(matchedProperties.size() + 1);
-    StyleResolver::MatchedProperties& newProperties = matchedProperties.last();
+    MatchedProperties& newProperties = matchedProperties.last();
     newProperties.properties = const_cast<StylePropertySet*>(properties);
     newProperties.linkMatchType = linkMatchType;
     newProperties.whitelistType = propertyWhitelistType;
@@ -173,9 +173,7 @@ void StyleResolver::MatchResult::addMatchedProperties(const StylePropertySet* pr
 }
 
 StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
-    : m_matchedPropertiesCacheAdditionsSinceLastSweep(0)
-    , m_matchedPropertiesCacheSweepTimer(this, &StyleResolver::sweepMatchedPropertiesCache)
-    , m_document(document)
+    : m_document(document)
     , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
     , m_fontSelector(CSSFontSelector::create(document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
@@ -360,29 +358,6 @@ StyleResolver::~StyleResolver()
 {
     m_fontSelector->clearDocument();
     m_viewportStyleResolver->clearDocument();
-}
-
-void StyleResolver::sweepMatchedPropertiesCache(Timer<StyleResolver>*)
-{
-    // Look for cache entries containing a style declaration with a single ref and remove them.
-    // This may happen when an element attribute mutation causes it to generate a new inlineStyle()
-    // or presentationAttributeStyle(), potentially leaving this cache with the last ref on the old one.
-    Vector<unsigned, 16> toRemove;
-    MatchedPropertiesCache::iterator it = m_matchedPropertiesCache.begin();
-    MatchedPropertiesCache::iterator end = m_matchedPropertiesCache.end();
-    for (; it != end; ++it) {
-        Vector<MatchedProperties>& matchedProperties = it->value.matchedProperties;
-        for (size_t i = 0; i < matchedProperties.size(); ++i) {
-            if (matchedProperties[i].properties->hasOneRef()) {
-                toRemove.append(it->key);
-                break;
-            }
-        }
-    }
-    for (size_t i = 0; i < toRemove.size(); ++i)
-        m_matchedPropertiesCache.remove(toRemove[i]);
-
-    m_matchedPropertiesCacheAdditionsSinceLastSweep = 0;
 }
 
 bool StyleResolver::classNamesAffectedByRules(const SpaceSplitString& classNames) const
@@ -2003,12 +1978,12 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, bool 
     }
 }
 
-static unsigned computeMatchedPropertiesHash(const StyleResolver::MatchedProperties* properties, unsigned size)
+static unsigned computeMatchedPropertiesHash(const MatchedProperties* properties, unsigned size)
 {
-    return StringHasher::hashMemory(properties, sizeof(StyleResolver::MatchedProperties) * size);
+    return StringHasher::hashMemory(properties, sizeof(MatchedProperties) * size);
 }
 
-bool operator==(const StyleResolver::MatchRanges& a, const StyleResolver::MatchRanges& b)
+bool operator==(const MatchRanges& a, const MatchRanges& b)
 {
     return a.firstUARule == b.firstUARule
         && a.lastUARule == b.lastUARule
@@ -2018,86 +1993,24 @@ bool operator==(const StyleResolver::MatchRanges& a, const StyleResolver::MatchR
         && a.lastUserRule == b.lastUserRule;
 }
 
-bool operator!=(const StyleResolver::MatchRanges& a, const StyleResolver::MatchRanges& b)
+bool operator!=(const MatchRanges& a, const MatchRanges& b)
 {
     return !(a == b);
 }
 
-bool operator==(const StyleResolver::MatchedProperties& a, const StyleResolver::MatchedProperties& b)
+bool operator==(const MatchedProperties& a, const MatchedProperties& b)
 {
     return a.properties == b.properties && a.linkMatchType == b.linkMatchType;
 }
 
-bool operator!=(const StyleResolver::MatchedProperties& a, const StyleResolver::MatchedProperties& b)
+bool operator!=(const MatchedProperties& a, const MatchedProperties& b)
 {
     return !(a == b);
-}
-
-const StyleResolver::MatchedPropertiesCacheItem* StyleResolver::findFromMatchedPropertiesCache(unsigned hash, const MatchResult& matchResult)
-{
-    ASSERT(hash);
-
-    MatchedPropertiesCache::iterator it = m_matchedPropertiesCache.find(hash);
-    if (it == m_matchedPropertiesCache.end())
-        return 0;
-    MatchedPropertiesCacheItem& cacheItem = it->value;
-
-    size_t size = matchResult.matchedProperties.size();
-    if (size != cacheItem.matchedProperties.size())
-        return 0;
-    if (cacheItem.renderStyle->insideLink() != m_state.style()->insideLink())
-        return 0;
-    for (size_t i = 0; i < size; ++i) {
-        if (matchResult.matchedProperties[i] != cacheItem.matchedProperties[i])
-            return 0;
-    }
-    if (cacheItem.ranges != matchResult.ranges)
-        return 0;
-    return &cacheItem;
-}
-
-void StyleResolver::addToMatchedPropertiesCache(const RenderStyle* style, const RenderStyle* parentStyle, unsigned hash, const MatchResult& matchResult)
-{
-    static const unsigned matchedDeclarationCacheAdditionsBetweenSweeps = 100;
-    if (++m_matchedPropertiesCacheAdditionsSinceLastSweep >= matchedDeclarationCacheAdditionsBetweenSweeps
-        && !m_matchedPropertiesCacheSweepTimer.isActive()) {
-        static const unsigned matchedDeclarationCacheSweepTimeInSeconds = 60;
-        m_matchedPropertiesCacheSweepTimer.startOneShot(matchedDeclarationCacheSweepTimeInSeconds);
-    }
-
-    ASSERT(hash);
-    MatchedPropertiesCacheItem cacheItem;
-    cacheItem.matchedProperties.append(matchResult.matchedProperties);
-    cacheItem.ranges = matchResult.ranges;
-    // Note that we don't cache the original RenderStyle instance. It may be further modified.
-    // The RenderStyle in the cache is really just a holder for the substructures and never used as-is.
-    cacheItem.renderStyle = RenderStyle::clone(style);
-    cacheItem.parentRenderStyle = RenderStyle::clone(parentStyle);
-    m_matchedPropertiesCache.add(hash, cacheItem);
 }
 
 void StyleResolver::invalidateMatchedPropertiesCache()
 {
     m_matchedPropertiesCache.clear();
-}
-
-static bool isCacheableInMatchedPropertiesCache(const Element* element, const RenderStyle* style, const RenderStyle* parentStyle)
-{
-    // FIXME: CSSPropertyWebkitWritingMode modifies state when applying to document element. We can't skip the applying by caching.
-    if (element == element->document()->documentElement() && element->document()->writingModeSetOnDocumentElement())
-        return false;
-    if (style->unique() || (style->styleType() != NOPSEUDO && parentStyle->unique()))
-        return false;
-    if (style->hasAppearance())
-        return false;
-    if (style->zoom() != RenderStyle::initialZoom())
-        return false;
-    if (style->writingMode() != RenderStyle::initialWritingMode())
-        return false;
-    // The cache assumes static knowledge about which properties are inherited.
-    if (parentStyle->hasExplicitlyInheritedProperties())
-        return false;
-    return true;
 }
 
 void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const Element* element)
@@ -2106,17 +2019,17 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     StyleResolverState& state = m_state;
     unsigned cacheHash = matchResult.isCacheable ? computeMatchedPropertiesHash(matchResult.matchedProperties.data(), matchResult.matchedProperties.size()) : 0;
     bool applyInheritedOnly = false;
-    const MatchedPropertiesCacheItem* cacheItem = 0;
-    if (cacheHash && (cacheItem = findFromMatchedPropertiesCache(cacheHash, matchResult))) {
+    const CachedMatchedProperties* cachedMatchedProperties = 0;
+    if (cacheHash && (cachedMatchedProperties = m_matchedPropertiesCache.find(cacheHash, m_state, matchResult))) {
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
-        state.style()->copyNonInheritedFrom(cacheItem->renderStyle.get());
-        if (state.parentStyle()->inheritedDataShared(cacheItem->parentRenderStyle.get()) && !isAtShadowBoundary(element)) {
+        state.style()->copyNonInheritedFrom(cachedMatchedProperties->renderStyle.get());
+        if (state.parentStyle()->inheritedDataShared(cachedMatchedProperties->parentRenderStyle.get()) && !isAtShadowBoundary(element)) {
             EInsideLink linkStatus = state.style()->insideLink();
             // If the cache item parent style has identical inherited properties to the current parent style then the
             // resulting style will be identical too. We copy the inherited properties over from the cache and are done.
-            state.style()->inheritFrom(cacheItem->renderStyle.get());
+            state.style()->inheritFrom(cachedMatchedProperties->renderStyle.get());
 
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
@@ -2144,7 +2057,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    if (cacheItem && cacheItem->renderStyle->effectiveZoom() != state.style()->effectiveZoom()) {
+    if (cachedMatchedProperties && cachedMatchedProperties->renderStyle->effectiveZoom() != state.style()->effectiveZoom()) {
         state.setFontDirty(true);
         applyInheritedOnly = false;
     }
@@ -2157,7 +2070,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
         applyProperty(CSSPropertyLineHeight, state.lineHeightValue());
 
     // Many properties depend on the font. If it changes we just apply all properties.
-    if (cacheItem && cacheItem->renderStyle->fontDescription() != state.style()->fontDescription())
+    if (cachedMatchedProperties && cachedMatchedProperties->renderStyle->fontDescription() != state.style()->fontDescription())
         applyInheritedOnly = false;
 
     // Now do the normal priority UA properties.
@@ -2179,13 +2092,13 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
     ASSERT(!state.fontDirty());
 
-    if (cacheItem || !cacheHash)
+    if (cachedMatchedProperties || !cacheHash)
         return;
     if (!state.isMatchedPropertiesCacheable())
         return;
-    if (!isCacheableInMatchedPropertiesCache(state.element(), state.style(), state.parentStyle()))
+    if (!MatchedPropertiesCache::isCacheable(state.element(), state.style(), state.parentStyle()))
         return;
-    addToMatchedPropertiesCache(state.style(), state.parentStyle(), cacheHash, matchResult);
+    m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
 }
 
 void StyleResolver::applyPropertyToStyle(CSSPropertyID id, CSSValue* value, RenderStyle* style)
@@ -3378,28 +3291,19 @@ bool StyleResolver::affectedByViewportChange() const
     return false;
 }
 
-inline StyleResolver::MatchedProperties::MatchedProperties()
+inline MatchedProperties::MatchedProperties()
     : possiblyPaddedMember(0)
 {
 }
 
-inline StyleResolver::MatchedProperties::~MatchedProperties()
+inline MatchedProperties::~MatchedProperties()
 {
 }
 
-void StyleResolver::MatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void MatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(properties, "properties");
-}
-
-void StyleResolver::MatchedPropertiesCacheItem::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(matchedProperties, "matchedProperties");
-    info.addMember(ranges, "ranges");
-    info.addMember(renderStyle, "renderStyle");
-    info.addMember(parentRenderStyle, "parentRenderStyle");
 }
 
 void MediaQueryResult::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
@@ -3413,7 +3317,6 @@ void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_ruleSets, "ruleSets");
     info.addMember(m_matchedPropertiesCache, "matchedPropertiesCache");
-    info.addMember(m_matchedPropertiesCacheSweepTimer, "matchedPropertiesCacheSweepTimer");
 
     info.addMember(m_medium, "medium");
     info.addMember(m_rootDefaultStyle, "rootDefaultStyle");
@@ -3432,6 +3335,111 @@ void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(CSSDefaultStyleSheets::defaultQuirksStyle, "defaultQuirksStyle");
     info.addMember(CSSDefaultStyleSheets::defaultPrintStyle, "defaultPrintStyle");
     info.addMember(CSSDefaultStyleSheets::defaultViewSourceStyle, "defaultViewSourceStyle");
+}
+
+MatchedPropertiesCache::MatchedPropertiesCache()
+    : m_additionsSinceLastSweep(0)
+    , m_sweepTimer(this, &MatchedPropertiesCache::sweep)
+{
+}
+
+const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const StyleResolverState& styleResolverState, const MatchResult& matchResult)
+{
+    ASSERT(hash);
+
+    Cache::iterator it = m_cache.find(hash);
+    if (it == m_cache.end())
+        return 0;
+    CachedMatchedProperties& cacheItem = it->value;
+
+    size_t size = matchResult.matchedProperties.size();
+    if (size != cacheItem.matchedProperties.size())
+        return 0;
+    if (cacheItem.renderStyle->insideLink() != styleResolverState.style()->insideLink())
+        return 0;
+    for (size_t i = 0; i < size; ++i) {
+        if (matchResult.matchedProperties[i] != cacheItem.matchedProperties[i])
+            return 0;
+    }
+    if (cacheItem.ranges != matchResult.ranges)
+        return 0;
+    return &cacheItem;
+}
+
+void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* parentStyle, unsigned hash, const MatchResult& matchResult)
+{
+    static const unsigned maxAdditionsBetweenSweeps = 100;
+    if (++m_additionsSinceLastSweep >= maxAdditionsBetweenSweeps
+        && !m_sweepTimer.isActive()) {
+        static const unsigned sweepTimeInSeconds = 60;
+        m_sweepTimer.startOneShot(sweepTimeInSeconds);
+    }
+
+    ASSERT(hash);
+    CachedMatchedProperties cacheItem;
+    cacheItem.matchedProperties.append(matchResult.matchedProperties);
+    cacheItem.ranges = matchResult.ranges;
+    // Note that we don't cache the original RenderStyle instance. It may be further modified.
+    // The RenderStyle in the cache is really just a holder for the substructures and never used as-is.
+    cacheItem.renderStyle = RenderStyle::clone(style);
+    cacheItem.parentRenderStyle = RenderStyle::clone(parentStyle);
+    m_cache.add(hash, cacheItem);
+}
+
+void MatchedPropertiesCache::clear()
+{
+    m_cache.clear();
+}
+
+void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
+{
+    // Look for cache entries containing a style declaration with a single ref and remove them.
+    // This may happen when an element attribute mutation causes it to generate a new inlineStyle()
+    // or presentationAttributeStyle(), potentially leaving this cache with the last ref on the old one.
+    Vector<unsigned, 16> toRemove;
+    Cache::iterator it = m_cache.begin();
+    Cache::iterator end = m_cache.end();
+    for (; it != end; ++it) {
+        Vector<MatchedProperties>& matchedProperties = it->value.matchedProperties;
+        for (size_t i = 0; i < matchedProperties.size(); ++i) {
+            if (matchedProperties[i].properties->hasOneRef()) {
+                toRemove.append(it->key);
+                break;
+            }
+        }
+    }
+    for (size_t i = 0; i < toRemove.size(); ++i)
+        m_cache.remove(toRemove[i]);
+
+    m_additionsSinceLastSweep = 0;
+}
+
+bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderStyle* style, const RenderStyle* parentStyle)
+{
+    // FIXME: CSSPropertyWebkitWritingMode modifies state when applying to document element. We can't skip the applying by caching.
+    if (element == element->document()->documentElement() && element->document()->writingModeSetOnDocumentElement())
+        return false;
+    if (style->unique() || (style->styleType() != NOPSEUDO && parentStyle->unique()))
+        return false;
+    if (style->hasAppearance())
+        return false;
+    if (style->zoom() != RenderStyle::initialZoom())
+        return false;
+    if (style->writingMode() != RenderStyle::initialWritingMode())
+        return false;
+    // The cache assumes static knowledge about which properties are inherited.
+    if (parentStyle->hasExplicitlyInheritedProperties())
+        return false;
+    return true;
+}
+
+void CachedMatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
+    info.addMember(matchedProperties, "matchedProperties");
+    info.addMember(ranges, "ranges");
+    info.addMember(renderStyle, "renderStyle");
+    info.addMember(parentRenderStyle, "parentRenderStyle");
 }
 
 } // namespace WebCore
