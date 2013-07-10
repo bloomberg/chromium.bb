@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
+#include "ipc/ipc_platform_file.h"
 
 namespace picasa {
 
@@ -29,6 +30,7 @@ struct AlbumInfo {
 
 struct AlbumTableFiles {
   AlbumTableFiles();
+  explicit AlbumTableFiles(const base::FilePath& directory_path);
 
   // Special empty file used to confirm existence of table.
   base::PlatformFile indicator_file;
@@ -39,6 +41,19 @@ struct AlbumTableFiles {
   base::PlatformFile name_file;
   base::PlatformFile token_file;
   base::PlatformFile uid_file;
+};
+
+// A mirror of AlbumTableFiles but for transit.
+struct AlbumTableFilesForTransit {
+  AlbumTableFilesForTransit();
+  IPC::PlatformFileForTransit indicator_file;
+
+  IPC::PlatformFileForTransit category_file;
+  IPC::PlatformFileForTransit date_file;
+  IPC::PlatformFileForTransit filename_file;
+  IPC::PlatformFileForTransit name_file;
+  IPC::PlatformFileForTransit token_file;
+  IPC::PlatformFileForTransit uid_file;
 };
 
 void CloseAlbumTableFiles(AlbumTableFiles* table_files);

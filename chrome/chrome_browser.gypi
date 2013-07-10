@@ -2466,6 +2466,8 @@
             'browser/media_galleries/fileapi/safe_itunes_library_parser.h',
             'browser/media_galleries/fileapi/safe_itunes_pref_parser_win.cc',
             'browser/media_galleries/fileapi/safe_itunes_pref_parser_win.h',
+            'browser/media_galleries/fileapi/safe_picasa_album_table_reader.cc',
+            'browser/media_galleries/fileapi/safe_picasa_album_table_reader.h',
           ],
         }],
         ['enable_extensions==1', {

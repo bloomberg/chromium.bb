@@ -89,7 +89,6 @@ class SafeITunesLibraryParser : public content::UtilityProcessHostClient {
   // Initialized on the Media Task Runner, but only accessed on the IO thread.
   ParserState parser_state_;
 
-
   DISALLOW_COPY_AND_ASSIGN(SafeITunesLibraryParser);
 };
 

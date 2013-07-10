@@ -42,7 +42,9 @@
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
+#include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/utility/itunes_library_parser.h"
+#include "chrome/utility/media_galleries/picasa_album_table_reader.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(ENABLE_PRINTING)
@@ -125,6 +127,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 #if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
                         OnParseITunesLibraryXmlFile)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParsePicasaPMPDatabase,
+                        OnParsePicasaPMPDatabase)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -514,6 +518,33 @@ void ChromeContentUtilityClient::OnParseITunesLibraryXmlFile(
   bool result = parser.Parse(
       itunes::ITunesLibraryParser::ReadITunesLibraryXmlFile(file));
   Send(new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
+  ReleaseProcessIfNeeded();
+}
+
+void ChromeContentUtilityClient::OnParsePicasaPMPDatabase(
+    const picasa::AlbumTableFilesForTransit& album_table_files) {
+  picasa::AlbumTableFiles files;
+  files.indicator_file = IPC::PlatformFileForTransitToPlatformFile(
+      album_table_files.indicator_file);
+  files.category_file = IPC::PlatformFileForTransitToPlatformFile(
+      album_table_files.category_file);
+  files.date_file = IPC::PlatformFileForTransitToPlatformFile(
+      album_table_files.date_file);
+  files.filename_file = IPC::PlatformFileForTransitToPlatformFile(
+      album_table_files.filename_file);
+  files.name_file = IPC::PlatformFileForTransitToPlatformFile(
+      album_table_files.name_file);
+  files.token_file = IPC::PlatformFileForTransitToPlatformFile(
+      album_table_files.token_file);
+  files.uid_file = IPC::PlatformFileForTransitToPlatformFile(
+      album_table_files.uid_file);
+
+  picasa::PicasaAlbumTableReader reader(files);
+  bool parse_success = reader.Init();
+  Send(new ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished(
+      parse_success,
+      reader.albums(),
+      reader.folders()));
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

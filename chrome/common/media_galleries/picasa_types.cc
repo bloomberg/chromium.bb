@@ -11,6 +11,19 @@ namespace picasa {
 
 namespace {
 
+base::PlatformFile OpenPlatformFile(const base::FilePath& directory_path,
+                                    const std::string& suffix) {
+  base::FilePath path = directory_path.Append(base::FilePath::FromUTF8Unsafe(
+      std::string(kPicasaAlbumTableName) + "_" + suffix));
+  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
+  return base::CreatePlatformFile(path, flags, NULL, NULL);
+}
+
+base::PlatformFile OpenColumnPlatformFile(const base::FilePath& directory_path,
+                                          const std::string& column_name) {
+  return OpenPlatformFile(directory_path, column_name + "." + kPmpExtension);
+}
+
 void ClosePlatformFile(base::PlatformFile* platform_file) {
   DCHECK(platform_file);
   if (base::ClosePlatformFile(*platform_file))
@@ -39,6 +52,26 @@ AlbumTableFiles::AlbumTableFiles()
       name_file(base::kInvalidPlatformFileValue),
       token_file(base::kInvalidPlatformFileValue),
       uid_file(base::kInvalidPlatformFileValue) {
+}
+
+AlbumTableFiles::AlbumTableFiles(const base::FilePath& directory_path)
+    : indicator_file(OpenPlatformFile(directory_path, "0")),
+      category_file(OpenColumnPlatformFile(directory_path, "category")),
+      date_file(OpenColumnPlatformFile(directory_path, "date")),
+      filename_file(OpenColumnPlatformFile(directory_path, "filename")),
+      name_file(OpenColumnPlatformFile(directory_path, "name")),
+      token_file(OpenColumnPlatformFile(directory_path, "token")),
+      uid_file(OpenColumnPlatformFile(directory_path, "uid")) {
+}
+
+AlbumTableFilesForTransit::AlbumTableFilesForTransit()
+    : indicator_file(IPC::InvalidPlatformFileForTransit()),
+      category_file(IPC::InvalidPlatformFileForTransit()),
+      date_file(IPC::InvalidPlatformFileForTransit()),
+      filename_file(IPC::InvalidPlatformFileForTransit()),
+      name_file(IPC::InvalidPlatformFileForTransit()),
+      token_file(IPC::InvalidPlatformFileForTransit()),
+      uid_file(IPC::InvalidPlatformFileForTransit()) {
 }
 
 void CloseAlbumTableFiles(AlbumTableFiles* table_files) {

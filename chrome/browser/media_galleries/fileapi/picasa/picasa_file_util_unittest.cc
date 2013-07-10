@@ -128,6 +128,11 @@ class TestPicasaDataProvider : public PicasaDataProvider {
 
   virtual ~TestPicasaDataProvider() {}
 
+  void RefreshData(const base::Closure& ready_callback) OVERRIDE {
+    DCHECK(initialized_);
+    ready_callback.Run();
+  }
+
   void Init(const std::vector<AlbumInfo>& albums,
             const std::vector<AlbumInfo>& folders) {
     InitializeWith(albums, folders);
@@ -135,11 +140,6 @@ class TestPicasaDataProvider : public PicasaDataProvider {
   }
 
  private:
-  virtual bool ReadData() OVERRIDE {
-    DCHECK(initialized_);
-    return true;
-  }
-
   bool initialized_;
 };
 

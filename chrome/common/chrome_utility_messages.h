@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/itunes_library.h"
+#include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -58,6 +59,25 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(itunes::parser::Track)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(location)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(picasa::AlbumInfo)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(uid)
+  IPC_STRUCT_TRAITS_MEMBER(path)
+IPC_STRUCT_TRAITS_END()
+
+// These files are opened read-only. Please see the constructor for
+// picasa::AlbumTableFiles for details.
+IPC_STRUCT_TRAITS_BEGIN(picasa::AlbumTableFilesForTransit)
+  IPC_STRUCT_TRAITS_MEMBER(indicator_file)
+  IPC_STRUCT_TRAITS_MEMBER(category_file)
+  IPC_STRUCT_TRAITS_MEMBER(date_file)
+  IPC_STRUCT_TRAITS_MEMBER(filename_file)
+  IPC_STRUCT_TRAITS_MEMBER(name_file)
+  IPC_STRUCT_TRAITS_MEMBER(token_file)
+  IPC_STRUCT_TRAITS_MEMBER(uid_file)
 IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
@@ -143,6 +163,11 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesPrefXml,
 // return the parse result as well as the iTunes library as an itunes::Library.
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
                      IPC::PlatformFileForTransit /* XML file to parse */)
+
+// Tells the utility process to parse the Picasa PMP database and return a
+// listing of the user's Picasa albums and folders, along with metadata.
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParsePicasaPMPDatabase,
+                     picasa::AlbumTableFilesForTransit /* album_table_files */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 //------------------------------------------------------------------------------
@@ -253,4 +278,11 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GotITunesDirectory,
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GotITunesLibrary,
                      bool /* Parser result */,
                      itunes::parser::Library /* iTunes library */)
+
+// Reply after parsing the Picasa PMP Database with the parser result and a
+// listing of the user's Picasa albums and folders, along with metadata.
+IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished,
+                     bool /* parse_success */,
+                     std::vector<picasa::AlbumInfo> /* albums */,
+                     std::vector<picasa::AlbumInfo> /* folders */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

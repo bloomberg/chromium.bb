@@ -21,6 +21,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace picasa {
+struct AlbumTableFilesForTransit;
+}
+
 namespace printing {
 struct PageRange;
 }
@@ -85,6 +89,9 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
+  void OnParsePicasaPMPDatabase(
+      const picasa::AlbumTableFilesForTransit& album_table_files);
+
   void OnParseITunesLibraryXmlFile(
       IPC::PlatformFileForTransit itunes_library_file);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

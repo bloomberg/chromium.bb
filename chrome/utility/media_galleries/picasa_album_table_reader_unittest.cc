@@ -11,30 +11,6 @@ namespace picasa {
 
 namespace {
 
-base::PlatformFile OpenPlatformFile(const base::FilePath& directory_path,
-                                    const std::string& suffix) {
-  base::FilePath path = directory_path.Append(base::FilePath::FromUTF8Unsafe(
-      std::string(kPicasaAlbumTableName) + "_" + suffix));
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  return base::CreatePlatformFile(path, flags, NULL, NULL);
-}
-
-base::PlatformFile OpenColumnPlatformFile(const base::FilePath& directory_path,
-                                          const std::string& column_name) {
-  return OpenPlatformFile(directory_path, column_name + "." + kPmpExtension);
-}
-
-AlbumTableFiles MakeAlbumTableFiles(const base::FilePath& directory_path) {
-  AlbumTableFiles files;
-  files.indicator_file = OpenPlatformFile(directory_path, "0");
-  files.category_file  = OpenColumnPlatformFile(directory_path, "category");
-  files.date_file      = OpenColumnPlatformFile(directory_path, "date");
-  files.filename_file  = OpenColumnPlatformFile(directory_path, "filename");
-  files.name_file      = OpenColumnPlatformFile(directory_path, "name");
-  files.token_file     = OpenColumnPlatformFile(directory_path, "token");
-  files.uid_file       = OpenColumnPlatformFile(directory_path, "uid");
-}
-
 TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   PmpTestHelper test_helper(kPicasaAlbumTableName);
   ASSERT_TRUE(test_helper.Init());
@@ -89,8 +65,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
       "uid", PMP_TYPE_STRING, uid_vector));
 
-  AlbumTableFiles album_table_files =
-      MakeAlbumTableFiles(test_helper.GetTempDirPath());
+  AlbumTableFiles album_table_files(test_helper.GetTempDirPath());
   PicasaAlbumTableReader reader(album_table_files);
 
   ASSERT_TRUE(reader.Init());

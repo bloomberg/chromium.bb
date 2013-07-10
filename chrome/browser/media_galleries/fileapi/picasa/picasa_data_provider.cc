@@ -9,43 +9,63 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/media_galleries/picasa_types.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
+#include "chrome/browser/media_galleries/fileapi/safe_picasa_album_table_reader.h"
+#include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+
+using chrome::MediaFileSystemBackend;
 
 namespace picasa {
 
 PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
     : database_path_(database_path),
-      needs_refresh_(true) {
+      needs_refresh_(true),
+      weak_factory_(this) {
 }
 
 PicasaDataProvider::~PicasaDataProvider() {}
 
 void PicasaDataProvider::RefreshData(const base::Closure& ready_callback) {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   // TODO(tommycli): Need to watch the database_path_ folder and handle
   // rereading the data when it changes.
-  if (needs_refresh_) {
-    if (ReadData()) {
-      needs_refresh_ = false;
-    }
+  if (!needs_refresh_) {
+    ready_callback.Run();
+    return;
   }
 
-  ready_callback.Run();
+  needs_refresh_ = false;
+  album_table_reader_ = new SafePicasaAlbumTableReader(
+      AlbumTableFiles(database_path_),
+      base::Bind(&PicasaDataProvider::OnDataRefreshed,
+                 weak_factory_.GetWeakPtr(),
+                 ready_callback));
+  album_table_reader_->Start();
 }
 
 scoped_ptr<AlbumMap> PicasaDataProvider::GetFolders() {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   return make_scoped_ptr(new AlbumMap(folder_map_));
 }
 
 scoped_ptr<AlbumMap> PicasaDataProvider::GetAlbums() {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   return make_scoped_ptr(new AlbumMap(album_map_));
 }
 
-void PicasaDataProvider::InitializeWith(const std::vector<AlbumInfo>& albums,
-                                        const std::vector<AlbumInfo>& folders) {
-  UniquifyNames(albums, &album_map_);
-  UniquifyNames(folders, &folder_map_);
+void PicasaDataProvider::OnDataRefreshed(
+    const base::Closure& ready_callback,
+    bool parse_success,
+    const std::vector<AlbumInfo>& albums,
+    const std::vector<AlbumInfo>& folders) {
+  DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
+  if (parse_success) {
+    UniquifyNames(albums, &album_map_);
+    UniquifyNames(folders, &folder_map_);
+  }
+  ready_callback.Run();
 }
 
 // static
@@ -86,25 +106,6 @@ void PicasaDataProvider::UniquifyNames(const std::vector<AlbumInfo>& info_list,
 
     result_map->insert(std::pair<std::string, AlbumInfo>(name, info_list[i]));
   }
-}
-
-bool PicasaDataProvider::ReadData() {
-  // TODO(tommycli): Disabled until utility process host client implemented.
-  // PicasaAlbumTableFiles album_table_files(database_path_);
-  // PicasaAlbumTableReader album_table_reader((album_table_files));
-  //
-  // bool read_success = album_table_reader.Init();
-  //
-  // ClosePicasaAlbumTableFiles(&album_table_files);
-  //
-  // if (read_success) {
-  //   InitializeWith(album_table_reader.albums(),
-  //                  album_table_reader.folders());
-  // }
-  //
-  //  return read_success;
-
-  return true;
 }
 
 }  // namespace picasa
