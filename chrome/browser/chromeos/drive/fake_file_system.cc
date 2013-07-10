@@ -54,18 +54,6 @@ void FakeFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::GetResourceEntryById(
-    const std::string& resource_id,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  drive_service_->GetResourceEntry(
-      resource_id,
-      base::Bind(
-          &FakeFileSystem::GetResourceEntryByIdAfterGetResourceEntry,
-          weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
 void FakeFileSystem::TransferFileFromRemoteToLocal(
     const base::FilePath& remote_src_file_path,
     const base::FilePath& local_dest_file_path,
@@ -253,22 +241,6 @@ void FakeFileSystem::GetCacheEntryByResourceId(
 }
 
 void FakeFileSystem::Reload() {
-}
-
-// Implementation of GetResourceEntryById.
-void FakeFileSystem::GetResourceEntryByIdAfterGetResourceEntry(
-    const GetResourceEntryCallback& callback,
-    google_apis::GDataErrorCode error_in,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  FileError error = util::GDataToFileError(error_in);
-  scoped_ptr<ResourceEntry> entry;
-  if (error == FILE_ERROR_OK) {
-    DCHECK(resource_entry);
-    entry.reset(new ResourceEntry(ConvertToResourceEntry(*resource_entry)));
-  }
-  callback.Run(error, entry.Pass());
 }
 
 // Implementation of GetFileContentByPath.

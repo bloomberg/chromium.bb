@@ -77,9 +77,6 @@ class FileSystem : public FileSystemInterface,
   virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
-  virtual void GetResourceEntryById(
-      const std::string& resource_id,
-      const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       const GURL& next_url,
                       const SearchCallback& callback) OVERRIDE;
@@ -275,14 +272,6 @@ class FileSystem : public FileSystemInterface,
       const ReadDirectoryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntryVector> entries);
-
-  // Part of GetResourceEntryById(). Called after
-  // ResourceMetadata::GetResourceEntryById() is complete.
-  // |callback| must not be null.
-  void GetResourceEntryByIdAfterGetEntry(
-      const GetResourceEntryCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
 
   // Part of RefreshDirectory(). Called after
   // GetResourceEntryByPath() is complete.

@@ -236,36 +236,6 @@ void FileSystem::RemoveObserver(FileSystemObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FileSystem::GetResourceEntryById(
-    const std::string& resource_id,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!resource_id.empty());
-  DCHECK(!callback.is_null());
-
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      resource_id,
-      base::Bind(&FileSystem::GetResourceEntryByIdAfterGetEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void FileSystem::GetResourceEntryByIdAfterGetEntry(
-    const GetResourceEntryCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
-    return;
-  }
-  DCHECK(entry.get());
-
-  CheckLocalModificationAndRun(entry.Pass(), callback);
-}
-
 void FileSystem::TransferFileFromRemoteToLocal(
     const base::FilePath& remote_src_file_path,
     const base::FilePath& local_dest_file_path,

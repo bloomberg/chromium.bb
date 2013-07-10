@@ -153,14 +153,6 @@ class FileSystemInterface {
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 
-  // Finds an entry (file or directory) by using |resource_id|. This call
-  // does not initiate content refreshing.
-  //
-  // |callback| must not be null.
-  virtual void GetResourceEntryById(
-      const std::string& resource_id,
-      const GetResourceEntryCallback& callback) = 0;
-
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the Drive file system.
   // |local_dest_file_path| is the destination path on the local file system.

@@ -35,20 +35,6 @@ class FakeFileSystemTest : public ::testing::Test {
   scoped_ptr<FakeFileSystem> fake_file_system_;
 };
 
-TEST_F(FakeFileSystemTest, GetResourceEntryById) {
-  FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
-  const std::string resource_id = "folder:sub_dir_folder_resource_id";
-
-  fake_file_system_->GetResourceEntryById(
-      resource_id,
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(resource_id, entry->resource_id());
-}
-
 TEST_F(FakeFileSystemTest, GetFileContentByPath) {
   FileError initialize_error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntry> entry;
