@@ -117,9 +117,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableFileSystem))
     WebRuntimeFeatures::enableFileSystem(false);
 
-  if (command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI))
-    WebRuntimeFeatures::enableJavaScriptI18NAPI(false);
-
   if (command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures))
     WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
 

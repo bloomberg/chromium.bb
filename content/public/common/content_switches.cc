@@ -155,9 +155,6 @@ const char kDisableJava[]                   = "disable-java";
 // Don't execute JavaScript (browser JS like the new tab page still runs).
 const char kDisableJavaScript[]             = "disable-javascript";
 
-// Disable JavaScript I18N API.
-const char kDisableJavaScriptI18NAPI[]      = "disable-javascript-i18n-api";
-
 // Disable LocalStorage.
 const char kDisableLocalStorage[]           = "disable-local-storage";
 

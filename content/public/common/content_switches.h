@@ -63,7 +63,6 @@ extern const char kDisableHistogramCustomizer[];
 extern const char kDisableImageTransportSurface[];
 CONTENT_EXPORT extern const char kDisableJava[];
 CONTENT_EXPORT extern const char kDisableJavaScript[];
-extern const char kDisableJavaScriptI18NAPI[];
 CONTENT_EXPORT extern const char kDisableLocalStorage[];
 CONTENT_EXPORT extern const char kDisableLogging[];
 CONTENT_EXPORT extern const char kLogNetLog[];

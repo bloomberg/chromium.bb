@@ -870,7 +870,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableGpuVsync,
     switches::kDisableGpu,
     switches::kDisableHistogramCustomizer,
-    switches::kDisableJavaScriptI18NAPI,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
     switches::kDisableNewDialogStyle,
