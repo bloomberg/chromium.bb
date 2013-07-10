@@ -416,9 +416,12 @@
     ]
   },
   "notifications": {
-    // Note that the chrome.notifications API is currently restricted
-    // to dev channel, extension/platform_app. This isn't done through
-    // this file, but rather on a method-by-method basis.
+    // The chrome.notifications functionality listed in notifications.idl is
+    // available only to extension/platform_app types. The implementation of
+    // that functionality enforces that restriction in
+    // NotificationsApiFunction::IsNotificationsApiAvailable(). This is more
+    // complicated than other namespaces because we are sharing the
+    // notifications permission with WebKit/Blink notifications.
     "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
