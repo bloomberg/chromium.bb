@@ -216,8 +216,18 @@ void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
                     OnAutoHideBehaviorChanged(auto_hide_behavior_));
 }
 
+void ShelfLayoutManager::PrepareForShutdown() {
+  // Clear all event filters, otherwise sometimes those filters may catch
+  // synthesized mouse event and cause crashes during the shutdown.
+  set_workspace_controller(NULL);
+  auto_hide_event_filter_.reset();
+  bezel_event_filter_.reset();
+}
+
 bool ShelfLayoutManager::IsVisible() const {
-  return shelf_->status_area_widget()->IsVisible() &&
+  // status_area_widget() may be NULL during the shutdown.
+  return shelf_->status_area_widget() &&
+      shelf_->status_area_widget()->IsVisible() &&
       (state_.visibility_state == SHELF_VISIBLE ||
        (state_.visibility_state == SHELF_AUTO_HIDE &&
         state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN));
@@ -547,15 +557,14 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
   state.is_screen_locked =
       Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
+  state.window_state = workspace_controller_ ?
+      workspace_controller_->GetWindowState() : WORKSPACE_WINDOW_STATE_DEFAULT;
 
   // It's possible for SetState() when a window becomes maximized but the state
   // won't have changed value. Do the dimming check before the early exit.
-  if (workspace_controller_) {
-    shelf_->SetDimsShelf(
-        (state.visibility_state == SHELF_VISIBLE) &&
-          workspace_controller_->GetWindowState() ==
-              WORKSPACE_WINDOW_STATE_MAXIMIZED);
-  }
+  shelf_->SetDimsShelf(
+      (state.visibility_state == SHELF_VISIBLE) &&
+      state.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED);
 
   if (state_.Equals(state))
     return;  // Nothing changed.
@@ -574,12 +583,18 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   auto_hide_timer_.Stop();
 
-  // Animating the background when transitioning from auto-hide & hidden to
-  // visible is janky. Update the background immediately in this case.
+  // The transition of background from auto-hide to visible is janky if the
+  // transition also cause the shelf's slide animation from the bottom edge.
+  // This happens if:
+  //  - shelf is hidden
+  //  - or, shelf is visible but workspace state is maximized
+  bool keep_maximized = state_.window_state == state.window_state &&
+      state_.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED;
   BackgroundAnimator::ChangeType change_type =
       (state_.visibility_state == SHELF_AUTO_HIDE &&
-       state_.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
-       state.visibility_state == SHELF_VISIBLE) ?
+       state.visibility_state == SHELF_VISIBLE &&
+       (state_.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN ||
+        keep_maximized)) ?
       BackgroundAnimator::CHANGE_IMMEDIATE : BackgroundAnimator::CHANGE_ANIMATE;
 
   State old_state = state_;
@@ -610,12 +625,13 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   // animation you see the background change.
   // Also delay the animation when the shelf was hidden, and has just been made
   // visible (e.g. using a gesture-drag).
+  // But do not delay if the transition happens when a window is maximized.
   bool delay_shelf_update =
       state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
       old_state.visibility_state == SHELF_AUTO_HIDE;
 
-  if (state.visibility_state == SHELF_VISIBLE &&
+  if (!keep_maximized && state.visibility_state == SHELF_VISIBLE &&
       old_state.visibility_state == SHELF_AUTO_HIDE &&
       old_state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN)
     delay_shelf_update = true;
@@ -840,14 +856,22 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
 void ShelfLayoutManager::UpdateShelfBackground(
     BackgroundAnimator::ChangeType type) {
-  bool launcher_paints = GetLauncherPaintsBackground();
-  shelf_->SetPaintsBackground(launcher_paints, type);
+  shelf_->SetPaintsBackground(GetShelfBackgroundType(), type);
 }
 
-bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
-  return gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
+ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
+  if (state_.visibility_state != SHELF_AUTO_HIDE &&
+      state_.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED) {
+    return SHELF_BACKGROUND_MAXIMIZED;
+  }
+
+  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
       (!state_.is_screen_locked && window_overlaps_shelf_) ||
-      (state_.visibility_state == SHELF_AUTO_HIDE);
+      (state_.visibility_state == SHELF_AUTO_HIDE)) {
+    return SHELF_BACKGROUND_OVERLAP;
+  }
+
+  return SHELF_BACKGROUND_DEFAULT;
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {
