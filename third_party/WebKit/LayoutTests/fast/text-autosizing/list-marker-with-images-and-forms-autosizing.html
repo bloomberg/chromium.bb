@@ -8,6 +8,7 @@
     width: 800px;
     margin: 0;
     overflow-y: hidden;
+    overflow-x: hidden;
   }
 </style>
 
@@ -23,7 +24,7 @@ if (window.internals) {
 <body>
 
 <div>
-The below list item markers should be autosized by a factor of 2.5 (800/320). Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+The below list item markers should be autosized by a factor of 2.5 (800/320). The whole list is shifted to the right by 8px (14 (autosized marker width) * (1 - 1/2.5) rounded) to compensate the scaling of list item markers and make sure they don't get chopped off.
 </div>
 <ul>
 <li>Simple plain list item</li>

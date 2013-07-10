@@ -11,7 +11,7 @@ body { width: 800px; margin: 0; overflow-y: hidden; }
 </head>
 <body>
 
-<ul style="width: 400px">
+<ul style="width: 400px; -webkit-margin-start: 3px">
 	<li style="width: 600px; font-size: 1.25rem">
 		This element is only autosized to 20px computed font size (16 * 400/320), since we don't want list items to be autosized differently from each other, and the width of UL tag is used for autosizing.<br>
 		Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -21,11 +21,11 @@ body { width: 800px; margin: 0; overflow-y: hidden; }
 		Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 	</li>
 	<li style="float: left; width: 800px; font-size: 2.5rem">
-		This list element becomes a separate autosizing cluster since it's floating. Hence its computed font size is 40px (16 * 400 / 320).<br>
+		This list element becomes a separate autosizing cluster since it's floating. Hence its computed font size is 40px (16 * 800 / 320).<br>
 		Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 	</li>
 	<li style="position: absolute; overflow: auto; margin-top: 280px; width: 800px; font-size: 2.5rem">
-		This list element becomes a separate autosizing cluster since it's positioned out of the list flow. Hence its computed font size is 40px (16 * 400 / 320).<br>
+		This list element becomes a separate autosizing cluster since it's positioned out of the list flow. Hence its computed font size is 40px (16 * 800 / 320).<br>
 		Margin is added so it doesn't overlap with the previous element.<br>
 		Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 	</li>

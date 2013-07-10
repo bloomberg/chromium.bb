@@ -49,6 +49,7 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTheme.h"
@@ -2016,6 +2017,36 @@ void RenderBox::updateLogicalWidth()
     setMarginEnd(computedValues.m_margins.m_end);
 }
 
+static float getMaxWidthListMarker(const RenderBox* renderer)
+{
+#ifndef NDEBUG
+    ASSERT(renderer);
+    Node* parentNode = renderer->generatingNode();
+    ASSERT(parentNode);
+    ASSERT(parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag));
+    ASSERT(renderer->style()->textAutosizingMultiplier() != 1);
+#endif
+    float maxWidth = 0;
+    for (RenderObject* child = renderer->firstChild(); child; child = child->nextSibling()) {
+        if (!child->isListItem())
+            continue;
+
+        RenderBox* listItem = toRenderBox(child);
+        for (RenderObject* itemChild = listItem->firstChild(); itemChild; itemChild = itemChild->nextSibling()) {
+            if (!itemChild->isListMarker())
+                continue;
+            RenderBox* itemMarker = toRenderBox(itemChild);
+            if (itemMarker->requiresLayoutToDetermineWidth()) {
+                // Make sure to compute the autosized width.
+                itemMarker->layout();
+            }
+            maxWidth = max<float>(maxWidth, toRenderListMarker(itemMarker)->logicalWidth().toFloat());
+            break;
+        }
+    }
+    return maxWidth;
+}
+
 void RenderBox::computeLogicalWidthInRegion(LogicalExtentComputedValues& computedValues, RenderRegion* region, LayoutUnit offsetFromLogicalTopOfFirstPage) const
 {
     computedValues.m_extent = logicalWidth();
@@ -2100,6 +2131,19 @@ void RenderBox::computeLogicalWidthInRegion(LogicalExtentComputedValues& compute
             computedValues.m_margins.m_start = newMargin;
         else
             computedValues.m_margins.m_end = newMargin;
+    }
+
+    if (styleToUse->textAutosizingMultiplier() != 1 && styleToUse->marginStart().type() == Fixed) {
+        Node* parentNode = generatingNode();
+        if (parentNode && (parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag))) {
+            // Make sure the markers in a list are properly positioned (i.e. not chopped off) when autosized.
+            const float adjustedMargin = (1 - 1.0 / styleToUse->textAutosizingMultiplier()) * getMaxWidthListMarker(this);
+            bool hasInvertedDirection = cb->style()->isLeftToRightDirection() != style()->isLeftToRightDirection();
+            if (hasInvertedDirection)
+                computedValues.m_margins.m_end += adjustedMargin;
+            else
+                computedValues.m_margins.m_start += adjustedMargin;
+        }
     }
 }
 
