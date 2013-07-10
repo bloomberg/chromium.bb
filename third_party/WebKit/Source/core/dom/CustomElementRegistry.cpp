@@ -58,7 +58,7 @@ static inline bool nameIncludesHyphen(const AtomicString& name)
     return (hyphenPosition != notFound);
 }
 
-bool CustomElementRegistry::isValidName(const AtomicString& name)
+bool CustomElementRegistry::isValidTypeName(const AtomicString& name)
 {
     if (!nameIncludesHyphen(name))
         return false;
@@ -78,6 +78,20 @@ bool CustomElementRegistry::isValidName(const AtomicString& name)
         return false;
 
     return Document::isValidName(name.string());
+}
+
+CustomElementDescriptor CustomElementRegistry::describe(Element* element) const
+{
+    ASSERT(element->isCustomElement());
+
+    // If an element has a custom tag name it takes precedence over
+    // the "is" attribute (if any).
+    const AtomicString& type = isCustomTagName(element->localName())
+        ? element->localName()
+        : m_elementTypeMap.get(element);
+
+    ASSERT(!type.isNull()); // Element must be in this registry
+    return CustomElementDescriptor(type, element->namespaceURI(), element->localName());
 }
 
 class RegistrationContextObserver : public DocumentLifecycleObserver {
@@ -110,7 +124,7 @@ void CustomElementRegistry::registerElement(Document* document, CustomElementCon
         return;
 
     AtomicString type = userSuppliedName.lower();
-    if (!isValidName(type)) {
+    if (!isValidTypeName(type)) {
         ec = InvalidCharacterError;
         return;
     }
@@ -127,7 +141,7 @@ void CustomElementRegistry::registerElement(Document* document, CustomElementCon
     }
     ASSERT(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
 
-    if (m_definitions.contains(type)) {
+    if (m_registeredTypeNames.contains(type)) {
         ec = InvalidStateError;
         return;
     }
@@ -143,14 +157,16 @@ void CustomElementRegistry::registerElement(Document* document, CustomElementCon
         return;
     }
 
-    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, tagName.localName(), tagName.namespaceURI(), lifecycleCallbacks);
+    const CustomElementDescriptor descriptor(type, tagName.namespaceURI(), tagName.localName());
+    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(descriptor, lifecycleCallbacks);
 
     if (!constructorBuilder->createConstructor(document, definition.get())) {
         ec = NotSupportedError;
         return;
     }
 
-    m_definitions.add(definition->type(), definition);
+    m_definitions.add(descriptor, definition);
+    m_registeredTypeNames.add(descriptor.type());
 
     if (!constructorBuilder->didRegisterDefinition(definition.get())) {
         ec = NotSupportedError;
@@ -158,44 +174,22 @@ void CustomElementRegistry::registerElement(Document* document, CustomElementCon
     }
 
     // Upgrade elements that were waiting for this definition.
-    const Vector<Element*>& upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
-
-    for (Vector<Element*>::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
-        CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(lifecycleCallbacks.get(), *it);
-    }
+    const CustomElementUpgradeCandidateMap::ElementSet& upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(descriptor);
+    for (CustomElementUpgradeCandidateMap::ElementSet::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it)
+        didResolveElement(definition.get(), *it);
 }
 
-PassRefPtr<CustomElementDefinition> CustomElementRegistry::findFor(Element* element) const
+CustomElementDefinition* CustomElementRegistry::findFor(Element* element) const
 {
     ASSERT(element->document()->registry() == this);
 
-    if (!element->isCustomElement())
-        return 0;
-
-    // When a custom tag and a type extension are provided as element
-    // names at the same time, the custom tag takes precedence.
-    if (isCustomTagName(element->localName())) {
-        if (RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(element->localName(), element->namespaceURI()))
-            return definition->isTypeExtension() ? 0 : definition.release();
-    }
-
-    const AtomicString& elementType = m_elementTypeMap.get(element);
-    if (RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(elementType, element->namespaceURI()))
-        return definition->isTypeExtension() && definition->name() == element->localName() ? definition.release() : 0;
-
-    return 0;
+    const CustomElementDescriptor& descriptor = describe(element);
+    return find(descriptor);
 }
 
-PassRefPtr<CustomElementDefinition> CustomElementRegistry::findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const
+CustomElementDefinition* CustomElementRegistry::find(const CustomElementDescriptor& descriptor) const
 {
-    if (type.isNull())
-        return 0;
-    DefinitionMap::const_iterator it = m_definitions.find(type);
-    if (it == m_definitions.end())
-        return 0;
-    if (it->value->namespaceURI() != namespaceURI)
-        return 0;
-    return it->value;
+    return m_definitions.get(descriptor);
 }
 
 PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(Document* document, const QualifiedName& tagName)
@@ -216,14 +210,12 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(Document* docu
 
     element->setIsCustomElement();
 
-    RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(tagName.localName(), tagName.namespaceURI());
-    if (!definition || definition->isTypeExtension()) {
-        // If a definition for a type extension was available, this
-        // custom tag element will be unresolved in perpetuity.
-        didCreateUnresolvedElement(CustomElementDefinition::CustomTag, tagName.localName(), element.get());
-    } else {
-        didCreateCustomTagElement(definition.get(), element.get());
-    }
+    const CustomElementDescriptor& descriptor = describe(element.get());
+    CustomElementDefinition* definition = find(descriptor);
+    if (definition)
+        didResolveElement(definition, element.get());
+    else
+        didCreateUnresolvedElement(descriptor, element.get());
 
     return element.release();
 }
@@ -232,26 +224,26 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element, const AtomicS
 {
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
+    if (element->isCustomElement())
+        return; // A custom tag, which takes precedence over type extensions
     element->setIsCustomElement();
     m_elementTypeMap.add(element, type);
-    RefPtr<CustomElementDefinition> definition = findFor(element);
-    if (!definition || !definition->isTypeExtension()) {
-        // If a definition for a custom tag was available, this type
-        // extension element will be unresolved in perpetuity.
-        didCreateUnresolvedElement(CustomElementDefinition::TypeExtension, type, element);
-    } else {
-        CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
-    }
+    const CustomElementDescriptor& descriptor = describe(element);
+    CustomElementDefinition* definition = find(descriptor);
+    if (definition)
+        didResolveElement(definition, element);
+    else
+        didCreateUnresolvedElement(descriptor, element);
 }
 
-void CustomElementRegistry::didCreateCustomTagElement(CustomElementDefinition* definition, Element* element)
+void CustomElementRegistry::didResolveElement(CustomElementDefinition* definition, Element* element) const
 {
     CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
 }
 
-void CustomElementRegistry::didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind kind, const AtomicString& type, Element* element)
+void CustomElementRegistry::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
 {
-    m_candidates.add(kind, type, element);
+    m_candidates.add(descriptor, element);
 }
 
 void CustomElementRegistry::customElementWasDestroyed(Element* element)

@@ -1733,6 +1733,8 @@
             'dom/CustomElementCallbackQueue.h',
             'dom/CustomElementDefinition.cpp',
             'dom/CustomElementDefinition.h',
+            'dom/CustomElementDescriptor.h',
+            'dom/CustomElementDescriptorHash.h',
             'dom/CustomElementLifecycleCallbacks.h',
             'dom/CustomElementRegistry.cpp',
             'dom/CustomElementRegistry.h',

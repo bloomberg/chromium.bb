@@ -31,8 +31,8 @@
 #ifndef CustomElementDefinition_h
 #define CustomElementDefinition_h
 
+#include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/CustomElementLifecycleCallbacks.h"
-#include "core/dom/QualifiedName.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,42 +41,17 @@ namespace WebCore {
 
 class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
 public:
-    static PassRefPtr<CustomElementDefinition> create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementLifecycleCallbacks>);
+    static PassRefPtr<CustomElementDefinition> create(const CustomElementDescriptor&, PassRefPtr<CustomElementLifecycleCallbacks>);
 
     virtual ~CustomElementDefinition() {}
 
-    enum CustomElementKind {
-        CustomTag,
-        TypeExtension
-    };
-
-    // This specifies whether the custom element is in the HTML or SVG
-    // namespace.
-    const AtomicString& namespaceURI() const { return m_tag.namespaceURI(); }
-
-    // This uniquely identifies the Custom Element. For custom tags, this
-    // is the tag name and the same as "name". For type extensions, this
-    // is the value of the "is" attribute.
-    const AtomicString& type() const { return m_type; }
-
-    // This is the tag name of the Custom Element.
-    const AtomicString& name() const { return m_tag.localName(); }
-
-    // This is a convenience property derived from "namespaceURI" and
-    // "name". Custom Elements of this kind will have this tag
-    // name. This does not have a prefix.
-    const QualifiedName& tagQName() const { return m_tag; }
-
-    CustomElementKind kind() const { return isTypeExtension() ? TypeExtension : CustomTag; }
-    bool isTypeExtension() const { return type() != name(); }
-
+    const CustomElementDescriptor& descriptor() const { return m_descriptor; }
     CustomElementLifecycleCallbacks* callbacks() const { return m_callbacks.get(); }
 
 private:
-    CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementLifecycleCallbacks>);
+    CustomElementDefinition(const CustomElementDescriptor&, PassRefPtr<CustomElementLifecycleCallbacks>);
 
-    AtomicString m_type;
-    QualifiedName m_tag;
+    CustomElementDescriptor m_descriptor;
     RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
 };
 

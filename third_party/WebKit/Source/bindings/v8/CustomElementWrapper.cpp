@@ -101,7 +101,7 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType>::wrap(PassRefPtr<Elemen
     if (!perContextData)
         return v8::Handle<v8::Object>();
 
-    CustomElementBinding* customElementBinding = perContextData->customElementBinding(definition->type());
+    CustomElementBinding* customElementBinding = perContextData->customElementBinding(definition->descriptor().type());
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, customElementBinding->wrapperType(), element.get(), isolate);
     if (wrapper.IsEmpty())

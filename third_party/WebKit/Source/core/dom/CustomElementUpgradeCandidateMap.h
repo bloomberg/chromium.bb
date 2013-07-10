@@ -31,39 +31,35 @@
 #ifndef CustomElementUpgradeCandidateMap_h
 #define CustomElementUpgradeCandidateMap_h
 
-#include "core/dom/CustomElementDefinition.h"
-#include "core/dom/Element.h"
+#include "core/dom/CustomElementDescriptor.h"
+#include "core/dom/CustomElementDescriptorHash.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
+
+class Element;
 
 class CustomElementUpgradeCandidateMap {
     WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
     CustomElementUpgradeCandidateMap() { }
 
-    typedef HashSet<Element*> ElementSet;
-
-    void add(CustomElementDefinition::CustomElementKind, const AtomicString& type, Element*);
+    void add(const CustomElementDescriptor&, Element*);
     void remove(Element*);
-    Vector<Element*> takeUpgradeCandidatesFor(CustomElementDefinition*);
+
+    typedef ListHashSet<Element*> ElementSet;
+    ElementSet takeUpgradeCandidatesFor(const CustomElementDescriptor&);
 
 private:
-    typedef std::pair<CustomElementDefinition::CustomElementKind, AtomicString> RequiredDefinition;
-    typedef HashMap<Element*, RequiredDefinition> UpgradeCandidateMap;
-    typedef HashMap<AtomicString, ElementSet> UnresolvedDefinitionMap;
-
-    bool matches(CustomElementDefinition*, Element*);
-
+    typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;
+
+    typedef HashMap<CustomElementDescriptor, ElementSet> UnresolvedDefinitionMap;
     UnresolvedDefinitionMap m_unresolvedDefinitions;
 };
 
 }
 
 #endif // CustomElementUpgradeCandidateMap_h
-

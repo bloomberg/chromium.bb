@@ -28,40 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/CustomElementUpgradeCandidateMap.h"
+#ifndef CustomElementDescriptorHash_h
+#define CustomElementDescriptorHash_h
+
+#include "core/dom/CustomElementDescriptor.h"
+#include "wtf/HashFunctions.h"
+#include "wtf/HashTraits.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
-void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descriptor, Element* element)
-{
-    m_upgradeCandidates.add(element, descriptor);
+struct CustomElementDescriptorHash {
+    static unsigned hash(const CustomElementDescriptor& descriptor)
+    {
+        return WTF::pairIntHash(AtomicStringHash::hash(descriptor.type()), WTF::pairIntHash(AtomicStringHash::hash(descriptor.namespaceURI()), AtomicStringHash::hash(descriptor.localName())));
+    }
 
-    UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(descriptor);
-    if (it == m_unresolvedDefinitions.end())
-        it = m_unresolvedDefinitions.add(descriptor, ElementSet()).iterator;
-    it->value.add(element);
-}
+    static bool equal(const CustomElementDescriptor& a, const CustomElementDescriptor& b)
+    {
+        return a == b;
+    }
 
-void CustomElementUpgradeCandidateMap::remove(Element* element)
-{
-    UpgradeCandidateMap::iterator it = m_upgradeCandidates.find(element);
-    if (it == m_upgradeCandidates.end())
-        return;
+    static const bool safeToCompareToEmptyOrDeleted = true;
+};
 
-    const CustomElementDescriptor& descriptor = it->value;
-    m_unresolvedDefinitions.get(descriptor).remove(element);
-    m_upgradeCandidates.remove(it);
-}
+} // namespace WebCore
 
-ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
-{
-    const ListHashSet<Element*>& candidates = m_unresolvedDefinitions.take(descriptor);
+namespace WTF {
 
-    for (ElementSet::const_iterator candidate = candidates.begin(); candidate != candidates.end(); ++candidate)
-        m_upgradeCandidates.remove(*candidate);
+template<>
+struct HashTraits<WebCore::CustomElementDescriptor> : SimpleClassHashTraits<WebCore::CustomElementDescriptor> {
+    static const bool emptyValueIsZero = HashTraits<AtomicString>::emptyValueIsZero;
+};
 
-    return candidates;
-}
+} // namespace WTF
 
-}
+#endif // CustomElementDescriptorHash

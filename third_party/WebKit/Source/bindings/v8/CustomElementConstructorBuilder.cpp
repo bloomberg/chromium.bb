@@ -46,6 +46,7 @@
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/CustomElementDefinition.h"
+#include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/Document.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
@@ -186,17 +187,19 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     if (m_constructor.IsEmpty())
         return false;
 
-    v8::Handle<v8::String> v8TagName = v8String(definition->name(), isolate);
+    const CustomElementDescriptor& descriptor = definition->descriptor();
+
+    v8::Handle<v8::String> v8TagName = v8String(descriptor.localName(), isolate);
     v8::Handle<v8::Value> v8Type;
-    if (definition->isTypeExtension())
-        v8Type = v8String(definition->type(), isolate);
+    if (descriptor.isTypeExtension())
+        v8Type = v8String(descriptor.type(), isolate);
     else
         v8Type = v8::Null(isolate);
 
     m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
 
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementDocument", toV8(document, m_context->Global(), isolate));
-    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementNamespaceURI", v8String(definition->namespaceURI(), isolate));
+    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementNamespaceURI", v8String(descriptor.namespaceURI(), isolate));
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementTagName", v8TagName);
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementType", v8Type);
 
@@ -241,7 +244,7 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
         return false;
 
     // Bindings retrieve the prototype when needed from per-context data.
-    perContextData->addCustomElementBinding(definition->type(), CustomElementBinding::create(m_context->GetIsolate(), m_prototype, m_wrapperType));
+    perContextData->addCustomElementBinding(definition->descriptor().type(), CustomElementBinding::create(m_context->GetIsolate(), m_prototype, m_wrapperType));
 
     return true;
 }

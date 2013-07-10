@@ -31,9 +31,13 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
+#include "core/dom/CustomElementDefinition.h"
+#include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -43,10 +47,10 @@
 namespace WebCore {
 
 class CustomElementConstructorBuilder;
-class CustomElementDefinition;
 class Document;
 class Element;
 
+// Element creation
 void setTypeExtension(Element*, const AtomicString& typeExtension);
 
 class CustomElementRegistry : public RefCounted<CustomElementRegistry> {
@@ -55,30 +59,40 @@ public:
     CustomElementRegistry() { }
     virtual ~CustomElementRegistry() { }
 
+    // Model
+    static bool isCustomTagName(const AtomicString& name) { return isValidTypeName(name); }
+
+    // Registration and definitions
     void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, ExceptionCode&);
+    CustomElementDefinition* findFor(Element*) const;
 
-    PassRefPtr<CustomElementDefinition> findFor(Element*) const;
-
+    // Element creation
     PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName& localName);
-
     void didGiveTypeExtension(Element*, const AtomicString&);
+
+    // Lifecycle
     void customElementWasDestroyed(Element*);
 
-    static bool isCustomTagName(const AtomicString& name) { return isValidName(name); }
-
 private:
-    typedef HashMap<AtomicString, RefPtr<CustomElementDefinition> > DefinitionMap;
-    typedef HashMap<Element*, AtomicString> ElementTypeMap;
-    static bool isValidName(const AtomicString&);
+    // Model
+    static bool isValidTypeName(const AtomicString&);
+    CustomElementDescriptor describe(Element*) const;
 
-    PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
+    // Registration and definitions
+    CustomElementDefinition* find(const CustomElementDescriptor&) const;
 
-    void didCreateCustomTagElement(CustomElementDefinition*, Element*);
-    void didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind, const AtomicString& type, Element*);
+    // Lifecycle
+    void didCreateUnresolvedElement(const CustomElementDescriptor&, Element*);
+    void didResolveElement(CustomElementDefinition*, Element*) const;
 
+    // Registration and definitions
+    typedef HashMap<CustomElementDescriptor, RefPtr<CustomElementDefinition> > DefinitionMap;
     DefinitionMap m_definitions;
-    // Only contains type extensions.
-    ElementTypeMap m_elementTypeMap;
+    HashSet<AtomicString> m_registeredTypeNames;
+
+    // Element creation
+    typedef HashMap<Element*, AtomicString> ElementTypeMap;
+    ElementTypeMap m_elementTypeMap; // Creation-time "is" attribute value.
     CustomElementUpgradeCandidateMap m_candidates;
 };
 
