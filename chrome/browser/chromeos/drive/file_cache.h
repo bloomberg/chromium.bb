@@ -250,21 +250,12 @@ class FileCache {
   friend class FileCacheTest;
   friend class FileCacheTestOnUIThread;
 
-  // Enum defining origin of a cached file.
-  enum CachedFileOrigin {
-    CACHED_FILE_FROM_SERVER = 0,
-    CACHED_FILE_LOCALLY_MODIFIED,
-  };
-
   ~FileCache();
 
   // Returns absolute path of the file if it were cached or to be cached.
   //
   // Can be called on any thread.
-  base::FilePath GetCacheFilePath(const std::string& resource_id,
-                                  const std::string& md5,
-                                  CachedFileOrigin file_origin) const;
-
+  base::FilePath GetCacheFilePath(const std::string& resource_id) const;
 
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
@@ -298,6 +289,10 @@ class FileCache {
   // Imports old format DB from |old_db_path| and deletes it.
   // TODO(hashimoto): Remove this method and FileCacheMetadata at some point.
   bool ImportOldDB(const base::FilePath& old_db_path);
+
+  // Renames cache files from old "resource_id.md5" format to the new format.
+  // TODO(hashimoto): Remove this method at some point.
+  void RenameCacheFilesToNewFormat();
 
   const base::FilePath cache_file_directory_;
 

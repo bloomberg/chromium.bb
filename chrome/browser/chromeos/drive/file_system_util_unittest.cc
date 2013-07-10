@@ -182,25 +182,6 @@ TEST(FileSystemUtilTest, GetCacheRootPath) {
             util::GetCacheRootPath(&profile));
 }
 
-TEST(FileSystemUtilTest, ParseCacheFilePath) {
-  std::string resource_id, md5;
-
-  ParseCacheFilePath(
-      base::FilePath::FromUTF8Unsafe(
-          "/home/user/GCache/v1/files/pdf:a1b2.0123456789abcdef"),
-      &resource_id,
-      &md5);
-  EXPECT_EQ(resource_id, "pdf:a1b2");
-  EXPECT_EQ(md5, "0123456789abcdef");
-
-  ParseCacheFilePath(
-      base::FilePath::FromUTF8Unsafe("/home/user/GCache/v1/files/pdf:a1b2"),
-      &resource_id,
-      &md5);
-  EXPECT_EQ(resource_id, "pdf:a1b2");
-  EXPECT_EQ(md5, "");
-}
-
 TEST(FileSystemUtilTest, MigrateCacheFilesFromOldDirectories) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

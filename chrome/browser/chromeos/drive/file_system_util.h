@@ -43,12 +43,6 @@ const base::FilePath::CharType kCacheFileDirectory[] =
 const base::FilePath::CharType kTemporaryFileDirectory[] =
     FILE_PATH_LITERAL("tmp");
 
-// The extension for dirty files. The file names look like
-// "<resource-id>.local".
-const base::FilePath::CharType kLocallyModifiedFileExtension[] =
-    FILE_PATH_LITERAL("local");
-const base::FilePath::CharType kWildCard[] = FILE_PATH_LITERAL("*");
-
 // Special resource IDs introduced to manage pseudo directory tree locally.
 // These strings are supposed to be different from any resource ID used on the
 // server, and are never sent to the server. Practical resource IDs used so far
@@ -140,13 +134,6 @@ std::string NormalizeFileName(const std::string& input);
 // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
 // profile.
 base::FilePath GetCacheRootPath(Profile* profile);
-
-// Extracts resource_id and md5 from cache path.
-// Example: path="/user/GCache/v1/tmp/pdf:a1b2.01234567" =>
-//          resource_id="pdf:a1b2", md5="01234567"
-void ParseCacheFilePath(const base::FilePath& path,
-                        std::string* resource_id,
-                        std::string* md5);
 
 // Migrates cache files from old "persistent" and "tmp" directories to the new
 // "files" directory (see crbug.com/248905).
