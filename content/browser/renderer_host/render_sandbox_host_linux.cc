@@ -665,7 +665,7 @@ class SandboxIPCProcess  {
 SandboxIPCProcess::~SandboxIPCProcess() {
   paths_.deleteAll();
   if (webkit_platform_support_)
-    WebKit::shutdown();
+    WebKit::shutdownWithoutV8();
 }
 
 void SandboxIPCProcess::EnsureWebKitInitialized() {

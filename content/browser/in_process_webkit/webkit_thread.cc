@@ -65,7 +65,7 @@ void WebKitThread::InternalWebKitThread::Init() {
 
 void WebKitThread::InternalWebKitThread::CleanUp() {
   DCHECK(webkit_platform_support_.get());
-  WebKit::shutdown();
+  WebKit::shutdownWithoutV8();
   // Delete BrowserWebKitPlatformSupportImpl now while on the same thread that
   // constructed it. (This prevents the WebKit shared timer from being destroyed
   // on a different thread than the one using it.)
