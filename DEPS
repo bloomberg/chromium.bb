@@ -542,6 +542,7 @@ hooks = [
     # This downloads binaries for Native Client's newlib toolchain.
     # Done in lieu of building the toolchain from scratch as it can take
     # anywhere from 30 minutes to 4 hours depending on platform to build.
+    "name": "nacltools",
     "pattern": ".",
     "action": [
         "python", "src/build/download_nacl_toolchains.py",
@@ -554,6 +555,7 @@ hooks = [
     # at about the same rate that the chrome build deps change.
     # This script is a no-op except for linux users who have
     # target_arch=arm in their GYP_DEFINES.
+    "name": "sysroot",
     "pattern": ".",
     "action": ["python", "src/build/linux/install-arm-sysroot.py",
                "--linux-only"],
@@ -563,6 +565,7 @@ hooks = [
     # This sysroot updates at about the same rate that the chrome build deps
     # change. This script is a no-op except for linux users who are doing
     # official chrome builds.
+    "name": "sysroot",
     "pattern": ".",
     "action": [
         "python",
@@ -572,6 +575,7 @@ hooks = [
   },
   {
     # Same as above, but for 32-bit Linux.
+    "name": "sysroot",
     "pattern": ".",
     "action": [
         "python",
@@ -583,17 +587,20 @@ hooks = [
     # Pull clang on mac. If nothing changed, or on non-mac platforms, this takes
     # zero seconds to run. If something changed, it downloads a prebuilt clang,
     # which takes ~20s, but clang speeds up builds by more than 20s.
+    "name": "clang",
     "pattern": ".",
     "action": ["python", "src/tools/clang/scripts/update.py", "--mac-only"],
   },
   {
     # Update the cygwin mount on Windows.
+    "name": "cygwin",
     "pattern": ".",
     "action": ["python", "src/build/win/setup_cygwin_mount.py", "--win-only"],
   },
   {
     # Update LASTCHANGE. This is also run by export_tarball.py in
     # src/tools/export_tarball - please keep them in sync.
+    "name": "lastchange",
     "pattern": ".",
     "action": ["python", "src/build/util/lastchange.py",
                "-o", "src/build/util/LASTCHANGE"],
@@ -601,6 +608,7 @@ hooks = [
   {
     # Update LASTCHANGE.blink. This is also run by export_tarball.py in
     # src/tools/export_tarball - please keep them in sync.
+    "name": "lastchange",
     "pattern": ".",
     "action": ["python", "src/build/util/lastchange.py",
                "-s", "src/third_party/WebKit",
@@ -608,11 +616,13 @@ hooks = [
   },
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
+    "name": "gyp",
     "pattern": ".",
     "action": ["python", "src/build/gyp_chromium"],
   },
   {
     # Check for landmines (reasons to clobber the build).
+    "name": "landmines",
     "pattern": ".",
     "action": ["python", "src/build/landmines.py"],
   },
