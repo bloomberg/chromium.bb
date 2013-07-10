@@ -6,7 +6,6 @@
 #include "win8/metro_driver/file_picker_ash.h"
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/strings/string_util.h"
@@ -85,7 +84,7 @@ class StringVectorImpl : public mswr::RuntimeClass<StringVectorItf> {
 FilePickerSessionBase::FilePickerSessionBase(ChromeAppViewAsh* app_view,
                                              const string16& title,
                                              const string16& filter,
-                                             const string16& default_path)
+                                             const base::FilePath& default_path)
     : app_view_(app_view),
       title_(title),
       filter_(filter),
@@ -116,11 +115,12 @@ bool FilePickerSessionBase::DoFilePicker() {
   return true;
 }
 
-OpenFilePickerSession::OpenFilePickerSession(ChromeAppViewAsh* app_view,
-                                             const string16& title,
-                                             const string16& filter,
-                                             const string16& default_path,
-                                             bool allow_multi_select)
+OpenFilePickerSession::OpenFilePickerSession(
+    ChromeAppViewAsh* app_view,
+    const string16& title,
+    const string16& filter,
+    const base::FilePath& default_path,
+    bool allow_multi_select)
     : FilePickerSessionBase(app_view, title, filter, default_path),
       allow_multi_select_(allow_multi_select) {
 }
@@ -377,7 +377,7 @@ SaveFilePickerSession::SaveFilePickerSession(
     : FilePickerSessionBase(app_view,
                             params.title,
                             params.filter,
-                            params.suggested_name.value()),
+                            params.suggested_name),
       filter_index_(params.filter_index) {
 }
 
@@ -492,8 +492,13 @@ HRESULT SaveFilePickerSession::StartFilePicker() {
   }
 
   if (!default_path_.empty()) {
+    string16 file_part = default_path_.BaseName().value();
+    // If the suggested_name is a root directory, then don't set it as the
+    // suggested name.
+    if (file_part.size() == 1 && file_part[0] == L'\\')
+      file_part.clear();
     hr = picker->put_SuggestedFileName(
-        mswrw::HStringReference(default_path_.c_str()).Get());
+        mswrw::HStringReference(file_part.c_str()).Get());
     if (FAILED(hr))
       return hr;
   }
@@ -546,7 +551,7 @@ HRESULT SaveFilePickerSession::FilePickerDone(SaveFileAsyncOp* async,
 
 FolderPickerSession::FolderPickerSession(ChromeAppViewAsh* app_view,
                                          const string16& title)
-    : FilePickerSessionBase(app_view, title, L"", L"") {}
+    : FilePickerSessionBase(app_view, title, L"", base::FilePath()) {}
 
 HRESULT FolderPickerSession::StartFilePicker() {
   mswrw::HStringReference class_name(

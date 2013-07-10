@@ -232,6 +232,7 @@ void RemoteRootWindowHostWin::HandleSaveFile(
   params.default_extension = default_extension;
   params.filter = filter;
   params.filter_index = filter_index;
+  params.suggested_name = default_path;
 
   // Can only have one of these operations in flight.
   DCHECK(file_saveas_completion_callback_.is_null());

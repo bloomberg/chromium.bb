@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
 class ChromeAppViewAsh;
@@ -24,7 +25,7 @@ class FilePickerSessionBase {
   explicit FilePickerSessionBase(ChromeAppViewAsh* app_view,
                                  const string16& title,
                                  const string16& filter,
-                                 const string16& default_path);
+                                 const base::FilePath& default_path);
 
   virtual ~FilePickerSessionBase() {
   }
@@ -56,7 +57,7 @@ class FilePickerSessionBase {
   string16 filter_;
 
   // The starting directory/file name.
-  string16 default_path_;
+  base::FilePath default_path_;
 
   // Pointer to the ChromeAppViewAsh instance. We notify the ChromeAppViewAsh
   // instance when the file open/save operations complete.
@@ -79,7 +80,7 @@ class OpenFilePickerSession : public FilePickerSessionBase {
   explicit OpenFilePickerSession(ChromeAppViewAsh* app_view,
                                  const string16& title,
                                  const string16& filter,
-                                 const string16& default_path,
+                                 const base::FilePath& default_path,
                                  bool allow_multi_select);
 
   const std::vector<base::FilePath>& filenames() const {

@@ -521,7 +521,7 @@ void ChromeAppViewAsh::OnDisplayFileOpenDialog(
       new OpenFilePickerSession(this,
                                 title,
                                 filter,
-                                default_path.value(),
+                                default_path,
                                 allow_multiple_files);
   file_picker_->Run();
 }
