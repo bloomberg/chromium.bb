@@ -705,7 +705,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     RefPtr<Element> element;
 
     if (CustomElementRegistry::isCustomTagName(localName))
-        element = ensureCustomElementRegistry()->createCustomTagElement(QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
+        element = ensureCustomElementRegistry()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     else
         element = createElement(localName, ec);
 
@@ -731,7 +731,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 
     RefPtr<Element> element;
     if (CustomElementRegistry::isCustomTagName(qName.localName()))
-        element = ensureCustomElementRegistry()->createCustomTagElement(qName);
+        element = ensureCustomElementRegistry()->createCustomTagElement(this, qName);
     else
         element = createElementNS(namespaceURI, qualifiedName, ec);
 
@@ -756,7 +756,7 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
     }
 
     CustomElementConstructorBuilder constructorBuilder(state, &options);
-    ensureCustomElementRegistry()->registerElement(&constructorBuilder, name, ec);
+    ensureCustomElementRegistry()->registerElement(this, &constructorBuilder, name, ec);
     return constructorBuilder.bindingsReturnValue();
 }
 
@@ -764,7 +764,7 @@ CustomElementRegistry* Document::ensureCustomElementRegistry()
 {
     if (!m_registry) {
         ASSERT(isHTMLDocument() || isXHTMLDocument());
-        m_registry = adoptRef(new CustomElementRegistry(this));
+        m_registry = adoptRef(new CustomElementRegistry());
     }
     return m_registry.get();
 }

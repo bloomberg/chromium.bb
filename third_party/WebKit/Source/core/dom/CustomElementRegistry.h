@@ -31,7 +31,6 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
@@ -50,19 +49,17 @@ class Element;
 
 void setTypeExtension(Element*, const AtomicString& typeExtension);
 
-class CustomElementRegistry : public RefCounted<CustomElementRegistry>, public ContextLifecycleObserver {
+class CustomElementRegistry : public RefCounted<CustomElementRegistry> {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit CustomElementRegistry(Document*);
+    CustomElementRegistry() { }
     virtual ~CustomElementRegistry() { }
 
-    void registerElement(CustomElementConstructorBuilder*, const AtomicString& name, ExceptionCode&);
+    void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, ExceptionCode&);
 
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
 
-    PassRefPtr<Element> createCustomTagElement(const QualifiedName& localName);
-
-    Document* document() const;
+    PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName& localName);
 
     void didGiveTypeExtension(Element*, const AtomicString&);
     void customElementWasDestroyed(Element*);

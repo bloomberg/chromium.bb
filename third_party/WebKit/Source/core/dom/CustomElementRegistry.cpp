@@ -37,6 +37,7 @@
 #include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
 #include "core/svg/SVGElement.h"
@@ -49,11 +50,6 @@ void setTypeExtension(Element* element, const AtomicString& typeExtension)
     ASSERT(element);
     if (!typeExtension.isEmpty())
         element->setAttribute(HTMLNames::isAttr, typeExtension);
-}
-
-CustomElementRegistry::CustomElementRegistry(Document* document)
-    : ContextLifecycleObserver(document)
-{
 }
 
 static inline bool nameIncludesHyphen(const AtomicString& name)
@@ -84,9 +80,31 @@ bool CustomElementRegistry::isValidName(const AtomicString& name)
     return Document::isValidName(name.string());
 }
 
-void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* constructorBuilder, const AtomicString& userSuppliedName, ExceptionCode& ec)
+class RegistrationContextObserver : public DocumentLifecycleObserver {
+public:
+    explicit RegistrationContextObserver(Document* document)
+        : DocumentLifecycleObserver(document)
+        , m_wentAway(!document)
+    {
+    }
+
+    bool registrationContextWentAway() { return m_wentAway; }
+
+private:
+    virtual void documentWasDisposed() OVERRIDE { m_wentAway = true; }
+
+    bool m_wentAway;
+};
+
+void CustomElementRegistry::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& userSuppliedName, ExceptionCode& ec)
 {
     RefPtr<CustomElementRegistry> protect(this);
+
+    // FIXME: In every instance except one it is the
+    // CustomElementConstructorBuilder that observes document
+    // destruction during registration. This responsibility should be
+    // consolidated in one place.
+    RegistrationContextObserver observer(document);
 
     if (!constructorBuilder->isFeatureAllowed())
         return;
@@ -114,18 +132,20 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
         return;
     }
 
-    RefPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks(document());
+    ASSERT(!observer.registrationContextWentAway());
+
+    RefPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks(document);
 
     // Consulting the constructor builder could execute script and
     // kill the document.
-    if (!document()) {
+    if (observer.registrationContextWentAway()) {
         ec = InvalidStateError;
         return;
     }
 
     RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, tagName.localName(), tagName.namespaceURI(), lifecycleCallbacks);
 
-    if (!constructorBuilder->createConstructor(document(), definition.get())) {
+    if (!constructorBuilder->createConstructor(document, definition.get())) {
         ec = NotSupportedError;
         return;
     }
@@ -178,9 +198,9 @@ PassRefPtr<CustomElementDefinition> CustomElementRegistry::findAndCheckNamespace
     return it->value;
 }
 
-PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const QualifiedName& tagName)
+PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(Document* document, const QualifiedName& tagName)
 {
-    if (!document())
+    if (!document)
         return 0;
 
     ASSERT(isCustomTagName(tagName.localName()));
@@ -188,11 +208,11 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
     RefPtr<Element> element;
 
     if (HTMLNames::xhtmlNamespaceURI == tagName.namespaceURI())
-        element = HTMLElement::create(tagName, document());
+        element = HTMLElement::create(tagName, document);
     else if (SVGNames::svgNamespaceURI == tagName.namespaceURI())
-        element = SVGElement::create(tagName, document());
+        element = SVGElement::create(tagName, document);
     else
-        return Element::create(tagName, document());
+        return Element::create(tagName, document);
 
     element->setIsCustomElement();
 
@@ -239,11 +259,6 @@ void CustomElementRegistry::customElementWasDestroyed(Element* element)
     ASSERT(element->isCustomElement());
     m_candidates.remove(element);
     m_elementTypeMap.remove(element);
-}
-
-inline Document* CustomElementRegistry::document() const
-{
-    return toDocument(m_scriptExecutionContext);
 }
 
 }
