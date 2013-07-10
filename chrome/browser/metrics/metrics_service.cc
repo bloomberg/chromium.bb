@@ -1452,6 +1452,10 @@ void MetricsService::PrepareFetchWithStagedLog() {
         UMA_HISTOGRAM_PERCENTAGE(
             "UMA.ProtoCompressionRatio",
             100 * compressed_log_text.size() / log_text.size());
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "UMA.ProtoGzippedKBSaved",
+            (log_text.size() - compressed_log_text.size()) / 1024,
+            1, 2000, 50);
       }
     } else {
       current_fetch_->SetUploadData(kMimeType, log_manager_.staged_log_text());

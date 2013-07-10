@@ -12496,6 +12496,12 @@ other types of suffix sets.
   <summary>Was the UMA protobuf uploaded earlier compressed or not.</summary>
 </histogram>
 
+<histogram name="UMA.ProtoGzippedKBSaved" units="KB">
+  <summary>
+    Kilobytes saved from gzipping the protobufs before uploading them.
+  </summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <obsolete>
     Deprecated 1/2013. No longer tracked.
