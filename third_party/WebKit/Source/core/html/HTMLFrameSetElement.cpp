@@ -33,10 +33,10 @@
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
-#include "core/platform/Length.h"
 #include "core/rendering/RenderFrameSet.h"
 
 namespace WebCore {
@@ -81,12 +81,12 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
 {
     if (name == rowsAttr) {
         if (!value.isNull()) {
-            m_rowLengths = parseFrameSetListOfDimensions(value.string());
+            m_rowLengths = parseListOfDimensions(value.string());
             setNeedsStyleRecalc();
         }
     } else if (name == colsAttr) {
         if (!value.isNull()) {
-            m_colLengths = parseFrameSetListOfDimensions(value.string());
+            m_colLengths = parseListOfDimensions(value.string());
             setNeedsStyleRecalc();
         }
     } else if (name == frameborderAttr) {
