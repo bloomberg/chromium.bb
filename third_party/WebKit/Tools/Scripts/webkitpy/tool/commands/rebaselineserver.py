@@ -31,7 +31,7 @@ results directory), provides comparisons of expected and actual results (both
 images and text) and allows one-click rebaselining of tests."""
 
 from webkitpy.common import system
-from webkitpy.common.net.resultsjsonparser import for_each_test, JSONTestResult
+from webkitpy.common.net.layouttestresults import for_each_test, JSONTestResult
 from webkitpy.layout_tests.layout_package import json_results_generator
 from webkitpy.tool.commands.abstractlocalservercommand import AbstractLocalServerCommand
 from webkitpy.tool.servers.rebaselineserver import get_test_baselines, RebaselineHTTPServer, STATE_NEEDS_REBASELINE

@@ -30,7 +30,7 @@
 
 from webkitpy.layout_tests.models import test_expectations
 
-from webkitpy.common.net import resultsjsonparser
+from webkitpy.common.net import layouttestresults
 
 
 TestExpectations = test_expectations.TestExpectations
@@ -119,7 +119,7 @@ class BuildBotPrinter(object):
             else:
                 add_to_dict_of_lists(regressions, results['actual'], test)
 
-        resultsjsonparser.for_each_test(summarized_results['tests'], add_result)
+        layouttestresults.for_each_test(summarized_results['tests'], add_result)
 
         if len(passes) or len(flaky) or len(regressions):
             self._print("")
@@ -140,7 +140,7 @@ class BuildBotPrinter(object):
                 tests.sort()
 
                 for test in tests:
-                    result = resultsjsonparser.result_for_test(summarized_results['tests'], test)
+                    result = layouttestresults.result_for_test(summarized_results['tests'], test)
                     actual = result['actual'].split(" ")
                     expected = result['expected'].split(" ")
                     result = TestExpectations.EXPECTATIONS[key.lower()]

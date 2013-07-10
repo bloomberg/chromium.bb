@@ -36,12 +36,67 @@ from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup
 
 
 class LayoutTestResultsTest(unittest.TestCase):
-    def test_set_failure_limit_count(self):
-        results = LayoutTestResults([])
-        self.assertIsNone(results.failure_limit_count())
-        results.set_failure_limit_count(10)
-        self.assertEqual(results.failure_limit_count(), 10)
+    # The real files have no whitespace, but newlines make this much more readable.
+    example_full_results_json = """ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "prototype-inheritance.html": {
+                    "expected": "PASS",
+                    "actual": "FAIL",
+                    "is_unexpected": true
+                },
+                "prototype-banana.html": {
+                    "expected": "FAIL",
+                    "actual": "PASS",
+                    "is_unexpected": true
+                },
+                "prototype-taco.html": {
+                    "expected": "PASS",
+                    "actual": "PASS FAIL",
+                    "is_unexpected": true
+                },
+                "prototype-chocolate.html": {
+                    "expected": "FAIL",
+                    "actual": "FAIL"
+                },
+                "prototype-strawberry.html": {
+                    "expected": "PASS",
+                    "actual": "FAIL PASS",
+                    "is_unexpected": true
+                }
+            }
+        },
+        "svg": {
+            "dynamic-updates": {
+                "SVGFEDropShadowElement-dom-stdDeviation-attr.html": {
+                    "expected": "PASS",
+                    "actual": "IMAGE",
+                    "has_stderr": true,
+                    "is_unexpected": true
+                }
+            }
+        }
+    },
+    "skipped": 450,
+    "num_regressions": 15,
+    "layout_tests_dir": "\/b\/build\/slave\/Webkit_Mac10_5\/build\/src\/third_party\/WebKit\/LayoutTests",
+    "version": 3,
+    "num_passes": 77,
+    "has_pretty_patch": false,
+    "fixable": 1220,
+    "num_flaky": 0,
+    "blink_revision": "1234",
+    "has_wdiff": false
+});"""
 
     def test_results_from_string(self):
         self.assertIsNone(LayoutTestResults.results_from_string(None))
         self.assertIsNone(LayoutTestResults.results_from_string(""))
+
+    def test_was_interrupted(self):
+        self.assertTrue(LayoutTestResults.results_from_string('ADD_RESULTS({"tests":{},"interrupted":true});').run_was_interrupted())
+        self.assertFalse(LayoutTestResults.results_from_string('ADD_RESULTS({"tests":{},"interrupted":false});').run_was_interrupted())
+
+    def test_blink_revision(self):
+        self.assertEqual(LayoutTestResults.results_from_string(self.example_full_results_json).blink_revision(), 1234)

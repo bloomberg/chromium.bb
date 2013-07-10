@@ -26,20 +26,58 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import json
 import logging
 
-from webkitpy.common.net.resultsjsonparser import ResultsJSONParser
-from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup, SoupStrainer
-from webkitpy.layout_tests.models import test_results
-from webkitpy.layout_tests.models import test_failures
+from webkitpy.common.memoized import memoized
+from webkitpy.layout_tests.layout_package import json_results_generator
+from webkitpy.layout_tests.models import test_expectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectations
 
 _log = logging.getLogger(__name__)
 
 
-# FIXME: This should be unified with all the layout test results code in the layout_tests package
-# This doesn't belong in common.net, but we don't have a better place for it yet.
-def path_for_layout_test(test_name):
-    return "LayoutTests/%s" % test_name
+# These are helper functions for navigating the results json structure.
+def for_each_test(tree, handler, prefix=''):
+    for key in tree:
+        new_prefix = (prefix + '/' + key) if prefix else key
+        if 'actual' not in tree[key]:
+            for_each_test(tree[key], handler, new_prefix)
+        else:
+            handler(new_prefix, tree[key])
+
+
+def result_for_test(tree, test):
+    parts = test.split('/')
+    for part in parts:
+        tree = tree[part]
+    return tree
+
+
+class JSONTestResult(object):
+    def __init__(self, test_name, result_dict):
+        self._test_name = test_name
+        self._result_dict = result_dict
+
+    def did_pass_or_run_as_expected(self):
+        return self.did_pass() or self.did_run_as_expected()
+
+    def did_pass(self):
+        return test_expectations.PASS in self._actual_as_tokens()
+
+    def did_run_as_expected(self):
+        return 'is_unexpected' not in self._result_dict
+
+    def _tokenize(self, results_string):
+        tokens = map(TestExpectations.expectation_from_string, results_string.split(' '))
+        if None in tokens:
+            _log.warning("Unrecognized result in %s" % results_string)
+        return set(tokens)
+
+    @memoized
+    def _actual_as_tokens(self):
+        actual_results = self._result_dict['actual']
+        return self._tokenize(actual_results)
 
 
 # FIXME: This should be unified with ResultsSummary or other NRWT layout tests code
@@ -50,42 +88,18 @@ class LayoutTestResults(object):
     def results_from_string(cls, string):
         if not string:
             return None
-        test_results = ResultsJSONParser.parse_results_json(string)
-        if not test_results:
+
+        content_string = json_results_generator.strip_json_wrapper(string)
+        json_dict = json.loads(content_string)
+        if not json_dict:
             return None
-        return cls(test_results)
+        return cls(json_dict)
 
-    def __init__(self, test_results):
-        self._test_results = test_results
-        self._failure_limit_count = None
-        self._unit_test_failures = []
+    def __init__(self, parsed_json):
+        self._results = parsed_json
 
-    # FIXME: run-webkit-tests should store the --exit-after-N-failures value
-    # (or some indication of early exit) somewhere in the results.json
-    # file.  Until it does, callers should set the limit to
-    # --exit-after-N-failures value used in that run.  Consumers of LayoutTestResults
-    # may use that value to know if absence from the failure list means PASS.
-    # https://bugs.webkit.org/show_bug.cgi?id=58481
-    def set_failure_limit_count(self, limit):
-        self._failure_limit_count = limit
+    def run_was_interrupted(self):
+        return self._results["interrupted"]
 
-    def failure_limit_count(self):
-        return self._failure_limit_count
-
-    def test_results(self):
-        return self._test_results
-
-    def results_matching_failure_types(self, failure_types):
-        return [result for result in self._test_results if result.has_failure_matching_types(*failure_types)]
-
-    def tests_matching_failure_types(self, failure_types):
-        return [result.test_name for result in self.results_matching_failure_types(failure_types)]
-
-    def failing_test_results(self):
-        return self.results_matching_failure_types(test_failures.ALL_FAILURE_CLASSES)
-
-    def failing_tests(self):
-        return [result.test_name for result in self.failing_test_results()] + self._unit_test_failures
-
-    def add_unit_test_failures(self, unit_test_results):
-        self._unit_test_failures = unit_test_results
+    def blink_revision(self):
+        return int(self._results["blink_revision"])
