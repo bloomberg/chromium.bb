@@ -39,6 +39,14 @@ InspectorTest.textWithSelection = function(text, selection)
     return lines.join("\n");
 }
 
+InspectorTest.dumpTextWithSelection = function(textEditor, dumpWhiteSpaces)
+{
+    var text = InspectorTest.textWithSelection(textEditor.text(), textEditor.selection());
+    if (dumpWhiteSpaces)
+        text = text.replace(/ /g, ".");
+    InspectorTest.addResult(text);
+}
+
 InspectorTest.typeIn = function(typeText)
 {
     for(var charIndex = 0; charIndex < typeText.length; ++charIndex) {
