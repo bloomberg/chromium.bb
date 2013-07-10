@@ -256,7 +256,6 @@ void ColorChooserView::SaturationValueView::OnSaturationValueChanged(
   marker_position_.set_x(x);
   marker_position_.set_y(y);
   SchedulePaint();
-  chooser_view_->OnSaturationValueChosen(saturation, value);
 }
 
 void ColorChooserView::SaturationValueView::ProcessEventAtLocation(
@@ -269,6 +268,7 @@ void ColorChooserView::SaturationValueView::ProcessEventAtLocation(
   saturation = SkScalarPin(saturation, 0, SK_Scalar1);
   value = SkScalarPin(value, 0, SK_Scalar1);
   OnSaturationValueChanged(saturation, value);
+  chooser_view_->OnSaturationValueChosen(saturation, value);
 }
 
 gfx::Size ColorChooserView::SaturationValueView::GetPreferredSize() {
