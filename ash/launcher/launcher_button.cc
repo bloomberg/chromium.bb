@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "grit/ash_resources.h"
@@ -293,7 +294,8 @@ void LauncherButton::SetImage(const gfx::ImageSkia& image) {
 
 void LauncherButton::AddState(State state) {
   if (!(state_ & state)) {
-    if (ShouldHop(state) || !ShouldHop(state_)) {
+    if (!ash::switches::UseAlternateShelfLayout() &&
+        (ShouldHop(state) || !ShouldHop(state_))) {
       ui::ScopedLayerAnimationSettings scoped_setter(
           icon_view_->layer()->GetAnimator());
       scoped_setter.SetTransitionDuration(
@@ -308,7 +310,8 @@ void LauncherButton::AddState(State state) {
 
 void LauncherButton::ClearState(State state) {
   if (state_ & state) {
-    if (!ShouldHop(state) || ShouldHop(state_)) {
+    if (!ash::switches::UseAlternateShelfLayout() &&
+        (!ShouldHop(state) || ShouldHop(state_))) {
       ui::ScopedLayerAnimationSettings scoped_setter(
           icon_view_->layer()->GetAnimator());
       scoped_setter.SetTweenType(ui::Tween::LINEAR);
@@ -408,7 +411,7 @@ void LauncherButton::Layout() {
   if (SHELF_ALIGNMENT_TOP == shelf_layout_manager_->GetAlignment())
     y_offset = button_bounds.height() - (kIconSize + kIconPad);
 
-  if (ShouldHop(state_)) {
+  if (ShouldHop(state_) && !ash::switches::UseAlternateShelfLayout()) {
     x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
         0, kHopSpacing, -kHopSpacing, 0);
     y_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
@@ -501,28 +504,50 @@ bool LauncherButton::IsShelfHorizontal() const {
 void LauncherButton::UpdateState() {
   // Even if not shown, the activation state image has an influence on the
   // layout. To avoid any odd movement we assign a bitmap here.
-  int bar_id;
-  if (state_ & (STATE_ACTIVE | STATE_ATTENTION))
-    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
-  else if (state_ & (STATE_HOVERED | STATE_FOCUSED))
-    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
-  else
-    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
-  if (SHELF_ALIGNMENT_BOTTOM == shelf_layout_manager_->GetAlignment()) {
-    bar_->SetImage(*image);
+  int bar_id = 0;
+  if (ash::switches::UseAlternateShelfLayout()) {
+    if (state_ & STATE_ACTIVE)
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE_ALTERNATE;
+    else if (state_ & STATE_RUNNING)
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING_ALTERNATE;
   } else {
-    bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(*image,
-        shelf_layout_manager_->SelectValueForShelfAlignment(
-            SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_270_CW,
-            SkBitmapOperations::ROTATION_180_CW)));
+    if (state_ & (STATE_ACTIVE | STATE_ATTENTION))
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+    else if (state_ & (STATE_HOVERED | STATE_FOCUSED))
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
+    else
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
   }
 
-  bar_->SetVisible(state_ != STATE_NORMAL);
+  if (bar_id != 0) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
+    if (shelf_layout_manager_->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+      bar_->SetImage(*image);
+    } else {
+      bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(*image,
+          shelf_layout_manager_->SelectValueForShelfAlignment(
+              SkBitmapOperations::ROTATION_90_CW,
+              SkBitmapOperations::ROTATION_90_CW,
+              SkBitmapOperations::ROTATION_270_CW,
+              SkBitmapOperations::ROTATION_180_CW)));
+    }
+    bar_->SetHorizontalAlignment(
+        shelf_layout_manager_->SelectValueForShelfAlignment(
+            views::ImageView::CENTER,
+            views::ImageView::LEADING,
+            views::ImageView::TRAILING,
+            views::ImageView::CENTER));
+    bar_->SetVerticalAlignment(
+        shelf_layout_manager_->SelectValueForShelfAlignment(
+            views::ImageView::TRAILING,
+            views::ImageView::CENTER,
+            views::ImageView::CENTER,
+            views::ImageView::LEADING));
+    bar_->SchedulePaint();
+  }
+
+  bar_->SetVisible(bar_id != 0 && state_ != STATE_NORMAL);
 
   icon_view_->SetHorizontalAlignment(
       shelf_layout_manager_->PrimaryAxisValue(views::ImageView::CENTER,
@@ -530,19 +555,6 @@ void LauncherButton::UpdateState() {
   icon_view_->SetVerticalAlignment(
       shelf_layout_manager_->PrimaryAxisValue(views::ImageView::LEADING,
                                               views::ImageView::CENTER));
-  bar_->SetHorizontalAlignment(
-      shelf_layout_manager_->SelectValueForShelfAlignment(
-          views::ImageView::CENTER,
-          views::ImageView::LEADING,
-          views::ImageView::TRAILING,
-          views::ImageView::CENTER));
-  bar_->SetVerticalAlignment(
-      shelf_layout_manager_->SelectValueForShelfAlignment(
-          views::ImageView::TRAILING,
-          views::ImageView::CENTER,
-          views::ImageView::CENTER,
-          views::ImageView::LEADING));
-  bar_->SchedulePaint();
   SchedulePaint();
 }
 

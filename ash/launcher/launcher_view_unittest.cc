@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_icon_observer.h"
@@ -22,6 +23,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
@@ -768,6 +770,51 @@ TEST_F(LauncherViewTest, LauncherItemStatus) {
   item.status = ash::STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
+}
+
+TEST_F(LauncherViewTest, LauncherItemPositionReflectedOnStateChanged) {
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add 2 items to the launcher.
+  LauncherID item1_id = AddTabbedBrowser();
+  LauncherID item2_id = AddPlatformAppNoWait();
+  internal::LauncherButton* item1_button = GetButtonByID(item1_id);
+  internal::LauncherButton* item2_button = GetButtonByID(item2_id);
+
+  internal::LauncherButton::State state_mask =
+      static_cast<internal::LauncherButton::State>
+          (internal::LauncherButton::STATE_NORMAL |
+          internal::LauncherButton::STATE_HOVERED |
+          internal::LauncherButton::STATE_RUNNING |
+          internal::LauncherButton::STATE_ACTIVE |
+          internal::LauncherButton::STATE_ATTENTION |
+          internal::LauncherButton::STATE_FOCUSED);
+
+  // Clear the button states.
+  item1_button->ClearState(state_mask);
+  item2_button->ClearState(state_mask);
+
+  // Since default alignment in tests is bottom, state is reflected in y-axis.
+  ASSERT_EQ(item1_button->GetIconBounds().y(),
+            item2_button->GetIconBounds().y());
+  item1_button->AddState(internal::LauncherButton::STATE_HOVERED);
+  ASSERT_NE(item1_button->GetIconBounds().y(),
+            item2_button->GetIconBounds().y());
+  item1_button->ClearState(internal::LauncherButton::STATE_HOVERED);
+
+  // Enable the alternate shelf layout.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshUseAlternateShelfLayout);
+  launcher_view_->Layout();
+
+  // Since default alignment in tests is bottom, state is reflected in y-axis.
+  // In alternate shelf layout there is no visible hovered state.
+  ASSERT_EQ(item1_button->GetIconBounds().y(),
+            item2_button->GetIconBounds().y());
+  item1_button->AddState(internal::LauncherButton::STATE_HOVERED);
+  ASSERT_EQ(item1_button->GetIconBounds().y(),
+            item2_button->GetIconBounds().y());
 }
 
 // Confirm that item status changes are reflected in the buttons
