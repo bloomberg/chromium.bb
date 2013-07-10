@@ -9,15 +9,19 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/input_method_win.h"
 
 namespace ui {
+
+class TSFEventRouter;
 
 // An InputMethod implementation based on Windows TSF API.
 class UI_EXPORT InputMethodTSF : public InputMethodWin {
  public:
   InputMethodTSF(internal::InputMethodDelegate* delegate,
                  HWND toplevel_window_handle);
+  virtual ~InputMethodTSF();
 
   // Overridden from InputMethod:
   virtual void OnFocus() OVERRIDE;
@@ -37,12 +41,18 @@ class UI_EXPORT InputMethodTSF : public InputMethodWin {
                                         TextInputClient* focused) OVERRIDE;
 
  private:
+  class TSFEventObserver;
+
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
 
   // Returns true if the Win32 native window bound to |client| has Win32 input
   // focus.
   bool IsWindowFocused(const TextInputClient* client) const;
+
+  // TSF event router and observer.
+  scoped_ptr<TSFEventObserver> tsf_event_observer_;
+  scoped_ptr<TSFEventRouter> tsf_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodTSF);
 };
