@@ -56,6 +56,9 @@ class PasswordChangeProcessor : public ChangeProcessor,
   // thread (http://crbug.com/70658).
   virtual void CommitChangesFromSyncModel() OVERRIDE;
 
+  // Stop processing changes and wait for being destroyed.
+  void Disconnect();
+
  protected:
   virtual void StartImpl(Profile* profile) OVERRIDE;
 
@@ -81,6 +84,11 @@ class PasswordChangeProcessor : public ChangeProcessor,
   content::NotificationRegistrar notification_registrar_;
 
   base::MessageLoop* expected_loop_;
+
+  // If disconnected is true, local/sync changes are dropped without modifying
+  // sync/local models.
+  bool disconnected_;
+  base::Lock disconnect_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordChangeProcessor);
 };

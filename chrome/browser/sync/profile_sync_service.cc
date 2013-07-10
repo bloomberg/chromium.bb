@@ -480,6 +480,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
   backend_->Initialize(
       this,
+      sync_thread_.Pass(),
       MakeWeakHandle(sync_js_controller_.AsWeakPtr()),
       sync_service_url_,
       credentials,
@@ -686,17 +687,19 @@ void ProfileSyncService::Shutdown() {
     SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
 
   ShutdownImpl(false);
+
+  if (sync_thread_)
+    sync_thread_->Stop();
 }
 
 void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
-  // First, we spin down the backend and wait for it to stop syncing completely
-  // before we Stop the data type manager.  This is to avoid a late sync cycle
-  // applying changes to the sync db that wouldn't get applied via
-  // ChangeProcessors, leading to back-from-the-dead bugs.
+  if (!backend_)
+    return;
+
+  // First, we spin down the backend to stop change processing as soon as
+  // possible.
   base::Time shutdown_start_time = base::Time::Now();
-  if (backend_) {
-    backend_->StopSyncingForShutdown();
-  }
+  backend_->StopSyncingForShutdown();
 
   // Stop all data type controllers, if needed.  Note that until Stop
   // completes, it is possible in theory to have a ChangeProcessor apply a
@@ -722,8 +725,11 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // shutting it down.
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
   if (doomed_backend) {
-    doomed_backend->Shutdown(sync_disabled);
-
+    sync_thread_ = doomed_backend->Shutdown(sync_disabled);
+    // When sync is disabled, backend should pass sync thread to PSS. Otherwise
+    // defer join()ing on backend until Chrome shutdown and avoid blocking UI
+    // right now.
+    DCHECK(!sync_disabled || sync_thread_.get());
     doomed_backend.reset();
   }
   base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;

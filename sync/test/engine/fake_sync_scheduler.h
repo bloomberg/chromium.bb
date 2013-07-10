@@ -20,7 +20,7 @@ class FakeSyncScheduler : public SyncScheduler {
   virtual ~FakeSyncScheduler();
 
   virtual void Start(Mode mode) OVERRIDE;
-  virtual void RequestStop(const base::Closure& callback) OVERRIDE;
+  virtual void RequestStop() OVERRIDE;
   virtual void ScheduleLocalNudge(
       const base::TimeDelta& desired_delay,
       ModelTypeSet types,
@@ -58,9 +58,6 @@ class FakeSyncScheduler : public SyncScheduler {
   virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
-
- private:
-  base::MessageLoop* const created_on_loop_;
 };
 
 }  // namespace syncer

@@ -98,7 +98,6 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
   // SyncManagerFactory implementation.  Called on the sync thread.
   virtual scoped_ptr<SyncManager> CreateSyncManager(
       std::string name) OVERRIDE {
-    DCHECK(!fake_manager_);
     fake_manager_ = new FakeSyncManager(initial_sync_ended_types_,
                                         progress_marker_types_,
                                         configure_fail_types_);
@@ -136,6 +135,8 @@ class SyncBackendHostTest : public testing::Test {
  protected:
   SyncBackendHostTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
+        db_thread_(BrowserThread::DB),
+        file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO),
         fake_manager_(NULL) {}
 
@@ -143,6 +144,8 @@ class SyncBackendHostTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     io_thread_.StartIOThread();
+    db_thread_.Start();
+    file_thread_.Start();
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
     sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
@@ -180,6 +183,8 @@ class SyncBackendHostTest : public testing::Test {
     // posting on the IO thread).
     ui_loop_.RunUntilIdle();
     io_thread_.Stop();
+    file_thread_.Stop();
+    db_thread_.Stop();
     // Pump any messages posted by the IO thread.
     ui_loop_.RunUntilIdle();
   }
@@ -189,6 +194,7 @@ class SyncBackendHostTest : public testing::Test {
     EXPECT_CALL(mock_frontend_, OnBackendInitialized(_, _, expect_success)).
         WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     backend_->Initialize(&mock_frontend_,
+                         scoped_ptr<base::Thread>(),
                          syncer::WeakHandle<syncer::JsEventHandler>(),
                          GURL(std::string()),
                          credentials_,
@@ -256,6 +262,8 @@ class SyncBackendHostTest : public testing::Test {
 
   base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   StrictMock<MockSyncFrontend> mock_frontend_;
   syncer::SyncCredentials credentials_;

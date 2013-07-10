@@ -401,7 +401,7 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
   // If no scheduler exists, the callback is run immediately (from the loop
   // this was created on, which is the sync loop), as sync is effectively
   // stopped.
-  virtual void StopSyncingForShutdown(const base::Closure& callback) = 0;
+  virtual void StopSyncingForShutdown() = 0;
 
   // Issue a final SaveChanges, and close sqlite handles.
   virtual void ShutdownOnSyncThread() = 0;
