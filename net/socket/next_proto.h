@@ -27,7 +27,9 @@ enum NextProto {
   kProtoSPDY4a2 = 7,
   kProtoSPDYMaximumVersion = kProtoSPDY4a2,
 
-  kProtoMaximumVersion = kProtoSPDYMaximumVersion,
+  kProtoQUIC1SPDY3 = 8,
+
+  kProtoMaximumVersion = kProtoQUIC1SPDY3,
 };
 
 }  // namespace net

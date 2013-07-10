@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "net/cert/cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -31,7 +32,9 @@ class QuicStreamFactoryTest : public ::testing::Test {
                  &crypto_client_stream_factory_,
                  &random_generator_, clock_),
         host_port_proxy_pair_(HostPortPair("www.google.com", 443),
-                              ProxyServer::Direct()) {
+                              ProxyServer::Direct()),
+        is_https_(false),
+        cert_verifier_(CertVerifier::CreateDefault()) {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstPacket(
@@ -119,6 +122,8 @@ class QuicStreamFactoryTest : public ::testing::Test {
   MockClock* clock_;  // Owned by factory_.
   QuicStreamFactory factory_;
   HostPortProxyPair host_port_proxy_pair_;
+  bool is_https_;
+  CertVerifier* cert_verifier_;
   BoundNetLog net_log_;
   TestCompletionCallback callback_;
 };
@@ -137,7 +142,8 @@ TEST_F(QuicStreamFactoryTest, Create) {
   socket_data.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_, net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -148,8 +154,11 @@ TEST_F(QuicStreamFactoryTest, Create) {
   stream = factory_.CreateIfSessionExists(host_port_proxy_pair_, net_log_);
   EXPECT_TRUE(stream.get());
 
+  // TODO(rtenneti): We should probably have a tests that HTTP and HTTPS result
+  // in streams on different sessions.
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(OK, request2.Request(host_port_proxy_pair_, net_log_,
+  EXPECT_EQ(OK, request2.Request(host_port_proxy_pair_, is_https_,
+                                 cert_verifier_, net_log_,
                                  callback_.callback()));
   stream = request2.ReleaseStream();  // Will reset stream 5.
   stream.reset();  // Will reset stream 7.
@@ -165,7 +174,8 @@ TEST_F(QuicStreamFactoryTest, CreateError) {
   host_resolver_.rules()->AddSimulatedFailure("www.google.com");
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_, net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback_.WaitForResult());
@@ -182,7 +192,8 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
   socket_factory_.AddSocketDataProvider(&socket_data);
   {
     QuicStreamRequest request(&factory_);
-    EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
+    EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                              cert_verifier_, net_log_,
                                               callback_.callback()));
   }
 
@@ -215,7 +226,8 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
   socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_, net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -230,7 +242,8 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
   // a new session.
 
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, net_log_,
+  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
+                                             cert_verifier_, net_log_,
                                              callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -259,7 +272,8 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   socket_data2.StopAfter(1);
 
   QuicStreamRequest request(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, net_log_,
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_, net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -274,7 +288,8 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   // a new session.
 
   QuicStreamRequest request2(&factory_);
-  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, net_log_,
+  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
+                                             cert_verifier_, net_log_,
                                              callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());

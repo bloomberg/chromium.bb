@@ -30,6 +30,8 @@ NextProto SSLClientSocket::NextProtoFromString(
     return kProtoSPDY31;
   } else if (proto_string == "spdy/4a2") {
     return kProtoSPDY4a2;
+  } else if (proto_string == "quic/1+spdy/3") {
+    return kProtoQUIC1SPDY3;
   } else {
     return kProtoUnknown;
   }
@@ -50,6 +52,8 @@ const char* SSLClientSocket::NextProtoToString(NextProto next_proto) {
       return "spdy/3.1";
     case kProtoSPDY4a2:
       return "spdy/4a2";
+    case kProtoQUIC1SPDY3:
+      return "quic/1+spdy/3";
     default:
       break;
   }

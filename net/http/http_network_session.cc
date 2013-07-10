@@ -81,6 +81,7 @@ HttpNetworkSession::Params::Params()
       spdy_max_concurrent_streams_limit(0),
       time_func(&base::TimeTicks::Now),
       enable_quic(false),
+      enable_quic_https(false),
       quic_clock(NULL),
       quic_random(NULL),
       enable_user_alternate_protocol_ports(false),

@@ -47,7 +47,8 @@ namespace {
 // This is the expected return from a current server advertising QUIC.
 static const char kQuicAlternateProtocolHttpHeader[] =
     "Alternate-Protocol: 80:quic\r\n\r\n";
-
+static const char kQuicAlternateProtocolHttpsHeader[] =
+    "Alternate-Protocol: 443:quic\r\n\r\n";
 }  // namespace
 
 namespace net {
@@ -151,12 +152,13 @@ class QuicNetworkTransactionTest : public PlatformTest {
   }
 
   std::string GetRequestString(const std::string& method,
+                               const std::string& scheme,
                                const std::string& path) {
     SpdyHeaderBlock headers;
     headers[":method"] = method;
     headers[":host"] = "www.google.com";
     headers[":path"] = path;
-    headers[":scheme"] = "http";
+    headers[":scheme"] = scheme;
     headers[":version"] = "HTTP/1.1";
     return SerializeHeaderBlock(headers);
   }
@@ -333,7 +335,7 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
   QuicStreamId stream_id = 3;
   scoped_ptr<QuicEncryptedPacket> req(
       ConstructDataPacket(1, stream_id, true, true, 0,
-                          GetRequestString("GET", "/")));
+                          GetRequestString("GET", "http", "/")));
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
@@ -459,7 +461,8 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   socket_factory_.AddSocketDataProvider(&http_data);
 
   scoped_ptr<QuicEncryptedPacket> req(
-      ConstructDataPacket(1, 3, true, true, 0, GetRequestString("GET", "/")));
+      ConstructDataPacket(1, 3, true, true, 0,
+                          GetRequestString("GET", "http", "/")));
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
@@ -490,6 +493,59 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
+  params_.origin_to_force_quic_on =
+      HostPortPair::FromString("www.google.com:443");
+  params_.enable_quic_https = true;
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+
+  MockRead http_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead(kQuicAlternateProtocolHttpsHeader),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+    MockRead(ASYNC, OK)
+  };
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  scoped_ptr<QuicEncryptedPacket> req(
+      ConstructDataPacket(1, 3, true, true, 0,
+                          GetRequestString("GET", "https", "/")));
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
+
+  MockWrite quic_writes[] = {
+    MockWrite(SYNCHRONOUS, req->data(), req->length()),
+    MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
+  };
+
+  scoped_ptr<QuicEncryptedPacket> resp(
+      ConstructDataPacket(
+          1, 3, false, true, 0, GetResponseString("200 OK", "hello!")));
+  MockRead quic_reads[] = {
+    MockRead(SYNCHRONOUS, resp->data(), resp->length()),
+    MockRead(ASYNC, OK),  // EOF
+  };
+
+  DelayedSocketData quic_data(
+      1,  // wait for one write to finish before reading.
+      quic_reads, arraysize(quic_reads),
+      quic_writes, arraysize(quic_writes));
+
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+
+  // TODO(rtenneti): Test QUIC over HTTPS, GetSSLInfo().
+  SendRequestAndExpectHttpResponse("hello world");
 }
 
 TEST_F(QuicNetworkTransactionTest, HungAlternateProtocol) {
@@ -551,39 +607,12 @@ TEST_F(QuicNetworkTransactionTest, HungAlternateProtocol) {
   ASSERT_TRUE(!quic_data.at_write_eof());
 }
 
-TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
-  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
-
-  MockRead http_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead("Content-length: 11\r\n"),
-    MockRead(kQuicAlternateProtocolHttpHeader),
-    MockRead("hello world"),
-
-    MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead("Content-length: 6\r\n"),
-    MockRead(kQuicAlternateProtocolHttpHeader),
-    MockRead("hello!"),
-  };
-
-  StaticSocketDataProvider data(http_reads, arraysize(http_reads), NULL, 0);
-  socket_factory_.AddSocketDataProvider(&data);
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  socket_factory_.AddSSLSocketDataProvider(&ssl);
-
-  request_.url = GURL("https://www.google.com/");
-
-  CreateSession();
-
-  SendRequestAndExpectHttpResponse("hello world");
-  SendRequestAndExpectHttpResponse("hello!");
-}
-
 TEST_F(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   scoped_ptr<QuicEncryptedPacket> req(
-      ConstructDataPacket(1, 3, true, true, 0, GetRequestString("GET", "/")));
+      ConstructDataPacket(1, 3, true, true, 0,
+                          GetRequestString("GET", "http", "/")));
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {
@@ -619,7 +648,8 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   scoped_ptr<QuicEncryptedPacket> req(
-      ConstructDataPacket(1, 3, true, true, 0, GetRequestString("GET", "/")));
+      ConstructDataPacket(1, 3, true, true, 0,
+                          GetRequestString("GET", "http", "/")));
   scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
 
   MockWrite quic_writes[] = {

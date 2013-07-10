@@ -22,8 +22,9 @@
 
 namespace net {
 
-class HostResolver;
+class CertVerifier;
 class ClientSocketFactory;
+class HostResolver;
 class QuicClock;
 class QuicClientSession;
 class QuicCryptoClientStreamFactory;
@@ -38,7 +39,10 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   explicit QuicStreamRequest(QuicStreamFactory* factory);
   ~QuicStreamRequest();
 
+  // For http, |is_https| is false and |cert_verifier| can be null.
   int Request(const HostPortProxyPair& host_port_proxy_pair,
+              bool is_https,
+              CertVerifier* cert_verifier,
               const BoundNetLog& net_log,
               const CompletionCallback& callback);
 
@@ -55,6 +59,8 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
  private:
   QuicStreamFactory* factory_;
   HostPortProxyPair host_port_proxy_pair_;
+  bool is_https_;
+  CertVerifier* cert_verifier_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
   scoped_ptr<QuicHttpStream> stream_;
@@ -76,10 +82,15 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   virtual ~QuicStreamFactory();
 
   // Creates a new QuicHttpStream to |host_port_proxy_pair| which will be
-  // owned by |request|. If a matching session already exists, this
-  // method will return OK.  If no matching session exists, this will
-  // return ERR_IO_PENDING and will invoke OnRequestComplete asynchronously.
+  // owned by |request|. |is_https| specifies if the protocol is https or not.
+  // |cert_verifier| is used by ProofVerifier for verifying the certificate
+  // chain and signature. For http, this can be null. If a matching session
+  // already exists, this method will return OK.  If no matching session exists,
+  // this will return ERR_IO_PENDING and will invoke OnRequestComplete
+  // asynchronously.
   int Create(const HostPortProxyPair& host_port_proxy_pair,
+             bool is_https,
+             CertVerifier* cert_verifier,
              const BoundNetLog& net_log,
              QuicStreamRequest* request);
 
@@ -127,6 +138,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool HasActiveJob(const HostPortProxyPair& host_port_proxy_pair);
   QuicClientSession* CreateSession(
       const HostPortProxyPair& host_port_proxy_pair,
+      bool is_https,
+      CertVerifier* cert_verifier,
       const AddressList& address_list,
       const BoundNetLog& net_log);
   void ActivateSession(const HostPortProxyPair& host_port_proxy_pair,

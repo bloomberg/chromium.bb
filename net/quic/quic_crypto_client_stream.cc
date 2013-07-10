@@ -148,7 +148,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         if (!cached->proof_valid()) {
-          ProofVerifier* verifier = session()->proof_verifier();
+          ProofVerifier* verifier = crypto_config_->proof_verifier();
           if (!verifier) {
             // If no verifier is set then we don't check the certificates.
             cached->SetProofValid();
@@ -160,7 +160,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         next_state_ = STATE_SEND_CHLO;
         break;
       case STATE_VERIFY_PROOF: {
-        ProofVerifier* verifier = session()->proof_verifier();
+        ProofVerifier* verifier = crypto_config_->proof_verifier();
         DCHECK(verifier);
         next_state_ = STATE_VERIFY_PROOF_COMPLETE;
         generation_counter_ = cached->generation_counter();
