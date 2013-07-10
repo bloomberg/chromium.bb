@@ -50,7 +50,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     , m_bytesAllocated(0)
     , m_didRecordDrawCommand(false)
     , m_framesPending(0)
-    , m_rateLimitingEnabled(false)
     , m_next(0)
     , m_prev(0)
     , m_lastImageId(0)
@@ -62,7 +61,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
     m_layer->setOpaque(opacityMode == Opaque);
     GraphicsLayer::registerContentsLayer(m_layer->layer());
-    m_layer->setRateLimitContext(m_rateLimitingEnabled);
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
@@ -80,14 +78,8 @@ void Canvas2DLayerBridge::limitPendingFrames()
     if (m_didRecordDrawCommand) {
         m_framesPending++;
         m_didRecordDrawCommand = false;
-        if (m_framesPending > 1) {
-            // Turn on the rate limiter if this layer tends to accumulate a
-            // non-discardable multi-frame backlog of draw commands.
-            setRateLimitingEnabled(true);
-        }
-        if (m_rateLimitingEnabled) {
+        if (m_framesPending > 1)
             flush();
-        }
     }
 }
 
@@ -116,18 +108,7 @@ void Canvas2DLayerBridge::flushedDrawCommands()
 
 void Canvas2DLayerBridge::skippedPendingDrawCommands()
 {
-    // Stop triggering the rate limiter if SkDeferredCanvas is detecting
-    // and optimizing overdraw.
-    setRateLimitingEnabled(false);
     flushedDrawCommands();
-}
-
-void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
-{
-    if (m_rateLimitingEnabled != enabled) {
-        m_rateLimitingEnabled = enabled;
-        m_layer->setRateLimitContext(m_rateLimitingEnabled);
-    }
 }
 
 size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
@@ -141,10 +122,8 @@ size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
 
 void Canvas2DLayerBridge::flush()
 {
-    if (m_canvas->hasPendingCommands()) {
-        TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
+    if (m_canvas->hasPendingCommands())
         m_canvas->flush();
-    }
 }
 
 unsigned Canvas2DLayerBridge::prepareTexture(WebTextureUpdater& updater)
@@ -165,7 +144,6 @@ bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outM
     // compositor. We do this before acquiring the next snapshot in
     // order to cap maximum gpu memory consumption.
     m_context->makeContextCurrent();
-    flush();
     Vector<MailboxInfo>::iterator mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
         if (mailboxInfo->m_status == MailboxReleased) {

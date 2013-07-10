@@ -90,7 +90,6 @@ public:
 
 protected:
     Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas*, OpacityMode, ThreadMode);
-    void setRateLimitingEnabled(bool);
 
     SkDeferredCanvas* m_canvas;
     OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
@@ -98,7 +97,6 @@ protected:
     size_t m_bytesAllocated;
     bool m_didRecordDrawCommand;
     int m_framesPending;
-    bool m_rateLimitingEnabled;
 
     friend class WTF::DoublyLinkedListNode<Canvas2DLayerBridge>;
     Canvas2DLayerBridge* m_next;
