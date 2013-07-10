@@ -31,8 +31,11 @@
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLMetaElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -94,28 +97,6 @@ private:
     virtual size_t appendBytes(const char*, size_t) OVERRIDE;
     virtual void finish();
 };
-
-class ImageDocumentElement FINAL : public HTMLImageElement {
-public:
-    static PassRefPtr<ImageDocumentElement> create(ImageDocument*);
-
-private:
-    ImageDocumentElement(ImageDocument* document)
-        : HTMLImageElement(imgTag, document)
-        , m_imageDocument(document)
-    {
-    }
-
-    virtual ~ImageDocumentElement();
-    virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
-
-    ImageDocument* m_imageDocument;
-};
-
-inline PassRefPtr<ImageDocumentElement> ImageDocumentElement::create(ImageDocument* document)
-{
-    return adoptRef(new ImageDocumentElement(document));
-}
 
 // --------
 
@@ -185,48 +166,43 @@ PassRefPtr<DocumentParser> ImageDocument::createParser()
 
 void ImageDocument::createDocumentStructure()
 {
-    RefPtr<Element> rootElement = Document::createElement(htmlTag, false);
-    appendChild(rootElement, IGNORE_EXCEPTION);
-    static_cast<HTMLHtmlElement*>(rootElement.get())->insertedByParser();
+    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(this);
+    appendChild(rootElement, ASSERT_NO_EXCEPTION, AttachLazily);
+    rootElement->insertedByParser();
 
     if (frame() && frame()->loader())
         frame()->loader()->dispatchDocumentElementAvailable();
 
-    RefPtr<Element> head = document()->createElement(headTag, false);
-    rootElement->appendChild(head, IGNORE_EXCEPTION);
-
-    RefPtr<Element> meta = document()->createElement(metaTag, false);
+    RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(this);
+    RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(this);
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width");
-    head->appendChild(meta, IGNORE_EXCEPTION);
+    head->appendChild(meta, ASSERT_NO_EXCEPTION, AttachLazily);
 
-    RefPtr<Element> body = Document::createElement(bodyTag, false);
+    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(this);
     body->setAttribute(styleAttr, "margin: 0px;");
-    
-    rootElement->appendChild(body, IGNORE_EXCEPTION);
-    
-    RefPtr<ImageDocumentElement> imageElement = ImageDocumentElement::create(this);
-    
-    imageElement->setAttribute(styleAttr, "-webkit-user-select: none");        
-    imageElement->setLoadManually(true);
-    imageElement->setSrc(url().string());
-    
-    body->appendChild(imageElement, IGNORE_EXCEPTION);
-    
+
+    m_imageElement = HTMLImageElement::create(this);
+    m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
+    m_imageElement->setLoadManually(true);
+    m_imageElement->setSrc(url().string());
+    body->appendChild(m_imageElement.get(), ASSERT_NO_EXCEPTION, AttachLazily);
+
     if (shouldShrinkToFit()) {
         // Add event listeners
         RefPtr<EventListener> listener = ImageEventListener::create(this);
         if (DOMWindow* domWindow = this->domWindow())
             domWindow->addEventListener("resize", listener, false);
-        imageElement->addEventListener("click", listener.release(), false);
+        m_imageElement->addEventListener("click", listener.release(), false);
     }
 
-    m_imageElement = imageElement.get();
+    rootElement->appendChild(head, ASSERT_NO_EXCEPTION, AttachLazily);
+    rootElement->appendChild(body, ASSERT_NO_EXCEPTION, AttachLazily);
 }
 
 float ImageDocument::scale() const
 {
-    if (!m_imageElement)
+    if (!m_imageElement || m_imageElement->document() != this)
         return 1.0f;
 
     FrameView* view = frame()->view();
@@ -244,7 +220,7 @@ float ImageDocument::scale() const
 
 void ImageDocument::resizeImageToFit()
 {
-    if (!m_imageElement)
+    if (!m_imageElement || m_imageElement->document() != this)
         return;
 
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), pageZoomFactor(this));
@@ -299,7 +275,7 @@ void ImageDocument::imageUpdated()
 
 void ImageDocument::restoreImageSize()
 {
-    if (!m_imageElement || !m_imageSizeIsKnown)
+    if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this)
         return;
     
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), 1.0f);
@@ -316,7 +292,7 @@ void ImageDocument::restoreImageSize()
 
 bool ImageDocument::imageFitsInWindow() const
 {
-    if (!m_imageElement)
+    if (!m_imageElement || m_imageElement->document() != this)
         return true;
 
     FrameView* view = frame()->view();
@@ -331,7 +307,7 @@ bool ImageDocument::imageFitsInWindow() const
 
 void ImageDocument::windowSizeChanged()
 {
-    if (!m_imageElement || !m_imageSizeIsKnown)
+    if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this)
         return;
 
     bool fitsInWindow = imageFitsInWindow();
@@ -376,6 +352,12 @@ bool ImageDocument::shouldShrinkToFit() const
         frame()->page()->mainFrame() == frame();
 }
 
+void ImageDocument::dispose()
+{
+    m_imageElement = 0;
+    HTMLDocument::dispose();
+}
+
 // --------
 
 void ImageEventListener::handleEvent(ScriptExecutionContext*, Event* event)
@@ -393,23 +375,6 @@ bool ImageEventListener::operator==(const EventListener& listener)
     if (const ImageEventListener* imageEventListener = ImageEventListener::cast(&listener))
         return m_doc == imageEventListener->m_doc;
     return false;
-}
-
-// --------
-
-ImageDocumentElement::~ImageDocumentElement()
-{
-    if (m_imageDocument)
-        m_imageDocument->disconnectImageElement();
-}
-
-void ImageDocumentElement::didMoveToNewDocument(Document* oldDocument)
-{
-    if (m_imageDocument) {
-        m_imageDocument->disconnectImageElement();
-        m_imageDocument = 0;
-    }
-    HTMLImageElement::didMoveToNewDocument(oldDocument);
 }
 
 }

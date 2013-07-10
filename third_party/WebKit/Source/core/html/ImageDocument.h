@@ -26,11 +26,12 @@
 #define ImageDocument_h
 
 #include "core/html/HTMLDocument.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class CachedImage;
-class ImageDocumentElement;
+class HTMLImageElement;
 
 class ImageDocument FINAL : public HTMLDocument {
 public:
@@ -40,9 +41,8 @@ public:
     }
 
     CachedImage* cachedImage();
-    ImageDocumentElement* imageElement() const { return m_imageElement; }
-    void disconnectImageElement() { m_imageElement = 0; }
-    
+    HTMLImageElement* imageElement() const { return m_imageElement.get(); }
+
     void windowSizeChanged();
     void imageUpdated();
     void imageClicked(int x, int y);
@@ -50,7 +50,8 @@ public:
 private:
     ImageDocument(Frame*, const KURL&);
 
-    virtual PassRefPtr<DocumentParser> createParser();
+    virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
+    virtual void dispose() OVERRIDE;
 
     void createDocumentStructure();
     void resizeImageToFit();
@@ -59,7 +60,7 @@ private:
     bool shouldShrinkToFit() const;
     float scale() const;
     
-    ImageDocumentElement* m_imageElement;
+    RefPtr<HTMLImageElement> m_imageElement;
     
     // Whether enough of the image has been loaded to determine its size
     bool m_imageSizeIsKnown;

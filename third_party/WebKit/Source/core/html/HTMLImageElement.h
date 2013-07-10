@@ -32,7 +32,7 @@ namespace WebCore {
 
 class HTMLFormElement;
 
-class HTMLImageElement : public HTMLElement {
+class HTMLImageElement FINAL : public HTMLElement {
     friend class HTMLFormElement;
 public:
     static PassRefPtr<HTMLImageElement> create(Document*);

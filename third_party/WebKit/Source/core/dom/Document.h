@@ -1046,11 +1046,11 @@ protected:
 
     void clearXMLVersion() { m_xmlVersion = String(); }
 
+    virtual void dispose() OVERRIDE;
+
 private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
-
-    virtual void dispose() OVERRIDE;
 
     void detachParser();
 
