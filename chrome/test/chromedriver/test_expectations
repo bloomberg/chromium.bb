@@ -112,6 +112,8 @@ _OS_NEGATIVE_FILTER['win'] = [
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=373
     'RenderedWebElementTest.testHoverPersists',
     'RenderedWebElementTest.canClickOnASuckerFishStyleMenu',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
 ]
 _OS_NEGATIVE_FILTER['linux'] = []
 _OS_NEGATIVE_FILTER['mac'] = [
