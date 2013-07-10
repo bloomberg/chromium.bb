@@ -148,8 +148,8 @@ bool ParseHostsFile(const base::FilePath& path, DnsHosts* dns_hosts) {
 
   UMA_HISTOGRAM_COUNTS("AsyncDNS.HostsSize", size);
 
-  // Reject HOSTS files larger than |kMaxHostsSize|.
-  const int64 kMaxHostsSize = 1 << 16;
+  // Reject HOSTS files larger than |kMaxHostsSize| bytes.
+  const int64 kMaxHostsSize = 1 << 25;  // 32MB
   if (size > kMaxHostsSize)
     return false;
 
