@@ -39,13 +39,11 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     const extensions::Extension* extension,
     const GURL& url,
     int height)
-    : InfoBarDelegate(infobar_service),
-#if defined(TOOLKIT_VIEWS)
-      browser_(browser),
-#endif
-      observer_(NULL),
-      extension_(extension),
-      closing_(false) {
+        : InfoBarDelegate(infobar_service),
+          browser_(browser),
+          observer_(NULL),
+          extension_(extension),
+          closing_(false) {
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   extension_host_.reset(manager->CreateInfobarHost(url, browser));
@@ -112,8 +110,10 @@ void ExtensionInfoBarDelegate::Observe(
       RemoveSelf();
   } else {
     DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
-    if (extension_ == content::Details<extensions::UnloadedExtensionInfo>(
-        details)->extension)
+    if (extension_ ==
+        content::Details<extensions::UnloadedExtensionInfo>(
+            details)->extension) {
       RemoveSelf();
+    }
   }
 }

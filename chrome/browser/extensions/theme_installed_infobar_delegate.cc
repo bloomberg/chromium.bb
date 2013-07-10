@@ -28,31 +28,25 @@ void ThemeInstalledInfoBarDelegate::Create(
     Profile* profile,
     const std::string& previous_theme_id,
     bool previous_using_native_theme) {
-  DCHECK(new_theme);
   if (!new_theme->is_theme())
     return;
 
-  // Create the new infobar.
-  // FindTabbedBrowser() is called with |match_original_profiles| true because a
-  // theme install in either a normal or incognito window for a profile affects
-  // all normal and incognito windows for that profile.
-  Browser* browser =
-      chrome::FindTabbedBrowser(profile, true, chrome::GetActiveDesktop());
+  // Get last active tabbed browser of profile.
+  Browser* browser = chrome::FindTabbedBrowser(profile,
+                                               true,
+                                               chrome::GetActiveDesktop());
   if (!browser)
     return;
+
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return;
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
-  scoped_ptr<InfoBarDelegate> new_infobar(new ThemeInstalledInfoBarDelegate(
-      infobar_service, profile->GetExtensionService(), theme_service, new_theme,
-      previous_theme_id, previous_using_native_theme));
 
-  // If there's a previous theme infobar, just replace that instead of adding a
-  // new one.
+  // First find any previous theme preview infobars.
+  InfoBarDelegate* old_delegate = NULL;
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     InfoBarDelegate* delegate = infobar_service->infobar_at(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
@@ -61,17 +55,27 @@ void ThemeInstalledInfoBarDelegate::Create(
       // If the user installed the same theme twice, ignore the second install
       // and keep the first install info bar, so that they can easily undo to
       // get back the previous theme.
-      if (theme_infobar->theme_id_ != new_theme->id()) {
-        infobar_service->ReplaceInfoBar(delegate, new_infobar.Pass());
-        theme_service->OnInfobarDisplayed();
-      }
-      return;
+      if (theme_infobar->theme_id_ == new_theme->id())
+        return;
+      old_delegate = delegate;
+      break;
     }
   }
 
-  // No previous theme infobar, so add this.
-  infobar_service->AddInfoBar(new_infobar.Pass());
-  theme_service->OnInfobarDisplayed();
+  // Then either replace that old one or add a new one.
+  scoped_ptr<InfoBarDelegate> new_delegate(
+      new ThemeInstalledInfoBarDelegate(
+          infobar_service,
+          profile->GetExtensionService(),
+          ThemeServiceFactory::GetForProfile(profile),
+          new_theme,
+          previous_theme_id,
+          previous_using_native_theme));
+
+  if (old_delegate)
+    infobar_service->ReplaceInfoBar(old_delegate, new_delegate.Pass());
+  else
+    infobar_service->AddInfoBar(new_delegate.Pass());
 }
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
@@ -88,6 +92,7 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
       theme_id_(new_theme->id()),
       previous_theme_id_(previous_theme_id),
       previous_using_native_theme_(previous_using_native_theme) {
+  theme_service_->OnInfobarDisplayed();
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
 }

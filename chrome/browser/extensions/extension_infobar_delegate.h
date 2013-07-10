@@ -69,9 +69,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-#if defined(TOOLKIT_VIEWS)
-  Browser* browser_;  // We pass this to the ExtensionInfoBar.
-#endif
+  Browser* browser_;
 
   // The extension host we are showing the InfoBar for. The delegate needs to
   // own this since the InfoBar gets deleted and recreated when you switch tabs
