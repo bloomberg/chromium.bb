@@ -1115,27 +1115,3 @@
   fun:testing::Test::DeleteSelf_
   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
 }
-{
-  bug_258935
-  ThreadSanitizer:Race
-  fun:base::Thread::StopSoon
-  fun:base::Thread::Stop
-  fun:content::UtilityMainThread::~UtilityMainThread
-  fun:content::UtilityMainThread::~UtilityMainThread
-  fun:base::DefaultDeleter::operator()
-  fun:base::internal::scoped_ptr_impl::~scoped_ptr_impl
-  fun:scoped_ptr::~scoped_ptr
-  fun:content::UtilityProcessHostImpl::~UtilityProcessHostImpl
-  fun:content::UtilityProcessHostImpl::~UtilityProcessHostImpl
-  fun:content::BrowserChildProcessHostImpl::OnChildDisconnected
-  fun:content::ChildProcessHostImpl::OnChannelError
-  fun:IPC::Channel::ChannelImpl::ClosePipeOnError
-  fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
-  fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
-  fun:base::MessagePumpLibevent::OnLibeventNotification
-  fun:event_process_active
-  fun:event_base_loop
-  fun:base::MessagePumpLibevent::Run
-  fun:base::MessageLoop::RunInternal
-  fun:base::MessageLoop::RunHandler
-}
