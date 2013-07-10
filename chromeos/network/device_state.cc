@@ -63,11 +63,25 @@ bool DeviceState::PropertyChanged(const std::string& key,
     const base::DictionaryValue* dict = NULL;
     if (!value.GetAsDictionary(&dict))
       return false;
-    if (!dict->GetStringWithoutPathExpansion(flimflam::kSIMLockTypeProperty,
-                                             &sim_lock_type_))
+
+    // Return true if at least one of the property values changed.
+    bool property_changed = false;
+    const base::Value* out_value = NULL;
+    if (!dict->GetWithoutPathExpansion(flimflam::kSIMLockRetriesLeftProperty,
+                                       &out_value))
       return false;
+    if (GetUInt32Value(key, *out_value, &sim_retries_left_))
+      property_changed = true;
+
+    if (!dict->GetWithoutPathExpansion(flimflam::kSIMLockTypeProperty,
+                                       &out_value))
+      return false;
+    if (GetStringValue(key, *out_value, &sim_lock_type_))
+      property_changed = true;
+
     // Ignore other SIMLockStatus properties.
-    return true;
+    // TODO(armansito): Also handle kSIMLockEnabledProperty.
+    return property_changed;
   } else if (key == flimflam::kMeidProperty) {
     return GetStringValue(key, value, &meid_);
   } else if (key == flimflam::kImeiProperty) {

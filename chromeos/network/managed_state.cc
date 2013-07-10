@@ -108,4 +108,23 @@ bool ManagedState::GetStringValue(const std::string& key,
   return true;
 }
 
+bool ManagedState::GetUInt32Value(const std::string& key,
+                                  const base::Value& value,
+                                  uint32* out_value) {
+  // base::Value restricts the number types to BOOL, INTEGER, and DOUBLE only.
+  // uint32 will automatically get converted to a double, which is why we try
+  // to obtain the value as a double (see dbus/values_util.h).
+  uint32 new_value;
+  double double_value;
+  if (!value.GetAsDouble(&double_value) || double_value < 0) {
+    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
+    return false;
+  }
+  new_value = static_cast<uint32>(double_value);
+  if (*out_value == new_value)
+    return false;
+  *out_value = new_value;
+  return true;
+}
+
 }  // namespace chromeos

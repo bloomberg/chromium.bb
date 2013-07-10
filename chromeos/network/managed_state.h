@@ -86,6 +86,9 @@ class ManagedState {
   bool GetStringValue(const std::string& key,
                       const base::Value& value,
                       std::string* out_value);
+  bool GetUInt32Value(const std::string& key,
+                      const base::Value& value,
+                      uint32* out_value);
 
   void set_name(const std::string& name) { name_ = name; }
 

@@ -26,6 +26,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   bool support_network_scan() const { return support_network_scan_; }
   bool scanning() const { return scanning_; }
   const std::string& sim_lock_type() const { return sim_lock_type_; }
+  uint32 sim_retries_left() const { return sim_retries_left_; }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
   const std::string& iccid() const { return iccid_; }
@@ -44,6 +45,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   bool scanning_;
   std::string technology_family_;
   std::string sim_lock_type_;
+  uint32 sim_retries_left_;
   std::string meid_;
   std::string imei_;
   std::string iccid_;
