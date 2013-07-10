@@ -133,7 +133,7 @@ public:
     virtual void discardSearchResults(ErrorString*, const String& searchId);
     virtual void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result);
     virtual void getAttributes(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<String> >& result);
-    virtual void setInspectModeEnabled(ErrorString*, bool enabled, const RefPtr<JSONObject>* highlightConfig);
+    virtual void setInspectModeEnabled(ErrorString*, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig);
     virtual void requestNode(ErrorString*, const String& objectId, int* nodeId);
     virtual void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId);
     virtual void pushNodeByBackendIdToFrontend(ErrorString*, BackendNodeId, int* nodeId);
@@ -205,9 +205,11 @@ public:
     InspectorPageAgent* pageAgent() { return m_pageAgent; }
 
 private:
+    enum SearchMode { NotSearching, SearchingForNormal, SearchingForShadow };
+
     InspectorDOMAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*, InspectorClient*);
 
-    void setSearchingForNode(ErrorString*, bool enabled, JSONObject* highlightConfig);
+    void setSearchingForNode(ErrorString*, SearchMode, JSONObject* highlightConfig);
     PassOwnPtr<HighlightConfig> highlightConfigFromInspectorObject(ErrorString*, JSONObject* highlightInspectorObject);
 
     // Node-related methods.
@@ -260,7 +262,7 @@ private:
     typedef HashMap<String, Vector<RefPtr<Node> > > SearchResults;
     SearchResults m_searchResults;
     OwnPtr<RevalidateStyleAttributeTask> m_revalidateStyleAttrTask;
-    bool m_searchingForNode;
+    SearchMode m_searchingForNode;
     OwnPtr<HighlightConfig> m_inspectModeHighlightConfig;
     OwnPtr<InspectorHistory> m_history;
     OwnPtr<DOMEditor> m_domEditor;

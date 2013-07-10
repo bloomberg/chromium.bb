@@ -229,7 +229,7 @@ InspectorDOMAgent::InspectorDOMAgent(InstrumentingAgents* instrumentingAgents, I
     , m_domListener(0)
     , m_lastNodeId(1)
     , m_lastBackendNodeId(-1)
-    , m_searchingForNode(false)
+    , m_searchingForNode(NotSearching)
     , m_suppressAttributeModifiedEvent(false)
 {
 }
@@ -237,7 +237,7 @@ InspectorDOMAgent::InspectorDOMAgent(InstrumentingAgents* instrumentingAgents, I
 InspectorDOMAgent::~InspectorDOMAgent()
 {
     reset();
-    ASSERT(!m_searchingForNode);
+    ASSERT(m_searchingForNode == NotSearching);
 }
 
 void InspectorDOMAgent::setFrontend(InspectorFrontend* frontend)
@@ -259,7 +259,7 @@ void InspectorDOMAgent::clearFrontend()
     m_domEditor.clear();
 
     ErrorString error;
-    setSearchingForNode(&error, false, 0);
+    setSearchingForNode(&error, NotSearching, 0);
     hideHighlight(&error);
 
     m_frontend = 0;
@@ -1046,7 +1046,7 @@ void InspectorDOMAgent::discardSearchResults(ErrorString*, const String& searchI
 
 bool InspectorDOMAgent::handleMousePress()
 {
-    if (!m_searchingForNode)
+    if (m_searchingForNode == NotSearching)
         return false;
 
     if (Node* node = m_overlay->highlightedNode()) {
@@ -1058,7 +1058,7 @@ bool InspectorDOMAgent::handleMousePress()
 
 bool InspectorDOMAgent::handleTouchEvent(Frame* frame, const PlatformTouchEvent& event)
 {
-    if (!m_searchingForNode)
+    if (m_searchingForNode == NotSearching)
         return false;
     Node* node = hoveredNodeForEvent(frame, event, false);
     if (node && m_inspectModeHighlightConfig) {
@@ -1085,12 +1085,16 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
 
 void InspectorDOMAgent::handleMouseMove(Frame* frame, const PlatformMouseEvent& event)
 {
-    if (!m_searchingForNode)
+    if (m_searchingForNode == NotSearching)
         return;
 
     if (!frame->view() || !frame->contentRenderer())
         return;
     Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
+
+    while (m_searchingForNode != SearchingForShadow && node && node->isInShadowTree())
+        node = node->parentOrShadowHostNode();
+
     Node* eventTarget = event.shiftKey() ? hoveredNodeForEvent(frame, event, false) : 0;
     if (eventTarget == node)
         eventTarget = 0;
@@ -1099,13 +1103,13 @@ void InspectorDOMAgent::handleMouseMove(Frame* frame, const PlatformMouseEvent& 
         m_overlay->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig);
 }
 
-void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, bool enabled, JSONObject* highlightInspectorObject)
+void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
 {
-    if (m_searchingForNode == enabled)
+    if (m_searchingForNode == searchMode)
         return;
-    m_searchingForNode = enabled;
-    m_overlay->setInspectModeEnabled(enabled);
-    if (enabled) {
+    m_searchingForNode = searchMode;
+    m_overlay->setInspectModeEnabled(searchMode != NotSearching);
+    if (searchMode != NotSearching) {
         m_inspectModeHighlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
         if (!m_inspectModeHighlightConfig)
             return;
@@ -1136,9 +1140,10 @@ PassOwnPtr<HighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObjec
     return highlightConfig.release();
 }
 
-void InspectorDOMAgent::setInspectModeEnabled(ErrorString* errorString, bool enabled, const RefPtr<JSONObject>* highlightConfig)
+void InspectorDOMAgent::setInspectModeEnabled(ErrorString* errorString, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig)
 {
-    setSearchingForNode(errorString, enabled, highlightConfig ? highlightConfig->get() : 0);
+    SearchMode searchMode = enabled ? (inspectShadowDOM && *inspectShadowDOM ? SearchingForShadow : SearchingForNormal) : NotSearching;
+    setSearchingForNode(errorString, searchMode, highlightConfig ? highlightConfig->get() : 0);
 }
 
 void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor)

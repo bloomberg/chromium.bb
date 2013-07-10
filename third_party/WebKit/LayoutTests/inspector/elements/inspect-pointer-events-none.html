@@ -59,7 +59,7 @@ function test()
 
     function step1()
     {
-        WebInspector.domAgent.setInspectModeEnabled(true, step2);
+        WebInspector.domAgent.setInspectModeEnabled(true, false, step2);
     }
 
     function step2()
@@ -72,7 +72,7 @@ function test()
     {
         WebInspector.panels.elements.treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
         expectSelectedNode("inner");
-        WebInspector.domAgent.setInspectModeEnabled(true, step4);
+        WebInspector.domAgent.setInspectModeEnabled(true, false, step4);
     }
 
     function step4()
