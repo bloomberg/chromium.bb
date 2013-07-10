@@ -1625,7 +1625,10 @@ public:
     static WrapFlow initialWrapFlow() { return WrapFlowAuto; }
     static WrapThrough initialWrapThrough() { return WrapThroughWrap; }
 
+    static QuotesData* initialQuotes() { return 0; }
+
     // Keep these at the end.
+    // FIXME: Why? Seems these should all be one big sorted list.
     static LineClampValue initialLineClamp() { return LineClampValue(); }
     static ETextSecurity initialTextSecurity() { return TSNONE; }
     static Color initialTapHighlightColor();

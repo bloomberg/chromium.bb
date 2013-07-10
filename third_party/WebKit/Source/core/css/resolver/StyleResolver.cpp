@@ -2451,14 +2451,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             return;
         }
     case CSSPropertyQuotes:
-        if (isInherit) {
-            state.style()->setQuotes(state.parentStyle()->quotes());
-            return;
-        }
-        if (isInitial) {
-            state.style()->setQuotes(0);
-            return;
-        }
+        HANDLE_INHERIT_AND_INITIAL(quotes, Quotes);
         if (value->isValueList()) {
             CSSValueList* list = toCSSValueList(value);
             RefPtr<QuotesData> quotes = QuotesData::create();
