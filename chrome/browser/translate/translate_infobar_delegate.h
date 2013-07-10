@@ -183,7 +183,6 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                                        bool autodetermined_source_language);
 
  protected:
-  // For testing.
   TranslateInfoBarDelegate(Type infobar_type,
                            TranslateErrors::Type error_type,
                            InfoBarService* infobar_service,
@@ -191,7 +190,6 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                            ShortcutConfiguration shortcut_config,
                            const std::string& original_language,
                            const std::string& target_language);
-  Type infobar_type_;
 
  private:
   typedef std::pair<std::string, string16> LanguageNamePair;
@@ -208,6 +206,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // Gets the host of the page being translated, or an empty string if no URL is
   // associated with the current page.
   std::string GetPageHost();
+
+  Type infobar_type_;
 
   // The type of fading animation if any that should be used when showing this
   // infobar.

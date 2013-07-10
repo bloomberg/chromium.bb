@@ -114,8 +114,8 @@ void TranslateInfoBarDelegate::RevertTranslation() {
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
-  TranslateManager::GetInstance()->
-      ReportLanguageDetectionError(web_contents());
+  TranslateManager::GetInstance()->ReportLanguageDetectionError(
+      web_contents());
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
@@ -129,9 +129,8 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
   // translations when getting a LANGUAGE_DETERMINED from the page, which
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(web_contents());
-  translate_tab_helper->language_state().set_translation_declined(true);
+  TranslateTabHelper::FromWebContents(web_contents())->
+      language_state().set_translation_declined(true);
 
   UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
 }
@@ -343,7 +342,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       error_type_(error_type),
       prefs_(prefs),
       shortcut_config_(shortcut_config) {
-  DCHECK_NE((infobar_type == TRANSLATION_ERROR),
+  DCHECK_NE((infobar_type_ == TRANSLATION_ERROR),
             (error_type_ == TranslateErrors::NONE));
 
   std::vector<std::string> language_codes;

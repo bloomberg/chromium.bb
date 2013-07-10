@@ -413,7 +413,6 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
       TranslateTabHelper::FromWebContents(web_contents);
   if (!translate_tab_helper)
     return;
-
   std::string auto_translate_to =
       translate_tab_helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
@@ -434,8 +433,10 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
       language_code, target_lang);
 }
 
-void TranslateManager::InitiateTranslationPosted(
-    int process_id, int render_id, const std::string& page_lang, int attempt) {
+void TranslateManager::InitiateTranslationPosted(int process_id,
+                                                 int render_id,
+                                                 const std::string& page_lang,
+                                                 int attempt) {
   // The tab might have been closed.
   WebContents* web_contents =
       tab_util::GetWebContentsByID(process_id, render_id);
@@ -600,9 +601,8 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
     details->error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = Profile::FromBrowserContext(
+      web_contents->GetBrowserContext())->GetPrefs();
   TranslateInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), true,
       (details->error_type == TranslateErrors::NONE) ?
