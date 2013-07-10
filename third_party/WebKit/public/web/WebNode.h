@@ -100,7 +100,6 @@ public:
     WEBKIT_EXPORT WebNode nextSibling() const;
     WEBKIT_EXPORT bool hasChildNodes() const;
     WEBKIT_EXPORT WebNodeList childNodes();
-    WEBKIT_EXPORT bool appendChild(const WebNode& child);
     WEBKIT_EXPORT WebString createMarkup() const;
     WEBKIT_EXPORT bool isLink() const;
     WEBKIT_EXPORT bool isTextNode() const;
