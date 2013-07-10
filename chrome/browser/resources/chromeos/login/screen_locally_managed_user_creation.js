@@ -173,7 +173,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     selectPod: function(podToSelect) {
-      if (this.selectedPod_ == podToSelect) {
+      if ((this.selectedPod_ == podToSelect) && (podToSelect != null)) {
         podToSelect.focusInput();
         return;
       }
@@ -185,6 +185,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
           pod.passwordBlock.hidden = true;
         }
       }
+      if (podToSelect == null)
+        return;
       podToSelect.classList.add('focused');
       podToSelect.passwordBlock.hidden = false;
       podToSelect.passwordElement.value = '';
@@ -696,6 +698,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
         this.getScreenButton(pageButtons[visiblePage]).focus();
 
       this.currentPage_ = visiblePage;
+
+      if (visiblePage == 'manager' || visiblePage == 'intro') {
+        this.managerList_.selectPod(null);
+        if (this.managerList_.pods.length == 1)
+          this.managerList_.selectPod(this.managerList_.pods[0]);
+      }
 
       if (visiblePage == 'username') {
         var imageGrid = this.getScreenElement('image-grid');
