@@ -166,8 +166,10 @@ def CalculateTruncatedMean(data_set, truncate_percent):
 
 
 def CalculateStandardDeviation(v):
-  mean = CalculateTruncatedMean(v, 0.0)
+  if len(v) == 1:
+    return 0.0
 
+  mean = CalculateTruncatedMean(v, 0.0)
   variances = [float(x) - mean for x in v]
   variances = [x * x for x in variances]
   variance = reduce(lambda x, y: float(x) + float(y), variances) / (len(v) - 1)
@@ -253,8 +255,7 @@ def RunProcessAndRetrieveOutput(command):
   shell = IsWindows()
   proc = subprocess.Popen(command,
                           shell=shell,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
+                          stdout=subprocess.PIPE)
 
   (output, _) = proc.communicate()
 
