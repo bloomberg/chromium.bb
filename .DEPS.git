@@ -389,7 +389,9 @@ hooks = [
     '--keep'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'nacltools'
 },
     {
     'action':
@@ -399,7 +401,9 @@ hooks = [
     '--linux-only'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'sysroot'
 },
     {
     'action':
@@ -410,7 +414,9 @@ hooks = [
     '--arch=amd64'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'sysroot'
 },
     {
     'action':
@@ -421,7 +427,9 @@ hooks = [
     '--arch=i386'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'sysroot'
 },
     {
     'action':
@@ -431,7 +439,9 @@ hooks = [
     '--mac-only'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'clang'
 },
     {
     'action':
@@ -441,7 +451,9 @@ hooks = [
     '--win-only'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'cygwin'
 },
     {
     'action':
@@ -452,7 +464,9 @@ hooks = [
     'src/build/util/LASTCHANGE'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'lastchange'
 },
     {
     'action':
@@ -465,7 +479,9 @@ hooks = [
     'src/build/util/LASTCHANGE.blink'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'lastchange'
 },
     {
     'action':
@@ -474,7 +490,9 @@ hooks = [
     'src/build/gyp_chromium'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'gyp'
 },
     {
     'action':
@@ -483,6 +501,8 @@ hooks = [
     'src/build/landmines.py'
 ],
     'pattern':
-         '.'
+         '.',
+    'name':
+         'landmines'
 }
 ]
