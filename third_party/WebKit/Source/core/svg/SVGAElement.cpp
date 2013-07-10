@@ -34,7 +34,9 @@
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/html/HTMLAnchorElement.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/Chrome.h"
@@ -180,7 +182,8 @@ void SVGAElement::defaultEventHandler(Event* event)
             Frame* frame = document()->frame();
             if (!frame)
                 return;
-            frame->loader()->urlSelected(document()->completeURL(url), target, event, false, MaybeSendReferrer);
+            FrameLoadRequest frameRequest(document()->securityOrigin(), ResourceRequest(document()->completeURL(url)), target);
+            frame->loader()->loadFrameRequest(frameRequest, false, event, 0, MaybeSendReferrer);
             return;
         }
     }
