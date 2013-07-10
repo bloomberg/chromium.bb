@@ -41,8 +41,6 @@ void ShillIPConfigClientStub::Refresh(const dbus::ObjectPath& ipconfig_path,
 void ShillIPConfigClientStub::GetProperties(
     const dbus::ObjectPath& ipconfig_path,
     const DictionaryValueCallback& callback) {
-  if (callback.is_null())
-    return;
   const base::DictionaryValue* dict = NULL;
   if (!ipconfigs_.GetDictionaryWithoutPathExpansion(ipconfig_path.value(),
                                                     &dict))
@@ -64,8 +62,6 @@ void ShillIPConfigClientStub::SetProperty(
     const std::string& name,
     const base::Value& value,
     const VoidDBusMethodCallback& callback) {
-  if (callback.is_null())
-    return;
   base::DictionaryValue* dict = NULL;
   if (ipconfigs_.GetDictionaryWithoutPathExpansion(ipconfig_path.value(),
                                                    &dict)) {
@@ -86,16 +82,12 @@ void ShillIPConfigClientStub::ClearProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,
     const VoidDBusMethodCallback& callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
 void ShillIPConfigClientStub::Remove(const dbus::ObjectPath& ipconfig_path,
                                      const VoidDBusMethodCallback& callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }

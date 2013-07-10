@@ -20,6 +20,13 @@ namespace {
 
 const char* kSuccessResult = "success";
 
+void ConfigureCallback(const dbus::ObjectPath& result) {
+}
+
+void ConfigureErrorCallback(const std::string& error_name,
+                            const std::string& error_message) {
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -68,7 +75,8 @@ class NetworkConnectionHandlerTest : public testing::Test {
     }
     DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
         *json_dict,
-        ObjectPathCallback(), ShillManagerClient::ErrorCallback());
+        base::Bind(&ConfigureCallback),
+        base::Bind(&ConfigureErrorCallback));
     message_loop_.RunUntilIdle();
     return true;
   }

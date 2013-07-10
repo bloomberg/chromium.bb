@@ -67,9 +67,6 @@ void ShillServiceClientStub::RemovePropertyChangedObserver(
 void ShillServiceClientStub::GetProperties(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {
-  if (callback.is_null())
-    return;
-
   base::DictionaryValue* nested_dict = NULL;
   scoped_ptr<base::DictionaryValue> result_properties;
   DBusMethodCallStatus call_status;
@@ -127,8 +124,6 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
                  weak_ptr_factory_.GetWeakPtr(), service_path, name));
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -148,8 +143,6 @@ void ShillServiceClientStub::ClearProperty(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
                  weak_ptr_factory_.GetWeakPtr(), service_path, name));
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -178,8 +171,6 @@ void ShillServiceClientStub::ClearProperties(
             &ShillServiceClientStub::NotifyObserversPropertyChanged,
             weak_ptr_factory_.GetWeakPtr(), service_path, *iter));
   }
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PassStubListValue,
@@ -192,7 +183,7 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
   VLOG(1) << "ShillServiceClientStub::Connect: " << service_path.value();
   base::Value* service;
   if (!stub_services_.Get(service_path.value(), &service)) {
-    LOG(ERROR) << "Service not found:  " << service_path.value();
+    LOG(ERROR) << "Service not found: " << service_path.value();
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
@@ -254,8 +245,6 @@ void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
 void ShillServiceClientStub::Remove(const dbus::ObjectPath& service_path,
                                     const base::Closure& callback,
                                     const ErrorCallback& error_callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -264,8 +253,6 @@ void ShillServiceClientStub::ActivateCellularModem(
     const std::string& carrier,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -273,8 +260,6 @@ void ShillServiceClientStub::CompleteCellularActivation(
     const dbus::ObjectPath& service_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -287,9 +272,6 @@ bool ShillServiceClientStub::CallActivateCellularModemAndBlock(
 void ShillServiceClientStub::GetLoadableProfileEntries(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {
-  if (callback.is_null())
-    return;
-
   // Provide a dictionary with a single { profile_path, service_path } entry
   // if the Profile property is set, or an empty dictionary.
   scoped_ptr<base::DictionaryValue> result_properties(

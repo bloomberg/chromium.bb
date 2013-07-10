@@ -33,8 +33,6 @@ const char kSharedProfilePath[] = "/profile/default";
 void PassDictionary(
     const ShillProfileClient::DictionaryValueCallbackWithoutStatus& callback,
     const base::DictionaryValue* dictionary) {
-  if (callback.is_null())
-    return;
   callback.Run(*dictionary);
 }
 

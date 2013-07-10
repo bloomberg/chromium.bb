@@ -58,8 +58,6 @@ void ShillManagerClientStub::RemovePropertyChangedObserver(
 
 void ShillManagerClientStub::GetProperties(
     const DictionaryValueCallback& callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(
           &ShillManagerClientStub::PassStubProperties,
@@ -69,8 +67,6 @@ void ShillManagerClientStub::GetProperties(
 
 void ShillManagerClientStub::GetNetworksForGeolocation(
     const DictionaryValueCallback& callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(
           &ShillManagerClientStub::PassStubGeoNetworks,
@@ -84,8 +80,6 @@ void ShillManagerClientStub::SetProperty(const std::string& name,
                                          const ErrorCallback& error_callback) {
   stub_properties_.SetWithoutPathExpansion(name, value.DeepCopy());
   CallNotifyObserversPropertyChanged(name, 0);
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -124,12 +118,10 @@ void ShillManagerClientStub::EnableTechnology(
   base::ListValue* enabled_list = NULL;
   if (!stub_properties_.GetListWithoutPathExpansion(
       flimflam::kEnabledTechnologiesProperty, &enabled_list)) {
-    if (!error_callback.is_null()) {
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(error_callback, "StubError", "Property not found"));
-    }
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback, "StubError", "Property not found"));
     return;
   }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -152,11 +144,9 @@ void ShillManagerClientStub::DisableTechnology(
   base::ListValue* enabled_list = NULL;
   if (!stub_properties_.GetListWithoutPathExpansion(
       flimflam::kEnabledTechnologiesProperty, &enabled_list)) {
-    if (!error_callback.is_null()) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(error_callback, "StubError", "Property not found"));
-    }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback, "StubError", "Property not found"));
     return;
   }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -186,10 +176,8 @@ void ShillManagerClientStub::ConfigureService(
     LOG(ERROR) << "ConfigureService requies GUID and Type to be defined";
     // If the properties aren't filled out completely, then just return an empty
     // object path.
-    if (!callback.is_null()) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
-    }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
     return;
   }
 
@@ -233,10 +221,8 @@ void ShillManagerClientStub::ConfigureService(
         AddService(profile_path, service_path);
   }
 
-  if (!callback.is_null()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, dbus::ObjectPath(service_path)));
-  }
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, dbus::ObjectPath(service_path)));
 }
 
 void ShillManagerClientStub::ConfigureServiceForProfile(
@@ -256,8 +242,6 @@ void ShillManagerClientStub::GetService(
     const base::DictionaryValue& properties,
     const ObjectPathCallback& callback,
     const ErrorCallback& error_callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
 }
@@ -266,8 +250,6 @@ void ShillManagerClientStub::VerifyDestination(
     const VerificationProperties& properties,
     const BooleanCallback& callback,
     const ErrorCallback& error_callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
@@ -276,8 +258,6 @@ void ShillManagerClientStub::VerifyAndEncryptCredentials(
     const std::string& service_path,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, "encrypted_credentials"));
 }
@@ -287,8 +267,6 @@ void ShillManagerClientStub::VerifyAndEncryptData(
     const std::string& data,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
-  if (callback.is_null())
-    return;
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(callback, "encrypted_data"));
 }
@@ -572,8 +550,7 @@ void ShillManagerClientStub::SetTechnologyEnabled(
     enabled_list->Remove(base::StringValue(type), NULL);
   CallNotifyObserversPropertyChanged(
       flimflam::kEnabledTechnologiesProperty, 0 /* already delayed */);
-  if (!callback.is_null())
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
   // May affect available services
   CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
   CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
@@ -619,8 +596,7 @@ void ShillManagerClientStub::ScanCompleted(const std::string& device_path,
   CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
   CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty,
                                      0);
-  if (!callback.is_null())
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace chromeos

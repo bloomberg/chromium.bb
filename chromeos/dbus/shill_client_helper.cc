@@ -227,6 +227,7 @@ void ShillClientHelper::MonitorPropertyChangedInternal(
 void ShillClientHelper::CallVoidMethod(
     dbus::MethodCall* method_call,
     const VoidDBusMethodCallback& callback) {
+  DCHECK(!callback.is_null());
   proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                      base::Bind(&OnVoidMethod,
                                 callback));
@@ -235,6 +236,7 @@ void ShillClientHelper::CallVoidMethod(
 void ShillClientHelper::CallObjectPathMethod(
     dbus::MethodCall* method_call,
     const ObjectPathDBusMethodCallback& callback) {
+  DCHECK(!callback.is_null());
   proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                      base::Bind(&OnObjectPathMethod,
                                 callback));
@@ -244,6 +246,8 @@ void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     const ObjectPathCallback& callback,
     const ErrorCallback& error_callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call,
       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -257,6 +261,7 @@ void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
 void ShillClientHelper::CallDictionaryValueMethod(
     dbus::MethodCall* method_call,
     const DictionaryValueCallback& callback) {
+  DCHECK(!callback.is_null());
   proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                      base::Bind(&OnDictionaryValueMethod,
                                 callback));
@@ -266,6 +271,8 @@ void ShillClientHelper::CallVoidMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnVoidMethodWithErrorCallback,
@@ -278,6 +285,8 @@ void ShillClientHelper::CallBooleanMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     const BooleanCallback& callback,
     const ErrorCallback& error_callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnBooleanMethodWithErrorCallback,
@@ -291,6 +300,8 @@ void ShillClientHelper::CallStringMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnStringMethodWithErrorCallback,
@@ -304,6 +315,8 @@ void ShillClientHelper::CallDictionaryValueMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     const DictionaryValueCallbackWithoutStatus& callback,
     const ErrorCallback& error_callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(
@@ -318,6 +331,8 @@ void ShillClientHelper::CallListValueMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     const ListValueCallback& callback,
     const ErrorCallback& error_callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(
