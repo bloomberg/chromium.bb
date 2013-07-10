@@ -1030,6 +1030,10 @@ class GitWrapper(SCMWrapper):
       kwargs['filter_fn'] = GitFilter(kwargs['nag_timer'] / 2,
                                       kwargs.get('filter_fn'))
       kwargs.setdefault('print_stdout', False)
+      # Don't prompt for passwords; just fail quickly and noisily.
+      env = kwargs.get('env') or kwargs.setdefault('env', os.environ.copy())
+      env.setdefault('GIT_ASKPASS', 'true')
+      env.setdefault('SSH_ASKPASS', 'true')
     else:
       kwargs.setdefault('print_stdout', True)
     stdout = kwargs.get('stdout', sys.stdout)
