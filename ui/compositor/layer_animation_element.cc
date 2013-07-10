@@ -517,7 +517,7 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
   }
 
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
-    if (delegate && animation_id()) {
+    if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
       delegate->SetTransformFromAnimation(Tween::ValueBetween(
           Tween::CalculateValue(tween_type(), last_progressed_fraction()),

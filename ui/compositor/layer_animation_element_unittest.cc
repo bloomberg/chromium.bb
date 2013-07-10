@@ -290,7 +290,8 @@ TEST(LayerAnimationElementTest, PauseElement) {
                   copy.GetGrayscaleForAnimation());
 }
 
-// Check that a threaded element updates the delegate as expected when aborted.
+// Check that a threaded opacity element updates the delegate as expected when
+// aborted.
 TEST(LayerAnimationElementTest, AbortOpacityElement) {
   TestLayerAnimationDelegate delegate;
   float start = 0.0;
@@ -305,9 +306,14 @@ TEST(LayerAnimationElementTest, AbortOpacityElement) {
   Tween::Type tween_type = Tween::EASE_IN;
   element->set_tween_type(tween_type);
 
+  delegate.SetOpacityFromAnimation(start);
+
+  // Aborting the element before it has started should not update the delegate.
+  element->Abort(&delegate);
+  EXPECT_FLOAT_EQ(start, delegate.GetOpacityForAnimation());
+
   start_time += delta;
   element->set_requested_start_time(start_time);
-  delegate.SetOpacityFromAnimation(start);
   element->Start(&delegate, 1);
   element->Progress(start_time, &delegate);
   effective_start_time = start_time + delta;
@@ -315,9 +321,52 @@ TEST(LayerAnimationElementTest, AbortOpacityElement) {
   element->Progress(effective_start_time, &delegate);
   element->Progress(effective_start_time + delta/2, &delegate);
 
+  // Since the element has started, it should update the delegate when
+  // aborted.
   element->Abort(&delegate);
   EXPECT_FLOAT_EQ(Tween::CalculateValue(tween_type, 0.5),
                   delegate.GetOpacityForAnimation());
+}
+
+// Check that a threaded transform element updates the delegate as expected when
+// aborted.
+TEST(LayerAnimationElementTest, AbortTransformElement) {
+  TestLayerAnimationDelegate delegate;
+  gfx::Transform start_transform, target_transform;
+  start_transform.Rotate(-30.0);
+  target_transform.Rotate(30.0);
+  base::TimeTicks start_time;
+  base::TimeTicks effective_start_time;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateTransformElement(target_transform, delta));
+
+  // Choose a non-linear Tween type.
+  Tween::Type tween_type = Tween::EASE_IN;
+  element->set_tween_type(tween_type);
+
+  delegate.SetTransformFromAnimation(start_transform);
+
+  // Aborting the element before it has started should not update the delegate.
+  element->Abort(&delegate);
+  CheckApproximatelyEqual(start_transform, delegate.GetTransformForAnimation());
+
+  start_time += delta;
+  element->set_requested_start_time(start_time);
+  element->Start(&delegate, 1);
+  element->Progress(start_time, &delegate);
+  effective_start_time = start_time + delta;
+  element->set_effective_start_time(effective_start_time);
+  element->Progress(effective_start_time, &delegate);
+  element->Progress(effective_start_time + delta/2, &delegate);
+
+  // Since the element has started, it should update the delegate when
+  // aborted.
+  element->Abort(&delegate);
+  target_transform.Blend(start_transform,
+                         Tween::CalculateValue(tween_type, 0.5));
+  CheckApproximatelyEqual(target_transform,
+                          delegate.GetTransformForAnimation());
 }
 
 } // namespace
