@@ -197,7 +197,7 @@ class CSSCalcPrimitiveValue : public CSSCalcExpressionNode {
     WTF_MAKE_FAST_ALLOCATED;
 public:
 
-    static PassRefPtr<CSSCalcPrimitiveValue> create(CSSPrimitiveValue* value, bool isInteger)
+    static PassRefPtr<CSSCalcPrimitiveValue> create(PassRefPtr<CSSPrimitiveValue> value, bool isInteger)
     {
         return adoptRef(new CSSCalcPrimitiveValue(value, isInteger));
     }
@@ -297,7 +297,7 @@ public:
     }
 
 private:
-    explicit CSSCalcPrimitiveValue(CSSPrimitiveValue* value, bool isInteger)
+    explicit CSSCalcPrimitiveValue(PassRefPtr<CSSPrimitiveValue> value, bool isInteger)
         : CSSCalcExpressionNode(unitCategory((CSSPrimitiveValue::UnitTypes)value->primitiveType()), isInteger)
         , m_value(value)
     {
@@ -711,6 +711,16 @@ private:
     }
 };
 
+PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(PassRefPtr<CSSPrimitiveValue> value, bool isInteger)
+{
+    return CSSCalcPrimitiveValue::create(value, isInteger);
+}
+
+PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(PassRefPtr<CSSCalcExpressionNode> leftSide, PassRefPtr<CSSCalcExpressionNode> rightSide, CalcOperator op)
+{
+    return CSSCalcBinaryOperation::create(leftSide, rightSide, op);
+}
+
 PassRefPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, CalculationPermittedValueRange range)
 {    
     CSSCalcExpressionNodeParser parser;    
@@ -721,6 +731,11 @@ PassRefPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserVal
     // FIXME calc (http://webkit.org/b/16662) Add parsing for min and max here
 
     return expression ? adoptRef(new CSSCalcValue(expression, range)) : 0;
+}
+
+PassRefPtr<CSSCalcValue> CSSCalcValue::create(PassRefPtr<CSSCalcExpressionNode> expression, CalculationPermittedValueRange range)
+{
+    return adoptRef(new CSSCalcValue(expression, range));
 }
 
 } // namespace WebCore

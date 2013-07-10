@@ -94,7 +94,10 @@ protected:
 class CSSCalcValue : public CSSValue {
 public:
     static PassRefPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, CalculationPermittedValueRange);
-    static PassRefPtr<CSSCalcValue> create(CalculationValue*);
+    static PassRefPtr<CSSCalcValue> create(PassRefPtr<CSSCalcExpressionNode>, CalculationPermittedValueRange = CalculationRangeAll);
+
+    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtr<CSSPrimitiveValue>, bool isInteger = false);
+    static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtr<CSSCalcExpressionNode>, PassRefPtr<CSSCalcExpressionNode>, CalcOperator);
 
     PassRefPtr<CalculationValue> toCalcValue(RenderStyle* style, RenderStyle* rootStyle, double zoom = 1.0) const
     {
@@ -105,7 +108,8 @@ public:
     double doubleValue() const;
     bool isNegative() const { return m_expression->doubleValue() < 0; }
     double computeLengthPx(RenderStyle* currentStyle, RenderStyle* rootStyle, double multiplier = 1.0, bool computingFontSize = false) const;
-        
+    CSSCalcExpressionNode* expressionNode() const { return m_expression.get(); }
+
     String customCssText() const;
     bool equals(const CSSCalcValue&) const;
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
@@ -126,7 +130,20 @@ private:
     const RefPtr<CSSCalcExpressionNode> m_expression;
     const bool m_nonNegative;
 };
-    
+
+inline CSSCalcValue* toCSSCalcValue(CSSValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isCalculationValue());
+    return static_cast<CSSCalcValue*>(value);
+}
+
+inline const CSSCalcValue* toCSSCalcValue(const CSSValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isCalculationValue());
+    return static_cast<const CSSCalcValue*>(value);
+}
+
 } // namespace WebCore
+
 
 #endif // CSSCalculationValue_h

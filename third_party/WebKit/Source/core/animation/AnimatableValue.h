@@ -54,6 +54,7 @@ public:
 protected:
     enum AnimatableType {
         TypeNeutral,
+        TypeNumber,
         TypeUnknown,
     };
 
@@ -65,16 +66,15 @@ protected:
         return value->m_type == m_type;
     }
 
-    bool isInterpolableWith(const AnimatableValue* value) const { return isSameType(value); }
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const = 0;
     static PassRefPtr<AnimatableValue> defaultInterpolateTo(const AnimatableValue* left, const AnimatableValue* right, double fraction) { return takeConstRef((fraction < 0.5) ? left : right); }
 
-    bool isAdditiveWith(const AnimatableValue* value) const { return isSameType(value); }
     // For noncommutative values read A->addWith(B) to mean the value A with B composed onto it.
     virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const = 0;
     static PassRefPtr<AnimatableValue> defaultAddWith(const AnimatableValue* left, const AnimatableValue* right) { return takeConstRef(right); }
 
-    static PassRefPtr<AnimatableValue> takeConstRef(const AnimatableValue* value) { return PassRefPtr<AnimatableValue>(const_cast<AnimatableValue*>(value)); }
+    template <class T>
+    static PassRefPtr<T> takeConstRef(const T* value) { return PassRefPtr<T>(const_cast<T*>(value)); }
 
     AnimatableType m_type;
 };

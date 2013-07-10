@@ -527,6 +527,8 @@
             'accessibility/AccessibilityTableRow.cpp',
             'accessibility/AccessibilityTableRow.h',
             'animation/AnimatableNeutral.h',
+            'animation/AnimatableNumber.cpp',
+            'animation/AnimatableNumber.h',
             'animation/AnimatableUnknown.h',
             'animation/AnimatableValue.cpp',
             'animation/AnimatableValue.h',
@@ -3692,6 +3694,7 @@
         ],
         'core_unittest_files': [
             'animation/AnimatableNeutralTest.cpp',
+            'animation/AnimatableNumberTest.cpp',
             'animation/AnimatableUnknownTest.cpp',
             'animation/DocumentTimelineTest.cpp',
             'animation/KeyframeAnimationEffectTest.cpp',
