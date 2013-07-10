@@ -2363,7 +2363,6 @@ static void perWorldAttributeAttrSetterCallback(v8::Local<v8::String> name, v8::
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::perWorldAttributeAttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void perWorldAttributeAttrSetterForMainWorld(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -2378,7 +2377,6 @@ static void perWorldAttributeAttrSetterCallbackForMainWorld(v8::Local<v8::String
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::perWorldAttributeAttrSetterForMainWorld(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedAttr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2469,7 +2467,6 @@ static void activityLoggedAttr2AttrSetterCallback(v8::Local<v8::String> name, v8
         contextData->activityLogger()->log("TestObject.activityLoggedAttr2", 1, &loggerArg[0], "Setter");
     }
     TestObjV8Internal::activityLoggedAttr2AttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedAttr2AttrSetterForMainWorld(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -2489,7 +2486,6 @@ static void activityLoggedAttr2AttrSetterCallbackForMainWorld(v8::Local<v8::Stri
         contextData->activityLogger()->log("TestObject.activityLoggedAttr2", 1, &loggerArg[0], "Setter");
     }
     TestObjV8Internal::activityLoggedAttr2AttrSetterForMainWorld(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldsAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2540,7 +2536,6 @@ static void activityLoggedInIsolatedWorldsAttrAttrSetterCallback(v8::Local<v8::S
         contextData->activityLogger()->log("TestObject.activityLoggedInIsolatedWorldsAttr", 1, &loggerArg[0], "Setter");
     }
     TestObjV8Internal::activityLoggedInIsolatedWorldsAttrAttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldsAttrAttrSetterForMainWorld(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -2555,7 +2550,6 @@ static void activityLoggedInIsolatedWorldsAttrAttrSetterCallbackForMainWorld(v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::activityLoggedInIsolatedWorldsAttrAttrSetterForMainWorld(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedAttrSetter1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2637,7 +2631,6 @@ static void activityLoggedAttrSetter2AttrSetterCallback(v8::Local<v8::String> na
         contextData->activityLogger()->log("TestObject.activityLoggedAttrSetter2", 1, &loggerArg[0], "Setter");
     }
     TestObjV8Internal::activityLoggedAttrSetter2AttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedAttrSetter2AttrSetterForMainWorld(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -2657,7 +2650,6 @@ static void activityLoggedAttrSetter2AttrSetterCallbackForMainWorld(v8::Local<v8
         contextData->activityLogger()->log("TestObject.activityLoggedAttrSetter2", 1, &loggerArg[0], "Setter");
     }
     TestObjV8Internal::activityLoggedAttrSetter2AttrSetterForMainWorld(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldsAttrSetterAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2705,7 +2697,6 @@ static void activityLoggedInIsolatedWorldsAttrSetterAttrSetterCallback(v8::Local
         contextData->activityLogger()->log("TestObject.activityLoggedInIsolatedWorldsAttrSetter", 1, &loggerArg[0], "Setter");
     }
     TestObjV8Internal::activityLoggedInIsolatedWorldsAttrSetterAttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldsAttrSetterAttrSetterForMainWorld(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -2720,7 +2711,6 @@ static void activityLoggedInIsolatedWorldsAttrSetterAttrSetterCallbackForMainWor
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::activityLoggedInIsolatedWorldsAttrSetterAttrSetterForMainWorld(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedAttrGetter1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2801,7 +2791,6 @@ static void activityLoggedAttrGetter2AttrSetterCallback(v8::Local<v8::String> na
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::activityLoggedAttrGetter2AttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedAttrGetter2AttrSetterForMainWorld(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -2816,7 +2805,6 @@ static void activityLoggedAttrGetter2AttrSetterCallbackForMainWorld(v8::Local<v8
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::activityLoggedAttrGetter2AttrSetterForMainWorld(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldsAttrGetterAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2862,7 +2850,6 @@ static void activityLoggedInIsolatedWorldsAttrGetterAttrSetterCallback(v8::Local
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldsAttrGetterAttrSetterForMainWorld(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -2877,7 +2864,6 @@ static void activityLoggedInIsolatedWorldsAttrGetterAttrSetterCallbackForMainWor
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrSetterForMainWorld(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void deprecatedStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4758,16 +4744,12 @@ static void perWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::
 
 static void perWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::perWorldMethodMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void perWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::perWorldMethodMethodForMainWorld(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void overloadedPerWorldMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4860,16 +4842,12 @@ static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbac
 
 static void overloadedPerWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::overloadedPerWorldMethodMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void overloadedPerWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::overloadedPerWorldMethodMethodForMainWorld(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4925,26 +4903,22 @@ static void activityLoggedMethod2MethodForMainWorld(const v8::FunctionCallbackIn
 
 static void activityLoggedMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
         contextData->activityLogger()->log("TestObject.activityLoggedMethod2", args.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedMethod2Method(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedMethod2MethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
         contextData->activityLogger()->log("TestObject.activityLoggedMethod2", args.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedMethod2MethodForMainWorld(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4975,21 +4949,17 @@ static void activityLoggedInIsolatedWorldMethodMethodForMainWorld(const v8::Func
 
 static void activityLoggedInIsolatedWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
         contextData->activityLogger()->log("TestObject.activityLoggedInIsolatedWorldMethod", args.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedInIsolatedWorldMethodMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void activityLoggedInIsolatedWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::activityLoggedInIsolatedWorldMethodMethodForMainWorld(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void overloadedActivityLoggedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -5082,26 +5052,22 @@ static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionC
 
 static void overloadedActivityLoggedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
         contextData->activityLogger()->log("TestObject.overloadedActivityLoggedMethod", args.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::overloadedActivityLoggedMethodMethod(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void overloadedActivityLoggedMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
         contextData->activityLogger()->log("TestObject.overloadedActivityLoggedMethod", args.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::overloadedActivityLoggedMethodMethodForMainWorld(args);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void deprecatedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
