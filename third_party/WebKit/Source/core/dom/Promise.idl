@@ -28,18 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+callback PromiseInit = void (PromiseResolver resolver);
+callback AnyCallback = any (optional any value);
 [
-   CustomConstructor(any init),
+   CustomConstructor(PromiseInit init),
    EnabledAtRuntime=promise
 ] interface Promise {
-   [Custom] Promise then(optional any fulfillCallback, optional any rejectCallback);
-   [Custom] Promise catch(optional any rejectCallback);
+   [Custom] Promise then(optional AnyCallback fulfillCallback, optional AnyCallback rejectCallback);
+   [Custom] Promise catch(optional AnyCallback rejectCallback);
 
    [Custom] static Promise fulfill(any value);
    [Custom] static Promise resolve(any value);
    [Custom] static Promise reject(any value);
 
-   [Custom] static Promise any(value... values);
-   [Custom] static Promise every(value... values);
-   [Custom] static Promise some(value... values);
+   [Custom] static Promise any(any... values);
+   [Custom] static Promise every(any... values);
+   [Custom] static Promise some(any... values);
 };
