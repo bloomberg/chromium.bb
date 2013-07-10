@@ -552,7 +552,10 @@ cr.define('options', function() {
       $('selected-display-name').textContent =
           loadTimeData.getString('mirroringDisplay');
       var resolution = $('display-options-resolution-selection');
-      resolution.appendChild(document.createElement('option'));
+      var option = document.createElement('option');
+      option.value = 'default';
+      option.textContent = display.width + 'x' + display.height;
+      resolution.appendChild(option);
       resolution.disabled = true;
     },
 
