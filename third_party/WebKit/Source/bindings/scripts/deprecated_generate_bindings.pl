@@ -2,31 +2,24 @@
 #
 # Copyright (C) 2005 Apple Computer, Inc.
 # Copyright (C) 2006 Anders Carlsson <andersca@mac.com>
-# 
+#
 # This file is part of WebKit
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
 # License as published by the Free Software Foundation; either
 # version 2 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Library General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Library General Public License
 # along with this library; see the file COPYING.LIB.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
-# 
-
-# This script is a temporary hack. 
-# Files are generated in the source directory, when they really should go
-# to the DerivedSources directory.
-# This should also eventually be a build rule driven off of .idl files
-# however a build rule only solution is blocked by several radars:
-# <rdar://problems/4251781&4251785>
+#
 
 use strict;
 
@@ -36,14 +29,12 @@ use Getopt::Long;
 use Text::ParseWords;
 use Cwd;
 
-use IDLParser;
-use CodeGeneratorV8;
-use IDLSerializer;
+use deprecated_idl_parser;
+use deprecated_code_generator_v8;
+use deprecated_idl_serializer;
 
 my @idlDirectories;
 my $outputDirectory;
-my $defines;
-my $filename;
 my $preprocessor;
 my $verbose;
 my $interfaceDependenciesFile;
@@ -53,8 +44,6 @@ my $writeFileOnlyIfChanged;
 
 GetOptions('include=s@' => \@idlDirectories,
            'outputDir=s' => \$outputDirectory,
-           'defines=s' => \$defines,
-           'filename=s' => \$filename,
            'preprocessor=s' => \$preprocessor,
            'verbose' => \$verbose,
            'interfaceDependenciesFile=s' => \$interfaceDependenciesFile,
@@ -66,7 +55,6 @@ my $targetIdlFile = $ARGV[0];
 
 die('Must specify input file.') unless defined($targetIdlFile);
 die('Must specify output directory.') unless defined($outputDirectory);
-$defines = "" unless defined($defines);
 
 $targetIdlFile = Cwd::realpath($targetIdlFile);
 if ($verbose) {
@@ -116,8 +104,8 @@ if ($interfaceDependenciesFile) {
 }
 
 # Parse the target IDL file.
-my $targetParser = IDLParser->new(!$verbose);
-my $targetDocument = $targetParser->Parse($targetIdlFile, $defines, $preprocessor);
+my $targetParser = deprecated_idl_parser->new(!$verbose);
+my $targetDocument = $targetParser->Parse($targetIdlFile, $preprocessor);
 
 if ($idlAttributesFile) {
     my $idlAttributes = loadIDLAttributes($idlAttributesFile);
@@ -128,8 +116,8 @@ foreach my $idlFile (@dependencyIdlFiles) {
     next if $idlFile eq $targetIdlFile;
 
     my $interfaceName = fileparse(basename($idlFile), ".idl");
-    my $parser = IDLParser->new(!$verbose);
-    my $document = $parser->Parse($idlFile, $defines, $preprocessor);
+    my $parser = deprecated_idl_parser->new(!$verbose);
+    my $document = $parser->Parse($idlFile, $preprocessor);
 
     foreach my $interface (@{$document->interfaces}) {
         if (!$interface->isPartial || $interface->name eq $targetInterfaceName) {
@@ -180,13 +168,13 @@ foreach my $idlFile (@dependencyIdlFiles) {
     }
 }
 
-# FIXME: This code will be removed once IDLParser.pm and CodeGeneratorV8.pm
-# are connected via JSON files. See http://crbug.com/242795
+# Serialize to and from JSON to ensure Perl and Python parsers are equivalent,
+# as part of porting compiler to Python. See http://crbug.com/242795
 $targetDocument = deserializeJSON(serializeJSON($targetDocument));
 
 # Generate desired output for the target IDL file.
 my @interfaceIdlFiles = ($targetDocument->fileName(), @dependencyIdlFiles);
-my $codeGenerator = CodeGeneratorV8->new($targetDocument, \@idlDirectories, $preprocessor, $defines, $verbose, \@interfaceIdlFiles, $writeFileOnlyIfChanged);
+my $codeGenerator = deprecated_code_generator_v8->new($targetDocument, \@idlDirectories, $preprocessor, $verbose, \@interfaceIdlFiles, $writeFileOnlyIfChanged);
 my $interfaces = $targetDocument->interfaces;
 foreach my $interface (@$interfaces) {
     print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;

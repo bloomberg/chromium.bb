@@ -1,6 +1,6 @@
 {
     'variables': {
-        'core_idl_files': [
+        'deprecated_perl_core_idl_files': [
             'css/CSS.idl',
             'css/CSSCharsetRule.idl',
             'css/CSSFontFaceLoadEvent.idl',
@@ -44,7 +44,6 @@
             'dom/BeforeLoadEvent.idl',
             'dom/CDATASection.idl',
             'dom/CharacterData.idl',
-            'dom/ChildNode.idl',
             'dom/ClientRect.idl',
             'dom/ClientRectList.idl',
             'dom/Clipboard.idl',
@@ -61,7 +60,6 @@
             'dom/DeviceOrientationEvent.idl',
             'dom/Document.idl',
             'dom/DocumentFragment.idl',
-            'dom/DocumentFullscreen.idl',
             'dom/DocumentType.idl',
             'dom/Element.idl',
             'dom/Entity.idl',
@@ -86,7 +84,6 @@
             'dom/Notation.idl',
             'dom/OverflowEvent.idl',
             'dom/PageTransitionEvent.idl',
-            'dom/ParentNode.idl',
             'dom/PopStateEvent.idl',
             'dom/ProcessingInstruction.idl',
             'dom/ProgressEvent.idl',
@@ -292,8 +289,6 @@
             'page/SpeechInputResultList.idl',
             'page/WebKitPoint.idl',
             'page/Window.idl',
-            'page/WindowPagePopup.idl',
-            'page/WindowTimers.idl',
             'page/WorkerNavigator.idl',
             'plugins/MimeType.idl',
             'plugins/MimeTypeArray.idl',
@@ -301,7 +296,6 @@
             'plugins/PluginArray.idl',
             'storage/Storage.idl',
             'storage/StorageEvent.idl',
-            'workers/AbstractWorker.idl',
             'workers/DedicatedWorkerGlobalScope.idl',
             'workers/SharedWorker.idl',
             'workers/SharedWorkerGlobalScope.idl',
@@ -320,7 +314,15 @@
             'xml/XPathResult.idl',
             'xml/XSLTProcessor.idl',
         ],
-        'svg_idl_files': [
+        'python_core_idl_files': [
+            'dom/ChildNode.idl',
+            'dom/DocumentFullscreen.idl',
+            'dom/ParentNode.idl',
+            'page/WindowPagePopup.idl',
+            'page/WindowTimers.idl',
+            'workers/AbstractWorker.idl',
+        ],
+        'deprecated_perl_svg_idl_files': [
             'svg/SVGAElement.idl',
             'svg/SVGAltGlyphElement.idl',
             'svg/SVGAltGlyphItemElement.idl',
@@ -355,7 +357,6 @@
             'svg/SVGElementInstance.idl',
             'svg/SVGElementInstanceList.idl',
             'svg/SVGEllipseElement.idl',
-            'svg/SVGExternalResourcesRequired.idl',
             'svg/SVGFEBlendElement.idl',
             'svg/SVGFEColorMatrixElement.idl',
             'svg/SVGFEComponentTransferElement.idl',
@@ -382,8 +383,6 @@
             'svg/SVGFETileElement.idl',
             'svg/SVGFETurbulenceElement.idl',
             'svg/SVGFilterElement.idl',
-            'svg/SVGFilterPrimitiveStandardAttributes.idl',
-            'svg/SVGFitToViewBox.idl',
             'svg/SVGFontElement.idl',
             'svg/SVGFontFaceElement.idl',
             'svg/SVGFontFaceFormatElement.idl',
@@ -454,7 +453,6 @@
             'svg/SVGSymbolElement.idl',
             'svg/SVGTRefElement.idl',
             'svg/SVGTSpanElement.idl',
-            'svg/SVGTests.idl',
             'svg/SVGTextContentElement.idl',
             'svg/SVGTextElement.idl',
             'svg/SVGTextPathElement.idl',
@@ -462,14 +460,20 @@
             'svg/SVGTitleElement.idl',
             'svg/SVGTransform.idl',
             'svg/SVGTransformList.idl',
-            'svg/SVGURIReference.idl',
             'svg/SVGUnitTypes.idl',
             'svg/SVGUseElement.idl',
             'svg/SVGViewElement.idl',
             'svg/SVGViewSpec.idl',
             'svg/SVGVKernElement.idl',
-            'svg/SVGZoomAndPan.idl',
             'svg/SVGZoomEvent.idl',
+        ],
+        'python_svg_idl_files': [
+            'svg/SVGExternalResourcesRequired.idl',
+            'svg/SVGFilterPrimitiveStandardAttributes.idl',
+            'svg/SVGFitToViewBox.idl',
+            'svg/SVGTests.idl',
+            'svg/SVGURIReference.idl',
+            'svg/SVGZoomAndPan.idl',
         ],
         'webcore_files': [
             'Init.cpp',
@@ -3618,7 +3622,7 @@
             'svg/properties/SVGAnimatedPathSegListPropertyTearOff.h',
             'svg/properties/SVGPathSegListPropertyTearOff.cpp',
         ],
-        'webcore_test_support_idl_files': [
+        'deprecated_perl_webcore_test_support_idl_files': [
           'testing/Internals.idl',
           'testing/InternalProfilers.idl',
           'testing/InternalSettings.idl',
@@ -3626,6 +3630,8 @@
           'testing/TypeConversions.idl',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.idl',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.idl',
+        ],
+        'python_webcore_test_support_idl_files': [
         ],
         'webcore_test_support_files': [
             'testing/v8/WebCoreTestSupport.cpp',

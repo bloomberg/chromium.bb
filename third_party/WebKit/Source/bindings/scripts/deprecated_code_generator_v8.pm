@@ -107,7 +107,7 @@ sub toString
 }
 
 
-package CodeGeneratorV8;
+package deprecated_code_generator_v8;
 
 use strict;
 use Cwd;
@@ -118,7 +118,6 @@ use File::Spec;
 my $idlDocument;
 my $idlDirectories;
 my $preprocessor;
-my $defines;
 my $verbose;
 my $interfaceIdlFiles;
 my $writeFileOnlyIfChanged;
@@ -262,7 +261,6 @@ sub new
     $idlDocument = shift;
     $idlDirectories = shift;
     $preprocessor = shift;
-    $defines = shift;
     $verbose = shift;
     $interfaceIdlFiles = shift;
     $writeFileOnlyIfChanged = shift;
@@ -312,8 +310,8 @@ sub ParseInterface
     print "  |  |>  Parsing parent IDL \"$filename\" for interface \"$interfaceName\"\n" if $verbose;
 
     # Step #2: Parse the found IDL file (in quiet mode).
-    my $parser = IDLParser->new(1);
-    my $document = $parser->Parse($filename, $defines, $preprocessor);
+    my $parser = deprecated_idl_parser->new(1);
+    my $document = $parser->Parse($filename, $preprocessor);
 
     foreach my $interface (@{$document->interfaces}) {
         if ($interface->name eq $interfaceName or $interface->isPartial) {

@@ -57,7 +57,7 @@ class BindingsTests:
                '-Ibindings/scripts',
                '-Icore/scripts',
                '-I../../JSON/out/lib/perl5',
-               'bindings/scripts/generate-bindings.pl',
+               'bindings/scripts/deprecated_generate_bindings.pl',
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
                '--outputDir', output_directory,

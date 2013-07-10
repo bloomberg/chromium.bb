@@ -1,25 +1,25 @@
-# 
+#
 # KDOM IDL parser
 #
 # Copyright (C) 2005 Nikolas Zimmermann <wildfox@kde.org>
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
 # License as published by the Free Software Foundation; either
 # version 2 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Library General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Library General Public License
 # along with this library; see the file COPYING.LIB.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
-# 
+#
 
-package IDLParser;
+package deprecated_idl_parser;
 
 use strict;
 
@@ -53,7 +53,7 @@ struct( domInterface => {
     parent => '$',      # Parent class identifier
     constants => '@',    # List of 'domConstant'
     functions => '@',    # List of 'domFunction'
-    attributes => '@',    # List of 'domAttribute'    
+    attributes => '@',    # List of 'domAttribute'
     extendedAttributes => '$', # Extended attributes
     constructors => '@', # Constructors, list of 'domFunction'
     customConstructors => '@', # Custom constructors, list of 'domFunction'
@@ -152,7 +152,7 @@ sub assertTokenValue
     my $line = shift;
     my $msg = "Next token should be " . $value . ", but " . $token->value() . " at " . $self->{Line};
     if (defined ($line)) {
-        $msg .= " IDLParser.pm:" . $line;
+        $msg .= " deprecated_idl_parser.pm:" . $line;
     }
     die $msg unless $token->value() eq $value;
 }
@@ -172,7 +172,7 @@ sub assertUnexpectedToken
     my $line = shift;
     my $msg = "Unexpected token " . $token . " at " . $self->{Line};
     if (defined ($line)) {
-        $msg .= " IDLParser.pm:" . $line;
+        $msg .= " deprecated_idl_parser.pm:" . $line;
     }
     die $msg;
 }
@@ -185,7 +185,7 @@ sub assertNoExtendedAttributesInTypedef
     my $typedef = $typedefs{$name};
     my $msg = "Unexpected extendedAttributeList in typedef \"$name\" at " . $self->{Line};
     if (defined ($line)) {
-        $msg .= " IDLParser.pm:" . $line;
+        $msg .= " deprecated_idl_parser.pm:" . $line;
     }
     die $msg if %{$typedef->extendedAttributes};
 }
@@ -194,8 +194,8 @@ sub Parse
 {
     my $self = shift;
     my $fileName = shift;
-    my $defines = shift;
     my $preprocessor = shift;
+    my $defines = "";
 
     my @definitions = ();
 
@@ -381,7 +381,7 @@ sub applyTypedefs
 {
     my $self = shift;
     my $definitions = shift;
-   
+
     if (!%typedefs) {
         return;
     }
