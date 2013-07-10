@@ -94,6 +94,8 @@ std::string GetPermissionName(const std::string& function_name) {
     return function_name;
 }
 
+
+
 }  // namespace
 
 namespace extensions {
@@ -263,28 +265,11 @@ PermissionMessages PermissionSet::GetPermissionMessages(
     return messages;
   }
 
-  // Since platform apps always use isolated storage, they can't (silently)
-  // access user data on other domains, so there's no need to prompt.
-  if (extension_type != Manifest::TYPE_PLATFORM_APP) {
-    if (HasEffectiveAccessToAllHosts()) {
-      messages.push_back(PermissionMessage(
-          PermissionMessage::kHostsAll,
-          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
-    } else {
-      PermissionMessages additional_warnings =
-          GetChromeSchemePermissionWarnings(effective_hosts_);
-      for (size_t i = 0; i < additional_warnings.size(); ++i)
-        messages.push_back(additional_warnings[i]);
-
-      std::set<std::string> hosts = GetDistinctHostsForDisplay();
-      if (!hosts.empty())
-        messages.push_back(PermissionMessage::CreateFromHostList(hosts));
-    }
-  }
-
-  std::set<PermissionMessage> simple_msgs =
-      GetSimplePermissionMessages();
-  messages.insert(messages.end(), simple_msgs.begin(), simple_msgs.end());
+  std::set<PermissionMessage> host_msgs =
+      GetHostPermissionMessages(extension_type);
+  std::set<PermissionMessage> api_msgs = GetAPIPermissionMessages();
+  messages.insert(messages.end(), host_msgs.begin(), host_msgs.end());
+  messages.insert(messages.end(), api_msgs.begin(), api_msgs.end());
 
   return messages;
 }
@@ -435,7 +420,8 @@ bool PermissionSet::HasEffectiveFullAccess() const {
 }
 
 bool PermissionSet::HasLessPrivilegesThan(
-    const PermissionSet* permissions) const {
+    const PermissionSet* permissions,
+    Manifest::Type extension_type) const {
   // Things can't get worse than native code access.
   if (HasEffectiveFullAccess())
     return false;
@@ -444,7 +430,7 @@ bool PermissionSet::HasLessPrivilegesThan(
   if (permissions->HasEffectiveFullAccess())
     return true;
 
-  if (HasLessHostPrivilegesThan(permissions))
+  if (HasLessHostPrivilegesThan(permissions, extension_type))
     return true;
 
   if (HasLessAPIPrivilegesThan(permissions))
@@ -537,8 +523,7 @@ void PermissionSet::InitEffectiveHosts() {
       explicit_hosts(), scriptable_hosts(), &effective_hosts_);
 }
 
-std::set<PermissionMessage>
-    PermissionSet::GetSimplePermissionMessages() const {
+std::set<PermissionMessage> PermissionSet::GetAPIPermissionMessages() const {
   std::set<PermissionMessage> messages;
   for (APIPermissionSet::const_iterator permission_it = apis_.begin();
        permission_it != apis_.end(); ++permission_it) {
@@ -552,15 +537,42 @@ std::set<PermissionMessage>
   return messages;
 }
 
+std::set<PermissionMessage> PermissionSet::GetHostPermissionMessages(
+    Manifest::Type extension_type) const {
+  // Since platform apps always use isolated storage, they can't (silently)
+  // access user data on other domains, so there's no need to prompt.
+  // Note: this must remain consistent with HasLessHostPrivilegesThan.
+  // See crbug.com/255229.
+  std::set<PermissionMessage> messages;
+  if (extension_type == Manifest::TYPE_PLATFORM_APP)
+    return messages;
+
+  if (HasEffectiveAccessToAllHosts()) {
+    messages.insert(PermissionMessage(
+        PermissionMessage::kHostsAll,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
+  } else {
+    PermissionMessages additional_warnings =
+        GetChromeSchemePermissionWarnings(effective_hosts_);
+    for (size_t i = 0; i < additional_warnings.size(); ++i)
+      messages.insert(additional_warnings[i]);
+
+    std::set<std::string> hosts = GetDistinctHostsForDisplay();
+    if (!hosts.empty())
+      messages.insert(PermissionMessage::CreateFromHostList(hosts));
+  }
+  return messages;
+}
+
 bool PermissionSet::HasLessAPIPrivilegesThan(
     const PermissionSet* permissions) const {
   if (permissions == NULL)
     return false;
 
   std::set<PermissionMessage> current_warnings =
-      GetSimplePermissionMessages();
+      GetAPIPermissionMessages();
   std::set<PermissionMessage> new_warnings =
-      permissions->GetSimplePermissionMessages();
+      permissions->GetAPIPermissionMessages();
   std::set<PermissionMessage> delta_warnings;
   std::set_difference(new_warnings.begin(), new_warnings.end(),
                       current_warnings.begin(), current_warnings.end(),
@@ -571,7 +583,13 @@ bool PermissionSet::HasLessAPIPrivilegesThan(
 }
 
 bool PermissionSet::HasLessHostPrivilegesThan(
-    const PermissionSet* permissions) const {
+    const PermissionSet* permissions,
+    Manifest::Type extension_type) const {
+  // Platform apps host permission changes do not count as privilege increases.
+  // Note: this must remain consistent with GetHostPermissionMessages.
+  if (extension_type == Manifest::TYPE_PLATFORM_APP)
+    return false;
+
   // If this permission set can access any host, then it can't be elevated.
   if (HasEffectiveAccessToAllHosts())
     return false;

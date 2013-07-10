@@ -592,6 +592,8 @@ TEST(PermissionsTest, HasLessPrivilegesThan) {
 #endif
     { "storage", false },  // none -> storage
     { "notifications", false },  // none -> notifications
+    { "platformapp1", false },  // host permissions for platform apps
+    { "platformapp2", true },  // API permissions for platform apps
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
@@ -610,9 +612,11 @@ TEST(PermissionsTest, HasLessPrivilegesThan) {
         old_extension->GetActivePermissions());
     scoped_refptr<const PermissionSet> new_p(
         new_extension->GetActivePermissions());
+    Manifest::Type extension_type = old_extension->GetType();
 
     EXPECT_EQ(kTests[i].expect_increase,
-              old_p->HasLessPrivilegesThan(new_p.get())) << kTests[i].base_name;
+              old_p->HasLessPrivilegesThan(new_p.get(), extension_type))
+        << kTests[i].base_name;
   }
 }
 
@@ -1224,6 +1228,7 @@ TEST(PermissionsTest,
 }
 
 TEST(PermissionsTest, HasLessHostPrivilegesThan) {
+  Manifest::Type extension_type = Manifest::TYPE_EXTENSION;
   URLPatternSet elist1;
   URLPatternSet elist2;
   URLPatternSet slist1;
@@ -1245,31 +1250,31 @@ TEST(PermissionsTest, HasLessHostPrivilegesThan) {
   set1 = new PermissionSet(empty_perms, elist1, slist1);
   set2 = new PermissionSet(empty_perms, elist2, slist2);
 
-  EXPECT_FALSE(set1->HasLessHostPrivilegesThan(set2.get()));
-  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get()));
+  EXPECT_FALSE(set1->HasLessHostPrivilegesThan(set2.get(), extension_type));
+  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get(), extension_type));
 
   // Test that paths are ignored.
   elist2.ClearPatterns();
   elist2.AddPattern(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com/*"));
   set2 = new PermissionSet(empty_perms, elist2, slist2);
-  EXPECT_FALSE(set1->HasLessHostPrivilegesThan(set2.get()));
-  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get()));
+  EXPECT_FALSE(set1->HasLessHostPrivilegesThan(set2.get(), extension_type));
+  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get(), extension_type));
 
   // Test that RCDs are ignored.
   elist2.ClearPatterns();
   elist2.AddPattern(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com.hk/*"));
   set2 = new PermissionSet(empty_perms, elist2, slist2);
-  EXPECT_FALSE(set1->HasLessHostPrivilegesThan(set2.get()));
-  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get()));
+  EXPECT_FALSE(set1->HasLessHostPrivilegesThan(set2.get(), extension_type));
+  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get(), extension_type));
 
   // Test that subdomain wildcards are handled properly.
   elist2.ClearPatterns();
   elist2.AddPattern(
       URLPattern(URLPattern::SCHEME_HTTP, "http://*.google.com.hk/*"));
   set2 = new PermissionSet(empty_perms, elist2, slist2);
-  EXPECT_TRUE(set1->HasLessHostPrivilegesThan(set2.get()));
+  EXPECT_TRUE(set1->HasLessHostPrivilegesThan(set2.get(), extension_type));
   // TODO(jstritar): Does not match subdomains properly. http://crbug.com/65337
   // EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get()));
 
@@ -1280,16 +1285,21 @@ TEST(PermissionsTest, HasLessHostPrivilegesThan) {
   elist2.AddPattern(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.example.org/path"));
   set2 = new PermissionSet(empty_perms, elist2, slist2);
-  EXPECT_TRUE(set1->HasLessHostPrivilegesThan(set2.get()));
-  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get()));
+  EXPECT_TRUE(set1->HasLessHostPrivilegesThan(set2.get(), extension_type));
+  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get(), extension_type));
 
   // Test that different subdomains count as different hosts.
   elist2.ClearPatterns();
   elist2.AddPattern(
       URLPattern(URLPattern::SCHEME_HTTP, "http://mail.google.com/*"));
   set2 = new PermissionSet(empty_perms, elist2, slist2);
-  EXPECT_TRUE(set1->HasLessHostPrivilegesThan(set2.get()));
-  EXPECT_TRUE(set2->HasLessHostPrivilegesThan(set1.get()));
+  EXPECT_TRUE(set1->HasLessHostPrivilegesThan(set2.get(), extension_type));
+  EXPECT_TRUE(set2->HasLessHostPrivilegesThan(set1.get(), extension_type));
+
+  // Test that platform apps do not have host permissions increases.
+  extension_type = Manifest::TYPE_PLATFORM_APP;
+  EXPECT_FALSE(set1->HasLessHostPrivilegesThan(set2.get(), extension_type));
+  EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get(), extension_type));
 }
 
 TEST(PermissionsTest, GetAPIsAsStrings) {

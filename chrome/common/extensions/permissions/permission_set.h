@@ -126,7 +126,9 @@ class PermissionSet
 
   // Returns true if |permissions| has a greater privilege level than this
   // permission set (e.g., this permission set has less permissions).
-  bool HasLessPrivilegesThan(const PermissionSet* permissions) const;
+  // Whether certain permissions are considered varies by extension type.
+  bool HasLessPrivilegesThan(const PermissionSet* permissions,
+                             Manifest::Type extension_type) const;
 
   const APIPermissionSet& apis() const { return apis_; }
 
@@ -166,17 +168,20 @@ class PermissionSet
   void InitEffectiveHosts();
 
   // Gets the permission messages for the API permissions.
-  std::set<PermissionMessage> GetSimplePermissionMessages() const;
+  std::set<PermissionMessage> GetAPIPermissionMessages() const;
+
+  // Gets the permission messages for the host permissions.
+  std::set<PermissionMessage> GetHostPermissionMessages(
+      Manifest::Type extension_type) const;
 
   // Returns true if |permissions| has an elevated API privilege level than
   // this set.
-  bool HasLessAPIPrivilegesThan(
-      const PermissionSet* permissions) const;
+  bool HasLessAPIPrivilegesThan(const PermissionSet* permissions) const;
 
   // Returns true if |permissions| has more host permissions compared to this
   // set.
-  bool HasLessHostPrivilegesThan(
-      const PermissionSet* permissions) const;
+  bool HasLessHostPrivilegesThan(const PermissionSet* permissions,
+                                 Manifest::Type extension_type) const;
 
   // Gets a list of the distinct hosts for displaying to the user.
   // NOTE: do not use this for comparing permissions, since this disgards some

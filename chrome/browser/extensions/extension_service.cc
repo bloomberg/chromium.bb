@@ -2175,7 +2175,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // upgraded and recognized additional privileges, or an extension upgrades
     // to a version that requires additional privileges.
     is_privilege_increase = granted_permissions->HasLessPrivilegesThan(
-        extension->GetActivePermissions().get());
+        extension->GetActivePermissions().get(), extension->GetType());
   }
 
   if (is_extension_upgrade) {
