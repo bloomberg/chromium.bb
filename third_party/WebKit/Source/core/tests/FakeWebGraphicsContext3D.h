@@ -235,8 +235,7 @@ public:
     virtual void vertexAttrib3fv(WGC3Duint index, const WGC3Dfloat* values) { }
     virtual void vertexAttrib4f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z, WGC3Dfloat w) { }
     virtual void vertexAttrib4fv(WGC3Duint index, const WGC3Dfloat* values) { }
-    virtual void vertexAttribPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dboolean normalized,
-                                     WGC3Dsizei stride, WGC3Dintptr offset) { }
+    virtual void vertexAttribPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dboolean normalized, WGC3Dsizei stride, WGC3Dintptr offset) { }
 
     virtual void viewport(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
 
@@ -254,8 +253,7 @@ public:
     virtual void deleteShader(WebGLId) { }
     virtual void deleteTexture(WebGLId) { }
 
-    virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
-                                 WGC3Dint width, WGC3Dint height) { }
+    virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat, WGC3Dint width, WGC3Dint height) { }
 
     virtual WebGLId createQueryEXT() { return 1; }
     virtual void deleteQueryEXT(WebGLId) { }

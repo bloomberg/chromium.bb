@@ -26,16 +26,16 @@
 
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 
-#include "FakeWebGraphicsContext3D.h"
 #include "SkDeferredCanvas.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/tests/FakeWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "wtf/RefPtr.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "wtf/RefPtr.h"
 
 using namespace WebCore;
 using namespace WebKit;
@@ -82,7 +82,7 @@ protected:
 
         EXPECT_CALL(mainMock, flush());
         unsigned textureId = bridge->backBufferTexture();
-        EXPECT_TRUE(textureId == 0);
+        EXPECT_EQ(textureId, 0u);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 

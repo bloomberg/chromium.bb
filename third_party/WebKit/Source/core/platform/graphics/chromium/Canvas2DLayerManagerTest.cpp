@@ -26,13 +26,14 @@
 
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include "FakeWebGraphicsContext3D.h"
 #include "SkDevice.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/tests/FakeWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using testing::InSequence;
@@ -87,7 +88,8 @@ public:
     int m_flushCount;
 };
 
-static PassOwnPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context) {
+static PassOwnPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context)
+{
     SkAutoTUnref<SkDevice> device(new SkDevice(SkBitmap::kARGB_8888_Config, 1, 1));
     return adoptPtr(new SkDeferredCanvas(device.get()));
 }
