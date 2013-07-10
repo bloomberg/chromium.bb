@@ -12,6 +12,7 @@
 import driver_tools
 from driver_env import env
 from driver_log import Log, DriverOpen, DriverClose
+import filetype
 
 EXTRA_ENV = {
   'INPUTS'          : '',
@@ -47,9 +48,9 @@ def main(argv):
     # to False to bypass the driver's line-by-line handling of stdout
     # which is extremely slow when you have a lot of output
 
-    if (driver_tools.IsLLVMBitcode(infile) or
-        driver_tools.IsPNaClBitcode(infile)):
-      format = 'pnacl' if driver_tools.IsPNaClBitcode(infile) else 'llvm'
+    if (filetype.IsLLVMBitcode(infile) or
+        filetype.IsPNaClBitcode(infile)):
+      format = 'pnacl' if filetype.IsPNaClBitcode(infile) else 'llvm'
       env.append('FLAGS', '-bitcode-format=' + format)
       if output == '':
         # LLVM by default outputs to a file if -o is missing
@@ -57,7 +58,7 @@ def main(argv):
         env.set('output', '-')
         env.append('FLAGS', '-f')
       driver_tools.Run('${LLVM_DIS} ${FLAGS} ${input} -o ${output}')
-    elif driver_tools.IsELF(infile):
+    elif filetype.IsELF(infile):
       flags = env.get('FLAGS')
       if len(flags) == 0:
         env.append('FLAGS', '-d')
@@ -67,9 +68,9 @@ def main(argv):
       else:
         # objdump always outputs to stdout, and doesn't recognize -o
         # Let's add this feature to be consistent.
-        fp = driver_tools.DriverOpen(output, 'w')
+        fp = DriverOpen(output, 'w')
         driver_tools.Run('${OBJDUMP} ${FLAGS} ${input}', redirect_stdout=fp)
-        driver_tools.DriverClose(fp)
+        DriverClose(fp)
     else:
       Log.Fatal('Unknown file type')
     env.pop()

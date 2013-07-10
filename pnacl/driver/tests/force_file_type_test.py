@@ -12,6 +12,7 @@ from driver_env import env
 import driver_log
 import driver_test_utils
 import driver_tools
+import filetype
 import pathtools
 
 import cStringIO
@@ -27,31 +28,31 @@ class TestForceFileType(unittest.TestCase):
   def setUp(self):
     driver_test_utils.ApplyTestEnvOverrides(env)
     # Reset some internal state.
-    driver_tools.ClearFileTypeCache()
-    driver_tools.SetForcedFileType(None)
+    filetype.ClearFileTypeCache()
+    filetype.SetForcedFileType(None)
 
   def tearDown(self):
     # Wipe other temp files that are normally wiped by DriverExit.
     # We don't want anything to exit, so we do not call DriverExit manually.
     driver_log.TempFiles.wipe()
     # Reset some internal state.
-    driver_tools.ClearFileTypeCache()
-    driver_tools.SetForcedFileType(None)
+    filetype.ClearFileTypeCache()
+    filetype.SetForcedFileType(None)
 
   def test_ForceFunction(self):
     """Test the internal functions directly."""
     made_up_file1 = 'dummy1'
-    driver_tools.SetForcedFileType('c')
-    self.assertEqual(driver_tools.GetForcedFileType(), 'c')
-    driver_tools.ForceFileType(made_up_file1)
-    self.assertEqual(driver_tools.FileType(made_up_file1), 'c')
-    driver_tools.ForceFileType(made_up_file1)
+    filetype.SetForcedFileType('c')
+    self.assertEqual(filetype.GetForcedFileType(), 'c')
+    filetype.ForceFileType(made_up_file1)
+    self.assertEqual(filetype.FileType(made_up_file1), 'c')
+    filetype.ForceFileType(made_up_file1)
 
     made_up_file2 = 'dummy2'
-    driver_tools.SetForcedFileType('cpp')
-    driver_tools.ForceFileType(made_up_file2)
-    self.assertEqual(driver_tools.FileType(made_up_file2), 'cpp')
-    driver_tools.ForceFileType(made_up_file1)
+    filetype.SetForcedFileType('cpp')
+    filetype.ForceFileType(made_up_file2)
+    self.assertEqual(filetype.FileType(made_up_file2), 'cpp')
+    filetype.ForceFileType(made_up_file1)
 
   def checkXFlagOutput(self, flags, expected):
     ''' Given |flags| for pnacl-clang, check that clang outputs the |expected|.

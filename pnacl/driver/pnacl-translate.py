@@ -10,6 +10,7 @@
 #
 
 import driver_tools
+import filetype
 import pathtools
 import shutil
 from driver_env import env
@@ -124,7 +125,7 @@ EXTRA_ENV = {
   'LLC_FLAGS_MIPS32': '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data',
 
   # LLC flags which set the target and output type.
-  'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${filetype}',
+  'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${outfiletype}',
 
   # Append additional non-default flags here.
   'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
@@ -255,9 +256,9 @@ def main(argv):
 
   # Find the bitcode file on the command line.
   bcfiles = [f for f in inputs
-             if driver_tools.IsPNaClBitcode(f)
-                or driver_tools.IsLLVMBitcode(f)
-                or driver_tools.FileType(f) == 'll']
+             if filetype.IsPNaClBitcode(f)
+                or filetype.IsLLVMBitcode(f)
+                or filetype.FileType(f) == 'll']
   if len(bcfiles) > 1:
     Log.Fatal('Expecting at most 1 bitcode file')
   elif len(bcfiles) == 1:
@@ -283,11 +284,11 @@ def main(argv):
       ofile = tng.TempNameForInput(bcfile, 'o')
 
     if sfile:
-      RunLLC(bcfile, sfile, filetype='asm')
+      RunLLC(bcfile, sfile, outfiletype='asm')
       if ofile:
         RunAS(sfile, ofile)
     else:
-      RunLLC(bcfile, ofile, filetype='obj')
+      RunLLC(bcfile, ofile, outfiletype='obj')
   else:
     ofile = None
 
@@ -306,8 +307,8 @@ def main(argv):
     # assume that pnacl-translate only handles pexes
     # to avoid a dependency on bitcode metadata.
     assert not env.getbool('SHARED')
-    bctype = driver_tools.GetBitcodeType(bcfile, True)
-    metadata = driver_tools.GetBitcodeMetadata(bcfile, True)
+    bctype = filetype.GetBitcodeType(bcfile, True)
+    metadata = filetype.GetBitcodeMetadata(bcfile, True)
 
   # Determine the output type, in this order of precedence:
   # 1) Output type can be specified on command-line (-S, -c, -shared, -static)
@@ -471,17 +472,17 @@ def RunLD(infile, outfile):
   args += env.get('LD_FLAGS')
   driver_tools.RunDriver('nativeld', args)
 
-def RunLLC(infile, outfile, filetype):
+def RunLLC(infile, outfile, outfiletype):
   env.push()
-  env.setmany(input=infile, output=outfile, filetype=filetype)
+  env.setmany(input=infile, output=outfile, outfiletype=outfiletype)
   if env.getbool('SANDBOXED'):
     is_shared, soname, needed = RunLLCSandboxed()
     env.pop()
     # soname and dt_needed libs are returned from LLC and passed to LD
-    driver_tools.SetBitcodeMetadata(infile, is_shared, soname, needed)
+    filetype.SetBitcodeMetadata(infile, is_shared, soname, needed)
   else:
     args = ["${RUN_LLC}"]
-    if driver_tools.IsPNaClBitcode(infile):
+    if filetype.IsPNaClBitcode(infile):
       args.append("-bitcode-format=pnacl")
     driver_tools.Run(' '.join(args))
     env.pop()
@@ -491,7 +492,7 @@ def RunLLCSandboxed():
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
-  if not driver_tools.IsPNaClBitcode(infile):
+  if not filetype.IsPNaClBitcode(infile):
     Log.Fatal('Input to sandboxed translator must be PNaCl bitcode')
   script = MakeSelUniversalScriptForLLC(infile, outfile)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '

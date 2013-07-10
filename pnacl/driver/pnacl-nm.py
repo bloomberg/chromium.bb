@@ -12,6 +12,7 @@
 import driver_tools
 from driver_env import env
 from driver_log import Log
+import filetype
 
 EXTRA_ENV = {
   'TOOLNAME':   '',
@@ -39,7 +40,7 @@ def main(argv):
 
     # For frozen PNaCl bitcode, use 'llvm-nm -bitcode-format=pnacl'. For all
     # other formats, use the binutils nm with our gold plugin.
-    if driver_tools.IsPNaClBitcode(infile):
+    if filetype.IsPNaClBitcode(infile):
       env.set('TOOLNAME', '${LLVM_NM}')
       env.append('FLAGS', '-bitcode-format=pnacl')
     else:

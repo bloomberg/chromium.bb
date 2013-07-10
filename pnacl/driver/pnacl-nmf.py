@@ -16,8 +16,9 @@ from driver_tools import *
 from driver_env import env
 from driver_log import Log, DriverOpen, TempFiles
 from collections import deque
-import hashlib
+import filetype
 
+import hashlib
 import json
 
 EXTRA_ENV = {
@@ -102,7 +103,7 @@ def GetActualFilePathAndType(shortname):
                 shortname)
     file_type = 'so'
   else:
-    file_type = FileType(actual_lib_path)
+    file_type = filetype.FileType(actual_lib_path)
   return actual_lib_path, file_type
 
 def GetTransitiveClosureOfNeeded(base_needed):
@@ -122,7 +123,8 @@ def GetTransitiveClosureOfNeeded(base_needed):
       continue
     elif file_type == 'pso':
       visited_portable.add(lib)
-      more_needed = GetBitcodeMetadata(actual_lib_path).get('NeedsLibrary', [])
+      more_needed = filetype.GetBitcodeMetadata(
+          actual_lib_path).get('NeedsLibrary', [])
       all_needed |= set(more_needed)
       worklist.extend(more_needed)
     else:

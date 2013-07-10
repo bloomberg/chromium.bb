@@ -9,13 +9,13 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import IsLLVMBitcode
 from driver_tools import Run
 from driver_env import env
+import filetype
 
 def main(argv):
   env.set('ARGS', *argv)
-  if IsLLVMBitcode(argv[1]):
+  if filetype.IsLLVMBitcode(argv[1]):
     # Hack to support newlib build.
     # Newlib determines whether the toolchain supports .init_array, etc., by
     # compiling a small test and looking for a specific section tidbit using

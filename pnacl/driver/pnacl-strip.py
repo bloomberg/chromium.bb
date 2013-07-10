@@ -10,6 +10,7 @@
 #
 
 import driver_tools
+import filetype
 import pathtools
 from driver_env import env
 from driver_log import Log
@@ -69,11 +70,11 @@ def main(argv):
       f_output = output
     else:
       f_output = f
-    if driver_tools.IsLLVMBitcode(f):
+    if filetype.IsLLVMBitcode(f):
       driver_tools.RunWithEnv('${RUN_OPT}', input=f, output=f_output)
-    elif driver_tools.IsELF(f) or driver_tools.IsNativeArchive(f):
+    elif filetype.IsELF(f) or filetype.IsNativeArchive(f):
       driver_tools.RunWithEnv('${RUN_STRIP}', input=f, output=f_output)
-    elif driver_tools.IsBitcodeArchive(f):
+    elif filetype.IsBitcodeArchive(f):
       # The strip tool supports native archives, but it does not support the
       # LLVM gold plugin so cannot handle bitcode.  There is also no bitcode
       # tool like opt that support archives.

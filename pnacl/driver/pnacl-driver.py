@@ -12,6 +12,7 @@
 from driver_tools import *
 from driver_env import env
 from driver_log import Log
+import filetype
 
 EXTRA_ENV = {
   'ALLOW_TRANSLATE': '0',  # Allow bitcode translation before linking.
@@ -207,7 +208,7 @@ def AddInputFileStdin():
   global stdin_count
 
   # When stdin is an input, -x or -E must be given.
-  forced_type = GetForcedFileType()
+  forced_type = filetype.GetForcedFileType()
   if not forced_type:
     # Only allowed if -E is specified.
     forced_type = 'c'
@@ -215,7 +216,7 @@ def AddInputFileStdin():
 
   stdin_name = '__stdin%d__' % stdin_count
   env.append('INPUTS', stdin_name)
-  ForceFileType(stdin_name, forced_type)
+  filetype.ForceFileType(stdin_name, forced_type)
   stdin_count += 1
 
 def IsStdinInput(f):
@@ -223,9 +224,9 @@ def IsStdinInput(f):
 
 def HandleDashX(arg):
   if arg == 'none':
-    SetForcedFileType(None)
+    filetype.SetForcedFileType(None)
     return
-  SetForcedFileType(GCCTypeToFileType(arg))
+  filetype.SetForcedFileType(filetype.GCCTypeToFileType(arg))
 
 CustomPatterns = [
   ( '--driver=(.+)',                "env.set('CC', pathtools.normalize($0))\n"),
@@ -390,7 +391,7 @@ GCCPatterns = [
   # parsed on the command-line. This ensures that the gcc "-x"
   # setting is correctly applied.
   ( '(.*)',  "env.append('INPUTS', pathtools.normalize($0))\n"
-             "ForceFileType(pathtools.normalize($0))"),
+             "filetype.ForceFileType(pathtools.normalize($0))"),
 ]
 
 def CheckSetup():
@@ -483,8 +484,8 @@ def main(argv):
     for f in inputs:
       if IsFlag(f):
         continue
-      intype = FileType(f)
-      if not IsSourceType(intype):
+      intype = filetype.FileType(f)
+      if not filetype.IsSourceType(intype):
         if ((output_type == 'pp' and intype != 'S') or
             (output_type == 'll') or
             (output_type == 'po' and intype != 'll') or
@@ -514,8 +515,8 @@ def main(argv):
   for i in xrange(0, len(inputs)):
     if IsFlag(inputs[i]):
       continue
-    intype = FileType(inputs[i])
-    if IsSourceType(intype) or intype == 'll':
+    intype = filetype.FileType(inputs[i])
+    if filetype.IsSourceType(intype) or intype == 'll':
       inputs[i] = CompileOne(inputs[i], 'po', namegen)
 
   # Compile all .s/.S to .o
@@ -523,7 +524,7 @@ def main(argv):
     for i in xrange(0, len(inputs)):
       if IsFlag(inputs[i]):
         continue
-      intype = FileType(inputs[i])
+      intype = filetype.FileType(inputs[i])
       if intype in ('s','S'):
         inputs[i] = CompileOne(inputs[i], 'o', namegen)
 
@@ -531,12 +532,12 @@ def main(argv):
   for f in inputs:
     if IsFlag(f):
       continue
-    intype = FileType(f)
-    if intype in ('o','s','S') or IsNativeArchive(f):
+    intype = filetype.FileType(f)
+    if intype in ('o','s','S') or filetype.IsNativeArchive(f):
       if not env.getbool('ALLOW_NATIVE'):
         Log.Fatal('%s: Native object files not allowed in link. '
                   'Use --pnacl-allow-native to override.', pathtools.touser(f))
-    assert(intype in ('po','o','so','pso','ldscript') or IsArchive(f))
+    assert(intype in ('po','o','so','pso','ldscript') or filetype.IsArchive(f))
 
   # Fix the user-specified linker arguments
   ld_inputs = []
@@ -568,13 +569,13 @@ def CompileOne(infile, output_type, namegen, output = None):
     output = namegen.TempNameForInput(infile, output_type)
 
   chain = DriverChain(infile, output, namegen)
-  SetupChain(chain, FileType(infile), output_type)
+  SetupChain(chain, filetype.FileType(infile), output_type)
   chain.run()
   return output
 
 def RunCC(infile, output, mode):
-  intype = FileType(infile)
-  typespec = FileTypeToGCCType(intype)
+  intype = filetype.FileType(infile)
+  typespec = filetype.FileTypeToGCCType(intype)
   include_cxx_headers = (env.get('LANGUAGE') == 'CXX') or (intype == 'c++')
   env.setbool('INCLUDE_CXX_HEADERS', include_cxx_headers)
   if IsStdinInput(infile):
@@ -611,14 +612,14 @@ def SetupChain(chain, input_type, output_type):
   cur_type = input_type
 
   # source file -> pp
-  if IsSourceType(cur_type) and output_type == 'pp':
+  if filetype.IsSourceType(cur_type) and output_type == 'pp':
     chain.add(RunCC, 'cpp', mode='-E')
     cur_type = 'pp'
   if cur_type == output_type:
     return
 
   # source file -> ll
-  if (IsSourceType(cur_type) and
+  if (filetype.IsSourceType(cur_type) and
      (env.getbool('FORCE_INTERMEDIATE_LL') or output_type == 'll')):
     chain.add(RunCC, 'll', mode='-S')
     cur_type = 'll'
@@ -633,7 +634,7 @@ def SetupChain(chain, input_type, output_type):
     return
 
   # source file -> po (we also force native output to go through this phase
-  if IsSourceType(cur_type) and output_type in ('po', 'o', 's'):
+  if filetype.IsSourceType(cur_type) and output_type in ('po', 'o', 's'):
     chain.add(RunCC, 'po', mode='-c')
     cur_type = 'po'
   if cur_type == output_type:

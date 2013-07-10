@@ -13,10 +13,8 @@
 # For information about the archive file format, see:
 #   http://en.wikipedia.org/wiki/Ar_(Unix)
 
-# TODO(pdox): Refactor driver_tools so that there is no circular dependency.
-# (just using DecodeELFHeader still)
-import driver_tools
 import driver_log
+import elftools
 import pathtools
 
 # See above link to wiki entry on archive format.
@@ -26,7 +24,9 @@ AR_MAGIC = '!<arch>\n'
 # See manpage for a description of this.
 THIN_MAGIC = '!<thin>\n'
 
-
+# filetype.IsArchive calls this IsArchive. Top-level tools should prefer
+# filetype.IsArchive, both for consistency (i.e., all checks for file type come
+# from that library), and because its results are cached.
 def IsArchive(filename):
   fp = driver_log.DriverOpen(filename, "rb")
   magic = fp.read(len(AR_MAGIC))
@@ -89,7 +89,7 @@ def GetArchiveType(filename):
       if data.startswith('BC'):
         found_type = 'archive-bc'
       else:
-        elf_header = driver_tools.DecodeELFHeader(data, filename)
+        elf_header = elftools.DecodeELFHeader(data, filename)
         if elf_header:
           found_type = 'archive-%s' % elf_header.arch
     elif member.is_strtab:

@@ -10,15 +10,21 @@
 #
 
 # Tool for reading linker scripts and searching for libraries.
+# There is still a circular dependence on filetype.IsNative/IsBitcode
+# (filetype uses IsLinkerScript from here)
+# TODO(dschuff): fix.
 
-# TODO(pdox): Refactor driver_tools so that there is no circular dependency.
-import driver_tools
 import os
-import pathtools
+
 import driver_log
+import filetype
+import pathtools
+
 
 def IsLinkerScript(filename):
-  return ParseLinkerScript(filename) is not None
+  _, ext = os.path.splitext(filename)
+  return (len(ext) > 0 and ext[1:] in ('o','so','a','po','pso','pa','x') and
+      ParseLinkerScript(filename) is not None)
 
 
 class LibraryTypes(object):
@@ -160,7 +166,7 @@ def FindFirstLinkerScriptInput(inputs):
     f = inputs[i]
     if IsFlag(f):
       continue
-    if driver_tools.FileType(f) == 'ldscript':
+    if IsLinkerScript(f):
       return (i, f)
   return (None, None)
 
@@ -251,11 +257,11 @@ def FindFile(search_names, search_dirs, acceptable_types):
         if IsLinkerScript(path):
           return path
         if (acceptable_types == LibraryTypes.NATIVE and
-            driver_tools.IsNative(path)):
+            filetype.IsNative(path)):
           return path
         if (acceptable_types == LibraryTypes.BITCODE and
-            (driver_tools.IsLLVMBitcode(path) or
-             driver_tools.IsBitcodeArchive(path))):
+            (filetype.IsLLVMBitcode(path) or
+             filetype.IsBitcodeArchive(path))):
           return path
   return None
 

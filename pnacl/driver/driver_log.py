@@ -20,6 +20,7 @@ import pathtools
 # same with TempFiles. this factoring is at least a little useful though
 # because it helps tease apart the dependencies. The TempName stuff is
 # smarter and uses env, so it is not here for now.
+# TODO(dschuff): rename this library to driver_base.
 
 def DriverOpen(filename, mode, fail_ok = False):
   try:
@@ -35,6 +36,32 @@ def DriverOpen(filename, mode, fail_ok = False):
 def DriverClose(fp):
   fp.close()
 
+def FixArch(arch):
+  arch = arch.lower()
+  archfix = { 'x86-32': 'X8632',
+              'x86_32': 'X8632',
+              'x8632' : 'X8632',
+              'i686'  : 'X8632',
+              'ia32'  : 'X8632',
+              '386'   : 'X8632',
+              '686'   : 'X8632',
+
+              'amd64' : 'X8664',
+              'x86_64': 'X8664',
+              'x86-64': 'X8664',
+              'x8664' : 'X8664',
+
+              'arm'   : 'ARM',
+              'armv7' : 'ARM',
+              'arm-thumb2' : 'ARM',
+
+              'mips32': 'MIPS32',
+              'mips'  : 'MIPS32',
+              'mipsel': 'MIPS32',
+              }
+  if arch not in archfix:
+    Log.Fatal('Unrecognized arch "%s"!', arch)
+  return archfix[arch]
 
 class TempFileHandler(object):
   def __init__(self):

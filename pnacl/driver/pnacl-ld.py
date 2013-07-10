@@ -12,6 +12,7 @@
 from driver_tools import *
 from driver_env import env
 from driver_log import Log, DriverOpen, TempFiles
+import filetype
 import platform
 
 EXTRA_ENV = {
@@ -483,7 +484,7 @@ def SplitLinkLine(inputs):
   for f in inputs:
     if ldtools.IsFlag(f):
       normal.append(f)
-    elif IsNativeArchive(f) or IsNativeObject(f):
+    elif filetype.IsNativeArchive(f) or filetype.IsNativeObject(f):
       native.append(f)
     else:
       normal.append(f)
@@ -493,7 +494,7 @@ def HasBitcodeInputs(inputs):
   for f in inputs:
     if ldtools.IsFlag(f):
       continue
-    elif IsBitcodeObject(f) or IsBitcodeArchive(f):
+    elif filetype.IsBitcodeObject(f) or filetype.IsBitcodeArchive(f):
       return True
   return False
 
@@ -502,9 +503,10 @@ def CheckInputsArch(inputs):
   for f in inputs:
     if ldtools.IsFlag(f):
       continue
-    elif IsBitcodeObject(f) or IsBitcodeDSO(f) or IsBitcodeArchive(f):
+    elif (filetype.IsBitcodeObject(f) or filetype.IsBitcodeDSO(f) or
+          filetype.IsBitcodeArchive(f)):
       pass
-    elif IsNative(f):
+    elif filetype.IsNative(f):
       ArchMerge(f, True)
     else:
       Log.Fatal("%s: Unexpected type of file for linking (%s)",
