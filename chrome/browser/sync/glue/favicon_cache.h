@@ -182,11 +182,9 @@ class FaviconCache : public syncer::SyncableService,
 
   // Deletes the favicon pointed to by |favicon_iter| and appends the necessary
   // sync deletions to |image_changes| and |tracking_changes|.
-  // Returns an iterator to the favicon after |favicon_iter|.
-  FaviconMap::iterator DeleteSyncedFavicon(
-      FaviconMap::iterator favicon_iter,
-      syncer::SyncChangeList* image_changes,
-      syncer::SyncChangeList* tracking_changes);
+  void DeleteSyncedFavicon(FaviconMap::iterator favicon_iter,
+                           syncer::SyncChangeList* image_changes,
+                           syncer::SyncChangeList* tracking_changes);
 
   // Locally drops the favicon pointed to by |favicon_iter|.
   void DropSyncedFavicon(FaviconMap::iterator favicon_iter);

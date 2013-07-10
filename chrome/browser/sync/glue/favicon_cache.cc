@@ -249,6 +249,8 @@ syncer::SyncMergeResult FaviconCache::MergeDataAndStartSyncing(
   syncer::SyncChangeList local_changes;
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
+    GURL remote_url = GetFaviconURLFromSpecifics(iter->GetSpecifics());
+    CHECK(remote_url.is_valid());  // TODO(zea): remove this, crbug.com/258196.
     GURL favicon_url = GetLocalFaviconFromSyncedData(*iter);
     if (favicon_url.is_valid()) {
       unsynced_favicon_urls.erase(favicon_url);
@@ -369,11 +371,13 @@ syncer::SyncError FaviconCache::ProcessSyncChanges(
             favicon_iter->second->is_bookmarked = false;
             recent_favicons_.insert(favicon_iter->second);
             DCHECK(!FaviconInfoHasTracking(*(favicon_iter->second)));
+            DCHECK(FaviconInfoHasImages(*(favicon_iter->second)));
           } else {
             for (int i = 0; i < NUM_SIZES; ++i) {
               favicon_iter->second->bitmap_data[i] =
                   chrome::FaviconBitmapResult();
             }
+            DCHECK(FaviconInfoHasTracking(*(favicon_iter->second)));
             DCHECK(!FaviconInfoHasImages(*(favicon_iter->second)));
           }
         }
@@ -597,17 +601,17 @@ void FaviconCache::Observe(int type,
   // All history was cleared: just delete all favicons.
   DVLOG(1) << "History clear detected, deleting all synced favicons.";
   syncer::SyncChangeList image_deletions, tracking_deletions;
-  for (FaviconMap::iterator iter = synced_favicons_.begin();
-       iter != synced_favicons_.end();) {
-    iter = DeleteSyncedFavicon(iter,
-                               &image_deletions,
-                               &tracking_deletions);
+  while (!synced_favicons_.empty()) {
+    DeleteSyncedFavicon(synced_favicons_.begin(),
+                        &image_deletions,
+                        &tracking_deletions);
   }
 
-  if (favicon_images_sync_processor_.get() &&
-      favicon_tracking_sync_processor_.get()) {
+  if (favicon_images_sync_processor_.get()) {
     favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
                                                        image_deletions);
+  }
+  if (favicon_tracking_sync_processor_.get()) {
     favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
                                                          tracking_deletions);
   }
@@ -699,8 +703,9 @@ void FaviconCache::UpdateSyncState(
   // have finished setting up. In that case ignore the update.
   // TODO(zea): consider tracking these skipped updates somehow?
   if (!favicon_images_sync_processor_.get() ||
-      !favicon_tracking_sync_processor_.get())
+      !favicon_tracking_sync_processor_.get()) {
     return;
+  }
 
   FaviconMap::const_iterator iter = synced_favicons_.find(icon_url);
   DCHECK(iter != synced_favicons_.end());
@@ -767,8 +772,11 @@ void FaviconCache::UpdateFaviconVisitTime(const GURL& icon_url,
   DCHECK_EQ(recent_favicons_.size(), synced_favicons_.size());
   FaviconMap::const_iterator iter = synced_favicons_.find(icon_url);
   DCHECK(iter != synced_favicons_.end());
-  if (iter->second->last_visit_time >= time)
+  if (iter->second->last_visit_time >= time) {
+    // TODO(zea): remove this, crbug.com/258196.
+    CHECK_GT(iter->second->last_visit_time.ToInternalValue(), 0);
     return;
+  }
   // Erase, update the time, then re-insert to maintain ordering.
   recent_favicons_.erase(iter->second);
   DVLOG(1) << "Updating " << icon_url.spec() << " visit time to "
@@ -784,6 +792,8 @@ void FaviconCache::UpdateFaviconVisitTime(const GURL& icon_url,
     }
   }
   DCHECK_EQ(recent_favicons_.size(), synced_favicons_.size());
+  // TODO(zea): remove this, crbug.com/258196.
+  CHECK_GT(iter->second->last_visit_time.ToInternalValue(), 0);
 }
 
 void FaviconCache::ExpireFaviconsIfNecessary(
@@ -820,12 +830,12 @@ void FaviconCache::MergeSyncFavicon(const syncer::SyncData& sync_favicon,
   DCHECK(type == syncer::FAVICON_IMAGES || type == syncer::FAVICON_TRACKING);
   sync_pb::EntitySpecifics new_specifics;
   GURL favicon_url = GetFaviconURLFromSpecifics(sync_favicon.GetSpecifics());
+  FaviconMap::const_iterator iter = synced_favicons_.find(favicon_url);
+  DCHECK(iter != synced_favicons_.end());
+  SyncedFaviconInfo* favicon_info = iter->second.get();
   if (type == syncer::FAVICON_IMAGES) {
     sync_pb::FaviconImageSpecifics image_specifics =
         sync_favicon.GetSpecifics().favicon_image();
-    FaviconMap::const_iterator iter = synced_favicons_.find(favicon_url);
-    DCHECK(iter != synced_favicons_.end());
-    SyncedFaviconInfo* favicon_info = iter->second.get();
 
     // Remote image data always clobbers local image data.
     bool needs_update = false;
@@ -853,9 +863,6 @@ void FaviconCache::MergeSyncFavicon(const syncer::SyncData& sync_favicon,
   } else {
     sync_pb::FaviconTrackingSpecifics tracking_specifics =
         sync_favicon.GetSpecifics().favicon_tracking();
-    FaviconMap::const_iterator iter = synced_favicons_.find(favicon_url);
-    DCHECK(iter != synced_favicons_.end());
-    SyncedFaviconInfo* favicon_info = iter->second.get();
 
     // Tracking data is merged, such that bookmark data is the logical OR
     // of the two, and last visit time is the most recent.
@@ -871,6 +878,7 @@ void FaviconCache::MergeSyncFavicon(const syncer::SyncData& sync_favicon,
       BuildTrackingSpecifics(favicon_info,
                              new_specifics.mutable_favicon_tracking());
     }
+    DCHECK(!favicon_info->last_visit_time.is_null());
   }
 
   if (new_specifics.has_favicon_image() ||
@@ -924,6 +932,7 @@ void FaviconCache::AddLocalFaviconFromSyncedData(
                            syncer::ProtoTimeToTime(
                                tracking_specifics.last_visit_time_ms()));
     favicon_info->is_bookmarked = tracking_specifics.is_bookmarked();
+    DCHECK(!favicon_info->last_visit_time.is_null());
   }
 }
 
@@ -965,16 +974,17 @@ void FaviconCache::DeleteSyncedFavicons(const std::set<GURL>& favicon_urls) {
                         &tracking_deletions);
   }
   DVLOG(1) << "Deleting " << image_deletions.size() << " synced favicons.";
-  if (favicon_images_sync_processor_.get() &&
-      favicon_tracking_sync_processor_.get()) {
+  if (favicon_images_sync_processor_.get()) {
     favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
                                                        image_deletions);
+  }
+  if (favicon_tracking_sync_processor_.get()) {
     favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
                                                          tracking_deletions);
   }
 }
 
-FaviconCache::FaviconMap::iterator FaviconCache::DeleteSyncedFavicon(
+void FaviconCache::DeleteSyncedFavicon(
     FaviconMap::iterator favicon_iter,
     syncer::SyncChangeList* image_changes,
     syncer::SyncChangeList* tracking_changes) {
@@ -995,10 +1005,7 @@ FaviconCache::FaviconMap::iterator FaviconCache::DeleteSyncedFavicon(
                                favicon_info->favicon_url.spec(),
                                syncer::FAVICON_TRACKING)));
   }
-  FaviconMap::iterator next = favicon_iter;
-  next++;
   DropSyncedFavicon(favicon_iter);
-  return next;
 }
 
 void FaviconCache::DropSyncedFavicon(FaviconMap::iterator favicon_iter) {
