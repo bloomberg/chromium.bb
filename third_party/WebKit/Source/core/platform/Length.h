@@ -310,7 +310,6 @@ private:
 };
 
 Vector<Length> parseHTMLAreaElementCoords(const String&);
-Vector<Length> parseFrameSetListOfDimensions(const String&);
 
 } // namespace WebCore
 

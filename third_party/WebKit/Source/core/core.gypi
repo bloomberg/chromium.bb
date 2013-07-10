@@ -2054,6 +2054,8 @@
             'html/HTMLDetailsElement.h',
             'html/HTMLDialogElement.cpp',
             'html/HTMLDialogElement.h',
+            'html/HTMLDimension.cpp',
+            'html/HTMLDimension.h',
             'html/HTMLDirectoryElement.cpp',
             'html/HTMLDirectoryElement.h',
             'html/HTMLDivElement.cpp',
