@@ -2357,6 +2357,16 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     if (StyleBuilder::applyProperty(id, this, state, value, isInitial, isInherit))
         return;
 
+    StyleBuilder::oldApplyProperty(id, this, state, value, isInitial, isInherit);
+}
+
+// FIXME: Move this to StyleBuilder.cpp
+// FIXME: Every use of "styleResolver" in this function is a layering
+// violation and should be removed.
+void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit)
+{
+    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
+
     float zoomFactor = state.style()->effectiveZoom();
 
     // What follows is a list that maps the CSS properties into their corresponding front-end
@@ -2382,7 +2392,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                 CSSValue* item = i.value();
                 if (item->isImageGeneratorValue()) {
                     if (item->isGradientValue())
-                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(m_state).get()), didSet);
+                        state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSGradientValue*>(item)->gradientWithStylesResolved(state).get()), didSet);
                     else
                         state.style()->setContent(StyleGeneratedImage::create(static_cast<CSSImageGeneratorValue*>(item)), didSet);
                     didSet = true;
@@ -2416,7 +2426,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                     state.style()->setContent(value.isNull() ? emptyAtom : value.impl(), didSet);
                     didSet = true;
                     // register the fact that the attribute value affects the style
-                    m_features.attrsInRules.add(attr.localName().impl());
+                    styleResolver->m_features.attrsInRules.add(attr.localName().impl());
                 } else if (contentValue->isCounter()) {
                     Counter* counterValue = contentValue->getCounterValue();
                     EListStyleType listStyleType = NoneListStyle;
@@ -2485,11 +2495,11 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             state.setLineHeightValue(0);
             state.setFontDescription(fontDescription);
         } else if (isInitial) {
-            Settings* settings = documentSettings();
+            Settings* settings = styleResolver->documentSettings();
             ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
             if (!settings)
                 return;
-            initializeFontStyle(settings);
+            styleResolver->initializeFontStyle(settings);
         } else if (primitiveValue) {
             state.style()->setLineHeight(RenderStyle::initialLineHeight());
             state.setLineHeightValue(0);
@@ -2500,14 +2510,14 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             // Double-check and see if the theme did anything. If not, don't bother updating the font.
             if (fontDescription.isAbsoluteSize()) {
                 // Make sure the rendering mode and printer font settings are updated.
-                Settings* settings = documentSettings();
+                Settings* settings = styleResolver->documentSettings();
                 ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
                 if (!settings)
                     return;
-                fontDescription.setUsePrinterFont(document()->printing());
+                fontDescription.setUsePrinterFont(styleResolver->document()->printing());
 
                 // Handle the zoom factor.
-                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), m_state.useSVGZoomRules()));
+                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(styleResolver->document(), state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), state.useSVGZoomRules()));
                 state.setFontDescription(fontDescription);
             }
         } else if (value->isFontValue()) {
@@ -2515,19 +2525,19 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             if (!font->style || !font->variant || !font->weight
                 || !font->size || !font->lineHeight || !font->family)
                 return;
-            applyProperty(CSSPropertyFontStyle, font->style.get());
-            applyProperty(CSSPropertyFontVariant, font->variant.get());
-            applyProperty(CSSPropertyFontWeight, font->weight.get());
+            styleResolver->applyProperty(CSSPropertyFontStyle, font->style.get());
+            styleResolver->applyProperty(CSSPropertyFontVariant, font->variant.get());
+            styleResolver->applyProperty(CSSPropertyFontWeight, font->weight.get());
             // The previous properties can dirty our font but they don't try to read the font's
             // properties back, which is safe. However if font-size is using the 'ex' unit, it will
             // need query the dirtied font's x-height to get the computed size. To be safe in this
             // case, let's just update the font now.
-            updateFont();
-            applyProperty(CSSPropertyFontSize, font->size.get());
+            styleResolver->updateFont();
+            styleResolver->applyProperty(CSSPropertyFontSize, font->size.get());
 
             state.setLineHeightValue(font->lineHeight.get());
 
-            applyProperty(CSSPropertyFontFamily, font->family.get());
+            styleResolver->applyProperty(CSSPropertyFontFamily, font->family.get());
         }
         return;
 
@@ -2604,7 +2614,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
             Color color;
             if (item->color)
-                color = m_state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
+                color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
             else if (state.style())
                 color = state.style()->color();
 
@@ -2723,7 +2733,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         if (!primitiveValue)
             break;
 
-        Color col = m_state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor));
+        Color col = state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor));
         state.style()->setTapHighlightColor(col);
         return;
     }
@@ -2763,7 +2773,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     {
         CSSPropertyID newId = CSSProperty::resolveDirectionAwareProperty(id, state.style()->direction(), state.style()->writingMode());
         ASSERT(newId != id);
-        return applyProperty(newId, value);
+        return styleResolver->applyProperty(newId, value);
     }
     case CSSPropertyFontStretch:
     case CSSPropertyPage:
@@ -2849,7 +2859,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitFilter: {
         HANDLE_INHERIT_AND_INITIAL(filter, Filter);
         FilterOperations operations;
-        if (FilterOperationResolver::createFilterOperations(value, state.style(), state.rootElementStyle(), operations, m_styleResourceLoader.customFilterProgramCache(), m_state))
+        if (FilterOperationResolver::createFilterOperations(value, state.style(), state.rootElementStyle(), operations, styleResolver->m_styleResourceLoader.customFilterProgramCache(), state))
             state.style()->setFilter(operations);
         return;
     }
@@ -3198,7 +3208,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     default:
         // Try the SVG properties
-        applySVGProperty(id, value);
+        styleResolver->applySVGProperty(id, value);
         return;
     }
 }

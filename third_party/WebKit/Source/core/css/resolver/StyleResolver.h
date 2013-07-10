@@ -35,6 +35,7 @@
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
+#include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResourceLoader.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -417,6 +418,8 @@ private:
     StyleResourceLoader m_styleResourceLoader;
 
     friend class DeprecatedStyleBuilder;
+    friend void StyleBuilder::oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
+
 };
 
 inline bool StyleResolver::hasSelectorForAttribute(const AtomicString &attributeName) const

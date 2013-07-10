@@ -42,6 +42,11 @@ class StyleResolverState;
 class StyleBuilder {
 public:
     static bool applyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
+
+    // This function contains the gigantic old switch-statement of properties inherited from
+    // StyleResolver. Each property should be migrated over to a new StyleBuilder templated
+    // function and removed from this code. Once they're all moved, this function can die.
+    static void oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
 };
 
 }
