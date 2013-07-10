@@ -752,6 +752,10 @@ void WebMediaPlayerAndroid::OnPlayerReleased() {
   // |needs_external_surface_| is always false on non-TV devices.
   if (!needs_external_surface_)
     needs_establish_peer_ = true;
+
+#if defined(GOOGLE_TV)
+  last_computed_rect_ = gfx::RectF();
+#endif
 }
 
 void WebMediaPlayerAndroid::ReleaseMediaResources() {
