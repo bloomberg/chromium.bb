@@ -79,8 +79,18 @@ IconURLs IconController::urlsForTypes(int iconTypesMask)
         iconURLs.append(defaultURL(Favicon));
 
 #if ENABLE(TOUCH_ICON_LOADING)
-    appendToIconURLs(TouchPrecomposedIcon, &iconURLs);
-    appendToIconURLs(TouchIcon, &iconURLs);
+    int missedIcons = 0;
+    if (iconTypesMask & TouchPrecomposedIcon)
+        missedIcons += appendToIconURLs(TouchPrecomposedIcon, &iconURLs) ? 0:1;
+
+    if (iconTypesMask & TouchIcon)
+      missedIcons += appendToIconURLs(TouchIcon, &iconURLs) ? 0:1;
+
+    // Only return the default touch icons when the both were required and neither was gotten.
+    if (missedIcons == 2) {
+        iconURLs.append(defaultURL(TouchPrecomposedIcon));
+        iconURLs.append(defaultURL(TouchIcon));
+    }
 #endif
 
     // Finally, append all remaining icons of this type.
@@ -127,6 +137,16 @@ IconURL IconController::defaultURL(IconType iconType)
         url.setPath("/favicon.ico");
         return IconURL::defaultIconURL(url, Favicon);
     }
+#if ENABLE(TOUCH_ICON_LOADING)
+    if (iconType == TouchPrecomposedIcon) {
+        url.setPath("/apple-touch-icon-precomposed.png");
+        return IconURL::defaultIconURL(url, TouchPrecomposedIcon);
+    }
+    if (iconType == TouchIcon) {
+        url.setPath("/apple-touch-icon.png");
+        return IconURL::defaultIconURL(url, TouchIcon);
+    }
+#endif
     return IconURL();
 }
 
