@@ -68,6 +68,8 @@ private:
 
     virtual ~SVGImage();
 
+    virtual String filenameExtension() const OVERRIDE;
+
     virtual void setContainerSize(const IntSize&) OVERRIDE;
     IntSize containerSize() const;
     virtual bool usesContainerSize() const OVERRIDE { return true; }

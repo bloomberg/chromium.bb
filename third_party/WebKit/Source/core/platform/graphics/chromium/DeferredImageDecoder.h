@@ -50,6 +50,8 @@ public:
 
     static void setEnabled(bool);
 
+    String filenameExtension() const;
+
     ImageFrame* frameBufferAtIndex(size_t index);
 
     void setData(SharedBuffer* data, bool allDataReceived);
@@ -76,6 +78,7 @@ private:
     bool m_allDataReceived;
     OwnPtr<ImageDecoder> m_actualDecoder;
 
+    String m_filenameExtension;
     IntSize m_size;
     ImageOrientation m_orientation;
 

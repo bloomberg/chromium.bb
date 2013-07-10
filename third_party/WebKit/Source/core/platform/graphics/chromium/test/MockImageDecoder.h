@@ -62,6 +62,11 @@ public:
 
     virtual void setFrameHasAlpha(bool hasAlpha) { m_frameBufferCache[0].setHasAlpha(hasAlpha); }
 
+    virtual String filenameExtension() const
+    {
+        return "mock";
+    }
+
     virtual ImageFrame* frameBufferAtIndex(size_t)
     {
         ++m_frameBufferRequestCount;

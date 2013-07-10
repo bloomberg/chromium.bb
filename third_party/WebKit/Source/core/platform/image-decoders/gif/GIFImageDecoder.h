@@ -42,6 +42,7 @@ namespace WebCore {
         enum GIFParseQuery { GIFSizeQuery, GIFFrameCountQuery };
 
         // ImageDecoder
+        virtual String filenameExtension() const OVERRIDE { return "gif"; }
         virtual void setData(SharedBuffer* data, bool allDataReceived) OVERRIDE;
         virtual bool isSizeAvailable() OVERRIDE;
         virtual size_t frameCount() OVERRIDE;

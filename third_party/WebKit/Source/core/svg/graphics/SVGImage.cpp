@@ -363,6 +363,11 @@ bool SVGImage::dataChanged(bool allDataReceived)
     return m_page;
 }
 
+String SVGImage::filenameExtension() const
+{
+    return "svg";
+}
+
 void SVGImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceImage);

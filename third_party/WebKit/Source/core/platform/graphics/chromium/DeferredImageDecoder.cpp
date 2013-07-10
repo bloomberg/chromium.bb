@@ -96,6 +96,11 @@ void DeferredImageDecoder::setEnabled(bool enabled)
     s_enabled = enabled;
 }
 
+String DeferredImageDecoder::filenameExtension() const
+{
+    return m_actualDecoder ? m_actualDecoder->filenameExtension() : m_filenameExtension;
+}
+
 ImageFrame* DeferredImageDecoder::frameBufferAtIndex(size_t index)
 {
     // Only defer image decoding if this is a single frame image. The reason is
@@ -109,6 +114,7 @@ ImageFrame* DeferredImageDecoder::frameBufferAtIndex(size_t index)
         && m_actualDecoder->frameCount() == 1) {
 
         m_size = m_actualDecoder->size();
+        m_filenameExtension = m_actualDecoder->filenameExtension();
         m_orientation = m_actualDecoder->orientation();
 
         SkBitmap lazyDecodedSkBitmap = createLazyDecodingBitmap();
