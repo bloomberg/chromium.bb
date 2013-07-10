@@ -52,7 +52,7 @@ class InstantNTP : public InstantPage,
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewGone(
+  virtual void RenderProcessGone(
       base::TerminationStatus status) OVERRIDE;
 
   // Overriden from InstantLoader::Delegate:

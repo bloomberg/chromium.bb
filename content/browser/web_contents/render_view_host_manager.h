@@ -61,7 +61,7 @@ class CONTENT_EXPORT RenderViewHostManager
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
-    virtual void RenderViewGoneFromRenderManager(
+    virtual void RenderProcessGoneFromRenderManager(
         RenderViewHost* render_view_host) = 0;
     virtual void UpdateRenderViewSizeForRenderManager() = 0;
     virtual void NotifySwappedFromRenderManager(

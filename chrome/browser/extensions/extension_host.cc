@@ -324,7 +324,7 @@ void ExtensionHost::ResizeDueToAutoResize(WebContents* source,
     view()->ResizeDueToAutoResize(new_size);
 }
 
-void ExtensionHost::RenderViewGone(base::TerminationStatus status) {
+void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
   // During browser shutdown, we may use sudden termination on an extension
   // process, so it is expected to lose our connection to the render view.
   // Do nothing.

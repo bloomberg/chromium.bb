@@ -34,7 +34,7 @@ class SadTabHelper : public content::WebContentsObserver,
   void InstallSadTab(base::TerminationStatus status);
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

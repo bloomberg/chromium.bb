@@ -319,7 +319,7 @@ void WebUIScreenLocker::SystemResumed(const base::TimeDelta& sleep_duration) {
       base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
 }
 
-void WebUIScreenLocker::RenderViewGone(base::TerminationStatus status) {
+void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
   if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID &&
       status != base::TERMINATION_STATUS_NORMAL_TERMINATION) {
     LOG(ERROR) << "Renderer crash on lock screen";

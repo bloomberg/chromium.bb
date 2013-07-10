@@ -80,7 +80,7 @@ views::View* ScreensaverView::GetContentsView() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ScreensaverView, content::WebContentsObserver implementation.
-void ScreensaverView::RenderViewGone(
+void ScreensaverView::RenderProcessGone(
     base::TerminationStatus status) {
   LOG(ERROR) << "Screensaver terminated with status " << status;
   termination_count_++;

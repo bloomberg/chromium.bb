@@ -78,7 +78,7 @@ class InfoBarService : public content::WebContentsObserver,
   virtual ~InfoBarService();
 
   // content::WebContentsObserver:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // content::NotificationObserver:

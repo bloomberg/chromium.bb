@@ -491,7 +491,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnShowFullscreenWidget(int route_id);
   void OnRunModal(int opener_id, IPC::Message* reply_msg);
   void OnRenderViewReady();
-  void OnRenderViewGone(int status, int error_code);
+  void OnRenderProcessGone(int status, int error_code);
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          int64 parent_frame_id,
                                          bool main_frame,
@@ -648,8 +648,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool is_subframe_;
 
   // The frame id of the main (top level) frame. This value is set on the
-  // initial navigation of a RenderView and reset when the RenderView is
-  // terminated (in RenderViewGone).
+  // initial navigation of a RenderView and reset when the RenderView's
+  // process is terminated (in RenderProcessGone).
   int64 main_frame_id_;
 
   // If we were asked to RunModal, then this will hold the reply_msg that we

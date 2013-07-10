@@ -456,7 +456,7 @@ void RenderWidgetHostViewAndroid::DidUpdateBackingStore(
   NOTIMPLEMENTED();
 }
 
-void RenderWidgetHostViewAndroid::RenderViewGone(
+void RenderWidgetHostViewAndroid::RenderProcessGone(
     base::TerminationStatus status, int error_code) {
   Destroy();
 }

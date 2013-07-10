@@ -52,7 +52,7 @@ class HungRendererDialogGtk {
     }
 
     // content::WebContentsObserver overrides:
-    virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
+    virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
       dialog_->Hide();
     }
     virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {

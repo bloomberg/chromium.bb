@@ -65,7 +65,7 @@ class MockPageCycler : public PageCycler {
                                             int error_code,
                                             const string16& error_description,
                                             RenderViewHost* render_view_host));
-  MOCK_METHOD1(RenderViewGone, void(base::TerminationStatus status));
+  MOCK_METHOD1(RenderProcessGone, void(base::TerminationStatus status));
 
   void PageCyclerDidFailProvisionalLoad(
       int64 frame_id,

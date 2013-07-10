@@ -385,7 +385,7 @@ void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   SendTestConfiguration();
 }
 
-void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
+void WebKitTestController::RenderProcessGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   if (current_pid_ != base::kNullProcessId) {
     printer_->AddErrorMessage(std::string("#CRASHED - renderer (pid ") +

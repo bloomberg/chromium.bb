@@ -85,7 +85,7 @@ void AwRenderViewHostExt::SetInitialPageScale(double page_scale_factor) {
                                          page_scale_factor));
 }
 
-void AwRenderViewHostExt::RenderViewGone(base::TerminationStatus status) {
+void AwRenderViewHostExt::RenderProcessGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   for (std::map<int, DocumentHasImagesResult>::iterator pending_req =
            pending_document_has_images_requests_.begin();

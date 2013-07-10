@@ -63,7 +63,7 @@ class BackgroundContents : public content::WebContentsDelegate,
                               bool* was_blocked) OVERRIDE;
 
   // content::WebContentsObserver implementation:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,

@@ -32,7 +32,7 @@ class FakePageDelegate : public InstantPage::Delegate {
   MOCK_METHOD2(InstantSupportDetermined,
                void(const content::WebContents* contents,
                     bool supports_instant));
-  MOCK_METHOD1(InstantPageRenderViewGone,
+  MOCK_METHOD1(InstantPageRenderProcessGone,
                void(const content::WebContents* contents));
   MOCK_METHOD2(InstantPageAboutToNavigateMainFrame,
                void(const content::WebContents* contents,

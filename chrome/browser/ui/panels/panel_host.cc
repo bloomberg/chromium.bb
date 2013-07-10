@@ -201,7 +201,7 @@ void PanelHost::RenderViewCreated(content::RenderViewHost* render_view_host) {
       render_view_host->GetRoutingID(), window->GetWindowId()));
 }
 
-void PanelHost::RenderViewGone(base::TerminationStatus status) {
+void PanelHost::RenderProcessGone(base::TerminationStatus status) {
   CloseContents(web_contents_.get());
 }
 

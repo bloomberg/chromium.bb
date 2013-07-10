@@ -89,7 +89,7 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
       static_cast<WebContentsImpl*>(web_contents()), event);
 }
 
-void BrowserPluginEmbedder::RenderViewGone(base::TerminationStatus status) {
+void BrowserPluginEmbedder::RenderProcessGone(base::TerminationStatus status) {
   CleanUp();
 }
 

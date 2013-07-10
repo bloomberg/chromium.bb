@@ -1618,9 +1618,9 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->OnMessageReceived(
-        ViewHostMsg_RenderViewGone(iter.GetCurrentKey(),
-                                   static_cast<int>(status),
-                                   exit_code));
+        ViewHostMsg_RenderProcessGone(iter.GetCurrentKey(),
+                                      static_cast<int>(status),
+                                      exit_code));
     iter.Advance();
   }
 

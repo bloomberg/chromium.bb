@@ -442,7 +442,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderWidgetHostImpl, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnRenderViewGone)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
@@ -1546,8 +1546,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   if (view_) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(surface_id_,
                                                gfx::GLSurfaceHandle());
-    view_->RenderViewGone(status, exit_code);
-    view_ = NULL;  // The View should be deleted by RenderViewGone.
+    view_->RenderProcessGone(status, exit_code);
+    view_ = NULL;  // The View should be deleted by RenderProcessGone.
   }
 
   BackingStoreManager::RemoveBackingStore(this);
@@ -1698,7 +1698,7 @@ void RenderWidgetHostImpl::OnRenderViewReady() {
   WasResized();
 }
 
-void RenderWidgetHostImpl::OnRenderViewGone(int status, int exit_code) {
+void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // TODO(evanm): This synchronously ends up calling "delete this".
   // Is that really what we want in response to this message?  I'm matching
   // previous behavior of the code here.

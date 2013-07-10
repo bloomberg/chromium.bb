@@ -116,7 +116,7 @@ void BalloonHost::RenderViewReady() {
       content::NotificationService::NoDetails());
 }
 
-void BalloonHost::RenderViewGone(base::TerminationStatus status) {
+void BalloonHost::RenderProcessGone(base::TerminationStatus status) {
   CloseContents(web_contents_.get());
 }
 

@@ -802,8 +802,8 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
     Redraw();
 }
 
-void RenderWidgetHostViewWin::RenderViewGone(base::TerminationStatus status,
-                                             int error_code) {
+void RenderWidgetHostViewWin::RenderProcessGone(base::TerminationStatus status,
+                                                int error_code) {
   UpdateCursorIfOverSelf();
   Destroy();
 }

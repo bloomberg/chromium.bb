@@ -73,7 +73,7 @@ class WebContents;
 
 // Called by |hungContentsObserver_| to indicate that |hungContents_|
 // has gone away.
-- (void)renderViewGone;
+- (void)renderProcessGone;
 
 @end  // HungRendererController
 

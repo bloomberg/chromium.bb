@@ -107,7 +107,7 @@ InfoBarService::~InfoBarService() {
   RemoveAllInfoBars(false);
 }
 
-void InfoBarService::RenderViewGone(base::TerminationStatus status) {
+void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }
 

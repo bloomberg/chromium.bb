@@ -559,7 +559,7 @@ bool PrerenderContents::Matches(
                        std::bind2nd(std::equal_to<GURL>(), url)) != 0;
 }
 
-void PrerenderContents::RenderViewGone(base::TerminationStatus status) {
+void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
 

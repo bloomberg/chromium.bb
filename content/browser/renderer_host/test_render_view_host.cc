@@ -107,8 +107,8 @@ bool TestRenderWidgetHostView::IsShowing() {
   return is_showing_;
 }
 
-void TestRenderWidgetHostView::RenderViewGone(base::TerminationStatus status,
-                                              int error_code) {
+void TestRenderWidgetHostView::RenderProcessGone(base::TerminationStatus status,
+                                                 int error_code) {
   delete this;
 }
 

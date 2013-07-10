@@ -449,7 +449,7 @@ void InstantController::InstantSupportDetermined(
   }
 }
 
-void InstantController::InstantPageRenderViewGone(
+void InstantController::InstantPageRenderProcessGone(
     const content::WebContents* contents) {
   if (IsContentsFrom(ntp(), contents)) {
     DeletePageSoon(ntp_.Pass());

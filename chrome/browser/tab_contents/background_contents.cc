@@ -110,7 +110,7 @@ void BackgroundContents::AddNewContents(WebContents* source,
       new_contents, disposition, initial_pos, user_gesture, was_blocked);
 }
 
-void BackgroundContents::RenderViewGone(base::TerminationStatus status) {
+void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
       content::Source<Profile>(profile_),

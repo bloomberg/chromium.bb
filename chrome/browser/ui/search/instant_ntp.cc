@@ -104,8 +104,8 @@ void InstantNTP::RenderViewCreated(content::RenderViewHost* render_view_host) {
   delegate()->InstantPageRenderViewCreated(contents());
 }
 
-void InstantNTP::RenderViewGone(base::TerminationStatus /* status */) {
-  delegate()->InstantPageRenderViewGone(contents());
+void InstantNTP::RenderProcessGone(base::TerminationStatus /* status */) {
+  delegate()->InstantPageRenderProcessGone(contents());
 }
 
 // static

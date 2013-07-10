@@ -632,7 +632,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // IPC message handlers
   void OnRenderViewReady();
-  void OnRenderViewGone(int status, int error_code);
+  void OnRenderProcessGone(int status, int error_code);
   void OnClose();
   void OnUpdateScreenRectsAck();
   void OnRequestMove(const gfx::Rect& pos);

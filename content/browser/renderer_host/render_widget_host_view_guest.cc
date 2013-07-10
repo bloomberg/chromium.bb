@@ -137,9 +137,10 @@ gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
   return shifted_rect;
 }
 
-void RenderWidgetHostViewGuest::RenderViewGone(base::TerminationStatus status,
-                                               int error_code) {
-  platform_view_->RenderViewGone(status, error_code);
+void RenderWidgetHostViewGuest::RenderProcessGone(
+    base::TerminationStatus status,
+    int error_code) {
+  platform_view_->RenderProcessGone(status, error_code);
   // Destroy the guest view instance only, so we don't end up calling
   // platform_view_->Destroy().
   DestroyGuestView();

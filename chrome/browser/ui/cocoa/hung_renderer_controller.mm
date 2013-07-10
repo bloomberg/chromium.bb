@@ -49,11 +49,11 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 
  protected:
   // WebContentsObserver overrides:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
-    [controller_ renderViewGone];
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+    [controller_ renderProcessGone];
   }
   virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
-    [controller_ renderViewGone];
+    [controller_ renderProcessGone];
   }
 
  private:
@@ -205,7 +205,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   }
 }
 
-- (void)renderViewGone {
+- (void)renderProcessGone {
   // Cannot call performClose:, because the close button is disabled.
   [self close];
 }

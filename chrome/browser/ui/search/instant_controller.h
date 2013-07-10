@@ -167,7 +167,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPForWrongProvider);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPRenderViewGone);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPRenderProcessGone);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            PreloadedNTPDoesntSupportInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
@@ -200,7 +200,7 @@ class InstantController : public InstantPage::Delegate,
   virtual void InstantSupportDetermined(
       const content::WebContents* contents,
       bool supports_instant) OVERRIDE;
-  virtual void InstantPageRenderViewGone(
+  virtual void InstantPageRenderProcessGone(
       const content::WebContents* contents) OVERRIDE;
   virtual void InstantPageAboutToNavigateMainFrame(
       const content::WebContents* contents,

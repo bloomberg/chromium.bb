@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPForWrongProvider) {
   EXPECT_NE(ntp_url, active_tab->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPRenderViewGone) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPRenderProcessGone) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPRenderViewGone) {
   EXPECT_FALSE(instant()->ntp()->IsLocal());
 
   // NTP not reloaded after being killed.
-  instant()->InstantPageRenderViewGone(instant()->ntp()->contents());
+  instant()->InstantPageRenderProcessGone(instant()->ntp()->contents());
   EXPECT_EQ(NULL, instant()->ntp());
 
   // Open new tab. Should use local NTP.

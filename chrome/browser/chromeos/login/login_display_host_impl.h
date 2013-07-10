@@ -91,7 +91,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
  private:
   // Marks display host for deletion.

@@ -107,7 +107,7 @@ class WebUIScreenLocker : public WebUILoginView,
                                 const base::TimeTicks& time) OVERRIDE;
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
  private:
   friend class test::WebUIScreenLockerTester;

@@ -1408,7 +1408,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_RenderViewReady)
 
 // Indicates the renderer process is gone.  This actually is sent by the
 // browser process to itself, but keeps the interface cleaner.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_RenderViewGone,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_RenderProcessGone,
                     int, /* this really is base::TerminationStatus */
                     int /* exit_code */)
 

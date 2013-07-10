@@ -37,7 +37,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
 
   // WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnActivateWindow();

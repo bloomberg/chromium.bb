@@ -98,7 +98,7 @@ views::View* AppLaunchView::GetContentsView() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppLaunchView, content::WebContentsObserver implementation.
-void AppLaunchView::RenderViewGone(
+void AppLaunchView::RenderProcessGone(
     base::TerminationStatus status) {
   LOG(ERROR) << "Splash screen terminated with status " << status;
   AppLaunchView::CloseAppLaunchSplashScreen();

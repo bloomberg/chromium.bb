@@ -603,7 +603,7 @@ void LoginDisplayHostImpl::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, WebContentsObserver implementation:
 
-void LoginDisplayHostImpl::RenderViewGone(base::TerminationStatus status) {
+void LoginDisplayHostImpl::RenderProcessGone(base::TerminationStatus status) {
   // Do not try to restore on shutdown
   if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
     return;

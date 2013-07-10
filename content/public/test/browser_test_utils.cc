@@ -58,7 +58,7 @@ class DOMOperationObserver : public NotificationObserver,
   }
 
   // Overridden from WebContentsObserver:
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
     message_loop_runner_->Quit();
   }
 

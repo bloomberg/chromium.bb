@@ -82,7 +82,7 @@ bool DevToolsFrontendHost::OnMessageReceived(
   return handled;
 }
 
-void DevToolsFrontendHost::RenderViewGone(
+void DevToolsFrontendHost::RenderProcessGone(
     base::TerminationStatus status) {
   switch(status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:

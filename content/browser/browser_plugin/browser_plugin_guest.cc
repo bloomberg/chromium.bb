@@ -893,7 +893,7 @@ void BrowserPluginGuest::RenderViewReady() {
       set_hung_renderer_delay_ms(guest_hang_timeout_);
 }
 
-void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
+void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
   int process_id = GetWebContents()->GetRenderProcessHost()->GetID();
   SendMessageToEmbedder(
       new BrowserPluginMsg_GuestGone(instance_id(), process_id, status));

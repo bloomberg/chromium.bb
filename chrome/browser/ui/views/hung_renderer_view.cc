@@ -158,7 +158,7 @@ HungPagesTableModel::WebContentsObserverImpl::WebContentsObserverImpl(
       model_(model) {
 }
 
-void HungPagesTableModel::WebContentsObserverImpl::RenderViewGone(
+void HungPagesTableModel::WebContentsObserverImpl::RenderProcessGone(
     base::TerminationStatus status) {
   model_->TabDestroyed(this);
 }

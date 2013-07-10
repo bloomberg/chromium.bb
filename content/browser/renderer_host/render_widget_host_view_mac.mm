@@ -915,8 +915,8 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
   }
 }
 
-void RenderWidgetHostViewMac::RenderViewGone(base::TerminationStatus status,
-                                             int error_code) {
+void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
+                                                int error_code) {
   Destroy();
 }
 

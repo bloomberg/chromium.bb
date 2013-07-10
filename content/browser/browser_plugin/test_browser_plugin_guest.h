@@ -34,7 +34,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
                        const NotificationDetails& details) OVERRIDE;
 
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
                                   const WebKit::WebInputEvent* event) OVERRIDE;

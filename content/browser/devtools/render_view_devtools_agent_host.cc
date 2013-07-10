@@ -247,7 +247,7 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
   ConnectRenderViewHost(dest_rvh, true);
 }
 
-void RenderViewDevToolsAgentHost::RenderViewGone(
+void RenderViewDevToolsAgentHost::RenderProcessGone(
     base::TerminationStatus status) {
   switch(status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:

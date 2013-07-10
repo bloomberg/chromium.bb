@@ -55,7 +55,7 @@ class ScreensaverView : public views::WidgetDelegateView,
   virtual views::View* GetContentsView() OVERRIDE;
 
   // content::WebContentsObserver overrides.
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
   void Show();
   void Close();

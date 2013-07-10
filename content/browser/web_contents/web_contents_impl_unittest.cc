@@ -1575,7 +1575,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
 
   // Crash the renderer
   test_rvh()->OnMessageReceived(
-      ViewHostMsg_RenderViewGone(
+      ViewHostMsg_RenderProcessGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   // While the interstitial is showing, go back.
@@ -1614,7 +1614,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenNavigate) {
 
   // Crash the renderer
   test_rvh()->OnMessageReceived(
-      ViewHostMsg_RenderViewGone(
+      ViewHostMsg_RenderProcessGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   interstitial->TestDidNavigate(2, interstitial_url);
@@ -1666,7 +1666,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
   // simulate quitting the browser.  This goes through all processes and
   // tells them to destruct.
   rvh->OnMessageReceived(
-        ViewHostMsg_RenderViewGone(0, 0, 0));
+        ViewHostMsg_RenderProcessGone(0, 0, 0));
 
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted);

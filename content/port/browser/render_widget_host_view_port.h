@@ -138,8 +138,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
       const ui::LatencyInfo& latency_info) = 0;
 
   // Notifies the View that the renderer has ceased to exist.
-  virtual void RenderViewGone(base::TerminationStatus status,
-                              int error_code) = 0;
+  virtual void RenderProcessGone(base::TerminationStatus status,
+                                 int error_code) = 0;
 
   // Tells the View to destroy itself.
   virtual void Destroy() = 0;

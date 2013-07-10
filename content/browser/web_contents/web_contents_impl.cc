@@ -2884,7 +2884,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
-                    RenderViewGone(GetCrashedStatus()));
+                    RenderProcessGone(GetCrashedStatus()));
 }
 
 void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
@@ -3485,7 +3485,7 @@ void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
   // Note: |this| might be deleted at this point.
 }
 
-void WebContentsImpl::RenderViewGoneFromRenderManager(
+void WebContentsImpl::RenderProcessGoneFromRenderManager(
     RenderViewHost* render_view_host) {
   DCHECK(crashed_status_ != base::TERMINATION_STATUS_STILL_RUNNING);
   RenderViewTerminated(render_view_host, crashed_status_, crashed_error_code_);

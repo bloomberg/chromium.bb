@@ -736,12 +736,12 @@ void RenderViewHostManager::CommitPending() {
   render_view_host_->GetProcess()->RemovePendingView();
 
   // If the view is gone, then this RenderViewHost died while it was hidden.
-  // We ignored the RenderViewGone call at the time, so we should send it now
+  // We ignored the RenderProcessGone call at the time, so we should send it now
   // to make sure the sad tab shows up, etc.
   if (render_view_host_->GetView())
     render_view_host_->GetView()->Show();
   else
-    delegate_->RenderViewGoneFromRenderManager(render_view_host_);
+    delegate_->RenderProcessGoneFromRenderManager(render_view_host_);
 
   // Hide the old view now that the new one is visible.
   if (old_render_view_host->GetView()) {

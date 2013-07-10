@@ -74,7 +74,7 @@ class HungPagesTableModel : public ui::TableModel, public views::TableGrouper {
     }
 
     // WebContentsObserver overrides:
-    virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+    virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
     virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
    private:

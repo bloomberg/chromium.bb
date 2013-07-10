@@ -68,7 +68,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   }
 
   // WebContentsObserver implementation.
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,

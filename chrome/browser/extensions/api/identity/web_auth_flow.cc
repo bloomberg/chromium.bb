@@ -207,7 +207,7 @@ void WebAuthFlow::Observe(int type,
   }
 }
 
-void WebAuthFlow::RenderViewGone(base::TerminationStatus status) {
+void WebAuthFlow::RenderProcessGone(base::TerminationStatus status) {
   if (delegate_)
     delegate_->OnAuthFlowFailure(WebAuthFlow::WINDOW_CLOSED);
 }
