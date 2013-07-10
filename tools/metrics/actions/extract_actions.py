@@ -518,6 +518,28 @@ def AddRendererActions(actions):
   WalkDirectory(content_renderer_root, actions, EXTENSIONS,
                 GrepForRendererActions)
 
+def AddHistoryPageActions(actions):
+  """Add actions that are used in History page.
+
+  Arguments
+    actions: set of actions to add to.
+  """
+  actions.add('HistoryPage_BookmarkStarClicked')
+  actions.add('HistoryPage_EntryMenuRemoveFromHistory')
+  actions.add('HistoryPage_EntryLinkClick')
+  actions.add('HistoryPage_EntryLinkRightClick')
+  actions.add('HistoryPage_SearchResultClick')
+  actions.add('HistoryPage_EntryMenuShowMoreFromSite')
+  actions.add('HistoryPage_NewestHistoryClick')
+  actions.add('HistoryPage_NewerHistoryClick')
+  actions.add('HistoryPage_OlderHistoryClick')
+  actions.add('HistoryPage_Search')
+  actions.add('HistoryPage_InitClearBrowsingData')
+  actions.add('HistoryPage_RemoveSelected')
+  actions.add('HistoryPage_SearchResultRemove')
+  actions.add('HistoryPage_ConfirmRemoveSelected')
+  actions.add('HistoryPage_CancelRemoveSelected')
+
 def main(argv):
   if '--hash' in argv:
     hash_output = True
@@ -557,6 +579,7 @@ def main(argv):
   AddExtensionActions(actions)
   AddAndroidActions(actions)
   AddBookmarkManagerActions(actions)
+  AddHistoryPageActions(actions)
 
   if hash_output:
     f = open(chromeactions_path, "wb")
