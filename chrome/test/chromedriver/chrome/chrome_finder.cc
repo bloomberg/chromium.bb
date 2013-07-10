@@ -10,14 +10,13 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+#include "base/base_paths_win.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -26,26 +25,13 @@ namespace {
 #if defined(OS_WIN)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
   std::vector<base::FilePath> installation_locations;
-  // Add user-level location.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string home_dir;
-  if (env->GetVar("userprofile", &home_dir)) {
-    base::FilePath default_location(UTF8ToWide(home_dir));
-    if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-      default_location = default_location.Append(
-          L"Local Settings\\Application Data");
-    } else {
-      default_location = default_location.Append(L"AppData\\Local");
-    }
-    installation_locations.push_back(default_location);
-  }
-
-  // Add the system-level location.
-  std::string program_dir;
-  if (env->GetVar("ProgramFiles", &program_dir))
-    installation_locations.push_back(base::FilePath(UTF8ToWide(program_dir)));
-  if (env->GetVar("ProgramFiles(x86)", &program_dir))
-    installation_locations.push_back(base::FilePath(UTF8ToWide(program_dir)));
+  base::FilePath local_app_data, program_files, program_files_x86;
+  if (PathService::Get(base::DIR_LOCAL_APP_DATA, &local_app_data))
+    installation_locations.push_back(local_app_data);
+  if (PathService::Get(base::DIR_PROGRAM_FILES, &program_files))
+    installation_locations.push_back(program_files);
+  if (PathService::Get(base::DIR_PROGRAM_FILESX86, &program_files_x86))
+    installation_locations.push_back(program_files_x86);
 
   for (size_t i = 0; i < installation_locations.size(); ++i) {
     locations->push_back(
