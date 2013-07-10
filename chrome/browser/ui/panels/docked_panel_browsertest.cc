@@ -26,7 +26,13 @@ class DockedPanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_SqueezePanelsInDock DISABLED_SqueezePanelsInDock
+#else
+#define MAYBE_SqueezePanelsInDock SqueezePanelsInDock
+#endif
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_SqueezePanelsInDock) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
 
