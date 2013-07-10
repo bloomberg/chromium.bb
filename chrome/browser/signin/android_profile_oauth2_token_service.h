@@ -62,10 +62,6 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
       net::URLRequestContextGetter* getter);
   virtual ~AndroidProfileOAuth2TokenService();
 
-  // Takes injected TokenService for testing.
-  bool ShouldCacheForRefreshToken(TokenService *token_service,
-                                  const std::string& refresh_token);
-
   void FetchOAuth2Token(const std::string& scope,
                         const FetchOAuth2TokenCallback& callback);
 

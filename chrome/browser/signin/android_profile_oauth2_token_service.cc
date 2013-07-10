@@ -21,6 +21,23 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
+namespace {
+
+std::string CombineScopes(const OAuth2TokenService::ScopeSet& scopes) {
+  // The Android AccountManager supports multiple scopes separated by a space:
+  // https://code.google.com/p/google-api-java-client/wiki/OAuth2#Android
+  std::string scope;
+  for (OAuth2TokenService::ScopeSet::const_iterator it = scopes.begin();
+       it != scopes.end(); ++it) {
+    if (!scope.empty())
+      scope += " ";
+    scope += *it;
+  }
+  return scope;
+}
+
+}  // namespace
+
 AndroidProfileOAuth2TokenService::AndroidProfileOAuth2TokenService(
     net::URLRequestContextGetter* getter)
     : ProfileOAuth2TokenService(getter) {
@@ -35,14 +52,9 @@ scoped_ptr<OAuth2TokenService::Request>
         OAuth2TokenService::Consumer* consumer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (HasCacheEntry(scopes))
-    return StartCacheLookupRequest(scopes, consumer);
-
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
-  DCHECK_EQ(scopes.size(), 1U);
-  std::vector<std::string> scope_list(scopes.begin(), scopes.end());
   FetchOAuth2Token(
-      scope_list.front(),
+      CombineScopes(scopes),
       base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr()));
   return request.PassAs<Request>();
 }
@@ -58,23 +70,12 @@ void AndroidProfileOAuth2TokenService::InvalidateToken(
     const std::string& invalid_token) {
   OAuth2TokenService::InvalidateToken(scopes, invalid_token);
 
-  DCHECK_EQ(scopes.size(), 1U);
-
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_invalid_token =
       ConvertUTF8ToJavaString(env, invalid_token);
   Java_AndroidProfileOAuth2TokenServiceHelper_invalidateOAuth2AuthToken(
       env, base::android::GetApplicationContext(),
       j_invalid_token.obj());
-}
-
-bool AndroidProfileOAuth2TokenService::ShouldCacheForRefreshToken(
-    TokenService *token_service,
-    const std::string& refresh_token) {
-  // The parent class skips caching if the TokenService login token is stale,
-  // but on Android the user is always logged in to exactly one profile, so
-  // this concept doesn't exist and we can simply always cache.
-  return true;
 }
 
 void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
