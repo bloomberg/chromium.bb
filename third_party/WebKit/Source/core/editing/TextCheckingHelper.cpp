@@ -49,7 +49,7 @@ static void findBadGrammars(TextCheckerClient* client, const UChar* text, int st
         int badGrammarLocation = -1;
         int badGrammarLength = 0;
         Vector<GrammarDetail> badGrammarDetails;
-        client->checkGrammarOfString(text + checkLocation, checkLength, badGrammarDetails, &badGrammarLocation, &badGrammarLength);
+        client->checkGrammarOfString(String(text + checkLocation, checkLength), badGrammarDetails, &badGrammarLocation, &badGrammarLength);
         if (!badGrammarLength)
             break;
         ASSERT(0 <= badGrammarLocation && badGrammarLocation <= checkLength);
@@ -79,7 +79,7 @@ static void findMisspellings(TextCheckerClient* client, const UChar* text, int s
         int wordLength = wordEnd - wordStart;
         int misspellingLocation = -1;
         int misspellingLength = 0;
-        client->checkSpellingOfString(text + start + wordStart, wordLength, &misspellingLocation, &misspellingLength);
+        client->checkSpellingOfString(String(text + start + wordStart, wordLength), &misspellingLocation, &misspellingLength);
         if (0 < misspellingLength) {
             ASSERT(0 <= misspellingLocation && misspellingLocation <= wordLength);
             ASSERT(0 < misspellingLength && misspellingLocation + misspellingLength <= wordLength);
@@ -245,7 +245,7 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
             
             int misspellingLocation = -1;
             int misspellingLength = 0;
-            m_client->textChecker()->checkSpellingOfString(chars, len, &misspellingLocation, &misspellingLength);
+            m_client->textChecker()->checkSpellingOfString(String(chars, len), &misspellingLocation, &misspellingLength);
 
             // 5490627 shows that there was some code path here where the String constructor below crashes.
             // We don't know exactly what combination of bad input caused this, so we're making this much
@@ -466,7 +466,7 @@ String TextCheckingHelper::findFirstBadGrammar(GrammarDetail& outGrammarDetail, 
         Vector<GrammarDetail> grammarDetails;
         int badGrammarPhraseLocation = -1;
         int badGrammarPhraseLength = 0;
-        m_client->textChecker()->checkGrammarOfString(paragraph.textCharacters() + startOffset, paragraph.textLength() - startOffset, grammarDetails, &badGrammarPhraseLocation, &badGrammarPhraseLength);
+        m_client->textChecker()->checkGrammarOfString(paragraph.textSubstring(startOffset), grammarDetails, &badGrammarPhraseLocation, &badGrammarPhraseLength);
         
         if (!badGrammarPhraseLength) {
             ASSERT(badGrammarPhraseLocation == -1);

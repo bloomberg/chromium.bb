@@ -84,8 +84,8 @@ public:
     virtual void textDidChangeInTextField(WebCore::Element*) OVERRIDE;
     virtual bool doTextFieldCommandFromEvent(WebCore::Element*, WebCore::KeyboardEvent*) OVERRIDE;
     virtual bool shouldEraseMarkersAfterChangeSelection(WebCore::TextCheckingType) const OVERRIDE;
-    virtual void checkSpellingOfString(const UChar*, int length, int* misspellingLocation, int* misspellingLength) OVERRIDE;
-    virtual void checkGrammarOfString(const UChar*, int length, WTF::Vector<WebCore::GrammarDetail>&,
+    virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) OVERRIDE;
+    virtual void checkGrammarOfString(const String&, WTF::Vector<WebCore::GrammarDetail>&,
         int* badGrammarLocation, int* badGrammarLength) OVERRIDE;
     virtual WTF::String getAutoCorrectSuggestionForMisspelledWord(const WTF::String&) OVERRIDE;
     virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) OVERRIDE;

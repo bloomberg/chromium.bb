@@ -648,7 +648,7 @@ bool EditorClientImpl::shouldEraseMarkersAfterChangeSelection(TextCheckingType t
     return !frame || !frame->settings() || (!frame->settings()->asynchronousSpellCheckingEnabled() && !frame->settings()->unifiedTextCheckerEnabled());
 }
 
-void EditorClientImpl::checkSpellingOfString(const UChar* text, int length,
+void EditorClientImpl::checkSpellingOfString(const String& text,
                                              int* misspellingLocation,
                                              int* misspellingLength)
 {
@@ -659,7 +659,7 @@ void EditorClientImpl::checkSpellingOfString(const UChar* text, int length,
 
     // Check to see if the provided text is spelled correctly.
     if (m_webView->spellCheckClient())
-        m_webView->spellCheckClient()->spellCheck(WebString(text, length), spellLocation, spellLength, 0);
+        m_webView->spellCheckClient()->spellCheck(text, spellLocation, spellLength, 0);
     else {
         spellLocation = 0;
         spellLength = 0;
@@ -700,7 +700,7 @@ String EditorClientImpl::getAutoCorrectSuggestionForMisspelledWord(const String&
     return String();
 }
 
-void EditorClientImpl::checkGrammarOfString(const UChar* text, int length, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)
+void EditorClientImpl::checkGrammarOfString(const String& text, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)
 {
     if (badGrammarLocation)
         *badGrammarLocation = -1;
@@ -710,7 +710,7 @@ void EditorClientImpl::checkGrammarOfString(const UChar* text, int length, WTF::
     if (!m_webView->spellCheckClient())
         return;
     WebVector<WebTextCheckingResult> webResults;
-    m_webView->spellCheckClient()->checkTextOfParagraph(WebString(text, length), WebTextCheckingTypeGrammar, &webResults);
+    m_webView->spellCheckClient()->checkTextOfParagraph(text, WebTextCheckingTypeGrammar, &webResults);
     if (!webResults.size())
         return;
 
@@ -732,7 +732,7 @@ void EditorClientImpl::checkGrammarOfString(const UChar* text, int length, WTF::
     if (badGrammarLocation)
         *badGrammarLocation = 0;
     if (badGrammarLength)
-        *badGrammarLength = length;
+        *badGrammarLength = text.length();
 }
 
 void EditorClientImpl::updateSpellingUIWithMisspelledWord(const String& misspelledWord)
