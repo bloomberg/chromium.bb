@@ -90,6 +90,8 @@ extern const char kEnableWebRtcAecRecordings[];
 CONTENT_EXPORT extern const char kEnableSCTPDataChannels[];
 #endif
 extern const char kEnableWebRtcTcpServerSocket[];
+extern const char kEnableWebAnimationsCSS[];
+extern const char kEnableWebAnimationsSVG[];
 extern const char kEnableWebMIDI[];
 extern const char kDisableWebSecurity[];
 extern const char kEnableExperimentalWebSocket[];

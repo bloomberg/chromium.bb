@@ -96,6 +96,12 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableLegacyEncryptedMedia))
     WebRuntimeFeatures::enableLegacyEncryptedMedia(false);
 
+  if (command_line.HasSwitch(switches::kEnableWebAnimationsCSS))
+    WebRuntimeFeatures::enableWebAnimationsCSS();
+
+  if (command_line.HasSwitch(switches::kEnableWebAnimationsSVG))
+    WebRuntimeFeatures::enableWebAnimationsSVG();
+
   if (command_line.HasSwitch(switches::kEnableWebMIDI))
     WebRuntimeFeatures::enableWebMIDI(true);
 
