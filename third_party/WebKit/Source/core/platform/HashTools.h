@@ -28,12 +28,12 @@ struct NamedColor {
 };
 
 struct Property {
-    const char* name;
+    int nameOffset;
     int id;
 };
 
 struct Value {
-    const char* name;
+    int nameOffset;
     int id;
 };
 

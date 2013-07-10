@@ -78,8 +78,12 @@ GPERF_TEMPLATE = """
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-const char* const propertyNameStrings[numCSSProperties] = {
+static const char propertyNameStringsPool[] = {
 %(property_name_strings)s
+};
+
+static const unsigned short propertyNameStringsOffsets[] = {
+%(property_name_offsets)s
 };
 
 %%}
@@ -93,6 +97,7 @@ struct Property;
 %%define class-name %(class_name)sHash
 %%define lookup-function-name findPropertyImpl
 %%define hash-function-name propery_hash_function
+%%define slot-name nameOffset
 %%define word-array-name property_wordlist
 %%enum
 %%%%
@@ -110,7 +115,7 @@ const char* getPropertyName(CSSPropertyID id)
     int index = id - firstCSSProperty;
     if (index >= numCSSProperties)
         return 0;
-    return propertyNameStrings[index];
+    return propertyNameStringsPool + propertyNameStringsOffsets[index];
 }
 
 const AtomicString& getPropertyNameAtomicString(CSSPropertyID id)
@@ -124,7 +129,7 @@ const AtomicString& getPropertyNameAtomicString(CSSPropertyID id)
     static AtomicString* propertyStrings = new AtomicString[numCSSProperties]; // Intentionally never destroyed.
     AtomicString& propertyString = propertyStrings[index];
     if (propertyString.isNull()) {
-        const char* propertyName = propertyNameStrings[index];
+        const char* propertyName = propertyNameStringsPool + propertyNameStringsOffsets[index];
         propertyString = AtomicString(propertyName, strlen(propertyName), AtomicString::ConstructFromLiteral);
     }
     return propertyString;
@@ -210,14 +215,21 @@ class CSSPropertiesWriter(in_generator.Writer):
         }
 
     def generate_implementation(self):
+        property_offsets = []
+        current_offset = 0
+        for property in self._properties:
+            property_offsets.append(current_offset)
+            current_offset += len(property["name"]) + 1
+
         gperf_input = GPERF_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'property_name_strings': '\n'.join(map(lambda property: '    "%(name)s",' % property, self._properties)),
+            'property_name_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._properties)),
+            'property_name_offsets': '\n'.join(map(lambda offset: '    %d,' % offset, property_offsets)),
             'property_to_enum_map': '\n'.join(map(lambda property: '%(name)s, %(enum_name)s' % property, self._properties + self._aliases)),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
-        gperf_args = ['gperf', '--key-positions=*', '-D', '-n', '-s', '2']
+        gperf_args = ['gperf', '--key-positions=*', '-P', '-D', '-n', '-s', '2']
         gperf = subprocess.Popen(gperf_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         return gperf.communicate(gperf_input)[0]
 

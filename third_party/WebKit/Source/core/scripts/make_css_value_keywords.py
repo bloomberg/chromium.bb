@@ -46,10 +46,13 @@ GPERF_TEMPLATE = """
 #include <string.h>
 
 namespace WebCore {
-const char* const valueList[] = {
-"",
+static const char valueListStringPool[] = {
+"\\0"
 %(value_keyword_strings)s
-0
+};
+
+static const unsigned short valueListStringOffsets[] = {
+%(value_keyword_offsets)s
 };
 
 %%}
@@ -62,7 +65,9 @@ struct Value;
 %%define class-name %(class_name)sHash
 %%define lookup-function-name findValueImpl
 %%define hash-function-name value_hash_function
+%%define slot-name nameOffset
 %%define word-array-name value_word_list
+%%pic
 %%enum
 %%%%
 %(value_keyword_to_enum_map)s
@@ -76,7 +81,7 @@ const char* getValueName(unsigned short id)
 {
     if (id >= numCSSValueKeywords || id <= 0)
         return 0;
-    return valueList[id];
+    return valueListStringPool + valueListStringOffsets[id];
 }
 
 bool isValueAllowedInMode(unsigned short id, CSSParserMode mode)
@@ -146,14 +151,21 @@ class CSSValueKeywordsWriter(in_generator.Writer):
         return filter(lambda property: property['mode'] == mode, self._value_keywords)
 
     def generate_implementation(self):
+        keyword_offsets = [0]
+        current_offset = 1
+        for keyword in self._value_keywords:
+            keyword_offsets.append(current_offset)
+            current_offset += len(keyword["name"]) + 1
+
         gperf_input = GPERF_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'value_keyword_strings': '\n'.join(map(lambda property: '    "%(name)s",' % property, self._value_keywords)),
+            'value_keyword_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._value_keywords)),
+            'value_keyword_offsets': '\n'.join(map(lambda offset: '  %d,' % offset, keyword_offsets)),
             'value_keyword_to_enum_map': '\n'.join(map(lambda property: '%(name)s, %(enum_name)s' % property, self._value_keywords)),
-            'ua_sheet_mode_values_keywords': '\n'.join(map(self._case_value_keyword, self._value_keywords_with_mode('UASheet'))),
-            'quirks_mode_values_keywords': '\n'.join(map(self._case_value_keyword, self._value_keywords_with_mode('Quirks'))),
-            'quirks_mode_or_ua_sheet_mode_values_keywords': '\n'.join(map(self._case_value_keyword, self._value_keywords_with_mode('QuirksOrUASheet'))),
+            'ua_sheet_mode_values_keywords': '\n        '.join(map(self._case_value_keyword, self._value_keywords_with_mode('UASheet'))),
+            'quirks_mode_values_keywords': '\n        '.join(map(self._case_value_keyword, self._value_keywords_with_mode('Quirks'))),
+            'quirks_mode_or_ua_sheet_mode_values_keywords': '\n    '.join(map(self._case_value_keyword, self._value_keywords_with_mode('QuirksOrUASheet'))),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
         gperf_args = ['gperf', '--key-positions=*', '-D', '-n', '-s', '2']
