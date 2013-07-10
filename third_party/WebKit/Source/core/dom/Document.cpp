@@ -2643,7 +2643,12 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
                 url = m_url.string();
             else
                 url = completeURL(url).string();
-            frame->navigationScheduler()->scheduleRedirect(delay, url);
+            if (!protocolIsJavaScript(url)) {
+                frame->navigationScheduler()->scheduleRedirect(delay, url);
+            } else {
+                String message = "Refused to refresh " + m_url.elidedString() + " to a javascript: URL";
+                addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+            }
         }
     } else if (equalIgnoringCase(equiv, "set-cookie")) {
         // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
