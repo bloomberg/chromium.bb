@@ -662,8 +662,8 @@ Chromium is unable to recover your settings.
 
       <!-- "Create application shortcuts" dialog -->
       <if expr="is_posix and not is_macosx">
-        <message name="IDS_CREATE_SHORTCUTS_ERROR_LABEL" desc="Contents of the main label in the error dialog box when creating an application shortcut failed.">
-          Chromium cannot create an application shortcut because it cannot determine the current desktop environment.
+        <message name="IDS_CREATE_SHORTCUTS_ERROR_LABEL" desc="Contents of the main label in the error dialog box when creating an application shortcut failed for unknown reasons.">
+          Chromium could not create an application shortcut.
         </message>
       </if>
 
