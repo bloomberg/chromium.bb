@@ -96,7 +96,9 @@ Forwarder::Forwarder(scoped_ptr<Socket> socket1, scoped_ptr<Socket> socket2)
   DCHECK(socket2_.get());
 }
 
-Forwarder::~Forwarder() {}
+Forwarder::~Forwarder() {
+  Detach();
+}
 
 void Forwarder::Run() {
   const int nfds = Socket::GetHighestFileDescriptor(*socket1_, *socket2_) + 1;

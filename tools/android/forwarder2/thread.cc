@@ -17,6 +17,12 @@ void Thread::Start() {
   CHECK_EQ(0, ret);
 }
 
+void Thread::Detach() {
+  CHECK_NE(static_cast<pthread_t>(-1), thread_);
+  int ret = pthread_detach(thread_);
+  CHECK_EQ(0, ret);
+}
+
 void Thread::Join() {
   CHECK_NE(static_cast<pthread_t>(-1), thread_);
   int ret = pthread_join(thread_, NULL);

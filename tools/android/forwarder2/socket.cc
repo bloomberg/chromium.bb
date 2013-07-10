@@ -249,6 +249,7 @@ bool Socket::Resolve(const std::string& host) {
   int errcode = getaddrinfo(host.c_str(), NULL, &hints, &res);
   if (errcode != 0) {
     SetSocketError();
+    freeaddrinfo(res);
     return false;
   }
   family_ = res->ai_family;
@@ -264,6 +265,7 @@ bool Socket::Resolve(const std::string& host) {
              sizeof(sockaddr_in6));
       break;
   }
+  freeaddrinfo(res);
   return true;
 }
 

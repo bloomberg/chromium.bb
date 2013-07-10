@@ -18,6 +18,7 @@ class Thread {
 
   // Start thread calling Run().
   void Start();
+  void Detach();
   virtual void Join();
 
  protected:
