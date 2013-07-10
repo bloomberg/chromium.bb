@@ -4,5 +4,14 @@ leak:*libfontconfig*
 # HeapCheck sanity test
 leak:base::ToolsSanityTest_MemoryLeak_Test::TestBody
 
-# http://crbug.com/99304
-leak:v8::internal::Heap::ReserveSpace
+# V8 leak, expect 1024 bytes leaked per process. http://crbug.com/99304
+leak:v8::internal::V8::Initialize
+
+# V8 GC issues in ProxyResolver tests, probably harmless. http://crbug.com/67378
+leak:net::ProxyResolverV8::SetPacScript
+leak:net::(anonymous namespace)::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
+leak:net::(anonymous namespace)::InitResolver
+
+# NSS leaks. http://crbug.com/51988
+leak:net::NSSCertDatabase::*
+leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB
