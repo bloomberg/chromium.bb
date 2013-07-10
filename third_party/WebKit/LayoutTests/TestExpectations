@@ -372,6 +372,35 @@ webkit.org/b/106126 [ Win ] svg/custom/feComponentTransfer-Table.svg [ ImageOnly
 # Only flaky on Linux. Looks like slight pixel differences in text-on-a-path.
 crbug.com/250897 [ Linux ] svg/batik/text/smallFonts.svg [ ImageOnlyFailure Pass ]
 
+# Flaky mostly on XP, where the <use> batiklogo.svg doesn't arrive in time to get rendered.
+crbug.com/258991 [ XP ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textLayout.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/smallFonts.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textOnPath.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textFeatures.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textPosition2.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textLayout2.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textEffect.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/verticalText.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textProperties.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textEffect3.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/longTextOnPath.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textPosition.svg [ Failure Pass ]
+crbug.com/258991 [ Win ] svg/batik/text/textProperties2.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textDecoration.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textAnchor.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textEffect2.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textLength.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textStyles.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textOnPathSpaces.svg [ Failure Pass ]
+crbug.com/258991 [ Release ] svg/batik/filters/feTile.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/filters/filterRegions.svg [ Failure Pass ]
+crbug.com/258991 [ Release ] svg/batik/masking/maskRegions.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/paints/gradientLimit.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/paints/patternRegions-positioned-objects.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/paints/patternRegionA.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/paints/patternRegions.svg [ Failure Pass ]
+
 # The test needs fixing. Flakiness is common across all Mac platforms, not just chromium.
 webkit.org/b/25817 svg/dom/SVGScriptElement/script-load-and-error-events.svg [ Failure Pass ]
 webkit.org/b/106598 svg/dom/SVGScriptElement/script-onerror-bubbling.svg [ Pass Timeout ]
@@ -1179,7 +1208,6 @@ crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timin
 
 webkit.org/b/103148 [ Lion ] fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure Pass ]
 webkit.org/b/103148 [ Lion ] fast/frames/iframe-scrolling-attribute.html [ ImageOnlyFailure Pass ]
-webkit.org/b/103148 svg/batik/text/textPosition2.svg [ Failure Pass ]
 webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [ Failure ImageOnlyFailure Pass ]
 
 webkit.org/b/103446 [ Mac ] http/tests/canvas/canvas-slow-font-loading.html [ ImageOnlyFailure ]
@@ -1279,8 +1307,6 @@ webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-form-post-override
 webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-window-location-replace.html [ Failure Pass ]
 webkit.org/b/112980 http/tests/navigation/lockedhistory-iframe.html [ Failure Pass ]
 webkit.org/b/112980 http/tests/navigation/changing-frame-hierarchy-in-onload.html [ Failure Pass ]
-webkit.org/b/112981 svg/batik/masking/maskRegions.svg [ Failure Pass ]
-webkit.org/b/112981 [ Win ] svg/batik/text/textProperties2.svg [ Failure Pass ]
 webkit.org/b/112984 [ Win ] fast/mediastream/RTCPeerConnection-statsSelector.html [ Failure Pass ]
 webkit.org/b/112987 [ Mac Win Release ] http/tests/xmlhttprequest/origin-whitelisting-https.html [ Failure Pass ]
 webkit.org/b/113128 fast/files/xhr-response-blob.html [ Failure Pass ]
