@@ -15,10 +15,10 @@
 namespace views {
 
 namespace {
-#if defined(OS_WIN)
-static const int kMenuCornerRadiusForAura = 0;
-#else
+#if defined(OS_CHROMEOS)
 static const int kMenuCornerRadiusForAura = 2;
+#else
+static const int kMenuCornerRadiusForAura = 0;
 #endif
 }  // namespace
 

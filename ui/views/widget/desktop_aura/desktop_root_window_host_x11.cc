@@ -79,6 +79,7 @@ const char* kAtomsToCache[] = {
   "_NET_WM_STATE_HIDDEN",
   "_NET_WM_STATE_MAXIMIZED_HORZ",
   "_NET_WM_STATE_MAXIMIZED_VERT",
+  "_NET_WM_WINDOW_OPACITY",
   "XdndActionAsk",
   "XdndActionCopy"
   "XdndActionLink",
@@ -649,8 +650,20 @@ bool DesktopRootWindowHostX11::IsFullscreen() const {
 }
 
 void DesktopRootWindowHostX11::SetOpacity(unsigned char opacity) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  // X server opacity is in terms of 32 bit unsigned int space, and counts from
+  // the opposite direction.
+  unsigned int cardinality = opacity * 0x1010101;
+
+  if (cardinality == 0xffffffff) {
+    XDeleteProperty(xdisplay_, xwindow_,
+                    atom_cache_.GetAtom("_NET_WM_WINDOW_OPACITY"));
+  } else {
+    XChangeProperty(xdisplay_, xwindow_,
+                    atom_cache_.GetAtom("_NET_WM_WINDOW_OPACITY"),
+                    XA_CARDINAL, 32,
+                    PropModeReplace,
+                    reinterpret_cast<unsigned char*>(&cardinality), 1);
+  }
 }
 
 void DesktopRootWindowHostX11::SetWindowIcons(
