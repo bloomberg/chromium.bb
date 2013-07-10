@@ -37,6 +37,10 @@ class ShillServiceClientStub : public ShillServiceClient,
                            const base::Value& value,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) OVERRIDE;
+  virtual void SetProperties(const dbus::ObjectPath& service_path,
+                             const base::DictionaryValue& properties,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) OVERRIDE;
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
                              const base::Closure& callback,
@@ -86,7 +90,7 @@ class ShillServiceClientStub : public ShillServiceClient,
                                       bool add_to_visible_list,
                                       bool add_to_watch_list) OVERRIDE;
   virtual void RemoveService(const std::string& service_path) OVERRIDE;
-  virtual void SetServiceProperty(const std::string& service_path,
+  virtual bool SetServiceProperty(const std::string& service_path,
                                   const std::string& property,
                                   const base::Value& value) OVERRIDE;
   virtual const base::DictionaryValue* GetServiceProperties(

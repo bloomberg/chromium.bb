@@ -147,6 +147,11 @@ class ShillClientHelper {
   static void AppendValueDataAsVariant(dbus::MessageWriter* writer,
                                        const base::Value& value);
 
+  // Appends a string-to-variant dictionary to the writer.
+  static void AppendServicePropertiesDictionary(
+      dbus::MessageWriter* writer,
+      const base::DictionaryValue& dictionary);
+
  private:
   // Starts monitoring PropertyChanged signal.
   void MonitorPropertyChangedInternal(const std::string& interface_name);

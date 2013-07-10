@@ -431,6 +431,24 @@ void ShillClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
 
 }
 
+// static
+void ShillClientHelper::AppendServicePropertiesDictionary(
+    dbus::MessageWriter* writer,
+    const base::DictionaryValue& dictionary) {
+  dbus::MessageWriter array_writer(NULL);
+  writer->OpenArray("{sv}", &array_writer);
+  for (base::DictionaryValue::Iterator it(dictionary);
+       !it.IsAtEnd();
+       it.Advance()) {
+    dbus::MessageWriter entry_writer(NULL);
+    array_writer.OpenDictEntry(&entry_writer);
+    entry_writer.AppendString(it.key());
+    ShillClientHelper::AppendValueDataAsVariant(&entry_writer, it.value());
+    array_writer.CloseContainer(&entry_writer);
+  }
+  writer->CloseContainer(&array_writer);
+}
+
 void ShillClientHelper::OnSignalConnected(const std::string& interface,
                                           const std::string& signal,
                                           bool success) {

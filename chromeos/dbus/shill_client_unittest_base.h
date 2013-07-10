@@ -143,6 +143,15 @@ class ShillClientUnittestBase : public testing::Test {
                                             const base::Value* expected_value,
                                             dbus::MessageReader* reader);
 
+  // Expects the reader to have a string-to-variant dictionary.
+  static void ExpectDictionaryValueArgument(
+      const base::DictionaryValue* expected_dictionary,
+      dbus::MessageReader* reader);
+
+  // Creates a DictionaryValue with example Service properties. The caller owns
+  // the result.
+  static base::DictionaryValue* CreateExampleServiceProperties();
+
   // Expects the call status to be SUCCESS.
   static void ExpectNoResultValue(DBusMethodCallStatus call_status);
 

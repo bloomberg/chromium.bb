@@ -97,6 +97,19 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
+  virtual void SetProperties(const dbus::ObjectPath& service_path,
+                             const base::DictionaryValue& properties,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
+                                 shill::kSetPropertiesFunction);
+    dbus::MessageWriter writer(&method_call);
+    ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                             callback,
+                                                             error_callback);
+  }
+
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
                              const base::Closure& callback,

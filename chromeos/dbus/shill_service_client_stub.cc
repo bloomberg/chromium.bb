@@ -96,34 +96,27 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
                                          const base::Value& value,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
-  base::DictionaryValue* dict = NULL;
-  if (!stub_services_.GetDictionaryWithoutPathExpansion(
-          service_path.value(), &dict)) {
-    LOG(ERROR) << "Service not found:  " << service_path.value();
+  if (!SetServiceProperty(service_path.value(), name, value)) {
+    LOG(ERROR) << "Service not found: " << service_path.value();
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  VLOG(1) << "Service.SetProperty: " << name << " = " << value
-          << " For: " << service_path.value();
-  if (name == flimflam::kStateProperty) {
-    // If the service went into a connected state, then move it to the top of
-    // the list in the manager client.
-    // TODO(gauravsh): Generalize to sort services properly to allow for testing
-    //  more complex scenarios.
-    std::string state;
-    if (value.GetAsString(&state) && (state == flimflam::kStateOnline ||
-                                      state == flimflam::kStatePortal))  {
-      ShillManagerClient* manager_client =
-          DBusThreadManager::Get()->GetShillManagerClient();
-      manager_client->GetTestInterface()->MoveServiceToIndex(
-          service_path.value(), 0, true);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+}
+
+void ShillServiceClientStub::SetProperties(
+    const dbus::ObjectPath& service_path,
+    const base::DictionaryValue& properties,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  for (base::DictionaryValue::Iterator iter(properties);
+       !iter.IsAtEnd(); iter.Advance()) {
+    if (!SetServiceProperty(service_path.value(), iter.key(), iter.value())) {
+      LOG(ERROR) << "Service not found: " << service_path.value();
+      error_callback.Run("Error.InvalidService", "Invalid Service");
+      return;
     }
   }
-  dict->SetWithoutPathExpansion(name, value.DeepCopy());
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(), service_path, name));
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -352,12 +345,34 @@ void ShillServiceClientStub::RemoveService(const std::string& service_path) {
   stub_services_.RemoveWithoutPathExpansion(service_path, NULL);
 }
 
-void ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
+bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
                                                 const std::string& property,
                                                 const base::Value& value) {
-  SetProperty(dbus::ObjectPath(service_path), property, value,
-              base::Bind(&base::DoNothing),
-              base::Bind(&ErrorFunction));
+  base::DictionaryValue* dict = NULL;
+  if (!stub_services_.GetDictionaryWithoutPathExpansion(service_path, &dict))
+    return false;
+
+  VLOG(1) << "Service.SetProperty: " << property << " = " << value
+          << " For: " << service_path;
+  if (property == flimflam::kStateProperty) {
+    // If the service went into a connected state, then move it to the top of
+    // the list in the manager client.
+    // TODO(gauravsh): Generalize to sort services properly to allow for testing
+    //  more complex scenarios.
+    std::string state;
+    if (value.GetAsString(&state) && (state == flimflam::kStateOnline ||
+                                      state == flimflam::kStatePortal))  {
+      DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+          MoveServiceToIndex(service_path, 0, true);
+    }
+  }
+  dict->SetWithoutPathExpansion(property, value.DeepCopy());
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 dbus::ObjectPath(service_path), property));
+  return true;
 }
 
 const base::DictionaryValue* ShillServiceClientStub::GetServiceProperties(

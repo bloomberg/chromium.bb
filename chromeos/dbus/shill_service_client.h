@@ -44,6 +44,7 @@ class CHROMEOS_EXPORT ShillServiceClient {
   // GetTestInterface(), only implemented in the stub implementation.
   class TestInterface {
    public:
+    // Adds a Service to the Manager and Service stubs.
     virtual void AddService(const std::string& service_path,
                             const std::string& name,
                             const std::string& type,
@@ -57,12 +58,20 @@ class CHROMEOS_EXPORT ShillServiceClient {
                                         const std::string& ipconfig_path,
                                         bool add_to_visible_list,
                                         bool add_to_watch_list) = 0;
+
+    // Removes a Service to the Manager and Service stubs.
     virtual void RemoveService(const std::string& service_path) = 0;
-    virtual void SetServiceProperty(const std::string& service_path,
+
+    // Returns false if a Service matching |service_path| does not exist.
+    virtual bool SetServiceProperty(const std::string& service_path,
                                     const std::string& property,
                                     const base::Value& value) = 0;
+
+    // Returns properties for |service_path| or NULL if no Service matches.
     virtual const base::DictionaryValue* GetServiceProperties(
         const std::string& service_path) const = 0;
+
+    // Clears all Services from the Manager and Service stubs.
     virtual void ClearServices() = 0;
 
    protected:
@@ -97,6 +106,13 @@ class CHROMEOS_EXPORT ShillServiceClient {
                            const base::Value& value,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) = 0;
+
+  // Calls SetProperties method.
+  // |callback| is called after the method call succeeds.
+  virtual void SetProperties(const dbus::ObjectPath& service_path,
+                             const base::DictionaryValue& properties,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call succeeds.

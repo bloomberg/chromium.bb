@@ -138,6 +138,30 @@ TEST_F(ShillServiceClientTest, SetProperty) {
   message_loop_.RunUntilIdle();
 }
 
+TEST_F(ShillServiceClientTest, SetProperties) {
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  scoped_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
+  PrepareForMethodCall(shill::kSetPropertiesFunction,
+                       base::Bind(&ExpectDictionaryValueArgument, arg.get()),
+                       response.get());
+
+  // Call method.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
+  client_->SetProperties(dbus::ObjectPath(kExampleServicePath),
+                         *arg,
+                         mock_closure.GetCallback(),
+                         mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
 TEST_F(ShillServiceClientTest, ClearProperty) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
