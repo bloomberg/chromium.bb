@@ -63,6 +63,7 @@ enum WinSubVersion {
   kWinXP,
   kWinVista,
   kWin7,
+  kWin8,
   kNumWinSubVersions
 };
 
@@ -83,6 +84,8 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
         sub_version = kWinVista;
       else if (version_numbers[0] == 6 && version_numbers[1] == 1)
         sub_version = kWin7;
+      else if (version_numbers[0] == 6 && version_numbers[1] == 2)
+        sub_version = kWin8;
     }
   }
   int entry_index = static_cast<int>(sub_version) * kGpuFeatureNumStatus;
@@ -137,27 +140,31 @@ void UpdateStats(const gpu::GpuBlacklist* blacklist,
   const gpu::GpuFeatureType kGpuFeatures[] = {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
-      gpu::GPU_FEATURE_TYPE_WEBGL
+      gpu::GPU_FEATURE_TYPE_WEBGL,
+      gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING
   };
   const std::string kGpuBlacklistFeatureHistogramNames[] = {
       "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResults.AcceleratedCompositing",
-      "GPU.BlacklistFeatureTestResults.Webgl"
+      "GPU.BlacklistFeatureTestResults.Webgl",
+      "GPU.BlacklistFeatureTestResults.TextureSharing"
   };
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
 #if defined(OS_ANDROID)
-      !command_line.HasSwitch(switches::kEnableExperimentalWebGL)
+      !command_line.HasSwitch(switches::kEnableExperimentalWebGL),
 #else
-      command_line.HasSwitch(switches::kDisableExperimentalWebGL)
+      command_line.HasSwitch(switches::kDisableExperimentalWebGL),
 #endif
+      command_line.HasSwitch(switches::kDisableImageTransportSurface)
   };
 #if defined(OS_WIN)
   const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
       "GPU.BlacklistFeatureTestResultsWindows.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResultsWindows.AcceleratedCompositing",
-      "GPU.BlacklistFeatureTestResultsWindows.Webgl"
+      "GPU.BlacklistFeatureTestResultsWindows.Webgl",
+      "GPU.BlacklistFeatureTestResultsWindows.TextureSharing"
   };
 #endif
   const size_t kNumFeatures =
