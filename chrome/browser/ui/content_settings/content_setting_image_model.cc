@@ -237,7 +237,7 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
       // icon is displayed in the omnibox.
       return;
     case TabSpecificContentSettings::MICROPHONE_ACCESSED:
-      set_icon(IDR_ALLOWED_MICROPHONE);
+      set_icon(IDR_ASK_MEDIA);
       set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_ACCESSED));
       break;
     case TabSpecificContentSettings::CAMERA_ACCESSED:
@@ -249,7 +249,7 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
       set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_CAMERA_ALLOWED));
       break;
     case TabSpecificContentSettings::MICROPHONE_BLOCKED:
-      set_icon(IDR_BLOCKED_MICROPHONE);
+      set_icon(IDR_BLOCKED_MEDIA);
       set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_BLOCKED));
       break;
     case TabSpecificContentSettings::CAMERA_BLOCKED:
