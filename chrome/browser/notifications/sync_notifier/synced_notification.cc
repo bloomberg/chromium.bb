@@ -54,7 +54,7 @@ SyncedNotification::SyncedNotification(const syncer::SyncData& sync_data)
 SyncedNotification::~SyncedNotification() {}
 
 void SyncedNotification::Update(const syncer::SyncData& sync_data) {
-  // TODO(petewil): Let's add checking that the notification looks valid.
+  // TODO(petewil): Add checking that the notification looks valid.
   specifics_.CopyFrom(sync_data.GetSpecifics().synced_notification());
 }
 
@@ -72,7 +72,7 @@ void SyncedNotification::OnFetchComplete(const GURL url,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Match the incoming bitmaps to URLs.  In case this is a dup, make sure to
-  // try all potentially matching urls.
+  // Try all potentially matching urls.
   if (GetAppIconUrl() == url && bitmap != NULL) {
     app_icon_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
   }
@@ -99,7 +99,6 @@ void SyncedNotification::QueueBitmapFetchJobs(
     NotificationUIManager* notification_manager,
     ChromeNotifierService* notifier_service,
     Profile* profile) {
-
   // If we are not using the MessageCenter, call show now, and the existing
   // code will handle the bitmap fetch for us.
   if (!UseRichNotifications()) {
@@ -114,7 +113,7 @@ void SyncedNotification::QueueBitmapFetchJobs(
   DCHECK_EQ(active_fetcher_count_, 0);
 
   // Get the URLs that we might need to fetch from Synced Notification.
-  // TODO(petewil): clean up the fact that icon and image return a GURL, and
+  // TODO(petewil): Clean up the fact that icon and image return a GURL, and
   // button urls return a string.
   // TODO(petewil): Eventually refactor this to accept an arbitrary number of
   // button URLs.
@@ -156,6 +155,16 @@ void SyncedNotification::AddBitmapToFetchQueue(const GURL& url) {
 void SyncedNotification::Show(NotificationUIManager* notification_manager,
                               ChromeNotifierService* notifier_service,
                               Profile* profile) {
+
+  // Let NotificationUIManager know that the notification has been dismissed.
+  if (SyncedNotification::kRead == GetReadState() ||
+      SyncedNotification::kDismissed == GetReadState() ) {
+    notification_manager->CancelById(GetKey());
+    DVLOG(2) << "Dismissed notification arrived"
+             << GetHeading() << " " << GetText();
+    return;
+  }
+
   // Set up the fields we need to send and create a Notification object.
   GURL image_url = GetImageUrl();
   string16 text = UTF8ToUTF16(GetText());
@@ -168,15 +177,6 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
   // was read or deleted, and send the changes back to the server.
   scoped_refptr<NotificationDelegate> delegate =
       new ChromeNotifierDelegate(GetKey(), notifier_service);
-
-  // TODO(petewil): For now, just punt on dismissed notifications until
-  // I change the interface to let NotificationUIManager know the right way.
-  if (SyncedNotification::kRead == GetReadState() ||
-      SyncedNotification::kDismissed == GetReadState() ) {
-    DVLOG(2) << "Dismissed notification arrived"
-             << GetHeading() << " " << GetText();
-    return;
-  }
 
   // Some inputs and fields are only used if there is a notification center.
   if (UseRichNotifications()) {
@@ -265,23 +265,58 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
   return;
 }
 
-// TODO(petewil): Decide what we need for equals - is this enough, or should
-// we exhaustively compare every field in case the server refreshed the notif?
+// This should detect even small changes in case the server updated the
+// notification.
+// TODO(petewil): Should I also ignore the timestamp if other fields match?
 bool SyncedNotification::EqualsIgnoringReadState(
     const SyncedNotification& other) const {
-  return (GetTitle() == other.GetTitle() &&
-          GetAppId() == other.GetAppId() &&
-          GetKey() == other.GetKey() &&
-          GetText() == other.GetText() &&
-          GetOriginUrl() == other.GetOriginUrl() &&
-          GetAppIconUrl() == other.GetAppIconUrl() &&
-          GetImageUrl() == other.GetImageUrl() );
+  if (GetTitle() == other.GetTitle() &&
+      GetHeading() == other.GetHeading() &&
+      GetDescription() == other.GetDescription() &&
+      GetAppId() == other.GetAppId() &&
+      GetKey() == other.GetKey() &&
+      GetOriginUrl() == other.GetOriginUrl() &&
+      GetAppIconUrl() == other.GetAppIconUrl() &&
+      GetImageUrl() == other.GetImageUrl() &&
+      GetText() == other.GetText() &&
+      // We intentionally skip read state
+      GetCreationTime() == other.GetCreationTime() &&
+      GetPriority() == other.GetPriority() &&
+      GetDefaultDestinationTitle() == other.GetDefaultDestinationTitle() &&
+      GetDefaultDestinationIconUrl() == other.GetDefaultDestinationIconUrl() &&
+      GetButtonOneTitle() == other.GetButtonOneTitle() &&
+      GetButtonOneIconUrl() == other.GetButtonOneIconUrl() &&
+      GetButtonTwoTitle() == other.GetButtonTwoTitle() &&
+      GetButtonTwoIconUrl() == other.GetButtonTwoIconUrl() &&
+      GetNotificationCount() == other.GetNotificationCount() &&
+      GetButtonCount() == other.GetButtonCount()) {
+    // If all the surface data matched, check, to see if contained data also
+    // matches.
+    size_t count = GetNotificationCount();
+    for (size_t ii = 0; ii < count; ++ii) {
+      // Check the contained titles match
+      if (GetContainedNotificationTitle(ii) !=
+          other.GetContainedNotificationTitle(ii))
+        return false;
+      // Check the contained messages match
+      if (GetContainedNotificationMessage(ii) !=
+          other.GetContainedNotificationMessage(ii))
+        return false;
+    }
+
+    // TODO(petewil): When I make buttons into a vector, check them here too.
+
+    // If buttons and notifications matched, they are equivalent.
+    return true;
+  }
+
+  return false;
 }
 
 // Set the read state on the notification, returns true for success.
 void SyncedNotification::SetReadState(const ReadState& read_state) {
 
-  // convert the read state to the protobuf type for read state
+  // Convert the read state to the protobuf type for read state.
   if (kDismissed == read_state)
     specifics_.mutable_coalesced_notification()->set_read_state(
         sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED);
@@ -344,8 +379,8 @@ GURL SyncedNotification::GetOriginUrl() const {
   return GURL(origin_url);
 }
 
-// TODO(petewil): This only returns the first icon. We should make all the
-// icons available.
+// TODO(petewil): This only returns the first icon. Make all the icons
+// available.
 GURL SyncedNotification::GetAppIconUrl() const {
   if (specifics_.coalesced_notification().render_info().expanded_info().
       collapsed_info_size() == 0)

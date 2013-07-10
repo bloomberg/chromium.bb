@@ -94,7 +94,8 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
           if (incoming->GetReadState() == SyncedNotification::kDismissed) {
             // If it is marked as read on the server, but not the client.
             found->NotificationHasBeenDismissed();
-            // TODO(petewil): Tell the Notification UI Manager to mark it read.
+            // Tell the Notification UI Manager to mark it read.
+            notification_manager_->CancelById(found->GetKey());
           } else {
             // If it is marked as read on the client, but not the server.
             syncer::SyncData sync_data = CreateSyncDataFromNotification(*found);
@@ -111,6 +112,9 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
         // TODO(petewil): Someday we may allow changes from the client to
         // flow upwards, when we do, we will need better merge resolution.
         found->Update(sync_data);
+
+        // Tell the notification manager to update the notification.
+        Display(found);
       }
     }
   }
@@ -149,7 +153,7 @@ syncer::SyncDataList ChromeNotifierService::GetAllSyncData(
 syncer::SyncError ChromeNotifierService::ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) {
-  // TODO(petewil): add a check that we are called on the thread we expect.
+  // TODO(petewil): Add a check that we are called on the thread we expect.
   syncer::SyncError error;
 
   for (syncer::SyncChangeList::const_iterator it = change_list.begin();
@@ -224,7 +228,7 @@ scoped_ptr<SyncedNotification>
           specifics.coalesced_notification().read_state()) ==
        SyncedNotification::kDismissed);
 
-  // if the notification is poorly formed, return a null pointer
+  // If the notification is poorly formed, return a null pointer.
   if (!is_well_formed_unread_notification &&
       !is_well_formed_dismissed_notification) {
     DVLOG(1) << "Synced Notification is not well formed."
@@ -263,8 +267,8 @@ SyncedNotification* ChromeNotifierService::FindNotificationByKey(
 
 void ChromeNotifierService::GetSyncedNotificationServices(
     std::vector<message_center::Notifier*>* notifiers) {
-  // TODO(mukai|petewil): should check the profile's eligibility before adding
-  // the sample app.
+  // TODO(mukai|petewil): Check the profile's eligibility before adding the
+  // sample app.
 
   // Currently we just use kSampleSyncedNotificationServiceId as a place holder.
   // TODO(petewil): Really obtain the list of apps from the server and create
@@ -279,7 +283,7 @@ void ChromeNotifierService::GetSyncedNotificationServices(
       l10n_util::GetStringUTF16(
           IDS_MESSAGE_CENTER_SAMPLE_SYNCED_NOTIFICATION_SERVICE_NAME),
       desktop_notification_service->IsNotifierEnabled(notifier_id)));
-  // TODO(mukai): should add icon for the sample app.
+  // TODO(mukai): Add icon for the sample app.
 }
 
 void ChromeNotifierService::MarkNotificationAsDismissed(
@@ -307,8 +311,17 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
   // Take ownership of the object and put it into our local storage.
   notification_data_.push_back(notification.release());
 
+  Display(notification_copy);
+}
+
+void ChromeNotifierService::AddForTest(
+    scoped_ptr<notifier::SyncedNotification> notification) {
+    notification_data_.push_back(notification.release());
+  }
+
+void ChromeNotifierService::Display(SyncedNotification* notification) {
   // Set up to fetch the bitmaps.
-  notification_copy->QueueBitmapFetchJobs(notification_manager_,
+  notification->QueueBitmapFetchJobs(notification_manager_,
                                           this,
                                           profile_);
 
@@ -319,7 +332,7 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
 
   // Start the bitmap fetching, Show() will be called when the last bitmap
   // either arrives or times out.
-  notification_copy->StartBitmapFetch();
+  notification->StartBitmapFetch();
 }
 
 void ChromeNotifierService::OnSyncedNotificationServiceEnabled(

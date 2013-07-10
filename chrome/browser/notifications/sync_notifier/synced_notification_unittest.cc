@@ -110,7 +110,8 @@ class StubNotificationUIManager : public NotificationUIManager {
   // Removes any notifications matching the supplied ID, either currently
   // displayed or in the queue.  Returns true if anything was removed.
   virtual bool CancelById(const std::string& notification_id) OVERRIDE {
-    return false;
+    dismissed_id_ = notification_id;
+    return true;
   }
 
   virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
@@ -141,10 +142,14 @@ class StubNotificationUIManager : public NotificationUIManager {
   // Test hook to get the notification so we can check it
   const Notification& notification() const { return notification_; }
 
+  // Test hook to check the ID of the last notification cancelled.
+  std::string& dismissed_id() { return dismissed_id_; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
   Notification notification_;
   Profile* profile_;
+  std::string dismissed_id_;
 };
 
 class SyncedNotificationTest : public testing::Test {
@@ -616,6 +621,19 @@ TEST_F(SyncedNotificationTest, ShowTest) {
   EXPECT_EQ(UTF8ToUTF16(kContainedMessage1), notification.items()[0].message);
   EXPECT_EQ(UTF8ToUTF16(kContainedMessage2), notification.items()[1].message);
   EXPECT_EQ(UTF8ToUTF16(kContainedMessage3), notification.items()[2].message);
+}
+
+TEST_F(SyncedNotificationTest, DismissTest) {
+
+  if (!UseRichNotifications())
+    return;
+
+  StubNotificationUIManager notification_manager;
+
+  // Call the method under test using a dismissed notification.
+  notification4_->Show(&notification_manager, NULL, NULL);
+
+  EXPECT_EQ(std::string(kKey1), notification_manager.dismissed_id());
 }
 
 TEST_F(SyncedNotificationTest, AddBitmapToFetchQueueTest) {

@@ -140,7 +140,8 @@ class StubNotificationUIManager : public NotificationUIManager {
   // Removes any notifications matching the supplied ID, either currently
   // displayed or in the queue.  Returns true if anything was removed.
   virtual bool CancelById(const std::string& notification_id) OVERRIDE {
-    return false;
+    dismissed_id_ = notification_id;
+    return true;
   }
 
   // Adds the notification_id for each outstanding notification to the set
@@ -173,10 +174,14 @@ class StubNotificationUIManager : public NotificationUIManager {
   // Test hook to get the notification so we can check it
   const Notification& notification() const { return notification_; }
 
+  // Test hook to check the ID of the last notification cancelled.
+  std::string& dismissed_id() { return dismissed_id_; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
   Notification notification_;
   Profile* profile_;
+  std::string dismissed_id_;
 };
 
 // Dummy SyncChangeProcessor used to help review what SyncChanges are pushed
@@ -699,6 +704,10 @@ TEST_F(ChromeNotifierServiceTest, ModelAssocBothNonEmptyReadMismatch1) {
   EXPECT_EQ(SyncedNotification::kDismissed, notification1->GetReadState());
   EXPECT_TRUE(notifier.FindNotificationByKey(kKey2));
   EXPECT_FALSE(notifier.FindNotificationByKey(kKey3));
+
+  // Make sure that the notification manager was told to dismiss the
+  // notification.
+  EXPECT_EQ(std::string(kKey1), notification_manager.dismissed_id());
 
   // Ensure no new data will be sent to the remote store for notification1.
   EXPECT_EQ(0U, processor()->change_list_size());
