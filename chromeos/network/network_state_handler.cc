@@ -486,8 +486,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     network_event_log::LogLevel log_level = network_event_log::LOG_LEVEL_EVENT;
     if (key == flimflam::kErrorProperty || key == shill::kErrorDetailsProperty)
       log_level = network_event_log::LOG_LEVEL_ERROR;
-    else if (key == flimflam::kSignalStrengthProperty ||
-             key == shill::kWifiFrequencyListProperty)
+    else if (key == flimflam::kSignalStrengthProperty)
       log_level = network_event_log::LOG_LEVEL_DEBUG;
     NET_LOG_LEVEL(log_level, "NetworkPropertyUpdated", detail);
   }

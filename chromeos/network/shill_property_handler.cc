@@ -554,24 +554,27 @@ void ShillPropertyHandler::GetIPConfigCallback(
                                      service_path.c_str(), call_status));
     return;
   }
-  UpdateIPConfigProperty(service_path, properties,
-                         flimflam::kAddressProperty);
-  UpdateIPConfigProperty(service_path, properties,
-                         flimflam::kNameServersProperty);
-}
-
-void ShillPropertyHandler::UpdateIPConfigProperty(
-    const std::string& service_path,
-    const base::DictionaryValue& properties,
-    const char* property) {
-  const base::Value* value;
-  if (!properties.GetWithoutPathExpansion(property, &value)) {
-    LOG(ERROR) << "Failed to get IPConfig property: " << property
-               << ", for: " << service_path;
+  const base::Value* ip_address;
+  if (!properties.GetWithoutPathExpansion(flimflam::kAddressProperty,
+                                          &ip_address)) {
+    LOG(ERROR) << "Failed to get IP Address property for: " << service_path;
     return;
   }
   listener_->UpdateNetworkServiceProperty(
-      service_path, NetworkState::IPConfigProperty(property), *value);
+      service_path,
+      NetworkState::IPConfigProperty(flimflam::kAddressProperty),
+      *ip_address);
+
+  const base::Value* dns_servers = NULL;
+  if (!properties.GetWithoutPathExpansion(
+          flimflam::kNameServersProperty, &dns_servers)) {
+    LOG(ERROR) << "Failed to get Name servers property for: " << service_path;
+    return;
+  }
+  listener_->UpdateNetworkServiceProperty(
+      service_path,
+      NetworkState::IPConfigProperty(flimflam::kNameServersProperty),
+      *dns_servers);
 }
 
 void ShillPropertyHandler::NetworkDevicePropertyChangedCallback(

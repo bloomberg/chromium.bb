@@ -8,16 +8,12 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "base/strings/string16.h"
 
 namespace ash {
 namespace network_connect {
 
 // Request a network connection and handle any errors and notifications.
 ASH_EXPORT void ConnectToNetwork(const std::string& service_path);
-
-// Returns the localized string for shill error string |error|.
-ASH_EXPORT base::string16 ErrorString(const std::string& error);
 
 }  // network_connect
 }  // ash

@@ -20,7 +20,7 @@ namespace chromeos {
 // call NetworkStateHandler::GetNetworkState(path) to retrieve the state for
 // the network.
 class CHROMEOS_EXPORT NetworkState : public ManagedState {
- public:
+public:
   typedef std::vector<int> FrequencyList;
 
   explicit NetworkState(const std::string& path);
@@ -95,6 +95,14 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Updates the name from hex_ssid_ if provided, and validates name_.
   void UpdateName();
+
+  // Called by NetworkStateHandler when the ip config changes.
+  void set_ip_address(const std::string& ip_address) {
+    ip_address_ = ip_address;
+  }
+  void set_dns_servers(const std::vector<std::string>& dns_servers) {
+    dns_servers_ = dns_servers;
+  }
 
   // TODO(gauravsh): Audit the list of properties that we are caching. We should
   // only be doing this for commonly accessed properties. crbug.com/252553

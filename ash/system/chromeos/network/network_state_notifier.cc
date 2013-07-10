@@ -5,7 +5,6 @@
 #include "ash/system/chromeos/network/network_state_notifier.h"
 
 #include "ash/shell.h"
-#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
@@ -33,6 +32,78 @@ string16 GetConnectErrorString(const std::string& error_name) {
   if (error_name == NetworkConnectionHandler::kErrorNotFound)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
   return string16();
+}
+
+// Error messages based on network_state->error().
+string16 GetErrorString(const NetworkState* network_state) {
+  DCHECK(network_state);
+  const std::string& error = network_state->error();
+  if (error.empty())
+    return string16();
+  if (error == flimflam::kErrorOutOfRange)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
+  if (error == flimflam::kErrorPinMissing)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING);
+  if (error == flimflam::kErrorDhcpFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED);
+  if (error == flimflam::kErrorConnectFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
+  if (error == flimflam::kErrorBadPassphrase)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE);
+  if (error == flimflam::kErrorBadWEPKey)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY);
+  if (error == flimflam::kErrorActivationFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
+  }
+  if (error == flimflam::kErrorNeedEvdo)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO);
+  if (error == flimflam::kErrorNeedHomeNetwork) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK);
+  }
+  if (error == flimflam::kErrorOtaspFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED);
+  if (error == flimflam::kErrorAaaFailed)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED);
+  if (error == flimflam::kErrorInternal)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_INTERNAL);
+  if (error == flimflam::kErrorDNSLookupFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED);
+  }
+  if (error == flimflam::kErrorHTTPGetFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED);
+  }
+  if (error == flimflam::kErrorIpsecPskAuthFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED);
+  }
+  if (error == flimflam::kErrorIpsecCertAuthFailed ||
+      error == shill::kErrorEapAuthenticationFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
+  }
+  if (error == shill::kErrorEapLocalTlsFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_EAP_LOCAL_TLS_FAILED);
+  }
+  if (error == shill::kErrorEapRemoteTlsFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_EAP_REMOTE_TLS_FAILED);
+  }
+  if (error == flimflam::kErrorPppAuthFailed) {
+    return l10n_util::GetStringUTF16(
+        IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
+  }
+
+  if (StringToLowerASCII(error) ==
+      StringToLowerASCII(std::string(flimflam::kUnknownString))) {
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
+  }
+  return l10n_util::GetStringFUTF16(IDS_NETWORK_UNRECOGNIZED_ERROR,
+                                    UTF8ToUTF16(error));
 }
 
 }  // namespace
@@ -154,7 +225,7 @@ void NetworkStateNotifier::ShowConnectError(const std::string& error_name,
   std::vector<string16> no_links;
   string16 error = GetConnectErrorString(error_name);
   if (error.empty() && network)
-    error = network_connect::ErrorString(network->error());
+    error = GetErrorString(network);
   if (error.empty())
     error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   std::string name = network ? network->name() : "";
