@@ -603,6 +603,7 @@ extern const char kNtpPromoDesktopSessionFound[];
 extern const char kNtpWebStoreEnabled[];
 extern const char kNtpAppPageNames[];
 
+extern const char kDevToolsAdbKey[];
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsDockSide[];
 extern const char kDevToolsEditedFiles[];

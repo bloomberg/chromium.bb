@@ -1729,6 +1729,9 @@ const char kNtpWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
 // Customized app page names that appear on the New Tab Page.
 const char kNtpAppPageNames[] = "ntp.app_page_names";
 
+// A private RSA key for ADB handshake.
+const char kDevToolsAdbKey[] = "devtools.adb_key";
+
 const char kDevToolsDisabled[] = "devtools.disabled";
 
 // A string specifying the dock location (either 'bottom' or 'right').

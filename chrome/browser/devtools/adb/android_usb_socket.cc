@@ -65,9 +65,8 @@ void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
       // Can be NULL after response.
       break;
     case AdbMessage::kCommandCLSE:
-      if (is_connected_) {
+      if (is_connected_)
         device_->Send(AdbMessage::kCommandCLSE, local_id_, 0, "");
-      }
       is_connected_ = false;
       RespondToReaders(true);
       // Can be NULL after response.
@@ -75,6 +74,11 @@ void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
     default:
       break;
   }
+}
+
+void AndroidUsbSocket::Terminated() {
+  is_connected_ = false;
+  RespondToReaders(true);
 }
 
 int AndroidUsbSocket::Read(net::IOBuffer* buffer,

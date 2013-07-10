@@ -197,6 +197,10 @@ void DevToolsWindow::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       prefs::kDevToolsFileSystemPaths,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kDevToolsAdbKey,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterDictionaryPref(
       GetDevToolsWindowPlacementPrefKey().c_str(),

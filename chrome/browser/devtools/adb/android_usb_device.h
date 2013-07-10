@@ -64,7 +64,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   static void Enumerate(Profile* profile, Devices* devices);
 
-  AndroidUsbDevice(scoped_refptr<UsbDevice> device,
+  AndroidUsbDevice(Profile* profile,
+                   scoped_refptr<UsbDevice> device,
                    const std::string& serial,
                    int inbound_address,
                    int outbound_address,
@@ -106,9 +107,15 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   void HandleIncoming(scoped_refptr<AdbMessage> message);
 
+  void TransferError(UsbTransferStatus status);
+
+  void Terminate();
+
   void SocketDeleted(uint32 socket_id);
 
   base::MessageLoop* message_loop_;
+
+  Profile* profile_;
 
   // Device info
   scoped_refptr<UsbDevice> usb_device_;
@@ -118,6 +125,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   int zero_mask_;
 
   bool is_connected_;
+  bool signature_sent_;
 
   // Created sockets info
   uint32 last_socket_id_;

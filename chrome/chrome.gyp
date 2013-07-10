@@ -221,6 +221,8 @@
             '..',
           ],
           'sources': [
+            'browser/devtools/adb/android_rsa.cc',
+            'browser/devtools/adb/android_rsa.h',
             'browser/devtools/adb/android_usb_device.cc',
             'browser/devtools/adb/android_usb_device.h',
             'browser/devtools/adb/android_usb_socket.cc',
