@@ -84,6 +84,11 @@ class CppBoundClassTest : public RenderViewTest {
     ProcessPendingMessages();
   }
 
+  virtual void TearDown() OVERRIDE {
+    observer_.reset();
+    RenderViewTest::TearDown();
+  }
+
   // Executes the specified JavaScript and checks that the resulting document
   // text is empty.
   void CheckJavaScriptFailure(const std::string& javascript) {
