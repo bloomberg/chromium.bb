@@ -1136,8 +1136,8 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
 
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     const ViewHostMsg_FrameNavigate_Params& params) {
-  if (PageTransitionStripQualifier(params.transition) ==
-      PAGE_TRANSITION_AUTO_SUBFRAME) {
+  if (PageTransitionCoreTypeIs(params.transition,
+                               PAGE_TRANSITION_AUTO_SUBFRAME)) {
     // This is not user-initiated. Ignore.
     DiscardNonCommittedEntriesInternal();
     return;

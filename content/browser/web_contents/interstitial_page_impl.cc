@@ -371,7 +371,8 @@ void InterstitialPageImpl::DidNavigate(
     DontProceed();
     return;
   }
-  if (params.transition == PAGE_TRANSITION_AUTO_SUBFRAME) {
+  if (PageTransitionCoreTypeIs(params.transition,
+                               PAGE_TRANSITION_AUTO_SUBFRAME)) {
     // No need to handle navigate message from iframe in the interstitial page.
     return;
   }

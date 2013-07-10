@@ -3338,8 +3338,10 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
-  if (navigation_state->transition_type() == PAGE_TRANSITION_LINK)
+  if (PageTransitionCoreTypeIs(navigation_state->transition_type(),
+                               PAGE_TRANSITION_LINK)) {
     navigation_state->set_transition_type(PAGE_TRANSITION_FORM_SUBMIT);
+  }
 
   // Save these to be processed when the ensuing navigation is committed.
   WebSearchableFormData web_searchable_form_data(form);
@@ -3722,8 +3724,8 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   //
   bool replace =
       navigation_state->pending_page_id() != -1 ||
-      navigation_state->transition_type() ==
-          PAGE_TRANSITION_AUTO_SUBFRAME;
+      PageTransitionCoreTypeIs(navigation_state->transition_type(),
+                               PAGE_TRANSITION_AUTO_SUBFRAME);
 
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.

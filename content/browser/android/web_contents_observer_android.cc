@@ -133,8 +133,9 @@ void WebContentsObserverAndroid::DidNavigateAnyFrame(
       ConvertUTF8ToJavaString(env, params.url.spec()));
   ScopedJavaLocalRef<jstring> jstring_base_url(
       ConvertUTF8ToJavaString(env, params.base_url.spec()));
-  jboolean jboolean_is_reload = (PAGE_TRANSITION_RELOAD ==
-      content::PageTransitionStripQualifier(params.transition));
+  jboolean jboolean_is_reload =
+      PageTransitionCoreTypeIs(params.transition, PAGE_TRANSITION_RELOAD);
+
   Java_WebContentsObserverAndroid_didNavigateAnyFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
       jboolean_is_reload);

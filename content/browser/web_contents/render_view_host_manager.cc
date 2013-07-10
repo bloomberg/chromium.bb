@@ -509,8 +509,10 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   //       RenderViews in response to a link click.
   //
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
-      entry.GetTransitionType() == PAGE_TRANSITION_GENERATED)
+      PageTransitionCoreTypeIs(entry.GetTransitionType(),
+                               PAGE_TRANSITION_GENERATED)) {
     return curr_instance;
+  }
 
   SiteInstanceImpl* curr_site_instance =
       static_cast<SiteInstanceImpl*>(curr_instance);
