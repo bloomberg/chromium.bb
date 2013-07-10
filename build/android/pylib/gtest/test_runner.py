@@ -139,12 +139,6 @@ def _GetDataFilesForTestSuite(product_dir, test_suite_basename):
         'net/data/test.html',
         'net/data/url_request_unittest/',
         ]
-  elif test_suite_basename == 'ui_tests':
-    return [
-        'chrome/test/data/dromaeo',
-        'chrome/test/data/json2.js',
-        'chrome/test/data/sunspider',
-        ]
   elif test_suite_basename == 'ui_unittests':
     return [
         'ui/base/test/data/data_pack_unittest/truncated-header.pak',
@@ -160,10 +154,6 @@ def _GetDataFilesForTestSuite(product_dir, test_suite_basename):
   elif test_suite_basename == 'cc_perftests':
     return [
       'cc/test/data',
-    ]
-  elif test_suite_basename == 'perf_tests':
-    return [
-      'base/test/data',
     ]
   elif test_suite_basename == 'content_browsertests':
     return [
