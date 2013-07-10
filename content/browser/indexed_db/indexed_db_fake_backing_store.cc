@@ -4,8 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 
-#include <vector>
-
 #include "base/memory/scoped_ptr.h"
 
 namespace content {

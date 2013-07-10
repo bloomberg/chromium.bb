@@ -5,7 +5,6 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 
 #include <math.h>
-#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -228,7 +227,7 @@ class PutOperation : public IndexedDBTransaction::Operation {
   PutOperation(scoped_refptr<IndexedDBBackingStore> backing_store,
                int64 database_id,
                const IndexedDBObjectStoreMetadata& object_store,
-               std::vector<char>* value,
+               std::string* value,
                scoped_ptr<IndexedDBKey> key,
                IndexedDBDatabase::PutMode put_mode,
                scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -250,7 +249,7 @@ class PutOperation : public IndexedDBTransaction::Operation {
   const scoped_refptr<IndexedDBBackingStore> backing_store_;
   const int64 database_id_;
   const IndexedDBObjectStoreMetadata object_store_;
-  std::vector<char> value_;
+  std::string value_;
   scoped_ptr<IndexedDBKey> key_;
   const IndexedDBDatabase::PutMode put_mode_;
   const scoped_refptr<IndexedDBCallbacks> callbacks_;
@@ -830,7 +829,7 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
   bool ok;
   if (index_id_ == IndexedDBIndexMetadata::kInvalidId) {
     // Object Store Retrieval Operation
-    std::vector<char> value;
+    std::string value;
     ok = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
                                    database_id_,
                                    object_store_id_,
@@ -882,7 +881,7 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
   }
 
   // Index Referenced Value Retrieval Operation
-  std::vector<char> value;
+  std::string value;
   ok = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
                                  database_id_,
                                  object_store_id_,
@@ -949,7 +948,7 @@ static bool UpdateKeyGenerator(
 
 void IndexedDBDatabase::Put(int64 transaction_id,
                             int64 object_store_id,
-                            std::vector<char>* value,
+                            std::string* value,
                             scoped_ptr<IndexedDBKey> key,
                             PutMode put_mode,
                             scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -1267,7 +1266,7 @@ void OpenCursorOperation::Perform(IndexedDBTransaction* transaction) {
   }
 
   if (!backing_store_cursor) {
-    callbacks_->OnSuccess(static_cast<std::vector<char>*>(NULL));
+    callbacks_->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 

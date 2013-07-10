@@ -10,11 +10,11 @@
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::StringPiece;
 using content::IndexedDBBackingStore;
 using content::LevelDBComparator;
 using content::LevelDBDatabase;
 using content::LevelDBFactory;
-using content::LevelDBSlice;
 using content::LevelDBSnapshot;
 
 namespace {
@@ -26,7 +26,7 @@ class BustedLevelDBDatabase : public LevelDBDatabase {
       const LevelDBComparator* /*comparator*/) {
     return scoped_ptr<LevelDBDatabase>(new BustedLevelDBDatabase);
   }
-  virtual bool Get(const LevelDBSlice& key,
+  virtual bool Get(const base::StringPiece& key,
                    std::string* value,
                    bool* found,
                    const LevelDBSnapshot* = 0) OVERRIDE {

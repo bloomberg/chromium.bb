@@ -194,10 +194,10 @@ class CONTENT_EXPORT IndexedDBDispatcher
                            const std::vector<string16>& value);
   void OnSuccessValue(int32 ipc_thread_id,
                       int32 ipc_callbacks_id,
-                      const std::vector<char>& value);
+                      const std::string& value);
   void OnSuccessValueWithKey(int32 ipc_thread_id,
                              int32 ipc_callbacks_id,
-                             const std::vector<char>& value,
+                             const std::string& value,
                              const IndexedDBKey& primary_key,
                              const IndexedDBKeyPath& key_path);
   void OnSuccessInteger(int32 ipc_thread_id,

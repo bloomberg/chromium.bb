@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CURSOR_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CURSOR_H_
 
-#include <vector>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -50,7 +50,7 @@ class CONTENT_EXPORT IndexedDBCursor
 
   const IndexedDBKey& key() const { return cursor_->key(); }
   const IndexedDBKey& primary_key() const { return cursor_->primary_key(); }
-  std::vector<char>* Value() const {
+  std::string* Value() const {
     return (cursor_type_ == indexed_db::CURSOR_KEY_ONLY) ? NULL
                                                          : cursor_->Value();
   }

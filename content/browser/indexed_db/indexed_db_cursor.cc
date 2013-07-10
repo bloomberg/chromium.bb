@@ -98,7 +98,7 @@ void IndexedDBCursor::CursorAdvanceOperation::Perform(
   IDB_TRACE("CursorAdvanceOperation");
   if (!cursor_->cursor_ || !cursor_->cursor_->Advance(count_)) {
     cursor_->cursor_.reset();
-    callbacks_->OnSuccess(static_cast<std::vector<char>*>(NULL));
+    callbacks_->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 
@@ -113,7 +113,7 @@ void IndexedDBCursor::CursorIterationOperation::Perform(
       !cursor_->cursor_->ContinueFunction(
           key_.get(), IndexedDBBackingStore::Cursor::SEEK)) {
     cursor_->cursor_.reset();
-    callbacks_->OnSuccess(static_cast<std::vector<char>*>(NULL));
+    callbacks_->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 
@@ -137,7 +137,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
 
   std::vector<IndexedDBKey> found_keys;
   std::vector<IndexedDBKey> found_primary_keys;
-  std::vector<std::vector<char> > found_values;
+  std::vector<std::string> found_values;
 
   if (cursor_->cursor_)
     cursor_->saved_cursor_.reset(cursor_->cursor_->Clone());
@@ -155,10 +155,10 @@ void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
 
     switch (cursor_->cursor_type_) {
       case indexed_db::CURSOR_KEY_ONLY:
-        found_values.push_back(std::vector<char>());
+        found_values.push_back(std::string());
         break;
       case indexed_db::CURSOR_KEY_AND_VALUE: {
-        std::vector<char> value;
+        std::string value;
         value.swap(*cursor_->cursor_->Value());
         size_estimate += value.size();
         found_values.push_back(value);
@@ -175,7 +175,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
   }
 
   if (!found_keys.size()) {
-    callbacks_->OnSuccess(static_cast<std::vector<char>*>(NULL));
+    callbacks_->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 

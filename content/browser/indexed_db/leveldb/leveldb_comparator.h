@@ -5,17 +5,16 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_COMPARATOR_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_COMPARATOR_H_
 
-#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 namespace content {
-
-class LevelDBSlice;
 
 class LevelDBComparator {
  public:
   virtual ~LevelDBComparator() {}
 
-  virtual int Compare(const LevelDBSlice& a, const LevelDBSlice& b) const = 0;
+  virtual int Compare(const base::StringPiece& a,
+                      const base::StringPiece& b) const = 0;
   virtual const char* Name() const = 0;
 };
 

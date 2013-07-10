@@ -5,19 +5,18 @@
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 
 #include <cerrno>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
-#include "content/browser/indexed_db/leveldb/leveldb_slice.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/env_idb.h"
@@ -27,19 +26,16 @@
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
+using base::StringPiece;
+
 namespace content {
 
-static leveldb::Slice MakeSlice(const std::vector<char>& value) {
-  DCHECK_GT(value.size(), static_cast<size_t>(0));
-  return leveldb::Slice(&*value.begin(), value.size());
+static leveldb::Slice MakeSlice(const StringPiece& s) {
+  return leveldb::Slice(s.begin(), s.size());
 }
 
-static leveldb::Slice MakeSlice(const LevelDBSlice& s) {
-  return leveldb::Slice(s.begin(), s.end() - s.begin());
-}
-
-static LevelDBSlice MakeLevelDBSlice(const leveldb::Slice& s) {
-  return LevelDBSlice(s.data(), s.data() + s.size());
+static StringPiece MakeStringPiece(const leveldb::Slice& s) {
+  return StringPiece(s.data(), s.size());
 }
 
 class ComparatorAdapter : public leveldb::Comparator {
@@ -49,7 +45,7 @@ class ComparatorAdapter : public leveldb::Comparator {
 
   virtual int Compare(const leveldb::Slice& a, const leveldb::Slice& b) const
       OVERRIDE {
-    return comparator_->Compare(MakeLevelDBSlice(a), MakeLevelDBSlice(b));
+    return comparator_->Compare(MakeStringPiece(a), MakeStringPiece(b));
   }
 
   virtual const char* Name() const OVERRIDE { return comparator_->Name(); }
@@ -330,8 +326,7 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   return result.Pass();
 }
 
-bool LevelDBDatabase::Put(const LevelDBSlice& key,
-                          std::vector<char>* value) {
+bool LevelDBDatabase::Put(const StringPiece& key, std::string* value) {
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -343,7 +338,7 @@ bool LevelDBDatabase::Put(const LevelDBSlice& key,
   return false;
 }
 
-bool LevelDBDatabase::Remove(const LevelDBSlice& key) {
+bool LevelDBDatabase::Remove(const StringPiece& key) {
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -356,7 +351,7 @@ bool LevelDBDatabase::Remove(const LevelDBSlice& key) {
   return false;
 }
 
-bool LevelDBDatabase::Get(const LevelDBSlice& key,
+bool LevelDBDatabase::Get(const StringPiece& key,
                           std::string* value,
                           bool* found,
                           const LevelDBSnapshot* snapshot) {
@@ -397,11 +392,11 @@ class IteratorImpl : public LevelDBIterator {
 
   virtual bool IsValid() const OVERRIDE;
   virtual void SeekToLast() OVERRIDE;
-  virtual void Seek(const LevelDBSlice& target) OVERRIDE;
+  virtual void Seek(const StringPiece& target) OVERRIDE;
   virtual void Next() OVERRIDE;
   virtual void Prev() OVERRIDE;
-  virtual LevelDBSlice Key() const OVERRIDE;
-  virtual LevelDBSlice Value() const OVERRIDE;
+  virtual StringPiece Key() const OVERRIDE;
+  virtual StringPiece Value() const OVERRIDE;
 
  private:
   friend class content::LevelDBDatabase;
@@ -428,7 +423,7 @@ void IteratorImpl::SeekToLast() {
   CheckStatus();
 }
 
-void IteratorImpl::Seek(const LevelDBSlice& target) {
+void IteratorImpl::Seek(const StringPiece& target) {
   iterator_->Seek(MakeSlice(target));
   CheckStatus();
 }
@@ -445,14 +440,14 @@ void IteratorImpl::Prev() {
   CheckStatus();
 }
 
-LevelDBSlice IteratorImpl::Key() const {
+StringPiece IteratorImpl::Key() const {
   DCHECK(IsValid());
-  return MakeLevelDBSlice(iterator_->key());
+  return MakeStringPiece(iterator_->key());
 }
 
-LevelDBSlice IteratorImpl::Value() const {
+StringPiece IteratorImpl::Value() const {
   DCHECK(IsValid());
-  return MakeLevelDBSlice(iterator_->value());
+  return MakeStringPiece(iterator_->value());
 }
 
 scoped_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(

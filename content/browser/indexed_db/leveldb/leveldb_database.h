@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
 namespace leveldb {
@@ -25,7 +26,6 @@ namespace content {
 class LevelDBComparator;
 class LevelDBDatabase;
 class LevelDBIterator;
-class LevelDBSlice;
 class LevelDBWriteBatch;
 
 class LevelDBSnapshot {
@@ -50,9 +50,9 @@ class CONTENT_EXPORT LevelDBDatabase {
   static bool Destroy(const base::FilePath& file_name);
   virtual ~LevelDBDatabase();
 
-  bool Put(const LevelDBSlice& key, std::vector<char>* value);
-  bool Remove(const LevelDBSlice& key);
-  virtual bool Get(const LevelDBSlice& key,
+  bool Put(const base::StringPiece& key, std::string* value);
+  bool Remove(const base::StringPiece& key);
+  virtual bool Get(const base::StringPiece& key,
                    std::string* value,
                    bool* found,
                    const LevelDBSnapshot* = 0);

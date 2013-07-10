@@ -4,8 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -529,7 +527,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
   // TODO(alecflett): Avoid a copy here.
-  std::vector<char> value_copy = params.value;
+  std::string value_copy(params.value);
   connection->database()->Put(
       host_transaction_id,
       params.object_store_id,

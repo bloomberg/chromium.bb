@@ -85,26 +85,26 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
-                         std::vector<char>* value);
+                         std::string* value);
 
   // IndexedDBCursor::Continue / Advance
   virtual void OnSuccess(const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
-                         std::vector<char>* value);
+                         std::string* value);
 
   // IndexedDBCursor::PrefetchContinue
   virtual void OnSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
-      const std::vector<std::vector<char> >& values);
+      const std::vector<std::string>& values);
 
   // IndexedDBDatabase::Get (with key injection)
-  virtual void OnSuccess(std::vector<char>* data,
+  virtual void OnSuccess(std::string* data,
                          const IndexedDBKey& key,
                          const IndexedDBKeyPath& key_path);
 
   // IndexedDBDatabase::Get
-  virtual void OnSuccess(std::vector<char>* value);
+  virtual void OnSuccess(std::string* value);
 
   // IndexedDBDatabase::Put / IndexedDBCursor::Update
   virtual void OnSuccess(const IndexedDBKey& value);

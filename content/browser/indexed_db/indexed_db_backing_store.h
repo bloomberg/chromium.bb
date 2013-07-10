@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_BACKING_STORE_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_BACKING_STORE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -98,13 +99,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   class CONTENT_EXPORT RecordIdentifier {
    public:
-    RecordIdentifier(const std::vector<char>& primary_key, int64 version);
+    RecordIdentifier(const std::string& primary_key, int64 version);
     RecordIdentifier();
     ~RecordIdentifier();
 
-    const std::vector<char>& primary_key() const { return primary_key_; }
+    const std::string& primary_key() const { return primary_key_; }
     int64 version() const { return version_; }
-    void Reset(const std::vector<char>& primary_key, int64 version) {
+    void Reset(const std::string& primary_key, int64 version) {
       primary_key_ = primary_key;
       version_ = version;
     }
@@ -112,7 +113,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
    private:
     // TODO(jsbell): Make it more clear that this is the *encoded* version of
     // the key.
-    std::vector<char> primary_key_;
+    std::string primary_key_;
     int64 version_;
     DISALLOW_COPY_AND_ASSIGN(RecordIdentifier);
   };
@@ -121,12 +122,12 @@ class CONTENT_EXPORT IndexedDBBackingStore
                          int64 database_id,
                          int64 object_store_id,
                          const IndexedDBKey& key,
-                         std::vector<char>* record) WARN_UNUSED_RESULT;
+                         std::string* record) WARN_UNUSED_RESULT;
   virtual bool PutRecord(IndexedDBBackingStore::Transaction* transaction,
                          int64 database_id,
                          int64 object_store_id,
                          const IndexedDBKey& key,
-                         const std::vector<char>& value,
+                         const std::string& value,
                          RecordIdentifier* record) WARN_UNUSED_RESULT;
   virtual bool ClearObjectStore(IndexedDBBackingStore::Transaction* transaction,
                                 int64 database_id,
@@ -203,9 +204,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 database_id;
       int64 object_store_id;
       int64 index_id;
-      std::vector<char> low_key;
+      std::string low_key;
       bool low_open;
-      std::vector<char> high_key;
+      std::string high_key;
       bool high_open;
       bool forward;
       bool unique;
@@ -219,7 +220,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     virtual Cursor* Clone() = 0;
     virtual const IndexedDBKey& primary_key() const;
-    virtual std::vector<char>* Value() = 0;
+    virtual std::string* Value() = 0;
     virtual const RecordIdentifier& record_identifier() const;
     virtual bool LoadCurrentRow() = 0;
 
@@ -228,7 +229,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
            const CursorOptions& cursor_options);
     explicit Cursor(const IndexedDBBackingStore::Cursor* other);
 
-    virtual std::vector<char> EncodeKey(const IndexedDBKey& key) = 0;
+    virtual std::string EncodeKey(const IndexedDBKey& key) = 0;
 
     bool IsPastBounds() const;
     bool HaveEnteredRange() const;
@@ -307,7 +308,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                       int64 object_store_id,
                       int64 index_id,
                       const IndexedDBKey& key,
-                      std::vector<char>* found_encoded_primary_key,
+                      std::string* found_encoded_primary_key,
                       bool* found);
   bool GetIndexes(int64 database_id,
                   int64 object_store_id,

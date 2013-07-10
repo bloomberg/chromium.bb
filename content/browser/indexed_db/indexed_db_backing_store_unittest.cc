@@ -29,16 +29,9 @@ class IndexedDBBackingStoreTest : public testing::Test {
     backing_store_ = IndexedDBBackingStore::OpenInMemory(file_identifier);
 
     // useful keys and values during tests
-    const char raw_value1[] = "value1";
-
-    const char raw_value2[] = "value2";
-    const char raw_value3[] = "value3";
-    m_value1.insert(
-        m_value1.end(), &raw_value1[0], &raw_value1[0] + sizeof(raw_value1));
-    m_value2.insert(
-        m_value2.end(), &raw_value2[0], &raw_value2[0] + sizeof(raw_value2));
-    m_value3.insert(
-        m_value3.end(), &raw_value3[0], &raw_value3[0] + sizeof(raw_value3));
+    m_value1 = "value1";
+    m_value2 = "value2";
+    m_value3 = "value3";
     m_key1 = IndexedDBKey(99, WebIDBKey::NumberType);
     m_key2 = IndexedDBKey(ASCIIToUTF16("key2"));
     m_key3 = IndexedDBKey(ASCIIToUTF16("key3"));
@@ -51,9 +44,9 @@ class IndexedDBBackingStoreTest : public testing::Test {
   IndexedDBKey m_key1;
   IndexedDBKey m_key2;
   IndexedDBKey m_key3;
-  std::vector<char> m_value1;
-  std::vector<char> m_value2;
-  std::vector<char> m_value3;
+  std::string m_value1;
+  std::string m_value2;
+  std::string m_value3;
 };
 
 TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
@@ -70,7 +63,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
     IndexedDBBackingStore::Transaction transaction2(backing_store_);
     transaction2.Begin();
-    std::vector<char> result_value;
+    std::string result_value;
     bool ok =
         backing_store_->GetRecord(&transaction2, 1, 1, m_key1, &result_value);
     transaction2.Commit();
@@ -90,7 +83,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   const int64 invalid_high_index_id = 1ULL << 37;
 
   const IndexedDBKey& index_key = m_key2;
-  std::vector<char> index_key_raw;
+  std::string index_key_raw;
   EncodeIDBKey(index_key, &index_key_raw);
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_);
@@ -127,7 +120,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   {
     IndexedDBBackingStore::Transaction transaction2(backing_store_);
     transaction2.Begin();
-    std::vector<char> result_value;
+    std::string result_value;
     bool ok = backing_store_->GetRecord(&transaction2,
                                         high_database_id,
                                         high_object_store_id,
@@ -167,7 +160,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   const int64 index_id = kMinimumIndexId;
   const int64 invalid_low_index_id = 19;  // index_ids must be > kMinimumIndexId
 
-  std::vector<char> result_value;
+  std::string result_value;
 
   IndexedDBBackingStore::Transaction transaction1(backing_store_);
   transaction1.Begin();

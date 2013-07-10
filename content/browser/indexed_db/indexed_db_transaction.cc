@@ -4,7 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
-#include <vector>
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -254,9 +253,8 @@ void IndexedDBTransaction::Commit() {
   } else {
     callbacks_->OnAbort(
         id_,
-        IndexedDBDatabaseError(
-            WebKit::WebIDBDatabaseExceptionUnknownError,
-            "Internal error committing transaction."));
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error committing transaction."));
     database_->TransactionFinishedAndAbortFired(this);
   }
 

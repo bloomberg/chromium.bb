@@ -11,11 +11,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "content/browser/indexed_db/leveldb/avltree.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
-#include "content/browser/indexed_db/leveldb/leveldb_slice.h"
 
 namespace content {
 
@@ -26,9 +26,9 @@ class CONTENT_EXPORT LevelDBTransaction
  public:
   static scoped_refptr<LevelDBTransaction> Create(LevelDBDatabase* db);
 
-  void Put(const LevelDBSlice& key, std::vector<char>* value);
-  void Remove(const LevelDBSlice& key);
-  bool Get(const LevelDBSlice& key, std::string* value, bool* found);
+  void Put(const base::StringPiece& key, std::string* value);
+  void Remove(const base::StringPiece& key);
+  bool Get(const base::StringPiece& key, std::string* value, bool* found);
   bool Commit();
   void Rollback();
 
@@ -42,8 +42,8 @@ class CONTENT_EXPORT LevelDBTransaction
   struct AVLTreeNode {
     AVLTreeNode();
     ~AVLTreeNode();
-    std::vector<char> key;
-    std::vector<char> value;
+    std::string key;
+    std::string value;
     bool deleted;
 
     AVLTreeNode* less;
@@ -55,7 +55,7 @@ class CONTENT_EXPORT LevelDBTransaction
   struct AVLTreeAbstractor {
     typedef AVLTreeNode* handle;
     typedef size_t size;
-    typedef LevelDBSlice key;
+    typedef base::StringPiece key;
 
     handle GetLess(handle h) { return h->less; }
     void SetLess(handle h, handle less) { h->less = less; }
@@ -69,10 +69,10 @@ class CONTENT_EXPORT LevelDBTransaction
       return comparator_->Compare(ka, kb);
     }
     int CompareKeyNode(const key& k, handle h) {
-      return CompareKeyKey(k, key(h->key));
+      return CompareKeyKey(k, h->key);
     }
     int CompareNodeNode(handle ha, handle hb) {
-      return CompareKeyKey(key(ha->key), key(hb->key));
+      return CompareKeyKey(ha->key, hb->key);
     }
 
     static handle Null() { return 0; }
@@ -89,11 +89,11 @@ class CONTENT_EXPORT LevelDBTransaction
 
     virtual bool IsValid() const OVERRIDE;
     virtual void SeekToLast() OVERRIDE;
-    virtual void Seek(const LevelDBSlice& slice) OVERRIDE;
+    virtual void Seek(const base::StringPiece& slice) OVERRIDE;
     virtual void Next() OVERRIDE;
     virtual void Prev() OVERRIDE;
-    virtual LevelDBSlice Key() const OVERRIDE;
-    virtual LevelDBSlice Value() const OVERRIDE;
+    virtual base::StringPiece Key() const OVERRIDE;
+    virtual base::StringPiece Value() const OVERRIDE;
     bool IsDeleted() const;
     void Reset();
 
@@ -102,7 +102,7 @@ class CONTENT_EXPORT LevelDBTransaction
     mutable TreeType::Iterator iterator_;  // Dereferencing this is non-const.
     TreeType* tree_;
     LevelDBTransaction* transaction_;
-    std::vector<char> key_;
+    std::string key_;
   };
 
   class TransactionIterator : public LevelDBIterator {
@@ -113,11 +113,11 @@ class CONTENT_EXPORT LevelDBTransaction
 
     virtual bool IsValid() const OVERRIDE;
     virtual void SeekToLast() OVERRIDE;
-    virtual void Seek(const LevelDBSlice& target) OVERRIDE;
+    virtual void Seek(const base::StringPiece& target) OVERRIDE;
     virtual void Next() OVERRIDE;
     virtual void Prev() OVERRIDE;
-    virtual LevelDBSlice Key() const OVERRIDE;
-    virtual LevelDBSlice Value() const OVERRIDE;
+    virtual base::StringPiece Key() const OVERRIDE;
+    virtual base::StringPiece Value() const OVERRIDE;
     void TreeChanged();
 
    private:
@@ -143,9 +143,7 @@ class CONTENT_EXPORT LevelDBTransaction
     mutable bool tree_changed_;
   };
 
-  void Set(const LevelDBSlice& key,
-           std::vector<char>* value,
-           bool deleted);
+  void Set(const base::StringPiece& key, std::string* value, bool deleted);
   void ClearTree();
   void RegisterIterator(TransactionIterator* iterator);
   void UnregisterIterator(TransactionIterator* iterator);
@@ -164,7 +162,7 @@ class LevelDBWriteOnlyTransaction {
   static scoped_ptr<LevelDBWriteOnlyTransaction> Create(LevelDBDatabase* db);
 
   ~LevelDBWriteOnlyTransaction();
-  void Remove(const LevelDBSlice& key);
+  void Remove(const base::StringPiece& key);
   bool Commit();
 
  private:

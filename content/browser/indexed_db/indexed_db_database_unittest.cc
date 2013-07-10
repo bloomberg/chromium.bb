@@ -4,8 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_database.h"
 
-#include <gtest/gtest.h>
-
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -20,6 +18,7 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
@@ -46,25 +45,25 @@ class MockIDBCallbacks : public IndexedDBCallbacks {
   virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
-                         std::vector<char>* value) OVERRIDE {}
+                         std::string* value) OVERRIDE {}
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
     connection_ = connection.Pass();
   }
   virtual void OnSuccess(const IndexedDBKey& key) OVERRIDE {}
-  virtual void OnSuccess(std::vector<char>* value) OVERRIDE {}
-  virtual void OnSuccess(std::vector<char>* value,
+  virtual void OnSuccess(std::string* value) OVERRIDE {}
+  virtual void OnSuccess(std::string* value,
                          const IndexedDBKey& key,
                          const IndexedDBKeyPath& key_path) OVERRIDE {}
   virtual void OnSuccess(int64 value) OVERRIDE {}
   virtual void OnSuccess() OVERRIDE {}
   virtual void OnSuccess(const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
-                         std::vector<char>* value) OVERRIDE {}
+                         std::string* value) OVERRIDE {}
   virtual void OnSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
-      const std::vector<std::vector<char> >& values) OVERRIDE {}
+      const std::vector<std::string>& values) OVERRIDE {}
 
   IndexedDBConnection* connection() { return connection_.get(); }
 

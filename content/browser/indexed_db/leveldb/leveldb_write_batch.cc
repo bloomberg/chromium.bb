@@ -4,7 +4,7 @@
 
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 
-#include "content/browser/indexed_db/leveldb/leveldb_slice.h"
+#include "base/strings/string_piece.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -19,16 +19,16 @@ LevelDBWriteBatch::LevelDBWriteBatch()
 
 LevelDBWriteBatch::~LevelDBWriteBatch() {}
 
-static leveldb::Slice MakeSlice(const LevelDBSlice& s) {
-  return leveldb::Slice(s.begin(), s.end() - s.begin());
+static leveldb::Slice MakeSlice(const base::StringPiece& s) {
+  return leveldb::Slice(s.begin(), s.size());
 }
 
-void LevelDBWriteBatch::Put(const LevelDBSlice& key,
-                            const LevelDBSlice& value) {
+void LevelDBWriteBatch::Put(const base::StringPiece& key,
+                            const base::StringPiece& value) {
   write_batch_->Put(MakeSlice(key), MakeSlice(value));
 }
 
-void LevelDBWriteBatch::Remove(const LevelDBSlice& key) {
+void LevelDBWriteBatch::Remove(const base::StringPiece& key) {
   write_batch_->Delete(MakeSlice(key));
 }
 

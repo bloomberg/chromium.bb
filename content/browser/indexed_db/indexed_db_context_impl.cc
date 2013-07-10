@@ -4,8 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"

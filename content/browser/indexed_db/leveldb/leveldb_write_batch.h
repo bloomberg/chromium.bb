@@ -6,14 +6,13 @@
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_WRITE_BATCH_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 
 namespace leveldb {
 class WriteBatch;
 }
 
 namespace content {
-
-class LevelDBSlice;
 
 // Wrapper around leveldb::WriteBatch.
 // This class holds a collection of updates to apply atomically to a database.
@@ -22,8 +21,9 @@ class LevelDBWriteBatch {
   static scoped_ptr<LevelDBWriteBatch> Create();
   ~LevelDBWriteBatch();
 
-  void Put(const LevelDBSlice& key, const LevelDBSlice& value);
-  void Remove(const LevelDBSlice& key);  // Add remove operation to the batch.
+  void Put(const base::StringPiece& key, const base::StringPiece& value);
+  void Remove(const base::StringPiece& key);  // Add remove operation to the
+                                              // batch.
   void Clear();
 
  private:
