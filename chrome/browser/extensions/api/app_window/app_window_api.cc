@@ -299,7 +299,7 @@ bool AppWindowCreateFunction::RunImpl() {
       url,
       create_params);
 
-  if (chrome::ShouldForceFullscreenApp())
+  if (chrome::IsRunningInForcedAppMode())
     shell_window->Fullscreen();
 
   content::RenderViewHost* created_view =

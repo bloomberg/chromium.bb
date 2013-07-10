@@ -16,10 +16,6 @@ bool IsRunningInAppMode();
 // Return true if browser process is run in forced app mode.
 bool IsRunningInForcedAppMode();
 
-// Return true if browser runs in force app mode and should force app to run
-// in full screen.
-bool ShouldForceFullscreenApp();
-
-}  // namespace switches
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_APP_MODE_APP_MODE_UTILS_H_

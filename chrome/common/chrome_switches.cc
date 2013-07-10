@@ -331,9 +331,6 @@ const char kDisableExtensionsHttpThrottling[] =
 const char kDisableExtensionsResourceWhitelist[] =
     "disable-extensions-resource-whitelist";
 
-// Disables automatically making app run in full screen in force app mode.
-const char kDisableFullscreenApp[]          = "disable-fullscreen-app";
-
 // Disable Instant extended API.
 const char kDisableInstantExtendedAPI[]     = "disable-instant-extended-api";
 

@@ -1137,20 +1137,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerEnableSharing)
   },
   {
-    "disable-app-mode",
-    IDS_FLAGS_DISABLE_KIOSK_APPS_NAME,
-    IDS_FLAGS_DISABLE_KIOSK_APPS_DESCRIPTION,
-    kOsCrOSOwnerOnly,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableAppMode),
-  },
-  {
-    "disable-force-fullscreen-app",
-    IDS_FLAGS_DISABLE_FULLSCREEN_APP_NAME,
-    IDS_FLAGS_DISABLE_FULLSCREEN_APP_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableFullscreenApp),
-  },
-  {
     "disable-quickoffice-component-app",
     IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_NAME,
     IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_DESCRIPTION,

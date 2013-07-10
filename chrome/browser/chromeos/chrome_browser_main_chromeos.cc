@@ -207,8 +207,7 @@ class StubLogin : public LoginStatusConsumer,
 
 bool ShouldAutoLaunchKioskApp(const CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
-  return !command_line.HasSwitch(switches::kDisableAppMode) &&
-      command_line.HasSwitch(switches::kLoginManager) &&
+  return command_line.HasSwitch(switches::kLoginManager) &&
       !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
       app_manager->IsAutoLaunchEnabled() &&
       KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
@@ -225,14 +224,11 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
     if (KioskModeSettings::Get()->IsKioskModeEnabled())
       InitializeKioskModeScreensaver();
 
-    // If app mode is enabled, reset reboot after update flag when login
-    // screen is shown.
-    if (!parsed_command_line.HasSwitch(switches::kDisableAppMode)) {
-      if (!g_browser_process->browser_policy_connector()->
-          IsEnterpriseManaged()) {
-        PrefService* local_state = g_browser_process->local_state();
-        local_state->ClearPref(prefs::kRebootAfterUpdate);
-      }
+    // Reset reboot after update flag when login screen is shown.
+    if (!g_browser_process->browser_policy_connector()->
+        IsEnterpriseManaged()) {
+      PrefService* local_state = g_browser_process->local_state();
+      local_state->ClearPref(prefs::kRebootAfterUpdate);
     }
   } else if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
              parsed_command_line.HasSwitch(switches::kLoginPassword)) {

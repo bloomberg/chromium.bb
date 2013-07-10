@@ -51,10 +51,4 @@ bool IsRunningInForcedAppMode() {
       command_line->HasSwitch(switches::kAppId);
 }
 
-bool ShouldForceFullscreenApp() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return IsRunningInForcedAppMode() &&
-      !command_line->HasSwitch(switches::kDisableFullscreenApp);
-}
-
-}  // namespace switches
+}  // namespace chrome

@@ -86,7 +86,7 @@ ui::WindowShowState DetermineWindowShowState(
     return ui::SHOW_STATE_DEFAULT;
   }
 
-  if (chrome::ShouldForceFullscreenApp())
+  if (chrome::IsRunningInForcedAppMode())
     return ui::SHOW_STATE_FULLSCREEN;
 
 #if defined(USE_ASH)

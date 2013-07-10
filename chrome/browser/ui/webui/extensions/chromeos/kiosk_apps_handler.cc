@@ -197,11 +197,9 @@ void KioskAppsHandler::OnGetConsumerKioskModeStatus(
     chromeos::KioskAppManager::ConsumerKioskModeStatus status) {
   initialized_ = true;
   is_kiosk_enabled_ =
-     !CommandLine::ForCurrentProcess()->HasSwitch(
-         chromeos::switches::kDisableAppMode) &&
-     (((status == KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED) &&
-         chromeos::UserManager::Get()->IsCurrentUserOwner()) ||
-         !base::chromeos::IsRunningOnChromeOS());
+      ((status == KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED) &&
+          chromeos::UserManager::Get()->IsCurrentUserOwner()) ||
+      !base::chromeos::IsRunningOnChromeOS();
 
   if (is_kiosk_enabled_) {
     base::FundamentalValue enabled(is_kiosk_enabled_);

@@ -25,7 +25,6 @@ CHROMEOS_EXPORT extern const char kAshWebUIInit[];
 CHROMEOS_EXPORT extern const char kAuthExtensionPath[];
 CHROMEOS_EXPORT extern const char kChromeOSReleaseBoard[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
-CHROMEOS_EXPORT extern const char kDisableAppMode[];
 CHROMEOS_EXPORT extern const char kDisableBootAnimation[];
 CHROMEOS_EXPORT extern const char kDisableChromeCaptivePortalDetector[];
 CHROMEOS_EXPORT extern const char kDisableDrive[];
