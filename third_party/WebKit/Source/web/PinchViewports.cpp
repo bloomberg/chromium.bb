@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "WebKit/chromium/src/PinchViewports.h"
+#include "PinchViewports.h"
 
-#include "WebKit/chromium/src/WebSettingsImpl.h"
-#include "WebKit/chromium/src/WebViewImpl.h"
+#include "WebSettingsImpl.h"
+#include "WebViewImpl.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsLayer.h"
