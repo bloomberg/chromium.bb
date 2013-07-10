@@ -35,13 +35,20 @@ class MEDIA_EXPORT AudioBufferQueue {
 
   // Reads a maximum of |frames| frames into |dest| from the current position.
   // Returns the number of frames read. The current position will advance by the
-  // amount of frames read.
-  int ReadFrames(int frames, AudioBus* dest);
+  // amount of frames read. |dest_frame_offset| specifies a starting offset into
+  // |dest|. On each call, the frames are converted from their source format
+  // into the destination AudioBus.
+  int ReadFrames(int frames, int dest_frame_offset, AudioBus* dest);
 
   // Copies up to |frames| frames from current position to |dest|. Returns
   // number of frames copied. Doesn't advance current position. Starts at
-  // |forward_offset| from current position.
-  int PeekFrames(int frames, int forward_offset, AudioBus* dest);
+  // |source_frame_offset| from current position. |dest_frame_offset| specifies
+  // a starting offset into |dest|. On each call, the frames are converted from
+  // their source format into the destination AudioBus.
+  int PeekFrames(int frames,
+                 int source_frame_offset,
+                 int dest_frame_offset,
+                 AudioBus* dest);
 
   // Moves the current position forward by |frames| frames. If |frames| exceeds
   // frames available, the seek operation will fail.
@@ -66,10 +73,12 @@ class MEDIA_EXPORT AudioBufferQueue {
   // the number of frames read. The current position will be moved forward by
   // the number of frames read if |advance_position| is set. If |dest| is NULL,
   // only the current position will advance but no data will be copied.
-  // |forward_offset| can be used to skip frames before reading.
+  // |source_frame_offset| can be used to skip frames before reading.
+  // |dest_frame_offset| specifies a starting offset into |dest|.
   int InternalRead(int frames,
                    bool advance_position,
-                   int forward_offset,
+                   int source_frame_offset,
+                   int dest_frame_offset,
                    AudioBus* dest);
 
   // Updates |current_time_| with the time that corresponds to the specified

@@ -76,6 +76,15 @@ class MEDIA_EXPORT AudioBus {
   // AudioBus object must have the same frames() and channels().
   void CopyTo(AudioBus* dest) const;
 
+  // Helper method to copy frames from one AudioBus to another. Both AudioBus
+  // objects must have the same number of channels(). |source_start_frame| is
+  // the starting offset. |dest_start_frame| is the starting offset in |dest|.
+  // |frame_count| is the number of frames to copy.
+  void CopyPartialFramesTo(int source_start_frame,
+                           int frame_count,
+                           int dest_start_frame,
+                           AudioBus* dest) const;
+
   // Returns a raw pointer to the requested channel.  Pointer is guaranteed to
   // have a 16-byte alignment.  Warning: Do not rely on having sane (i.e. not
   // inf, nan, or between [-1.0, 1.0]) values in the channel data.

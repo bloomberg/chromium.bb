@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/sample_format.h"
 
 struct AVCodecContext;
 struct AVFrame;
@@ -22,9 +23,7 @@ class MessageLoopProxy;
 
 namespace media {
 
-class AudioBus;
 class AudioTimestampHelper;
-class DataBuffer;
 class DecoderBuffer;
 struct QueuedAudioBuffer;
 
@@ -72,6 +71,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
 
   // AVSampleFormat initially requested; not Chrome's SampleFormat.
   int av_sample_format_;
+  SampleFormat sample_format_;
 
   // Used for computing output timestamps.
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
@@ -90,10 +90,6 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   // Since multiple frames may be decoded from the same packet we need to queue
   // them up and hand them out as we receive Read() calls.
   std::list<QueuedAudioBuffer> queued_audio_;
-
-  // We may need to convert the audio data coming out of FFmpeg from planar
-  // float to integer.
-  scoped_ptr<AudioBus> converter_bus_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FFmpegAudioDecoder);
 };

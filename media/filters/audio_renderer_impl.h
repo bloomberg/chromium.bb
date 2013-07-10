@@ -36,6 +36,7 @@ class MessageLoopProxy;
 
 namespace media {
 
+class AudioBus;
 class AudioDecoderSelector;
 class AudioSplicer;
 class DecryptingDemuxerStream;
@@ -98,11 +99,11 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(AudioDecoder::Status status,
-                         const scoped_refptr<DataBuffer>& buffer);
+                         const scoped_refptr<AudioBuffer>& buffer);
 
   // Handles buffers that come out of |splicer_|.
   // Returns true if more buffers are needed.
-  bool HandleSplicerBuffer(const scoped_refptr<DataBuffer>& buffer);
+  bool HandleSplicerBuffer(const scoped_refptr<AudioBuffer>& buffer);
 
   // Helper functions for AudioDecoder::Status values passed to
   // DecodedAudioReady().
@@ -125,7 +126,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // should the filled buffer be played.
   //
   // Safe to call on any thread.
-  uint32 FillBuffer(uint8* dest,
+  uint32 FillBuffer(AudioBus* dest,
                     uint32 requested_frames,
                     int audio_delay_milliseconds);
 
@@ -155,7 +156,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // Returns true if the data in the buffer is all before
   // |preroll_timestamp_|. This can only return true while
   // in the kPrerolling state.
-  bool IsBeforePrerollTime(const scoped_refptr<DataBuffer>& buffer);
+  bool IsBeforePrerollTime(const scoped_refptr<AudioBuffer>& buffer);
 
   // Called when |decoder_selector_| has selected |decoder| or is null if no
   // decoder could be selected.
@@ -267,10 +268,6 @@ class MEDIA_EXPORT AudioRendererImpl
   bool preroll_aborted_;
 
   // End variables which must be accessed under |lock_|. ----------------------
-
-  // Variables used only on the audio thread. ---------------------------------
-  int actual_frames_per_buffer_;
-  scoped_ptr<uint8[]> audio_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

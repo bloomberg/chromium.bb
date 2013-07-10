@@ -12,69 +12,106 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "media/base/audio_buffer.h"
+#include "media/base/audio_bus.h"
+#include "media/base/buffers.h"
 #include "media/base/channel_layout.h"
-#include "media/base/data_buffer.h"
+#include "media/base/test_helpers.h"
 #include "media/filters/audio_renderer_algorithm.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-static const size_t kRawDataSize = 2048;
+static const int kFrameSize = 250;
 static const int kSamplesPerSecond = 3000;
-static const ChannelLayout kDefaultChannelLayout = CHANNEL_LAYOUT_STEREO;
-static const int kDefaultSampleBits = 16;
+static const SampleFormat kSampleFormat = kSampleFormatS16;
 
 class AudioRendererAlgorithmTest : public testing::Test {
  public:
   AudioRendererAlgorithmTest()
-      : bytes_enqueued_(0) {
+      : frames_enqueued_(0),
+        channels_(0),
+        sample_format_(kUnknownSampleFormat),
+        bytes_per_sample_(0) {
   }
 
   virtual ~AudioRendererAlgorithmTest() {}
 
   void Initialize() {
-    Initialize(kDefaultChannelLayout, kDefaultSampleBits, kSamplesPerSecond);
+    Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 3000);
   }
 
-  void Initialize(ChannelLayout channel_layout, int bits_per_channel,
+  void Initialize(ChannelLayout channel_layout,
+                  SampleFormat sample_format,
                   int samples_per_second) {
-    AudioParameters params(
-        media::AudioParameters::AUDIO_PCM_LINEAR, channel_layout,
-        samples_per_second, bits_per_channel, samples_per_second / 100);
-
+    channels_ = ChannelLayoutToChannelCount(channel_layout);
+    sample_format_ = sample_format;
+    bytes_per_sample_ = SampleFormatToBytesPerChannel(sample_format);
+    AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
+                           channel_layout,
+                           samples_per_second,
+                           bytes_per_sample_ * 8,
+                           samples_per_second / 100);
     algorithm_.Initialize(1, params);
     FillAlgorithmQueue();
   }
 
   void FillAlgorithmQueue() {
+    // The value of the data is meaningless; we just want non-zero data to
+    // differentiate it from muted data.
+    scoped_refptr<AudioBuffer> buffer;
     while (!algorithm_.IsQueueFull()) {
-      scoped_ptr<uint8[]> audio_data(new uint8[kRawDataSize]);
-      CHECK_EQ(kRawDataSize % algorithm_.bytes_per_channel(), 0u);
-      CHECK_EQ(kRawDataSize % algorithm_.bytes_per_frame(), 0u);
-      // The value of the data is meaningless; we just want non-zero data to
-      // differentiate it from muted data.
-      memset(audio_data.get(), 1, kRawDataSize);
-      algorithm_.EnqueueBuffer(new DataBuffer(audio_data.Pass(), kRawDataSize));
-      bytes_enqueued_ += kRawDataSize;
+      switch (sample_format_) {
+        case kSampleFormatU8:
+          buffer = MakeInterleavedAudioBuffer<uint8>(sample_format_,
+                                                     channels_,
+                                                     1,
+                                                     1,
+                                                     kFrameSize,
+                                                     kNoTimestamp(),
+                                                     kNoTimestamp());
+          break;
+        case kSampleFormatS16:
+          buffer = MakeInterleavedAudioBuffer<int16>(sample_format_,
+                                                     channels_,
+                                                     1,
+                                                     1,
+                                                     kFrameSize,
+                                                     kNoTimestamp(),
+                                                     kNoTimestamp());
+          break;
+        case kSampleFormatS32:
+          buffer = MakeInterleavedAudioBuffer<int32>(sample_format_,
+                                                     channels_,
+                                                     1,
+                                                     1,
+                                                     kFrameSize,
+                                                     kNoTimestamp(),
+                                                     kNoTimestamp());
+          break;
+        default:
+          NOTREACHED() << "Unrecognized format " << sample_format_;
+      }
+      algorithm_.EnqueueBuffer(buffer);
+      frames_enqueued_ += kFrameSize;
     }
   }
 
-  void CheckFakeData(uint8* audio_data, int frames_written) {
-    int sum = 0;
-    for (int i = 0; i < frames_written * algorithm_.bytes_per_frame(); ++i)
-      sum |= audio_data[i];
-
-    if (algorithm_.is_muted())
-      ASSERT_EQ(sum, 0);
-    else
-      ASSERT_NE(sum, 0);
+  void CheckFakeData(AudioBus* audio_data, int frames_written) {
+    // Check each channel individually.
+    for (int ch = 0; ch < channels_; ++ch) {
+      bool all_zero = true;
+      for (int i = 0; i < frames_written && all_zero; ++i)
+        all_zero = audio_data->channel(ch)[i] == 0.0f;
+      ASSERT_EQ(algorithm_.is_muted(), all_zero) << " for channel " << ch;
+    }
   }
 
-  int ComputeConsumedBytes(int initial_bytes_enqueued,
-                           int initial_bytes_buffered) {
-    int byte_delta = bytes_enqueued_ - initial_bytes_enqueued;
-    int buffered_delta = algorithm_.bytes_buffered() - initial_bytes_buffered;
-    int consumed = byte_delta - buffered_delta;
+  int ComputeConsumedFrames(int initial_frames_enqueued,
+                            int initial_frames_buffered) {
+    int frame_delta = frames_enqueued_ - initial_frames_enqueued;
+    int buffered_delta = algorithm_.frames_buffered() - initial_frames_buffered;
+    int consumed = frame_delta - buffered_delta;
     CHECK_GE(consumed, 0);
     return consumed;
   }
@@ -83,24 +120,22 @@ class AudioRendererAlgorithmTest : public testing::Test {
     const int kDefaultBufferSize = algorithm_.samples_per_second() / 100;
     const int kDefaultFramesRequested = 2 * algorithm_.samples_per_second();
 
-    TestPlaybackRate(playback_rate, kDefaultBufferSize,
-                     kDefaultFramesRequested);
+    TestPlaybackRate(
+        playback_rate, kDefaultBufferSize, kDefaultFramesRequested);
   }
 
   void TestPlaybackRate(double playback_rate,
                         int buffer_size_in_frames,
                         int total_frames_requested) {
-    int initial_bytes_enqueued = bytes_enqueued_;
-    int initial_bytes_buffered = algorithm_.bytes_buffered();
-
+    int initial_frames_enqueued = frames_enqueued_;
+    int initial_frames_buffered = algorithm_.frames_buffered();
     algorithm_.SetPlaybackRate(static_cast<float>(playback_rate));
 
-    scoped_ptr<uint8[]> buffer(
-        new uint8[buffer_size_in_frames * algorithm_.bytes_per_frame()]);
-
+    scoped_ptr<AudioBus> bus =
+        AudioBus::Create(channels_, buffer_size_in_frames);
     if (playback_rate == 0.0) {
       int frames_written =
-          algorithm_.FillBuffer(buffer.get(), buffer_size_in_frames);
+          algorithm_.FillBuffer(bus.get(), buffer_size_in_frames);
       EXPECT_EQ(0, frames_written);
       return;
     }
@@ -108,23 +143,22 @@ class AudioRendererAlgorithmTest : public testing::Test {
     int frames_remaining = total_frames_requested;
     while (frames_remaining > 0) {
       int frames_requested = std::min(buffer_size_in_frames, frames_remaining);
-      int frames_written =
-          algorithm_.FillBuffer(buffer.get(), frames_requested);
-      ASSERT_GT(frames_written, 0);
-      CheckFakeData(buffer.get(), frames_written);
+      int frames_written = algorithm_.FillBuffer(bus.get(), frames_requested);
+      ASSERT_GT(frames_written, 0) << "Requested: " << frames_requested
+                                   << ", playing at " << playback_rate;
+      CheckFakeData(bus.get(), frames_written);
       frames_remaining -= frames_written;
 
       FillAlgorithmQueue();
     }
 
-    int bytes_requested = total_frames_requested * algorithm_.bytes_per_frame();
-    int bytes_consumed = ComputeConsumedBytes(initial_bytes_enqueued,
-                                              initial_bytes_buffered);
+    int frames_consumed =
+        ComputeConsumedFrames(initial_frames_enqueued, initial_frames_buffered);
 
     // If playing back at normal speed, we should always get back the same
     // number of bytes requested.
     if (playback_rate == 1.0) {
-      EXPECT_EQ(bytes_requested, bytes_consumed);
+      EXPECT_EQ(total_frames_requested, frames_consumed);
       return;
     }
 
@@ -136,19 +170,17 @@ class AudioRendererAlgorithmTest : public testing::Test {
     // down playback, and for playback_rate > 1, playback rate generally gets
     // less and less accurate the farther it drifts from 1 (though this is
     // nonlinear).
-    static const double kMaxAcceptableDelta = 0.01;
-    double actual_playback_rate = 1.0 * bytes_consumed / bytes_requested;
-
-    // Calculate the percentage difference from the target |playback_rate| as a
-    // fraction from 0.0 to 1.0.
-    double delta = std::abs(1.0 - (actual_playback_rate / playback_rate));
-
-    EXPECT_LE(delta, kMaxAcceptableDelta);
+    double actual_playback_rate =
+        1.0 * frames_consumed / total_frames_requested;
+    EXPECT_NEAR(playback_rate, actual_playback_rate, playback_rate / 100.0);
   }
 
  protected:
   AudioRendererAlgorithm algorithm_;
-  int bytes_enqueued_;
+  int frames_enqueued_;
+  int channels_;
+  SampleFormat sample_format_;
+  int bytes_per_sample_;
 };
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_NormalRate) {
@@ -245,25 +277,21 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_SmallBufferSize) {
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_LargeBufferSize) {
-  Initialize(kDefaultChannelLayout, kDefaultSampleBits, 44100);
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 44100);
   TestPlaybackRate(1.0);
   TestPlaybackRate(0.5);
   TestPlaybackRate(1.5);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_LowerQualityAudio) {
-  static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;
-  static const int kSampleBits = 8;
-  Initialize(kChannelLayout, kSampleBits, kSamplesPerSecond);
+  Initialize(CHANNEL_LAYOUT_MONO, kSampleFormatU8, kSamplesPerSecond);
   TestPlaybackRate(1.0);
   TestPlaybackRate(0.5);
   TestPlaybackRate(1.5);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_HigherQualityAudio) {
-  static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
-  static const int kSampleBits = 32;
-  Initialize(kChannelLayout, kSampleBits, kSamplesPerSecond);
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS32, kSamplesPerSecond);
   TestPlaybackRate(1.0);
   TestPlaybackRate(0.5);
   TestPlaybackRate(1.5);

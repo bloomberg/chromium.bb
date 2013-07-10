@@ -10,12 +10,12 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/media_export.h"
 
 namespace media {
 
 class AudioDecoderConfig;
-class DataBuffer;
 class DecoderBuffer;
 class VideoDecoderConfig;
 class VideoFrame;
@@ -103,7 +103,7 @@ class MEDIA_EXPORT Decryptor {
 
   // Helper structure for managing multiple decoded audio buffers per input.
   // TODO(xhwang): Rename this to AudioFrames.
-  typedef std::list<scoped_refptr<DataBuffer> > AudioBuffers;
+  typedef std::list<scoped_refptr<AudioBuffer> > AudioBuffers;
 
   // Indicates completion of audio/video decrypt-and-decode operation.
   //

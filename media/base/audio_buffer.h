@@ -37,13 +37,20 @@ class MEDIA_EXPORT AudioBuffer
                                              const base::TimeDelta timestamp,
                                              const base::TimeDelta duration);
 
+  // Create an empty AudioBuffer with |frame_count| frames.
+  static scoped_refptr<AudioBuffer> CreateEmptyBuffer(
+      int channel_count,
+      int frame_count,
+      const base::TimeDelta timestamp,
+      const base::TimeDelta duration);
+
   // Create a AudioBuffer indicating we've reached end of stream.
   // Calling any method other than end_of_stream() on the resulting buffer
   // is disallowed.
   static scoped_refptr<AudioBuffer> CreateEOSBuffer();
 
   // Copy frames into |dest|. |frames_to_copy| is the number of frames to copy.
-  // |source_frame_offset| specified how many frames in the buffer to skip
+  // |source_frame_offset| specifies how many frames in the buffer to skip
   // first. |dest_frame_offset| is the frame offset in |dest|. The frames are
   // converted from their source format into planar float32 data (which is all
   // that AudioBus handles).
@@ -52,15 +59,29 @@ class MEDIA_EXPORT AudioBuffer
                   int dest_frame_offset,
                   AudioBus* dest);
 
+  // Trim an AudioBuffer by removing |frames_to_trim| frames from the start.
+  // Note that repeated calls to TrimStart() may result in timestamp() and
+  // duration() being off by a few microseconds due to rounding issues.
+  void TrimStart(int frames_to_trim);
+
+  // Return the number of channels.
+  int channel_count() const { return channel_count_; }
+
   // Return the number of frames held.
-  int frame_count() const { return frame_count_; }
+  int frame_count() const { return adjusted_frame_count_; }
 
   // Access to constructor parameters.
   base::TimeDelta timestamp() const { return timestamp_; }
   base::TimeDelta duration() const { return duration_; }
 
+  // TODO(jrummell): Remove set_timestamp() and set_duration() once
+  // DecryptingAudioDecoder::EnqueueFrames() is changed to set them when
+  // creating the buffer. See http://crbug.com/255261.
+  void set_timestamp(base::TimeDelta timestamp) { timestamp_ = timestamp; }
+  void set_duration(base::TimeDelta duration) { duration_ = duration; }
+
   // If there's no data in this buffer, it represents end of stream.
-  bool end_of_stream() const { return data_ == NULL; }
+  bool end_of_stream() const { return end_of_stream_; }
 
  private:
   friend class base::RefCountedThreadSafe<AudioBuffer>;
@@ -78,9 +99,12 @@ class MEDIA_EXPORT AudioBuffer
 
   virtual ~AudioBuffer();
 
-  SampleFormat sample_format_;
-  int channel_count_;
-  int frame_count_;
+  const SampleFormat sample_format_;
+  const int channel_count_;
+  const int frame_count_;
+  int adjusted_frame_count_;
+  int trim_start_;
+  const bool end_of_stream_;
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;
 

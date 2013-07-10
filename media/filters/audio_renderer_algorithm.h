@@ -24,11 +24,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/seekable_buffer.h"
+#include "media/base/audio_buffer.h"
+#include "media/base/audio_buffer_queue.h"
 
 namespace media {
 
-class DataBuffer;
+class AudioBus;
 
 class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
@@ -44,9 +45,9 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   //
   // Data from |audio_buffer_| is consumed in proportion to the playback rate.
   //
-  // Returns the number of frames copied into |dest|.
-  // May request more reads via |request_read_cb_| before returning.
-  int FillBuffer(uint8* dest, int requested_frames);
+  // Returns the number of frames copied into |dest|. May request more reads via
+  // |request_read_cb_| before returning.
+  int FillBuffer(AudioBus* dest, int requested_frames);
 
   // Clears |audio_buffer_|.
   void FlushBuffers();
@@ -57,7 +58,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
-  void EnqueueBuffer(const scoped_refptr<DataBuffer>& buffer_in);
+  void EnqueueBuffer(const scoped_refptr<AudioBuffer>& buffer_in);
 
   float playback_rate() const { return playback_rate_; }
   void SetPlaybackRate(float new_rate);
@@ -65,42 +66,42 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Returns true if |audio_buffer_| is at or exceeds capacity.
   bool IsQueueFull();
 
-  // Returns the capacity of |audio_buffer_|.
-  int QueueCapacity();
+  // Returns the capacity of |audio_buffer_| in frames.
+  int QueueCapacity() const { return capacity_; }
 
   // Increase the capacity of |audio_buffer_| if possible.
   void IncreaseQueueCapacity();
 
-  // Returns the number of bytes left in |audio_buffer_|, which may be larger
+  // Returns the number of frames left in |audio_buffer_|, which may be larger
   // than QueueCapacity() in the event that EnqueueBuffer() delivered more data
   // than |audio_buffer_| was intending to hold.
-  int bytes_buffered() { return audio_buffer_.forward_bytes(); }
+  int frames_buffered() { return audio_buffer_.frames(); }
 
-  int bytes_per_frame() { return bytes_per_frame_; }
-
-  int bytes_per_channel() { return bytes_per_channel_; }
-
+  // Returns the samples per second for this audio stream.
   int samples_per_second() { return samples_per_second_; }
 
+  // Is the sound currently muted?
   bool is_muted() { return muted_; }
 
  private:
-  // Fills |dest| with one frame of audio data at normal speed. Returns true if
-  // a frame was rendered, false otherwise.
-  bool OutputNormalPlayback(uint8* dest);
-
-  // Fills |dest| with one frame of audio data at faster than normal speed.
-  // Returns true if a frame was rendered, false otherwise.
+  // Fills |dest| with up to |requested_frames| frames of audio data at faster
+  // than normal speed. Returns the number of frames inserted into |dest|. If
+  // not enough data available, returns 0.
   //
   // When the audio playback is > 1.0, we use a variant of Overlap-Add to squish
   // audio output while preserving pitch. Essentially, we play a bit of audio
   // data at normal speed, then we "fast forward" by dropping the next bit of
   // audio data, and then we stich the pieces together by crossfading from one
   // audio chunk to the next.
-  bool OutputFasterPlayback(uint8* dest, int input_step, int output_step);
+  int OutputFasterPlayback(AudioBus* dest,
+                           int dest_offset,
+                           int requested_frames,
+                           int input_step,
+                           int output_step);
 
-  // Fills |dest| with one frame of audio data at slower than normal speed.
-  // Returns true if a frame was rendered, false otherwise.
+  // Fills |dest| with up to |requested_frames| frames of audio data at slower
+  // than normal speed. Returns the number of frames inserted into |dest|. If
+  // not enough data available, returns 0.
   //
   // When the audio playback is < 1.0, we use a variant of Overlap-Add to
   // stretch audio output while preserving pitch. This works by outputting a
@@ -108,32 +109,21 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // by repeating some of the audio data from the previous audio segment.
   // Segments are stiched together by crossfading from one audio chunk to the
   // next.
-  bool OutputSlowerPlayback(uint8* dest, int input_step, int output_step);
+  int OutputSlowerPlayback(AudioBus* dest,
+                           int dest_offset,
+                           int requested_frames,
+                           int input_step,
+                           int output_step);
 
   // Resets the window state to the start of a new window.
   void ResetWindow();
 
-  // Copies a raw frame from |audio_buffer_| into |dest| without progressing
-  // |audio_buffer_|'s internal "current" cursor. Optionally peeks at a forward
-  // byte |offset|.
-  void CopyWithoutAdvance(uint8* dest);
-  void CopyWithoutAdvance(uint8* dest, int offset);
-
-  // Copies a raw frame from |audio_buffer_| into |dest| and progresses the
-  // |audio_buffer_| forward.
-  void CopyWithAdvance(uint8* dest);
-
-  // Moves the |audio_buffer_| forward by one frame.
-  void DropFrame();
-
   // Does a linear crossfade from |intro| into |outtro| for one frame.
-  // Assumes pointers are valid and are at least size of |bytes_per_frame_|.
-  void OutputCrossfadedFrame(uint8* outtro, const uint8* intro);
-  template <class Type>
-  void CrossfadeFrame(uint8* outtro, const uint8* intro);
-
-  // Rounds |*value| down to the nearest frame boundary.
-  void AlignToFrameBoundary(int* value);
+  void CrossfadeFrame(AudioBus* intro,
+                      int intro_offset,
+                      AudioBus* outtro,
+                      int outtro_offset,
+                      int fade_offset);
 
   // Number of channels in audio stream.
   int channels_;
@@ -141,24 +131,18 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Sample rate of audio stream.
   int samples_per_second_;
 
-  // Byte depth of audio.
-  int bytes_per_channel_;
-
   // Used by algorithm to scale output.
   float playback_rate_;
 
   // Buffered audio data.
-  SeekableBuffer audio_buffer_;
+  AudioBufferQueue audio_buffer_;
 
-  // Length for crossfade in bytes.
-  int bytes_in_crossfade_;
-
-  // Length of frame in bytes.
-  int bytes_per_frame_;
+  // Length for crossfade in frames.
+  int frames_in_crossfade_;
 
   // The current location in the audio window, between 0 and |window_size_|.
   // When |index_into_window_| reaches |window_size_|, the window resets.
-  // Indexed by byte.
+  // Indexed by frame.
   int index_into_window_;
 
   // The frame number in the crossfade.
@@ -167,11 +151,17 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // True if the audio should be muted.
   bool muted_;
 
-  // Temporary buffer to hold crossfade data.
-  scoped_ptr<uint8[]> crossfade_buffer_;
+  // If muted, keep track of partial frames that should have been skipped over.
+  double muted_partial_frame_;
 
-  // Window size, in bytes (calculated from audio properties).
+  // Temporary buffer to hold crossfade data.
+  scoped_ptr<AudioBus> crossfade_buffer_;
+
+  // Window size, in frames (calculated from audio properties).
   int window_size_;
+
+  // How many frames to have in the queue before we report the queue is full.
+  int capacity_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithm);
 };

@@ -13,13 +13,13 @@
 
 namespace media {
 
+class AudioBuffer;
 class AudioDecoderConfig;
-class DataBuffer;
 
 // Helper class that handles filling gaps and resolving overlaps.
 class MEDIA_EXPORT AudioSplicer {
  public:
-  AudioSplicer(int bytes_per_frame, int samples_per_second);
+  AudioSplicer(int samples_per_second);
   ~AudioSplicer();
 
   // Resets the splicer state by clearing the output buffers queue,
@@ -29,27 +29,27 @@ class MEDIA_EXPORT AudioSplicer {
   // Adds a new buffer full of samples or end of stream buffer to the splicer.
   // Returns true if the buffer was accepted. False is returned if an error
   // occurred.
-  bool AddInput(const scoped_refptr<DataBuffer>& input);
+  bool AddInput(const scoped_refptr<AudioBuffer>& input);
 
   // Returns true if the splicer has a buffer to return.
   bool HasNextBuffer() const;
 
   // Removes the next buffer from the output buffer queue and returns it.
   // This should only be called if HasNextBuffer() returns true.
-  scoped_refptr<DataBuffer> GetNextBuffer();
+  scoped_refptr<AudioBuffer> GetNextBuffer();
 
  private:
-  void AddOutputBuffer(const scoped_refptr<DataBuffer>& buffer);
+  void AddOutputBuffer(const scoped_refptr<AudioBuffer>& buffer);
 
   AudioTimestampHelper output_timestamp_helper_;
 
   // Minimum gap size needed before the splicer will take action to
   // fill a gap. This avoids periodically inserting and then dropping samples
   // when the buffer timestamps are slightly off because of timestamp rounding
-  // in the source content.
+  // in the source content. Unit is frames.
   int min_gap_size_;
 
-  std::deque<scoped_refptr<DataBuffer> > output_buffers_;
+  std::deque<scoped_refptr<AudioBuffer> > output_buffers_;
   bool received_end_of_stream_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioSplicer);

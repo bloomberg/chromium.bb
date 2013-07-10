@@ -27,8 +27,9 @@ TEST(AudioBufferTest, CopyFrom) {
   const int channels = 1;
   const int frames = 8;
   const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<uint8>(
-      kSampleFormatU8, channels, 1, 1, frames, start_time);
+      kSampleFormatU8, channels, 1, 1, frames, start_time, duration);
   EXPECT_EQ(frames, buffer->frame_count());
   EXPECT_EQ(buffer->timestamp(), start_time);
   EXPECT_EQ(buffer->duration().InSeconds(), frames);
@@ -61,8 +62,9 @@ TEST(AudioBufferTest, ReadU8) {
   const int channels = 4;
   const int frames = 4;
   const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<uint8>(
-      kSampleFormatU8, channels, 128, 1, frames, start_time);
+      kSampleFormatU8, channels, 128, 1, frames, start_time, duration);
 
   // Read all 4 frames from the buffer. Data is interleaved, so ch[0] should be
   // 128, 132, 136, 140, other channels similar. However, values are converted
@@ -80,8 +82,9 @@ TEST(AudioBufferTest, ReadS16) {
   const int channels = 2;
   const int frames = 10;
   const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<int16>(
-      kSampleFormatS16, channels, 1, 1, frames, start_time);
+      kSampleFormatS16, channels, 1, 1, frames, start_time, duration);
 
   // Read 6 frames from the buffer. Data is interleaved, so ch[0] should be 1,
   // 3, 5, 7, 9, 11, and ch[1] should be 2, 4, 6, 8, 10, 12. Data is converted
@@ -104,8 +107,9 @@ TEST(AudioBufferTest, ReadS32) {
   const int channels = 2;
   const int frames = 6;
   const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<int32>(
-      kSampleFormatS32, channels, 1, 1, frames, start_time);
+      kSampleFormatS32, channels, 1, 1, frames, start_time, duration);
 
   // Read 6 frames from the buffer. Data is interleaved, so ch[0] should be 1,
   // 3, 5, 7, 9, 11, and ch[1] should be 2, 4, 6, 8, 10, 12. Data is converted
@@ -126,8 +130,9 @@ TEST(AudioBufferTest, ReadF32) {
   const int channels = 2;
   const int frames = 20;
   const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<float>(
-      kSampleFormatF32, channels, 1.0f, 1.0f, frames, start_time);
+      kSampleFormatF32, channels, 1.0f, 1.0f, frames, start_time, duration);
 
   // Read first 10 frames from the buffer. F32 is interleaved, so ch[0] should
   // be 1, 3, 5, ... and ch[1] should be 2, 4, 6, ...
@@ -147,8 +152,9 @@ TEST(AudioBufferTest, ReadS16Planar) {
   const int channels = 2;
   const int frames = 20;
   const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   scoped_refptr<AudioBuffer> buffer = MakePlanarAudioBuffer<int16>(
-      kSampleFormatPlanarS16, channels, 1, 1, frames, start_time);
+      kSampleFormatPlanarS16, channels, 1, 1, frames, start_time, duration);
 
   // Read 6 frames from the buffer. Data is planar, so ch[0] should be 1, 2, 3,
   // 4, 5, 6, and ch[1] should be 21, 22, 23, 24, 25, 26. Data is converted to
@@ -179,8 +185,15 @@ TEST(AudioBufferTest, ReadF32Planar) {
   const int channels = 4;
   const int frames = 100;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakePlanarAudioBuffer<float>(
-      kSampleFormatPlanarF32, channels, 1.0f, 1.0f, frames, start_time);
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
+  scoped_refptr<AudioBuffer> buffer =
+      MakePlanarAudioBuffer<float>(kSampleFormatPlanarF32,
+                                   channels,
+                                   1.0f,
+                                   1.0f,
+                                   frames,
+                                   start_time,
+                                   duration);
 
   // Read all 100 frames from the buffer. F32 is planar, so ch[0] should be 1,
   // 2, 3, 4, ..., ch[1] should be 101, 102, 103, ..., and so on for all 4
@@ -199,6 +212,65 @@ TEST(AudioBufferTest, ReadF32Planar) {
   VerifyResult(bus->channel(1), 20, 151.0f, 1.0f);
   VerifyResult(bus->channel(2), 20, 251.0f, 1.0f);
   VerifyResult(bus->channel(3), 20, 351.0f, 1.0f);
+}
+
+TEST(AudioBufferTest, EmptyBuffer) {
+  const int channels = 4;
+  const int frames = 100;
+  const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
+  scoped_refptr<AudioBuffer> buffer = AudioBuffer::CreateEmptyBuffer(
+      channels, frames, start_time, duration);
+  EXPECT_EQ(frames, buffer->frame_count());
+  EXPECT_EQ(start_time, buffer->timestamp());
+  EXPECT_EQ(frames, buffer->duration().InSeconds());
+  EXPECT_FALSE(buffer->end_of_stream());
+
+  // Read all 100 frames from the buffer. All data should be 0.
+  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, 100);
+  buffer->ReadFrames(frames, 0, 0, bus.get());
+  VerifyResult(bus->channel(0), frames, 0.0f, 0.0f);
+  VerifyResult(bus->channel(1), frames, 0.0f, 0.0f);
+  VerifyResult(bus->channel(2), frames, 0.0f, 0.0f);
+  VerifyResult(bus->channel(3), frames, 0.0f, 0.0f);
+}
+
+TEST(AudioBufferTest, Trim) {
+  const int channels = 4;
+  const int frames = 100;
+  const base::TimeDelta start_time;
+  const base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
+  scoped_refptr<AudioBuffer> buffer =
+      MakePlanarAudioBuffer<float>(kSampleFormatPlanarF32,
+                                   channels,
+                                   1.0f,
+                                   1.0f,
+                                   frames,
+                                   start_time,
+                                   duration);
+  EXPECT_EQ(frames, buffer->frame_count());
+  EXPECT_EQ(start_time, buffer->timestamp());
+  EXPECT_EQ(frames, buffer->duration().InSeconds());
+
+  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, 100);
+  buffer->ReadFrames(20, 0, 0, bus.get());
+  VerifyResult(bus->channel(0), 20, 1.0f, 1.0f);
+
+  // Trim off 10 frames.
+  buffer->TrimStart(10);
+  EXPECT_EQ(buffer->frame_count(), frames - 10);
+  EXPECT_EQ(buffer->timestamp(), start_time + base::TimeDelta::FromSeconds(10));
+  EXPECT_EQ(buffer->duration(), base::TimeDelta::FromSeconds(90));
+  buffer->ReadFrames(20, 0, 0, bus.get());
+  VerifyResult(bus->channel(0), 20, 11.0f, 1.0f);
+
+  // Trim off 80 more.
+  buffer->TrimStart(80);
+  EXPECT_EQ(buffer->frame_count(), frames - 90);
+  EXPECT_EQ(buffer->timestamp(), start_time + base::TimeDelta::FromSeconds(90));
+  EXPECT_EQ(buffer->duration(), base::TimeDelta::FromSeconds(10));
+  buffer->ReadFrames(10, 0, 0, bus.get());
+  VerifyResult(bus->channel(0), 10, 91.0f, 1.0f);
 }
 
 }  // namespace media

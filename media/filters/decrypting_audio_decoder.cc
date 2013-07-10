@@ -11,10 +11,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/buffers.h"
-#include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
@@ -96,7 +96,7 @@ void DecryptingAudioDecoder::Read(const ReadCB& read_cb) {
 
   // Return empty (end-of-stream) frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    base::ResetAndReturn(&read_cb_).Run(kOk, DataBuffer::CreateEOSBuffer());
+    base::ResetAndReturn(&read_cb_).Run(kOk, AudioBuffer::CreateEOSBuffer());
     return;
   }
 
@@ -396,7 +396,7 @@ void DecryptingAudioDecoder::DeliverFrame(
     DVLOG(2) << "DeliverFrame() - kNeedMoreData";
     if (scoped_pending_buffer_to_decode->IsEndOfStream()) {
       state_ = kDecodeFinished;
-      base::ResetAndReturn(&read_cb_).Run(kOk, DataBuffer::CreateEOSBuffer());
+      base::ResetAndReturn(&read_cb_).Run(kOk, AudioBuffer::CreateEOSBuffer());
       return;
     }
 
@@ -454,12 +454,12 @@ void DecryptingAudioDecoder::EnqueueFrames(
   queued_audio_frames_ = frames;
 
   for (Decryptor::AudioBuffers::iterator iter = queued_audio_frames_.begin();
-      iter != queued_audio_frames_.end();
-      ++iter) {
-    scoped_refptr<DataBuffer>& frame = *iter;
+       iter != queued_audio_frames_.end();
+       ++iter) {
+    scoped_refptr<AudioBuffer>& frame = *iter;
 
     DCHECK(!frame->end_of_stream()) << "EOS frame returned.";
-    DCHECK_GT(frame->data_size(), 0) << "Empty frame returned.";
+    DCHECK_GT(frame->frame_count(), 0) << "Empty frame returned.";
 
     base::TimeDelta cur_timestamp = output_timestamp_base_ +
         NumberOfSamplesToDuration(total_samples_decoded_);
@@ -471,11 +471,7 @@ void DecryptingAudioDecoder::EnqueueFrames(
     }
     frame->set_timestamp(cur_timestamp);
 
-    int frame_size = frame->data_size();
-    DCHECK_EQ(frame_size % bytes_per_sample_, 0) <<
-        "Decoder didn't output full samples";
-    int samples_decoded = frame_size / bytes_per_sample_;
-    total_samples_decoded_ += samples_decoded;
+    total_samples_decoded_ += frame->frame_count();
 
     base::TimeDelta next_timestamp = output_timestamp_base_ +
         NumberOfSamplesToDuration(total_samples_decoded_);

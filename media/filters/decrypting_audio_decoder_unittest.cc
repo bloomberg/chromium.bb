@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/buffers.h"
-#include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/gmock_callback_support.h"
@@ -80,17 +80,22 @@ class DecryptingAudioDecoderTest : public testing::Test {
         demuxer_(new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
         decoded_frame_(NULL),
-        end_of_stream_frame_(DataBuffer::CreateEOSBuffer()),
+        end_of_stream_frame_(AudioBuffer::CreateEOSBuffer()),
         decoded_frame_list_() {
-    scoped_refptr<DataBuffer> data_buffer = new DataBuffer(kFakeAudioFrameSize);
-    data_buffer->set_data_size(kFakeAudioFrameSize);
-    // |decoded_frame_| contains random data.
-    decoded_frame_ = data_buffer;
-    decoded_frame_list_.push_back(decoded_frame_);
   }
 
   void InitializeAndExpectStatus(const AudioDecoderConfig& config,
                                  PipelineStatus status) {
+    // Initialize data now that the config is known. Since the code uses
+    // invalid values (that CreateEmptyBuffer() doesn't support), tweak them
+    // just for CreateEmptyBuffer().
+    int channels = ChannelLayoutToChannelCount(config.channel_layout());
+    if (channels < 1)
+      channels = 1;
+    decoded_frame_ = AudioBuffer::CreateEmptyBuffer(
+        channels, kFakeAudioFrameSize, kNoTimestamp(), kNoTimestamp());
+    decoded_frame_list_.push_back(decoded_frame_);
+
     demuxer_->set_audio_decoder_config(config);
     decoder_->Initialize(demuxer_.get(), NewExpectedStatusCB(status),
                          base::Bind(&MockStatisticsCB::OnStatistics,
@@ -119,7 +124,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   void ReadAndExpectFrameReadyWith(
       AudioDecoder::Status status,
-      const scoped_refptr<DataBuffer>& audio_frame) {
+      const scoped_refptr<AudioBuffer>& audio_frame) {
     if (status != AudioDecoder::kOk)
       EXPECT_CALL(*this, FrameReady(status, IsNull()));
     else if (audio_frame->end_of_stream())
@@ -213,8 +218,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   MOCK_METHOD1(RequestDecryptorNotification, void(const DecryptorReadyCB&));
 
-  MOCK_METHOD2(FrameReady, void(AudioDecoder::Status,
-                                const scoped_refptr<DataBuffer>&));
+  MOCK_METHOD2(FrameReady,
+               void(AudioDecoder::Status, const scoped_refptr<AudioBuffer>&));
 
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingAudioDecoder> decoder_;
@@ -230,8 +235,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   // Constant buffer/frames to be returned by the |demuxer_| and |decryptor_|.
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
-  scoped_refptr<DataBuffer> decoded_frame_;
-  scoped_refptr<DataBuffer> end_of_stream_frame_;
+  scoped_refptr<AudioBuffer> decoded_frame_;
+  scoped_refptr<AudioBuffer> end_of_stream_frame_;
   Decryptor::AudioBuffers decoded_frame_list_;
 
  private:
@@ -321,10 +326,16 @@ TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_NeedMoreData) {
 TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_MultipleFrames) {
   Initialize();
 
-  scoped_refptr<DataBuffer> frame_a = new DataBuffer(kFakeAudioFrameSize);
-  frame_a->set_data_size(kFakeAudioFrameSize);
-  scoped_refptr<DataBuffer> frame_b = new DataBuffer(kFakeAudioFrameSize);
-  frame_b->set_data_size(kFakeAudioFrameSize);
+  scoped_refptr<AudioBuffer> frame_a = AudioBuffer::CreateEmptyBuffer(
+      ChannelLayoutToChannelCount(config_.channel_layout()),
+      kFakeAudioFrameSize,
+      kNoTimestamp(),
+      kNoTimestamp());
+  scoped_refptr<AudioBuffer> frame_b = AudioBuffer::CreateEmptyBuffer(
+      ChannelLayoutToChannelCount(config_.channel_layout()),
+      kFakeAudioFrameSize,
+      kNoTimestamp(),
+      kNoTimestamp());
   decoded_frame_list_.push_back(frame_a);
   decoded_frame_list_.push_back(frame_b);
 

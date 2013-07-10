@@ -10,60 +10,57 @@
 
 namespace media {
 
-// Generates timestamps for a sequence of audio sample bytes. This class should
+// Generates timestamps for a sequence of audio sample frames. This class should
 // be used any place timestamps need to be calculated for a sequence of audio
 // samples. It helps avoid timestamps inaccuracies caused by rounding/truncation
 // in repeated sample count to timestamp conversions.
 //
-// The class is constructed with bytes per frame and samples_per_second
-// information so that it can convert audio sample byte counts into timestamps.
-// After the object is constructed, SetBaseTimestamp() must be called to specify
-// the starting timestamp of the audio sequence. As audio samples are received,
-// their byte counts are added to AddBytes(). These byte counts are
-// accumulated by this class so GetTimestamp() can be used to determine the
-// timestamp for the samples that have been added. GetDuration() calculates
-// the proper duration values for samples added to the current timestamp.
-// GetBytesToTarget() determines the number of bytes that need to be
-// added/removed from the accumulated bytes to reach a target timestamp.
+// The class is constructed with samples_per_second information so that it can
+// convert audio sample frame counts into timestamps. After the object is
+// constructed, SetBaseTimestamp() must be called to specify the starting
+// timestamp of the audio sequence. As audio samples are received, their frame
+// counts are added using AddFrames(). These frame counts are accumulated by
+// this class so GetTimestamp() can be used to determine the timestamp for the
+// samples that have been added. GetDuration() calculates the proper duration
+// values for samples added to the current timestamp. GetFramesToTarget()
+// determines the number of frames that need to be added/removed from the
+// accumulated frames to reach a target timestamp.
 class MEDIA_EXPORT AudioTimestampHelper {
  public:
-  AudioTimestampHelper(int bytes_per_frame, int samples_per_second);
+  AudioTimestampHelper(int samples_per_second);
 
   // Sets the base timestamp to |base_timestamp| and the sets count to 0.
   void SetBaseTimestamp(base::TimeDelta base_timestamp);
 
   base::TimeDelta base_timestamp() const;
 
-  // Adds sample bytes to the frame counter.
-  //
+  // Adds |frame_count| to the frame counter.
   // Note: SetBaseTimestamp() must be called with a value other than
   // kNoTimestamp() before this method can be called.
-  void AddBytes(int byte_count);
+  void AddFrames(int frame_count);
 
   // Get the current timestamp. This value is computed from the base_timestamp()
-  // and the number of sample bytes that have been added so far.
+  // and the number of sample frames that have been added so far.
   base::TimeDelta GetTimestamp() const;
 
-  // Gets the duration if |byte_count| bytes were added to the current
+  // Gets the duration if |frame_count| frames were added to the current
   // timestamp reported by GetTimestamp(). This method ensures that
-  // (GetTimestamp() + GetDuration(n)) will equal the timestamp that
-  // GetTimestamp() will return if AddBytes(n) is called.
-  base::TimeDelta GetDuration(int byte_count) const;
+  // (GetTimestamp() + GetFrameDuration(n)) will equal the timestamp that
+  // GetTimestamp() will return if AddFrames(n) is called.
+  base::TimeDelta GetFrameDuration(int frame_count) const;
 
-  // Returns the number of bytes needed to reach the target timestamp.
-  //
+  // Returns the number of frames needed to reach the target timestamp.
   // Note: |target| must be >= |base_timestamp_|.
-  int64 GetBytesToTarget(base::TimeDelta target) const;
+  int64 GetFramesToTarget(base::TimeDelta target) const;
 
  private:
   base::TimeDelta ComputeTimestamp(int64 frame_count) const;
 
-  int bytes_per_frame_;
   double microseconds_per_frame_;
 
   base::TimeDelta base_timestamp_;
 
-  // Number of frames accumulated by byte counts passed to AddBytes() calls.
+  // Number of frames accumulated by AddFrames() calls.
   int64 frame_count_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioTimestampHelper);

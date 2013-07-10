@@ -24,6 +24,9 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
     : sample_format_(sample_format),
       channel_count_(channel_count),
       frame_count_(frame_count),
+      adjusted_frame_count_(frame_count),
+      trim_start_(0),
+      end_of_stream_(data == NULL && frame_count_ == 0),
       timestamp_(timestamp),
       duration_(duration) {
   CHECK_GE(channel_count, 0);
@@ -34,10 +37,8 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
   int data_size = frame_count * bytes_per_channel;
 
   // Empty buffer?
-  if (!data) {
-    CHECK_EQ(frame_count, 0);
+  if (!data)
     return;
-  }
 
   if (sample_format == kSampleFormatPlanarF32 ||
       sample_format == kSampleFormatPlanarS16) {
@@ -90,6 +91,18 @@ scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
 }
 
 // static
+scoped_refptr<AudioBuffer> AudioBuffer::CreateEmptyBuffer(
+    int channel_count,
+    int frame_count,
+    const base::TimeDelta timestamp,
+    const base::TimeDelta duration) {
+  CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
+  // Since data == NULL, format doesn't matter.
+  return make_scoped_refptr(new AudioBuffer(
+      kSampleFormatF32, channel_count, frame_count, NULL, timestamp, duration));
+}
+
+// static
 scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new AudioBuffer(
       kUnknownSampleFormat, 1, 0, NULL, kNoTimestamp(), kNoTimestamp()));
@@ -111,8 +124,15 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
   // specified must be in range.
   DCHECK(!end_of_stream());
   DCHECK_EQ(dest->channels(), channel_count_);
+  source_frame_offset += trim_start_;
   DCHECK_LE(source_frame_offset + frames_to_copy, frame_count_);
   DCHECK_LE(dest_frame_offset + frames_to_copy, dest->frames());
+
+  if (!data_) {
+    // Special case for an empty buffer.
+    dest->ZeroFramesPartial(dest_frame_offset, frames_to_copy);
+    return;
+  }
 
   if (sample_format_ == kSampleFormatPlanarF32) {
     // Format is planar float32. Copy the data from each channel as a block.
@@ -166,6 +186,22 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
   const uint8* source_data = data_.get() + source_frame_offset * frame_size;
   dest->FromInterleavedPartial(
       source_data, dest_frame_offset, frames_to_copy, bytes_per_channel);
+}
+
+void AudioBuffer::TrimStart(int frames_to_trim) {
+  CHECK_LT(frames_to_trim, adjusted_frame_count_);
+  trim_start_ += frames_to_trim;
+
+  // Adjust timestamp_ and duration_ to reflect the smaller number of frames.
+  double offset = static_cast<double>(duration_.InMicroseconds()) *
+                  frames_to_trim / adjusted_frame_count_;
+  base::TimeDelta offset_as_time =
+      base::TimeDelta::FromMicroseconds(static_cast<int64>(offset));
+  timestamp_ += offset_as_time;
+  duration_ -= offset_as_time;
+
+  // Finally adjust the number of frames in this buffer.
+  adjusted_frame_count_ = frame_count_ - trim_start_;
 }
 
 }  // namespace media

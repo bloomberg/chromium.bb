@@ -9,12 +9,9 @@
 
 namespace media {
 
-AudioTimestampHelper::AudioTimestampHelper(int bytes_per_frame,
-                                           int samples_per_second)
-    : bytes_per_frame_(bytes_per_frame),
-      base_timestamp_(kNoTimestamp()),
+AudioTimestampHelper::AudioTimestampHelper(int samples_per_second)
+    : base_timestamp_(kNoTimestamp()),
       frame_count_(0) {
-  DCHECK_GT(bytes_per_frame, 0);
   DCHECK_GT(samples_per_second, 0);
   double fps = samples_per_second;
   microseconds_per_frame_ = base::Time::kMicrosecondsPerSecond / fps;
@@ -29,27 +26,23 @@ base::TimeDelta AudioTimestampHelper::base_timestamp() const {
   return base_timestamp_;
 }
 
-void AudioTimestampHelper::AddBytes(int byte_count) {
-  DCHECK_GE(byte_count, 0);
+void AudioTimestampHelper::AddFrames(int frame_count) {
+  DCHECK_GE(frame_count, 0);
   DCHECK(base_timestamp_ != kNoTimestamp());
-  DCHECK_EQ(byte_count % bytes_per_frame_, 0);
-  frame_count_ += byte_count / bytes_per_frame_;
+  frame_count_ += frame_count;
 }
 
 base::TimeDelta AudioTimestampHelper::GetTimestamp() const {
   return ComputeTimestamp(frame_count_);
 }
 
-base::TimeDelta AudioTimestampHelper::GetDuration(int byte_count) const {
-  DCHECK_GE(byte_count, 0);
-  DCHECK_EQ(byte_count % bytes_per_frame_, 0);
-  int frames = byte_count / bytes_per_frame_;
-  base::TimeDelta end_timestamp = ComputeTimestamp(frame_count_ + frames);
+base::TimeDelta AudioTimestampHelper::GetFrameDuration(int frame_count) const {
+  DCHECK_GE(frame_count, 0);
+  base::TimeDelta end_timestamp = ComputeTimestamp(frame_count_ + frame_count);
   return end_timestamp - GetTimestamp();
 }
 
-int64 AudioTimestampHelper::GetBytesToTarget(
-    base::TimeDelta target) const {
+int64 AudioTimestampHelper::GetFramesToTarget(base::TimeDelta target) const {
   DCHECK(base_timestamp_ != kNoTimestamp());
   DCHECK(target >= base_timestamp_);
 
@@ -68,7 +61,7 @@ int64 AudioTimestampHelper::GetBytesToTarget(
   double threshold = microseconds_per_frame_ / 2;
   int64 target_frame_count =
       (delta_from_base.InMicroseconds() + threshold) / microseconds_per_frame_;
-  return bytes_per_frame_ * (target_frame_count - frame_count_);
+  return target_frame_count - frame_count_;
 }
 
 base::TimeDelta AudioTimestampHelper::ComputeTimestamp(

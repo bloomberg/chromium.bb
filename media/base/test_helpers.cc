@@ -153,7 +153,8 @@ scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
     T start,
     T increment,
     int frames,
-    base::TimeDelta start_time) {
+    base::TimeDelta start_time,
+    base::TimeDelta duration) {
   DCHECK(format == kSampleFormatU8 || format == kSampleFormatS16 ||
          format == kSampleFormatS32 || format == kSampleFormatF32);
 
@@ -173,8 +174,6 @@ scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
     buffer[i] = start;
     start += increment;
   }
-  // Duration is 1 second per frame (for simplicity).
-  base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   return AudioBuffer::CopyFrom(
       format, channels, frames, data, start_time, duration);
 }
@@ -186,7 +185,8 @@ scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
     T start,
     T increment,
     int frames,
-    base::TimeDelta start_time) {
+    base::TimeDelta start_time,
+    base::TimeDelta duration) {
   DCHECK(format == kSampleFormatPlanarF32 || format == kSampleFormatPlanarS16);
 
   // Create multiple blocks of data, one for each channel.
@@ -209,8 +209,6 @@ scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
       start += increment;
     }
   }
-  // Duration is 1 second per frame (for simplicity).
-  base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   return AudioBuffer::CopyFrom(
       format, channels, frames, data.get(), start_time, duration);
 }
@@ -225,7 +223,8 @@ scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
       type start,                                                       \
       type increment,                                                   \
       int frames,                                                       \
-      base::TimeDelta start_time)
+      base::TimeDelta start_time,                                       \
+      base::TimeDelta duration)
 DEFINE_INTERLEAVED_INSTANCE(uint8);
 DEFINE_INTERLEAVED_INSTANCE(int16);
 DEFINE_INTERLEAVED_INSTANCE(int32);
@@ -238,7 +237,8 @@ DEFINE_INTERLEAVED_INSTANCE(float);
       type start,                                                  \
       type increment,                                              \
       int frames,                                                  \
-      base::TimeDelta start_time);
+      base::TimeDelta start_time,                                  \
+      base::TimeDelta duration);
 DEFINE_PLANAR_INSTANCE(int16);
 DEFINE_PLANAR_INSTANCE(float);
 

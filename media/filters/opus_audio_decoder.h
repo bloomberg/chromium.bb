@@ -19,8 +19,8 @@ class MessageLoopProxy;
 
 namespace media {
 
+class AudioBuffer;
 class AudioTimestampHelper;
-class DataBuffer;
 class DecoderBuffer;
 struct QueuedAudioBuffer;
 
@@ -51,7 +51,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   void CloseDecoder();
   void ResetTimestampState();
   bool Decode(const scoped_refptr<DecoderBuffer>& input,
-              scoped_refptr<DataBuffer>* output_buffer);
+              scoped_refptr<AudioBuffer>* output_buffer);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<OpusAudioDecoder> weak_factory_;

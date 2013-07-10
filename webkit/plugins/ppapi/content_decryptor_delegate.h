@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
+#include "media/base/sample_format.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ui/gfx/size.h"
@@ -127,6 +128,12 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
 
   void SetBufferToFreeInTrackingInfo(PP_DecryptTrackingInfo* tracking_info);
 
+  // Deserializes audio data stored in |audio_frames| into individual audio
+  // buffers in |frames|. Returns true upon success.
+  bool DeserializeAudioFrames(PP_Resource audio_frames,
+                              size_t data_size,
+                              media::Decryptor::AudioBuffers* frames);
+
   const PP_Instance pp_instance_;
   const PPP_ContentDecryptor_Private* const plugin_decryption_interface_;
 
@@ -172,6 +179,12 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
 
   base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;
   base::WeakPtr<ContentDecryptorDelegate> weak_this_;
+
+  // Keep track of audio parameters.
+  media::SampleFormat audio_sample_format_;
+  int audio_samples_per_second_;
+  int audio_channel_count_;
+  int audio_bytes_per_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentDecryptorDelegate);
 };

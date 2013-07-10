@@ -7,6 +7,8 @@
 #include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/safe_numerics.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/channel_layout.h"
@@ -127,56 +129,6 @@ static bool MakeEncryptedBlockInfo(
   return true;
 }
 
-// Deserializes audio data stored in |audio_frames| into individual audio
-// buffers in |frames|. Returns true upon success.
-bool DeserializeAudioFrames(PP_Resource audio_frames,
-                            int data_size,
-                            media::Decryptor::AudioBuffers* frames) {
-  DCHECK(frames);
-  EnterResourceNoLock<PPB_Buffer_API> enter(audio_frames, true);
-  if (!enter.succeeded())
-    return false;
-
-  BufferAutoMapper mapper(enter.object());
-  if (!mapper.data() || !mapper.size() ||
-      mapper.size() < static_cast<uint32_t>(data_size))
-    return false;
-
-  const uint8* cur = static_cast<uint8*>(mapper.data());
-  int bytes_left = data_size;
-
-  do {
-    int64 timestamp = 0;
-    int64 frame_size = -1;
-    const int kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
-
-    if (bytes_left < kHeaderSize)
-      return false;
-
-    memcpy(&timestamp, cur, sizeof(timestamp));
-    cur += sizeof(timestamp);
-    bytes_left -= sizeof(timestamp);
-
-    memcpy(&frame_size, cur, sizeof(frame_size));
-    cur += sizeof(frame_size);
-    bytes_left -= sizeof(frame_size);
-
-    // We should *not* have empty frame in the list.
-    if (frame_size <= 0 || bytes_left < frame_size)
-      return false;
-
-    scoped_refptr<media::DataBuffer> frame =
-        media::DataBuffer::CopyFrom(cur, frame_size);
-    frame->set_timestamp(base::TimeDelta::FromMicroseconds(timestamp));
-    frames->push_back(frame);
-
-    cur += frame_size;
-    bytes_left -= frame_size;
-  } while (bytes_left > 0);
-
-  return true;
-}
-
 PP_AudioCodec MediaAudioCodecToPpAudioCodec(media::AudioCodec codec) {
   switch (codec) {
     case media::kCodecVorbis:
@@ -282,7 +234,11 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       pending_audio_decode_request_id_(0),
       pending_video_decode_request_id_(0),
       weak_ptr_factory_(this),
-      weak_this_(weak_ptr_factory_.GetWeakPtr()) {
+      weak_this_(weak_ptr_factory_.GetWeakPtr()),
+      audio_sample_format_(media::kUnknownSampleFormat),
+      audio_samples_per_second_(0),
+      audio_channel_count_(0),
+      audio_bytes_per_frame_(0) {
 }
 
 void ContentDecryptorDelegate::Initialize(const std::string& key_system) {
@@ -441,6 +397,11 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
   pp_decoder_config.bits_per_channel = decoder_config.bits_per_channel();
   pp_decoder_config.samples_per_second = decoder_config.samples_per_second();
   pp_decoder_config.request_id = next_decryption_request_id_++;
+
+  audio_sample_format_ = decoder_config.sample_format();
+  audio_samples_per_second_ = pp_decoder_config.samples_per_second;
+  audio_channel_count_ = pp_decoder_config.channel_count;
+  audio_bytes_per_frame_ = decoder_config.bytes_per_frame();
 
   scoped_refptr<PPB_Buffer_Impl> extra_data_resource;
   if (!MakeBufferResource(pp_instance_,
@@ -1020,6 +981,67 @@ void ContentDecryptorDelegate::SetBufferToFreeInTrackingInfo(
 
   tracking_info->buffer_id = free_buffers_.front();
   free_buffers_.pop();
+}
+
+bool ContentDecryptorDelegate::DeserializeAudioFrames(
+    PP_Resource audio_frames,
+    size_t data_size,
+    media::Decryptor::AudioBuffers* frames) {
+  DCHECK(frames);
+  EnterResourceNoLock<PPB_Buffer_API> enter(audio_frames, true);
+  if (!enter.succeeded())
+    return false;
+
+  BufferAutoMapper mapper(enter.object());
+  if (!mapper.data() || !mapper.size() ||
+      mapper.size() < static_cast<uint32_t>(data_size))
+    return false;
+
+  // TODO(jrummell): Pass ownership of data() directly to AudioBuffer to avoid
+  // the copy. Since it is possible to get multiple buffers, it would need to be
+  // sliced and ref counted appropriately. http://crbug.com/255576.
+  const uint8* cur = static_cast<uint8*>(mapper.data());
+  size_t bytes_left = data_size;
+
+  do {
+    int64 timestamp = 0;
+    int64 frame_size = -1;
+    const size_t kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
+
+    if (bytes_left < kHeaderSize)
+      return false;
+
+    memcpy(&timestamp, cur, sizeof(timestamp));
+    cur += sizeof(timestamp);
+    bytes_left -= sizeof(timestamp);
+
+    memcpy(&frame_size, cur, sizeof(frame_size));
+    cur += sizeof(frame_size);
+    bytes_left -= sizeof(frame_size);
+
+    // We should *not* have empty frames in the list.
+    if (frame_size <= 0 ||
+        bytes_left < base::checked_numeric_cast<size_t>(frame_size)) {
+      return false;
+    }
+
+    const uint8* data[] = {cur};
+    int frame_count = frame_size / audio_bytes_per_frame_;
+    scoped_refptr<media::AudioBuffer> frame = media::AudioBuffer::CopyFrom(
+        audio_sample_format_,
+        audio_channel_count_,
+        frame_count,
+        data,
+        base::TimeDelta::FromMicroseconds(timestamp),
+        base::TimeDelta::FromMicroseconds(audio_samples_per_second_ /
+                                          frame_count));
+    frames->push_back(frame);
+
+    cur += frame_size;
+    bytes_left -= frame_size;
+  } while (bytes_left > 0);
+
+  return true;
 }
 
 }  // namespace ppapi

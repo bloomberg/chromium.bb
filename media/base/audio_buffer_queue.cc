@@ -26,8 +26,7 @@ void AudioBufferQueue::Clear() {
 void AudioBufferQueue::Append(const scoped_refptr<AudioBuffer>& buffer_in) {
   // If we have just written the first buffer, update |current_time_| to be the
   // start time.
-  if (buffers_.empty()) {
-    DCHECK_EQ(frames_, 0);
+  if (buffers_.empty() && buffer_in->timestamp() != kNoTimestamp()) {
     current_time_ = buffer_in->timestamp();
   }
 
@@ -41,35 +40,40 @@ void AudioBufferQueue::Append(const scoped_refptr<AudioBuffer>& buffer_in) {
   CHECK_GT(frames_, 0);  // make sure it doesn't overflow.
 }
 
-int AudioBufferQueue::ReadFrames(int frames, AudioBus* dest) {
-  DCHECK_GE(dest->frames(), frames);
-  return InternalRead(frames, true, 0, dest);
+int AudioBufferQueue::ReadFrames(int frames,
+                                 int dest_frame_offset,
+                                 AudioBus* dest) {
+  DCHECK_GE(dest->frames(), frames + dest_frame_offset);
+  return InternalRead(frames, true, 0, dest_frame_offset, dest);
 }
 
 int AudioBufferQueue::PeekFrames(int frames,
-                                 int forward_offset,
+                                 int source_frame_offset,
+                                 int dest_frame_offset,
                                  AudioBus* dest) {
   DCHECK_GE(dest->frames(), frames);
-  return InternalRead(frames, false, forward_offset, dest);
+  return InternalRead(
+      frames, false, source_frame_offset, dest_frame_offset, dest);
 }
 
 void AudioBufferQueue::SeekFrames(int frames) {
   // Perform seek only if we have enough bytes in the queue.
   CHECK_LE(frames, frames_);
-  int taken = InternalRead(frames, true, 0, NULL);
+  int taken = InternalRead(frames, true, 0, 0, NULL);
   DCHECK_EQ(taken, frames);
 }
 
 int AudioBufferQueue::InternalRead(int frames,
                                    bool advance_position,
-                                   int forward_offset,
+                                   int source_frame_offset,
+                                   int dest_frame_offset,
                                    AudioBus* dest) {
   // Counts how many frames are actually read from the buffer queue.
   int taken = 0;
   BufferQueue::iterator current_buffer = current_buffer_;
   int current_buffer_offset = current_buffer_offset_;
 
-  int frames_to_skip = forward_offset;
+  int frames_to_skip = source_frame_offset;
   while (taken < frames) {
     // |current_buffer| is valid since the first time this buffer is appended
     // with data. Make sure there is data to be processed.
@@ -94,8 +98,10 @@ int AudioBufferQueue::InternalRead(int frames,
       int copied = std::min(frames - taken, remaining_frames_in_buffer);
 
       // if |dest| is NULL, there's no need to copy.
-      if (dest)
-        buffer->ReadFrames(copied, current_buffer_offset, taken, dest);
+      if (dest) {
+        buffer->ReadFrames(
+            copied, current_buffer_offset, dest_frame_offset + taken, dest);
+      }
 
       // Increase total number of frames copied, which regulates when to end
       // this loop.
@@ -131,14 +137,13 @@ int AudioBufferQueue::InternalRead(int frames,
     DCHECK_GE(frames_, 0);
     DCHECK(current_buffer_ != buffers_.end() || frames_ == 0);
 
-    current_buffer_ = current_buffer;
-    current_buffer_offset_ = current_buffer_offset;
-
-    UpdateCurrentTime(current_buffer_, current_buffer_offset_);
+    UpdateCurrentTime(current_buffer, current_buffer_offset);
 
     // Remove any buffers before the current buffer as there is no going
     // backwards.
-    buffers_.erase(buffers_.begin(), current_buffer_);
+    buffers_.erase(buffers_.begin(), current_buffer);
+    current_buffer_ = buffers_.begin();
+    current_buffer_offset_ = current_buffer_offset;
   }
 
   return taken;

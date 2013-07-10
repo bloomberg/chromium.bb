@@ -15,9 +15,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "media/audio/audio_util.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_loop.h"
-#include "media/base/data_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/filters/audio_decoder_selector.h"
 #include "media/filters/decrypting_demuxer_stream.h"
@@ -59,8 +59,7 @@ AudioRendererImpl::AudioRendererImpl(
       current_time_(kNoTimestamp()),
       underflow_disabled_(false),
       increase_preroll_on_underflow_(increase_preroll_on_underflow),
-      preroll_aborted_(false),
-      actual_frames_per_buffer_(0) {
+      preroll_aborted_(false) {
 }
 
 AudioRendererImpl::~AudioRendererImpl() {
@@ -263,9 +262,7 @@ void AudioRendererImpl::OnDecoderSelected(
     return;
   }
 
-  int channels = ChannelLayoutToChannelCount(decoder_->channel_layout());
-  int bytes_per_frame = channels * decoder_->bits_per_channel() / 8;
-  splicer_.reset(new AudioSplicer(bytes_per_frame, sample_rate));
+  splicer_.reset(new AudioSplicer(sample_rate));
 
   // We're all good! Continue initializing the rest of the audio renderer based
   // on the decoder format.
@@ -311,7 +308,7 @@ void AudioRendererImpl::SetVolume(float volume) {
 
 void AudioRendererImpl::DecodedAudioReady(
     AudioDecoder::Status status,
-    const scoped_refptr<DataBuffer>& buffer) {
+    const scoped_refptr<AudioBuffer>& buffer) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -355,7 +352,7 @@ void AudioRendererImpl::DecodedAudioReady(
 }
 
 bool AudioRendererImpl::HandleSplicerBuffer(
-    const scoped_refptr<DataBuffer>& buffer) {
+    const scoped_refptr<AudioBuffer>& buffer) {
   if (buffer->end_of_stream()) {
     received_end_of_stream_ = true;
 
@@ -454,32 +451,20 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
 }
 
 bool AudioRendererImpl::IsBeforePrerollTime(
-    const scoped_refptr<DataBuffer>& buffer) {
+    const scoped_refptr<AudioBuffer>& buffer) {
   return (state_ == kPrerolling) && buffer.get() && !buffer->end_of_stream() &&
          (buffer->timestamp() + buffer->duration()) < preroll_timestamp_;
 }
 
 int AudioRendererImpl::Render(AudioBus* audio_bus,
                               int audio_delay_milliseconds) {
-  if (actual_frames_per_buffer_ != audio_bus->frames()) {
-    audio_buffer_.reset(
-        new uint8[audio_bus->frames() * audio_parameters_.GetBytesPerFrame()]);
-    actual_frames_per_buffer_ = audio_bus->frames();
-  }
-
-  int frames_filled = FillBuffer(
-      audio_buffer_.get(), audio_bus->frames(), audio_delay_milliseconds);
-  DCHECK_LE(frames_filled, actual_frames_per_buffer_);
-
-  // Deinterleave audio data into the output bus.
-  audio_bus->FromInterleaved(
-      audio_buffer_.get(), frames_filled,
-      audio_parameters_.bits_per_sample() / 8);
-
+  int frames_filled =
+      FillBuffer(audio_bus, audio_bus->frames(), audio_delay_milliseconds);
+  DCHECK_LE(frames_filled, audio_bus->frames());
   return frames_filled;
 }
 
-uint32 AudioRendererImpl::FillBuffer(uint8* dest,
+uint32 AudioRendererImpl::FillBuffer(AudioBus* dest,
                                      uint32 requested_frames,
                                      int audio_delay_milliseconds) {
   base::TimeDelta current_time = kNoTimestamp();

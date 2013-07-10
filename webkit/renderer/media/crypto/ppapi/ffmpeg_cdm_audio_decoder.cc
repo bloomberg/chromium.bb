@@ -151,8 +151,8 @@ bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
   bits_per_channel_ = config.bits_per_channel;
   samples_per_second_ = config.samples_per_second;
   bytes_per_frame_ = codec_context_->channels * bits_per_channel_ / 8;
-  output_timestamp_helper_.reset(new media::AudioTimestampHelper(
-      bytes_per_frame_, config.samples_per_second));
+  output_timestamp_helper_.reset(
+      new media::AudioTimestampHelper(config.samples_per_second));
   serialized_audio_frames_.reserve(bytes_per_frame_ * samples_per_second_);
   is_initialized_ = true;
 
@@ -351,7 +351,8 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
 
       base::TimeDelta output_timestamp =
           output_timestamp_helper_->GetTimestamp();
-      output_timestamp_helper_->AddBytes(decoded_audio_size);
+      output_timestamp_helper_->AddFrames(decoded_audio_size /
+                                          bytes_per_frame_);
 
       // Serialize the audio samples into |serialized_audio_frames_|.
       SerializeInt64(output_timestamp.InMicroseconds());

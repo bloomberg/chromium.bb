@@ -459,8 +459,7 @@ void MediaSourcePlayer::DemuxerReady(
   audio_extra_data_ = params.audio_extra_data;
   if (HasAudio()) {
     DCHECK_GT(num_channels_, 0);
-    audio_timestamp_helper_.reset(new AudioTimestampHelper(
-        kBytesPerAudioOutputSample * num_channels_, sampling_rate_));
+    audio_timestamp_helper_.reset(new AudioTimestampHelper(sampling_rate_));
     audio_timestamp_helper_->SetBaseTimestamp(GetCurrentTime());
   } else {
     audio_timestamp_helper_.reset();
@@ -560,7 +559,8 @@ void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {
 void MediaSourcePlayer::UpdateTimestamps(
     const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
   if (audio_output_bytes > 0) {
-    audio_timestamp_helper_->AddBytes(audio_output_bytes);
+    audio_timestamp_helper_->AddFrames(
+        audio_output_bytes / (kBytesPerAudioOutputSample * num_channels_));
     clock_.SetMaxTime(audio_timestamp_helper_->GetTimestamp());
   } else {
     clock_.SetMaxTime(presentation_timestamp);

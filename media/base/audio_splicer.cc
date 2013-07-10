@@ -7,10 +7,10 @@
 #include <cstdlib>
 
 #include "base/logging.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/buffers.h"
-#include "media/base/data_buffer.h"
 
 namespace media {
 
@@ -20,9 +20,9 @@ namespace media {
 // roughly represents the duration of 2 compressed AAC or MP3 frames.
 static const int kMaxTimeDeltaInMilliseconds = 50;
 
-AudioSplicer::AudioSplicer(int bytes_per_frame, int samples_per_second)
-    : output_timestamp_helper_(bytes_per_frame, samples_per_second),
-      min_gap_size_(2 * bytes_per_frame),
+AudioSplicer::AudioSplicer(int samples_per_second)
+    : output_timestamp_helper_(samples_per_second),
+      min_gap_size_(2),
       received_end_of_stream_(false) {
 }
 
@@ -35,7 +35,7 @@ void AudioSplicer::Reset() {
   received_end_of_stream_ = false;
 }
 
-bool AudioSplicer::AddInput(const scoped_refptr<DataBuffer>& input){
+bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   DCHECK(!received_end_of_stream_ || input->end_of_stream());
 
   if (input->end_of_stream()) {
@@ -46,7 +46,7 @@ bool AudioSplicer::AddInput(const scoped_refptr<DataBuffer>& input){
 
   DCHECK(input->timestamp() != kNoTimestamp());
   DCHECK(input->duration() > base::TimeDelta());
-  DCHECK_GT(input->data_size(), 0);
+  DCHECK_GT(input->frame_count(), 0);
 
   if (output_timestamp_helper_.base_timestamp() == kNoTimestamp())
     output_timestamp_helper_.SetBaseTimestamp(input->timestamp());
@@ -65,26 +65,26 @@ bool AudioSplicer::AddInput(const scoped_refptr<DataBuffer>& input){
     return false;
   }
 
-  int bytes_to_fill = 0;
+  int frames_to_fill = 0;
   if (delta != base::TimeDelta())
-    bytes_to_fill = output_timestamp_helper_.GetBytesToTarget(timestamp);
+    frames_to_fill = output_timestamp_helper_.GetFramesToTarget(timestamp);
 
-  if (bytes_to_fill == 0 || std::abs(bytes_to_fill) < min_gap_size_) {
+  if (frames_to_fill == 0 || std::abs(frames_to_fill) < min_gap_size_) {
     AddOutputBuffer(input);
     return true;
   }
 
-  if (bytes_to_fill > 0) {
+  if (frames_to_fill > 0) {
     DVLOG(1) << "Gap detected @ " << expected_timestamp.InMicroseconds()
              << " us: " << delta.InMicroseconds() << " us";
 
     // Create a buffer with enough silence samples to fill the gap and
     // add it to the output buffer.
-    scoped_refptr<DataBuffer> gap = new DataBuffer(bytes_to_fill);
-    gap->set_data_size(bytes_to_fill);
-    memset(gap->writable_data(), 0, bytes_to_fill);
-    gap->set_timestamp(expected_timestamp);
-    gap->set_duration(output_timestamp_helper_.GetDuration(bytes_to_fill));
+    scoped_refptr<AudioBuffer> gap = AudioBuffer::CreateEmptyBuffer(
+        input->channel_count(),
+        frames_to_fill,
+        expected_timestamp,
+        output_timestamp_helper_.GetFrameDuration(frames_to_fill));
     AddOutputBuffer(gap);
 
     // Add the input buffer now that the gap has been filled.
@@ -92,12 +92,12 @@ bool AudioSplicer::AddInput(const scoped_refptr<DataBuffer>& input){
     return true;
   }
 
-  int bytes_to_skip = -bytes_to_fill;
+  int frames_to_skip = -frames_to_fill;
 
   DVLOG(1) << "Overlap detected @ " << expected_timestamp.InMicroseconds()
            << " us: "  << -delta.InMicroseconds() << " us";
 
-  if (input->data_size() <= bytes_to_skip) {
+  if (input->frame_count() <= frames_to_skip) {
     DVLOG(1) << "Dropping whole buffer";
     return true;
   }
@@ -107,17 +107,8 @@ bool AudioSplicer::AddInput(const scoped_refptr<DataBuffer>& input){
   //
   // TODO(acolwell): Implement a cross-fade here so the transition is less
   // jarring.
-  int new_buffer_size = input->data_size() - bytes_to_skip;
-
-  scoped_refptr<DataBuffer> new_buffer = new DataBuffer(new_buffer_size);
-  new_buffer->set_data_size(new_buffer_size);
-  memcpy(new_buffer->writable_data(),
-         input->data() + bytes_to_skip,
-         new_buffer_size);
-  new_buffer->set_timestamp(expected_timestamp);
-  new_buffer->set_duration(
-      output_timestamp_helper_.GetDuration(new_buffer_size));
-  AddOutputBuffer(new_buffer);
+  input->TrimStart(frames_to_skip);
+  AddOutputBuffer(input);
   return true;
 }
 
@@ -125,14 +116,14 @@ bool AudioSplicer::HasNextBuffer() const {
   return !output_buffers_.empty();
 }
 
-scoped_refptr<DataBuffer> AudioSplicer::GetNextBuffer() {
-  scoped_refptr<DataBuffer> ret = output_buffers_.front();
+scoped_refptr<AudioBuffer> AudioSplicer::GetNextBuffer() {
+  scoped_refptr<AudioBuffer> ret = output_buffers_.front();
   output_buffers_.pop_front();
   return ret;
 }
 
-void AudioSplicer::AddOutputBuffer(const scoped_refptr<DataBuffer>& buffer) {
-  output_timestamp_helper_.AddBytes(buffer->data_size());
+void AudioSplicer::AddOutputBuffer(const scoped_refptr<AudioBuffer>& buffer) {
+  output_timestamp_helper_.AddFrames(buffer->frame_count());
   output_buffers_.push_back(buffer);
 }
 

@@ -94,8 +94,8 @@ class TestVideoConfig {
 // requires data to be of type T, but it is verified that |format| is an
 // interleaved format.
 //
-// |start_time| will be used as the start time for the samples. Duration is set
-// to 1 second per frame, to simplify calculations.
+// |start_time| will be used as the start time for the samples. |duration| is
+// the duration.
 template <class T>
 scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
     SampleFormat format,
@@ -103,7 +103,8 @@ scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
     T start,
     T increment,
     int frames,
-    base::TimeDelta start_time);
+    base::TimeDelta start_time,
+    base::TimeDelta duration);
 
 // Create an AudioBuffer containing |frames| frames of data, where each sample
 // is of type T. Since this is planar data, there will be a block for each of
@@ -117,8 +118,8 @@ scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
 // similar. No check is done that |format| requires data to be of type T, but it
 // is verified that |format| is a planar format.
 //
-// |start_time| will be used as the start time for the samples. Duration is set
-// to 1 second per frame, to simplify calculations.
+// |start_time| will be used as the start time for the samples. |duration| is
+// the duration.
 template <class T>
 scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
     SampleFormat format,
@@ -126,7 +127,8 @@ scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
     T start,
     T increment,
     int frames,
-    base::TimeDelta start_time);
+    base::TimeDelta start_time,
+    base::TimeDelta duration);
 
 }  // namespace media
 
