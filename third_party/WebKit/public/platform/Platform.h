@@ -290,7 +290,7 @@ public:
     // A wrapper for tcmalloc's HeapProfilerStop();
     virtual void stopHeapProfiling() { }
     // A wrapper for tcmalloc's HeapProfilerDump()
-    virtual void dumpHeapProfing(const WebString& /*reason*/) { }
+    virtual void dumpHeapProfiling(const WebString& /*reason*/) { }
     // A wrapper for tcmalloc's GetHeapProfile()
     virtual WebString getHeapProfile() { return WebString(); }
 

@@ -48,9 +48,9 @@ void InternalProfilers::stopHeapProfiling()
     WebKit::Platform::current()->stopHeapProfiling();
 }
 
-void InternalProfilers::dumpHeapProfing(const String& reason)
+void InternalProfilers::dumpHeapProfiling(const String& reason)
 {
-    WebKit::Platform::current()->dumpHeapProfing(reason);
+    WebKit::Platform::current()->dumpHeapProfiling(reason);
 }
 
 String InternalProfilers::getHeapProfile()

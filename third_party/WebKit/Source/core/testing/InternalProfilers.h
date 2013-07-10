@@ -45,7 +45,7 @@ public:
 
     void startHeapProfiling(const String& prefix);
     void stopHeapProfiling();
-    void dumpHeapProfing(const String& reason);
+    void dumpHeapProfiling(const String& reason);
     String getHeapProfile();
 };
 

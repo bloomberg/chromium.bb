@@ -33,6 +33,6 @@
 ] interface InternalProfilers {
     void startHeapProfiling(DOMString prefix);
     void stopHeapProfiling();
-    void dumpHeapProfing(DOMString reason);
+    void dumpHeapProfiling(DOMString reason);
     DOMString getHeapProfile();
 };
