@@ -1154,16 +1154,26 @@ void RenderLayerCompositor::frameViewDidScroll()
     if (!m_scrollLayer)
         return;
 
-    // If there's a scrolling coordinator that manages scrolling for this frame view,
-    // it will also manage updating the scroll layer position.
+    bool scrollingCoordinatorHandlesOffset = false;
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
         if (Settings* settings = m_renderView->document()->settings()) {
             if (isMainFrame() || settings->compositedScrollingForFramesEnabled())
-                scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
+                scrollingCoordinatorHandlesOffset = scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
         }
     }
 
-    m_scrollLayer->setPosition(FloatPoint(-scrollPosition.x(), -scrollPosition.y()));
+#ifndef BLINK_SCROLLING_POSITION_NO_OFFSET
+    // FIXME: Remove when possible. Only required to stage multi-repo change.
+    scrollingCoordinatorHandlesOffset = false;
+#endif
+
+    // Scroll position = scroll minimum + scroll offset. Adjust the layer's
+    // position to handle whatever the scroll coordinator isn't handling.
+    // The minimum scroll position is non-zero for RTL pages with overflow.
+    if (scrollingCoordinatorHandlesOffset)
+        m_scrollLayer->setPosition(-frameView->minimumScrollPosition());
+    else
+        m_scrollLayer->setPosition(-scrollPosition);
 }
 
 void RenderLayerCompositor::frameViewDidLayout()
@@ -1192,10 +1202,11 @@ void RenderLayerCompositor::rootFixedBackgroundsChanged()
         m_clipLayer->addChildBelow(backgroundLayer, m_scrollLayer.get());
 }
 
-void RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
+bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 {
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer);
+        return scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer);
+    return false;
 }
 
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)

@@ -267,7 +267,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
         removeWebScrollbarLayer(scrollableArea, orientation);
 }
 
-void ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* scrollableArea)
+bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* scrollableArea)
 {
     GraphicsLayer* scrollLayer = scrollLayerForScrollableArea(scrollableArea);
     if (scrollLayer) {
@@ -285,6 +285,8 @@ void ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
         setupScrollbarLayer(horizontalScrollbarLayerForScrollableArea(scrollableArea), scrollbarLayer, webLayer);
     if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, VerticalScrollbar))
         setupScrollbarLayer(verticalScrollbarLayerForScrollableArea(scrollableArea), scrollbarLayer, webLayer);
+
+    return !!webLayer;
 }
 
 void ScrollingCoordinator::setTouchEventTargetRects(const Vector<IntRect>& absoluteHitTestRects)

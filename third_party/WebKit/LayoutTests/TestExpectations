@@ -1811,6 +1811,15 @@ crbug.com/254985 [ Win ] fast/events/space-scroll-event.html [ Crash Pass ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Failure ]
 
+Bug(enne) compositing/fixed-body-background-positioned.html [ Pass Failure ]
+Bug(enne) compositing/overflow/scrolling-without-painting.html [ Pass Failure ]
+Bug(enne) compositing/overflow/textarea-scroll-touch.html [ Pass Failure ]
+Bug(enne) virtual/gpu/compositedscrolling/overflow/scrolling-without-painting.html [ Pass Failure ]
+Bug(enne) virtual/gpu/compositedscrolling/overflow/textarea-scroll-touch.html [ Pass Failure ]
+Bug(enne) virtual/softwarecompositing/fixed-body-background-positioned.html [ Pass Failure ]
+Bug(enne) virtual/softwarecompositing/overflow/scrolling-without-painting.html [ Pass Failure ]
+Bug(enne) virtual/softwarecompositing/overflow/textarea-scroll-touch.html [ Pass Failure ]
+
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
 
 crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]

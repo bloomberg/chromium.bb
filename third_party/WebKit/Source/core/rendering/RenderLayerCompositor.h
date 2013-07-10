@@ -175,7 +175,7 @@ public:
     void frameViewDidLayout();
     void rootFixedBackgroundsChanged();
 
-    void scrollingLayerDidChange(RenderLayer*);
+    bool scrollingLayerDidChange(RenderLayer*);
 
     String layerTreeAsText(LayerTreeFlags);
 

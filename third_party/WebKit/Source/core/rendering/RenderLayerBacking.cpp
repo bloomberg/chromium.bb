@@ -638,7 +638,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         IntSize adjustedScrollOffset = m_owningLayer->adjustedScrollOffset();
         m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location()));
         m_scrollingLayer->setSize(clientBox.size());
-        m_scrollingContentsLayer->setPosition(FloatPoint(-adjustedScrollOffset.width(), -adjustedScrollOffset.height()));
 
         IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromRenderer();
         m_scrollingLayer->setOffsetFromRenderer(-toIntSize(clientBox.location()));
@@ -650,8 +649,19 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
             m_scrollingContentsLayer->setNeedsDisplay();
 
         IntSize scrollingContentsOffset = toIntSize(clientBox.location() - adjustedScrollOffset);
-        if (scrollingContentsOffset != m_scrollingContentsLayer->offsetFromRenderer() || scrollSize != m_scrollingContentsLayer->size())
-            compositor()->scrollingLayerDidChange(m_owningLayer);
+        if (scrollingContentsOffset != m_scrollingContentsLayer->offsetFromRenderer() || scrollSize != m_scrollingContentsLayer->size()) {
+            bool scrollingCoordinatorHandlesOffset = compositor()->scrollingLayerDidChange(m_owningLayer);
+
+#ifndef BLINK_SCROLLING_POSITION_NO_OFFSET
+            // FIXME: Remove when possible.
+            // Only required to stage multi-repo change.
+            scrollingCoordinatorHandlesOffset = false;
+#endif
+            if (scrollingCoordinatorHandlesOffset)
+                m_scrollingContentsLayer->setPosition(-m_owningLayer->scrollOrigin());
+            else
+                m_scrollingContentsLayer->setPosition(FloatPoint(-adjustedScrollOffset));
+        }
 
         m_scrollingContentsLayer->setSize(scrollSize);
         // FIXME: The paint offset and the scroll offset should really be separate concepts.

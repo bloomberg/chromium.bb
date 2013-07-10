@@ -90,7 +90,8 @@ public:
     bool shouldUpdateScrollLayerPositionOnMainThread() const { return mainThreadScrollingReasons() != 0; }
 
     void willDestroyScrollableArea(ScrollableArea*);
-    void scrollableAreaScrollLayerDidChange(ScrollableArea*);
+    // Returns true if the coordinator handled this change.
+    bool scrollableAreaScrollLayerDidChange(ScrollableArea*);
     void scrollableAreaScrollbarLayerDidChange(ScrollableArea*, ScrollbarOrientation);
     void setLayerIsContainerForFixedPositionLayers(GraphicsLayer*, bool);
     void updateLayerPositionConstraint(RenderLayer*);
