@@ -86,7 +86,7 @@ const String& CachedScript::script()
 
 bool CachedScript::mimeTypeAllowedByNosniff() const
 {
-    return !parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) == ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
+    return parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
 }
 
 void CachedScript::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
