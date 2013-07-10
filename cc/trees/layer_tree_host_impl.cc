@@ -944,7 +944,10 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
 
 bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
                                       gfx::Rect device_viewport_damage_rect) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::PrepareToDraw");
+  TRACE_EVENT1("cc",
+               "LayerTreeHostImpl::PrepareToDraw",
+               "SourceFrameNumber",
+               active_tree_->source_frame_number());
 
   if (need_check_for_completed_tile_uploads_before_draw_) {
     DCHECK(tile_manager_);

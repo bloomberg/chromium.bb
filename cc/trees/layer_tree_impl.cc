@@ -276,10 +276,12 @@ void LayerTreeImpl::UpdateDrawProperties() {
     return;
 
   {
-    TRACE_EVENT1("cc",
+    TRACE_EVENT2("cc",
                  "LayerTreeImpl::UpdateDrawProperties",
                  "IsActive",
-                 IsActiveTree());
+                 IsActiveTree(),
+                 "SourceFrameNumber",
+                 source_frame_number_);
     LayerTreeHostCommon::CalculateDrawProperties(
         root_layer(),
         layer_tree_host_impl_->DeviceViewport().size(),

@@ -686,7 +686,7 @@ void LayerTreeHost::CalculateLCDTextMetricsCallback(Layer* layer) {
 bool LayerTreeHost::UpdateLayers(Layer* root_layer,
                                  ResourceUpdateQueue* queue) {
   TRACE_EVENT1("cc", "LayerTreeHost::UpdateLayers",
-               "commit_number", commit_number());
+               "SourceFrameNumber", commit_number());
 
   LayerList update_list;
   {
