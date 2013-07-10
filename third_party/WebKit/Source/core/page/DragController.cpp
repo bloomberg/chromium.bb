@@ -102,6 +102,8 @@ static bool dragTypeIsValid(DragSourceAction action)
     case DragSourceActionNone:
         return false;
     }
+    // Make sure MSVC doesn't complain that not all control paths return a value.
+    return false;
 }
 
 static PlatformMouseEvent createMouseEvent(DragData* dragData)
