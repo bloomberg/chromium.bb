@@ -411,7 +411,6 @@ class DepsChecker(object):
     cpp = cpp_checker.CppChecker(self.verbose)
     problems = []
     for file_path, include_lines in added_includes:
-      # TODO(joi): Make this cover Java as well.
       if not cpp.IsCppFile(file_path):
         pass
       rules_for_file = self.GetDirectoryRules(os.path.dirname(file_path))
