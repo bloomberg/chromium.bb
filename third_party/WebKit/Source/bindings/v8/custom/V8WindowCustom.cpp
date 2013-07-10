@@ -485,17 +485,21 @@ bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t i
     Frame* target = targetWindow->frame();
     if (!target)
         return false;
-    Frame* childFrame =  target->tree()->scopedChild(index);
 
     // Notify the loader's client if the initial document has been accessed.
     if (target->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
         target->loader()->didAccessInitialDocument();
 
+    Frame* childFrame =  target->tree()->scopedChild(index);
+
     // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
     // because that would generate infinite recursion.
     if (type == v8::ACCESS_HAS && childFrame)
         return true;
-    if (type == v8::ACCESS_GET && childFrame && !host->HasRealIndexedProperty(index))
+    if (type == v8::ACCESS_GET
+        && childFrame
+        && !host->HasRealIndexedProperty(index)
+        && !window->HasRealIndexedProperty(index))
         return true;
 
     return BindingSecurity::shouldAllowAccessToFrame(target, DoNotReportSecurityError);
