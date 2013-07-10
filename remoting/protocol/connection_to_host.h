@@ -77,7 +77,8 @@ class ConnectionToHost : public SignalStrategy::Listener,
   ConnectionToHost(bool allow_nat_traversal);
   virtual ~ConnectionToHost();
 
-  // |signal_strategy| must outlive connection.
+  // |signal_strategy| must outlive connection. |audio_stub| may be
+  // null, in which case audio will not be requested.
   virtual void Connect(SignalStrategy* signal_strategy,
                        const std::string& host_jid,
                        const std::string& host_public_key,

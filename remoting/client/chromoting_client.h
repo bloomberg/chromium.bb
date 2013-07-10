@@ -42,6 +42,7 @@ class SignalStrategy;
 class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::ClientStub {
  public:
+  // |audio_player| may be null, in which case audio will not be requested.
   ChromotingClient(const ClientConfig& config,
                    ClientContext* client_context,
                    protocol::ConnectionToHost* connection,

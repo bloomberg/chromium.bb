@@ -41,10 +41,12 @@ ChromotingClient::ChromotingClient(
       new RectangleUpdateDecoder(client_context->main_task_runner(),
                                  client_context->decode_task_runner(),
                                  frame_consumer);
-  audio_decode_scheduler_.reset(new AudioDecodeScheduler(
-      client_context->main_task_runner(),
-      client_context->audio_decode_task_runner(),
-      audio_player.Pass()));
+  if (audio_player) {
+    audio_decode_scheduler_.reset(new AudioDecodeScheduler(
+        client_context->main_task_runner(),
+        client_context->audio_decode_task_runner(),
+        audio_player.Pass()));
+  }
 }
 
 ChromotingClient::~ChromotingClient() {
