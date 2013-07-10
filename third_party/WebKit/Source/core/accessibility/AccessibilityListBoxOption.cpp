@@ -59,8 +59,8 @@ bool AccessibilityListBoxOption::isEnabled() const
 {
     if (!m_optionElement)
         return false;
-    
-    if (m_optionElement->hasTagName(optgroupTag))
+
+    if (isHTMLOptGroupElement(m_optionElement))
         return false;
 
     if (equalIgnoringCase(getAttribute(aria_disabledAttr), "true"))
@@ -154,10 +154,10 @@ String AccessibilityListBoxOption::stringValue() const
     
     if (m_optionElement->hasTagName(optionTag))
         return toHTMLOptionElement(m_optionElement)->text();
-    
-    if (m_optionElement->hasTagName(optgroupTag))
-        return static_cast<HTMLOptGroupElement*>(m_optionElement)->groupLabelText();
-    
+
+    if (isHTMLOptGroupElement(m_optionElement))
+        return toHTMLOptGroupElement(m_optionElement)->groupLabelText();
+
     return String();
 }
 
@@ -200,10 +200,10 @@ HTMLSelectElement* AccessibilityListBoxOption::listBoxOptionParentNode() const
     
     if (m_optionElement->hasTagName(optionTag))
         return toHTMLOptionElement(m_optionElement)->ownerSelectElement();
-    
-    if (m_optionElement->hasTagName(optgroupTag))
-        return static_cast<HTMLOptGroupElement*>(m_optionElement)->ownerSelectElement();
-    
+
+    if (isHTMLOptGroupElement(m_optionElement))
+        return toHTMLOptGroupElement(m_optionElement)->ownerSelectElement();
+
     return 0;
 }
 

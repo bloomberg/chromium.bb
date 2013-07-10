@@ -81,6 +81,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLOptGroupElement.h"
 #include "core/html/track/WebVTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/CachedDocument.h"
@@ -722,7 +723,7 @@ bool StyleResolver::canShareStyleWithElement(Element* element) const
     // FIXME: We should share style for option and optgroup whenever possible.
     // Before doing so, we need to resolve issues in HTMLSelectElement::recalcListItems
     // and RenderMenuList::setText. See also https://bugs.webkit.org/show_bug.cgi?id=88405
-    if (element->hasTagName(optionTag) || element->hasTagName(optgroupTag))
+    if (element->hasTagName(optionTag) || isHTMLOptGroupElement(element))
         return false;
 
     bool isControl = element->isFormControlElement();

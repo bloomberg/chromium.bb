@@ -121,10 +121,10 @@ void RenderListBox::updateFromElement()
             HTMLElement* element = listItems[i];
             String text;
             Font itemFont = style()->font();
-            if (element->hasTagName(optionTag))
+            if (element->hasTagName(optionTag)) {
                 text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-            else if (element->hasTagName(optgroupTag)) {
-                text = static_cast<const HTMLOptGroupElement*>(element)->groupLabelText();
+            } else if (isHTMLOptGroupElement(element)) {
+                text = toHTMLOptGroupElement(element)->groupLabelText();
                 FontDescription d = itemFont.fontDescription();
                 d.setWeight(d.bolderWeight());
                 itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());
@@ -403,8 +403,8 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
     bool isOptionElement = element->hasTagName(optionTag);
     if (isOptionElement)
         itemText = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-    else if (element->hasTagName(optgroupTag))
-        itemText = static_cast<const HTMLOptGroupElement*>(element)->groupLabelText();
+    else if (isHTMLOptGroupElement(element))
+        itemText = toHTMLOptGroupElement(element)->groupLabelText();
     applyTextTransform(style(), itemText, ' ');
 
     Color textColor = element->renderStyle() ? element->renderStyle()->visitedDependentColor(CSSPropertyColor) : style()->visitedDependentColor(CSSPropertyColor);
@@ -423,7 +423,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
     LayoutRect r = itemBoundingBoxRect(paintOffset, listIndex);
     r.move(itemOffsetForAlignment(textRun, itemStyle, itemFont, r));
 
-    if (element->hasTagName(optgroupTag)) {
+    if (isHTMLOptGroupElement(element)) {
         FontDescription d = itemFont.fontDescription();
         d.setWeight(d.bolderWeight());
         itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());

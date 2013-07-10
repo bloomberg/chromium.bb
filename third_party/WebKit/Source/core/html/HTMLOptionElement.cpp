@@ -34,6 +34,7 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLDataListElement.h"
+#include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTheme.h"
@@ -333,7 +334,7 @@ void HTMLOptionElement::didRecalcStyle(StyleChange)
 String HTMLOptionElement::textIndentedToRespectGroupLabel() const
 {
     ContainerNode* parent = parentNode();
-    if (parent && parent->hasTagName(optgroupTag))
+    if (parent && isHTMLOptGroupElement(parent))
         return "    " + text();
     return text();
 }
@@ -343,7 +344,7 @@ bool HTMLOptionElement::isDisabledFormControl() const
     if (ownElementDisabled())
         return true;
     if (Element* parent = parentElement())
-        return parent->hasTagName(optgroupTag) && parent->isDisabledFormControl();
+        return isHTMLOptGroupElement(parent) && parent->isDisabledFormControl();
     return false;
 }
 

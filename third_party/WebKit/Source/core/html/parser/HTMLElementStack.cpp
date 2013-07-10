@@ -31,6 +31,7 @@
 #include "MathMLNames.h"
 #include "SVGNames.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLOptGroupElement.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
@@ -113,7 +114,7 @@ inline bool isButtonScopeMarker(HTMLStackItem* item)
 
 inline bool isSelectScopeMarker(HTMLStackItem* item)
 {
-    return !item->hasTagName(optgroupTag)
+    return !isHTMLOptGroupElement(item->node())
         && !item->hasTagName(optionTag);
 }
 
