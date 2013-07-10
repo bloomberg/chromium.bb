@@ -140,12 +140,16 @@ ManagedUserService::ManagedUserService(Profile* profile)
     : weak_ptr_factory_(this),
       profile_(profile),
       waiting_for_sync_initialization_(false),
-      elevated_for_testing_(false) {
+      elevated_for_testing_(false),
+      did_shutdown_(false) {
 }
 
-ManagedUserService::~ManagedUserService() {}
+ManagedUserService::~ManagedUserService() {
+  DCHECK(did_shutdown_);
+}
 
 void ManagedUserService::Shutdown() {
+  did_shutdown_ = true;
   if (!waiting_for_sync_initialization_)
     return;
 

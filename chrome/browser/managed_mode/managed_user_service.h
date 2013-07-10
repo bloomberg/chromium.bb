@@ -51,7 +51,6 @@ class ManagedUserService : public BrowserContextKeyedService,
     MANUAL_BLOCK
   };
 
-  explicit ManagedUserService(Profile* profile);
   virtual ~ManagedUserService();
 
   // ProfileKeyedService override:
@@ -158,6 +157,7 @@ class ManagedUserService : public BrowserContextKeyedService,
 
  private:
   friend class ManagedUserServiceExtensionTest;
+  friend class ManagedUserServiceFactory;
 
   // A bridge from ManagedMode (which lives on the UI thread) to the
   // ManagedModeURLFilters, one of which lives on the IO thread. This class
@@ -188,6 +188,10 @@ class ManagedUserService : public BrowserContextKeyedService,
 
     DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
   };
+
+  // Use |ManagedUserServiceFactory::GetForProfile(..)| to get
+  // an instance of this service.
+  explicit ManagedUserService(Profile* profile);
 
   void OnCustodianProfileDownloaded(const string16& full_name);
 
@@ -235,6 +239,9 @@ class ManagedUserService : public BrowserContextKeyedService,
 
   // Sets a profile in elevated state for testing if set to true.
   bool elevated_for_testing_;
+
+  // True only when |Shutdown()| method has been called.
+  bool did_shutdown_;
 
   URLFilterContext url_filter_context_;
 };
