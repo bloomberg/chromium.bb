@@ -98,7 +98,14 @@ class AudioInputVolumeTest : public ::testing::Test {
 #endif
 };
 
-TEST_F(AudioInputVolumeTest, InputVolumeTest) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Currently failing on linux ARM bot: http://crbug/238490
+#define MAYBE_InputVolumeTest DISABLED_InputVolumeTest
+#else
+#define MAYBE_InputVolumeTest InputVolumeTest
+#endif
+
+TEST_F(AudioInputVolumeTest, MAYBE_InputVolumeTest) {
   if (!CanRunAudioTests())
     return;
 
