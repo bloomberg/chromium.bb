@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APPS_CHROME_SHELL_WINDOW_DELEGATE_H_
 
 #include "apps/shell_window.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -13,6 +14,19 @@
 #include "ui/gfx/rect.h"
 
 namespace chrome {
+
+class ShellWindowLinkDelegate : public content::WebContentsDelegate {
+ public:
+  ShellWindowLinkDelegate();
+  virtual ~ShellWindowLinkDelegate();
+
+ private:
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellWindowLinkDelegate);
+};
 
 class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
  public:
@@ -50,6 +64,8 @@ class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
                                      bool blocked) OVERRIDE;
   virtual bool IsWebContentsVisible(
       content::WebContents* web_contents) OVERRIDE;
+
+  scoped_ptr<ShellWindowLinkDelegate> shell_window_link_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellWindowDelegate);
 };

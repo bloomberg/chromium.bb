@@ -29,19 +29,11 @@ namespace {
 
 bool disable_external_open_for_testing_ = false;
 
-class ShellWindowLinkDelegate : public content::WebContentsDelegate {
- public:
-  ShellWindowLinkDelegate();
-
- private:
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellWindowLinkDelegate);
-};
+}  // namespace
 
 ShellWindowLinkDelegate::ShellWindowLinkDelegate() {}
+
+ShellWindowLinkDelegate::~ShellWindowLinkDelegate() {}
 
 // TODO(rockot): Add a test that exercises this code. See
 // http://crbug.com/254260.
@@ -52,8 +44,6 @@ content::WebContents* ShellWindowLinkDelegate::OpenURLFromTab(
   delete source;
   return NULL;
 }
-
-}  // namespace
 
 ChromeShellWindowDelegate::ChromeShellWindowDelegate() {}
 
@@ -92,7 +82,9 @@ void ChromeShellWindowDelegate::AddNewContents(
     bool user_gesture,
     bool* was_blocked) {
   if (!disable_external_open_for_testing_) {
-    new_contents->SetDelegate(new ShellWindowLinkDelegate());
+    if (!shell_window_link_delegate_.get())
+      shell_window_link_delegate_.reset(new ShellWindowLinkDelegate());
+    new_contents->SetDelegate(shell_window_link_delegate_.get());
     return;
   }
   Browser* browser =
