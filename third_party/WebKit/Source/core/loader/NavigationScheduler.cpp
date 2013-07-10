@@ -186,10 +186,9 @@ public:
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
 
         if (!m_historySteps) {
-            FrameLoadRequest frameRequest(frame->document()->securityOrigin(), ResourceRequest(frame->document()->url()));
             // Special case for go(0) from a frame -> reload only the frame
             // To follow Firefox and IE's behavior, history reload can only navigate the self frame.
-            frame->loader()->loadFrameRequest(frameRequest, lockBackForwardList(), 0, 0, MaybeSendReferrer);
+            frame->loader()->urlSelected(frame->document()->url(), "_self", 0, lockBackForwardList(), MaybeSendReferrer);
             return;
         }
         // go(i!=0) from a frame navigates into the history of the frame only,

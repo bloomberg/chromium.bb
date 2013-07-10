@@ -221,9 +221,37 @@ void FrameLoader::setDefersLoading(bool defers)
 void FrameLoader::changeLocation(SecurityOrigin* securityOrigin, const KURL& url, const String& referrer, bool lockBackForwardList, bool refresh)
 {
     m_startingClientRedirect = true;
-    loadFrameRequest(FrameLoadRequest(securityOrigin, ResourceRequest(url, referrer, refresh ? ReloadIgnoringCacheData : UseProtocolCachePolicy), "_self"),
-        lockBackForwardList, 0, 0, MaybeSendReferrer);
+    urlSelected(FrameLoadRequest(securityOrigin, ResourceRequest(url, referrer, refresh ? ReloadIgnoringCacheData : UseProtocolCachePolicy), "_self"),
+        0, lockBackForwardList, MaybeSendReferrer);
     m_startingClientRedirect = false;
+}
+
+void FrameLoader::urlSelected(const KURL& url, const String& passedTarget, PassRefPtr<Event> triggeringEvent, bool lockBackForwardList, ShouldSendReferrer shouldSendReferrer)
+{
+    urlSelected(FrameLoadRequest(m_frame->document()->securityOrigin(), ResourceRequest(url), passedTarget),
+        triggeringEvent, lockBackForwardList, shouldSendReferrer);
+}
+
+void FrameLoader::urlSelected(const FrameLoadRequest& passedRequest, PassRefPtr<Event> triggeringEvent, bool lockBackForwardList, ShouldSendReferrer shouldSendReferrer)
+{
+    ASSERT(!m_suppressOpenerInNewFrame);
+
+    RefPtr<Frame> protect(m_frame);
+    FrameLoadRequest frameRequest(passedRequest);
+
+    if (m_frame->script()->executeScriptIfJavaScriptURL(frameRequest.resourceRequest().url()))
+        return;
+
+    if (frameRequest.frameName().isEmpty())
+        frameRequest.setFrameName(m_frame->document()->baseTarget());
+
+    if (shouldSendReferrer == NeverSendReferrer)
+        m_suppressOpenerInNewFrame = true;
+    addHTTPOriginIfNeeded(frameRequest.resourceRequest(), outgoingOrigin());
+
+    loadFrameRequest(frameRequest, lockBackForwardList, triggeringEvent, 0, shouldSendReferrer);
+
+    m_suppressOpenerInNewFrame = false;
 }
 
 void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
@@ -931,19 +959,13 @@ void FrameLoader::prepareForHistoryNavigation()
     }
 }
 
-void FrameLoader::loadFrameRequest(const FrameLoadRequest& passedRequest, bool lockBackForwardList,
+void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBackForwardList,
     PassRefPtr<Event> event, PassRefPtr<FormState> formState, ShouldSendReferrer shouldSendReferrer)
-{
-    ASSERT(!m_suppressOpenerInNewFrame);
-
+{    
     // Protect frame from getting blown away inside dispatchBeforeLoadEvent in loadWithDocumentLoader.
     RefPtr<Frame> protect(m_frame);
 
-    FrameLoadRequest request(passedRequest);
     KURL url = request.resourceRequest().url();
-
-    if (m_frame->script()->executeScriptIfJavaScriptURL(url))
-        return;
 
     ASSERT(m_frame->document());
     if (request.requester() && !request.requester()->canDisplay(url)) {
@@ -977,13 +999,18 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& passedRequest, bool l
     else
         loadType = FrameLoadTypeStandard;
 
-    if (request.frameName().isEmpty())
-        request.setFrameName(m_frame->document()->baseTarget());
-    if (shouldSendReferrer == NeverSendReferrer)
-        m_suppressOpenerInNewFrame = true;
-
     loadURL(resourceRequest, request.frameName(), loadType, event, formState.get(), request.substituteData());
-    m_suppressOpenerInNewFrame = false;
+
+    // FIXME: It's possible this targetFrame will not be the same frame that was targeted by the actual
+    // load if frame names have changed.
+    Frame* sourceFrame = formState ? formState->sourceDocument()->frame() : m_frame;
+    if (!sourceFrame)
+        sourceFrame = m_frame;
+    Frame* targetFrame = sourceFrame->loader()->findFrameForNavigation(request.frameName());
+    if (targetFrame && targetFrame != sourceFrame) {
+        if (Page* page = targetFrame->page())
+            page->chrome().focus();
+    }
 }
 
 void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType, PassRefPtr<Event> event, PassRefPtr<FormState> formState, const SubstituteData& substituteData)

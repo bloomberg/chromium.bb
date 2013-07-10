@@ -34,10 +34,8 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/editing/FrameSelection.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -568,24 +566,22 @@ void HTMLAnchorElement::handleClick(Event* event)
     StringBuilder url;
     url.append(stripLeadingAndTrailingHTMLSpaces(fastGetAttribute(hrefAttr)));
     appendServerMapMousePosition(url, event);
-    KURL completedURL = document()->completeURL(url.toString());
+    KURL kurl = document()->completeURL(url.toString());
 
     if (hasAttribute(downloadAttr)) {
-        ResourceRequest request(completedURL);
+        ResourceRequest request(kurl);
 
         if (!hasRel(RelationNoReferrer)) {
-            String referrer = SecurityPolicy::generateReferrerHeader(document()->referrerPolicy(), completedURL, frame->loader()->outgoingReferrer());
+            String referrer = SecurityPolicy::generateReferrerHeader(document()->referrerPolicy(), kurl, frame->loader()->outgoingReferrer());
             if (!referrer.isEmpty())
                 request.setHTTPReferrer(referrer);
         }
 
         frame->loader()->client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));
-    } else {
-        FrameLoadRequest frameRequest(document()->securityOrigin(), ResourceRequest(completedURL), target());
-        frame->loader()->loadFrameRequest(frameRequest, false, event, 0, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
-    }
+    } else
+        frame->loader()->urlSelected(kurl, target(), event, false, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
 
-    sendPings(completedURL);
+    sendPings(kurl);
 }
 
 HTMLAnchorElement::EventType HTMLAnchorElement::eventType(Event* event)
