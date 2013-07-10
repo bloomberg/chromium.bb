@@ -20,6 +20,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
@@ -1804,6 +1805,11 @@ WebKit::WebNotificationPresenter::Permission
         int render_process_id) {
 #if defined(ENABLE_NOTIFICATIONS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Sometimes a notification may be invoked during the shutdown.
+  // See http://crbug.com/256638
+  if (browser_shutdown::IsTryingToQuit())
+    return WebKit::WebNotificationPresenter::PermissionNotAllowed;
+
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
 
   DesktopNotificationService* notification_service =
