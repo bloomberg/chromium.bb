@@ -180,7 +180,7 @@ bool ServiceWatcherImpl::ServiceListeners::Start() {
 void ServiceWatcherImpl::AddService(const std::string& service) {
   DCHECK(started_);
   std::pair<ServiceListenersMap::iterator, bool> found = services_.insert(
-      make_pair(service, static_cast<ServiceListeners*>(NULL)));
+      make_pair(service, linked_ptr<ServiceListeners>(NULL)));
   if (found.second) {  // Newly inserted.
     found.first->second = linked_ptr<ServiceListeners>(
         new ServiceListeners(service, this, mdns_client_));
