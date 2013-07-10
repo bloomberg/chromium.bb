@@ -219,13 +219,13 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionCode& ec
             RefPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, document());
             RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
             newBody->appendChild(newRow, ec);
-            appendChild(newBody.release(), ec);
+            appendChild(newBody.release(), ec, AttachLazily);
             return newRow.release();
         }
     }
 
     RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
-    parent->insertBefore(newRow, row.get(), ec);
+    parent->insertBefore(newRow, row.get(), ec, AttachLazily);
     return newRow.release();
 }
 

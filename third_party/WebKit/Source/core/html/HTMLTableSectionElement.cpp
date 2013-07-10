@@ -65,14 +65,14 @@ PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionC
     else {
         row = HTMLTableRowElement::create(trTag, document());
         if (numRows == index || index == -1)
-            appendChild(row, ec);
+            appendChild(row, ec, AttachLazily);
         else {
             Node* n;
             if (index < 1)
                 n = firstChild();
             else
                 n = children->item(index);
-            insertBefore(row, n, ec);
+            insertBefore(row, n, ec, AttachLazily);
         }
     }
     return row.release();
