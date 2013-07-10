@@ -2697,6 +2697,7 @@ libs-support-native() {
   local tmpdir="${TC_BUILD}/libs-support-native"
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
+  ${cc_cmd} -c pnacl_irt.c -O2 -o "${tmpdir}"/pnacl_irt.o
   ${cc_cmd} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
 
   # Some of the support code lives in third_party/ because it's based on code
