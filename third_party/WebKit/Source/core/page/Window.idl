@@ -26,11 +26,10 @@
 
 [
     CheckSecurity,
-    EventTarget,
     CustomToV8,
     DoNotGenerateWrap,
     ImplementedAs=DOMWindow
-] interface Window {
+] interface Window : EventTarget {
     // DOM Level 0
     [Replaceable] readonly attribute Screen screen;
     [Replaceable] readonly attribute History history;
@@ -276,15 +275,6 @@
 
     [EnabledAtRuntime=deviceMotion] attribute EventListener ondevicemotion;
     [EnabledAtRuntime=deviceOrientation] attribute EventListener ondeviceorientation;
-
-    // EventTarget interface
-    [Custom] void addEventListener(DOMString type,
-                                  EventListener listener,
-                                  optional boolean useCapture);
-    [Custom] void removeEventListener(DOMString type,
-                                      EventListener listener,
-                                      optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 
     // Additional constructors.
     attribute TransitionEventConstructor WebKitTransitionEvent;

@@ -232,60 +232,6 @@ void V8Window::openerAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::
     info.This()->Set(name, value);
 }
 
-void V8Window::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    String eventType = toWebCoreString(args[0]);
-    bool useCapture = args[2]->BooleanValue();
-
-    DOMWindow* imp = V8Window::toNative(args.Holder());
-
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
-        return;
-
-    Document* doc = imp->document();
-
-    if (!doc)
-        return;
-
-    // FIXME: Check if there is not enough arguments
-    if (!imp->frame())
-        return;
-
-    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFindOrCreate);
-
-    if (listener) {
-        imp->addEventListener(eventType, listener, useCapture);
-        createHiddenDependency(args.Holder(), args[1], eventListenerCacheIndex, args.GetIsolate());
-    }
-}
-
-
-void V8Window::removeEventListenerMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    String eventType = toWebCoreString(args[0]);
-    bool useCapture = args[2]->BooleanValue();
-
-    DOMWindow* imp = V8Window::toNative(args.Holder());
-
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
-        return;
-
-    Document* doc = imp->document();
-
-    if (!doc)
-        return;
-
-    if (!imp->frame())
-        return;
-
-    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFindOnly);
-
-    if (listener) {
-        imp->removeEventListener(eventType, listener.get(), useCapture);
-        removeHiddenDependency(args.Holder(), args[1], eventListenerCacheIndex, args.GetIsolate());
-    }
-}
-
 static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)
 {
     if (value->IsString() || value->IsStringObject())

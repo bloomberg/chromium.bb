@@ -53,6 +53,7 @@
 #include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/PageConsole.h"
 #include "core/page/UseCounter.h"
@@ -3229,10 +3230,19 @@ static void customMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8
 
 static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    EventTarget* impl = V8TestObject::toNative(args.Holder());
+    if (DOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame()))
+            return;
+
+        if (!window->document())
+            return;
+    }
+
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFindOrCreate);
     if (listener) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, args[0]);
-        V8TestObject::toNative(args.Holder())->addEventListener(stringResource, listener, args[2]->BooleanValue());
+        impl->addEventListener(stringResource, listener, args[2]->BooleanValue());
         createHiddenDependency(args.Holder(), args[1], V8TestObject::eventListenerCacheIndex, args.GetIsolate());
     }
 }
@@ -3246,10 +3256,19 @@ static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    EventTarget* impl = V8TestObject::toNative(args.Holder());
+    if (DOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame()))
+            return;
+
+        if (!window->document())
+            return;
+    }
+
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFindOnly);
     if (listener) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, args[0]);
-        V8TestObject::toNative(args.Holder())->removeEventListener(stringResource, listener.get(), args[2]->BooleanValue());
+        impl->removeEventListener(stringResource, listener.get(), args[2]->BooleanValue());
         removeHiddenDependency(args.Holder(), args[1], V8TestObject::eventListenerCacheIndex, args.GetIsolate());
     }
 }

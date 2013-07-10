@@ -2174,12 +2174,23 @@ sub GenerateFunction
         my $passRefPtrHandling = ($name eq "addEventListener") ? "" : ".get()";
         my $hiddenDependencyAction = ($name eq "addEventListener") ? "create" : "remove";
 
+        AddToImplIncludes("bindings/v8/BindingSecurity.h");
         AddToImplIncludes("bindings/v8/V8EventListenerList.h");
+        AddToImplIncludes("core/page/DOMWindow.h");
         $code .= <<END;
+    EventTarget* impl = ${v8ClassName}::toNative(args.Holder());
+    if (DOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame()))
+            return;
+
+        if (!window->document())
+            return;
+    }
+
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFind${lookupType});
     if (listener) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, args[0]);
-        ${v8ClassName}::toNative(args.Holder())->${implName}(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
+        impl->${implName}(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
 END
         if (!InheritsInterface($interface, "Node")) {
             $code .= <<END;
