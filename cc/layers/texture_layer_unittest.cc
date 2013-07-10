@@ -17,6 +17,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -793,6 +794,87 @@ class TextureLayerClientTest
 // The TextureLayerClient does not use mailboxes, so can't use a delegating
 // renderer.
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TextureLayerClientTest);
+
+// Test recovering from a lost context.
+class TextureLayerLostContextTest
+    : public LayerTreeTest,
+      public TextureLayerClient {
+ public:
+  TextureLayerLostContextTest()
+      : texture_(0),
+        draw_count_(0) {}
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+    texture_context_ = TestWebGraphicsContext3D::Create();
+    texture_ = texture_context_->createTexture();
+    scoped_ptr<TestWebGraphicsContext3D> context(
+        TestWebGraphicsContext3D::Create());
+    return FakeOutputSurface::Create3d(
+        context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+  }
+
+  virtual unsigned PrepareTexture(ResourceUpdateQueue* queue) OVERRIDE {
+    if (draw_count_ == 0) {
+      texture_context_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+          GL_INNOCENT_CONTEXT_RESET_ARB);
+    }
+    return texture_;
+  }
+
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    return texture_context_.get();
+  }
+
+  virtual bool PrepareTextureMailbox(
+      cc::TextureMailbox* mailbox, bool use_shared_memory) OVERRIDE {
+    return false;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
+    root->SetIsDrawable(true);
+
+    texture_layer_ = TextureLayer::Create(this);
+    texture_layer_->SetBounds(gfx::Size(10, 10));
+    texture_layer_->SetIsDrawable(true);
+    root->AddChild(texture_layer_);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    LayerImpl* root = host_impl->RootLayer();
+    TextureLayerImpl* texture_layer =
+        static_cast<TextureLayerImpl*>(root->children()[0]);
+    if (++draw_count_ == 1)
+      EXPECT_EQ(0u, texture_layer->texture_id());
+    else
+      EXPECT_EQ(texture_, texture_layer->texture_id());
+    return true;
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  scoped_refptr<TextureLayer> texture_layer_;
+  scoped_ptr<TestWebGraphicsContext3D> texture_context_;
+  unsigned texture_;
+  int draw_count_;
+};
+
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TextureLayerLostContextTest);
 
 }  // namespace
 }  // namespace cc

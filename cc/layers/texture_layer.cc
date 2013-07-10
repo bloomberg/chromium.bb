@@ -32,7 +32,6 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
       uv_bottom_right_(1.f, 1.f),
       premultiplied_alpha_(true),
       rate_limit_context_(false),
-      context_lost_(false),
       content_committed_(false),
       texture_id_(0),
       needs_set_mailbox_(false) {
@@ -162,8 +161,7 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 }
 
 bool TextureLayer::DrawsContent() const {
-  return (client_ || texture_id_ || holder_ref_) &&
-         !context_lost_ && Layer::DrawsContent();
+  return (client_ || texture_id_ || holder_ref_) && Layer::DrawsContent();
 }
 
 bool TextureLayer::Update(ResourceUpdateQueue* queue,
@@ -180,8 +178,9 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
     } else {
       DCHECK(client_->Context3d());
       texture_id_ = client_->PrepareTexture(queue);
-      context_lost_ = client_->Context3d() &&
-          client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR;
+      if (client_->Context3d() &&
+          client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR)
+        texture_id_ = 0;
       updated = true;
     }
   }

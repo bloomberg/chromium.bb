@@ -141,7 +141,6 @@ class CC_EXPORT TextureLayer : public Layer {
   float vertex_opacity_[4];
   bool premultiplied_alpha_;
   bool rate_limit_context_;
-  bool context_lost_;
   bool content_committed_;
 
   unsigned texture_id_;
