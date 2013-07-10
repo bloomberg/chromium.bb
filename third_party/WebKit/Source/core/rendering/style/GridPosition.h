@@ -92,7 +92,7 @@ public:
 
     bool operator==(const GridPosition& other) const
     {
-        return m_type == other.m_type && m_integerPosition == other.m_integerPosition;
+        return m_type == other.m_type && m_integerPosition == other.m_integerPosition && m_namedGridLine == other.m_namedGridLine;
     }
 
     bool shouldBeResolvedAgainstOppositePosition() const
