@@ -398,7 +398,8 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
         ParsePatternString(pattern_str);
     if (!pattern_pair.first.IsValid() ||
         !pattern_pair.second.IsValid()) {
-      LOG(DFATAL) << "Invalid pattern strings: " << pattern_str;
+      // TODO: Change this to DFATAL when crbug.com/132659 is fixed.
+      LOG(ERROR) << "Invalid pattern strings: " << pattern_str;
       continue;
     }
 
