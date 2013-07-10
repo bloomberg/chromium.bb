@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/open_file_system_mode.h"
+#include "webkit/browser/fileapi/sandbox_context.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -285,6 +286,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   scoped_ptr<FileSystemTaskRunners> task_runners_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+
+  scoped_ptr<SandboxContext> sandbox_context_;
 
   // Regular file system backends.
   scoped_ptr<SandboxFileSystemBackend> sandbox_backend_;

@@ -38,10 +38,10 @@ class SyncableFileSystemOperation;
 
 namespace fileapi {
 
-class AsyncFileUtilAdapter;
 class FileSystemUsageCache;
 class LocalFileSystemOperation;
 class ObfuscatedFileUtil;
+class SandboxContext;
 class SandboxQuotaObserver;
 
 // An interface to construct or crack sandboxed filesystem paths for
@@ -66,17 +66,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
     virtual bool HasFileSystemType(FileSystemType type) const = 0;
   };
 
-  // The FileSystem directory name.
-  static const base::FilePath::CharType kFileSystemDirectory[];
-
-  // |file_task_runner| is used to validate the root directory and delete the
-  // obfuscated file util.
   SandboxFileSystemBackend(
-      quota::QuotaManagerProxy* quota_manager_proxy,
-      base::SequencedTaskRunner* file_task_runner,
-      const base::FilePath& profile_path,
-      const FileSystemOptions& file_system_options,
-      quota::SpecialStoragePolicy* special_storage_policy);
+      SandboxContext* sandbox_context,
+      const FileSystemOptions& file_system_options);
   virtual ~SandboxFileSystemBackend();
 
   // FileSystemBackend overrides.
@@ -188,10 +180,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   bool IsAllowedScheme(const GURL& url) const;
 
   ObfuscatedFileUtil* sandbox_sync_file_util();
-
-  FileSystemUsageCache* usage_cache() {
-    return file_system_usage_cache_.get();
-  }
+  FileSystemUsageCache* usage_cache();
 
   static void InvalidateUsageCacheOnFileThread(
       ObfuscatedFileUtil* file_util,
@@ -203,18 +192,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
                          const GURL& origin,
                          FileSystemType type);
 
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-
-  const base::FilePath profile_path_;
+  SandboxContext* sandbox_context_;  // Not owned.
 
   FileSystemOptions file_system_options_;
   bool enable_temporary_file_system_in_incognito_;
-
-  scoped_ptr<AsyncFileUtilAdapter> sandbox_file_util_;
-
-  scoped_ptr<FileSystemUsageCache> file_system_usage_cache_;
-
-  scoped_ptr<SandboxQuotaObserver> quota_observer_;
 
   // Acccessed only on the file thread.
   std::set<GURL> visited_origins_;
@@ -236,8 +217,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   // The usage tracking is enabled by default and can be disabled by
   // a command-line switch (--disable-file-system-usage-tracking).
   bool enable_usage_tracking_;
-
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   base::WeakPtrFactory<SandboxFileSystemBackend> weak_factory_;
 

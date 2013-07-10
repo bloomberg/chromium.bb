@@ -179,6 +179,8 @@
         'browser/fileapi/remote_file_system_proxy.h',
         'browser/fileapi/remove_operation_delegate.cc',
         'browser/fileapi/remove_operation_delegate.h',
+        'browser/fileapi/sandbox_context.cc',
+        'browser/fileapi/sandbox_context.h',
         'browser/fileapi/sandbox_directory_database.cc',
         'browser/fileapi/sandbox_directory_database.h',
         'browser/fileapi/sandbox_file_stream_writer.cc',

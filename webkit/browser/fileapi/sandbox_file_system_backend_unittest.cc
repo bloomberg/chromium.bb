@@ -17,6 +17,7 @@
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
+#include "webkit/browser/fileapi/sandbox_context.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 // PS stands for path separator.
@@ -82,15 +83,15 @@ class SandboxFileSystemBackendTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    context_.reset(new SandboxContext(
+        NULL /* quota_manager_proxy */,
+        base::MessageLoopProxy::current().get(),
+        data_dir_.path(),
+        NULL /* special_storage_policy */));
   }
 
   void SetUpNewBackend(const FileSystemOptions& options) {
-    backend_.reset(
-        new SandboxFileSystemBackend(NULL,
-                                      base::MessageLoopProxy::current().get(),
-                                      data_dir_.path(),
-                                      options,
-                                      NULL));
+    backend_.reset(new SandboxFileSystemBackend(context_.get(), options));
   }
 
   SandboxFileSystemBackend::OriginEnumerator* CreateOriginEnumerator() const {
@@ -125,12 +126,12 @@ class SandboxFileSystemBackendTest : public testing::Test {
   }
 
   base::FilePath file_system_path() const {
-    return data_dir_.path().Append(
-        SandboxFileSystemBackend::kFileSystemDirectory);
+    return data_dir_.path().Append(SandboxContext::kFileSystemDirectory);
   }
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
+  scoped_ptr<SandboxContext> context_;
   scoped_ptr<SandboxFileSystemBackend> backend_;
 };
 

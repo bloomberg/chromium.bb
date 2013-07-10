@@ -24,6 +24,7 @@
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
+#include "webkit/browser/fileapi/sandbox_context.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_operation.h"
@@ -32,6 +33,7 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using quota::QuotaManagerProxy;
+using quota::SpecialStoragePolicy;
 
 namespace fileapi {
 
@@ -129,55 +131,34 @@ void OpenFileSystemOnFileThread(
 
 }  // anonymous namespace
 
-const base::FilePath::CharType
-SandboxFileSystemBackend::kFileSystemDirectory[] =
-    FILE_PATH_LITERAL("File System");
-
 SandboxFileSystemBackend::SandboxFileSystemBackend(
-    quota::QuotaManagerProxy* quota_manager_proxy,
-    base::SequencedTaskRunner* file_task_runner,
-    const base::FilePath& profile_path,
-    const FileSystemOptions& file_system_options,
-    quota::SpecialStoragePolicy* special_storage_policy)
-    : file_task_runner_(file_task_runner),
-      profile_path_(profile_path),
-      file_system_options_(file_system_options),
+    SandboxContext* sandbox_context,
+    const FileSystemOptions& file_system_options)
+    : file_system_options_(file_system_options),
+      sandbox_context_(sandbox_context),
       enable_temporary_file_system_in_incognito_(false),
-      sandbox_file_util_(
-          new AsyncFileUtilAdapter(
-              new ObfuscatedFileUtil(
-                  special_storage_policy,
-                  profile_path.Append(kFileSystemDirectory),
-                  file_task_runner))),
-      file_system_usage_cache_(new FileSystemUsageCache(file_task_runner)),
-      quota_observer_(new SandboxQuotaObserver(
-                      quota_manager_proxy,
-                      file_task_runner,
-                      sandbox_sync_file_util(),
-                      file_system_usage_cache_.get())),
       enable_usage_tracking_(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               kDisableUsageTracking)),
-      special_storage_policy_(special_storage_policy),
       weak_factory_(this) {
   // Set quota observers.
   UpdateObserverList::Source update_observers_src;
   AccessObserverList::Source access_observers_src;
 
   if (enable_usage_tracking_) {
-    update_observers_src.AddObserver(quota_observer_.get(),
-                                     file_task_runner_.get());
-    access_observers_src.AddObserver(quota_observer_.get(), NULL);
+    update_observers_src.AddObserver(sandbox_context_->quota_observer(),
+                                     sandbox_context_->file_task_runner());
+    access_observers_src.AddObserver(sandbox_context_->quota_observer(), NULL);
   }
 
   update_observers_ = UpdateObserverList(update_observers_src);
   access_observers_ = AccessObserverList(access_observers_src);
   syncable_update_observers_ = UpdateObserverList(update_observers_src);
 
-  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!sandbox_context_->file_task_runner()->RunsTasksOnCurrentThread()) {
     // Post prepopulate task only if it's not already running on
     // file_task_runner (which implies running in tests).
-    file_task_runner_->PostTask(
+    sandbox_context_->file_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
                   base::Unretained(sandbox_sync_file_util())));
@@ -185,18 +166,6 @@ SandboxFileSystemBackend::SandboxFileSystemBackend(
 }
 
 SandboxFileSystemBackend::~SandboxFileSystemBackend() {
-  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
-    AsyncFileUtilAdapter* sandbox_file_util = sandbox_file_util_.release();
-    SandboxQuotaObserver* quota_observer = quota_observer_.release();
-    FileSystemUsageCache* file_system_usage_cache =
-        file_system_usage_cache_.release();
-    if (!file_task_runner_->DeleteSoon(FROM_HERE, sandbox_file_util))
-      delete sandbox_file_util;
-    if (!file_task_runner_->DeleteSoon(FROM_HERE, quota_observer))
-      delete quota_observer;
-    if (!file_task_runner_->DeleteSoon(FROM_HERE, file_system_usage_cache))
-      delete file_system_usage_cache;
-  }
 }
 
 bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
@@ -230,7 +199,7 @@ void SandboxFileSystemBackend::OpenFileSystem(
   }
 
   base::PlatformFileError* error_ptr = new base::PlatformFileError;
-  file_task_runner_->PostTaskAndReply(
+  sandbox_context_->file_task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&OpenFileSystemOnFileThread,
                  sandbox_sync_file_util(),
@@ -245,22 +214,22 @@ void SandboxFileSystemBackend::OpenFileSystem(
 
   // Schedule full usage recalculation on the next launch without
   // --disable-file-system-usage-tracking.
-  file_task_runner_->PostTask(
+  sandbox_context_->file_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SandboxFileSystemBackend::InvalidateUsageCacheOnFileThread,
-                 sandbox_sync_file_util(), origin_url, type,
-                 file_system_usage_cache_.get()));
+                 sandbox_sync_file_util(), origin_url, type, usage_cache()));
 };
 
 FileSystemFileUtil* SandboxFileSystemBackend::GetFileUtil(
     FileSystemType type) {
-  DCHECK(sandbox_file_util_.get());
-  return sandbox_file_util_->sync_file_util();
+  DCHECK(sandbox_context_);
+  return sandbox_context_->sync_file_util();
 }
 
 AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
     FileSystemType type) {
-  return sandbox_file_util_.get();
+  DCHECK(sandbox_context_);
+  return sandbox_context_->file_util();
 }
 
 CopyOrMoveFileValidatorFactory*
@@ -296,12 +265,11 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
   operation_context->set_update_observers(update_observers_);
   operation_context->set_change_observers(change_observers_);
 
-  if (special_storage_policy_.get() &&
-      special_storage_policy_->IsStorageUnlimited(url.origin())) {
+  SpecialStoragePolicy* policy = sandbox_context_->special_storage_policy();
+  if (policy && policy->IsStorageUnlimited(url.origin()))
     operation_context->set_quota_limit_type(quota::kQuotaLimitTypeUnlimited);
-  } else {
+  else
     operation_context->set_quota_limit_type(quota::kQuotaLimitTypeLimited);
-  }
 
   return new LocalFileSystemOperation(url, context, operation_context.Pass());
 }
@@ -341,7 +309,6 @@ SandboxFileSystemBackend::CreateOriginEnumerator() {
 
 base::FilePath SandboxFileSystemBackend::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) {
-
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath path = sandbox_sync_file_util()->GetDirectoryForOriginAndType(
       origin_url, type, create, &error);
@@ -356,11 +323,10 @@ SandboxFileSystemBackend::DeleteOriginDataOnFileThread(
     QuotaManagerProxy* proxy,
     const GURL& origin_url,
     fileapi::FileSystemType type) {
-
   int64 usage = GetOriginUsageOnFileThread(file_system_context,
                                            origin_url, type);
 
-  file_system_usage_cache_->CloseCacheFiles();
+  usage_cache()->CloseCacheFiles();
   bool result = sandbox_sync_file_util()->DeleteDirectoryForOriginAndType(
           origin_url, type);
   if (result && proxy) {
@@ -435,26 +401,25 @@ int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
   base::FilePath usage_file_path =
       base_path.Append(FileSystemUsageCache::kUsageFileName);
 
-  bool is_valid = file_system_usage_cache_->IsValid(usage_file_path);
+  bool is_valid = usage_cache()->IsValid(usage_file_path);
   uint32 dirty_status = 0;
   bool dirty_status_available =
-      file_system_usage_cache_->GetDirty(usage_file_path, &dirty_status);
+      usage_cache()->GetDirty(usage_file_path, &dirty_status);
   bool visited = !visited_origins_.insert(origin_url).second;
   if (is_valid && (dirty_status == 0 || (dirty_status_available && visited))) {
     // The usage cache is clean (dirty == 0) or the origin is already
     // initialized and running.  Read the cache file to get the usage.
     int64 usage = 0;
-    return file_system_usage_cache_->GetUsage(usage_file_path, &usage) ?
-        usage : -1;
+    return usage_cache()->GetUsage(usage_file_path, &usage) ? usage : -1;
   }
   // The usage cache has not been initialized or the cache is dirty.
   // Get the directory size now and update the cache.
-  file_system_usage_cache_->Delete(usage_file_path);
+  usage_cache()->Delete(usage_file_path);
 
   int64 usage = RecalculateUsage(file_system_context, origin_url, type);
 
   // This clears the dirty flag too.
-  file_system_usage_cache_->UpdateUsage(usage_file_path, usage);
+  usage_cache()->UpdateUsage(usage_file_path, usage);
   return usage;
 }
 
@@ -467,7 +432,7 @@ void SandboxFileSystemBackend::InvalidateUsageCache(
       sandbox_sync_file_util(), origin, type, &error);
   if (error != base::PLATFORM_FILE_OK)
     return;
-  file_system_usage_cache_->IncrementDirty(usage_file_path);
+  usage_cache()->IncrementDirty(usage_file_path);
 }
 
 void SandboxFileSystemBackend::StickyInvalidateUsageCache(
@@ -475,7 +440,7 @@ void SandboxFileSystemBackend::StickyInvalidateUsageCache(
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
   sticky_dirty_origins_.insert(std::make_pair(origin, type));
-  quota_observer_->SetUsageCacheEnabled(origin, type, false);
+  sandbox_context_->quota_observer()->SetUsageCacheEnabled(origin, type, false);
   InvalidateUsageCache(origin, type);
 }
 
@@ -635,8 +600,13 @@ bool SandboxFileSystemBackend::IsAllowedScheme(const GURL& url) const {
 }
 
 ObfuscatedFileUtil* SandboxFileSystemBackend::sandbox_sync_file_util() {
-  DCHECK(sandbox_file_util_.get());
-  return static_cast<ObfuscatedFileUtil*>(sandbox_file_util_->sync_file_util());
+  DCHECK(sandbox_context_);
+  return sandbox_context_->sync_file_util();
+}
+
+FileSystemUsageCache* SandboxFileSystemBackend::usage_cache() {
+  DCHECK(sandbox_context_);
+  return sandbox_context_->usage_cache();
 }
 
 // static

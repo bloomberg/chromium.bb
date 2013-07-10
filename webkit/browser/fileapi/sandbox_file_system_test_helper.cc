@@ -130,7 +130,8 @@ void SandboxFileSystemTestHelper::AddFileChangeObserver(
 }
 
 FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
-  return file_system_context()->sandbox_backend()->usage_cache();
+  return file_system_context()->sandbox_backend()->
+      sandbox_context_->usage_cache();
 }
 
 void SandboxFileSystemTestHelper::SetUpFileSystem() {
