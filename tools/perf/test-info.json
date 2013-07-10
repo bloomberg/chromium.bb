@@ -228,6 +228,10 @@
     "description": "Score on the [V8 team's Octane benchmark](http://octane-benchmark.googlecode.com/svn/latest/index.html)",
     "code": ["chrome/src/tools/perf/perf_tools/octane.py"]
   },
+  "pica": {
+    "description": "Loading benchmark for the Polymer toolkit's [Pica](http://www.polymer-project.org/polymer-all/projects/pica/index.html) demo app",
+    "code": ["chrome/src/tools/perf/perf_tools/pica.py"]
+  },
   "page_cycler_2012Q2-netsim": {
     "description": "Page loading benchmark for a set of 25 top pages recorded in Q2, 2012.  Despite the name, network simulation has not actually been enabled on this test yet.",
     "code": ["chrome/test/functional/perf.py"]
