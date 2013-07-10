@@ -380,8 +380,11 @@ namespace WebCore {
         virtual void setMemoryAllocator(SkBitmap::Allocator* allocator)
         {
             // FIXME: this doesn't work for images with multiple frames.
-            if (m_frameBufferCache.isEmpty())
+            if (m_frameBufferCache.isEmpty()) {
                 m_frameBufferCache.resize(1);
+                m_frameBufferCache[0].setRequiredPreviousFrameIndex(
+                    findRequiredPreviousFrame(0));
+            }
             m_frameBufferCache[0].setMemoryAllocator(allocator);
         }
 
