@@ -176,9 +176,9 @@ def prepare_symbol_info(maps_path,
       files[entry.name]['readelf-debug-decodedline-file'] = {
           'file': os.path.basename(readelf_debug_decodedline_file)}
 
-    files[entry.name]['size'] = os.stat(entry.name).st_size
+    files[entry.name]['size'] = os.stat(binary_path).st_size
 
-    with open(entry.name, 'rb') as entry_f:
+    with open(binary_path, 'rb') as entry_f:
       md5 = hashlib.md5()
       sha1 = hashlib.sha1()
       chunk = entry_f.read(1024 * 1024)
