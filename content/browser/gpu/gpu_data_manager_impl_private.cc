@@ -719,13 +719,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   if (gpu_info_.optimus)
     reduce_sandbox = true;
 
-  if (gpu_info_.amd_switchable) {
-    // The image transport surface currently doesn't work with AMD Dynamic
-    // Switchable graphics.
-    reduce_sandbox = true;
-    command_line->AppendSwitch(switches::kDisableImageTransportSurface);
-  }
-
   if (reduce_sandbox)
     command_line->AppendSwitch(switches::kReduceGpuSandbox);
 
@@ -890,8 +883,6 @@ bool GpuDataManagerImplPrivate::IsUsingAcceleratedSurface() const {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
 
-  if (gpu_info_.amd_switchable)
-    return false;
   if (use_swiftshader_)
     return false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();

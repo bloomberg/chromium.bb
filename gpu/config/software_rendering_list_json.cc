@@ -88,7 +88,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.3",
+  "version": "6.4",
   "entries": [
     {
       "id": 1,
@@ -1126,6 +1126,18 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 75,
+      "description": "Texture sharing not supported on AMD Switchable GPUs due to driver issues",
+      "cr_bugs": [117371],
+      "os": {
+        "type": "win"
+      },
+      "multi_gpu_style": "amd_switchable",
+      "features": [
+        "texture_sharing"
       ]
     }
   ]
