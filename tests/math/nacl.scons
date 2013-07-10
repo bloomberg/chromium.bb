@@ -62,6 +62,7 @@ AddMathTest(noerrno_env, 'cxx_pow.cc', testname='cxx_pow_noerrno',
 
 asm_env = env.Clone()
 if env.Bit('bitcode'):
+  # Depends on assembly, so cannot build it as a pexe.
   if env.Bit('pnacl_generate_pexe'):
     Return()
   else:
@@ -85,4 +86,7 @@ node = env.CommandSelLdrTestNacl(
     nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'nonpexe_tests'],
-                       'run_float_rounding_mode_test')
+                       'run_float_rounding_mode_test',
+                        # Valgrind does not support rounding mode changes yet:
+                        # https://bugs.kde.org/show_bug.cgi?id=136779
+                        is_broken=env.IsRunningUnderValgrind())
