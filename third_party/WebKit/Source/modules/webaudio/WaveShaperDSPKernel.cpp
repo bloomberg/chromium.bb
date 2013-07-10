@@ -48,8 +48,6 @@ WaveShaperDSPKernel::WaveShaperDSPKernel(WaveShaperProcessor* processor)
 
 void WaveShaperDSPKernel::lazyInitializeOversampling()
 {
-    ASSERT(isMainThread());
-
     if (!m_tempBuffer) {
         m_tempBuffer = adoptPtr(new AudioFloatArray(RenderingQuantum * 2));
         m_tempBuffer2 = adoptPtr(new AudioFloatArray(RenderingQuantum * 4));
