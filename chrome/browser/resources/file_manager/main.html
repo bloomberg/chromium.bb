@@ -130,6 +130,8 @@
       <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"
                shortcut="Enter-Ctrl">
       <command id="delete" shortcut="U+007F">
+      <command id="pin" i18n-values="label:PIN_FOLDER_BUTTON_LABEL">
+      <command id="unpin" i18n-values="label:UNPIN_FOLDER_BUTTON_LABEL">
       <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
                shortcut="U+0045-Ctrl">
       <command id="newwindow" i18n-values="label:NEW_WINDOW_BUTTON_LABEL">
@@ -181,6 +183,7 @@
       <hr id="default-action-separator" visibleif="full-page" hidden>
       <menuitem command="#toggle-pinned" checkable></menuitem>
       <menuitem command="#share"></menuitem>
+      <menuitem command="#pin"></menuitem>
       <hr command="#share">
       <menuitem command="#cut" visibleif="full-page"></menuitem>
       <menuitem command="#copy" visibleif="full-page"></menuitem>
@@ -197,6 +200,7 @@
       <menuitem command="#import-photos"></menuitem>
       <menuitem command="#unmount"></menuitem>
       <menuitem command="#format"></menuitem>
+      <menuitem command="#unpin"></menuitem>
     </menu>
 
     <menu id="gear-menu" class="chrome-menu" showShortcuts>

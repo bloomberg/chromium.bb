@@ -678,6 +678,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         Commands.zipSelectionCommand, this, this.directoryModel_);
 
     CommandUtil.registerCommand(doc, 'share', Commands.shareCommand, this);
+    CommandUtil.registerCommand(doc, 'pin', Commands.pinCommand, this);
+    CommandUtil.registerCommand(doc, 'unpin',
+        Commands.unpinCommand, this, this.volumeList_);
 
     CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
         this.dialogDom_.querySelector('#search-box'));
@@ -1146,6 +1149,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.directoryModel_.start();
 
+    this.pinnedFolderModel_ = new cr.ui.ArrayDataModel([]);
+
     this.selectionHandler_ = new FileSelectionHandler(this);
     this.selectionHandler_.addEventListener('show-preview-panel',
         this.onPreviewPanelVisibilityChanged_.bind(this, true));
@@ -1238,7 +1243,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this));
 
     this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
-    VolumeList.decorate(this.volumeList_, this.directoryModel_);
+    VolumeList.decorate(this.volumeList_,
+                        this.directoryModel_,
+                        this.pinnedFolderModel_);
   };
 
   /**
@@ -2202,6 +2209,48 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.shareSelection = function() {
     // TODO(mtomasz): Implement it. crbug.com/141396
+  };
+
+  /**
+   * Pin the selected folder.
+   */
+  FileManager.prototype.pinSelection = function() {
+    var entries = this.getSelection().entries;
+    var entry = entries[0];
+    // Duplicate entry.
+    if (this.isFolderPinned(entry.fullPath))
+      return;
+
+    this.pinnedFolderModel_.splice(0, 0, entry);
+    this.pinnedFolderModel_.sort('name', 'asc');
+  };
+
+  /**
+   * Checkes if the folder is pinned or not.
+   * @param {string} path Path of the folder to be checked.
+   */
+  FileManager.prototype.isFolderPinned = function(path) {
+    for (var i = 0; i < this.pinnedFolderModel_.length; i++) {
+      var entry = this.pinnedFolderModel_.item(i);
+      if (entry.fullPath == path) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Unpins the pinned folder.
+   * @param {string} path Path of the pinned folder to be unpinnned.
+   */
+  FileManager.prototype.unpinFolder = function(path) {
+    for (var i = 0; i < this.pinnedFolderModel_.length; i++) {
+      var entry = this.pinnedFolderModel_.item(i);
+      if (entry.fullPath == path) {
+        this.pinnedFolderModel_.splice(i, 1);
+        return;
+      }
+    }
   };
 
   /**

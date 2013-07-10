@@ -543,6 +543,60 @@ Commands.shareCommand = {
 };
 
 /**
+ * Pins the selected folder (single only).
+ */
+Commands.pinCommand = {
+  /**
+   * @param {Event} event Command event.
+   * @param {FileManager} fileManager The file manager instance.
+   */
+  execute: function(event, fileManager) {
+    fileManager.pinSelection();
+  },
+  /**
+   * @param {Event} event Command event.
+   * @param {FileManager} fileManager The file manager instance.
+   */
+  canExecute: function(event, fileManager) {
+    var selection = fileManager.getSelection();
+    var selectionEntries = selection.entries;
+    var onlyOneFolderSelected =
+        selection && selection.directoryCount == 1 && selection.fileCount == 0;
+    event.canExecute = onlyOneFolderSelected &&
+        !fileManager.isFolderPinned(selectionEntries[0].fullPath);
+    event.command.setHidden(!onlyOneFolderSelected);
+  }
+};
+
+/**
+ * Unpin the pinned folder.
+ */
+Commands.unpinCommand = {
+  /**
+   * @param {Event} event Command event.
+   * @param {FileManager} fileManager The file manager instance.
+   * @param {DirectoryTree} directoryTree Target directory tree.
+   */
+  execute: function(event, fileManager, directoryTree) {
+    var entry = CommandUtil.getCommandRoot(event, directoryTree);
+
+    if (entry)
+      fileManager.unpinFolder(entry.fullPath);
+  },
+  /**
+   * @param {Event} event Command event.
+   * @param {FileManager} fileManager The file manager instance.
+   * @param {DirectoryTree} directoryTree Target directory tree.
+   */
+  canExecute: function(event, fileManager, directoryTree) {
+    var entry = CommandUtil.getCommandRoot(event, directoryTree);
+    var isPinned = entry && !PathUtil.isRootPath(entry.fullPath);
+    event.canExecute = isPinned;
+    event.command.setHidden(!isPinned);
+  }
+};
+
+/**
  * Zoom in to the Files.app.
  */
 Commands.zoomInCommand = {

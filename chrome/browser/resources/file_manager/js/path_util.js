@@ -259,3 +259,28 @@ PathUtil.getRootLabel = function(path) {
 
   return path;
 };
+
+/**
+ * Return the label of the folder to be shown. Eg.
+ *  - '/foo/bar/baz' -> 'baz'
+ *  - '/hoge/fuga/ -> 'fuga'
+ * If the directory is root, returns the root label, which is same as
+ * PathUtil.getRootLabel().
+ *
+ * @param {string} directoryPath The full path of the folder.
+ * @return {string} The label to be shown.
+ */
+PathUtil.getFolderLabel = function(directoryPath) {
+  var label = '';
+  if (PathUtil.isRootPath(directoryPath))
+    label = PathUtil.getRootLabel(directoryPath);
+
+  if (label && label != directoryPath)
+    return label;
+
+  var matches = directoryPath.match(/([^\/]*)[\/]?$/);
+  if (matches[1])
+    return matches[1];
+
+  return directoryPath;
+};
