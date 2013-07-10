@@ -62,11 +62,9 @@ Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath full_path = profile_manager->user_data_dir().Append(path);
   Profile* profile = profile_manager->GetProfileByPath(full_path);
-  if (!profile)
-    return NULL;
 
   // Use IsValidProfile to check if the profile has been created.
-  return profile_manager->IsValidProfile(profile) ? profile : NULL;
+  return profile && profile_manager->IsValidProfile(profile) ? profile : NULL;
 }
 
 void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
@@ -212,14 +210,13 @@ void ExtensionAppShimHandler::OnProfileLoaded(Host* host,
 }
 
 void ExtensionAppShimHandler::OnShimClose(Host* host) {
-  DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
-
-  HostMap::iterator it = hosts_.find(make_pair(profile, host->GetAppId()));
-  // Any hosts other than the main host will still call OnShimClose, so ignore
-  // them.
-  if (it != hosts_.end() && it->second == host)
-    hosts_.erase(it);
+  // This might be called when shutting down. Don't try to look up the profile
+  // since profile_manager might not be around.
+  for (HostMap::iterator it = hosts_.begin(); it != hosts_.end(); ) {
+    HostMap::iterator current = it++;
+    if (current->second == host)
+      hosts_.erase(current);
+  }
 }
 
 void ExtensionAppShimHandler::OnShimFocus(Host* host,
