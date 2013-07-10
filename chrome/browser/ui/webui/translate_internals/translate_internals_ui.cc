@@ -23,6 +23,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if !defined(OS_IOS)
+#include "third_party/cld/encodings/compact_lang_det/compact_lang_det.h"
+#endif
+
 namespace {
 
 // Sets the languages to |dict|. Each key is a language code and each value is
@@ -64,6 +68,11 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   bool enable_translate_settings =
       command_line.HasSwitch(switches::kEnableTranslateSettings);
   source->AddBoolean("enable-translate-settings", enable_translate_settings);
+
+#if !defined(OS_IOS)
+  std::string cld_version = CompactLangDet::DetectLanguageVersion();
+  source->AddString("cld-version", cld_version);
+#endif
 
   return source;
 }
