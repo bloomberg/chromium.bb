@@ -685,6 +685,8 @@ void LayerTreeHost::CalculateLCDTextMetricsCallback(Layer* layer) {
 
 bool LayerTreeHost::UpdateLayers(Layer* root_layer,
                                  ResourceUpdateQueue* queue) {
+  // If you change the name of this event or its arguments, please update
+  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
   TRACE_EVENT1("cc", "LayerTreeHost::UpdateLayers",
                "SourceFrameNumber", commit_number());
 

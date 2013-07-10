@@ -89,6 +89,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   }
 
   bool RunRasterOnThread(SkDevice* device, unsigned thread_index) {
+    // If you change the name of this event or its arguments, please update
+    // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
     TRACE_EVENT2(
         "cc",
         "RasterWorkerPoolTaskImpl::RunRasterOnThread",

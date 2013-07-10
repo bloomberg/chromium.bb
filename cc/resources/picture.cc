@@ -184,6 +184,8 @@ void Picture::CloneForDrawing(int num_threads) {
 void Picture::Record(ContentLayerClient* painter,
                      const SkTileGridPicture::TileGridInfo& tile_grid_info,
                      RenderingStatsInstrumentation* stats_instrumentation) {
+  // If you change the name of this event or its arguments, please update
+  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
   TRACE_EVENT2("cc", "Picture::Record",
                "width", layer_rect_.width(),
                "height", layer_rect_.height());
@@ -289,6 +291,8 @@ void Picture::Raster(
     SkDrawPictureCallback* callback,
     gfx::Rect content_rect,
     float contents_scale) {
+  // If you change the name of this event or its arguments, please update
+  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
   TRACE_EVENT_BEGIN1("cc", "Picture::Raster",
     "data", AsTraceableRasterData(content_rect, contents_scale));
 
@@ -302,6 +306,8 @@ void Picture::Raster(
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   canvas->restore();
+  // If you change the name of this event or its arguments, please update
+  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
   TRACE_EVENT_END1("cc", "Picture::Raster",
                    "num_pixels_rasterized", bounds.width() * bounds.height());
 }

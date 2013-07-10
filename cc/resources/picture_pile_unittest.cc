@@ -46,7 +46,8 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
                false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
-               &stats_instrumentation);
+               &stats_instrumentation,
+               0);
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 1, 1);
@@ -55,7 +56,8 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
                false,
                invalidate_rect,
                gfx::Rect(layer_size),
-               &stats_instrumentation);
+               &stats_instrumentation,
+               0);
 
   EXPECT_EQ(1, pile->tiling().num_tiles_x());
   EXPECT_EQ(1, pile->tiling().num_tiles_y());
@@ -98,7 +100,8 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
                false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
-               &stats_instrumentation);
+               &stats_instrumentation,
+               0);
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 100, 100);
@@ -107,7 +110,8 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
                false,
                invalidate_rect,
                gfx::Rect(layer_size),
-               &stats_instrumentation);
+               &stats_instrumentation,
+               0);
 
   EXPECT_EQ(1, pile->tiling().num_tiles_x());
   EXPECT_EQ(1, pile->tiling().num_tiles_y());
@@ -161,7 +165,8 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
                false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
-               &stats_instrumentation);
+               &stats_instrumentation,
+               0);
 
   // Invalidate something just over a tile boundary by a single pixel.
   // This will invalidate the tile (1, 1), as well as 1 row of pixels in (1, 0).
@@ -175,7 +180,8 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
                false,
                invalidate_rect,
                gfx::Rect(layer_size),
-               &stats_instrumentation);
+               &stats_instrumentation,
+               0);
 
   for (int i = 0; i < pile->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile->tiling().num_tiles_y(); ++j) {

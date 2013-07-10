@@ -37,7 +37,8 @@ bool PicturePile::Update(
     bool contents_opaque,
     const Region& invalidation,
     gfx::Rect visible_layer_rect,
-    RenderingStatsInstrumentation* stats_instrumentation) {
+    RenderingStatsInstrumentation* stats_instrumentation,
+    int commit_number) {
   background_color_ = background_color;
   contents_opaque_ = contents_opaque;
 
@@ -111,7 +112,10 @@ bool PicturePile::Update(
          pic != pic_list.end(); ++pic) {
       if (!(*pic)->HasRecording()) {
         modified_pile = true;
-        TRACE_EVENT0("cc", "PicturePile::Update recording loop");
+        // If you change the name of this event or its arguments, please update
+        // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
+        TRACE_EVENT1("cc", "PicturePile::Update recording loop",
+                     "commit_number", commit_number);
         for (int i = 0; i < repeat_count; i++)
           (*pic)->Record(painter, tile_grid_info_, stats_instrumentation);
         (*pic)->GatherPixelRefs(tile_grid_info_, stats_instrumentation);

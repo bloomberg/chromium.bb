@@ -94,7 +94,8 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
                                contents_opaque(),
                                pile_invalidation_,
                                visible_layer_rect,
-                               rendering_stats_instrumentation());
+                               rendering_stats_instrumentation(),
+                               layer_tree_host()->commit_number());
   if (!updated) {
     // If this invalidation did not affect the pile, then it can be cleared as
     // an optimization.
