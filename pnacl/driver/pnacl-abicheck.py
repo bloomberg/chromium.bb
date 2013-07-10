@@ -9,8 +9,10 @@
 # updates the copy in the toolchain/ tree.
 #
 
-import driver_env
+from driver_env import env
 import driver_tools
+import filetype
+import pathtools
 
 EXTRA_ENV = {
     'ARGS' : '',
@@ -21,9 +23,13 @@ PATTERNS = [
 ]
 
 def main(argv):
-  driver_env.env.update(EXTRA_ENV)
+  env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, PATTERNS)
 
+  args = env.get('ARGS')
+  input = pathtools.normalize(args[-1])
+  if filetype.IsPNaClBitcode(input):
+    env.append('ARGS', '--bitcode-format=pnacl')
   driver_tools.Run('"${PNACL_ABICHECK}" ${ARGS}')
   return 0;
 
