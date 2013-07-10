@@ -29,17 +29,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/cros_disks_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using chromeos::DBusThreadManager;
 using chromeos::disks::DiskMountManager;
 using content::BrowserThread;
 using drive::DriveIntegrationService;
@@ -99,85 +94,6 @@ const char* MountErrorToString(chromeos::MountError error) {
   NOTREACHED();
   return "";
 }
-
-// Observes PowerManager and updates its state when the system suspends and
-// resumes. After the system resumes it will stay in "is_resuming" state for 5
-// seconds. This is to give DiskManager time to process device removed/added
-// events (events for the devices that were present before suspend should not
-// trigger any new notifications or file manager windows).
-// The delegate will go into the same state after screen is unlocked. Cros-disks
-// will not send events while the screen is locked. The events will be postponed
-// until the screen is unlocked. These have to be handled too.
-class SuspendStateDelegateImpl
-    : public chromeos::PowerManagerClient::Observer,
-      public chromeos::SessionManagerClient::Observer,
-      public FileManagerEventRouter::SuspendStateDelegate {
- public:
-  SuspendStateDelegateImpl()
-      : is_resuming_(false),
-        weak_factory_(this) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-    DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
-  }
-
-  virtual ~SuspendStateDelegateImpl() {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-    DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
-  }
-
-  // chromeos::PowerManagerClient::Observer implementation.
-  virtual void SuspendImminent() OVERRIDE {
-    is_resuming_ = false;
-    weak_factory_.InvalidateWeakPtrs();
-  }
-
-  // chromeos::PowerManagerClient::Observer implementation.
-  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE {
-    is_resuming_ = true;
-    // Undo any previous resets.
-    weak_factory_.InvalidateWeakPtrs();
-    base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&SuspendStateDelegateImpl::Reset,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(5));
-  }
-
-  // chromeos::SessionManagerClient::Observer implementation.
-  virtual void ScreenIsUnlocked() OVERRIDE {
-    is_resuming_ = true;
-    // Undo any previous resets.
-    weak_factory_.InvalidateWeakPtrs();
-    base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&SuspendStateDelegateImpl::Reset,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(5));
-  }
-
-  // FileManagerEventRouter::SuspendStateDelegate implementation.
-  virtual bool SystemIsResuming() const OVERRIDE {
-    return is_resuming_;
-  }
-
-  // FileManagerEventRouter::SuspendStateDelegate implementation.
-  virtual bool DiskWasPresentBeforeSuspend(
-      const DiskMountManager::Disk& disk) const OVERRIDE {
-    // TODO(tbarzic): Implement this. Blocked on http://crbug.com/153338.
-    return false;
-  }
-
- private:
-  void Reset() {
-    is_resuming_ = false;
-  }
-
-  bool is_resuming_;
-
-  base::WeakPtrFactory<SuspendStateDelegateImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SuspendStateDelegateImpl);
-};
 
 void DirectoryExistsOnBlockingPool(const base::FilePath& directory_path,
                                    const base::Closure& success_callback,
@@ -351,7 +267,6 @@ void FileManagerEventRouter::ObserveFileSystemEvents() {
     chromeos::ConnectivityStateHelper::Get()->
         AddNetworkManagerObserver(this);
   }
-  suspend_state_delegate_.reset(new SuspendStateDelegateImpl());
 
   pref_change_registrar_->Init(profile_->GetPrefs());
 
@@ -499,9 +414,9 @@ void FileManagerEventRouter::OnMountEvent(
     DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
     const DiskMountManager::Disk* disk =
         disk_mount_manager->FindDiskBySourcePath(mount_info.source_path);
-    // TODO(tbarzic): DiskWasPresentBeforeSuspend is not yet functional. It
-    // always returns false.
-    if (!disk || suspend_state_delegate_->DiskWasPresentBeforeSuspend(*disk))
+    // TODO(tbarzic): Check if the disk was present before suspend. Blocked on
+    // crbug.com/153338.
+    if (!disk)
       return;
 
     notifications_->ManageNotificationsOnMountCompleted(

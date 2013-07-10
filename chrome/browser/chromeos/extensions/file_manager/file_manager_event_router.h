@@ -31,22 +31,6 @@ class FileManagerEventRouter
       public drive::JobListObserver,
       public drive::DriveServiceObserver {
  public:
-  // Interface that should keep track of the system state in regards to system
-  // suspend and resume events.
-  // When the |IsResuming()| returns true, it should be able to check if a
-  // removable device was present before the was system suspended.
-  class SuspendStateDelegate {
-   public:
-    virtual ~SuspendStateDelegate() {}
-
-    // Returns true if the system has recently woken up.
-    virtual bool SystemIsResuming() const = 0;
-    // If system is resuming, returns true if the disk was present before the
-    // system suspend. Should return false if the system is not resuming.
-    virtual bool DiskWasPresentBeforeSuspend(
-        const chromeos::disks::DiskMountManager::Disk& disk) const = 0;
-  };
-
   explicit FileManagerEventRouter(Profile* profile);
   virtual ~FileManagerEventRouter();
 
@@ -221,7 +205,6 @@ class FileManagerEventRouter
   WatcherMap file_watchers_;
   scoped_ptr<FileManagerNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  scoped_ptr<SuspendStateDelegate> suspend_state_delegate_;
   Profile* profile_;
 
   // Note: This should remain the last member so it'll be destroyed and
