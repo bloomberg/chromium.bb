@@ -405,10 +405,6 @@ class MetricsService
   // process, and false otherwise.
   static bool IsPluginProcess(int process_type);
 
-  // Returns true if we are in the Finch experiment group that should compress
-  // protobufs before uploading.
-  bool GzipProtobufsBeforeUploading();
-
   content::ActionCallback action_callback_;
 
   content::NotificationRegistrar registrar_;
@@ -438,14 +434,6 @@ class MetricsService
 
   // Google Update statistics, which were retrieved on a blocking pool thread.
   GoogleUpdateMetrics google_update_metrics_;
-
-  // Field trial that determines whether we gzip protobufs before uploading
-  // them.
-  scoped_refptr<base::FieldTrial> gzipped_protobufs_trial_;
-
-  // The integer value corresponding to the group that will be gzipping
-  // protobufs before uploading them.
-  int gzipped_protobufs_group_;
 
   // The initial log, used to record startup metrics.
   scoped_ptr<MetricsLog> initial_log_;
