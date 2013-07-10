@@ -76,6 +76,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
     {"keyboard/elements/kb-accent-key.html", IDR_KEYBOARD_ELEMENTS_ACCENT_KEY},
     {"keyboard/elements/kb-accent-set.html", IDR_KEYBOARD_ELEMENTS_ACCENT_SET},
     {"keyboard/elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY},
+    {"keyboard/elements/kb-key-base.html", IDR_KEYBOARD_ELEMENTS_KEY_BASE},
     {"keyboard/elements/kb-keyboard.html", IDR_KEYBOARD_ELEMENTS_KEYBOARD},
     {"keyboard/elements/kb-keyset.html", IDR_KEYBOARD_ELEMENTS_KEYSET},
     {"keyboard/elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW},

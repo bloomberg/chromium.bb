@@ -4,8 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-key" on-pointerdown="down" on-pointerup="up" on-pointerout="out"
-    attributes="accents char invert repeat superscript toKeyset">
+<element name="kb-key" extends="kb-key-base">
   <template>
     <style>
       @host {
@@ -18,77 +17,13 @@
           background-size: contain;
         }
       }
-      .key {
-        bottom: 0;
-        left: 0;
-        height: 1.2em;
-        margin: auto;
-        position: absolute;
-        right: 0;
-        top: 0;
-        padding-left: 10px;
-        padding-right: 10px;
-      }
-      .superscript {
-        color: #7c7c7c;
-        font-size: 70%;
-        position: absolute;
-        right: 7%;
-        top: 5%;
-      }
-      div.key[inverted] {
-        color: #7c7c7c;
-      }
-      div.superscript[inverted] {
-        color: #ffffff;
-      }
     </style>
-    <div id="key" class="key" inverted?={{invert}}>
+    <div id="key" pseudo="x-key" inverted?={{invert}}>
       <content></content>
     </div>
-    <div class="superscript" inverted?={{invert}}>{{superscript}}</div>
+    <div pseudo="x-superscript" inverted?={{invert}}>{{superscript}}</div>
   </template>
   <script>
-    /**
-     * The long-press delay in milliseconds before long-press handler is
-     * invoked.
-     * @type {number}
-     */
-    var LONGPRESS_DELAY_MSEC = 500;
-
-    Polymer.register(this, {
-      repeat: false,
-      invert: false,
-      longPressTimer: null,
-      down: function(event) {
-        var detail = {
-            char: this.char || this.textContent,
-            toKeyset: this.toKeyset,
-            repeat: this.repeat
-        };
-        this.send('key-down', detail);
-        if (this.accents) {
-          this.longPressTimer = this.asyncMethod(function() {
-            var detail = {
-              char: this.char || this.textContent,
-              accents: this.accents
-            };
-            this.classList.remove('active');
-            this.send('key-longpress', detail);
-          }, null, LONGPRESS_DELAY_MSEC);
-        }
-      },
-      out: function(event) {
-        clearTimeout(this.longPressTimer);
-      },
-      up: function(event) {
-        clearTimeout(this.longPressTimer);
-        var detail = {
-            char: this.char || this.textContent,
-            toKeyset: this.toKeyset
-        };
-        this.send('key-up', detail);
-      }
-    });
+    Polymer.register(this);
   </script>
 </element>

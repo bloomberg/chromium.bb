@@ -7,6 +7,9 @@
 <element name="kb-accent-set" attributes="offset">
   <template>
     <style>
+      /* TODO(stevet): Migrate this to main.css using custom pseudo
+       * selectors.
+       */
       @host {
         * {
            background-color: #3b3b3e;
@@ -16,6 +19,7 @@
            position: absolute;
         }
       }
+
       content::-webkit-distributed(.active) {
         background-color: #848490 !important;
         /* This artificial border is used to prevent the key contents from
@@ -28,6 +32,7 @@
         box-shadow: 0px 0px 15px #fff;
         */
       }
+
       content::-webkit-distributed(kb-accent-key) {
         -webkit-flex: 1 auto;
         background-color: #3b3b3e;
@@ -37,10 +42,12 @@
         font-family: 'Open Sans', sans-serif;
         font-weight: 100;
       }
+
       content::-webkit-distributed(kb-accent-key:first-child) {
         border-top-left-radius: 2px;
         border-bottom-left-radius: 2px;
       }
+
       content::-webkit-distributed(kb-accent-key:last-child) {
         border-top-right-radius: 2px;
         border-bottom-right-radius: 2px;

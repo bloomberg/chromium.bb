@@ -31,9 +31,49 @@ kb-key {
   margin-left: 7px;
 }
 
+kb-key::x-key {
+  bottom: 0;
+  left: 0;
+  height: 1.2em;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+kb-key::x-superscript {
+  color: #7c7c7c;
+  font-size: 70%;
+  position: absolute;
+  right: 7%;
+  top: 5%;
+}
+
+kb-key::x-key[inverted] {
+  color: #7c7c7c;
+}
+
+kb-key::x-superscript[inverted] {
+  color: #ffffff;
+}
+
 kb-key.dark {
   background-color: #2a2a2c;
   border-top: 2px solid #3a3a3c;
+}
+
+/* TODO(stevet): We can probably share most of this with kb-key::x-key. */
+kb-accent-key::x-key {
+  bottom: 0;
+  left: 0;
+  height: 1.2em;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  text-align: center;
 }
 
 #upper .left-shift,
