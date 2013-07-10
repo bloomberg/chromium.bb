@@ -74,7 +74,7 @@ const AcceleratorData kAcceleratorData[] = {
     TOUCH_HUD_MODE_CHANGE },
   { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
     TOUCH_HUD_CLEAR },
-  { true, ui::VKEY_9, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+  { true, ui::VKEY_9, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
     TOUCH_HUD_PROJECTION_TOGGLE },
   // Accessibility: Spoken feedback shortcuts. The first one is to toggle
   // spoken feedback on or off. The others are only valid when

@@ -222,6 +222,8 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT },
   { "keyboardOverlayToggleSpokenFeedback",
     IDS_KEYBOARD_OVERLAY_TOGGLE_SPOKEN_FEEDBACK },
+  { "keyboardOverlayToggleTouchHudProjection",
+    IDS_KEYBOARD_OVERLAY_TOGGLE_TOUCH_HUD_PROJECTION },
   { "keyboardOverlayUndo", IDS_KEYBOARD_OVERLAY_UNDO },
   { "keyboardOverlayViewKeyboardOverlay",
     IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY },

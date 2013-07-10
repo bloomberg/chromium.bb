@@ -3182,6 +3182,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
     Toggle spoken feedback
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_TOUCH_HUD_PROJECTION" desc="The text in the keyboard overlay to explain the shortcut (enable or disable projection touch HUD).">
+    Toggle projection touch HUD
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
     Undo
   </message>
