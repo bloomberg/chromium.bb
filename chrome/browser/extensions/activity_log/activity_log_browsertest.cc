@@ -19,14 +19,11 @@
 
 namespace extensions {
 
-// Used to fire all of the listeners on the test buttons.
-static const char kScriptBeginClickingTestButtons[] =
-    "(function() {"
-    "  setRunningAsRobot();"
-    "  beginClickingTestButtons();"
-    "})();";
+// Only the prerender tests are in this file. To add tests for activity
+// logging please see:
+//    chrome/test/data/extensions/api_test/activity_log_private/README
 
-class ActivityLogExtensionTest : public ExtensionApiTest {
+class ActivityLogPrerenderTest : public ExtensionApiTest {
  protected:
   // Make sure the activity log is turned on.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -35,24 +32,6 @@ class ActivityLogExtensionTest : public ExtensionApiTest {
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogTesting);
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
                                     switches::kPrerenderModeSwitchValueEnabled);
-  }
-  // Start the test server, load the activity log extension, and navigate
-  // the browser to the options page of the extension.
-  TabStripModel* StartEmbeddedTestServerAndInitialize() {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    StartEmbeddedTestServer();
-
-    // Get the extension (chrome/test/data/extensions/activity_log)
-    const extensions::Extension* ext =
-        LoadExtension(test_data_dir_.AppendASCII("activity_log"));
-    CHECK(ext);
-
-    // Open up the Options page.
-    ui_test_utils::NavigateToURL(
-        browser(),
-        GURL("chrome-extension://" + ext->id() + "/options.html"));
-    TabStripModel* tab_strip = browser()->tab_strip_model();
-    return tab_strip;
   }
 
   static void Prerender_Arguments(int port,
@@ -74,61 +53,7 @@ class ActivityLogExtensionTest : public ExtensionApiTest {
   }
 };
 
-#if defined(OS_WIN)
-// TODO(ataly): test flaky on windows. See Bug: crbug.com/245594
-#define MAYBE_ChromeEndToEnd DISABLED_ChromeEndToEnd
-#else
-#define MAYBE_ChromeEndToEnd ChromeEndToEnd
-#endif
-
-IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, MAYBE_ChromeEndToEnd) {
-  TabStripModel* tab_strip = StartEmbeddedTestServerAndInitialize();
-  ResultCatcher catcher;
-  // Set the default URL so that is has the correct port number.
-  std::string url_setting_script = base::StringPrintf(
-      "defaultUrl = \'http://www.google.com:%d\';",
-      embedded_test_server()->port());
-  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     url_setting_script));
-  // Set the test buttons array
-  std::string test_buttons_setting_script =
-      "setTestButtons(document.getElementsByName('chromeButton'))";
-  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     test_buttons_setting_script));
-  // Run the test by firing all the buttons.  Wait until completion.
-  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     kScriptBeginClickingTestButtons));
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// TODO(ataly): test flaky on windows and Mac. See Bug: crbug.com/245594
-#define MAYBE_DOMEndToEnd DISABLED_DOMEndToEnd
-#else
-#define MAYBE_DOMEndToEnd DOMEndToEnd
-#endif
-
-IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, MAYBE_DOMEndToEnd) {
-  TabStripModel* tab_strip = StartEmbeddedTestServerAndInitialize();
-  ResultCatcher catcher;
-  // Set the default URL so that is has the correct port number.
-  std::string url_setting_script = base::StringPrintf(
-      "defaultUrl = \'http://www.google.com:%d\';",
-      embedded_test_server()->port());
-  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     url_setting_script));
-  // Set the test buttons array
-  std::string test_buttons_setting_script =
-      "setTestButtons(document.getElementsByName('domButton'))";
-  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     test_buttons_setting_script));
-  // Run the test by firing all the buttons.  Wait until completion.
-  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     kScriptBeginClickingTestButtons));
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionPrerender) {
+IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartEmbeddedTestServer();
   int port = embedded_test_server()->port();
@@ -173,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionPrerender) {
 
   activity_log->GetActions(
       ext->id(), 0, base::Bind(
-          ActivityLogExtensionTest::Prerender_Arguments, port));
+          ActivityLogPrerenderTest::Prerender_Arguments, port));
 
   // Allow invocation of Prerender_Arguments
   base::MessageLoop::current()->Run();
