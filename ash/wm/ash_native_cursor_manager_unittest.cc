@@ -16,6 +16,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "ui/base/cursor/cursor_loader_win.h"
 #endif
 
 using views::corewm::CursorManager;
@@ -57,7 +58,7 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   CursorManagerTestApi test_api(cursor_manager);
   gfx::Display display(0);
 #if defined(OS_WIN)
-  cursor_manager->SetCursorResourceModule(L"ash_unittests.exe");
+  ui::CursorLoaderWin::SetCursorResourceModule(L"ash_unittests.exe");
 #endif
   cursor_manager->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
@@ -105,7 +106,7 @@ TEST_F(AshNativeCursorManagerTest, SetCursor) {
   CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 #if defined(OS_WIN)
-  cursor_manager->SetCursorResourceModule(L"ash_unittests.exe");
+  ui::CursorLoaderWin::SetCursorResourceModule(L"ash_unittests.exe");
 #endif
   cursor_manager->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());

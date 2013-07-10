@@ -63,9 +63,6 @@ void TestCursorClient::LockCursor() {
 void TestCursorClient::UnlockCursor() {
 }
 
-void TestCursorClient::SetCursorResourceModule(const string16& module_name) {
-}
-
 void TestCursorClient::AddObserver(
     aura::client::CursorClientObserver* observer) {
   observers_.AddObserver(observer);

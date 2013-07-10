@@ -45,6 +45,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "installer_util_strings/installer_util_strings.h"
+#include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/ui_base_switches.h"
@@ -185,6 +186,9 @@ void ChromeBrowserMainPartsWin::ToolkitInitialized() {
   ChromeBrowserMainParts::ToolkitInitialized();
   gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
   gfx::PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
+#if defined(USE_AURA)
+  ui::CursorLoaderWin::SetCursorResourceModule(chrome::kBrowserResourcesDll);
+#endif
 }
 
 void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
