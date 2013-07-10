@@ -1138,12 +1138,4 @@
   fun:base::MessagePumpLibevent::Run
   fun:base::MessageLoop::RunInternal
   fun:base::MessageLoop::RunHandler
-  fun:base::RunLoop::Run
-  fun:content::RunThisRunLoop
-  fun:content::MessageLoopRunner::Run
-  fun:content::WindowedNotificationObserver::Wait
-  fun:ExtensionServiceTest::WaitForCrxInstall
-  fun:ExtensionServiceTest::WaitForCrxInstall
-  fun:ExtensionSourcePriorityTest_InstallExternalBlocksSyncRequest_Test::TestBody
-  fun:testing::internal::HandleSehExceptionsInMethodIfSupported
 }
