@@ -6,17 +6,6 @@
 
 #include "chrome/browser/chromeos/cros/network_library.h"
 
-#define DEFINE_GET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
-class_prefix##Library* CrosLibrary::Get##class_prefix##Library() {             \
-  return var_prefix##_lib_.GetDefaultImpl(use_stub_impl_);                     \
-}
-
-#define DEFINE_SET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
-void CrosLibrary::TestApi::Set##class_prefix##Library(                         \
-    class_prefix##Library* library, bool own) {                                \
-  library_->var_prefix##_lib_.SetImpl(library, own);                           \
-}
-
 namespace chromeos {
 
 static CrosLibrary* g_cros_library = NULL;
@@ -47,14 +36,16 @@ CrosLibrary* CrosLibrary::Get() {
   return g_cros_library;
 }
 
-DEFINE_GET_LIBRARY_METHOD(Network, network);
-
-CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
-  if (!test_api_.get())
-    test_api_.reset(new TestApi(this));
-  return test_api_.get();
+NetworkLibrary* CrosLibrary::GetNetworkLibrary() {
+  if (!network_library_)
+    network_library_.reset(NetworkLibrary::GetImpl(use_stub_impl_));
+  return network_library_.get();
 }
 
-DEFINE_SET_LIBRARY_METHOD(Network, network);
+void CrosLibrary::SetNetworkLibrary(NetworkLibrary* library) {
+  if (network_library_)
+    network_library_.reset();
+  network_library_.reset(library);
+}
 
 } // namespace chromeos

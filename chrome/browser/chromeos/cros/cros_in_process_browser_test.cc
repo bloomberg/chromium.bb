@@ -29,8 +29,7 @@ void CrosInProcessBrowserTest::InitStatusAreaMocks() {
   if (mock_network_library_)
     return;
   mock_network_library_ = new StrictMock<MockNetworkLibrary>();
-  CrosLibrary::Get()->GetTestApi()->SetNetworkLibrary(
-      mock_network_library_, true);
+  CrosLibrary::Get()->SetNetworkLibrary(mock_network_library_);
 }
 
 void CrosInProcessBrowserTest::SetStatusAreaMocksExpectations() {
@@ -167,7 +166,7 @@ void CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
 void CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture() {
   // Prevent bogus gMock leak check from firing.
   if (mock_network_library_)
-    CrosLibrary::Get()->GetTestApi()->SetNetworkLibrary(NULL, false);
+    CrosLibrary::Get()->SetNetworkLibrary(NULL);
 }
 
 }  // namespace chromeos

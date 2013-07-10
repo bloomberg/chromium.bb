@@ -22,21 +22,6 @@ class NetworkLibrary;
 // be mocked for testing.
 class CrosLibrary {
  public:
-  // This class provides access to internal members of CrosLibrary class for
-  // purpose of testing (i.e. replacement of members' implementation with
-  // mock objects).
-  class TestApi {
-   public:
-    // Passing true for own for these setters will cause them to be deleted
-    // when the CrosLibrary is deleted (or other mocks are set).
-    void SetNetworkLibrary(NetworkLibrary* library, bool own);
-
-   private:
-    friend class CrosLibrary;
-    explicit TestApi(CrosLibrary* library) : library_(library) {}
-    CrosLibrary* library_;
-  };
-
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize(bool use_stub);
 
@@ -48,10 +33,14 @@ class CrosLibrary {
   // called (or Shutdown() has been called).
   static CrosLibrary* Get();
 
+  // Gets the network library. The network library is created if it's not yet
+  // created.
   NetworkLibrary* GetNetworkLibrary();
 
-  // Getter for Test API that gives access to internal members of this class.
-  TestApi* GetTestApi();
+  // Sets the network library to be returned from GetNetworkLibrary().
+  // CrosLibrary will take the ownership. The existing network library will
+  // be deleted. Passing NULL will just delete the existing network library.
+  void SetNetworkLibrary(NetworkLibrary* network_library);
 
   // Note: Since we are no longer loading Libcros, we can return true here
   // whenever the used libraries are not stub.
@@ -59,51 +48,13 @@ class CrosLibrary {
   bool libcros_loaded() { return !use_stub_impl_; }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<chromeos::CrosLibrary>;
-  friend class CrosLibrary::TestApi;
-
   explicit CrosLibrary(bool use_stub);
   virtual ~CrosLibrary();
 
-  // This template supports the creation, setting and optional deletion of
-  // the cros libraries.
-  template <class L>
-  class Library {
-   public:
-    Library() : library_(NULL), own_(true) {}
-
-    ~Library() {
-      if (own_)
-        delete library_;
-    }
-
-    L* GetDefaultImpl(bool use_stub_impl) {
-      if (!library_) {
-        own_ = true;
-        library_ = L::GetImpl(use_stub_impl);
-      }
-      return library_;
-    }
-
-    void SetImpl(L* library, bool own) {
-      if (library != library_) {
-        if (own_)
-          delete library_;
-        library_ = library;
-        own_ = own;
-      }
-    }
-
-   private:
-    L* library_;
-    bool own_;
-  };
-
-  Library<NetworkLibrary> network_lib_;
+  scoped_ptr<NetworkLibrary> network_library_;
 
   // Stub implementations of the libraries should be used.
   bool use_stub_impl_;
-  scoped_ptr<TestApi> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosLibrary);
 };
