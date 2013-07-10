@@ -93,6 +93,10 @@ enum UserTextClearedType {
 // in the EnteredKeywordModeMethod enum which is defined in the .h file.
 const char kEnteredKeywordModeHistogram[] = "Omnibox.EnteredKeywordMode";
 
+// Histogram name which counts the number of milliseconds a user takes
+// between focusing and editing the omnibox.
+const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -380,6 +384,16 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
 }
 
 void OmniboxEditModel::SetInputInProgress(bool in_progress) {
+  if (in_progress && !last_omnibox_focus_without_user_input_.is_null()) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    DCHECK(last_omnibox_focus_without_user_input_ <= now);
+    UMA_HISTOGRAM_TIMES(kFocusToEditTimeHistogram,
+                        now - last_omnibox_focus_without_user_input_);
+    // We only want to count the time from focus to the first user input, so
+    // reset |last_omnibox_focus_without_user_input_| to null.
+    last_omnibox_focus_without_user_input_ = base::TimeTicks();
+  }
+
   if (user_input_in_progress_ == in_progress)
     return;
 
@@ -750,6 +764,8 @@ void OmniboxEditModel::ClearKeyword(const string16& visible_text) {
 }
 
 void OmniboxEditModel::OnSetFocus(bool control_down) {
+  last_omnibox_focus_without_user_input_ = base::TimeTicks::Now();
+
   // If the omnibox lost focus while the caret was hidden and then regained
   // focus, OnSetFocus() is called and should restore visibility. Note that
   // focus can be regained without an accompanying call to
