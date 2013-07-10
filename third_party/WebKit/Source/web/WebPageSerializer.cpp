@@ -43,6 +43,7 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTableElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/archive/MHTMLArchive.h"
 #include "core/page/Frame.h"
@@ -70,9 +71,9 @@ KURL getSubResourceURLFromElement(Element* element)
         if (toHTMLInputElement(element)->isImageButton())
             attributeName = &HTMLNames::srcAttr;
     } else if (element->hasTagName(HTMLNames::bodyTag)
-               || element->hasTagName(HTMLNames::tableTag)
-               || element->hasTagName(HTMLNames::trTag)
-               || element->hasTagName(HTMLNames::tdTag))
+        || isHTMLTableElement(element)
+        || element->hasTagName(HTMLNames::trTag)
+        || element->hasTagName(HTMLNames::tdTag))
         attributeName = &HTMLNames::backgroundAttr;
     else if (element->hasTagName(HTMLNames::blockquoteTag)
              || element->hasTagName(HTMLNames::qTag)

@@ -103,17 +103,17 @@ bool AccessibilityTable::isDataTable() const
     // Only "data" tables should be exposed as tables.
     // Unfortunately, there is no good way to determine the difference
     // between a "layout" table and a "data" table.
-    
+
     RenderTable* table = toRenderTable(m_renderer);
     Node* tableNode = table->node();
-    if (!tableNode || !tableNode->hasTagName(tableTag))
+    if (!tableNode || !isHTMLTableElement(tableNode))
         return false;
 
     // if there is a caption element, summary, THEAD, or TFOOT section, it's most certainly a data table
-    HTMLTableElement* tableElement = static_cast<HTMLTableElement*>(tableNode);
+    HTMLTableElement* tableElement = toHTMLTableElement(tableNode);
     if (!tableElement->summary().isEmpty() || tableElement->tHead() || tableElement->tFoot() || tableElement->caption())
         return true;
-    
+
     // if someone used "rules" attribute than the table should appear
     if (!tableElement->rules().isEmpty())
         return true;    
@@ -531,15 +531,15 @@ String AccessibilityTable::title() const
     String title;
     if (!m_renderer)
         return title;
-    
+
     // see if there is a caption
     Node* tableElement = m_renderer->node();
-    if (tableElement && tableElement->hasTagName(tableTag)) {
-        HTMLTableCaptionElement* caption = static_cast<HTMLTableElement*>(tableElement)->caption();
+    if (tableElement && isHTMLTableElement(tableElement)) {
+        HTMLTableCaptionElement* caption = toHTMLTableElement(tableElement)->caption();
         if (caption)
             title = caption->innerText();
     }
-    
+
     // try the standard 
     if (title.isEmpty())
         title = AccessibilityRenderObject::title();

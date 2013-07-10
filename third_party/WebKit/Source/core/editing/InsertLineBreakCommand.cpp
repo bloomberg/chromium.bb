@@ -35,6 +35,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLTableElement.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
 
@@ -112,10 +113,10 @@ void InsertLineBreakCommand::doApply()
         nodeToInsert = document()->createTextNode("\n");
     
     // FIXME: Need to merge text nodes when inserting just after or before text.
-    
+
     if (isEndOfParagraph(caret) && !lineBreakExistsAtVisiblePosition(caret)) {
-        bool needExtraLineBreak = !pos.deprecatedNode()->hasTagName(hrTag) && !pos.deprecatedNode()->hasTagName(tableTag);
-        
+        bool needExtraLineBreak = !pos.deprecatedNode()->hasTagName(hrTag) && !isHTMLTableElement(pos.deprecatedNode());
+
         insertNodeAt(nodeToInsert.get(), pos);
         
         if (needExtraLineBreak)

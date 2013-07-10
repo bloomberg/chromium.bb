@@ -46,6 +46,7 @@
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/html/HTMLParagraphElement.h"
+#include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLUListElement.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
@@ -1169,7 +1170,7 @@ bool isNonTableCellHTMLBlockElement(const Node* node)
     return node->hasTagName(listingTag)
         || node->hasTagName(olTag)
         || node->hasTagName(preTag)
-        || node->hasTagName(tableTag)
+        || isHTMLTableElement(node)
         || node->hasTagName(ulTag)
         || node->hasTagName(xmpTag)
         || node->hasTagName(h1Tag)

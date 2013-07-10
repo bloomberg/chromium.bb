@@ -35,6 +35,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLTableElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -3048,7 +3049,7 @@ Element* RenderObject::offsetParent() const
         if (node->hasTagName(HTMLNames::bodyTag))
             break;
 
-        if (!isPositioned() && (node->hasTagName(tableTag) || node->hasTagName(tdTag) || node->hasTagName(thTag)))
+        if (!isPositioned() && (isHTMLTableElement(node) || node->hasTagName(tdTag) || node->hasTagName(thTag)))
             break;
 
         // Webkit specific extension where offsetParent stops at zoom level changes.

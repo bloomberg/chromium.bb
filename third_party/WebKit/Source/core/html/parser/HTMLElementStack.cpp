@@ -32,6 +32,7 @@
 #include "SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLOptGroupElement.h"
+#include "core/html/HTMLTableElement.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
@@ -53,7 +54,7 @@ inline bool isScopeMarker(HTMLStackItem* item)
         || item->hasTagName(captionTag)
         || item->hasTagName(marqueeTag)
         || item->hasTagName(objectTag)
-        || item->hasTagName(tableTag)
+        || isHTMLTableElement(item->node())
         || item->hasTagName(tdTag)
         || item->hasTagName(thTag)
         || item->hasTagName(MathMLNames::miTag)
@@ -78,7 +79,7 @@ inline bool isListItemScopeMarker(HTMLStackItem* item)
 
 inline bool isTableScopeMarker(HTMLStackItem* item)
 {
-    return item->hasTagName(tableTag)
+    return isHTMLTableElement(item->node())
         || item->hasTagName(templateTag)
         || isRootNode(item);
 }
