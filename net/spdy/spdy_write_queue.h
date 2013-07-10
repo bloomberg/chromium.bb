@@ -27,6 +27,8 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   SpdyWriteQueue();
   ~SpdyWriteQueue();
 
+  bool IsEmpty() const;
+
   // Enqueues the given frame producer of the given type at the given
   // priority associated with the given stream, which may be NULL if
   // the frame producer is not associated with a stream. If |stream|

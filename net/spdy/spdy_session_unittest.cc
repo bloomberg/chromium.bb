@@ -1813,10 +1813,11 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytes);
+  // Build buffer of size kMaxReadBytesWithoutYielding / 4
+  // (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
   const int kPayloadSize =
-      kMaxReadBytes / 4 - framer.GetControlFrameHeaderSize();
+      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
   scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -1869,8 +1870,9 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrl());
 
-  // Set up the TaskObserver to verify SpdySession::DoRead doesn't post a task.
-  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
+  // Set up the TaskObserver to verify SpdySession::DoReadLoop doesn't
+  // post a task.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
 
   // Run until 1st read.
   EXPECT_EQ(0u, delegate1.stream_id());
@@ -1903,10 +1905,11 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytes);
+  // Build buffer of size kMaxReadBytesWithoutYielding / 4
+  // (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
   const int kPayloadSize =
-      kMaxReadBytes / 4 - framer.GetControlFrameHeaderSize();
+      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
   scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -1960,7 +1963,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   EXPECT_TRUE(spdy_stream1->HasUrl());
 
   // Set up the TaskObserver to verify SpdySession::DoRead posts a task.
-  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
 
   // Run until 1st read.
   EXPECT_EQ(0u, delegate1.stream_id());
@@ -2001,11 +2004,12 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytes);
+  // Build buffer of size kMaxReadBytesWithoutYielding / 4
+  // (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
   TestDataStream test_stream;
   const int kEightKPayloadSize =
-      kMaxReadBytes / 4 - framer.GetControlFrameHeaderSize();
+      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
   scoped_refptr<net::IOBuffer> eightk_payload(
       new net::IOBuffer(kEightKPayloadSize));
   char* eightk_payload_data = eightk_payload->data();
@@ -2072,8 +2076,9 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrl());
 
-  // Set up the TaskObserver to monitor SpdySession::DoRead posting of tasks.
-  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
+  // Set up the TaskObserver to monitor SpdySession::DoReadLoop
+  // posting of tasks.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
 
   // Run until 1st read.
   EXPECT_EQ(0u, delegate1.stream_id());
