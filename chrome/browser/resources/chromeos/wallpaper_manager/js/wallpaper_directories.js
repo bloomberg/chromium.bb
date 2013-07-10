@@ -5,12 +5,12 @@
 /**
  * Wallpaper file system quota.
  */
-/** #const */ var WallpaperQuota = 1024 * 1024 * 100;
+/** @const */ var WallpaperQuota = 1024 * 1024 * 100;
 
 /**
  * Wallpaper directories enum.
  */
-/** #const */ var WallpaperDirNameEnum = {
+/** @const */ var WallpaperDirNameEnum = {
                   ORIGINAL: 'original',
                   THUMBNAIL: 'thumbnail'
               };
