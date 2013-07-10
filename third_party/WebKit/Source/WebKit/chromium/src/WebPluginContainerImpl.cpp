@@ -852,7 +852,7 @@ void WebPluginContainerImpl::focusPlugin()
 {
     Frame* containingFrame = static_cast<FrameView*>(parent())->frame();
     if (Page* currentPage = containingFrame->page())
-        currentPage->focusController()->setFocusedNode(m_element, containingFrame);
+        currentPage->focusController()->setFocusedElement(m_element, containingFrame);
     else
         containingFrame->document()->setFocusedNode(m_element);
 }

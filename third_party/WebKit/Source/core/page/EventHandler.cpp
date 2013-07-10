@@ -2074,11 +2074,11 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
         // If focus shift is blocked, we eat the event.  Note we should never clear swallowEvent
         // if the page already set it (e.g., by canceling default behavior).
         if (Page* page = m_frame->page()) {
-            if (node && node->isMouseFocusable()) {
-                if (!page->focusController()->setFocusedNode(node, m_frame, FocusDirectionMouse))
+            if (node && node->isElementNode() && node->isMouseFocusable()) {
+                if (!page->focusController()->setFocusedElement(toElement(node), m_frame, FocusDirectionMouse))
                     swallowEvent = true;
             } else if (!node || !node->focused()) {
-                if (!page->focusController()->setFocusedNode(0, m_frame))
+                if (!page->focusController()->setFocusedElement(0, m_frame))
                     swallowEvent = true;
             }
         }
