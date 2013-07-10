@@ -32,14 +32,6 @@ SpdyWriteQueue::~SpdyWriteQueue() {
   Clear();
 }
 
-bool SpdyWriteQueue::IsEmpty() const {
-  for (int i = NUM_PRIORITIES - 1; i >= 0; --i) {
-    if (!queue_[i].empty())
-      return false;
-  }
-  return true;
-}
-
 void SpdyWriteQueue::Enqueue(RequestPriority priority,
                              SpdyFrameType frame_type,
                              scoped_ptr<SpdyBufferProducer> frame_producer,
