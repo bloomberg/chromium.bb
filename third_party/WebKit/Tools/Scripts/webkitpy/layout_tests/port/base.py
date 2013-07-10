@@ -86,6 +86,9 @@ class Port(object):
 
     CONTENT_SHELL_NAME = 'content_shell'
 
+    # True if the port as aac and mp3 codecs built in.
+    PORT_HAS_AUDIO_CODECS_BUILT_IN = False
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         """Return a fully-specified port name that can be used to construct objects."""
@@ -1408,10 +1411,13 @@ class Port(object):
     # If ports don't ever enable certain features, then those directories can just be
     # in the Skipped list instead of compile-time-checked here.
     def _missing_symbol_to_skipped_tests(self):
-        return {
-            "ff_mp3_decoder": ["webaudio/codec-tests/mp3"],
-            "ff_aac_decoder": ["webaudio/codec-tests/aac"],
-        }
+        if self.PORT_HAS_AUDIO_CODECS_BUILT_IN:
+            return {}
+        else:
+            return {
+                "ff_mp3_decoder": ["webaudio/codec-tests/mp3"],
+                "ff_aac_decoder": ["webaudio/codec-tests/aac"],
+            }
 
     def _has_test_in_directories(self, directory_lists, test_list):
         if not test_list:

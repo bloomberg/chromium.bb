@@ -66,7 +66,10 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
         # Test that we get the chromium skips and not the webkit default skips
         port = self.make_port()
         skip_dict = port._missing_symbol_to_skipped_tests()
-        self.assertTrue('ff_mp3_decoder' in skip_dict)
+        if port.PORT_HAS_AUDIO_CODECS_BUILT_IN:
+            self.assertEqual(skip_dict, {})
+        else:
+            self.assertTrue('ff_mp3_decoder' in skip_dict)
         self.assertFalse('WebGLShader' in skip_dict)
 
     def test_all_test_configurations(self):

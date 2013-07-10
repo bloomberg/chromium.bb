@@ -366,6 +366,9 @@ class AndroidPort(chromium.ChromiumPort):
 
     FALLBACK_PATHS = { 'android': [ 'android' ] + linux.LinuxPort.latest_platform_fallback_path() }
 
+    # Android has aac and mp3 codecs built in.
+    PORT_HAS_AUDIO_CODECS_BUILT_IN = True
+
     def __init__(self, host, port_name, **kwargs):
         super(AndroidPort, self).__init__(host, port_name, **kwargs)
 
