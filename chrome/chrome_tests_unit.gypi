@@ -1614,6 +1614,7 @@
         'browser/upload_list_unittest.cc',
         'browser/chrome_content_browser_client_unittest.cc',
         'browser/chrome_to_mobile_service_unittest.cc',
+        'browser/undo/undo_manager_test.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
