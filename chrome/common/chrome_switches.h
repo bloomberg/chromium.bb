@@ -357,7 +357,6 @@ extern const char kSyncKeystoreEncryption[];
 extern const char kSyncShortInitialRetryOverride[];
 extern const char kSyncNotificationHostPort[];
 extern const char kSyncServiceURL[];
-extern const char kSyncTabFavicons[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
 extern const char kSyncEnableDeferredStartup[];

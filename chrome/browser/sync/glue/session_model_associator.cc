@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -111,9 +110,6 @@ SessionModelAssociator::SessionModelAssociator(
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSyncTabFavicons))
-    favicon_cache_.SetLegacyDelegate(this);
 }
 
 SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
@@ -498,53 +494,6 @@ void SessionModelAssociator::FaviconsUpdated(
   }
 }
 
-void SessionModelAssociator::OnFaviconUpdated(
-    const GURL& page_url,
-    const GURL& icon_url) {
-  TabLink* tab_link = NULL;
-  for (TabLinksMap::const_iterator iter = tab_map_.begin();
-       iter != tab_map_.end(); ++iter) {
-    if (iter->second->url() == page_url) {
-      tab_link = iter->second.get();
-      if (tab_link->sync_id() == syncer::kInvalidId)
-        continue;
-
-      scoped_refptr<base::RefCountedMemory> favicon_png;
-      if (!favicon_cache_.GetSyncedFaviconForPageURL(page_url, &favicon_png)) {
-        LOG(ERROR) << "Unable to look up favicon for page url after "
-                   << "notification";
-      }
-
-      // Load the sync tab node and update the favicon data.
-      syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-      syncer::WriteNode tab_node(&trans);
-      if (tab_node.InitByIdLookup(tab_link->sync_id()) !=
-              syncer::BaseNode::INIT_OK) {
-        LOG(WARNING) << "Failed to load sync tab node for url "
-                     << tab_link->url().spec();
-        return;
-      }
-      sync_pb::SessionSpecifics session_specifics =
-          tab_node.GetSessionSpecifics();
-      DCHECK(session_specifics.has_tab());
-      sync_pb::SessionTab* tab = session_specifics.mutable_tab();
-      if (favicon_png.get() && favicon_png->size() > 0) {
-        DVLOG(1) << "Storing session favicon for "
-                 << tab_link->url() << " with size "
-                 << favicon_png->size() << " bytes.";
-        tab->set_favicon(favicon_png->front(),
-                         favicon_png->size());
-        tab->set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
-        tab->set_favicon_source(icon_url.spec());
-      } else {
-        LOG(WARNING) << "Null favicon stored for url "
-                     << tab_link->url().spec();
-      }
-      tab_node.SetSessionSpecifics(session_specifics);
-    }
-  }
-}
-
 syncer::SyncError SessionModelAssociator::AssociateModels(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result) {
@@ -646,7 +595,6 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
 syncer::SyncError SessionModelAssociator::DisassociateModels() {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Disassociating local session " << GetCurrentMachineTag();
-  favicon_cache_.RemoveLegacyDelegate();
   synced_session_tracker_.Clear();
   tab_map_.clear();
   tab_pool_.clear();

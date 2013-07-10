@@ -43,15 +43,6 @@ enum IconSize {
 
 struct SyncedFaviconInfo;
 
-// Observer interface.
-class FaviconCacheObserver {
- public:
-  virtual void OnFaviconUpdated(const GURL& page_url, const GURL& icon_url) = 0;
-
- protected:
-  virtual ~FaviconCacheObserver();
-};
-
 // Encapsulates the logic for loading and storing synced favicons.
 // TODO(zea): make this a BrowserContextKeyedService.
 class FaviconCache : public syncer::SyncableService,
@@ -105,10 +96,6 @@ class FaviconCache : public syncer::SyncableService,
                              const GURL& icon_url,
                              const std::string& icon_bytes,
                              int64 visit_time_ms);
-
-  // Support for syncing favicons using the legacy format (within tab sync).
-  void SetLegacyDelegate(FaviconCacheObserver* observer);
-  void RemoveLegacyDelegate();
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -231,10 +218,6 @@ class FaviconCache : public syncer::SyncableService,
 
   // Weak pointer factory for favicon loads.
   base::WeakPtrFactory<FaviconCache> weak_ptr_factory_;
-
-  // Delegate for legacy favicon sync support.
-  // TODO(zea): Remove this eventually.
-  FaviconCacheObserver* legacy_delegate_;
 
   scoped_ptr<syncer::SyncChangeProcessor> favicon_images_sync_processor_;
   scoped_ptr<syncer::SyncChangeProcessor> favicon_tracking_sync_processor_;

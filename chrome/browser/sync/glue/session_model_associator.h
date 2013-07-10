@@ -54,7 +54,6 @@ class SyncedWindowDelegate;
 class SessionModelAssociator
     : public AssociatorInterface,
       public base::SupportsWeakPtr<SessionModelAssociator>,
-      public FaviconCacheObserver,
       public base::NonThreadSafe {
  public:
   // Does not take ownership of sync_service.
@@ -81,10 +80,6 @@ class SessionModelAssociator
   // Returns syncer::kInvalidId if the sync node is not found for the given
   // tag
   virtual int64 GetSyncIdFromSessionTag(const std::string& tag);
-
-  // FaviconCacheObserver interface.
-  virtual void OnFaviconUpdated(const GURL& page_url,
-                                const GURL& icon_url) OVERRIDE;
 
   // Resync local window information. Updates the local sessions header node
   // with the status of open windows and the order of tabs they contain. Should

@@ -1350,9 +1350,6 @@ const char kSyncNotificationHostPort[]      = "sync-notification-host-port";
 // Overrides the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 
-// Enables syncing of favicons as part of tab sync.
-const char kSyncTabFavicons[]               = "sync-tab-favicons";
-
 // Makes the sync code to throw an unrecoverable error after initialization.
 // Useful for testing unrecoverable error scenarios.
 const char kSyncThrowUnrecoverableError[]   = "sync-throw-unrecoverable-error";

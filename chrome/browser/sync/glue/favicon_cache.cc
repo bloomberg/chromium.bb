@@ -215,12 +215,9 @@ bool FaviconInfoHasTracking(const SyncedFaviconInfo& favicon_info) {
 
 }  // namespace
 
-FaviconCacheObserver::~FaviconCacheObserver() {}
-
 FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
     : profile_(profile),
       weak_ptr_factory_(this),
-      legacy_delegate_(NULL),
       max_sync_favicon_limit_(max_sync_favicon_limit) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_HISTORY_URLS_DELETED,
@@ -581,14 +578,6 @@ void FaviconCache::OnReceivedSyncFaviconImpl(
                    syncer::SyncChange::ACTION_UPDATE));
 }
 
-void FaviconCache::SetLegacyDelegate(FaviconCacheObserver* observer) {
-  legacy_delegate_ = observer;
-}
-
-void FaviconCache::RemoveLegacyDelegate() {
-  legacy_delegate_ = NULL;
-}
-
 void FaviconCache::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
@@ -695,8 +684,6 @@ void FaviconCache::OnFaviconDataAvailable(
     if (iter->second.new_tracking)
       tracking_change = syncer::SyncChange::ACTION_ADD;
     UpdateSyncState(favicon_url, image_change, tracking_change);
-    if (legacy_delegate_)
-      legacy_delegate_->OnFaviconUpdated(page_url, favicon_url);
 
     // TODO(zea): support multiple favicon urls per page.
     page_favicon_map_[page_url] = favicon_url;
