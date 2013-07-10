@@ -157,8 +157,6 @@
         '../plugins/ppapi/resource_creation_impl.h',
         '../plugins/ppapi/resource_helper.cc',
         '../plugins/ppapi/resource_helper.h',
-        '../plugins/ppapi/url_response_info_util.cc',
-        '../plugins/ppapi/url_response_info_util.h',
         '../plugins/ppapi/url_request_info_util.cc',
         '../plugins/ppapi/url_request_info_util.h',
         '../plugins/ppapi/usb_key_code_conversion.h',

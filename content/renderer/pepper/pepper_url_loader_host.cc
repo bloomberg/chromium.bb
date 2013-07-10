@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/url_response_info_util.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -25,7 +26,6 @@
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/url_request_info_util.h"
-#include "webkit/plugins/ppapi/url_response_info_util.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;
@@ -355,7 +355,7 @@ void PepperURLLoaderHost::SaveResponse(const WebURLResponse& response) {
     // redirects are processed since WebKit has to know the MIME type).
     SendUpdateToPlugin(
         new PpapiPluginMsg_URLLoader_ReceivedResponse(
-            webkit::ppapi::DataFromWebURLResponse(pp_instance(), response)));
+            DataFromWebURLResponse(pp_instance(), response)));
   }
 }
 

@@ -57,6 +57,7 @@
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/pepper/url_response_info_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -100,7 +101,6 @@
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/ppapi/url_response_info_util.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebView;
@@ -1348,7 +1348,7 @@ void PepperPluginDelegateImpl::HandleDocumentLoad(
       scoped_ptr<ppapi::host::ResourceHost>(loader_host));
   DCHECK(pending_host_id);
   ppapi::URLResponseInfoData data =
-      webkit::ppapi::DataFromWebURLResponse(pp_instance, response);
+      DataFromWebURLResponse(pp_instance, response);
 
   if (host_impl->in_process_router()) {
     // Running in-process, we can just create the resource and call the

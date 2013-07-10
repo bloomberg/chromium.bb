@@ -264,6 +264,8 @@
     'renderer/pepper/pepper_websocket_host.h',
     'renderer/pepper/renderer_ppapi_host_impl.cc',
     'renderer/pepper/renderer_ppapi_host_impl.h',
+    'renderer/pepper/url_response_info_util.cc',
+    'renderer/pepper/url_response_info_util.h',
     'renderer/plugin_channel_host.cc',
     'renderer/plugin_channel_host.h',
     'renderer/browser_plugin/browser_plugin.cc',

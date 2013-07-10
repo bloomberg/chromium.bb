@@ -1,24 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/url_response_info_util.h"
+#include "content/renderer/pepper/url_response_info_util.h"
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "ppapi/shared_impl/url_response_info_data.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
-#include "webkit/glue/webkit_glue.h"
 
+using webkit::ppapi::PPB_FileRef_Impl;
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebString;
 using WebKit::WebURLResponse;
 
-namespace webkit {
-namespace ppapi {
+namespace content {
 
 namespace {
 
@@ -44,10 +44,10 @@ bool IsRedirect(int32_t status) {
 
 }  // namespace
 
-::ppapi::URLResponseInfoData DataFromWebURLResponse(
+ppapi::URLResponseInfoData DataFromWebURLResponse(
     PP_Instance pp_instance,
     const WebURLResponse& response) {
-  ::ppapi::URLResponseInfoData data;
+  ppapi::URLResponseInfoData data;
 
   data.url = response.url().spec();
   data.status_code = response.httpStatusCode();
@@ -74,5 +74,4 @@ bool IsRedirect(int32_t status) {
   return data;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace content
