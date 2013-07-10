@@ -698,7 +698,8 @@ cr.define('options', function() {
      * @private
      */
     updateSyncState_: function(syncData) {
-      if (!syncData.signinAllowed && !syncData.supervisedUser) {
+      if (!syncData.signinAllowed &&
+          (!syncData.supervisedUser || !cr.isChromeOS)) {
         $('sync-section').hidden = true;
         return;
       }
