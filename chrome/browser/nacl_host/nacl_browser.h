@@ -176,7 +176,7 @@ class NaClBrowser {
   // A list of pending tasks to start NaCl processes.
   std::vector<base::Closure> waiting_;
 
-  NaClBrowserDelegate* browser_delegate_;
+  scoped_ptr<NaClBrowserDelegate> browser_delegate_;
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };
 

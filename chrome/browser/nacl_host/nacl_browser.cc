@@ -162,19 +162,17 @@ NaClBrowser::NaClBrowser()
       validation_cache_is_modified_(false),
       validation_cache_state_(NaClResourceUninitialized),
       path_cache_(kFilePathCacheSize),
-      ok_(true),
-      browser_delegate_(NULL) {
+      ok_(true) {
 }
 
 void NaClBrowser::SetDelegate(NaClBrowserDelegate* delegate) {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  delete nacl_browser->browser_delegate_;
-  nacl_browser->browser_delegate_ = delegate;
+  nacl_browser->browser_delegate_.reset(delegate);
 }
 
 NaClBrowserDelegate* NaClBrowser::GetDelegate() {
-  DCHECK(GetInstance()->browser_delegate_ != NULL);
-  return GetInstance()->browser_delegate_;
+  DCHECK(GetInstance()->browser_delegate_.get() != NULL);
+  return GetInstance()->browser_delegate_.get();
 }
 
 void NaClBrowser::EarlyStartup() {
