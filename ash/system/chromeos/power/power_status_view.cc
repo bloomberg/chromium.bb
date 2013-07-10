@@ -115,7 +115,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
   base::string16 battery_percentage;
   base::string16 battery_time_status;
 
-  if (status.IsLinePowerConnected() && status.IsBatteryFull()) {
+  if (status.IsBatteryFull()) {
     battery_time_status =
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
   } else {
@@ -125,27 +125,26 @@ void PowerStatusView::UpdateTextForDefaultView() {
     if (status.IsUsbChargerConnected()) {
       battery_time_status = rb.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
+    } else if (status.IsBatteryTimeBeingCalculated()) {
+      battery_time_status =
+          rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
     } else {
-      if (status.IsBatteryTimeBeingCalculated()) {
+      base::TimeDelta time = status.IsBatteryCharging() ?
+          status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
+      if (PowerStatus::ShouldDisplayBatteryTime(time) &&
+          !status.IsBatteryDischargingOnLinePower()) {
+        int hour = 0, min = 0;
+        PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
+        base::string16 minute = min < 10 ?
+            ASCIIToUTF16("0") + base::IntToString16(min) :
+            base::IntToString16(min);
         battery_time_status =
-            rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
-      } else {
-        base::TimeDelta time = status.IsLinePowerConnected() ?
-            status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
-        int hour = time.InHours();
-        int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-        if (hour || min) {
-          base::string16 minute = min < 10 ?
-              ASCIIToUTF16("0") + base::IntToString16(min) :
-              base::IntToString16(min);
-          battery_time_status =
-              l10n_util::GetStringFUTF16(
-                  status.IsLinePowerConnected() ?
-                  IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT :
-                  IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
-                  base::IntToString16(hour),
-                  minute);
-        }
+            l10n_util::GetStringFUTF16(
+                status.IsBatteryCharging() ?
+                IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT :
+                IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
+                base::IntToString16(hour),
+                minute);
       }
     }
     battery_percentage = battery_time_status.empty() ?
@@ -159,7 +158,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
 
 void PowerStatusView::UpdateTextForNotificationView() {
   const PowerStatus& status = *PowerStatus::Get();
-  if (status.IsLinePowerConnected() && status.IsBatteryFull()) {
+  if (status.IsBatteryFull()) {
     status_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_FULL));
@@ -170,14 +169,8 @@ void PowerStatusView::UpdateTextForNotificationView() {
             base::IntToString16(status.GetRoundedBatteryPercent())));
   }
 
-  int hour = 0;
-  int min = 0;
-  if (!status.IsBatteryTimeBeingCalculated()) {
-    base::TimeDelta time = status.IsLinePowerConnected() ?
-        status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
-    hour = time.InHours();
-    min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-  }
+  const base::TimeDelta time = status.IsBatteryCharging() ?
+      status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
 
   if (status.IsUsbChargerConnected()) {
     time_label_->SetText(
@@ -187,8 +180,11 @@ void PowerStatusView::UpdateTextForNotificationView() {
     time_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
-  } else if (hour || min) {
-    if (status.IsLinePowerConnected()) {
+  } else if (PowerStatus::ShouldDisplayBatteryTime(time) &&
+             !status.IsBatteryDischargingOnLinePower()) {
+    int hour = 0, min = 0;
+    PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
+    if (status.IsBatteryCharging()) {
       time_label_->SetText(
           l10n_util::GetStringFUTF16(
               IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,

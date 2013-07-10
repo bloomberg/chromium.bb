@@ -76,6 +76,8 @@ const int kNumPowerImages = 15;
 
 }  // namespace
 
+const int PowerStatus::kMaxBatteryTimeToDisplaySec = 24 * 60 * 60;
+
 // static
 void PowerStatus::Initialize() {
   CHECK(!g_power_status);
@@ -98,6 +100,22 @@ bool PowerStatus::IsInitialized() {
 PowerStatus* PowerStatus::Get() {
   CHECK(g_power_status) << "PowerStatus::Get() called before Initialize().";
   return g_power_status;
+}
+
+// static
+bool PowerStatus::ShouldDisplayBatteryTime(const base::TimeDelta& time) {
+  return time >= base::TimeDelta::FromMinutes(1) &&
+      time.InSeconds() <= kMaxBatteryTimeToDisplaySec;
+}
+
+// static
+void PowerStatus::SplitTimeIntoHoursAndMinutes(const base::TimeDelta& time,
+                                               int* hours,
+                                               int* minutes) {
+  DCHECK(hours);
+  DCHECK(minutes);
+  *hours = time.InHours();
+  *minutes = (time - base::TimeDelta::FromHours(*hours)).InMinutes();
 }
 
 void PowerStatus::AddObserver(Observer* observer) {
@@ -123,6 +141,16 @@ bool PowerStatus::IsBatteryPresent() const {
 bool PowerStatus::IsBatteryFull() const {
   return proto_.battery_state() ==
       power_manager::PowerSupplyProperties_BatteryState_FULL;
+}
+
+bool PowerStatus::IsBatteryCharging() const {
+  return proto_.battery_state() ==
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+}
+
+bool PowerStatus::IsBatteryDischargingOnLinePower() const {
+  return IsLinePowerConnected() && proto_.battery_state() ==
+      power_manager::PowerSupplyProperties_BatteryState_DISCHARGING;
 }
 
 double PowerStatus::GetBatteryPercent() const {
@@ -174,10 +202,13 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
         IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
   }
 
-  // Get the horizontal offset in the battery icon array image.
-  int offset = (IsUsbChargerConnected() || !IsLinePowerConnected()) ? 0 : 1;
+  // Get the horizontal offset in the battery icon array image. The USB /
+  // "unreliable charging" image has a single column of icons; the other
+  // image contains a "battery" column on the left and a "line power"
+  // column on the right.
+  int offset = IsUsbChargerConnected() ? 0 : (IsLinePowerConnected() ? 1 : 0);
 
-  // Get the icon index in the battery icon array image.
+  // Get the vertical offset corresponding to the current battery level.
   int index = -1;
   if (GetBatteryPercent() >= 100.0) {
     index = kNumPowerImages - 1;
@@ -197,40 +228,39 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
 
 base::string16 PowerStatus::GetAccessibleNameString() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (IsLinePowerConnected() && IsBatteryFull()) {
+  if (IsBatteryFull()) {
     return rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE);
   }
+
   base::string16 battery_percentage_accessible = l10n_util::GetStringFUTF16(
-      IsLinePowerConnected() ?
+      IsBatteryCharging() ?
       IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE :
       IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE,
       base::IntToString16(GetRoundedBatteryPercent()));
   base::string16 battery_time_accessible = base::string16();
+  const base::TimeDelta time = IsBatteryCharging() ? GetBatteryTimeToFull() :
+      GetBatteryTimeToEmpty();
+
   if (IsUsbChargerConnected()) {
     battery_time_accessible = rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE_ACCESSIBLE);
-  } else {
-    if (IsBatteryTimeBeingCalculated()) {
-      battery_time_accessible = rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
-    } else {
-      base::TimeDelta time = IsLinePowerConnected() ? GetBatteryTimeToFull() :
-          GetBatteryTimeToEmpty();
-      int hour = time.InHours();
-      int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-      if (hour || min) {
-        base::string16 minute = min < 10 ?
-            ASCIIToUTF16("0") + base::IntToString16(min) :
-            base::IntToString16(min);
-        battery_time_accessible =
-            l10n_util::GetStringFUTF16(
-                IsLinePowerConnected() ?
-                IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE :
-                IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE,
-                GetBatteryTimeAccessibilityString(hour, min));
-      }
-    }
+  } else if (IsBatteryTimeBeingCalculated()) {
+    battery_time_accessible = rb.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE);
+  } else if (ShouldDisplayBatteryTime(time) &&
+             !IsBatteryDischargingOnLinePower()) {
+    int hour = 0, min = 0;
+    PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
+    base::string16 minute = min < 10 ?
+        ASCIIToUTF16("0") + base::IntToString16(min) :
+        base::IntToString16(min);
+    battery_time_accessible =
+        l10n_util::GetStringFUTF16(
+            IsBatteryCharging() ?
+            IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE :
+            IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE,
+            GetBatteryTimeAccessibilityString(hour, min));
   }
   return battery_time_accessible.empty() ?
       battery_percentage_accessible :

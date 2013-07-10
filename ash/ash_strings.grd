@@ -449,14 +449,14 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE" desc="The label in the tray dialog to indicate that battery charging is unreliable.">
         Low-power charger
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE" desc="The message used by accessibility to show battery is full and charging.">
-        Battery is full and charging.
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE" desc="The message used by accessibility to show battery is fully charged.">
+        Battery is full.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time.">
-        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE" desc="The message used by accessibility to show battery is discharging.">
+        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time.">
-        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full and charging
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is being charged.">
+        Battery is <ph name="percentage">$1<ex>56</ex></ph>% full and charging.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time in short message.">
         Calculating battery time.

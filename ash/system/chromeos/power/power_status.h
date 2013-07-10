@@ -39,7 +39,10 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
     virtual ~Observer() {}
   };
 
-  virtual ~PowerStatus();
+  // Maximum battery time-to-full or time-to-empty that should be displayed
+  // in the UI. If the current is close to zero, battery time estimates can
+  // get very large; avoid displaying these large numbers.
+  static const int kMaxBatteryTimeToDisplaySec;
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();
@@ -53,6 +56,16 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Gets the global instance. Initialize must be called first.
   static PowerStatus* Get();
 
+  // Returns true if |time|, a time returned by GetBatteryTimeToEmpty() or
+  // GetBatteryTimeToFull(), should be displayed in the UI.
+  // Less-than-a-minute or very large values aren't displayed.
+  static bool ShouldDisplayBatteryTime(const base::TimeDelta& time);
+
+  // Copies the hour and minute components of |time| to |hours| and |minutes|.
+  static void SplitTimeIntoHoursAndMinutes(const base::TimeDelta& time,
+                                           int* hours,
+                                           int* minutes);
+
   // Adds or removes an observer.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -63,8 +76,20 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Returns true if a battery is present.
   bool IsBatteryPresent() const;
 
-  // Returns true if the battery is full.
+  // Returns true if the battery is full. This also implies that a charger
+  // is connected.
   bool IsBatteryFull() const;
+
+  // Returns true if the battery is charging. Note that this implies that a
+  // charger is connected but the converse is not necessarily true: the
+  // battery may be discharging even while a (perhaps low-power) charger is
+  // connected. Use Is*Connected() to test for the presence of a charger
+  // and also see IsBatteryDischargingOnLinePower().
+  bool IsBatteryCharging() const;
+
+  // Returns true if the battery is discharging (or neither charging nor
+  // discharging while not being full) while line power is connected.
+  bool IsBatteryDischargingOnLinePower() const;
 
   // Returns the battery's remaining charge as a value in the range [0.0,
   // 100.0].
@@ -106,6 +131,7 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
 
  protected:
   PowerStatus();
+  virtual ~PowerStatus();
 
  private:
   // Overriden from PowerManagerClient::Observer.
