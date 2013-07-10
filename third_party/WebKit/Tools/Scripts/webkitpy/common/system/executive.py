@@ -51,7 +51,12 @@ class ScriptError(Exception):
                  script_args=None,
                  exit_code=None,
                  output=None,
-                 cwd=None):
+                 cwd=None,
+                 output_limit=500):
+        shortened_output = output
+        if output and output_limit and len(output) > output_limit:
+            shortened_output = "Last %s characters of output:\n%s" % (output_limit, output[-output_limit:])
+
         if not message:
             message = 'Failed to run "%s"' % repr(script_args)
             if exit_code:
@@ -59,18 +64,16 @@ class ScriptError(Exception):
             if cwd:
                 message += " cwd: %s" % cwd
 
+        if shortened_output:
+            message += "\n\noutput: %s" % shortened_output
+
         Exception.__init__(self, message)
         self.script_args = script_args # 'args' is already used by Exception
         self.exit_code = exit_code
         self.output = output
         self.cwd = cwd
 
-    def message_with_output(self, output_limit=500):
-        if self.output:
-            if output_limit and len(self.output) > output_limit:
-                return u"%s\n\nLast %s characters of output:\n%s" % \
-                    (self, output_limit, self.output[-output_limit:])
-            return u"%s\n\n%s" % (self, self.output)
+    def message_with_output(self):
         return unicode(self)
 
     def command_name(self):

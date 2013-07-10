@@ -63,7 +63,7 @@ class WorkspaceTest(unittest.TestCase):
 Workspace.create_zip failed in /source/path:
 MOCK ScriptError
 
-MOCK output of child process
+output: MOCK output of child process
 """
         class MockZipFile(object):
             def __init__(self, path):
