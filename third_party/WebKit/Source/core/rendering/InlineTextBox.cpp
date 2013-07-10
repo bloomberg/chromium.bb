@@ -374,7 +374,7 @@ void updateGraphicsContext(GraphicsContext* context, const Color& fillColor, con
 
 bool InlineTextBox::isLineBreak() const
 {
-    return renderer()->isBR() || (renderer()->style()->preserveNewline() && len() == 1 && (*textRenderer()->text().impl())[start()] == '\n');
+    return renderer()->isBR() || (renderer()->style()->preserveNewline() && len() == 1 && (*textRenderer()->text())[start()] == '\n');
 }
 
 bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)

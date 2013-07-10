@@ -707,7 +707,7 @@ bool AccessibilityRenderObject::computeAccessibilityIsIgnored() const
         }
 
         // text elements that are just empty whitespace should not be returned
-        return renderText->text().impl()->containsOnlyWhitespace();
+        return renderText->text()->containsOnlyWhitespace();
     }
 
     if (isHeading())

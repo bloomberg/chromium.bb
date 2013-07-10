@@ -292,10 +292,10 @@ static TextBreakIterator* wordBreakIteratorForMinOffsetBoundary(const VisiblePos
     string.clear();
     if (previousBox) {
         previousBoxLength = previousBox->len();
-        previousBox->textRenderer()->text().appendTo(string, previousBox->start(), previousBoxLength);
+        string.append(previousBox->textRenderer()->text()->bloatedCharacters() + previousBox->start(), previousBoxLength);
         len += previousBoxLength;
     }
-    textBox->textRenderer()->text().appendTo(string, textBox->start(), textBox->len());
+    string.append(textBox->textRenderer()->text()->bloatedCharacters() + textBox->start(), textBox->len());
     len += textBox->len();
 
     return wordBreakIterator(string.data(), len);
@@ -311,10 +311,10 @@ static TextBreakIterator* wordBreakIteratorForMaxOffsetBoundary(const VisiblePos
 
     int len = 0;
     string.clear();
-    textBox->textRenderer()->text().appendTo(string, textBox->start(), textBox->len());
+    string.append(textBox->textRenderer()->text()->bloatedCharacters() + textBox->start(), textBox->len());
     len += textBox->len();
     if (nextBox) {
-        nextBox->textRenderer()->text().appendTo(string, nextBox->start(), nextBox->len());
+        string.append(nextBox->textRenderer()->text()->bloatedCharacters() + nextBox->start(), nextBox->len());
         len += nextBox->len();
     }
 
@@ -381,9 +381,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         else if (offsetInBox == box->caretMaxOffset())
             iter = wordBreakIteratorForMaxOffsetBoundary(visiblePosition, textBox, nextBoxInDifferentBlock, string, leafBoxes);
         else if (movingIntoNewBox) {
-            Vector<UChar, 1024> characters;
-            textBox->textRenderer()->text().appendTo(characters, textBox->start(), textBox->len());
-            iter = wordBreakIterator(characters.data(), textBox->len());
+            iter = wordBreakIterator(textBox->textRenderer()->text()->bloatedCharacters() + textBox->start(), textBox->len());
             previouslyVisitedBox = box;
         }
 
@@ -494,9 +492,9 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
             string.prepend(it.characters(), it.length());
         else {
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
-            Vector<UChar, 1024> iteratorString;
-            iteratorString.fill('x', it.length());
-            string.prepend(iteratorString.data(), iteratorString.size());
+            String iteratorString(it.characters(), it.length());
+            iteratorString.fill('x');
+            string.prepend(iteratorString.bloatedCharacters(), iteratorString.length());
         }
         next = searchFunction(string.data(), string.size(), string.size() - suffixLength, MayHaveMoreContext, needMoreContext);
         if (next)
@@ -570,7 +568,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
             String iteratorString(it.characters(), it.length());
             iteratorString.fill('x');
-            iteratorString.appendTo(string);
+            string.append(iteratorString.bloatedCharacters(), iteratorString.length());
         }
         next = searchFunction(string.data(), string.size(), prefixLength, MayHaveMoreContext, needMoreContext);
         if (next != string.size())

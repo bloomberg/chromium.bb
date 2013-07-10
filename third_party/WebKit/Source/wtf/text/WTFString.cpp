@@ -402,6 +402,22 @@ unsigned String::copyTo(UChar* buffer, unsigned maxLength) const
     return numCharacters;
 }
 
+void String::appendTo(Vector<UChar>& result) const
+{
+    unsigned length = this->length();
+    if (!length)
+        return;
+    result.reserveCapacity(result.size() + length);
+    if (is8Bit()) {
+        const LChar* characters8 = m_impl->characters8();
+        for (size_t i = 0; i < length; ++i)
+            result.uncheckedAppend(characters8[i]);
+    } else {
+        const UChar* characters16 = m_impl->characters16();
+        result.append(characters16, length);
+    }
+}
+
 String String::format(const char *format, ...)
 {
     va_list args;

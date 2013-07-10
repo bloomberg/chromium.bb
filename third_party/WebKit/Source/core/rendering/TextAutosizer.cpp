@@ -461,7 +461,7 @@ bool TextAutosizer::containerIsRowOfLinks(const RenderObject* container)
 
     while (renderer) {
         if (!isAutosizingContainer(renderer)) {
-            if (renderer->isText() && toRenderText(renderer)->text().impl()->stripWhiteSpace()->length() > 3)
+            if (renderer->isText() && toRenderText(renderer)->text()->stripWhiteSpace()->length() > 3)
                 return false;
             if (!renderer->isInline())
                 return false;

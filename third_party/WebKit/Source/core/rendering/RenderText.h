@@ -52,7 +52,7 @@ public:
     void attachTextBox(InlineTextBox*);
     void removeTextBox(InlineTextBox*);
 
-    const String& text() const { return m_text; }
+    StringImpl* text() const { return m_text.impl(); }
     String textWithoutTranscoding() const;
 
     InlineTextBox* createInlineTextBox();
