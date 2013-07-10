@@ -1301,9 +1301,7 @@ sub GenerateNormalAttrGetterCallback
 
     $code .= "static void ${attrName}AttrGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    if (!$attrExt->{"PerWorldBindings"}) {
-        $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMGetter\");\n";
-    }
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMGetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
     if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Getter")) {
@@ -1314,9 +1312,7 @@ sub GenerateNormalAttrGetterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::${attrName}AttrGetter${forMainWorldSuffix}(name, info);\n";
     }
-    if (!$attrExt->{"PerWorldBindings"}) {
-        $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
-    }
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
 
