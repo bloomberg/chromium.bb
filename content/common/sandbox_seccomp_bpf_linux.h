@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_SANDBOX_SECCOMP_BPF_LINUX_H_
 #define CONTENT_COMMON_SANDBOX_SECCOMP_BPF_LINUX_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy_forward.h"
 

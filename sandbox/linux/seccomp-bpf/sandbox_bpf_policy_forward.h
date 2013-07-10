@@ -6,12 +6,12 @@
 #define SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_POLICY_FORWARD_H_
 
 #include "base/callback_forward.h"
-#include "sandbox/linux/seccomp-bpf/errorcode.h"
 
 namespace playground2 {
 
 class Sandbox;
-typedef playground2::ErrorCode BpfSandboxPolicy(
+class ErrorCode;
+typedef ErrorCode BpfSandboxPolicy(
     Sandbox* sandbox_compiler,
     int system_call_number,
     void* aux);
