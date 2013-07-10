@@ -29,6 +29,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/public/browser/android/compositor_client.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -83,7 +84,7 @@ static base::LazyInstance<SurfaceMap>
 static base::LazyInstance<base::Lock> g_surface_map_lock;
 
 // static
-Compositor* Compositor::Create(Client* client) {
+Compositor* Compositor::Create(CompositorClient* client) {
   return client ? new CompositorImpl(client) : NULL;
 }
 
@@ -131,7 +132,7 @@ jobject CompositorImpl::GetSurface(int surface_id) {
   return jsurface;
 }
 
-CompositorImpl::CompositorImpl(Compositor::Client* client)
+CompositorImpl::CompositorImpl(CompositorClient* client)
     : root_layer_(cc::Layer::Create()),
       has_transparent_background_(false),
       window_(NULL),

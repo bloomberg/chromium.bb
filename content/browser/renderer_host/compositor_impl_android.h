@@ -24,6 +24,7 @@ class LayerTreeHost;
 }
 
 namespace content {
+class CompositorClient;
 class GraphicsContext;
 
 // -----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ class CONTENT_EXPORT CompositorImpl
       public WebGraphicsContext3DSwapBuffersClient,
       public ImageTransportFactoryAndroidObserver {
  public:
-  explicit CompositorImpl(Compositor::Client* client);
+  explicit CompositorImpl(CompositorClient* client);
   virtual ~CompositorImpl();
 
   static bool IsInitialized();
@@ -110,7 +111,7 @@ class CONTENT_EXPORT CompositorImpl
   ANativeWindow* window_;
   int surface_id_;
 
-  Compositor::Client* client_;
+  CompositorClient* client_;
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   scoped_refptr<cc::ContextProvider> null_offscreen_context_provider_;

@@ -22,25 +22,11 @@ class JavaBitmap;
 }
 
 namespace content {
+class CompositorClient;
 
 // An interface to the browser-side compositor.
 class CONTENT_EXPORT Compositor {
  public:
-  class Client {
-   public:
-    // Tells the client that it should schedule a composite.
-    virtual void ScheduleComposite() = 0;
-
-    // The compositor has completed swapping a frame.
-    virtual void OnSwapBuffersCompleted() {}
-
-    // The compositor will eventually swap a frame.
-    virtual void OnSwapBuffersPosted() {}
-
-    // Tells the client that GL resource were lost and need to be reinitialized.
-    virtual void DidLoseResources() {}
-  };
-
   virtual ~Compositor() {}
 
   // Performs the global initialization needed before any compositor
@@ -61,7 +47,7 @@ class CONTENT_EXPORT Compositor {
   static void InitializeWithFlags(uint32 flags);
 
   // Creates and returns a compositor instance.
-  static Compositor* Create(Client* client);
+  static Compositor* Create(CompositorClient* client);
 
   // Attaches the layer tree.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) = 0;

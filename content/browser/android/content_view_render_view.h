@@ -8,12 +8,14 @@
 #include <jni.h>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/android/compositor.h"
+#include "content/public/browser/android/compositor_client.h"
 
 namespace content {
+class Compositor;
 
-class ContentViewRenderView : public Compositor::Client {
+class ContentViewRenderView : public CompositorClient {
  public:
   // Registers the JNI methods for ContentViewRender.
   static bool RegisterContentViewRenderView(JNIEnv* env);
@@ -34,7 +36,7 @@ class ContentViewRenderView : public Compositor::Client {
   friend class base::RefCounted<ContentViewRenderView>;
   virtual ~ContentViewRenderView();
 
-  // Compositor::Client implementation.
+  // CompositorClient implementation.
   virtual void ScheduleComposite() OVERRIDE;
 
   void InitCompositor();
