@@ -83,6 +83,20 @@ TouchEditingMenuView::TouchEditingMenuView(
 TouchEditingMenuView::~TouchEditingMenuView() {
 }
 
+// static
+TouchEditingMenuView* TouchEditingMenuView::Create(
+    TouchEditingMenuController* controller,
+    gfx::Rect anchor_rect,
+    gfx::NativeView context) {
+  if (controller) {
+    for (size_t i = 0; i < arraysize(kMenuCommands); i++) {
+      if (controller->IsCommandIdEnabled(kMenuCommands[i]))
+        return new TouchEditingMenuView(controller, anchor_rect, context);
+    }
+  }
+  return NULL;
+}
+
 void TouchEditingMenuView::Close() {
   if (GetWidget()) {
     controller_ = NULL;

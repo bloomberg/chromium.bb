@@ -40,14 +40,21 @@ class VIEWS_EXPORT TouchEditingMenuController {
 class VIEWS_EXPORT TouchEditingMenuView : public BubbleDelegateView,
                                           public ButtonListener {
  public:
-  TouchEditingMenuView(TouchEditingMenuController* controller,
-                       gfx::Rect anchor_rect,
-                       gfx::NativeView context);
   virtual ~TouchEditingMenuView();
+
+  // If there are no actions available for the menu, returns NULL. Otherwise,
+  // returns a new instance of TouchEditingMenuView.
+  static TouchEditingMenuView* Create(TouchEditingMenuController* controller,
+                                      gfx::Rect anchor_rect,
+                                      gfx::NativeView context);
 
   void Close();
 
  private:
+  TouchEditingMenuView(TouchEditingMenuController* controller,
+                       gfx::Rect anchor_rect,
+                       gfx::NativeView context);
+
   // views::WidgetDelegate overrides:
   virtual void WindowClosing() OVERRIDE;
 
