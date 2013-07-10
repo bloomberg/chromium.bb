@@ -186,19 +186,19 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     if (m_constructor.IsEmpty())
         return false;
 
-    v8::Handle<v8::String> v8Name = v8String(definition->name(), isolate);
+    v8::Handle<v8::String> v8TagName = v8String(definition->name(), isolate);
     v8::Handle<v8::Value> v8Type;
     if (definition->isTypeExtension())
         v8Type = v8String(definition->type(), isolate);
     else
         v8Type = v8::Null(isolate);
 
-    m_constructor->SetName(v8Type->IsNull() ? v8Name : v8Type.As<v8::String>());
+    m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
 
-    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "document", toV8(document, m_context->Global(), isolate));
-    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "namespaceURI", v8String(definition->namespaceURI(), isolate));
-    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "name", v8Name);
-    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "type", v8Type);
+    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementDocument", toV8(document, m_context->Global(), isolate));
+    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementNamespaceURI", v8String(definition->namespaceURI(), isolate));
+    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementTagName", v8TagName);
+    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementType", v8Type);
 
     v8::Handle<v8::String> prototypeKey = v8String("prototype", isolate);
     ASSERT(m_constructor->HasOwnProperty(prototypeKey));
@@ -211,7 +211,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     // property.
     m_constructor->ForceSet(prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
 
-    V8HiddenPropertyName::setNamedHiddenReference(m_prototype, "isCustomElementInterfacePrototypeObject", v8::True());
+    V8HiddenPropertyName::setNamedHiddenReference(m_prototype, "customElementIsInterfacePrototypeObject", v8::True());
     m_prototype->ForceSet(v8String("constructor", isolate), m_constructor, v8::DontEnum);
 
     return true;
@@ -219,7 +219,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
 bool CustomElementConstructorBuilder::prototypeIsValid() const
 {
-    if (m_prototype->InternalFieldCount() || !m_prototype->GetHiddenValue(V8HiddenPropertyName::isCustomElementInterfacePrototypeObject()).IsEmpty()) {
+    if (m_prototype->InternalFieldCount() || !m_prototype->GetHiddenValue(V8HiddenPropertyName::customElementIsInterfacePrototypeObject()).IsEmpty()) {
         // Alcreated an interface prototype object.
         return false;
     }
@@ -298,15 +298,15 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& ar
         return;
     }
 
-    Document* document = V8Document::toNative(args.Callee()->GetHiddenValue(V8HiddenPropertyName::document()).As<v8::Object>());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, args.Callee()->GetHiddenValue(V8HiddenPropertyName::namespaceURI()));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args.Callee()->GetHiddenValue(V8HiddenPropertyName::name()));
-    v8::Handle<v8::Value> maybeType = args.Callee()->GetHiddenValue(V8HiddenPropertyName::type());
+    Document* document = V8Document::toNative(args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementDocument()).As<v8::Object>());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementNamespaceURI()));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, tagName, args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementTagName()));
+    v8::Handle<v8::Value> maybeType = args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementType());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
 
     ExceptionCode ec = 0;
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    RefPtr<Element> element = document->createElementNS(namespaceURI, name, maybeType->IsNull() ? nullAtom : type, ec);
+    RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, ec);
     if (ec) {
         setDOMException(ec, isolate);
         return;

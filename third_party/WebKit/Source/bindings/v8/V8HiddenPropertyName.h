@@ -41,21 +41,22 @@ namespace WebCore {
     V(callback) \
     V(customElementAttributeChanged) \
     V(customElementCreated) \
+    V(customElementDocument) \
     V(customElementEnteredDocument) \
+    V(customElementIsInterfacePrototypeObject) \
     V(customElementLeftDocument) \
+    V(customElementNamespaceURI) \
+    V(customElementTagName) \
+    V(customElementType) \
     V(data) \
     V(detail) \
     V(document) \
     V(event) \
-    V(isCustomElementInterfacePrototypeObject) \
     V(listener) \
-    V(name) \
-    V(namespaceURI) \
     V(scriptState) \
     V(sleepFunction) \
     V(state) \
     V(toStringString) \
-    V(type) \
     V(typedArrayHiddenCopyMethod)
 
 class V8HiddenPropertyName {
