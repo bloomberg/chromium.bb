@@ -1,37 +1,38 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    for (i = 0; i < 21; i++) {
-        moveSelectionForwardByCharacterCommand();
-    }
-    deleteCommand();
-}
-
-</script>
-
-<title>Editing Test</title> 
-</head> 
 <body>
-<div contenteditable id="root" class="editing">
-<span id="test">Fourscore 
-and   seven <br>years ago</span>
+<div id="container">
+<div contenteditable="true" id="work"></div>
 </div>
-
+</div>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
 <script>
-runEditingTest();
-</script>
+function $(id) { return document.getElementById(id); }
 
+var sampleHTML = 'abc<br id="a"><br id="b"><br id="c">def';
+var selection = window.getSelection();
+function testIt(nth, numberOfDeletes, expectedOffset, expectedHTML) {
+    $('work').innerHTML = sampleHTML;
+    var range = document.createRange();
+    range.setStartAfter($('work').querySelectorAll('br')[nth]);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    for (var i = 0; i < numberOfDeletes; ++i)
+        document.execCommand('Delete');
+    shouldBeEqualToString('$("work").innerHTML', expectedHTML);
+    shouldBeEqualToString('selection.type', 'Caret');
+    shouldBe('selection.anchorOffset', expectedOffset + '');
+}
+
+testIt(0, 1, 3, 'abc<br id="b"><br id="c">def');
+testIt(1, 1, 2, 'abc<br id="a"><br>def');
+testIt(2, 1, 0, 'abc<br id="a"><br id="b">def');
+testIt(1, 2, 3, 'abc<br>def');
+testIt(2, 2, 0, 'abc<br id="a">def');
+testIt(2, 3, 3, 'abcdef');
+
+if (window.testRunner)
+    $('container').outerHTML = '';
+else
+    $('work').innerHTML = sampleHTML;
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
 </body>
-</html>
