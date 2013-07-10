@@ -128,10 +128,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Records an app launch from the main view of the app list.
   static void RecordAppListMainLaunch(const extensions::Extension* extension);
 
-  // Records the given |value| in the apps::kAppLauncherPromoHistogram.
-  static void RecordAppLauncherPromoHistogram(
-      apps::AppLauncherPromoHistogramValues value);
-
  private:
   struct AppInstallInfo {
     AppInstallInfo();

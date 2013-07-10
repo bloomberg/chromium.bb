@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "apps/app_launcher.h"
 #include "apps/metrics_names.h"
 #include "apps/pref_names.h"
 #include "base/auto_reset.h"
@@ -74,6 +75,13 @@ bool ShouldDisplayInNewTabPage(const Extension* app, PrefService* prefs) {
   return app->ShouldDisplayInNewTabPage() && !blocked_by_policy;
 }
 
+void RecordAppLauncherPromoHistogram(
+      apps::AppLauncherPromoHistogramValues value) {
+  DCHECK_LT(value, apps::APP_LAUNCHER_PROMO_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.AppLauncherPromo", value, apps::APP_LAUNCHER_PROMO_MAX);
+}
+
 }  // namespace
 
 const net::UnescapeRule::Type kUnescapeRules =
@@ -88,6 +96,10 @@ AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
       ignore_changes_(false),
       attempted_bookmark_app_install_(false),
       has_loaded_apps_(false) {
+  if (apps::IsAppLauncherEnabled())
+    RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_ALREADY_INSTALLED);
+  else if (apps::ShouldShowAppLauncherPromo())
+    RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_SHOWN);
 }
 
 AppLauncherHandler::~AppLauncherHandler() {}
@@ -797,14 +809,6 @@ void AppLauncherHandler::RecordAppListMainLaunch(const Extension* extension) {
   else if (extension->id() == extension_misc::kChromeAppId)
     bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_CHROME;
   AppLauncherHandler::RecordAppLaunchType(bucket, extension->GetType());
-}
-
-// static
-void AppLauncherHandler::RecordAppLauncherPromoHistogram(
-      apps::AppLauncherPromoHistogramValues value) {
-  DCHECK_LT(value, apps::APP_LAUNCHER_PROMO_MAX);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Apps.AppLauncherPromo", value, apps::APP_LAUNCHER_PROMO_MAX);
 }
 
 // static
