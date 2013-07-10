@@ -12103,6 +12103,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Tab.AgeUponRestoreFromColdStart" units="minutes">
+  <summary>
+    Age (time since the last display in previous sessions) of a tab being
+    restored due to the first tab switch after the browser cold start, recorded
+    upon such restore. When the browser is started from cold, this metric is not
+    recorded for the foreground, automatically restored tab, so that the metric
+    tracks only the restores triggered by direct user decision to switch tabs.
+  </summary>
+</histogram>
+
 <histogram name="Tab.RestoreResult" enum="BooleanSuccess">
   <summary>
     When the browser restores a tab, whether the load was successful. Loads can
@@ -12167,6 +12177,13 @@ other types of suffix sets.
     Each time a tab is brought to the foreground, this histogram indicates if
     this is the first viewing of the tab since Chrome was put into foreground,
     or if it was a return to a tab that has already been shown in this session.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.ForegroundTabAgeAtStartup" units="minutes">
+  <summary>
+    Age (time since the last display in previous sessions) of the foreground tab
+    being restored on the browser cold start.
   </summary>
 </histogram>
 
