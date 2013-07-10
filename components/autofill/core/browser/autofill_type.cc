@@ -223,6 +223,16 @@ std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
       return "PHONE_HOME_CITY_AND_NUMBER";
     case PHONE_HOME_WHOLE_NUMBER:
       return "PHONE_HOME_WHOLE_NUMBER";
+    case PHONE_FAX_NUMBER:
+      return "PHONE_FAX_NUMBER";
+    case PHONE_FAX_CITY_CODE:
+      return "PHONE_FAX_CITY_CODE";
+    case PHONE_FAX_COUNTRY_CODE:
+      return "PHONE_FAX_COUNTRY_CODE";
+    case PHONE_FAX_CITY_AND_NUMBER:
+      return "PHONE_FAX_CITY_AND_NUMBER";
+    case PHONE_FAX_WHOLE_NUMBER:
+      return "PHONE_FAX_WHOLE_NUMBER";
     case ADDRESS_HOME_LINE1:
       return "ADDRESS_HOME_LINE1";
     case ADDRESS_HOME_LINE2:
@@ -271,8 +281,20 @@ std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
       return "CREDIT_CARD_VERIFICATION_CODE";
     case COMPANY_NAME:
       return "COMPANY_NAME";
-    default:
-      NOTREACHED() << "Invalid AutofillFieldType value.";
+    case FIELD_WITH_DEFAULT_VALUE:
+      return "FIELD_WITH_DEFAULT_VALUE";
+    case PHONE_BILLING_NUMBER:
+      return "PHONE_BILLING_NUMBER";
+    case PHONE_BILLING_CITY_CODE:
+      return "PHONE_BILLING_CITY_CODE";
+    case PHONE_BILLING_COUNTRY_CODE:
+      return "PHONE_BILLING_COUNTRY_CODE";
+    case PHONE_BILLING_CITY_AND_NUMBER:
+      return "PHONE_BILLING_CITY_AND_NUMBER";
+    case PHONE_BILLING_WHOLE_NUMBER:
+      return "PHONE_BILLING_WHOLE_NUMBER";
+    case MAX_VALID_FIELD_TYPE:
+      return std::string();
   }
   return std::string();
 }
