@@ -58,3 +58,31 @@ AddMathTest(errno_env, 'cxx_pow.cc', testname='cxx_pow_errno',
 AddMathTest(noerrno_env, 'cxx_pow.cc', testname='cxx_pow_noerrno',
             golden_filename='common_pow.stdout')
 
+# --- Test rounding mode settings / queries.
+
+asm_env = env.Clone()
+if env.Bit('bitcode'):
+  if env.Bit('pnacl_generate_pexe'):
+    Return()
+  else:
+    asm_env.PNaClForceNative()
+    asm_env.AddBiasForPNaCl()
+
+if env.Bit('target_x86'):
+  helper_files = ['set_rounding_x86.S']
+elif env.Bit('target_arm'):
+  helper_files = ['set_rounding_arm.S']
+elif env.Bit('target_mips32'):
+  helper_files = ['set_rounding_mips.S']
+else:
+  raise Exception('Unknown target')
+
+nexe = asm_env.ComponentProgram('float_rounding_mode',
+                                ['float_rounding_mode.c'] + helper_files,
+                                EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl(
+    'float_rounding_mode.out',
+    nexe)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'nonpexe_tests'],
+                       'run_float_rounding_mode_test')
