@@ -1830,14 +1830,17 @@ class BisectPerformanceMetrics(object):
     # Find range where it possibly broke.
     first_working_revision = None
     last_broken_revision = None
+    last_broken_revision_index = -1
 
-    for k, v in revision_data_sorted:
+    for i in xrange(len(revision_data_sorted)):
+      k, v = revision_data_sorted[i]
       if v['passed'] == 1:
         if not first_working_revision:
           first_working_revision = k
 
       if not v['passed']:
         last_broken_revision = k
+        last_broken_revision_index = i
 
     if last_broken_revision != None and first_working_revision != None:
       print 'Results: Regression may have occurred in range:'
@@ -1896,15 +1899,26 @@ class BisectPerformanceMetrics(object):
           print 'Subject : %s' % info['subject']
         print
       else:
-        info = self.source_control.QueryRevisionInfo(last_broken_revision)
+        multiple_commits = 0
+        for i in xrange(last_broken_revision_index, len(revision_data_sorted)):
+          k, v = revision_data_sorted[i]
+          if k == first_working_revision:
+            break
 
-        print
-        print 'Commit  : %s' % last_broken_revision
-        print 'Author  : %s' % info['author']
-        print 'Email   : %s' % info['email']
-        print 'Date    : %s' % info['date']
-        print 'Subject : %s' % info['subject']
-        print
+          info = self.source_control.QueryRevisionInfo(k)
+
+          print
+          print 'Commit  : %s' % k
+          print 'Author  : %s' % info['author']
+          print 'Email   : %s' % info['email']
+          print 'Date    : %s' % info['date']
+          print 'Subject : %s' % info['subject']
+
+          multiple_commits += 1
+        if multiple_commits > 1:
+          self.warnings.append('Due to build errors, regression range could'
+            ' not be narrowed down to a single commit.')
+      print
       os.chdir(cwd)
 
       # Give a warning if the values were very close together
