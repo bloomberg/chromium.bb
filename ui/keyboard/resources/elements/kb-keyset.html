@@ -25,9 +25,12 @@
       keyLongpress: function(event, detail) {
         if (detail.accents) {
           var accentContainer = this.$.accentContainer.getDistributedNodes()[0];
-          accentContainer.keyset = detail.accents;
           var activeAccentKeySet = accentContainer.querySelector('#' +
               detail.accents);
+          if (!activeAccentKeySet)
+            return;
+          accentContainer.keyset = detail.accents;
+          event.target.classList.remove('active');
           activeAccentKeySet.style.width = event.target.clientWidth *
               activeAccentKeySet.childElementCount + 'px';
           activeAccentKeySet.style.height = event.target.clientHeight + 'px';

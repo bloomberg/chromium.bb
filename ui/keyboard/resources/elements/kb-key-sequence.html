@@ -1,0 +1,46 @@
+<!--
+  -- Copyright 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<element name="kb-key-sequence" attributes="keys superscripts">
+  <template>
+    <style>
+      @host {
+        * {
+          display: none;
+        }
+      }
+    </style>
+  </template>
+  <script>
+    Polymer.register(this, {
+      /**
+       * Generates the DOM structure to replace (expand) this kb-key-sequence.
+       */
+      generateDom: function() {
+        var result;
+        if (this.keys) {
+          var newKeys = this.keys;
+          var newSuperScripts = this.superscripts;
+          if (newSuperScripts && newKeys.length != newSuperScripts.length) {
+            console.error('keys and superscripts do not match');
+            return;
+          }
+          var replacement = document.createDocumentFragment();
+          for (var i = 0; i < newKeys.length; i++) {
+            var key = document.createElement('kb-key');
+            key.innerText = newKeys[i];
+            key.accents = newKeys[i];
+            if (newSuperScripts)
+              key.superscript = newSuperScripts[i];
+            replacement.appendChild(key);
+          }
+          result = replacement;
+        }
+        return result;
+      }
+    });
+  </script>
+</element>

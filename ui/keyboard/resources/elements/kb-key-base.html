@@ -33,7 +33,6 @@
               char: this.char || this.textContent,
               accents: this.accents
             };
-            this.classList.remove('active');
             this.send('key-longpress', detail);
           }, null, LONGPRESS_DELAY_MSEC);
         }

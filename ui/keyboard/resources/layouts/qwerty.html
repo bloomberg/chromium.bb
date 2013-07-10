@@ -4,41 +4,32 @@
   -- found in the LICENSE file.
   -->
 
+<link rel="import" href="../elements/kb-key-sequence.html">
+<link rel="import" href="../elements/kb-key-import.html">
+<link id="spacebar-row" rel="import" href="spacebar-row.html">
+
 <template>
   <kb-keyset id="upper" toKeyset="lower">
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
-      <kb-key superscript="1" accents="Q">Q</kb-key>
-      <kb-key superscript="2" accents="W">W</kb-key>
-      <kb-key superscript="3" accents="E">E</kb-key>
-      <kb-key superscript="4" accents="R">R</kb-key>
-      <kb-key superscript="5" accents="T">T</kb-key>
-      <kb-key superscript="6" accents="Y">Y</kb-key>
-      <kb-key superscript="7" accents="U">U</kb-key>
-      <kb-key superscript="8" accents="I">I</kb-key>
-      <kb-key superscript="9" accents="O">O</kb-key>
-      <kb-key superscript="0" accents="P">P</kb-key>
+      <kb-key-sequence keys="QWERTYUIOP" superscripts="1234567890"></kb-key-sequence>
       <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="microphone dark" char="Microphone"></kb-key>
-      <kb-key accents="A">A</kb-key><kb-key accents="S">S</kb-key><kb-key>D</kb-key>
-      <kb-key>F</kb-key><kb-key>G</kb-key><kb-key>H</kb-key><kb-key>J</kb-key>
-      <kb-key>K</kb-key><kb-key>L</kb-key>
+      <kb-key-sequence keys="ASDFGHJKL"></kb-key-sequence>
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="left-shift dark" toKeyset="lower" char="Invalid" align="left">shift</kb-key>
-      <kb-key>Z</kb-key><kb-key>X</kb-key><kb-key accents="C">C</kb-key><kb-key>V</kb-key>
-      <kb-key>B</kb-key><kb-key accents="N">N</kb-key><kb-key>M</kb-key>
+      <kb-key-sequence keys="ZXCVBNM"></kb-key-sequence>
       <kb-key invert superscript="!" char="!">,</kb-key>
       <kb-key invert superscript="?" char="?">.</kb-key>
       <kb-key class="right-shift dark" toKeyset="lower" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
-      <kb-key class="dotcom dark" align="left">.com</kb-key>
-      <kb-key char=" " class="space dark" toKeyset="upper"></kb-key>
+      <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
       <kb-key class="hide dark"></kb-key>
     </kb-row>
@@ -134,36 +125,23 @@
   <kb-keyset id="lower">
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
-      <kb-key superscript="1" accents="q">q</kb-key>
-      <kb-key superscript="2" accents="w">w</kb-key>
-      <kb-key superscript="3" accents="e">e</kb-key>
-      <kb-key superscript="4" accents="r">r</kb-key>
-      <kb-key superscript="5" accents="t">t</kb-key>
-      <kb-key superscript="6" accents="y">y</kb-key>
-      <kb-key superscript="7" accents="u">u</kb-key>
-      <kb-key superscript="8" accents="i">i</kb-key>
-      <kb-key superscript="9" accents="o">o</kb-key>
-      <kb-key superscript="0" accents="p">p</kb-key>
+      <kb-key-sequence keys="qwertyuiop" superscripts="1234567890"></kb-key-sequence>
       <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="microphone dark" char="Microphone"></kb-key>
-      <kb-key accents="a">a</kb-key><kb-key accents="s">s</kb-key>
-      <kb-key>d</kb-key><kb-key>f</kb-key><kb-key>g</kb-key><kb-key>h</kb-key>
-      <kb-key>j</kb-key><kb-key>k</kb-key><kb-key>l</kb-key>
+      <kb-key-sequence keys="asdfghjkl"></kb-key-sequence>
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="left-shift dark" toKeyset="upper" char="Invalid" align="left">shift</kb-key>
-      <kb-key>z</kb-key><kb-key>x</kb-key><kb-key accents="c">c</kb-key><kb-key>v</kb-key>
-      <kb-key>b</kb-key><kb-key accents="n">n</kb-key><kb-key>m</kb-key>
+      <kb-key-sequence keys="zxcvbnm"></kb-key-sequence>
       <kb-key superscript="!" accents="comma">,</kb-key><kb-key superscript="?" accents="period">.</kb-key>
       <kb-key class="right-shift dark" toKeyset="upper" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
-      <kb-key class="dotcom dark" align="left">.com</kb-key>
-      <kb-key class="space dark" char=" "></kb-key>
+      <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
       <kb-key class="hide dark"></kb-key>
     </kb-row>
@@ -290,8 +268,7 @@
     </kb-row>
     <kb-row>
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
-      <kb-key class="dotcom dark" align="left">.com</kb-key>
-      <kb-key class="space dark" char=" "></kb-key>
+      <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
       <kb-key class="hide dark"></kb-key>
     </kb-row>
@@ -411,8 +388,7 @@
     </kb-row>
     <kb-row>
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
-      <kb-key class="dotcom dark" align="left">.com</kb-key>
-      <kb-key class="space dark" char=" "></kb-key>
+      <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
       <kb-key class="hide dark"></kb-key>
     </kb-row>
