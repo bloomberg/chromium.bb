@@ -2098,8 +2098,6 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
     if (cachedMatchedProperties || !cacheHash)
         return;
-    if (!state.isMatchedPropertiesCacheable())
-        return;
     if (!MatchedPropertiesCache::isCacheable(state.element(), state.style(), state.parentStyle()))
         return;
     m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
@@ -2327,6 +2325,10 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
+    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
+    if (primitiveValue && primitiveValue->getValueID() == CSSValueCurrentcolor)
+        state.style()->setHasCurrentColor();
+
     if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSProperty::isInheritedProperty(id))
         state.parentStyle()->setHasExplicitlyInheritedProperties();
 
@@ -2354,8 +2356,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     // Use the new StyleBuilder.
     if (StyleBuilder::applyProperty(id, this, state, value, isInitial, isInherit))
         return;
-
-    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
 
     float zoomFactor = state.style()->effectiveZoom();
 
@@ -2604,7 +2604,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
             Color color;
             if (item->color)
-                color = m_state.resolveColorFromPrimitiveValue(item->color.get());
+                color = m_state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
             else if (state.style())
                 color = state.style()->color();
 
@@ -2723,7 +2723,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         if (!primitiveValue)
             break;
 
-        Color col = m_state.resolveColorFromPrimitiveValue(primitiveValue);
+        Color col = m_state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor));
         state.style()->setTapHighlightColor(col);
         return;
     }
@@ -3425,6 +3425,8 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderSty
     if (style->zoom() != RenderStyle::initialZoom())
         return false;
     if (style->writingMode() != RenderStyle::initialWritingMode())
+        return false;
+    if (style->hasCurrentColor())
         return false;
     // The cache assumes static knowledge about which properties are inherited.
     if (parentStyle->hasExplicitlyInheritedProperties())

@@ -323,9 +323,9 @@ namespace WebCore {
 {%- endif %}
 
     if (state.applyPropertyToRegularStyle())
-        {{ set_value(property) }}(state.resolveColorFromPrimitiveValue(primitiveValue));
+        {{ set_value(property) }}(state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor)));
     if (state.applyPropertyToVisitedLinkStyle())
-        state.style()->{{visited_link_setter}}(state.resolveColorFromPrimitiveValue(primitiveValue, /* forVisitedLink */ true));
+        state.style()->{{visited_link_setter}}(state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor), state.element()->isLink() /* forVisitedLink */));
 }
 {%- endcall %}
 {%- endmacro %}

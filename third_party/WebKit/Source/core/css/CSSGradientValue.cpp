@@ -137,7 +137,7 @@ PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(StyleR
     }
 
     for (unsigned i = 0; i < result->m_stops.size(); i++)
-        result->m_stops[i].m_resolvedColor = styleResolverState.resolveColorFromPrimitiveValue(result->m_stops[i].m_color.get());
+        result->m_stops[i].m_resolvedColor = styleResolverState.document()->textLinkColors().colorFromPrimitiveValue(result->m_stops[i].m_color.get(), styleResolverState.style()->visitedDependentColor(CSSPropertyColor));
 
     return result.release();
 }

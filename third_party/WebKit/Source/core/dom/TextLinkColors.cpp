@@ -28,6 +28,8 @@
 #include "config.h"
 #include "core/dom/TextLinkColors.h"
 
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/rendering/RenderTheme.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -53,6 +55,67 @@ void TextLinkColors::resetVisitedLinkColor()
 void TextLinkColors::resetActiveLinkColor()
 {
     m_activeLinkColor.setNamedColor("red");
+}
+
+static Color colorForCSSValue(CSSValueID cssValueId)
+{
+    struct ColorValue {
+        CSSValueID cssValueId;
+        RGBA32 color;
+    };
+
+    static const ColorValue colorValues[] = {
+        { CSSValueAqua, 0xFF00FFFF },
+        { CSSValueBlack, 0xFF000000 },
+        { CSSValueBlue, 0xFF0000FF },
+        { CSSValueFuchsia, 0xFFFF00FF },
+        { CSSValueGray, 0xFF808080 },
+        { CSSValueGreen, 0xFF008000  },
+        { CSSValueGrey, 0xFF808080 },
+        { CSSValueLime, 0xFF00FF00 },
+        { CSSValueMaroon, 0xFF800000 },
+        { CSSValueNavy, 0xFF000080 },
+        { CSSValueOlive, 0xFF808000  },
+        { CSSValueOrange, 0xFFFFA500 },
+        { CSSValuePurple, 0xFF800080 },
+        { CSSValueRed, 0xFFFF0000 },
+        { CSSValueSilver, 0xFFC0C0C0 },
+        { CSSValueTeal, 0xFF008080  },
+        { CSSValueTransparent, 0x00000000 },
+        { CSSValueWhite, 0xFFFFFFFF },
+        { CSSValueYellow, 0xFFFFFF00 },
+        { CSSValueInvalid, CSSValueInvalid }
+    };
+
+    for (const ColorValue* col = colorValues; col->cssValueId; ++col) {
+        if (col->cssValueId == cssValueId)
+            return col->color;
+    }
+    return RenderTheme::defaultTheme()->systemColor(cssValueId);
+}
+
+Color TextLinkColors::colorFromPrimitiveValue(const CSSPrimitiveValue* value, Color currentColor, bool forVisitedLink) const
+{
+    if (value->isRGBColor())
+        return Color(value->getRGBA32Value());
+
+    CSSValueID valueID = value->getValueID();
+    switch (valueID) {
+    case 0:
+        return Color();
+    case CSSValueWebkitText:
+        return textColor();
+    case CSSValueWebkitLink:
+        return forVisitedLink ? visitedLinkColor() : linkColor();
+    case CSSValueWebkitActivelink:
+        return activeLinkColor();
+    case CSSValueWebkitFocusRingColor:
+        return RenderTheme::focusRingColor();
+    case CSSValueCurrentcolor:
+        return currentColor;
+    default:
+        return colorForCSSValue(valueID);
+    }
 }
 
 }

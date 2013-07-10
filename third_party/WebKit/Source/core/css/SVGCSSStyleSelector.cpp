@@ -129,7 +129,7 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
         primitiveValue = toCSSPrimitiveValue(value);
 
     // FIXME: This should be a const StyleResolverState, but
-    // unfortunately resolveColorFromPrimitiveValue
+    // unfortunately colorFromPrimitiveValue
     // has side-effects and is thus not const.
     StyleResolverState& state = m_state;
     RenderStyle* style = state.style();
@@ -492,7 +492,7 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
             int blur = item->blur ? item->blur->computeLength<int>(state.style(), state.rootElementStyle()) : 0;
             Color color;
             if (item->color)
-                color = state.resolveColorFromPrimitiveValue(item->color.get());
+                color = state.document()->textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
 
             // -webkit-svg-shadow does should not have a spread or style
             ASSERT(!item->spread);

@@ -54,7 +54,6 @@ public:
     , m_elementAffectedByClassRules(false)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
-    , m_isMatchedPropertiesCacheable(true)
     , m_lineHeightValue(0)
     , m_fontDirty(false)
     , m_styleMap(*this)
@@ -63,11 +62,6 @@ public:
 public:
     void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
-
-    // FIXME: This function should live on TextLinkColors (or be passed a TextLinkColors),
-    // but it has dependencies that need to be untangled first.
-    // This method might change an internal state, i.e. m_isMatchedPropertiesCachable.
-    Color resolveColorFromPrimitiveValue(CSSPrimitiveValue*, bool forVisitedLink = false);
 
     Document* document() const { return m_element->document(); }
     Element* element() const { return m_element; }
@@ -96,7 +90,6 @@ public:
     void setApplyPropertyToVisitedLinkStyle(bool isApply) { m_applyPropertyToVisitedLinkStyle = isApply; }
     bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
     bool applyPropertyToVisitedLinkStyle() const { return m_applyPropertyToVisitedLinkStyle; }
-    bool isMatchedPropertiesCacheable() const { return m_isMatchedPropertiesCacheable; }
 
     void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
     CSSValue* lineHeightValue() { return m_lineHeightValue; }
@@ -167,7 +160,6 @@ private:
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;
-    bool m_isMatchedPropertiesCacheable;
 
     CSSValue* m_lineHeightValue;
     bool m_fontDirty;

@@ -188,6 +188,7 @@ void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
     noninherited_flags._page_break_after = other->noninherited_flags._page_break_after;
     noninherited_flags._page_break_inside = other->noninherited_flags._page_break_inside;
     noninherited_flags.explicitInheritance = other->noninherited_flags.explicitInheritance;
+    noninherited_flags.currentColor = other->noninherited_flags.currentColor;
     if (m_svgStyle != other->m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFrom(other->m_svgStyle.get());
     ASSERT(zoom() == initialZoom());
