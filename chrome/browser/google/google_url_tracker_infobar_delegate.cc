@@ -44,21 +44,28 @@ void GoogleURLTrackerInfoBarDelegate::Update(const GURL& search_url) {
 }
 
 void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
+  // It's not obvious whether calling OpenURL() with a search URL would
+  // auto-close us or not.  If it did, we wouldn't want to try to
+  // RemoveInfoBar() afterwards.  So for safety, we always call RemoveInfoBar()
+  // directly, and then navigate if necessary afterwards.
+  GURL new_search_url;
   if (redo_search) {
     // Re-do the user's search on the new domain.
     DCHECK(search_url_.is_valid());
     url_canon::Replacements<char> replacements;
     const std::string& host(google_url_tracker_->fetched_google_url().host());
     replacements.SetHost(host.data(), url_parse::Component(0, host.length()));
-    GURL new_search_url(search_url_.ReplaceComponents(replacements));
-    if (new_search_url.is_valid()) {
-      web_contents()->OpenURL(content::OpenURLParams(
-          new_search_url, content::Referrer(), CURRENT_TAB,
-          content::PAGE_TRANSITION_GENERATED, false));
-    }
+    new_search_url = search_url_.ReplaceComponents(replacements);
   }
 
   owner()->RemoveInfoBar(this);
+  // WARNING: |this| may be deleted at this point!  Do not access any members!
+
+  if (new_search_url.is_valid()) {
+    web_contents()->OpenURL(content::OpenURLParams(
+        new_search_url, content::Referrer(), CURRENT_TAB,
+        content::PAGE_TRANSITION_GENERATED, false));
+  }
 }
 
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
@@ -99,12 +106,13 @@ string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
 
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  content::OpenURLParams params(google_util::AppendGoogleLocaleParam(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
+  web_contents()->OpenURL(content::OpenURLParams(
+      google_util::AppendGoogleLocaleParam(GURL(
+          "https://www.google.com/support/chrome/bin/answer.py?"
+          "answer=1618699")),
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 

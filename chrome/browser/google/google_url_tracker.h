@@ -105,8 +105,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // |pending_id| is the unique ID of the newly pending NavigationEntry.
   // If there is already a visible GoogleURLTracker infobar for this tab, this
   // function resets its associated pending entry ID to the new ID.  Otherwise
-  // this function creates a (still-invisible) InfoBarDelegate for the
-  // associated tab.
+  // this function creates a map entry for the associated tab.
   virtual void OnNavigationPending(
       content::NavigationController* navigation_controller,
       InfoBarService* infobar_service,

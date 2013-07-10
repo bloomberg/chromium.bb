@@ -24,9 +24,11 @@ class GoogleURLTrackerMapEntry : public content::NotificationObserver {
       const content::NavigationController* navigation_controller);
   virtual ~GoogleURLTrackerMapEntry();
 
-  bool has_infobar() const { return !!infobar_; }
-  GoogleURLTrackerInfoBarDelegate* infobar() { return infobar_; }
-  void SetInfoBar(GoogleURLTrackerInfoBarDelegate* infobar);
+  bool has_infobar_delegate() const { return !!infobar_delegate_; }
+  GoogleURLTrackerInfoBarDelegate* infobar_delegate() {
+    return infobar_delegate_;
+  }
+  void SetInfoBarDelegate(GoogleURLTrackerInfoBarDelegate* infobar_delegate);
 
   const content::NavigationController* navigation_controller() const {
     return navigation_controller_;
@@ -45,7 +47,7 @@ class GoogleURLTrackerMapEntry : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   GoogleURLTracker* const google_url_tracker_;
   const InfoBarService* const infobar_service_;
-  GoogleURLTrackerInfoBarDelegate* infobar_;
+  GoogleURLTrackerInfoBarDelegate* infobar_delegate_;
   const content::NavigationController* const navigation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerMapEntry);
