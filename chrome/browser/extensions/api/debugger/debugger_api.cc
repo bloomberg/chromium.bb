@@ -43,6 +43,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/worker_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/common/error_utils.h"
