@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var toolchains = body.dataset.tools.split(' ');
       var configs = body.dataset.configs.split(' ');
       var attr_list = body.dataset.attrs.split(' ');
-      var atts = {}
+      var attrs = {};
       for (var key in attr_list) {
         var attr = attr_list[key].split('=');
         var key = attr[0];
