@@ -1,1 +1,3 @@
+CONSOLE MESSAGE: The page at https://127.0.0.1:8443/ssl/referer-303.html displayed insecure content from http://127.0.0.1:8000/ssl/resources/no-http-referer.cgi.
+
 PASS
