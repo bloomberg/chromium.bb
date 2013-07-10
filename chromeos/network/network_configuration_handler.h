@@ -68,7 +68,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const std::string& service_path,
       const base::DictionaryValue& properties,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const;
+      const network_handler::ErrorCallback& error_callback);
 
   // Removes the properties with the given property paths. If any of them are
   // unable to be cleared, the |error_callback| will only be run once with
@@ -117,10 +117,19 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   // Called from ProfileEntryDeleter instances when they complete causing
   // this class to delete the instance.
   void ProfileEntryDeleterCompleted(const std::string& service_path);
-
   bool PendingProfileEntryDeleterForTest(const std::string& service_path) {
     return profile_entry_deleters_.count(service_path);
   }
+
+  // Invoke the callback and inform NetworkStateHandler to request an update
+  // for the service.
+  void SetPropertiesSuccessCallback(const std::string& service_path,
+                                    const base::Closure& callback);
+  void SetPropertiesErrorCallback(
+      const std::string& service_path,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& dbus_error_name,
+      const std::string& dbus_error_message);
 
   // Unowned associated NetworkStateHandler* (global or test instance).
   NetworkStateHandler* network_state_handler_;

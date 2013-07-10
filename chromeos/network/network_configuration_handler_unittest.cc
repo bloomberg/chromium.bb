@@ -124,10 +124,11 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   }
 
   // Handles responses for SetProperties method calls.
-  void OnSetProperties(const base::DictionaryValue& properties,
-                       const ObjectPathCallback& callback,
+  void OnSetProperties(const dbus::ObjectPath& service_path,
+                       const base::DictionaryValue& properties,
+                       const base::Closure& callback,
                        const ShillClientHelper::ErrorCallback& error_callback) {
-    callback.Run(dbus::ObjectPath());
+    callback.Run();
   }
 
   // Handles responses for ClearProperties method calls.
@@ -235,8 +236,8 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   base::DictionaryValue value;
   value.Set(key, base::Value::CreateStringValue(networkName));
   dictionary_value_result_ = &value;
-  EXPECT_CALL(*mock_manager_client_,
-              ConfigureService(_, _, _)).WillOnce(
+  EXPECT_CALL(*mock_service_client_,
+              SetProperties(_, _, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnSetProperties));
   network_configuration_handler_->SetProperties(
@@ -258,8 +259,8 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
   base::DictionaryValue value;
   value.Set(key, base::Value::CreateStringValue(networkName));
   dictionary_value_result_ = &value;
-  EXPECT_CALL(*mock_manager_client_,
-              ConfigureService(_, _, _)).WillOnce(
+  EXPECT_CALL(*mock_service_client_,
+              SetProperties(_, _, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnSetProperties));
   network_configuration_handler_->SetProperties(
@@ -295,8 +296,8 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
   base::DictionaryValue value;
   value.Set(key, base::Value::CreateStringValue(networkName));
   dictionary_value_result_ = &value;
-  EXPECT_CALL(*mock_manager_client_,
-              ConfigureService(_, _, _)).WillOnce(
+  EXPECT_CALL(*mock_service_client_,
+              SetProperties(_, _, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnSetProperties));
   network_configuration_handler_->SetProperties(

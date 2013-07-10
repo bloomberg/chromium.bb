@@ -54,7 +54,7 @@ void ClearPropertiesCallback(
     }
   }
 
-  if (some_failed) {
+  if (some_failed && !error_callback.is_null()) {
     DCHECK(names.size() == result.GetSize())
         << "Result wrong size from ClearProperties.";
     scoped_ptr<base::DictionaryValue> error_data(
@@ -68,14 +68,14 @@ void ClearPropertiesCallback(
     name_list->AppendStrings(names);
     error_data->Set("names", name_list.release());
     error_callback.Run(kClearPropertiesFailedError, error_data.Pass());
-  } else {
+  } else if (!callback.is_null()) {
     callback.Run();
   }
 }
 
 // Used to translate the dbus dictionary callback into one that calls
 // the error callback if we have a failure.
-void RunCallbackWithDictionaryValue(
+void GetPropertiesCallback(
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
@@ -86,17 +86,15 @@ void RunCallbackWithDictionaryValue(
         network_handler::CreateErrorData(service_path,
                                          kDBusFailedError,
                                          kDBusFailedErrorMessage));
-    LOG(ERROR) << "CallbackWithDictionaryValue failed for service path: "
-               << service_path;
-    error_callback.Run(kDBusFailedError, error_data.Pass());
-  } else {
+    // Because services are added and removed frequently, we will see these
+    // failures regularly, so log as events not errors.
+    NET_LOG_EVENT(base::StringPrintf("GetProperties failed: %d", call_status),
+                  service_path);
+    if (!error_callback.is_null())
+      error_callback.Run(kDBusFailedError, error_data.Pass());
+  } else if (!callback.is_null()) {
     callback.Run(service_path, value);
   }
-}
-
-void IgnoreObjectPathCallback(const base::Closure& callback,
-                              const dbus::ObjectPath& object_path) {
-  callback.Run();
 }
 
 // Strip surrounding "" from keys (if present).
@@ -231,24 +229,22 @@ void NetworkConfigurationHandler::GetProperties(
     const network_handler::ErrorCallback& error_callback) const {
   DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
-      base::Bind(&RunCallbackWithDictionaryValue,
-                 callback,
-                 error_callback,
-                 service_path));
+      base::Bind(&GetPropertiesCallback,
+                 callback, error_callback, service_path));
 }
 
 void NetworkConfigurationHandler::SetProperties(
     const std::string& service_path,
     const base::DictionaryValue& properties,
     const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) const {
-  DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
+    const network_handler::ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
+      dbus::ObjectPath(service_path),
       properties,
-      base::Bind(&IgnoreObjectPathCallback, callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 "Config.SetProperties Failed",
-                 service_path, error_callback));
-  network_state_handler_->RequestUpdateForNetwork(service_path);
+      base::Bind(&NetworkConfigurationHandler::SetPropertiesSuccessCallback,
+                 AsWeakPtr(), service_path, callback),
+      base::Bind(&NetworkConfigurationHandler::SetPropertiesErrorCallback,
+                 AsWeakPtr(), service_path, error_callback));
 }
 
 void NetworkConfigurationHandler::ClearProperties(
@@ -340,7 +336,8 @@ void NetworkConfigurationHandler::Init(
 void NetworkConfigurationHandler::RunCreateNetworkCallback(
     const network_handler::StringResultCallback& callback,
     const dbus::ObjectPath& service_path) {
-  callback.Run(service_path.value());
+  if (!callback.is_null())
+    callback.Run(service_path.value());
   // This may also get called when CreateConfiguration is used to update an
   // existing configuration, so request a service update just in case.
   // TODO(pneubeck): Separate 'Create' and 'Update' calls and only trigger
@@ -355,6 +352,27 @@ void NetworkConfigurationHandler::ProfileEntryDeleterCompleted(
   DCHECK(iter != profile_entry_deleters_.end());
   delete iter->second;
   profile_entry_deleters_.erase(iter);
+}
+
+void NetworkConfigurationHandler::SetPropertiesSuccessCallback(
+    const std::string& service_path,
+    const base::Closure& callback) {
+  if (!callback.is_null())
+    callback.Run();
+  network_state_handler_->RequestUpdateForNetwork(service_path);
+}
+
+void NetworkConfigurationHandler::SetPropertiesErrorCallback(
+    const std::string& service_path,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message) {
+  network_handler::ShillErrorCallbackFunction(
+      "Config.SetProperties Failed",
+      service_path, error_callback,
+      dbus_error_name, dbus_error_message);
+  // Some properties may have changed so request an update regardless.
+  network_state_handler_->RequestUpdateForNetwork(service_path);
 }
 
 // static

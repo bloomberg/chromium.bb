@@ -592,7 +592,8 @@ void NetworkConnectionHandler::HandleShillDisconnectSuccess(
     const std::string& service_path,
     const base::Closure& success_callback) {
   NET_LOG_EVENT("Disconnect Request Sent", service_path);
-  success_callback.Run();
+  if (!success_callback.is_null())
+    success_callback.Run();
 }
 
 }  // namespace chromeos
