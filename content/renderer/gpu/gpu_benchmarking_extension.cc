@@ -209,6 +209,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "                             Math.abs(pixels_to_scroll));"
           "  }"
           "};"
+          "chrome.gpuBenchmarking.smoothScrollBySendsTouch = function() {"
+          "  native function SmoothScrollSendsTouch();"
+          "  return SmoothScrollSendsTouch();"
+          "};"
           "chrome.gpuBenchmarking.runRenderingBenchmarks = function(filter) {"
           "  native function RunRenderingBenchmarks();"
           "  return RunRenderingBenchmarks(filter);"
@@ -234,6 +238,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(PrintToSkPicture);
     if (name->Equals(v8::String::New("BeginSmoothScroll")))
       return v8::FunctionTemplate::New(BeginSmoothScroll);
+    if (name->Equals(v8::String::New("SmoothScrollSendsTouch")))
+      return v8::FunctionTemplate::New(SmoothScrollSendsTouch);
     if (name->Equals(v8::String::New("RunRenderingBenchmarks")))
       return v8::FunctionTemplate::New(RunRenderingBenchmarks);
     if (name->Equals(v8::String::New("BeginWindowSnapshotPNG")))
@@ -365,6 +371,16 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       frame->callFunctionEvenIfScriptDisabled(
           callback_and_context->GetCallback(), v8::Object::New(), 0, NULL);
     }
+  }
+
+  static void SmoothScrollSendsTouch(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    // TODO(epenner): Should other platforms emulate touch events?
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    args.GetReturnValue().Set(true);
+#else
+    args.GetReturnValue().Set(false);
+#endif
   }
 
   static void BeginSmoothScroll(
