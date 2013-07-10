@@ -238,7 +238,7 @@ class InputMethodEngine {
       const char* extension_id,
       const char* engine_id,
       const char* description,
-      const char* language,
+      const std::vector<std::string>& language,
       const std::vector<std::string>& layouts,
       const GURL& options_page,
       std::string* error);

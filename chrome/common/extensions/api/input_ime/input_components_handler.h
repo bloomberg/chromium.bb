@@ -32,7 +32,7 @@ struct InputComponentInfo {
   InputComponentType type;
   std::string id;
   std::string description;
-  std::string language;
+  std::set<std::string> languages;
   std::set<std::string> layouts;
   std::string shortcut_keycode;
   bool shortcut_alt;

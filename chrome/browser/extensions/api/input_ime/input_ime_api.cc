@@ -378,11 +378,14 @@ bool InputImeEventRouter::RegisterIme(
   std::vector<std::string> layouts;
   layouts.assign(component.layouts.begin(), component.layouts.end());
 
+  std::vector<std::string> languages;
+  languages.assign(component.languages.begin(), component.languages.end());
+
   chromeos::InputMethodEngine* engine =
       chromeos::InputMethodEngine::CreateEngine(
           observer, component.name.c_str(), extension_id.c_str(),
           component.id.c_str(), component.description.c_str(),
-          component.language.c_str(), layouts, component.options_page_url,
+          languages, layouts, component.options_page_url,
           &error);
   if (!engine) {
     delete observer;

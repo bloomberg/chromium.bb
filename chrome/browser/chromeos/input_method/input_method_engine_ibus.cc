@@ -76,7 +76,7 @@ void InputMethodEngineIBus::Initialize(
     const char* extension_id,
     const char* engine_id,
     const char* description,
-    const char* language,
+    const std::vector<std::string>& languages,
     const std::vector<std::string>& layouts,
     const GURL& options_page,
     std::string* error) {
@@ -102,17 +102,15 @@ void InputMethodEngineIBus::Initialize(
   component_->set_description(description);
   component_->set_author(engine_name);
 
+  // TODO(nona): Remove IBusComponent once ibus is gone.
   chromeos::IBusComponent::EngineDescription engine_desc;
   engine_desc.engine_id = ibus_id_;
   engine_desc.display_name = description;
   engine_desc.description = description;
-  engine_desc.language_code = language;
+  engine_desc.language_code = (languages.empty()) ? "" : languages[0];
   engine_desc.author = ibus_id_;
 
   component_->mutable_engine_description()->push_back(engine_desc);
-
-  std::vector<std::string> languages;
-  languages.push_back(language);
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, this);
   // If connection is avaiable, register component. If there are no connection

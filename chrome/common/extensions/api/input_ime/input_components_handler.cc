@@ -60,7 +60,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     InputComponentType type;
     std::string id_str;
     std::string description_str;
-    std::string language_str;
+    std::set<std::string> languages;
     std::set<std::string> layouts;
     std::string shortcut_keycode_str;
     bool shortcut_alt = false;
@@ -112,8 +112,23 @@ bool InputComponentsHandler::Parse(Extension* extension,
     }
 
     // Get input_components[i].language.
-    if (!module_value->GetString(keys::kLanguage, &language_str)) {
-      language_str = "";
+    // Both string and list of string are allowed to be compatibile with old
+    // input_ime manifest specification.
+    const base::Value* language_value = NULL;
+    if (module_value->Get(keys::kLanguage, &language_value)) {
+      if (language_value->GetType() == base::Value::TYPE_STRING) {
+        std::string language_str;
+        language_value->GetAsString(&language_str);
+        languages.insert(language_str);
+      } else if (language_value->GetType() == base::Value::TYPE_LIST) {
+        const base::ListValue* language_list = NULL;
+        language_value->GetAsList(&language_list);
+        for (size_t j = 0; j < language_list->GetSize(); ++j) {
+          std::string language_str;
+          if (language_list->GetString(j, &language_str))
+            languages.insert(language_str);
+        }
+      }
     }
 
     // Get input_components[i].layouts.
@@ -170,7 +185,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     info->input_components.back().type = type;
     info->input_components.back().id = id_str;
     info->input_components.back().description = description_str;
-    info->input_components.back().language = language_str;
+    info->input_components.back().languages = languages;
     info->input_components.back().layouts.insert(layouts.begin(),
         layouts.end());
     info->input_components.back().shortcut_keycode = shortcut_keycode_str;
