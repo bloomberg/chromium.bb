@@ -7,13 +7,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/pickle.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/bind_to_loop.h"
-#include "media/base/decoder_buffer.h"
 #include "ui/gfx/rect.h"
 
 using ::testing::_;
@@ -243,41 +241,5 @@ DEFINE_INTERLEAVED_INSTANCE(float);
       base::TimeDelta duration);
 DEFINE_PLANAR_INSTANCE(int16);
 DEFINE_PLANAR_INSTANCE(float);
-
-static const char kFakeVideoBufferHeader[] = "FakeVideoBufferForTest";
-
-scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
-    const VideoDecoderConfig& config,
-    base::TimeDelta timestamp, base::TimeDelta duration) {
-  Pickle pickle;
-  pickle.WriteString(kFakeVideoBufferHeader);
-  pickle.WriteInt(config.coded_size().width());
-  pickle.WriteInt(config.coded_size().height());
-  pickle.WriteInt64(timestamp.InMilliseconds());
-
-  scoped_refptr<DecoderBuffer> buffer = DecoderBuffer::CopyFrom(
-      static_cast<const uint8*>(pickle.data()),
-      static_cast<int>(pickle.size()));
-  buffer->SetTimestamp(timestamp);
-  buffer->SetDuration(duration);
-
-  return buffer;
-}
-
-bool VerifyFakeVideoBufferForTest(
-    const scoped_refptr<DecoderBuffer>& buffer,
-    const VideoDecoderConfig& config) {
-  // Check if the input |buffer| matches the |config|.
-  PickleIterator pickle(Pickle(reinterpret_cast<const char*>(buffer->GetData()),
-                               buffer->GetDataSize()));
-  std::string header;
-  int width = 0;
-  int height = 0;
-  bool success = pickle.ReadString(&header) && pickle.ReadInt(&width) &&
-                 pickle.ReadInt(&height);
-  return (success && header == kFakeVideoBufferHeader &&
-          width == config.coded_size().width() &&
-          height == config.coded_size().height());
-}
 
 }  // namespace media

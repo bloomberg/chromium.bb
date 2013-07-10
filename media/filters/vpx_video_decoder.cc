@@ -4,9 +4,6 @@
 
 #include "media/filters/vpx_video_decoder.h"
 
-#include <algorithm>
-#include <string>
-
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -64,6 +61,7 @@ VpxVideoDecoder::VpxVideoDecoder(
     : message_loop_(message_loop),
       weak_factory_(this),
       state_(kUninitialized),
+      demuxer_stream_(NULL),
       vpx_codec_(NULL),
       vpx_codec_alpha_(NULL) {
 }
@@ -73,25 +71,26 @@ VpxVideoDecoder::~VpxVideoDecoder() {
   CloseDecoder();
 }
 
-void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                 const PipelineStatusCB& status_cb,
-                                 const StatisticsCB& statistics_cb) {
+void VpxVideoDecoder::Initialize(
+    DemuxerStream* stream,
+    const PipelineStatusCB& status_cb,
+    const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(config.IsValidConfig());
-  DCHECK(!config.is_encrypted());
+  DCHECK(stream);
   DCHECK(read_cb_.is_null());
   DCHECK(reset_cb_.is_null());
 
   weak_this_ = weak_factory_.GetWeakPtr();
 
-  if (!ConfigureDecoder(config)) {
+  demuxer_stream_ = stream;
+  statistics_cb_ = statistics_cb;
+
+  if (!ConfigureDecoder()) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
   // Success!
-  config_ = config;
-  statistics_cb_ = statistics_cb;
   state_ = kNormal;
   status_cb.Run(PIPELINE_OK);
 }
@@ -118,7 +117,10 @@ static vpx_codec_ctx* InitializeVpxContext(vpx_codec_ctx* context,
   return context;
 }
 
-bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
+bool VpxVideoDecoder::ConfigureDecoder() {
+  const VideoDecoderConfig& config = demuxer_stream_->video_decoder_config();
+  DCHECK(config.IsValidConfig());
+
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   bool can_handle = false;
   if (config.codec() == kCodecVP9)
@@ -158,27 +160,25 @@ void VpxVideoDecoder::CloseDecoder() {
   }
 }
 
-void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                             const ReadCB& read_cb) {
+void VpxVideoDecoder::Read(const ReadCB& read_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!read_cb.is_null());
   CHECK_NE(state_, kUninitialized);
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
-
   read_cb_ = BindToCurrentLoop(read_cb);
 
   if (state_ == kError) {
-    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    read_cb.Run(kDecodeError, NULL);
     return;
   }
 
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
+    read_cb.Run(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
-  DecodeBuffer(buffer);
+  ReadFromDemuxerStream();
 }
 
 void VpxVideoDecoder::Reset(const base::Closure& closure) {
@@ -210,18 +210,57 @@ void VpxVideoDecoder::Stop(const base::Closure& closure) {
   state_ = kUninitialized;
 }
 
+void VpxVideoDecoder::ReadFromDemuxerStream() {
+  DCHECK_NE(state_, kUninitialized);
+  DCHECK_NE(state_, kDecodeFinished);
+  DCHECK_NE(state_, kError);
+  DCHECK(!read_cb_.is_null());
+
+  demuxer_stream_->Read(base::Bind(
+      &VpxVideoDecoder::DoDecryptOrDecodeBuffer, weak_this_));
+}
+
 bool VpxVideoDecoder::HasAlpha() const {
   return vpx_codec_alpha_ != NULL;
 }
 
-void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
+void VpxVideoDecoder::DoDecryptOrDecodeBuffer(
+    DemuxerStream::Status status,
+    const scoped_refptr<DecoderBuffer>& buffer) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK_NE(state_, kDecodeFinished);
+  DCHECK_EQ(status != DemuxerStream::kOk, !buffer.get()) << status;
+
+  if (state_ == kUninitialized)
+    return;
+
+  DCHECK(!read_cb_.is_null());
+
+  if (!reset_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
+    DoReset();
+    return;
+  }
+
+  if (status == DemuxerStream::kAborted) {
+    base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
+    return;
+  }
+
+  // VideoFrameStream ensures no kConfigChanged is passed to VideoDecoders.
+  DCHECK_EQ(status, DemuxerStream::kOk) << status;
+  DecodeBuffer(buffer);
+}
+
+void VpxVideoDecoder::DecodeBuffer(
+    const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK_NE(state_, kError);
   DCHECK(reset_cb_.is_null());
   DCHECK(!read_cb_.is_null());
-  DCHECK(buffer);
+  DCHECK(buffer.get());
 
   // Transition to kDecodeFinished on the first end of stream buffer.
   if (state_ == kNormal && buffer->IsEndOfStream()) {
@@ -231,7 +270,7 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
   }
 
   scoped_refptr<VideoFrame> video_frame;
-  if (!VpxDecode(buffer, &video_frame)) {
+  if (!Decode(buffer, &video_frame)) {
     state_ = kError;
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
@@ -244,16 +283,18 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
     statistics_cb_.Run(statistics);
   }
 
+  // If we didn't get a frame we need more data.
   if (!video_frame.get()) {
-    base::ResetAndReturn(&read_cb_).Run(kNotEnoughData, NULL);
+    ReadFromDemuxerStream();
     return;
   }
 
   base::ResetAndReturn(&read_cb_).Run(kOk, video_frame);
 }
 
-bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
-                                scoped_refptr<VideoFrame>* video_frame) {
+bool VpxVideoDecoder::Decode(
+    const scoped_refptr<DecoderBuffer>& buffer,
+    scoped_refptr<VideoFrame>* video_frame) {
   DCHECK(video_frame);
   DCHECK(!buffer->IsEndOfStream());
 
@@ -333,9 +374,10 @@ void VpxVideoDecoder::DoReset() {
   reset_cb_.Reset();
 }
 
-void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
-                                     const struct vpx_image* vpx_image_alpha,
-                                     scoped_refptr<VideoFrame>* video_frame) {
+void VpxVideoDecoder::CopyVpxImageTo(
+    const vpx_image* vpx_image,
+    const struct vpx_image* vpx_image_alpha,
+    scoped_refptr<VideoFrame>* video_frame) {
   CHECK(vpx_image);
   CHECK_EQ(vpx_image->d_w % 2, 0U);
   CHECK_EQ(vpx_image->d_h % 2, 0U);
@@ -343,13 +385,16 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
         vpx_image->fmt == VPX_IMG_FMT_YV12);
 
   gfx::Size size(vpx_image->d_w, vpx_image->d_h);
+  gfx::Size natural_size =
+      demuxer_stream_->video_decoder_config().natural_size();
 
-  *video_frame = VideoFrame::CreateFrame(
-      vpx_codec_alpha_ ? VideoFrame::YV12A : VideoFrame::YV12,
-      size,
-      gfx::Rect(size),
-      config_.natural_size(),
-      kNoTimestamp());
+  *video_frame = VideoFrame::CreateFrame(vpx_codec_alpha_ ?
+                                             VideoFrame::YV12A :
+                                             VideoFrame::YV12,
+                                         size,
+                                         gfx::Rect(size),
+                                         natural_size,
+                                         kNoTimestamp());
 
   CopyYPlane(vpx_image->planes[VPX_PLANE_Y],
              vpx_image->stride[VPX_PLANE_Y],

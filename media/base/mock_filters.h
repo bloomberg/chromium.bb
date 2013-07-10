@@ -44,7 +44,7 @@ class MockDemuxer : public Demuxer {
 
 class MockDemuxerStream : public DemuxerStream {
  public:
-  explicit MockDemuxerStream(DemuxerStream::Type type);
+  MockDemuxerStream(DemuxerStream::Type type);
   virtual ~MockDemuxerStream();
 
   // DemuxerStream implementation.
@@ -71,11 +71,10 @@ class MockVideoDecoder : public VideoDecoder {
   virtual ~MockVideoDecoder();
 
   // VideoDecoder implementation.
-  MOCK_METHOD3(Initialize, void(const VideoDecoderConfig& config,
+  MOCK_METHOD3(Initialize, void(DemuxerStream*,
                                 const PipelineStatusCB&,
                                 const StatisticsCB&));
-  MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
-                            const ReadCB&));
+  MOCK_METHOD1(Read, void(const ReadCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
   MOCK_METHOD1(Stop, void(const base::Closure&));
   MOCK_CONST_METHOD0(HasAlpha, bool());

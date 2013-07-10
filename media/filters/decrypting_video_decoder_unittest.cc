@@ -46,6 +46,10 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
 // times across multiple test files. Sadly we can't use static for them.
 namespace {
 
+ACTION_P(ReturnBuffer, buffer) {
+  arg0.Run(buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
+}
+
 ACTION_P(RunCallbackIfNotNull, param) {
   if (!arg0.is_null())
     arg0.Run(param);
@@ -70,6 +74,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
                 &DecryptingVideoDecoderTest::RequestDecryptorNotification,
                 base::Unretained(this)))),
         decryptor_(new StrictMock<MockDecryptor>()),
+        demuxer_(new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
         decoded_video_frame_(VideoFrame::CreateBlackFrame(
             TestVideoConfig::NormalCodedSize())),
@@ -85,7 +90,8 @@ class DecryptingVideoDecoderTest : public testing::Test {
 
   void InitializeAndExpectStatus(const VideoDecoderConfig& config,
                                  PipelineStatus status) {
-    decoder_->Initialize(config, NewExpectedStatusCB(status),
+    demuxer_->set_video_decoder_config(config);
+    decoder_->Initialize(demuxer_.get(), NewExpectedStatusCB(status),
                          base::Bind(&MockStatisticsCB::OnStatistics,
                                     base::Unretained(&statistics_cb_)));
     message_loop_.RunUntilIdle();
@@ -106,7 +112,6 @@ class DecryptingVideoDecoderTest : public testing::Test {
   }
 
   void ReadAndExpectFrameReadyWith(
-      const scoped_refptr<DecoderBuffer>& buffer,
       VideoDecoder::Status status,
       const scoped_refptr<VideoFrame>& video_frame) {
     if (status != VideoDecoder::kOk)
@@ -116,55 +121,68 @@ class DecryptingVideoDecoderTest : public testing::Test {
     else
       EXPECT_CALL(*this, FrameReady(status, video_frame));
 
-    decoder_->Decode(buffer,
-                     base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                                base::Unretained(this)));
+    decoder_->Read(base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                              base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
   // Sets up expectations and actions to put DecryptingVideoDecoder in an
   // active normal decoding state.
   void EnterNormalDecodingState() {
+    EXPECT_CALL(*demuxer_, Read(_))
+        .WillOnce(ReturnBuffer(encrypted_buffer_))
+        .WillRepeatedly(ReturnBuffer(DecoderBuffer::CreateEOSBuffer()));
     EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
         .WillOnce(RunCallback<1>(Decryptor::kSuccess, decoded_video_frame_))
         .WillRepeatedly(RunCallback<1>(Decryptor::kNeedMoreData,
                                        scoped_refptr<VideoFrame>()));
     EXPECT_CALL(statistics_cb_, OnStatistics(_));
 
-    ReadAndExpectFrameReadyWith(
-        encrypted_buffer_, VideoDecoder::kOk, decoded_video_frame_);
+    ReadAndExpectFrameReadyWith(VideoDecoder::kOk, decoded_video_frame_);
   }
 
   // Sets up expectations and actions to put DecryptingVideoDecoder in an end
   // of stream state. This function must be called after
   // EnterNormalDecodingState() to work.
   void EnterEndOfStreamState() {
-    ReadAndExpectFrameReadyWith(DecoderBuffer::CreateEOSBuffer(),
-                                VideoDecoder::kOk,
-                                end_of_stream_video_frame_);
+    ReadAndExpectFrameReadyWith(VideoDecoder::kOk, end_of_stream_video_frame_);
+  }
+
+  // Make the read callback pending by saving and not firing it.
+  void EnterPendingReadState() {
+    EXPECT_TRUE(pending_demuxer_read_cb_.is_null());
+    EXPECT_CALL(*demuxer_, Read(_))
+        .WillOnce(SaveArg<0>(&pending_demuxer_read_cb_));
+    decoder_->Read(base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                              base::Unretained(this)));
+    message_loop_.RunUntilIdle();
+    // Make sure the Read() on the decoder triggers a Read() on the demuxer.
+    EXPECT_FALSE(pending_demuxer_read_cb_.is_null());
   }
 
   // Make the video decode callback pending by saving and not firing it.
   void EnterPendingDecodeState() {
     EXPECT_TRUE(pending_video_decode_cb_.is_null());
+    EXPECT_CALL(*demuxer_, Read(_))
+        .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
     EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(encrypted_buffer_, _))
         .WillOnce(SaveArg<1>(&pending_video_decode_cb_));
 
-    decoder_->Decode(encrypted_buffer_,
-                     base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                                base::Unretained(this)));
+    decoder_->Read(base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                              base::Unretained(this)));
     message_loop_.RunUntilIdle();
-    // Make sure the Decode() on the decoder triggers a DecryptAndDecode() on
-    // the decryptor.
+    // Make sure the Read() on the decoder triggers a DecryptAndDecode() on the
+    // decryptor.
     EXPECT_FALSE(pending_video_decode_cb_.is_null());
   }
 
   void EnterWaitingForKeyState() {
+    EXPECT_CALL(*demuxer_, Read(_))
+        .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
     EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
         .WillRepeatedly(RunCallback<1>(Decryptor::kNoKey, null_video_frame_));
-    decoder_->Decode(encrypted_buffer_,
-                     base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                                base::Unretained(this)));
+    decoder_->Read(base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                              base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
@@ -214,13 +232,15 @@ class DecryptingVideoDecoderTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingVideoDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;
 
+  DemuxerStream::ReadCB pending_demuxer_read_cb_;
   Decryptor::DecoderInitCB pending_init_cb_;
   Decryptor::NewKeyCB key_added_cb_;
   Decryptor::VideoDecodeCB pending_video_decode_cb_;
 
-  // Constant buffer/frames.
+  // Constant buffer/frames to be returned by the |demuxer_| and |decryptor_|.
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
   scoped_refptr<VideoFrame> decoded_video_frame_;
   scoped_refptr<VideoFrame> null_video_frame_;
@@ -280,16 +300,16 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_Normal) {
 TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_DecodeError) {
   Initialize();
 
+  EXPECT_CALL(*demuxer_, Read(_))
+      .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
       .WillRepeatedly(RunCallback<1>(Decryptor::kError,
-                                     scoped_refptr<VideoFrame>(NULL)));
+                                   scoped_refptr<VideoFrame>(NULL)));
 
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kDecodeError, null_video_frame_);
+  ReadAndExpectFrameReadyWith(VideoDecoder::kDecodeError, null_video_frame_);
 
   // After a decode error occurred, all following read returns kDecodeError.
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kDecodeError, null_video_frame_);
+  ReadAndExpectFrameReadyWith(VideoDecoder::kDecodeError, null_video_frame_);
 }
 
 // Test the case where the decryptor returns kNeedMoreData to ask for more
@@ -297,6 +317,9 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_DecodeError) {
 TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_NeedMoreData) {
   Initialize();
 
+  EXPECT_CALL(*demuxer_, Read(_))
+      .Times(2)
+      .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
       .WillOnce(RunCallback<1>(Decryptor::kNeedMoreData,
                              scoped_refptr<VideoFrame>()))
@@ -305,10 +328,7 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_NeedMoreData) {
   EXPECT_CALL(statistics_cb_, OnStatistics(_))
       .Times(2);
 
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kNotEnoughData, decoded_video_frame_);
-  ReadAndExpectFrameReadyWith(
-      encrypted_buffer_, VideoDecoder::kOk, decoded_video_frame_);
+  ReadAndExpectFrameReadyWith(VideoDecoder::kOk, decoded_video_frame_);
 }
 
 // Test the case where the decryptor receives end-of-stream buffer.
@@ -316,6 +336,17 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_EndOfStream) {
   Initialize();
   EnterNormalDecodingState();
   EnterEndOfStreamState();
+}
+
+// Test aborted read on the demuxer stream.
+TEST_F(DecryptingVideoDecoderTest, DemuxerRead_Aborted) {
+  Initialize();
+
+  // ReturnBuffer() with NULL triggers aborted demuxer read.
+  EXPECT_CALL(*demuxer_, Read(_))
+      .WillOnce(ReturnBuffer(scoped_refptr<DecoderBuffer>()));
+
+  ReadAndExpectFrameReadyWith(VideoDecoder::kOk, null_video_frame_);
 }
 
 // Test the case where the a key is added when the decryptor is in
@@ -367,6 +398,35 @@ TEST_F(DecryptingVideoDecoderTest, Reset_DuringIdleAfterDecodedOneFrame) {
   Reset();
 }
 
+// Test resetting when the decoder is in kPendingDemuxerRead state and the read
+// callback is returned with kOk.
+TEST_F(DecryptingVideoDecoderTest, Reset_DuringDemuxerRead_Ok) {
+  Initialize();
+  EnterPendingReadState();
+
+  EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, IsNull()));
+
+  Reset();
+  base::ResetAndReturn(&pending_demuxer_read_cb_).Run(DemuxerStream::kOk,
+                                                      encrypted_buffer_);
+  message_loop_.RunUntilIdle();
+}
+
+// Test resetting when the decoder is in kPendingDemuxerRead state and the read
+// callback is returned with kAborted.
+TEST_F(DecryptingVideoDecoderTest, Reset_DuringDemuxerRead_Aborted) {
+  Initialize();
+  EnterPendingReadState();
+
+  // Make sure we get a NULL video frame returned.
+  EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, IsNull()));
+
+  Reset();
+  base::ResetAndReturn(&pending_demuxer_read_cb_).Run(DemuxerStream::kAborted,
+                                                      NULL);
+  message_loop_.RunUntilIdle();
+}
+
 // Test resetting when the decoder is in kPendingDecode state.
 TEST_F(DecryptingVideoDecoderTest, Reset_DuringPendingDecode) {
   Initialize();
@@ -406,10 +466,11 @@ TEST_F(DecryptingVideoDecoderTest, Reset_AfterReset) {
 
 // Test stopping when the decoder is in kDecryptorRequested state.
 TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
+  demuxer_->set_video_decoder_config(TestVideoConfig::NormalEncrypted());
   DecryptorReadyCB decryptor_ready_cb;
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(SaveArg<0>(&decryptor_ready_cb));
-  decoder_->Initialize(TestVideoConfig::NormalEncrypted(),
+  decoder_->Initialize(demuxer_.get(),
                        NewExpectedStatusCB(DECODER_ERROR_NOT_SUPPORTED),
                        base::Bind(&MockStatisticsCB::OnStatistics,
                                   base::Unretained(&statistics_cb_)));
@@ -450,6 +511,19 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringIdleAfterDecodedOneFrame) {
   Initialize();
   EnterNormalDecodingState();
   Stop();
+}
+
+// Test stopping when the decoder is in kPendingDemuxerRead state.
+TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingDemuxerRead) {
+  Initialize();
+  EnterPendingReadState();
+
+  EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, IsNull()));
+
+  Stop();
+  base::ResetAndReturn(&pending_demuxer_read_cb_).Run(DemuxerStream::kOk,
+                                                      encrypted_buffer_);
+  message_loop_.RunUntilIdle();
 }
 
 // Test stopping when the decoder is in kPendingDecode state.

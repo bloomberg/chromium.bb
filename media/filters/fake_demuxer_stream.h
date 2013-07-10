@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_export.h"
 #include "media/base/video_decoder_config.h"
 
 namespace base {
@@ -17,7 +18,7 @@ class MessageLoopProxy;
 
 namespace media {
 
-class FakeDemuxerStream : public DemuxerStream {
+class MEDIA_EXPORT FakeDemuxerStream : public DemuxerStream {
  public:
   // Constructs an object that outputs |num_configs| different configs in
   // sequence with |num_frames_in_one_config| buffers for each config. The
