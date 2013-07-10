@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 // Test that Autocheckout steps are shown after submitting the
 // dialog for controller with type DIALOG_TYPE_AUTOCHECKOUT.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       AutocheckoutShowsSteps) {
+                       DISABLED_AutocheckoutShowsSteps) {
   InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
   controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
 
@@ -679,7 +679,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
 }
 
 // Notifications with long message text should not make the dialog bigger.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       DISABLED_LongNotifications) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
 
   const gfx::Size no_notification_size =
