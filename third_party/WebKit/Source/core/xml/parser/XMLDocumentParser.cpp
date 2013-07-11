@@ -37,6 +37,7 @@
 #include <wtf/Vector.h>
 #include "HTMLNames.h"
 #include "XMLNSNames.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
@@ -335,8 +336,11 @@ void XMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
 
     doWrite(source.toString());
 
-    // After parsing, go ahead and dispatch image beforeload events.
-    ImageLoader::dispatchPendingBeforeLoadEvents();
+    if (isStopped())
+        return;
+
+    if (document()->frame() && document()->frame()->script()->canExecuteScripts(NotAboutToExecuteScript))
+        ImageLoader::dispatchPendingBeforeLoadEvents();
 }
 
 void XMLDocumentParser::handleError(XMLErrors::ErrorType type, const char* formattedMessage, TextPosition position)

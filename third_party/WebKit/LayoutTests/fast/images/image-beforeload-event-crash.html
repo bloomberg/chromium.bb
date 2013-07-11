@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    .dataUriBackgroundImage {
+        background-image: url("data:image/svg+xml,<svg></svg>");
+    }
+</style>
+<script>
+    function createAndAttachStyledElement() {
+        var pEl = document.createElementNS("http://www.w3.org/1999/xhtml", "p");
+        pEl.setAttribute("class", "dataUriBackgroundImage");
+        document.body.appendChild(pEl);
+        if (window.testRunner)
+            testRunner.dumpAsText();
+    }
+
+    document.addEventListener("DOMContentLoaded", createAndAttachStyledElement, false);
+    document.addEventListener("beforeload", function(event) { event.preventDefault(); }, true);
+</script>
+</head>
+<body>
+    Test for crbug.com/256013: This test passes if it does not crash.<br/>
+    <object data="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="></object>
+</body>
+</html>
