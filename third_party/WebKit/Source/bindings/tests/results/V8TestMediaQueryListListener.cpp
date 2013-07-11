@@ -22,6 +22,7 @@
 #include "V8TestMediaQueryListListener.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -29,7 +30,6 @@
 #include "core/css/MediaQueryListListener.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "wtf/UnusedParam.h"

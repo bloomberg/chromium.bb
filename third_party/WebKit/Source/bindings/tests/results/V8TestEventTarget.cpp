@@ -24,6 +24,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8EventTarget.h"
 #include "V8Node.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -70,7 +71,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
         return;
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     V8TRYCATCH_VOID(int, index, toUInt32(args[0]));
     if (UNLIKELY(index < 0)) {
         setDOMException(IndexSizeError, args.GetIsolate());
@@ -143,12 +144,10 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v
 static void indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
-    ExceptionCode ec = 0;
-    bool result = collection->anonymousIndexedDeleter(index, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    bool result = collection->anonymousIndexedDeleter(index, es);
+    if (es.throwIfNeeded())
         return;
-    }
     return v8SetReturnValueBool(info, result);
 }
 
@@ -229,14 +228,12 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionCode ec = 0;
+    ExceptionState es(info.GetIsolate());
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     Vector<String> names;
-    collection->namedPropertyEnumerator(names, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    collection->namedPropertyEnumerator(names, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8::Integer::New(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
@@ -247,12 +244,10 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionCode ec = 0;
-    bool result = collection->namedPropertyQuery(propertyName, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    bool result = collection->namedPropertyQuery(propertyName, es);
+    if (es.throwIfNeeded())
         return;
-    }
     if (!result)
         return;
     v8SetReturnValueInt(info, v8::None);

@@ -27,6 +27,7 @@
 #include "V8SerializedScriptValue.h"
 #include "V8TestCallback.h"
 #include "V8TestSubObj.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
@@ -35,7 +36,6 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
@@ -130,12 +130,10 @@ static void immutableSerializedScriptValueAttrSetterCallback(v8::Local<v8::Strin
 static void attrWithGetterExceptionAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    ExceptionCode ec = 0;
-    int v = imp->attrWithGetterException(ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    int v = imp->attrWithGetterException(es);
+    if (UNLIKELY(es.throwIfNeeded()))
         return;
-    };
     v8SetReturnValueInt(info, v);
     return;
 }
@@ -180,10 +178,9 @@ static void attrWithSetterExceptionAttrSetter(v8::Local<v8::String> name, v8::Lo
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
-    ExceptionCode ec = 0;
-    imp->setAttrWithSetterException(v, ec);
-    if (UNLIKELY(ec))
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    imp->setAttrWithSetterException(v, es);
+    es.throwIfNeeded();
     return;
 }
 
@@ -197,12 +194,10 @@ static void attrWithSetterExceptionAttrSetterCallback(v8::Local<v8::String> name
 static void stringAttrWithGetterExceptionAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    ExceptionCode ec = 0;
-    String v = imp->stringAttrWithGetterException(ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    String v = imp->stringAttrWithGetterException(es);
+    if (UNLIKELY(es.throwIfNeeded()))
         return;
-    };
     v8SetReturnValueString(info, v, info.GetIsolate(), NullStringAsEmpty);
     return;
 }
@@ -247,10 +242,9 @@ static void stringAttrWithSetterExceptionAttrSetter(v8::Local<v8::String> name, 
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
-    ExceptionCode ec = 0;
-    imp->setStringAttrWithSetterException(v, ec);
-    if (UNLIKELY(ec))
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    imp->setStringAttrWithSetterException(v, es);
+    es.throwIfNeeded();
     return;
 }
 
@@ -427,13 +421,11 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0]));
-    Vector<String> result = imp->stringArrayFunction(values, ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, args.GetIsolate());
+    Vector<String> result = imp->stringArrayFunction(values, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
     return;
 }
@@ -452,13 +444,11 @@ static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0]));
-    Vector<String> result = imp->stringArrayFunction2(values, ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, args.GetIsolate());
+    Vector<String> result = imp->stringArrayFunction2(values, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
     return;
 }
@@ -473,12 +463,10 @@ static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8
 static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    ExceptionCode ec = 0;
-    imp->methodWithException(ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, args.GetIsolate());
+    ExceptionState es(args.GetIsolate());
+    imp->methodWithException(es);
+    if (es.throwIfNeeded())
         return;
-    }
 
     return;
 }

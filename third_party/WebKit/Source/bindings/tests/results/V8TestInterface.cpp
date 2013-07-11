@@ -27,6 +27,7 @@
 #include "V8NodeList.h"
 #include "V8TestObject.h"
 #include "bindings/bindings/tests/idls/TestPartialInterface.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -34,7 +35,6 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -768,15 +768,13 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
-    RefPtr<TestObj> result = imp->implementsMethod2(scriptContext, strArg, objArg, ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, args.GetIsolate());
+    RefPtr<TestObj> result = imp->implementsMethod2(scriptContext, strArg, objArg, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8(result.release(), args.Holder(), args.GetIsolate()));
     return;
 }
@@ -859,15 +857,13 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
-    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, args.GetIsolate());
+    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8(result.release(), args.Holder(), args.GetIsolate()));
     return;
 }
@@ -924,18 +920,16 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
         throwNotEnoughArgumentsError(args.GetIsolate());
         return;
     }
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, args[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, args[1]);
 
     ScriptExecutionContext* context = getScriptExecutionContext();
 
-    RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, ec);
+    RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, es);
     v8::Handle<v8::Object> wrapper = args.Holder();
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    if (es.throwIfNeeded())
         return;
-    }
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl.release(), &V8TestInterface::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     args.GetReturnValue().Set(wrapper);
@@ -987,14 +981,12 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionCode ec = 0;
+    ExceptionState es(info.GetIsolate());
     TestInterface* collection = V8TestInterface::toNative(info.Holder());
     Vector<String> names;
-    collection->namedPropertyEnumerator(names, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    collection->namedPropertyEnumerator(names, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8::Integer::New(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
@@ -1005,12 +997,10 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestInterface* collection = V8TestInterface::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionCode ec = 0;
-    bool result = collection->namedPropertyQuery(propertyName, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    bool result = collection->namedPropertyQuery(propertyName, es);
+    if (es.throwIfNeeded())
         return;
-    }
     if (!result)
         return;
     v8SetReturnValueInt(info, v8::None);
