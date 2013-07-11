@@ -32,7 +32,6 @@
 #include "config.h"
 #include "core/platform/Partitions.h"
 
-#if ENABLE(PARTITION_ALLOC)
 namespace WebCore {
 
 PartitionRoot Partitions::m_objectModelRoot;
@@ -49,6 +48,5 @@ void Partitions::shutdown()
     // the valgrind and heapcheck bots, which run without partitions.
     (void) partitionAllocShutdown(&m_objectModelRoot);
 }
-#endif
 
 } // namespace WebCore

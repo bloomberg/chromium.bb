@@ -98,7 +98,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-#if ENABLE(PARTITION_ALLOC)
 void* Node::operator new(size_t size)
 {
     return partitionAlloc(Partitions::getObjectModelPartition(), size);
@@ -108,7 +107,6 @@ void Node::operator delete(void* ptr)
 {
     partitionFree(ptr);
 }
-#endif // ENABLE(PARTITION_ALLOC)
 
 bool Node::isSupported(const String& feature, const String& version)
 {

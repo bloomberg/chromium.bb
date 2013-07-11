@@ -63,9 +63,7 @@ void init()
     MediaFeatureNames::init();
     WTF::StringStatics::init();
     QualifiedName::init();
-#if ENABLE(PARTITION_ALLOC)
     Partitions::init();
-#endif
     EventTracer::initialize();
 }
 
