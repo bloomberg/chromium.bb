@@ -1464,11 +1464,35 @@ bool Browser::ShouldCreateWebContents(
     int route_id,
     WindowContainerType window_container_type,
     const string16& frame_name,
-    const GURL& target_url) {
+    const GURL& target_url,
+    WindowOpenDisposition disposition,
+    bool user_gesture) {
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
     return !MaybeCreateBackgroundContents(
         route_id, web_contents, frame_name, target_url);
+  }
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBetterPopupBlocking)) {
+    return true;
+  }
+
+  BlockedContentTabHelper* blocked_content_helper =
+      BlockedContentTabHelper::FromWebContents(web_contents);
+  if (!blocked_content_helper)
+    return true;
+
+  if (blocked_content_helper->all_contents_blocked()) {
+    // TODO(jochen): store information about the blocked pop-up in the helper.
+    return false;
+  }
+
+  if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB ||
+       disposition == NEW_BACKGROUND_TAB) && !user_gesture &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePopupBlocking)) {
+    return false;
   }
 
   return true;

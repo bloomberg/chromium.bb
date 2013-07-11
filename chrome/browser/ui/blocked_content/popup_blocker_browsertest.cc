@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -38,6 +39,33 @@ namespace {
 
 static const base::FilePath::CharType* kTestDir =
     FILE_PATH_LITERAL("popup_blocker");
+
+// Counts the number of RenderViewHosts created.
+class CountRenderViewHosts : public content::NotificationObserver {
+ public:
+  CountRenderViewHosts()
+      : count_(0) {
+    registrar_.Add(this,
+                   content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
+                   content::NotificationService::AllSources());
+  }
+  virtual ~CountRenderViewHosts() {}
+
+  int GetRenderViewHostCreatedCount() const { return count_; }
+
+ private:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    count_++;
+  }
+
+  content::NotificationRegistrar registrar_;
+
+  int count_;
+
+  DISALLOW_COPY_AND_ASSIGN(CountRenderViewHosts);
+};
 
 class PopupBlockerBrowserTest : public InProcessBrowserTest {
  public:
@@ -180,6 +208,26 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
   EXPECT_EQ(GURL(search_string), model->CurrentMatch(NULL).destination_url);
   EXPECT_EQ(ASCIIToUTF16(search_string), model->CurrentMatch(NULL).contents);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BetterPopupBlockerTest) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableBetterPopupBlocking);
+
+  CountRenderViewHosts counter;
+
+  // If the popup blocker blocked the blank post, there should be only one tab.
+  ui_test_utils::NavigateToURL(browser(), GetTestURL());
+
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(GetTestURL(), web_contents->GetURL());
+
+  // And no new RVH created.
+  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
 }
 
 }  // namespace

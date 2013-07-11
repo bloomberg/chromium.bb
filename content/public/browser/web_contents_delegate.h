@@ -293,7 +293,9 @@ class CONTENT_EXPORT WebContentsDelegate {
       int route_id,
       WindowContainerType window_container_type,
       const string16& frame_name,
-      const GURL& target_url);
+      const GURL& target_url,
+      WindowOpenDisposition disposition,
+      bool user_gesture);
 
   // Notifies the delegate about the creation of a new WebContents. This
   // typically happens when popups are created.

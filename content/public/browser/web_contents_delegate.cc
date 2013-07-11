@@ -126,7 +126,9 @@ bool WebContentsDelegate::ShouldCreateWebContents(
     int route_id,
     WindowContainerType window_container_type,
     const string16& frame_name,
-    const GURL& target_url) {
+    const GURL& target_url,
+    WindowOpenDisposition disposition,
+    bool user_gesture) {
   return true;
 }
 
