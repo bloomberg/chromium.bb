@@ -18,9 +18,12 @@ NaClErrorCode NaClRunSelQualificationTests(void) {
     return LOAD_UNSUPPORTED_OS_PLATFORM;
   }
 
+  /* Mips does not support DEP and it does not need it, so skip it. */
+#if NACL_ARCH(NACL_BUILD_ARCH) != NACL_mips
   if (!NaClCheckDEP()) {
     return LOAD_DEP_UNSUPPORTED;
   }
+#endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   if (NaCl_ThisCPUIsBlacklisted()) {
