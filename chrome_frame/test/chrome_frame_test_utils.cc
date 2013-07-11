@@ -532,6 +532,10 @@ std::wstring GetClipboardText() {
   return UTF16ToWide(text16);
 }
 
+void DestroyClipboard() {
+  ui::Clipboard::DestroyClipboardForCurrentThread();
+}
+
 void SetClipboardText(const std::wstring& text) {
   ui::ScopedClipboardWriter clipboard_writer(
       ui::Clipboard::GetForCurrentThread(),

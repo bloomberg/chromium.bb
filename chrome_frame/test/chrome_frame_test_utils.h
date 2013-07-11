@@ -303,6 +303,10 @@ bool AddCFMetaTag(std::string* html_data);
 // Get text data from the clipboard.
 std::wstring GetClipboardText();
 
+// Destroys the clipboard for the current thread. This function must be called
+// if GetClipboardText() or SetClipboardText() have been invoked.
+void DestroyClipboard();
+
 // Puts the given text data on the clipboard. All previous items on the
 // clipboard are removed.
 void SetClipboardText(const std::wstring& text);

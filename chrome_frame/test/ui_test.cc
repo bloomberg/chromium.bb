@@ -470,6 +470,11 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
     EXPECT_CALL(acc_observer_, OnAccDocLoad(_)).Times(testing::AnyNumber());
   }
 
+  virtual void TearDown() {
+    // Destroy the clipboard here because it is not destroyed automatically.
+    DestroyClipboard();
+  }
+
   // Common helper function for "Save xxx As" tests.
   void DoSaveAsTest(const wchar_t* role, const wchar_t* menu_item_name,
                     const wchar_t* file_ext) {

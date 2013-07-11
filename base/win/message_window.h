@@ -20,6 +20,9 @@ namespace win {
 // Implements a message-only window.
 class BASE_EXPORT MessageWindow : public base::NonThreadSafe {
  public:
+  // Used to register a process-wide message window class.
+  class WindowClass;
+
   // Implement this callback to handle messages received by the message window.
   // If the callback returns |false|, the first four parameters are passed to
   // DefWindowProc(). Otherwise, |*result| is returned by the window procedure.
@@ -41,7 +44,14 @@ class BASE_EXPORT MessageWindow : public base::NonThreadSafe {
 
   HWND hwnd() const { return window_; }
 
+  // Retrieves a handle of the first message-only window with matching
+  // |window_name|.
+  static HWND FindWindow(const string16& window_name);
+
  private:
+  // Give |WindowClass| access to WindowProc().
+  friend class WindowClass;
+
   // Contains the actual window creation code.
   bool DoCreate(const MessageCallback& message_callback,
                 const wchar_t* window_name);
@@ -49,9 +59,6 @@ class BASE_EXPORT MessageWindow : public base::NonThreadSafe {
   // Invoked by the OS to process incoming window messages.
   static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wparam,
                                      LPARAM lparam);
-
-  // Atom representing the registered window class.
-  ATOM atom_;
 
   // Invoked to handle messages received by the window.
   MessageCallback message_callback_;
