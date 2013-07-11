@@ -746,6 +746,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_client(client)
     , m_weakFactory(this)
     , m_styleRecalcElementCounter(0)
+    , m_layerTreeId(0)
 {
 }
 
