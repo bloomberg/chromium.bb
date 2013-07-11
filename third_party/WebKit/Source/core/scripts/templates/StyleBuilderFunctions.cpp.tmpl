@@ -343,6 +343,24 @@ namespace WebCore {
 {{ apply_color("CSSPropertyWebkitTextFillColor") }}
 {{ apply_color("CSSPropertyWebkitTextStrokeColor") }}
 
+{%- macro apply_value_compute_length(property_id) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    float zoom = state.style()->effectiveZoom();
+    {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(state.style(), state.rootElementStyle(), zoom));
+}
+{%- endmacro %}
+
+{{ apply_value_compute_length("CSSPropertyOutlineOffset") }}
+{{ apply_value_compute_length("CSSPropertyWebkitBorderHorizontalSpacing") }}
+{{ apply_value_compute_length("CSSPropertyWebkitBorderVerticalSpacing") }}
+{{ apply_value_compute_length("CSSPropertyWebkitTransformOriginZ") }}
+
 {%- macro apply_fill_layer(property_id, fill_type) %}
 {%- set layer_type = "Background" if "Background" in property_id else "Mask" %}
 {%- set fill_layer_type = layer_type + "FillLayer" %}
@@ -430,6 +448,48 @@ namespace WebCore {
 {{ apply_fill_layer("CSSPropertyWebkitMaskRepeatY", "RepeatY") }}
 {{ apply_fill_layer("CSSPropertyWebkitMaskSize", "Size") }}
 
+{%- macro apply_value_line_width(property_id) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    {%- set T = property.type_name %}
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    CSSValueID valueID = primitiveValue->getValueID();
+    {{ T }} length;
+    if (valueID == CSSValueThin) {
+        length = 1;
+    } else if (valueID == CSSValueMedium) {
+        length = 3;
+    } else if (valueID == CSSValueThick) {
+        length = 5;
+    } else if (valueID == CSSValueInvalid) {
+        float zoom = state.style()->effectiveZoom();
+        // Any original result that was >= 1 should not be allowed to fall below 1.
+        // This keeps border lines from vanishing.
+        length = primitiveValue->computeLength<{{T}}>(state.style(), state.rootElementStyle(), zoom);
+        if (zoom < 1.0f && length < 1.0) {
+            {{ T }} originalLength = primitiveValue->computeLength<{{T}}>(state.style(), state.rootElementStyle(), 1.0);
+            if (originalLength >= 1.0)
+                length = 1.0;
+        }
+    } else {
+        ASSERT_NOT_REACHED();
+        length = 0;
+    }
+    {{ set_value(property) }}(length);
+}
+{%- endmacro %}
+
+{{ apply_value_line_width("CSSPropertyBorderBottomWidth") }}
+{{ apply_value_line_width("CSSPropertyBorderLeftWidth") }}
+{{ apply_value_line_width("CSSPropertyBorderRightWidth") }}
+{{ apply_value_line_width("CSSPropertyBorderTopWidth") }}
+{{ apply_value_line_width("CSSPropertyOutlineWidth") }}
+{{ apply_value_line_width("CSSPropertyWebkitColumnRuleWidth") }}
+
 {%- macro apply_value_number(property_id, id_for_minus_one) %}
 {{ apply_value(property_id) }}
 {
@@ -449,6 +509,29 @@ namespace WebCore {
 {{ apply_value_number("CSSPropertyWebkitHyphenateLimitBefore", "CSSValueAuto") }}
 {{ apply_value_number("CSSPropertyWebkitHyphenateLimitLines", "CSSValueNoLimit") }}
 {{ apply_value_number("CSSPropertyWebkitMarqueeRepetition", "CSSValueInfinite") }}
+
+{%- macro apply_value_spacing(property_id) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    {%- set T = property.type_name %}
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    {{ T }} length;
+    if (primitiveValue->getValueID() == CSSValueNormal) {
+        length = 0;
+    } else {
+        float zoom = state.useSVGZoomRules() ? 1.0f : state.style()->effectiveZoom();
+        length = primitiveValue->computeLength<{{T}}>(state.style(), state.rootElementStyle(), zoom);
+    }
+    {{ set_value(property) }}(length);
+}
+{%- endmacro %}
+
+{{ apply_value_spacing("CSSPropertyLetterSpacing") }}
+{{ apply_value_spacing("CSSPropertyWordSpacing") }}
 
 {%- macro apply_value_string(property_id, id_for_none) %}
 {{ apply_value(property_id) }}

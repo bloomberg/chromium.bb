@@ -249,63 +249,6 @@ public:
     }
 };
 
-enum ComputeLengthNormal {NormalDisabled = 0, NormalEnabled};
-enum ComputeLengthThickness {ThicknessDisabled = 0, ThicknessEnabled};
-enum ComputeLengthSVGZoom {SVGZoomDisabled = 0, SVGZoomEnabled};
-template <typename T,
-          T (RenderStyle::*getterFunction)() const,
-          void (RenderStyle::*setterFunction)(T),
-          T (*initialFunction)(),
-          ComputeLengthNormal normalEnabled = NormalDisabled,
-          ComputeLengthThickness thicknessEnabled = ThicknessDisabled,
-          ComputeLengthSVGZoom svgZoomEnabled = SVGZoomDisabled>
-class ApplyPropertyComputeLength {
-public:
-    static void setValue(RenderStyle* style, T value) { (style->*setterFunction)(value); }
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
-    {
-        // note: CSSPropertyLetter/WordSpacing right now sets to zero if it's not a primitive value for some reason...
-        if (!value->isPrimitiveValue())
-            return;
-
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-
-        CSSValueID valueID = primitiveValue->getValueID();
-        T length;
-        if (normalEnabled && valueID == CSSValueNormal) {
-            length = 0;
-        } else if (thicknessEnabled && valueID == CSSValueThin) {
-            length = 1;
-        } else if (thicknessEnabled && valueID == CSSValueMedium) {
-            length = 3;
-        } else if (thicknessEnabled && valueID == CSSValueThick) {
-            length = 5;
-        } else if (valueID == CSSValueInvalid) {
-            float zoom = (svgZoomEnabled && state.useSVGZoomRules()) ? 1.0f : state.style()->effectiveZoom();
-
-            // Any original result that was >= 1 should not be allowed to fall below 1.
-            // This keeps border lines from vanishing.
-            length = primitiveValue->computeLength<T>(state.style(), state.rootElementStyle(), zoom);
-            if (zoom < 1.0f && length < 1.0) {
-                T originalLength = primitiveValue->computeLength<T>(state.style(), state.rootElementStyle(), 1.0);
-                if (originalLength >= 1.0)
-                    length = 1.0;
-            }
-
-        } else {
-            ASSERT_NOT_REACHED();
-            length = 0;
-        }
-
-        setValue(state.style(), length);
-    }
-    static PropertyHandler createHandler()
-    {
-        PropertyHandler handler = ApplyPropertyDefaultBase<T, getterFunction, T, setterFunction, T, initialFunction>::createHandler();
-        return PropertyHandler(handler.inheritFunction(), handler.initialFunction(), &applyValue);
-    }
-};
-
 template <typename T, T (FontDescription::*getterFunction)() const, void (FontDescription::*setterFunction)(T), T initialValue>
 class ApplyPropertyFont {
 public:
@@ -1414,10 +1357,6 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
         m_propertyMap[i] = PropertyHandler();
 
     // Please keep CSS property list in alphabetical order.
-    setPropertyHandler(CSSPropertyBorderBottomWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderBottomWidth, &RenderStyle::setBorderBottomWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
-    setPropertyHandler(CSSPropertyBorderLeftWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderLeftWidth, &RenderStyle::setBorderLeftWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
-    setPropertyHandler(CSSPropertyBorderRightWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderRightWidth, &RenderStyle::setBorderRightWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
-    setPropertyHandler(CSSPropertyBorderTopWidth, ApplyPropertyComputeLength<unsigned, &RenderStyle::borderTopWidth, &RenderStyle::setBorderTopWidth, &RenderStyle::initialBorderWidth, NormalDisabled, ThicknessEnabled>::createHandler());
     setPropertyHandler(CSSPropertyClip, ApplyPropertyClip::createHandler());
     setPropertyHandler(CSSPropertyCounterIncrement, ApplyPropertyCounter<Increment>::createHandler());
     setPropertyHandler(CSSPropertyCounterReset, ApplyPropertyCounter<Reset>::createHandler());
@@ -1429,12 +1368,9 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
     setPropertyHandler(CSSPropertyFontStyle, ApplyPropertyFont<FontItalic, &FontDescription::italic, &FontDescription::setItalic, FontItalicOff>::createHandler());
     setPropertyHandler(CSSPropertyFontVariant, ApplyPropertyFont<FontSmallCaps, &FontDescription::smallCaps, &FontDescription::setSmallCaps, FontSmallCapsOff>::createHandler());
     setPropertyHandler(CSSPropertyFontWeight, ApplyPropertyFontWeight::createHandler());
-    setPropertyHandler(CSSPropertyLetterSpacing, ApplyPropertyComputeLength<float, &RenderStyle::letterSpacing, &RenderStyle::setLetterSpacing, &RenderStyle::initialLetterWordSpacing, NormalEnabled, ThicknessDisabled, SVGZoomEnabled>::createHandler());
     setPropertyHandler(CSSPropertyLineHeight, ApplyPropertyLineHeight::createHandler());
     setPropertyHandler(CSSPropertyListStyleImage, ApplyPropertyStyleImage<&RenderStyle::listStyleImage, &RenderStyle::setListStyleImage, &RenderStyle::initialListStyleImage, CSSPropertyListStyleImage>::createHandler());
-    setPropertyHandler(CSSPropertyOutlineOffset, ApplyPropertyComputeLength<int, &RenderStyle::outlineOffset, &RenderStyle::setOutlineOffset, &RenderStyle::initialOutlineOffset>::createHandler());
     setPropertyHandler(CSSPropertyOutlineStyle, ApplyPropertyOutlineStyle::createHandler());
-    setPropertyHandler(CSSPropertyOutlineWidth, ApplyPropertyComputeLength<unsigned short, &RenderStyle::outlineWidth, &RenderStyle::setOutlineWidth, &RenderStyle::initialOutlineWidth, NormalDisabled, ThicknessEnabled>::createHandler());
     setPropertyHandler(CSSPropertyResize, ApplyPropertyResize::createHandler());
     setPropertyHandler(CSSPropertySize, ApplyPropertyPageSize::createHandler());
     setPropertyHandler(CSSPropertyTextAlign, ApplyPropertyTextAlign::createHandler());
@@ -1449,20 +1385,15 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
     setPropertyHandler(CSSPropertyTextRendering, ApplyPropertyFont<TextRenderingMode, &FontDescription::textRenderingMode, &FontDescription::setTextRenderingMode, AutoTextRendering>::createHandler());
     setPropertyHandler(CSSPropertyVerticalAlign, ApplyPropertyVerticalAlign::createHandler());
     setPropertyHandler(CSSPropertyWebkitAspectRatio, ApplyPropertyAspectRatio::createHandler());
-    setPropertyHandler(CSSPropertyWebkitBorderHorizontalSpacing, ApplyPropertyComputeLength<short, &RenderStyle::horizontalBorderSpacing, &RenderStyle::setHorizontalBorderSpacing, &RenderStyle::initialHorizontalBorderSpacing>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitBorderVerticalSpacing, ApplyPropertyComputeLength<short, &RenderStyle::verticalBorderSpacing, &RenderStyle::setVerticalBorderSpacing, &RenderStyle::initialVerticalBorderSpacing>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitColumnRuleWidth, ApplyPropertyComputeLength<unsigned short, &RenderStyle::columnRuleWidth, &RenderStyle::setColumnRuleWidth, &RenderStyle::initialColumnRuleWidth, NormalDisabled, ThicknessEnabled>::createHandler());
     setPropertyHandler(CSSPropertyWebkitFontKerning, ApplyPropertyFont<FontDescription::Kerning, &FontDescription::kerning, &FontDescription::setKerning, FontDescription::AutoKerning>::createHandler());
     setPropertyHandler(CSSPropertyWebkitFontSmoothing, ApplyPropertyFont<FontSmoothingMode, &FontDescription::fontSmoothing, &FontDescription::setFontSmoothing, AutoSmoothing>::createHandler());
     setPropertyHandler(CSSPropertyWebkitFontVariantLigatures, ApplyPropertyFontVariantLigatures::createHandler());
     setPropertyHandler(CSSPropertyWebkitMarqueeSpeed, ApplyPropertyMarqueeSpeed::createHandler());
     setPropertyHandler(CSSPropertyWebkitPerspectiveOrigin, ApplyPropertyExpanding<SuppressValue, CSSPropertyWebkitPerspectiveOriginX, CSSPropertyWebkitPerspectiveOriginY>::createHandler());
     setPropertyHandler(CSSPropertyWebkitTextEmphasisStyle, ApplyPropertyTextEmphasisStyle::createHandler());
-    setPropertyHandler(CSSPropertyWebkitTransformOriginZ, ApplyPropertyComputeLength<float, &RenderStyle::transformOriginZ, &RenderStyle::setTransformOriginZ, &RenderStyle::initialTransformOriginZ>::createHandler());
     setPropertyHandler(CSSPropertyWebkitClipPath, ApplyPropertyClipPath<&RenderStyle::clipPath, &RenderStyle::setClipPath, &RenderStyle::initialClipPath>::createHandler());
     setPropertyHandler(CSSPropertyWebkitShapeInside, ApplyPropertyShape<&RenderStyle::shapeInside, &RenderStyle::setShapeInside, &RenderStyle::initialShapeInside>::createHandler());
     setPropertyHandler(CSSPropertyWebkitShapeOutside, ApplyPropertyShape<&RenderStyle::shapeOutside, &RenderStyle::setShapeOutside, &RenderStyle::initialShapeOutside>::createHandler());
-    setPropertyHandler(CSSPropertyWordSpacing, ApplyPropertyComputeLength<float, &RenderStyle::wordSpacing, &RenderStyle::setWordSpacing, &RenderStyle::initialLetterWordSpacing, NormalEnabled, ThicknessDisabled, SVGZoomEnabled>::createHandler());
 }
 
 

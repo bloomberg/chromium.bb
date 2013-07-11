@@ -20,6 +20,7 @@ border-bottom-color custom_all
 border-bottom-left-radius initial=initialBorderRadius, custom_value
 border-bottom-right-radius initial=initialBorderRadius, custom_value
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
+border-bottom-width type_name=unsigned, initial=initialBorderWidth, custom_value
 border-collapse
 border-image-outset custom_all
 border-image-repeat custom_all
@@ -28,12 +29,15 @@ border-image-source custom_value
 border-image-width custom_all
 border-left-color custom_all
 border-left-style type_name=EBorderStyle, initial=initialBorderStyle
+border-left-width type_name=unsigned, initial=initialBorderWidth, custom_value
 border-right-color custom_all
 border-right-style type_name=EBorderStyle, initial=initialBorderStyle
+border-right-width type_name=unsigned, initial=initialBorderWidth, custom_value
 border-top-color custom_all
 border-top-left-radius initial=initialBorderRadius, custom_value
 border-top-right-radius initial=initialBorderRadius, custom_value
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
+border-top-width type_name=unsigned, initial=initialBorderWidth, custom_value
 bottom apply_type=length, initial=initialOffset, use_auto
 box-sizing
 caption-side
@@ -51,6 +55,7 @@ height apply_type=length, initial=initialSize, use_auto, use_intrinsic
 justify-content
 image-rendering
 left apply_type=length, initial=initialOffset, use_auto
+letter-spacing type_name=float, initial=initialLetterWordSpacing, custom_value
 list-style-position
 list-style-type
 margin-bottom apply_type=length, initial=initialMargin, use_auto
@@ -66,6 +71,8 @@ opacity type_name=float
 order type_name=int
 orphans type_name=short, custom_all
 outline-color custom_all
+outline-offset type_name=int, custom_value
+outline-width type_name=unsigned short, custom_value
 overflow-wrap
 overflow-x type_name=EOverflow
 overflow-y type_name=EOverflow
@@ -94,6 +101,7 @@ white-space
 widows type_name=short, custom_all
 width apply_type=length, initial=initialSize, use_auto, use_intrinsic
 word-break
+word-spacing type_name=float, initial=initialLetterWordSpacing, custom_value
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
 word-wrap name_for_methods=OverflowWrap
 zoom custom_all
@@ -114,7 +122,9 @@ z-index type_name=int, custom_all
 -webkit-background-origin use_handlers_for=CSSPropertyBackgroundOrigin
 -webkit-background-size use_handlers_for=CSSPropertyBackgroundSize
 -webkit-border-fit
+-webkit-border-horizontal-spacing type_name=short, name_for_methods=HorizontalBorderSpacing, custom_value
 -webkit-border-image initial=initialNinePieceImage, custom_value
+-webkit-border-vertical-spacing type_name=short, name_for_methods=VerticalBorderSpacing, custom_value
 -webkit-box-align type_name=EBoxAlignment
 -webkit-box-decoration-break
 -webkit-box-direction
@@ -133,6 +143,7 @@ z-index type_name=int, custom_all
 -webkit-column-progression type_name=ColumnProgression
 -webkit-column-rule-color custom_all
 -webkit-column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
+-webkit-column-rule-width type_name=unsigned short, custom_value
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
 -webkit-flow-from type_name=const AtomicString&, name_for_methods=RegionThread, custom_value
@@ -191,6 +202,7 @@ z-index type_name=int, custom_all
 -webkit-text-stroke-color custom_all
 -webkit-transform-origin-x apply_type=length
 -webkit-transform-origin-y apply_type=length
+-webkit-transform-origin-z type_name=float, custom_value
 -webkit-transform-style name_for_methods=TransformStyle3D
 -webkit-transition-delay custom_all
 -webkit-transition-duration custom_all
