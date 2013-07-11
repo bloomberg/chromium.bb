@@ -1091,6 +1091,7 @@ class GtkNativePanelTesting : public NativePanelTesting {
   virtual bool IsButtonVisible(
       panel::TitlebarButtonType button_type) const OVERRIDE;
   virtual panel::CornerStyle GetWindowCornerStyle() const OVERRIDE;
+  virtual bool EnsureApplicationRunOnForeground() OVERRIDE;
 
   PanelGtk* panel_gtk_;
 };
@@ -1211,4 +1212,9 @@ bool GtkNativePanelTesting::IsButtonVisible(
 
 panel::CornerStyle GtkNativePanelTesting::GetWindowCornerStyle() const {
   return panel_gtk_->corner_style_;
+}
+
+bool GtkNativePanelTesting::EnsureApplicationRunOnForeground() {
+  // Not needed on GTK.
+  return true;
 }

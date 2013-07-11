@@ -107,6 +107,7 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual bool IsButtonVisible(
       panel::TitlebarButtonType button_type) const OVERRIDE;
   virtual panel::CornerStyle GetWindowCornerStyle() const OVERRIDE;
+  virtual bool EnsureApplicationRunOnForeground() OVERRIDE;
 
   PanelView* panel_view_;
 };
@@ -220,6 +221,11 @@ bool NativePanelTestingWin::IsButtonVisible(
 
 panel::CornerStyle NativePanelTestingWin::GetWindowCornerStyle() const {
   return panel_view_->GetFrameView()->corner_style();
+}
+
+bool NativePanelTestingWin::EnsureApplicationRunOnForeground() {
+  // Not needed on views.
+  return true;
 }
 
 }  // namespace

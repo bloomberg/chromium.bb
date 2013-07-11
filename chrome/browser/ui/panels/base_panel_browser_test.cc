@@ -287,6 +287,14 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
     Panel* panel, ActiveState expected_state) {
   DCHECK(expected_state == SHOW_AS_ACTIVE ||
          expected_state == SHOW_AS_INACTIVE);
+
+#if defined(OS_MACOSX)
+  scoped_ptr<NativePanelTesting> panel_testing(
+      CreateNativePanelTesting(panel));
+  ASSERT_TRUE(panel_testing->EnsureApplicationRunOnForeground()) <<
+      "Failed to bring application to foreground. Bail out.";
+#endif
+
   PanelActiveStateObserver signal(panel, expected_state == SHOW_AS_ACTIVE);
   signal.Wait();
 }

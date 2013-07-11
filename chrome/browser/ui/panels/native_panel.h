@@ -136,6 +136,10 @@ class NativePanelTesting {
   virtual bool IsButtonVisible(panel::TitlebarButtonType button_type) const = 0;
 
   virtual panel::CornerStyle GetWindowCornerStyle() const = 0;
+
+  // Makes sure that the application is running on foreground. Returns false
+  // if the effort fails.
+  virtual bool EnsureApplicationRunOnForeground() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
