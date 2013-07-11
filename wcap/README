@@ -2,7 +2,7 @@ WCAP Tools
 
 WCAP is the video capture format used by Weston (Weston CAPture).
 It's a simple, lossless format, that encodes the difference between
-frames as run-length ecoded rectangles.  It's a variable framerate
+frames as run-length encoded rectangles.  It's a variable framerate
 format, that only records new frames along with a timestamp when
 something actually changes.
 
