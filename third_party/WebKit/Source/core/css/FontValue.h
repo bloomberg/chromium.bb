@@ -22,8 +22,8 @@
 #define FontValue_h
 
 #include "core/css/CSSValue.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

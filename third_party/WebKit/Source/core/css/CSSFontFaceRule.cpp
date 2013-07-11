@@ -26,7 +26,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

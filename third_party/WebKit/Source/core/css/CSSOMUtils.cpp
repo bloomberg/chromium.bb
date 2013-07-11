@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/css/CSSOMUtils.h"
 
-#include <wtf/HexNumber.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/HexNumber.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

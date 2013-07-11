@@ -32,7 +32,7 @@
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/StyleCachedImage.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

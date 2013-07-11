@@ -27,7 +27,7 @@
 #include "core/css/CSSBorderImageSliceValue.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

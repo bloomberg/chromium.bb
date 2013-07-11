@@ -36,9 +36,9 @@
 
 #include "core/css/CSSPropertySourceData.h"
 
-#include <wtf/StaticConstructors.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/StaticConstructors.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

@@ -28,7 +28,7 @@
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

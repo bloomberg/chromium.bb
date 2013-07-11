@@ -23,8 +23,8 @@
 
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/rendering/style/RenderStyleConstants.h"
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

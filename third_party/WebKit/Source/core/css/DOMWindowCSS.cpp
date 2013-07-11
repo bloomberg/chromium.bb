@@ -33,7 +33,7 @@
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/page/RuntimeCSSEnabled.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -27,8 +27,8 @@
 #define CSSBorderImageSliceValue_h
 
 #include "core/css/CSSPrimitiveValue.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

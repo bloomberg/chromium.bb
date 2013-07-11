@@ -29,7 +29,7 @@
 
 #include "core/css/CSSParserValues.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

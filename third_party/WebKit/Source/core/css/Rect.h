@@ -22,8 +22,8 @@
 #define Rect_h
 
 #include "core/css/CSSPrimitiveValue.h"
-#include <wtf/RefPtr.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/RefPtr.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

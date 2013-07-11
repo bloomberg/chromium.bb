@@ -26,9 +26,9 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
-#include <wtf/ListHashSet.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/ListHashSet.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

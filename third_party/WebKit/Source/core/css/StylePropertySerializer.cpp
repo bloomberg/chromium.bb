@@ -26,8 +26,8 @@
 #include "CSSValueKeywords.h"
 #include "core/css/StylePropertyShorthand.h"
 #include "core/page/RuntimeCSSEnabled.h"
-#include <wtf/BitArray.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/BitArray.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace std;
 

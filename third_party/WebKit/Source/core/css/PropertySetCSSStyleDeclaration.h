@@ -27,7 +27,7 @@
 #define PropertySetCSSStyleDeclaration_h
 
 #include "core/css/CSSStyleDeclaration.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

@@ -29,8 +29,8 @@
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/Timer.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/HashMap.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

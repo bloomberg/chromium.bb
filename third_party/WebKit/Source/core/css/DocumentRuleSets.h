@@ -26,9 +26,9 @@
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 
-#include <wtf/OwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

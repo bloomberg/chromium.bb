@@ -24,7 +24,7 @@
 #define CSSRule_h
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

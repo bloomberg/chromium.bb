@@ -47,8 +47,7 @@
 #include "core/rendering/style/LineClampValue.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
-
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 

@@ -36,9 +36,9 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 using namespace std;
 

@@ -28,8 +28,8 @@
 
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

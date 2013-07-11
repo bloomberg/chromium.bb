@@ -35,7 +35,7 @@
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/svg/SVGFontFaceElement.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

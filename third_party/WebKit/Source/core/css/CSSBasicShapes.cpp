@@ -28,10 +28,9 @@
  */
 
 #include "config.h"
-
 #include "core/css/CSSBasicShapes.h"
 
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
 

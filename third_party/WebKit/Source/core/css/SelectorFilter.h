@@ -30,8 +30,8 @@
 #define SelectorFilter_h
 
 #include "core/dom/Element.h"
-#include <wtf/BloomFilter.h>
-#include <wtf/Vector.h>
+#include "wtf/BloomFilter.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

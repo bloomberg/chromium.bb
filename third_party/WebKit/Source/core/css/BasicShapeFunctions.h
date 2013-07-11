@@ -30,7 +30,7 @@
 #ifndef BasicShapeFunctions_h
 #define BasicShapeFunctions_h
 
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

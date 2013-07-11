@@ -21,9 +21,6 @@
 #include "config.h"
 #include "core/css/StyleSheetContents.h"
 
-#include <wtf/Deque.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
@@ -34,6 +31,9 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/Deque.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 

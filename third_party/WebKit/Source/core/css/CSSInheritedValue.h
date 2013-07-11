@@ -22,7 +22,7 @@
 #define CSSInheritedValue_h
 
 #include "core/css/CSSValue.h"
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

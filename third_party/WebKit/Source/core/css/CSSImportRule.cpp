@@ -22,12 +22,12 @@
 #include "config.h"
 #include "core/css/CSSImportRule.h"
 
-#include <wtf/text/StringBuilder.h>
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

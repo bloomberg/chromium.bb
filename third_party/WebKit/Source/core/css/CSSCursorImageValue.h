@@ -23,7 +23,7 @@
 
 #include "core/css/CSSImageValue.h"
 #include "core/platform/graphics/IntPoint.h"
-#include <wtf/HashSet.h>
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 

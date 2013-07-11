@@ -22,9 +22,9 @@
 #define Pair_h
 
 #include "core/css/CSSPrimitiveValue.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
