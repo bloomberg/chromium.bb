@@ -119,7 +119,7 @@ class SurfaceStatsCollector(object):
   def _CalculateBuckets(refresh_period, timestamps):
     results = []
     for pct in [0.99, 0.5]:
-      sliced = timestamps[int(-pct * len(timestamps)) + 3 : ]
+      sliced = timestamps[min(int(-pct * len(timestamps)), -3) : ]
       results += SurfaceStatsCollector._CalculateResults(
           refresh_period, sliced, '_' + str(int(pct * 100)))
     return results
