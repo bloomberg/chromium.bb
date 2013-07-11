@@ -274,12 +274,10 @@ TEST(KeyframeAnimationEffect, MultipleProperties)
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
     OwnPtr<AnimationEffect::CompositableValueMap> values = effect->sample(0, 0.6);
     ASSERT_EQ(2, values->size());
-    AnimationEffect::CompositableValueMap::const_iterator iter = values->begin();
-    ASSERT_EQ(CSSPropertyLeft, iter->key);
-    ASSERT_FLOAT_EQ(5.0, getDoubleValue(iter->value->compositeOnto(unknownAnimatableValue(7.0))));
-    ++iter;
-    ASSERT_EQ(CSSPropertyRight, iter->key);
-    ASSERT_FLOAT_EQ(6.0, getDoubleValue(iter->value->compositeOnto(unknownAnimatableValue(7.0))));
+    ASSERT_TRUE(values->contains(CSSPropertyLeft));
+    EXPECT_EQ(5.0, getDoubleValue(values->get(CSSPropertyLeft)->compositeOnto(unknownAnimatableValue(7.0))));
+    ASSERT_TRUE(values->contains(CSSPropertyRight));
+    EXPECT_EQ(6.0, getDoubleValue(values->get(CSSPropertyRight)->compositeOnto(unknownAnimatableValue(7.0))));
 }
 
 TEST(KeyframeAnimationEffect, RecompositeCompositableValue)
