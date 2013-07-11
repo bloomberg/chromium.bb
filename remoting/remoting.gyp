@@ -1890,6 +1890,7 @@
             'remoting_client',
             'remoting_jingle_glue',
             'remoting_protocol',
+            '../google_apis/google_apis.gyp:google_apis',
           ],
           'sources': [
             'client/jni/chromoting_jni_instance.cc',

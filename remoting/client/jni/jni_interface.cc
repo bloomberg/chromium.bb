@@ -12,7 +12,9 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "google_apis/google_api_keys.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 
 // Class and package name of the Java class that declares this file's functions.
@@ -32,7 +34,30 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(loadNative)(JNIEnv* env,
   base::android::ScopedJavaLocalRef<jobject> context_activity(env, context);
   base::android::InitApplicationContext(context_activity);
 
+  // The google_apis functions check the command-line arguments to make sure no
+  // runtime API keys have been specified by the environment. Unfortunately, we
+  // neither launch Chromium nor have a command line, so we need to prevent
+  // them from DCHECKing out when they go looking.
+  CommandLine::Init(0, NULL);
+
   remoting::ChromotingJNIInstance::GetInstance(); // Initialize threads now.
+}
+
+JNIEXPORT jstring JNICALL JNI_IMPLEMENTATION(getApiKey)(JNIEnv* env,
+                                                        jobject that) {
+  return env->NewStringUTF(google_apis::GetAPIKey().c_str());
+}
+
+JNIEXPORT jstring JNICALL JNI_IMPLEMENTATION(getClientId)(JNIEnv* env,
+                                                          jobject that) {
+  return env->NewStringUTF(
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING).c_str());
+}
+
+JNIEXPORT jstring JNICALL JNI_IMPLEMENTATION(getClientSecret)(JNIEnv* env,
+                                                              jobject that) {
+  return env->NewStringUTF(
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING).c_str());
 }
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(JNIEnv* env,
