@@ -33,7 +33,6 @@ namespace WTF {
 ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer,
                        unsigned byteOffset)
         : m_byteOffset(byteOffset)
-        , m_isNeuterable(true)
         , m_buffer(buffer)
         , m_prevView(0)
         , m_nextView(0)

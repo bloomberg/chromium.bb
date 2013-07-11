@@ -56,7 +56,7 @@ public:
 
     // Channel data access
     unsigned numberOfChannels() const { return m_channels.size(); }
-    PassRefPtr<Float32Array> getChannelData(unsigned channelIndex, ExceptionCode&);
+    Float32Array* getChannelData(unsigned channelIndex, ExceptionCode&);
     Float32Array* getChannelData(unsigned channelIndex);
     void zero();
 
