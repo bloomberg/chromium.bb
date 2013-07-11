@@ -73,15 +73,13 @@ void RunSnapshotFileCallback(
 
 FileSystemProxy::FileSystemProxy(
     FileSystemInterface* file_system)
-    : file_system_(file_system),
-      worker_(new internal::FileApiWorker(file_system)) {
+    : file_system_(file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void FileSystemProxy::DetachFromFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_system_ = NULL;
-  worker_.reset();
 }
 
 void FileSystemProxy::GetFileInfo(
@@ -98,9 +96,8 @@ void FileSystemProxy::GetFileInfo(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::GetFileInfo,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::GetFileInfo,
                  file_path, google_apis::CreateRelayCallback(callback)));
 }
 
@@ -119,9 +116,8 @@ void FileSystemProxy::Copy(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::Copy,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::Copy,
                  src_file_path, dest_file_path,
                  google_apis::CreateRelayCallback(callback)));
 }
@@ -141,9 +137,8 @@ void FileSystemProxy::Move(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::Move,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::Move,
                  src_file_path, dest_file_path,
                  google_apis::CreateRelayCallback(callback)));
 }
@@ -164,9 +159,8 @@ void FileSystemProxy::ReadDirectory(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::ReadDirectory,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::ReadDirectory,
                  file_path, google_apis::CreateRelayCallback(callback)));
 }
 
@@ -184,9 +178,8 @@ void FileSystemProxy::Remove(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::Remove,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::Remove,
                  file_path, recursive,
                  google_apis::CreateRelayCallback(callback)));
 }
@@ -206,9 +199,8 @@ void FileSystemProxy::CreateDirectory(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::CreateDirectory,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::CreateDirectory,
                  file_path, exclusive, recursive,
                  google_apis::CreateRelayCallback(callback)));
 }
@@ -227,9 +219,8 @@ void FileSystemProxy::CreateFile(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::CreateFile,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::CreateFile,
                  file_path, exclusive,
                  google_apis::CreateRelayCallback(callback)));
 }
@@ -248,9 +239,8 @@ void FileSystemProxy::Truncate(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::Truncate,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::Truncate,
                  file_path, length,
                  google_apis::CreateRelayCallback(callback)));
 }
@@ -273,9 +263,8 @@ void FileSystemProxy::OpenFile(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::OpenFile,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::OpenFile,
                  file_path, file_flags,
                  google_apis::CreateRelayCallback(
                      base::Bind(&RunOpenFileCallback, peer_handle, callback))));
@@ -286,9 +275,8 @@ void FileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
   if (!ValidateUrl(url, &file_path))
     return;
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::CloseFile,
-                 base::Unretained(worker_.get()), file_path));
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::CloseFile, file_path));
 }
 
 void FileSystemProxy::TouchFile(
@@ -302,9 +290,8 @@ void FileSystemProxy::TouchFile(
   if (!ValidateUrl(url, &file_path))
     return;
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::TouchFile,
-                 base::Unretained(worker_.get()),
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::TouchFile,
                  file_path, last_access_time, last_modified_time,
                  google_apis::CreateRelayCallback(callback)));
 }
@@ -326,9 +313,9 @@ void FileSystemProxy::CreateSnapshotFile(
     return;
   }
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::CreateSnapshotFile,
-                 base::Unretained(worker_.get()), file_path,
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::CreateSnapshotFile,
+                 file_path,
                  google_apis::CreateRelayCallback(
                      base::Bind(&RunSnapshotFileCallback, callback))));
 }
@@ -415,6 +402,26 @@ void FileSystemProxy::CallFileSystemMethodOnUIThreadInternal(
     method_call.Run();
 }
 
+void FileSystemProxy::CallFileApiInternalFunctionOnUIThread(
+    const base::Callback<void(FileSystemInterface*)>& function) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &FileSystemProxy::CallFileApiInternalFunctionOnUIThreadInternal,
+          this,
+          function));
+}
+
+void FileSystemProxy::CallFileApiInternalFunctionOnUIThreadInternal(
+    const base::Callback<void(FileSystemInterface*)>& function) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // If |file_system_| is NULL, it means the file system has already shut down.
+  if (file_system_)
+    function.Run(file_system_);
+}
+
 void FileSystemProxy::OnCreateWritableSnapshotFile(
     const base::FilePath& virtual_path,
     const fileapi::WritableSnapshotFile& callback,
@@ -443,9 +450,8 @@ void FileSystemProxy::CloseWritableSnapshotFile(
     const base::FilePath& local_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&internal::FileApiWorker::CloseFile,
-                 base::Unretained(worker_.get()), virtual_path));
+  CallFileApiInternalFunctionOnUIThread(
+      base::Bind(&fileapi_internal::CloseFile, virtual_path));
 }
 
 FileSystemInterface* FileSystemProxy::GetFileSystemOnUIThread() {

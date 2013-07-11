@@ -117,6 +117,15 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void CallFileSystemMethodOnUIThreadInternal(
       const base::Closure& method_call);
 
+  // Helper method to call drive::filapi_internal functions. This method
+  // aborts calls in case DetachFromFileSystem() has been called.
+  void CallFileApiInternalFunctionOnUIThread(
+      const base::Callback<void(FileSystemInterface*)>& function);
+
+  // Used to implement CallFileApiFunctionOnUIThread.
+  void CallFileApiInternalFunctionOnUIThreadInternal(
+      const base::Callback<void(FileSystemInterface*)>& function);
+
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
   // the calling thread.
   void OnCreateWritableSnapshotFile(
@@ -135,10 +144,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // Returns |file_system_| on UI thread.
   FileSystemInterface* GetFileSystemOnUIThread();
 
-  // TODO(hidehiko): Remove |file_system_| when all the core implementation
-  // is moved to FileApiWorker.
   FileSystemInterface* file_system_;
-  scoped_ptr<internal::FileApiWorker> worker_;
 };
 
 }  // namespace drive
