@@ -25,9 +25,10 @@ void RemoveStaleCacheFiles(FileCache* cache,
     ResourceEntry entry;
     FileError error = resource_metadata->GetResourceEntryById(it->GetID(),
                                                               &entry);
-    // The entry is not found or the MD5 does not match.
+    // Stale = the entry is not found, or not dirty but the MD5 does not match.
     if (error != FILE_ERROR_OK ||
-        it->GetValue().md5() != entry.file_specific_info().md5()) {
+        (!it->GetValue().is_dirty() &&
+         it->GetValue().md5() != entry.file_specific_info().md5())) {
       FileError error = cache->Remove(it->GetID());
       LOG_IF(WARNING, error != FILE_ERROR_OK)
           << "Failed to remove a stale cache file. resource_id: "

@@ -685,8 +685,11 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
                 TEST_CACHE_STATE_PINNED |
                 TEST_CACHE_STATE_DIRTY);
 
-  // Try to remove the file.  Since file is dirty, it should not be removed.
-  TestRemoveFromCache(resource_id, FILE_ERROR_IN_USE);
+  // Try to remove the file.  Dirty caches can be removed at the level of
+  // FileCache::Remove. Upper layer cache clearance functions like
+  // FreeDiskSpaceIfNeededFor() and RemoveStaleCacheFiles() takes care of
+  // securing dirty files.
+  TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
 TEST_F(FileCacheTestOnUIThread, MountUnmount) {

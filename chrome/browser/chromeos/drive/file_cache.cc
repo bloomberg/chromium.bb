@@ -494,17 +494,14 @@ void FileCache::RemoveOnUIThread(const std::string& resource_id,
 FileError FileCache::Remove(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
-  // MD5 is not passed into RemoveCacheEntry because we would delete all
-  // cache files corresponding to <resource_id> regardless of the md5.
-  // So, search for entry in cache without taking md5 into account.
   FileCacheEntry cache_entry;
 
   // If entry doesn't exist, nothing to do.
   if (!storage_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_OK;
 
-  // Cannot delete a dirty or mounted file.
-  if (cache_entry.is_dirty() || mounted_files_.count(resource_id))
+  // Cannot delete a mounted file.
+  if (mounted_files_.count(resource_id))
     return FILE_ERROR_IN_USE;
 
   // Delete the file.
