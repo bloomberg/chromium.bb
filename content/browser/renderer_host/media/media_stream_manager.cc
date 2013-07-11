@@ -159,7 +159,6 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
 MediaStreamManager::~MediaStreamManager() {
   DCHECK(requests_.empty());
   DCHECK(!device_thread_.get());
-  DCHECK(!io_loop_);
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
@@ -971,7 +970,6 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
 
   audio_input_device_manager_ = NULL;
   video_capture_manager_ = NULL;
-  io_loop_ = NULL;
 }
 
 void MediaStreamManager::NotifyDevicesChanged(

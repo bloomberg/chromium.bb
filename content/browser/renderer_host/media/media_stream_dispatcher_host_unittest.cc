@@ -155,6 +155,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     // Recover the old browser client and content client.
     SetBrowserClientForTesting(old_browser_client_);
     content_client_.reset();
+    media_stream_manager_->WillDestroyCurrentMessageLoop();
   }
 
  protected:
