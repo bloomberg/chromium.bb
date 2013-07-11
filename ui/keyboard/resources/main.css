@@ -33,14 +33,14 @@ kb-key {
 
 kb-key::x-key {
   bottom: 0;
-  left: 0;
   height: 1.2em;
+  left: 0;
   margin: auto;
+  padding-left: 10px;
+  padding-right: 10px;
   position: absolute;
   right: 0;
   top: 0;
-  padding-left: 10px;
-  padding-right: 10px;
 }
 
 kb-key::x-superscript {
@@ -67,8 +67,8 @@ kb-key.dark {
 /* TODO(stevet): We can probably share most of this with kb-key::x-key. */
 kb-accent-key::x-key {
   bottom: 0;
-  left: 0;
   height: 1.2em;
+  left: 0;
   margin: auto;
   position: absolute;
   right: 0;

@@ -20,18 +20,57 @@ kb-keyboard {
 }
 
 kb-key {
-  background-color: #444444;
-  border-top: 2px solid #555555;
+  background-color: #3b3b3e;
+  border-top: 2px solid #4b4b4e;
   border-radius: 1px;
   color: #ffffff;
-  font-family: sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   margin-left: 3px;
 }
 
+kb-key::x-key {
+  bottom: 0;
+  height: 1.2em;
+  left: 0;
+  margin: auto;
+  padding-left: 10px;
+  padding-right: 10px;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+kb-key::x-superscript {
+  color: #7c7c7c;
+  font-size: 70%;
+  position: absolute;
+  right: 7%;
+  top: 5%;
+}
+
+kb-key::x-key[inverted] {
+  color: #7c7c7c;
+}
+
+kb-key::x-superscript[inverted] {
+  color: #ffffff;
+}
+
 kb-key.dark {
-  background-color: #333333;
-  border-top: 2px solid #444444;
+  background-color: #2a2a2c;
+  border-top: 2px solid #3a3a3c;
+}
+
+kb-accent-key::x-key {
+  bottom: 0;
+  height: 1.2em;
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  text-align: center;
 }
 
 /* Left and right-side special keys with a character letter next to them need
@@ -52,8 +91,8 @@ kb-row.top {
 #upper .left-shift,
 #upper .right-shift,
 .active {
-  background-color: #acacac !important;
-  border-top: 2px solid rgba(125,125,125,0.5) !important;
+  background-color: #848490 !important;
+  border-top: 2px solid #A9A9AF !important;
   /* Do not use box shadow until performance improves
    * http://code.google.com/p/chromium/issues/detail?id=99045
    * box-shadow: 0px 0px 15px #fff;
