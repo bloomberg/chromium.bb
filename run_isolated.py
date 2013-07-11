@@ -1083,16 +1083,20 @@ class DeadlockDetector(object):
 
   def __init__(self, timeout):
     self.timeout = timeout
-    self._last_ping = None
-    self._stop_flag = False
-    self._stop_cv = threading.Condition()
     self._thread = None
+    # Thread stop condition. Also lock for shared variables below.
+    self._stop_cv = threading.Condition()
+    self._stop_flag = False
+    # Time when 'ping' was called last time.
+    self._last_ping = None
+    # True if pings are coming on time.
+    self._alive = True
 
   def __enter__(self):
     """Starts internal watcher thread."""
     assert self._thread is None
-    self._last_ping = time.time()
-    self._thread = threading.Thread(name='deadlock-watcher', target=self._run)
+    self.ping()
+    self._thread = threading.Thread(name='deadlock-detector', target=self._run)
     self._thread.daemon = True
     self._thread.start()
     return self
@@ -1100,12 +1104,9 @@ class DeadlockDetector(object):
   def __exit__(self, *_args):
     """Stops internal watcher thread."""
     assert self._thread is not None
-    self._stop_cv.acquire()
-    try:
+    with self._stop_cv:
       self._stop_flag = True
       self._stop_cv.notify()
-    finally:
-      self._stop_cv.release()
     self._thread.join()
     self._thread = None
     self._stop_flag = False
@@ -1116,39 +1117,33 @@ class DeadlockDetector(object):
     Should be called periodically to inform the detector that everything is
     running as it should.
     """
-    self._stop_cv.acquire()
-    self._last_ping = time.time()
-    self._stop_cv.release()
+    with self._stop_cv:
+      self._last_ping = time.time()
+      self._alive = True
 
   def _run(self):
     """Loop that watches for pings and dumps threads state if ping is late."""
-    while True:
-      self._stop_cv.acquire()
-      try:
-        # This thread is closing?
-        if self._stop_flag:
-          return
+    with self._stop_cv:
+      while not self._stop_flag:
+        # Skipped deadline? Dump threads and switch to 'not alive' state.
+        if self._alive and time.time() > self._last_ping + self.timeout:
+          self.dump_threads(time.time() - self._last_ping, True)
+          self._alive = False
 
-        # Wait until the moment we need to dump stack traces.
-        # Most probably some other thread will call 'ping' to move deadline
-        # further in time. We don't bother to wake up after each 'ping', only
-        # right before initial expected deadline. After waking up we recalculate
-        # the new deadline (since _last_ping might have changed) and dump
-        # threads only if it's still exceeded.
-        deadline = self._last_ping + self.timeout
-        time_to_wait = deadline - time.time()
-        if time_to_wait > 0:
-          self._stop_cv.wait(time_to_wait)
-        new_deadline = self._last_ping + self.timeout
+        # Pings are on time?
+        if self._alive:
+          # Wait until the moment we need to dump stack traces.
+          # Most probably some other thread will call 'ping' to move deadline
+          # further in time. We don't bother to wake up after each 'ping',
+          # only right before initial expected deadline.
+          self._stop_cv.wait(self._last_ping + self.timeout - time.time())
+        else:
+          # Skipped some pings previously. Just periodically silently check
+          # for new pings with some arbitrary frequency.
+          self._stop_cv.wait(self.timeout * 0.1)
 
-        # Do we still want to dump stacks frames?
-        if not self._stop_flag and time.time() >= new_deadline:
-          self._dump_threads(time.time() - self._last_ping)
-          self._last_ping = time.time()
-      finally:
-        self._stop_cv.release()
-
-  def _dump_threads(self, timeout):
+  @staticmethod
+  def dump_threads(timeout=None, skip_current_thread=False):
     """Dumps stack frames of all running threads."""
     all_threads = threading.enumerate()
     current_thread_id = threading.current_thread().ident
@@ -1159,7 +1154,7 @@ class DeadlockDetector(object):
     # pylint: disable=W0212
     for thread_id, frame in sys._current_frames().iteritems():
       # Don't dump deadlock detector's own thread, it's boring.
-      if thread_id == current_thread_id:
+      if thread_id == current_thread_id and not skip_current_thread:
         continue
 
       # Try to get more informative symbolic thread name.
@@ -1171,19 +1166,19 @@ class DeadlockDetector(object):
       name += ' #%d' % (thread_id,)
       tracebacks[name] = ''.join(traceback.format_stack(frame))
 
+    # Function to print a message. Makes it easier to change output destination.
+    def output(msg):
+      logging.warning(msg.rstrip())
+
     # Print tracebacks, sorting them by thread name. That way a thread pool's
     # threads will be printed as one group.
-    self._print('=============== Potential deadlock detected ===============')
-    self._print('No pings in last %d sec.' % (timeout,))
-    self._print('Dumping stack frames for all threads:')
+    output('=============== Potential deadlock detected ===============')
+    if timeout is not None:
+      output('No pings in last %d sec.' % (timeout,))
+    output('Dumping stack frames for all threads:')
     for name in sorted(tracebacks):
-      self._print('Traceback for \'%s\':\n%s' % (name, tracebacks[name]))
-    self._print('===========================================================')
-
-  @staticmethod
-  def _print(msg):
-    """Writes message to log."""
-    logging.warning('%s', msg.rstrip())
+      output('Traceback for \'%s\':\n%s' % (name, tracebacks[name]))
+    output('===========================================================')
 
 
 class Remote(object):
