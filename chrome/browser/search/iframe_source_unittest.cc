@@ -183,17 +183,15 @@ TEST_F(IframeSourceTest, GetMimeType) {
 }
 
 TEST_F(IframeSourceTest, SendResource) {
-  SendResource(IDR_OMNIBOX_RESULT_LOADER_HTML);
+  SendResource(IDR_MOST_VISITED_TITLE_HTML);
   EXPECT_FALSE(response_string().empty());
 }
 
 TEST_F(IframeSourceTest, SendJSWithOrigin) {
-  SendJSWithOrigin(IDR_OMNIBOX_RESULT_LOADER_JS, kInstantRendererPID, 0);
+  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS, kInstantRendererPID, 0);
   EXPECT_FALSE(response_string().empty());
-  EXPECT_NE(std::string::npos, response_string().find(kInstantOrigin));
-  SendJSWithOrigin(IDR_OMNIBOX_RESULT_LOADER_JS, kNonInstantRendererPID, 0);
+  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS, kNonInstantRendererPID, 0);
   EXPECT_FALSE(response_string().empty());
-  EXPECT_NE(std::string::npos, response_string().find(kNonInstantOrigin));
-  SendJSWithOrigin(IDR_OMNIBOX_RESULT_LOADER_JS, kInvalidRendererPID, 0);
+  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS, kInvalidRendererPID, 0);
   EXPECT_TRUE(response_string().empty());
 }

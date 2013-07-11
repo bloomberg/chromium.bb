@@ -451,10 +451,6 @@ extern const char kChromeSearchLocalNtpHost[];
 extern const char kChromeSearchLocalNtpUrl[];
 extern const char kChromeSearchLocalGoogleNtpUrl[];
 
-// Host for search suggestions iframes.
-extern const char kChromeSearchSuggestionHost[];
-extern const char kChromeSearchSuggestionUrl[];
-
 // Host and URL for most visited iframes used on the Instant Extended NTP.
 extern const char kChromeSearchMostVisitedHost[];
 extern const char kChromeSearchMostVisitedUrl[];

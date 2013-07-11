@@ -532,9 +532,6 @@ const char kChromeSearchLocalNtpUrl[] =
 const char kChromeSearchLocalGoogleNtpUrl[] =
     "chrome-search://local-ntp/local-ntp.html?isGoogle";
 
-const char kChromeSearchSuggestionHost[] = "suggestion";
-const char kChromeSearchSuggestionUrl[] = "chrome-search://suggestion/";
-
 const char kChromeSearchMostVisitedHost[] = "most-visited";
 const char kChromeSearchMostVisitedUrl[] = "chrome-search://most-visited/";
 

@@ -1767,8 +1767,6 @@
         'browser/search/search.h',
         'browser/search/search_terms_tracker.cc',
         'browser/search/search_terms_tracker.h',
-        'browser/search/suggestion_iframe_source.cc',
-        'browser/search/suggestion_iframe_source.h',
         'browser/search_engines/search_engine_type.h',
         'browser/search_engines/search_host_to_urls_map.cc',
         'browser/search_engines/search_host_to_urls_map.h',

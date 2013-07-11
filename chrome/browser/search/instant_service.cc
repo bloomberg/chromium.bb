@@ -17,7 +17,6 @@
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search/suggestion_iframe_source.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -79,7 +78,6 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile, new FaviconSource(
       profile, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile, new LocalNtpSource());
-  content::URLDataSource::Add(profile, new SuggestionIframeSource());
   content::URLDataSource::Add(profile, new MostVisitedIframeSource());
 }
 

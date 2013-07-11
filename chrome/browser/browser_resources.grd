@@ -171,10 +171,6 @@
       <include name="IDR_MOST_VISITED_THUMBNAIL_CSS" file="resources\local_ntp\most_visited_thumbnail.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_THUMBNAIL_JS" file="resources\local_ntp\most_visited_thumbnail.js" type="BINDATA" />
       <include name="IDR_MOST_VISITED_UTIL_JS" file="resources\local_ntp\most_visited_util.js" type="BINDATA" flattenhtml="true" />
-      <include name="IDR_OMNIBOX_RESULT_LOADER_HTML" file="resources\omnibox_result_loader.html" type="BINDATA" />
-      <include name="IDR_OMNIBOX_RESULT_LOADER_JS" file="resources\omnibox_result_loader.js" type="BINDATA" flattenhtml="true" />
-      <include name="IDR_OMNIBOX_RESULT_HTML" file="resources\omnibox_result.html" type="BINDATA" />
-      <include name="IDR_OMNIBOX_RESULT_JS" file="resources\omnibox_result.js" type="BINDATA" />
 
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />

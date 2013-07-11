@@ -151,8 +151,7 @@ bool LocalNtpSource::ShouldServiceRequest(
 }
 
 std::string LocalNtpSource::GetContentSecurityPolicyFrameSrc() const {
-  // Allow embedding of suggestion and most visited iframes.
-  return base::StringPrintf("frame-src %s %s;",
-                            chrome::kChromeSearchSuggestionUrl,
+  // Allow embedding of most visited iframes.
+  return base::StringPrintf("frame-src %s;",
                             chrome::kChromeSearchMostVisitedUrl);
 }
