@@ -101,7 +101,7 @@ ColorChooserAura* ColorChooserAura::Open(
     content::WebContents* web_contents, SkColor initial_color) {
   if (current_color_chooser_)
     current_color_chooser_->End();
-  DCHECK(current_color_chooser_);
+  DCHECK(!current_color_chooser_);
   current_color_chooser_ = new ColorChooserAura(web_contents, initial_color);
   return current_color_chooser_;
 }
