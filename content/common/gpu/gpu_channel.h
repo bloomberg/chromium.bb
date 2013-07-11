@@ -229,6 +229,9 @@ class GpuChannel : public IPC::Listener,
 
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gpu::gles2::ImageManager> image_manager_;
+#if defined(OS_ANDROID)
+  scoped_ptr<StreamTextureManagerAndroid> stream_texture_manager_;
+#endif
 
 #if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
@@ -242,10 +245,6 @@ class GpuChannel : public IPC::Listener,
   bool handle_messages_scheduled_;
   bool processed_get_state_fast_;
   IPC::Message* currently_processing_message_;
-
-#if defined(OS_ANDROID)
-  scoped_ptr<StreamTextureManagerAndroid> stream_texture_manager_;
-#endif
 
   base::WeakPtrFactory<GpuChannel> weak_factory_;
 
