@@ -1933,7 +1933,7 @@ void FrameSelection::setFocusedNodeIfNeeded()
             }
             target = target->parentOrShadowHostElement();
         }
-        m_frame->document()->setFocusedNode(0);
+        m_frame->document()->setFocusedElement(0);
     }
 
     if (caretBrowsing)

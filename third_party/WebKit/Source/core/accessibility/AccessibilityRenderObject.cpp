@@ -1735,7 +1735,7 @@ void AccessibilityRenderObject::setFocused(bool on)
 
     Document* document = this->document();
     if (!on)
-        document->setFocusedNode(0);
+        document->setFocusedElement(0);
     else {
         Node* node = this->node();
         if (node && node->isElementNode()) {
@@ -1743,11 +1743,12 @@ void AccessibilityRenderObject::setFocused(bool on)
             // That is a problem when focus is removed from the webpage to chrome, and then returns.
             // In these cases, we need to do what keyboard and mouse focus do, which is reset focus first.
             if (document->focusedNode() == node)
-                document->setFocusedNode(0);
+                document->setFocusedElement(0);
 
             toElement(node)->focus();
-        } else
-            document->setFocusedNode(node);
+        } else {
+            document->setFocusedElement(0);
+        }
     }
 }
 

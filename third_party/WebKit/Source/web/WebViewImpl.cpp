@@ -2681,7 +2681,7 @@ void WebViewImpl::setInitialFocus(bool reverse)
 
     Frame* frame = page()->focusController()->focusedOrMainFrame();
     if (Document* document = frame->document())
-        document->setFocusedNode(0);
+        document->setFocusedElement(0);
     page()->focusController()->setInitialFocus(
         reverse ? FocusDirectionBackward : FocusDirectionForward,
         webkitEvent.get());
@@ -2700,7 +2700,7 @@ void WebViewImpl::clearFocusedNode()
     RefPtr<Node> oldFocusedNode = document->focusedNode();
 
     // Clear the focused node.
-    document->setFocusedNode(0);
+    document->setFocusedElement(0);
 
     if (!oldFocusedNode)
         return;

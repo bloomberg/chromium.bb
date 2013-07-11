@@ -363,7 +363,7 @@ private:
         if (document->focusedNode()->renderer() && document->focusedNode()->renderer()->needsLayout())
             return;
         if (!document->focusedNode()->isFocusable())
-            document->setFocusedNode(0);
+            document->setFocusedElement(0);
     }
 };
 
@@ -3051,7 +3051,7 @@ void Document::removeFocusedNodeOfSubtree(Node* node, bool amongChildrenOnly)
         nodeInSubtree = (focusedNode == node) || focusedNode->isDescendantOf(node);
 
     if (nodeInSubtree)
-        setFocusedNode(0);
+        setFocusedElement(0);
 }
 
 void Document::hoveredNodeDetached(Node* node)
@@ -3101,7 +3101,7 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
     setAnnotatedRegionsDirty(false);
 }
 
-bool Document::setFocusedNode(PassRefPtr<Node> prpNewFocusedNode, FocusDirection direction)
+bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedNode, FocusDirection direction)
 {
     RefPtr<Node> newFocusedNode = prpNewFocusedNode;
 

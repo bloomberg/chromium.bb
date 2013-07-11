@@ -295,7 +295,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, Keyb
     if (!node) {
         // We didn't find a node to focus, so we should try to pass focus to Chrome.
         if (!initialFocus && m_page->chrome().canTakeFocus(direction)) {
-            document->setFocusedNode(0);
+            document->setFocusedElement(0);
             setFocusedFrame(0);
             m_page->chrome().takeFocus(direction);
             return true;
@@ -326,20 +326,20 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, Keyb
         if (!owner->contentFrame())
             return false;
 
-        document->setFocusedNode(0);
+        document->setFocusedElement(0);
         setFocusedFrame(owner->contentFrame());
         return true;
     }
     
-    // FIXME: It would be nice to just be able to call setFocusedNode(node) here, but we can't do
-    // that because some elements (e.g. HTMLInputElement and HTMLTextAreaElement) do extra work in
-    // their focus() methods.
-
+    // FIXME: It would be nice to just be able to call setFocusedElement(node)
+    // here, but we can't do that because some elements (e.g. HTMLInputElement
+    // and HTMLTextAreaElement) do extra work in their focus() methods.
     Document* newDocument = node->document();
 
-    if (newDocument != document)
+    if (newDocument != document) {
         // Focus is going away from this document, so clear the focused node.
-        document->setFocusedNode(0);
+        document->setFocusedElement(0);
+    }
 
     if (newDocument)
         setFocusedFrame(newDocument->frame());
@@ -595,7 +595,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
 
     if (!element) {
         if (oldDocument)
-            oldDocument->setFocusedNode(0);
+            oldDocument->setFocusedElement(0);
         return true;
     }
 
@@ -605,7 +605,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
         return true;
     
     if (oldDocument && oldDocument != newDocument)
-        oldDocument->setFocusedNode(0);
+        oldDocument->setFocusedElement(0);
 
     if (newFocusedFrame && !newFocusedFrame->page()) {
         setFocusedFrame(0);
@@ -616,7 +616,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
     // Setting the focused node can result in losing our last reft to node when JS event handlers fire.
     RefPtr<Element> protect = element;
     if (newDocument) {
-        bool successfullyFocused = newDocument->setFocusedNode(element, direction);
+        bool successfullyFocused = newDocument->setFocusedElement(element, direction);
         if (!successfullyFocused)
             return false;
     }

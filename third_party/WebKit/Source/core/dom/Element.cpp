@@ -266,7 +266,7 @@ bool Element::rendererIsFocusable() const
     }
 
     // FIXME: These asserts should be in Node::isFocusable, but there are some
-    // callsites like Document::setFocusedNode that would currently fail on
+    // callsites like Document::setFocusedElement that would currently fail on
     // them. See crbug.com/251163
     if (renderer()) {
         ASSERT(!renderer()->needsLayout());
@@ -2093,7 +2093,7 @@ void Element::blur()
         if (doc->frame())
             doc->frame()->page()->focusController()->setFocusedElement(0, doc->frame());
         else
-            doc->setFocusedNode(0);
+            doc->setFocusedElement(0);
     }
 }
 

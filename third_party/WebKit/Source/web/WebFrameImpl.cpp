@@ -1555,7 +1555,7 @@ bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFi
     mainFrameImpl->m_currentActiveMatchFrame = this;
 
     // Make sure no node is focused. See http://crbug.com/38700.
-    frame()->document()->setFocusedNode(0);
+    frame()->document()->setFocusedElement(0);
 
     if (!options.findNext || activeSelection) {
         // This is either a Find operation or a Find-next from a new start point
@@ -2024,7 +2024,7 @@ int WebFrameImpl::selectFindMatch(unsigned index, WebRect* selectionRect)
         frame()->selection()->clear();
 
         // Make sure no node is focused. See http://crbug.com/38700.
-        frame()->document()->setFocusedNode(0);
+        frame()->document()->setFocusedElement(0);
     }
 
     IntRect activeMatchRect;
@@ -2295,15 +2295,14 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
             if (host->hasTagName(HTMLNames::inputTag) || host->hasTagName(HTMLNames::textareaTag))
                 node = host;
         }
-        while (node && !node->isFocusable() && node != frame()->document())
-            node = node->parentNode();
-
-        if (node && node != frame()->document()) {
-            // Found a focusable parent node. Set the active match as the
-            // selection and focus to the focusable node.
-            frame()->selection()->setSelection(m_activeMatch.get());
-            frame()->document()->setFocusedNode(node);
-            return;
+        for (; node; node = node->parentNode()) {
+            if (node->isElementNode() && node->isFocusable()) {
+                // Found a focusable parent node. Set the active match as the
+                // selection and focus to the focusable node.
+                frame()->selection()->setSelection(m_activeMatch.get());
+                frame()->document()->setFocusedElement(toElement(node));
+                return;
+            }
         }
 
         // Iterate over all the nodes in the range until we find a focusable node.
@@ -2312,7 +2311,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         node = m_activeMatch->firstNode();
         while (node && node != m_activeMatch->pastLastNode()) {
             if (node->isFocusable()) {
-                frame()->document()->setFocusedNode(node);
+                frame()->document()->setFocusedElement(toElement(node));
                 return;
             }
             node = NodeTraversal::next(node);
@@ -2324,7 +2323,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // we have nothing focused (otherwise you might have text selected but
         // a link focused, which is weird).
         frame()->selection()->setSelection(m_activeMatch.get());
-        frame()->document()->setFocusedNode(0);
+        frame()->document()->setFocusedElement(0);
 
         // Finally clear the active match, for two reasons:
         // We just finished the find 'session' and we don't want future (potentially

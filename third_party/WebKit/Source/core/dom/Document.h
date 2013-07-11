@@ -627,7 +627,7 @@ public:
     String selectedStylesheetSet() const;
     void setSelectedStylesheetSet(const String&);
 
-    bool setFocusedNode(PassRefPtr<Node>, FocusDirection = FocusDirectionNone);
+    bool setFocusedElement(PassRefPtr<Element>, FocusDirection = FocusDirectionNone);
     Node* focusedNode() const { return m_focusedNode.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
