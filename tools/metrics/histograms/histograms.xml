@@ -3512,6 +3512,39 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InstantExtended.PercentageMatchQuerytoQuery" units="%">
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a search query to another search query.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PercentageMatchQuerytoURL" units="%">
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a search query to a url. Example: Accidental search for
+    google.con, then navigation to google.com.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PercentageMatchURLtoQuery" units="%">
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a url to a search query.
+  </summary>
+</histogram>
+
+<histogram name="InstantExtended.PercentageMatchURLtoURL" units="%">
+  <summary>
+    Records the number of matching characters at the start of the user's text as
+    a percentage of average length between the old and new text when the user
+    navigates from a url to another url.
+  </summary>
+</histogram>
+
 <histogram name="InstantExtended.PrefValue" enum="BooleanEnabled">
   <obsolete>
     Deprecated 2013-06. This preference has not been exposed or used for months,

@@ -97,6 +97,41 @@ const char kEnteredKeywordModeHistogram[] = "Omnibox.EnteredKeywordMode";
 // between focusing and editing the omnibox.
 const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 
+void RecordPercentageMatchHistogram(const string16& old_text,
+                                    const string16& new_text,
+                                    bool search_term_replacement_active,
+                                    content::PageTransition transition) {
+  size_t avg_length = (old_text.length() + new_text.length()) / 2;
+
+  int percent = 0;
+  if (!old_text.empty() && !new_text.empty()) {
+    size_t shorter_length = std::min(old_text.length(), new_text.length());
+    string16::const_iterator end(old_text.begin() + shorter_length);
+    string16::const_iterator mismatch(
+        std::mismatch(old_text.begin(), end, new_text.begin()).first);
+    size_t matching_characters = mismatch - old_text.begin();
+    percent = static_cast<float>(matching_characters) / avg_length * 100;
+  }
+
+  if (search_term_replacement_active) {
+    if (transition == content::PAGE_TRANSITION_TYPED) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "InstantExtended.PercentageMatchQuerytoURL", percent);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "InstantExtended.PercentageMatchQuerytoQuery", percent);
+    }
+  } else {
+    if (transition == content::PAGE_TRANSITION_TYPED) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "InstantExtended.PercentageMatchURLtoURL", percent);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "InstantExtended.PercentageMatchURLtoQuery", percent);
+    }
+  }
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -679,6 +714,11 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         base::TimeTicks::Now() - time_user_first_modified_omnibox_;
     const GURL destination_url = autocomplete_controller()->
         GetDestinationURL(match, query_formulation_time);
+
+    RecordPercentageMatchHistogram(
+        permanent_text_, match.contents,
+        view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(),
+        match.transition);
 
     // Track whether the destination URL sends us to a search results page
     // using the default search provider.
