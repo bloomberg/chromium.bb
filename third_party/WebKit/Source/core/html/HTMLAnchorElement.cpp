@@ -837,6 +837,10 @@ void HTMLAnchorElement::PrefetchEventHandler::prefetch(WebKit::WebPreconnectMoti
     if (!shouldPrefetch(url))
         return;
 
+    // The precision of current MouseOver trigger is too low to actually trigger preconnects.
+    if (motivation == WebKit::WebPreconnectMotivationLinkMouseOver)
+        return;
+
     preconnectToURL(url, motivation);
 }
 
