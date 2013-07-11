@@ -6,8 +6,26 @@
 // Multiply-included message file, hence no include guard.
 
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_param_traits.h"
+#include "ipc/ipc_platform_file.h"
+#include "base/shared_memory.h"
 
 #define IPC_MESSAGE_START DeviceMotionMsgStart
+
+// Messages sent from the renderer to the browser.
+
+// Asks the browser process to start polling, and return a shared memory
+// handles that will hold the data from the hardware. See
+// device_motion_hardware_buffer.h for a description of how synchronization is
+// handled. The number of Starts should match the number of Stops.
+IPC_MESSAGE_CONTROL0(DeviceMotionHostMsg_StartPolling)
+IPC_MESSAGE_CONTROL1(DeviceMotionMsg_DidStartPolling,
+                     base::SharedMemoryHandle /* handle */)
+
+IPC_MESSAGE_CONTROL0(DeviceMotionHostMsg_StopPolling)
+
+// TODO(timvolodine): remove the methods below once the Device Motion
+// is implemented.
 
 IPC_STRUCT_BEGIN(DeviceMotionMsg_Updated_Params)
   // These fields have the same meaning as in device_motion::Motion.

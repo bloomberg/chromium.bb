@@ -27,6 +27,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/device_orientation/device_motion_event_pump.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/hyphenator/hyphenator.h"
@@ -1052,6 +1053,17 @@ WebKit::WebString RendererWebKitPlatformSupportImpl::convertIDNToUnicode(
     const WebKit::WebString& host,
     const WebKit::WebString& languages) {
   return net::IDNToUnicode(host.utf8(), languages.utf8());
+}
+
+//------------------------------------------------------------------------------
+
+void RendererWebKitPlatformSupportImpl::setDeviceMotionListener(
+    WebKit::WebDeviceMotionListener* listener) {
+  if (!device_motion_event_pump_) {
+    device_motion_event_pump_.reset(new DeviceMotionEventPump);
+    device_motion_event_pump_->Attach(RenderThreadImpl::current());
+  }
+  device_motion_event_pump_->SetListener(listener);
 }
 
 }  // namespace content

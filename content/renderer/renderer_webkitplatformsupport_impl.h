@@ -32,6 +32,7 @@ class WebGraphicsContext3DProvider;
 }
 
 namespace content {
+class DeviceMotionEventPump;
 class GamepadSharedMemoryReader;
 class RendererClipboardClient;
 class ThreadSafeSender;
@@ -135,6 +136,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebCompositorSupport* compositorSupport();
   virtual WebKit::WebString convertIDNToUnicode(
       const WebKit::WebString& host, const WebKit::WebString& languages);
+  virtual void setDeviceMotionListener(
+      WebKit::WebDeviceMotionListener* listener) OVERRIDE;
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -186,6 +189,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
+
+  scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
 
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;

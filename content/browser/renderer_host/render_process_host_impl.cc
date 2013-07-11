@@ -66,6 +66,7 @@
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
+#include "content/browser/renderer_host/device_motion_browser_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 #include "content/browser/renderer_host/gamepad_browser_message_filter.h"
 #include "content/browser/renderer_host/gpu_message_filter.h"
@@ -705,6 +706,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new GamepadBrowserMessageFilter());
+  channel_->AddFilter(new DeviceMotionBrowserMessageFilter());
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   channel_->AddFilter(new HistogramMessageFilter());
   channel_->AddFilter(new HyphenatorMessageFilter(this));

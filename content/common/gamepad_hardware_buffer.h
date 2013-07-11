@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_GAMEPAD_HARDWARE_BUFFER_H_
 #define CONTENT_COMMON_GAMEPAD_HARDWARE_BUFFER_H_
 
-#include "content/common/gamepad_seqlock.h"
+#include "content/common/one_writer_seqlock.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace content {
@@ -24,7 +24,8 @@ contention is detected by using the associated SeqLock.
 */
 
 struct GamepadHardwareBuffer {
-  GamepadSeqLock sequence;
+  // FIXME: Use the generic SharedMemorySeqLockBuffer<WebKit::WebGamepads>.
+  OneWriterSeqLock sequence;
   WebKit::WebGamepads buffer;
 };
 

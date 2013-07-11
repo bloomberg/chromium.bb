@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gamepad_seqlock.h"
+#include "content/common/one_writer_seqlock.h"
 
 namespace content {
 
-GamepadSeqLock::GamepadSeqLock()
+OneWriterSeqLock::OneWriterSeqLock()
   : sequence_(0) {
 }
 
-base::subtle::Atomic32 GamepadSeqLock::ReadBegin() {
+base::subtle::Atomic32 OneWriterSeqLock::ReadBegin() {
   base::subtle::Atomic32 version;
   for (;;) {
     version = base::subtle::NoBarrier_Load(&sequence_);
@@ -26,20 +26,20 @@ base::subtle::Atomic32 GamepadSeqLock::ReadBegin() {
   return version;
 }
 
-bool GamepadSeqLock::ReadRetry(base::subtle::Atomic32 version) {
+bool OneWriterSeqLock::ReadRetry(base::subtle::Atomic32 version) {
   // If the sequence number was updated then a read should be re-attempted.
   // -- Load fence, read membarrier
   return base::subtle::Release_Load(&sequence_) != version;
 }
 
-void GamepadSeqLock::WriteBegin() {
+void OneWriterSeqLock::WriteBegin() {
   // Increment the sequence number to odd to indicate the beginning of a write
   // update.
   base::subtle::Barrier_AtomicIncrement(&sequence_, 1);
   // -- Store fence, write membarrier
 }
 
-void GamepadSeqLock::WriteEnd() {
+void OneWriterSeqLock::WriteEnd() {
   // Increment the sequence to an even number to indicate the completion of
   // a write update.
   // -- Store fence, write membarrier
