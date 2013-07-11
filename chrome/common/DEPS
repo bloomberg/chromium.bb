@@ -23,10 +23,6 @@ include_rules = [
   # TODO(jam): remove me once chrome_notifcation_types.h includes are updated.
   "+chrome/browser/chrome_notification_types.h",
 
-  # TODO(ananta): remove me when
-  # bug https://code.google.com/p/chromium/issues/detail?id=237249 is fixed.
-  "!content/public/child/image_decoder_utils.h",
-
   # Other libraries.
   "+chrome/third_party/xdg_user_dirs",
   "+third_party/bzip2",

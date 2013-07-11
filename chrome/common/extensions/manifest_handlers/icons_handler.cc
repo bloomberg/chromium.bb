@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
-#include "content/public/child/image_decoder_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -36,58 +35,6 @@ const ExtensionIconSet& IconsInfo::GetIcons(const Extension* extension) {
   IconsInfo* info = static_cast<IconsInfo*>(
       extension->GetManifestData(keys::kIcons));
   return info ? info->icons : g_empty_icon_set.Get();
-}
-
-// static
-void IconsInfo::DecodeIcon(const Extension* extension,
-                           int preferred_icon_size,
-                           ExtensionIconSet::MatchType match_type,
-                           scoped_ptr<SkBitmap>* result) {
-  std::string path = GetIcons(extension).Get(preferred_icon_size, match_type);
-  int size = GetIcons(extension).GetIconSizeFromPath(path);
-  ExtensionResource icon_resource = extension->GetResource(path);
-  DecodeIconFromPath(icon_resource.GetFilePath(), size, result);
-}
-
-// static
-void IconsInfo::DecodeIcon(const Extension* extension,
-                           int icon_size,
-                           scoped_ptr<SkBitmap>* result) {
-  DecodeIcon(extension, icon_size, ExtensionIconSet::MATCH_EXACTLY, result);
-}
-
-// static
-void IconsInfo::DecodeIconFromPath(const base::FilePath& icon_path,
-                                   int icon_size,
-                                   scoped_ptr<SkBitmap>* result) {
-  if (icon_path.empty())
-    return;
-
-  std::string file_contents;
-  if (!file_util::ReadFileToString(icon_path, &file_contents)) {
-    DLOG(ERROR) << "Could not read icon file: " << icon_path.LossyDisplayName();
-    return;
-  }
-
-  // Decode the image using WebKit's image decoder.
-  const unsigned char* data =
-    reinterpret_cast<const unsigned char*>(file_contents.data());
-  scoped_ptr<SkBitmap> decoded(new SkBitmap());
-  *decoded = content::DecodeImage(data, gfx::Size(), file_contents.length());
-  if (decoded->empty()) {
-    DLOG(ERROR) << "Could not decode icon file: "
-                << icon_path.LossyDisplayName();
-    return;
-  }
-
-  if (decoded->width() != icon_size || decoded->height() != icon_size) {
-    DLOG(ERROR) << "Icon file has unexpected size: "
-                << base::IntToString(decoded->width()) << "x"
-                << base::IntToString(decoded->height());
-    return;
-  }
-
-  result->swap(decoded);
 }
 
 // static

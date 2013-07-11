@@ -25,31 +25,6 @@ struct IconsInfo : public Extension::ManifestData {
   // Return the icon set for the given |extension|.
   static const ExtensionIconSet& GetIcons(const Extension* extension);
 
-  // Given an extension, icon size, and match type, read a valid icon if present
-  // and decode it into |result|. In the browser process, this will DCHECK if
-  // not called on the file thread. To easily load extension images on the UI
-  // thread, see ImageLoader.
-  static void DecodeIcon(const Extension* extension,
-                         int icon_size,
-                         ExtensionIconSet::MatchType match_type,
-                         scoped_ptr<SkBitmap>* result);
-
-  // Given an extension and icon size, read it if present and decode it into
-  // |result|. In the browser process, this will DCHECK if not called on the
-  // file thread. To easily load extension images on the UI thread, see
-  // ImageLoader.
-  static void DecodeIcon(const Extension* extension,
-                         int icon_size,
-                         scoped_ptr<SkBitmap>* result);
-
-  // Given an icon_path and icon size, read it if present and decode it into
-  // |result|. In the browser process, this will DCHECK if not called on the
-  // file thread. To easily load extension images on the UI thread, see
-  // ImageLoader.
-  static void DecodeIconFromPath(const base::FilePath& icon_path,
-                                 int icon_size,
-                                 scoped_ptr<SkBitmap>* result);
-
   // Returns the default extension/app icon (for extensions or apps that don't
   // have one).
   static const gfx::ImageSkia& GetDefaultExtensionIcon();

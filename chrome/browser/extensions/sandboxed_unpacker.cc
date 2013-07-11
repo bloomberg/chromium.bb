@@ -29,6 +29,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/common_param_traits.h"
@@ -395,13 +396,14 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
     return;
   }
 
-  if (!RewriteImageFiles())
+  SkBitmap install_icon;
+  if (!RewriteImageFiles(&install_icon))
     return;
 
   if (!RewriteCatalogFiles())
     return;
 
-  ReportSuccess(manifest);
+  ReportSuccess(manifest, install_icon);
 }
 
 void SandboxedUnpacker::OnUnpackExtensionFailed(const string16& error) {
@@ -587,7 +589,8 @@ void SandboxedUnpacker::ReportFailure(FailureReason reason,
 }
 
 void SandboxedUnpacker::ReportSuccess(
-    const DictionaryValue& original_manifest) {
+    const DictionaryValue& original_manifest,
+    const SkBitmap& install_icon) {
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
 
   RecordSuccessfulUnpackTimeHistograms(
@@ -595,7 +598,8 @@ void SandboxedUnpacker::ReportSuccess(
 
   // Client takes ownership of temporary directory and extension.
   client_->OnUnpackSuccess(
-      temp_dir_.Take(), extension_root_, &original_manifest, extension_.get());
+      temp_dir_.Take(), extension_root_, &original_manifest, extension_.get(),
+      install_icon);
   extension_ = NULL;
 }
 
@@ -636,7 +640,7 @@ DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
   return final_manifest.release();
 }
 
-bool SandboxedUnpacker::RewriteImageFiles() {
+bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
   DecodedImages images;
   if (!ReadImagesFromFile(temp_dir_.path(), &images)) {
     // Couldn't read image data from disk.
@@ -686,6 +690,10 @@ bool SandboxedUnpacker::RewriteImageFiles() {
     }
   }
 
+  std::string install_icon_path = IconsInfo::GetIcons(extension_).Get(
+      extension_misc::EXTENSION_ICON_LARGE,
+      ExtensionIconSet::MATCH_BIGGER);
+
   // Write our parsed images back to disk as well.
   for (size_t i = 0; i < images.size(); ++i) {
     if (BrowserThread::GetBlockingPool()->IsShutdownInProgress()) {
@@ -700,6 +708,9 @@ bool SandboxedUnpacker::RewriteImageFiles() {
 
     const SkBitmap& image = images[i].a;
     base::FilePath path_suffix = images[i].b;
+    if (path_suffix.MaybeAsASCII() == install_icon_path)
+      *install_icon = image;
+
     if (path_suffix.IsAbsolute() || path_suffix.ReferencesParent()) {
       // Invalid path for bitmap image.
       ReportFailure(

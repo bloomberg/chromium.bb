@@ -51,7 +51,8 @@ class ScreensaverUnpackerClient
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
-                               const Extension* extension) OVERRIDE;
+                               const Extension* extension,
+                               const SkBitmap& install_icon) OVERRIDE;
   virtual void OnUnpackFailure(const string16& error) OVERRIDE;
 
  protected:
@@ -74,7 +75,8 @@ void ScreensaverUnpackerClient::OnUnpackSuccess(
     const base::FilePath& temp_dir,
     const base::FilePath& extension_root,
     const base::DictionaryValue* original_manifest,
-    const Extension* extension) {
+    const Extension* extension,
+    const SkBitmap& install_icon) {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,

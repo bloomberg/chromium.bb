@@ -107,7 +107,8 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
-                               const Extension* extension) OVERRIDE {
+                               const Extension* extension,
+                               const SkBitmap& install_icon) OVERRIDE {
     finished_ = true;
     success_ = true;
     BrowserThread::PostTask(BrowserThread::UI,

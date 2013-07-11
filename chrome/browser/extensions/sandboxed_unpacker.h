@@ -14,6 +14,8 @@
 #include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/utility_process_host_client.h"
 
+class SkBitmap;
+
 namespace base {
 class DictionaryValue;
 class SequencedTaskRunner;
@@ -35,10 +37,13 @@ class SandboxedUnpackerClient
   //
   // extension - The extension that was unpacked. The client is responsible
   // for deleting this memory.
+  //
+  // install_icon - The icon we will display in the installation UI, if any.
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
-                               const Extension* extension) = 0;
+                               const Extension* extension,
+                               const SkBitmap& install_icon) = 0;
   virtual void OnUnpackFailure(const string16& error) = 0;
 
  protected:
@@ -177,7 +182,8 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   void OnUnpackExtensionFailed(const string16& error_message);
 
   void ReportFailure(FailureReason reason, const string16& message);
-  void ReportSuccess(const base::DictionaryValue& original_manifest);
+  void ReportSuccess(const base::DictionaryValue& original_manifest,
+                     const SkBitmap& install_icon);
 
   // Overwrites original manifest with safe result from utility process.
   // Returns NULL on error. Caller owns the returned object.
@@ -186,7 +192,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
 
   // Overwrites original files with safe results from utility process.
   // Reports error and returns false if it fails.
-  bool RewriteImageFiles();
+  bool RewriteImageFiles(SkBitmap* install_icon);
   bool RewriteCatalogFiles();
 
   // Cleans up temp directory artifacts.

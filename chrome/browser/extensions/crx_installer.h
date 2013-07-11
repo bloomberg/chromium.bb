@@ -222,7 +222,8 @@ class CrxInstaller
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_dir,
                                const base::DictionaryValue* original_manifest,
-                               const Extension* extension) OVERRIDE;
+                               const Extension* extension,
+                               const SkBitmap& install_icon) OVERRIDE;
 
   // Called on the UI thread to start the requirements check on the extension.
   void CheckImportsAndRequirements();

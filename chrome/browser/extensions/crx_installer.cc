@@ -39,7 +39,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/user_script.h"
@@ -184,7 +183,8 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
     return;
   }
 
-  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get());
+  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get(),
+                  SkBitmap());
 }
 
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
@@ -211,7 +211,8 @@ void CrxInstaller::ConvertWebAppOnFileThread(
 
   // TODO(aa): conversion data gets lost here :(
 
-  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get());
+  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get(),
+                  SkBitmap());
 }
 
 CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
@@ -359,7 +360,8 @@ void CrxInstaller::OnUnpackFailure(const string16& error_message) {
 void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
                                    const base::FilePath& extension_dir,
                                    const DictionaryValue* original_manifest,
-                                   const Extension* extension) {
+                                   const Extension* extension,
+                                   const SkBitmap& install_icon) {
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallSource",
@@ -372,6 +374,8 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
 
   installer_.set_extension(extension);
   temp_dir_ = temp_dir;
+  if (!install_icon.empty())
+    install_icon_.reset(new SkBitmap(install_icon));
 
   if (original_manifest)
     original_manifest_.reset(new Manifest(
@@ -386,13 +390,6 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
   if (error.type() != CrxInstallerError::ERROR_NONE) {
     ReportFailureFromFileThread(error);
     return;
-  }
-
-  if (client_) {
-    IconsInfo::DecodeIcon(installer_.extension().get(),
-                          extension_misc::EXTENSION_ICON_LARGE,
-                          ExtensionIconSet::MATCH_BIGGER,
-                          &install_icon_);
   }
 
   if (!BrowserThread::PostTask(
