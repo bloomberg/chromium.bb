@@ -25,7 +25,7 @@ class CustomDictionaryEngine {
   // Spellcheck |text|. Assumes that another spelling engine has set
   // |misspelling_start| and |misspelling_len| to indicate a misspelling.
   // Returns true if there are no misspellings, otherwise returns false.
-  bool SpellCheckWord(const char16* text,
+  bool SpellCheckWord(const string16& text,
                       int misspelling_start,
                       int misspelling_len);
 
