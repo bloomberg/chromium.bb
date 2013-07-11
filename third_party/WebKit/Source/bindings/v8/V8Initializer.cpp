@@ -36,6 +36,8 @@
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/page/ConsoleTypes.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/platform/MemoryUsageSupport.h"
@@ -103,6 +105,15 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
 }
 
+static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context)
+{
+    if (ScriptExecutionContext* scriptExecutionContext = toScriptExecutionContext(context)) {
+        if (ContentSecurityPolicy* policy = toDocument(scriptExecutionContext)->contentSecurityPolicy())
+            return policy->allowEval(ScriptState::forContext(context));
+    }
+    return false;
+}
+
 static void initializeV8Common()
 {
     v8::V8::AddGCPrologueCallback(V8GCController::gcPrologue);
@@ -126,6 +137,7 @@ void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)
     v8::V8::SetFatalErrorHandler(reportFatalErrorInMainThread);
     v8::V8::AddMessageListener(messageHandlerInMainThread);
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
+    v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
     ScriptProfiler::initialize();
     V8PerIsolateData::ensureInitialized(isolate);
 }
