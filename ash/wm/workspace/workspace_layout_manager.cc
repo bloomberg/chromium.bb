@@ -316,29 +316,41 @@ void WorkspaceLayoutManager::AdjustWindowSizesForScreenChange(
 void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
     Window* window,
     AdjustWindowReason reason) {
-  if (GetTrackedByWorkspace(window) &&
-      !SetMaximizedOrFullscreenBounds(window)) {
-    if (reason == ADJUST_WINDOW_SCREEN_SIZE_CHANGED) {
-      // The work area may be smaller than the full screen.  Put as much of the
-      // window as possible within the display area.
-      gfx::Rect bounds = window->bounds();
-      bounds.AdjustToFit(work_area_);
-      window->SetBounds(bounds);
-    } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
-      gfx::Rect bounds = window->bounds();
-      ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_, &bounds);
-      if (window->bounds() != bounds)
-        window->SetBounds(bounds);
-    } else if (reason == ADJUST_WINDOW_WINDOW_ADDED) {
-      gfx::Rect bounds = window->bounds();
-      int min_width = bounds.width() * kMinimumPercentOnScreenArea;
-      int min_height = bounds.height() * kMinimumPercentOnScreenArea;
-      ash::wm::AdjustBoundsToEnsureWindowVisibility(
-          work_area_, min_width, min_height, &bounds);
-      if (window->bounds() != bounds)
-        window->SetBounds(bounds);
-    }
+  if (!GetTrackedByWorkspace(window))
+    return;
+
+  // Use cross fade transition for the maximized window if the adjustment
+  // happens due to the shelf's visibility change. Otherwise the background
+  // can be seen slightly between the bottom edge of resized-window and
+  // the animating shelf.
+  // TODO(mukai): this cause slight blur at the window frame because of the
+  // cross fade. I think this is better, but should reconsider if someone
+  // raises voice for this.
+  if (wm::IsWindowMaximized(window) &&
+      reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
+    CrossFadeToBounds(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
+        window->parent()->parent()));
+    return;
   }
+
+  if (SetMaximizedOrFullscreenBounds(window))
+    return;
+
+  gfx::Rect bounds = window->bounds();
+  if (reason == ADJUST_WINDOW_SCREEN_SIZE_CHANGED) {
+    // The work area may be smaller than the full screen.  Put as much of the
+    // window as possible within the display area.
+    bounds.AdjustToFit(work_area_);
+  } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
+    ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_, &bounds);
+  } else if (reason == ADJUST_WINDOW_WINDOW_ADDED) {
+    int min_width = bounds.width() * kMinimumPercentOnScreenArea;
+    int min_height = bounds.height() * kMinimumPercentOnScreenArea;
+    ash::wm::AdjustBoundsToEnsureWindowVisibility(
+        work_area_, min_width, min_height, &bounds);
+  }
+  if (window->bounds() != bounds)
+    window->SetBounds(bounds);
 }
 
 void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {

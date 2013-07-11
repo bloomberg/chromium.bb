@@ -111,7 +111,6 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
     SWITCH_WINDOW_MADE_ACTIVE,
     SWITCH_WINDOW_REMOVED,
     SWITCH_VISIBILITY_CHANGED,
-    SWITCH_BACKGROUND_ONLY_WITHIN_DESKTOP,
     SWITCH_MINIMIZED,
     SWITCH_MAXIMIZED_OR_RESTORED,
     // Switch a normal window in a fullscreen workspace to get fullscreen.
