@@ -76,15 +76,19 @@ std::string TestFlashDRM::TestGetDeviceID() {
 std::string TestFlashDRM::TestGetHmonitor() {
   DRM drm(instance_);
   int64_t hmonitor;
-  bool success = drm.GetHmonitor(&hmonitor);
 #if defined(PPAPI_OS_WIN)
-  // TODO(cpu): Replace this with a better test. See bug 249135.
-  ASSERT_TRUE(success);
-  MONITORINFO info = { sizeof(info) };
-  ASSERT_EQ(TRUE,
-            ::GetMonitorInfo(reinterpret_cast<HMONITOR>(hmonitor), &info));
+  while (true) {
+    if (drm.GetHmonitor(&hmonitor)) {
+      MONITORINFO info = { sizeof(info) };
+      ASSERT_EQ(TRUE,
+                ::GetMonitorInfo(reinterpret_cast<HMONITOR>(hmonitor), &info));
+      break;
+    } else {
+      ::Sleep(30);
+    }
+  }
 #else
-  ASSERT_FALSE(success);
+  ASSERT_FALSE(drm.GetHmonitor(&hmonitor));
 #endif
 
   PASS();

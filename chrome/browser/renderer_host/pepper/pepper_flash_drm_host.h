@@ -21,6 +21,7 @@ class Message;
 }
 
 namespace chrome {
+class MonitorFinder;
 
 class PepperFlashDRMHost : public ppapi::host::ResourceHost {
  public:
@@ -45,6 +46,7 @@ class PepperFlashDRMHost : public ppapi::host::ResourceHost {
                    const std::string& id);
 
   scoped_refptr<DeviceIDFetcher> fetcher_;
+  scoped_refptr<MonitorFinder> monitor_finder_;
 
   base::WeakPtrFactory<PepperFlashDRMHost> weak_factory_;
 
