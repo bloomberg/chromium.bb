@@ -100,8 +100,7 @@ def BisectPerfRegression(_):
   RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
           '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
   RunCmd([SrcPath('tools', 'run-bisect-perf-regression.py'),
-          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir),
-          '-p', bb_utils.GOMA_DIR])
+          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
 
 
 def GetHostStepCmds():

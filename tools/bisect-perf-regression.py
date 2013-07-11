@@ -294,7 +294,12 @@ def CheckRunGit(command):
 
 
 def BuildWithMake(threads, targets):
-  cmd = ['make', 'BUILDTYPE=Release', '-j%d' % threads] + targets
+  cmd = ['make', 'BUILDTYPE=Release']
+
+  if threads:
+    cmd.append('-j%d' % threads)
+
+  cmd += targets
 
   return_code = RunProcess(cmd)
 
@@ -302,8 +307,12 @@ def BuildWithMake(threads, targets):
 
 
 def BuildWithNinja(threads, targets):
-  cmd = ['ninja', '-C', os.path.join('out', 'Release'),
-      '-j%d' % threads] + targets
+  cmd = ['ninja', '-C', os.path.join('out', 'Release')]
+
+  if threads:
+    cmd.append('-j%d' % threads)
+
+  cmd += targets
 
   return_code = RunProcess(cmd)
 
@@ -346,7 +355,7 @@ class DesktopBuilder(Builder):
     """
     targets = ['chrome', 'performance_ui_tests']
 
-    threads = 16
+    threads = None
     if opts.use_goma:
       threads = 64
 
@@ -377,9 +386,10 @@ class AndroidBuilder(Builder):
         True if successful.
     """
     path_to_tool = os.path.join('build', 'android', 'adb_install_apk.py')
-    cmd = [path_to_tool, '--apk', 'ContentShell.apk', '--apk_package',
-        'org.chromium.content_shell_apk', '--release']
+    cmd = [path_to_tool, '--apk', 'ChromiumTestShell.apk', '--apk_package',
+           'org.chromium.chrome.testshell', '--release']
     return_code = RunProcess(cmd)
+
     return not return_code
 
   def Build(self, depot, opts):
@@ -393,8 +403,8 @@ class AndroidBuilder(Builder):
     Returns:
         True if build was successful.
     """
-    targets = ['content_shell_apk', 'forwarder2', 'md5sum']
-    threads = 16
+    targets = ['chromium_testshell', 'forwarder2', 'md5sum']
+    threads = None
     if opts.use_goma:
       threads = 64
 
@@ -525,7 +535,7 @@ class SourceControl(object):
       The return code of the call.
     """
     return bisect_utils.RunGClient(['sync', '--revision',
-        revision, '--verbose'])
+        revision, '--verbose', '--nohooks'])
 
   def SyncToRevisionWithRepo(self, timestamp):
     """Uses repo to sync all the underlying git depots to the specified
@@ -1233,6 +1243,13 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if successful.
     """
+    if self.opts.target_platform == 'android':
+      cwd = os.getcwd()
+      os.chdir(os.path.join(self.src_cwd, '..'))
+      if not bisect_utils.SetupAndroidBuildEnvironment(self.opts):
+        return False
+      os.chdir(cwd)
+
     if depot == 'cros':
       return self.CreateCrosChroot()
     else:
