@@ -148,14 +148,15 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   if (!shader_callback.is_null() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    GpuProgramProto* proto = GpuProgramProto::default_instance().New();
+    scoped_ptr<GpuProgramProto> proto(
+        GpuProgramProto::default_instance().New());
     proto->set_sha(sha, kHashLength);
     proto->set_format(value->format);
     proto->set_program(value->data.get(), value->length);
 
     FillShaderProto(proto->mutable_vertex_shader(), a_sha, shader_a);
     FillShaderProto(proto->mutable_fragment_shader(), b_sha, shader_b);
-    RunShaderCallback(shader_callback, proto, sha_string);
+    RunShaderCallback(shader_callback, proto.get(), sha_string);
   }
 
   return PROGRAM_LOAD_SUCCESS;
@@ -222,14 +223,15 @@ void MemoryProgramCache::SaveLinkedProgram(
   if (!shader_callback.is_null() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    GpuProgramProto* proto = GpuProgramProto::default_instance().New();
+    scoped_ptr<GpuProgramProto> proto(
+        GpuProgramProto::default_instance().New());
     proto->set_sha(sha, kHashLength);
     proto->set_format(format);
     proto->set_program(binary.get(), length);
 
     FillShaderProto(proto->mutable_vertex_shader(), a_sha, shader_a);
     FillShaderProto(proto->mutable_fragment_shader(), b_sha, shader_b);
-    RunShaderCallback(shader_callback, proto, sha_string);
+    RunShaderCallback(shader_callback, proto.get(), sha_string);
   }
 
   store_[sha_string] = new ProgramCacheValue(length,
@@ -253,7 +255,7 @@ void MemoryProgramCache::SaveLinkedProgram(
 }
 
 void MemoryProgramCache::LoadProgram(const std::string& program) {
-  GpuProgramProto* proto = GpuProgramProto::default_instance().New();
+  scoped_ptr<GpuProgramProto> proto(GpuProgramProto::default_instance().New());
   if (proto->ParseFromString(program)) {
     ShaderTranslator::VariableMap vertex_attribs;
     ShaderTranslator::VariableMap vertex_uniforms;
