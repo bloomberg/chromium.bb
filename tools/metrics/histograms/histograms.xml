@@ -12483,6 +12483,53 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UMA.CollectExternalEventsTime" units="milliseconds">
+  <summary>
+    The time to run the external metrics collection task (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="UMA.Discarded Log Events">
+  <summary>
+    The number of events discarded at log transmission time because the event
+    count was already too large.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FieldTrialsEnabledBenchmarking" enum="BooleanUsage">
+  <summary>
+    Log whether the --enable-benchmarking flag was set, which causes field
+    trials to only use the default group.
+  </summary>
+</histogram>
+
+<histogram name="UMA.GeneratedLowEntropySource" enum="BooleanSuccess">
+  <summary>
+    For each attempt to generate the low entropy source, log whether or not the
+    load required generating a new low entropy source.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Large Accumulated Log Not Persisted" units="bytes">
+  <summary>
+    Number of bytes in an excessively large log that was discarded at shutdown
+    instead of being saved to disk to retry during next chrome run.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Large Rejected Log was Discarded" units="bytes">
+  <summary>
+    Number of bytes in a log was was rejected by server, and then discarded.
+  </summary>
+</histogram>
+
+<histogram name="UMA.LogLoadComplete called">
+  <summary>
+    Simple counter of the number of times LogLoadComplete was called (bug
+    demonstration, as we're called more often than once per page load :-/ )
+  </summary>
+</histogram>
+
 <histogram name="UMA.LowEntropySourceValue">
   <summary>
     Distribution of the low entropy source value used for field trial
@@ -12511,6 +12558,65 @@ other types of suffix sets.
 <histogram name="UMA.ProtoGzippedKBSaved" units="KB">
   <summary>
     Kilobytes saved from gzipping the protobufs before uploading them.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Unacceptable_Log_Discarded">
+  <obsolete>
+    Deprecated as of May, 2012 (i.e. Chrome 21+).  Replaced by the
+    UMA.UploadResponseStatus.XML and UMA.UploadResponseStatus.Protobuf
+    histograms.
+  </obsolete>
+  <summary>The server returned a 400 code, and we discarded a log.</summary>
+  <details>
+    This tends to indicate that a syntax error is present in a log, such as
+    would appear when a bogus XML tag is included, or the XML is not balanced
+    and well structured.
+  </details>
+</histogram>
+
+<histogram name="UMA.UploadCreation" enum="BooleanSuccess">
+  <summary>
+    For each attempted UMA upload, log whether the upload was successfully
+    constructed.  An upload might fail to be constructed, for example, if we try
+    to upload before the system is fully initialized; or if serialization of the
+    data fails.
+  </summary>
+</histogram>
+
+<histogram name="UMA.UploadResponseStatus.Protobuf"
+    enum="UmaUploadResponseStatus">
+  <summary>
+    For each upload to the protocol buffer (v2) UMA server, log whether the
+    upload was successful, or whether there was an error.
+  </summary>
+</histogram>
+
+<histogram name="UMA.UploadResponseStatus.XML" enum="UmaUploadResponseStatus">
+  <summary>
+    For each upload to the XML (v1) UMA server, log whether the upload was
+    successful, or whether there was an error.
+  </summary>
+</histogram>
+
+<histogram name="UMA.UsedResetVariationsFlag" enum="BooleanUsage">
+  <summary>
+    Log whether the --reset-variation-state flag was set before the low entropy
+    source was requested.
+  </summary>
+</histogram>
+
+<histogram name="UMA.XMLNodeDumpTime" units="milliseconds">
+  <summary>
+    The time spent in converting the XML tree into a character buffer when
+    closing a metrics log (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="UMA.XMLWriterDestructionTime" units="milliseconds">
+  <summary>
+    The time spent in freeing the XML writer and tree when closing a metrics log
+    (Chrome OS).
   </summary>
 </histogram>
 
@@ -19581,6 +19687,13 @@ other types of suffix sets.
   <int value="0" label="http"/>
   <int value="1" label="https"/>
   <int value="2" label="unexpected other schemes"/>
+</enum>
+
+<enum name="UmaUploadResponseStatus" type="int">
+  <int value="0" label="Unknown failure"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Bad request"/>
+  <int value="3" label="No response"/>
 </enum>
 
 <enum name="UncacheableReason" type="int">
