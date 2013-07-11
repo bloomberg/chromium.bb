@@ -104,6 +104,7 @@ public:
     }
 
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
+    const CSSToStyleMap& styleMap() const { return m_styleMap; }
     CSSToStyleMap& styleMap() { return m_styleMap; }
 
     // FIXME: Once styleImage can be made to not take a StyleResolverState
@@ -111,7 +112,7 @@ public:
     // sites are extremely verbose.
     PassRefPtr<StyleImage> styleImage(CSSPropertyID propertyId, CSSValue* value)
     {
-        return m_elementStyleResources.styleImage(*this, propertyId, value);
+        return m_elementStyleResources.styleImage(document()->textLinkColors(), style()->visitedDependentColor(CSSPropertyColor), propertyId, value);
     }
 
     // FIXME: These exist as a primitive way to track mutations to font-related properties

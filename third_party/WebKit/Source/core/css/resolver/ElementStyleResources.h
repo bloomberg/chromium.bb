@@ -24,6 +24,7 @@
 #define ElementStyleResources_h
 
 #include "CSSPropertyNames.h"
+#include "core/platform/graphics/Color.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
@@ -37,7 +38,7 @@ class CSSSVGDocumentValue;
 class CSSValue;
 class FilterOperation;
 class StyleImage;
-class StyleResolverState;
+class TextLinkColors;
 
 typedef HashMap<FilterOperation*, RefPtr<CSSSVGDocumentValue> > PendingSVGDocumentMap;
 typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
@@ -52,10 +53,7 @@ WTF_MAKE_NONCOPYABLE(ElementStyleResources);
 public:
     ElementStyleResources();
 
-    // FIXME: Passing StyleResolverState here is unfortunate, since ElementStyleResolver is a member of
-    // StyleResolverState. However, we need to resolve colors here, and color resolution involves
-    // flipping bits on StyleResolverState.
-    PassRefPtr<StyleImage> styleImage(StyleResolverState&, CSSPropertyID, CSSValue*);
+    PassRefPtr<StyleImage> styleImage(const TextLinkColors&, Color currentColor, CSSPropertyID, CSSValue*);
 
     PassRefPtr<StyleImage> generatedOrPendingFromValue(CSSPropertyID, CSSImageGeneratorValue*);
     PassRefPtr<StyleImage> cachedOrPendingFromValue(CSSPropertyID, CSSImageValue*);
