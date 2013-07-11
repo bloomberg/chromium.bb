@@ -478,7 +478,7 @@ cr.define('options', function() {
     decorate: function() {
       var self = this;
       self.type = 'text';
-      self.dataType = 'text';
+      self.dataType = 'number';
       PrefTextField.prototype.decorate.call(this);
       self.oninput = function() {
         // Note that using <input type="number"> is insufficient to restrict
