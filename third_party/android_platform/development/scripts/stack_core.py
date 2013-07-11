@@ -48,17 +48,23 @@ HEAP = "[heap]"
 STACK = "[stack]"
 
 
-def PrintOutput(trace_lines, value_lines):
+def PrintOutput(trace_lines, value_lines, more_info):
   if trace_lines:
     PrintTraceLines(trace_lines)
   if value_lines:
-    PrintValueLines(value_lines)
+    # TODO(cjhopman): it seems that symbol.SymbolInformation always fails to
+    # find information for addresses in value_lines in chrome libraries, and so
+    # value_lines have little value to us and merely clutter the output.
+    # Since information is sometimes contained in these lines (from system
+    # libraries), don't completely disable them.
+    if more_info:
+      PrintValueLines(value_lines)
 
 def PrintDivider():
   print
   print "-----------------------------------------------------\n"
 
-def ConvertTrace(lines):
+def ConvertTrace(lines, more_info):
   """Convert strings containing native crash to a stack."""
   process_info_line = re.compile("(pid: [0-9]+, tid: [0-9]+.*)")
   signal_line = re.compile("(signal [0-9]+ \(.*\).*)")
@@ -77,7 +83,7 @@ def ConvertTrace(lines):
   # Or lines from AndroidFeedback crash report system logs like:
   #   03-25 00:51:05.520 I/DEBUG ( 65): #00 pc 001cf42e /data/data/com.my.project/lib/libmyproject.so
   # Please note the spacing differences.
-  trace_line = re.compile("(.*)\#([0-9]+)[ \t]+(..)[ \t]+([0-9a-f]{8})[ \t]+([^\r\n \t]*)( \((.*)\))?")  # pylint: disable-msg=C6310
+  trace_line = re.compile("(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,8})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?")  # pylint: disable-msg=C6310
   # Examples of matched value lines include:
   #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so
   #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
@@ -97,6 +103,31 @@ def ConvertTrace(lines):
   value_lines = []
   last_frame = -1
 
+  # It is faster to get symbol information with a single call rather than with
+  # separate calls for each line. Since symbol.SymbolInformation caches results,
+  # we can extract all the addresses that we will want symbol information for
+  # from the log and call symbol.SymbolInformation so that the results are
+  # cached in the following lookups.
+  code_addresses = {}
+  for ln in lines:
+    line = unicode(ln, errors='ignore')
+    lib, address = None, None
+
+    match = trace_line.match(line)
+    if match:
+      address, lib = match.group('address', 'lib')
+
+    match = value_line.match(line)
+    if match and not code_line.match(line):
+      (_0, _1, address, lib, _2, _3) = match.groups()
+
+    if lib:
+      code_addresses.setdefault(lib, set()).add(address)
+
+  for lib in code_addresses:
+    symbol.SymbolInformationForSet(
+        symbol.TranslateLibPath(lib), code_addresses[lib], more_info)
+
   for ln in lines:
     # AndroidFeedback adds zero width spaces into its crash reports. These
     # should be removed or the regular expresssions will fail to match.
@@ -110,7 +141,7 @@ def ConvertTrace(lines):
     if process_header or signal_header or register_header or thread_header \
         or dalvik_jni_thread_header or dalvik_native_thread_header:
       if trace_lines or value_lines:
-        PrintOutput(trace_lines, value_lines)
+        PrintOutput(trace_lines, value_lines, more_info)
         PrintDivider()
         trace_lines = []
         value_lines = []
@@ -130,11 +161,11 @@ def ConvertTrace(lines):
       continue
     if trace_line.match(line):
       match = trace_line.match(line)
-      (unused_0, frame, unused_1,
-       code_addr, area, symbol_present, symbol_name) = match.groups()
+      frame, code_addr, area, symbol_present, symbol_name = match.group(
+          'frame', 'address', 'lib', 'symbol_present', 'symbol_name')
 
       if frame <= last_frame and (trace_lines or value_lines):
-        PrintOutput(trace_lines, value_lines)
+        PrintOutput(trace_lines, value_lines, more_info)
         PrintDivider()
         trace_lines = []
         value_lines = []
@@ -145,7 +176,7 @@ def ConvertTrace(lines):
       else:
         # If a calls b which further calls c and c is inlined to b, we want to
         # display "a -> b -> c" in the stack trace instead of just "a -> c"
-        info = symbol.SymbolInformation(area, code_addr)
+        info = symbol.SymbolInformation(area, code_addr, more_info)
         nest_count = len(info) - 1
         for (source_symbol, source_location, object_symbol_with_offset) in info:
           if not source_symbol:
@@ -174,7 +205,7 @@ def ConvertTrace(lines):
       if area == UNKNOWN or area == HEAP or area == STACK or not area:
         value_lines.append((addr, value, "", area))
       else:
-        info = symbol.SymbolInformation(area, value)
+        info = symbol.SymbolInformation(area, value, more_info)
         (source_symbol, source_location, object_symbol_with_offset) = info.pop()
         if not source_symbol:
           if symbol_present:
@@ -190,7 +221,4 @@ def ConvertTrace(lines):
                             object_symbol_with_offset,
                             source_location))
 
-  PrintOutput(trace_lines, value_lines)
-
-
-# vi: ts=2 sw=2
+  PrintOutput(trace_lines, value_lines, more_info)

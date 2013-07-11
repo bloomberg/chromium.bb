@@ -23,23 +23,11 @@ import os
 import re
 import subprocess
 
-ANDROID_BUILD_TOP = os.environ["ANDROID_BUILD_TOP"]
-if not ANDROID_BUILD_TOP:
-  ANDROID_BUILD_TOP = "."
-
-def FindSymbolsDir():
-  saveddir = os.getcwd()
-  os.chdir(ANDROID_BUILD_TOP)
-  try:
-    cmd = ("CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core "
-           "SRC_TARGET_DIR=build/target make -f build/core/config.mk "
-           "dumpvar-abs-TARGET_OUT_UNSTRIPPED")
-    stream = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).stdout
-    return os.path.join(ANDROID_BUILD_TOP, stream.read().strip())
-  finally:
-    os.chdir(saveddir)
-
-SYMBOLS_DIR = FindSymbolsDir()
+CHROME_SRC = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                          os.pardir, os.pardir, os.pardir, os.pardir)
+ANDROID_BUILD_TOP = CHROME_SRC
+SYMBOLS_DIR = CHROME_SRC
+CHROME_SYMBOLS_DIR = CHROME_SRC
 
 ARCH = "arm"
 
@@ -59,11 +47,22 @@ def Uname():
 
 def ToolPath(tool, toolchain_info=None):
   """Return a full qualified path to the specified tool"""
-  if not toolchain_info:
-    toolchain_info = FindToolchain()
-  (label, platform, target) = toolchain_info
-  return os.path.join(ANDROID_BUILD_TOP, "prebuilts/gcc", Uname(), platform, label, "bin",
-                     target + "-" + tool)
+  # ToolPath looks for the tools in the completely incorrect directory.
+  # This looks in the checked in android_tools.
+  if ARCH == "arm":
+    toolchain_source = "arm-linux-androideabi-4.6"
+    toolchain_prefix = "arm-linux-androideabi"
+  else:
+    toolchain_source = "x86-4.6"
+    toolchain_prefix = "i686-android-linux"
+
+  toolchain_subdir = (
+      "third_party/android_tools/ndk/toolchains/%s/prebuilt/linux-x86_64/bin" %
+       toolchain_source)
+
+  return os.path.join(CHROME_SRC,
+                      toolchain_subdir,
+                      toolchain_prefix + "-" + tool)
 
 def FindToolchain():
   """Look for the latest available toolchain
@@ -80,9 +79,8 @@ def FindToolchain():
 
   ## Known toolchains, newer ones in the front.
   if ARCH == "arm":
-    gcc_version = os.environ["TARGET_GCC_VERSION"]
     known_toolchains = [
-      ("arm-linux-androideabi-" + gcc_version, "arm", "arm-linux-androideabi"),
+      ("arm-linux-androideabi-4.6", "arm", "arm-linux-androideabi"),
     ]
   elif ARCH =="x86":
     known_toolchains = [
@@ -100,7 +98,35 @@ def FindToolchain():
 
   raise Exception("Could not find tool chain")
 
-def SymbolInformation(lib, addr):
+def TranslateLibPath(lib):
+  # SymbolInformation(lib, addr) receives lib as the path from symbols
+  # root to the symbols file. This needs to be translated to point to the
+  # correct .so path. If the user doesn't explicitly specify which directory to
+  # use, then use the most recently updated one in one of the known directories.
+  # If the .so is not found somewhere in CHROME_SYMBOLS_DIR, leave it
+  # untranslated in case it is an Android symbol in SYMBOLS_DIR.
+  library_name = os.path.basename(lib)
+  candidate_dirs = ['.',
+                    'out/Debug/lib',
+                    'out/Debug/lib.target',
+                    'out/Release/lib',
+                    'out/Release/lib.target',
+                    ]
+
+  candidate_libraries = map(
+      lambda d: ('%s/%s/%s' % (CHROME_SYMBOLS_DIR, d, library_name)),
+      candidate_dirs)
+  candidate_libraries = filter(os.path.exists, candidate_libraries)
+  candidate_libraries = sorted(candidate_libraries,
+                               key=os.path.getmtime, reverse=True)
+
+  if not candidate_libraries:
+    return lib
+
+  library_path = os.path.relpath(candidate_libraries[0], SYMBOLS_DIR)
+  return '/' + library_path
+
+def SymbolInformation(lib, addr, get_detailed_info):
   """Look up symbol information about an address.
 
   Args:
@@ -119,11 +145,12 @@ def SymbolInformation(lib, addr):
     Usually you want to display the source_location and
     object_symbol_with_offset from the last element in the list.
   """
-  info = SymbolInformationForSet(lib, set([addr]))
+  lib = TranslateLibPath(lib)
+  info = SymbolInformationForSet(lib, set([addr]), get_detailed_info)
   return (info and info.get(addr)) or [(None, None, None)]
 
 
-def SymbolInformationForSet(lib, unique_addrs):
+def SymbolInformationForSet(lib, unique_addrs, get_detailed_info):
   """Look up symbol information for a set of addresses from the given library.
 
   Args:
@@ -150,9 +177,12 @@ def SymbolInformationForSet(lib, unique_addrs):
   if not addr_to_line:
     return None
 
-  addr_to_objdump = CallObjdumpForSet(lib, unique_addrs)
-  if not addr_to_objdump:
-    return None
+  if get_detailed_info:
+    addr_to_objdump = CallObjdumpForSet(lib, unique_addrs)
+    if not addr_to_objdump:
+      return None
+  else:
+    addr_to_objdump = dict((addr, ("", 0)) for addr in unique_addrs)
 
   result = {}
   for addr in unique_addrs:
@@ -171,6 +201,25 @@ def SymbolInformationForSet(lib, unique_addrs):
   return result
 
 
+class MemoizedForSet(object):
+  def __init__(self, fn):
+    self.fn = fn
+    self.cache = {}
+
+  def __call__(self, lib, unique_addrs):
+    lib_cache = self.cache.setdefault(lib, {})
+
+    no_cache = filter(lambda x: x not in lib_cache, unique_addrs)
+    if no_cache:
+      lib_cache.update((k, None) for k in no_cache)
+      result = self.fn(lib, no_cache)
+      if result:
+        lib_cache.update(result)
+
+    return dict((k, lib_cache[k]) for k in unique_addrs if lib_cache[k])
+
+
+@MemoizedForSet
 def CallAddr2LineForSet(lib, unique_addrs):
   """Look up line and symbol information for a set of addresses.
 
@@ -244,6 +293,7 @@ def StripPC(addr):
     return addr & ~1
   return addr
 
+@MemoizedForSet
 def CallObjdumpForSet(lib, unique_addrs):
   """Use objdump to find out the names of the containing functions.
 
@@ -265,16 +315,7 @@ def CallObjdumpForSet(lib, unique_addrs):
   if not os.path.exists(symbols):
     return None
 
-  addrs = sorted(unique_addrs)
-  start_addr_dec = str(StripPC(int(addrs[0], 16)))
-  stop_addr_dec = str(StripPC(int(addrs[-1], 16)) + 8)
-  cmd = [ToolPath("objdump"),
-         "--section=.text",
-         "--demangle",
-         "--disassemble",
-         "--start-address=" + start_addr_dec,
-         "--stop-address=" + stop_addr_dec,
-         symbols]
+  result = {}
 
   # Function lines look like:
   #   000177b0 <android::IBinder::~IBinder()+0x2c>:
@@ -284,46 +325,51 @@ def CallObjdumpForSet(lib, unique_addrs):
   offset_regexp = re.compile("(.*)\+0x([a-f0-9]*)")
 
   # A disassembly line looks like:
-  #   177b2:	b510      	push	{r4, lr}
+  #   177b2:  b510        push  {r4, lr}
   asm_regexp = re.compile("(^[ a-f0-9]*):[ a-f0-0]*.*$")
 
-  current_symbol = None    # The current function symbol in the disassembly.
-  current_symbol_addr = 0  # The address of the current function.
-  addr_index = 0  # The address that we are currently looking for.
+  for target_addr in unique_addrs:
+    start_addr_dec = str(StripPC(int(target_addr, 16)))
+    stop_addr_dec = str(StripPC(int(target_addr, 16)) + 8)
+    cmd = [ToolPath("objdump"),
+           "--section=.text",
+           "--demangle",
+           "--disassemble",
+           "--start-address=" + start_addr_dec,
+           "--stop-address=" + stop_addr_dec,
+           symbols]
 
-  stream = subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
-  result = {}
-  for line in stream:
-    # Is it a function line like:
-    #   000177b0 <android::IBinder::~IBinder()>:
-    components = func_regexp.match(line)
-    if components:
-      # This is a new function, so record the current function and its address.
-      current_symbol_addr = int(components.group(1), 16)
-      current_symbol = components.group(2)
+    current_symbol = None    # The current function symbol in the disassembly.
+    current_symbol_addr = 0  # The address of the current function.
 
-      # Does it have an optional offset like: "foo(..)+0x2c"?
-      components = offset_regexp.match(current_symbol)
+    stream = subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
+    for line in stream:
+      # Is it a function line like:
+      #   000177b0 <android::IBinder::~IBinder()>:
+      components = func_regexp.match(line)
       if components:
-        current_symbol = components.group(1)
-        offset = components.group(2)
-        if offset:
-          current_symbol_addr -= int(offset, 16)
+        # This is a new function, so record the current function and its address.
+        current_symbol_addr = int(components.group(1), 16)
+        current_symbol = components.group(2)
 
-    # Is it an disassembly line like:
-    #   177b2:	b510      	push	{r4, lr}
-    components = asm_regexp.match(line)
-    if components:
-      addr = components.group(1)
-      target_addr = addrs[addr_index]
-      i_addr = int(addr, 16)
-      i_target = StripPC(int(target_addr, 16))
-      if i_addr == i_target:
-        result[target_addr] = (current_symbol, i_target - current_symbol_addr)
-        addr_index += 1
-        if addr_index >= len(addrs):
-          break
-  stream.close()
+        # Does it have an optional offset like: "foo(..)+0x2c"?
+        components = offset_regexp.match(current_symbol)
+        if components:
+          current_symbol = components.group(1)
+          offset = components.group(2)
+          if offset:
+            current_symbol_addr -= int(offset, 16)
+
+      # Is it an disassembly line like:
+      #   177b2:  b510        push  {r4, lr}
+      components = asm_regexp.match(line)
+      if components:
+        addr = components.group(1)
+        i_addr = int(addr, 16)
+        i_target = StripPC(int(target_addr, 16))
+        if i_addr == i_target:
+          result[target_addr] = (current_symbol, i_target - current_symbol_addr)
+    stream.close()
 
   return result
 
