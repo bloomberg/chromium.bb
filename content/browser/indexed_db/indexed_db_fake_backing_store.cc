@@ -39,7 +39,7 @@ bool IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
   return false;
 }
 bool IndexedDBFakeBackingStore::DeleteDatabase(const string16& name) {
-  return false;
+  return true;
 }
 
 bool IndexedDBFakeBackingStore::CreateObjectStore(Transaction*,
