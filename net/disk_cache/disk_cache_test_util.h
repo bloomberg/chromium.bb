@@ -16,9 +16,6 @@
 // Re-creates a given test file inside the cache test folder.
 bool CreateCacheTestFile(const base::FilePath& name);
 
-// Re-creates a given test file inside the cache test folder of the given size.
-bool CreateCacheTestFileWithSize(const base::FilePath& name, size_t size);
-
 // Deletes all file son the cache.
 bool DeleteCache(const base::FilePath& path);
 

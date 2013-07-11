@@ -2759,11 +2759,7 @@ TEST_F(DiskCacheBackendTest, FileSharing) {
   InitCache();
 
   disk_cache::Addr address(0x80000001);
-
-  RunTaskForTest(base::Bind(
-      base::IgnoreResult(&disk_cache::BackendImpl::CreateExternalFile),
-      base::Unretained(cache_impl_),
-      &address));
+  ASSERT_TRUE(cache_impl_->CreateExternalFile(&address));
   base::FilePath name = cache_impl_->GetFileName(address);
 
   scoped_refptr<disk_cache::File> file(new disk_cache::File(false));
