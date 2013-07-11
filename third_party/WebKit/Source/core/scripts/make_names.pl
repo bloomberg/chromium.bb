@@ -893,7 +893,7 @@ print F <<END
 
     if (RuntimeEnabledFeatures::customDOMElementsEnabled() && CustomElementRegistry::isCustomTagName(qName.localName())) {
         RefPtr<Element> element = document->ensureCustomElementRegistry()->createCustomTagElement(document, qName);
-        ASSERT(element->is$parameters{namespace}Element());
+        ASSERT_WITH_SECURITY_IMPLICATION(element->is$parameters{namespace}Element());
         return static_pointer_cast<$parameters{namespace}Element>(element.release());
     }
 
