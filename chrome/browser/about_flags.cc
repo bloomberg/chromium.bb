@@ -1617,7 +1617,7 @@ const Experiment kExperiments[] = {
     "enable-gaia-profile-info",
     IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_NAME,
     IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_DESCRIPTION,
-    kOsMac | kOsWin,
+    kOsMac | kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kGaiaProfileInfo)
   },
 #if defined(OS_WIN)
