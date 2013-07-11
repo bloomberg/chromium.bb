@@ -32,6 +32,7 @@
 #define UniscribeHelperTextRun_h
 
 #include "core/platform/graphics/chromium/UniscribeHelper.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -76,6 +77,10 @@ private:
     //
     // This pointer can be NULL for no font fallback handling.
     const Font* m_font;
+
+    // When we have an 8 bit TestRun, we store the buffer of upconverted characters
+    // in this string.
+    String m_stringFor8BitRun;
 
     // It's rare that many fonts are listed in stylesheets.
     // Four would be large enough in most cases.

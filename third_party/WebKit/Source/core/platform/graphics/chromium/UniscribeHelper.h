@@ -223,6 +223,11 @@ protected:
     // This is the default implementation and it does not do anything.
     virtual void tryToPreloadFont(HFONT) {}
 
+    // Let our subclasses provide the input lazily in case they can't compute
+    // it in their constructors. Once we have input, however, we don't let
+    // our subclasses change it.
+    void setInput(const UChar* input) { ASSERT(!m_input); m_input = input; }
+
 private:
     friend class UniscribeTest_TooBig_Test;
 

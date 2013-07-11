@@ -32,6 +32,7 @@
   # The following defines turn WebKit features on and off.
   'variables': {
     'feature_defines': [
+      'ENABLE_8BIT_TEXTRUN=1',
       'ENABLE_CSS3_TEXT=0',
       'ENABLE_CSS_EXCLUSIONS=1',
       'ENABLE_CSS_REGIONS=1',
@@ -82,12 +83,6 @@
           'ENABLE_ORIENTATION_EVENTS=0',
           'ENABLE_PRINTING=1',
           'ENABLE_WEB_AUDIO=1',
-        ],
-      }],
-      ['OS=="linux" or OS=="mac" or OS=="android"', {
-        'feature_defines': [
-          # 8Bit text runs should be enabled for all platforms webkit.org/b/111348
-          'ENABLE_8BIT_TEXTRUN=1',
         ],
       }],
       # Mac OS X uses Accelerate.framework FFT by default instead of FFmpeg.

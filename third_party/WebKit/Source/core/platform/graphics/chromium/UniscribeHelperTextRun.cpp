@@ -40,7 +40,7 @@ namespace WebCore {
 
 UniscribeHelperTextRun::UniscribeHelperTextRun(const TextRun& run,
                                                const Font& font)
-    : UniscribeHelper(run.characters16(), run.length(), run.rtl(),
+    : UniscribeHelper(0, run.length(), run.rtl(),
                       font.primaryFont()->platformData().hfont(),
                       font.primaryFont()->platformData().scriptCache(),
                       font.primaryFont()->platformData().scriptFontProperties(),
@@ -48,6 +48,13 @@ UniscribeHelperTextRun::UniscribeHelperTextRun(const TextRun& run,
     , m_font(&font)
     , m_fontIndex(0)
 {
+    if (run.is8Bit()) {
+        m_stringFor8BitRun = String::make16BitFrom8BitSource(run.characters8(), run.length());
+        setInput(m_stringFor8BitRun.characters16());
+    } else {
+        setInput(run.characters16());
+    }
+
     setDirectionalOverride(run.directionalOverride());
     setLetterSpacing(font.letterSpacing());
     setSpaceWidth(font.spaceWidth());
