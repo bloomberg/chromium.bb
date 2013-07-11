@@ -441,6 +441,10 @@
         'common/time_format.h',
         'common/translate/language_detection_details.cc',
         'common/translate/language_detection_details.h',
+        'common/translate/language_detection_util.cc',
+        'common/translate/language_detection_util.h',
+        'common/translate/translate_common_metrics.cc',
+        'common/translate/translate_common_metrics.h',
         'common/translate/translate_errors.h',
         'common/translate/translate_util.cc',
         'common/translate/translate_util.h',
@@ -537,6 +541,7 @@
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '(^|/)ios/'],
             ['include', '^common/chrome_version_info\\.cc$'],
+            ['include', '^common/translate'],
             ['include', '^common/zip'],
           ],
           'include_dirs': [
@@ -620,6 +625,11 @@
           'sources!': [
             'common/media/webrtc_logging_messages.h',
           ]
+        }],
+        ['enable_language_detection==1', {
+          'dependencies': [
+            '../third_party/cld/cld.gyp:cld',
+          ],
         }],
       ],
       'target_conditions': [

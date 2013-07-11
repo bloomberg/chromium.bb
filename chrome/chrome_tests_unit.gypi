@@ -1731,6 +1731,8 @@
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',
         'common/time_format_unittest.cc',
+        'common/translate/language_detection_util_unittest.cc',
+        'common/translate/translate_common_metrics_unittest.cc',
         'common/translate/translate_util_unittest.cc',
         'common/worker_thread_ticker_unittest.cc',
         'nacl/nacl_ipc_adapter_unittest.cc',
@@ -1763,8 +1765,6 @@
         'renderer/spellchecker/spellcheck_provider_test.h',
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
-        'renderer/translate/translate_helper_unittest.cc',
-        'renderer/translate/translate_helper_metrics_unittest.cc',
         'renderer/web_apps_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
         'service/cloud_print/cloud_print_token_store_unittest.cc',
@@ -1940,6 +1940,8 @@
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
+            ['include', '^common/translate/language_detection_util_unittest\\.cc$'],
+            ['include', '^common/translate/translate_util_unittest\\.cc$'],
             ['include', '^common/zip_'],
           ],
           'conditions': [

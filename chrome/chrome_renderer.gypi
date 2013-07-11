@@ -328,8 +328,6 @@
         'renderer/tts_dispatcher.h',
         'renderer/translate/translate_helper.cc',
         'renderer/translate/translate_helper.h',
-        'renderer/translate/translate_helper_metrics.cc',
-        'renderer/translate/translate_helper_metrics.h',
         'renderer/validation_message_agent.cc',
         'renderer/validation_message_agent.h',
         'renderer/web_apps.cc',
@@ -379,14 +377,6 @@
         ['OS=="mac"', {
           'dependencies': [
             '../third_party/mach_override/mach_override.gyp:mach_override',
-          ],
-        }],
-        ['enable_language_detection==1', {
-          'dependencies': [
-            '../third_party/cld/cld.gyp:cld',
-          ],
-          'include_dirs': [
-            '../third_party/cld',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

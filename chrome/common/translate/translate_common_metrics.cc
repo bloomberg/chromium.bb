@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/translate/translate_helper_metrics.h"
+#include "chrome/common/translate/translate_common_metrics.h"
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
@@ -26,63 +26,63 @@ const char kSchemeHttp[] = "http";
 const char kSchemeHttps[] = "https";
 
 struct MetricsEntry {
-  TranslateHelperMetrics::MetricsNameIndex index;
+  TranslateCommonMetrics::MetricsNameIndex index;
   const char* const name;
 };
 
 // This entry table should be updated when new UMA items are added.
 const MetricsEntry kMetricsEntries[] = {
-  { TranslateHelperMetrics::UMA_LANGUAGE_DETECTION,
+  { TranslateCommonMetrics::UMA_LANGUAGE_DETECTION,
     kRenderer4LanguageDetection },
-  { TranslateHelperMetrics::UMA_CONTENT_LANGUAGE,
+  { TranslateCommonMetrics::UMA_CONTENT_LANGUAGE,
     kTranslateContentLanguage },
-  { TranslateHelperMetrics::UMA_HTML_LANG,
+  { TranslateCommonMetrics::UMA_HTML_LANG,
     kTranslateHtmlLang },
-  { TranslateHelperMetrics::UMA_LANGUAGE_VERIFICATION,
+  { TranslateCommonMetrics::UMA_LANGUAGE_VERIFICATION,
     kTranslateLanguageVerification },
-  { TranslateHelperMetrics::UMA_TIME_TO_BE_READY,
+  { TranslateCommonMetrics::UMA_TIME_TO_BE_READY,
     kTranslateTimeToBeReady },
-  { TranslateHelperMetrics::UMA_TIME_TO_LOAD,
+  { TranslateCommonMetrics::UMA_TIME_TO_LOAD,
     kTranslateTimeToLoad },
-  { TranslateHelperMetrics::UMA_TIME_TO_TRANSLATE,
+  { TranslateCommonMetrics::UMA_TIME_TO_TRANSLATE,
     kTranslateTimeToTranslate },
-  { TranslateHelperMetrics::UMA_USER_ACTION_DURATION,
+  { TranslateCommonMetrics::UMA_USER_ACTION_DURATION,
     kTranslateUserActionDuration },
-  { TranslateHelperMetrics::UMA_PAGE_SCHEME,
+  { TranslateCommonMetrics::UMA_PAGE_SCHEME,
     kTranslatePageScheme },
-  { TranslateHelperMetrics::UMA_SIMILAR_LANGUAGE_MATCH,
+  { TranslateCommonMetrics::UMA_SIMILAR_LANGUAGE_MATCH,
     kTranslateSimilarLanguageMatch },
 };
 
-COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateHelperMetrics::UMA_MAX,
+COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateCommonMetrics::UMA_MAX,
                arraysize_of_kMetricsEntries_should_be_UMA_MAX);
 
-TranslateHelperMetrics::LanguageCheckType GetLanguageCheckMetric(
+TranslateCommonMetrics::LanguageCheckType GetLanguageCheckMetric(
     const std::string& provided_code,
     const std::string& revised_code) {
   if (provided_code.empty())
-    return TranslateHelperMetrics::LANGUAGE_NOT_PROVIDED;
+    return TranslateCommonMetrics::LANGUAGE_NOT_PROVIDED;
   else if (provided_code == revised_code)
-    return TranslateHelperMetrics::LANGUAGE_VALID;
-  return TranslateHelperMetrics::LANGUAGE_INVALID;
+    return TranslateCommonMetrics::LANGUAGE_VALID;
+  return TranslateCommonMetrics::LANGUAGE_INVALID;
 }
 
 }  // namespace
 
-namespace TranslateHelperMetrics {
+namespace TranslateCommonMetrics {
 
 void ReportContentLanguage(const std::string& provided_code,
                            const std::string& revised_code) {
   UMA_HISTOGRAM_ENUMERATION(kTranslateContentLanguage,
                             GetLanguageCheckMetric(provided_code, revised_code),
-                            TranslateHelperMetrics::LANGUAGE_MAX);
+                            TranslateCommonMetrics::LANGUAGE_MAX);
 }
 
 void ReportHtmlLang(const std::string& provided_code,
                     const std::string& revised_code) {
   UMA_HISTOGRAM_ENUMERATION(kTranslateHtmlLang,
                             GetLanguageCheckMetric(provided_code, revised_code),
-                            TranslateHelperMetrics::LANGUAGE_MAX);
+                            TranslateCommonMetrics::LANGUAGE_MAX);
 }
 
 void ReportLanguageVerification(LanguageVerificationType type) {
@@ -143,4 +143,4 @@ const char* GetMetricsName(MetricsNameIndex index) {
   return NULL;
 }
 
-} // namespace TranslateHelperMetrics
+} // namespace TranslateCommonMetrics

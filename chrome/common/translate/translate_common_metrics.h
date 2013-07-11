@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_METRICS_H_
-#define CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_METRICS_H_
+#ifndef CHROME_COMMON_TRANSLATE_TRANSLATE_COMMON_METRICS_H_
+#define CHROME_COMMON_TRANSLATE_TRANSLATE_COMMON_METRICS_H_
 
 #include <string>
 
 #include "base/time/time.h"
 
-namespace TranslateHelperMetrics {
+namespace TranslateCommonMetrics {
 
 // An indexing type to query each UMA entry name via GetMetricsName() function.
 // Note: |kMetricsEntries| should be updated when a new entry is added here.
@@ -103,6 +103,6 @@ void ReportSimilarLanguageMatch(bool match);
 // Gets UMA name for an entry specified by |index|.
 const char* GetMetricsName(MetricsNameIndex index);
 
-}  // namespace TranslateHelperMetrics
+}  // namespace TranslateCommonMetrics
 
-#endif  // CHROME_RENDERER_TRANSLATE_TRANSLATE_HELPER_METRICS_H_
+#endif  // CHROME_COMMON_TRANSLATE_TRANSLATE_COMMON_METRICS_H_

@@ -87,7 +87,6 @@ class TranslateHelper : public content::RenderViewObserver {
   virtual double ExecuteScriptAndGetDoubleResult(const std::string& script);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, IsValidLanguageCode);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, AdoptHtmlLang);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
                            CLDAgreeWithLanguageCodeHavingCountryCode);
@@ -101,54 +100,13 @@ class TranslateHelper : public content::RenderViewObserver {
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, SimilarLanguageCode);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, WellKnownWrongConfiguration);
 
-  // Corrects language code if it contains well-known mistakes.
-  static void CorrectLanguageCodeTypo(std::string* code);
-
   // Converts language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);
-
-  // Checks if the language code's format is valid.
-  static bool IsValidLanguageCode(const std::string& code);
-
-  // Applies a series of language code modification in proper order.
-  static void ApplyLanguageCodeCorrection(std::string* code);
-
-  // Checks if languages are matched, or similar. This function returns true
-  // against a language pair containing a language which is difficult for CLD
-  // to distinguish.
-  static bool IsSameOrSimilarLanguages(const std::string& page_language,
-                                       const std::string& cld_language);
-
-  // Checks if languages pair is one of well-known pairs of wrong server
-  // configuration.
-  static bool MaybeServerWrongConfiguration(const std::string& page_language,
-                                            const std::string& cld_language);
-
-  // Checks if CLD can complement a sub code when the page language doesn't
-  // know the sub code.
-  static bool CanCLDComplementSubCode(const std::string& page_language,
-                                      const std::string& cld_language);
-
-  // Determines content page language from Content-Language code and contents.
-  static std::string DeterminePageLanguage(const std::string& code,
-                                           const std::string& html_lang,
-                                           const string16& contents,
-                                           std::string* cld_language,
-                                           bool* is_cld_reliable);
 
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they
   // should not be translated.
   static bool IsTranslationAllowed(WebKit::WebDocument* document);
-
-#if defined(ENABLE_LANGUAGE_DETECTION)
-  // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
-  // if it failed.
-  // |is_cld_reliable| will be set as true if CLD says the detection is
-  // reliable.
-  static std::string DetermineTextLanguage(const string16& text,
-                                           bool* is_cld_reliable);
-#endif
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
