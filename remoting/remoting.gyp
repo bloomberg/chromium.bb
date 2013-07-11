@@ -1880,6 +1880,26 @@
       ],  # end of 'targets'
     }],  # 'OS=="win"'
 
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'remoting_client_jni',
+          'type': 'shared_library',
+          'dependencies': [
+            'remoting_base',
+            'remoting_client',
+            'remoting_jingle_glue',
+            'remoting_protocol',
+          ],
+          'sources': [
+            'client/jni/chromoting_jni_instance.cc',
+            'client/jni/chromoting_jni_instance.h',
+            'client/jni/jni_interface.cc',
+          ],
+        },  # end of target 'remoting_client_jni'
+      ],  # end of 'targets'
+    }],  # 'OS=="android"'
+
     # The host installation is generated only if WiX is available. If
     # component build is used the produced installation will not work due to
     # missing DLLs. We build it anyway to make sure the GYP scripts are executed
