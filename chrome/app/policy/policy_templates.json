@@ -230,7 +230,7 @@
       'name': 'AlternateErrorPagesEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -253,7 +253,7 @@
       'name': 'SearchSuggestEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -276,7 +276,7 @@
       'name': 'DnsPrefetchingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -425,7 +425,7 @@
       'name': 'SavingBrowserHistoryDisabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -672,7 +672,7 @@
       'name': 'MetricsReportingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'android:30-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': False,
@@ -1664,7 +1664,7 @@
           'name': 'DefaultSearchProviderEnabled',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1688,7 +1688,7 @@
           'name': 'DefaultSearchProviderName',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1704,7 +1704,7 @@
           'name': 'DefaultSearchProviderKeyword',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1722,7 +1722,7 @@
           'name': 'DefaultSearchProviderSearchURL',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1738,7 +1738,7 @@
           'name': 'DefaultSearchProviderSuggestURL',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1756,7 +1756,7 @@
           'name': 'DefaultSearchProviderInstantURL',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1774,7 +1774,7 @@
           'name': 'DefaultSearchProviderIconURL',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1795,7 +1795,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1816,7 +1816,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:24-', 'chrome_os:0.24-'],
+          'supported_on': ['chrome.*:24-', 'chrome_os:0.24-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1834,7 +1834,7 @@
           'name': 'DefaultSearchProviderSearchTermsReplacementKey',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:25-', 'chrome_os:0.25-'],
+          'supported_on': ['chrome.*:25-', 'chrome_os:0.25-', 'android:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2693,7 +2693,7 @@
       'name': 'EditBookmarksEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-'],
+      'supported_on': ['chrome.*:12-', 'chrome_os:0.12-', 'android:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
