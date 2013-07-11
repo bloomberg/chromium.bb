@@ -323,9 +323,6 @@ private:
 public:
     static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
 
-    static Length convertToIntLength(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, double multiplier = 1);
-    static Length convertToFloatLength(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, double multiplier = 1);
-
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;

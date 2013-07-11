@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/css/CSSCalculationValue.h"
 
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 
@@ -237,8 +238,12 @@ public:
         case CalcLength:
             return adoptPtr(new CalcExpressionNumber(m_value->computeLength<float>(style, rootStyle, zoom)));
         case CalcPercent:
-        case CalcPercentLength:
-            return adoptPtr(new CalcExpressionLength(StyleResolver::convertToFloatLength(m_value.get(), style, rootStyle, zoom)));
+        case CalcPercentLength: {
+            CSSPrimitiveValue* primitiveValue = m_value.get();
+            return adoptPtr(new CalcExpressionLength(primitiveValue
+                ? primitiveValue->convertToLength<FixedFloatConversion | PercentConversion | CalculatedConversion | FractionConversion | ViewportPercentageConversion>(style, rootStyle, zoom)
+                : Length(Undefined)));
+        }
         // Only types that could be part of a Length expression can be converted
         // to a CalcExpressionNode. CalcPercentNumber makes no sense as a Length.
         case CalcPercentNumber:

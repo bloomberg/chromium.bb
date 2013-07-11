@@ -574,7 +574,7 @@ namespace WebCore {
             break;
         }
     } else {
-        Length marqueeLength = styleResolver->convertToIntLength(primitiveValue, state.style(), state.rootElementStyle());
+        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | CalculatedConversion | FractionConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle()) : Length(Undefined);
         if (!marqueeLength.isUndefined())
             state.style()->setMarqueeIncrement(marqueeLength);
     }
