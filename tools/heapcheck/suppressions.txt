@@ -239,6 +239,15 @@
    fun:base::internal::PostTaskAndReplyImpl::PostTaskAndReply
    fun:base::WorkerPool::PostTaskAndReply
 }
+# This one pops out too often on different leaks and the stacks are very often
+# uninformative, e.g. don't include anything related to the bug.
+# TODO(earthdok): revisit what we want to do with _Rep when we have LSan.
+{
+   basic_string::_Rep::_S_create
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:std::basic_string::basic_string
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -1017,4 +1026,32 @@
    fun:WebCore::V8PerIsolateData::ensureInitialized
    fun:WebKit::initialize
    fun:UnitTestTestSuite
+}
+{
+   bug_259350a
+   Heapcheck:Leak
+   ...
+   fun:SingleLoginAttemptTest_*_Test
+}
+{
+   bug_259350b
+   Heapcheck:Leak
+   ...
+   fun:notifier::SingleLoginAttempt::OnError
+}
+{
+   bug_259350c
+   Heapcheck:Leak
+   ...
+   fun:buzz::XmppClient::Process
+   fun:talk_base::Task::Step
+   fun:talk_base::TaskRunner::InternalRunTasks
+   fun:talk_base::TaskRunner::RunTasks
+   fun:jingle_glue::TaskPump::CheckAndRunTasks
+}
+{
+   bug_259350d
+   Heapcheck:Leak
+   ...
+   fun:jingle_glue::ProxyResolvingClientSocket::ProcessProxyResolveDone
 }
