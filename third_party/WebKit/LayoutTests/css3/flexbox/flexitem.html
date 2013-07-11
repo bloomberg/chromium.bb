@@ -131,6 +131,24 @@
     <img data-expected-height="10" style="max-height:-webkit-fit-content;height:1000px" src="../images/resources/green-10.png">
 </div>
 
+<!-- tests that images can shrink below their CSS height with min-height: min-content -->
+<div class="flexbox column" style="height:50px">
+    <img data-expected-height="50" style="-webkit-flex-shrink:1;height:1000px;min-height:-webkit-min-content;" src="../images/resources/blue-10.png">
+</div>
+
+<!-- tests that text can shrink below its CSS height with min-height: min-content -->
+<div class="flexbox column" style="height:50px">
+    <div data-expected-height="50" style="-webkit-flex-shrink:1;height:1000px;min-height:-webkit-min-content;" src="../images/resources/blue-10.png">
+      Some text<br>
+      Some more text
+    </div>
+</div>
+
+<!-- tests that images can shrink below their CSS width with min-width: min-content -->
+<div class="flexbox" style="width:50px">
+    <img data-expected-width="50" style="-webkit-flex-shrink:1;width:1000px;min-width:-webkit-min-content;" src="../images/resources/blue-10.png">
+</div>
+
 <!-- tests that min-width expands the width of flex items beyond the width of the flexbox -->
 <div class="flexbox column" style="width:50px">
     <img data-expected-width="60" style="min-width:60px" src="../images/resources/blue-100.png">

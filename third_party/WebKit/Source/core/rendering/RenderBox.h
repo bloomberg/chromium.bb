@@ -674,6 +674,11 @@ protected:
     // The preferred logical width of the element if it never breaks any lines at all.
     LayoutUnit m_maxPreferredLogicalWidth;
 
+    // Our intrinsic height, used for min-height: min-content etc. Maintained by
+    // updateLogicalHeight. This is logicalHeight() before it is clamped to
+    // min/max.
+    LayoutUnit m_intrinsicContentLogicalHeight;
+
     // For inline replaced elements, the inline box that owns us.
     InlineBox* m_inlineBoxWrapper;
 

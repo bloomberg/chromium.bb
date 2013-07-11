@@ -100,6 +100,7 @@ RenderBox::RenderBox(ContainerNode* node)
     : RenderBoxModelObject(node)
     , m_minPreferredLogicalWidth(-1)
     , m_maxPreferredLogicalWidth(-1)
+    , m_intrinsicContentLogicalHeight(-1)
     , m_inlineBoxWrapper(0)
 {
     setIsBox();
@@ -2440,6 +2441,8 @@ static bool shouldFlipBeforeAfterMargins(const RenderStyle* containingBlockStyle
 
 void RenderBox::updateLogicalHeight()
 {
+    m_intrinsicContentLogicalHeight = contentLogicalHeight();
+
     LogicalExtentComputedValues computedValues;
     computeLogicalHeight(logicalHeight(), logicalTop(), computedValues);
 
@@ -2582,8 +2585,13 @@ LayoutUnit RenderBox::computeIntrinsicLogicalContentHeightUsing(Length logicalHe
 {
     // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
     // If that happens, this code will have to change.
-    if (logicalHeightLength.isMinContent() || logicalHeightLength.isMaxContent() || logicalHeightLength.isFitContent())
+    if (logicalHeightLength.isMinContent() || logicalHeightLength.isMaxContent() || logicalHeightLength.isFitContent()) {
+        if (isReplaced())
+            return intrinsicSize().height();
+        if (m_intrinsicContentLogicalHeight != -1)
+            return m_intrinsicContentLogicalHeight;
         return intrinsicContentHeight;
+    }
     if (logicalHeightLength.isFillAvailable())
         return containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding) - borderAndPadding;
     ASSERT_NOT_REACHED();

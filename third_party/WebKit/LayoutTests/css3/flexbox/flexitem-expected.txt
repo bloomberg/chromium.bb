@@ -35,5 +35,12 @@ PASS
 PASS
 
 PASS
+Some text
+Some more text
+PASS
+
+PASS
+
+PASS
 
 PASS
