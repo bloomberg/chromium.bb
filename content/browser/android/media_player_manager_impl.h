@@ -148,7 +148,7 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
   // Removes the player with the specified id.
   void RemovePlayer(int player_id);
 
-  // Add a new DrmBridge for the given |uuid| and |media_keys_id|.
+  // Add a new MediaDrmBridge for the given |uuid| and |media_keys_id|.
   void AddDrmBridge(int media_keys_id, const std::vector<uint8>& uuid);
 
   // Removes the DRM bridge with the specified id.
