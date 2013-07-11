@@ -830,22 +830,18 @@ bool DragController::startDrag(Frame* src, const DragState& state, const Platfor
 
     IntPoint mouseDraggedPoint = src->view()->windowToContents(dragEvent.position());
 
-    OwnPtr<DragImage> dragImage;
     IntPoint dragLocation;
     IntPoint dragOffset;
 
     Clipboard* clipboard = state.m_dragClipboard.get();
-    if (state.m_dragType == DragSourceActionDHTML)
-        dragImage = clipboard->createDragImage(dragOffset);
-
     // We allow DHTML/JS to set the drag image, even if its a link, image or text we're dragging.
     // This is in the spirit of the IE API, which allows overriding of pasteboard data and DragOp.
+    OwnPtr<DragImage> dragImage = clipboard->createDragImage(dragOffset);
     if (dragImage) {
         dragLocation = dragLocationForDHTMLDrag(mouseDraggedPoint, dragOrigin, dragOffset, !linkURL.isEmpty());
     }
 
     Node* node = state.m_dragSrc.get();
-
     if (state.m_dragType == DragSourceActionSelection) {
         if (!dragImage) {
             dragImage = src->dragImageForSelection();
