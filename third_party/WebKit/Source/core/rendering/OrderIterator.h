@@ -41,9 +41,10 @@ class RenderBox;
 class OrderIterator {
     WTF_MAKE_NONCOPYABLE(OrderIterator);
 public:
+    friend class OrderIteratorPopulator;
+
     OrderIterator(const RenderBox*);
 
-    void setOrderValues(Vector<int>&);
     RenderBox* currentChild() const { return m_currentChild; }
     RenderBox* first();
     RenderBox* next();
@@ -52,8 +53,33 @@ public:
 private:
     const RenderBox* m_containerBox;
     RenderBox* m_currentChild;
-    Vector<int> m_orderValues;
+    // The inline capacity for a single item is used to cover the most
+    // common case by far: if we only have the default 'order' value 0.
+    typedef Vector<int, 1> OrderValues;
+    OrderValues m_orderValues;
     Vector<int>::const_iterator m_orderValuesIterator;
+};
+
+class OrderIteratorPopulator {
+public:
+    OrderIteratorPopulator(OrderIterator& iterator)
+        : m_iterator(iterator)
+        , m_anyChildHasDefaultOrderValue(false)
+    {
+        // Note that we don't release the memory here, we only invalidate the size.
+        // This avoids unneeded reallocation if the size ends up not changing.
+        m_iterator.m_orderValues.shrink(0);
+    }
+
+    ~OrderIteratorPopulator();
+
+    void collectChild(const RenderBox*);
+
+private:
+    void removeDuplicatedOrderValues();
+
+    OrderIterator& m_iterator;
+    bool m_anyChildHasDefaultOrderValue;
 };
 
 } // namespace WebCore

@@ -31,8 +31,7 @@
 #include "config.h"
 #include "core/rendering/OrderIterator.h"
 
-#include "core/rendering/RenderFlexibleBox.h"
-#include "core/rendering/RenderGrid.h"
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 
@@ -41,35 +40,6 @@ OrderIterator::OrderIterator(const RenderBox* containerBox)
     , m_currentChild(0)
     , m_orderValuesIterator(0)
 {
-}
-
-void OrderIterator::setOrderValues(Vector<int>& orderValues)
-{
-    reset();
-    m_orderValues.clear();
-
-    if (orderValues.isEmpty())
-        return;
-
-    std::sort(orderValues.begin(), orderValues.end());
-
-
-    // This is inefficient if there are many repeated values, but
-    // saves a lot of allocations when the values are unique. By far,
-    // the common case is that there's exactly one item in the list
-    // (the default order value of 0).
-    m_orderValues.reserveInitialCapacity(orderValues.size());
-
-    int previous = orderValues[0];
-    m_orderValues.append(previous);
-    for (size_t i = 1; i < orderValues.size(); ++i) {
-        int current = orderValues[i];
-        if (current == previous)
-            continue;
-        m_orderValues.append(current);
-        previous = current;
-    }
-    m_orderValues.shrinkToFit();
 }
 
 RenderBox* OrderIterator::first()
@@ -105,6 +75,48 @@ void OrderIterator::reset()
 {
     m_currentChild = 0;
     m_orderValuesIterator = 0;
+}
+
+OrderIteratorPopulator::~OrderIteratorPopulator()
+{
+    m_iterator.reset();
+
+    if (m_anyChildHasDefaultOrderValue)
+        m_iterator.m_orderValues.append(0);
+
+    if (m_iterator.m_orderValues.size() > 1)
+        removeDuplicatedOrderValues();
+
+    // Ensure that we release any extra memory we hold onto.
+    m_iterator.m_orderValues.shrinkToFit();
+}
+
+void OrderIteratorPopulator::removeDuplicatedOrderValues()
+{
+    OrderIterator::OrderValues& orderValues = m_iterator.m_orderValues;
+
+    std::sort(orderValues.begin(), orderValues.end());
+
+    int previous = orderValues[0];
+    size_t uniqueItemIndex = 0;
+    for (size_t i = 1; i < orderValues.size(); ++i) {
+        int current = orderValues[i];
+        if (current == previous)
+            continue;
+        ++uniqueItemIndex;
+        std::swap(orderValues[i], orderValues[uniqueItemIndex]);
+        previous = current;
+    }
+    orderValues.shrink(uniqueItemIndex + 1);
+}
+
+void OrderIteratorPopulator::collectChild(const RenderBox* child)
+{
+    // Avoid growing the vector for the common-case default value of 0.
+    if (int order = child->style()->order())
+        m_iterator.m_orderValues.append(order);
+    else
+        m_anyChildHasDefaultOrderValue = true;
 }
 
 } // namespace WebCore

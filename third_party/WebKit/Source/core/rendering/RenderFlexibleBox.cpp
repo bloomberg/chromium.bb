@@ -293,13 +293,12 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
 
     RenderBlock::startDelayUpdateScrollInfo();
 
-    Vector<LineContext> lineContexts;
-    Vector<int> orderValues;
-    computeMainAxisPreferredSizes(orderValues);
-    m_orderIterator.setOrderValues(orderValues);
+    prepareOrderIteratorAndMargins();
 
     ChildFrameRects oldChildRects;
     appendChildFrameRects(oldChildRects);
+
+    Vector<LineContext> lineContexts;
     layoutFlexItems(relayoutChildren, lineContexts);
 
     updateLogicalHeight();
@@ -871,17 +870,13 @@ LayoutUnit RenderFlexibleBox::computeChildMarginValue(Length margin, RenderView*
     return minimumValueForLength(margin, availableSize, view);
 }
 
-void RenderFlexibleBox::computeMainAxisPreferredSizes(Vector<int>& orderValues)
+void RenderFlexibleBox::prepareOrderIteratorAndMargins()
 {
     RenderView* renderView = view();
-    bool anyChildHasDefaultOrderValue = false;
+    OrderIteratorPopulator populator(m_orderIterator);
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-        // Avoid growing the vector for the common-case default value of 0.
-        if (int order = child->style()->order())
-            orderValues.append(child->style()->order());
-        else
-            anyChildHasDefaultOrderValue = true;
+        populator.collectChild(child);
 
         if (child->isOutOfFlowPositioned())
             continue;
@@ -895,13 +890,6 @@ void RenderFlexibleBox::computeMainAxisPreferredSizes(Vector<int>& orderValues)
             child->setMarginTop(computeChildMarginValue(child->style()->marginTop(), renderView));
             child->setMarginBottom(computeChildMarginValue(child->style()->marginBottom(), renderView));
         }
-    }
-
-    if (anyChildHasDefaultOrderValue) {
-        // Avoid growing the vector to the default capacity of 16 if we're only going to put one item in it.
-        if (orderValues.isEmpty())
-            orderValues.reserveInitialCapacity(1);
-        orderValues.append(0);
     }
 }
 

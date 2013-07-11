@@ -662,20 +662,13 @@ void RenderGrid::placeItemsOnGrid()
 
 void RenderGrid::populateExplicitGridAndOrderIterator()
 {
-    // FIXME: We should find a way to share OrderIterator's Vector's
-    // initialization code with RenderFlexibleBox.
-    Vector<int> orderValues;
-    bool anyChildHasDefaultOrderValue = false;
+    OrderIteratorPopulator populator(m_orderIterator);
 
     size_t maximumRowIndex = std::max<size_t>(1, explicitGridRowCount());
     size_t maximumColumnIndex = std::max<size_t>(1, explicitGridColumnCount());
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-        // Avoid growing the vector for the common-case default value of 0.
-        if (int order = child->style()->order())
-            orderValues.append(child->style()->order());
-        else
-            anyChildHasDefaultOrderValue = true;
+        populator.collectChild(child);
 
         // This function bypasses the cache (cachedGridCoordinate()) as it is used to build it.
         OwnPtr<GridSpan> rowPositions = resolveGridPositionsFromStyle(child, ForRows);
@@ -692,15 +685,6 @@ void RenderGrid::populateExplicitGridAndOrderIterator()
     m_grid.grow(maximumRowIndex);
     for (size_t i = 0; i < m_grid.size(); ++i)
         m_grid[i].grow(maximumColumnIndex);
-
-    if (anyChildHasDefaultOrderValue) {
-        // Avoid growing the vector to the default capacity of 16 if we're only going to put one item in it.
-        if (orderValues.isEmpty())
-            orderValues.reserveInitialCapacity(1);
-        orderValues.append(0);
-    }
-
-    m_orderIterator.setOrderValues(orderValues);
 }
 
 void RenderGrid::placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*> autoGridItems)

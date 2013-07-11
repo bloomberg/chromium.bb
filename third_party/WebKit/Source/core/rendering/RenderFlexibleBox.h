@@ -135,7 +135,7 @@ private:
     LayoutUnit marginBoxAscentForChild(RenderBox*);
 
     LayoutUnit computeChildMarginValue(Length margin, RenderView*);
-    void computeMainAxisPreferredSizes(Vector<int>&);
+    void prepareOrderIteratorAndMargins();
     LayoutUnit adjustChildSizeForMinAndMax(RenderBox*, LayoutUnit childSize);
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
     bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool& hasInfiniteLineLength);
