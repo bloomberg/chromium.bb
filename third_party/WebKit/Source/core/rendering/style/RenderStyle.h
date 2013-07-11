@@ -867,7 +867,6 @@ public:
     CSSAnimationDataList* accessTransitions();
 
     bool hasAnimations() const { return rareNonInheritedData->m_animations && rareNonInheritedData->m_animations->size() > 0; }
-    bool hasTransitions() const { return rareNonInheritedData->m_transitions && rareNonInheritedData->m_transitions->size() > 0; }
 
     // return the first found Animation (including 'all' transitions)
     const CSSAnimationData* transitionForProperty(CSSPropertyID) const;
@@ -1296,8 +1295,6 @@ public:
         rareNonInheritedData.access()->m_transitions.clear();
     }
 
-    void inheritAnimations(const CSSAnimationDataList* parent) { rareNonInheritedData.access()->m_animations = parent ? adoptPtr(new CSSAnimationDataList(*parent)) : nullptr; }
-    void inheritTransitions(const CSSAnimationDataList* parent) { rareNonInheritedData.access()->m_transitions = parent ? adoptPtr(new CSSAnimationDataList(*parent)) : nullptr; }
     void adjustAnimations();
     void adjustTransitions();
 
