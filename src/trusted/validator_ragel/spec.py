@@ -556,7 +556,7 @@ def ValidateRegularInstruction(instruction, bitness):
         'cmc', 'clc', 'cld', 'stc', 'std',
         'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
         'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
-        'ud2a',
+        'ud2', 'ud2a',
         ]:
       return Condition(), Condition()
 
@@ -703,7 +703,7 @@ def ValidateRegularInstruction(instruction, bitness):
         'cmc', 'clc', 'cld', 'stc', 'std',
         'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
         'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
-        'ud2a',
+        'ud2', 'ud2a',
         ]:
       assert len(ops) == 0
       write_ops = []
