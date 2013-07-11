@@ -1434,6 +1434,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
       switches::kAllowHTTPBackgroundPage,
       switches::kEnableExperimentalExtensionApis,
+      switches::kExtensionsOnChromeURLs,
       switches::kWhitelistedExtensionID,
     };
 
