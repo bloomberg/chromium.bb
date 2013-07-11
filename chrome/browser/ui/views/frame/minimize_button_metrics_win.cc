@@ -24,7 +24,7 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
                                    ui::win::GetUndocumentedDPIScale(),
                                    0 };
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
-  return minimize_button_corner.x;
+  return minimize_button_corner.x / ui::win::GetDeviceScaleFactor();
 }
 
 }  // namespace
