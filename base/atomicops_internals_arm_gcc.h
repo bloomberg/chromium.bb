@@ -70,7 +70,7 @@ inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
     //      reloop = STREX(ptr, new_value)
     __asm__ __volatile__("    ldrex %0, [%3]\n"
                          "    mov %1, #0\n"
-                         "    teq %0, %4\n"
+                         "    cmp %0, %4\n"
 #ifdef __thumb2__
                          "    it eq\n"
 #endif
@@ -135,7 +135,7 @@ inline Atomic32 NoBarrier_AtomicExchange(volatile Atomic32* ptr,
   int reloop;
   do {
     // old_value = LDREX(ptr)
-    // fail = STREX(ptr, new_value)
+    // reloop = STREX(ptr, new_value)
     __asm__ __volatile__("   ldrex %0, [%3]\n"
                          "   strex %1, %4, [%3]\n"
                          : "=&r"(old_value), "=&r"(reloop), "+m"(*ptr)
@@ -232,10 +232,17 @@ inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
 inline Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
-  // Use NoBarrier_CompareAndSwap(), because its implementation
-  // ensures that all stores happen through the kernel helper
-  // which always implement a full barrier.
-  return NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  // This could be implemented as:
+  //    MemoryBarrier();
+  //    return NoBarrier_CompareAndSwap();
+  //
+  // But would use 3 barriers per succesful CAS. To save performance,
+  // use Acquire_CompareAndSwap(). Its implementation guarantees that:
+  // - A succesful swap uses only 2 barriers (in the kernel helper).
+  // - An early return due to (prev_value != old_value) performs
+  //   a memory barrier with no store, which is equivalent to the
+  //   generic implementation above.
+  return Acquire_CompareAndSwap(ptr, old_value, new_value);
 }
 
 #else
