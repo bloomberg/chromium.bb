@@ -49,7 +49,7 @@ class InfoBarGtk : public InfoBar,
   virtual void InitWidgets();
 
   // Get the top level native GTK widget for this infobar.
-  GtkWidget* widget();
+  GtkWidget* widget() { return widget_.get(); }
 
   GdkColor GetBorderColor() const;
 
@@ -81,9 +81,14 @@ class InfoBarGtk : public InfoBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Styles the close button as if we're doing Chrome-stlye widget rendering.
+  void ForceCloseButtonToUseChromeTheme();
+
+  GtkWidget* hbox() { return hbox_; }
+
   // Returns the signal registrar for this infobar. All signals representing
   // user actions on visible widgets must go through this registrar!
-  ui::GtkSignalRegistrar* Signals();
+  ui::GtkSignalRegistrar* signals() { return signals_.get(); }
 
   // Creates a label with the appropriate font and color for the current
   // gtk-theme state. It is InfoBarGtk's responsibility to observe browser
@@ -111,6 +116,20 @@ class InfoBarGtk : public InfoBar,
                          MenuGtk::Delegate* delegate,
                          ui::MenuModel* model);
 
+ private:
+  void GetBackgroundColor(SkColor color, double* r, double* g, double* b);
+  void UpdateBorderColor();
+
+  CHROMEGTK_CALLBACK_0(InfoBarGtk, void, OnCloseButton);
+  CHROMEGTK_CALLBACK_1(InfoBarGtk, gboolean, OnBackgroundExpose,
+                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_2(InfoBarGtk, void, OnChildSizeRequest, GtkWidget*,
+                       GtkRequisition*);
+
+  // A GtkExpandedContainer that contains |bg_box_| so we can vary the height of
+  // the infobar.
+  ui::OwnedWidgetGtk widget_;
+
   // The second highest widget in the hierarchy (after the |widget_|).
   GtkWidget* bg_box_;
 
@@ -124,19 +143,6 @@ class InfoBarGtk : public InfoBar,
   GtkThemeService* theme_service_;
 
   content::NotificationRegistrar registrar_;
-
- private:
-  void UpdateBorderColor();
-
-  CHROMEGTK_CALLBACK_0(InfoBarGtk, void, OnCloseButton);
-  CHROMEGTK_CALLBACK_1(InfoBarGtk, gboolean, OnBackgroundExpose,
-                       GdkEventExpose*);
-  CHROMEGTK_CALLBACK_2(InfoBarGtk, void, OnChildSizeRequest, GtkWidget*,
-                       GtkRequisition*);
-
-  // A GtkExpandedContainer that contains |bg_box_| so we can varry the height
-  // of the infobar.
-  ui::OwnedWidgetGtk widget_;
 
   // A list of signals which we clear out once we're closing.
   scoped_ptr<ui::GtkSignalRegistrar> signals_;

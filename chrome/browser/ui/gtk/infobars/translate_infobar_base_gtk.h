@@ -19,7 +19,7 @@ class TranslateInfoBarBase : public InfoBarGtk {
                        TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
-  // InfoBar:
+  // InfoBarGtk:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
   virtual void GetTopColor(InfoBarDelegate::Type type,
                            double* r, double* g, double* b) OVERRIDE;
@@ -27,7 +27,7 @@ class TranslateInfoBarBase : public InfoBarGtk {
                               double* r, double* g, double* b) OVERRIDE;
   virtual void InitWidgets() OVERRIDE;
 
-  // Sub-classes that want to have the options menu button showing sould
+  // Sub-classes that want to have the options menu button showing should
   // override and return true.
   virtual bool ShowOptionsMenuButton() const;
 

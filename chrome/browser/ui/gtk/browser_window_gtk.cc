@@ -1029,8 +1029,8 @@ void BrowserWindowGtk::ShowWebsiteSettings(
     content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl) {
-  WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile,
-                                web_contents, url, ssl);
+  WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile, web_contents, url,
+                                ssl);
 }
 
 void BrowserWindowGtk::ShowAppMenu() {
@@ -1220,9 +1220,8 @@ void BrowserWindowGtk::ActiveTabChanged(WebContents* old_contents,
   // Update various elements that are interested in knowing the current
   // WebContents.
   UpdateDevToolsForContents(new_contents);
-  InfoBarService* new_infobar_service =
-      InfoBarService::FromWebContents(new_contents);
-  infobar_container_->ChangeInfoBarService(new_infobar_service);
+  infobar_container_->ChangeInfoBarService(
+      InfoBarService::FromWebContents(new_contents));
   contents_container_->SetTab(new_contents);
 
   // TODO(estade): after we manage browser activation, add a check to make sure

@@ -44,7 +44,7 @@ void ConfirmInfoBarGtk::InitWidgets() {
   // requests, and less if there is not enough available.
   GtkWidget* align = gtk_alignment_new(0, 0, 0, 1);
   gtk_container_add(GTK_CONTAINER(align), confirm_hbox_);
-  gtk_box_pack_start(GTK_BOX(hbox_), align, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox()), align, TRUE, TRUE, 0);
 
   // We add the buttons in reverse order and pack end instead of start so
   // that the first widget to get shrunk is the label rather than the button(s).
@@ -56,7 +56,7 @@ void ConfirmInfoBarGtk::InitWidgets() {
   gtk_util::ForceFontSizePixels(label, 13.4);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_util::CenterWidgetInHBox(confirm_hbox_, label, true, 0);
-  Signals()->Connect(label, "map",
+  signals()->Connect(label, "map",
                      G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                      NULL);
 
@@ -66,12 +66,12 @@ void ConfirmInfoBarGtk::InitWidgets() {
 
   GtkWidget* link = CreateLinkButton(link_text);
   gtk_misc_set_alignment(GTK_MISC(GTK_CHROME_LINK_BUTTON(link)->label), 0, 0.5);
-  Signals()->Connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
+  signals()->Connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
   gtk_util::SetButtonTriggersNavigation(link);
   // Until we switch to vector graphics, force the font size.
   // 13.4px == 10pt @ 96dpi
   gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link)->label, 13.4);
-  gtk_util::CenterWidgetInHBox(hbox_, link, true, kEndOfLabelSpacing);
+  gtk_util::CenterWidgetInHBox(hbox(), link, true, kEndOfLabelSpacing);
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBarGtk::GetDelegate() {
@@ -89,7 +89,7 @@ void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
     gtk_size_group_add_widget(size_group_, button);
 
     gtk_util::CenterWidgetInHBox(confirm_hbox_, button, true, 0);
-    Signals()->Connect(button, "clicked",
+    signals()->Connect(button, "clicked",
                        G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
                                   OnOkButtonThunk : OnCancelButtonThunk),
                        this);

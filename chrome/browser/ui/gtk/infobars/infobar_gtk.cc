@@ -118,10 +118,6 @@ void InfoBarGtk::InitWidgets() {
   UpdateBorderColor();
 }
 
-GtkWidget* InfoBarGtk::widget() {
-  return widget_.get();
-}
-
 GdkColor InfoBarGtk::GetBorderColor() const {
   DCHECK(theme_service_);
   return theme_service_->GetBorderColor();
@@ -139,32 +135,20 @@ SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
 
 void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
                              double* r, double* g, double* b) {
-  DCHECK(theme_service_);
-  SkColor color = theme_service_->UsingNativeTheme() ?
-                  theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
-                  GetInfoBarTopColor(type);
-  *r = SkColorGetR(color) / 255.0;
-  *g = SkColorGetG(color) / 255.0;
-  *b = SkColorGetB(color) / 255.0;
+  GetBackgroundColor(GetInfoBarTopColor(type), r, g, b);
 }
 
 void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
                                 double* r, double* g, double* b) {
-  DCHECK(theme_service_);
-  SkColor color = theme_service_->UsingNativeTheme() ?
-                  theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
-                  GetInfoBarBottomColor(type);
-  *r = SkColorGetR(color) / 255.0;
-  *g = SkColorGetG(color) / 255.0;
-  *b = SkColorGetB(color) / 255.0;
+  GetBackgroundColor(GetInfoBarBottomColor(type), r, g, b);
 }
 
 void InfoBarGtk::PlatformSpecificShow(bool animate) {
   DCHECK(bg_box_);
 
   DCHECK(widget());
-  gtk_widget_show_all(widget_.get());
-  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
+  gtk_widget_show_all(widget());
+  gtk_widget_set_size_request(widget(), -1, bar_height());
 
   GdkWindow* gdk_window = gtk_widget_get_window(bg_box_);
   if (gdk_window)
@@ -182,12 +166,12 @@ void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
   DCHECK(bg_box_);
   DCHECK(widget());
   gtk_widget_set_size_request(bg_box_, -1, bar_target_height());
-  gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
+  gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget()),
                               bg_box_, 0,
                               bar_height() - bar_target_height());
 
-  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
-  gtk_widget_queue_draw(widget_.get());
+  gtk_widget_set_size_request(widget(), -1, bar_height());
+  gtk_widget_queue_draw(widget());
 }
 
 void InfoBarGtk::Observe(int type,
@@ -197,8 +181,8 @@ void InfoBarGtk::Observe(int type,
   UpdateBorderColor();
 }
 
-ui::GtkSignalRegistrar* InfoBarGtk::Signals() {
-  return signals_.get();
+void InfoBarGtk::ForceCloseButtonToUseChromeTheme() {
+  close_button_->ForceChromeTheme();
 }
 
 GtkWidget* InfoBarGtk::CreateLabel(const std::string& text) {
@@ -274,6 +258,16 @@ void InfoBarGtk::ShowMenuWithModel(GtkWidget* sender,
                                    ui::MenuModel* model) {
   menu_.reset(new MenuGtk(delegate, model));
   menu_->PopupForWidget(sender, 1, gtk_get_current_event_time());
+}
+
+void InfoBarGtk::GetBackgroundColor(SkColor color,
+                                    double* r, double* g, double* b) {
+  DCHECK(theme_service_);
+  if (theme_service_->UsingNativeTheme())
+    color = theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  *r = SkColorGetR(color) / 255.0;
+  *g = SkColorGetG(color) / 255.0;
+  *b = SkColorGetB(color) / 255.0;
 }
 
 void InfoBarGtk::UpdateBorderColor() {
