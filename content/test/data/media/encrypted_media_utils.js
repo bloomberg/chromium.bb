@@ -33,7 +33,8 @@ function loadEncryptedMediaFromURL(video) {
   return loadEncryptedMedia(video, mediaFile, keySystem, KEY, useMSE);
 }
 
-function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE) {
+function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
+                            appendSourceCallbackFn) {
   var keyRequested = false;
   var sourceOpened = false;
   // Add properties to enable verification that events occurred.
@@ -124,7 +125,8 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE) {
   installTitleEventHandler(video, 'error');
 
   if (useMSE) {
-    var mediaSource = loadMediaSource(mediaFile, mediaType);
+    var mediaSource = loadMediaSource(mediaFile, mediaType,
+                                      appendSourceCallbackFn);
     video.src = window.URL.createObjectURL(mediaSource);
   } else {
     video.src = mediaFile;

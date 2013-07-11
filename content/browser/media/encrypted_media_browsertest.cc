@@ -84,6 +84,14 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
                           key_system, src_type, expectation);
   }
 
+  void TestConfigChange(const char* key_system, const char* expectation) {
+    std::vector<StringPair> query_params;
+    query_params.push_back(std::make_pair("keysystem", key_system));
+    query_params.push_back(std::make_pair("runencrypted", "1"));
+    RunMediaTestPage("mse_config_change.html", &query_params, expectation,
+                     true);
+  }
+
   void RunEncryptedMediaTest(const char* html_page, const char* media_file,
                              const char* media_type, const char* key_system,
                              SrcType src_type, const char* expectation) {
@@ -186,7 +194,15 @@ INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
     ::testing::Combine(
         ::testing::Values(kExternalClearKeyKeySystem),
         ::testing::Values(SRC, MSE)));
-#endif
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ConfigChangeVideo_ExternalClearKey) {
+  TestConfigChange(kExternalClearKeyKeySystem, kEnded);
+}
+#endif // defined(ENABLE_PEPPER_CDMS)
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ConfigChangeVideo_ClearKey) {
+  TestConfigChange(kClearKeyKeySystem, kEnded);
+}
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   TestMSESimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,

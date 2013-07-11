@@ -6,15 +6,22 @@
     <video controls></video>
     <script src="media_utils.js" type="text/javascript"></script>
     <script src="media_source_utils.js" type="text/javascript"></script>
+    <script src="encrypted_media_utils.js" type="text/javascript"></script>
     <script type="text/javascript">
+      var runEncrypted = QueryString.runencrypted == 1;
       var video = document.querySelector('video');
       var mediaType = 'video/webm; codecs="vorbis, vp8"';
 
       var MEDIA_1 = 'bear-320x240.webm';
+      var MEDIA_2 = 'bear-640x360.webm';
+      if (runEncrypted) {
+        MEDIA_1 = 'bear-320x240-av-enc_av.webm';
+        MEDIA_2 = 'bear-640x360-av-enc_av.webm';
+      }
+
       var MEDIA_1_WIDTH = 320;
       var MEDIA_1_HEIGHT = 240;
 
-      var MEDIA_2 = 'bear-640x360.webm';
       var MEDIA_2_WIDTH = 640;
       var MEDIA_2_HEIGHT = 360;
       var MEDIA_2_LENGTH = 2.75;
@@ -103,10 +110,16 @@
       }
 
       function runTest() {
-        var mediaSource = loadMediaSource(MEDIA_1, mediaType, appendNextSource);
         video.addEventListener('timeupdate', onTimeUpdate);
         video.addEventListener('ended', failTest);
-        video.src = window.URL.createObjectURL(mediaSource);
+        if (runEncrypted) {
+          loadEncryptedMedia(video, MEDIA_1, keySystem, KEY, true,
+                             appendNextSource);
+        } else {
+          var mediaSource = loadMediaSource(MEDIA_1, mediaType,
+                                            appendNextSource);
+          video.src = window.URL.createObjectURL(mediaSource);
+        }
       }
       </script>
   </body>
