@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/notifications/notification_delegate.h"
+#include "googleurl/src/gurl.h"
 
 namespace notifier {
 
@@ -19,21 +20,26 @@ class ChromeNotifierService;
 
 class ChromeNotifierDelegate : public NotificationDelegate {
  public:
-  explicit ChromeNotifierDelegate(const std::string& id,
+  // We use an id instead of a notification so we can check to see if the
+  // notification still exists before acting on it instead of using a ref count.
+  explicit ChromeNotifierDelegate(const std::string& notification_id,
                                   ChromeNotifierService* notifier);
 
   // NotificationDelegate interface.
   virtual void Display() OVERRIDE {}
   virtual void Error() OVERRIDE {}
   virtual void Close(bool by_user) OVERRIDE;
-  virtual void Click() OVERRIDE {}
+  virtual void Click() OVERRIDE;
+  virtual void ButtonClick(int button_index) OVERRIDE;
   virtual std::string id() const OVERRIDE;
+
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
 
  private:
   virtual ~ChromeNotifierDelegate();
+  void NavigateToUrl(const GURL& destination) const;
 
-  const std::string id_;
+  const std::string notification_id_;
   ChromeNotifierService* const chrome_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNotifierDelegate);

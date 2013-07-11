@@ -57,21 +57,24 @@ class ChromeNotifierService : public syncer::SyncableService,
       const syncer::SyncData& sync_data);
 
   // Get a pointer to a notification.  ChromeNotifierService owns this pointer.
-  // The caller must not free it.
-  notifier::SyncedNotification* FindNotificationByKey(const std::string& key);
+  virtual notifier::SyncedNotification* FindNotificationById(
+      const std::string& notification_id);
 
   // Get the list of synced notification services and fill their meta data to
   // |notifiers|.
   void GetSyncedNotificationServices(
       std::vector<message_center::Notifier*>* notifiers);
 
-  // Called when we dismiss a notification.
-  void MarkNotificationAsDismissed(const std::string& id);
+  // Called when we dismiss a notification.  This is virtual so that test
+  // subclasses can override it.
+  virtual void MarkNotificationAsDismissed(const std::string& id);
 
   // Called when a notier is enabled or disabled.
   void OnSyncedNotificationServiceEnabled(
       const std::string& notifier_id,
       bool enabled);
+
+  Profile* profile() const { return profile_; }
 
   // Functions for test.
   void AddForTest(scoped_ptr<notifier::SyncedNotification> notification);

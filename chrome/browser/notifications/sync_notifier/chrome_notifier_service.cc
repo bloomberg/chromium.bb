@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "googleurl/src/gurl.h"
 #include "grit/ui_strings.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
@@ -76,7 +77,7 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
     // Process each incoming remote notification.
     const std::string& key = incoming->GetKey();
     DCHECK_GT(key.length(), 0U);
-    SyncedNotification* found = FindNotificationByKey(key);
+    SyncedNotification* found = FindNotificationById(key);
 
     if (NULL == found) {
       // If there are no conflicts, copy in the data from remote.
@@ -248,8 +249,8 @@ scoped_ptr<SyncedNotification>
 
 // This returns a pointer into a vector that we own.  Caller must not free it.
 // Returns NULL if no match is found.
-SyncedNotification* ChromeNotifierService::FindNotificationByKey(
-    const std::string& key) {
+SyncedNotification* ChromeNotifierService::FindNotificationById(
+    const std::string& notification_id) {
   // TODO(petewil): We can make a performance trade off here.
   // While the vector has good locality of reference, a map has faster lookup.
   // Based on how big we expect this to get, maybe change this to a map.
@@ -258,7 +259,7 @@ SyncedNotification* ChromeNotifierService::FindNotificationByKey(
       it != notification_data_.end();
       ++it) {
     SyncedNotification* notification = *it;
-    if (key == notification->GetKey())
+    if (notification_id == notification->GetKey())
       return *it;
   }
 
@@ -288,7 +289,7 @@ void ChromeNotifierService::GetSyncedNotificationServices(
 
 void ChromeNotifierService::MarkNotificationAsDismissed(
     const std::string& key) {
-  SyncedNotification* notification = FindNotificationByKey(key);
+  SyncedNotification* notification = FindNotificationById(key);
   CHECK(notification != NULL);
 
   notification->NotificationHasBeenDismissed();

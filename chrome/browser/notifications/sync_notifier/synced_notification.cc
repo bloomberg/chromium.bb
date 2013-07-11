@@ -22,6 +22,10 @@
 namespace {
 const char kExtensionScheme[] = "chrome-extension://";
 
+// Today rich notifications only supports two buttons, make sure we don't
+// try to supply them with more than this number of buttons.
+const unsigned int kMaxNotificationButtonIndex = 2;
+
 bool UseRichNotifications() {
   return message_center::IsRichNotificationEnabled();
 }
@@ -79,11 +83,11 @@ void SyncedNotification::OnFetchComplete(const GURL url,
   if (GetImageUrl() == url && bitmap != NULL) {
     image_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
   }
-  if (GetButtonOneIconUrl() == url.spec() && bitmap != NULL) {
-    button_one_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
-  }
-  if (GetButtonTwoIconUrl() == url.spec() && bitmap != NULL) {
-    button_two_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+
+  // If this URL matches one or more button bitmaps, save them off.
+  for (unsigned int i = 0; i < GetButtonCount(); ++i) {
+    if (GetButtonIconUrl(i) == url && bitmap != NULL)
+      button_bitmaps_[i] = gfx::Image::CreateFrom1xBitmap(*bitmap);
   }
 
   // Count off the bitmaps as they arrive.
@@ -112,17 +116,16 @@ void SyncedNotification::QueueBitmapFetchJobs(
   profile_ = profile;
   DCHECK_EQ(active_fetcher_count_, 0);
 
-  // Get the URLs that we might need to fetch from Synced Notification.
-  // TODO(petewil): Clean up the fact that icon and image return a GURL, and
-  // button urls return a string.
-  // TODO(petewil): Eventually refactor this to accept an arbitrary number of
-  // button URLs.
+  // Ensure our bitmap vector has as many entries as there are buttons,
+  // so that when the bitmaps arrive the vector has a slot for them.
+  for (unsigned int i = 0; i < GetButtonCount(); ++i) {
+    button_bitmaps_.push_back(gfx::Image());
+    AddBitmapToFetchQueue(GetButtonIconUrl(i));
+  }
 
   // If the URL is non-empty, add it to our queue of URLs to fetch.
   AddBitmapToFetchQueue(GetAppIconUrl());
   AddBitmapToFetchQueue(GetImageUrl());
-  AddBitmapToFetchQueue(GURL(GetButtonOneIconUrl()));
-  AddBitmapToFetchQueue(GURL(GetButtonTwoIconUrl()));
 
   // If there are no bitmaps, call show now.
   if (active_fetcher_count_ == 0) {
@@ -155,7 +158,6 @@ void SyncedNotification::AddBitmapToFetchQueue(const GURL& url) {
 void SyncedNotification::Show(NotificationUIManager* notification_manager,
                               ChromeNotifierService* notifier_service,
                               Profile* profile) {
-
   // Let NotificationUIManager know that the notification has been dismissed.
   if (SyncedNotification::kRead == GetReadState() ||
       SyncedNotification::kDismissed == GetReadState() ) {
@@ -184,10 +186,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
         base::Time::FromDoubleT(static_cast<double>(GetCreationTime()));
     int priority = GetPriority();
     int notification_count = GetNotificationCount();
-    int button_count = GetButtonCount();
-    // TODO(petewil): Refactor this for an arbitrary number of buttons.
-    std::string button_one_title = GetButtonOneTitle();
-    std::string button_two_title = GetButtonTwoTitle();
+    unsigned int button_count = GetButtonCount();
 
     // Deduce which notification template to use from the data.
     message_center::NotificationType notification_type =
@@ -206,16 +205,23 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     rich_notification_data.timestamp = creation_time;
     if (priority != SyncedNotification::kUndefinedPriority)
       rich_notification_data.priority = priority;
-    if (!button_one_title.empty()) {
-      message_center::ButtonInfo button_info(UTF8ToUTF16(button_one_title));
-      if (!button_one_bitmap_.IsEmpty())
-        button_info.icon = button_one_bitmap_;
-      rich_notification_data.buttons.push_back(button_info);
-    }
-    if (!button_two_title.empty()) {
-      message_center::ButtonInfo button_info(UTF8ToUTF16(button_two_title));
-      if (!button_two_bitmap_.IsEmpty())
-        button_info.icon = button_two_bitmap_;
+
+    // Fill in the button data.
+    // TODO(petewil): Today Rich notifiations are limited to two buttons.
+    // When rich notifications supports more, remove the
+    // "&& i < kMaxNotificationButtonIndex" below.
+    for (unsigned int i = 0;
+         i < button_count
+         && i < button_bitmaps_.size()
+         && i < kMaxNotificationButtonIndex;
+         ++i) {
+      // Stop at the first button with no title
+      std::string title = GetButtonTitle(i);
+      if (title.empty())
+        break;
+      message_center::ButtonInfo button_info(UTF8ToUTF16(title));
+      if (!button_bitmaps_[i].IsEmpty())
+        button_info.icon = button_bitmaps_[i];
       rich_notification_data.buttons.push_back(button_info);
     }
 
@@ -284,27 +290,29 @@ bool SyncedNotification::EqualsIgnoringReadState(
       GetPriority() == other.GetPriority() &&
       GetDefaultDestinationTitle() == other.GetDefaultDestinationTitle() &&
       GetDefaultDestinationIconUrl() == other.GetDefaultDestinationIconUrl() &&
-      GetButtonOneTitle() == other.GetButtonOneTitle() &&
-      GetButtonOneIconUrl() == other.GetButtonOneIconUrl() &&
-      GetButtonTwoTitle() == other.GetButtonTwoTitle() &&
-      GetButtonTwoIconUrl() == other.GetButtonTwoIconUrl() &&
       GetNotificationCount() == other.GetNotificationCount() &&
       GetButtonCount() == other.GetButtonCount()) {
+
     // If all the surface data matched, check, to see if contained data also
-    // matches.
+    // matches, titles and messages.
     size_t count = GetNotificationCount();
     for (size_t ii = 0; ii < count; ++ii) {
-      // Check the contained titles match
       if (GetContainedNotificationTitle(ii) !=
           other.GetContainedNotificationTitle(ii))
         return false;
-      // Check the contained messages match
       if (GetContainedNotificationMessage(ii) !=
           other.GetContainedNotificationMessage(ii))
         return false;
     }
 
-    // TODO(petewil): When I make buttons into a vector, check them here too.
+    // Make sure buttons match.
+    count = GetButtonCount();
+    for (size_t jj = 0; jj < count; ++jj) {
+      if (GetButtonTitle(jj) != other.GetButtonTitle(jj))
+        return false;
+      if (GetButtonIconUrl(jj) != other.GetButtonIconUrl(jj))
+        return false;
+    }
 
     // If buttons and notifications matched, they are equivalent.
     return true;
@@ -473,12 +481,12 @@ int SyncedNotification::GetPriority() const {
   }
 }
 
-int SyncedNotification::GetNotificationCount() const {
+size_t SyncedNotification::GetNotificationCount() const {
   return specifics_.coalesced_notification().render_info().
       expanded_info().collapsed_info_size();
 }
 
-int SyncedNotification::GetButtonCount() const {
+size_t SyncedNotification::GetButtonCount() const {
   return specifics_.coalesced_notification().render_info().collapsed_info().
       target_size();
 }
@@ -492,94 +500,59 @@ std::string SyncedNotification::GetDefaultDestinationTitle() const {
       default_destination().icon().alt_text();
 }
 
-std::string SyncedNotification::GetDefaultDestinationIconUrl() const {
+GURL SyncedNotification::GetDefaultDestinationIconUrl() const {
   if (!specifics_.coalesced_notification().render_info().collapsed_info().
       default_destination().icon().has_url()) {
-    return std::string();
+    return GURL();
   }
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      default_destination().icon().url();
+  return GURL(specifics_.coalesced_notification().render_info().
+              collapsed_info().default_destination().icon().url());
 }
 
-std::string SyncedNotification::GetDefaultDestinationUrl() const {
+GURL SyncedNotification::GetDefaultDestinationUrl() const {
   if (!specifics_.coalesced_notification().render_info().collapsed_info().
       default_destination().has_url()) {
-    return std::string();
+    return GURL();
   }
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      default_destination().url();
+  return GURL(specifics_.coalesced_notification().render_info().
+              collapsed_info().default_destination().url());
 }
 
-std::string SyncedNotification::GetButtonOneTitle() const {
+std::string SyncedNotification::GetButtonTitle(
+    unsigned int which_button) const {
   // Must ensure that we have a target before trying to access it.
-  if (GetButtonCount() < 1)
+  if (GetButtonCount() <= which_button)
     return std::string();
   if (!specifics_.coalesced_notification().render_info().collapsed_info().
-      target(0).action().icon().has_alt_text()) {
+      target(which_button).action().icon().has_alt_text()) {
     return std::string();
   }
   return specifics_.coalesced_notification().render_info().collapsed_info().
-      target(0).action().icon().alt_text();
+      target(which_button).action().icon().alt_text();
 }
 
-std::string SyncedNotification::GetButtonOneIconUrl() const {
+GURL SyncedNotification::GetButtonIconUrl(unsigned int which_button) const {
   // Must ensure that we have a target before trying to access it.
-  if (GetButtonCount() < 1)
-    return std::string();
+  if (GetButtonCount() <= which_button)
+    return GURL();
   if (!specifics_.coalesced_notification().render_info().collapsed_info().
-      target(0).action().icon().has_url()) {
-    return std::string();
+      target(which_button).action().icon().has_url()) {
+    return GURL();
   }
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      target(0).action().icon().url();
+  return GURL(specifics_.coalesced_notification().render_info().
+              collapsed_info().target(which_button).action().icon().url());
 }
 
-std::string SyncedNotification::GetButtonOneUrl() const {
+GURL SyncedNotification::GetButtonUrl(unsigned int which_button) const {
   // Must ensure that we have a target before trying to access it.
-  if (GetButtonCount() < 1)
-    return std::string();
+  if (GetButtonCount() <= which_button)
+    return GURL();
   if (!specifics_.coalesced_notification().render_info().collapsed_info().
-      target(0).action().has_url()) {
-    return std::string();
+      target(which_button).action().has_url()) {
+    return GURL();
   }
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      target(0).action().url();
-}
-
-std::string SyncedNotification::GetButtonTwoTitle() const {
-  // Must ensure that we have a target before trying to access it.
-  if (GetButtonCount() < 2)
-    return std::string();
-  if (!specifics_.coalesced_notification().render_info().collapsed_info().
-      target(1).action().icon().has_alt_text()) {
-    return std::string();
-  }
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      target(1).action().icon().alt_text();
-}
-
-std::string SyncedNotification::GetButtonTwoIconUrl() const {
-  // Must ensure that we have a target before trying to access it.
-  if (GetButtonCount() < 2)
-    return std::string();
-  if (!specifics_.coalesced_notification().render_info().collapsed_info().
-      target(1).action().icon().has_url()) {
-    return std::string();
-  }
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      target(1).action().icon().url();
-}
-
-std::string SyncedNotification::GetButtonTwoUrl() const {
-  // Must ensure that we have a target before trying to access it.
-  if (GetButtonCount() < 2)
-    return std::string();
-  if (!specifics_.coalesced_notification().render_info().collapsed_info().
-      target(1).action().has_url()) {
-    return std::string();
-  }
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      target(1).action().url();
+  return GURL(specifics_.coalesced_notification().render_info().
+              collapsed_info().target(which_button).action().url());
 }
 
 std::string SyncedNotification::GetContainedNotificationTitle(

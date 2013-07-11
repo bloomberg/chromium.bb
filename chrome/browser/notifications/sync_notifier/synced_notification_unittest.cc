@@ -10,13 +10,11 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/sync_notifier/sync_notifier_test_utils.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
-#include "sync/api/sync_data.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/protocol/synced_notification_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/message_center/message_center_util.h"
@@ -28,9 +26,6 @@ using sync_pb::EntitySpecifics;
 using sync_pb::SyncedNotificationSpecifics;
 
 namespace {
-const uint64 kFakeCreationTime = 42;
-const int kProtobufPriority = static_cast<int>(
-    sync_pb::CoalescedSyncedNotification_Priority_LOW);
 const int kNotificationPriority = static_cast<int>(
     message_center::LOW_PRIORITY);
 
@@ -38,46 +33,6 @@ bool UseRichNotifications() {
   return message_center::IsRichNotificationEnabled();
 }
 
-const char kTitle1[] = "New appointment at 2:15";
-const char kTitle2[] = "Email from Mark: Upcoming Ski trip";
-const char kTitle3[] = "Weather alert - light rain tonight.";
-const char kAppId1[] = "fboilmbenheemaomgaeehigklolhkhnf";
-const char kAppId2[] = "fbcmoldooppoahjhfflnmljoanccekpf";
-const char kKey1[] = "foo";
-const char kKey2[] = "bar";
-const char kText1[] = "Space Needle, 12:00 pm";
-const char kText2[] = "Stevens Pass is our first choice.";
-const char kText3[] = "More rain expected in the Seattle area tonight.";
-const char kIconUrl1[] = "http://www.google.com/icon1.jpg";
-const char kIconUrl2[] = "http://www.google.com/icon2.jpg";
-const char kIconUrl3[] = "http://www.google.com/icon3.jpg";
-const char kImageUrl1[] = "http://www.google.com/image1.jpg";
-const char kImageUrl2[] = "http://www.google.com/image2.jpg";
-const char kImageUrl3[] = "http://www.google.com/image3.jpg";
-const char kDefaultDestinationTitle[] = "Open web page";
-const char kDefaultDestinationIconUrl[] = "http://www.google.com/image4.jpg";
-const char kDefaultDestinationUrl[] = "http://www.google.com";
-const char kButtonOneTitle[] = "Read";
-const char kButtonOneIconUrl[] = "http://www.google.com/image5.jpg";
-const char kButtonOneUrl[] = "http://www.google.com/do-something1";
-const char kButtonTwoTitle[] = "Reply";
-const char kButtonTwoIconUrl[] = "http://www.google.com/image6.jpg";
-const char kButtonTwoUrl[] = "http://www.google.com/do-something2";
-const char kContainedTitle1[] = "Today's Picnic moved";
-const char kContainedTitle2[] = "Group Run Today";
-const char kContainedTitle3[] = "Starcraft Tonight";
-const char kContainedMessage1[] = "Due to rain, we will be inside the cafe.";
-const char kContainedMessage2[] = "Meet at noon in the Gym.";
-const char kContainedMessage3[] = "Let's play starcraft tonight on the LAN.";
-const char kExpectedOriginUrl[] =
-    "chrome-extension://fboilmbenheemaomgaeehigklolhkhnf/";
-
-const sync_pb::CoalescedSyncedNotification_ReadState kRead =
-    sync_pb::CoalescedSyncedNotification_ReadState_READ;
-const sync_pb::CoalescedSyncedNotification_ReadState kUnread =
-    sync_pb::CoalescedSyncedNotification_ReadState_UNREAD;
-const sync_pb::CoalescedSyncedNotification_ReadState kDismissed =
-    sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED;
 }  // namespace
 
 namespace notifier {
@@ -192,246 +147,6 @@ class SyncedNotificationTest : public testing::Test {
   syncer::SyncData sync_data4_;
 
  private:
-  // Helper to create syncer::SyncData.
-  static SyncData CreateSyncData(
-      const std::string& title,
-      const std::string& text,
-      const std::string& app_icon_url,
-      const std::string& image_url,
-      const std::string& app_id,
-      const std::string& key,
-      const sync_pb::CoalescedSyncedNotification_ReadState read_state) {
-    // CreateLocalData makes a copy of this, so this can safely live
-    // on the stack.
-    EntitySpecifics entity_specifics;
-
-    // Get a writeable pointer to the sync notifications specifics inside the
-    // entity specifics.
-    SyncedNotificationSpecifics* specifics =
-        entity_specifics.mutable_synced_notification();
-
-    specifics->mutable_coalesced_notification()->
-        set_app_id(app_id);
-
-    specifics->mutable_coalesced_notification()->
-        set_key(key);
-
-    specifics->mutable_coalesced_notification()->
-        set_priority(static_cast<sync_pb::CoalescedSyncedNotification_Priority>(
-            kProtobufPriority));
-
-    // Set the title.
-    specifics->
-        mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_simple_expanded_layout()->
-        set_title(title);
-
-    // Set the text.
-    specifics->
-        mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_simple_expanded_layout()->
-        set_text(text);
-
-    // Set the heading.
-    specifics->
-        mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_simple_collapsed_layout()->
-        set_heading(title);
-
-    // Add the collapsed info and set the app_icon_url on it.
-    specifics->
-        mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        add_collapsed_info();
-    specifics->
-        mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_collapsed_info(0)->
-        mutable_simple_collapsed_layout()->
-        mutable_app_icon()->
-        set_url(app_icon_url);
-
-    // Add the media object and set the image url on it.
-    specifics->
-        mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_simple_expanded_layout()->
-        add_media();
-    specifics->
-        mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_simple_expanded_layout()->
-        mutable_media(0)->
-        mutable_image()->
-        set_url(image_url);
-
-    specifics->mutable_coalesced_notification()->
-        set_creation_time_msec(kFakeCreationTime);
-
-    specifics->mutable_coalesced_notification()->
-        set_read_state(read_state);
-
-    // Contained notification one.
-    // We re-use the collapsed info we added for the app_icon_url,
-    // so no need to create another one here.
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_collapsed_info(0)->
-        mutable_simple_collapsed_layout()->
-        set_heading(kContainedTitle1);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_collapsed_info(0)->
-        mutable_simple_collapsed_layout()->
-        set_description(kContainedMessage1);
-
-    // Contained notification two.
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        add_collapsed_info();
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_collapsed_info(1)->
-        mutable_simple_collapsed_layout()->
-        set_heading(kContainedTitle2);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_collapsed_info(1)->
-        mutable_simple_collapsed_layout()->
-        set_description(kContainedMessage2);
-
-    // Contained notification three.
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        add_collapsed_info();
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_collapsed_info(2)->
-        mutable_simple_collapsed_layout()->
-        set_heading(kContainedTitle3);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_expanded_info()->
-        mutable_collapsed_info(2)->
-        mutable_simple_collapsed_layout()->
-        set_description(kContainedMessage3);
-
-    // Default Destination.
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_default_destination()->
-        set_text(kDefaultDestinationTitle);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_default_destination()->
-        mutable_icon()->
-        set_url(kDefaultDestinationIconUrl);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_default_destination()->
-        mutable_icon()->
-        set_alt_text(kDefaultDestinationTitle);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_default_destination()->
-        set_url(kDefaultDestinationUrl);
-
-    // Buttons are represented as targets.
-
-    // Button One.
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        add_target();
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(0)->
-        mutable_action()->
-        set_text(kButtonOneTitle);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(0)->
-        mutable_action()->
-        mutable_icon()->
-        set_url(kButtonOneIconUrl);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(0)->
-        mutable_action()->
-        mutable_icon()->
-        set_alt_text(kButtonOneTitle);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(0)->
-        mutable_action()->
-        set_url(kButtonOneUrl);
-
-    // Button Two.
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        add_target();
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(1)->
-        mutable_action()->
-        set_text(kButtonTwoTitle);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(1)->
-        mutable_action()->
-        mutable_icon()->
-        set_url(kButtonTwoIconUrl);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(1)->
-        mutable_action()->
-        mutable_icon()->
-        set_alt_text(kButtonTwoTitle);
-    specifics->mutable_coalesced_notification()->
-        mutable_render_info()->
-        mutable_collapsed_info()->
-        mutable_target(1)->
-        mutable_action()->
-        set_url(kButtonTwoUrl);
-
-    SyncData sync_data = SyncData::CreateLocalData(
-        "syncer::SYNCED_NOTIFICATIONS",
-        "SyncedNotificationTest",
-        entity_specifics);
-
-    return sync_data;
-  }
-
- private:
   base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
 
@@ -485,8 +200,8 @@ TEST_F(SyncedNotificationTest, GetReadStateTest) {
 // TODO(petewil): Improve ctor to pass in an image and type so this test can
 // pass on actual data.
 TEST_F(SyncedNotificationTest, GetImageURLTest) {
-  std::string found_image_url = notification1_->GetImageUrl().spec();
-  std::string expected_image_url = kImageUrl1;
+  GURL found_image_url = notification1_->GetImageUrl();
+  GURL expected_image_url = GURL(kImageUrl1);
 
   EXPECT_EQ(expected_image_url, found_image_url);
 }
@@ -522,29 +237,29 @@ TEST_F(SyncedNotificationTest, GetNotificationCountTest) {
 TEST_F(SyncedNotificationTest, GetDefaultDestinationDataTest) {
     std::string default_destination_title =
         notification1_->GetDefaultDestinationTitle();
-    std::string default_destination_icon_url =
+    GURL default_destination_icon_url =
         notification1_->GetDefaultDestinationIconUrl();
-    std::string default_destination_url =
+    GURL default_destination_url =
         notification1_->GetDefaultDestinationUrl();
     EXPECT_EQ(std::string(kDefaultDestinationTitle), default_destination_title);
-    EXPECT_EQ(std::string(kDefaultDestinationIconUrl),
+    EXPECT_EQ(GURL(kDefaultDestinationIconUrl),
               default_destination_icon_url);
-    EXPECT_EQ(std::string(kDefaultDestinationUrl), default_destination_url);
+    EXPECT_EQ(GURL(kDefaultDestinationUrl), default_destination_url);
 }
 
 TEST_F(SyncedNotificationTest, GetButtonDataTest) {
-    std::string button_one_title = notification1_->GetButtonOneTitle();
-    std::string button_one_icon_url = notification1_->GetButtonOneIconUrl();
-    std::string button_one_url = notification1_->GetButtonOneUrl();
-    std::string button_two_title = notification1_->GetButtonTwoTitle();
-    std::string button_two_icon_url = notification1_->GetButtonTwoIconUrl();
-    std::string button_two_url = notification1_->GetButtonTwoUrl();
+    std::string button_one_title = notification1_->GetButtonTitle(0);
+    GURL button_one_icon_url = notification1_->GetButtonIconUrl(0);
+    GURL button_one_url = notification1_->GetButtonUrl(0);
+    std::string button_two_title = notification1_->GetButtonTitle(1);
+    GURL button_two_icon_url = notification1_->GetButtonIconUrl(1);
+    GURL button_two_url = notification1_->GetButtonUrl(1);
     EXPECT_EQ(std::string(kButtonOneTitle), button_one_title);
-    EXPECT_EQ(std::string(kButtonOneIconUrl), button_one_icon_url);
-    EXPECT_EQ(std::string(kButtonOneUrl), button_one_url);
+    EXPECT_EQ(GURL(kButtonOneIconUrl), button_one_icon_url);
+    EXPECT_EQ(GURL(kButtonOneUrl), button_one_url);
     EXPECT_EQ(std::string(kButtonTwoTitle), button_two_title);
-    EXPECT_EQ(std::string(kButtonTwoIconUrl), button_two_icon_url);
-    EXPECT_EQ(std::string(kButtonTwoUrl), button_two_url);
+    EXPECT_EQ(GURL(kButtonTwoIconUrl), button_two_icon_url);
+    EXPECT_EQ(GURL(kButtonTwoUrl), button_two_url);
 }
 
 TEST_F(SyncedNotificationTest, ContainedNotificationTest) {
@@ -603,16 +318,13 @@ TEST_F(SyncedNotificationTest, ShowTest) {
 
   // Check the base fields of the notification.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
-  EXPECT_EQ(kTitle1, UTF16ToUTF8(notification.title()));
-  EXPECT_EQ(kText1, UTF16ToUTF8(notification.message()));
-  EXPECT_EQ(kExpectedOriginUrl, notification.origin_url().spec());
-  EXPECT_EQ(kKey1, UTF16ToUTF8(notification.replace_id()));
+  EXPECT_EQ(std::string(kTitle1), UTF16ToUTF8(notification.title()));
+  EXPECT_EQ(std::string(kText1), UTF16ToUTF8(notification.message()));
+  EXPECT_EQ(std::string(kExpectedOriginUrl), notification.origin_url().spec());
+  EXPECT_EQ(std::string(kKey1), UTF16ToUTF8(notification.replace_id()));
 
   EXPECT_EQ(kFakeCreationTime, notification.timestamp().ToDoubleT());
   EXPECT_EQ(kNotificationPriority, notification.priority());
-
-  EXPECT_EQ(UTF8ToUTF16(kButtonOneTitle), notification.buttons()[0].title);
-  EXPECT_EQ(UTF8ToUTF16(kButtonTwoTitle), notification.buttons()[1].title);
 
   EXPECT_EQ(UTF8ToUTF16(kContainedTitle1), notification.items()[0].title);
   EXPECT_EQ(UTF8ToUTF16(kContainedTitle2), notification.items()[1].title);
@@ -684,9 +396,9 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   // Since we check Show() thoroughly in its own test, we only check cursorily.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
             notification_manager.notification().type());
-  EXPECT_EQ(kTitle1,
+  EXPECT_EQ(std::string(kTitle1),
             UTF16ToUTF8(notification_manager.notification().title()));
-  EXPECT_EQ(kText1,
+  EXPECT_EQ(std::string(kText1),
             UTF16ToUTF8(notification_manager.notification().message()));
 
   // TODO(petewil): Check that the bitmap in the notification is what we expect.

@@ -996,6 +996,8 @@
         'browser/notifications/message_center_notifications_unittest_win.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_unittest.cc',
+        'browser/notifications/sync_notifier/sync_notifier_test_utils.cc',
+        'browser/notifications/sync_notifier/sync_notifier_test_utils.h',
         'browser/omnibox/omnibox_field_trial_unittest.cc',
         'browser/page_cycler/page_cycler_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',

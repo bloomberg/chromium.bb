@@ -62,16 +62,13 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   uint64 GetCreationTime() const;
   int GetPriority() const;
   std::string GetDefaultDestinationTitle() const;
-  std::string GetDefaultDestinationIconUrl() const;
-  std::string GetDefaultDestinationUrl() const;
-  std::string GetButtonOneTitle() const;
-  std::string GetButtonOneIconUrl() const;
-  std::string GetButtonOneUrl() const;
-  std::string GetButtonTwoTitle() const;
-  std::string GetButtonTwoIconUrl() const;
-  std::string GetButtonTwoUrl() const;
-  int GetNotificationCount() const;
-  int GetButtonCount() const;
+  GURL GetDefaultDestinationIconUrl() const;
+  GURL GetDefaultDestinationUrl() const;
+  std::string GetButtonTitle(unsigned int which_button) const;
+  GURL GetButtonIconUrl(unsigned int which_button) const;
+  GURL GetButtonUrl(unsigned int which_button) const;
+  size_t GetNotificationCount() const;
+  size_t GetButtonCount() const;
   std::string GetContainedNotificationTitle(int index) const;
   std::string GetContainedNotificationMessage(int index) const;
 
@@ -116,8 +113,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   int active_fetcher_count_;
   gfx::Image app_icon_bitmap_;
   gfx::Image image_bitmap_;
-  gfx::Image button_one_bitmap_;
-  gfx::Image button_two_bitmap_;
+  std::vector<gfx::Image> button_bitmaps_;
 
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, AddBitmapToFetchQueueTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, OnFetchCompleteTest);
