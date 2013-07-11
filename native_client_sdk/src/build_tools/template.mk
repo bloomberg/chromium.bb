@@ -24,7 +24,7 @@
 [[    out.extend(post)]]
 {{key}}_{{subkey}} = {{' '.join(out)}}
 [[  ]]
-{{key}} = {{key}}_$(TOOLCHAIN)
+{{key}} = $({{key}}_$(TOOLCHAIN))
 [[]]
 
 VALID_TOOLCHAINS := {{' '.join(tools)}}

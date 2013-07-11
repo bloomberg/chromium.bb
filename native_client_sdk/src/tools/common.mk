@@ -302,7 +302,7 @@ NACL_LDFLAGS ?= -Wl,-as-needed
 # Default Paths
 #
 ifeq (,$(findstring $(TOOLCHAIN),linux mac win))
-INC_PATHS ?= $(NACL_SDK_ROOT)/include $(EXTRA_INC_PATHS)
+INC_PATHS ?= $(NACL_SDK_ROOT)/include $(NACL_SDK_ROOT)/include/$(TOOLCHAIN) $(EXTRA_INC_PATHS)
 else
 INC_PATHS ?= $(NACL_SDK_ROOT)/include/$(OSNAME) $(NACL_SDK_ROOT)/include $(EXTRA_INC_PATHS)
 endif
