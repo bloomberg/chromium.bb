@@ -130,7 +130,6 @@ DragController::DragController(Page* page, DragClient* client)
     , m_documentIsHandlingDrag(false)
     , m_dragDestinationAction(DragDestinationActionNone)
     , m_didInitiateDrag(false)
-    , m_sourceDragOperation(DragOperationNone)
 {
     ASSERT(m_client);
 }
@@ -813,7 +812,7 @@ static PassOwnPtr<DragImage> dragImageForLink(const KURL& linkURL, const String&
     return dragImage.release();
 }
 
-bool DragController::startDrag(Frame* src, const DragState& state, DragOperation srcOp, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin)
+bool DragController::startDrag(Frame* src, const DragState& state, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin)
 {
     ASSERT(dragTypeIsValid(state.m_dragType));
     ASSERT(src);
@@ -831,8 +830,6 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
 
     IntPoint mouseDraggedPoint = src->view()->windowToContents(dragEvent.position());
 
-    m_sourceDragOperation = srcOp;
-
     OwnPtr<DragImage> dragImage;
     IntPoint dragLocation;
     IntPoint dragOffset;
@@ -840,11 +837,6 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
     Clipboard* clipboard = state.m_dragClipboard.get();
     if (state.m_dragType == DragSourceActionDHTML)
         dragImage = clipboard->createDragImage(dragOffset);
-    if (state.m_dragType == DragSourceActionSelection || !imageURL.isEmpty() || !linkURL.isEmpty())
-        // Selection, image, and link drags receive a default set of allowed drag operations that
-        // follows from:
-        // http://trac.webkit.org/browser/trunk/WebKit/mac/WebView/WebHTMLView.mm?rev=48526#L3430
-        m_sourceDragOperation = static_cast<DragOperation>(m_sourceDragOperation | DragOperationGeneric | DragOperationCopy);
 
     // We allow DHTML/JS to set the drag image, even if its a link, image or text we're dragging.
     // This is in the spirit of the IE API, which allows overriding of pasteboard data and DragOp.
@@ -921,21 +913,6 @@ void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLocation
         return;
 
     cleanupAfterSystemDrag();
-}
-
-// Manual drag caret manipulation
-void DragController::placeDragCaret(const IntPoint& windowPoint)
-{
-    mouseMovedIntoDocument(m_page->mainFrame()->documentAtPoint(windowPoint));
-    if (!m_documentUnderMouse)
-        return;
-    Frame* frame = m_documentUnderMouse->frame();
-    FrameView* frameView = frame->view();
-    if (!frameView)
-        return;
-    IntPoint framePoint = frameView->windowToContents(windowPoint);
-
-    m_page->dragCaretController()->setCaretPosition(frame->visiblePositionForPoint(framePoint));
 }
 
 DragOperation DragController::dragOperation(DragData* dragData)

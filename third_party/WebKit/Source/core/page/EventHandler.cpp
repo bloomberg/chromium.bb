@@ -3243,8 +3243,6 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
 
 bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
 {
-    DragOperation srcOp = DragOperationNone;      
-    
     freeClipboard(); // would only happen if we missed a dragEnd.  Do it anyway, just
                      // to make sure it gets numbified
     dragState().m_dragClipboard = createDraggingClipboard();  
@@ -3276,9 +3274,6 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     dragState().m_dragClipboard->setAccessPolicy(ClipboardImageWritable);
     
     if (m_mouseDownMayStartDrag) {
-        // gather values from DHTML element, if it set any
-        srcOp = dragState().m_dragClipboard->sourceOperation();
-
         // Yuck, a draggedImage:moveTo: message can be fired as a result of kicking off the
         // drag with dragImage! Because of that dumb reentrancy, we may think we've not
         // started the drag when that happens. So we have to assume it's started before we
@@ -3286,7 +3281,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
         dragState().m_dragClipboard->setDragHasStarted();
 
         // Dispatching the event could cause Page to go away. Make sure it's still valid before trying to use DragController.
-        m_didStartDrag = m_frame->page() && dragController->startDrag(m_frame, dragState(), srcOp, event.event(), m_mouseDownPos);
+        m_didStartDrag = m_frame->page() && dragController->startDrag(m_frame, dragState(), event.event(), m_mouseDownPos);
         // FIXME: This seems pretty useless now. The gesture code uses this as a signal for
         // whether or not the drag started, but perhaps it can simply use the return value from
         // handleDrag(), even though it doesn't mean exactly the same thing.
