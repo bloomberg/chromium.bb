@@ -331,17 +331,13 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
     outdir:    Output directory to create the files in.
     indir:     Root directory the infiles are based in.
     infiles:   dict of files to map from |indir| to |outdir|.
-    action:    See assert below.
+    action:    One of accepted action of run_isolated.link_file().
     as_sha1:   Output filename is the sha1 instead of relfile.
   """
   logging.info(
       'recreate_tree(outdir=%s, indir=%s, files=%d, action=%s, as_sha1=%s)' %
       (outdir, indir, len(infiles), action, as_sha1))
 
-  assert action in (
-      run_isolated.HARDLINK,
-      run_isolated.SYMLINK,
-      run_isolated.COPY)
   assert os.path.isabs(outdir) and outdir == os.path.normpath(outdir), outdir
   if not os.path.isdir(outdir):
     logging.info('Creating %s' % outdir)
@@ -1972,7 +1968,7 @@ def CMDhashtable(args):
             outdir=options.outdir,
             indir=complete_state.root_dir,
             infiles=infiles,
-            action=run_isolated.HARDLINK,
+            action=run_isolated.HARDLINK_WITH_FALLBACK,
             as_sha1=True)
       success = True
       print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
@@ -2051,7 +2047,7 @@ def CMDremap(args):
       outdir=options.outdir,
       indir=complete_state.root_dir,
       infiles=complete_state.saved_state.files,
-      action=run_isolated.HARDLINK,
+      action=run_isolated.HARDLINK_WITH_FALLBACK,
       as_sha1=False)
   if complete_state.saved_state.read_only:
     run_isolated.make_writable(options.outdir, True)
@@ -2129,7 +2125,7 @@ def CMDrun(args):
         outdir=options.outdir,
         indir=root_dir,
         infiles=complete_state.saved_state.files,
-        action=run_isolated.HARDLINK,
+        action=run_isolated.HARDLINK_WITH_FALLBACK,
         as_sha1=False)
     cwd = os.path.normpath(
         os.path.join(options.outdir, complete_state.saved_state.relative_cwd))

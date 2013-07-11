@@ -50,7 +50,7 @@ except ImportError:
 
 
 # Types of action accepted by link_file().
-HARDLINK, SYMLINK, COPY = range(1, 4)
+HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY = range(1, 5)
 
 RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
 
@@ -203,7 +203,7 @@ def readable_copy(outfile, infile):
 def link_file(outfile, infile, action):
   """Links a file. The type of link depends on |action|."""
   logging.debug('Mapping %s to %s' % (infile, outfile))
-  if action not in (HARDLINK, SYMLINK, COPY):
+  if action not in (HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY):
     raise ValueError('Unknown mapping action %s' % action)
   if not os.path.isfile(infile):
     raise MappingError('%s is missing' % infile)
@@ -220,7 +220,10 @@ def link_file(outfile, infile, action):
   else:
     try:
       os_link(infile, outfile)
-    except OSError:
+    except OSError as e:
+      if action == HARDLINK:
+        raise MappingError(
+            'Failed to hardlink %s to %s: %s' % (infile, outfile, e))
       # Probably a different file system.
       logging.warning(
           'Failed to hardlink, failing back to copy %s to %s' % (
@@ -1569,7 +1572,7 @@ class Cache(object):
     """Forcibly adds a file to the cache."""
     self._update_lookup()
     if not obj in self._lookup:
-      link_file(self.path(obj), filepath, HARDLINK)
+      link_file(self.path(obj), filepath, HARDLINK_WITH_FALLBACK)
       self._add(obj, True)
 
   def path(self, item):
@@ -1941,7 +1944,7 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
             obj = cache.wait_for(remaining)
             for filepath, properties in remaining.pop(obj):
               outfile = os.path.join(outdir, filepath)
-              link_file(outfile, cache.path(obj), HARDLINK)
+              link_file(outfile, cache.path(obj), HARDLINK_WITH_FALLBACK)
               if 'm' in properties:
                 # It's not set on Windows.
                 os.chmod(outfile, properties['m'])
