@@ -48,19 +48,6 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
-# TODO(jamesr): Remove these once blink depends on the real targets.
-    {
-      'target_name': 'webkit_temp_resources',
-      'type': 'none',
-      'dependencies': [ 'webkit_resources' ],
-      'export_dependent_settings': [ 'webkit_resources' ],
-    },
-    {
-      'target_name': 'webkit_temp_strings',
-      'type': 'none',
-      'dependencies': [ 'webkit_strings' ],
-      'export_dependent_settings': [ 'webkit_strings' ],
-    },
   ]
 }
 
