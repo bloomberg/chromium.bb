@@ -1,0 +1,2 @@
+# Silently crashes, see http://crbug.com/259393
+GLES2DecoderWithShaderTest.DrawArraysNoAttributesSucceeds
