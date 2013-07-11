@@ -68,6 +68,12 @@ void UserPolicySigninServiceFactory::RegisterProfilePrefs(
       prefs::kDisableCloudPolicyOnSignin,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#if defined(OS_ANDROID)
+  user_prefs->RegisterInt64Pref(
+      prefs::kLastPolicyCheckTime,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
 }
 
 }  // namespace policy

@@ -488,6 +488,13 @@ const char kUrlBlacklist[] = "policy.url_blacklist";
 // Allows access to the listed host patterns, as exceptions to the blacklist.
 const char kUrlWhitelist[] = "policy.url_whitelist";
 
+#if defined(OS_ANDROID)
+// Last time that a check for cloud policy management was done. This time is
+// recorded on Android so that retries aren't attempted on every startup.
+// Instead the cloud policy registration is retried at least 1 or 3 days later.
+const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
+#endif
+
 // Prefix URL for the experimental Instant ZeroSuggest provider.
 const char kInstantUIZeroSuggestUrlPrefix[] =
     "instant_ui.zero_suggest_url_prefix";
