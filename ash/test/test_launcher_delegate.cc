@@ -42,13 +42,10 @@ void TestLauncherDelegate::AddLauncherItem(
   window_to_id_[window] = model_->next_id();
   item.status = status;
   model_->Add(item);
-  if (observed_windows_.find(window->parent()) == observed_windows_.end()) {
-    window->parent()->AddObserver(this);
-    observed_windows_.insert(window->parent());
-  }
+  window->AddObserver(this);
 }
 
-void TestLauncherDelegate::OnWillRemoveWindow(aura::Window* window) {
+void TestLauncherDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
   ash::LauncherID id = GetIDByWindow(window);
   if (id == 0)
     return;
@@ -56,11 +53,20 @@ void TestLauncherDelegate::OnWillRemoveWindow(aura::Window* window) {
   DCHECK_NE(-1, index);
   model_->RemoveItemAt(index);
   window_to_id_.erase(window);
-  ObservedWindows::iterator it = observed_windows_.find(window->parent());
-  if (it != observed_windows_.end()) {
-    window->parent()->RemoveObserver(this);
-    observed_windows_.erase(it);
-  }
+  window->RemoveObserver(this);
+}
+
+void TestLauncherDelegate::OnWindowDestroying(aura::Window* window) {
+  RemoveLauncherItemForWindow(window);
+}
+
+void TestLauncherDelegate::OnWindowHierarchyChanging(
+      const HierarchyChangeParams& params) {
+  // The window may be legitimately reparented while staying open if it moves
+  // to another display or container. If the window does not have a new parent
+  // then remove the launcher item.
+  if (!params.new_parent)
+    RemoveLauncherItemForWindow(params.target);
 }
 
 void TestLauncherDelegate::ItemSelected(const ash::LauncherItem& item,

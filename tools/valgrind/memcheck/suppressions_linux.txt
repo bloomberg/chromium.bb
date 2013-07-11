@@ -33,16 +33,3 @@
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 
-{
-   bug_256886
-   Memcheck:Unaddressable
-   fun:_ZNKSbItN4base20string16_char_traitsESaItEE7_M_dataEv
-   fun:_ZNKSbItN4base20string16_char_traitsESaItEE6_M_repEv
-   fun:_ZNSbItN4base20string16_char_traitsESaItEEC1ERKS2_
-   fun:_ZNK4aura6Window5titleEv
-   fun:_ZN3ash4test20TestLauncherDelegate8GetTitleERKNS_12LauncherItemE
-   fun:_ZN3ash8internal12LauncherView17GetAccessibleNameEPKN5views4ViewE
-   fun:_ZN3ash8internal12LauncherView18MouseEnteredButtonEPN5views4ViewE
-   fun:_ZN3ash8internal14LauncherButton14OnMouseEnteredERKN2ui10MouseEventE
-   fun:_ZN5views4View12OnMouseEventEPN2ui10MouseEventE
-}

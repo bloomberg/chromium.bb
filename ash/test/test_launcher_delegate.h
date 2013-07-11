@@ -28,11 +28,14 @@ class TestLauncherDelegate : public LauncherDelegate,
 
   void AddLauncherItem(aura::Window* window);
   void AddLauncherItem(aura::Window* window, LauncherItemStatus status);
+  void RemoveLauncherItemForWindow(aura::Window* window);
 
   static TestLauncherDelegate* instance() { return instance_; }
 
   // WindowObserver implementation
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowHierarchyChanging(
+      const HierarchyChangeParams& params) OVERRIDE;
 
   // LauncherDelegate implementation.
   virtual void ItemSelected(const LauncherItem& item,
@@ -66,9 +69,6 @@ class TestLauncherDelegate : public LauncherDelegate,
 
   // Maps from window to the id we gave it.
   WindowToID window_to_id_;
-
-  // Parent windows we are watching.
-  ObservedWindows observed_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLauncherDelegate);
 };

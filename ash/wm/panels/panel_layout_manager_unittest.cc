@@ -628,6 +628,16 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
   EXPECT_EQ(root_windows[1], p2_d2->GetRootWindow());
   EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
       p1_d2->GetBoundsInScreen()));
+
+  // Test if clicking on a previously moved window moves the
+  // panel back to the original display.
+  ClickLauncherItemForWindow(launcher_view_1st, p1_d1.get());
+  EXPECT_EQ(root_windows[0], p1_d1->GetRootWindow());
+  EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
+  EXPECT_EQ(root_windows[0], p1_d2->GetRootWindow());
+  EXPECT_EQ(root_windows[1], p2_d2->GetRootWindow());
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      p1_d1->GetBoundsInScreen()));
 }
 
 TEST_F(PanelLayoutManagerTest, PanelAttachPositionMultipleDisplays) {
