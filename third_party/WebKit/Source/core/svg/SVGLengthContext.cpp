@@ -228,7 +228,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEMS(float value, ExceptionCod
         return 0;
     }
 
-    float fontSize = style->fontSize();
+    float fontSize = style->specifiedFontSize();
     if (!fontSize) {
         ec = NotSupportedError;
         return 0;
@@ -245,7 +245,7 @@ float SVGLengthContext::convertValueFromEMSToUserUnits(float value, ExceptionCod
         return 0;
     }
 
-    return value * style->fontSize();
+    return value * style->specifiedFontSize();
 }
 
 float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionCode& ec) const
