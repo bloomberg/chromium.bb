@@ -2553,7 +2553,7 @@ frame_button_handler(struct widget *widget,
 	struct display *display = window->display;
 	int location;
 
-	if (window->type != TYPE_TOPLEVEL)
+	if (state != WL_POINTER_BUTTON_STATE_PRESSED)
 		return;
 
 	location = theme_get_location(display->theme, input->sx, input->sy,
@@ -2563,7 +2563,7 @@ frame_button_handler(struct widget *widget,
 				      THEME_FRAME_MAXIMIZED : 0);
 
 	if (window->display->shell && button == BTN_LEFT &&
-	    state == WL_POINTER_BUTTON_STATE_PRESSED) {
+	    window->type == TYPE_TOPLEVEL) {
 		switch (location) {
 		case THEME_LOCATION_TITLEBAR:
 			if (!window->shell_surface)
@@ -2592,7 +2592,8 @@ frame_button_handler(struct widget *widget,
 			break;
 		}
 	} else if (button == BTN_RIGHT &&
-		   state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		   (window->type == TYPE_TOPLEVEL ||
+		    window->type == TYPE_MAXIMIZED)) {
 		window_show_frame_menu(window, input, time);
 	}
 }
