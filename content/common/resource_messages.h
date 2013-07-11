@@ -39,8 +39,8 @@ struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<webkit_base::DataElement> {
-  typedef webkit_base::DataElement param_type;
+struct CONTENT_EXPORT ParamTraits<webkit_common::DataElement> {
+  typedef webkit_common::DataElement param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

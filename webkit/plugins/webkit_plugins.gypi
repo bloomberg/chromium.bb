@@ -35,7 +35,6 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-        '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
         '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',

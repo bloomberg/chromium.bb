@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
-#include "webkit/base/data_element.h"
 #include "webkit/common/blob/shareable_file_reference.h"
+#include "webkit/common/data_element.h"
 #include "webkit/common/webkit_storage_common_export.h"
 
 namespace webkit_blob {
@@ -22,7 +22,7 @@ namespace webkit_blob {
 class WEBKIT_STORAGE_COMMON_EXPORT BlobData
     : public base::RefCounted<BlobData> {
  public:
-  typedef webkit_base::DataElement Item;
+  typedef webkit_common::DataElement Item;
 
   // TODO(michaeln): remove the empty ctor when we fully transition to uuids.
   BlobData();

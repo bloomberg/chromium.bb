@@ -23,7 +23,6 @@
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:shell_dialogs',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
         '<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',

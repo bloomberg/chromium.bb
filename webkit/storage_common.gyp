@@ -13,7 +13,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
+        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
       ],
       'defines': ['WEBKIT_STORAGE_COMMON_IMPLEMENTATION'],
       'sources': [

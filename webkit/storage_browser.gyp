@@ -18,7 +18,7 @@
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
+        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
       ],
       'defines': ['WEBKIT_STORAGE_BROWSER_IMPLEMENTATION'],

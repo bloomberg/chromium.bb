@@ -584,7 +584,6 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/base/webkit_base.gyp:webkit_base',
             '../webkit/common/webkit_common.gyp:webkit_common',
             '../webkit/plugins/webkit_plugins.gyp:plugins_common',
             '../webkit/plugins/webkit_plugins.gyp:test_mock_plugin_list',

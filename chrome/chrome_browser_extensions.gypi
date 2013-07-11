@@ -41,7 +41,6 @@
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../url/url.gyp:url_lib',
-        '../webkit/base/webkit_base.gyp:webkit_base',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',

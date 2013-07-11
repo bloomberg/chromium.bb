@@ -13,7 +13,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
+        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
       ],
       'defines': ['WEBKIT_STORAGE_RENDERER_IMPLEMENTATION'],

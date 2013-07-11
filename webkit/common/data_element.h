@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BASE_DATA_ELEMENT_H_
-#define WEBKIT_BASE_DATA_ELEMENT_H_
+#ifndef WEBKIT_COMMON_DATA_ELEMENT_H_
+#define WEBKIT_COMMON_DATA_ELEMENT_H_
 
 #include <string>
 #include <vector>
@@ -13,13 +13,13 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
-#include "webkit/base/webkit_base_export.h"
+#include "webkit/common/webkit_common_export.h"
 
-namespace webkit_base {
+namespace webkit_common {
 
 // Represents a base Web data element. This could be either one of
 // bytes, file or blob data.
-class WEBKIT_BASE_EXPORT DataElement {
+class WEBKIT_COMMON_EXPORT DataElement {
  public:
   enum Type {
     TYPE_UNKNOWN = -1,
@@ -141,6 +141,6 @@ inline bool operator!=(const DataElement& a, const DataElement& b) {
 }
 #endif  // defined(UNIT_TEST)
 
-}  // namespace webkit_base
+}  // namespace webkit_common
 
-#endif  // WEBKIT_BASE_DATA_ELEMENT_H_
+#endif  // WEBKIT_COMMON_DATA_ELEMENT_H_

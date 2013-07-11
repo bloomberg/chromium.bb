@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "url/gurl.h"
-#include "webkit/base/data_element.h"
+#include "webkit/common/data_element.h"
 #include "webkit/common/webkit_common_export.h"
 
 namespace base {
@@ -26,7 +26,7 @@ class WEBKIT_COMMON_EXPORT ResourceRequestBody
     : public base::RefCounted<ResourceRequestBody>,
       public base::SupportsUserData {
  public:
-  typedef webkit_base::DataElement Element;
+  typedef webkit_common::DataElement Element;
 
   ResourceRequestBody();
 

@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/base/data_element.h"
+#include "webkit/common/data_element.h"
 
-namespace webkit_base {
+namespace webkit_common {
 
 DataElement::DataElement()
     : type_(TYPE_UNKNOWN),
@@ -57,4 +57,4 @@ void DataElement::SetToFileSystemUrlRange(
   expected_modification_time_ = expected_modification_time;
 }
 
-}  // webkit_base
+}  // webkit_common

@@ -23,7 +23,6 @@
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
       ],
 
@@ -45,6 +44,8 @@
         'cursors/webcursor_gtk_data.h',
         'cursors/webcursor_mac.mm',
         'cursors/webcursor_win.cc',
+        'data_element.cc',
+        'data_element.h',
         'resource_devtools_info.cc',
         'resource_devtools_info.h',
         'resource_request_body.cc',
