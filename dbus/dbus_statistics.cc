@@ -84,8 +84,8 @@ class DBusStatistics {
                const std::string& method,
                StatType type) {
     if (base::PlatformThread::CurrentId() != origin_thread_id_) {
-      DLOG(WARNING) << "Ignoring DBusStatistics::AddStat call from thread: "
-                    << base::PlatformThread::CurrentId();
+      DVLOG(1) << "Ignoring DBusStatistics::AddStat call from thread: "
+               << base::PlatformThread::CurrentId();
       return;
     }
     Stat* stat = GetStat(service, interface, method, true);
