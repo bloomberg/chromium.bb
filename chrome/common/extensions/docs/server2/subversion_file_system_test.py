@@ -45,7 +45,7 @@ class SubversionFileSystemTest(unittest.TestCase):
 
   def testDirStat(self):
     file_system = self._CreateSubversionFileSystem()
-    stat_info =file_system.Stat('stat/')
+    stat_info = file_system.Stat('stat/')
     expected = StatInfo(
       '151113',
       child_versions=json.loads(self._ReadLocalFile('stat_result.json'))

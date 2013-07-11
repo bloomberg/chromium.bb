@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// An API that can be used to override the system's power management
-// features.
+// Use the <code>chrome.power</code> API to override the system's power
+// management features.
 namespace power {
   [noinline_doc] enum Level {
     // Prevent the system from sleeping in response to user inactivity.

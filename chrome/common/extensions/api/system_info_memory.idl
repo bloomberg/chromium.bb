@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// File-level comment to appease parser. Eventually this will not be necessary.
+// The <code>chrome.systemInfo.memory</code> API.
 namespace systemInfo.memory {
 
   dictionary MemoryInfo {
@@ -13,7 +13,7 @@ namespace systemInfo.memory {
   };
 
   callback MemoryInfoCallback = void (MemoryInfo info);
-  
+
   interface Functions {
     // Get physical memory information.
     static void get(MemoryInfoCallback callback);

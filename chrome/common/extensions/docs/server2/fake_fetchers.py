@@ -37,6 +37,7 @@ class FakeOmahaProxy(_FakeFetcher):
                                        'test_data',
                                        'branch_utility',
                                        'first.json'))
+
 class FakeOmahaHistory(_FakeFetcher):
   def fetch(self, url):
     return self._ReadFile(os.path.join('server2',

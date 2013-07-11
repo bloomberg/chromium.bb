@@ -4,7 +4,7 @@
 
 // Use <code>chrome.pushMessaging</code> to enable apps and extensions to
 // receive message data sent through
-// <a href="cloudMessaging">Google Cloud Messaging</a>.
+// <a href="cloudMessaging.html">Google Cloud Messaging</a>.
 namespace pushMessaging {
 
   dictionary Message {

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A private API for accessing feedback reports sent by a user.
+// Use the <code>chrome.feedbackPrivate</code> API to provide Chrome [OS]
+// feedback to the Google Feedback servers.
 namespace feedbackPrivate {
 
   dictionary AttachedFile {
