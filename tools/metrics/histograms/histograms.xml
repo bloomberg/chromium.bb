@@ -196,6 +196,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Ash.GestureTarget" enum="GestureActionType">
+  <summary>
+    The gesture-events recognized and dispatched by the browser gesture
+    recognizer for various UI components.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess">
   <summary>
     Whether DnsConfigService::OnConfigChange actually corresponded to a change
@@ -16043,6 +16050,30 @@ other types of suffix sets.
   <int value="16385" label="FOLDER"/>
   <int value="32769" label="FILE"/>
   <int value="32770" label="PDF"/>
+</enum>
+
+<enum name="GestureActionType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Omnibox pinch"/>
+  <int value="2" label="Omnibox scroll"/>
+  <int value="3" label="Tabstrip pinch"/>
+  <int value="4" label="Tabstrip scroll"/>
+  <int value="5" label="Bezel scroll"/>
+  <int value="6" label="Desktop scroll"/>
+  <int value="7" label="Desktop pinch"/>
+  <int value="8" label="Webpage pinch"/>
+  <int value="9" label="Webpage scroll"/>
+  <int value="10" label="Webpage tap"/>
+  <int value="11" label="Tabstrip tap"/>
+  <int value="12" label="Bezel down"/>
+  <int value="13" label="Tab switched tap"/>
+  <int value="14" label="Active tab tap"/>
+  <int value="15" label="Tab close button tap"/>
+  <int value="16" label="New tab button tap"/>
+  <int value="17" label="Top edge of window tap"/>
+  <int value="18" label="Window size button tap"/>
+  <int value="19" label="Area surrounding tabstrip tap"/>
+  <int value="20" label="Window resized double tap"/>
 </enum>
 
 <enum name="GetPerfDataOutcome" type="int">
