@@ -773,8 +773,6 @@ void FaviconCache::UpdateFaviconVisitTime(const GURL& icon_url,
   FaviconMap::const_iterator iter = synced_favicons_.find(icon_url);
   DCHECK(iter != synced_favicons_.end());
   if (iter->second->last_visit_time >= time) {
-    // TODO(zea): remove this, crbug.com/258196.
-    CHECK_GT(iter->second->last_visit_time.ToInternalValue(), 0);
     return;
   }
   // Erase, update the time, then re-insert to maintain ordering.
@@ -792,8 +790,6 @@ void FaviconCache::UpdateFaviconVisitTime(const GURL& icon_url,
     }
   }
   DCHECK_EQ(recent_favicons_.size(), synced_favicons_.size());
-  // TODO(zea): remove this, crbug.com/258196.
-  CHECK_GT(iter->second->last_visit_time.ToInternalValue(), 0);
 }
 
 void FaviconCache::ExpireFaviconsIfNecessary(
