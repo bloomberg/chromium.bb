@@ -100,7 +100,7 @@ void HTMLIdentifier::addNames(QualifiedName** names, unsigned namesCount, unsign
         IdentifierTable::AddResult addResult = table.add(hash, name);
         maxNameLength = std::max(maxNameLength, name->length());
         // Ensure we're using the same hashing algorithm to get and set.
-        ASSERT_UNUSED(addResult, !addResult.isNewEntry || HTMLIdentifier::findIfKnown(name->bloatedCharacters(), name->length()) == name);
+        ASSERT_UNUSED(addResult, !addResult.isNewEntry || HTMLIdentifier::findIfKnown(String(name).charactersWithNullTermination().data(), name->length()) == name);
         // We expect some hash collisions, but only for identical strings.
         // Since all of these names are AtomicStrings pointers should be equal.
         // Note: If you hit this ASSERT, then we had a hash collision among
