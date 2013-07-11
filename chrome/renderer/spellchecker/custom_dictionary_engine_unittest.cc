@@ -21,8 +21,3 @@ TEST(CustomDictionaryTest, Basic) {
   engine.Init(custom_words);
   EXPECT_TRUE(engine.SpellCheckWord(ASCIIToUTF16("helllo").c_str(), 0, 6));
 }
-
-TEST(CustomDictionaryTest, HandleNullCharacters) {
-  char16 data[4] = {'a', 0, 'b', 'c'};
-  EXPECT_FALSE(CustomDictionaryEngine().SpellCheckWord(data, 1, 1));
-}
