@@ -68,12 +68,6 @@ namespace {
 // an IPC message back to the renderer.
 const int kDefaultPageID = 137;
 
-typedef Tuple5<int,
-               std::vector<base::string16>,
-               std::vector<base::string16>,
-               std::vector<base::string16>,
-               std::vector<int> > AutofillParam;
-
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() : PersonalDataManager("en-US") {

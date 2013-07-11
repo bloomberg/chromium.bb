@@ -514,7 +514,9 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
       "platform_apps/web_view/common", "execute_code")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioning) {
+// This test used the old Autofill UI, which has been removed.
+// See crbug.com/259438
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioning) {
   SetupTest(
       "web_view/popup_positioning",
       "/extensions/platform_apps/web_view/popup_positioning/guest.html");

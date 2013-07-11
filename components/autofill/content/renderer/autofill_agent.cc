@@ -764,24 +764,15 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (password_autofill_agent_->ShowSuggestions(element))
     return;
 
-  // If autocomplete is disabled at the form level, then we might want to show a
-  // warning in place of suggestions.  However, if autocomplete is disabled
-  // specifically for this field, we never want to show a warning.  Otherwise,
-  // we might interfere with custom popups (e.g. search suggestions) used by the
-  // website.  Note that we cannot use the WebKit method element.autoComplete()
+  // If autocomplete is disabled at the field level, ensure that the native
+  // UI won't try to show a warning, since that may conflict with a custom
+  // popup. Note that we cannot use the WebKit method element.autoComplete()
   // as it does not allow us to distinguish the case where autocomplete is
   // disabled for *both* the element and for the form.
-  // Also, if the field has no name, then we won't have values.
   const base::string16 autocomplete_attribute =
       element.getAttribute("autocomplete");
-  if (LowerCaseEqualsASCII(autocomplete_attribute, "off") ||
-      element.nameForAutofill().isEmpty()) {
-    CombineDataListEntriesAndShow(element, std::vector<base::string16>(),
-                                  std::vector<base::string16>(),
-                                  std::vector<base::string16>(),
-                                  std::vector<int>(), false);
-    return;
-  }
+  if (LowerCaseEqualsASCII(autocomplete_attribute, "off"))
+    display_warning_if_disabled = false;
 
   QueryAutofillSuggestions(element, display_warning_if_disabled);
 }
@@ -800,9 +791,6 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   // warning.  Otherwise, we want to ignore fields that disable autocomplete, so
   // that the suggestions list does not include suggestions for these form
   // fields -- see comment 1 on http://crbug.com/69914
-  // Rather than testing the form's autocomplete enabled state, we test the
-  // element's state.  The DCHECK below ensures that this is equivalent.
-  DCHECK(element.autoComplete() || !element.form().autoComplete());
   const RequirementsMask requirements =
       element.autoComplete() ? REQUIRE_AUTOCOMPLETE : REQUIRE_NONE;
 

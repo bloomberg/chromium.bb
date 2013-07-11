@@ -19,6 +19,12 @@ using WebKit::WebString;
 
 namespace autofill {
 
+typedef Tuple5<int,
+               autofill::FormData,
+               autofill::FormFieldData,
+               gfx::RectF,
+               bool> AutofillQueryParam;
+
 TEST_F(ChromeRenderViewTest, SendForms) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
@@ -258,24 +264,29 @@ TEST_F(ChromeRenderViewTest, ShowAutofillWarning) {
       document.getElementById("middlename").to<WebInputElement>();
 
   // Simulate attempting to Autofill the form from the first element, which
-  // specifies autocomplete="off".  This should still not trigger an IPC, as we
-  // don't show warnings for elements that have autocomplete="off".
+  // specifies autocomplete="off".  This should still trigger an IPC which
+  // shouldn't display warnings.
   autofill_agent_->InputElementClicked(firstname, true, true);
   const IPC::Message* message1 = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_QueryFormFieldAutofill::ID);
-  EXPECT_EQ(static_cast<IPC::Message*>(NULL), message1);
+  EXPECT_NE(static_cast<IPC::Message*>(NULL), message1);
+
+  AutofillQueryParam query_param;
+  AutofillHostMsg_QueryFormFieldAutofill::Read(message1, &query_param);
+  EXPECT_FALSE(query_param.e);
+  render_thread_->sink().ClearMessages();
 
   // Simulate attempting to Autofill the form from the second element, which
-  // does not specify autocomplete="off".  This *should* trigger an IPC, as we
-  // *do* show warnings for elements that don't themselves set
-  // autocomplete="off", but for which the form does.
+  // does not specify autocomplete="off".  This should trigger an IPC that will
+  // show warnings, as we *do* show warnings for elements that don't themselves
+  // set autocomplete="off", but for which the form does.
   autofill_agent_->InputElementClicked(middlename, true, true);
   const IPC::Message* message2 = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_QueryFormFieldAutofill::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
-  // TODO(isherman): It would be nice to verify here that the message includes
-  // the correct data.  I'm not sure how to extract that information from an
-  // IPC::Message though.
+
+  AutofillHostMsg_QueryFormFieldAutofill::Read(message2, &query_param);
+  EXPECT_TRUE(query_param.e);
 }
 
 }  // namespace autofill
