@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
+#include "core/page/Page.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/filters/FEColorMatrix.h"
@@ -115,8 +116,9 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
 
     // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the same zoom as the unzoomed reference filters.
     const RenderStyle* style = renderer->style();
-    float zoom = style ? style->effectiveZoom() : 1.0f;
-    float invZoom = 1.0f / zoom;
+    // FIXME: The effects now contain high dpi information, but the software path doesn't (yet) scale its backing.
+    //        When the proper dpi dependant backing size is allocated, we should remove deviceScaleFactor(...) here.
+    float invZoom = 1.0f / ((style ? style->effectiveZoom() : 1.0f) * deviceScaleFactor(renderer->frame()));
 
     RefPtr<FilterEffect> previousEffect = m_sourceGraphic;
     for (size_t i = 0; i < operations.operations().size(); ++i) {

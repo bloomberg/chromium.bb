@@ -378,7 +378,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
     if (!inValue->isValueList())
         return false;
 
-    float zoomFactor = style ? style->effectiveZoom() : 1;
+    float zoomFactor = (style ? style->effectiveZoom() : 1) * state.elementStyleResources().deviceScaleFactor();
     FilterOperations operations;
     for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();

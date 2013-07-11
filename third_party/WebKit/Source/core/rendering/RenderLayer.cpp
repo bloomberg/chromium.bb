@@ -6255,7 +6255,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
             ReferenceFilterOperation* referenceOperation = static_cast<ReferenceFilterOperation*>(filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
             RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
-            float zoom = style->effectiveZoom();
+            float zoom = style->effectiveZoom() * WebCore::deviceScaleFactor(renderer()->frame());
             referenceFilter->setFilterResolution(FloatSize(zoom, zoom));
             referenceFilter->setLastEffect(ReferenceFilterBuilder::build(referenceFilter.get(), renderer(), referenceFilter->sourceGraphic(),
                 referenceOperation));
