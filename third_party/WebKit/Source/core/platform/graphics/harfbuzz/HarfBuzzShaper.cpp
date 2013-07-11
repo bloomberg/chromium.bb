@@ -480,7 +480,8 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
             String upperText = String(m_normalizedBuffer.get() + currentRun->startIndex(), currentRun->numCharacters());
             upperText.makeUpper();
             currentFontData = m_font->glyphDataForCharacter(upperText[0], false, SmallCapsVariant).fontData;
-            hb_buffer_add_utf16(harfBuzzBuffer.get(), upperText.bloatedCharacters(), currentRun->numCharacters(), 0, currentRun->numCharacters());
+            ASSERT(!upperText.is8Bit()); // m_normalizedBuffer is 16 bit, therefore upperText is 16 bit, even after we call makeUpper().
+            hb_buffer_add_utf16(harfBuzzBuffer.get(), upperText.characters16(), currentRun->numCharacters(), 0, currentRun->numCharacters());
         } else
             hb_buffer_add_utf16(harfBuzzBuffer.get(), m_normalizedBuffer.get() + currentRun->startIndex(), currentRun->numCharacters(), 0, currentRun->numCharacters());
 
