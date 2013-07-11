@@ -423,7 +423,7 @@ def _ProcessOperandWrites(instruction, write_operands, zero_extending=False):
     SandboxingError if write is invalid.
   """
   postcondition = Condition()
-  for op in write_operands:
+  for i, op in enumerate(write_operands):
     if op in ['%r15', '%r15d', '%r15w', '%r15b']:
       raise SandboxingError('changes to r15 are not allowed', instruction)
     if op in ['%bpl', '%bp', '%rbp']:
@@ -432,13 +432,11 @@ def _ProcessOperandWrites(instruction, write_operands, zero_extending=False):
       raise SandboxingError('changes to rsp are not allowed', instruction)
 
     if op in REGS32:
-      if zero_extending:
-        if not postcondition.Implies(Condition()):
-          raise SandboxingError(
-              '%s when zero-extending %s'
-              % (postcondition.WhyNotImplies(Condition()), op),
-              instruction)
-
+      # Only last of the operand writes is considered zero-extending.
+      # For example,
+      #   xchg %eax, (%rbp)
+      # does not zero-extend %rax.
+      if zero_extending and i == len(write_operands) - 1:
         r = REG32_TO_REG64[op]
         if r in ['%rbp', '%rsp']:
           postcondition = Condition(restricted_instead_of_sandboxed=r)

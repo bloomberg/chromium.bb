@@ -36,5 +36,5 @@
   0: [0] improper %rbp sandboxing
   return code: 1
 @spec:
-  0: ('%rbp should not be restricted when zero-extending %ecx', Instruction(0x0: 87 e9  xchg %ebp,%ecx))
+  0: ('non-zero-extending changes to ebp and esp are not allowed', Instruction(0x0: 87 e9  xchg %ebp,%ecx))
   2: register %rcx should be restricted, while in fact None is restricted
