@@ -8,10 +8,11 @@
 # machine-parsable.
 
 # Drop uninformative lines.
-/The operation completed successfully./d
+/The operation completed successfully\./d
 
 # Drop parallelization indicators on lines.
 s/^[0-9]\+>//
 
 # Shorten bindings generation lines
-s/^.*"perl".*generate-bindings.pl".*\("[^"]\+\.idl"\).*$/  generate-bindings \1/
+s/^.*"\(perl\|[^"]\+perl\.exe\)".*deprecated_generate_bindings\.pl".*\("[^"]\+\.idl"\).*$/  deprecated_generate_bindings \2/
+s/^.*"python".*idl_compiler\.py".*\("[^"]\+\.idl"\).*$/  idl_compiler \1/
