@@ -76,6 +76,10 @@ class ASH_EXPORT DisplayManager :
   // Returns the display id of the first display in the outupt list.
   int64 first_display_id() const { return first_display_id_; }
 
+  // Initializes displays using command line flag, or uses
+  // defualt if no options are specified.
+  void InitFromCommandLine();
+
   // True if the given |display| is currently connected.
   bool IsActiveDisplay(const gfx::Display& display) const;
 
@@ -213,17 +217,12 @@ private:
     change_display_upon_host_resize_ = value;
   }
 
-  void Init();
-
   gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
   gfx::Display& FindDisplayForId(int64 id);
 
   // Add the mirror display's display info if the software based
   // mirroring is in use.
   void AddMirrorDisplayInfoIfAny(std::vector<DisplayInfo>* display_info_list);
-
-  // Refer to |CreateDisplayFromSpec| API for the format of |spec|.
-  void AddDisplayFromSpec(const std::string& spec);
 
   // Inserts and update the DisplayInfo according to the overscan
   // state. Note that The DisplayInfo stored in the |internal_display_info_|

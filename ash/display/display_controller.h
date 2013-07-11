@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/gfx/point.h"
 
 namespace aura {
 class Display;
@@ -31,7 +32,6 @@ template <typename T> class JSONValueConverter;
 namespace gfx {
 class Display;
 class Insets;
-class Point;
 }
 
 namespace ash {
@@ -74,9 +74,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // Returns the number of display. This is safe to use after
   // ash::Shell is deleted.
   static int GetNumDisplays();
-
-  // True if the primary display has been initialized.
-  static bool HasPrimaryDisplay();
 
   // Initializes primary display.
   void InitPrimaryDisplay();
@@ -141,12 +138,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // the center of the nearest display if it's outside of all displays.
   void EnsurePointerInDisplays();
 
-  gfx::Point GetNativeMouseCursorLocation() const;
-
-  // Update the current cursor image that is sutable for the given
-  // |point_in_native|.
-  void UpdateMouseCursor(const gfx::Point& point_in_native);
-
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
       const gfx::Display& display) OVERRIDE;
@@ -207,6 +198,11 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   bool in_bootstrap_;
 
   scoped_ptr<internal::FocusActivationStore> focus_activation_store_;
+
+  // Stores the curent cursor location (in native coordinates) used to
+  // restore the cursor location when display configuration
+  // changed.
+  gfx::Point cursor_location_in_native_coords_for_restore_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayController);
 };

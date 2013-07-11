@@ -368,7 +368,7 @@ TEST_F(DisplayControllerTest, MirroredLayout) {
   EXPECT_EQ(
       2U, Shell::GetInstance()->display_manager()->num_connected_displays());
 
-  UpdateDisplay("500x500,1+0-500x500");
+  UpdateDisplay("1+0-500x500,1+0-500x500");
   EXPECT_TRUE(display_controller->GetCurrentDisplayLayout().mirrored);
   EXPECT_EQ(1, Shell::GetScreen()->GetNumDisplays());
   EXPECT_EQ(

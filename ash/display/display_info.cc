@@ -203,7 +203,7 @@ gfx::Insets DisplayInfo::GetOverscanInsetsInPixel() const {
 std::string DisplayInfo::ToString() const {
   int rotation_degree = static_cast<int>(rotation_) * 90;
   return base::StringPrintf(
-      "DisplayInfo[%lld] bounds=%s, size=%s, scale=%f, "
+      "DisplayInfo[%lld] native bounds=%s, size=%s, scale=%f, "
       "overscan=%s, rotation=%d, ui-scale=%f",
       static_cast<long long int>(id_),
       bounds_in_pixel_.ToString().c_str(),

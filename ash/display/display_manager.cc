@@ -18,16 +18,13 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/root_window_host.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
@@ -47,7 +44,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "ui/aura/remote_root_window_host_win.h"
 #endif
 
 DECLARE_WINDOW_PROPERTY_TYPE(int64);
@@ -147,7 +143,6 @@ DisplayManager::DisplayManager()
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::chromeos::IsRunningOnChromeOS();
 #endif
-  Init();
 }
 
 DisplayManager::~DisplayManager() {
@@ -198,6 +193,27 @@ float DisplayManager::GetNextUIScale(const DisplayInfo& info, bool up) {
   return 1.0f;
 }
 
+void DisplayManager::InitFromCommandLine() {
+  DisplayInfoList info_list;
+
+  const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAshHostWindowBounds);
+  vector<string> parts;
+  base::SplitString(size_str, ',', &parts);
+  for (vector<string>::const_iterator iter = parts.begin();
+       iter != parts.end(); ++iter) {
+    info_list.push_back(DisplayInfo::CreateFromSpec(*iter));
+  }
+  if (info_list.empty()) {
+    info_list.push_back(
+        DisplayInfo::CreateFromSpec(std::string() /* default */));
+  }
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
+    gfx::Display::SetInternalDisplayId(info_list[0].id());
+  OnNativeDisplaysChanged(info_list);
+}
+
 void DisplayManager::UpdateDisplayBoundsForLayout(
     const DisplayLayout& layout,
     const gfx::Display& primary_display,
@@ -205,8 +221,6 @@ void DisplayManager::UpdateDisplayBoundsForLayout(
   DCHECK_EQ("0,0", primary_display.bounds().origin().ToString());
 
   const gfx::Rect& primary_bounds = primary_display.bounds();
-  DisplayController::GetPrimaryDisplay().bounds();
-
   const gfx::Rect& secondary_bounds = secondary_display->bounds();
   gfx::Point new_secondary_origin = primary_bounds.origin();
 
@@ -402,7 +416,8 @@ void DisplayManager::OnNativeDisplaysChanged(
     return;
   }
   first_display_id_ = updated_displays[0].id();
-  std::set<int> y_coords;
+  std::set<gfx::Point> origins;
+
   if (updated_displays.size() == 1) {
     VLOG(1) << "OnNativeDisplaysChanged(1):" << updated_displays[0].ToString();
   } else {
@@ -420,13 +435,13 @@ void DisplayManager::OnNativeDisplaysChanged(
        ++iter) {
     if (!internal_display_connected)
       internal_display_connected = IsInternalDisplayId(iter->id());
-    // Mirrored monitors have the same y coordinates.
-    int y = iter->bounds_in_pixel().y();
-    if (y_coords.find(y) != y_coords.end()) {
+    // Mirrored monitors have the same origins.
+    gfx::Point origin = iter->bounds_in_pixel().origin();
+    if (origins.find(origin) != origins.end()) {
       InsertAndUpdateDisplayInfo(*iter);
       mirrored_display_ = CreateDisplayFromDisplayInfoById(iter->id());
     } else {
-      y_coords.insert(y);
+      origins.insert(origin);
       new_display_info_list.push_back(*iter);
     }
   }
@@ -477,7 +492,6 @@ void DisplayManager::UpdateDisplays(
   DisplayInfoList::const_iterator new_info_iter = new_display_info_list.begin();
 
   DisplayList new_displays;
-  bool update_mouse_location = false;
 
   scoped_ptr<MirrorWindowCreator> mirror_window_creater;
 
@@ -507,7 +521,6 @@ void DisplayManager::UpdateDisplays(
         removed_displays.push_back(*curr_iter);
         ++curr_iter;
       }
-      update_mouse_location = true;
       continue;
     }
 
@@ -522,7 +535,6 @@ void DisplayManager::UpdateDisplays(
       // more displays in current list.
       removed_displays.push_back(*curr_iter);
       ++curr_iter;
-      update_mouse_location = true;
     } else if (curr_iter->id() == new_info_iter->id()) {
       const gfx::Display& current_display = *curr_iter;
       // Copy the info because |CreateDisplayFromInfo| updates the instance.
@@ -545,11 +557,6 @@ void DisplayManager::UpdateDisplays(
            new_display.GetSizeInPixel()) ||
           (current_display.rotation() != new_display.rotation())) {
 
-        // Don't update mouse location if the display size has
-        // changed due to rotation or zooming.
-        if (host_window_bounds_changed)
-          update_mouse_location = true;
-
         changed_display_indices.push_back(new_displays.size());
       }
 
@@ -561,7 +568,6 @@ void DisplayManager::UpdateDisplays(
       // more displays in current list between ids, which means it is deleted.
       removed_displays.push_back(*curr_iter);
       ++curr_iter;
-      update_mouse_location = true;
     } else {
       // more displays in new list between ids, which means it is added.
       added_display_indices.push_back(new_displays.size());
@@ -587,9 +593,7 @@ void DisplayManager::UpdateDisplays(
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
-  gfx::Point mouse_location_in_native;
   display_controller->NotifyDisplayConfigurationChanging();
-  mouse_location_in_native = display_controller->GetNativeMouseCursorLocation();
 
   size_t updated_index;
   if (UpdateSecondaryDisplayBoundsForLayout(&new_displays, &updated_index) &&
@@ -632,10 +636,6 @@ void DisplayManager::UpdateDisplays(
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
   }
   display_controller->NotifyDisplayConfigurationChanged();
-  if (update_mouse_location)
-    display_controller->EnsurePointerInDisplays();
-  else
-    display_controller->UpdateMouseCursor(mouse_location_in_native);
 
 #if defined(USE_X11) && defined(OS_CHROMEOS)
   if (!changed_display_indices.empty() && base::chromeos::IsRunningOnChromeOS())
@@ -829,25 +829,6 @@ void DisplayManager::SetSoftwareMirroring(bool enabled) {
   mirrored_display_ = gfx::Display();
 }
 
-void DisplayManager::Init() {
-  // TODO(oshima): Move this logic to DisplayChangeObserver.
-  const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAshHostWindowBounds);
-  vector<string> parts;
-  base::SplitString(size_str, ',', &parts);
-  for (vector<string>::const_iterator iter = parts.begin();
-       iter != parts.end(); ++iter) {
-    AddDisplayFromSpec(*iter);
-  }
-  if (displays_.empty())
-    AddDisplayFromSpec(std::string() /* default */);
-  first_display_id_ = displays_[0].id();
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
-    gfx::Display::SetInternalDisplayId(first_display_id_);
-  num_connected_displays_ = displays_.size();
-}
-
 gfx::Display& DisplayManager::FindDisplayForRootWindow(
     const aura::RootWindow* root_window) {
   int64 id = root_window->GetProperty(kDisplayIdKey);
@@ -878,13 +859,6 @@ void DisplayManager::AddMirrorDisplayInfoIfAny(
     std::vector<DisplayInfo>* display_info_list) {
   if (software_mirroring_enabled_ && mirrored_display_.is_valid())
     display_info_list->push_back(GetDisplayInfo(mirrored_display_.id()));
-}
-
-void DisplayManager::AddDisplayFromSpec(const std::string& spec) {
-  DisplayInfo display_info = DisplayInfo::CreateFromSpec(spec);
-  InsertAndUpdateDisplayInfo(display_info);
-  gfx::Display display = CreateDisplayFromDisplayInfoById(display_info.id());
-  displays_.push_back(display);
 }
 
 void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {

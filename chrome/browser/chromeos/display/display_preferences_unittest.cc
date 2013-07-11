@@ -272,7 +272,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   SetCurrentDisplayLayout(
       ash::DisplayLayout(ash::DisplayLayout::BOTTOM, 20));
 
-  UpdateDisplay("200x200*2,1+0-200x200");
+  UpdateDisplay("1+0-200x200*2,1+0-200x200");
   // Mirrored.
   int offset = 0;
   std::string position;

@@ -438,6 +438,7 @@ void Shell::Init() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   delegate_->PreInit();
+  bool display_initialized = false;
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   output_configurator_animation_.reset(
       new internal::OutputConfiguratorAnimation());
@@ -454,8 +455,11 @@ void Shell::Init() {
       output_configurator_->set_mirroring_controller(display_manager_.get());
     output_configurator_->Start();
     display_change_observer_->OnDisplayModeChanged();
+    display_initialized = true;
   }
 #endif
+  if (!display_initialized)
+    display_manager_->InitFromCommandLine();
 
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.

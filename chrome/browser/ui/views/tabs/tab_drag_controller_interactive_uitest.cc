@@ -1517,7 +1517,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("ash-host-window-bounds",
-                                    "400x400,800x800*2");
+                                    "400x400,0+400-800x800*2");
   }
 
   float GetCursorDeviceScaleFactor() const {
