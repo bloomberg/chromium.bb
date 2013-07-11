@@ -20,8 +20,8 @@ include_rules = [
   "+webkit/glue",
   "+webkit/plugins",
 
-  # TODO(jam): remove me once chrome_notifcation_types.h moves to browser
-  "+content/public/browser/notification_types.h",
+  # TODO(jam): remove me once chrome_notifcation_types.h includes are updated.
+  "+chrome/browser/chrome_notification_types.h",
 
   # TODO(ananta): remove me when
   # bug https://code.google.com/p/chromium/issues/detail?id=237249 is fixed.
