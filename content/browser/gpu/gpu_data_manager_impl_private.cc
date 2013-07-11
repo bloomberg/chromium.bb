@@ -667,6 +667,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitch(switches::kDisableImageTransportSurface);
     reduce_sandbox = true;
   }
+  if (gpu_driver_bugs_.find(gpu::DISABLE_D3D11) != gpu_driver_bugs_.end())
+    command_line->AppendSwitch(switches::kDisableD3D11);
   if (use_swiftshader_) {
     command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
     if (swiftshader_path.empty())

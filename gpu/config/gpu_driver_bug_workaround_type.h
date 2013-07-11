@@ -60,6 +60,8 @@
          use_non_zero_size_for_client_side_stream_buffers)   \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
          disable_async_readpixels)                           \
+  GPU_OP(DISABLE_D3D11,                                      \
+         disable_d3d11)                                      \
 
 namespace gpu {
 

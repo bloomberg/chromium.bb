@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.2",
+  "version": "2.3",
   "entries": [
     {
       "id": 1,
@@ -401,6 +401,20 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "disable_async_readpixels"
+      ]
+    },
+    {
+      "id": 26,
+      "description": "Disable use of Direct3D 11 on Windows Vista",
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "<",
+          "number": "6.1"
+        }
+      },
+      "features": [
+        "disable_d3d11"
       ]
     }
   ]
