@@ -10813,10 +10813,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         The following details will be shared with <ph name="SITE">$1<ex>www.shopping.com</ex></ph>
       </message>
       <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_ERROR" desc="Text explaining there has been an Autocheckout error and the user must finish checking out themselves.">
-        Oops. Auto-Checkout cannot complete this form. You'll have to the finish this transaction from here.
+        Oops! We couldn't complete your entire checkout form. We finished as much as we could, but you'll have to take over from here.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_SUCCESS" desc="Text explaining Autocheckout succeeded but the user must confirm the transaction.">
-        You're almost done. After you close this window, confirm this transaction on the merchant's site and look forward to receiving your new purchase.
+        We're done! Click continue to check your details on the confirmation page. Don't forget to submit your purchase!
       </message>
       <message name="IDS_AUTOFILL_DIALOG_VERIFY_CVV" desc="Text explaining a user must enter their CVV to continuing submitting for security purposes (while using Google Wallet).">
         For your security, please verify your card details.
