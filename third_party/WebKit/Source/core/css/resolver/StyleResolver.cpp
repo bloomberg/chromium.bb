@@ -520,7 +520,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
     RenderStyle* parentStyle = parent->renderStyle();
     unsigned subcount = 0;
     Node* thisCousin = parent;
-    Node* currentNode = parent->previousSibling();
+    Node* currentNode = parent->nextSibling();
 
     // Reserve the tries for this level. This effectively makes sure that the algorithm
     // will never go deeper than cStyleSearchLevelThreshold levels into recursion.
@@ -538,7 +538,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
             }
             if (subcount >= cStyleSearchThreshold)
                 return 0;
-            currentNode = currentNode->previousSibling();
+            currentNode = currentNode->nextSibling();
         }
         currentNode = locateCousinList(thisCousin->parentElement(), visitedNodeCount);
         thisCousin = currentNode;
@@ -737,7 +737,7 @@ bool StyleResolver::canShareStyleWithElement(Element* element) const
 
 inline Element* StyleResolver::findSiblingForStyleSharing(Node* node, unsigned& count) const
 {
-    for (; node; node = node->previousSibling()) {
+    for (; node; node = node->nextSibling()) {
         if (!node->isStyledElement())
             continue;
         if (canShareStyleWithElement(toElement(node)))
@@ -791,11 +791,11 @@ RenderStyle* StyleResolver::locateSharedStyle()
     // FIXME: This shouldn't be a member variable. The style sharing code could be factored out of StyleResolver.
     state.setElementAffectedByClassRules(state.element() && state.element()->hasClass() && classNamesAffectedByRules(state.element()->classNames()));
 
-    // Check previous siblings and their cousins.
+    // Check next siblings and their cousins.
     unsigned count = 0;
     unsigned visitedNodeCount = 0;
     Element* shareElement = 0;
-    Node* cousinList = state.styledElement()->previousSibling();
+    Node* cousinList = state.styledElement()->nextSibling();
     while (cousinList) {
         shareElement = findSiblingForStyleSharing(cousinList, count);
         if (shareElement)
@@ -997,8 +997,8 @@ static inline bool isAtShadowBoundary(const Element* element)
     return parentNode && parentNode->isShadowRoot();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent,
-    StyleSharingBehavior sharingBehavior, RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
+PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
+    RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling, int childIndex)
 {
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
@@ -1013,7 +1013,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     }
 
     StyleResolverState& state = m_state;
-    state.initForStyleResolve(document(), element, defaultParent, regionForStyling);
+    state.initForStyleResolve(document(), element, childIndex, defaultParent, regionForStyling);
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint()) {
         RenderStyle* sharedStyle = locateSharedStyle();
         if (sharedStyle) {
@@ -1204,7 +1204,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     StyleResolverState& state = m_state;
 
-    state.initForStyleResolve(document(), e, parentStyle);
+    state.initForStyleResolve(document(), e, 0, parentStyle);
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());
@@ -1704,7 +1704,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (!e || !e->document()->haveStylesheetsLoaded())
         return 0;
 
-    m_state.initForStyleResolve(document(), e, 0);
+    m_state.initForStyleResolve(document(), e);
 
     ElementRuleCollector collector(this, m_state);
     collector.setMode(SelectorChecker::CollectingRules);
@@ -2051,7 +2051,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
 void StyleResolver::applyPropertyToStyle(CSSPropertyID id, CSSValue* value, RenderStyle* style)
 {
-    m_state.initForStyleResolve(document(), 0, style);
+    m_state.initForStyleResolve(document(), 0, 0, style);
     m_state.setStyle(style);
     applyPropertyToCurrentStyle(id, value);
 }

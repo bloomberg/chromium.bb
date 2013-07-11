@@ -497,7 +497,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             if (!selector->parseNth())
                 break;
             if (Element* parentElement = element->parentElement()) {
-                int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
+                // FIXME: We should always have the index passed in to avoid needing countElementsBefore.
+                int count = context.childIndex ? context.childIndex : 1 + siblingTraversalStrategy.countElementsBefore(element);
                 if (m_mode == ResolvingStyle) {
                     RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element->renderStyle();
                     element->setChildIndex(count);
@@ -530,7 +531,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     parentElement->setChildrenAffectedByBackwardPositionalRules();
                 if (!parentElement->isFinishedParsingChildren())
                     return false;
-                int count = 1 + siblingTraversalStrategy.countElementsAfter(element);
+                // FIXME: We should always have the index passed in to avoid needing countElementsAfter.
+                int count = context.childIndex ? context.childIndex : 1 + siblingTraversalStrategy.countElementsAfter(element);
                 if (selector->matchNth(count))
                     return true;
             }

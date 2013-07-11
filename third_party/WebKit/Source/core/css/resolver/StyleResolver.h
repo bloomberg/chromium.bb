@@ -183,7 +183,13 @@ public:
     void popParentShadowRoot(const ShadowRoot*);
 
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
-        RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
+        RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0, int childIndex = 0);
+
+    // childIndex's origin is 1, and avoids unnecessary tree walks to resolve nth/nth-last selectors.
+    PassRefPtr<RenderStyle> styleForElement(Element* element, int childIndex)
+    {
+        return styleForElement(element, 0, AllowStyleSharing, MatchAllRules, 0, childIndex);
+    }
 
     void keyframeStylesForAnimation(Element*, const RenderStyle*, KeyframeList&);
 

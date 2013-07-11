@@ -436,7 +436,7 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
-    bool recalcStyle(StyleChange = NoChange);
+    bool recalcStyle(StyleChange = NoChange, int childIndex = 0);
     void didAffectSelector(AffectedSelectorMask);
 
     ElementShadow* shadow() const;
@@ -608,8 +608,8 @@ public:
 
     bool isSpellCheckingEnabled() const;
 
-    PassRefPtr<RenderStyle> styleForRenderer();
-    PassRefPtr<RenderStyle> originalStyleForRenderer();
+    PassRefPtr<RenderStyle> styleForRenderer(int childIndex = 0);
+    PassRefPtr<RenderStyle> originalStyleForRenderer(int childIndex = 0);
 
     RenderRegion* renderRegion() const;
     virtual bool shouldMoveToFlowThread(RenderStyle*) const;

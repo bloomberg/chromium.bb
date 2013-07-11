@@ -1442,22 +1442,22 @@ bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderS
     return false;
 }
 
-PassRefPtr<RenderStyle> Element::styleForRenderer()
+PassRefPtr<RenderStyle> Element::styleForRenderer(int childIndex)
 {
     if (hasCustomStyleCallbacks()) {
         if (RefPtr<RenderStyle> style = customStyleForRenderer())
             return style.release();
     }
 
-    return originalStyleForRenderer();
+    return originalStyleForRenderer(childIndex);
 }
 
-PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
+PassRefPtr<RenderStyle> Element::originalStyleForRenderer(int childIndex)
 {
-    return document()->styleResolver()->styleForElement(this);
+    return document()->styleResolver()->styleForElement(this, childIndex);
 }
 
-bool Element::recalcStyle(StyleChange change)
+bool Element::recalcStyle(StyleChange change, int childIndex)
 {
     ASSERT(document()->inStyleRecalc());
 
@@ -1481,7 +1481,7 @@ bool Element::recalcStyle(StyleChange change)
             // FIXME: This still recalcs style twice when changing display types, but saves
             // us from recalcing twice when going from none -> anything else which is more
             // common, especially during lazy attach.
-            newStyle = styleForRenderer();
+            newStyle = styleForRenderer(childIndex);
             localChange = Node::diff(currentStyle.get(), newStyle.get(), document());
         } else if (attached() && isActiveInsertionPoint(this)) {
             // Active InsertionPoints will never have renderers so there's no reason to
@@ -1545,35 +1545,39 @@ bool Element::recalcStyle(StyleChange change)
     // without doing way too much re-resolution.
     bool forceCheckOfNextElementSibling = false;
     bool forceCheckOfAnyElementSibling = false;
-    bool forceReattachOfAnyWhitespaceSibling = false;
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    int indexForChild = 1;
+    if (hasDirectAdjacentRules || hasIndirectAdjacentRules) {
+        for (Node *child = firstChild(); child; child = child->nextSibling()) {
+            ++indexForChild;
+            if (!child->isElementNode())
+                continue;
+            Element* element = toElement(child);
+            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
+            if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
+                element->setNeedsStyleRecalc();
+            forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
+            forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
+        }
+    }
+    // FIXME: Reversing the loop we call recalcStyle avoids an N^2 walk through the DOM to find the next renderer
+    // to insert before. The logic in NodeRenderingContext should be improved to make this unnecessary.
+    for (Node *child = lastChild(); child; child = child->previousSibling()) {
+        indexForChild = max(--indexForChild, 0);
         bool didReattach = false;
 
-        if (child->renderer())
-            forceReattachOfAnyWhitespaceSibling = false;
-
         if (child->isTextNode()) {
-            if (forceReattachOfAnyWhitespaceSibling && toText(child)->containsOnlyWhitespace())
-                child->reattach();
-            else
-                didReattach = toText(child)->recalcTextStyle(change);
+            didReattach = toText(child)->recalcTextStyle(change);
         } else if (child->isElementNode()) {
             Element* element = toElement(child);
 
-            if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
-                element->setNeedsStyleRecalc();
-
-            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
-            forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
-            forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
-
             if (shouldRecalcStyle(change, element)) {
                 parentPusher.push();
-                didReattach = element->recalcStyle(change);
+                didReattach = element->recalcStyle(change, indexForChild);
             }
         }
 
-        forceReattachOfAnyWhitespaceSibling = didReattach || forceReattachOfAnyWhitespaceSibling;
+        if (didReattach)
+            child->reattachWhitespaceSiblings();
     }
 
     if (shouldRecalcStyle(change, this))

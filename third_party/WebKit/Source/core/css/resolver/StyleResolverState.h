@@ -44,6 +44,7 @@ WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
     StyleResolverState()
     : m_element(0)
+    , m_childIndex(0)
     , m_styledElement(0)
     , m_parentNode(0)
     , m_parentStyle(0)
@@ -59,12 +60,12 @@ public:
     , m_styleMap(*this, m_elementStyleResources)
     { }
 
-public:
-    void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    void initForStyleResolve(Document*, Element*, int childIndex = 0, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
 
     Document* document() const { return m_element->document(); }
     Element* element() const { return m_element; }
+    int childIndex() const { return m_childIndex; }
     Element* styledElement() const { return m_styledElement; }
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
     RenderStyle* style() const { return m_style.get(); }
@@ -141,9 +142,10 @@ public:
     bool useSVGZoomRules() const { return m_element && m_element->isSVGElement(); }
 
 private:
-    void initElement(Element*);
+    void initElement(Element*, int childIndex);
 
     Element* m_element;
+    int m_childIndex;
     RefPtr<RenderStyle> m_style;
     Element* m_styledElement;
     ContainerNode* m_parentNode;
