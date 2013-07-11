@@ -74,7 +74,7 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        ec = FSInvalidModificationError;
+        ec = InvalidModificationError;
         return 0;
     }
 
@@ -115,7 +115,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
     FileSystemType type;
     String filePath;
     if (!completedURL.isValid() || !DOMFileSystemBase::crackFileSystemURL(completedURL, type, filePath)) {
-        ec = FSEncodingError;
+        ec = EncodingError;
         return 0;
     }
 

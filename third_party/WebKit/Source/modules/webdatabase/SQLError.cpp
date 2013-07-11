@@ -42,7 +42,7 @@ SQLError::SQLErrorCode SQLError::ExceptionCodeToSQLErrorCode(ExceptionCode ec)
         return DATABASE_ERR;
     case SQLVersionError:
         return VERSION_ERR;
-    case SQLTooLargeError:
+    case TooLargeError:
         return TOO_LARGE_ERR;
     case SQLQuotaExceededError:
         return QUOTA_ERR;

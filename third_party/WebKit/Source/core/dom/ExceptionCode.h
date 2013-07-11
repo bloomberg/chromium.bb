@@ -77,21 +77,20 @@ namespace WebCore {
         FSSecurityError,
         FSAbortError,
         FSNotReadableError,
-        FSEncodingError,
+        EncodingError,
         FSNoModificationAllowedError,
         FSInvalidStateError,
         FSSyntaxError,
-        FSInvalidModificationError, // FIXME: This seems to be only used by the file system
         FSQuotaExceededError,
         FSTypeMismatchError,
-        FSPathExistsError,
+        PathExistsError,
 
         // SQL
         // FIXME: Consolidate these once https://crbug.com/252233 is fixed.
         SQLUnknownError,
         SQLDatabaseError,
         SQLVersionError,
-        SQLTooLargeError,
+        TooLargeError,
         SQLQuotaExceededError,
         SQLSyntaxError,
         SQLConstraintError,

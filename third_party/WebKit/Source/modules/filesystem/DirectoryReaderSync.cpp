@@ -55,7 +55,7 @@ PassRefPtr<EntryArraySync> DirectoryReaderSync::readEntries(ExceptionCode& ec)
 
     EntriesSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->readDirectory(this, m_fullPath, helper.successCallback(), helper.errorCallback())) {
-        ec = FSInvalidModificationError;
+        ec = InvalidModificationError;
         setHasMoreEntries(false);
         return 0;
     }

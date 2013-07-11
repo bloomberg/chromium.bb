@@ -47,7 +47,7 @@ ExceptionCode FileError::ErrorCodeToExceptionCode(ErrorCode code)
     case NOT_READABLE_ERR:
         return FSNotReadableError;
     case ENCODING_ERR:
-        return FSEncodingError;
+        return EncodingError;
     case NO_MODIFICATION_ALLOWED_ERR:
         return FSNoModificationAllowedError;
     case INVALID_STATE_ERR:
@@ -55,13 +55,13 @@ ExceptionCode FileError::ErrorCodeToExceptionCode(ErrorCode code)
     case SYNTAX_ERR:
         return FSSyntaxError;
     case INVALID_MODIFICATION_ERR:
-        return FSInvalidModificationError;
+        return InvalidModificationError;
     case QUOTA_EXCEEDED_ERR:
         return FSQuotaExceededError;
     case TYPE_MISMATCH_ERR:
         return FSTypeMismatchError;
     case PATH_EXISTS_ERR:
-        return FSPathExistsError;
+        return PathExistsError;
     default:
         ASSERT_NOT_REACHED();
         return 0;
