@@ -87,7 +87,7 @@ public:
     WeakPtr() { }
     WeakPtr(PassRefPtr<WeakReference<T> > ref) : m_ref(ref) { }
 
-    T* get() const { return m_ref->get(); }
+    T* get() const { return m_ref ? m_ref->get() : 0; }
 
 private:
     RefPtr<WeakReference<T> > m_ref;
