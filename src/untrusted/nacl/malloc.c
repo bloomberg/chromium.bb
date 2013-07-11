@@ -19,7 +19,7 @@
 #define LACKS_TIME_H            1
 #define USE_LOCKS               1
 #define USE_SPIN_LOCKS          1
-#define HAVE_MORECORE           1
+#define HAVE_MORECORE           0  /* Don't try to use sbrk() */
 #define HAVE_MMAP               1
 #define HAVE_MREMAP             0
 
