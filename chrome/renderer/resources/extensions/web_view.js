@@ -261,8 +261,10 @@ WebView.prototype.setupWebviewNodeProperties_ = function() {
   // getter value.
   Object.defineProperty(this.webviewNode_, 'contentWindow', {
     get: function() {
+      // TODO(fsamuel): This is a workaround to enable
+      // contentWindow.postMessage until http://crbug.com/152006 is fixed.
       if (browserPluginNode.contentWindow)
-        return browserPluginNode.contentWindow;
+        return browserPluginNode.contentWindow.self;
       console.error(ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
     },
     // No setter.
