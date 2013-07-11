@@ -41,15 +41,12 @@ int TestSemInitErrors() {
 
   sem_t my_semaphore;
 
-  // This produces a compile-time overflow warning with glibc.
-#ifndef __GLIBC__
   // Create a value just beyond SEM_VALUE_MAX, try to initialize the semaphore.
-  const unsigned int sem_max_plus_1 = SEM_VALUE_MAX + 1;
+  const unsigned int sem_max_plus_1 = (unsigned) SEM_VALUE_MAX + 1;
 
   // sem_init should return -1 and errno should equal EINVAL
   EXPECT(-1 == sem_init(&my_semaphore, 0, sem_max_plus_1));
   EXPECT(EINVAL == errno);
-#endif
 
   // Try with the largest possible unsigned int.
   EXPECT(-1 == sem_init(&my_semaphore,
@@ -81,14 +78,6 @@ int TestSemInitErrors() {
 int TestSemDestroy() {
   START_TEST("sem_destroy");
 
-  sem_t my_semaphore[2];
-
-  // Try destroying a semaphore twice.  After the first destroy, the semaphore
-  // is no longer valid, so the second call should fail.
-  EXPECT(0 == sem_init(&my_semaphore[0], 0, 0));
-  EXPECT(0 == sem_destroy(&my_semaphore[0]));
-  EXPECT(-1 == sem_destroy(&my_semaphore[0]));
-  EXPECT(EINVAL == errno);
   // Try sem_destroy with a null pointer.
   EXPECT(-1 == sem_destroy(NULL));
   EXPECT(EINVAL == errno);
@@ -114,26 +103,16 @@ int TestSemDestroy() {
 int TestSemPostErrors() {
   START_TEST("sem_post error conditions");
 
-  sem_t my_semaphore[2];
-
-  // Test invalid semaphores.
-  // Try posting to a semaphore that has been initialized and destroyed.
-  EXPECT(0 == sem_init(&my_semaphore[0], 0, 0));
-  EXPECT(0 == sem_destroy(&my_semaphore[0]));
-  EXPECT(-1 == sem_post(&my_semaphore[0]));
-  EXPECT(EINVAL == errno);
-  // Try a null pointer.
+  // Test an invalid semaphore: try a null pointer.
   EXPECT(-1 == sem_post(NULL));
   EXPECT(EINVAL == errno);
 
-  // Now really initialize one with the max value, and try to post to it.
-  EXPECT(0 == sem_init(&my_semaphore[1], 0, SEM_VALUE_MAX));
-  // TODO(abarth): Disable this part of this test for now.  We apparently let
-  //               you post to a maxed-out semaphore (at least on Mac). See
-  //               http://code.google.com/p/nativeclient/issues/detail?id=849
-  // EXPECT(-1 == sem_post(&my_semaphore[1]));
-  // EXPECT(EOVERFLOW == errno);
-  EXPECT(0 == sem_destroy(&my_semaphore[1]));
+  // Initialize a semaphore with the max value, and try to post to it.
+  sem_t my_semaphore;
+  EXPECT(0 == sem_init(&my_semaphore, 0, SEM_VALUE_MAX));
+  EXPECT(-1 == sem_post(&my_semaphore));
+  EXPECT(EOVERFLOW == errno);
+  EXPECT(0 == sem_destroy(&my_semaphore));
 
   END_TEST();
 }
@@ -202,13 +181,6 @@ void* PostThreadFunc(void* poster_thread_arg) {
 int TestSemWaitErrors() {
   START_TEST("sem_wait error conditions");
 
-  sem_t my_semaphore[2];
-
-  // Try waiting on an invalid (destroyed) semaphore.
-  EXPECT(0 == sem_init(&my_semaphore[0], 0, 0));
-  EXPECT(0 == sem_destroy(&my_semaphore[0]));
-  EXPECT(-1 == sem_wait(&my_semaphore[0]));
-  EXPECT(EINVAL == errno);
   // Try a null pointer.
   EXPECT(-1 == sem_wait(NULL));
   EXPECT(EINVAL == errno);

@@ -9,15 +9,12 @@
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 
 struct nacl_irt_futex __nc_irt_futex;
-struct nacl_irt_sem __nc_irt_sem;
 
 void __nc_initialize_interfaces(struct nacl_irt_thread *irt_thread) {
   __libnacl_mandatory_irt_query(NACL_IRT_THREAD_v0_1,
                                 irt_thread, sizeof(*irt_thread));
   __libnacl_mandatory_irt_query(NACL_IRT_FUTEX_v0_1,
                                 &__nc_irt_futex, sizeof(__nc_irt_futex));
-  __libnacl_mandatory_irt_query(NACL_IRT_SEM_v0_1,
-                                &__nc_irt_sem, sizeof(__nc_irt_sem));
 }
 
 /*

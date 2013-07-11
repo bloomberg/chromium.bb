@@ -275,11 +275,8 @@ void TestSemaphoreInitDestroy(void) {
   int rv;
   TEST_FUNCTION_START;
 
-  /* This produces a compile-time overflow warning with glibc. */
-#ifndef __GLIBC__
-  rv = sem_init(&sem, 0, SEM_VALUE_MAX + 1);
+  rv = sem_init(&sem, 0, (unsigned) SEM_VALUE_MAX + 1);
   EXPECT_EQ(-1, rv);  /* failure */
-#endif
 
   rv = sem_init(&sem, 0, SEM_VALUE_MAX);
   EXPECT_EQ(0, rv);  /* success */

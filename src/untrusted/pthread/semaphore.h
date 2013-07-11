@@ -11,19 +11,26 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_SEMPAHPORE_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_SEMPAHPORE_H_ 1
 
+#include <limits.h>
 #include <sys/types.h>
 
 
-/* A handle to a semaphore object */
+/* A pthread semaphore object */
 typedef struct {
-  int handle;
+  /* Current value of the semaphore.  This is always non-negative. */
+  volatile int count;
+  /*
+   * Number of threads waiting for the semaphore in sem_wait(); always
+   * non-negative.  This is used as an optimization to avoid
+   * unnecessary futex_wake() calls in sem_post().
+   */
+  volatile int nwaiters;
 } sem_t;
 
 /*
- * Maximum value the semaphore can have. Using OSX 10.5 value -
- * the lowest of all platforms.
+ * Maximum value the semaphore can have.  This matches glibc's value.
  */
-#define SEM_VALUE_MAX (32767)
+#define SEM_VALUE_MAX INT_MAX
 
 
 #ifdef __cplusplus
