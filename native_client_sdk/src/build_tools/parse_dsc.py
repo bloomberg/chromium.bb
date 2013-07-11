@@ -45,7 +45,7 @@ DSC_FORMAT = {
     'PRE': (str, '', False),
     'DEST': (str, ['examples/getting_started', 'examples/api',
                    'examples/demo', 'examples/tutorial',
-                   'src', 'testlibs', 'tests'], True),
+                   'src', 'tests'], True),
     'NAME': (str, '', False),
     'DATA': (list, '', False),
     'TITLE': (str, '', False),

@@ -235,7 +235,10 @@ var common = (function() {
 
     if (typeof window.handleMessage !== 'undefined') {
       window.handleMessage(message_event);
+      return;
     }
+
+    logMessage('Unhandled message: ' + message_event.data + '\n')
   }
 
   /**

@@ -48,7 +48,7 @@ def StepCopyTests(pepperdir, toolchains, build_experimental):
 
   # Update test libraries and test apps
   filters = {
-    'DEST': ['testlibs', 'tests']
+    'DEST': ['tests']
   }
   if not build_experimental:
     filters['EXPERIMENTAL'] = False
@@ -61,9 +61,6 @@ def StepCopyTests(pepperdir, toolchains, build_experimental):
 
 def StepBuildTests(pepperdir):
   for config in ('Debug', 'Release'):
-    build_sdk.BuildStepMakeAll(pepperdir, 'testlibs',
-                                   'Build Test Libraries (%s)' % config,
-                                   config=config)
     build_sdk.BuildStepMakeAll(pepperdir, 'tests',
                                    'Build Tests (%s)' % config,
                                    deps=False, config=config)

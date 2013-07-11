@@ -194,16 +194,14 @@ def BuildProjectsBranch(pepperdir, branch, deps, clean, config, args=None):
 
 def BuildProjects(pepperdir, project_tree, deps=True,
                   clean=False, config='Debug'):
-  # First build libraries
-  build_order = ['src', 'testlibs']
-  for branch in build_order:
-    if branch in project_tree:
-      BuildProjectsBranch(pepperdir, branch, deps, clean, config)
 
-  # Build everything else.
-  for branch in project_tree:
-    if branch not in build_order:
-      BuildProjectsBranch(pepperdir, branch, deps, clean, config)
+  # Make sure we build libraries (which live in 'src') before
+  # any of the examples.
+  build_first = [p for p in project_tree if p != 'src']
+  build_second = [p for p in project_tree if p == 'src']
+
+  for branch in build_first + build_second:
+    BuildProjectsBranch(pepperdir, branch, deps, clean, config)
 
 
 def main(args):
@@ -290,7 +288,10 @@ def main(args):
 
 
 if __name__ == '__main__':
+  script_name = os.path.basename(sys.argv[0])
   try:
     sys.exit(main(sys.argv))
+  except parse_dsc.ValidationError as e:
+    buildbot_common.ErrorExit('%s: %s' % (script_name, e))
   except KeyboardInterrupt:
-    buildbot_common.ErrorExit('%s: interrupted' % os.path.basename(sys.argv[0]))
+    buildbot_common.ErrorExit('%s: interrupted' % script_name)

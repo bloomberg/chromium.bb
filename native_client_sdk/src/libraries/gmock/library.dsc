@@ -51,6 +51,6 @@
       'DEST': 'include/gmock/internal',
     },
   ],
-  'DEST': 'testlibs',
+  'DEST': 'src',
   'NAME': 'gmock',
 }

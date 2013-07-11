@@ -74,6 +74,6 @@
       'DEST': 'include/gtest/internal/src',
     },
   ],
-  'DEST': 'testlibs',
+  'DEST': 'src',
   'NAME': 'gtest',
 }

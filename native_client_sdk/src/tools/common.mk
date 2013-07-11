@@ -434,13 +434,13 @@ SEL_LDR_PATH := python $(NACL_SDK_ROOT)/tools/sel_ldr.py
 ifdef SEL_LDR
 run: all
 ifndef NACL_ARCH
-	$(error Cannot run in sel_ldr unless \$NACL_ARCH is set)
+	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
 endif
 	$(SEL_LDR_PATH) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
 
 debug: all
 ifndef NACL_ARCH
-	$(error Cannot run in sel_ldr unless \$NACL_ARCH is set)
+	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
 endif
 	$(SEL_LDR_PATH) -d $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
 else
