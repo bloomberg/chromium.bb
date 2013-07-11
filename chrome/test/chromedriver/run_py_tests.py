@@ -143,6 +143,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         chrome_paths.GetTestData())
     if _ANDROID_PACKAGE:
       ChromeDriverTest._adb = android_commands.AndroidCommands()
+      forwarder.Forwarder.KillHost('Debug')
       ChromeDriverTest._forwarder = forwarder.Forwarder(ChromeDriverTest._adb,
                                                         'Debug')
       host_port = ChromeDriverTest._http_server._server.server_port

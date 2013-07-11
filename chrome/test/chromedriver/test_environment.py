@@ -94,6 +94,7 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
     os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
     os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
     self._adb = android_commands.AndroidCommands()
+    forwarder.Forwarder.KillHost('Debug')
     self._forwarder = forwarder.Forwarder(self._adb, 'Debug')
     self._forwarder.Run(
         [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
