@@ -194,10 +194,8 @@ static void skipWhile(const UChar*& position, const UChar* end)
         ++position;
 }
 
-static bool isSourceListNone(const String& value)
+static bool isSourceListNone(const UChar* begin, const UChar* end)
 {
-    const UChar* begin = value.bloatedCharacters();
-    const UChar* end = value.bloatedCharacters() + value.length();
     skipWhile<isASCIISpace>(begin, end);
 
     const UChar* position = begin;
@@ -303,15 +301,14 @@ class CSPSourceList {
 public:
     CSPSourceList(ContentSecurityPolicy*, const String& directiveName);
 
-    void parse(const String&);
+    void parse(const UChar* begin, const UChar* end);
+
     bool matches(const KURL&);
     bool allowInline() const { return m_allowInline; }
     bool allowEval() const { return m_allowEval; }
     bool allowNonce(const String& nonce) const { return !nonce.isNull() && m_nonces.contains(nonce); }
 
 private:
-    void parse(const UChar* begin, const UChar* end);
-
     bool parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, bool& hostHasWildcard, bool& portHasWildcard);
     bool parseScheme(const UChar* begin, const UChar* end, String& scheme);
     bool parseHost(const UChar* begin, const UChar* end, String& host, bool& hostHasWildcard);
@@ -343,14 +340,6 @@ CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& direct
 {
 }
 
-void CSPSourceList::parse(const String& value)
-{
-    // We represent 'none' as an empty m_list.
-    if (isSourceListNone(value))
-        return;
-    parse(value.bloatedCharacters(), value.bloatedCharacters() + value.length());
-}
-
 bool CSPSourceList::matches(const KURL& url)
 {
     if (m_allowStar)
@@ -371,8 +360,11 @@ bool CSPSourceList::matches(const KURL& url)
 //
 void CSPSourceList::parse(const UChar* begin, const UChar* end)
 {
-    const UChar* position = begin;
+    // We represent 'none' as an empty m_list.
+    if (isSourceListNone(begin, end))
+        return;
 
+    const UChar* position = begin;
     while (position < end) {
         skipWhile<isASCIISpace>(position, end);
         if (position == end)
@@ -533,7 +525,7 @@ bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& non
 {
     DEFINE_STATIC_LOCAL(const String, noncePrefix, (ASCIILiteral("'nonce-")));
 
-    if (!equalIgnoringCase(noncePrefix.bloatedCharacters(), begin, noncePrefix.length()))
+    if (!equalIgnoringCase(noncePrefix.characters8(), begin, noncePrefix.length()))
         return true;
 
     const UChar* position = begin + noncePrefix.length();
@@ -716,7 +708,9 @@ public:
     MediaListDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
         : CSPDirective(name, value, policy)
     {
-        parse(value);
+        Vector<UChar> characters;
+        value.appendTo(characters);
+        parse(characters.data(), characters.data() + characters.size());
     }
 
     bool allows(const String& type)
@@ -725,15 +719,13 @@ public:
     }
 
 private:
-    void parse(const String& value)
+    void parse(const UChar* begin, const UChar* end)
     {
-        const UChar* begin = value.bloatedCharacters();
         const UChar* position = begin;
-        const UChar* end = begin + value.length();
 
         // 'plugin-types ____;' OR 'plugin-types;'
-        if (value.isEmpty()) {
-            policy()->reportInvalidPluginTypes(value);
+        if (position == end) {
+            policy()->reportInvalidPluginTypes(String());
             return;
         }
 
@@ -793,7 +785,10 @@ public:
         : CSPDirective(name, value, policy)
         , m_sourceList(policy, name)
     {
-        m_sourceList.parse(value);
+        Vector<UChar> characters;
+        value.appendTo(characters);
+
+        m_sourceList.parse(characters.data(), characters.data() + characters.size());
     }
 
     bool allows(const KURL& url)
@@ -812,7 +807,9 @@ private:
 class CSPDirectiveList {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const String&, ContentSecurityPolicy::HeaderType);
+    static PassOwnPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicy::HeaderType);
+
+    void parse(const UChar* begin, const UChar* end);
 
     const String& header() const { return m_header; }
     ContentSecurityPolicy::HeaderType headerType() const { return m_headerType; }
@@ -844,8 +841,6 @@ public:
 
 private:
     CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicy::HeaderType);
-
-    void parse(const String&);
 
     bool parseDirective(const UChar* begin, const UChar* end, String& name, String& value);
     void parseReportURI(const String& name, const String& value);
@@ -913,10 +908,10 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     m_reportOnly = (type == ContentSecurityPolicy::Report || type == ContentSecurityPolicy::PrefixedReport);
 }
 
-PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const String& header, ContentSecurityPolicy::HeaderType type)
+PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicy::HeaderType type)
 {
     OwnPtr<CSPDirectiveList> directives = adoptPtr(new CSPDirectiveList(policy, type));
-    directives->parse(header);
+    directives->parse(begin, end);
 
     if (!directives->checkEval(directives->operativeDirective(directives->m_scriptSrc.get()))) {
         String message = "Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: \"" + directives->operativeDirective(directives->m_scriptSrc.get())->text() + "\".\n";
@@ -924,7 +919,7 @@ PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* pol
     }
 
     if (directives->isReportOnly() && directives->reportURIs().isEmpty())
-        policy->reportMissingReportURI(header);
+        policy->reportMissingReportURI(String(begin, end - begin));
 
     return directives.release();
 }
@@ -1193,15 +1188,14 @@ bool CSPDirectiveList::allowScriptNonce(const String& nonce) const
 // policy            = directive-list
 // directive-list    = [ directive *( ";" [ directive ] ) ]
 //
-void CSPDirectiveList::parse(const String& policy)
+void CSPDirectiveList::parse(const UChar* begin, const UChar* end)
 {
-    m_header = policy;
-    if (policy.isEmpty())
+    m_header = String(begin, end - begin);
+
+    if (begin == end)
         return;
 
-    const UChar* position = policy.bloatedCharacters();
-    const UChar* end = position + policy.length();
-
+    const UChar* position = begin;
     while (position < end) {
         const UChar* directiveBegin = position;
         skipUntil(position, end, ';');
@@ -1278,8 +1272,12 @@ void CSPDirectiveList::parseReportURI(const String& name, const String& value)
         m_policy->reportDuplicateDirective(name);
         return;
     }
-    const UChar* position = value.bloatedCharacters();
-    const UChar* end = position + value.length();
+
+    Vector<UChar> characters;
+    value.appendTo(characters);
+
+    const UChar* position = characters.data();
+    const UChar* end = position + characters.size();
 
     while (position < end) {
         skipWhile<isASCIISpace>(position, end);
@@ -1332,8 +1330,11 @@ void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value
         return;
     }
 
-    const UChar* position = value.bloatedCharacters();
-    const UChar* end = position + value.length();
+    Vector<UChar> characters;
+    value.appendTo(characters);
+
+    const UChar* position = characters.data();
+    const UChar* end = position + characters.size();
 
     skipWhile<isASCIISpace>(position, end);
     const UChar* begin = position;
@@ -1432,18 +1433,22 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType ty
             UseCounter::count(document, getUseCounterType(type));
     }
 
+    Vector<UChar> characters;
+    header.appendTo(characters);
+
+    const UChar* begin = characters.data();
+    const UChar* end = begin + characters.size();
+
     // RFC2616, section 4.2 specifies that headers appearing multiple times can
     // be combined with a comma. Walk the header string, and parse each comma
     // separated chunk as a separate header.
-    const UChar* begin = header.bloatedCharacters();
     const UChar* position = begin;
-    const UChar* end = begin + header.length();
     while (position < end) {
         skipUntil(position, end, ',');
 
         // header1,header2 OR header1
         //        ^                  ^
-        OwnPtr<CSPDirectiveList> policy = CSPDirectiveList::create(this, String(begin, position - begin), type);
+        OwnPtr<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type);
         if (!policy->isReportOnly() && !policy->allowEval(0, SuppressReport))
             m_scriptExecutionContext->disableEval(policy->evalDisabledErrorMessage());
 
