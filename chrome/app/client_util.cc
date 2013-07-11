@@ -17,9 +17,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "base/win/windows_version.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/chrome_breakpad_client.h"
 #include "chrome/app/client_util.h"
+#include "chrome/app/image_pre_reader_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -47,6 +49,16 @@ base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
 HMODULE LoadChromeWithDirectory(string16* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
   dir->append(installer::kChromeDll);
+
+#if !defined(WIN_DISABLE_PREREAD)
+  // On Win7 with Syzygy, pre-read is a win. There've very little difference
+  // between 25% and 100%. For cold starts, with or without prefetch 25%
+  // performs slightly better than 100%. On XP, pre-read is generally a
+  // performance loss.
+  const size_t kStepSize = 1024 * 1024;
+  uint8 percent = base::win::GetVersion() > base::win::VERSION_XP ? 25 : 0;
+  ImagePreReader::PartialPreReadImage(dir->c_str(), percent, kStepSize);
+#endif
 
   return ::LoadLibraryExW(dir->c_str(), NULL,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
