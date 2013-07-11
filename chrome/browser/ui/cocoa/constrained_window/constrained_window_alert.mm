@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 namespace {
@@ -29,6 +30,10 @@ const CGFloat kButtonGap = 6;
 - (CGFloat)layoutTextField:(NSTextField*)textField
                       yPos:(CGFloat)yPos
                windowWidth:(CGFloat)windowWidth;
+// If a link has been set, resizes the link to fit within the window and
+// position it starting at |yPos|. Returns the new value of yPos.
+- (CGFloat)layoutLinkAtYPos:(CGFloat)yPos
+                windowWidth:(CGFloat)windowWidth;
 // Positions the accessory view starting at yPos. Returns the new value of yPos.
 - (CGFloat)layoutAccessoryViewAtYPos:(CGFloat)yPos;
 // Update the position of the close button.
@@ -80,6 +85,24 @@ const CGFloat kButtonGap = 6;
           chrome_style::kTitleFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
+}
+
+- (void)setLinkText:(NSString*)text target:(id)target action:(SEL)action {
+  if (![text length]) {
+    [linkView_ removeFromSuperview];
+    linkView_.reset(nil);
+    return;
+  }
+
+  if (!linkView_.get()) {
+    linkView_.reset(
+        [[HyperlinkButtonCell buttonWithString:[NSString string]] retain]);
+    [[window_ contentView] addSubview:linkView_];
+  }
+
+  [linkView_ setTitle:text];
+  [linkView_ setTarget:target];
+  [linkView_ setAction:action];
 }
 
 - (NSView*)accessoryView {
@@ -142,12 +165,14 @@ const CGFloat kButtonGap = 6;
   [self layoutButtonsWithWindowWidth:windowWidth];
   CGFloat curY = [buttons_ count] ? NSMaxY([[buttons_ lastObject] frame])
       : chrome_style::kClientBottomPadding;
+  CGFloat availableMessageWidth =
+      windowWidth - chrome_style::GetCloseButtonSize() - kButtonGap;
+  curY = [self layoutLinkAtYPos:curY
+                    windowWidth:availableMessageWidth];
   curY = [self layoutAccessoryViewAtYPos:curY];
   curY = [self layoutTextField:informativeTextField_
                           yPos:curY
                    windowWidth:windowWidth];
-  CGFloat availableMessageWidth =
-      windowWidth - chrome_style::GetCloseButtonSize() - kButtonGap;
   curY = [self layoutTextField:messageTextField_
                           yPos:curY
                    windowWidth:availableMessageWidth];
@@ -205,6 +230,26 @@ const CGFloat kButtonGap = 6;
   return NSMaxY([textField frame]);
 }
 
+- (CGFloat)layoutLinkAtYPos:(CGFloat)yPos
+                windowWidth:(CGFloat)windowWidth {
+  if (!linkView_.get())
+    return yPos;
+
+  NSRect availableBounds = NSMakeRect(
+      0,
+      0,
+      windowWidth - chrome_style::kHorizontalPadding * 2,
+      CGFLOAT_MAX);
+  NSSize size = [[linkView_ cell] cellSizeForBounds:availableBounds];
+
+  NSRect rect;
+  rect.origin.y = yPos + chrome_style::kRowPadding;
+  rect.origin.x = chrome_style::kHorizontalPadding;
+  rect.size = size;
+  [linkView_ setFrame:rect];
+  return NSMaxY([linkView_ frame]);
+}
+
 - (CGFloat)layoutAccessoryViewAtYPos:(CGFloat)yPos {
   if (!accessoryView_.get())
     return yPos;
@@ -225,6 +270,10 @@ const CGFloat kButtonGap = 6;
   frame.origin.y = windowHeight -
       chrome_style::kCloseButtonPadding - NSHeight(frame);
   [closeButton_ setFrame:frame];
+}
+
+- (NSButton*)linkView {
+  return linkView_;
 }
 
 @end

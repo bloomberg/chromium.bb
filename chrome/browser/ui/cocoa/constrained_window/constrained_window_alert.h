@@ -17,6 +17,7 @@
  @private
   base::scoped_nsobject<NSTextField> informativeTextField_;
   base::scoped_nsobject<NSTextField> messageTextField_;
+  base::scoped_nsobject<NSButton> linkView_;
   base::scoped_nsobject<NSView> accessoryView_;
   base::scoped_nsobject<NSMutableArray> buttons_;
   base::scoped_nsobject<NSButton> closeButton_;
@@ -40,10 +41,20 @@
                     target:(id)target
                     action:(SEL)action;
 
+// Sets the |text|, the |target| and the |action| of a left-aligned link
+// positioned above the buttons. If |text| is empty, no link is displayed.
+- (void)setLinkText:(NSString*)text
+             target:(id)target
+             action:(SEL)action;
+
 // Lays out the controls in the alert. This should be called before the window
 // is displayed.
 - (void)layout;
 
+@end
+
+@interface ConstrainedWindowAlert (ExposedForTesting)
+@property(nonatomic, readonly) NSButton* linkView;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_ALERT_H_

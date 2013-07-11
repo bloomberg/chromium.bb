@@ -9,6 +9,25 @@
 class ConstrainedWindowAlertTest : public CocoaTest {
 };
 
+@interface ConstrainedWindowAlertTestTarget : NSObject {
+ @private
+  int linkClickedCount_;
+}
+@property(nonatomic, readonly) int linkClickedCount;
+
+- (void)onLinkClicked:(id)sender;
+@end
+
+@implementation ConstrainedWindowAlertTestTarget
+
+@synthesize linkClickedCount = linkClickedCount_;
+
+- (void)onLinkClicked:(id)sender {
+  ++linkClickedCount_;
+}
+
+@end
+
 // Test showing the alert.
 TEST_F(ConstrainedWindowAlertTest, Show) {
   base::scoped_nsobject<ConstrainedWindowAlert> alert(
@@ -52,4 +71,32 @@ TEST_F(ConstrainedWindowAlertTest, AccessoryView) {
   EXPECT_GT(NSHeight(window_rect), NSHeight(view_rect));
 
   [[alert window] makeKeyAndOrderFront:nil];
+}
+
+// Test adding a link to an alert.
+TEST_F(ConstrainedWindowAlertTest, LinkView) {
+  base::scoped_nsobject<ConstrainedWindowAlert> alert(
+      [[ConstrainedWindowAlert alloc] init]);
+  base::scoped_nsobject<ConstrainedWindowAlertTestTarget> target(
+      [[ConstrainedWindowAlertTestTarget alloc] init]);
+
+  [alert layout];
+  NSRect initial_window_rect = [[alert window] frame];
+
+  EXPECT_EQ(nil, [alert linkView]);
+  NSString* linkText = @"Text of the link";
+  [alert setLinkText:linkText
+              target:target.get()
+              action:@selector(onLinkClicked:)];
+  EXPECT_EQ([linkText length], [[[alert linkView] title] length]);
+
+  [alert layout];
+  NSRect window_rect = [[alert window] frame];
+
+  EXPECT_GT(NSHeight(window_rect), NSHeight(initial_window_rect));
+
+  [[alert window] makeKeyAndOrderFront:nil];
+
+  [[alert linkView] performClick:nil];
+  EXPECT_EQ(1, [target linkClickedCount]);
 }
