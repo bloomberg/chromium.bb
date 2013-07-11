@@ -69,6 +69,7 @@ class WebIconLoadingCompletion;
 class WebImage;
 class WebInputElement;
 class WebKeyboardEvent;
+class WebMIDIClient;
 class WebNode;
 class WebNotificationPresenter;
 class WebRange;
@@ -373,6 +374,10 @@ public:
     // Media Streams -------------------------------------------------------
 
     virtual WebUserMediaClient* userMediaClient() { return 0; }
+
+    // Web MIDI -------------------------------------------------------------
+
+    virtual WebMIDIClient* webMIDIClient() { return 0; }
 
 
     // Content detection ----------------------------------------------------

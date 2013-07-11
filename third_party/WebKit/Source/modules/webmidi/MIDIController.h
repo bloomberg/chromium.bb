@@ -28,42 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessor_h
-#define MIDIAccessor_h
+#ifndef MIDIController_h
+#define MIDIController_h
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "core/page/Page.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class MIDIAccessorClient;
+class MIDIAccess;
+class MIDIClient;
 
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
+class MIDIController : public Supplement<Page> {
 public:
-    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
+    ~MIDIController();
 
-    virtual ~MIDIAccessor() { }
+    void requestSysExPermission(PassRefPtr<MIDIAccess>);
+    void cancelSysExPermissionRequest(MIDIAccess*);
 
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
+    static PassOwnPtr<MIDIController> create(MIDIClient*);
+    static const char* supplementName();
+    static MIDIController* from(Page* page) { return static_cast<MIDIController*>(Supplement<Page>::from(page, supplementName())); }
 
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+protected:
+    explicit MIDIController(MIDIClient*);
 
 private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
-
-    MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
+    MIDIClient* m_client;
 };
 
 } // namespace WebCore
 
-#endif // MIDIAccessor_h
+#endif // MIDIController_h

@@ -28,42 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessor_h
-#define MIDIAccessor_h
+#ifndef WebMIDIClient_h
+#define WebMIDIClient_h
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+namespace WebKit {
+class WebMIDIPermissionRequest;
 
-namespace WebCore {
-
-class MIDIAccessorClient;
-
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
+class WebMIDIClient {
 public:
-    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
+    virtual ~WebMIDIClient() { }
 
-    virtual ~MIDIAccessor() { }
-
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
-
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
-
-private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
-
-    MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
+    // Request a permission to use system exclusive messages. Called when MIDIOptions.sysex is true.
+    virtual void requestSysExPermission(const WebMIDIPermissionRequest&) = 0;
+    // Cancel the request since the requesting frame may be moving to a new page.
+    virtual void cancelSysExPermissionRequest(const WebMIDIPermissionRequest&) = 0;
 };
 
-} // namespace WebCore
+} // namespace WebKit
 
-#endif // MIDIAccessor_h
+#endif // WebMIDIClient_h

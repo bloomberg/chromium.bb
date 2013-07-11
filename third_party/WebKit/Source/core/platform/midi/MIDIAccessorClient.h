@@ -40,8 +40,7 @@ public:
     virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
     virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
 
-    virtual void didAllowAccess() = 0;
-    virtual void didBlockAccess() = 0;
+    virtual void didStartSession() = 0;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;
 };
 

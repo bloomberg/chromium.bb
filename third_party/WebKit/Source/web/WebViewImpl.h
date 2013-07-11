@@ -37,6 +37,7 @@
 #include "DragClientImpl.h"
 #include "EditorClientImpl.h"
 #include "InspectorClientImpl.h"
+#include "MIDIClientImpl.h"
 #include "NotificationPresenterImpl.h"
 #include "PageOverlayList.h"
 #include "PageWidgetDelegate.h"
@@ -814,6 +815,7 @@ private:
     float m_emulatedTextZoomFactor;
 
     UserMediaClientImpl m_userMediaClientImpl;
+    MIDIClientImpl m_midiClientImpl;
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
     OwnPtr<NavigatorContentUtilsClientImpl> m_navigatorContentUtilsClient;
 #endif

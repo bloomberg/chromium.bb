@@ -28,42 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessor_h
-#define MIDIAccessor_h
+#include "config.h"
+#include "WebMIDIPermissionRequest.h"
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "WebSecurityOrigin.h"
+#include "core/dom/Document.h"
+#include "modules/webmidi/MIDIAccess.h"
+#include "weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+using namespace WebCore;
 
-class MIDIAccessorClient;
+namespace WebKit {
 
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
-public:
-    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
+WebMIDIPermissionRequest::WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>& midi)
+    : m_private(midi)
+{
+}
 
-    virtual ~MIDIAccessor() { }
+WebMIDIPermissionRequest::WebMIDIPermissionRequest(WebCore::MIDIAccess* midi)
+    : m_private(midi)
+{
+}
 
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
+WebSecurityOrigin WebMIDIPermissionRequest::securityOrigin() const
+{
+    return WebSecurityOrigin(m_private->scriptExecutionContext()->securityOrigin());
+}
 
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+void WebMIDIPermissionRequest::setIsAllowed(bool allowed)
+{
+    m_private->enableSysEx(allowed);
+}
 
-private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
-
-    MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
-};
-
-} // namespace WebCore
-
-#endif // MIDIAccessor_h
+} // namespace WebKit

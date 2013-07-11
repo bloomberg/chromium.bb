@@ -28,42 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessor_h
-#define MIDIAccessor_h
+#ifndef MIDIClientImpl_h
+#define MIDIClientImpl_h
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "modules/webmidi/MIDIClient.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
+class MIDIAccess;
+}
 
-class MIDIAccessorClient;
+namespace WebKit {
 
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
+class WebMIDIClient;
+class WebViewImpl;
+
+class MIDIClientImpl : public WebCore::MIDIClient {
 public:
-    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
+    explicit MIDIClientImpl(WebViewImpl*);
 
-    virtual ~MIDIAccessor() { }
-
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
-
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+    // WebCore::MIDIClient ---------------------------------------------------
+    virtual void requestSysExPermission(PassRefPtr<WebCore::MIDIAccess>);
+    virtual void cancelSysExPermissionRequest(WebCore::MIDIAccess*);
 
 private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
-
-    MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
+    WebMIDIClient* m_client;
 };
 
-} // namespace WebCore
+} // namespace WebKit
 
-#endif // MIDIAccessor_h
+#endif // MIDIClientImpl_h

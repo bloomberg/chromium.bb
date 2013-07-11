@@ -28,42 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessor_h
-#define MIDIAccessor_h
+#include "config.h"
+#include "MIDIClientImpl.h"
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "WebMIDIClient.h"
+#include "WebMIDIPermissionRequest.h"
+#include "WebViewClient.h"
+#include "WebViewImpl.h"
+#include "modules/webmidi/MIDIAccess.h"
+#include "wtf/RefPtr.h"
 
-namespace WebCore {
+using namespace WebCore;
 
-class MIDIAccessorClient;
+namespace WebKit {
 
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
-public:
-    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
+MIDIClientImpl::MIDIClientImpl(WebViewImpl* webView)
+    : m_client(webView->client() ? webView->client()->webMIDIClient() : 0)
+{
+}
 
-    virtual ~MIDIAccessor() { }
+void MIDIClientImpl::requestSysExPermission(PassRefPtr<MIDIAccess> access)
+{
+    if (m_client)
+        m_client->requestSysExPermission(WebMIDIPermissionRequest(access));
+    else
+        access->enableSysEx(false);
+}
 
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
+void MIDIClientImpl::cancelSysExPermissionRequest(MIDIAccess* access)
+{
+    if (m_client)
+        m_client->cancelSysExPermissionRequest(WebMIDIPermissionRequest(access));
+}
 
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
-
-private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
-
-    MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
-};
-
-} // namespace WebCore
-
-#endif // MIDIAccessor_h
+} // namespace WebKit

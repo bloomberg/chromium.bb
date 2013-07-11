@@ -39,6 +39,9 @@ class WebMIDIAccessor {
 public:
     virtual ~WebMIDIAccessor() { }
 
+    virtual void startSession() { }
+
+    // FIXME: Remove this obsoleted API. Now access permission is handled though the WebMIDIClient API.
     // |access| is set to true if MIDIOptions.sysex is true. Otherwise false.
     virtual void requestAccess(bool access) { }
     // |timeStamp| is measured in milliseconds as Web MIDI spec defines.

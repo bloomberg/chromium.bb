@@ -28,42 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessor_h
-#define MIDIAccessor_h
+#ifndef WebMIDIPermissionRequest_h
+#define WebMIDIPermissionRequest_h
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebPrivatePtr.h"
 
 namespace WebCore {
+class MIDIAccess;
+}
 
-class MIDIAccessorClient;
+namespace WebKit {
 
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
+class WebSecurityOrigin;
+
+// WebMIDIPermissionRequest encapsulates a WebCore MIDIAccess object and represents
+// a request from WebCore for permissions.
+// The underlying MIDIAccess object is guaranteed to be valid until the invocation of
+// either WebMIDIPermissionRequest::setIsAllowed (request complete) or
+// WebMIDIClient::cancelPermissionRequest (request canceled).
+class WebMIDIPermissionRequest {
 public:
-    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
+    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
+    WEBKIT_EXPORT void setIsAllowed(bool);
 
-    virtual ~MIDIAccessor() { }
-
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
-
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+#if WEBKIT_IMPLEMENTATION
+    explicit WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>&);
+    explicit WebMIDIPermissionRequest(WebCore::MIDIAccess*);
+#endif
 
 private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
-
-    MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
+    WebPrivatePtr<WebCore::MIDIAccess> m_private;
 };
 
-} // namespace WebCore
+} // namespace WebKit
 
-#endif // MIDIAccessor_h
+#endif // WebMIDIPermissionRequest_h

@@ -61,6 +61,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
+    void enableSysEx(bool enable);
+
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIAccess; }
     virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
@@ -72,12 +74,14 @@ public:
     // MIDIAccessorClient
     virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
     virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
+    virtual void didStartSession() OVERRIDE;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
 
 private:
     explicit MIDIAccess(ScriptExecutionContext*, MIDIAccessPromise*);
+
+    void startRequest();
+    virtual void permissionDenied();
 
     // EventTarget
     virtual void refEventTarget() OVERRIDE { ref(); }
@@ -92,6 +96,8 @@ private:
 
     OwnPtr<MIDIAccessor> m_accessor;
     bool m_hasAccess;
+    bool m_enableSysEx;
+    bool m_requesting;
 };
 
 } // namespace WebCore

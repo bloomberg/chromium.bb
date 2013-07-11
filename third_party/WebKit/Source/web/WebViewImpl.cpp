@@ -422,6 +422,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
     , m_emulatedTextZoomFactor(1)
     , m_userMediaClientImpl(this)
+    , m_midiClientImpl(this)
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
     , m_navigatorContentUtilsClient(NavigatorContentUtilsClientImpl::create(this))
 #endif
@@ -443,6 +444,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     m_page = adoptPtr(new Page(pageClients));
     provideUserMediaTo(m_page.get(), &m_userMediaClientImpl);
+    provideMIDITo(m_page.get(), &m_midiClientImpl);
 #if ENABLE(INPUT_SPEECH)
     provideSpeechInputTo(m_page.get(), m_speechInputClient.get());
 #endif

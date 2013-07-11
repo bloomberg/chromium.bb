@@ -28,42 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessor_h
-#define MIDIAccessor_h
+#include "config.h"
+#include "modules/webmidi/MIDIController.h"
 
-#include "public/platform/WebMIDIAccessor.h"
-#include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "modules/webmidi/MIDIAccess.h"
+#include "modules/webmidi/MIDIClient.h"
 
 namespace WebCore {
 
-class MIDIAccessorClient;
+const char* MIDIController::supplementName()
+{
+    return "MIDIController";
+}
 
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
-public:
-    static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
+MIDIController::MIDIController(MIDIClient* client)
+    : m_client(client)
+{
+    ASSERT(client);
+}
 
-    virtual ~MIDIAccessor() { }
+MIDIController::~MIDIController()
+{
+}
 
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
+PassOwnPtr<MIDIController> MIDIController::create(MIDIClient* client)
+{
+    return adoptPtr(new MIDIController(client));
+}
 
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didStartSession() OVERRIDE;
-    virtual void didAllowAccess() OVERRIDE;
-    virtual void didBlockAccess() OVERRIDE;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+void MIDIController::requestSysExPermission(PassRefPtr<MIDIAccess> access)
+{
+    m_client->requestSysExPermission(access);
+}
 
-private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
+void MIDIController::cancelSysExPermissionRequest(MIDIAccess* access)
+{
+    m_client->cancelSysExPermissionRequest(access);
+}
 
-    MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
-};
+void provideMIDITo(Page* page, MIDIClient* client)
+{
+    MIDIController::provideTo(page, MIDIController::supplementName(), MIDIController::create(client));
+}
 
 } // namespace WebCore
-
-#endif // MIDIAccessor_h

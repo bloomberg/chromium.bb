@@ -40,6 +40,9 @@ public:
     virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
     virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
 
+    virtual void didStartSession() = 0;
+
+    // FIXME: Remove these obsoleted APIs.
     virtual void didAllowAccess() = 0;
     virtual void didBlockAccess() = 0;
 
