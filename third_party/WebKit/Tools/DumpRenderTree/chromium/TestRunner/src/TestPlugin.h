@@ -78,8 +78,6 @@ public:
     virtual bool isPlaceholder() { return false; }
 
     // WebExternalTextureLayerClient methods:
-    // FIXME: following 2 methods are deprecated.
-    virtual unsigned prepareTexture(WebKit::WebTextureUpdater&) { return 0; }
     virtual WebKit::WebGraphicsContext3D* context() { return 0; }
     virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*);
     virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&);

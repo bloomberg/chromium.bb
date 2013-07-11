@@ -40,7 +40,6 @@
 
 using WebKit::WebExternalTextureLayer;
 using WebKit::WebGraphicsContext3D;
-using WebKit::WebTextureUpdater;
 
 namespace WebCore {
 
@@ -59,7 +58,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
     m_canvas->setNotificationClient(this);
-    m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
+    m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
     m_layer->setOpaque(opacityMode == Opaque);
     GraphicsLayer::registerContentsLayer(m_layer->layer());
     m_layer->setRateLimitContext(m_rateLimitingEnabled);
@@ -145,12 +144,6 @@ void Canvas2DLayerBridge::flush()
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         m_canvas->flush();
     }
-}
-
-unsigned Canvas2DLayerBridge::prepareTexture(WebTextureUpdater& updater)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 WebGraphicsContext3D* Canvas2DLayerBridge::context()

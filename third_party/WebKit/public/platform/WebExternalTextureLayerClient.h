@@ -35,18 +35,8 @@ class WebGraphicsContext3D;
 class WebExternalBitmap;
 struct WebExternalTextureMailbox;
 
-class WebTextureUpdater {
-public:
-    virtual void appendCopy(unsigned sourceTexture, unsigned destinationTexture, WebSize) = 0;
-
-protected:
-    virtual ~WebTextureUpdater() { }
-};
-
 class WebExternalTextureLayerClient {
 public:
-    // FIXME: Following methods is deprecated.
-    virtual unsigned prepareTexture(WebTextureUpdater&) = 0;
     virtual WebGraphicsContext3D* context() = 0;
 
     // Returns true and provides a mailbox if a new frame is available. If the WebExternalBitmap

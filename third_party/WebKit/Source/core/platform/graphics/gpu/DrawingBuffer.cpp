@@ -137,12 +137,6 @@ DrawingBuffer::~DrawingBuffer()
     releaseResources();
 }
 
-unsigned DrawingBuffer::prepareTexture(WebKit::WebTextureUpdater& updater)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 WebKit::WebGraphicsContext3D* DrawingBuffer::context()
 {
     if (!m_context)
@@ -309,7 +303,7 @@ WebKit::WebLayer* DrawingBuffer::platformLayer()
         return 0;
 
     if (!m_layer) {
-        m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
+        m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
         m_layer->setOpaque(!m_attributes.alpha);
         m_layer->setPremultipliedAlpha(m_attributes.premultipliedAlpha);

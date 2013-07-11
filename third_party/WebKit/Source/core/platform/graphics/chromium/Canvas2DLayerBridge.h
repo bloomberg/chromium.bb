@@ -64,8 +64,6 @@ public:
     virtual ~Canvas2DLayerBridge();
 
     // WebKit::WebExternalTextureLayerClient implementation.
-    // FIXME: Following method is deprecated.
-    virtual unsigned prepareTexture(WebKit::WebTextureUpdater&);
     virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
     virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;

@@ -54,11 +54,6 @@ public:
     virtual GrGLInterface* onCreateGrGLInterface() OVERRIDE { return 0; }
 };
 
-class MockWebTextureUpdater : public WebTextureUpdater {
-public:
-    MOCK_METHOD3(appendCopy, void(unsigned, unsigned, WebSize));
-};
-
 } // namespace
 
 class Canvas2DLayerBridgeTest : public Test {
@@ -68,8 +63,6 @@ protected:
         RefPtr<GraphicsContext3D> mainContext = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new MockCanvasContext));
 
         MockCanvasContext& mainMock = *static_cast<MockCanvasContext*>(mainContext->webContext());
-
-        MockWebTextureUpdater updater;
 
         SkDevice device(SkBitmap::kARGB_8888_Config, 300, 150);
         SkDeferredCanvas canvas(&device);
@@ -89,7 +82,6 @@ protected:
         bridge.clear();
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
-        ::testing::Mock::VerifyAndClearExpectations(&updater);
     }
 };
 
