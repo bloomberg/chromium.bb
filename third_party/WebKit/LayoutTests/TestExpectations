@@ -1178,10 +1178,6 @@ webkit.org/b/100955 http/tests/security/contentSecurityPolicy/object-src-none-bl
 webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 
-# Needs rebaseline.
-crbug.com/231504 css3/filters/effect-reference-hidpi.html [ NeedsRebaseline ]
-crbug.com/231504 css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
-
 # This test is consistently leaking state into the next test.
 webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
 
