@@ -271,9 +271,8 @@ void V8WindowShell::createContext()
     // Used to avoid sleep calls in unload handlers.
     ScriptController::registerExtensionIfNeeded(DateExtension::get());
 
-    // Enables experimental i18n API in V8.
-    if (RuntimeEnabledFeatures::javaScriptI18NAPIEnabled())
-        ScriptController::registerExtensionIfNeeded(v8_i18n::Extension::get());
+    // Enable i18n API in V8.
+    ScriptController::registerExtensionIfNeeded(v8_i18n::Extension::get());
 
     // Dynamically tell v8 about our extensions now.
     const V8Extensions& extensions = ScriptController::registeredExtensions();

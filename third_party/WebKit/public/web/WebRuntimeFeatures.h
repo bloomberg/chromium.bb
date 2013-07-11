@@ -78,9 +78,6 @@ public:
     WEBKIT_EXPORT static void enableGeolocation(bool);
     WEBKIT_EXPORT static bool isGeolocationEnabled();
 
-    WEBKIT_EXPORT static void enableJavaScriptI18NAPI(bool);
-    WEBKIT_EXPORT static bool isJavaScriptI18NAPIEnabled();
-
     WEBKIT_EXPORT static void enableLazyLayout(bool);
     WEBKIT_EXPORT static bool isLazyLayoutEnabled();
 

@@ -51,7 +51,6 @@ IndexedDB status=stable
 InputModeAttribute status=test
 InputTypeColor status=stable
 InputTypeWeek status=stable
-JavaScriptI18NAPI status=stable
 LangAttributeAwareFormControlUI
 LazyLayout
 LegacyEncryptedMedia status=stable

@@ -175,16 +175,6 @@ bool WebRuntimeFeatures::isGeolocationEnabled()
     return RuntimeEnabledFeatures::geolocationEnabled();
 }
 
-void WebRuntimeFeatures::enableJavaScriptI18NAPI(bool enable)
-{
-    RuntimeEnabledFeatures::setJavaScriptI18NAPIEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isJavaScriptI18NAPIEnabled()
-{
-    return RuntimeEnabledFeatures::javaScriptI18NAPIEnabled();
-}
-
 void WebRuntimeFeatures::enableLazyLayout(bool enable)
 {
     RuntimeEnabledFeatures::setLazyLayoutEnabled(enable);
