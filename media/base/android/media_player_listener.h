@@ -43,7 +43,7 @@ class MediaPlayerListener {
   void OnMediaInterrupted(JNIEnv* /* env */, jobject /* obj */);
 
   // Create a Java MediaPlayerListener object.
-  void CreateMediaPlayerListener(jobject context, jobject media_player);
+  void CreateMediaPlayerListener(jobject context, jobject media_player_bridge);
   void ReleaseMediaPlayerListenerResources();
 
   // Register MediaPlayerListener in the system library loader.

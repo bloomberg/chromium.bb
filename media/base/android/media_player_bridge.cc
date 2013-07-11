@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "jni/MediaPlayerBridge_jni.h"
-#include "jni/MediaPlayer_jni.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_resource_getter.h"
 #include "media/base/android/media_source_player.h"
@@ -104,27 +103,28 @@ void MediaPlayerBridge::Initialize() {
       &MediaPlayerBridge::OnCookiesRetrieved, weak_this_.GetWeakPtr()));
 }
 
-void MediaPlayerBridge::CreateMediaPlayer() {
+void MediaPlayerBridge::CreateJavaMediaPlayerBridge() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  j_media_player_.Reset(JNI_MediaPlayer::Java_MediaPlayer_Constructor(env));
+  j_media_player_bridge_.Reset(Java_MediaPlayerBridge_create(env));
 
   SetMediaPlayerListener();
 }
 
-void MediaPlayerBridge::SetMediaPlayer(jobject j_media_player) {
+void MediaPlayerBridge::SetJavaMediaPlayerBridge(
+    jobject j_media_player_bridge) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  j_media_player_.Reset(env, j_media_player);
+  j_media_player_bridge_.Reset(env, j_media_player_bridge);
 }
 
 void MediaPlayerBridge::SetMediaPlayerListener() {
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
 
-  listener_.CreateMediaPlayerListener(j_context, j_media_player_.obj());
+  listener_.CreateMediaPlayerListener(j_context, j_media_player_bridge_.obj());
 }
 
 void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
@@ -132,7 +132,7 @@ void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
 }
 
 void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
-  if (j_media_player_.is_null()) {
+  if (j_media_player_bridge_.is_null()) {
     if (surface.IsEmpty())
       return;
     Prepare();
@@ -141,13 +141,13 @@ void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  JNI_MediaPlayer::Java_MediaPlayer_setSurface(
-      env, j_media_player_.obj(), surface.j_surface().obj());
+  Java_MediaPlayerBridge_setSurface(
+      env, j_media_player_bridge_.obj(), surface.j_surface().obj());
 }
 
 void MediaPlayerBridge::Prepare() {
-  if (j_media_player_.is_null())
-    CreateMediaPlayer();
+  if (j_media_player_bridge_.is_null())
+    CreateJavaMediaPlayerBridge();
   if (url_.SchemeIsFileSystem()) {
     manager()->GetMediaResourceGetter()->GetPlatformPathFromFileSystemURL(
             url_, base::Bind(&MediaPlayerBridge::SetDataSource,
@@ -158,7 +158,7 @@ void MediaPlayerBridge::Prepare() {
 }
 
 void MediaPlayerBridge::SetDataSource(const std::string& url) {
-  if (j_media_player_.is_null())
+  if (j_media_player_bridge_.is_null())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -173,11 +173,11 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
   DCHECK(j_context);
 
   if (Java_MediaPlayerBridge_setDataSource(
-      env, j_media_player_.obj(), j_context, j_url_string.obj(),
+      env, j_media_player_bridge_.obj(), j_context, j_url_string.obj(),
       j_cookies.obj(), hide_url_log_)) {
     RequestMediaResourcesFromManager();
-    JNI_MediaPlayer::Java_MediaPlayer_prepareAsync(
-        env, j_media_player_.obj());
+    Java_MediaPlayerBridge_prepareAsync(
+        env, j_media_player_bridge_.obj());
   } else {
     OnMediaError(MEDIA_ERROR_FORMAT);
   }
@@ -205,7 +205,7 @@ void MediaPlayerBridge::OnMediaMetadataExtracted(
 }
 
 void MediaPlayerBridge::Start() {
-  if (j_media_player_.is_null()) {
+  if (j_media_player_bridge_.is_null()) {
     pending_play_ = true;
     Prepare();
   } else {
@@ -217,7 +217,7 @@ void MediaPlayerBridge::Start() {
 }
 
 void MediaPlayerBridge::Pause() {
-  if (j_media_player_.is_null()) {
+  if (j_media_player_bridge_.is_null()) {
     pending_play_ = false;
   } else {
     if (prepared_ && IsPlaying())
@@ -233,8 +233,8 @@ bool MediaPlayerBridge::IsPlaying() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
-  jboolean result = JNI_MediaPlayer::Java_MediaPlayer_isPlaying(
-      env, j_media_player_.obj());
+  jboolean result = Java_MediaPlayerBridge_isPlaying(
+      env, j_media_player_bridge_.obj());
   return result;
 }
 
@@ -242,23 +242,23 @@ int MediaPlayerBridge::GetVideoWidth() {
   if (!prepared_)
     return width_;
   JNIEnv* env = base::android::AttachCurrentThread();
-  return JNI_MediaPlayer::Java_MediaPlayer_getVideoWidth(
-      env, j_media_player_.obj());
+  return Java_MediaPlayerBridge_getVideoWidth(
+      env, j_media_player_bridge_.obj());
 }
 
 int MediaPlayerBridge::GetVideoHeight() {
   if (!prepared_)
     return height_;
   JNIEnv* env = base::android::AttachCurrentThread();
-  return JNI_MediaPlayer::Java_MediaPlayer_getVideoHeight(
-      env, j_media_player_.obj());
+  return Java_MediaPlayerBridge_getVideoHeight(
+      env, j_media_player_bridge_.obj());
 }
 
 void MediaPlayerBridge::SeekTo(base::TimeDelta time) {
   // Record the time to seek when OnMediaPrepared() is called.
   pending_seek_ = time;
 
-  if (j_media_player_.is_null())
+  if (j_media_player_bridge_.is_null())
     Prepare();
   else if (prepared_)
     SeekInternal(time);
@@ -269,8 +269,8 @@ base::TimeDelta MediaPlayerBridge::GetCurrentTime() {
     return pending_seek_;
   JNIEnv* env = base::android::AttachCurrentThread();
   return base::TimeDelta::FromMilliseconds(
-      JNI_MediaPlayer::Java_MediaPlayer_getCurrentPosition(
-          env, j_media_player_.obj()));
+      Java_MediaPlayerBridge_getCurrentPosition(
+          env, j_media_player_bridge_.obj()));
 }
 
 base::TimeDelta MediaPlayerBridge::GetDuration() {
@@ -278,12 +278,12 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
     return duration_;
   JNIEnv* env = base::android::AttachCurrentThread();
   return base::TimeDelta::FromMilliseconds(
-      JNI_MediaPlayer::Java_MediaPlayer_getDuration(
-          env, j_media_player_.obj()));
+      Java_MediaPlayerBridge_getDuration(
+          env, j_media_player_bridge_.obj()));
 }
 
 void MediaPlayerBridge::Release() {
-  if (j_media_player_.is_null())
+  if (j_media_player_bridge_.is_null())
     return;
 
   time_update_timer_.Stop();
@@ -294,20 +294,20 @@ void MediaPlayerBridge::Release() {
   SetVideoSurface(gfx::ScopedJavaSurface());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  JNI_MediaPlayer::Java_MediaPlayer_release(env, j_media_player_.obj());
-  j_media_player_.Reset();
+  Java_MediaPlayerBridge_release(env, j_media_player_bridge_.obj());
+  j_media_player_bridge_.Reset();
   ReleaseMediaResourcesFromManager();
   listener_.ReleaseMediaPlayerListenerResources();
 }
 
 void MediaPlayerBridge::SetVolume(float left_volume, float right_volume) {
-  if (j_media_player_.is_null())
+  if (j_media_player_bridge_.is_null())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
-  JNI_MediaPlayer::Java_MediaPlayer_setVolume(
-      env, j_media_player_.obj(), left_volume, right_volume);
+  Java_MediaPlayerBridge_setVolume(
+      env, j_media_player_bridge_.obj(), left_volume, right_volume);
 }
 
 void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
@@ -327,7 +327,7 @@ void MediaPlayerBridge::OnMediaInterrupted() {
 }
 
 void MediaPlayerBridge::OnMediaPrepared() {
-  if (j_media_player_.is_null())
+  if (j_media_player_bridge_.is_null())
     return;
 
   prepared_ = true;
@@ -359,7 +359,8 @@ void MediaPlayerBridge::GetAllowedOperations() {
   CHECK(env);
 
   ScopedJavaLocalRef<jobject> allowedOperations =
-      Java_MediaPlayerBridge_getAllowedOperations(env, j_media_player_.obj());
+      Java_MediaPlayerBridge_getAllowedOperations(
+          env, j_media_player_bridge_.obj());
   can_pause_ = Java_AllowedOperations_canPause(env, allowedOperations.obj());
   can_seek_forward_ = Java_AllowedOperations_canSeekForward(
       env, allowedOperations.obj());
@@ -369,7 +370,7 @@ void MediaPlayerBridge::GetAllowedOperations() {
 
 void MediaPlayerBridge::StartInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  JNI_MediaPlayer::Java_MediaPlayer_start(env, j_media_player_.obj());
+  Java_MediaPlayerBridge_start(env, j_media_player_bridge_.obj());
   if (!time_update_timer_.IsRunning()) {
     time_update_timer_.Start(
         FROM_HERE,
@@ -380,7 +381,7 @@ void MediaPlayerBridge::StartInternal() {
 
 void MediaPlayerBridge::PauseInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  JNI_MediaPlayer::Java_MediaPlayer_pause(env, j_media_player_.obj());
+  Java_MediaPlayerBridge_pause(env, j_media_player_bridge_.obj());
   time_update_timer_.Stop();
 }
 
@@ -393,15 +394,13 @@ void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
   CHECK(env);
 
   int time_msec = static_cast<int>(time.InMilliseconds());
-  JNI_MediaPlayer::Java_MediaPlayer_seekTo(
-      env, j_media_player_.obj(), time_msec);
+  Java_MediaPlayerBridge_seekTo(
+      env, j_media_player_bridge_.obj(), time_msec);
 }
 
 bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
   bool ret = RegisterNativesImpl(env);
   DCHECK(g_MediaPlayerBridge_clazz);
-  if (ret)
-    ret = JNI_MediaPlayer::RegisterNativesImpl(env);
   return ret;
 }
 

@@ -1455,20 +1455,8 @@
     ['OS=="android"', {
       'targets': [
         {
-          'target_name': 'media_player_jni_headers',
-          'type': 'none',
-          'variables': {
-            'jni_gen_package': 'media',
-            'input_java_class': 'android/media/MediaPlayer.class',
-          },
-          'includes': ['../build/jar_file_jni_generator.gypi'],
-        },
-        {
           'target_name': 'media_android_jni_headers',
           'type': 'none',
-          'dependencies': [
-            'media_player_jni_headers',
-          ],
           'sources': [
             'base/android/java/src/org/chromium/media/AudioManagerAndroid.java',
             'base/android/java/src/org/chromium/media/MediaCodecBridge.java',

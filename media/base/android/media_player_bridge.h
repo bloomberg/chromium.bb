@@ -23,22 +23,25 @@ namespace media {
 
 class MediaPlayerManager;
 
-// This class serves as a bridge for native code to call java functions inside
-// android mediaplayer class. For more information on android mediaplayer, check
+// This class serves as a bridge between the native code and Android MediaPlayer
+// Java class. For more information on Android MediaPlayer, check
 // http://developer.android.com/reference/android/media/MediaPlayer.html
-// The actual android mediaplayer instance is created lazily when Start(),
+// The actual Android MediaPlayer instance is created lazily when Start(),
 // Pause(), SeekTo() gets called. As a result, media information may not
 // be available until one of those operations is performed. After that, we
 // will cache those information in case the mediaplayer gets released.
+// The class uses the corresponding MediaPlayerBridge Java class to talk to
+// the Android MediaPlayer instance.
 class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
  public:
   static bool RegisterMediaPlayerBridge(JNIEnv* env);
 
-  // Construct a MediaPlayerBridge object with all the needed media player
-  // callbacks. This object needs to call |manager|'s RequestMediaResources()
-  // before decoding the media stream. This allows |manager| to track
-  // unused resources and free them when needed. On the other hand, it needs
-  // to call ReleaseMediaResources() when it is done with decoding.
+  // Construct a MediaPlayerBridge object. This object needs to call |manager|'s
+  // RequestMediaResources() before decoding the media stream. This allows
+  // |manager| to track unused resources and free them when needed. On the other
+  // hand, it needs to call ReleaseMediaResources() when it is done with
+  // decoding. MediaPlayerBridge also forwards Android MediaPlayer callbacks to
+  // the |manager| when needed.
   MediaPlayerBridge(int player_id,
                     const GURL& url,
                     const GURL& first_party_for_cookies,
@@ -69,7 +72,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual GURL GetFirstPartyForCookies() OVERRIDE;
 
  protected:
-  void SetMediaPlayer(jobject j_media_player);
+  void SetJavaMediaPlayerBridge(jobject j_media_player_bridge);
   void SetMediaPlayerListener();
   void SetDuration(base::TimeDelta time);
 
@@ -86,8 +89,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual void Prepare();
   void OnMediaPrepared();
 
-  // Create the actual android media player.
-  virtual void CreateMediaPlayer();
+  // Create the corresponding Java class instance.
+  virtual void CreateJavaMediaPlayerBridge();
 
  private:
   // Set the data source for the media player.
@@ -142,8 +145,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // Cookies for |url_|.
   std::string cookies_;
 
-  // Java MediaPlayer instance.
-  base::android::ScopedJavaGlobalRef<jobject> j_media_player_;
+  // Java MediaPlayerBridge instance.
+  base::android::ScopedJavaGlobalRef<jobject> j_media_player_bridge_;
 
   base::RepeatingTimer<MediaPlayerBridge> time_update_timer_;
 
