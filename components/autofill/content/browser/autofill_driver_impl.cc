@@ -133,11 +133,18 @@ void AutofillDriverImpl::SendAutofillTypePredictionsToRenderer(
                                                     type_predictions));
 }
 
-void AutofillDriverImpl::RendererShouldClearForm() {
+void AutofillDriverImpl::RendererShouldClearFilledForm() {
   if (!RendererIsAvailable())
     return;
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
+}
+
+void AutofillDriverImpl::RendererShouldClearPreviewedForm() {
+  if (!RendererIsAvailable())
+    return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
 }
 
 bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {

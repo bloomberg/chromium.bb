@@ -42,26 +42,11 @@ class MockAutofillDriver : public TestAutofillDriver {
   // Mock methods to enable testability.
   MOCK_METHOD1(SetRendererActionOnFormDataReception,
                void(RendererFormDataAction action));
-  MOCK_METHOD0(RendererShouldClearForm, void());
+  MOCK_METHOD0(RendererShouldClearFilledForm, void());
+  MOCK_METHOD0(RendererShouldClearPreviewedForm, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
-};
-
-class MockAutofillExternalDelegate : public AutofillExternalDelegate {
- public:
-  MockAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manger,
-                               AutofillDriver* autofill_driver)
-      : AutofillExternalDelegate(web_contents, autofill_manger,
-                                 autofill_driver) {}
-
-  ~MockAutofillExternalDelegate() {}
-
-  MOCK_METHOD0(ClearPreviewedForm, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
 };
 
 class MockAutofillManagerDelegate
@@ -116,7 +101,7 @@ class AutofillExternalDelegateUnitTest
         new MockAutofillManager(autofill_driver_.get(),
                                 &manager_delegate_));
     external_delegate_.reset(
-        new testing::NiceMock<MockAutofillExternalDelegate>(
+        new AutofillExternalDelegate(
             web_contents(),
             autofill_manager_.get(), autofill_driver_.get()));
   }
@@ -146,8 +131,7 @@ class AutofillExternalDelegateUnitTest
   MockAutofillManagerDelegate manager_delegate_;
   scoped_ptr<MockAutofillDriver> autofill_driver_;
   scoped_ptr<MockAutofillManager> autofill_manager_;
-  scoped_ptr<testing::NiceMock<MockAutofillExternalDelegate> >
-      external_delegate_;
+  scoped_ptr<AutofillExternalDelegate> external_delegate_;
 };
 
 // Test that our external delegate called the virtual methods at the right time.
@@ -310,7 +294,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
   EXPECT_CALL(*autofill_driver_,
               SetRendererActionOnFormDataReception(_)).Times(0);
-  EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
+  EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   external_delegate_->DidSelectSuggestion(-1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
@@ -321,7 +305,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   external_delegate_->DidAcceptSuggestion(base::string16(), -1);
 }
 
-// Test that the ClearPreview IPC is only sent the form was being previewed
+// Test that the ClearPreview call is only sent if the form was being previewed
 // (i.e. it isn't autofilling a password).
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
   // Called by DidSelectSuggestion, add expectation to remove warning.
@@ -329,11 +313,11 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
 
   // Ensure selecting a new password entries or Autofill entries will
   // cause any previews to get cleared.
-  EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
+  EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   external_delegate_->DidSelectSuggestion(
       WebAutofillClient::MenuItemIDPasswordEntry);
 
-  EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
+  EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   EXPECT_CALL(*autofill_driver_, SetRendererActionOnFormDataReception(
       AutofillDriver::FORM_DATA_ACTION_PREVIEW));
   external_delegate_->DidSelectSuggestion(1);
@@ -397,7 +381,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
 // the user accepted the suggestion to clear the form.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearForm) {
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
-  EXPECT_CALL(*autofill_driver_, RendererShouldClearForm());
+  EXPECT_CALL(*autofill_driver_, RendererShouldClearFilledForm());
 
   external_delegate_->DidAcceptSuggestion(
       base::string16(),

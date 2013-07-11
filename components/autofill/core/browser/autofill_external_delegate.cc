@@ -198,7 +198,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     autofill_manager_->OnShowAutofillDialog();
   } else if (identifier == WebAutofillClient::MenuItemIDClearForm) {
     // User selected 'Clear form'.
-    autofill_driver_->RendererShouldClearForm();
+    autofill_driver_->RendererShouldClearFilledForm();
   } else if (identifier == WebAutofillClient::MenuItemIDPasswordEntry) {
     bool success = password_autofill_manager_.DidAcceptAutofillSuggestion(
         autofill_query_field_, value);
@@ -233,9 +233,7 @@ void AutofillExternalDelegate::DidEndTextFieldEditing() {
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (host)
-    host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
+  autofill_driver_->RendererShouldClearPreviewedForm();
 }
 
 void AutofillExternalDelegate::Reset() {

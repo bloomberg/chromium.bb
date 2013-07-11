@@ -55,8 +55,11 @@ class AutofillDriver {
   virtual void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) = 0;
 
-  // Tells the renderer to clear the currently displayed Autofill results.
-  virtual void RendererShouldClearForm() = 0;
+  // Tells the renderer to clear the currently filled Autofill results.
+  virtual void RendererShouldClearFilledForm() = 0;
+
+  // Tells the renderer to clear the currently previewed Autofill results.
+  virtual void RendererShouldClearPreviewedForm() = 0;
 };
 
 }  // namespace autofill

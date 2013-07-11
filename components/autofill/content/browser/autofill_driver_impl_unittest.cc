@@ -124,39 +124,12 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
     return true;
   }
 
-  // Searches for an |AutofillMsg_SetAutofillActionPreview| message in the
-  // queue of sent IPC messages. If none is present, returns false. Otherwise,
-  // clears the queue of sent messages and returns true.
-  bool GetSetAutofillActionPreviewMessage() {
-    const uint32 kMsgID = AutofillMsg_SetAutofillActionPreview::ID;
-    const IPC::Message* message =
-        process()->sink().GetFirstMessageMatching(kMsgID);
-    if (!message)
-      return false;
-    process()->sink().ClearMessages();
-    return true;
-  }
-
-  // Searches for an |AutofillMsg_SetAutofillActionFill| message in the
-  // queue of sent IPC messages. If none is present, returns false. Otherwise,
-  // clears the queue of sent messages and returns true.
-  bool GetSetAutofillActionFillMessage() {
-    const uint32 kMsgID = AutofillMsg_SetAutofillActionFill::ID;
-    const IPC::Message* message =
-        process()->sink().GetFirstMessageMatching(kMsgID);
-    if (!message)
-      return false;
-    process()->sink().ClearMessages();
-    return true;
-  }
-
-  // Searches for an |AutofillMsg_ClearForm| message in the queue of sent IPC
+  // Searches for a message matching |messageID| in the queue of sent IPC
   // messages. If none is present, returns false. Otherwise, clears the queue
   // of sent messages and returns true.
-  bool GetClearFormMessage() {
-    const uint32 kMsgID = AutofillMsg_ClearForm::ID;
+  bool HasMessageMatchingID(uint32 messageID) {
     const IPC::Message* message =
-        process()->sink().GetFirstMessageMatching(kMsgID);
+        process()->sink().GetFirstMessageMatching(messageID);
     if (!message)
       return false;
     process()->sink().ClearMessages();
@@ -229,18 +202,23 @@ TEST_F(AutofillDriverImplTest, TypePredictionsSentToRendererWhenEnabled) {
 TEST_F(AutofillDriverImplTest, PreviewActionSentToRenderer) {
   driver_->SetRendererActionOnFormDataReception(
       AutofillDriver::FORM_DATA_ACTION_PREVIEW);
-  EXPECT_TRUE(GetSetAutofillActionPreviewMessage());
+  EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_SetAutofillActionPreview::ID));
 }
 
 TEST_F(AutofillDriverImplTest, FillActionSentToRenderer) {
   driver_->SetRendererActionOnFormDataReception(
       AutofillDriver::FORM_DATA_ACTION_FILL);
-  EXPECT_TRUE(GetSetAutofillActionFillMessage());
+  EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_SetAutofillActionFill::ID));
 }
 
-TEST_F(AutofillDriverImplTest, ClearFormSentToRenderer) {
-  driver_->RendererShouldClearForm();
-  EXPECT_TRUE(GetClearFormMessage());
+TEST_F(AutofillDriverImplTest, ClearFilledFormSentToRenderer) {
+  driver_->RendererShouldClearFilledForm();
+  EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_ClearForm::ID));
+}
+
+TEST_F(AutofillDriverImplTest, ClearPreviewedFormSentToRenderer) {
+  driver_->RendererShouldClearPreviewedForm();
+  EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_ClearPreviewedForm::ID));
 }
 
 }  // namespace autofill
