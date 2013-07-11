@@ -112,10 +112,11 @@ class OneClickSigninHelper
                                     int child_id,
                                     int route_id);
 
-  // Remove the item currently at the top of the history list.  Due to
-  // limitations of the NavigationController, this cannot be done until
-  // a new page becomes "current".
-  static void RemoveCurrentHistoryItem(content::WebContents* web_contents);
+  // Remove the item currently at the top of the history list if it's
+  // the Gaia redirect URL. Due to limitations of the NavigationController
+  // this cannot be done until a new page becomes "current".
+  static void RemoveSigninRedirectURLHistoryItem(
+      content::WebContents* web_contents);
 
   static void LogConfirmHistogramValue(int action);
 

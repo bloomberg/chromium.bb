@@ -56,6 +56,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -876,9 +877,11 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 }
 
 // static
-void OneClickSigninHelper::RemoveCurrentHistoryItem(
+void OneClickSigninHelper::RemoveSigninRedirectURLHistoryItem(
     content::WebContents* web_contents) {
-  new CurrentHistoryCleaner(web_contents);  // will self-destruct when finished
+  // Only actually remove the item if it's the blank.html continue url.
+  if (SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(web_contents->GetURL()))
+    new CurrentHistoryCleaner(web_contents);  // will self-destruct when done
 }
 
 void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
@@ -1023,7 +1026,7 @@ void OneClickSigninHelper::DidStopLoading(
   // TODO(rogerta): Could we move this code back up to ShowInfoBarUIThread()?
   if (!error_message_.empty() && auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
     VLOG(1) << "OneClickSigninHelper::DidStopLoading: error=" << error_message_;
-    RemoveCurrentHistoryItem(contents);
+    RemoveSigninRedirectURLHistoryItem(contents);
     // After we redirect to NTP, our browser pointer gets corrupted because the
     // WebContents have changed, so grab the browser pointer
     // before the navigation.
@@ -1057,7 +1060,7 @@ void OneClickSigninHelper::DidStopLoading(
         continue_url_.ReplaceComponents(replacements));
 
   if (continue_url_match)
-    RemoveCurrentHistoryItem(contents);
+    RemoveSigninRedirectURLHistoryItem(contents);
 
   // If there is no valid email yet, there is nothing to do.  As of M26, the
   // password is allowed to be empty, since its no longer required to setup
