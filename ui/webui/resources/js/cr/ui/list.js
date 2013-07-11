@@ -550,18 +550,12 @@ cr.define('cr.ui', function() {
       return this.selectionController_.handleKeyDown(e);
     },
 
-    scrollTopBefore_: 0,
-
     /**
      * Handle a scroll event.
      * @param {Event} e The scroll event.
      */
     handleScroll: function(e) {
-      var scrollTop = this.scrollTop;
-      if (scrollTop != this.scrollTopBefore_) {
-        this.scrollTopBefore_ = scrollTop;
-        this.redraw();
-      }
+      requestAnimationFrame(this.redraw.bind(this));
     },
 
     /**
@@ -934,22 +928,21 @@ cr.define('cr.ui', function() {
      * Merges list items currently existing in the list with items in the range
      * [firstIndex, lastIndex). Removes or adds items if needed.
      * Doesn't delete {@code this.pinnedItem_} if it is present (instead hides
-     * it if it is out of the range). Adds items to {@code newCachedItems}.
+     * it if it is out of the range).
      * @param {number} firstIndex The index of first item, inclusively.
      * @param {number} lastIndex The index of last item, exclusively.
-     * @param {Object.<string, ListItem>} cachedItems Old items cache.
-     * @param {Object.<string, ListItem>} newCachedItems New items cache.
      */
-    mergeItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
+    mergeItems: function(firstIndex, lastIndex) {
       var self = this;
       var dataModel = this.dataModel;
       var currentIndex = firstIndex;
 
       function insert() {
         var dataItem = dataModel.item(currentIndex);
-        var newItem = cachedItems[currentIndex] || self.createItem(dataItem);
+        var newItem = self.cachedItems_[currentIndex] ||
+            self.createItem(dataItem);
         newItem.listIndex = currentIndex;
-        newCachedItems[currentIndex] = newItem;
+        self.cachedItems_[currentIndex] = newItem;
         self.insertBefore(newItem, item);
         currentIndex++;
       }
@@ -969,10 +962,10 @@ cr.define('cr.ui', function() {
         }
 
         var index = item.listIndex;
-        if (cachedItems[index] != item || index < currentIndex) {
+        if (this.cachedItems_[index] != item || index < currentIndex) {
           remove();
         } else if (index == currentIndex) {
-          newCachedItems[currentIndex] = item;
+          this.cachedItems_[currentIndex] = item;
           item = item.nextSibling;
           currentIndex++;
         } else {  // index > currentIndex
@@ -990,7 +983,7 @@ cr.define('cr.ui', function() {
       if (this.pinnedItem_) {
         var index = this.pinnedItem_.listIndex;
         this.pinnedItem_.hidden = index < firstIndex || index >= lastIndex;
-        newCachedItems[index] = this.pinnedItem_;
+        this.cachedItems_[index] = this.pinnedItem_;
         if (index >= lastIndex)
           item = this.pinnedItem_;  // Insert new items before this one.
       }
@@ -1090,18 +1083,14 @@ cr.define('cr.ui', function() {
       if (!this.fixedHeight_)
         this.ensureAllItemSizesInCache();
 
-      // We cache the list items since creating the DOM nodes is the most
-      // expensive part of redrawing.
-      var cachedItems = this.cachedItems_ || {};
-      var newCachedItems = {};
-
       var autoExpands = this.autoExpands_;
 
       var itemsInViewPort = this.getItemsInViewPort(scrollTop, clientHeight);
       // Draws the hidden rows just above/below the viewport to prevent
       // flashing in scroll.
-      var firstIndex = Math.max(0, Math.min(dataModel.length - 1,
-                                            itemsInViewPort.first - 1));
+      var firstIndex = Math.max(
+          0,
+          Math.min(dataModel.length - 1, itemsInViewPort.first - 1));
       var lastIndex = Math.min(itemsInViewPort.last + 1, dataModel.length);
 
       var beforeFillerHeight =
@@ -1115,17 +1104,17 @@ cr.define('cr.ui', function() {
       var leadIndex = sm.leadIndex;
 
       if (this.pinnedItem_ &&
-          this.pinnedItem_ != cachedItems[leadIndex]) {
+          this.pinnedItem_ != this.cachedItems_[leadIndex]) {
         if (this.pinnedItem_.hidden)
           this.removeChild(this.pinnedItem_);
         this.pinnedItem_ = undefined;
       }
 
-      this.mergeItems(firstIndex, lastIndex, cachedItems, newCachedItems);
+      this.mergeItems(firstIndex, lastIndex);
 
-      if (!this.pinnedItem_ && newCachedItems[leadIndex] &&
-          newCachedItems[leadIndex].parentNode == this) {
-        this.pinnedItem_ = newCachedItems[leadIndex];
+      if (!this.pinnedItem_ && this.cachedItems_[leadIndex] &&
+          this.cachedItems_[leadIndex].parentNode == this) {
+        this.pinnedItem_ = this.cachedItems_[leadIndex];
       }
 
       this.afterFiller_.style.height = afterFillerHeight + 'px';
@@ -1133,43 +1122,27 @@ cr.define('cr.ui', function() {
       // We don't set the lead or selected properties until after adding all
       // items, in case they force relayout in response to these events.
       var listItem = null;
-      if (leadIndex != -1 && newCachedItems[leadIndex])
-        newCachedItems[leadIndex].lead = true;
+      if (leadIndex != -1 && this.cachedItems_[leadIndex])
+        this.cachedItems_[leadIndex].lead = true;
       for (var y = firstIndex; y < lastIndex; y++) {
         if (sm.getIndexSelected(y))
-          newCachedItems[y].selected = true;
+          this.cachedItems_[y].selected = true;
         else if (y != leadIndex)
-          listItem = newCachedItems[y];
+          listItem = this.cachedItems_[y];
       }
 
       this.firstIndex_ = firstIndex;
       this.lastIndex_ = lastIndex;
 
       this.remainingSpace_ = itemsInViewPort.last > dataModel.length;
-      this.cachedItems_ = newCachedItems;
 
       // Mesurings must be placed after adding all the elements, to prevent
       // performance reducing.
       if (!this.fixedHeight_) {
-        for (var y = firstIndex; y < lastIndex; y++)
+        for (var y = firstIndex; y < lastIndex; y++) {
           this.cachedItemHeights_[y] =
-              this.measureItemHeight_(newCachedItems[y]);
-      }
-
-      // Measure again in case the item height has changed due to a page zoom.
-      //
-      // The measure above is only done the first time but this measure is done
-      // after every redraw. It is done in a timeout so it will not trigger
-      // a reflow (which made the redraw speed 3 times slower on my system).
-      // By using a timeout the measuring will happen later when there is no
-      // need for a reflow.
-      if (listItem && this.fixedHeight_) {
-        var list = this;
-        window.setTimeout(function() {
-          if (listItem.parentNode == list) {
-            list.measured_ = list.measureItem(listItem);
-          }
-        });
+              this.measureItemHeight_(this.cachedItems_[y]);
+        }
       }
     },
 
