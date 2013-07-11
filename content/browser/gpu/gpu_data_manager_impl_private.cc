@@ -114,10 +114,15 @@ void UpdateStats(const gpu::GpuBlacklist* blacklist,
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool disabled = false;
-  if (blacklisted_features.size() == 0) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-        0, max_entry_id + 1);
-  } else {
+
+  // Use entry 0 to capture the total number of times that data
+  // was recorded in this histogram in order to have a convenient
+  // denominator to compute blacklist percentages for the rest of the
+  // entries.
+  UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+      0, max_entry_id + 1);
+
+  if (blacklisted_features.size() != 0) {
     std::vector<uint32> flag_entries;
     blacklist->GetDecisionEntries(&flag_entries, disabled);
     DCHECK_GT(flag_entries.size(), 0u);
