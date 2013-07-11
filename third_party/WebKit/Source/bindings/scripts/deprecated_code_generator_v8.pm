@@ -2190,13 +2190,8 @@ sub GenerateFunction
     if (listener) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, args[0]);
         impl->${implName}(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
-END
-        if (!InheritsInterface($interface, "Node")) {
-            $code .= <<END;
-        ${hiddenDependencyAction}HiddenDependency(args.Holder(), args[1], ${v8ClassName}::eventListenerCacheIndex, args.GetIsolate());
-END
-        }
-        $code .= <<END;
+        if (!impl->toNode())
+            ${hiddenDependencyAction}HiddenDependency(args.Holder(), args[1], ${v8ClassName}::eventListenerCacheIndex, args.GetIsolate());
     }
 }
 

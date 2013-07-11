@@ -19,7 +19,6 @@
  */
 
 [
-    EventTarget,
     Constructor,
     DependentLifetime
 ] interface TestNode : Node {

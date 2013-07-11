@@ -18,12 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// FIXME: Node should inherit EventTarget.
 [
     CustomToV8,
-    EventTarget,
     DependentLifetime
-] interface Node {
+] interface Node : EventTarget {
     // NodeType
     const unsigned short      ELEMENT_NODE                   = 1;
     const unsigned short      ATTRIBUTE_NODE                 = 2;
@@ -97,12 +95,4 @@
 
     // IE extensions
     [PerWorldBindings] readonly attribute Element          parentElement;
-
-    void addEventListener(DOMString type, 
-                          EventListener listener, 
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type, 
-                             EventListener listener, 
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
 };
