@@ -108,6 +108,7 @@ public:
     CachedResource* resourceForURL(const KURL&);
     
     void add(CachedResource*);
+    void replace(CachedResource* newResource, CachedResource* oldResource);
     void remove(CachedResource* resource) { evict(resource); }
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);

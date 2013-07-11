@@ -679,13 +679,7 @@ void CachedResource::revalidationSucceeded(const ResourceResponse& response)
     ASSERT(!canDelete());
 
     m_resourceToRevalidate->updateResponseAfterRevalidation(response);
-    memoryCache()->remove(this);
-    memoryCache()->add(m_resourceToRevalidate);
-    int delta = m_resourceToRevalidate->size();
-    if (m_resourceToRevalidate->decodedSize() && m_resourceToRevalidate->hasClients())
-        memoryCache()->insertInLiveDecodedResourcesList(m_resourceToRevalidate);
-    if (delta)
-        memoryCache()->adjustSize(m_resourceToRevalidate->hasClients(), delta);
+    memoryCache()->replace(m_resourceToRevalidate, this);
 
     switchClientsToRevalidatedResource();
     ASSERT(!m_deleted);
@@ -706,11 +700,8 @@ void CachedResource::updateForAccess()
     ASSERT(inCache());
 
     // Need to make sure to remove before we increase the access count, since
-    // the queue will possibly change. However, if this is a resource that is being
-    // added back in due to a successful revalidation, it is not present in the LRU list
-    // at this point, so we don't need to remove it.
-    if (!m_proxyResource && m_accessCount)
-        memoryCache()->removeFromLRUList(this);
+    // the queue will possibly change.
+    memoryCache()->removeFromLRUList(this);
 
     // If this is the first time the resource has been accessed, adjust the size of the cache to account for its initial size.
     if (!m_accessCount)

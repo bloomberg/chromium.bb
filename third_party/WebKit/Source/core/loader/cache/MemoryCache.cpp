@@ -111,6 +111,20 @@ void MemoryCache::add(CachedResource* resource)
     LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().string().latin1().data(), resource);
 }
 
+void MemoryCache::replace(CachedResource* newResource, CachedResource* oldResource)
+{
+    evict(oldResource);
+    ASSERT(!m_resources.get(newResource->url()));
+    m_resources.set(newResource->url(), newResource);
+    newResource->setInCache(true);
+    insertInLRUList(newResource);
+    int delta = newResource->size();
+    if (newResource->decodedSize() && newResource->hasClients())
+        insertInLiveDecodedResourcesList(newResource);
+    if (delta)
+        adjustSize(newResource->hasClients(), delta);
+}
+
 CachedResource* MemoryCache::resourceForURL(const KURL& resourceURL)
 {
     ASSERT(WTF::isMainThread());
