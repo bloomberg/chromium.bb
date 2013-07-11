@@ -85,16 +85,15 @@ namespace {
 // Arguments used with StartSync function.  base::Bind() cannot support too
 // many args for performance reasons, so they are packaged up into a struct.
 struct StartSyncArgs {
-  StartSyncArgs(
-      Profile* profile,
-      Browser* browser,
-      OneClickSigninHelper::AutoAccept auto_accept,
-      const std::string& session_index,
-      const std::string& email,
-      const std::string& password,
-      bool force_same_tab_navigation,
-      bool untrusted_confirmation_required,
-      SyncPromoUI::Source source);
+  StartSyncArgs(Profile* profile,
+                Browser* browser,
+                OneClickSigninHelper::AutoAccept auto_accept,
+                const std::string& session_index,
+                const std::string& email,
+                const std::string& password,
+                bool force_same_tab_navigation,
+                bool untrusted_confirmation_required,
+                SyncPromoUI::Source source);
 
   Profile* profile;
   Browser* browser;
@@ -107,16 +106,15 @@ struct StartSyncArgs {
   SyncPromoUI::Source source;
 };
 
-StartSyncArgs::StartSyncArgs(
-    Profile* profile,
-    Browser* browser,
-    OneClickSigninHelper::AutoAccept auto_accept,
-    const std::string& session_index,
-    const std::string& email,
-    const std::string& password,
-    bool force_same_tab_navigation,
-    bool untrusted_confirmation_required,
-    SyncPromoUI::Source source)
+StartSyncArgs::StartSyncArgs(Profile* profile,
+                             Browser* browser,
+                             OneClickSigninHelper::AutoAccept auto_accept,
+                             const std::string& session_index,
+                             const std::string& email,
+                             const std::string& password,
+                             bool force_same_tab_navigation,
+                             bool untrusted_confirmation_required,
+                             SyncPromoUI::Source source)
     : profile(profile),
       browser(browser),
       auto_accept(auto_accept),
@@ -143,8 +141,7 @@ StartSyncArgs::StartSyncArgs(
 // sign-in, for this profile.
 void AddEmailToOneClickRejectedList(Profile* profile,
                                     const std::string& email) {
-  PrefService* pref_service = profile->GetPrefs();
-  ListPrefUpdate updater(pref_service,
+  ListPrefUpdate updater(profile->GetPrefs(),
                          prefs::kReverseAutologinRejectedEmailList);
   updater->AppendIfNotPresent(new base::StringValue(email));
 }
@@ -385,6 +382,7 @@ class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
                              const std::string& last_email,
                              const std::string& email,
                              Callback callback);
+  virtual ~ConfirmEmailDialogDelegate();
 
   // TabModalConfirmDialogDelegate:
   virtual string16 GetTitle() OVERRIDE;
@@ -423,6 +421,9 @@ ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
     callback_(callback) {
 }
 
+ConfirmEmailDialogDelegate::~ConfirmEmailDialogDelegate() {
+}
+
 string16 ConfirmEmailDialogDelegate::GetTitle() {
   return l10n_util::GetStringUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
@@ -431,8 +432,7 @@ string16 ConfirmEmailDialogDelegate::GetTitle() {
 string16 ConfirmEmailDialogDelegate::GetMessage() {
   return l10n_util::GetStringFUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
-      UTF8ToUTF16(last_email_),
-      UTF8ToUTF16(email_));
+      UTF8ToUTF16(last_email_), UTF8ToUTF16(email_));
 }
 
 string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
@@ -465,10 +465,12 @@ void ConfirmEmailDialogDelegate::OnCanceled() {
 class CurrentHistoryCleaner : public content::WebContentsObserver {
  public:
   explicit CurrentHistoryCleaner(content::WebContents* contents);
+  virtual ~CurrentHistoryCleaner();
 
+  // content::WebContentsObserver:
   virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
-  virtual void DidStopLoading(content::RenderViewHost* render_view_host)
-      OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   scoped_ptr<content::WebContents> contents_;
@@ -479,23 +481,26 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
 
 CurrentHistoryCleaner::CurrentHistoryCleaner(content::WebContents* contents)
     : WebContentsObserver(contents) {
-  content::NavigationController& nc = web_contents()->GetController();
-  history_index_to_remove_ = nc.GetLastCommittedEntryIndex();
+  history_index_to_remove_ =
+      web_contents()->GetController().GetLastCommittedEntryIndex();
+}
+
+CurrentHistoryCleaner::~CurrentHistoryCleaner() {
 }
 
 void CurrentHistoryCleaner::DidStopLoading(
     content::RenderViewHost* render_view_host) {
-  content::NavigationController& nc = web_contents()->GetController();
+  content::NavigationController* nc = &web_contents()->GetController();
   // Have to wait until something else gets added to history before removal.
-  if (history_index_to_remove_ < nc.GetLastCommittedEntryIndex()) {
-    nc.RemoveEntryAtIndex(history_index_to_remove_);
-    delete this;  /* success */
+  if (history_index_to_remove_ < nc->GetLastCommittedEntryIndex()) {
+    nc->RemoveEntryAtIndex(history_index_to_remove_);
+    delete this;  // Success.
   }
 }
 
 void CurrentHistoryCleaner::WebContentsDestroyed(
     content::WebContents* contents) {
-  delete this;  /* failure */
+  delete this;  // Failure.
 }
 
 }  // namespace
@@ -503,10 +508,10 @@ void CurrentHistoryCleaner::WebContentsDestroyed(
 
 // OneClickSigninHelper -------------------------------------------------------
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
+
 // static
 const int OneClickSigninHelper::kMaxNavigationsSince = 10;
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 
 OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

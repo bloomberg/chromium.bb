@@ -45,13 +45,14 @@ namespace {
 
 class OwnedHandleVector {
  public:
+  typedef std::vector<HANDLE> Handles;
   OwnedHandleVector();
   ~OwnedHandleVector();
 
-  std::vector<HANDLE>& data() { return data_; }
+  Handles* data() { return &data_; }
 
  private:
-  std::vector<HANDLE> data_;
+  Handles data_;
 
   DISALLOW_COPY_AND_ASSIGN(OwnedHandleVector);
 };
@@ -60,10 +61,8 @@ OwnedHandleVector::OwnedHandleVector() {
 }
 
 OwnedHandleVector::~OwnedHandleVector() {
-  for (std::vector<HANDLE>::const_iterator iter = data_.begin();
-       iter != data_.end(); ++iter) {
+  for (Handles::iterator iter = data_.begin(); iter != data_.end(); ++iter)
     ::CloseHandle(*iter);
-  }
 }
 
 
@@ -76,9 +75,9 @@ void DumpBrowserInBlockingPool() {
 }
 
 void DumpRenderersInBlockingPool(OwnedHandleVector* renderer_handles) {
-  for (std::vector<HANDLE>::const_iterator iter =
-           renderer_handles->data().begin();
-       iter != renderer_handles->data().end(); ++iter) {
+  for (OwnedHandleVector::Handles::const_iterator iter =
+           renderer_handles->data()->begin();
+       iter != renderer_handles->data()->end(); ++iter) {
     CrashDumpForHangDebugging(*iter);
   }
 }
@@ -88,7 +87,7 @@ void DumpAndTerminatePluginInBlockingPool(
   CrashDumpAndTerminateHungChildProcess(plugin_handle->Get());
 }
 
-#endif
+#endif  // defined(OS_WIN)
 
 // Called on the I/O thread to actually kill the plugin with the given child
 // ID. We specifically don't want this to be a member function since if the
@@ -178,11 +177,11 @@ HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
     const string16& plugin_name)
     : ConfirmInfoBarDelegate(infobar_service),
       helper_(helper),
-      plugin_child_id_(plugin_child_id) {
-  message_ = l10n_util::GetStringFUTF16(IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR,
-                                        plugin_name);
-  button_text_ = l10n_util::GetStringUTF16(
-      IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR_KILLBUTTON);
+      plugin_child_id_(plugin_child_id),
+      message_(l10n_util::GetStringFUTF16(
+          IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR, plugin_name)),
+      button_text_(l10n_util::GetStringUTF16(
+          IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR_KILLBUTTON)) {
 }
 
 HungPluginInfoBarDelegate::~HungPluginInfoBarDelegate() {
@@ -225,7 +224,7 @@ struct HungPluginTabHelper::PluginState {
   string16 name;
 
   // Possibly-null if we're not showing an infobar right now.
-  InfoBarDelegate* info_bar;
+  InfoBarDelegate* infobar;
 
   // Time to delay before re-showing the infobar for a hung plugin. This is
   // increased each time the user cancels it.
@@ -251,7 +250,7 @@ HungPluginTabHelper::PluginState::PluginState(const base::FilePath& p,
                                               const string16& n)
     : path(p),
       name(n),
-      info_bar(NULL),
+      infobar(NULL),
       next_reshow_delay(base::TimeDelta::FromSeconds(kInitialReshowDelaySec)),
       timer(false, false) {
 }
@@ -288,8 +287,8 @@ void HungPluginTabHelper::PluginCrashed(const base::FilePath& plugin_path,
   for (PluginStateMap::iterator i = hung_plugins_.begin();
        i != hung_plugins_.end(); ++i) {
     if (i->second->path == plugin_path) {
-      if (i->second->info_bar)
-        infobar_service->RemoveInfoBar(i->second->info_bar);
+      if (i->second->infobar)
+        infobar_service->RemoveInfoBar(i->second->infobar);
       hung_plugins_.erase(i);
       break;
     }
@@ -309,8 +308,8 @@ void HungPluginTabHelper::PluginHungStatusChanged(
   if (found != hung_plugins_.end()) {
     if (!is_hung) {
       // Hung plugin became un-hung, close the infobar and delete our info.
-      if (found->second->info_bar)
-        infobar_service->RemoveInfoBar(found->second->info_bar);
+      if (found->second->infobar)
+        infobar_service->RemoveInfoBar(found->second->infobar);
       hung_plugins_.erase(found);
     }
     return;
@@ -337,14 +336,14 @@ void HungPluginTabHelper::Observe(
   //
   // TODO(pkasting): This comment will be incorrect and should be removed once
   // InfoBars own their delegates.
-  InfoBarDelegate* delegate =
+  InfoBarDelegate* infobar =
       content::Details<InfoBarRemovedDetails>(details)->first;
 
   for (PluginStateMap::iterator i = hung_plugins_.begin();
        i != hung_plugins_.end(); ++i) {
     PluginState* state = i->second.get();
-    if (state->info_bar == delegate) {
-      state->info_bar = NULL;
+    if (state->infobar == infobar) {
+      state->infobar = NULL;
 
       // Schedule the timer to re-show the infobar if the plugin continues to be
       // hung.
@@ -377,14 +376,14 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
         HANDLE handle = NULL;
         ::DuplicateHandle(current_process, host->GetHandle(), current_process,
                           &handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
-        renderer_handles->data().push_back(handle);
+        renderer_handles->data()->push_back(handle);
       }
       // If there are a lot of renderer processes, it is likely that we will
       // generate too many crash dumps. They might not all be uploaded/recorded
       // due to our crash dump uploading restrictions. So we just don't generate
       // renderer crash dumps in that case.
-      if (renderer_handles->data().size() > 0 &&
-          renderer_handles->data().size() < 4) {
+      if (renderer_handles->data()->size() > 0 &&
+          renderer_handles->data()->size() < 4) {
         content::BrowserThread::PostBlockingPoolSequencedTask(
             kDumpChildProcessesSequenceName, FROM_HERE,
             base::Bind(&DumpBrowserInBlockingPool));
@@ -398,10 +397,7 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
 #endif
 
   PluginStateMap::iterator found = hung_plugins_.find(child_id);
-  if (found == hung_plugins_.end()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(found != hung_plugins_.end());
 
   content::BrowserThread::PostTask(content::BrowserThread::IO,
                                    FROM_HERE,
@@ -410,12 +406,11 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
 }
 
 void HungPluginTabHelper::OnReshowTimer(int child_id) {
+  // The timer should have been cancelled if the record isn't in our map
+  // anymore.
   PluginStateMap::iterator found = hung_plugins_.find(child_id);
-  if (found == hung_plugins_.end() || found->second->info_bar) {
-    // The timer should be cancelled if the record isn't in our map anymore.
-    NOTREACHED();
-    return;
-  }
+  DCHECK(found != hung_plugins_.end());
+  DCHECK(!found->second->infobar);
   ShowBar(child_id, found->second.get());
 }
 
@@ -425,8 +420,8 @@ void HungPluginTabHelper::ShowBar(int child_id, PluginState* state) {
   if (!infobar_service)
     return;
 
-  DCHECK(!state->info_bar);
-  state->info_bar =
+  DCHECK(!state->infobar);
+  state->infobar =
       HungPluginInfoBarDelegate::Create(infobar_service, this, child_id,
                                         state->name);
 }
@@ -434,11 +429,8 @@ void HungPluginTabHelper::ShowBar(int child_id, PluginState* state) {
 void HungPluginTabHelper::CloseBar(PluginState* state) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
-  if (!infobar_service)
-    return;
-
-  if (state->info_bar) {
-    infobar_service->RemoveInfoBar(state->info_bar);
-    state->info_bar = NULL;
+  if (infobar_service && state->infobar) {
+    infobar_service->RemoveInfoBar(state->infobar);
+    state->infobar = NULL;
   }
 }

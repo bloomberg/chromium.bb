@@ -705,11 +705,9 @@ void ShowWebsiteSettings(Browser* browser,
                          content::WebContents* web_contents,
                          const GURL& url,
                          const SSLStatus& ssl) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents->GetBrowserContext());
-
   browser->window()->ShowWebsiteSettings(
-      profile, web_contents, url, ssl);
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      web_contents, url, ssl);
 }
 
 void ShowChromeToMobileBubble(Browser* browser) {

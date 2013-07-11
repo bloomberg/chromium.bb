@@ -41,14 +41,11 @@ string16 AlternateNavInfoBarDelegate::GetLinkText() const {
 
 bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  content::OpenURLParams params(
+  // Pretend the user typed this URL, so that navigating to it will be the
+  // default action when it's typed again in the future.
+  web_contents()->OpenURL(content::OpenURLParams(
       alternate_nav_url_, content::Referrer(), disposition,
-      // Pretend the user typed this URL, so that navigating to
-      // it will be the default action when it's typed again in
-      // the future.
-      content::PAGE_TRANSITION_TYPED,
-      false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_TYPED, false));
 
   // We should always close, even if the navigation did not occur within this
   // WebContents.

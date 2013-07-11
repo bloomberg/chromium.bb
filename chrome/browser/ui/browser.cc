@@ -845,7 +845,6 @@ void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
       InfoBarService::FromWebContents(web_contents);
   if (!infobar_service)
     return;
-
   SimpleAlertInfoBarDelegate::Create(
       infobar_service, InfoBarDelegate::kNoIconID,
       l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true);

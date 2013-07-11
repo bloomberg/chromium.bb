@@ -21,6 +21,7 @@ class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   explicit CollectedCookiesInfoBarDelegate(InfoBarService* infobar_service);
+  virtual ~CollectedCookiesInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;

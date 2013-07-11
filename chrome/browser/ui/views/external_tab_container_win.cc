@@ -383,9 +383,8 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   web_contents_.reset(existing_contents);
 
   if (!infobars_enabled) {
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(existing_contents);
-    infobar_service->set_infobars_enabled(false);
+    InfoBarService::FromWebContents(existing_contents)->set_infobars_enabled(
+        false);
   }
 
   // Start loading initial URL
@@ -1375,10 +1374,9 @@ void ExternalTabContainerWin::SetupExternalTabView() {
   // widget is torn down.
   external_tab_view_ = new views::View();
 
-  InfoBarContainerView* info_bar_container = new InfoBarContainerView(this);
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_.get());
-  info_bar_container->ChangeInfoBarService(infobar_service);
+  InfoBarContainerView* infobar_container = new InfoBarContainerView(this);
+  infobar_container->ChangeInfoBarService(
+      InfoBarService::FromWebContents(web_contents_.get()));
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);
   // Give this column an identifier of 0.
@@ -1393,7 +1391,7 @@ void ExternalTabContainerWin::SetupExternalTabView() {
   external_tab_view_->SetLayoutManager(layout);
 
   layout->StartRow(0, 0);
-  layout->AddView(info_bar_container);
+  layout->AddView(infobar_container);
   layout->StartRow(1, 0);
   layout->AddView(tab_contents_container_);
   widget_->SetContentsView(external_tab_view_);

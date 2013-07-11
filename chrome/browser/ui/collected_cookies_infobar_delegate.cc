@@ -22,6 +22,9 @@ CollectedCookiesInfoBarDelegate::CollectedCookiesInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_service) {
 }
 
+CollectedCookiesInfoBarDelegate::~CollectedCookiesInfoBarDelegate() {
+}
+
 int CollectedCookiesInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_COOKIE;
 }

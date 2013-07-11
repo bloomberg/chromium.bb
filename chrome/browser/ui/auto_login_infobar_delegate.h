@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_
 
+#include <string>
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "components/auto_login_parser/auto_login_parser.h"
 #include "content/public/browser/notification_observer.h"
@@ -22,9 +23,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
                                  public content::NotificationObserver {
  public:
   struct Params {
-    Params();
-    ~Params();
-
     // Information from a parsed header.
     auto_login_parser::HeaderData header;
 
@@ -47,13 +45,13 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
  private:
   // Enum values used for UMA histograms.
   enum Actions {
-    HISTOGRAM_SHOWN,       // The infobar was shown to the user.
-    HISTOGRAM_ACCEPTED,    // The user pressed the accept button.
-    HISTOGRAM_REJECTED,    // The user pressed the reject button.
-    HISTOGRAM_DISMISSED,   // The user pressed the close button.
-    HISTOGRAM_IGNORED,     // The user ignored the infobar.
-    HISTOGRAM_LEARN_MORE,  // The user clicked on the learn more link.
-    HISTOGRAM_MAX
+    SHOWN,       // The infobar was shown to the user.
+    ACCEPTED,    // The user pressed the accept button.
+    REJECTED,    // The user pressed the reject button.
+    DISMISSED,   // The user pressed the close button.
+    IGNORED,     // The user ignored the infobar.
+    LEARN_MORE,  // The user clicked on the learn more link.
+    HISTOGRAM_BOUNDING_VALUE
   };
 
   // ConfirmInfoBarDelegate:
