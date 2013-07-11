@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2008 Rob Buis <buis@kde.org>
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -18,30 +19,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathSegCurvetoQuadraticSmooth_h
-#define SVGPathSegCurvetoQuadraticSmooth_h
+#ifndef SVGPathSegCurvetoQuadraticSmoothRel_h
+#define SVGPathSegCurvetoQuadraticSmoothRel_h
 
 #include "core/svg/SVGPathSegWithContext.h"
 
 namespace WebCore {
-
-class SVGPathSegCurvetoQuadraticSmoothAbs : public SVGPathSegSingleCoordinate {
-public:
-    static PassRefPtr<SVGPathSegCurvetoQuadraticSmoothAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
-    {
-        return adoptRef(new SVGPathSegCurvetoQuadraticSmoothAbs(element, role, x, y));
-    }
-
-private:
-    SVGPathSegCurvetoQuadraticSmoothAbs(SVGPathElement* element, SVGPathSegRole role, float x, float y)
-        : SVGPathSegSingleCoordinate(element, role, x, y)
-    {
-        ScriptWrappable::init(this);
-    }
-
-    virtual unsigned short pathSegType() const { return PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS; }
-    virtual String pathSegTypeAsLetter() const { return "T"; }
-};
 
 class SVGPathSegCurvetoQuadraticSmoothRel : public SVGPathSegSingleCoordinate {
 public:

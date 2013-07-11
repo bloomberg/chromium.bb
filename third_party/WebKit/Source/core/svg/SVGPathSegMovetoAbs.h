@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2008 Rob Buis <buis@kde.org>
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -18,47 +19,29 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathSegLineto_h
-#define SVGPathSegLineto_h
+#ifndef SVGPathSegMovetoAbs_h
+#define SVGPathSegMovetoAbs_h
 
 #include "core/svg/SVGPathSegWithContext.h"
 
 namespace WebCore {
 
-class SVGPathSegLinetoAbs : public SVGPathSegSingleCoordinate {
+class SVGPathSegMovetoAbs : public SVGPathSegSingleCoordinate {
 public:
-    static PassRefPtr<SVGPathSegLinetoAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
+    static PassRefPtr<SVGPathSegMovetoAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
     {
-        return adoptRef(new SVGPathSegLinetoAbs(element, role, x, y));
+        return adoptRef(new SVGPathSegMovetoAbs(element, role, x, y));
     }
 
 private:
-    SVGPathSegLinetoAbs(SVGPathElement* element, SVGPathSegRole role, float x, float y)
+    SVGPathSegMovetoAbs(SVGPathElement* element, SVGPathSegRole role, float x, float y)
         : SVGPathSegSingleCoordinate(element, role, x, y)
     {
         ScriptWrappable::init(this);
     }
 
-    virtual unsigned short pathSegType() const { return PATHSEG_LINETO_ABS; }
-    virtual String pathSegTypeAsLetter() const { return "L"; }
-};
-
-class SVGPathSegLinetoRel : public SVGPathSegSingleCoordinate {
-public:
-    static PassRefPtr<SVGPathSegLinetoRel> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
-    {
-        return adoptRef(new SVGPathSegLinetoRel(element, role, x, y));
-    }
-
-private:
-    SVGPathSegLinetoRel(SVGPathElement* element, SVGPathSegRole role, float x, float y)
-        : SVGPathSegSingleCoordinate(element, role, x, y)
-    {
-        ScriptWrappable::init(this);
-    }
-
-    virtual unsigned short pathSegType() const { return PATHSEG_LINETO_REL; }
-    virtual String pathSegTypeAsLetter() const { return "l"; }
+    virtual unsigned short pathSegType() const { return PATHSEG_MOVETO_ABS; }
+    virtual String pathSegTypeAsLetter() const { return "M"; }
 };
 
 } // namespace WebCore

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2008 Rob Buis <buis@kde.org>
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -18,57 +19,29 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathSegCurvetoCubicSmooth_h
-#define SVGPathSegCurvetoCubicSmooth_h
+#ifndef SVGPathSegArcAbs_h
+#define SVGPathSegArcAbs_h
 
-#include "core/svg/SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSegArc.h"
 
 namespace WebCore {
 
-class SVGPathSegCurvetoCubicSmooth : public SVGPathSegWithContext {
+class SVGPathSegArcAbs : public SVGPathSegArc {
 public:
-    SVGPathSegCurvetoCubicSmooth(SVGPathElement* element, SVGPathSegRole role, float x, float y, float x2, float y2)
-        : SVGPathSegWithContext(element, role)
-        , m_x(x)
-        , m_y(y)
-        , m_x2(x2)
-        , m_y2(y2)
+    static PassRefPtr<SVGPathSegArcAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
     {
-    }
-
-    float x() const { return m_x; }
-    void setX(float x)
-    {
-        m_x = x;
-        commitChange();
-    }
-
-    float y() const { return m_y; }
-    void setY(float y)
-    {
-        m_y = y;
-        commitChange();
-    }
-
-    float x2() const { return m_x2; }
-    void setX2(float x2)
-    {
-        m_x2 = x2;
-        commitChange();
-    }
-
-    float y2() const { return m_y2; }
-    void setY2(float y2)
-    {
-        m_y2 = y2;
-        commitChange();
+        return adoptRef(new SVGPathSegArcAbs(element, role, x, y, r1, r2, angle, largeArcFlag, sweepFlag));
     }
 
 private:
-    float m_x;
-    float m_y;
-    float m_x2;
-    float m_y2;
+    SVGPathSegArcAbs(SVGPathElement* element, SVGPathSegRole role, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
+        : SVGPathSegArc(element, role, x, y, r1, r2, angle, largeArcFlag, sweepFlag)
+    {
+        ScriptWrappable::init(this);
+    }
+
+    virtual unsigned short pathSegType() const { return PATHSEG_ARC_ABS; }
+    virtual String pathSegTypeAsLetter() const { return "A"; }
 };
 
 } // namespace WebCore

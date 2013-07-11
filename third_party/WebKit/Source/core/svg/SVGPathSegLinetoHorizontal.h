@@ -44,42 +44,6 @@ private:
     float m_x;
 };
 
-class SVGPathSegLinetoHorizontalAbs : public SVGPathSegLinetoHorizontal {
-public:
-    static PassRefPtr<SVGPathSegLinetoHorizontalAbs> create(SVGPathElement* element, SVGPathSegRole role, float x)
-    {
-        return adoptRef(new SVGPathSegLinetoHorizontalAbs(element, role, x));
-    }
-
-private:
-    SVGPathSegLinetoHorizontalAbs(SVGPathElement* element, SVGPathSegRole role, float x)
-        : SVGPathSegLinetoHorizontal(element, role, x)
-    {
-        ScriptWrappable::init(this);
-    }
-
-    virtual unsigned short pathSegType() const { return PATHSEG_LINETO_HORIZONTAL_ABS; }
-    virtual String pathSegTypeAsLetter() const { return "H"; }
-};
-
-class SVGPathSegLinetoHorizontalRel : public SVGPathSegLinetoHorizontal {
-public:
-    static PassRefPtr<SVGPathSegLinetoHorizontalRel> create(SVGPathElement* element, SVGPathSegRole role, float x)
-    {
-        return adoptRef(new SVGPathSegLinetoHorizontalRel(element, role, x));
-    }
-
-private:
-    SVGPathSegLinetoHorizontalRel(SVGPathElement* element, SVGPathSegRole role, float x)
-        : SVGPathSegLinetoHorizontal(element, role, x)
-    {
-        ScriptWrappable::init(this);
-    }
-
-    virtual unsigned short pathSegType() const { return PATHSEG_LINETO_HORIZONTAL_REL; }
-    virtual String pathSegTypeAsLetter() const { return "h"; }
-};
-
 } // namespace WebCore
 
 #endif

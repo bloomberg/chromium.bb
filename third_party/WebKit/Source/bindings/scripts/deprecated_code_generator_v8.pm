@@ -460,9 +460,6 @@ sub HeaderFilesForInterface
     my @includes = ();
     if (IsTypedArrayType($interfaceName) or $interfaceName eq "ArrayBuffer") {
         push(@includes, "wtf/${interfaceName}.h");
-    } elsif ($interfaceName =~ /SVGPathSeg/) {
-        $interfaceName =~ s/Abs|Rel//;
-        push(@includes, "core/svg/${interfaceName}.h");
     } elsif (!SkipIncludeHeader($interfaceName)) {
         my $idlFilename = IDLFileForInterface($interfaceName) or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
         my $idlRelPath= "bindings/" . File::Spec->abs2rel($idlFilename, $sourceRoot);
