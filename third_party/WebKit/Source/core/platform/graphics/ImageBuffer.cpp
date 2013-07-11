@@ -73,7 +73,6 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, OwnPtr<Canvas2DLay
         return 0;
     gr->resetContext();
     Canvas2DLayerBridge::OpacityMode bridgeOpacityMode = opacityMode == Opaque ? Canvas2DLayerBridge::Opaque : Canvas2DLayerBridge::NonOpaque;
-    Canvas2DLayerBridge::ThreadMode threadMode = WebKit::Platform::current()->isThreadedCompositingEnabled() ? Canvas2DLayerBridge::Threaded : Canvas2DLayerBridge::SingleThread;
     SkImage::Info info;
     info.fWidth = size.width();
     info.fHeight = size.height();
@@ -83,7 +82,7 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, OwnPtr<Canvas2DLay
     if (!surface.get())
         return 0;
     SkDeferredCanvas* canvas = new SkDeferredCanvas(surface.get());
-    *outLayerBridge = Canvas2DLayerBridge::create(context3D.release(), canvas, bridgeOpacityMode, threadMode);
+    *outLayerBridge = Canvas2DLayerBridge::create(context3D.release(), canvas, bridgeOpacityMode);
     // If canvas buffer allocation failed, debug build will have asserted
     // For release builds, we must verify whether the device has a render target
     return canvas;

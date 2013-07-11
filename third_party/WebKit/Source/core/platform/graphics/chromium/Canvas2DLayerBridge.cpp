@@ -43,7 +43,7 @@ using WebKit::WebGraphicsContext3D;
 
 namespace WebCore {
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode, ThreadMode threadMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
     : m_canvas(canvas)
     , m_context(context)
     , m_bytesAllocated(0)

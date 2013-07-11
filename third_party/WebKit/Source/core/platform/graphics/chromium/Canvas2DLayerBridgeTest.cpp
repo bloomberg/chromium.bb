@@ -58,7 +58,7 @@ public:
 
 class Canvas2DLayerBridgeTest : public Test {
 protected:
-    void fullLifecycleTest(Canvas2DLayerBridge::ThreadMode threadMode)
+    void fullLifecycleTest()
     {
         RefPtr<GraphicsContext3D> mainContext = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new MockCanvasContext));
 
@@ -69,7 +69,7 @@ protected:
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        OwnPtr<Canvas2DLayerBridge> bridge = Canvas2DLayerBridge::create(mainContext.release(), &canvas, Canvas2DLayerBridge::NonOpaque, threadMode);
+        OwnPtr<Canvas2DLayerBridge> bridge = Canvas2DLayerBridge::create(mainContext.release(), &canvas, Canvas2DLayerBridge::NonOpaque);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
@@ -89,12 +89,7 @@ namespace {
 
 TEST_F(Canvas2DLayerBridgeTest, testFullLifecycleSingleThreaded)
 {
-    fullLifecycleTest(Canvas2DLayerBridge::SingleThread);
-}
-
-TEST_F(Canvas2DLayerBridgeTest, testFullLifecycleThreaded)
-{
-    fullLifecycleTest(Canvas2DLayerBridge::Threaded);
+    fullLifecycleTest();
 }
 
 } // namespace

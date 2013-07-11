@@ -51,14 +51,9 @@ public:
         NonOpaque
     };
 
-    enum ThreadMode {
-        SingleThread,
-        Threaded
-    };
-
-    static PassOwnPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode, ThreadMode threading)
+    static PassOwnPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
     {
-        return adoptPtr(new Canvas2DLayerBridge(context, canvas, opacityMode, threading));
+        return adoptPtr(new Canvas2DLayerBridge(context, canvas, opacityMode));
     }
 
     virtual ~Canvas2DLayerBridge();
@@ -87,7 +82,7 @@ public:
     unsigned backBufferTexture();
 
 protected:
-    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas*, OpacityMode, ThreadMode);
+    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas*, OpacityMode);
     void setRateLimitingEnabled(bool);
 
     SkDeferredCanvas* m_canvas;
