@@ -1702,7 +1702,6 @@
         'common/extensions/permissions/socket_permission_unittest.cc',
         'common/extensions/permissions/usb_device_permission_unittest.cc',
         'common/extensions/sync_type_unittest.cc',
-        'common/extensions/unpacker_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',
         'common/extensions/user_script_unittest.cc',
         'common/extensions/value_counter_unittest.cc',
@@ -1786,6 +1785,7 @@
         'test/data/unit/framework_unittest.gtestjs',
         'test/logging/win/mof_data_parser_unittest.cc',
         'tools/convert_dict/convert_dict_unittest.cc',
+        'utility/extensions/unpacker_unittest.cc',
 
         # Duplicate these tests here because PathService has more items in
         # unit_tests than in base_unittests.
@@ -2001,7 +2001,7 @@
             'browser/extensions/sandboxed_unpacker_unittest.cc',
             'common/extensions/sync_type_unittest.cc',
             'common/extensions/permissions/permission_set_unittest.cc',
-            'common/extensions/unpacker_unittest.cc',
+            'utility/extensions/unpacker_unittest.cc',
           ],
         }],
         ['use_ash==1', {

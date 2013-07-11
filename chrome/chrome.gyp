@@ -293,10 +293,13 @@
             '../skia/skia.gyp:skia',
             '../third_party/libxml/libxml.gyp:libxml',
             'common',
+            '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
           ],
           'sources': [
             'utility/chrome_content_utility_client.cc',
             'utility/chrome_content_utility_client.h',
+            'utility/extensions/unpacker.cc',
+            'utility/extensions/unpacker.h',
             'utility/itunes_pref_parser_win.cc',
             'utility/itunes_pref_parser_win.h',
             'utility/profile_import_handler.cc',
