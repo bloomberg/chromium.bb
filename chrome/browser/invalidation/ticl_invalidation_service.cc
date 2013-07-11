@@ -344,7 +344,6 @@ void TiclInvalidationService::UpdateInvalidatorCredentials() {
   std::string email = signin_manager_->GetAuthenticatedUsername();
 
   DCHECK(!email.empty()) << "Expected user to be signed in.";
-  DCHECK(!access_token_.empty());
 
   DVLOG(2) << "UpdateCredentials: " << email;
   invalidator_->UpdateCredentials(email, access_token_);
