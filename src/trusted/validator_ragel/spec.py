@@ -48,14 +48,6 @@ def _ValidateNop(instruction):
   #   nopw   0x0(%rax,%rax,1)
   # and so seems valid, but we should only allow
   #   66 0f 1f 84 00 00 00 00 00
-  if instruction.disasm in [
-      'nop',
-      'nopl (%rax)',
-      'nopl 0x0(%rax)',
-      'nopl 0x0(%rax,%rax,1)',
-      ]:
-    return
-
   if re.match(
       r'(data32 )*nopw (%cs:)?0x0\(%[er]ax,%[er]ax,1\)$',
       instruction.disasm):
@@ -529,14 +521,21 @@ def ValidateRegularInstruction(instruction, bitness):
   if bitness == 32:
     if _InstructionNameIn(
         name,
-        ['mov',  # including MOVD
+        ['mov',  # including MOVQ
+         'movbe', 'movd',
          'add', 'sub', 'and', 'or', 'xor',
          'xchg', 'xadd',
          'inc', 'dec', 'neg', 'not',
          'shl', 'shr', 'sar', 'rol', 'ror', 'rcl', 'rcr',
-         'pop',
+         'shld', 'shrd',
+         'pop', 'clflush', 'cmpxchg8b',
          'lea',
-         'adc', 'sbb', 'bsf', 'bsr', 'lzcnt',
+         'nop',
+         'prefetch', 'prefetchnta', 'prefetcht0', 'prefetcht1', 'prefetcht2',
+         'prefetchw',
+         'adc', 'sbb', 'bsf', 'bsr',
+         'lzcnt', 'tzcnt', 'popcnt', 'crc32', 'cmpxchg',
+         'movmskpd', 'movmskps', 'movnti',
          'btc', 'btr', 'bts', 'bt',
          'cmp', 'test',
          'imul', 'mul', 'div', 'idiv', 'push',
@@ -544,7 +543,8 @@ def ValidateRegularInstruction(instruction, bitness):
       return Condition(), Condition()
 
     elif name in [
-        'cpuid', 'hlt', 'lahf', 'sahf', 'rdtsc',
+        'cpuid', 'hlt', 'lahf', 'sahf', 'rdtsc', 'pause',
+        'sfence', 'lfence', 'mfence',
         'leave',
         'cmc', 'clc', 'cld', 'stc', 'std',
         'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
@@ -575,10 +575,25 @@ def ValidateRegularInstruction(instruction, bitness):
     zero_extending = False
     touches_memory = True
 
+    # Here we determine which operands instruction writes to. Note that for
+    # our purposes writes are only relevant when they either have potential to
+    # zero-extend regular register, or can modify protected registers (r15,
+    # rbp, rsp).
+    # This means that we don't have to worry about implicit operands (for
+    # example it does not matter to us that mul writes to edx and eax).
+
     if _InstructionNameIn(
           name, [
-            'mov',  # including MOVD
+            'mov',  # including MOVQ
+            'movabs',
+            'movbe', 'movd',
             'add', 'sub', 'and', 'or', 'xor']):
+      # Technically, movabs is not allowed, it's ok to accept it here, because
+      # it will later be rejected because of improper memory access.
+      # On the other hand, because of objdump quirk it prints regular
+      # mov with 64-bit immediate as movabs:
+      #   48 b8 00 00 00 00 00 00 00 00
+      #   movabs $0x0,%rax
       assert len(ops) == 2
       zero_extending = True
       write_ops = [ops[1]]
@@ -603,7 +618,12 @@ def ValidateRegularInstruction(instruction, bitness):
       assert len(ops) in [1, 2]
       write_ops = [ops[-1]]
 
-    elif _InstructionNameIn(name, ['pop']):
+    elif _InstructionNameIn(name, ['shld', 'shrd']):
+      assert len(ops) == 3
+      write_ops = [ops[2]]
+
+    elif _InstructionNameIn(name, [
+        'pop', 'clflush', 'cmpxchg8b', 'cmpxchg16b']):
       assert len(ops) == 1
       write_ops = ops
 
@@ -613,9 +633,23 @@ def ValidateRegularInstruction(instruction, bitness):
       touches_memory = False
       zero_extending = True
 
+    elif _InstructionNameIn(name, ['nop']):
+      assert len(ops) in [0, 1]
+      write_ops = []
+      touches_memory = False
+
+    elif name in [
+        'prefetch', 'prefetchnta', 'prefetcht0', 'prefetcht1', 'prefetcht2',
+        'prefetchw']:
+      assert len(ops) == 1
+      write_ops = []
+      touches_memory = False
+
     elif _InstructionNameIn(
         name,
-        ['adc', 'sbb', 'bsf', 'bsr', 'lzcnt']):
+        ['adc', 'sbb', 'bsf', 'bsr',
+         'lzcnt', 'tzcnt', 'popcnt', 'crc32', 'cmpxchg',
+         'movmskpd', 'movmskps', 'movnti']):
       # Note: some versions of objdump (including one that is currently used
       # in targeted tests) decode 'tzcnt' as 'repz bsf'
       # (see validator_ragel/testdata/32/tzcnt.test)
@@ -657,7 +691,8 @@ def ValidateRegularInstruction(instruction, bitness):
       write_ops = ops
 
     elif name in [
-        'cpuid', 'hlt', 'lahf', 'sahf', 'rdtsc',
+        'cpuid', 'hlt', 'lahf', 'sahf', 'rdtsc', 'pause',
+        'sfence', 'lfence', 'mfence',
         'cmc', 'clc', 'cld', 'stc', 'std',
         'cwtl', 'cbtw', 'cltq',  # CBW/CWDE/CDQE
         'cltd', 'cwtd', 'cqto',  # CWD/CDQ/CQO
@@ -709,7 +744,7 @@ def ValidateDirectJump(instruction, bitness):
   assert bitness in [32, 64]
   cond_jumps_re = re.compile(
       r'(data16 )?'
-      r'(?P<name>j%s|loop(n?)e|j[er]?cxz)(?P<branch_hint>,p[nt])? %s$'
+      r'(?P<name>j%s|loop(n?e)?|j[er]?cxz)(?P<branch_hint>,p[nt])? %s$'
       % (_CONDITION_SUFFIX_RE, _HexRE('destination')))
   m = cond_jumps_re.match(instruction.disasm)
   if m is not None:

@@ -14,6 +14,7 @@
 ----------------------------------------------------------------------
 @hex:
   # This is an example where we have incremented the nop by 1.
+  # Spec accepts nop with any operand.
   66 0f 1f 44 00 01
 @dis:
      0:	66 0f 1f 44 00 01                            	nopw   0x1(%eax,%eax,1)
@@ -21,7 +22,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: unrecognized instruction 'nopw 0x1(%eax,%eax,1)'
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # This is an example where we have decremented the nop by 1.
@@ -35,7 +36,6 @@
   4: [1] unrecognized instruction
   return code: 1
 @spec:
-  0: unrecognized instruction 'nopw -0x1(%ebx)'
   5: ('objdump failed to decode', Instruction(0x5: ff  .byte 0xff))
 ----------------------------------------------------------------------
 @hex:
