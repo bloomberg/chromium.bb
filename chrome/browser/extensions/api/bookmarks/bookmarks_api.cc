@@ -32,8 +32,10 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_creator.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/bookmarks.h"
@@ -41,8 +43,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN) && defined(USE_AURA)
+#include "ui/aura/remote_root_window_host_win.h"
+#endif
 
 namespace extensions {
 
@@ -939,6 +947,14 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
   // TODO(kinaba): http://crbug.com/140425. Turn file_type_info.support_drive
   // on for saving once Google Drive client on ChromeOS supports it.
+  gfx::NativeWindow owning_window = web_contents ?
+      platform_util::GetTopLevel(web_contents->GetView()->GetNativeView())
+          : NULL;
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (!owning_window &&
+      chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    owning_window = aura::RemoteRootWindowHostWin::Instance()->GetAshWindow();
+#endif
   if (type == ui::SelectFileDialog::SELECT_OPEN_FILE)
     file_type_info.support_drive = true;
   // |web_contents| can be NULL (for background pages), which is fine. In such
@@ -950,7 +966,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
                                   &file_type_info,
                                   0,
                                   base::FilePath::StringType(),
-                                  NULL,
+                                  owning_window,
                                   NULL);
 }
 

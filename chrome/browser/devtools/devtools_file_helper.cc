@@ -16,6 +16,7 @@
 #include "base/value_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -59,9 +61,11 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
                          public base::RefCounted<SelectFileDialog> {
  public:
   SelectFileDialog(const SelectedCallback& selected_callback,
-                   const CanceledCallback& canceled_callback)
+                   const CanceledCallback& canceled_callback,
+                   WebContents* web_contents)
       : selected_callback_(selected_callback),
-        canceled_callback_(canceled_callback) {
+        canceled_callback_(canceled_callback),
+        web_contents_(web_contents) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(NULL));
   }
@@ -69,14 +73,15 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
   void Show(ui::SelectFileDialog::Type type,
             const base::FilePath& default_path) {
     AddRef();  // Balanced in the three listener outcomes.
-    select_file_dialog_->SelectFile(type,
-                                    string16(),
-                                    default_path,
-                                    NULL,
-                                    0,
-                                    base::FilePath::StringType(),
-                                    NULL,
-                                    NULL);
+    select_file_dialog_->SelectFile(
+      type,
+      string16(),
+      default_path,
+      NULL,
+      0,
+      base::FilePath::StringType(),
+      platform_util::GetTopLevel(web_contents_->GetView()->GetNativeView()),
+      NULL);
   }
 
   // ui::SelectFileDialog::Listener implementation.
@@ -105,6 +110,7 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   SelectedCallback selected_callback_;
   CanceledCallback canceled_callback_;
+  WebContents* web_contents_;
 };
 
 void WriteToFile(const base::FilePath& path, const std::string& content) {
@@ -238,7 +244,8 @@ void DevToolsFileHelper::Save(const std::string& url,
            content,
            callback),
       Bind(&DevToolsFileHelper::SaveAsFileSelectionCanceled,
-           weak_factory_.GetWeakPtr()));
+           weak_factory_.GetWeakPtr()),
+      web_contents_);
   select_file_dialog->Show(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                            initial_path);
 }
@@ -282,7 +289,8 @@ void DevToolsFileHelper::AddFileSystem(
            weak_factory_.GetWeakPtr(),
            callback,
            show_info_bar_callback),
-      Bind(callback, FileSystem()));
+      Bind(callback, FileSystem()),
+      web_contents_);
   select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
                            base::FilePath());
 }

@@ -121,6 +121,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
                           const SelectFolderCompletion& on_success,
                           const FileSelectionCanceled& on_failure);
 
+  // Returns the active ASH root window.
+  Window* GetAshWindow();
+
  private:
   explicit RemoteRootWindowHostWin(const gfx::Rect& bounds);
   virtual ~RemoteRootWindowHostWin();

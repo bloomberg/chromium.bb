@@ -259,6 +259,10 @@ void RemoteRootWindowHostWin::HandleSelectFolder(
   host_->Send(new MetroViewerHostMsg_DisplaySelectFolder(title));
 }
 
+Window* RemoteRootWindowHostWin::GetAshWindow() {
+  return GetRootWindow();
+}
+
 void RemoteRootWindowHostWin::SetDelegate(RootWindowHostDelegate* delegate) {
   delegate_ = delegate;
 }
