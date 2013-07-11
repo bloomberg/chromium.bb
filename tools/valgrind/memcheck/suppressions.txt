@@ -7422,6 +7422,20 @@
    fun:ChromeMain
 }
 {
+   bug_258132a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5ppapi5proxy15PPP_Class_Proxy19CreateProxiedObjectEPK18PPB_Var_DeprecatedPNS0_10DispatcherEill
+   fun:_ZN5ppapi5proxy24PPB_Var_Deprecated_Proxy27OnMsgCreateObjectDeprecatedEillNS0_24SerializedVarReturnValueE
+}
+{
+   bug_258132b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5ppapi5proxy26PluginProxyMultiThreadTest7RunTestEv
+   fun:_ZN5ppapi*ThreadAwareCallback*Test_*
+}
+{
    bug_259188
    Memcheck:Leak
    fun:_Znw*
@@ -7441,4 +7455,30 @@
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
    fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+}
+{
+   bug_259350a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN8notifier*SingleLoginAttemptTest_*
+}
+{
+   bug_259350b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN3net18ClientSocketHandleEFviENS_8internal17UnretainedWrapperIS2_EEEENS_8CallbackINS5_9BindStateINS5_13FunctorTraitsIT_E12RunnableTypeENSC_7RunTypeEFvNS5_19CallbackParamTraitsIT0_E11StorageTypeEEE14UnboundRunTypeEEESB_RKSG_
+   fun:_ZN3net18ClientSocketHandleC1Ev
+   fun:_ZN11jingle_glue26ProxyResolvingClientSocket23ProcessProxyResolveDoneEi
+}
+{
+   bug_259350c
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN4buzz10XmppClient7ProcessEi
+   fun:_ZN9talk_base4Task4StepEv
+   fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
+   fun:_ZN9talk_base10TaskRunner8RunTasksEv
+   fun:_ZN11jingle_glue8TaskPump16CheckAndRunTasksEv
 }
