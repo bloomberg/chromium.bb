@@ -6,6 +6,7 @@ include_rules = [
   "-chrome/browser",
   "+chrome/browser/bookmarks",
   "+chrome/browser/favicon",
+  "+chrome/browser/chrome_notification_types.h",
 
   # TODO(kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,

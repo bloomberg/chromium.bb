@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/signin/token_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 
 namespace policy {

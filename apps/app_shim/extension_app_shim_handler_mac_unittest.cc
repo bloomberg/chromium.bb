@@ -6,7 +6,7 @@
 
 #include "apps/app_shim/app_shim_host_mac.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"

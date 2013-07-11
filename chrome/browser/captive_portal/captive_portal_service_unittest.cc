@@ -11,7 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/captive_portal/testing_utils.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/app_window_contents.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"

@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chromeos/ime/input_method_delegate.h"
 #include "content/public/browser/notification_service.h"
 

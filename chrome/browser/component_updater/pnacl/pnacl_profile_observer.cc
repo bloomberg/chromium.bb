@@ -5,8 +5,8 @@
 #include "chrome/browser/component_updater/pnacl/pnacl_profile_observer.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
 PnaclProfileObserver::PnaclProfileObserver(
