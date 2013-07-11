@@ -36,9 +36,9 @@
         'glue',
         'glue_child',
         'glue_common',
-        'glue_renderer',
         'plugins',
         'webkit_media',
+        'webkit_renderer',
         'webkit_support_common',
       ],
       'include_dirs': [
@@ -116,7 +116,7 @@
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         'glue',
-        'glue_renderer',
+        'webkit_renderer',
         'webkit_support_gfx',
       ],
       'export_dependent_settings': [

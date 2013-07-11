@@ -147,41 +147,6 @@
     },
 
     {
-      'target_name': 'glue_renderer',
-      'type': '<(component)',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'defines': [
-        'WEBKIT_RENDERER_IMPLEMENTATION',
-      ],
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:base_i18n',
-        '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
-        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-        '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        'glue_common',
-      ],
-
-      'sources': [
-        '../renderer/cpp_bound_class.cc',
-        '../renderer/cpp_bound_class.h',
-        '../renderer/cpp_variant.cc',
-        '../renderer/cpp_variant.h',
-        '../renderer/clipboard_utils.cc',
-        '../renderer/clipboard_utils.h',
-        '../renderer/cursor_utils.cc',
-        '../renderer/cursor_utils.h',
-        '../renderer/webkit_renderer_export.h',
-        '../renderer/webpreferences_renderer.cc',
-        '../renderer/webpreferences_renderer.h',
-      ],
-    },
-
-    {
       'target_name': 'glue',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },

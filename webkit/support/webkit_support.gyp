@@ -13,6 +13,7 @@
         '../glue/webkit_glue.gypi',
         '../plugins/webkit_plugins.gypi',
         '../renderer/media/webkit_media.gypi',
+        '../renderer/webkit_renderer.gypi',
         'webkit_support.gypi',
       ],
     }],

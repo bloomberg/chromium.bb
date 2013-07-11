@@ -26,9 +26,9 @@
     '../webkit/support/webkit_support.gyp:glue',
     '../webkit/support/webkit_support.gyp:glue_child',
     '../webkit/support/webkit_support.gyp:glue_common',
-    '../webkit/support/webkit_support.gyp:glue_renderer',
     '../webkit/support/webkit_support.gyp:plugins',
     '../webkit/support/webkit_support.gyp:webkit_media',
+    '../webkit/support/webkit_support.gyp:webkit_renderer',
   ],
   'include_dirs': [
     '..',
