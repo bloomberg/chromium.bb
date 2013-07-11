@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "components/autofill/content/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -20,7 +24,12 @@
 
 namespace {
 
-const size_t kTestDownloadInterval = 3;  // 3 seconds
+const int64 kTestDownloadInterval = 3;  // 3 seconds
+
+// First 4 retry delays are 3, 18, 108, 648 seconds, and following retries
+// capped at one hour.
+const int64 kBackoffDelaysInMs[] = {
+    3000, 18000, 108000, 648000, 3600000, 3600000 };
 
 const char kDownloadWhitelistResponse[] =
     "https://www.merchant1.com/checkout/\n"
@@ -49,13 +58,14 @@ class TestWhitelistManager : public WhitelistManager {
       : WhitelistManager(),
         did_start_download_timer_(false) {}
 
-  virtual void ScheduleDownload(size_t interval_seconds) OVERRIDE {
+  virtual void ScheduleDownload(base::TimeDelta interval) OVERRIDE {
     did_start_download_timer_ = false;
-    return WhitelistManager::ScheduleDownload(interval_seconds);
+    download_interval_ = interval;
+    return WhitelistManager::ScheduleDownload(interval);
   }
 
-  virtual void StartDownloadTimer(size_t interval_seconds) OVERRIDE {
-    WhitelistManager::StartDownloadTimer(interval_seconds);
+  virtual void StartDownloadTimer(base::TimeDelta interval) OVERRIDE {
+    WhitelistManager::StartDownloadTimer(interval);
     did_start_download_timer_ = true;
   }
 
@@ -71,6 +81,10 @@ class TestWhitelistManager : public WhitelistManager {
     WhitelistManager::StopDownloadTimer();
   }
 
+  const base::TimeDelta& download_interval() const {
+    return download_interval_;
+  }
+
   const std::vector<std::string>& url_prefixes() const {
     return WhitelistManager::url_prefixes();
   }
@@ -81,6 +95,7 @@ class TestWhitelistManager : public WhitelistManager {
 
  private:
   bool did_start_download_timer_;
+  base::TimeDelta download_interval_;
 
   MockAutofillMetrics mock_metrics_logger_;
 
@@ -123,14 +138,6 @@ class WhitelistManagerTest : public testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  void ResetBackOff() {
-    whitelist_manager_->StopDownloadTimer();
-  }
-
-  const std::vector<std::string>& get_url_prefixes() const {
-    return whitelist_manager_->url_prefixes();
-  }
-
  protected:
   scoped_ptr<TestWhitelistManager> whitelist_manager_;
 
@@ -142,32 +149,36 @@ TEST_F(WhitelistManagerTest, DownloadWhitelist) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalFormFilling);
   DownloadWhitelist(net::HTTP_OK, kDownloadWhitelistResponse);
-  ASSERT_EQ(2U, get_url_prefixes().size());
+  ASSERT_EQ(2U, whitelist_manager_->url_prefixes().size());
   EXPECT_EQ("https://www.merchant1.com/checkout/",
-            get_url_prefixes()[0]);
+            whitelist_manager_->url_prefixes()[0]);
   EXPECT_EQ("https://cart.merchant2.com/",
-            get_url_prefixes()[1]);
+            whitelist_manager_->url_prefixes()[1]);
 }
 
 TEST_F(WhitelistManagerTest, DoNotDownloadWhitelistWhenSwitchIsOff) {
   CreateWhitelistManager();
-  whitelist_manager_->ScheduleDownload(kTestDownloadInterval);
+  whitelist_manager_->ScheduleDownload(
+      base::TimeDelta::FromSeconds(kTestDownloadInterval));
   EXPECT_FALSE(whitelist_manager_->did_start_download_timer());
 }
 
-TEST_F(WhitelistManagerTest, DoNotDownloadWhitelistWhenBackOff) {
+TEST_F(WhitelistManagerTest, DoNotDownloadWhitelistIfAlreadyScheduled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalFormFilling);
   CreateWhitelistManager();
   // First attempt should schedule a download.
-  whitelist_manager_->ScheduleDownload(kTestDownloadInterval);
+  whitelist_manager_->ScheduleDownload(
+      base::TimeDelta::FromSeconds(kTestDownloadInterval));
   EXPECT_TRUE(whitelist_manager_->did_start_download_timer());
   // Second attempt should NOT schedule a download while there is already one.
-  whitelist_manager_->ScheduleDownload(kTestDownloadInterval);
+  whitelist_manager_->ScheduleDownload(
+      base::TimeDelta::FromSeconds(kTestDownloadInterval));
   EXPECT_FALSE(whitelist_manager_->did_start_download_timer());
   // It should schedule a new download when not in backoff mode.
-  ResetBackOff();
-  whitelist_manager_->ScheduleDownload(kTestDownloadInterval);
+  whitelist_manager_->StopDownloadTimer();
+  whitelist_manager_->ScheduleDownload(
+      base::TimeDelta::FromSeconds(kTestDownloadInterval));
   EXPECT_TRUE(whitelist_manager_->did_start_download_timer());
 }
 
@@ -176,23 +187,39 @@ TEST_F(WhitelistManagerTest, DownloadWhitelistFailed) {
       switches::kEnableExperimentalFormFilling);
   DownloadWhitelist(net::HTTP_INTERNAL_SERVER_ERROR,
                     kDownloadWhitelistResponse);
-  EXPECT_EQ(0U, get_url_prefixes().size());
+  EXPECT_EQ(0U, whitelist_manager_->url_prefixes().size());
 
-  ResetBackOff();
+  whitelist_manager_->StopDownloadTimer();
   DownloadWhitelist(net::HTTP_OK, kDownloadWhitelistResponse);
-  EXPECT_EQ(2U, get_url_prefixes().size());
+  EXPECT_EQ(2U, whitelist_manager_->url_prefixes().size());
 
-  ResetBackOff();
+  whitelist_manager_->StopDownloadTimer();
   DownloadWhitelist(net::HTTP_INTERNAL_SERVER_ERROR,
                     kDownloadWhitelistResponse);
-  EXPECT_EQ(2U, get_url_prefixes().size());
+  EXPECT_EQ(2U, whitelist_manager_->url_prefixes().size());
+}
+
+TEST_F(WhitelistManagerTest, DownloadWhitelistRetry) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalFormFilling);
+
+  for (size_t i = 0; i < arraysize(kBackoffDelaysInMs); ++i) {
+    DownloadWhitelist(net::HTTP_INTERNAL_SERVER_ERROR,
+                      kDownloadWhitelistResponse);
+    SCOPED_TRACE(
+        base::StringPrintf("Testing retry %"PRIuS", expecting delay: %"PRId64,
+                           i, kBackoffDelaysInMs[i]));
+    EXPECT_EQ(
+        kBackoffDelaysInMs[i],
+        whitelist_manager_->download_interval().InMillisecondsRoundedUp());
+  }
 }
 
 TEST_F(WhitelistManagerTest, GetMatchedURLPrefix) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalFormFilling);
   DownloadWhitelist(net::HTTP_OK, kDownloadWhitelistResponse);
-  EXPECT_EQ(2U, get_url_prefixes().size());
+  EXPECT_EQ(2U, whitelist_manager_->url_prefixes().size());
 
   // Empty url.
   EXPECT_EQ(std::string(),
@@ -258,7 +285,7 @@ TEST_F(WhitelistManagerTest, BypassWhitelist) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kBypassAutocheckoutWhitelist);
   DownloadWhitelist(net::HTTP_OK, kDownloadWhitelistResponse);
-  EXPECT_EQ(2U, get_url_prefixes().size());
+  EXPECT_EQ(2U, whitelist_manager_->url_prefixes().size());
 
   // Empty url.
   EXPECT_EQ(std::string(),

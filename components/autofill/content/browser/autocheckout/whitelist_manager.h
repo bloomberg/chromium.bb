@@ -10,6 +10,7 @@
 
 #include "base/timer/timer.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
@@ -44,11 +45,11 @@ class WhitelistManager : public net::URLFetcherDelegate {
 
  protected:
   // Schedules a future call to TriggerDownload if one isn't already pending.
-  virtual void ScheduleDownload(size_t interval_seconds);
+  virtual void ScheduleDownload(base::TimeDelta interval);
 
   // Start the download timer. It is called by ScheduleDownload(), and exposed
   // as a separate method for mocking out in tests.
-  virtual void StartDownloadTimer(size_t interval_seconds);
+  virtual void StartDownloadTimer(base::TimeDelta interval);
 
   // Returns the |AutofillMetrics| instance that should be used for logging
   // Autocheckout whitelist file downloading.
@@ -87,6 +88,9 @@ class WhitelistManager : public net::URLFetcherDelegate {
 
   // State of the kBypassAutocheckoutWhitelist flag.
   const bool bypass_autocheckout_whitelist_;
+
+  // Exponential back-off delay to retry a failed download.
+  net::BackoffEntry retry_entry_;
 
   // Logger for UMA metrics.
   AutofillMetrics metrics_logger_;

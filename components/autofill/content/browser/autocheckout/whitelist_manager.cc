@@ -27,6 +27,30 @@ const int kDownloadIntervalSeconds = 86400;  // 1 day
 // to reduce contention at startup time.
 const int kInitialDownloadDelaySeconds = 3;
 
+const net::BackoffEntry::Policy kBackoffPolicy = {
+  // Number of initial errors to ignore before starting to back off.
+  0,
+
+  // Initial delay in ms: 3 seconds.
+  3000,
+
+  // Factor by which the waiting time is multiplied.
+  6,
+
+  // Fuzzing percentage: no fuzzing logic.
+  0,
+
+  // Maximum delay in ms: 1 hour.
+  1000 * 60 * 60,
+
+  // When to discard an entry: 3 hours.
+  1000 * 60 * 60 * 3,
+
+  // |always_use_initial_delay|; false means that the initial delay is
+  // applied after the first error, and starts backing off from there.
+  false,
+};
+
 const char kDefaultWhitelistUrl[] =
     "https://www.gstatic.com/commerce/autocheckout/whitelist.csv";
 
@@ -54,7 +78,8 @@ WhitelistManager::WhitelistManager()
           base::FieldTrialList::FindFullName("Autocheckout") == "Yes"),
       bypass_autocheckout_whitelist_(
           CommandLine::ForCurrentProcess()->HasSwitch(
-                        switches::kBypassAutocheckoutWhitelist)) {
+                        switches::kBypassAutocheckoutWhitelist)),
+      retry_entry_(&kBackoffPolicy) {
 }
 
 WhitelistManager::~WhitelistManager() {}
@@ -62,10 +87,10 @@ WhitelistManager::~WhitelistManager() {}
 void WhitelistManager::Init(net::URLRequestContextGetter* context_getter) {
   DCHECK(context_getter);
   context_getter_ = context_getter;
-  ScheduleDownload(kInitialDownloadDelaySeconds);
+  ScheduleDownload(base::TimeDelta::FromSeconds(kInitialDownloadDelaySeconds));
 }
 
-void WhitelistManager::ScheduleDownload(size_t interval_seconds) {
+void WhitelistManager::ScheduleDownload(base::TimeDelta interval) {
   if (!experimental_form_filling_enabled_) {
     // The feature is not enabled: do not do the request.
     return;
@@ -74,12 +99,12 @@ void WhitelistManager::ScheduleDownload(size_t interval_seconds) {
     // A download activity is already scheduled or happening.
     return;
   }
-  StartDownloadTimer(interval_seconds);
+  StartDownloadTimer(interval);
 }
 
-void WhitelistManager::StartDownloadTimer(size_t interval_seconds) {
+void WhitelistManager::StartDownloadTimer(base::TimeDelta interval) {
   download_timer_.Start(FROM_HERE,
-                        base::TimeDelta::FromSeconds(interval_seconds),
+                        interval,
                         this,
                         &WhitelistManager::TriggerDownload);
 }
@@ -117,18 +142,25 @@ void WhitelistManager::OnURLFetchComplete(
   AutofillMetrics::AutocheckoutWhitelistDownloadStatus status;
   base::TimeDelta duration = base::Time::Now() - request_started_timestamp_;
 
+  // Refresh the whitelist after kDownloadIntervalSeconds (24 hours).
+  base::TimeDelta next_download_time =
+      base::TimeDelta::FromSeconds(kDownloadIntervalSeconds);
+
   if (source->GetResponseCode() == net::HTTP_OK) {
     std::string data;
     source->GetResponseAsString(&data);
     BuildWhitelist(data);
     status = AutofillMetrics::AUTOCHECKOUT_WHITELIST_DOWNLOAD_SUCCEEDED;
+    retry_entry_.Reset();
   } else {
     status = AutofillMetrics::AUTOCHECKOUT_WHITELIST_DOWNLOAD_FAILED;
+    retry_entry_.InformOfRequest(false);
+    if (!retry_entry_.CanDiscard())
+      next_download_time = retry_entry_.GetTimeUntilRelease();
   }
 
   GetMetricLogger().LogAutocheckoutWhitelistDownloadDuration(duration, status);
-
-  ScheduleDownload(kDownloadIntervalSeconds);
+  ScheduleDownload(next_download_time);
 }
 
 std::string WhitelistManager::GetMatchedURLPrefix(const GURL& url) const {
