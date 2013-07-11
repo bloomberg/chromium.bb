@@ -517,16 +517,9 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
 void OmniboxViewViews::OnRevertTemporaryText() {
   SelectRange(saved_temporary_selection_);
   // We got here because the user hit the Escape key. We explicitly don't call
-  // TextChanged(), since calling it breaks Instant-Extended, and isn't needed
-  // otherwise (in regular non-Instant or Instant-but-not-Extended modes).
-  //
-  // Why it breaks Instant-Extended: Instant handles the Escape key separately
-  // (cf: OmniboxEditModel::RevertTemporaryText). Calling TextChanged() makes
-  // the page think the user additionally typed some text, causing it to update
-  // its suggestions dropdown with new suggestions, which is wrong.
-  //
-  // Why it isn't needed: OmniboxPopupModel::ResetToDefaultMatch() has already
-  // been called by now; it would've called TextChanged() if it was warranted.
+  // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
+  // been called by now, and it would've called TextChanged() if it was
+  // warranted.
 }
 
 void OmniboxViewViews::OnBeforePossibleChange() {
@@ -581,15 +574,15 @@ gfx::NativeView OmniboxViewViews::GetRelativeWindowForPopup() const {
   return GetWidget()->GetTopLevelWidget()->GetNativeView();
 }
 
-void OmniboxViewViews::SetInstantSuggestion(const string16& input) {
+void OmniboxViewViews::SetGrayTextAutocompletion(const string16& input) {
 #if defined(OS_WIN) || defined(USE_AURA)
-  location_bar_view_->SetInstantSuggestion(input);
+  location_bar_view_->SetGrayTextAutocompletion(input);
 #endif
 }
 
-string16 OmniboxViewViews::GetInstantSuggestion() const {
+string16 OmniboxViewViews::GetGrayTextAutocompletion() const {
 #if defined(OS_WIN) || defined(USE_AURA)
-  return location_bar_view_->GetInstantSuggestion();
+  return location_bar_view_->GetGrayTextAutocompletion();
 #else
   return string16();
 #endif
@@ -661,7 +654,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   }
 
   // Handle the right-arrow key for LTR text and the left-arrow key for RTL text
-  // if there is an Instant suggestion (gray text) that needs to be committed.
+  // if there is gray text that needs to be committed.
   if (GetCursorPosition() == text().length()) {
     base::i18n::TextDirection direction = GetTextDirection();
     if ((direction == base::i18n::LEFT_TO_RIGHT &&
@@ -853,7 +846,7 @@ void OmniboxViewViews::CandidateWindowClosed(
 // OmniboxViewViews, private:
 
 int OmniboxViewViews::GetOmniboxTextLength() const {
-  // TODO(oshima): Support instant, IME.
+  // TODO(oshima): Support IME.
   return static_cast<int>(text().length());
 }
 
@@ -903,7 +896,7 @@ void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,
 }
 
 string16 OmniboxViewViews::GetSelectedText() const {
-  // TODO(oshima): Support instant, IME.
+  // TODO(oshima): Support IME.
   return views::Textfield::GetSelectedText();
 }
 

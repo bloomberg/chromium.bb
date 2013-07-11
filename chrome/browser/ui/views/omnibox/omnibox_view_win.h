@@ -110,9 +110,9 @@ class OmniboxViewWin
   virtual bool OnAfterPossibleChange() OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetRelativeWindowForPopup() const OVERRIDE;
-  virtual void SetInstantSuggestion(const string16& suggestion) OVERRIDE;
+  virtual void SetGrayTextAutocompletion(const string16& suggestion) OVERRIDE;
   virtual int TextWidth() const OVERRIDE;
-  virtual string16 GetInstantSuggestion() const OVERRIDE;
+  virtual string16 GetGrayTextAutocompletion() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;

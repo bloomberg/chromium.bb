@@ -14,7 +14,6 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "chrome/common/instant_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -30,10 +29,6 @@ class LocationBar {
  public:
   // Shows the first run bubble anchored to the location bar.
   virtual void ShowFirstRunBubble() = 0;
-
-  // Sets the suggested text to show in the omnibox. This is shown in addition
-  // to the current text of the omnibox.
-  virtual void SetInstantSuggestion(const InstantSuggestion& suggestion) = 0;
 
   // Returns the string of text entered in the location bar.
   virtual string16 GetInputString() const = 0;

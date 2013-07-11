@@ -130,8 +130,6 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
-  virtual void SetInstantSuggestion(
-      const InstantSuggestion& suggestion) OVERRIDE;
   virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual content::PageTransition GetPageTransition() const OVERRIDE;

@@ -195,11 +195,11 @@ class LocationBarView : public LocationBar,
   // comments on |ime_inline_autocomplete_view_|.
   void SetImeInlineAutocompletion(const string16& text);
 
-  // Invoked from OmniboxViewWin to show the instant suggestion.
-  void SetInstantSuggestion(const string16& text);
+  // Invoked from OmniboxViewWin to show gray text autocompletion.
+  void SetGrayTextAutocompletion(const string16& text);
 
-  // Returns the current instant suggestion text.
-  string16 GetInstantSuggestion() const;
+  // Returns the current gray text autocompletion.
+  string16 GetGrayTextAutocompletion() const;
 
   // Sets whether the location entry can accept focus.
   void SetLocationEntryFocusable(bool focusable);
@@ -278,8 +278,6 @@ class LocationBarView : public LocationBar,
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
-  virtual void SetInstantSuggestion(
-      const InstantSuggestion& suggestion) OVERRIDE;
   virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual content::PageTransition GetPageTransition() const OVERRIDE;

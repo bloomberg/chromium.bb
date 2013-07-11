@@ -188,11 +188,11 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
   [editor_ display];
 }
 
-// Test setting instant suggestion, mostly to ensure nothing leaks or crashes.
-TEST_F(AutocompleteTextFieldEditorTest, InstantSuggestion) {
+// Test setting gray text, mostly to ensure nothing leaks or crashes.
+TEST_F(AutocompleteTextFieldEditorTest, GrayText) {
   [editor_ display];
   EXPECT_FALSE([editor_ needsDisplay]);
-  [field_ setInstantSuggestion:@"foo" textColor:[NSColor redColor]];
+  [field_ setGrayTextAutocompletion:@"foo" textColor:[NSColor redColor]];
   EXPECT_TRUE([editor_ needsDisplay]);
   [editor_ display];
 }

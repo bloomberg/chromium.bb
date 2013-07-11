@@ -139,14 +139,6 @@ bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,
       actual == expected;
 }
 
-bool InstantTestBase::HasUserInputInProgress() {
-  return omnibox()->model()->user_input_in_progress_;
-}
-
-bool InstantTestBase::HasTemporaryText() {
-  return omnibox()->model()->has_temporary_text_;
-}
-
 std::string InstantTestBase::GetOmniboxText() {
   return UTF16ToUTF8(omnibox()->GetText());
 }
@@ -168,8 +160,4 @@ string16 InstantTestBase::GetBlueText() {
   if (start > end)
     std::swap(start, end);
   return omnibox()->GetText().substr(start, end - start);
-}
-
-string16 InstantTestBase::GetGrayText() {
-  return omnibox()->GetInstantSuggestion();
 }

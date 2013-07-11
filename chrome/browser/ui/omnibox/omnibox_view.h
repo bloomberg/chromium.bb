@@ -196,11 +196,11 @@ class OmniboxView {
   // the top-most window is the relative window.
   virtual gfx::NativeView GetRelativeWindowForPopup() const = 0;
 
-  // Shows the instant suggestion text.
-  virtual void SetInstantSuggestion(const string16& input) = 0;
+  // Shows |input| as gray suggested text after what the user has typed.
+  virtual void SetGrayTextAutocompletion(const string16& input) = 0;
 
-  // Returns the current instant suggestion text.
-  virtual string16 GetInstantSuggestion() const = 0;
+  // Returns the current gray suggested text.
+  virtual string16 GetGrayTextAutocompletion() const = 0;
 
   // Returns the width in pixels needed to display the current text. The
   // returned value includes margins.

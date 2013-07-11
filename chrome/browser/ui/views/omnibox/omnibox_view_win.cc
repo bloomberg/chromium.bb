@@ -901,16 +901,9 @@ bool OmniboxViewWin::OnInlineAutocompleteTextMaybeChanged(
 void OmniboxViewWin::OnRevertTemporaryText() {
   SetSelectionRange(original_selection_);
   // We got here because the user hit the Escape key. We explicitly don't call
-  // TextChanged(), since calling it breaks Instant-Extended, and isn't needed
-  // otherwise (in regular non-Instant or Instant-but-not-Extended modes).
-  //
-  // Why it breaks Instant-Extended: Instant handles the Escape key separately
-  // (cf: OmniboxEditModel::RevertTemporaryText). Calling TextChanged() makes
-  // the page think the user additionally typed some text, causing it to update
-  // its suggestions dropdown with new suggestions, which is wrong.
-  //
-  // Why it isn't needed: OmniboxPopupModel::ResetToDefaultMatch() has already
-  // been called by now; it would've called TextChanged() if it was warranted.
+  // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
+  // been called by now, and it would've called TextChanged() if it was
+  // warranted.
 }
 
 void OmniboxViewWin::OnBeforePossibleChange() {
@@ -1028,16 +1021,16 @@ gfx::NativeView OmniboxViewWin::GetRelativeWindowForPopup() const {
   return GetRelativeWindowForNativeView(GetNativeView());
 }
 
-void OmniboxViewWin::SetInstantSuggestion(const string16& suggestion) {
-  location_bar_->SetInstantSuggestion(suggestion);
+void OmniboxViewWin::SetGrayTextAutocompletion(const string16& suggestion) {
+  location_bar_->SetGrayTextAutocompletion(suggestion);
 }
 
 int OmniboxViewWin::TextWidth() const {
   return WidthNeededToDisplay(GetText());
 }
 
-string16 OmniboxViewWin::GetInstantSuggestion() const {
-  return location_bar_->GetInstantSuggestion();
+string16 OmniboxViewWin::GetGrayTextAutocompletion() const {
+  return location_bar_->GetGrayTextAutocompletion();
 }
 
 bool OmniboxViewWin::IsImeComposing() const {

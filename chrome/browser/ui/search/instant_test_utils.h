@@ -88,8 +88,6 @@ class InstantTestBase {
   bool ExecuteScript(const std::string& script) WARN_UNUSED_RESULT;
   bool CheckVisibilityIs(content::WebContents* contents,
                          bool expected) WARN_UNUSED_RESULT;
-  bool HasUserInputInProgress();
-  bool HasTemporaryText();
 
   std::string GetOmniboxText();
 
@@ -102,9 +100,6 @@ class InstantTestBase {
 
   // Returns the omnibox's inline autocompletion (shown in blue highlight).
   string16 GetBlueText();
-
-  // Returns the omnibox's suggest text (shown as gray text).
-  string16 GetGrayText();
 
  private:
   GURL instant_url_;

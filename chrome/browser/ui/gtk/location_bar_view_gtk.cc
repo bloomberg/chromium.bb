@@ -860,11 +860,6 @@ void LocationBarViewGtk::ShowFirstRunBubble() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LocationBarViewGtk::SetInstantSuggestion(
-    const InstantSuggestion& suggestion) {
-  location_entry_->model()->SetInstantSuggestion(suggestion);
-}
-
 string16 LocationBarViewGtk::GetInputString() const {
   return location_input_;
 }

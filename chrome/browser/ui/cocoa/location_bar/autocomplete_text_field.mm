@@ -234,8 +234,8 @@
   [self addToolTipRect:aRect owner:tooltip userData:nil];
 }
 
-- (void)setInstantSuggestion:(NSString*)suggestText
-                   textColor:(NSColor*)suggestColor {
+- (void)setGrayTextAutocompletion:(NSString*)suggestText
+                        textColor:(NSColor*)suggestColor {
   [self setNeedsDisplay:YES];
   suggestText_.reset([suggestText retain]);
   suggestColor_.reset([suggestColor retain]);
@@ -388,7 +388,7 @@
 
 - (void)drawRect:(NSRect)rect {
   [super drawRect:rect];
-  autocomplete_text_field::DrawInstantSuggestion(
+  autocomplete_text_field::DrawGrayTextAutocompletion(
       [self attributedStringValue],
       suggestText_,
       suggestColor_,
@@ -441,11 +441,11 @@
 
 namespace autocomplete_text_field {
 
-void DrawInstantSuggestion(NSAttributedString* mainText,
-                           NSString* suggestText,
-                           NSColor* suggestColor,
-                           NSView* controlView,
-                           NSRect frame) {
+void DrawGrayTextAutocompletion(NSAttributedString* mainText,
+                                NSString* suggestText,
+                                NSColor* suggestColor,
+                                NSView* controlView,
+                                NSRect frame) {
   if (![suggestText length])
     return;
 

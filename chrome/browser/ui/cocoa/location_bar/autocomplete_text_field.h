@@ -155,8 +155,8 @@ class AutocompleteTextFieldObserver {
 // Sets the suggest text that shows at the end of the field's normal text.
 // This can't be simply appended to the field's text storage because that
 // will end any pending IME session.
-- (void)setInstantSuggestion:(NSString*)suggestText
-                   textColor:(NSColor*)suggestColor;
+- (void)setGrayTextAutocompletion:(NSString*)suggestText
+                        textColor:(NSColor*)suggestColor;
 
 - (NSString*)suggestText;
 - (NSColor*)suggestColor;
@@ -165,12 +165,12 @@ class AutocompleteTextFieldObserver {
 
 namespace autocomplete_text_field {
 
-// Draw instant suggestion text in |controlView|.
-void DrawInstantSuggestion(NSAttributedString* mainText,
-                           NSString* suggestText,
-                           NSColor* suggestColor,
-                           NSView* controlView,
-                           NSRect frame);
+// Draw gray text suggestion in |controlView|.
+void DrawGrayTextAutocompletion(NSAttributedString* mainText,
+                                NSString* suggestText,
+                                NSColor* suggestColor,
+                                NSView* controlView,
+                                NSRect frame);
 
 }  // namespace autocomplete_text_field
 

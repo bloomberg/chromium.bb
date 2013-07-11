@@ -22,7 +22,6 @@
 
 class AutocompleteController;
 class AutocompleteResult;
-struct InstantSuggestion;
 class OmniboxCurrentPageDelegate;
 class OmniboxEditController;
 class OmniboxPopupModel;
@@ -48,7 +47,7 @@ class OmniboxEditModel {
   struct State {
     State(bool user_input_in_progress,
           const string16& user_text,
-          const string16& instant_suggestion,
+          const string16& gray_text,
           const string16& keyword,
           bool is_keyword_hint,
           OmniboxFocusState focus_state);
@@ -56,7 +55,7 @@ class OmniboxEditModel {
 
     bool user_input_in_progress;
     const string16 user_text;
-    const string16 instant_suggestion;
+    const string16 gray_text;
     const string16 keyword;
     const bool is_keyword_hint;
     OmniboxFocusState focus_state;
@@ -140,16 +139,13 @@ class OmniboxEditModel {
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const string16& text);
 
-  // Sets the suggestion text.
-  void SetInstantSuggestion(const InstantSuggestion& suggestion);
-
   // Commits the gray suggested text as if it's been input by the user.
   // Returns true if the text was committed.
   // TODO: can the return type be void?
   bool CommitSuggestedText();
 
-  // Invoked any time the text may have changed in the edit. Updates Instant and
-  // notifies the controller.
+  // Invoked any time the text may have changed in the edit. Notifies the
+  // controller.
   void OnChanged();
 
   // Reverts the edit model back to its unedited state (permanent text showing,
@@ -312,7 +308,6 @@ class OmniboxEditModel {
   InstantController* GetInstantController() const;
 
  private:
-  friend class InstantTestBase;
   friend class OmniboxControllerTest;
 
   enum PasteState {
@@ -508,21 +503,8 @@ class OmniboxEditModel {
 
   Profile* profile_;
 
-  // This is needed as prior to accepting the current text the model is
-  // reverted, which triggers resetting Instant. We don't want to update Instant
-  // in this case, so we use the flag to determine if this is happening.
-  //
-  // For example: The permanent text is "foo". The user has typed "bar" and
-  // Instant is showing a search results preview for "bar". The user hits Enter.
-  // in_revert_ is used to tell Instant, "The omnibox text is about to change to
-  // 'foo', thus TextChanged() will be called, leading to DoInstant(), but
-  // please don't change what you are showing. I'll commit the real match
-  // ("bar") immediately after the revert."
-  //
-  // Without in_revert_, Instant would erroneously change its search results to
-  // "foo". Because of the way the code is structured (specifically, DoInstant()
-  // is NOT called for "bar" again), this leaves Instant showing results for
-  // "foo", which is wrong.
+  // This is needed to properly update the SearchModel state when the user
+  // presses escape.
   bool in_revert_;
 
   // Indicates if the upcoming autocomplete search is allowed to be treated as

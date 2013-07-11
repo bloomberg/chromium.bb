@@ -539,7 +539,7 @@ BOOL ThePasteboardIsTooDamnBig() {
 
 - (void)drawRect:(NSRect)rect {
   [super drawRect:rect];
-  autocomplete_text_field::DrawInstantSuggestion(
+  autocomplete_text_field::DrawGrayTextAutocompletion(
       [self textStorage],
       [[self delegate] suggestText],
       [[self delegate] suggestColor],

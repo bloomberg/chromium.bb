@@ -104,13 +104,13 @@ const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 
 OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& user_text,
-                               const string16& instant_suggestion,
+                               const string16& gray_text,
                                const string16& keyword,
                                bool is_keyword_hint,
                                OmniboxFocusState focus_state)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
-      instant_suggestion(instant_suggestion),
+      gray_text(gray_text),
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
       focus_state(focus_state) {
@@ -164,7 +164,7 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
 
   return State(user_input_in_progress_,
                user_text_,
-               view_->GetInstantSuggestion(),
+               view_->GetGrayTextAutocompletion(),
                keyword_,
                is_keyword_hint_,
                focus_state_);
@@ -180,7 +180,7 @@ void OmniboxEditModel::RestoreState(const State& state) {
     is_keyword_hint_ = state.is_keyword_hint;
     view_->SetUserText(state.user_text,
         DisplayTextFromUserText(state.user_text), false);
-    view_->SetInstantSuggestion(state.instant_suggestion);
+    view_->SetGrayTextAutocompletion(state.gray_text);
   }
 }
 
@@ -204,19 +204,19 @@ bool OmniboxEditModel::UpdatePermanentText(const string16& new_permanent_text) {
   // common case where the edit doesn't have focus is when the user has started
   // an edit and then abandoned it and clicked a link on the page.)
   //
-  // If the page is auto-committing an instant suggestion, however, we generally
-  // don't want to make any change to the edit.  While auto-commits modify the
-  // underlying permanent URL, they're intended to have no effect on the user's
-  // editing process -- before and after the auto-commit, the omnibox should
-  // show the same user text and the same instant suggestion, even if the
-  // auto-commit happens while the edit doesn't have focus.
-  string16 instant_suggestion = view_->GetInstantSuggestion();
+  // If the page is auto-committing gray text, however, we generally don't want
+  // to make any change to the edit.  While auto-commits modify the underlying
+  // permanent URL, they're intended to have no effect on the user's editing
+  // process -- before and after the auto-commit, the omnibox should show the
+  // same user text and the same instant suggestion, even if the auto-commit
+  // happens while the edit doesn't have focus.
+  string16 gray_text = view_->GetGrayTextAutocompletion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
       (!has_focus() ||
        (!user_input_in_progress_ && !popup_model()->IsOpen())) &&
-      (instant_suggestion.empty() ||
-       new_permanent_text != user_text_ + instant_suggestion);
+      (gray_text.empty() ||
+       new_permanent_text != user_text_ + gray_text);
 
   permanent_text_ = new_permanent_text;
   return visibly_changed_permanent_text;
@@ -234,16 +234,11 @@ void OmniboxEditModel::SetUserText(const string16& text) {
   has_temporary_text_ = false;
 }
 
-void OmniboxEditModel::SetInstantSuggestion(
-    const InstantSuggestion& suggestion) {
-}
-
 bool OmniboxEditModel::CommitSuggestedText() {
-  const string16 suggestion = view_->GetInstantSuggestion();
+  const string16 suggestion = view_->GetGrayTextAutocompletion();
   if (suggestion.empty())
     return false;
 
-  // Assume that the gray text we are committing is a search suggestion.
   const string16 final_text = view_->GetText() + suggestion;
   view_->OnBeforePossibleChange();
   view_->SetWindowTextAndCaretPos(final_text, final_text.length(), false,
@@ -281,7 +276,7 @@ void OmniboxEditModel::OnChanged() {
                             AutocompleteActionPredictor::LAST_PREDICT_ACTION);
 
   // Hide any suggestions we might be showing.
-  view_->SetInstantSuggestion(string16());
+  view_->SetGrayTextAutocompletion(string16());
 
   switch (recommended_action) {
     case AutocompleteActionPredictor::ACTION_PRERENDER:
@@ -1215,11 +1210,8 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
   // Then check if the text before the inserted space matches a keyword.
   string16 keyword;
   TrimWhitespace(new_text.substr(0, space_position), TRIM_LEADING, &keyword);
-  // TODO(sreeram): Once the Instant extended API supports keywords properly,
-  // keyword_provider() should never be NULL. Remove that clause.
-  return !keyword.empty() && autocomplete_controller()->keyword_provider() &&
-      !autocomplete_controller()->keyword_provider()->
-          GetKeywordForText(keyword).empty();
+  return !keyword.empty() && !autocomplete_controller()->keyword_provider()->
+      GetKeywordForText(keyword).empty();
 }
 
 //  static

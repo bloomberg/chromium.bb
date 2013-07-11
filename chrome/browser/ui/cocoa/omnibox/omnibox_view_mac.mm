@@ -525,16 +525,9 @@ bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
 void OmniboxViewMac::OnRevertTemporaryText() {
   SetSelectedRange(saved_temporary_selection_);
   // We got here because the user hit the Escape key. We explicitly don't call
-  // TextChanged(), since calling it breaks Instant-Extended, and isn't needed
-  // otherwise (in regular non-Instant or Instant-but-not-Extended modes).
-  //
-  // Why it breaks Instant-Extended: Instant handles the Escape key separately
-  // (cf: OmniboxEditModel::RevertTemporaryText). Calling TextChanged() makes
-  // the page think the user additionally typed some text, causing it to update
-  // its suggestions dropdown with new suggestions, which is wrong.
-  //
-  // Why it isn't needed: OmniboxPopupModel::ResetToDefaultMatch() has already
-  // been called by now; it would've called TextChanged() if it was warranted.
+  // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
+  // been called by now, and it would've called TextChanged() if it was
+  // warranted.
 }
 
 bool OmniboxViewMac::IsFirstResponder() const {
@@ -611,15 +604,15 @@ gfx::NativeView OmniboxViewMac::GetRelativeWindowForPopup() const {
   return NULL;
 }
 
-void OmniboxViewMac::SetInstantSuggestion(const string16& suggest_text) {
+void OmniboxViewMac::SetGrayTextAutocompletion(const string16& suggest_text) {
   if (suggest_text == suggest_text_)
     return;
   suggest_text_ = suggest_text;
-  [field_ setInstantSuggestion:base::SysUTF16ToNSString(suggest_text)
-                     textColor:SuggestTextColor()];
+  [field_ setGrayTextAutocompletion:base::SysUTF16ToNSString(suggest_text)
+                          textColor:SuggestTextColor()];
 }
 
-string16 OmniboxViewMac::GetInstantSuggestion() const {
+string16 OmniboxViewMac::GetGrayTextAutocompletion() const {
   return suggest_text_;
 }
 

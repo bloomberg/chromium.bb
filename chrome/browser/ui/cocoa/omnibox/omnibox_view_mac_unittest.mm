@@ -144,7 +144,7 @@ TEST_F(OmniboxViewMacTest, TabToAutocomplete) {
   EXPECT_EQ(-1, model->up_or_down_count());
 }
 
-TEST_F(OmniboxViewMacTest, SetInstantSuggestion) {
+TEST_F(OmniboxViewMacTest, SetGrayTextAutocompletion) {
   const NSRect frame = NSMakeRect(0, 0, 50, 30);
   base::scoped_nsobject<AutocompleteTextField> field(
       [[AutocompleteTextField alloc] initWithFrame:frame]);
@@ -164,13 +164,13 @@ TEST_F(OmniboxViewMacTest, SetInstantSuggestion) {
 
   view.SetUserText(ASCIIToUTF16("Alfred"));
   EXPECT_EQ("Alfred", UTF16ToUTF8(view.GetText()));
-  view.SetInstantSuggestion(ASCIIToUTF16(" Hitchcock"));
+  view.SetGrayTextAutocompletion(ASCIIToUTF16(" Hitchcock"));
   EXPECT_EQ("Alfred", UTF16ToUTF8(view.GetText()));
-  EXPECT_EQ(" Hitchcock", UTF16ToUTF8(view.GetInstantSuggestion()));
+  EXPECT_EQ(" Hitchcock", UTF16ToUTF8(view.GetGrayTextAutocompletion()));
 
   view.SetUserText(string16());
   EXPECT_EQ(string16(), view.GetText());
-  EXPECT_EQ(string16(), view.GetInstantSuggestion());
+  EXPECT_EQ(string16(), view.GetGrayTextAutocompletion());
 }
 
 TEST_F(OmniboxViewMacTest, UpDownArrow) {

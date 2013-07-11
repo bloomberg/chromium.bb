@@ -629,7 +629,7 @@ void LocationBarView::SetImeInlineAutocompletion(const string16& text) {
   ime_inline_autocomplete_view_->SetVisible(!text.empty());
 }
 
-void LocationBarView::SetInstantSuggestion(const string16& text) {
+void LocationBarView::SetGrayTextAutocompletion(const string16& text) {
   if (suggested_text_view_->text() != text) {
     suggested_text_view_->SetText(text);
     suggested_text_view_->SetVisible(!text.empty());
@@ -638,7 +638,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text) {
   }
 }
 
-string16 LocationBarView::GetInstantSuggestion() const {
+string16 LocationBarView::GetGrayTextAutocompletion() const {
   return HasValidSuggestText() ? suggested_text_view_->text() : string16();
 }
 
@@ -1354,11 +1354,6 @@ void LocationBarView::ShowFirstRunBubble() {
     return;
   }
   ShowFirstRunBubbleInternal();
-}
-
-void LocationBarView::SetInstantSuggestion(
-    const InstantSuggestion& suggestion) {
-  location_entry_->model()->SetInstantSuggestion(suggestion);
 }
 
 string16 LocationBarView::GetInputString() const {

@@ -15,13 +15,10 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
-#include "chrome/browser/ui/search/instant_controller.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/rect.h"
 
@@ -64,8 +61,6 @@ void OmniboxController::StartAutocomplete(
 }
 
 void OmniboxController::OnResultChanged(bool default_match_changed) {
-  // TODO(beaudoin): There should be no need to access the popup when using
-  // instant extended, remove this reference.
   const bool was_open = popup_->IsOpen();
   if (default_match_changed) {
     // The default match has changed, we need to let the OmniboxEditModel know
@@ -109,11 +104,6 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
   }
 }
 
-void OmniboxController::SetInstantSuggestion(
-    const InstantSuggestion& suggestion) {
-  // TODO(jered): Delete this.
-}
-
 void OmniboxController::InvalidateCurrentMatch() {
   current_match_ = AutocompleteMatch();
 }
@@ -138,47 +128,4 @@ void OmniboxController::DoPreconnect(const AutocompleteMatch& match) {
     // can be many of these as a user types an initial series of characters,
     // the OS DNS cache could suffer eviction problems for minimal gain.
   }
-}
-
-bool OmniboxController::UseVerbatimInstant(bool just_deleted_text) const {
-#if defined(OS_MACOSX)
-  // TODO(suzhe): Fix Mac port to display Instant suggest in a separated NSView,
-  // so that we can display Instant suggest along with composition text.
-  const AutocompleteInput& input = autocomplete_controller_->input();
-  if (input.prevent_inline_autocomplete())
-    return true;
-#endif
-
-  // The value of input.prevent_inline_autocomplete() is determined by the
-  // following conditions:
-  // 1. If the caret is at the end of the text.
-  // 2. If it's in IME composition mode.
-  // We send the caret position to Instant (so it can determine #1 itself), and
-  // we use a separated widget for displaying the Instant suggest (so it doesn't
-  // interfere with #2). So, we don't need to care about the value of
-  // input.prevent_inline_autocomplete() here.
-  return just_deleted_text || popup_->selected_line() != 0;
-}
-
-InstantController* OmniboxController::GetInstantController() const {
-  return omnibox_edit_model_->GetInstantController();
-}
-
-void OmniboxController::CreateAndSetInstantMatch(
-    string16 query_string,
-    string16 input_text,
-    AutocompleteMatchType::Type match_type) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (!template_url_service)
-    return;
-
-  TemplateURL* template_url =
-      template_url_service->GetDefaultSearchProvider();
-  if (!template_url)
-    return;
-
-  current_match_ = SearchProvider::CreateSearchSuggestion(
-      NULL, 0, match_type, template_url, query_string, input_text,
-      AutocompleteInput(), false, 0, -1, true);
 }

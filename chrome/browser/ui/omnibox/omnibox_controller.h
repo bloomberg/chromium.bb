@@ -17,7 +17,6 @@ struct AutocompleteMatch;
 class AutocompleteResult;
 class GURL;
 class InstantController;
-struct InstantSuggestion;
 class OmniboxEditModel;
 class OmniboxPopupModel;
 class Profile;
@@ -35,7 +34,6 @@ class Rect;
 //     As the refactor progresses, keep the class comment up-to-date to
 //     precisely explain what this class is doing.
 class OmniboxController : public AutocompleteControllerDelegate {
-
  public:
   OmniboxController(OmniboxEditModel* omnibox_edit_model,
                     Profile* profile);
@@ -56,9 +54,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
   AutocompleteController* autocomplete_controller() {
     return autocomplete_controller_.get();
   }
-
-  // Sets the suggestion text.
-  void SetInstantSuggestion(const InstantSuggestion& suggestion);
 
   // Set |current_match_| to an invalid value, indicating that we do not yet
   // have a valid match for the current text in the omnibox.
@@ -85,22 +80,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
   void DoPreconnect(const AutocompleteMatch& match);
 
  private:
-
-  // Returns true if a verbatim query should be used for Instant. A verbatim
-  // query is forced in certain situations, such as pressing delete at the end
-  // of the edit.
-  bool UseVerbatimInstant(bool just_deleted_text) const;
-
-  // Access the instant controller from the OmniboxEditModel. We need to do this
-  // because the only valid pointer to InstantController is kept in Browser,
-  // which OmniboxEditModel has some ways of reaching.
-  InstantController* GetInstantController() const;
-
-  // Creates an AutocompleteMatch for an instant result and sets it into
-  // |current_match_|.
-  void CreateAndSetInstantMatch(string16 query_string,
-                                string16 input_text,
-                                AutocompleteMatchType::Type match_type);
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
   OmniboxEditModel* omnibox_edit_model_;
@@ -108,8 +87,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
   Profile* profile_;
 
   OmniboxPopupModel* popup_;
-
-  InstantController* instant_controller_;
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 
