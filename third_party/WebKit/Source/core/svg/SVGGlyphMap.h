@@ -21,11 +21,11 @@
 #define SVGGlyphMap_h
 
 #if ENABLE(SVG_FONTS)
+#include "core/platform/graphics/Latin1TextIterator.h"
 #include "core/platform/graphics/SVGGlyph.h"
 #include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
-
-#include <wtf/HashMap.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -62,23 +62,16 @@ public:
             return;
         }
     
-        GlyphMapLayer* currentLayer = &m_rootLayer;
+        unsigned length = unicodeString.length();
+
         RefPtr<GlyphMapNode> node;
-        size_t length = unicodeString.length();
-
-        UChar32 character = 0;
-        unsigned clusterLength = 0;
-        SurrogatePairAwareTextIterator textIterator(unicodeString.bloatedCharacters(), 0, length, length);
-        while (textIterator.consume(character, clusterLength)) {
-            node = currentLayer->get(character);
-            if (!node) {
-                node = GlyphMapNode::create();
-                currentLayer->set(character, node);
-            }
-            currentLayer = &node->children;
-            textIterator.advance(clusterLength);
+        if (unicodeString.is8Bit()) {
+            Latin1TextIterator textIterator(unicodeString.characters8(), 0, length, length);
+            node = findOrCreateNode(textIterator);
+        } else {
+            SurrogatePairAwareTextIterator textIterator(unicodeString.characters16(), 0, length, length);
+            node = findOrCreateNode(textIterator);
         }
-
         if (!node)
             return;
 
@@ -111,21 +104,17 @@ public:
 
     void collectGlyphsForString(const String& string, Vector<SVGGlyph>& glyphs)
     {
-        GlyphMapLayer* currentLayer = &m_rootLayer;
+        unsigned length = string.length();
 
-        const UChar* characters = string.bloatedCharacters();
-        size_t length = string.length();
+        if (!length)
+            return;
 
-        UChar32 character = 0;
-        unsigned clusterLength = 0;
-        SurrogatePairAwareTextIterator textIterator(characters, 0, length, length);
-        while (textIterator.consume(character, clusterLength)) {
-            RefPtr<GlyphMapNode> node = currentLayer->get(character);
-            if (!node)
-                break;
-            glyphs.append(node->glyphs);
-            currentLayer = &node->children;
-            textIterator.advance(clusterLength);
+        if (string.is8Bit()) {
+            Latin1TextIterator textIterator(string.characters8(), 0, length, length);
+            collectGlyphsForIterator(textIterator, glyphs);
+        } else {
+            SurrogatePairAwareTextIterator textIterator(string.characters16(), 0, length, length);
+            collectGlyphsForIterator(textIterator, glyphs);
         }
 
         std::sort(glyphs.begin(), glyphs.end(), compareGlyphPriority);
@@ -153,6 +142,44 @@ public:
     }
 
 private:
+    template<typename Iterator>
+    PassRefPtr<GlyphMapNode> findOrCreateNode(Iterator& textIterator)
+    {
+        GlyphMapLayer* currentLayer = &m_rootLayer;
+
+        RefPtr<GlyphMapNode> node;
+        UChar32 character = 0;
+        unsigned clusterLength = 0;
+        while (textIterator.consume(character, clusterLength)) {
+            node = currentLayer->get(character);
+            if (!node) {
+                node = GlyphMapNode::create();
+                currentLayer->set(character, node);
+            }
+            currentLayer = &node->children;
+            textIterator.advance(clusterLength);
+        }
+
+        return node.release();
+    }
+
+    template<typename Iterator>
+    void collectGlyphsForIterator(Iterator& textIterator, Vector<SVGGlyph>& glyphs)
+    {
+        GlyphMapLayer* currentLayer = &m_rootLayer;
+
+        UChar32 character = 0;
+        unsigned clusterLength = 0;
+        while (textIterator.consume(character, clusterLength)) {
+            RefPtr<GlyphMapNode> node = currentLayer->get(character);
+            if (!node)
+                break;
+            glyphs.append(node->glyphs);
+            currentLayer = &node->children;
+            textIterator.advance(clusterLength);
+        }
+    }
+
     GlyphMapLayer m_rootLayer;
     Vector<SVGGlyph> m_glyphTable;
     HashMap<String, Glyph> m_namedGlyphs;
