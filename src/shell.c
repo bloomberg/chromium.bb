@@ -3732,7 +3732,6 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy, in
 {
 	struct input_panel_surface *ip_surface = surface->configure_private;
 	struct desktop_shell *shell = ip_surface->shell;
-	struct weston_mode *mode;
 	float x, y;
 	uint32_t show_surface = 0;
 
@@ -3752,10 +3751,8 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy, in
 		x = shell->text_input.surface->geometry.x + shell->text_input.cursor_rectangle.x2;
 		y = shell->text_input.surface->geometry.y + shell->text_input.cursor_rectangle.y2;
 	} else {
-		mode = ip_surface->output->current;
-
-		x = ip_surface->output->x + (mode->width - width) / 2;
-		y = ip_surface->output->y + mode->height - height;
+		x = ip_surface->output->x + (ip_surface->output->width - width) / 2;
+		y = ip_surface->output->y + ip_surface->output->height - height;
 	}
 
 	weston_surface_configure(surface,
