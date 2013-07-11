@@ -358,10 +358,15 @@ static bool ContainsModule(
 static void PrintModule(
     const CodeModule *module,
     const vector<const CodeModule*> *modules_without_symbols,
+    const vector<const CodeModule*> *modules_with_corrupt_symbols,
     uint64_t main_address) {
-  string missing_symbols;
+  string symbol_issues;
   if (ContainsModule(modules_without_symbols, module)) {
-    missing_symbols = "  (WARNING: No symbols, " +
+    symbol_issues = "  (WARNING: No symbols, " +
+        PathnameStripper::File(module->debug_file()) + ", " +
+        module->debug_identifier() + ")";
+  } else if (ContainsModule(modules_with_corrupt_symbols, module)) {
+    symbol_issues = "  (WARNING: Corrupt symbols, " +
         PathnameStripper::File(module->debug_file()) + ", " +
         module->debug_identifier() + ")";
   }
@@ -371,7 +376,7 @@ static void PrintModule(
          PathnameStripper::File(module->code_file()).c_str(),
          module->version().empty() ? "???" : module->version().c_str(),
          main_address != 0 && base_address == main_address ? "  (main)" : "",
-         missing_symbols.c_str());
+         symbol_issues.c_str());
 }
 
 // PrintModules prints the list of all loaded |modules| to stdout.
@@ -379,7 +384,8 @@ static void PrintModule(
 // confirmed to be missing their symbols during the stack walk.
 static void PrintModules(
     const CodeModules *modules,
-    const vector<const CodeModule*> *modules_without_symbols) {
+    const vector<const CodeModule*> *modules_without_symbols,
+    const vector<const CodeModule*> *modules_with_corrupt_symbols) {
   if (!modules)
     return;
 
@@ -397,7 +403,8 @@ static void PrintModules(
        module_sequence < module_count;
        ++module_sequence) {
     const CodeModule *module = modules->GetModuleAtSequence(module_sequence);
-    PrintModule(module, modules_without_symbols, main_address);
+    PrintModule(module, modules_without_symbols, modules_with_corrupt_symbols,
+                main_address);
   }
 }
 
@@ -490,7 +497,8 @@ static void PrintProcessState(const ProcessState& process_state) {
   }
 
   PrintModules(process_state.modules(),
-               process_state.modules_without_symbols());
+               process_state.modules_without_symbols(),
+               process_state.modules_with_corrupt_symbols());
 }
 
 static void PrintProcessStateMachineReadable(const ProcessState& process_state)

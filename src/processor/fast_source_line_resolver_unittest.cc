@@ -403,28 +403,32 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
 
 TEST_F(TestFastSourceLineResolver, TestInvalidLoads) {
   TestCodeModule module3("module3");
-  ASSERT_FALSE(basic_resolver.LoadModule(&module3,
-                                         testdata_dir + "/module3_bad.out"));
-  ASSERT_FALSE(basic_resolver.HasModule(&module3));
+  ASSERT_TRUE(basic_resolver.LoadModule(&module3,
+                                        testdata_dir + "/module3_bad.out"));
+  ASSERT_TRUE(basic_resolver.HasModule(&module3));
+  ASSERT_TRUE(basic_resolver.IsModuleCorrupt(&module3));
   // Convert module3 to fast_module:
-  ASSERT_FALSE(serializer.ConvertOneModule(module3.code_file(),
-                                           &basic_resolver,
-                                           &fast_resolver));
-  ASSERT_FALSE(fast_resolver.HasModule(&module3));
+  ASSERT_TRUE(serializer.ConvertOneModule(module3.code_file(),
+                                          &basic_resolver,
+                                          &fast_resolver));
+  ASSERT_TRUE(fast_resolver.HasModule(&module3));
+  ASSERT_TRUE(fast_resolver.IsModuleCorrupt(&module3));
 
   TestCodeModule module4("module4");
-  ASSERT_FALSE(basic_resolver.LoadModule(&module4,
-                                         testdata_dir + "/module4_bad.out"));
-  ASSERT_FALSE(basic_resolver.HasModule(&module4));
+  ASSERT_TRUE(basic_resolver.LoadModule(&module4,
+                                        testdata_dir + "/module4_bad.out"));
+  ASSERT_TRUE(basic_resolver.HasModule(&module4));
+  ASSERT_TRUE(basic_resolver.IsModuleCorrupt(&module4));
   // Convert module4 to fast_module:
-  ASSERT_FALSE(serializer.ConvertOneModule(module4.code_file(),
-                                           &basic_resolver,
-                                           &fast_resolver));
-  ASSERT_FALSE(fast_resolver.HasModule(&module4));
+  ASSERT_TRUE(serializer.ConvertOneModule(module4.code_file(),
+                                          &basic_resolver,
+                                          &fast_resolver));
+  ASSERT_TRUE(fast_resolver.HasModule(&module4));
+  ASSERT_TRUE(fast_resolver.IsModuleCorrupt(&module4));
 
   TestCodeModule module5("module5");
   ASSERT_FALSE(fast_resolver.LoadModule(&module5,
-                                         testdata_dir + "/invalid-filename"));
+                                        testdata_dir + "/invalid-filename"));
   ASSERT_FALSE(fast_resolver.HasModule(&module5));
 
   TestCodeModule invalidmodule("invalid-module");
@@ -457,6 +461,7 @@ TEST_F(TestFastSourceLineResolver, TestUnload) {
 
 TEST_F(TestFastSourceLineResolver, CompareModule) {
   char *symbol_data;
+  size_t symbol_data_size;
   string symbol_data_string;
   string filename;
 
@@ -465,8 +470,8 @@ TEST_F(TestFastSourceLineResolver, CompareModule) {
     ss << testdata_dir << "/module" << module_index << ".out";
     filename = ss.str();
     ASSERT_TRUE(SourceLineResolverBase::ReadSymbolFile(
-        &symbol_data, symbol_file(module_index)));
-    symbol_data_string = symbol_data;
+        symbol_file(module_index), &symbol_data, &symbol_data_size));
+    symbol_data_string.assign(symbol_data, symbol_data_size);
     delete [] symbol_data;
     ASSERT_TRUE(module_comparer.Compare(symbol_data_string));
   }

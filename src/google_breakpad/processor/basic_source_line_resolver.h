@@ -59,6 +59,7 @@ class BasicSourceLineResolver : public SourceLineResolverBase {
   using SourceLineResolverBase::ShouldDeleteMemoryBufferAfterLoadModule;
   using SourceLineResolverBase::UnloadModule;
   using SourceLineResolverBase::HasModule;
+  using SourceLineResolverBase::IsModuleCorrupt;
   using SourceLineResolverBase::FillSourceLineInfo;
   using SourceLineResolverBase::FindWindowsFrameInfo;
   using SourceLineResolverBase::FindCFIFrameInfo;

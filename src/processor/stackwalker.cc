@@ -71,16 +71,46 @@ Stackwalker::Stackwalker(const SystemInfo* system_info,
   assert(frame_symbolizer_);
 }
 
+void InsertSpecialAttentionModule(
+    StackFrameSymbolizer::SymbolizerResult symbolizer_result,
+    const CodeModule* module,
+    vector<const CodeModule*>* modules) {
+  if (!module) {
+    return;
+  }
+  assert(symbolizer_result == StackFrameSymbolizer::kError ||
+         symbolizer_result == StackFrameSymbolizer::kWarningCorruptSymbols);
+  bool found = false;
+  vector<const CodeModule*>::iterator iter;
+  for (iter = modules->begin(); iter != modules->end(); ++iter) {
+    if (*iter == module) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    BPLOG(INFO) << ((symbolizer_result == StackFrameSymbolizer::kError) ?
+                       "Couldn't load symbols for: " :
+                       "Detected corrupt symbols for: ")
+                << module->debug_file() << "|" << module->debug_identifier();
+    modules->push_back(module);
+  }
+}
 
-bool Stackwalker::Walk(CallStack* stack,
-                       vector<const CodeModule*>* modules_without_symbols) {
+bool Stackwalker::Walk(
+    CallStack* stack,
+    vector<const CodeModule*>* modules_without_symbols,
+    vector<const CodeModule*>* modules_with_corrupt_symbols) {
   BPLOG_IF(ERROR, !stack) << "Stackwalker::Walk requires |stack|";
   assert(stack);
   stack->Clear();
 
   BPLOG_IF(ERROR, !modules_without_symbols) << "Stackwalker::Walk requires "
                                             << "|modules_without_symbols|";
+  BPLOG_IF(ERROR, !modules_without_symbols) << "Stackwalker::Walk requires "
+                                            << "|modules_with_corrupt_symbols|";
   assert(modules_without_symbols);
+  assert(modules_with_corrupt_symbols);
 
   // Begin with the context frame, and keep getting callers until there are
   // no more.
@@ -97,30 +127,24 @@ bool Stackwalker::Walk(CallStack* stack,
     StackFrameSymbolizer::SymbolizerResult symbolizer_result =
         frame_symbolizer_->FillSourceLineInfo(modules_, system_info_,
                                              frame.get());
-    if (symbolizer_result == StackFrameSymbolizer::kInterrupt) {
-      BPLOG(INFO) << "Stack walk is interrupted.";
-      return false;
-    }
-
-    // Keep track of modules that have no symbols.
-    if (symbolizer_result == StackFrameSymbolizer::kError &&
-        frame->module != NULL) {
-      bool found = false;
-      vector<const CodeModule*>::iterator iter;
-      for (iter = modules_without_symbols->begin();
-           iter != modules_without_symbols->end();
-           ++iter) {
-        if (*iter == frame->module) {
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        BPLOG(INFO) << "Couldn't load symbols for: "
-                    << frame->module->debug_file() << "|"
-                    << frame->module->debug_identifier();
-        modules_without_symbols->push_back(frame->module);
-      }
+    switch (symbolizer_result) {
+      case StackFrameSymbolizer::kInterrupt:
+        BPLOG(INFO) << "Stack walk is interrupted.";
+        return false;
+        break;
+      case StackFrameSymbolizer::kError:
+        InsertSpecialAttentionModule(symbolizer_result, frame->module,
+                                     modules_without_symbols);
+        break;
+      case StackFrameSymbolizer::kWarningCorruptSymbols:
+        InsertSpecialAttentionModule(symbolizer_result, frame->module,
+                                     modules_with_corrupt_symbols);
+        break;
+      case StackFrameSymbolizer::kNoError:
+        break;
+      default:
+        assert(false);
+        break;
     }
 
     // Add the frame to the call stack.  Relinquish the ownership claim
@@ -222,7 +246,8 @@ bool Stackwalker::InstructionAddressSeemsValid(uint64_t address) {
     return true;
   }
 
-  if (symbolizer_result != StackFrameSymbolizer::kNoError) {
+  if (symbolizer_result != StackFrameSymbolizer::kNoError &&
+      symbolizer_result != StackFrameSymbolizer::kWarningCorruptSymbols) {
     // Some error occurred during symbolization, but the address is within a
     // known module
     return true;

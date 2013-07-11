@@ -60,25 +60,65 @@ namespace google_breakpad {
 #endif
 
 static const char *kWhitespace = " \r\n";
+static const int kMaxErrorsPrinted = 5;
+static const int kMaxErrorsBeforeBailing = 100;
 
 BasicSourceLineResolver::BasicSourceLineResolver() :
     SourceLineResolverBase(new BasicModuleFactory) { }
 
-bool BasicSourceLineResolver::Module::LoadMapFromMemory(char *memory_buffer) {
+// static
+void BasicSourceLineResolver::Module::LogParseError(
+   const string &message,
+   int line_number,
+   int *num_errors) {
+  if (++(*num_errors) <= kMaxErrorsPrinted) {
+    if (line_number > 0) {
+      BPLOG(ERROR) << "Line " << line_number << ": " << message;
+    } else {
+      BPLOG(ERROR) << message;
+    }
+  }
+}
+
+bool BasicSourceLineResolver::Module::LoadMapFromMemory(
+    char *memory_buffer,
+    size_t memory_buffer_size) {
   linked_ptr<Function> cur_func;
   int line_number = 0;
+  int num_errors = 0;
   char *save_ptr;
-  size_t map_buffer_length = strlen(memory_buffer);
 
   // If the length is 0, we can still pretend we have a symbol file. This is
   // for scenarios that want to test symbol lookup, but don't necessarily care
   // if certain modules do not have any information, like system libraries.
-  if (map_buffer_length == 0) {
+  if (memory_buffer_size == 0) {
     return true;
   }
 
-  if (memory_buffer[map_buffer_length - 1] == '\n') {
-    memory_buffer[map_buffer_length - 1] = '\0';
+  // Make sure the last character is null terminator.
+  size_t last_null_terminator = memory_buffer_size - 1;
+  if (memory_buffer[last_null_terminator] != '\0') {
+    memory_buffer[last_null_terminator] = '\0';
+  }
+
+  // Skip any null terminators at the end of the memory buffer, and make sure
+  // there are no other null terminators in the middle of the memory buffer.
+  bool has_null_terminator_in_the_middle = false;
+  while (last_null_terminator > 0 &&
+         memory_buffer[last_null_terminator - 1] == '\0') {
+    last_null_terminator--;
+  }
+  for (size_t i = 0; i < last_null_terminator; i++) {
+    if (memory_buffer[i] == '\0') {
+      memory_buffer[i] = '_';
+      has_null_terminator_in_the_middle = true;
+    }
+  }
+  if (has_null_terminator_in_the_middle) {
+    LogParseError(
+       "Null terminator is not expected in the middle of the symbol data",
+       line_number,
+       &num_errors);
   }
 
   char *buffer;
@@ -89,35 +129,28 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(char *memory_buffer) {
 
     if (strncmp(buffer, "FILE ", 5) == 0) {
       if (!ParseFile(buffer)) {
-        BPLOG(ERROR) << "ParseFile on buffer failed at " <<
-            ":" << line_number;
-        return false;
+        LogParseError("ParseFile on buffer failed", line_number, &num_errors);
       }
     } else if (strncmp(buffer, "STACK ", 6) == 0) {
       if (!ParseStackInfo(buffer)) {
-        BPLOG(ERROR) << "ParseStackInfo failed at " <<
-            ":" << line_number;
-        return false;
+        LogParseError("ParseStackInfo failed", line_number, &num_errors);
       }
     } else if (strncmp(buffer, "FUNC ", 5) == 0) {
       cur_func.reset(ParseFunction(buffer));
       if (!cur_func.get()) {
-        BPLOG(ERROR) << "ParseFunction failed at " <<
-            ":" << line_number;
-        return false;
+        LogParseError("ParseFunction failed", line_number, &num_errors);
+      } else {
+        // StoreRange will fail if the function has an invalid address or size.
+        // We'll silently ignore this, the function and any corresponding lines
+        // will be destroyed when cur_func is released.
+        functions_.StoreRange(cur_func->address, cur_func->size, cur_func);
       }
-      // StoreRange will fail if the function has an invalid address or size.
-      // We'll silently ignore this, the function and any corresponding lines
-      // will be destroyed when cur_func is released.
-      functions_.StoreRange(cur_func->address, cur_func->size, cur_func);
     } else if (strncmp(buffer, "PUBLIC ", 7) == 0) {
       // Clear cur_func: public symbols don't contain line number information.
       cur_func.reset();
 
       if (!ParsePublicSymbol(buffer)) {
-        BPLOG(ERROR) << "ParsePublicSymbol failed at " <<
-            ":" << line_number;
-        return false;
+        LogParseError("ParsePublicSymbol failed", line_number, &num_errors);
       }
     } else if (strncmp(buffer, "MODULE ", 7) == 0) {
       // Ignore these.  They're not of any use to BasicSourceLineResolver,
@@ -132,21 +165,24 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(char *memory_buffer) {
       // INFO CODE_ID <code id> <filename>
     } else {
       if (!cur_func.get()) {
-        BPLOG(ERROR) << "Found source line data without a function at " <<
-            ":" << line_number;
-        return false;
+        LogParseError("Found source line data without a function",
+                       line_number, &num_errors);
+      } else {
+        Line *line = ParseLine(buffer);
+        if (!line) {
+          LogParseError("ParseLine failed", line_number, &num_errors);
+        } else {
+          cur_func->lines.StoreRange(line->address, line->size,
+                                     linked_ptr<Line>(line));
+        }
       }
-      Line *line = ParseLine(buffer);
-      if (!line) {
-        BPLOG(ERROR) << "ParseLine failed at " << line_number << " for " <<
-            buffer;
-        return false;
-      }
-      cur_func->lines.StoreRange(line->address, line->size,
-                                 linked_ptr<Line>(line));
+    }
+    if (num_errors > kMaxErrorsBeforeBailing) {
+      break;
     }
     buffer = strtok_r(NULL, "\r\n", &save_ptr);
   }
+  is_corrupt_ = num_errors > 0;
   return true;
 }
 

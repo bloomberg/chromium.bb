@@ -247,7 +247,8 @@ ProcessResult MinidumpProcessor::Process(
     scoped_ptr<CallStack> stack(new CallStack());
     if (stackwalker.get()) {
       if (!stackwalker->Walk(stack.get(),
-                             &process_state->modules_without_symbols_)) {
+                             &process_state->modules_without_symbols_,
+                             &process_state->modules_with_corrupt_symbols_)) {
         BPLOG(INFO) << "Stackwalker interrupt (missing symbols?) at "
                     << thread_string;
         interrupted = true;

@@ -68,15 +68,18 @@ class Stackwalker {
   // GetCallerFrame.  The frames are further processed to fill all available
   // data.  Returns true if the stackwalk completed, or false if it was
   // interrupted by SymbolSupplier::GetSymbolFile().
-  // Upon return, modules_without_symbols will be populated with pointers to
+  // Upon return, |modules_without_symbols| will be populated with pointers to
   // the code modules (CodeModule*) that DON'T have symbols.
-  // modules_without_symbols DOES NOT take ownership of the code modules.
+  // |modules_with_corrupt_symbols| will be populated with pointers to the
+  // modules which have corrupt symbols.  |modules_without_symbols| and
+  // |modules_with_corrupt_symbols| DO NOT take ownership of the code modules.
   // The lifetime of these code modules is the same as the lifetime of the
   // CodeModules passed to the StackWalker constructor (which currently
   // happens to be the lifetime of the Breakpad's ProcessingState object).
   // There is a check for duplicate modules so no duplicates are expected.
   bool Walk(CallStack* stack,
-            vector<const CodeModule*>* modules_without_symbols);
+            vector<const CodeModule*>* modules_without_symbols,
+            vector<const CodeModule*>* modules_with_corrupt_symbols);
 
   // Returns a new concrete subclass suitable for the CPU that a stack was
   // generated on, according to the CPU type indicated by the context

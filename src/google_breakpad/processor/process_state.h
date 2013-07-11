@@ -109,6 +109,9 @@ class ProcessState {
   const vector<const CodeModule*>* modules_without_symbols() const {
     return &modules_without_symbols_;
   }
+  const vector<const CodeModule*>* modules_with_corrupt_symbols() const {
+    return &modules_with_corrupt_symbols_;
+  }
   ExploitabilityRating exploitability() const { return exploitability_; }
 
  private:
@@ -163,6 +166,9 @@ class ProcessState {
 
   // The modules that didn't have symbols when the report was processed.
   vector<const CodeModule*> modules_without_symbols_;
+
+  // The modules that had corrupt symbols when the report was processed.
+  vector<const CodeModule*> modules_with_corrupt_symbols_;
 
   // The exploitability rating as determined by the exploitability
   // engine. When the exploitability engine is not enabled this

@@ -376,13 +376,15 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
 TEST_F(TestBasicSourceLineResolver, TestInvalidLoads)
 {
   TestCodeModule module3("module3");
-  ASSERT_FALSE(resolver.LoadModule(&module3,
+  ASSERT_TRUE(resolver.LoadModule(&module3,
                                    testdata_dir + "/module3_bad.out"));
-  ASSERT_FALSE(resolver.HasModule(&module3));
+  ASSERT_TRUE(resolver.HasModule(&module3));
+  ASSERT_TRUE(resolver.IsModuleCorrupt(&module3));
   TestCodeModule module4("module4");
-  ASSERT_FALSE(resolver.LoadModule(&module4,
+  ASSERT_TRUE(resolver.LoadModule(&module4,
                                    testdata_dir + "/module4_bad.out"));
-  ASSERT_FALSE(resolver.HasModule(&module4));
+  ASSERT_TRUE(resolver.HasModule(&module4));
+  ASSERT_TRUE(resolver.IsModuleCorrupt(&module4));
   TestCodeModule module5("module5");
   ASSERT_FALSE(resolver.LoadModule(&module5,
                                    testdata_dir + "/invalid-filename"));

@@ -164,19 +164,22 @@ SymbolSupplier::SymbolResult
 OnDemandSymbolSupplier::GetCStringSymbolData(const CodeModule *module,
                                              const SystemInfo *system_info,
                                              string *symbol_file,
-                                             char **symbol_data) {
+                                             char **symbol_data,
+                                             uint64_t *symbol_data_size) {
   std::string symbol_data_string;
   SymbolSupplier::SymbolResult result = GetSymbolFile(module,
                                                       system_info,
                                                       symbol_file,
                                                       &symbol_data_string);
   if (result == FOUND) {
-    *symbol_data = new char[symbol_data_string.size() + 1];
+    *symbol_data_size = symbol_data_string.size() + 1;
+    *symbol_data = new char[*symbol_data_size];
     if (*symbol_data == NULL) {
       // Should return INTERRUPT on memory allocation failure.
       return INTERRUPT;
     }
-    strcpy(*symbol_data, symbol_data_string.c_str());
+    memcpy(*symbol_data, symbol_data_string.c_str(), symbol_data_string.size());
+    (*symbol_data)[symbol_data_string.size()] = '\0';
     memory_buffers_.insert(make_pair(module->code_file(), *symbol_data));
   }
   return result;
