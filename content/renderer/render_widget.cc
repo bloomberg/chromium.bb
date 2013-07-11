@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -139,7 +140,51 @@ const char* GetEventName(WebInputEvent::Type type) {
 #undef CASE_TYPE
   return "";
 }
+
+typedef std::map<std::string, ui::TextInputMode> TextInputModeMap;
+
+class TextInputModeMapSingleton {
+ public:
+  static TextInputModeMapSingleton* GetInstance() {
+    return Singleton<TextInputModeMapSingleton>::get();
+  }
+  TextInputModeMapSingleton()
+      : map() {
+    map["verbatim"] = ui::TEXT_INPUT_MODE_VERBATIM;
+    map["latin"] = ui::TEXT_INPUT_MODE_LATIN;
+    map["latin-name"] = ui::TEXT_INPUT_MODE_LATIN_NAME;
+    map["latin-prose"] = ui::TEXT_INPUT_MODE_LATIN_PROSE;
+    map["full-width-latin"] = ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN;
+    map["kana"] = ui::TEXT_INPUT_MODE_KANA;
+    map["katakana"] = ui::TEXT_INPUT_MODE_KATAKANA;
+    map["numeric"] = ui::TEXT_INPUT_MODE_NUMERIC;
+    map["tel"] = ui::TEXT_INPUT_MODE_TEL;
+    map["email"] = ui::TEXT_INPUT_MODE_EMAIL;
+    map["url"] = ui::TEXT_INPUT_MODE_URL;
+  }
+  TextInputModeMap& Map() {
+    return map;
+  }
+ private:
+  TextInputModeMap map;
+
+  friend struct DefaultSingletonTraits<TextInputModeMapSingleton>;
+
+  DISALLOW_COPY_AND_ASSIGN(TextInputModeMapSingleton);
+};
+
+ui::TextInputMode ConvertInputMode(
+    const WebKit::WebString& input_mode) {
+  static TextInputModeMapSingleton* singleton =
+      TextInputModeMapSingleton::GetInstance();
+  TextInputModeMap::iterator it = singleton->Map().find(input_mode.utf8());
+  if (it == singleton->Map().end())
+    return ui::TEXT_INPUT_MODE_DEFAULT;
+  return it->second;
 }
+
+}  // namespace
+
 namespace content {
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
@@ -171,6 +216,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       input_method_is_active_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
+      text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
@@ -2072,19 +2118,28 @@ void RenderWidget::UpdateTextInputType() {
   if (!input_method_is_active_)
     return;
 
-  ui::TextInputType new_type = GetTextInputType();
+  WebKit::WebTextInputInfo new_info;
+  if (webwidget_)
+    new_info = webwidget_->textInputInfo();
+
+  ui::TextInputType new_type = WebKitToUiTextInputType(new_info.type);
   if (IsDateTimeInput(new_type))
     return;  // Not considered as a text input field in WebKit/Chromium.
 
   bool new_can_compose_inline = CanComposeInline();
 
+  const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
+
   if (text_input_type_ != new_type
-      || can_compose_inline_ != new_can_compose_inline) {
+      || can_compose_inline_ != new_can_compose_inline
+      || text_input_mode_ != new_mode) {
     Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
                                               new_type,
-                                              new_can_compose_inline));
+                                              new_can_compose_inline,
+                                              new_mode));
     text_input_type_ = new_type;
     can_compose_inline_ = new_can_compose_inline;
+    text_input_mode_ = new_mode;
   }
 }
 

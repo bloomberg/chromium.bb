@@ -48,6 +48,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_base_types.h"
@@ -90,6 +91,7 @@ IPC_ENUM_TRAITS(content::ThreeDAPIType)
 IPC_ENUM_TRAITS(media::ChannelLayout)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 IPC_ENUM_TRAITS(ui::MenuSourceType)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 IPC_ENUM_TRAITS(ui::TextInputType)
 
 #if defined(OS_MACOSX)
@@ -1956,9 +1958,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenDateTimeDialog,
                     ViewHostMsg_DateTimeDialogValue_Params /* value */)
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_TextInputTypeChanged,
+IPC_MESSAGE_ROUTED3(ViewHostMsg_TextInputTypeChanged,
                     ui::TextInputType /* TextInputType of the focused node */,
-                    bool /* can_compose_inline in the focused node */)
+                    bool /* can_compose_inline in the focused node */,
+                    ui::TextInputMode /* TextInputMode of the focused node */)
 
 // Required for updating text input state.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,

@@ -2133,10 +2133,12 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
   view_->UpdateCursor(cursor);
 }
 
-void RenderWidgetHostImpl::OnTextInputTypeChanged(ui::TextInputType type,
-                                                  bool can_compose_inline) {
+void RenderWidgetHostImpl::OnTextInputTypeChanged(
+    ui::TextInputType type,
+    bool can_compose_inline,
+    ui::TextInputMode input_mode) {
   if (view_)
-    view_->TextInputTypeChanged(type, can_compose_inline);
+    view_->TextInputTypeChanged(type, can_compose_inline, input_mode);
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)

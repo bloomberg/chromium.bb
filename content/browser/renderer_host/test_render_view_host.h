@@ -98,7 +98,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetIsLoading(bool is_loading) OVERRIDE {}
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE {}
   virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    bool can_compose_inline) OVERRIDE {}
+                                    bool can_compose_inline,
+                                    ui::TextInputMode input_mode) OVERRIDE {}
   virtual void ImeCancelComposition() OVERRIDE {}
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   virtual void ImeCompositionRangeChanged(

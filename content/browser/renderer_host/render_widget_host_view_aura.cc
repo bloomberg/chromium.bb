@@ -1011,8 +1011,10 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::TextInputTypeChanged(ui::TextInputType type,
-                                                    bool can_compose_inline) {
+void RenderWidgetHostViewAura::TextInputTypeChanged(
+    ui::TextInputType type,
+    bool can_compose_inline,
+    ui::TextInputMode input_mode) {
   if (text_input_type_ != type ||
       can_compose_inline_ != can_compose_inline) {
     text_input_type_ = type;

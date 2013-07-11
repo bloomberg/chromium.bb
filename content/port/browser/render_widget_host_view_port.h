@@ -16,6 +16,7 @@
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/surface/transport_dib.h"
@@ -101,7 +102,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 
   // Updates the type of the input method attached to the view.
   virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    bool can_compose_inline) = 0;
+                                    bool can_compose_inline,
+                                    ui::TextInputMode mode) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;

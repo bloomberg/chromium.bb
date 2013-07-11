@@ -701,8 +701,10 @@ void RenderWidgetHostViewWin::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewWin::TextInputTypeChanged(ui::TextInputType type,
-                                                   bool can_compose_inline) {
+void RenderWidgetHostViewWin::TextInputTypeChanged(
+    ui::TextInputType type,
+    bool can_compose_inline,
+    ui::TextInputMode input_mode) {
   if (text_input_type_ != type ||
       can_compose_inline_ != can_compose_inline) {
     const bool text_input_type_changed = (text_input_type_ != type);

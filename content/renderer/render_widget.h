@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
@@ -636,6 +637,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Stores the current type of composition text rendering of |webwidget_|.
   bool can_compose_inline_;
+
+  // Stores the current text input mode of |webwidget_|.
+  ui::TextInputMode text_input_mode_;
 
   // Stores the current selection bounds.
   gfx::Rect selection_focus_rect_;

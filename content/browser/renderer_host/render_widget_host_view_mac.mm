@@ -830,8 +830,10 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
   // like Chrome does on Windows, call |UpdateCursor()| here.
 }
 
-void RenderWidgetHostViewMac::TextInputTypeChanged(ui::TextInputType type,
-                                                   bool can_compose_inline) {
+void RenderWidgetHostViewMac::TextInputTypeChanged(
+    ui::TextInputType type,
+    bool can_compose_inline,
+    ui::TextInputMode input_mode) {
   if (text_input_type_ != type
       || can_compose_inline_ != can_compose_inline) {
     text_input_type_ = type;
