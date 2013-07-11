@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "content/public/browser/browser_thread.h"
@@ -72,7 +71,11 @@ class ActivityLogPolicy {
   // TODO(felt,dbabic)  Since only ReadData uses thread_id, it would be
   // cleaner to pass thread_id as a param of ReadData directly.
   explicit ActivityLogPolicy(Profile* profile);
-  virtual ~ActivityLogPolicy();
+
+  // Instead of a public destructor, ActivityLogPolicy objects have a Close()
+  // method which will cause the object to be deleted (but may do so on another
+  // thread or in a deferred fashion).
+  virtual void Close() = 0;
 
   // Updates the internal state of the model summarizing actions and possibly
   // writes to the database.  Implements the default policy storing internal
@@ -84,11 +87,6 @@ class ActivityLogPolicy {
       const GURL& gurl,                           // target URL
       const base::ListValue* args,                // arguments
       const base::DictionaryValue* details) = 0;  // details
-
-  // Saves the internal state in the memory into the database.  Must be
-  // written so as to be thread-safe, as it can be called from a timer that
-  // saves state periodically and explicitly.
-  virtual void SaveState() { }
 
   // Pass the parameters as a set of key-value pairs and return data back via
   // a callback passing results as a set of key-value pairs.  The keys are
@@ -108,13 +106,13 @@ class ActivityLogPolicy {
           <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback)
       const {}
 
-  // For testing purposes --- disables periodic state saving, making the
-  // behavior reproducible.
-  virtual void SetSaveStateOnRequestOnly();
-
   virtual std::string GetKey(KeyType key_id) const;
 
  protected:
+  // An ActivityLogPolicy is not directly destroyed.  Instead, call Close()
+  // which will cause the object to be deleted when it is safe.
+  virtual ~ActivityLogPolicy();
+
   // The Schedule methods dispatch the calls to the database on a
   // separate thread. We dispatch to the UI thread if the DB thread doesn't
   // exist, which should only happen in tests where there is no DB thread.
@@ -144,7 +142,9 @@ class ActivityLogPolicy {
   }
 
   base::FilePath profile_base_path_;
-  base::RepeatingTimer<ActivityLogPolicy> timer_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActivityLogPolicy);
 };
 
 }  // namespace extensions

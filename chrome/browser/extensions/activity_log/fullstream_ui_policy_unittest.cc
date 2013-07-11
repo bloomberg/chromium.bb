@@ -89,7 +89,7 @@ class FullStreamUIPolicyTest : public testing::Test {
 };
 
 TEST_F(FullStreamUIPolicyTest, Construct) {
-  scoped_ptr<ActivityLogPolicy> policy(new FullStreamUIPolicy(profile_.get()));
+  ActivityLogPolicy* policy = new FullStreamUIPolicy(profile_.get());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -101,10 +101,11 @@ TEST_F(FullStreamUIPolicyTest, Construct) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),
       std::string("tabs.testMethod"), GURL(), args.get(), NULL);
+  policy->Close();
 }
 
 TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
-  scoped_ptr<ActivityLogPolicy> policy(new FullStreamUIPolicy(profile_.get()));
+  ActivityLogPolicy* policy = new FullStreamUIPolicy(profile_.get());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -124,10 +125,12 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
                         gurl, args.get(), NULL);
   policy->ReadData(extension->id(), 0,
       base::Bind(FullStreamUIPolicyTest::RetrieveActions_LogAndFetchActions));
+
+  policy->Close();
 }
 
 TEST_F(FullStreamUIPolicyTest, LogWithArguments) {
-  scoped_ptr<ActivityLogPolicy> policy(new FullStreamUIPolicy(profile_.get()));
+  ActivityLogPolicy* policy = new FullStreamUIPolicy(profile_.get());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -143,6 +146,7 @@ TEST_F(FullStreamUIPolicyTest, LogWithArguments) {
       std::string("extension.connect"), GURL(), args.get(), NULL);
   policy->ReadData(extension->id(), 0,
       base::Bind(FullStreamUIPolicyTest::Arguments_Present));
+  policy->Close();
 }
 
 }  // namespace extensions

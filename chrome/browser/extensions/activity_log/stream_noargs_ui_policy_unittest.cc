@@ -89,8 +89,7 @@ class StreamWithoutArgsUIPolicyTest : public testing::Test {
 };
 
 TEST_F(StreamWithoutArgsUIPolicyTest, Construct) {
-  scoped_ptr<ActivityLogPolicy> policy(
-      new StreamWithoutArgsUIPolicy(profile_.get()));
+  ActivityLogPolicy* policy = new StreamWithoutArgsUIPolicy(profile_.get());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -102,11 +101,11 @@ TEST_F(StreamWithoutArgsUIPolicyTest, Construct) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),
       std::string("tabs.testMethod"), GURL(), args.get(), NULL);
+  policy->Close();
 }
 
 TEST_F(StreamWithoutArgsUIPolicyTest, LogAndFetchActions) {
-  scoped_ptr<ActivityLogPolicy> policy(
-      new StreamWithoutArgsUIPolicy(profile_.get()));
+  ActivityLogPolicy* policy = new StreamWithoutArgsUIPolicy(profile_.get());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -127,11 +126,12 @@ TEST_F(StreamWithoutArgsUIPolicyTest, LogAndFetchActions) {
   policy->ReadData(extension->id(), 0,
       base::Bind(
           StreamWithoutArgsUIPolicyTest::RetrieveActions_LogAndFetchActions));
+
+  policy->Close();
 }
 
 TEST_F(StreamWithoutArgsUIPolicyTest, LogWithoutArguments) {
-  scoped_ptr<ActivityLogPolicy> policy(
-      new StreamWithoutArgsUIPolicy(profile_.get()));
+  ActivityLogPolicy* policy = new StreamWithoutArgsUIPolicy(profile_.get());
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -147,6 +147,7 @@ TEST_F(StreamWithoutArgsUIPolicyTest, LogWithoutArguments) {
       std::string("tabs.testMethod"), GURL(), args.get(), NULL);
   policy->ReadData(extension->id(), 0,
       base::Bind(StreamWithoutArgsUIPolicyTest::Arguments_Missing));
+  policy->Close();
 }
 
 }  // namespace extensions

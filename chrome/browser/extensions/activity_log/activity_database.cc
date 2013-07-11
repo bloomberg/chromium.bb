@@ -34,8 +34,9 @@ bool SortActionsByTime(const scoped_refptr<extensions::Action> a,
 
 namespace extensions {
 
-ActivityDatabase::ActivityDatabase()
-    : testing_clock_(NULL),
+ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
+    : delegate_(delegate),
+      testing_clock_(NULL),
       valid_db_(false),
       already_closed_(false),
       did_init_(false) {
@@ -76,16 +77,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
 
   db_.Preload();
 
-  // Create the DOMAction database.
-  if (!DOMAction::InitializeTable(&db_))
-    return LogInitFailure();
-
-  // Create the APIAction database.
-  if (!APIAction::InitializeTable(&db_))
-    return LogInitFailure();
-
-  // Create the BlockedAction database.
-  if (!BlockedAction::InitializeTable(&db_))
+  if (!delegate_->OnDatabaseInit(&db_))
     return LogInitFailure();
 
   sql::InitStatus stat = committer.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
@@ -221,6 +213,9 @@ void ActivityDatabase::Close() {
   }
   valid_db_ = false;
   already_closed_ = true;
+  // Call DatabaseCloseCallback() just before deleting the ActivityDatabase
+  // itself--these two objects should have the same lifetime.
+  delegate_->OnDatabaseClose();
   delete this;
 }
 

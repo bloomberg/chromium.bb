@@ -185,7 +185,10 @@ class ActivityLog : public BrowserContextKeyedService,
   scoped_refptr<ObserverList> observers_;
 
   // The policy object takes care of data summarization, compression, and
-  // logging
+  // logging.  The policy object is owned by the ActivityLog, but this cannot
+  // be a scoped_ptr since some cleanup work must happen on the database
+  // thread.  Calling policy_->Close() will free the object; see the comments
+  // on the ActivityDatabase class for full details.
   extensions::ActivityLogPolicy* policy_;
 
   // TODO(dbabic,felt) change this into a list of policy types later.

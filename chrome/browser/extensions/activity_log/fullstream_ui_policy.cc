@@ -43,13 +43,28 @@ namespace extensions {
 
 FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
     : ActivityLogPolicy(profile) {
-  db_ = new ActivityDatabase();
+  db_ = new ActivityDatabase(this);
   FilePath database_name = profile_base_path_.Append(
       chrome::kExtensionActivityLogFilename);
   ScheduleAndForget(db_, &ActivityDatabase::Init, database_name);
 }
 
-FullStreamUIPolicy::~FullStreamUIPolicy() {
+bool FullStreamUIPolicy::OnDatabaseInit(sql::Connection* db) {
+  if (!DOMAction::InitializeTable(db))
+    return false;
+  if (!APIAction::InitializeTable(db))
+    return false;
+  if (!BlockedAction::InitializeTable(db))
+    return false;
+
+  return true;
+}
+
+void FullStreamUIPolicy::OnDatabaseClose() {
+  delete this;
+}
+
+void FullStreamUIPolicy::Close() {
   // The policy object should have never been created if there's no DB thread.
   DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::DB));
   ScheduleAndForget(db_, &ActivityDatabase::Close);
@@ -68,11 +83,6 @@ void FullStreamUIPolicy::ReadData(
       base::Bind(&ActivityDatabase::GetActions, Unretained(db_),
                  extension_id, day),
       callback);
-}
-
-void FullStreamUIPolicy::SetSaveStateOnRequestOnly() {
-  ScheduleAndForget(db_, &ActivityDatabase::SetBatchModeForTesting, false);
-  ActivityLogPolicy::SetSaveStateOnRequestOnly();
 }
 
 std::string FullStreamUIPolicy::GetKey(ActivityLogPolicy::KeyType key_ty) const

@@ -27,17 +27,70 @@ class FilePath;
 
 namespace extensions {
 
-// Encapsulates the SQL connection for the activity log database.
-// This class holds the database connection and has methods for writing.
-// All of the methods except constructor need to be
-// called on the DB thread. For this reason, the ActivityLog calls Close from
-// its destructor instead of destructing its ActivityDatabase object.
+// Encapsulates the SQL connection for the activity log database.  This class
+// holds the database connection and has methods for writing.  All of the
+// methods except the constructor need to be called on the DB thread.
+//
+// Object ownership and lifetime is a bit complicated for ActivityLog,
+// ActivityLogPolicy, and ActivityDatabase:
+//
+//    ActivityLog ----> ActivityLogPolicy ----> ActivityDatabase
+//                         ^                               |
+//                         |                               |
+//                         \--(ActivityDatabase::Delegate)-/
+//
+// The ActivityLogPolicy object contains a pointer to the ActivityDatabase, and
+// the ActivityDatabase contains a pointer back to the ActivityLogPolicy object
+// (as an instance of ActivityDatabase::Delegate).
+//
+// Since some cleanup must happen on the database thread, deletion should occur
+// as follows:
+//   1. ActivityLog calls ActivityLogPolicy::Close()
+//   2. ActivityLogPolicy should call ActivityDatabase::Close() on the database
+//      thread.
+//   3. ActivityDatabase::Close() shuts down the database, then calls
+//      ActivityDatabase::Delegate::OnDatabaseClose().
+//   4. ActivityDatabase::Delegate::OnDatabaseClose() should delete the
+//      ActivityLogPolicy object.
+//   5. ActivityDatabase::Close() finishes running by deleting the
+//      ActivityDatabase object.
+//
+// (This assumes the common case that the ActivityLogPolicy uses an
+// ActivityDatabase and implements the ActivityDatabase::Delegate interface.
+// It is also possible for an ActivityLogPolicy to not use a database at all,
+// in which case ActivityLogPolicy::Close() should directly delete itself.)
 class ActivityDatabase {
  public:
-  // Need to call Init to actually use the ActivityDatabase.
-  ActivityDatabase();
+  // Interface defining calls that the ActivityDatabase can make into a
+  // ActivityLogPolicy instance to implement policy-specific behavior.  Methods
+  // are always invoked on the database thread.  Classes other than
+  // ActivityDatabase should not call these methods.
+  class Delegate {
+   protected:
+    friend class ActivityDatabase;
 
-  // Opens the DB and creates tables as necessary.
+    // A Delegate is never directly deleted; it should instead delete itself
+    // after any final cleanup when OnDatabaseClose() is invoked.
+    virtual ~Delegate() {}
+
+    // Initializes the database schema; this gives a policy a chance to create
+    // or update database tables as needed.  Should return true on success.
+    virtual bool OnDatabaseInit(sql::Connection* db) = 0;
+
+    // Called by ActivityDatabase just before the ActivityDatabase object is
+    // deleted.  The database will make no further callbacks after invoking
+    // this method, so it is an appropriate time for the policy to delete
+    // itself.
+    virtual void OnDatabaseClose() = 0;
+  };
+
+  // Need to call Init to actually use the ActivityDatabase.  The Delegate
+  // provides hooks for an ActivityLogPolicy to control the database schema and
+  // reads/writes.
+  explicit ActivityDatabase(Delegate* delegate);
+
+  // Opens the DB.  This invokes OnDatabaseInit in the delegate to create or
+  // update the database schema if needed.
   void Init(const base::FilePath& db_name);
 
   // The ActivityLog should call this to kill the ActivityDatabase.
@@ -99,6 +152,10 @@ class ActivityDatabase {
 
   // For unit testing only.
   void RecordBatchedActionsWhileTesting();
+
+  // A reference a Delegate for policy-specific database behavior.  See the
+  // top-level comment for ActivityDatabase for comments on cleanup.
+  Delegate* delegate_;
 
   base::Clock* testing_clock_;
   sql::Connection db_;

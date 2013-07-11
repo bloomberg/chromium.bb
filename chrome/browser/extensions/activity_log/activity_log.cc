@@ -132,7 +132,17 @@ ActivityLogFactory::~ActivityLogFactory() {
 void ActivityLog::SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type) {
   // Can't use IsLogEnabled() here because this is called from inside Init.
   if (policy_type != policy_type_ && enabled_) {
-    delete policy_;
+    // Deleting the old policy takes place asynchronously, on the database
+    // thread.  Initializing a new policy below similarly happens
+    // asynchronously.  Since the two operations are both queued for the
+    // database, the queue ordering should ensure that the deletion completes
+    // before database initialization occurs.
+    //
+    // However, changing policies at runtime is still not recommended, and
+    // likely only should be done for unit tests.
+    if (policy_)
+      policy_->Close();
+
     switch (policy_type) {
       case ActivityLogPolicy::POLICY_FULLSTREAM:
         policy_ = new FullStreamUIPolicy(profile_);
@@ -207,8 +217,8 @@ void ActivityLog::Shutdown() {
 }
 
 ActivityLog::~ActivityLog() {
-  // TODO(felt): Turn policy_ into a scoped_ptr.
-  delete policy_;
+  if (policy_)
+    policy_->Close();
 }
 
 bool ActivityLog::IsLogEnabled() {

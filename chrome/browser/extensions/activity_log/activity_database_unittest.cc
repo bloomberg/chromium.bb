@@ -39,6 +39,28 @@ using content::BrowserThread;
 
 namespace extensions {
 
+// A dummy implementation of ActivityDatabase::Delegate, sufficient for
+// the unit tests.
+class ActivityDatabaseTestPolicy : public ActivityDatabase::Delegate {
+ public:
+  ActivityDatabaseTestPolicy() {};
+
+ protected:
+  virtual bool OnDatabaseInit(sql::Connection* db) OVERRIDE {
+    if (!DOMAction::InitializeTable(db)) return false;
+    if (!APIAction::InitializeTable(db)) return false;
+    if (!BlockedAction::InitializeTable(db)) return false;
+    return true;
+  }
+
+  // Called by ActivityDatabase just before the ActivityDatabase object is
+  // deleted.  The database will make no further callbacks after invoking this
+  // method, so it is an appropriate time for the policy to delete itself.
+  virtual void OnDatabaseClose() OVERRIDE {
+    delete this;
+  }
+};
+
 class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
@@ -56,6 +78,15 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
     test_user_manager_.reset();
 #endif
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  // Creates a test database and initializes the table schema.
+  ActivityDatabase* OpenDatabase(const base::FilePath& db_file) const {
+    ActivityDatabase* activity_db =
+        new ActivityDatabase(new ActivityDatabaseTestPolicy());
+    activity_db->Init(db_file);
+    CHECK(activity_db->is_db_valid());
+    return activity_db;
   }
 
  private:
@@ -77,9 +108,7 @@ TEST_F(ActivityDatabaseTest, Init) {
   db_file = temp_dir.path().AppendASCII("ActivityInit.db");
   base::Delete(db_file, false);
 
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->is_db_valid());
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->Close();
 
   sql::Connection db;
@@ -98,10 +127,8 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
   base::Delete(db_file, false);
 
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(false);
-  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> action = new APIAction(
       "punky",
       base::Time::Now(),
@@ -134,10 +161,8 @@ TEST_F(ActivityDatabaseTest, RecordDOMAction) {
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
   base::Delete(db_file, false);
 
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(false);
-  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<DOMAction> action = new DOMAction(
       "punky",
       base::Time::Now(),
@@ -179,9 +204,7 @@ TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
   base::Delete(db_file, false);
 
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->is_db_valid());
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   scoped_refptr<BlockedAction> action = new BlockedAction(
       "punky",
       base::Time::Now(),
@@ -222,9 +245,7 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
                     base::TimeDelta::FromHours(12));
 
   // Record some actions
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->is_db_valid());
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
@@ -282,9 +303,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
                     base::TimeDelta::FromHours(12));
 
   // Record some actions
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->is_db_valid());
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromDays(3)
@@ -352,11 +371,9 @@ TEST_F(ActivityDatabaseTest, BatchModeOff) {
                     base::TimeDelta::FromHours(12));
 
   // Record some actions
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(false);
   activity_db->SetClockForTesting(&mock_clock);
-  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
@@ -386,11 +403,9 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
                     base::TimeDelta::FromHours(11));
 
   // Record some actions
-  ActivityDatabase* activity_db = new ActivityDatabase();
-  activity_db->Init(db_file);
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(true);
   activity_db->SetClockForTesting(&mock_clock);
-  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
@@ -423,7 +438,8 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
   base::Delete(db_file, false);
 
-  ActivityDatabase* activity_db = new ActivityDatabase();
+  ActivityDatabase* activity_db =
+      new ActivityDatabase(new ActivityDatabaseTestPolicy());
   scoped_refptr<APIAction> action = new APIAction(
       "punky",
       base::Time::Now(),
