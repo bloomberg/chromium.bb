@@ -80,6 +80,10 @@ const char* kAtomsToCache[] = {
   "_NET_WM_STATE_MAXIMIZED_HORZ",
   "_NET_WM_STATE_MAXIMIZED_VERT",
   "_NET_WM_WINDOW_OPACITY",
+  "_NET_WM_WINDOW_TYPE",
+  "_NET_WM_WINDOW_TYPE_MENU",
+  "_NET_WM_WINDOW_TYPE_NORMAL",
+  "_NET_WM_WINDOW_TYPE_TOOLTIP",
   "XdndActionAsk",
   "XdndActionCopy"
   "XdndActionLink",
@@ -150,9 +154,19 @@ void DesktopRootWindowHostX11::InitX11Window(
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
 
-  if (params.type == Widget::InitParams::TYPE_MENU) {
-    swa.override_redirect = True;
-    attribute_mask |= CWOverrideRedirect;
+  ::Atom window_type;
+  switch (params.type) {
+    case Widget::InitParams::TYPE_MENU:
+      swa.override_redirect = True;
+      attribute_mask |= CWOverrideRedirect;
+      window_type = atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_MENU");
+      break;
+    case Widget::InitParams::TYPE_TOOLTIP:
+      window_type = atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_TOOLTIP");
+      break;
+    default:
+      window_type = atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_NORMAL");
+      break;
   }
 
   xwindow_ = XCreateWindow(
@@ -203,6 +217,14 @@ void DesktopRootWindowHostX11::InitX11Window(
                   32,
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&pid), 1);
+
+  XChangeProperty(xdisplay_,
+                  xwindow_,
+                  atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE"),
+                  XA_ATOM,
+                  32,
+                  PropModeReplace,
+                  reinterpret_cast<unsigned char*>(&window_type), 1);
 }
 
 // static
