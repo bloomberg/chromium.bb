@@ -55,7 +55,7 @@ static const int k640WebMFileDurationMs = 2763;
 static const int k640IsoFileDurationMs = 2737;
 static const int k640IsoCencFileDurationMs = 2736;
 static const int k1280IsoFileDurationMs = 2736;
-static const int kVP9WebMFileDurationMs = 2736;
+static const int kVP9WebMFileDurationMs = 2735;
 static const int kVP8AWebMFileDurationMs = 2700;
 
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
@@ -453,10 +453,9 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource) {
   Stop();
 }
 
-// TODO(fgalligan): Enable after new vp9 files are landed. crbug.com/180280
 TEST_F(PipelineIntegrationTest,
-       DISABLED_BasicPlayback_MediaSource_VideoOnly_VP9_WebM) {
-  MockMediaSource source("bear-vp9.webm", kWebMVP9, 19678);
+       BasicPlayback_MediaSource_VideoOnly_VP9_WebM) {
+  MockMediaSource source("bear-vp9.webm", kWebMVP9, 32393);
   StartPipelineWithMediaSource(&source);
   source.EndOfStream();
 
@@ -915,8 +914,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
 }
 
 // Verify that VP9 video in WebM containers can be played back.
-// TODO(fgalligan): Enable after new vp9 files are landed. crbug.com/180280
-TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VideoOnly_VP9_WebM) {
+TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9.webm"),
                     PIPELINE_OK));
   Play();
@@ -925,8 +923,7 @@ TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VideoOnly_VP9_WebM) {
 
 // Verify that VP9 video and Opus audio in the same WebM container can be played
 // back.
-// TODO(fgalligan): Enable after new vp9 files are landed. crbug.com/180280
-TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VP9_Opus_WebM) {
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Opus_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9-opus.webm"),
                     PIPELINE_OK));
   Play();
