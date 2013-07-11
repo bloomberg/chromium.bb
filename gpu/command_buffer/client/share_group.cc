@@ -194,7 +194,7 @@ class ThreadSafeIdHandlerWrapper : public IdHandlerInterface {
   }
 
  private:
-   IdHandlerInterface* id_handler_;
+   scoped_ptr<IdHandlerInterface> id_handler_;
    Lock lock_;
 };
 
