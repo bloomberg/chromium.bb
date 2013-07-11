@@ -46,7 +46,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
       const base::Closure& task) OVERRIDE;
   virtual ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents()
       OVERRIDE;
-  virtual void DisconnectProcessor() OVERRIDE;
+  virtual void DisconnectProcessor(ChangeProcessor* processor) OVERRIDE;
 
  private:
   virtual ~TypedUrlDataTypeController();

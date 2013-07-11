@@ -137,8 +137,9 @@ TypedUrlDataTypeController::CreateSyncComponents() {
       this);
 }
 
-void TypedUrlDataTypeController::DisconnectProcessor() {
-  static_cast<TypedUrlChangeProcessor*>(change_processor())->Disconnect();
+void TypedUrlDataTypeController::DisconnectProcessor(
+    ChangeProcessor* processor) {
+  static_cast<TypedUrlChangeProcessor*>(processor)->Disconnect();
 }
 
 TypedUrlDataTypeController::~TypedUrlDataTypeController() {}

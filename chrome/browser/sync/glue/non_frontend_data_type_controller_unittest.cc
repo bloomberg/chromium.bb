@@ -98,8 +98,9 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
       DataTypeController::StartResult result) OVERRIDE {
     mock_->RecordStartFailure(result);
   }
-  virtual void DisconnectProcessor() OVERRIDE{
-    mock_->DisconnectProcessor();
+  virtual void DisconnectProcessor(
+      browser_sync::ChangeProcessor* processor) OVERRIDE{
+    mock_->DisconnectProcessor(processor);
   }
 
  private:
@@ -163,7 +164,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(*dtc_mock_.get(), DisconnectProcessor());
+    EXPECT_CALL(*dtc_mock_.get(), DisconnectProcessor(_));
     EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels()).
                 WillOnce(Return(syncer::SyncError()));

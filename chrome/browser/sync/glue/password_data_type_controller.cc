@@ -65,8 +65,9 @@ PasswordDataTypeController::CreateSyncComponents() {
       this);
 }
 
-void PasswordDataTypeController::DisconnectProcessor() {
-  static_cast<PasswordChangeProcessor*>(change_processor())->Disconnect();
+void PasswordDataTypeController::DisconnectProcessor(
+    ChangeProcessor* processor) {
+  static_cast<PasswordChangeProcessor*>(processor)->Disconnect();
 }
 
 }  // namespace browser_sync

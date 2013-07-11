@@ -119,7 +119,7 @@ class NonFrontendDataTypeController : public DataTypeController {
 
   // Called on UI thread during shutdown to effectively disable processing
   // any changes.
-  virtual void DisconnectProcessor() = 0;
+  virtual void DisconnectProcessor(ChangeProcessor* processor) = 0;
 
   // Start up complete, update the state and invoke the callback.
   // Note: this is performed on the datatype's thread.

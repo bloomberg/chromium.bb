@@ -37,7 +37,7 @@ class PasswordDataTypeController : public NonFrontendDataTypeController {
   virtual bool StartModels() OVERRIDE;
   virtual ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents()
       OVERRIDE;
-  virtual void DisconnectProcessor() OVERRIDE;
+  virtual void DisconnectProcessor(ChangeProcessor* processor) OVERRIDE;
 
  private:
   scoped_refptr<PasswordStore> password_store_;

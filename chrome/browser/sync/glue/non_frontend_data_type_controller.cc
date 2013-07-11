@@ -120,6 +120,7 @@ void NonFrontendDataTypeController::BackendComponentsContainer::Associate() {
 
   // Destroy processor/associator on backend on failure.
   if (!succeeded) {
+    base::AutoLock al(controller_lock_);
     model_associator_->DisassociateModels();
     change_processor_.reset();
     model_associator_.reset();
@@ -136,7 +137,7 @@ void NonFrontendDataTypeController::BackendComponentsContainer::Disconnect() {
   CHECK(controller_);
 
   if (change_processor_)
-    controller_->DisconnectProcessor();
+    controller_->DisconnectProcessor(change_processor_.get());
   if (model_associator_)
     model_associator_->AbortAssociation();
 
