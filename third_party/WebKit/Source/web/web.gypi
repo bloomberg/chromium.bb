@@ -226,6 +226,7 @@
       'WebScopedMicrotaskSuppression.cpp',
       'WebScopedUserGesture.cpp',
       'WebScopedUserGesture.cpp',
+      'WebScriptBindings.cpp',
       'WebScriptController.cpp',
       'WebScrollbarThemePainter.cpp',
       'WebSearchableFormData.cpp',
