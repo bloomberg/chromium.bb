@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/webstore_installer.h"
 #include "chrome/browser/ui/app_list/search/webstore_result_icon_source.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/chromium_strings.h"
@@ -36,8 +37,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
       icon_url_(icon_url),
       weak_factory_(this),
       controller_(controller),
-      install_tracker_(NULL),
-      launch_after_install_(false) {
+      install_tracker_(NULL) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
   set_relevance(0.0);  // What is the right value to use?
 
@@ -65,16 +65,13 @@ WebstoreResult::~WebstoreResult() {
 }
 
 void WebstoreResult::Open(int event_flags) {
-  const extensions::Extension* extension =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()
-          ->GetInstalledExtension(app_id_);
-  if (extension) {
-    controller_->ActivateApp(profile_, extension, event_flags);
-    return;
-  }
-
-  launch_after_install_ = true;
-  StartInstall();
+  const GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
+                       app_id_);
+  chrome::NavigateParams params(profile_,
+                                store_url,
+                                content::PAGE_TRANSITION_LINK);
+  params.disposition = ui::DispositionFromEventFlags(event_flags);
+  chrome::Navigate(&params);
 }
 
 void WebstoreResult::InvokeAction(int action_index, int event_flags) {
@@ -186,11 +183,6 @@ void WebstoreResult::OnExtensionInstalled(
 
   SetIsInstalling(false);
   UpdateActions();
-
-  if (launch_after_install_) {
-    launch_after_install_ = false;
-    Open(ui::EF_NONE);
-  }
 }
 
 void WebstoreResult::OnExtensionUninstalled(
