@@ -97,6 +97,11 @@ void AddDependenciesToGraphNode(
   }
 }
 
+// Only used as std::find_if predicate for DCHECKs.
+bool WasCanceled(const internal::RasterWorkerPoolTask* task) {
+  return task->WasCanceled();
+}
+
 }  // namespace
 
 PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
@@ -198,6 +203,14 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
     internal::RasterWorkerPoolTask* task = it->first;
     if (IsRasterTaskRequiredForActivation(task))
       tasks_required_for_activation_.insert(task);
+  }
+
+  // |tasks_required_for_activation_| contains all tasks that need to
+  // complete before we can send a "ready to activate" signal. Tasks
+  // that have already completed should not be part of this set.
+  for (TaskDeque::const_iterator it = completed_tasks_.begin();
+       it != completed_tasks_.end(); ++it) {
+    tasks_required_for_activation_.erase(*it);
   }
 
   pixel_buffer_tasks_.swap(new_pixel_buffer_tasks);
@@ -409,10 +422,16 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
     ScheduleCheckForCompletedRasterTasks();
 
   // Generate client notifications.
-  if (will_notify_client_that_no_tasks_required_for_activation_are_pending)
+  if (will_notify_client_that_no_tasks_required_for_activation_are_pending) {
+    DCHECK(std::find_if(raster_tasks_required_for_activation().begin(),
+                        raster_tasks_required_for_activation().end(),
+                        WasCanceled) ==
+          raster_tasks_required_for_activation().end());
     client()->DidFinishedRunningTasksRequiredForActivation();
+  }
   if (will_notify_client_that_no_tasks_are_pending) {
     TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
+    DCHECK(!HasPendingTasksRequiredForActivation());
     client()->DidFinishedRunningTasks();
   }
 }
@@ -582,6 +601,20 @@ void PixelBufferRasterWorkerPool::OnRasterTaskCompleted(
 
   if (!needs_upload) {
     resource_provider()->ReleasePixelBuffer(task->resource()->id());
+
+    if (was_canceled) {
+      // When priorites change, a raster task can be canceled as a result of
+      // no longer being of high enough priority to fit in our throttled
+      // raster task budget. The task has not yet completed in this case.
+      RasterTaskVector::const_iterator it = std::find(raster_tasks().begin(),
+                                                      raster_tasks().end(),
+                                                      task);
+      if (it != raster_tasks().end()) {
+        pixel_buffer_tasks_[task.get()] = NULL;
+        return;
+      }
+    }
+
     task->DidRun(was_canceled);
     DCHECK(std::find(completed_tasks_.begin(),
                      completed_tasks_.end(),
@@ -590,6 +623,8 @@ void PixelBufferRasterWorkerPool::OnRasterTaskCompleted(
     tasks_required_for_activation_.erase(task);
     return;
   }
+
+  DCHECK(!was_canceled);
 
   resource_provider()->BeginSetPixels(task->resource()->id());
   has_performed_uploads_since_last_flush_ = true;

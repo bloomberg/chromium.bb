@@ -209,6 +209,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
   typedef std::vector<scoped_refptr<internal::RasterWorkerPoolTask> >
       RasterTaskVector;
+  typedef base::hash_set<internal::RasterWorkerPoolTask*> RasterTaskSet;
   typedef internal::RasterWorkerPoolTask* TaskMapKey;
   typedef base::hash_map<TaskMapKey,
                          scoped_refptr<internal::WorkerPoolTask> > TaskMap;
@@ -224,8 +225,9 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
   RasterWorkerPoolClient* client() const { return client_; }
   ResourceProvider* resource_provider() const { return resource_provider_; }
-  const RasterTask::Queue::TaskVector& raster_tasks() const {
-    return raster_tasks_;
+  const RasterTaskVector& raster_tasks() const { return raster_tasks_; }
+  const RasterTaskSet& raster_tasks_required_for_activation() const {
+    return raster_tasks_required_for_activation_;
   }
   void set_raster_finished_task(
       scoped_refptr<internal::WorkerPoolTask> raster_finished_task) {
