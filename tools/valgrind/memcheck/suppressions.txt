@@ -7421,10 +7421,3 @@
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
    fun:ChromeMain
 }
-{
-   bug_258917
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net12CertVerifier13CreateDefaultEv
-   fun:_ZN3net4test21QuicStreamFactoryTest*
-}

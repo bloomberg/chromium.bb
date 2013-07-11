@@ -123,7 +123,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   QuicStreamFactory factory_;
   HostPortProxyPair host_port_proxy_pair_;
   bool is_https_;
-  CertVerifier* cert_verifier_;
+  scoped_ptr<CertVerifier> cert_verifier_;
   BoundNetLog net_log_;
   TestCompletionCallback callback_;
 };
@@ -143,7 +143,7 @@ TEST_F(QuicStreamFactoryTest, Create) {
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_, net_log_,
+                                            cert_verifier_.get(), net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -158,7 +158,7 @@ TEST_F(QuicStreamFactoryTest, Create) {
   // in streams on different sessions.
   QuicStreamRequest request2(&factory_);
   EXPECT_EQ(OK, request2.Request(host_port_proxy_pair_, is_https_,
-                                 cert_verifier_, net_log_,
+                                 cert_verifier_.get(), net_log_,
                                  callback_.callback()));
   stream = request2.ReleaseStream();  // Will reset stream 5.
   stream.reset();  // Will reset stream 7.
@@ -175,7 +175,7 @@ TEST_F(QuicStreamFactoryTest, CreateError) {
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_, net_log_,
+                                            cert_verifier_.get(), net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback_.WaitForResult());
@@ -193,7 +193,7 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
   {
     QuicStreamRequest request(&factory_);
     EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                              cert_verifier_, net_log_,
+                                              cert_verifier_.get(), net_log_,
                                               callback_.callback()));
   }
 
@@ -227,7 +227,7 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_, net_log_,
+                                            cert_verifier_.get(), net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -243,7 +243,7 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
 
   QuicStreamRequest request2(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
-                                             cert_verifier_, net_log_,
+                                             cert_verifier_.get(), net_log_,
                                              callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -273,7 +273,7 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
 
   QuicStreamRequest request(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
-                                            cert_verifier_, net_log_,
+                                            cert_verifier_.get(), net_log_,
                                             callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -289,7 +289,7 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
 
   QuicStreamRequest request2(&factory_);
   EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
-                                             cert_verifier_, net_log_,
+                                             cert_verifier_.get(), net_log_,
                                              callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
