@@ -1108,16 +1108,6 @@ void AutofillDialogViews::Show() {
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // On non-Aura Windows a standard accelerator gets registered that will
-  // navigate on a backspace. Override that here.
-  // TODO(abodenha): Remove this when no longer needed. See
-  // http://crbug.com/242584.
-  ui::Accelerator backspace(ui::VKEY_BACK, ui::EF_NONE);
-  focus_manager_->RegisterAccelerator(
-      backspace, ui::AcceleratorManager::kNormalPriority, this);
-#endif
-
   // Listen for size changes on the browser.
   views::Widget* browser_widget =
       views::Widget::GetTopLevelWidgetForNativeView(
@@ -1265,6 +1255,7 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
 
   sign_in_webview_->SetVisible(true);
+  sign_in_webview_->RequestFocus();
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
   return &sign_in_webview_->web_contents()->GetController();
@@ -1357,18 +1348,6 @@ void AutofillDialogViews::ActivateInput(const DetailInput& input) {
 
 gfx::Size AutofillDialogViews::GetSize() const {
   return GetWidget() ? GetWidget()->GetRootView()->size() : gfx::Size();
-}
-
-bool AutofillDialogViews::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  ui::KeyboardCode key = accelerator.key_code();
-  if (key == ui::VKEY_BACK)
-    return true;
-  return false;
-}
-
-bool AutofillDialogViews::CanHandleAccelerators() const {
-  return true;
 }
 
 gfx::Size AutofillDialogViews::GetPreferredSize() {
@@ -1464,11 +1443,6 @@ string16 AutofillDialogViews::GetWindowTitle() const {
 
 void AutofillDialogViews::WindowClosing() {
   focus_manager_->RemoveFocusChangeListener(this);
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // TODO(abodenha): Remove this when no longer needed. See
-  // http://crbug.com/242584.
-  focus_manager_->UnregisterAccelerators(this);
-#endif
 }
 
 void AutofillDialogViews::DeleteDelegate() {
