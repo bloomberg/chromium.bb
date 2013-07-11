@@ -8,8 +8,29 @@
 // http://msdn.microsoft.com/workshop/author/css/reference/attributes.asp
 //
 
-// high-priority property names have to be listed first, to simplify the check
-// for applying them first.
+// properties that generate animations must be listed first
+-webkit-animation
+-webkit-animation-delay
+-webkit-animation-direction
+-webkit-animation-duration
+-webkit-animation-fill-mode
+-webkit-animation-iteration-count
+-webkit-animation-name
+-webkit-animation-play-state
+-webkit-animation-timing-function
+-webkit-transition
+-webkit-transition-delay
+-webkit-transition-duration
+-webkit-transition-property
+-webkit-transition-timing-function
+transition
+transition-delay
+transition-duration
+transition-property
+transition-timing-function
+
+// next, high-priority properties (those on which other properties can depend)
+// must be listed
 color
 direction
 display
@@ -178,11 +199,6 @@ text-underline-style
 text-underline-width
 top
 touch-action
-transition
-transition-delay
-transition-duration
-transition-property
-transition-timing-function
 
 unicode-bidi
 unicode-range
@@ -196,15 +212,6 @@ word-break
 word-spacing
 word-wrap
 z-index
--webkit-animation
--webkit-animation-delay
--webkit-animation-direction
--webkit-animation-duration
--webkit-animation-fill-mode
--webkit-animation-iteration-count
--webkit-animation-name
--webkit-animation-play-state
--webkit-animation-timing-function
 -webkit-appearance
 -webkit-aspect-ratio
 -webkit-backface-visibility
@@ -388,11 +395,6 @@ order
 -webkit-transform-origin-y
 -webkit-transform-origin-z
 -webkit-transform-style
--webkit-transition
--webkit-transition-delay
--webkit-transition-duration
--webkit-transition-property
--webkit-transition-timing-function
 -webkit-user-drag
 -webkit-user-modify
 -webkit-user-select
