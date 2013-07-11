@@ -153,6 +153,7 @@ extern const char kEnableCloudPrintProxy[];
 extern const char kEnableComponentCloudPolicy[];
 extern const char kEnableContacts[];
 extern const char kEnableDesktopGuestMode[];
+extern const char kEnableDeviceDiscovery[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];

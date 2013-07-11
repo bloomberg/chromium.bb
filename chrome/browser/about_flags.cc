@@ -1513,6 +1513,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableResetProfileSettings)
   },
+  {
+    "enable-device-discovery",
+    IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_NAME,
+    IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableDeviceDiscovery)
+  },
 #if defined(OS_MACOSX)
   {
     "enable-app-list-shim",
