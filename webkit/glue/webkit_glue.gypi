@@ -84,67 +84,6 @@
       ],
     },
 
-    {
-      'target_name': 'glue_common',
-      'type': '<(component)',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'defines': [
-        'WEBKIT_COMMON_IMPLEMENTATION',
-      ],
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:base_i18n',
-        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
-        '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/url/url.gyp:url_lib',
-      ],
-
-      'sources': [
-        '../common/webkit_common_export.h',
-        '../common/webmenuitem.cc',
-        '../common/webmenuitem.h',
-        '../common/webpreferences.cc',
-        '../common/webpreferences.h',
-        'multipart_response_delegate.cc',
-        'multipart_response_delegate.h',
-        'weburlrequest_extradata_impl.cc',
-        'weburlrequest_extradata_impl.h',
-        'weburlresponse_extradata_impl.cc',
-        'weburlresponse_extradata_impl.h',
-      ],
-
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:gtk',
-          ],
-          'sources/': [['exclude', '_x11\\.cc$']],
-        }],
-        ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
-        }, {  # else: OS=="mac"
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
-        }],
-        ['OS!="win"', {
-          'sources/': [['exclude', '_win\\.cc$']],
-        }, {  # else: OS=="win"
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4800, 4267 ],
-          'sources/': [['exclude', '_posix\\.cc$']],
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-        }],
-      ],
-    },
 
     {
       'target_name': 'glue',
@@ -174,13 +113,13 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
+        '<(DEPTH)/webkit/glue/webkit_glue_common.gyp:glue_common',
         '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/storage_browser.gyp:webkit_storage_browser',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
-        'glue_common',
         'plugins',
         'webkit_media',
       ],

@@ -27,11 +27,11 @@
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
+        '../webkit/glue/webkit_glue_common.gyp:glue_common',
+        '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
         '../webkit/support/webkit_support.gyp:glue',
-        '../webkit/support/webkit_support.gyp:glue_common',
         '../webkit/support/webkit_support.gyp:plugins',
         '../webkit/support/webkit_support.gyp:webkit_media',
-        '../webkit/support/webkit_support.gyp:webkit_renderer',
         '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
