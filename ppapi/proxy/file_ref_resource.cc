@@ -60,9 +60,9 @@ PP_Resource FileRefResource::CreateFileRef(
     const FileRef_CreateInfo& create_info) {
   // If we have a valid file_system resource, ensure that its type matches that
   // of the fs_type parameter.
-  if (create_info.pending_host_resource_id != 0) {
+  if (create_info.file_system_plugin_resource != 0) {
     thunk::EnterResourceNoLock<thunk::PPB_FileSystem_API> enter(
-        create_info.pending_host_resource_id, true);
+        create_info.file_system_plugin_resource, true);
     if (enter.failed())
       return 0;
     if (enter.object()->GetType() != create_info.file_system_type) {
