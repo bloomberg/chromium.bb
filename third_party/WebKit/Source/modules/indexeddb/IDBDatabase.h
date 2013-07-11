@@ -72,6 +72,7 @@ public:
     void close();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange);
 

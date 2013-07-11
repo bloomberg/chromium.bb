@@ -32,6 +32,7 @@
     readonly attribute DOMStringList objectStoreNames;
 
     attribute EventListener onabort;
+    attribute EventListener onclose;
     attribute EventListener onerror;
     attribute EventListener onversionchange;
 

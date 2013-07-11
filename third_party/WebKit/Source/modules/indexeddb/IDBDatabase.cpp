@@ -282,6 +282,7 @@ void IDBDatabase::forceClose()
     for (TransactionMap::const_iterator::Values it = m_transactions.begin().values(), end = m_transactions.end().values(); it != end; ++it)
         (*it)->abort(IGNORE_EXCEPTION_STATE);
     this->close();
+    enqueueEvent(Event::create(eventNames().closeEvent, false, false));
 }
 
 void IDBDatabase::close()
@@ -343,7 +344,7 @@ void IDBDatabase::enqueueEvent(PassRefPtr<Event> event)
 bool IDBDatabase::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
-    ASSERT(event->type() == eventNames().versionchangeEvent);
+    ASSERT(event->type() == eventNames().versionchangeEvent || event->type() == eventNames().closeEvent);
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
         if (m_enqueuedEvents[i].get() == event.get())
             m_enqueuedEvents.remove(i);
