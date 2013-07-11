@@ -350,12 +350,13 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 {
     TRACE_EVENT_BEGIN0("v8", "minorGC");
     if (isMainThread()) {
-        TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "MinorGC");
-        v8::HandleScope scope;
-        MinorGCWrapperVisitor visitor(isolate);
-        v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
-        visitor.notifyFinished();
-
+        {
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "MinorGC");
+            v8::HandleScope scope;
+            MinorGCWrapperVisitor visitor(isolate);
+            v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
+            visitor.notifyFinished();
+        }
         V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
         TRACE_EVENT_SET_SAMPLING_STATE("V8", "MinorGC");
     }
@@ -367,12 +368,13 @@ void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isol
     v8::HandleScope scope;
     TRACE_EVENT_BEGIN0("v8", "majorGC");
     if (isMainThread()) {
-        TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "MajorGC");
-        MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
-        v8::V8::VisitHandlesWithClassIds(&visitor);
-        visitor.notifyFinished();
-        V8PerIsolateData::from(isolate)->stringCache()->clearOnGC();
-
+        {
+            TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "MajorGC");
+            MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
+            v8::V8::VisitHandlesWithClassIds(&visitor);
+            visitor.notifyFinished();
+            V8PerIsolateData::from(isolate)->stringCache()->clearOnGC();
+        }
         V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
         TRACE_EVENT_SET_SAMPLING_STATE("V8", "MajorGC");
     } else {
