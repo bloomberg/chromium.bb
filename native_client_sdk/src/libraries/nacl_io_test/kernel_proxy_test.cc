@@ -38,7 +38,13 @@ namespace {
 
 class KernelProxyFriend : public KernelProxy {
  public:
-  Mount* RootMount() { return mounts_["/"].get(); }
+  Mount* RootMount() {
+    ScopedMount mnt;
+    Path path;
+
+    AcquireMountAndRelPath("/", &mnt, &path);
+    return mnt.get();
+  }
 };
 
 class KernelProxyTest : public ::testing::Test {

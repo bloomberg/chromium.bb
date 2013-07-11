@@ -14,13 +14,15 @@
 #include "nacl_io/error.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount.h"
+#include "nacl_io/mount_node.h"
 #include "nacl_io/path.h"
 
 
-// KernelObject provides basic functionality for threadsafe
-// access to kernel objects such as file descriptors and
-// file handles.  It also provides access to the CWD for
-// path resolution.
+// KernelObject provides basic functionality for threadsafe access to kernel
+// objects such as the CWD, mount points, file descriptors and file handles.
+// All Kernel locks are private to ensure the lock order.
+//
+// All calls are assumed to be a relative path.
 class KernelObject {
  public:
   typedef std::vector<ScopedKernelHandle> HandleMap_t;
@@ -29,11 +31,26 @@ class KernelObject {
   KernelObject();
   virtual ~KernelObject();
 
-  // Find the mount for the given path, and acquires it.
-  // Assumes |out_mount| and |out_path| are non-NULL.
-  Error AcquireMountAndPath(const std::string& relpath,
+  // Attach the given Mount object at the specified path.
+  Error AttachMountAtPath(const ScopedMount& mnt, const std::string& path);
+
+  // Unmap the Mount object from the specified path and release it.
+  Error DetachMountAtPath(const std::string& path);
+
+  // Find the mount for the given path, and acquires it and return a
+  // path relative to the mount.
+  // Assumes |out_mount| and |rel_path| are non-NULL.
+  Error AcquireMountAndRelPath(const std::string& path,
+                               ScopedMount* out_mount,
+                               Path* rel_path);
+
+  // Find the mount and node for the given path, acquiring/creating it as
+  // specified by the |oflags|.
+  // Assumes |out_mount| and |out_node| are non-NULL.
+  Error AcquireMountAndNode(const std::string& path,
+                            int oflags,
                             ScopedMount* out_mount,
-                            Path* out_path);
+                            ScopedMountNode* out_node);
 
   // Convert from FD to KernelHandle, and acquire the handle.
   // Assumes |out_handle| is non-NULL.
@@ -48,20 +65,27 @@ class KernelObject {
   void FreeAndReassignFD(int fd, const ScopedKernelHandle& handle);
   void FreeFD(int fd);
 
- protected:
-  Path GetAbsPathLocked(const std::string& path);
+  // Returns or sets CWD
+  std::string GetCWD();
+  Error SetCWD(const std::string& path);
 
-  std::vector<int> free_fds_;
+  // Returns parts of the absolute path for the given relative path
+  Path GetAbsParts(const std::string& path);
+
+private:
   std::string cwd_;
-
+  std::vector<int> free_fds_;
   HandleMap_t handle_map_;
   MountMap_t mounts_;
 
-  // Kernel lock protects kernel wide resources such as the mount table...
-  pthread_mutex_t kernel_lock_;
+  // Lock to protect free_fds_ and handle_map_.
+  pthread_mutex_t handle_lock_;
 
-  // Process lock protects process wide resources such as CWD, file handles...
-  pthread_mutex_t process_lock_;
+  // Lock to protect handle_map_.
+  pthread_mutex_t mount_lock_;
+
+  // Lock to protect cwd_.
+  pthread_mutex_t cwd_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(KernelObject);
 };

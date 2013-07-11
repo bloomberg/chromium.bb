@@ -34,7 +34,6 @@ class KernelHandle : public RefObject {
   size_t offs_;
 
  private:
-  friend class KernelObject;
   friend class KernelProxy;
   DISALLOW_COPY_AND_ASSIGN(KernelHandle);
 };

@@ -23,38 +23,66 @@
 #include "sdk_util/scoped_ref.h"
 
 KernelObject::KernelObject() {
-  pthread_mutex_init(&kernel_lock_, NULL);
-  pthread_mutex_init(&process_lock_, NULL);
+  pthread_mutex_init(&mount_lock_, NULL);
+  pthread_mutex_init(&handle_lock_, NULL);
+  pthread_mutex_init(&cwd_lock_,NULL);
+
+  cwd_ = "/";
 }
 
 KernelObject::~KernelObject() {
-  pthread_mutex_destroy(&process_lock_);
-  pthread_mutex_destroy(&kernel_lock_);
+  pthread_mutex_destroy(&cwd_lock_);
+  pthread_mutex_destroy(&handle_lock_);
+  pthread_mutex_destroy(&mount_lock_);
+}
+
+Error KernelObject::AttachMountAtPath(const ScopedMount& mnt,
+                                const std::string& path) {
+  std::string abs_path = GetAbsParts(path).Join();
+
+  AutoLock lock(&mount_lock_);
+  if (mounts_.find(abs_path) != mounts_.end())
+    return EBUSY;
+
+  mounts_[abs_path] = mnt;
+  return 0;
+}
+
+Error KernelObject::DetachMountAtPath(const std::string& path) {
+  std::string abs_path = GetAbsParts(path).Join();
+
+  AutoLock lock(&mount_lock_);
+  MountMap_t::iterator it = mounts_.find(abs_path);
+  if (mounts_.end() == it)
+    return EINVAL;
+
+  // It is only legal to unmount if there are no open references
+  if (it->second->RefCount() != 1)
+    return EBUSY;
+
+  mounts_.erase(it);
+  return 0;
 }
 
 // Uses longest prefix to find the mount for the give path, then
 // acquires the mount and returns it with a relative path.
-Error KernelObject::AcquireMountAndPath(const std::string& relpath,
-                                        ScopedMount* out_mount,
-                                        Path* out_path) {
+Error KernelObject::AcquireMountAndRelPath(const std::string& path,
+                                           ScopedMount* out_mount,
+                                           Path* rel_parts) {
+  Path abs_parts = GetAbsParts(path);
+
   out_mount->reset(NULL);
+  *rel_parts = Path();
 
-  *out_path = Path();
-  Path abs_path;
-  {
-    AutoLock lock(&process_lock_);
-    abs_path = GetAbsPathLocked(relpath);
-  }
-
-  AutoLock lock(&kernel_lock_);
+  AutoLock lock(&mount_lock_);
 
   // Find longest prefix
-  size_t max = abs_path.Size();
-  for (size_t len = 0; len < abs_path.Size(); len++) {
-    MountMap_t::iterator it = mounts_.find(abs_path.Range(0, max - len));
+  size_t max = abs_parts.Size();
+  for (size_t len = 0; len < abs_parts.Size(); len++) {
+    MountMap_t::iterator it = mounts_.find(abs_parts.Range(0, max - len));
     if (it != mounts_.end()) {
-      out_path->Set("/");
-      out_path->Append(abs_path.Range(max - len, max));
+      rel_parts->Set("/");
+      rel_parts->Append(abs_parts.Range(max - len, max));
 
       *out_mount = it->second;
       return 0;
@@ -64,10 +92,69 @@ Error KernelObject::AcquireMountAndPath(const std::string& relpath,
   return ENOTDIR;
 }
 
+// Given a path, acquire the associated mount and node, creating the
+// node if needed based on the provided flags.
+Error KernelObject::AcquireMountAndNode(const std::string& path,
+                                        int oflags,
+                                        ScopedMount* out_mount,
+                                        ScopedMountNode* out_node) {
+  Path rel_parts;
+  out_mount->reset(NULL);
+  out_node->reset(NULL);
+  Error error = AcquireMountAndRelPath(path, out_mount, &rel_parts);
+  if (error)
+    return error;
+
+  error = (*out_mount)->Open(rel_parts, oflags, out_node);
+  if (error)
+    return error;
+
+  return 0;
+}
+
+Path KernelObject::GetAbsParts(const std::string& path) {
+  AutoLock lock(&cwd_lock_);
+
+  Path abs_parts(cwd_);
+  if (path[0] == '/') {
+    abs_parts = path;
+  } else {
+    abs_parts = cwd_;
+    abs_parts.Append(path);
+  }
+
+  return abs_parts;
+}
+
+std::string KernelObject::GetCWD() {
+  AutoLock lock(&cwd_lock_);
+  std::string out = cwd_;
+
+  return out;
+}
+
+Error KernelObject::SetCWD(const std::string& path) {
+  std::string abs_path = GetAbsParts(path).Join();
+
+  ScopedMount mnt;
+  ScopedMountNode node;
+
+  Error error = AcquireMountAndNode(abs_path, O_RDONLY, &mnt, &node);
+  if (error)
+    return error;
+
+  if ((node->GetType() & S_IFDIR) == 0)
+    return ENOTDIR;
+
+  AutoLock lock(&cwd_lock_);
+  cwd_ = abs_path;
+  return 0;
+}
+
 Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
   out_handle->reset(NULL);
 
-  AutoLock lock(&process_lock_);
+  AutoLock lock(&handle_lock_);
   if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
     return EBADF;
 
@@ -78,7 +165,7 @@ Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
 }
 
 int KernelObject::AllocateFD(const ScopedKernelHandle& handle) {
-  AutoLock lock(&process_lock_);
+  AutoLock lock(&handle_lock_);
   int id;
 
   // If we can recycle and FD, use that first
@@ -99,7 +186,7 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
   if (NULL == handle) {
     FreeFD(fd);
   } else {
-    AutoLock lock(&process_lock_);
+    AutoLock lock(&handle_lock_);
 
     // If the required FD is larger than the current set, grow the set
     if (fd >= handle_map_.size())
@@ -110,7 +197,7 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
 }
 
 void KernelObject::FreeFD(int fd) {
-  AutoLock lock(&process_lock_);
+  AutoLock lock(&handle_lock_);
 
   handle_map_[fd].reset(NULL);
   free_fds_.push_back(fd);
@@ -118,18 +205,3 @@ void KernelObject::FreeFD(int fd) {
   // Force lower numbered FD to be available first.
   std::push_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
 }
-
-Path KernelObject::GetAbsPathLocked(const std::string& path) {
-  // Generate absolute path
-  Path abs_path(cwd_);
-
-  if (path[0] == '/') {
-    abs_path = path;
-  } else {
-    abs_path = cwd_;
-    abs_path.Append(path);
-  }
-
-  return abs_path;
-}
-

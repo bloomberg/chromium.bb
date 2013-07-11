@@ -18,6 +18,14 @@ class PepperInterface;
 // KernelProxy provide one-to-one mapping for libc kernel calls.  Calls to the
 // proxy will result in IO access to the provided Mount and MountNode objects.
 //
+// NOTE: The KernelProxy does not directly take any kernel locks, all locking
+// is done by the parent class KernelObject.  Instead, KernelProxy is
+// responsible for taking the locks of the KernelHandle, and MountNode objects.
+// For this reason, a KernelObject call should not be done while holding
+// a handle or node lock.  In addition, to ensure locking order,
+// a KernelHandle lock must never be taken after taking the associated
+// MountNode's lock.
+//
 // NOTE: The KernelProxy is the only class that should be setting errno. All
 // other classes should return Error (as defined by nacl_io/error.h).
 class KernelProxy : protected KernelObject {
@@ -26,9 +34,13 @@ class KernelProxy : protected KernelObject {
 
   KernelProxy();
   virtual ~KernelProxy();
+
   // Takes ownership of |ppapi|.
   // |ppapi| may be NULL. If so, no mount that uses pepper calls can be mounted.
   virtual void Init(PepperInterface* ppapi);
+
+  // NaCl-only function to read resources specified in the NMF file.
+  virtual int open_resource(const char* file);
 
   // KernelHandle and FD allocation and manipulation functions.
   virtual int open(const char* path, int oflag);
@@ -36,12 +48,15 @@ class KernelProxy : protected KernelObject {
   virtual int dup(int fd);
   virtual int dup2(int fd, int newfd);
 
-  // System calls handled by KernelProxy (not mount-specific)
+  // Path related System calls handled by KernelProxy (not mount-specific)
   virtual int chdir(const char* path);
   virtual char* getcwd(char* buf, size_t size);
   virtual char* getwd(char* buf);
-  virtual int mount(const char *source, const char *target,
-      const char *filesystemtype, unsigned long mountflags, const void *data);
+  virtual int mount(const char *source,
+                    const char *target,
+                    const char *filesystemtype,
+                    unsigned long mountflags,
+                    const void *data);
   virtual int umount(const char *path);
 
   // Stub system calls that don't do anything (yet), handled by KernelProxy.
@@ -99,14 +114,11 @@ class KernelProxy : protected KernelObject {
                      size_t offset);
   virtual int munmap(void* addr, size_t length);
 
-  // NaCl-only function to read resources specified in the NMF file.
-  virtual int open_resource(const char* file);
-
 protected:
   MountFactoryMap_t factories_;
+
   int dev_;
   PepperInterface* ppapi_;
-
   static KernelProxy *s_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(KernelProxy);
