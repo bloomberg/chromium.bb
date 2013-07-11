@@ -14,13 +14,14 @@ class InfoBarService;
 // changed. The user is shown a message indicating that a reload of the page is
 // required for the changes to take effect, and presented a button to perform
 // the reload right from the infobar.
-class WebsiteSettingsInfobarDelegate : public ConfirmInfoBarDelegate {
+class WebsiteSettingsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a website settings delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:
-  explicit WebsiteSettingsInfobarDelegate(InfoBarService* infobar_service);
+  explicit WebsiteSettingsInfoBarDelegate(InfoBarService* infobar_service);
+  virtual ~WebsiteSettingsInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
@@ -30,7 +31,7 @@ class WebsiteSettingsInfobarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsInfobarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_

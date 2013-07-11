@@ -230,7 +230,7 @@ void WebsiteSettings::OnSiteDataAccessed() {
 
 void WebsiteSettings::OnUIClosing() {
   if (show_info_bar_)
-    WebsiteSettingsInfobarDelegate::Create(infobar_service_);
+    WebsiteSettingsInfoBarDelegate::Create(infobar_service_);
 }
 
 void WebsiteSettings::Init(Profile* profile,

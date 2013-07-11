@@ -13,39 +13,42 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-void WebsiteSettingsInfobarDelegate::Create(InfoBarService* infobar_service) {
+void WebsiteSettingsInfoBarDelegate::Create(InfoBarService* infobar_service) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new WebsiteSettingsInfobarDelegate(infobar_service)));
+      new WebsiteSettingsInfoBarDelegate(infobar_service)));
 }
 
-WebsiteSettingsInfobarDelegate::WebsiteSettingsInfobarDelegate(
+WebsiteSettingsInfoBarDelegate::WebsiteSettingsInfoBarDelegate(
     InfoBarService* infobar_service)
     : ConfirmInfoBarDelegate(infobar_service) {
 }
 
-int WebsiteSettingsInfobarDelegate::GetIconID() const {
+WebsiteSettingsInfoBarDelegate::~WebsiteSettingsInfoBarDelegate() {
+}
+
+int WebsiteSettingsInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_ALT_NAV_URL;
 }
 
-InfoBarDelegate::Type WebsiteSettingsInfobarDelegate::GetInfoBarType() const {
+InfoBarDelegate::Type WebsiteSettingsInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-string16 WebsiteSettingsInfobarDelegate::GetMessageText() const {
+string16 WebsiteSettingsInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INFOBAR_TEXT);
 }
 
-int WebsiteSettingsInfobarDelegate::GetButtons() const {
+int WebsiteSettingsInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 WebsiteSettingsInfobarDelegate::GetButtonLabel(
+string16 WebsiteSettingsInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INFOBAR_BUTTON);
 }
 
-bool WebsiteSettingsInfobarDelegate::Accept() {
+bool WebsiteSettingsInfoBarDelegate::Accept() {
   web_contents()->GetController().Reload(true);
   return true;
 }

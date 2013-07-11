@@ -144,7 +144,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   WebsiteSettingsUI* ui_;
 
   // The infobar service of the active tab.
-  InfoBarService* infobar_service_;  // Owned by the active tab contents.
+  InfoBarService* infobar_service_;
 
   // The flag that controls whether an infobar is displayed after the website
   // settings UI is closed or not.
