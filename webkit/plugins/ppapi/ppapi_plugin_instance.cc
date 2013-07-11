@@ -857,6 +857,7 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
             ::ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
         pending_user_gesture_token_ =
             WebUserGestureIndicator::currentUserGestureToken();
+        pending_user_gesture_token_.setOutOfProcess();
       }
 
       // Each input event may generate more than one PP_InputEvent.
