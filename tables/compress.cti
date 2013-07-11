@@ -35,6 +35,7 @@ space \x000c 0
 space \x000d 0 carriage return
 space \x001b 1b escape character for html back-translation
 space \x00A0 a NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE 
+context `$s1-10 ?
 
 # Sequences which should be represented by blank spaces
 repeated \s 0
