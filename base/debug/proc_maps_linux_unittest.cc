@@ -180,7 +180,14 @@ TEST(ProcMapsTest, Permissions) {
   }
 }
 
-TEST(ProcMapsTest, ReadProcMaps) {
+// ProcMapsTest.ReadProcMaps fails under TSan on Linux,
+// see http://crbug.com/258451.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ReadProcMaps DISABLED_ReadProcMaps
+#else
+#define MAYBE_ReadProcMaps ReadProcMaps
+#endif
+TEST(ProcMapsTest, MAYBE_ReadProcMaps) {
   std::string proc_maps;
   ASSERT_TRUE(ReadProcMaps(&proc_maps));
 
