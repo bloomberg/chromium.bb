@@ -140,9 +140,13 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMo
     , m_logicalSize(size)
     , m_resolutionScale(resolutionScale)
 {
-    if (renderingMode == Accelerated)
+    if (renderingMode == Accelerated) {
         m_canvas = adoptPtr(createAcceleratedCanvas(size, &m_layerBridge, opacityMode));
-    else if (renderingMode == UnacceleratedNonPlatformBuffer)
+        if (!m_canvas)
+            renderingMode = UnacceleratedNonPlatformBuffer;
+    }
+
+    if (renderingMode == UnacceleratedNonPlatformBuffer)
         m_canvas = adoptPtr(createNonPlatformCanvas(size));
 
     if (!m_canvas)
