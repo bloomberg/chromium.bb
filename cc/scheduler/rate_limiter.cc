@@ -4,8 +4,10 @@
 
 #include "cc/scheduler/rate_limiter.h"
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 

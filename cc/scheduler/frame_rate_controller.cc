@@ -4,6 +4,7 @@
 
 #include "cc/scheduler/frame_rate_controller.h"
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"

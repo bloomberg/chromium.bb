@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/scoped_ptr_deque.h"
