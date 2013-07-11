@@ -10,6 +10,7 @@ import multiprocessing
 
 from pylib.base import base_test_result
 from pylib.base import sharded_tests_queue
+from pylib.forwarder import Forwarder
 
 from python_test_caller import CallPythonTest
 
@@ -120,6 +121,9 @@ class PythonTestSharder(object):
     logging.warning('*' * 80)
     final_results = base_test_result.TestRunResults()
     tests_to_run = self.tests
+
+    Forwarder.KillHost()
+
     for retry in xrange(self.retries):
       logging.warning('Try %d of %d', retry + 1, self.retries)
       self._SetupSharding(self.tests)
