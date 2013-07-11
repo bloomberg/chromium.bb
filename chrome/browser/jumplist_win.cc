@@ -735,7 +735,7 @@ void JumpList::RunUpdate() {
   // icon directory, and create a new directory which contains new JumpList
   // icon files.
   base::FilePath icon_dir_old(icon_dir_.value() + L"Old");
-  if (file_util::PathExists(icon_dir_old))
+  if (base::PathExists(icon_dir_old))
     base::Delete(icon_dir_old, true);
   base::Move(icon_dir_, icon_dir_old);
   file_util::CreateDirectory(icon_dir_);

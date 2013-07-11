@@ -41,7 +41,7 @@ base::FilePath GetTempCacheName(const base::FilePath& path,
   // We'll attempt to have up to kMaxOldFolders folders for deletion.
   for (int i = 0; i < kMaxOldFolders; i++) {
     base::FilePath to_delete = GetPrefixedName(path, name, i);
-    if (!file_util::PathExists(to_delete))
+    if (!base::PathExists(to_delete))
       return to_delete;
   }
   return base::FilePath();

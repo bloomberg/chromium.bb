@@ -167,7 +167,7 @@ class FileCacheTestOnUIThread : public testing::Test {
       EXPECT_EQ(FILE_ERROR_OK, error);
 
       const base::FilePath path = cache_->GetCacheFilePath(resource_id);
-      EXPECT_FALSE(file_util::PathExists(path));
+      EXPECT_FALSE(base::PathExists(path));
     }
   }
 
@@ -267,7 +267,7 @@ class FileCacheTestOnUIThread : public testing::Test {
             &error, &cache_file_path));
     test_util::RunBlockingPoolTask();
 
-    EXPECT_TRUE(file_util::PathExists(cache_file_path));
+    EXPECT_TRUE(base::PathExists(cache_file_path));
     EXPECT_EQ(cache_file_path, cache_->GetCacheFilePath(resource_id));
   }
 
@@ -293,7 +293,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     test_util::RunBlockingPoolTask();
     EXPECT_EQ(FILE_ERROR_OK, error);
 
-    EXPECT_TRUE(file_util::PathExists(cache_file_path));
+    EXPECT_TRUE(base::PathExists(cache_file_path));
     EXPECT_EQ(cache_file_path, cache_->GetCacheFilePath(resource_id));
   }
 
@@ -322,7 +322,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     // Verify actual cache file.
     base::FilePath dest_path = cache_->GetCacheFilePath(resource_id);
     EXPECT_EQ((expected_cache_state_ & TEST_CACHE_STATE_PRESENT) != 0,
-              file_util::PathExists(dest_path));
+              base::PathExists(dest_path));
   }
 
   // Helper function to call GetCacheEntry from origin thread.
@@ -600,7 +600,7 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
       google_apis::test_util::CreateCopyResultCallback(&error, &dirty_path));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_TRUE(file_util::PathExists(dirty_path));
+  EXPECT_TRUE(base::PathExists(dirty_path));
 
   // Pin the dirty file.
   TestPin(resource_id, FILE_ERROR_OK,
@@ -609,14 +609,14 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
           TEST_CACHE_STATE_PINNED);
 
   // Verify dirty file still exist at the same pathname.
-  EXPECT_TRUE(file_util::PathExists(dirty_path));
+  EXPECT_TRUE(base::PathExists(dirty_path));
 
   // Unpin the dirty file.
   TestUnpin(resource_id, FILE_ERROR_OK,
             TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_DIRTY);
 
   // Verify dirty file still exist at the same pathname.
-  EXPECT_TRUE(file_util::PathExists(dirty_path));
+  EXPECT_TRUE(base::PathExists(dirty_path));
 }
 
 TEST_F(FileCacheTestOnUIThread, DirtyCacheRepetitive) {
@@ -918,10 +918,10 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   // Only 'temporary' file gets removed.
   FileCacheEntry entry;
   EXPECT_FALSE(cache_->GetCacheEntry(resource_id_tmp, md5_tmp, &entry));
-  EXPECT_FALSE(file_util::PathExists(tmp_path));
+  EXPECT_FALSE(base::PathExists(tmp_path));
 
   EXPECT_TRUE(cache_->GetCacheEntry(resource_id_pinned, md5_pinned, &entry));
-  EXPECT_TRUE(file_util::PathExists(pinned_path));
+  EXPECT_TRUE(base::PathExists(pinned_path));
 
   // Returns false when disk space cannot be freed.
   fake_free_disk_space_getter_->set_default_value(0);
@@ -948,13 +948,13 @@ TEST_F(FileCacheTest, ImportOldDB) {
     entry.set_md5(md5_2);
     old_metadata.AddOrUpdateCacheEntry(key2, entry);
   }
-  EXPECT_TRUE(file_util::PathExists(old_db_path));
+  EXPECT_TRUE(base::PathExists(old_db_path));
 
   // Do import.
   EXPECT_TRUE(ImportOldDB(cache_.get(), old_db_path));
 
   // Old DB should be removed.
-  EXPECT_FALSE(file_util::PathExists(old_db_path));
+  EXPECT_FALSE(base::PathExists(old_db_path));
 
   // Data is imported correctly.
   FileCacheEntry entry;

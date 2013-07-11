@@ -248,7 +248,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     if (import_search_plugins) {
       ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
       data_path = data_path.AppendASCII("firefox3_searchplugins");
-      if (!file_util::PathExists(data_path)) {
+      if (!base::PathExists(data_path)) {
         // TODO(maruel):  Create search test data that we can open source!
         LOG(ERROR) << L"Missing internal test data";
         return;

@@ -106,7 +106,7 @@ void CreateIconAndSetRelaunchDetails(
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
       shortcut_info.title, hwnd);
 
-  if (!file_util::PathExists(web_app_path) &&
+  if (!base::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
     return;
   }

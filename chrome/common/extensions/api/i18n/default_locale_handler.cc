@@ -54,7 +54,7 @@ bool DefaultLocaleHandler::Validate(
     std::vector<InstallWarning>* warnings) const {
   // default_locale and _locales have to be both present or both missing.
   const base::FilePath path = extension->path().Append(kLocaleFolder);
-  bool path_exists = file_util::PathExists(path);
+  bool path_exists = base::PathExists(path);
   std::string default_locale =
       extensions::LocaleInfo::GetDefaultLocale(extension);
 
@@ -87,7 +87,7 @@ bool DefaultLocaleHandler::Validate(
 
     base::FilePath messages_path = locale_path.Append(kMessagesFilename);
 
-    if (!file_util::PathExists(messages_path)) {
+    if (!base::PathExists(messages_path)) {
       *error = base::StringPrintf(
           "%s %s", errors::kLocalesMessagesFileMissing,
           UTF16ToUTF8(messages_path.LossyDisplayName()).c_str());

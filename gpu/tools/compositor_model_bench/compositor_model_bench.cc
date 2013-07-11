@@ -41,7 +41,7 @@ using base::TimeTicks;
 using file_util::CloseFile;
 using file_util::DirectoryExists;
 using file_util::OpenFile;
-using file_util::PathExists;
+using base::PathExists;
 using std::queue;
 using std::string;
 

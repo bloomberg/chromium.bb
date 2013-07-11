@@ -48,18 +48,18 @@ class CacheUtilTest : public PlatformTest {
 
 TEST_F(CacheUtilTest, MoveCache) {
   EXPECT_TRUE(disk_cache::MoveCache(cache_dir_, dest_dir_));
-  EXPECT_TRUE(file_util::PathExists(dest_dir_));
-  EXPECT_TRUE(file_util::PathExists(dest_file1_));
-  EXPECT_TRUE(file_util::PathExists(dest_file2_));
-  EXPECT_TRUE(file_util::PathExists(dest_dir1_));
+  EXPECT_TRUE(base::PathExists(dest_dir_));
+  EXPECT_TRUE(base::PathExists(dest_file1_));
+  EXPECT_TRUE(base::PathExists(dest_file2_));
+  EXPECT_TRUE(base::PathExists(dest_dir1_));
 #if defined(OS_CHROMEOS)
-  EXPECT_TRUE(file_util::PathExists(cache_dir_)); // old cache dir stays
+  EXPECT_TRUE(base::PathExists(cache_dir_)); // old cache dir stays
 #else
-  EXPECT_FALSE(file_util::PathExists(cache_dir_)); // old cache is gone
+  EXPECT_FALSE(base::PathExists(cache_dir_)); // old cache is gone
 #endif
-  EXPECT_FALSE(file_util::PathExists(file1_));
-  EXPECT_FALSE(file_util::PathExists(file2_));
-  EXPECT_FALSE(file_util::PathExists(dir1_));
+  EXPECT_FALSE(base::PathExists(file1_));
+  EXPECT_FALSE(base::PathExists(file2_));
+  EXPECT_FALSE(base::PathExists(dir1_));
 }
 
 TEST_F(CacheUtilTest, DeleteCache) {
@@ -67,9 +67,9 @@ TEST_F(CacheUtilTest, DeleteCache) {
   // one around.
   base::Delete(dir1_, false);
   disk_cache::DeleteCache(cache_dir_, false);
-  EXPECT_TRUE(file_util::PathExists(cache_dir_)); // cache dir stays
-  EXPECT_FALSE(file_util::PathExists(file1_));
-  EXPECT_FALSE(file_util::PathExists(file2_));
+  EXPECT_TRUE(base::PathExists(cache_dir_)); // cache dir stays
+  EXPECT_FALSE(base::PathExists(file1_));
+  EXPECT_FALSE(base::PathExists(file2_));
 }
 
 TEST_F(CacheUtilTest, DeleteCacheAndDir) {
@@ -77,15 +77,15 @@ TEST_F(CacheUtilTest, DeleteCacheAndDir) {
   // one around.
   base::Delete(dir1_, false);
   disk_cache::DeleteCache(cache_dir_, true);
-  EXPECT_FALSE(file_util::PathExists(cache_dir_)); // cache dir is gone
-  EXPECT_FALSE(file_util::PathExists(file1_));
-  EXPECT_FALSE(file_util::PathExists(file2_));
+  EXPECT_FALSE(base::PathExists(cache_dir_)); // cache dir is gone
+  EXPECT_FALSE(base::PathExists(file1_));
+  EXPECT_FALSE(base::PathExists(file2_));
 }
 
 TEST_F(CacheUtilTest, DeleteCacheFile) {
   EXPECT_TRUE(disk_cache::DeleteCacheFile(file1_));
-  EXPECT_FALSE(file_util::PathExists(file1_));
-  EXPECT_TRUE(file_util::PathExists(cache_dir_)); // cache dir stays
+  EXPECT_FALSE(base::PathExists(file1_));
+  EXPECT_TRUE(base::PathExists(cache_dir_)); // cache dir stays
 }
 
 }  // namespace disk_cache

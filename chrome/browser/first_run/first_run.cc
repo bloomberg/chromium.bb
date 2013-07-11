@@ -169,7 +169,7 @@ base::FilePath GetDefaultPrefFilePath(bool create_profile_dir,
   base::FilePath default_pref_dir =
       ProfileManager::GetDefaultProfileDir(user_data_dir);
   if (create_profile_dir) {
-    if (!file_util::PathExists(default_pref_dir)) {
+    if (!base::PathExists(default_pref_dir)) {
       if (!file_util::CreateDirectory(default_pref_dir))
         return base::FilePath();
     }
@@ -470,7 +470,7 @@ bool IsChromeFirstRun() {
 
   base::FilePath first_run_sentinel;
   if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel) ||
-      file_util::PathExists(first_run_sentinel)) {
+      base::PathExists(first_run_sentinel)) {
     internal::first_run_ = internal::FIRST_RUN_FALSE;
     return false;
   }
@@ -677,7 +677,7 @@ void AutoImport(
 
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = file_util::PathExists(local_state_path);
+  bool local_state_file_exists = base::PathExists(local_state_path);
 
   scoped_refptr<ImporterList> importer_list(new ImporterList());
   importer_list->DetectSourceProfilesHack(

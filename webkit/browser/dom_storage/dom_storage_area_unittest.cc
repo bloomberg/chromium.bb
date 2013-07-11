@@ -135,7 +135,7 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
         new DomStorageArea(kOrigin, base::FilePath(), NULL));
     EXPECT_EQ(NULL, area->backing_.get());
     EXPECT_TRUE(area->is_initial_import_done_);
-    EXPECT_FALSE(file_util::PathExists(kExpectedOriginFilePath));
+    EXPECT_FALSE(base::PathExists(kExpectedOriginFilePath));
   }
 
   // Valid directory and origin but no session storage backing. Backing should
@@ -153,7 +153,7 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
 
     // Check that saving a value has still left us without a backing database.
     EXPECT_EQ(NULL, area->backing_.get());
-    EXPECT_FALSE(file_util::PathExists(kExpectedOriginFilePath));
+    EXPECT_FALSE(base::PathExists(kExpectedOriginFilePath));
   }
 
   // This should set up a DomStorageArea that is correctly backed to disk.
@@ -323,17 +323,17 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
 
   // Nothing bad should happen when invoked w/o any files on disk.
   area->DeleteOrigin();
-  EXPECT_FALSE(file_util::PathExists(db_file_path));
+  EXPECT_FALSE(base::PathExists(db_file_path));
 
   // Commit something in the database and then delete.
   base::NullableString16 old_value;
   area->SetItem(kKey, kValue, &old_value);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(file_util::PathExists(db_file_path));
+  EXPECT_TRUE(base::PathExists(db_file_path));
   area->DeleteOrigin();
   EXPECT_EQ(0u, area->Length());
-  EXPECT_FALSE(file_util::PathExists(db_file_path));
-  EXPECT_FALSE(file_util::PathExists(db_journal_file_path));
+  EXPECT_FALSE(base::PathExists(db_file_path));
+  EXPECT_FALSE(base::PathExists(db_journal_file_path));
 
   // Put some uncommitted changes to a non-existing database in
   // and then delete. No file ever gets created in this case.
@@ -345,13 +345,13 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
   EXPECT_EQ(0u, area->Length());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(area->HasUncommittedChanges());
-  EXPECT_FALSE(file_util::PathExists(db_file_path));
+  EXPECT_FALSE(base::PathExists(db_file_path));
 
   // Put some uncommitted changes to a an existing database in
   // and then delete.
   area->SetItem(kKey, kValue, &old_value);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(file_util::PathExists(db_file_path));
+  EXPECT_TRUE(base::PathExists(db_file_path));
   area->SetItem(kKey2, kValue2, &old_value);
   EXPECT_TRUE(area->HasUncommittedChanges());
   EXPECT_EQ(2u, area->Length());
@@ -362,10 +362,10 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
   EXPECT_FALSE(area->HasUncommittedChanges());
   // Since the area had uncommitted changes at the time delete
   // was called, the file will linger until the shutdown time.
-  EXPECT_TRUE(file_util::PathExists(db_file_path));
+  EXPECT_TRUE(base::PathExists(db_file_path));
   area->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(file_util::PathExists(db_file_path));
+  EXPECT_FALSE(base::PathExists(db_file_path));
 }
 
 TEST_F(DomStorageAreaTest, PurgeMemory) {

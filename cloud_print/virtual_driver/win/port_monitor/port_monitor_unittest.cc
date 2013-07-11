@@ -99,7 +99,7 @@ TEST_F(PortMonitorTest, GetChromeExePathTest) {
   EXPECT_FALSE(chrome_path.empty());
   EXPECT_TRUE(
       chrome_path.value().rfind(kAlternateChromeExePath) != std::string::npos);
-  EXPECT_TRUE(file_util::PathExists(chrome_path));
+  EXPECT_TRUE(base::PathExists(chrome_path));
   DeleteChromeExeRegistry();
   chrome_path = cloud_print::GetChromeExePath();
   // No Chrome or regular chrome path.

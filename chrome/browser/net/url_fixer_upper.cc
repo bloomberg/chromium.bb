@@ -107,7 +107,7 @@ bool ValidPathForFile(const base::FilePath::StringType& text,
   if (file_path.empty())
     return false;
 
-  if (!file_util::PathExists(file_path))
+  if (!base::PathExists(file_path))
     return false;
 
   *full_path = file_path;

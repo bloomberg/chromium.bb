@@ -78,7 +78,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     base::FilePath path;
     PathService::Get(content::DIR_TEST_DATA, &path);
     path = path.AppendASCII("plugin").AppendASCII(filename);
-    CHECK(file_util::PathExists(path));
+    CHECK(base::PathExists(path));
     return net::FilePathToFileURL(path);
   }
 

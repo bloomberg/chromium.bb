@@ -29,7 +29,7 @@ class NativeFileUtilTest : public testing::Test {
   }
 
   bool FileExists(const base::FilePath& path) {
-    return file_util::PathExists(path) &&
+    return base::PathExists(path) &&
            !file_util::DirectoryExists(path);
   }
 
@@ -56,7 +56,7 @@ TEST_F(NativeFileUtilTest, CreateCloseAndDeleteFile) {
                                          &file_handle, &created));
   ASSERT_TRUE(created);
 
-  EXPECT_TRUE(file_util::PathExists(file_name));
+  EXPECT_TRUE(base::PathExists(file_name));
   EXPECT_TRUE(NativeFileUtil::PathExists(file_name));
   EXPECT_EQ(0, GetSize(file_name));
   EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
@@ -72,7 +72,7 @@ TEST_F(NativeFileUtilTest, CreateCloseAndDeleteFile) {
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::DeleteFile(file_name));
-  EXPECT_FALSE(file_util::PathExists(file_name));
+  EXPECT_FALSE(base::PathExists(file_name));
   EXPECT_FALSE(NativeFileUtil::PathExists(file_name));
 }
 

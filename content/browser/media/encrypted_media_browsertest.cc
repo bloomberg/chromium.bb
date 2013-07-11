@@ -118,7 +118,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
     base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
     base::FilePath plugin_lib = plugin_dir.AppendASCII(adapter_name);
-    EXPECT_TRUE(file_util::PathExists(plugin_lib));
+    EXPECT_TRUE(base::PathExists(plugin_lib));
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)

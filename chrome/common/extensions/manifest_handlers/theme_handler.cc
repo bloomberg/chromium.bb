@@ -202,7 +202,7 @@ bool ThemeHandler::Validate(const Extension* extension,
         if (iter.value().GetAsString(&val)) {
           base::FilePath image_path = extension->path().Append(
               base::FilePath::FromUTF8Unsafe(val));
-          if (!file_util::PathExists(image_path)) {
+          if (!base::PathExists(image_path)) {
             *error =
                 l10n_util::GetStringFUTF8(IDS_EXTENSION_INVALID_IMAGE_PATH,
                                           image_path.LossyDisplayName());

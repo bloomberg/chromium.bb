@@ -212,7 +212,7 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
 bool DoCheckWritableFile(const base::FilePath& path,
                          const base::FilePath& extension_directory) {
   // Don't allow links.
-  if (file_util::PathExists(path) && file_util::IsLink(path))
+  if (base::PathExists(path) && file_util::IsLink(path))
     return false;
 
   if (extension_directory == path || extension_directory.IsParent(path))

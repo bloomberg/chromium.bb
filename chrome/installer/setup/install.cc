@@ -201,7 +201,7 @@ installer::InstallStatus InstallNewVersion(
   if (!install_list->Do()) {
     installer_state.UpdateStage(installer::ROLLINGBACK);
     installer::InstallStatus result =
-        file_util::PathExists(new_chrome_exe) && current_version->get() &&
+        base::PathExists(new_chrome_exe) && current_version->get() &&
         new_version.Equals(*current_version->get()) ?
         installer::SAME_VERSION_REPAIR_FAILED :
         installer::INSTALL_FAILED;
@@ -226,7 +226,7 @@ installer::InstallStatus InstallNewVersion(
   }
 
   if (new_version.CompareTo(**current_version) > 0) {
-    if (file_util::PathExists(new_chrome_exe)) {
+    if (base::PathExists(new_chrome_exe)) {
       VLOG(1) << "Version updated to " << new_version.GetString()
               << " while running " << (*current_version)->GetString();
       return installer::IN_USE_UPDATED;
@@ -302,7 +302,7 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 
   // Some distributions of Chromium may not include visual elements. Only
   // proceed if this distribution does.
-  if (!file_util::PathExists(src_path.Append(elements_dir))) {
+  if (!base::PathExists(src_path.Append(elements_dir))) {
     VLOG(1) << "No visual elements found, not writing "
             << installer::kVisualElementsManifest << " to " << src_path.value();
     return true;
@@ -673,7 +673,7 @@ void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
   // shortcuts; if the decision is to create them, only shortcuts whose matching
   // all-users shortcut isn't present on the system will be created.
   InstallShortcutOperation install_operation =
-      (!force && file_util::PathExists(first_run_sentinel) ?
+      (!force && base::PathExists(first_run_sentinel) ?
            INSTALL_SHORTCUT_REPLACE_EXISTING :
            INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
 

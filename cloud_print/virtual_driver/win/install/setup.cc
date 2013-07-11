@@ -116,7 +116,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
           source_path.value() << " to " << target_path.value();
       return GetLastHResult();
     }
-  } else if (!file_util::PathExists(target_path)) {
+  } else if (!base::PathExists(target_path)) {
     // Already removed.  Just "succeed" silently.
     return S_OK;
   }
@@ -237,9 +237,9 @@ void ReadyDriverDependencies(const base::FilePath& destination) {
     driver_cache_path = driver_cache_path.Append(L"Driver Cache\\i386");
     for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
       base::FilePath dst_path = destination.Append(kDependencyList[i]);
-      if (!file_util::PathExists(dst_path)) {
+      if (!base::PathExists(dst_path)) {
         base::FilePath src_path = driver_cache_path.Append(kDependencyList[i]);
-        if (!file_util::PathExists(src_path))
+        if (!base::PathExists(src_path))
           src_path = GetSystemPath(kDependencyList[i]);
         base::CopyFile(src_path, dst_path);
       }
@@ -257,7 +257,7 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
   // Add all files. AddPrinterDriverEx will removes unnecessary.
   for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
     base::FilePath file_path = temp_path.path().Append(kDependencyList[i]);
-    if (file_util::PathExists(file_path))
+    if (base::PathExists(file_path))
       dependent_array.push_back(file_path.value());
     else
       LOG(WARNING) << "File is missing: " << file_path.BaseName().value();
@@ -269,7 +269,7 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
   base::FilePath ui_path = temp_path.path().Append(kUiDriverName);
   base::FilePath ui_help_path = temp_path.path().Append(kHelpName);
 
-  if (!file_util::PathExists(xps_path)) {
+  if (!base::PathExists(xps_path)) {
     SetGoogleUpdateError(kGoogleUpdateProductId,
                          LoadLocalString(IDS_ERROR_NO_XPS));
     return HRESULT_FROM_WIN32(ERROR_BAD_DRIVER);

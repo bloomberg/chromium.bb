@@ -245,7 +245,7 @@ class PathTest : public DiagnosticsTest {
       RecordStopFailure(DIAG_RECON_PATH_PROVIDER, "Path provider failure");
       return false;
     }
-    if (!file_util::PathExists(dir_or_file)) {
+    if (!base::PathExists(dir_or_file)) {
       RecordFailure(
           DIAG_RECON_PATH_NOT_FOUND,
           "Path not found: " + UTF16ToUTF8(dir_or_file.LossyDisplayName()));
@@ -332,7 +332,7 @@ class JSONTest : public DiagnosticsTest {
       : DiagnosticsTest(id, name), path_(path), max_file_size_(max_file_size) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
-    if (!file_util::PathExists(path_)) {
+    if (!base::PathExists(path_)) {
       RecordFailure(DIAG_RECON_FILE_NOT_FOUND, "File not found");
       return true;
     }

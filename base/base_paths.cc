@@ -33,7 +33,7 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("base"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
       cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!file_util::PathExists(cur))  // We don't want to create this.
+      if (!base::PathExists(cur))  // We don't want to create this.
         return false;
       break;
     default:

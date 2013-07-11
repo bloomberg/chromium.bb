@@ -85,8 +85,8 @@ TEST(WebAppShortcutCreatorTest, CreateShortcuts) {
   EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts());
-  EXPECT_TRUE(file_util::PathExists(app_in_app_data_path_path));
-  EXPECT_TRUE(file_util::PathExists(dst_path));
+  EXPECT_TRUE(base::PathExists(app_in_app_data_path_path));
+  EXPECT_TRUE(base::PathExists(dst_path));
   EXPECT_EQ(dst_path.BaseName(), shortcut_creator.GetShortcutName());
 
   base::FilePath plist_path = dst_path.Append("Contents").Append("Info.plist");
@@ -143,8 +143,8 @@ TEST(WebAppShortcutCreatorTest, UpdateShortcuts) {
       other_folder.Append(app_name).Append("Contents"), true));
 
   EXPECT_TRUE(shortcut_creator.UpdateShortcuts());
-  EXPECT_FALSE(file_util::PathExists(dst_folder.Append(app_name)));
-  EXPECT_TRUE(file_util::PathExists(
+  EXPECT_FALSE(base::PathExists(dst_folder.Append(app_name)));
+  EXPECT_TRUE(base::PathExists(
       other_folder.Append(app_name).Append("Contents")));
 
   // Also test case where GetAppBundleById fails.
@@ -157,8 +157,8 @@ TEST(WebAppShortcutCreatorTest, UpdateShortcuts) {
       other_folder.Append(app_name).Append("Contents"), true));
 
   EXPECT_FALSE(shortcut_creator.UpdateShortcuts());
-  EXPECT_FALSE(file_util::PathExists(dst_folder.Append(app_name)));
-  EXPECT_FALSE(file_util::PathExists(
+  EXPECT_FALSE(base::PathExists(dst_folder.Append(app_name)));
+  EXPECT_FALSE(base::PathExists(
       other_folder.Append(app_name).Append("Contents")));
 }
 
@@ -200,7 +200,7 @@ TEST(WebAppShortcutCreatorTest, RunShortcut) {
   EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts());
-  EXPECT_TRUE(file_util::PathExists(dst_path));
+  EXPECT_TRUE(base::PathExists(dst_path));
 
   ssize_t status = getxattr(
       dst_path.value().c_str(), "com.apple.quarantine", NULL, 0, 0, 0);

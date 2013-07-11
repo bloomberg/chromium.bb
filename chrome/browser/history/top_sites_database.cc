@@ -25,7 +25,7 @@ TopSitesDatabase::~TopSitesDatabase() {
 }
 
 bool TopSitesDatabase::Init(const base::FilePath& db_name) {
-  bool file_existed = file_util::PathExists(db_name);
+  bool file_existed = base::PathExists(db_name);
 
   if (!file_existed)
     may_need_history_migration_ = true;

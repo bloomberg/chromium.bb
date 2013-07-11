@@ -112,7 +112,7 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
         .AppendASCII("data")
         .AppendASCII("content")
         .AppendASCII(name.c_str());
-    EXPECT_TRUE(file_util::PathExists(path));
+    EXPECT_TRUE(base::PathExists(path));
 
     CHECK(file_data_.Initialize(path));
     protocol_.reset(new InMemoryUrlProtocol(

@@ -1291,7 +1291,7 @@ TEST_F(SpellCheckTest, DictionaryFiles) {
   for (size_t i = 0; i < spellcheck_languages.size(); ++i) {
     base::FilePath dict = chrome::spellcheck_common::GetVersionedFileName(
         spellcheck_languages[i], hunspell);
-    EXPECT_TRUE(file_util::PathExists(dict)) << dict.value() << " not found";
+    EXPECT_TRUE(base::PathExists(dict)) << dict.value() << " not found";
   }
 }
 

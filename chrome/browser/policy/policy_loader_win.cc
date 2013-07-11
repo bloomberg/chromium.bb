@@ -583,12 +583,12 @@ bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,
   // access to the %WINDIR%/System32/GroupPolicy directory to
   // %WINDIR%/SysWOW64/GroupPolicy, but the file is actually in the
   // system-native directory.
-  if (file_util::PathExists(preg_file)) {
+  if (base::PathExists(preg_file)) {
     return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy, status);
   } else {
     // Try with redirection switched off.
     ScopedDisableWow64Redirection redirection_disable;
-    if (redirection_disable.is_active() && file_util::PathExists(preg_file)) {
+    if (redirection_disable.is_active() && base::PathExists(preg_file)) {
       status->Add(POLICY_LOAD_STATUS_WOW64_REDIRECTION_DISABLED);
       return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy,
                                    status);

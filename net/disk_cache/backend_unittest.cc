@@ -2950,7 +2950,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
   // Delete one of the files in the entry.
   base::FilePath to_delete_file = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
-  EXPECT_TRUE(file_util::PathExists(to_delete_file));
+  EXPECT_TRUE(base::PathExists(to_delete_file));
   EXPECT_TRUE(disk_cache::DeleteCacheFile(to_delete_file));
 
   // Failing to open the entry should delete the rest of these files.
@@ -2961,7 +2961,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
     base::FilePath
         should_be_gone_file(cache_path_.AppendASCII(
             disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, i)));
-    EXPECT_FALSE(file_util::PathExists(should_be_gone_file));
+    EXPECT_FALSE(base::PathExists(should_be_gone_file));
   }
 }
 

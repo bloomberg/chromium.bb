@@ -440,7 +440,7 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
 
   bool in_memory_only = db_file_path_.empty();
   if (!create_if_needed &&
-      (in_memory_only || !file_util::PathExists(db_file_path_))) {
+      (in_memory_only || !base::PathExists(db_file_path_))) {
     return false;
   }
 
@@ -552,7 +552,7 @@ bool QuotaDatabase::CreateSchema(
 
 bool QuotaDatabase::ResetSchema() {
   DCHECK(!db_file_path_.empty());
-  DCHECK(file_util::PathExists(db_file_path_));
+  DCHECK(base::PathExists(db_file_path_));
   VLOG(1) << "Deleting existing quota data and starting over.";
 
   db_.reset();

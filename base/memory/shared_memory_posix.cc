@@ -236,9 +236,8 @@ bool SharedMemory::Delete(const std::string& name) {
   if (!FilePathForMemoryName(name, &path))
     return false;
 
-  if (file_util::PathExists(path)) {
+  if (PathExists(path))
     return base::Delete(path, false);
-  }
 
   // Doesn't exist, so success.
   return true;

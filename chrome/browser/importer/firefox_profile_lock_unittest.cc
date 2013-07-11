@@ -39,27 +39,27 @@ TEST_F(FirefoxProfileLockTest, ProfileLock) {
 
   scoped_ptr<FirefoxProfileLock> lock;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock.get());
-  EXPECT_FALSE(file_util::PathExists(lock_file_path));
+  EXPECT_FALSE(base::PathExists(lock_file_path));
   lock.reset(new FirefoxProfileLock(test_path));
   EXPECT_TRUE(lock->HasAcquired());
-  EXPECT_TRUE(file_util::PathExists(lock_file_path));
+  EXPECT_TRUE(base::PathExists(lock_file_path));
   lock->Unlock();
   EXPECT_FALSE(lock->HasAcquired());
 
   // In the posix code, we don't delete the file when releasing the lock.
 #if !defined(OS_POSIX)
-  EXPECT_FALSE(file_util::PathExists(lock_file_path));
+  EXPECT_FALSE(base::PathExists(lock_file_path));
 #endif  // !defined(OS_POSIX)
   lock->Lock();
   EXPECT_TRUE(lock->HasAcquired());
-  EXPECT_TRUE(file_util::PathExists(lock_file_path));
+  EXPECT_TRUE(base::PathExists(lock_file_path));
   lock->Lock();
   EXPECT_TRUE(lock->HasAcquired());
   lock->Unlock();
   EXPECT_FALSE(lock->HasAcquired());
   // In the posix code, we don't delete the file when releasing the lock.
 #if !defined(OS_POSIX)
-  EXPECT_FALSE(file_util::PathExists(lock_file_path));
+  EXPECT_FALSE(base::PathExists(lock_file_path));
 #endif  // !defined(OS_POSIX)
 }
 
@@ -74,7 +74,7 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
   FILE* lock_file = file_util::OpenFile(lock_file_path, "w");
   ASSERT_TRUE(lock_file);
   file_util::CloseFile(lock_file);
-  EXPECT_TRUE(file_util::PathExists(lock_file_path));
+  EXPECT_TRUE(base::PathExists(lock_file_path));
 
   scoped_ptr<FirefoxProfileLock> lock;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock.get());

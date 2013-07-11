@@ -167,7 +167,7 @@ void DeviceIDFetcher::ComputeOnBlockingPool(const base::FilePath& profile_path,
   // First check if the legacy device ID file exists on ChromeOS. If it does, we
   // should just return that.
   base::FilePath id_path = GetLegacyDeviceIDPath(profile_path);
-  if (file_util::PathExists(id_path)) {
+  if (base::PathExists(id_path)) {
     if (file_util::ReadFileToString(id_path, &id) && !id.empty()) {
       RunCallbackOnIOThread(id);
       return;

@@ -196,7 +196,7 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
     simple_index_file.WriteToDisk(entries, kCacheSize,
                                   base::TimeTicks(), false);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(file_util::PathExists(index_path));
+    EXPECT_TRUE(base::PathExists(index_path));
   }
 
   WrappedSimpleIndexFile simple_index_file(temp_dir.path());
@@ -204,7 +204,7 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
                                      GetCallback());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(file_util::PathExists(index_path));
+  EXPECT_TRUE(base::PathExists(index_path));
   ASSERT_TRUE(callback_result());
   EXPECT_FALSE(callback_result()->force_index_flush);
   const SimpleIndex::EntrySet* read_entries =
@@ -235,7 +235,7 @@ TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
                                      GetCallback());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(file_util::PathExists(index_path));
+  EXPECT_FALSE(base::PathExists(index_path));
   ASSERT_TRUE(callback_result());
   EXPECT_TRUE(callback_result()->force_index_flush);
   EXPECT_TRUE(callback_result()->index_file_entries);

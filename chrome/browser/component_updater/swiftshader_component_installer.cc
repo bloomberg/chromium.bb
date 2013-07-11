@@ -72,8 +72,8 @@ bool GetLatestSwiftShaderDirectory(base::FilePath* result,
     if (!version.IsValid())
       continue;
     if (version.CompareTo(*latest) > 0 &&
-        file_util::PathExists(path.Append(kSwiftShaderEglName)) &&
-        file_util::PathExists(path.Append(kSwiftShaderGlesName))) {
+        base::PathExists(path.Append(kSwiftShaderEglName)) &&
+        base::PathExists(path.Append(kSwiftShaderGlesName))) {
       if (found && older_dirs)
           older_dirs->push_back(*result);
       *latest = version;
@@ -135,13 +135,13 @@ bool SwiftShaderComponentInstaller::Install(
     return false;
   if (current_version_.CompareTo(version) >= 0)
     return false;
-  if (!file_util::PathExists(unpack_path.Append(kSwiftShaderEglName)) ||
-      !file_util::PathExists(unpack_path.Append(kSwiftShaderGlesName)))
+  if (!base::PathExists(unpack_path.Append(kSwiftShaderEglName)) ||
+      !base::PathExists(unpack_path.Append(kSwiftShaderGlesName)))
     return false;
   // Passed the basic tests. Time to install it.
   base::FilePath path =
       GetSwiftShaderBaseDirectory().AppendASCII(version.GetString());
-  if (file_util::PathExists(path))
+  if (base::PathExists(path))
     return false;
   if (!base::Move(unpack_path, path))
     return false;
@@ -208,7 +208,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
 void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath path = GetSwiftShaderBaseDirectory();
-  if (!file_util::PathExists(path)) {
+  if (!base::PathExists(path)) {
     if (!file_util::CreateDirectory(path)) {
       NOTREACHED() << "Could not create SwiftShader directory.";
       return;

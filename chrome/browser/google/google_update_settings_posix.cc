@@ -42,8 +42,8 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
 
   base::FilePath consent_file = consent_dir.AppendASCII(kConsentToSendStats);
   if (consented) {
-    if ((!file_util::PathExists(consent_file)) ||
-        (file_util::PathExists(consent_file) &&
+    if ((!base::PathExists(consent_file)) ||
+        (base::PathExists(consent_file) &&
          !google_update::posix_guid().empty())) {
       const char* c_str = google_update::posix_guid().c_str();
       int size = google_update::posix_guid().size();

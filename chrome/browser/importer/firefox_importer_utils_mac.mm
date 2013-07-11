@@ -18,7 +18,7 @@ base::FilePath GetProfilesINI() {
   }
   base::FilePath ini_file =
       app_data_path.Append("Firefox").Append("profiles.ini");
-  if (!file_util::PathExists(ini_file)) {
+  if (!base::PathExists(ini_file)) {
     return base::FilePath();
   }
   return ini_file;

@@ -73,7 +73,7 @@ class IconUtilTest : public testing::Test {
 
 void IconUtilTest::CheckAllIconSizes(const base::FilePath& icon_filename,
                                      int max_icon_size) {
-  ASSERT_TRUE(file_util::PathExists(icon_filename));
+  ASSERT_TRUE(base::PathExists(icon_filename));
 
   // Determine how many icons to expect, based on |max_icon_size|.
   int expected_num_icons = 0;
@@ -214,7 +214,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        valid_icon_filename));
-  EXPECT_FALSE(file_util::PathExists(valid_icon_filename));
+  EXPECT_FALSE(base::PathExists(valid_icon_filename));
 
   // Invalid bitmap size.
   image_family.clear();
@@ -225,7 +225,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        valid_icon_filename));
-  EXPECT_FALSE(file_util::PathExists(valid_icon_filename));
+  EXPECT_FALSE(base::PathExists(valid_icon_filename));
 
   // Bitmap with no allocated pixels.
   image_family.clear();
@@ -237,7 +237,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        valid_icon_filename));
-  EXPECT_FALSE(file_util::PathExists(valid_icon_filename));
+  EXPECT_FALSE(base::PathExists(valid_icon_filename));
 
   // Invalid file name.
   image_family.clear();
@@ -247,7 +247,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        invalid_icon_filename));
-  EXPECT_FALSE(file_util::PathExists(invalid_icon_filename));
+  EXPECT_FALSE(base::PathExists(invalid_icon_filename));
 }
 
 // This test case makes sure IconUtil::CreateIconFileFromImageFamily fails if
@@ -259,14 +259,14 @@ TEST_F(IconUtilTest, TestCreateIconFileEmptyImageFamily) {
   // Empty image family.
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(gfx::ImageFamily(),
                                                        icon_filename));
-  EXPECT_FALSE(file_util::PathExists(icon_filename));
+  EXPECT_FALSE(base::PathExists(icon_filename));
 
   // Image family with only an empty image.
   gfx::ImageFamily image_family;
   image_family.Add(gfx::Image());
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        icon_filename));
-  EXPECT_FALSE(file_util::PathExists(icon_filename));
+  EXPECT_FALSE(base::PathExists(icon_filename));
 }
 
 // This test case makes sure that when we load an icon from disk and convert

@@ -108,7 +108,7 @@ bool DeleteTreeWorkItem::Do() {
   }
 
   // Now that we've taken care of the key files, take care of the rest.
-  if (!root_path_.empty() && file_util::PathExists(root_path_)) {
+  if (!root_path_.empty() && base::PathExists(root_path_)) {
     if (!ignore_failure_) {
       if (!backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
         PLOG(ERROR) << "Failed to get backup path in folder "
@@ -143,7 +143,7 @@ void DeleteTreeWorkItem::Rollback() {
   if (copied_to_backup_) {
     DCHECK(!backup_path_.path().empty());
     base::FilePath backup = backup_path_.path().Append(root_path_.BaseName());
-    if (file_util::PathExists(backup))
+    if (base::PathExists(backup))
       base::Move(backup, root_path_);
   }
 
@@ -153,7 +153,7 @@ void DeleteTreeWorkItem::Rollback() {
       base::FilePath& key_file = key_paths_[i];
       base::FilePath backup_file =
           backup_dir.path().Append(key_file.BaseName());
-      if (file_util::PathExists(backup_file) &&
+      if (base::PathExists(backup_file) &&
           !base::Move(backup_file, key_file)) {
         // This could happen if we could not delete the key file to begin with.
         PLOG(WARNING) << "Rollback: Failed to move backup file back in place: "

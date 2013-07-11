@@ -212,7 +212,7 @@ TEST_F(ShortcutTest, UpdateShortcutClearArguments) {
 TEST_F(ShortcutTest, FailUpdateShortcutThatDoesNotExist) {
   ASSERT_FALSE(CreateOrUpdateShortcutLink(
       link_file_, link_properties_, SHORTCUT_UPDATE_EXISTING));
-  ASSERT_FALSE(file_util::PathExists(link_file_));
+  ASSERT_FALSE(PathExists(link_file_));
 }
 
 TEST_F(ShortcutTest, ReplaceShortcutAllProperties) {
@@ -249,7 +249,7 @@ TEST_F(ShortcutTest, ReplaceShortcutSomeProperties) {
 TEST_F(ShortcutTest, FailReplaceShortcutThatDoesNotExist) {
   ASSERT_FALSE(CreateOrUpdateShortcutLink(
       link_file_, link_properties_, SHORTCUT_REPLACE_EXISTING));
-  ASSERT_FALSE(file_util::PathExists(link_file_));
+  ASSERT_FALSE(PathExists(link_file_));
 }
 
 // Test that the old arguments remain on the replaced shortcut when not

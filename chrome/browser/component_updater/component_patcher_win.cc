@@ -42,12 +42,12 @@ base::FilePath FindSetupProgram() {
   base::FilePath setup_path = exe_dir;
   setup_path = setup_path.AppendASCII(installer_dir);
   setup_path = setup_path.AppendASCII(setup_exe);
-  if (file_util::PathExists(setup_path))
+  if (base::PathExists(setup_path))
     return setup_path;
 
   setup_path = exe_dir;
   setup_path = setup_path.AppendASCII(setup_exe);
-  if (file_util::PathExists(setup_path))
+  if (base::PathExists(setup_path))
     return setup_path;
 
   return base::FilePath();

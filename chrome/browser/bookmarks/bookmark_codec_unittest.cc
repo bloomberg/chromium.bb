@@ -300,7 +300,7 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
   base::FilePath test_file = test_data_directory.AppendASCII(
       "bookmarks/model_without_sync.json");
-  ASSERT_TRUE(file_util::PathExists(test_file));
+  ASSERT_TRUE(base::PathExists(test_file));
 
   JSONFileValueSerializer serializer(test_file);
   scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));

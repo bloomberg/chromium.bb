@@ -65,7 +65,7 @@ scoped_ptr<HttpResponse> HandleFileRequest(
   base::FilePath headers_path(
       file_path.AddExtension(FILE_PATH_LITERAL("mock-http-headers")));
 
-  if (file_util::PathExists(headers_path)) {
+  if (base::PathExists(headers_path)) {
     std::string headers_contents;
     if (!file_util::ReadFileToString(headers_path, &headers_contents))
       return scoped_ptr<HttpResponse>();

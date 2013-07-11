@@ -246,7 +246,7 @@ TEST_F(MacUtilTest, TestRemoveQuarantineAttributeNonExistentPath) {
   ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   FilePath non_existent_path = temp_dir_.path().Append("DummyPath");
-  ASSERT_FALSE(file_util::PathExists(non_existent_path));
+  ASSERT_FALSE(PathExists(non_existent_path));
   EXPECT_FALSE(RemoveQuarantineAttribute(non_existent_path));
 }
 

@@ -54,7 +54,7 @@ bool CheckForChromeExe(const std::vector<base::FilePath>& browser_exes,
   for (size_t i = 0; i < browser_exes.size(); ++i) {
     for (size_t j = 0; j < locations.size(); ++j) {
       base::FilePath path = locations[j].Append(browser_exes[i]);
-      if (file_util::PathExists(path)) {
+      if (base::PathExists(path)) {
         *browser_exe = path;
         return true;
       }
@@ -97,7 +97,7 @@ bool GetDefaultChromeExe(base::FilePath* browser_exe) {
   if (PathService::Get(base::DIR_MODULE, &module_dir)) {
     for (size_t j = 0; j < browser_exes.size(); ++j) {
       base::FilePath path = module_dir.Append(browser_exes[j]);
-      if (file_util::PathExists(path)) {
+      if (base::PathExists(path)) {
         *browser_exe = path;
         return true;
       }
@@ -411,7 +411,7 @@ void Automation::Init(
     }
     command.SetProgram(browser_exe);
   }
-  if (!file_util::PathExists(command.GetProgram())) {
+  if (!base::PathExists(command.GetProgram())) {
     std::string message = base::StringPrintf(
         "Could not find Chrome binary at: %" PRFilePath,
         command.GetProgram().value().c_str());

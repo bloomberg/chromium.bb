@@ -340,7 +340,7 @@ const int DownloadFileTest::kDummyRequestId = 67;
 TEST_F(DownloadFileTest, RenameFileFinal) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
   base::FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
   base::FilePath path_2(initial_path.InsertBeforeExtensionASCII("_2"));
   base::FilePath path_3(initial_path.InsertBeforeExtensionASCII("_3"));
@@ -356,8 +356,8 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_EQ(path_1, output_path);
 
   // Check the files.
-  EXPECT_FALSE(file_util::PathExists(initial_path));
-  EXPECT_TRUE(file_util::PathExists(path_1));
+  EXPECT_FALSE(base::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(path_1));
 
   // Download the data.
   const char* chunks1[] = { kTestData1, kTestData2 };
@@ -371,8 +371,8 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_EQ(path_2, output_path);
 
   // Check the files.
-  EXPECT_FALSE(file_util::PathExists(path_1));
-  EXPECT_TRUE(file_util::PathExists(path_2));
+  EXPECT_FALSE(base::PathExists(path_1));
+  EXPECT_TRUE(base::PathExists(path_2));
 
   const char* chunks2[] = { kTestData3 };
   AppendDataToFile(chunks2, 1);
@@ -385,8 +385,8 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_EQ(path_3, output_path);
 
   // Check the files.
-  EXPECT_FALSE(file_util::PathExists(path_2));
-  EXPECT_TRUE(file_util::PathExists(path_3));
+  EXPECT_FALSE(base::PathExists(path_2));
+  EXPECT_TRUE(base::PathExists(path_3));
 
   // Should not be able to get the hash until the file is closed.
   std::string hash;
@@ -402,8 +402,8 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_EQ(path_4, output_path);
 
   // Check the files.
-  EXPECT_FALSE(file_util::PathExists(path_3));
-  EXPECT_TRUE(file_util::PathExists(path_4));
+  EXPECT_FALSE(base::PathExists(path_3));
+  EXPECT_TRUE(base::PathExists(path_4));
 
   // Check the hash.
   EXPECT_TRUE(download_file_->GetHash(&hash));
@@ -411,11 +411,11 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Check that a rename with overwrite to an existing file succeeds.
   std::string file_contents;
-  ASSERT_FALSE(file_util::PathExists(path_5));
+  ASSERT_FALSE(base::PathExists(path_5));
   static const char file_data[] = "xyzzy";
   ASSERT_EQ(static_cast<int>(sizeof(file_data) - 1),
             file_util::WriteFile(path_5, file_data, sizeof(file_data) - 1));
-  ASSERT_TRUE(file_util::PathExists(path_5));
+  ASSERT_TRUE(base::PathExists(path_5));
   EXPECT_TRUE(file_util::ReadFileToString(path_5, &file_contents));
   EXPECT_EQ(std::string(file_data), file_contents);
 
@@ -435,18 +435,18 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 TEST_F(DownloadFileTest, RenameUniquifies) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
   base::FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
   base::FilePath path_1_suffixed(path_1.InsertBeforeExtensionASCII(" (1)"));
 
-  ASSERT_FALSE(file_util::PathExists(path_1));
+  ASSERT_FALSE(base::PathExists(path_1));
   static const char file_data[] = "xyzzy";
   ASSERT_EQ(static_cast<int>(sizeof(file_data)),
             file_util::WriteFile(path_1, file_data, sizeof(file_data)));
-  ASSERT_TRUE(file_util::PathExists(path_1));
+  ASSERT_TRUE(base::PathExists(path_1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, RenameAndUniquify(path_1, NULL));
-  EXPECT_TRUE(file_util::PathExists(path_1_suffixed));
+  EXPECT_TRUE(base::PathExists(path_1_suffixed));
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
   loop_.RunUntilIdle();
@@ -467,8 +467,8 @@ TEST_F(DownloadFileTest, RenameError) {
   // Targets
   base::FilePath target_path_suffixed(
       target_path.InsertBeforeExtensionASCII(" (1)"));
-  ASSERT_FALSE(file_util::PathExists(target_path));
-  ASSERT_FALSE(file_util::PathExists(target_path_suffixed));
+  ASSERT_FALSE(base::PathExists(target_path));
+  ASSERT_FALSE(base::PathExists(target_path_suffixed));
 
   // Make the directory unwritable and try to rename within it.
   {
@@ -479,7 +479,7 @@ TEST_F(DownloadFileTest, RenameError) {
     EXPECT_CALL(*input_stream_, RegisterCallback(IsNullCallback()));
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
               RenameAndAnnotate(target_path, NULL));
-    EXPECT_FALSE(file_util::PathExists(target_path_suffixed));
+    EXPECT_FALSE(base::PathExists(target_path_suffixed));
   }
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
@@ -491,7 +491,7 @@ TEST_F(DownloadFileTest, RenameError) {
 TEST_F(DownloadFileTest, StreamEmptySuccess) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
 
   // Test that calling the sink_callback_ on an empty stream shouldn't
   // do anything.
@@ -509,7 +509,7 @@ TEST_F(DownloadFileTest, StreamEmptySuccess) {
 TEST_F(DownloadFileTest, StreamEmptyError) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
 
   // Finish the download in error and make sure we see it on the
   // observer.
@@ -536,7 +536,7 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
 TEST_F(DownloadFileTest, StreamNonEmptySuccess) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
 
   const char* chunks1[] = { kTestData1, kTestData2 };
   ::testing::Sequence s1;
@@ -552,7 +552,7 @@ TEST_F(DownloadFileTest, StreamNonEmptySuccess) {
 TEST_F(DownloadFileTest, StreamNonEmptyError) {
   ASSERT_TRUE(CreateDownloadFile(0, true));
   base::FilePath initial_path(download_file_->FullPath());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
 
   const char* chunks1[] = { kTestData1, kTestData2 };
   ::testing::Sequence s1;

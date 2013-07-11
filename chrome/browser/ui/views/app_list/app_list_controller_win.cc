@@ -224,7 +224,7 @@ void CreateAppListShortcuts(
     base::FilePath shortcut_file =
         shortcut_paths[i].Append(app_list_shortcut_name).
             AddExtension(installer::kLnkExt);
-    if (!file_util::PathExists(shortcut_file.DirName()) &&
+    if (!base::PathExists(shortcut_file.DirName()) &&
         !file_util::CreateDirectory(shortcut_file.DirName())) {
       NOTREACHED();
       return;

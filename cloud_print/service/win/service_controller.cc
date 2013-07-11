@@ -162,7 +162,7 @@ HRESULT ServiceController::InstallService(const string16& user,
     return hr;
 
   base::FilePath service_path = GetBinary();
-  if (!file_util::PathExists(service_path))
+  if (!base::PathExists(service_path))
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
   CommandLine command_line(service_path);
   command_line.AppendSwitch(run_switch);
@@ -246,7 +246,7 @@ HRESULT ServiceController::UpdateBinaryPath() {
     return hr;
 
   base::FilePath service_path = GetBinary();
-  if (!file_util::PathExists(service_path))
+  if (!base::PathExists(service_path))
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 
   command_line_.SetProgram(service_path);

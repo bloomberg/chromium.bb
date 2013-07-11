@@ -129,7 +129,7 @@ TEST_F(ScreenshotTakerTest, TakeScreenshot) {
   EXPECT_EQ(ScreenshotTakerObserver::SCREENSHOT_SUCCESS, screenshot_result_);
 
   if (ScreenshotTakerObserver::SCREENSHOT_SUCCESS == screenshot_result_)
-    EXPECT_TRUE(file_util::PathExists(screenshot_path_));
+    EXPECT_TRUE(base::PathExists(screenshot_path_));
 }
 
 }  // namespace test

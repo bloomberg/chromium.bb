@@ -28,7 +28,7 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
 #if !defined(USE_AURA)
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = file_util::PathExists(local_state_path);
+  bool local_state_file_exists = base::PathExists(local_state_path);
   // Launch the first run dialog only for certain builds, and only if the user
   // has not already set preferences.
   if (internal::IsOrganicFirstRun() && !local_state_file_exists) {

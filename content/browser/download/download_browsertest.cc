@@ -664,7 +664,7 @@ class DownloadContentTest : public ContentBrowserTest {
               download->GetFullPath().BaseName().value());
     EXPECT_EQ(file_exists,
               (!download->GetFullPath().empty() &&
-               file_util::PathExists(download->GetFullPath())));
+               base::PathExists(download->GetFullPath())));
 
     if (file_exists) {
       std::string file_contents;
@@ -1412,14 +1412,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
 
   base::FilePath intermediate_path(download->GetFullPath());
   ASSERT_FALSE(intermediate_path.empty());
-  EXPECT_TRUE(file_util::PathExists(intermediate_path));
+  EXPECT_TRUE(base::PathExists(intermediate_path));
 
   download->Cancel(true /* user_cancel */);
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
 
   // The intermediate file should now be gone.
-  EXPECT_FALSE(file_util::PathExists(intermediate_path));
+  EXPECT_FALSE(base::PathExists(intermediate_path));
   EXPECT_TRUE(download->GetFullPath().empty());
 }
 
@@ -1444,14 +1444,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveDownload) {
 
     base::FilePath intermediate_path(download->GetFullPath());
     ASSERT_FALSE(intermediate_path.empty());
-    EXPECT_TRUE(file_util::PathExists(intermediate_path));
+    EXPECT_TRUE(base::PathExists(intermediate_path));
 
     download->Remove();
     RunAllPendingInMessageLoop(BrowserThread::FILE);
     RunAllPendingInMessageLoop();
 
     // The intermediate file should now be gone.
-    EXPECT_FALSE(file_util::PathExists(intermediate_path));
+    EXPECT_FALSE(base::PathExists(intermediate_path));
   }
 
   // A completed download shouldn't delete the downloaded file when it is
@@ -1467,13 +1467,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveDownload) {
 
     // The target path should exist.
     base::FilePath target_path(download->GetTargetFilePath());
-    EXPECT_TRUE(file_util::PathExists(target_path));
+    EXPECT_TRUE(base::PathExists(target_path));
     download->Remove();
     RunAllPendingInMessageLoop(BrowserThread::FILE);
     RunAllPendingInMessageLoop();
 
     // The file should still exist.
-    EXPECT_TRUE(file_util::PathExists(target_path));
+    EXPECT_TRUE(base::PathExists(target_path));
   }
 }
 
@@ -1502,7 +1502,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
 
   base::FilePath intermediate_path(download->GetFullPath());
   ASSERT_FALSE(intermediate_path.empty());
-  EXPECT_TRUE(file_util::PathExists(intermediate_path));
+  EXPECT_TRUE(base::PathExists(intermediate_path));
 
   // Resume and remove download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
@@ -1513,7 +1513,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   // The intermediate file should now be gone.
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(file_util::PathExists(intermediate_path));
+  EXPECT_FALSE(base::PathExists(intermediate_path));
 
   // Start the second download and wait until it's done. The test server is
   // single threaded. The response to this download request should follow the
@@ -1549,7 +1549,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
 
   base::FilePath intermediate_path(download->GetFullPath());
   ASSERT_FALSE(intermediate_path.empty());
-  EXPECT_TRUE(file_util::PathExists(intermediate_path));
+  EXPECT_TRUE(base::PathExists(intermediate_path));
 
   // Resume and cancel download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
@@ -1560,7 +1560,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   // The intermediate file should now be gone.
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(file_util::PathExists(intermediate_path));
+  EXPECT_FALSE(base::PathExists(intermediate_path));
   EXPECT_TRUE(download->GetFullPath().empty());
 
   // Start the second download and wait until it's done. The test server is

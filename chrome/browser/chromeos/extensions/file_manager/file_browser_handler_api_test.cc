@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
       FileBrowserHandlerExtensionTest::TestSelectFileFunctionFactory));
 
   // Selected path should still not exist.
-  ASSERT_FALSE(file_util::PathExists(selected_path));
+  ASSERT_FALSE(base::PathExists(selected_path));
 
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("file_browser/filehandler_create"));
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
 
   // Selected path should have been created by the test extension after the
   // extension function call.
-  ASSERT_TRUE(file_util::PathExists(selected_path));
+  ASSERT_TRUE(base::PathExists(selected_path));
 
   // Let's check that the file has the expected content.
   const std::string expected_contents = "hello from test extension.";

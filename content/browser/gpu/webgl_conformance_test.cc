@@ -56,7 +56,7 @@ class WebGLConformanceTest : public ContentBrowserTest {
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &path));
     path = path.Append(FILE_PATH_LITERAL("gpu"))
         .Append(FILE_PATH_LITERAL("webgl_conformance_test_expectations.txt"));
-    ASSERT_TRUE(file_util::PathExists(path));
+    ASSERT_TRUE(base::PathExists(path));
     ASSERT_TRUE(test_expectations_.LoadTestExpectations(path));
   }
 

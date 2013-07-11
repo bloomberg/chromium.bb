@@ -530,7 +530,7 @@ base::FilePath ShellIntegration::GetStartMenuShortcut(
 
     shortcut = shortcut.Append(shortcut_name).Append(shortcut_name +
                                                      installer::kLnkExt);
-    if (file_util::PathExists(shortcut))
+    if (base::PathExists(shortcut))
       return shortcut;
   }
 

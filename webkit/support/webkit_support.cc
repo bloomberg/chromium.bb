@@ -201,15 +201,15 @@ class WebPluginImplWithPageDelegate
 base::FilePath GetWebKitRootDirFilePath() {
   base::FilePath basePath;
   PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
-  if (file_util::PathExists(
+  if (base::PathExists(
           basePath.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
     // We're in a WebKit-in-chrome checkout.
     basePath = basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-  } else if (file_util::PathExists(
+  } else if (base::PathExists(
           basePath.Append(FILE_PATH_LITERAL("chromium")))) {
     // We're in a WebKit-only checkout on Windows.
     basePath = basePath.Append(FILE_PATH_LITERAL("../.."));
-  } else if (file_util::PathExists(
+  } else if (base::PathExists(
           basePath.Append(FILE_PATH_LITERAL("webkit/support")))) {
     // We're in a WebKit-only/xcodebuild checkout on Mac
     basePath = basePath.Append(FILE_PATH_LITERAL("../../.."));
@@ -246,7 +246,7 @@ namespace webkit_support {
 base::FilePath GetChromiumRootDirFilePath() {
   base::FilePath basePath;
   PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
-  if (file_util::PathExists(
+  if (base::PathExists(
           basePath.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
     // We're in a WebKit-in-chrome checkout.
     return basePath;
@@ -512,7 +512,7 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
   // On Android, the file is actually accessed through file-over-http. Disable
   // the following CHECK because the file is unlikely to exist on the device.
 #if !defined(OS_ANDROID)
-  CHECK(file_util::PathExists(replacePath)) << replacePath.value() <<
+  CHECK(base::PathExists(replacePath)) << replacePath.value() <<
       " (re-written from " << utf8_url << ") does not exit";
 #endif
 

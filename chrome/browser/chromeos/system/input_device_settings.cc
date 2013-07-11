@@ -30,7 +30,7 @@ const char kMouseControl[] = "/opt/google/mouse/mousecontrol";
 
 bool ScriptExists(const std::string& script) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  return file_util::PathExists(base::FilePath(script));
+  return base::PathExists(base::FilePath(script));
 }
 
 // Executes the input control script asynchronously, if it exists.

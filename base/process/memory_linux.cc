@@ -150,7 +150,7 @@ bool AdjustOOMScore(ProcessId process, int score) {
 
   // Attempt to write the newer oom_score_adj file first.
   FilePath oom_file = oom_path.AppendASCII("oom_score_adj");
-  if (file_util::PathExists(oom_file)) {
+  if (PathExists(oom_file)) {
     std::string score_str = IntToString(score);
     DVLOG(1) << "Adjusting oom_score_adj of " << process << " to "
              << score_str;
@@ -163,7 +163,7 @@ bool AdjustOOMScore(ProcessId process, int score) {
   // If the oom_score_adj file doesn't exist, then we write the old
   // style file and translate the oom_adj score to the range 0-15.
   oom_file = oom_path.AppendASCII("oom_adj");
-  if (file_util::PathExists(oom_file)) {
+  if (PathExists(oom_file)) {
     // Max score for the old oom_adj range.  Used for conversion of new
     // values to old values.
     const int kMaxOldOomScore = 15;

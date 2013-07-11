@@ -71,7 +71,7 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
     return true;
 
   base::FilePath db_path = GetDatabasePath();
-  if (init_option == FAIL_IF_NONEXISTENT && !file_util::PathExists(db_path))
+  if (init_option == FAIL_IF_NONEXISTENT && !base::PathExists(db_path))
     return false;
 
   std::string path = FilePathToString(db_path);

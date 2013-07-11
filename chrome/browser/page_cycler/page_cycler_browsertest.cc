@@ -51,9 +51,9 @@ class PageCyclerBrowserTest : public content::NotificationObserver,
     errors_file_ = temp_path.AppendASCII("errors");
     stats_file_ = temp_path.AppendASCII("stats");
 
-    ASSERT_FALSE(file_util::PathExists(urls_file_));
-    ASSERT_FALSE(file_util::PathExists(errors_file_));
-    ASSERT_FALSE(file_util::PathExists(stats_file_));
+    ASSERT_FALSE(base::PathExists(urls_file_));
+    ASSERT_FALSE(base::PathExists(errors_file_));
+    ASSERT_FALSE(base::PathExists(stats_file_));
   }
 
   // Initialize a PageCycler using either the base fields, or using provided
@@ -152,17 +152,17 @@ class PageCyclerCachedBrowserTest : public PageCyclerBrowserTest {
     test_dir = test_dir.AppendASCII("page_cycler");
 
     base::FilePath source_data_dir = test_dir.AppendASCII("cached_data_dir");
-    CHECK(file_util::PathExists(source_data_dir));
+    CHECK(base::PathExists(source_data_dir));
 
     CHECK(user_data_dir_.CreateUniqueTempDir());
 
     base::FilePath dest_data_dir =
         user_data_dir_.path().AppendASCII("cached_data_dir");
-    CHECK(!file_util::PathExists(dest_data_dir));
+    CHECK(!base::PathExists(dest_data_dir));
 
     CHECK(base::CopyDirectory(source_data_dir, user_data_dir_.path(),
                               true));  // recursive.
-    CHECK(file_util::PathExists(dest_data_dir));
+    CHECK(base::PathExists(dest_data_dir));
 
     command_line->AppendSwitchPath(switches::kUserDataDir,
                                    dest_data_dir);
@@ -177,9 +177,9 @@ class PageCyclerCachedBrowserTest : public PageCyclerBrowserTest {
     errors_file_ = temp_path.AppendASCII("errors");
     stats_file_ = temp_path.AppendASCII("stats");
 
-    ASSERT_TRUE(file_util::PathExists(urls_file_));
-    ASSERT_FALSE(file_util::PathExists(errors_file_));
-    ASSERT_FALSE(file_util::PathExists(stats_file_));
+    ASSERT_TRUE(base::PathExists(urls_file_));
+    ASSERT_FALSE(base::PathExists(errors_file_));
+    ASSERT_FALSE(base::PathExists(stats_file_));
   }
 
  private:
@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, BasicTest) {
   page_cycler()->Run();
 
   content::RunMessageLoop();
-  ASSERT_FALSE(file_util::PathExists(errors_file()));
-  ASSERT_TRUE(file_util::PathExists(stats_file()));
+  ASSERT_FALSE(base::PathExists(errors_file()));
+  ASSERT_TRUE(base::PathExists(stats_file()));
 }
 
 // Test to make sure that PageCycler will recognize unvisitable URLs, and will
@@ -236,8 +236,8 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, UnvisitableURL) {
   page_cycler()->Run();
 
   content::RunMessageLoop();
-  ASSERT_TRUE(file_util::PathExists(errors_file()));
-  ASSERT_TRUE(file_util::PathExists(stats_file()));
+  ASSERT_TRUE(base::PathExists(errors_file()));
+  ASSERT_TRUE(base::PathExists(stats_file()));
 
   std::vector<std::string> errors = GetErrorsFromFile();
 
@@ -270,8 +270,8 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, InvalidURL) {
   page_cycler()->Run();
 
   content::RunMessageLoop();
-  ASSERT_TRUE(file_util::PathExists(errors_file()));
-  ASSERT_TRUE(file_util::PathExists(stats_file()));
+  ASSERT_TRUE(base::PathExists(errors_file()));
+  ASSERT_TRUE(base::PathExists(stats_file()));
 
   std::vector<std::string> errors = GetErrorsFromFile();
   ASSERT_EQ(1u, errors.size());
@@ -303,8 +303,8 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
   page_cycler()->Run();
 
   content::RunMessageLoop();
-  ASSERT_TRUE(file_util::PathExists(errors_file()));
-  ASSERT_TRUE(file_util::PathExists(stats_file()));
+  ASSERT_TRUE(base::PathExists(errors_file()));
+  ASSERT_TRUE(base::PathExists(stats_file()));
 
   std::vector<std::string> errors = GetErrorsFromFile();
   ASSERT_EQ(1u, errors.size());
@@ -343,8 +343,8 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, DISABLED_PlaybackMode) {
   page_cycler()->Run();
 
   content::RunMessageLoop();
-  ASSERT_TRUE(file_util::PathExists(stats_file()));
-  ASSERT_FALSE(file_util::PathExists(errors_file()));
+  ASSERT_TRUE(base::PathExists(stats_file()));
+  ASSERT_FALSE(base::PathExists(errors_file()));
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
   // other URLs.
 
   base::FilePath new_urls_file = temp.path().AppendASCII("urls");
-  ASSERT_FALSE(file_util::PathExists(new_urls_file));
+  ASSERT_FALSE(base::PathExists(new_urls_file));
 
   ASSERT_TRUE(file_util::WriteFile(new_urls_file, kCacheMissURL,
                                    sizeof(kCacheMissURL)));
@@ -383,8 +383,8 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
   page_cycler()->Run();
 
   content::RunMessageLoop();
-  ASSERT_TRUE(file_util::PathExists(errors_file()));
-  ASSERT_TRUE(file_util::PathExists(stats_file()));
+  ASSERT_TRUE(base::PathExists(errors_file()));
+  ASSERT_TRUE(base::PathExists(stats_file()));
 
   std::vector<std::string> errors = GetErrorsFromFile();
   ASSERT_EQ(1u, errors.size());

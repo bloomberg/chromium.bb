@@ -427,7 +427,7 @@ base::FilePath BackupLocalStateFile(
     const base::FilePath& local_state_folder = local_state_folders[i];
     base::FilePath state_file(
         local_state_folder.Append(chrome::kLocalStateFilename));
-    if (!file_util::PathExists(state_file))
+    if (!base::PathExists(state_file))
       continue;
     if (!file_util::CreateTemporaryFile(&backup))
       LOG(ERROR) << "Failed to create temporary file for Local State.";

@@ -268,7 +268,7 @@ void ReadDataFromSpeechFile(char* data, int length) {
                .Append(FILE_PATH_LITERAL("test"))
                .Append(FILE_PATH_LITERAL("data"))
                .Append(FILE_PATH_LITERAL("speech_16b_stereo_48kHz.raw"));
-  DCHECK(file_util::PathExists(data_file));
+  DCHECK(base::PathExists(data_file));
   int64 data_file_size64 = 0;
   DCHECK(file_util::GetFileSize(data_file, &data_file_size64));
   EXPECT_EQ(length, file_util::ReadFile(data_file, data, length));

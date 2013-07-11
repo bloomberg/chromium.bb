@@ -597,7 +597,7 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
 }
 
 bool ChromiumEnv::FileExists(const std::string& fname) {
-  return ::file_util::PathExists(CreateFilePath(fname));
+  return ::base::PathExists(CreateFilePath(fname));
 }
 
 Status ChromiumEnv::GetChildren(const std::string& dir,
@@ -665,7 +665,7 @@ Status ChromiumEnv::GetFileSize(const std::string& fname, uint64_t* size) {
 Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   Status result;
   base::FilePath src_file_path = CreateFilePath(src);
-  if (!::file_util::PathExists(src_file_path))
+  if (!::base::PathExists(src_file_path))
     return result;
   base::FilePath destination = CreateFilePath(dst);
 

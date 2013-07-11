@@ -81,7 +81,7 @@ bool IsBrowserRunning(const base::FilePath& chrome_exe) {
 // |chrome_exe|.
 bool NewChromeExeExists(const base::FilePath& chrome_exe) {
   base::FilePath new_chrome_exe(chrome_exe.DirName().Append(kNewChromeExe));
-  return file_util::PathExists(new_chrome_exe);
+  return base::PathExists(new_chrome_exe);
 }
 
 bool GetUpdateCommand(bool is_per_user, string16* update_command) {

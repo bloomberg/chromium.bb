@@ -122,7 +122,7 @@ base::DictionaryValue* ReadJSONManifest(
 base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
   base::FilePath manifest_path = GetPlatformDir(unpack_path).AppendASCII(
       "pnacl_public_pnacl_json");
-  if (!file_util::PathExists(manifest_path))
+  if (!base::PathExists(manifest_path))
     return NULL;
   return ReadJSONManifest(manifest_path);
 }
@@ -132,7 +132,7 @@ base::DictionaryValue* ReadComponentManifest(
     const base::FilePath& unpack_path) {
   base::FilePath manifest_path = unpack_path.Append(
       FILE_PATH_LITERAL("manifest.json"));
-  if (!file_util::PathExists(manifest_path))
+  if (!base::PathExists(manifest_path))
     return NULL;
   return ReadJSONManifest(manifest_path);
 }
@@ -265,7 +265,7 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   // Passed the basic tests. Time to install it.
   base::FilePath path = GetPnaclBaseDirectory().AppendASCII(
       version.GetString());
-  if (file_util::PathExists(path)) {
+  if (base::PathExists(path)) {
     LOG(WARNING) << "Target path already exists, not installing.";
     NotifyInstallError();
     return false;
@@ -372,7 +372,7 @@ void FinishPnaclUpdateRegistration(const Version& current_version,
 void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath path = pci->GetPnaclBaseDirectory();
-  if (!file_util::PathExists(path)) {
+  if (!base::PathExists(path)) {
     if (!file_util::CreateDirectory(path)) {
       NOTREACHED() << "Could not create base Pnacl directory.";
       return;

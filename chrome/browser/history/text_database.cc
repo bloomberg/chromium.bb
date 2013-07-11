@@ -127,7 +127,7 @@ TextDatabase::DBIdent TextDatabase::FileNameToID(
 bool TextDatabase::Init() {
   // Make sure, if we're not allowed to create the file, that it exists.
   if (!allow_create_) {
-    if (!file_util::PathExists(file_name_))
+    if (!base::PathExists(file_name_))
       return false;
   }
 

@@ -150,7 +150,7 @@ TEST(ExtensionFromWebApp, Basic) {
                                    web_app.icons[i].width,
                                    ExtensionIconSet::MATCH_EXACTLY);
     ASSERT_TRUE(!resource.empty());
-    EXPECT_TRUE(file_util::PathExists(resource.GetFilePath()));
+    EXPECT_TRUE(base::PathExists(resource.GetFilePath()));
   }
 }
 

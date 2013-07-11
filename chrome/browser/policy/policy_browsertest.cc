@@ -287,14 +287,14 @@ void DownloadAndVerifyFile(
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   base::FilePath downloaded = dir.Append(file);
-  EXPECT_FALSE(file_util::PathExists(downloaded));
+  EXPECT_FALSE(base::PathExists(downloaded));
   ui_test_utils::NavigateToURLWithDisposition(
       browser, url, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   observer.WaitForFinished();
   EXPECT_EQ(
       1u, observer.NumDownloadsSeenInState(content::DownloadItem::COMPLETE));
-  EXPECT_TRUE(file_util::PathExists(downloaded));
+  EXPECT_TRUE(base::PathExists(downloaded));
   base::FileEnumerator enumerator(dir, false, base::FileEnumerator::FILES);
   EXPECT_EQ(file, enumerator.Next().BaseName());
   EXPECT_EQ(base::FilePath(), enumerator.Next());
@@ -1127,7 +1127,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
 
   // Verify that the test page exists. It is only present in checkouts with
   // src-internal.
-  if (!file_util::PathExists(ui_test_utils::GetTestFilePath(
+  if (!base::PathExists(ui_test_utils::GetTestFilePath(
       base::FilePath(FILE_PATH_LITERAL("plugin")),
       base::FilePath(FILE_PATH_LITERAL("quicktime.html"))))) {
     LOG(INFO) <<
@@ -1249,7 +1249,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   UpdateProviderPolicy(policies);
   DownloadAndVerifyFile(browser(), forced_dir.path(), file);
   // Verify that the first download location wasn't affected.
-  EXPECT_FALSE(file_util::PathExists(initial_dir.path().Append(file)));
+  EXPECT_FALSE(base::PathExists(initial_dir.path().Append(file)));
 }
 #endif
 

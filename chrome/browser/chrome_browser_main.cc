@@ -236,7 +236,7 @@ PrefService* InitializeLocalState(
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::InitializeLocalState")
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = file_util::PathExists(local_state_path);
+  bool local_state_file_exists = base::PathExists(local_state_path);
 
   // Load local state.  This includes the application locale so we know which
   // locale dll to load.  This also causes local state prefs to be registered.

@@ -339,7 +339,7 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
   // If the file is still there, then the error could be due to AES not being
   // available or some other error during the AES invocation. In either case,
   // we don't surface the error to the user.
-  if (!file_util::PathExists(full_path_)) {
+  if (!base::PathExists(full_path_)) {
     DCHECK(FAILED(hr));
     result = MapScanAndSaveErrorCodeToInterruptReason(hr);
     if (result == DOWNLOAD_INTERRUPT_REASON_NONE) {

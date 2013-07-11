@@ -288,7 +288,7 @@ base::FilePath ReadPathFromRegistry(HKEY root, const wchar_t* path_name) {
   base::win::RegKey gcp_key(HKEY_CURRENT_USER, kCloudPrintRegKey, KEY_READ);
   string16 data;
   if (SUCCEEDED(gcp_key.ReadValue(path_name, &data)) &&
-      file_util::PathExists(base::FilePath(data))) {
+      base::PathExists(base::FilePath(data))) {
     return base::FilePath(data);
   }
   return base::FilePath();

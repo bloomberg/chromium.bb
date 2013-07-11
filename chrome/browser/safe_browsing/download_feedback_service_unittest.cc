@@ -229,7 +229,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackComplete) {
 
   // File should still exist since our FakeDownloadFeedback does not delete it.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(file_util::PathExists(file_path));
+  EXPECT_TRUE(base::PathExists(file_path));
 }
 
 TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
@@ -296,9 +296,9 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
   base::RunLoop().RunUntilIdle();
   // These files should still exist since the FakeDownloadFeedback does not
   // delete them.
-  EXPECT_TRUE(file_util::PathExists(file_path[0]));
-  EXPECT_TRUE(file_util::PathExists(file_path[1]));
-  EXPECT_TRUE(file_util::PathExists(file_path[2]));
+  EXPECT_TRUE(base::PathExists(file_path[0]));
+  EXPECT_TRUE(base::PathExists(file_path[1]));
+  EXPECT_TRUE(base::PathExists(file_path[2]));
 }
 
 TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
@@ -361,17 +361,17 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   EXPECT_EQ(2U, num_feedbacks());
 
   // File should still exist since the FileUtilProxy task hasn't run yet.
-  EXPECT_TRUE(file_util::PathExists(file_path[2]));
+  EXPECT_TRUE(base::PathExists(file_path[2]));
 
   base::RunLoop().RunUntilIdle();
   // File should be deleted since the AcquireFileCallback ran after the service
   // was deleted.
-  EXPECT_FALSE(file_util::PathExists(file_path[2]));
+  EXPECT_FALSE(base::PathExists(file_path[2]));
 
   // These files should still exist since the FakeDownloadFeedback does not
   // delete them.
-  EXPECT_TRUE(file_util::PathExists(file_path[0]));
-  EXPECT_TRUE(file_util::PathExists(file_path[1]));
+  EXPECT_TRUE(base::PathExists(file_path[0]));
+  EXPECT_TRUE(base::PathExists(file_path[1]));
 }
 
 }  // namespace safe_browsing

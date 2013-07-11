@@ -153,5 +153,5 @@ bool NetLogTempFile::GetNetExportLogDirectory(base::FilePath* path) {
 bool NetLogTempFile::NetExportLogExists() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
   DCHECK(!log_path_.empty());
-  return file_util::PathExists(log_path_);
+  return base::PathExists(log_path_);
 }

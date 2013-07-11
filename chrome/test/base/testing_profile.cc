@@ -291,7 +291,7 @@ void TestingProfile::Init() {
   else
     CreateTestingPrefService();
 
-  if (!file_util::PathExists(profile_path_))
+  if (!base::PathExists(profile_path_))
     file_util::CreateDirectory(profile_path_);
 
   // TODO(joaodasilva): remove this once this PKS isn't created in ProfileImpl

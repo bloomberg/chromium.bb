@@ -136,7 +136,7 @@ bool PluginsHandler::Validate(const Extension* extension,
     for (std::vector<extensions::PluginInfo>::const_iterator plugin =
              plugins->begin();
          plugin != plugins->end(); ++plugin) {
-      if (!file_util::PathExists(plugin->path)) {
+      if (!base::PathExists(plugin->path)) {
         *error = l10n_util::GetStringFUTF8(
             IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
             plugin->path.LossyDisplayName());

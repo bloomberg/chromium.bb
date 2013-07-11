@@ -478,7 +478,7 @@ void AppPackUpdater::BlockingInstallCacheEntry(
   base::FilePath cache_dir(kAppPackCacheDir);
   base::FilePath cached_crx_path = cache_dir.Append(basename);
 
-  if (file_util::PathExists(cached_crx_path)) {
+  if (base::PathExists(cached_crx_path)) {
     LOG(WARNING) << "AppPack downloaded a crx whose filename will overwrite "
                  << "an existing cached crx.";
     base::Delete(cached_crx_path, true /* recursive */);

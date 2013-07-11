@@ -40,22 +40,22 @@ class DuplicateTreeDetectorTest : public testing::Test {
     base::FilePath d1(first_root);
     d1 = d1.AppendASCII("D1");
     file_util::CreateDirectory(d1);
-    ASSERT_TRUE(file_util::PathExists(d1));
+    ASSERT_TRUE(base::PathExists(d1));
 
     base::FilePath f1(d1);
     f1 = f1.AppendASCII("F1");
     CreateTextFile(f1.MaybeAsASCII(), text_content_1_);
-    ASSERT_TRUE(file_util::PathExists(f1));
+    ASSERT_TRUE(base::PathExists(f1));
 
     base::FilePath d2(d1);
     d2 = d2.AppendASCII("D2");
     file_util::CreateDirectory(d2);
-    ASSERT_TRUE(file_util::PathExists(d2));
+    ASSERT_TRUE(base::PathExists(d2));
 
     base::FilePath f2(d2);
     f2 = f2.AppendASCII("F2");
     CreateTextFile(f2.MaybeAsASCII(), text_content_2_);
-    ASSERT_TRUE(file_util::PathExists(f2));
+    ASSERT_TRUE(base::PathExists(f2));
 
     ASSERT_TRUE(installer::test::CopyFileHierarchy(d1, second_root));
   }
@@ -94,7 +94,7 @@ TEST_F(DuplicateTreeDetectorTest, TestSourceContainsDest) {
   base::FilePath new_file(temp_source_dir_.path());
   new_file = new_file.AppendASCII("FNew");
   CreateTextFile(new_file.MaybeAsASCII(), text_content_1_);
-  ASSERT_TRUE(file_util::PathExists(new_file));
+  ASSERT_TRUE(base::PathExists(new_file));
 
   EXPECT_FALSE(installer::IsIdenticalFileHierarchy(temp_source_dir_.path(),
                                                    temp_dest_dir_.path()));
@@ -108,7 +108,7 @@ TEST_F(DuplicateTreeDetectorTest, TestDestContainsSource) {
   base::FilePath new_file(temp_dest_dir_.path());
   new_file = new_file.AppendASCII("FNew");
   CreateTextFile(new_file.MaybeAsASCII(), text_content_1_);
-  ASSERT_TRUE(file_util::PathExists(new_file));
+  ASSERT_TRUE(base::PathExists(new_file));
 
   EXPECT_TRUE(installer::IsIdenticalFileHierarchy(temp_source_dir_.path(),
                                                   temp_dest_dir_.path()));

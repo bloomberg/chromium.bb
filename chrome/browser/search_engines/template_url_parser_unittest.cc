@@ -77,7 +77,7 @@ TemplateURLParserTest::~TemplateURLParserTest() {
 void TemplateURLParserTest::SetUp() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &full_path_));
   full_path_ = full_path_.AppendASCII("osdd");
-  if (!file_util::PathExists(full_path_)) {
+  if (!base::PathExists(full_path_)) {
     LOG(ERROR) <<
         "This test can't be run without some non-redistributable data";
     full_path_ = base::FilePath();
@@ -95,7 +95,7 @@ void TemplateURLParserTest::ParseFile(
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &full_path));
   full_path = full_path.AppendASCII("osdd");
   full_path = full_path.AppendASCII(file_name);
-  ASSERT_TRUE(file_util::PathExists(full_path));
+  ASSERT_TRUE(base::PathExists(full_path));
 
   std::string contents;
   ASSERT_TRUE(file_util::ReadFileToString(full_path, &contents));

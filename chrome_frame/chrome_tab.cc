@@ -344,12 +344,12 @@ HRESULT SetupUserLevelHelper() {
   if (PathService::Get(base::FILE_MODULE, &module_path)) {
     module_path = module_path.DirName();
     helper_path = module_path.Append(kChromeFrameHelperExe);
-    if (!file_util::PathExists(helper_path)) {
+    if (!base::PathExists(helper_path)) {
       // If we can't find the helper in the current directory, try looking
       // one up (this is the layout in the build output folder).
       module_path = module_path.DirName();
       helper_path = module_path.Append(kChromeFrameHelperExe);
-      DCHECK(file_util::PathExists(helper_path)) <<
+      DCHECK(base::PathExists(helper_path)) <<
           "Could not find chrome_frame_helper.exe.";
     }
 
@@ -357,7 +357,7 @@ HRESULT SetupUserLevelHelper() {
     HWND old_window = FindWindow(kChromeFrameHelperWindowClassName,
                                  kChromeFrameHelperWindowName);
 
-    if (file_util::PathExists(helper_path)) {
+    if (base::PathExists(helper_path)) {
       std::wstring helper_path_cmd(L"\"");
       helper_path_cmd += helper_path.value();
       helper_path_cmd += L"\" ";

@@ -95,7 +95,7 @@ FileCacheMetadata::InitializeResult FileCacheMetadata::Initialize(
     const base::FilePath& db_path) {
   AssertOnSequencedWorkerPool();
 
-  bool created = !file_util::PathExists(db_path);
+  bool created = !base::PathExists(db_path);
 
   leveldb::DB* level_db = NULL;
   leveldb::Options options;

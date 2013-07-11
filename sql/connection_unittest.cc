@@ -325,7 +325,7 @@ TEST_F(SQLConnectionTest, RazeEmptyDB) {
 TEST_F(SQLConnectionTest, RazeNOTADB) {
   db().Close();
   sql::Connection::Delete(db_path());
-  ASSERT_FALSE(file_util::PathExists(db_path()));
+  ASSERT_FALSE(base::PathExists(db_path()));
 
   {
     file_util::ScopedFILE file(file_util::OpenFile(db_path(), "w"));
@@ -334,7 +334,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
     const char* kJunk = "This is the hour of our discontent.";
     fputs(kJunk, file.get());
   }
-  ASSERT_TRUE(file_util::PathExists(db_path()));
+  ASSERT_TRUE(base::PathExists(db_path()));
 
   // SQLite will successfully open the handle, but will fail with
   // SQLITE_IOERR_SHORT_READ on pragma statemenets which read the
@@ -551,12 +551,12 @@ TEST_F(SQLConnectionTest, Delete) {
   // Should have both a main database file and a journal file because
   // of journal_mode PERSIST.
   base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
-  ASSERT_TRUE(file_util::PathExists(db_path()));
-  ASSERT_TRUE(file_util::PathExists(journal));
+  ASSERT_TRUE(base::PathExists(db_path()));
+  ASSERT_TRUE(base::PathExists(journal));
 
   sql::Connection::Delete(db_path());
-  EXPECT_FALSE(file_util::PathExists(db_path()));
-  EXPECT_FALSE(file_util::PathExists(journal));
+  EXPECT_FALSE(base::PathExists(db_path()));
+  EXPECT_FALSE(base::PathExists(journal));
 }
 
 }  // namespace

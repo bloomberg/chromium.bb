@@ -131,7 +131,7 @@ void Firefox3Importer::StartImport(
 
 void Firefox3Importer::ImportHistory() {
   base::FilePath file = source_path_.AppendASCII("places.sqlite");
-  if (!file_util::PathExists(file))
+  if (!base::PathExists(file))
     return;
 
   sql::Connection db;
@@ -175,7 +175,7 @@ void Firefox3Importer::ImportHistory() {
 
 void Firefox3Importer::ImportBookmarks() {
   base::FilePath file = source_path_.AppendASCII("places.sqlite");
-  if (!file_util::PathExists(file))
+  if (!base::PathExists(file))
     return;
 
   sql::Connection db;
@@ -333,13 +333,13 @@ void Firefox3Importer::ImportPasswords() {
   std::vector<content::PasswordForm> forms;
   base::FilePath source_path = source_path_;
   base::FilePath file = source_path.AppendASCII("signons.sqlite");
-  if (file_util::PathExists(file)) {
+  if (base::PathExists(file)) {
     // Since Firefox 3.1, passwords are in signons.sqlite db.
     decryptor.ReadAndParseSignons(file, &forms);
   } else {
     // Firefox 3.0 uses signons3.txt to store the passwords.
     file = source_path.AppendASCII("signons3.txt");
-    if (!file_util::PathExists(file))
+    if (!base::PathExists(file))
       file = source_path.AppendASCII("signons2.txt");
 
     std::string content;
@@ -371,7 +371,7 @@ void Firefox3Importer::ImportHomepage() {
 void Firefox3Importer::GetSearchEnginesXMLData(
     std::vector<std::string>* search_engine_data) {
   base::FilePath file = source_path_.AppendASCII("search.sqlite");
-  if (!file_util::PathExists(file))
+  if (!base::PathExists(file))
     return;
 
   sql::Connection db;

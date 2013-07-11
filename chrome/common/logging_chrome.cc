@@ -167,7 +167,7 @@ base::FilePath SetUpSymlinkIfNeeded(const base::FilePath& symlink_path,
   // starting a new log, then delete the old symlink and make a new
   // one to a fresh log file.
   base::FilePath target_path;
-  bool symlink_exists = file_util::PathExists(symlink_path);
+  bool symlink_exists = base::PathExists(symlink_path);
   if (new_log || !symlink_exists) {
     target_path = GenerateTimestampedName(symlink_path, base::Time::Now());
 

@@ -47,7 +47,7 @@ TEST(SandboxIsolatedOriginDatabaseTest, MigrationTest) {
   {
     SandboxOriginDatabase database_old(dir.path());
     old_db_path = database_old.GetDatabasePath();
-    EXPECT_FALSE(file_util::PathExists(old_db_path));
+    EXPECT_FALSE(base::PathExists(old_db_path));
     EXPECT_TRUE(database_old.GetPathForOrigin(kOrigin, &path));
     EXPECT_FALSE(path.empty());
     EXPECT_TRUE(file_util::DirectoryExists(old_db_path));
@@ -75,13 +75,13 @@ TEST(SandboxIsolatedOriginDatabaseTest, MigrationTest) {
   std::string origin_db_data;
   base::FilePath directory_db_path = dir.path().Append(path);
   EXPECT_TRUE(file_util::DirectoryExists(directory_db_path));
-  EXPECT_TRUE(file_util::PathExists(directory_db_path.AppendASCII("dummy")));
+  EXPECT_TRUE(base::PathExists(directory_db_path.AppendASCII("dummy")));
   EXPECT_TRUE(file_util::ReadFileToString(
       directory_db_path.AppendASCII("dummy"), &origin_db_data));
   EXPECT_EQ(kFakeDirectoryData, origin_db_data);
 
   // After the migration the database must be gone.
-  EXPECT_FALSE(file_util::PathExists(old_db_path));
+  EXPECT_FALSE(base::PathExists(old_db_path));
 }
 
 }  // namespace fileapi

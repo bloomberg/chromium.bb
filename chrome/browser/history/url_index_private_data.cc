@@ -396,7 +396,7 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
     const base::FilePath& file_path,
     const std::string& languages) {
   base::TimeTicks beginning_time = base::TimeTicks::Now();
-  if (!file_util::PathExists(file_path))
+  if (!base::PathExists(file_path))
     return NULL;
   std::string data;
   // If there is no cache file then simply give up. This will cause us to

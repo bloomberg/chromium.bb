@@ -205,8 +205,8 @@ bool SimpleResourceLoader::LoadLocalePack(
         locales_path.Append(*scan + pack_suffix);
     base::FilePath dll_path = locales_path.Append(*scan + dll_suffix);
 
-    if (file_util::PathExists(resource_pack_path) &&
-        file_util::PathExists(dll_path)) {
+    if (base::PathExists(resource_pack_path) &&
+        base::PathExists(dll_path)) {
       scoped_ptr<ui::DataPack> cur_data_pack(
           new ui::DataPack(ui::SCALE_FACTOR_100P));
       if (!cur_data_pack->LoadFromPath(resource_pack_path))

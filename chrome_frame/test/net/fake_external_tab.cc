@@ -480,7 +480,7 @@ BOOL SupplyProxyCredentials::EnumChildren(HWND hwnd, LPARAM param) {
 FakeExternalTab::FakeExternalTab() {
   user_data_dir_ = chrome_frame_test::GetProfilePathForIE();
 
-  if (file_util::PathExists(user_data_dir_)) {
+  if (base::PathExists(user_data_dir_)) {
     VLOG(1) << __FUNCTION__ << " deleting IE Profile user data directory "
             << user_data_dir_.value();
     bool deleted = base::Delete(user_data_dir_, true);

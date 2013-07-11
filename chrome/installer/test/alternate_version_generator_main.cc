@@ -140,7 +140,7 @@ int wmain(int argc, wchar_t *argv[]) {
     return EXIT_FAILURE;
   }
 
-  if (!file_util::PathExists(mini_installer)) {
+  if (!base::PathExists(mini_installer)) {
     DumpUsage(*cmd_line, errors::MINI_INSTALLER_NOT_FOUND,
               mini_installer.value());
     return EXIT_FAILURE;
@@ -148,7 +148,7 @@ int wmain(int argc, wchar_t *argv[]) {
 
   base::FilePath out;
   GetOutPath(*cmd_line, &out);
-  if (!cmd_line->HasSwitch(switches::kForce) && file_util::PathExists(out)) {
+  if (!cmd_line->HasSwitch(switches::kForce) && base::PathExists(out)) {
     DumpUsage(*cmd_line, errors::OUT_FILE_EXISTS, out.value());
     return EXIT_FAILURE;
   }

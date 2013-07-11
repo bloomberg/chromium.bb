@@ -37,7 +37,7 @@ namespace fileapi {
 namespace {
 
 bool FileExists(const base::FilePath& path) {
-  return file_util::PathExists(path) && !file_util::DirectoryExists(path);
+  return base::PathExists(path) && !file_util::DirectoryExists(path);
 }
 
 int64 GetSize(const base::FilePath& path) {
@@ -720,7 +720,7 @@ TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   base::FilePath local_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetLocalFilePath(
       context.get(), url, &local_path));
-  EXPECT_TRUE(file_util::PathExists(local_path));
+  EXPECT_TRUE(base::PathExists(local_path));
 
   // Verify that deleting a file isn't stopped by zero quota, and that it frees
   // up quote from its path.
@@ -729,7 +729,7 @@ TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->DeleteFile(context.get(), url));
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_file_count());
-  EXPECT_FALSE(file_util::PathExists(local_path));
+  EXPECT_FALSE(base::PathExists(local_path));
   EXPECT_EQ(ObfuscatedFileUtil::ComputeFilePathCost(url.path()),
       context->allowed_bytes_growth());
 
@@ -758,13 +758,13 @@ TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetLocalFilePath(
       context.get(), url, &local_path));
-  EXPECT_TRUE(file_util::PathExists(local_path));
+  EXPECT_TRUE(base::PathExists(local_path));
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->DeleteFile(context.get(), url));
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_file_count());
-  EXPECT_FALSE(file_util::PathExists(local_path));
+  EXPECT_FALSE(base::PathExists(local_path));
 
   // Make sure we have no unexpected changes.
   EXPECT_TRUE(change_observer()->HasNoChange());

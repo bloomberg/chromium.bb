@@ -93,7 +93,7 @@ class NetLogTempFileTest : public ::testing::Test {
   // constants will always be written to it on creation.
   void VerifyNetExportLog() {
     EXPECT_EQ(net_export_log_, net_log_temp_file_->log_path_);
-    EXPECT_TRUE(file_util::PathExists(net_export_log_));
+    EXPECT_TRUE(base::PathExists(net_export_log_));
 
     int64 file_size;
     // file_util::GetFileSize returns proper file size on open handles.
@@ -142,7 +142,7 @@ class NetLogTempFileTest : public ::testing::Test {
 
     base::FilePath net_export_file_path;
     EXPECT_TRUE(net_log_temp_file_->GetFilePath(&net_export_file_path));
-    EXPECT_TRUE(file_util::PathExists(net_export_file_path));
+    EXPECT_TRUE(base::PathExists(net_export_file_path));
     EXPECT_EQ(net_export_log_, net_export_file_path);
 
     VerifyNetExportLog();
@@ -187,11 +187,11 @@ TEST_F(NetLogTempFileTest, EnsureInitAllowStartOrSend) {
   EXPECT_EQ(NetLogTempFile::STATE_ALLOW_START_SEND,
             net_log_temp_file_->state());
   EXPECT_EQ(net_export_log_, net_log_temp_file_->log_path_);
-  EXPECT_TRUE(file_util::PathExists(net_export_log_));
+  EXPECT_TRUE(base::PathExists(net_export_log_));
 
   base::FilePath net_export_file_path;
   EXPECT_TRUE(net_log_temp_file_->GetFilePath(&net_export_file_path));
-  EXPECT_TRUE(file_util::PathExists(net_export_file_path));
+  EXPECT_TRUE(base::PathExists(net_export_file_path));
   EXPECT_EQ(net_export_log_, net_export_file_path);
 
   // GetFilePath should return false if NetExportLogExists() fails.

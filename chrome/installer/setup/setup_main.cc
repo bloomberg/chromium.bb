@@ -121,7 +121,7 @@ DWORD UnPackArchive(const base::FilePath& archive,
   // Check if this is differential update and if it is, patch it to the
   // installer archive that should already be on the machine. We assume
   // it is a differential installer if chrome.7z is not found.
-  if (!file_util::PathExists(uncompressed_archive)) {
+  if (!base::PathExists(uncompressed_archive)) {
     *archive_type = installer::INCREMENTAL_ARCHIVE_TYPE;
     VLOG(1) << "Differential patch found. Applying to existing archive.";
     if (!archive_version.get()) {
@@ -683,7 +683,7 @@ installer::InstallStatus InstallProductsHelper(
   // We want to keep uncompressed archive (chrome.7z) that we get after
   // uncompressing and binary patching. Get the location for this file.
   base::FilePath archive_to_copy;
-  if (file_util::PathExists(archive)) {
+  if (base::PathExists(archive)) {
     VLOG(1) << "Archive found to install Chrome " << archive.value();
     if (UnPackArchive(archive, installer_state, temp_path.path(), unpack_path,
                       archive_type)) {
@@ -701,7 +701,7 @@ installer::InstallStatus InstallProductsHelper(
     base::FilePath uncompressed_archive(cmd_line.GetProgram().DirName().Append(
         installer::kChromeArchive));
 
-    if (file_util::PathExists(uncompressed_archive)) {
+    if (base::PathExists(uncompressed_archive)) {
       VLOG(1) << "Uncompressed archive found to install Chrome "
               << uncompressed_archive.value();
       *archive_type = installer::FULL_ARCHIVE_TYPE;
@@ -1057,7 +1057,7 @@ installer::InstallStatus UninstallProducts(
       base::FilePath first_run_sentinel;
       InstallUtil::GetSentinelFilePath(
           chrome::kFirstRunSentinel, dist, &first_run_sentinel);
-      if (file_util::PathExists(first_run_sentinel)) {
+      if (base::PathExists(first_run_sentinel)) {
         // If the Chrome being self-destructed has already undergone First Run,
         // trigger Active Setup and make sure the system-level Chrome doesn't go
         // through first run.
@@ -1204,7 +1204,7 @@ installer::InstallStatus RegisterDevChrome(
     chrome_exe = base::MakeAbsoluteFilePath(chrome_exe);
 
   installer::InstallStatus status = installer::FIRST_INSTALL_SUCCESS;
-  if (file_util::PathExists(chrome_exe)) {
+  if (base::PathExists(chrome_exe)) {
     Product chrome(chrome_dist);
 
     // Create the Start menu shortcut and pin it to the taskbar.

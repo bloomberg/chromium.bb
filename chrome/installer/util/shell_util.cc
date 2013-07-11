@@ -692,7 +692,7 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
   base::FilePath exe_path =
       base::FilePath::FromWStringHack(chrome_exe).DirName()
           .Append(installer::kSetupExe);
-  if (!file_util::PathExists(exe_path)) {
+  if (!base::PathExists(exe_path)) {
     HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
     RegKey key(reg_root, dist->GetUninstallRegPath().c_str(), KEY_READ);
@@ -702,7 +702,7 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
     exe_path = command_line.GetProgram();
   }
 
-  if (file_util::PathExists(exe_path)) {
+  if (base::PathExists(exe_path)) {
     CommandLine cmd(exe_path);
     cmd.AppendSwitchNative(installer::switches::kRegisterChromeBrowser,
                            chrome_exe);
@@ -1438,7 +1438,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
     // Install the system-level shortcut if requested.
     chosen_path = &system_shortcut_path;
   } else if (operation != SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL ||
-             !file_util::PathExists(system_shortcut_path)) {
+             !base::PathExists(system_shortcut_path)) {
     // Otherwise install the user-level shortcut, unless the system-level
     // variant of this shortcut is present on the machine and |operation| states
     // not to create a user-level shortcut in that case.

@@ -385,7 +385,7 @@ ACTION_P(VerifySelectedText, expected_text) {
 
 ACTION_P3(CloseWhenFileSaved, mock, file, timeout_ms) {
   base::Time start = base::Time::Now();
-  while (!file_util::PathExists(file)) {
+  while (!base::PathExists(file)) {
     if ((base::Time::Now() - start).InMilliseconds() > timeout_ms) {
       ADD_FAILURE() << "File was not saved within timeout";
       TakeSnapshotAndLog();
@@ -398,7 +398,7 @@ ACTION_P3(CloseWhenFileSaved, mock, file, timeout_ms) {
 
 ACTION_P2(WaitForFileSave, file, timeout_ms) {
   base::Time start = base::Time::Now();
-  while (!file_util::PathExists(file)) {
+  while (!base::PathExists(file)) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
     if ((base::Time::Now() - start).InMilliseconds() > timeout_ms) {
       ADD_FAILURE() << "File was not saved within timeout";

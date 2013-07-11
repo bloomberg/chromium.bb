@@ -180,7 +180,7 @@ bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
 
   // Instead of creating a new directory, we copy the old one to include the
   // security information of the folder as part of the copy.
-  if (!file_util::PathExists(to_path)) {
+  if (!PathExists(to_path)) {
     // Except that Vista fails to do that, and instead do a recursive copy if
     // the target directory doesn't exist.
     if (base::win::GetVersion() >= base::win::VERSION_VISTA)
@@ -193,6 +193,11 @@ bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
   return ShellCopy(directory, to_path, false);
 }
 
+bool PathExists(const FilePath& path) {
+  ThreadRestrictions::AssertIOAllowed();
+  return (GetFileAttributes(path.value().c_str()) != INVALID_FILE_ATTRIBUTES);
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -201,11 +206,6 @@ namespace file_util {
 
 using base::FilePath;
 using base::kFileShareAll;
-
-bool PathExists(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return (GetFileAttributes(path.value().c_str()) != INVALID_FILE_ATTRIBUTES);
-}
 
 bool PathIsWritable(const FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();

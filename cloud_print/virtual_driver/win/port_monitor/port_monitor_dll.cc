@@ -45,7 +45,7 @@ bool XpsIsInstalled() {
     return false;
   }
   xps_path = xps_path.Append(L"mxdwdrv.dll");
-  if (!file_util::PathExists(xps_path)) {
+  if (!base::PathExists(xps_path)) {
     return false;
   }
   return true;

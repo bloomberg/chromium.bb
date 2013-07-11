@@ -35,7 +35,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
       return false;
     }
     base::FilePath non_global_pref_file = GetPreferencesFilePath();
-    if (!file_util::PathExists(non_global_pref_file)) {
+    if (!base::PathExists(non_global_pref_file)) {
       LOG(ERROR) << "Doesn't exist " << non_global_pref_file.MaybeAsASCII();
       return false;
     }

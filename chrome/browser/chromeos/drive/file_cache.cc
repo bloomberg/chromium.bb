@@ -688,7 +688,7 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
 }
 
 bool FileCache::ImportOldDB(const base::FilePath& old_db_path) {
-  if (!file_util::PathExists(old_db_path))  // Old DB is not there, do nothing.
+  if (!base::PathExists(old_db_path))  // Old DB is not there, do nothing.
     return false;
 
   // Copy all entries stored in the old DB.

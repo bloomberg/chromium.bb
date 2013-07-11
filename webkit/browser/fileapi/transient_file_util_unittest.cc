@@ -85,7 +85,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
 
   // Make sure the file is there.
   ASSERT_TRUE(temp_url.is_valid());
-  ASSERT_TRUE(file_util::PathExists(temp_path));
+  ASSERT_TRUE(base::PathExists(temp_path));
   ASSERT_FALSE(file_util::DirectoryExists(temp_path));
 
   // Create a snapshot file.
@@ -101,7 +101,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
     ASSERT_FALSE(file_info.is_directory);
 
     // The file should be still there.
-    ASSERT_TRUE(file_util::PathExists(temp_path));
+    ASSERT_TRUE(base::PathExists(temp_path));
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               file_util()->GetFileInfo(NewOperationContext().get(),
                                        temp_url, &file_info, &path));
@@ -113,7 +113,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Now the temporary file and the transient filesystem must be gone too.
-  ASSERT_FALSE(file_util::PathExists(temp_path));
+  ASSERT_FALSE(base::PathExists(temp_path));
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             file_util()->GetFileInfo(NewOperationContext().get(),
                                      temp_url, &file_info, &path));

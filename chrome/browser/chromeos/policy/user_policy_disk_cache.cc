@@ -66,7 +66,7 @@ void UserPolicyDiskCache::LoadOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   em::CachedCloudPolicyResponse cached_response;
-  if (!file_util::PathExists(backing_file_path_)) {
+  if (!base::PathExists(backing_file_path_)) {
     LoadDone(LOAD_RESULT_NOT_FOUND, cached_response);
     return;
   }

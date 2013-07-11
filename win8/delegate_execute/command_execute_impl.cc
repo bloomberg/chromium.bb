@@ -71,7 +71,7 @@ bool LaunchChromeBrowserProcess() {
       delegate_exe_path.DirName()
                        .DirName()
                        .Append(chrome::kBrowserProcessExecutableName);
-  if (!file_util::PathExists(chrome_exe_path)) {
+  if (!base::PathExists(chrome_exe_path)) {
     // Try looking in the current directory if we couldn't find it one up in
     // order to support developer installs.
     chrome_exe_path =
@@ -79,7 +79,7 @@ bool LaunchChromeBrowserProcess() {
                          .Append(chrome::kBrowserProcessExecutableName);
   }
 
-  if (!file_util::PathExists(chrome_exe_path)) {
+  if (!base::PathExists(chrome_exe_path)) {
     AtlTrace("Could not locate chrome.exe at: %ls\n",
              chrome_exe_path.value().c_str());
     return false;
@@ -392,9 +392,9 @@ bool CommandExecuteImpl::FindChromeExe(base::FilePath* chrome_exe) {
   }
 
   *chrome_exe = dir_exe.DirName().Append(chrome::kBrowserProcessExecutableName);
-  if (!file_util::PathExists(*chrome_exe)) {
+  if (!base::PathExists(*chrome_exe)) {
     *chrome_exe = dir_exe.Append(chrome::kBrowserProcessExecutableName);
-    if (!file_util::PathExists(*chrome_exe)) {
+    if (!base::PathExists(*chrome_exe)) {
       AtlTrace("Failed to find chrome exe file\n");
       return false;
     }

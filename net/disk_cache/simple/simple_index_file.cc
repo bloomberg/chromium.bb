@@ -165,7 +165,7 @@ void SimpleIndexFile::SyncLoadIndexEntries(
   // TODO(felipeg): probably could load a stale index and use it for something.
   scoped_ptr<SimpleIndex::EntrySet> index_file_entries;
 
-  const bool index_file_exists = file_util::PathExists(index_file_path);
+  const bool index_file_exists = base::PathExists(index_file_path);
 
   // Only load if the index is not stale.
   const bool index_stale = IsIndexFileStale(index_file_path);

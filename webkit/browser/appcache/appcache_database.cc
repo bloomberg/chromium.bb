@@ -994,7 +994,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   // Avoid creating a database at all if we can.
   bool use_in_memory_db = db_file_path_.empty();
   if (!create_if_needed &&
-      (use_in_memory_db || !file_util::PathExists(db_file_path_))) {
+      (use_in_memory_db || !base::PathExists(db_file_path_))) {
     return false;
   }
 
@@ -1179,7 +1179,7 @@ void AppCacheDatabase::ResetConnectionAndTables() {
 
 bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   DCHECK(!db_file_path_.empty());
-  DCHECK(file_util::PathExists(db_file_path_));
+  DCHECK(base::PathExists(db_file_path_));
   VLOG(1) << "Deleting existing appcache data and starting over.";
 
   ResetConnectionAndTables();
@@ -1192,7 +1192,7 @@ bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   }
 
   // Make sure the steps above actually deleted things.
-  if (file_util::PathExists(db_file_path_))
+  if (base::PathExists(db_file_path_))
     return false;
 
   // So we can't go recursive.

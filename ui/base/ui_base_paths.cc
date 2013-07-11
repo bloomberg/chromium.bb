@@ -48,7 +48,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("app"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
       cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!file_util::PathExists(cur))  // we don't want to create this
+      if (!base::PathExists(cur))  // we don't want to create this
         return false;
       break;
 #if defined(OS_ANDROID)
@@ -62,7 +62,7 @@ bool PathProvider(int key, base::FilePath* result) {
       return false;
   }
 
-  if (create_dir && !file_util::PathExists(cur) &&
+  if (create_dir && !base::PathExists(cur) &&
       !file_util::CreateDirectory(cur))
     return false;
 

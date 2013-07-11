@@ -179,7 +179,7 @@ void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
     const base::FilePath& current_filename) {
   const base::FilePath original_filename(
       current_filename.DirName().AppendASCII("Safe Browsing"));
-  if (file_util::PathExists(original_filename)) {
+  if (base::PathExists(original_filename)) {
     int64 size = 0;
     if (file_util::GetFileSize(original_filename, &size)) {
       UMA_HISTOGRAM_COUNTS("SB2.OldDatabaseKilobytes",
@@ -406,7 +406,7 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   if (empty_) {
     // If the file exists but cannot be opened, try to delete it (not
     // deleting directly, the bloom filter needs to be deleted, too).
-    if (file_util::PathExists(filename_))
+    if (base::PathExists(filename_))
       return OnCorruptDatabase();
 
     new_file_.swap(new_file);
@@ -655,7 +655,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
   // Close the file handle and swizzle the file into place.
   new_file_.reset();
   if (!base::Delete(filename_, false) &&
-      file_util::PathExists(filename_))
+      base::PathExists(filename_))
     return false;
 
   const base::FilePath new_filename = TemporaryFileForFilename(filename_);
@@ -736,14 +736,14 @@ void SafeBrowsingStoreFile::DeleteSubChunk(int32 chunk_id) {
 // static
 bool SafeBrowsingStoreFile::DeleteStore(const base::FilePath& basename) {
   if (!base::Delete(basename, false) &&
-      file_util::PathExists(basename)) {
+      base::PathExists(basename)) {
     NOTREACHED();
     return false;
   }
 
   const base::FilePath new_filename = TemporaryFileForFilename(basename);
   if (!base::Delete(new_filename, false) &&
-      file_util::PathExists(new_filename)) {
+      base::PathExists(new_filename)) {
     NOTREACHED();
     return false;
   }
@@ -753,7 +753,7 @@ bool SafeBrowsingStoreFile::DeleteStore(const base::FilePath& basename) {
   // also removed.
   const base::FilePath journal_filename(
       basename.value() + FILE_PATH_LITERAL("-journal"));
-  if (file_util::PathExists(journal_filename))
+  if (base::PathExists(journal_filename))
     base::Delete(journal_filename, false);
 
   return true;

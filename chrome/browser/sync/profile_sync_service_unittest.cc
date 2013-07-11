@@ -465,11 +465,11 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   harness_.service.reset();
 
   // This file should have been deleted when the whole directory was nuked.
-  ASSERT_FALSE(file_util::PathExists(sync_file3));
-  ASSERT_FALSE(file_util::PathExists(sync_file1));
+  ASSERT_FALSE(base::PathExists(sync_file3));
+  ASSERT_FALSE(base::PathExists(sync_file1));
 
   // This will still exist, but the text should have changed.
-  ASSERT_TRUE(file_util::PathExists(sync_file2));
+  ASSERT_TRUE(base::PathExists(sync_file2));
   std::string file2text;
   ASSERT_TRUE(file_util::ReadFileToString(sync_file2, &file2text));
   ASSERT_NE(file2text.compare(nonsense2), 0);

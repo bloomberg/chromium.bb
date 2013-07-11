@@ -544,7 +544,7 @@ TEST(JSONReaderTest, ReadFromFile) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &path));
   path = path.AppendASCII("json");
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(base::PathExists(path));
 
   std::string input;
   ASSERT_TRUE(file_util::ReadFileToString(

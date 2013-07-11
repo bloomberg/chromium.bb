@@ -178,7 +178,7 @@ void CheckAppListShimOnFileThread(const base::FilePath& profile_path) {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppListShim);
   base::FilePath install_path = web_app::GetAppInstallPath(
       GetAppListShortcutInfo(profile_path));
-  if (enable == file_util::PathExists(install_path))
+  if (enable == base::PathExists(install_path))
     return;
 
   if (enable) {

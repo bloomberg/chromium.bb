@@ -35,8 +35,8 @@ namespace {
 bool IsPciSupported() {
   const base::FilePath pci_path("/sys/bus/pci/");
   const base::FilePath pcie_path("/sys/bus/pci_express/");
-  return (file_util::PathExists(pci_path) ||
-          file_util::PathExists(pcie_path));
+  return (base::PathExists(pci_path) ||
+          base::PathExists(pcie_path));
 }
 
 // Scan /etc/ati/amdpcsdb.default for "ReleaseVersion".
@@ -45,7 +45,7 @@ std::string CollectDriverVersionATI() {
   const base::FilePath::CharType kATIFileName[] =
       FILE_PATH_LITERAL("/etc/ati/amdpcsdb.default");
   base::FilePath ati_file_path(kATIFileName);
-  if (!file_util::PathExists(ati_file_path))
+  if (!base::PathExists(ati_file_path))
     return std::string();
   std::string contents;
   if (!file_util::ReadFileToString(ati_file_path, &contents))

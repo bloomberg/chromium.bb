@@ -393,7 +393,7 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
                                               int preferred_height) {
   if (layout == ash::WALLPAPER_LAYOUT_CENTER) {
     // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
-    if (file_util::PathExists(path))
+    if (base::PathExists(path))
       base::Delete(path, false);
     return;
   }
@@ -731,16 +731,16 @@ void WallpaperManager::EnsureCustomWallpaperDirectories(
     const std::string& email) {
   base::FilePath dir;
   dir = GetCustomWallpaperDir(kSmallWallpaperSubDir, email);
-  if (!file_util::PathExists(dir))
+  if (!base::PathExists(dir))
     file_util::CreateDirectory(dir);
   dir = GetCustomWallpaperDir(kLargeWallpaperSubDir, email);
-  if (!file_util::PathExists(dir))
+  if (!base::PathExists(dir))
     file_util::CreateDirectory(dir);
   dir = GetCustomWallpaperDir(kOriginalWallpaperSubDir, email);
-  if (!file_util::PathExists(dir))
+  if (!base::PathExists(dir))
     file_util::CreateDirectory(dir);
   dir = GetCustomWallpaperDir(kThumbnailWallpaperSubDir, email);
-  if (!file_util::PathExists(dir))
+  if (!base::PathExists(dir))
     file_util::CreateDirectory(dir);
 }
 
@@ -846,25 +846,25 @@ void WallpaperManager::MoveCustomWallpapersOnWorker(const UserList& users) {
     EnsureCustomWallpaperDirectories(email);
     from_path = GetWallpaperPathForUser(email, true);
     // Old wallpaper with extension name may still exist.
-    if (!file_util::PathExists(from_path))
+    if (!base::PathExists(from_path))
       from_path = from_path.AddExtension(".png");
-    if (file_util::PathExists(from_path)) {
+    if (base::PathExists(from_path)) {
       // Appends DUMMY to the file name of moved custom wallpaper. This way we
       // do not need to update WallpaperInfo for user.
       to_path = GetCustomWallpaperPath(kSmallWallpaperSubDir, email, "DUMMY");
       base::Move(from_path, to_path);
     }
     from_path = GetWallpaperPathForUser(email, false);
-    if (!file_util::PathExists(from_path))
+    if (!base::PathExists(from_path))
       from_path = from_path.AddExtension(".png");
-    if (file_util::PathExists(from_path)) {
+    if (base::PathExists(from_path)) {
       to_path = GetCustomWallpaperPath(kLargeWallpaperSubDir, email, "DUMMY");
       base::Move(from_path, to_path);
     }
     from_path = GetOriginalWallpaperPathForUser(email);
-    if (!file_util::PathExists(from_path))
+    if (!base::PathExists(from_path))
       from_path = from_path.AddExtension(".png");
-    if (file_util::PathExists(from_path)) {
+    if (base::PathExists(from_path)) {
       to_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir, email,
                                        "DUMMY");
       base::Move(from_path, to_path);
@@ -922,8 +922,8 @@ void WallpaperManager::GetCustomWallpaperInternalOld(
       IsRunningSequenceOnCurrentThread(sequence_token_));
   std::string file_name = wallpaper_path.BaseName().value();
 
-  if (!file_util::PathExists(wallpaper_path)) {
-    if (file_util::PathExists(wallpaper_path.AddExtension(".png"))) {
+  if (!base::PathExists(wallpaper_path)) {
+    if (base::PathExists(wallpaper_path.AddExtension(".png"))) {
       // Old wallpaper may have a png extension.
       file_name += ".png";
     } else {
@@ -935,7 +935,7 @@ void WallpaperManager::GetCustomWallpaperInternalOld(
   }
 
   base::FilePath valid_path = wallpaper_path.DirName().Append(file_name);
-  if (!file_util::PathExists(valid_path))
+  if (!base::PathExists(valid_path))
     valid_path = valid_path.AddExtension(".png");
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -956,7 +956,7 @@ void WallpaperManager::GetCustomWallpaperInternal(
       IsRunningSequenceOnCurrentThread(sequence_token_));
 
   base::FilePath valid_path = wallpaper_path;
-  if (!file_util::PathExists(wallpaper_path)) {
+  if (!base::PathExists(wallpaper_path)) {
     // Falls back on original file if the correct resoltuion file does not
     // exist. This may happen when the original custom wallpaper is small or
     // browser shutdown before resized wallpaper saved.
@@ -964,7 +964,7 @@ void WallpaperManager::GetCustomWallpaperInternal(
                                         info.file);
   }
 
-  if (!file_util::PathExists(valid_path)) {
+  if (!base::PathExists(valid_path)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,

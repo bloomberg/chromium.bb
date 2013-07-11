@@ -149,7 +149,7 @@ bool FileSystemUsageCache::UpdateUsage(const base::FilePath& usage_file_path,
 bool FileSystemUsageCache::Exists(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::Exists");
   DCHECK(CalledOnValidThread());
-  return file_util::PathExists(usage_file_path);
+  return base::PathExists(usage_file_path);
 }
 
 bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {

@@ -826,7 +826,7 @@ bool SettingGetterImplGSettings::LoadAndCheckVersion(
     Tokenize(path, ":", &paths);
     for (size_t i = 0; i < paths.size(); ++i) {
       base::FilePath file(paths[i]);
-      if (file_util::PathExists(file.Append("gnome-network-properties"))) {
+      if (base::PathExists(file.Append("gnome-network-properties"))) {
         VLOG(1) << "Found gnome-network-properties. Will fall back to gconf.";
         return false;
       }

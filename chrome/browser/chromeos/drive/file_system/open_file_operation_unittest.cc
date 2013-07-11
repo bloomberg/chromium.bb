@@ -48,7 +48,7 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(file_util::PathExists(file_path));
+  ASSERT_TRUE(base::PathExists(file_path));
   int64 local_file_size;
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
@@ -107,7 +107,7 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(file_util::PathExists(file_path));
+  ASSERT_TRUE(base::PathExists(file_path));
   int64 local_file_size;
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(0, local_file_size);  // Should be an empty file.
@@ -132,7 +132,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(file_util::PathExists(file_path));
+  ASSERT_TRUE(base::PathExists(file_path));
   int64 local_file_size;
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
@@ -154,7 +154,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(file_util::PathExists(file_path));
+  ASSERT_TRUE(base::PathExists(file_path));
   int64 local_file_size;
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(0, local_file_size);  // Should be an empty file.
@@ -179,7 +179,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(file_util::PathExists(file_path));
+  ASSERT_TRUE(base::PathExists(file_path));
   int64 local_file_size;
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
@@ -196,7 +196,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(file_util::PathExists(file_path));
+  ASSERT_TRUE(base::PathExists(file_path));
   ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 

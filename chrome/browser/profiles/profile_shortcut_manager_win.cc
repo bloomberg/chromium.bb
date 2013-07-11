@@ -286,12 +286,12 @@ void RenameChromeDesktopShortcutForProfile(
   const base::FilePath new_shortcut_path =
       user_shortcuts_directory.Append(new_shortcut_filename);
 
-  if (file_util::PathExists(old_shortcut_path)) {
+  if (base::PathExists(old_shortcut_path)) {
     // Rename the old shortcut unless a system-level shortcut exists at the
     // destination, in which case the old shortcut is simply deleted.
     const base::FilePath possible_new_system_shortcut =
         system_shortcuts_directory.Append(new_shortcut_filename);
-    if (file_util::PathExists(possible_new_system_shortcut))
+    if (base::PathExists(possible_new_system_shortcut))
       base::Delete(old_shortcut_path, false);
     else if (!RenameDesktopShortcut(old_shortcut_path, new_shortcut_path))
       DLOG(ERROR) << "Could not rename Windows profile desktop shortcut.";
@@ -304,7 +304,7 @@ void RenameChromeDesktopShortcutForProfile(
     // properties updated by |CreateOrUpdateDesktopShortcutsForProfile()|.
     const base::FilePath possible_old_system_shortcut =
         system_shortcuts_directory.Append(old_shortcut_filename);
-    if (file_util::PathExists(possible_old_system_shortcut))
+    if (base::PathExists(possible_old_system_shortcut))
       base::CopyFile(possible_old_system_shortcut, new_shortcut_path);
   }
 }

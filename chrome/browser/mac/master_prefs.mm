@@ -45,7 +45,7 @@ base::FilePath MasterPrefsPath() {
   if (chrome::GetDefaultUserDataDirectory(&user_application_support_path)) {
     user_application_support_path =
         user_application_support_path.Append(kMasterPreferencesFileName);
-    if (file_util::PathExists(user_application_support_path))
+    if (base::PathExists(user_application_support_path))
       return user_application_support_path;
   }
 

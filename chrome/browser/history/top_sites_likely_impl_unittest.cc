@@ -911,7 +911,7 @@ TEST_F(TopSitesLikelyMigrationTest, Migrate) {
   WaitForHistory();
 
   // Make sure there is no longer a Thumbnails file on disk.
-  ASSERT_FALSE(file_util::PathExists(
+  ASSERT_FALSE(base::PathExists(
                    profile()->GetPath().Append(chrome::kThumbnailsFilename)));
 
   // Recreate top sites and make sure everything is still there.

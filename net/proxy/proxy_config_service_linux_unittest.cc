@@ -1550,7 +1550,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   // Note that its timestamp will be at least as new as the .kde one.
   file_util::CreateDirectory(kde4_config_);
   file_util::WriteFile(kioslaverc4_, slaverc4.c_str(), slaverc4.length());
-  CHECK(file_util::PathExists(kioslaverc4_));
+  CHECK(base::PathExists(kioslaverc4_));
 
   { SCOPED_TRACE("KDE4, .kde4 directory present, use it");
     MockEnvironment* env = new MockEnvironment;

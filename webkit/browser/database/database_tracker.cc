@@ -468,7 +468,7 @@ bool DatabaseTracker::LazyInit() {
     const base::FilePath kTrackerDatabaseFullPath =
         db_dir_.Append(base::FilePath(kTrackerDatabaseFileName));
     if (file_util::DirectoryExists(db_dir_) &&
-        file_util::PathExists(kTrackerDatabaseFullPath) &&
+        base::PathExists(kTrackerDatabaseFullPath) &&
         (!db_->Open(kTrackerDatabaseFullPath) ||
          !sql::MetaTable::DoesTableExist(db_.get()))) {
       db_->Close();

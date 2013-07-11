@@ -76,7 +76,7 @@ void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
   // Under the setuid sandbox, we should not be able to open any file via the
   // filesystem.
   if (linux_sandbox->GetStatus() & kSandboxLinuxSUID) {
-    CHECK(!file_util::PathExists(base::FilePath("/proc/cpuinfo")));
+    CHECK(!base::PathExists(base::FilePath("/proc/cpuinfo")));
   }
 
 #if defined(__x86_64__)

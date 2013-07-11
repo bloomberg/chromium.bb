@@ -401,8 +401,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  EXPECT_TRUE(file_util::PathExists(full_file_name));
-  EXPECT_FALSE(file_util::PathExists(dir));
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(file_util::ContentsEqual(test_dir_.Append(base::FilePath(
       kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
@@ -469,8 +469,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
   GetCurrentTab(browser())->Close();
   EXPECT_EQ(DownloadItem::CANCELLED, items[0]->GetState());
 
-  EXPECT_FALSE(file_util::PathExists(full_file_name));
-  EXPECT_FALSE(file_util::PathExists(dir));
+  EXPECT_FALSE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323
@@ -506,8 +506,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
-  EXPECT_TRUE(file_util::PathExists(full_file_name));
-  EXPECT_FALSE(file_util::PathExists(dir));
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(file_util::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).Append(file_name),
       full_file_name));
@@ -541,8 +541,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
-  EXPECT_TRUE(file_util::PathExists(full_file_name));
-  EXPECT_TRUE(file_util::PathExists(dir));
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_TRUE(base::PathExists(dir));
   EXPECT_TRUE(file_util::TextContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved1.htm"),
       full_file_name));
@@ -639,8 +639,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
-  EXPECT_TRUE(file_util::PathExists(full_file_name));
-  EXPECT_TRUE(file_util::PathExists(dir));
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_TRUE(base::PathExists(dir));
   EXPECT_TRUE(file_util::TextContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved2.htm"),
       full_file_name));
@@ -691,8 +691,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
 
   removed.WaitForRemoved();
 
-  EXPECT_TRUE(file_util::PathExists(full_file_name));
-  EXPECT_FALSE(file_util::PathExists(dir));
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(file_util::ContentsEqual(test_dir_.Append(base::FilePath(
       kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
@@ -710,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
       download_dir.AppendASCII(std::string("test.exe") + kAppendedExtension);
   base::FilePath dir = download_dir.AppendASCII("test.exe_files");
 
-  EXPECT_FALSE(file_util::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(full_file_name));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -724,7 +724,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   chrome::SavePage(browser());
   loop_runner->Run();
 
-  EXPECT_TRUE(file_util::PathExists(full_file_name));
+  EXPECT_TRUE(base::PathExists(full_file_name));
 
   EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
   EXPECT_TRUE(file_util::DieFileDie(dir, true));
@@ -767,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
 
-  ASSERT_TRUE(file_util::PathExists(full_file_name));
+  ASSERT_TRUE(base::PathExists(full_file_name));
   int64 actual_file_size = -1;
   EXPECT_TRUE(file_util::GetFileSize(full_file_name, &actual_file_size));
   EXPECT_LE(kFileSizeMin, actual_file_size);
@@ -787,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->DownloadPath();
   base::FilePath filename = download_dir.AppendASCII("dataurl.txt");
-  ASSERT_TRUE(file_util::PathExists(filename));
+  ASSERT_TRUE(base::PathExists(filename));
   std::string contents;
   EXPECT_TRUE(file_util::ReadFileToString(filename, &contents));
   EXPECT_EQ("foo", contents);

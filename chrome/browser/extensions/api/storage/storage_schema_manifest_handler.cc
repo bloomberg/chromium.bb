@@ -46,7 +46,7 @@ scoped_ptr<policy::PolicySchema> StorageSchemaManifestHandler::GetSchema(
     return scoped_ptr<policy::PolicySchema>();
   }
   file = extension->path().AppendASCII(path);
-  if (!file_util::PathExists(file)) {
+  if (!base::PathExists(file)) {
     *error =
         base::StringPrintf("File does not exist: %s", file.value().c_str());
     return scoped_ptr<policy::PolicySchema>();

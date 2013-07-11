@@ -88,7 +88,7 @@ bool DomStorageDatabase::CommitChanges(bool clear_all_first,
     // If we're being asked to commit changes that will result in an
     // empty database, we return true if the database file doesn't exist.
     return clear_all_first && changes.empty() &&
-           !file_util::PathExists(file_path_);
+           !base::PathExists(file_path_);
   }
 
   bool old_known_to_be_empty = known_to_be_empty_;
@@ -150,7 +150,7 @@ bool DomStorageDatabase::LazyOpen(bool create_if_needed) {
   if (IsOpen())
     return true;
 
-  bool database_exists = file_util::PathExists(file_path_);
+  bool database_exists = base::PathExists(file_path_);
 
   if (!database_exists && !create_if_needed) {
     // If the file doesn't exist already and we haven't been asked to create
@@ -257,7 +257,7 @@ bool DomStorageDatabase::CreateTableV2() {
 
 bool DomStorageDatabase::DeleteFileAndRecreate() {
   DCHECK(!IsOpen());
-  DCHECK(file_util::PathExists(file_path_));
+  DCHECK(base::PathExists(file_path_));
 
   // We should only try and do this once.
   if (tried_to_recreate_)

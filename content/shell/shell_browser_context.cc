@@ -100,7 +100,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   NOTIMPLEMENTED();
 #endif
 
-  if (!file_util::PathExists(path_))
+  if (!base::PathExists(path_))
     file_util::CreateDirectory(path_);
 }
 

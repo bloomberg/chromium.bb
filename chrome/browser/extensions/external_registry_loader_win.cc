@@ -100,7 +100,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    if (!file_util::PathExists(extension_path)) {
+    if (!base::PathExists(extension_path)) {
       LOG(ERROR) << "File " << extension_path_str
                  << " for key " << key_path
                  << " does not exist or is not readable.";

@@ -24,7 +24,7 @@ const char kTrimChars[] = "\" ";
 bool GetToolOutput(int argc, const char* argv[], std::string& output) {
   DCHECK_GE(argc, 1);
 
-  if (!file_util::PathExists(base::FilePath(argv[0]))) {
+  if (!base::PathExists(base::FilePath(argv[0]))) {
     LOG(WARNING) << "Tool for statistics not found: " << argv[0];
     return false;
   }

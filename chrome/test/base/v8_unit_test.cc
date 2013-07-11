@@ -67,7 +67,7 @@ bool V8UnitTest::ExecuteJavascriptLibraries() {
     base::FilePath library_file(*user_libraries_iterator);
     if (!user_libraries_iterator->IsAbsolute()) {
       base::FilePath gen_file = gen_test_data_directory.Append(library_file);
-      library_file = file_util::PathExists(gen_file) ? gen_file :
+      library_file = base::PathExists(gen_file) ? gen_file :
           test_data_directory.Append(*user_libraries_iterator);
     }
     library_file = base::MakeAbsoluteFilePath(library_file);

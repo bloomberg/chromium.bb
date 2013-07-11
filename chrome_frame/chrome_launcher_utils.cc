@@ -34,7 +34,7 @@ bool CreateChromeLauncherCommandLine(scoped_ptr<CommandLine>* command_line) {
     base::FilePath current_dir = module_path.DirName();
     base::FilePath chrome_launcher = current_dir.Append(
         chrome_launcher::kLauncherExeBaseName);
-    if (file_util::PathExists(chrome_launcher)) {
+    if (base::PathExists(chrome_launcher)) {
       command_line->reset(new CommandLine(chrome_launcher));
       success = true;
     }
@@ -98,7 +98,7 @@ base::FilePath GetChromeExecutablePath() {
   // sub-folder one down from the Chrome executable. If we fail to find
   // chrome.exe in the current path, try looking one up and launching that
   // instead.
-  if (!file_util::PathExists(cur_path)) {
+  if (!base::PathExists(cur_path)) {
     PathService::Get(base::DIR_MODULE, &cur_path);
     cur_path = cur_path.DirName().Append(chrome::kBrowserProcessExecutableName);
   }

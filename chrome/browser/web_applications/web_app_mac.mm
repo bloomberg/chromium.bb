@@ -166,7 +166,7 @@ void LaunchShimOnFileThread(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
 
-  if (shim_path.empty() || !file_util::PathExists(shim_path)) {
+  if (shim_path.empty() || !base::PathExists(shim_path)) {
     // The user may have deleted the copy in the Applications folder, use the
     // one in the web app's app_data_path.
     base::FilePath app_data_path = web_app::GetWebAppDataDirectory(
@@ -174,7 +174,7 @@ void LaunchShimOnFileThread(
     shim_path = app_data_path.Append(shim_path.BaseName());
   }
 
-  if (!file_util::PathExists(shim_path))
+  if (!base::PathExists(shim_path))
     return;
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
@@ -377,7 +377,7 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
 
   // If the path does not exist, check if a matching bundle can be found
   // elsewhere.
-  if (dst_path.empty() || !file_util::PathExists(app_path))
+  if (dst_path.empty() || !base::PathExists(app_path))
     app_path = GetAppBundleById(GetBundleIdentifier());
 
   if (!app_path.empty()) {

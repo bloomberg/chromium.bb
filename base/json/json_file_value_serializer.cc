@@ -55,7 +55,7 @@ int JSONFileValueSerializer::ReadFileToString(std::string* json_string) {
       return JSON_ACCESS_DENIED;
     }
 #endif
-    if (!file_util::PathExists(json_file_path_))
+    if (!base::PathExists(json_file_path_))
       return JSON_NO_SUCH_FILE;
     else
       return JSON_CANNOT_READ_FILE;

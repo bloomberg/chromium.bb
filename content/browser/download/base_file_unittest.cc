@@ -79,7 +79,7 @@ class BaseFileTest : public testing::Test {
     // thread checks inside it.
     base_file_.reset();
 
-    EXPECT_EQ(expect_file_survives_, file_util::PathExists(full_path));
+    EXPECT_EQ(expect_file_survives_, base::PathExists(full_path));
   }
 
   void ResetHash() {
@@ -239,9 +239,9 @@ TEST_F(BaseFileTest, CreateDestroy) {
 // Cancel the download explicitly.
 TEST_F(BaseFileTest, Cancel) {
   ASSERT_TRUE(InitializeFile());
-  EXPECT_TRUE(file_util::PathExists(base_file_->full_path()));
+  EXPECT_TRUE(base::PathExists(base_file_->full_path()));
   base_file_->Cancel();
-  EXPECT_FALSE(file_util::PathExists(base_file_->full_path()));
+  EXPECT_FALSE(base::PathExists(base_file_->full_path()));
   EXPECT_NE(base::FilePath().value(), base_file_->full_path().value());
 }
 
@@ -284,15 +284,15 @@ TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
   ASSERT_TRUE(InitializeFile());
 
   base::FilePath initial_path(base_file_->full_path());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
   base::FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
-  EXPECT_FALSE(file_util::PathExists(new_path));
+  EXPECT_FALSE(base::PathExists(new_path));
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, base_file_->Rename(new_path));
-  EXPECT_FALSE(file_util::PathExists(initial_path));
-  EXPECT_TRUE(file_util::PathExists(new_path));
+  EXPECT_FALSE(base::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(new_path));
 
   base_file_->Finish();
   base_file_->Detach();
@@ -422,16 +422,16 @@ TEST_F(BaseFileTest, WriteThenRename) {
   ASSERT_TRUE(InitializeFile());
 
   base::FilePath initial_path(base_file_->full_path());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
   base::FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
-  EXPECT_FALSE(file_util::PathExists(new_path));
+  EXPECT_FALSE(base::PathExists(new_path));
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             base_file_->Rename(new_path));
-  EXPECT_FALSE(file_util::PathExists(initial_path));
-  EXPECT_TRUE(file_util::PathExists(new_path));
+  EXPECT_FALSE(base::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(new_path));
 
   base_file_->Finish();
 }
@@ -441,16 +441,16 @@ TEST_F(BaseFileTest, RenameWhileInProgress) {
   ASSERT_TRUE(InitializeFile());
 
   base::FilePath initial_path(base_file_->full_path());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(initial_path));
   base::FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
-  EXPECT_FALSE(file_util::PathExists(new_path));
+  EXPECT_FALSE(base::PathExists(new_path));
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
 
   EXPECT_TRUE(base_file_->in_progress());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, base_file_->Rename(new_path));
-  EXPECT_FALSE(file_util::PathExists(initial_path));
-  EXPECT_TRUE(file_util::PathExists(new_path));
+  EXPECT_FALSE(base::PathExists(initial_path));
+  EXPECT_TRUE(base::PathExists(new_path));
 
   ASSERT_TRUE(AppendDataToFile(kTestData2));
 
@@ -467,7 +467,7 @@ TEST_F(BaseFileTest, RenameWithError) {
   ASSERT_TRUE(file_util::CreateDirectory(test_dir));
 
   base::FilePath new_path(test_dir.AppendASCII("TestFile"));
-  EXPECT_FALSE(file_util::PathExists(new_path));
+  EXPECT_FALSE(base::PathExists(new_path));
 
   {
     file_util::PermissionRestorer restore_permissions_for(test_dir);

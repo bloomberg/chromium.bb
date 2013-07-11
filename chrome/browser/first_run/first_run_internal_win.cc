@@ -112,7 +112,7 @@ bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
     // Be conservative and show the EULA if the path to the sentinel can't be
     // determined.
     if (!GetEULASentinelFilePath(&eula_sentinel) ||
-        !file_util::PathExists(eula_sentinel)) {
+        !base::PathExists(eula_sentinel)) {
       return true;
     }
   }

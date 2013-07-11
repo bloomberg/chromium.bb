@@ -100,7 +100,7 @@ TEST_F(DefaultAppOrderTest, NoExternalFile) {
 
   base::FilePath none_existent_file =
       scoped_tmp_dir.path().AppendASCII("none_existent_file");
-  ASSERT_FALSE(file_util::PathExists(none_existent_file));
+  ASSERT_FALSE(base::PathExists(none_existent_file));
   SetExternalFile(none_existent_file);
 
   scoped_ptr<default_app_order::ExternalLoader> loader(

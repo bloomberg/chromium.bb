@@ -1126,7 +1126,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
     database_->UpdateFinished(true);
 
     // Database file still exists until the corruption handler has run.
-    EXPECT_TRUE(file_util::PathExists(database_filename_));
+    EXPECT_TRUE(base::PathExists(database_filename_));
 
     // Flush through the corruption-handler task.
     VLOG(1) << "Expect failed check on: SafeBrowsing database reset";
@@ -1134,13 +1134,13 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   }
 
   // Database file should not exist.
-  EXPECT_FALSE(file_util::PathExists(database_filename_));
+  EXPECT_FALSE(base::PathExists(database_filename_));
 
   // Run the update again successfully.
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
   database_->UpdateFinished(true);
-  EXPECT_TRUE(file_util::PathExists(database_filename_));
+  EXPECT_TRUE(base::PathExists(database_filename_));
 
   database_.reset();
 }
@@ -1647,7 +1647,7 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
 
   // After re-creating the database, it should have a filter read from
   // a file, so it should find the same results.
-  ASSERT_TRUE(file_util::PathExists(filter_file));
+  ASSERT_TRUE(base::PathExists(filter_file));
   database_.reset(new SafeBrowsingDatabaseNew);
   database_->Init(database_filename_);
   EXPECT_TRUE(database_->ContainsBrowseUrl(
@@ -1659,7 +1659,7 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
 
   // If there is no filter file, the database cannot find malware urls.
   base::Delete(filter_file, false);
-  ASSERT_FALSE(file_util::PathExists(filter_file));
+  ASSERT_FALSE(base::PathExists(filter_file));
   database_.reset(new SafeBrowsingDatabaseNew);
   database_->Init(database_filename_);
   EXPECT_FALSE(database_->ContainsBrowseUrl(

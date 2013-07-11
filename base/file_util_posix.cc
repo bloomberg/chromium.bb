@@ -227,7 +227,7 @@ bool CopyDirectory(const FilePath& from_path,
 
   // This function does not properly handle destinations within the source
   FilePath real_to_path = to_path;
-  if (file_util::PathExists(real_to_path)) {
+  if (PathExists(real_to_path)) {
     real_to_path = MakeAbsoluteFilePath(real_to_path);
     if (real_to_path.empty())
       return false;
@@ -309,6 +309,11 @@ bool CopyDirectory(const FilePath& from_path,
   return success;
 }
 
+bool PathExists(const FilePath& path) {
+  ThreadRestrictions::AssertIOAllowed();
+  return access(path.value().c_str(), F_OK) == 0;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -323,11 +328,6 @@ using base::FilePath;
 using base::MakeAbsoluteFilePath;
 using base::RealPath;
 using base::VerifySpecificPathControlledByUser;
-
-bool PathExists(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return access(path.value().c_str(), F_OK) == 0;
-}
 
 bool PathIsWritable(const FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();

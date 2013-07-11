@@ -20,7 +20,7 @@ namespace {
 base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
   const base::FilePath commands =
       unpack_path.Append(FILE_PATH_LITERAL("commands.json"));
-  if (!file_util::PathExists(commands))
+  if (!base::PathExists(commands))
     return NULL;
 
   JSONFileValueSerializer serializer(commands);

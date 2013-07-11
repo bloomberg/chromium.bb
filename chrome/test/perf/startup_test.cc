@@ -60,7 +60,7 @@ class StartupTest : public UIPerfTest {
     const base::FilePath file_url = ui_test_utils::GetTestFilePath(
         base::FilePath(base::FilePath::kCurrentDirectory),
         base::FilePath(FILE_PATH_LITERAL("simple.html")));
-    ASSERT_TRUE(file_util::PathExists(file_url));
+    ASSERT_TRUE(base::PathExists(file_url));
     launch_arguments_.AppendArgPath(file_url);
   }
 

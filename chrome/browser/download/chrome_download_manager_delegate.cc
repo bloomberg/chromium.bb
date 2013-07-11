@@ -370,7 +370,7 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
 #endif
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&file_util::PathExists, download->GetTargetFilePath()),
+      base::Bind(&base::PathExists, download->GetTargetFilePath()),
       callback);
 }
 

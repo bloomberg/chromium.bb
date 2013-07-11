@@ -240,8 +240,8 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     const base::FilePath manifest_path =
         component_ime.path.Append("manifest.json");
 
-    if (!file_util::PathExists(component_ime.path) ||
-        !file_util::PathExists(manifest_path))
+    if (!base::PathExists(component_ime.path) ||
+        !base::PathExists(manifest_path))
       continue;
 
     if (!file_util::ReadFileToString(manifest_path, &component_ime.manifest))

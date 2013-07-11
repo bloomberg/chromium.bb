@@ -109,12 +109,12 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
 
     // Ensure we have the stuff we need.
-    EXPECT_TRUE(file_util::PathExists(GetWorkingDir()))
+    EXPECT_TRUE(base::PathExists(GetWorkingDir()))
         << "Cannot find the working directory for the reference video and "
            "the temporary files:" << GetWorkingDir().value();
     base::FilePath reference_file =
         GetWorkingDir().Append(kReferenceYuvFileName);
-    EXPECT_TRUE(file_util::PathExists(reference_file))
+    EXPECT_TRUE(base::PathExists(reference_file))
         << "Cannot find the reference file to be used for video quality "
         << "comparison: " << reference_file.value();
   }
@@ -144,9 +144,9 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
     base::FilePath path_to_data_handler =
         GetSourceDir().Append(FILE_PATH_LITERAL("chrome/test/functional"));
 
-    EXPECT_TRUE(file_util::PathExists(pywebsocket_server))
+    EXPECT_TRUE(base::PathExists(pywebsocket_server))
         << "Fatal: missing pywebsocket server.";
-    EXPECT_TRUE(file_util::PathExists(path_to_data_handler))
+    EXPECT_TRUE(base::PathExists(path_to_data_handler))
         << "Fatal: missing data handler for pywebsocket server.";
 
     AppendToPythonPath(path_pywebsocket_dir);
@@ -277,7 +277,7 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
                               const base::FilePath& captured_video_filename) {
     base::FilePath path_to_converter = base::MakeAbsoluteFilePath(
         GetBrowserDir().Append(kArgbToI420ConverterExecutable));
-    EXPECT_TRUE(file_util::PathExists(path_to_converter))
+    EXPECT_TRUE(base::PathExists(path_to_converter))
         << "Missing ARGB->I420 converter: should be in "
         << path_to_converter.value();
 
@@ -315,9 +315,9 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
     base::FilePath path_to_compare_script = GetSourceDir().Append(
         FILE_PATH_LITERAL("third_party/webrtc/tools/compare_videos.py"));
 
-    EXPECT_TRUE(file_util::PathExists(path_to_analyzer))
+    EXPECT_TRUE(base::PathExists(path_to_analyzer))
         << "Missing frame analyzer: should be in " << path_to_analyzer.value();
-    EXPECT_TRUE(file_util::PathExists(path_to_compare_script))
+    EXPECT_TRUE(base::PathExists(path_to_compare_script))
         << "Missing video compare script: should be in "
         << path_to_compare_script.value();
 
@@ -427,7 +427,7 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
     base::FilePath peerconnection_server =
         GetBrowserDir().Append(kPeerConnectionServer);
 
-    EXPECT_TRUE(file_util::PathExists(peerconnection_server))
+    EXPECT_TRUE(base::PathExists(peerconnection_server))
         << "Missing peerconnection_server. You must build "
            "it so it ends up next to the browser test binary.";
     EXPECT_TRUE(base::LaunchProcess(CommandLine(peerconnection_server),

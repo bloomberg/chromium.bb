@@ -44,7 +44,7 @@ void ValidatePathOnFileThread(
     const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, file_util::PathExists(path)));
+                          base::Bind(callback, base::PathExists(path)));
 }
 
 typedef std::vector<StorageInfo> StorageInfoList;
@@ -79,7 +79,7 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
     if (type == StorageInfo::FIXED_MASS_STORAGE ||
         type == StorageInfo::ITUNES ||
         type == StorageInfo::PICASA) {
-      if (!file_util::PathExists(base::FilePath::FromUTF8Unsafe(unique_id)))
+      if (!base::PathExists(base::FilePath::FromUTF8Unsafe(unique_id)))
         missing_devices.insert(*it);
       continue;
     }

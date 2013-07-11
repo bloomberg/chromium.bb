@@ -36,7 +36,7 @@ public:
     original_path = original_path.AppendASCII("extensions")
         .AppendASCII("unpacker")
         .AppendASCII(crx_name);
-    ASSERT_TRUE(file_util::PathExists(original_path)) << original_path.value();
+    ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
 
     // Try bots won't let us write into DIR_TEST_DATA, so we have to create
     // a temp folder to play in.

@@ -47,7 +47,7 @@ const int kMaxImageCanvas = 4096 * 4096;
 SkBitmap DecodeImage(const base::FilePath& path) {
   // Read the file from disk.
   std::string file_contents;
-  if (!file_util::PathExists(path) ||
+  if (!base::PathExists(path) ||
       !file_util::ReadFileToString(path, &file_contents)) {
     return SkBitmap();
   }
@@ -110,7 +110,7 @@ Unpacker::~Unpacker() {
 base::DictionaryValue* Unpacker::ReadManifest() {
   base::FilePath manifest_path =
       temp_install_dir_.Append(kManifestFilename);
-  if (!file_util::PathExists(manifest_path)) {
+  if (!base::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
     return NULL;
   }

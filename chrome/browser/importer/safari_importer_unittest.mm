@@ -37,7 +37,7 @@ class SafariImporterTest : public PlatformTest {
  public:
   SafariImporter* GetSafariImporter() {
     base::FilePath test_library_dir = GetTestSafariLibraryPath();
-    CHECK(file_util::PathExists(test_library_dir))  <<
+    CHECK(base::PathExists(test_library_dir))  <<
         "Missing test data directory";
 
     return new SafariImporter(test_library_dir);

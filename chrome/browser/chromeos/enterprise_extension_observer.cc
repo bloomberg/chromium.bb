@@ -53,7 +53,7 @@ void EnterpriseExtensionObserver::Observe(
 void EnterpriseExtensionObserver::CheckExtensionAndNotifyEntd(
     const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (file_util::PathExists(
+  if (base::PathExists(
       path.Append(FILE_PATH_LITERAL("isa-cros-policy")))) {
     BrowserThread::PostTask(
         BrowserThread::UI,

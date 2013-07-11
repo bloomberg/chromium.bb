@@ -31,7 +31,7 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
 
   std::set<base::FilePath> external_extension_paths;
 
-  if (!file_util::PathExists(external_extension_search_path)) {
+  if (!base::PathExists(external_extension_search_path)) {
     // Does not have to exist.
     return external_extension_paths;
   }
@@ -156,7 +156,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(DictionaryValue* prefs) {
 
   base::FilePath json_file = base_path_.Append(kExternalExtensionJson);
 
-  if (!file_util::PathExists(json_file)) {
+  if (!base::PathExists(json_file)) {
     // This is not an error.  The file does not exist by default.
     return;
   }

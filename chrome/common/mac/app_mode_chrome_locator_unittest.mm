@@ -64,5 +64,5 @@ TEST(ChromeLocatorTest, GetChromeBundleInfo) {
       &raw_version, &version_path, &framework_path));
   EXPECT_GT(raw_version.size(), 0U);
   EXPECT_TRUE(file_util::DirectoryExists(version_path));
-  EXPECT_TRUE(file_util::PathExists(framework_path));
+  EXPECT_TRUE(base::PathExists(framework_path));
 }

@@ -45,7 +45,7 @@ base::FilePath TestExtensionDir::Pack() {
   base::FilePath pem_path =
       crx_dir_.path().Append(FILE_PATH_LITERAL("ext.pem"));
   base::FilePath pem_in_path, pem_out_path;
-  if (file_util::PathExists(pem_path))
+  if (base::PathExists(pem_path))
     pem_in_path = pem_path;
   else
     pem_out_path = pem_path;
@@ -58,7 +58,7 @@ base::FilePath TestExtensionDir::Pack() {
         << "ExtensionCreator::Run() failed: " << creator.error_message();
     return base::FilePath();
   }
-  if (!file_util::PathExists(crx_path)) {
+  if (!base::PathExists(crx_path)) {
     ADD_FAILURE() << crx_path.value() << " was not created.";
     return base::FilePath();
   }

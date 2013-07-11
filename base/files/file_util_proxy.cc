@@ -107,7 +107,7 @@ class GetFileInfoHelper {
       : error_(PLATFORM_FILE_OK) {}
 
   void RunWorkForFilePath(const FilePath& file_path) {
-    if (!file_util::PathExists(file_path)) {
+    if (!PathExists(file_path)) {
       error_ = PLATFORM_FILE_ERROR_NOT_FOUND;
       return;
     }
@@ -210,7 +210,7 @@ PlatformFileError CloseAdapter(PlatformFile file_handle) {
 }
 
 PlatformFileError DeleteAdapter(const FilePath& file_path, bool recursive) {
-  if (!file_util::PathExists(file_path)) {
+  if (!PathExists(file_path)) {
     return PLATFORM_FILE_ERROR_NOT_FOUND;
   }
   if (!base::Delete(file_path, recursive)) {

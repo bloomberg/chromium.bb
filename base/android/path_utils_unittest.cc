@@ -39,7 +39,7 @@ TEST_F(PathUtilsTest, TestGetNativeLibraryDirectory) {
   // the base tests shared object.
   FilePath path;
   GetNativeLibraryDirectory(&path);
-  EXPECT_TRUE(file_util::PathExists(path.Append(("libbase_unittests.so"))));
+  EXPECT_TRUE(base::PathExists(path.Append(("libbase_unittests.so"))));
 }
 
 }  // namespace android

@@ -3768,7 +3768,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     NavigationControllerTest::TearDown();
 
     ASSERT_TRUE(base::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
+    ASSERT_FALSE(base::PathExists(test_dir_));
   }
 
   // Deletes the current profile manager and creates a new one. Indirectly this

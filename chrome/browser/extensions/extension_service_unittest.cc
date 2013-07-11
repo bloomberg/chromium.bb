@@ -675,7 +675,7 @@ class ExtensionServiceTest
     if (pem_path.value().empty()) {
       pem_output_path = crx_path.DirName().AppendASCII("temp.pem");
     } else {
-      ASSERT_TRUE(file_util::PathExists(pem_path));
+      ASSERT_TRUE(base::PathExists(pem_path));
     }
 
     ASSERT_TRUE(base::Delete(crx_path, false));
@@ -687,7 +687,7 @@ class ExtensionServiceTest
                              pem_output_path,
                              ExtensionCreator::kOverwriteCRX));
 
-    ASSERT_TRUE(file_util::PathExists(crx_path));
+    ASSERT_TRUE(base::PathExists(crx_path));
   }
 
   // Create a CrxInstaller and start installation. To allow the install
@@ -699,7 +699,7 @@ class ExtensionServiceTest
   }
 
   void StartCRXInstall(const base::FilePath& crx_path, int creation_flags) {
-    ASSERT_TRUE(file_util::PathExists(crx_path))
+    ASSERT_TRUE(base::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
     installer->set_creation_flags(creation_flags);
@@ -784,7 +784,7 @@ class ExtensionServiceTest
   const Extension* InstallCRXWithLocation(const base::FilePath& crx_path,
                                           Manifest::Location install_location,
                                           InstallState install_state) {
-    EXPECT_TRUE(file_util::PathExists(crx_path))
+    EXPECT_TRUE(base::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     // no client (silent install)
     scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
@@ -886,7 +886,7 @@ class ExtensionServiceTest
 
   void UpdateExtension(const std::string& id, const base::FilePath& in_path,
                        UpdateState expected_state) {
-    ASSERT_TRUE(file_util::PathExists(in_path));
+    ASSERT_TRUE(base::PathExists(in_path));
 
     // We need to copy this to a temporary location because Update() will delete
     // it.
@@ -938,7 +938,7 @@ class ExtensionServiceTest
     }
 
     // Update() should the temporary input file.
-    EXPECT_FALSE(file_util::PathExists(path));
+    EXPECT_FALSE(base::PathExists(path));
   }
 
   void TerminateExtension(const std::string& id) {
@@ -963,7 +963,7 @@ class ExtensionServiceTest
   void UninstallExtension(const std::string& id, bool use_helper) {
     // Verify that the extension is installed.
     base::FilePath extension_path = extensions_install_dir_.AppendASCII(id);
-    EXPECT_TRUE(file_util::PathExists(extension_path));
+    EXPECT_TRUE(base::PathExists(extension_path));
     size_t pref_key_count = GetPrefKeyCount();
     EXPECT_GT(pref_key_count, 0u);
     ValidateIntegerPref(id, "state", Extension::ENABLED);
@@ -994,7 +994,7 @@ class ExtensionServiceTest
     loop_.RunUntilIdle();
 
     // The directory should be gone.
-    EXPECT_FALSE(file_util::PathExists(extension_path));
+    EXPECT_FALSE(base::PathExists(extension_path));
   }
 
   void ValidatePrefKeyCount(size_t count) {
@@ -1205,7 +1205,7 @@ void PackExtensionTestClient::OnPackSuccess(
   base::MessageLoop::current()->Quit();
   EXPECT_EQ(expected_crx_path_.value(), crx_path.value());
   EXPECT_EQ(expected_private_key_path_.value(), private_key_path.value());
-  ASSERT_TRUE(file_util::PathExists(private_key_path));
+  ASSERT_TRUE(base::PathExists(private_key_path));
 }
 
 // The tests are designed so that we never expect to see a packing error.
@@ -1410,7 +1410,7 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   // And extension1 dir should now be toast.
   base::FilePath extension_dir = extensions_install_dir_
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj");
-  ASSERT_FALSE(file_util::PathExists(extension_dir));
+  ASSERT_FALSE(base::PathExists(extension_dir));
 }
 
 // Test that GarbageCollectExtensions deletes the right versions of an
@@ -1429,7 +1429,7 @@ TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
 
   // This is the directory that is going to be deleted, so make sure it actually
   // is there before the garbage collection.
-  ASSERT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  ASSERT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   service_->GarbageCollectExtensions();
@@ -1438,13 +1438,13 @@ TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
 
   // Verify that the pending update for the first extension didn't get
   // deleted.
-  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
-  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/2.0")));
-  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/2")));
-  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_FALSE(base::PathExists(extensions_install_dir_.AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 }
 
@@ -1463,7 +1463,7 @@ TEST_F(ExtensionServiceTest, UpdateOnStartup) {
 
   // This is the directory that is going to be deleted, so make sure it actually
   // is there before the garbage collection.
-  ASSERT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  ASSERT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   service_->Init();
@@ -1475,13 +1475,13 @@ TEST_F(ExtensionServiceTest, UpdateOnStartup) {
   loop_.RunUntilIdle();
 
   // Verify that the pending update for the first extension got installed.
-  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_FALSE(base::PathExists(extensions_install_dir_.AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
-  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/2.0")));
-  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/2")));
-  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_FALSE(base::PathExists(extensions_install_dir_.AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   // Make sure update information got deleted.
@@ -1512,9 +1512,9 @@ TEST_F(ExtensionServiceTest, PendingImports) {
 
   // These extensions are used by the extensions we test below, they must be
   // installed.
-  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
-  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_TRUE(base::PathExists(extensions_install_dir_.AppendASCII(
       "hpiknbiabeeppbpihjehijgoemciehgk/2")));
 
   // Each of these extensions should have been rejected because of dependencies
@@ -1539,7 +1539,7 @@ TEST_F(ExtensionServiceTest, PendingImports) {
   EXPECT_EQ(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
       prefs->GetDelayedInstallReason("behllobkkfkfnphdnhnkndlbkcpglgmj"));
 
-  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+  EXPECT_FALSE(base::PathExists(extensions_install_dir_.AppendASCII(
       "behllobkkfkfnphdnhnkndlbkcpglgmj/1.0.0.0")));
 
   EXPECT_TRUE(service_->pending_extension_manager()->HasPendingExtensions());
@@ -1801,7 +1801,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   base::FilePath path = data_dir_
              .AppendASCII("user_script_basic.user.js");
 
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(base::PathExists(path));
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
   installer->set_allow_silent_install(true);
   installer->InstallUserScript(
@@ -1851,8 +1851,8 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   base::FilePath pem_path = path.AppendASCII("unknown.pem");
   path = path.AppendASCII("unknown");
 
-  ASSERT_TRUE(file_util::PathExists(pem_path));
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(base::PathExists(pem_path));
+  ASSERT_TRUE(base::PathExists(path));
 
   ExtensionPrefs* prefs = service_->extension_prefs();
 
@@ -1900,8 +1900,8 @@ TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
   base::FilePath pem_path = path.AppendASCII("unknown.pem");
   path = path.AppendASCII("unknown");
 
-  ASSERT_TRUE(file_util::PathExists(pem_path));
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(base::PathExists(pem_path));
+  ASSERT_TRUE(base::PathExists(path));
 
   ExtensionPrefs* prefs = service_->extension_prefs();
 
@@ -1947,7 +1947,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
       .AppendASCII(good1)
       .AppendASCII("2");
 
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(base::PathExists(path));
   const Extension* extension = PackAndInstallCRX(path, INSTALL_NEW);
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -1975,7 +1975,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
       .AppendASCII("permissions")
       .AppendASCII("unknown");
 
-  ASSERT_TRUE(file_util::PathExists(path));
+  ASSERT_TRUE(base::PathExists(path));
 
   const Extension* extension = PackAndInstallCRX(path, INSTALL_NEW);
 
@@ -2086,8 +2086,8 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
   ASSERT_TRUE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags));
-  ASSERT_TRUE(file_util::PathExists(crx_path));
-  ASSERT_TRUE(file_util::PathExists(privkey_path));
+  ASSERT_TRUE(base::PathExists(crx_path));
+  ASSERT_TRUE(base::PathExists(privkey_path));
 
   // Repeat the run with the pem file gone, and no special flags
   // Should refuse to overwrite the existing crx.
@@ -2104,7 +2104,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   ASSERT_FALSE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kOverwriteCRX));
 
-  ASSERT_TRUE(file_util::PathExists(privkey_path));
+  ASSERT_TRUE(base::PathExists(privkey_path));
   InstallCRX(crx_path, INSTALL_NEW);
 
   // Try packing with invalid paths.
@@ -2225,8 +2225,8 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
   ASSERT_TRUE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags))
       << creator->error_message();
-  ASSERT_TRUE(file_util::PathExists(crx_path));
-  ASSERT_TRUE(file_util::PathExists(privkey_path));
+  ASSERT_TRUE(base::PathExists(crx_path));
+  ASSERT_TRUE(base::PathExists(privkey_path));
 
   base::Delete(crx_path, false);
   // Move the pem file into the extension.
@@ -2256,7 +2256,7 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
       .AppendASCII("1.0.0.0");
   base::FilePath privkey_path(data_dir_.AppendASCII(
       "openssl_privkey_asn1.pem"));
-  ASSERT_TRUE(file_util::PathExists(privkey_path));
+  ASSERT_TRUE(base::PathExists(privkey_path));
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -2330,7 +2330,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // temporary directory, but it automatically installs to the extension's
   // directory, and we don't want to copy the whole extension for a unittest.
   base::FilePath theme_file = extension_path.Append(chrome::kThemePackFilename);
-  ASSERT_TRUE(file_util::PathExists(theme_file));
+  ASSERT_TRUE(base::PathExists(theme_file));
   ASSERT_TRUE(base::Delete(theme_file, false));  // Not recursive.
 }
 
@@ -2353,8 +2353,8 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
       AppendASCII("unpacked").
       AppendASCII("manifest_with_key.json");
 
-  ASSERT_TRUE(file_util::PathExists(manifest_no_key));
-  ASSERT_TRUE(file_util::PathExists(manifest_with_key));
+  ASSERT_TRUE(base::PathExists(manifest_no_key));
+  ASSERT_TRUE(base::PathExists(manifest_with_key));
 
   // Load the unpacked extension with no key.
   base::CopyFile(manifest_no_key, manifest_path);
@@ -2387,9 +2387,9 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
 
   // Paths to test data files.
   base::FilePath source_manifest = source_data_dir.AppendASCII("manifest.json");
-  ASSERT_TRUE(file_util::PathExists(source_manifest));
+  ASSERT_TRUE(base::PathExists(source_manifest));
   base::FilePath source_icon = source_data_dir.AppendASCII("icon.png");
-  ASSERT_TRUE(file_util::PathExists(source_icon));
+  ASSERT_TRUE(base::PathExists(source_icon));
 
   // Set up the temporary extension directory.
   base::ScopedTempDir temp;
@@ -2842,7 +2842,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   base::FilePath extension_path = temp.path();
   base::FilePath manifest_path =
       extension_path.Append(extensions::kManifestFilename);
-  ASSERT_FALSE(file_util::PathExists(manifest_path));
+  ASSERT_FALSE(base::PathExists(manifest_path));
 
   // Start with version 2.0.
   DictionaryValue manifest;
@@ -4061,7 +4061,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
-  EXPECT_TRUE(file_util::PathExists(lso_file_path));
+  EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
@@ -4092,7 +4092,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_EQ(0U, origins.size());
 
   // Check that the LSO file has been removed.
-  EXPECT_FALSE(file_util::PathExists(lso_file_path));
+  EXPECT_FALSE(base::PathExists(lso_file_path));
 
   // Check if the indexed db has disappeared too.
   EXPECT_FALSE(file_util::DirectoryExists(idb_path));
@@ -4178,7 +4178,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
-  EXPECT_TRUE(file_util::PathExists(lso_file_path));
+  EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
@@ -4226,7 +4226,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_EQ(0U, origins.size());
 
   // Check that the LSO file has been removed.
-  EXPECT_FALSE(file_util::PathExists(lso_file_path));
+  EXPECT_FALSE(base::PathExists(lso_file_path));
 
   // Check if the indexed db has disappeared too.
   EXPECT_FALSE(file_util::DirectoryExists(idb_path));
@@ -4363,10 +4363,10 @@ void ExtensionServiceTest::TestExternalProvider(
   base::FilePath install_path = extensions_install_dir_.AppendASCII(id);
   if (no_uninstall) {
     // Policy controlled extensions should not have been touched by uninstall.
-    ASSERT_TRUE(file_util::PathExists(install_path));
+    ASSERT_TRUE(base::PathExists(install_path));
   } else {
     // The extension should also be gone from the install directory.
-    ASSERT_FALSE(file_util::PathExists(install_path));
+    ASSERT_FALSE(base::PathExists(install_path));
     loaded_.clear();
     service_->CheckForExternalUpdates();
     loop_.RunUntilIdle();
@@ -4404,7 +4404,7 @@ void ExtensionServiceTest::TestExternalProvider(
     ValidatePrefKeyCount(0);
 
     // The extension should also be gone from the install directory.
-    ASSERT_FALSE(file_util::PathExists(install_path));
+    ASSERT_FALSE(base::PathExists(install_path));
 
     // Now test the case where user uninstalls and then the extension is removed
     // from the external provider.

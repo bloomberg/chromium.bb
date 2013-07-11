@@ -549,7 +549,7 @@ void LoginUtilsImpl::InitRlzDelayed(Profile* user_profile) {
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(false),
       FROM_HERE,
-      base::Bind(&file_util::PathExists, GetRlzDisabledFlagPath()),
+      base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&LoginUtilsImpl::InitRlz, AsWeakPtr(), user_profile));
 #endif
 }

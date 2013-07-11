@@ -502,7 +502,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
             store_->policy()->SerializeAsString());
   VerifyPolicyMap(kDefaultHomepage);
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-  EXPECT_TRUE(file_util::PathExists(policy_file()));
+  EXPECT_TRUE(base::PathExists(policy_file()));
 
   // Now store a new policy using the new homepage location.
   const char kNewHomepage[] = "http://google.com";
@@ -516,7 +516,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
   VerifyPolicyMap(kNewHomepage);
 
   // Verify that the legacy cache has been removed.
-  EXPECT_FALSE(file_util::PathExists(policy_file()));
+  EXPECT_FALSE(base::PathExists(policy_file()));
 }
 
 }  // namespace

@@ -71,7 +71,7 @@ class ZipTest : public PlatformTest {
   }
 
   void TestUnzipFile(const base::FilePath& path, bool expect_hidden_files) {
-    ASSERT_TRUE(file_util::PathExists(path)) << "no file " << path.value();
+    ASSERT_TRUE(base::PathExists(path)) << "no file " << path.value();
     ASSERT_TRUE(zip::Unzip(path, test_dir_));
 
     base::FileEnumerator files(test_dir_, true,
@@ -130,7 +130,7 @@ TEST_F(ZipTest, UnzipEvil) {
   base::FilePath evil_file = output_dir;
   evil_file = evil_file.AppendASCII(
       "../levilevilevilevilevilevilevilevilevilevilevilevil");
-  ASSERT_FALSE(file_util::PathExists(evil_file));
+  ASSERT_FALSE(base::PathExists(evil_file));
 }
 
 TEST_F(ZipTest, UnzipEvil2) {
@@ -145,7 +145,7 @@ TEST_F(ZipTest, UnzipEvil2) {
   ASSERT_FALSE(zip::Unzip(path, output_dir));
   base::FilePath evil_file = output_dir;
   evil_file = evil_file.AppendASCII("../evil.txt");
-  ASSERT_FALSE(file_util::PathExists(evil_file));
+  ASSERT_FALSE(base::PathExists(evil_file));
 }
 
 TEST_F(ZipTest, Zip) {

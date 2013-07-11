@@ -57,7 +57,7 @@ class ShutdownTest : public UIPerfTest {
     };
 
     for (size_t i = 0; i < arraysize(test_cases); i++) {
-      ASSERT_TRUE(file_util::PathExists(test_cases[i]));
+      ASSERT_TRUE(base::PathExists(test_cases[i]));
       for (size_t j = 0; j < 5; j++) {
         ASSERT_TRUE(browser_proxy->AppendTab(
             net::FilePathToFileURL(test_cases[i])));

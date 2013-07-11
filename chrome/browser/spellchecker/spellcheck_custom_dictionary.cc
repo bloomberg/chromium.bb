@@ -96,7 +96,7 @@ void LoadDictionaryFileReliably(WordList& custom_words,
     return;
   // Checksum is not valid. See if there's a backup.
   base::FilePath backup = path.AddExtension(BACKUP_EXTENSION);
-  if (!file_util::PathExists(backup))
+  if (!base::PathExists(backup))
     return;
   // Load the backup and verify its checksum.
   if (LoadFile(backup, custom_words) != VALID_CHECKSUM)

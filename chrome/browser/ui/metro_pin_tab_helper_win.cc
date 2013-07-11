@@ -124,7 +124,7 @@ bool GetPathToBackupLogo(const base::FilePath& logo_dir,
                          base::FilePath* logo_path) {
   const wchar_t kDefaultLogoFileName[] = L"SecondaryTile.png";
   *logo_path = logo_dir.Append(kDefaultLogoFileName);
-  if (file_util::PathExists(*logo_path))
+  if (base::PathExists(*logo_path))
     return true;
 
   base::FilePath default_logo_path;

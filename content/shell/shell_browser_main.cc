@@ -73,7 +73,7 @@ GURL GetURLForLayoutTest(const std::string& test_name,
 #else
     base::FilePath local_file(path_or_url);
 #endif
-    if (!file_util::PathExists(local_file)) {
+    if (!base::PathExists(local_file)) {
       local_file = content::GetWebKitRootDirFilePath()
           .Append(FILE_PATH_LITERAL("LayoutTests")).Append(local_file);
     }

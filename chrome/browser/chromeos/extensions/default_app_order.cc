@@ -27,7 +27,7 @@ ExternalLoader* loader_instance = NULL;
 // if the file does not exist or could not be parsed properly. Caller takes
 // ownership of the returned value.
 base::ListValue* ReadExternalOrdinalFile(const base::FilePath& path) {
-  if (!file_util::PathExists(path))
+  if (!base::PathExists(path))
     return NULL;
 
   JSONFileValueSerializer serializer(path);

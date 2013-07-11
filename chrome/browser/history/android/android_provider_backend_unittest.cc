@@ -262,8 +262,8 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
 
   // The history_db_name and thumbnail_db_name files should be created by
   // HistoryBackend. We need to open the same database files.
-  ASSERT_TRUE(file_util::PathExists(history_db_name_));
-  ASSERT_TRUE(file_util::PathExists(thumbnail_db_name_));
+  ASSERT_TRUE(base::PathExists(history_db_name_));
+  ASSERT_TRUE(base::PathExists(thumbnail_db_name_));
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -412,8 +412,8 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
 
   // The history_db_name and thumbnail_db_name files should be created by
   // HistoryBackend. We need to open the same database files.
-  ASSERT_TRUE(file_util::PathExists(history_db_name_));
-  ASSERT_TRUE(file_util::PathExists(thumbnail_db_name_));
+  ASSERT_TRUE(base::PathExists(history_db_name_));
+  ASSERT_TRUE(base::PathExists(thumbnail_db_name_));
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -1826,8 +1826,8 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
 
   // The history_db_name and thumbnail_db_name files should be created by
   // HistoryBackend. We need to open the same database files.
-  ASSERT_TRUE(file_util::PathExists(history_db_name_));
-  ASSERT_TRUE(file_util::PathExists(thumbnail_db_name_));
+  ASSERT_TRUE(base::PathExists(history_db_name_));
+  ASSERT_TRUE(base::PathExists(thumbnail_db_name_));
 
   // Only creates the history database
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));

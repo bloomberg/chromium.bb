@@ -92,7 +92,7 @@ class CRXValidator {
 base::DictionaryValue* ReadManifest(const base::FilePath& unpack_path) {
   base::FilePath manifest =
       unpack_path.Append(FILE_PATH_LITERAL("manifest.json"));
-  if (!file_util::PathExists(manifest))
+  if (!base::PathExists(manifest))
     return NULL;
   JSONFileValueSerializer serializer(manifest);
   std::string error;
@@ -109,7 +109,7 @@ base::DictionaryValue* ReadManifest(const base::FilePath& unpack_path) {
 // This method doesn't take any special steps to prevent files from
 // being inserted into the target directory by another process or thread.
 bool MakeEmptyDirectory(const base::FilePath& path) {
-  if (file_util::PathExists(path)) {
+  if (base::PathExists(path)) {
     if (!base::Delete(path, true))
       return false;
   }

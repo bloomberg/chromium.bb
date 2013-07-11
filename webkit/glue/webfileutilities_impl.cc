@@ -26,7 +26,7 @@ WebFileUtilitiesImpl::~WebFileUtilitiesImpl() {
 }
 
 bool WebFileUtilitiesImpl::fileExists(const WebString& path) {
-  return file_util::PathExists(base::FilePath::FromUTF16Unsafe(path));
+  return base::PathExists(base::FilePath::FromUTF16Unsafe(path));
 }
 
 bool WebFileUtilitiesImpl::deleteFile(const WebString& path) {

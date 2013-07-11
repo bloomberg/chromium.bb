@@ -250,7 +250,7 @@ base::FilePath ExtensionBrowserTest::PackExtension(
       dir_path.ReplaceExtension(FILE_PATH_LITERAL(".pem"));
   base::FilePath pem_path_out;
 
-  if (!file_util::PathExists(pem_path)) {
+  if (!base::PathExists(pem_path)) {
     pem_path = base::FilePath();
     pem_path_out = crx_path.DirName().AppendASCII("temp.pem");
     if (!base::Delete(pem_path_out, false)) {
@@ -267,12 +267,12 @@ base::FilePath ExtensionBrowserTest::PackExtensionWithOptions(
     const base::FilePath& crx_path,
     const base::FilePath& pem_path,
     const base::FilePath& pem_out_path) {
-  if (!file_util::PathExists(dir_path)) {
+  if (!base::PathExists(dir_path)) {
     ADD_FAILURE() << "Extension dir not found: " << dir_path.value();
     return base::FilePath();
   }
 
-  if (!file_util::PathExists(pem_path) && pem_out_path.empty()) {
+  if (!base::PathExists(pem_path) && pem_out_path.empty()) {
     ADD_FAILURE() << "Must specify a PEM file or PEM output path";
     return base::FilePath();
   }
@@ -288,7 +288,7 @@ base::FilePath ExtensionBrowserTest::PackExtensionWithOptions(
     return base::FilePath();
   }
 
-  if (!file_util::PathExists(crx_path)) {
+  if (!base::PathExists(crx_path)) {
     ADD_FAILURE() << crx_path.value() << " was not created.";
     return base::FilePath();
   }

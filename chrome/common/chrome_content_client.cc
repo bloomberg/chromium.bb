@@ -137,7 +137,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   static bool skip_pdf_file_check = false;
   base::FilePath path;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
-    if (skip_pdf_file_check || file_util::PathExists(path)) {
+    if (skip_pdf_file_check || base::PathExists(path)) {
       content::PepperPluginInfo pdf;
       pdf.path = path;
       pdf.name = chrome::ChromeContentClient::kPDFPluginName;
@@ -165,7 +165,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   // switch.
   static bool skip_nacl_file_check = false;
   if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
-    if (skip_nacl_file_check || file_util::PathExists(path)) {
+    if (skip_nacl_file_check || base::PathExists(path)) {
       content::PepperPluginInfo nacl;
       nacl.path = path;
       nacl.name = chrome::ChromeContentClient::kNaClPluginName;
@@ -190,7 +190,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   // entirely with o1d.
   static bool skip_o3d_file_check = false;
   if (PathService::Get(chrome::FILE_O3D_PLUGIN, &path)) {
-    if (skip_o3d_file_check || file_util::PathExists(path)) {
+    if (skip_o3d_file_check || base::PathExists(path)) {
       content::PepperPluginInfo o3d;
       o3d.path = path;
       o3d.name = kO3DPluginName;
@@ -209,7 +209,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 
   static bool skip_o1d_file_check = false;
   if (PathService::Get(chrome::FILE_O1D_PLUGIN, &path)) {
-    if (skip_o1d_file_check || file_util::PathExists(path)) {
+    if (skip_o1d_file_check || base::PathExists(path)) {
       content::PepperPluginInfo o1d;
       o1d.path = path;
       o1d.name = kO1DPluginName;
@@ -228,7 +228,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 
   static bool skip_gtalk_file_check = false;
   if (PathService::Get(chrome::FILE_GTALK_PLUGIN, &path)) {
-    if (skip_gtalk_file_check || file_util::PathExists(path)) {
+    if (skip_gtalk_file_check || base::PathExists(path)) {
       content::PepperPluginInfo gtalk;
       gtalk.path = path;
       gtalk.name = kGTalkPluginName;
@@ -249,7 +249,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     !defined(WIDEVINE_CDM_IS_COMPONENT)
   static bool skip_widevine_cdm_file_check = false;
   if (PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &path)) {
-    if (skip_widevine_cdm_file_check || file_util::PathExists(path)) {
+    if (skip_widevine_cdm_file_check || base::PathExists(path)) {
       content::PepperPluginInfo widevine_cdm;
       widevine_cdm.is_out_of_process = true;
       widevine_cdm.path = path;

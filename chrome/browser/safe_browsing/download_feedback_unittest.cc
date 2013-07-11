@@ -192,14 +192,14 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
             uploader()->metadata_);
   EXPECT_EQ(kTestFeedbackURL, uploader()->base_url_.spec());
 
-  EXPECT_TRUE(file_util::PathExists(upload_file_path_));
+  EXPECT_TRUE(base::PathExists(upload_file_path_));
 
   EXPECT_FALSE(feedback_finish_called_);
   uploader()->finish_callback_.Run(
       TwoPhaseUploader::STATE_SUCCESS, net::OK, 0, "");
   EXPECT_TRUE(feedback_finish_called_);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(file_util::PathExists(upload_file_path_));
+  EXPECT_FALSE(base::PathExists(upload_file_path_));
 }
 
 TEST_F(DownloadFeedbackTest, CancelUpload) {
@@ -230,13 +230,13 @@ TEST_F(DownloadFeedbackTest, CancelUpload) {
   ASSERT_TRUE(uploader());
   EXPECT_FALSE(feedback_finish_called_);
   EXPECT_TRUE(uploader()->start_called_);
-  EXPECT_TRUE(file_util::PathExists(upload_file_path_));
+  EXPECT_TRUE(base::PathExists(upload_file_path_));
 
   delete feedback;
   EXPECT_FALSE(feedback_finish_called_);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(file_util::PathExists(upload_file_path_));
+  EXPECT_FALSE(base::PathExists(upload_file_path_));
 }
 
 }  // namespace safe_browsing

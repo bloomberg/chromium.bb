@@ -409,7 +409,7 @@ void UserCloudPolicyStoreChromeOS::InstallLegacyTokens(
 // static
 void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(
     const base::FilePath& dir) {
-  if (file_util::PathExists(dir) && !base::Delete(dir, true))
+  if (base::PathExists(dir) && !base::Delete(dir, true))
     LOG(ERROR) << "Failed to remove cache dir " << dir.value();
 }
 
@@ -430,7 +430,7 @@ void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
 // static
 void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
                                                  std::vector<uint8>* key) {
-  if (!file_util::PathExists(path)) {
+  if (!base::PathExists(path)) {
     // There is no policy key the first time that a user fetches policy. If
     // |path| does not exist then that is the most likely scenario, so there's
     // no need to sample a failure.

@@ -76,7 +76,7 @@ Status PrepareCommandLine(int port,
     if (!FindChrome(&program))
       return Status(kUnknownError, "cannot find Chrome binary");
     command.SetProgram(program);
-  } else if (!file_util::PathExists(program)) {
+  } else if (!base::PathExists(program)) {
     return Status(kUnknownError,
                   base::StringPrintf("no chrome binary at %" PRFilePath,
                                      program.value().c_str()));

@@ -70,7 +70,7 @@ void ITunesFinderWin::TryDefaultLocation() {
   base::FilePath library_file =
       music_dir.AppendASCII("iTunes").AppendASCII("iTunes Music Library.xml");
 
-  if (!file_util::PathExists(library_file)) {
+  if (!base::PathExists(library_file)) {
     PostResultToUIThread(std::string());
     return;
   }
@@ -81,7 +81,7 @@ void ITunesFinderWin::FinishedParsingPrefXML(
     const base::FilePath& library_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  if (library_file.empty() || !file_util::PathExists(library_file)) {
+  if (library_file.empty() || !base::PathExists(library_file)) {
     TryDefaultLocation();
     return;
   }

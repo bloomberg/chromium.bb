@@ -226,7 +226,7 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
     const std::string& report_id) {
   std::string contents;
 
-  if (file_util::PathExists(upload_list_path_)) {
+  if (base::PathExists(upload_list_path_)) {
     bool read_ok = file_util::ReadFileToString(upload_list_path_, &contents);
     DPCHECK(read_ok);
 

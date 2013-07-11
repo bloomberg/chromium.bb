@@ -53,7 +53,7 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
     return false;
   }
 
-  bool shortcut_existed = file_util::PathExists(shortcut_path);
+  bool shortcut_existed = PathExists(shortcut_path);
 
   // Interfaces to the old shortcut when replacing an existing shortcut.
   ScopedComPtr<IShellLink> old_i_shell_link;

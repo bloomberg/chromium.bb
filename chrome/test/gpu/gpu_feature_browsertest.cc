@@ -91,7 +91,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
     base::FilePath test_path;
     test_path = gpu_test_dir_.Append(url);
-    ASSERT_TRUE(file_util::PathExists(test_path))
+    ASSERT_TRUE(base::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
     content::DOMMessageQueue message_queue;
@@ -494,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   const base::FilePath url(
       FILE_PATH_LITERAL("feature_compositing_static.html"));
   base::FilePath test_path = gpu_test_dir_.Append(url);
-  ASSERT_TRUE(file_util::PathExists(test_path))
+  ASSERT_TRUE(base::PathExists(test_path))
       << "Missing test file: " << test_path.value();
 
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_path));

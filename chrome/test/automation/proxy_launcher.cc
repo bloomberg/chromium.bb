@@ -82,7 +82,7 @@ void UpdateHistoryDates(const base::FilePath& user_data_dir) {
   base::FilePath history =
       user_data_dir.AppendASCII("Default").AppendASCII("History");
   // Not all test profiles have a history file.
-  if (!file_util::PathExists(history))
+  if (!base::PathExists(history))
     return;
 
   ASSERT_TRUE(db.Open(history));

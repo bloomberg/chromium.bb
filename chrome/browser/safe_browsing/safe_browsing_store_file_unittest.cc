@@ -57,24 +57,24 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteTemp) {
   const base::FilePath temp_file =
       SafeBrowsingStoreFile::TemporaryFileForFilename(filename_);
 
-  EXPECT_FALSE(file_util::PathExists(filename_));
-  EXPECT_FALSE(file_util::PathExists(temp_file));
+  EXPECT_FALSE(base::PathExists(filename_));
+  EXPECT_FALSE(base::PathExists(temp_file));
 
   // Starting a transaction creates a temporary file.
   EXPECT_TRUE(store_->BeginUpdate());
-  EXPECT_TRUE(file_util::PathExists(temp_file));
+  EXPECT_TRUE(base::PathExists(temp_file));
 
   // Pull the rug out from under the existing store, simulating a
   // crash.
   store_.reset(new SafeBrowsingStoreFile());
   store_->Init(filename_, base::Closure());
-  EXPECT_FALSE(file_util::PathExists(filename_));
-  EXPECT_TRUE(file_util::PathExists(temp_file));
+  EXPECT_FALSE(base::PathExists(filename_));
+  EXPECT_TRUE(base::PathExists(temp_file));
 
   // Make sure the temporary file is deleted.
   EXPECT_TRUE(store_->Delete());
-  EXPECT_FALSE(file_util::PathExists(filename_));
-  EXPECT_FALSE(file_util::PathExists(temp_file));
+  EXPECT_FALSE(base::PathExists(filename_));
+  EXPECT_FALSE(base::PathExists(temp_file));
 }
 
 // Test basic corruption-handling.
@@ -133,7 +133,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
 
 TEST_F(SafeBrowsingStoreFileTest, CheckValidity) {
   // Empty store is valid.
-  EXPECT_FALSE(file_util::PathExists(filename_));
+  EXPECT_FALSE(base::PathExists(filename_));
   ASSERT_TRUE(store_->BeginUpdate());
   EXPECT_FALSE(corruption_detected_);
   EXPECT_TRUE(store_->CheckValidity());
@@ -141,9 +141,9 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidity) {
   EXPECT_TRUE(store_->CancelUpdate());
 
   // A store with some data is valid.
-  EXPECT_FALSE(file_util::PathExists(filename_));
+  EXPECT_FALSE(base::PathExists(filename_));
   SafeBrowsingStoreTestStorePrefix(store_.get());
-  EXPECT_TRUE(file_util::PathExists(filename_));
+  EXPECT_TRUE(base::PathExists(filename_));
   ASSERT_TRUE(store_->BeginUpdate());
   EXPECT_FALSE(corruption_detected_);
   EXPECT_TRUE(store_->CheckValidity());
@@ -154,7 +154,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidity) {
 // Corrupt the payload.
 TEST_F(SafeBrowsingStoreFileTest, CheckValidityPayload) {
   SafeBrowsingStoreTestStorePrefix(store_.get());
-  EXPECT_TRUE(file_util::PathExists(filename_));
+  EXPECT_TRUE(base::PathExists(filename_));
 
   // 37 is the most random prime number.  It's also past the header,
   // as corrupting the header would fail BeginUpdate() in which case
@@ -176,7 +176,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityPayload) {
 // Corrupt the checksum.
 TEST_F(SafeBrowsingStoreFileTest, CheckValidityChecksum) {
   SafeBrowsingStoreTestStorePrefix(store_.get());
-  EXPECT_TRUE(file_util::PathExists(filename_));
+  EXPECT_TRUE(base::PathExists(filename_));
 
   // An offset from the end of the file which is in the checksum.
   const int kOffset = -static_cast<int>(sizeof(base::MD5Digest));

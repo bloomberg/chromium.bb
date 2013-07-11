@@ -80,7 +80,7 @@ bool PathProviderPosix(int key, FilePath* result) {
       std::string cr_source_root;
       if (env->GetVar("CR_SOURCE_ROOT", &cr_source_root)) {
         path = FilePath(cr_source_root);
-        if (file_util::PathExists(path)) {
+        if (base::PathExists(path)) {
           *result = path;
           return true;
         } else {

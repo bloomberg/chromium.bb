@@ -89,7 +89,7 @@ void CellularConfigDocument::LoadCellularConfigFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Load partner customization startup manifest if it is available.
   base::FilePath config_path(kCellularConfigPath);
-  if (!file_util::PathExists(config_path))
+  if (!base::PathExists(config_path))
     return;
 
   if (LoadFromFile(config_path))

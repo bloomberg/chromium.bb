@@ -29,7 +29,7 @@ class SetupUtilTestWithDir : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
     data_dir_ = data_dir_.AppendASCII("installer");
-    ASSERT_TRUE(file_util::PathExists(data_dir_));
+    ASSERT_TRUE(base::PathExists(data_dir_));
 
     // Create a temp directory for testing.
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
@@ -98,9 +98,9 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
 TEST_F(SetupUtilTestWithDir, ApplyDiffPatchTest) {
   base::FilePath work_dir(test_dir_.path());
   work_dir = work_dir.AppendASCII("ApplyDiffPatchTest");
-  ASSERT_FALSE(file_util::PathExists(work_dir));
+  ASSERT_FALSE(base::PathExists(work_dir));
   EXPECT_TRUE(file_util::CreateDirectory(work_dir));
-  ASSERT_TRUE(file_util::PathExists(work_dir));
+  ASSERT_TRUE(base::PathExists(work_dir));
 
   base::FilePath src = data_dir_.AppendASCII("archive1.7z");
   base::FilePath patch = data_dir_.AppendASCII("archive.diff");
@@ -119,33 +119,33 @@ TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
   // Create a version dir
   base::FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   file_util::CreateDirectory(chrome_dir);
-  ASSERT_TRUE(file_util::PathExists(chrome_dir));
+  ASSERT_TRUE(base::PathExists(chrome_dir));
   scoped_ptr<Version> version(
       installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
   ASSERT_EQ(version->GetString(), "1.0.0.0");
 
   base::Delete(chrome_dir, true);
-  ASSERT_FALSE(file_util::PathExists(chrome_dir));
+  ASSERT_FALSE(base::PathExists(chrome_dir));
   ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir_.path()) == NULL);
 
   chrome_dir = test_dir_.path().AppendASCII("ABC");
   file_util::CreateDirectory(chrome_dir);
-  ASSERT_TRUE(file_util::PathExists(chrome_dir));
+  ASSERT_TRUE(base::PathExists(chrome_dir));
   ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir_.path()) == NULL);
 
   chrome_dir = test_dir_.path().AppendASCII("2.3.4.5");
   file_util::CreateDirectory(chrome_dir);
-  ASSERT_TRUE(file_util::PathExists(chrome_dir));
+  ASSERT_TRUE(base::PathExists(chrome_dir));
   version.reset(installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
   ASSERT_EQ(version->GetString(), "2.3.4.5");
 
   // Create multiple version dirs, ensure that we select the greatest.
   chrome_dir = test_dir_.path().AppendASCII("9.9.9.9");
   file_util::CreateDirectory(chrome_dir);
-  ASSERT_TRUE(file_util::PathExists(chrome_dir));
+  ASSERT_TRUE(base::PathExists(chrome_dir));
   chrome_dir = test_dir_.path().AppendASCII("1.1.1.1");
   file_util::CreateDirectory(chrome_dir);
-  ASSERT_TRUE(file_util::PathExists(chrome_dir));
+  ASSERT_TRUE(base::PathExists(chrome_dir));
 
   version.reset(installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
   ASSERT_EQ(version->GetString(), "9.9.9.9");
@@ -154,11 +154,11 @@ TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
 TEST_F(SetupUtilTestWithDir, DeleteFileFromTempProcess) {
   base::FilePath test_file;
   file_util::CreateTemporaryFileInDir(test_dir_.path(), &test_file);
-  ASSERT_TRUE(file_util::PathExists(test_file));
+  ASSERT_TRUE(base::PathExists(test_file));
   file_util::WriteFile(test_file, "foo", 3);
   EXPECT_TRUE(installer::DeleteFileFromTempProcess(test_file, 0));
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
-  EXPECT_FALSE(file_util::PathExists(test_file));
+  EXPECT_FALSE(base::PathExists(test_file));
 }
 
 // Note: This test is only valid when run at high integrity (i.e. it will fail

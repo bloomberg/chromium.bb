@@ -385,7 +385,7 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
   original_file_path =
       original_file_path.Append(FILE_PATH_LITERAL("serializer_test.json"));
 
-  ASSERT_TRUE(file_util::PathExists(original_file_path));
+  ASSERT_TRUE(PathExists(original_file_path));
 
   JSONFileValueSerializer deserializer(original_file_path);
   scoped_ptr<Value> root;
@@ -417,10 +417,10 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
   const base::FilePath written_file_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("test_output.js"));
 
-  ASSERT_FALSE(file_util::PathExists(written_file_path));
+  ASSERT_FALSE(PathExists(written_file_path));
   JSONFileValueSerializer serializer(written_file_path);
   ASSERT_TRUE(serializer.Serialize(*root));
-  ASSERT_TRUE(file_util::PathExists(written_file_path));
+  ASSERT_TRUE(PathExists(written_file_path));
 
   // Now compare file contents.
   EXPECT_TRUE(file_util::TextContentsEqual(original_file_path,
@@ -434,7 +434,7 @@ TEST_F(JSONFileValueSerializerTest, RoundtripNested) {
   original_file_path = original_file_path.Append(
       FILE_PATH_LITERAL("serializer_nested_test.json"));
 
-  ASSERT_TRUE(file_util::PathExists(original_file_path));
+  ASSERT_TRUE(PathExists(original_file_path));
 
   JSONFileValueSerializer deserializer(original_file_path);
   scoped_ptr<Value> root;
@@ -445,10 +445,10 @@ TEST_F(JSONFileValueSerializerTest, RoundtripNested) {
   base::FilePath written_file_path = temp_dir_.path().Append(
       FILE_PATH_LITERAL("test_output.json"));
 
-  ASSERT_FALSE(file_util::PathExists(written_file_path));
+  ASSERT_FALSE(PathExists(written_file_path));
   JSONFileValueSerializer serializer(written_file_path);
   ASSERT_TRUE(serializer.Serialize(*root));
-  ASSERT_TRUE(file_util::PathExists(written_file_path));
+  ASSERT_TRUE(PathExists(written_file_path));
 
   // Now compare file contents.
   EXPECT_TRUE(file_util::TextContentsEqual(original_file_path,
@@ -461,7 +461,7 @@ TEST_F(JSONFileValueSerializerTest, NoWhitespace) {
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &source_file_path));
   source_file_path = source_file_path.Append(
       FILE_PATH_LITERAL("serializer_test_nowhitespace.json"));
-  ASSERT_TRUE(file_util::PathExists(source_file_path));
+  ASSERT_TRUE(PathExists(source_file_path));
   JSONFileValueSerializer serializer(source_file_path);
   scoped_ptr<Value> root;
   root.reset(serializer.Deserialize(NULL, NULL));

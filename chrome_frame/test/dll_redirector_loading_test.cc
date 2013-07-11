@@ -39,7 +39,7 @@ class DllRedirectorLoadingTest : public testing::Test {
   static void SetUpTestCase() {
     // First ensure that we can find the built Chrome Frame DLL.
     base::FilePath build_chrome_frame_dll = GetChromeFrameBuildPath();
-    ASSERT_TRUE(file_util::PathExists(build_chrome_frame_dll));
+    ASSERT_TRUE(base::PathExists(build_chrome_frame_dll));
 
     // Then grab its version.
     scoped_ptr<FileVersionInfo> original_version_info(
@@ -63,7 +63,7 @@ class DllRedirectorLoadingTest : public testing::Test {
         original_version_dir.Append(build_chrome_frame_dll.BaseName());
     ASSERT_TRUE(base::CopyFile(build_chrome_frame_dll,
                                original_chrome_frame_dll_));
-    ASSERT_TRUE(file_util::PathExists(original_chrome_frame_dll_));
+    ASSERT_TRUE(base::PathExists(original_chrome_frame_dll_));
 
     // Temporary location for the new Chrome Frame DLL.
     base::FilePath temporary_new_chrome_frame_dll(
@@ -95,7 +95,7 @@ class DllRedirectorLoadingTest : public testing::Test {
         new_version_dir.Append(build_chrome_frame_dll.BaseName());
     ASSERT_TRUE(base::Move(temporary_new_chrome_frame_dll,
                            new_chrome_frame_dll_));
-    ASSERT_TRUE(file_util::PathExists(new_chrome_frame_dll_));
+    ASSERT_TRUE(base::PathExists(new_chrome_frame_dll_));
   }
 
   static void TearDownTestCase() {

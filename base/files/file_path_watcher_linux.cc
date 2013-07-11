@@ -351,7 +351,7 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
       //    recheck.
       if (target_changed ||
           (change_on_target_path && !created) ||
-          (change_on_target_path && file_util::PathExists(target_))) {
+          (change_on_target_path && PathExists(target_))) {
         callback_.Run(target_, false);
         return;
       }

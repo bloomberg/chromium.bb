@@ -217,7 +217,7 @@ class WebDatabaseMigrationTest : public testing::Test {
     source_path = source_path.AppendASCII("data");
     source_path = source_path.AppendASCII("web_database");
     source_path = source_path.Append(file);
-    return file_util::PathExists(source_path) &&
+    return base::PathExists(source_path) &&
         file_util::ReadFileToString(source_path, contents);
   }
 

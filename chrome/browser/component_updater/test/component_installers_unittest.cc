@@ -65,7 +65,7 @@ TEST(ComponentInstallerTest, MAYBE_PepperFlashCheck) {
   manifest = manifest.Append(kDataPath);
   manifest = manifest.AppendASCII("manifest.json");
 
-  if (!file_util::PathExists(manifest)) {
+  if (!base::PathExists(manifest)) {
     LOG(WARNING) << "No test manifest available. Skipping.";
     return;
   }

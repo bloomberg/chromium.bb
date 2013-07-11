@@ -115,7 +115,7 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
     int icon_index = dist->GetIconIndex();
     base::FilePath prefs_path(target_exe.DirName().AppendASCII(
         installer::kDefaultMasterPrefs));
-    if (file_util::PathExists(prefs_path)) {
+    if (base::PathExists(prefs_path)) {
       installer::MasterPreferences prefs(prefs_path);
       prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
                    &icon_index);

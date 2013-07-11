@@ -32,7 +32,7 @@ TEST(SandboxOriginDatabaseTest, BasicTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
-  EXPECT_FALSE(file_util::PathExists(kFSDir));
+  EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
   SandboxOriginDatabase database(kFSDir);
@@ -55,14 +55,14 @@ TEST(SandboxOriginDatabaseTest, BasicTest) {
   EXPECT_FALSE(path1.empty());
   EXPECT_EQ(path0, path1);
 
-  EXPECT_TRUE(file_util::PathExists(kFSDir.Append(kOriginDatabaseName)));
+  EXPECT_TRUE(base::PathExists(kFSDir.Append(kOriginDatabaseName)));
 }
 
 TEST(SandboxOriginDatabaseTest, TwoPathTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
-  EXPECT_FALSE(file_util::PathExists(kFSDir));
+  EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
   SandboxOriginDatabase database(kFSDir);
@@ -83,14 +83,14 @@ TEST(SandboxOriginDatabaseTest, TwoPathTest) {
   EXPECT_FALSE(path1.empty());
   EXPECT_NE(path0, path1);
 
-  EXPECT_TRUE(file_util::PathExists(kFSDir.Append(kOriginDatabaseName)));
+  EXPECT_TRUE(base::PathExists(kFSDir.Append(kOriginDatabaseName)));
 }
 
 TEST(SandboxOriginDatabaseTest, DropDatabaseTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
-  EXPECT_FALSE(file_util::PathExists(kFSDir));
+  EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
   SandboxOriginDatabase database(kFSDir);
@@ -103,7 +103,7 @@ TEST(SandboxOriginDatabaseTest, DropDatabaseTest) {
   EXPECT_TRUE(database.HasOriginPath(origin));
   EXPECT_FALSE(path0.empty());
 
-  EXPECT_TRUE(file_util::PathExists(kFSDir.Append(kOriginDatabaseName)));
+  EXPECT_TRUE(base::PathExists(kFSDir.Append(kOriginDatabaseName)));
 
   database.DropDatabase();
 
@@ -118,7 +118,7 @@ TEST(SandboxOriginDatabaseTest, DeleteOriginTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
-  EXPECT_FALSE(file_util::PathExists(kFSDir));
+  EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
   SandboxOriginDatabase database(kFSDir);
@@ -145,7 +145,7 @@ TEST(SandboxOriginDatabaseTest, ListOriginsTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
-  EXPECT_FALSE(file_util::PathExists(kFSDir));
+  EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
   std::vector<SandboxOriginDatabase::OriginRecord> origins;
@@ -195,7 +195,7 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryTest) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   const base::FilePath kDBDir = kFSDir.Append(kOriginDatabaseName);
-  EXPECT_FALSE(file_util::PathExists(kFSDir));
+  EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
   const std::string kOrigins[] = {
@@ -255,8 +255,8 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryTest) {
   EXPECT_FALSE(path.empty());
   EXPECT_TRUE(database->HasOriginPath(kOrigin));
 
-  EXPECT_FALSE(file_util::PathExists(kGarbageFile));
-  EXPECT_FALSE(file_util::PathExists(kGarbageDir));
+  EXPECT_FALSE(base::PathExists(kGarbageFile));
+  EXPECT_FALSE(base::PathExists(kGarbageDir));
 }
 
 TEST(SandboxOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
@@ -275,7 +275,7 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
     ASSERT_TRUE(dir.CreateUniqueTempDir());
     const base::FilePath kFSDir = dir.path().Append(kFileSystemDirName);
     const base::FilePath kDBDir = kFSDir.Append(kOriginDatabaseName);
-    EXPECT_FALSE(file_util::PathExists(kFSDir));
+    EXPECT_FALSE(base::PathExists(kFSDir));
     EXPECT_TRUE(file_util::CreateDirectory(kFSDir));
 
     const std::string kOrigin = "foo.example.com";

@@ -260,7 +260,7 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
 
     base::FilePath shortcut_file = path.Append(file_name_).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
-    if (file_util::PathExists(shortcut_file)) {
+    if (base::PathExists(shortcut_file)) {
       shortcut_files_.push_back(shortcut_file);
     }
   }
@@ -280,7 +280,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
 
   // Ensure web_app_path exists. web_app_path could be missing for a legacy
   // shortcut created by Gears.
-  if (!file_util::PathExists(web_app_path) &&
+  if (!base::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
     NOTREACHED();
     return;

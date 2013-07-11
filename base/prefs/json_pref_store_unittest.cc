@@ -44,7 +44,7 @@ class JsonPrefStoreTest : public testing::Test {
 
     ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &data_dir_));
     data_dir_ = data_dir_.AppendASCII("prefs");
-    ASSERT_TRUE(file_util::PathExists(data_dir_));
+    ASSERT_TRUE(PathExists(data_dir_));
   }
 
   // The path to temporary directory used to contain the test operations.
@@ -58,7 +58,7 @@ class JsonPrefStoreTest : public testing::Test {
 // Test fallback behavior for a nonexistent file.
 TEST_F(JsonPrefStoreTest, NonExistentFile) {
   base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
-  ASSERT_FALSE(file_util::PathExists(bogus_input_file));
+  ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       bogus_input_file, message_loop_.message_loop_proxy().get());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
@@ -78,9 +78,9 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   EXPECT_FALSE(pref_store->ReadOnly());
 
   // The file should have been moved aside.
-  EXPECT_FALSE(file_util::PathExists(invalid_file));
+  EXPECT_FALSE(PathExists(invalid_file));
   base::FilePath moved_aside = temp_dir_.path().AppendASCII("invalid.bad");
-  EXPECT_TRUE(file_util::PathExists(moved_aside));
+  EXPECT_TRUE(PathExists(moved_aside));
   EXPECT_TRUE(file_util::TextContentsEqual(invalid_file_original,
                                            moved_aside));
 }
@@ -144,7 +144,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   EXPECT_EQ(214748364842LL, value);
 
   // Serialize and compare to expected output.
-  ASSERT_TRUE(file_util::PathExists(golden_output_file));
+  ASSERT_TRUE(PathExists(golden_output_file));
   pref_store->CommitPendingWrite();
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, output_file));
@@ -157,7 +157,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
 
   // Test that the persistent value can be loaded.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  ASSERT_TRUE(file_util::PathExists(input_file));
+  ASSERT_TRUE(PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(input_file, message_loop_.message_loop_proxy().get());
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
@@ -183,7 +183,7 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
 
   // Test that the persistent value can be loaded.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
-  ASSERT_TRUE(file_util::PathExists(input_file));
+  ASSERT_TRUE(PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(input_file, message_loop_.message_loop_proxy().get());
 
@@ -220,7 +220,7 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
 // Tests asynchronous reading of the file when there is no file.
 TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
   base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
-  ASSERT_FALSE(file_util::PathExists(bogus_input_file));
+  ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       bogus_input_file, message_loop_.message_loop_proxy().get());
   MockPrefStoreObserver mock_observer;
@@ -246,7 +246,7 @@ TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
       pref_file));
 
   // Test that the persistent value can be loaded.
-  ASSERT_TRUE(file_util::PathExists(pref_file));
+  ASSERT_TRUE(PathExists(pref_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(pref_file, message_loop_.message_loop_proxy().get());
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
@@ -281,7 +281,7 @@ TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
   // Compare to expected output.
   base::FilePath golden_output_file =
       data_dir_.AppendASCII("write.golden.need_empty_value.json");
-  ASSERT_TRUE(file_util::PathExists(golden_output_file));
+  ASSERT_TRUE(PathExists(golden_output_file));
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, pref_file));
 }
 

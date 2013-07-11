@@ -109,7 +109,7 @@ void ImageDecoderTest::SetUp() {
   data_dir_ = data_dir.AppendASCII("webkit").
                        AppendASCII("data").
                        AppendASCII(format_ + "_decoder");
-  if (!file_util::PathExists(data_dir_)) {
+  if (!base::PathExists(data_dir_)) {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     LOG(INFO) << test_info->name() <<

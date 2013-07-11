@@ -74,7 +74,7 @@ void AvatarMenuButtonTest::CreateTestingProfile() {
   base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.AppendASCII("test_profile");
-  if (!file_util::PathExists(path))
+  if (!base::PathExists(path))
     ASSERT_TRUE(file_util::CreateDirectory(path));
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);

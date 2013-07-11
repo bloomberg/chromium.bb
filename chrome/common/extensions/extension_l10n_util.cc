@@ -211,7 +211,7 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
     return true;
   }
   // Check if messages file is actually present (but don't check content).
-  if (file_util::PathExists(
+  if (base::PathExists(
       locale_folder.Append(extensions::kMessagesFilename))) {
     valid_locales->insert(locale_name);
   } else {

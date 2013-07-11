@@ -296,7 +296,7 @@ void FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry(
 
   base::FilePath cache_path =
       cache_dir_.path().AppendASCII(entry->resource_id());
-  if (file_util::PathExists(cache_path)) {
+  if (base::PathExists(cache_path)) {
     // Cache file is found.
     initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), cache_path,
                              base::Closure());

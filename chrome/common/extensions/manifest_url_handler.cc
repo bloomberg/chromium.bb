@@ -240,7 +240,7 @@ bool OptionsPageHandler::Validate(const Extension* extension,
             extensions::ManifestURL::GetOptionsPage(extension));
     const base::FilePath path =
         extension->GetResource(options_path).GetFilePath();
-    if (path.empty() || !file_util::PathExists(path)) {
+    if (path.empty() || !base::PathExists(path)) {
       *error =
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED,

@@ -90,7 +90,7 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
   if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
     return base::FilePath();
 
-  if (test_file_exists && !file_util::PathExists(locale_file_path))
+  if (test_file_exists && !base::PathExists(locale_file_path))
     return base::FilePath();
 
   return locale_file_path;

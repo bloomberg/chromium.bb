@@ -39,7 +39,7 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_FALSE(db.LazyOpen(false));
     ASSERT_TRUE(db.LazyOpen(true));
     EXPECT_TRUE(db.db_.get());
-    EXPECT_TRUE(kDbFile.empty() || file_util::PathExists(kDbFile));
+    EXPECT_TRUE(kDbFile.empty() || base::PathExists(kDbFile));
   }
 
   void UpgradeSchemaV2toV3(const base::FilePath& kDbFile) {

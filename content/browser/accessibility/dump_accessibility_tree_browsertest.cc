@@ -130,7 +130,7 @@ void DumpAccessibilityTreeTest::RunTest(
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
   base::FilePath test_path(
       dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
-  ASSERT_TRUE(file_util::PathExists(test_path))
+  ASSERT_TRUE(base::PathExists(test_path))
       << test_path.LossyDisplayName();
 
   base::FilePath html_file = test_path.Append(base::FilePath(file_path));
@@ -216,7 +216,7 @@ void DumpAccessibilityTreeTest::RunTest(
     printf("%s\n", actual_contents.c_str());
   }
 
-  if (!file_util::PathExists(expected_file)) {
+  if (!base::PathExists(expected_file)) {
     base::FilePath actual_file =
         base::FilePath(html_file.RemoveExtension().value() +
                        AccessibilityTreeFormatter::GetActualFileSuffix());

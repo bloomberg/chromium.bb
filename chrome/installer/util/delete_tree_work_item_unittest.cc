@@ -49,27 +49,27 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   base::FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete));
+  ASSERT_TRUE(base::PathExists(dir_name_delete));
 
   base::FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
   file_util::CreateDirectory(dir_name_delete_1);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
+  ASSERT_TRUE(base::PathExists(dir_name_delete_1));
 
   base::FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
   file_util::CreateDirectory(dir_name_delete_2);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
+  ASSERT_TRUE(base::PathExists(dir_name_delete_2));
 
   base::FilePath file_name_delete_1(dir_name_delete_1);
   file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
   CreateTextFile(file_name_delete_1.value(), text_content_1);
-  ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
+  ASSERT_TRUE(base::PathExists(file_name_delete_1));
 
   base::FilePath file_name_delete_2(dir_name_delete_2);
   file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
   CreateTextFile(file_name_delete_2.value(), text_content_1);
-  ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
+  ASSERT_TRUE(base::PathExists(file_name_delete_2));
 
   // Test Do().
   base::ScopedTempDir temp_dir;
@@ -82,15 +82,15 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
-  EXPECT_FALSE(file_util::PathExists(file_name_delete_1));
-  EXPECT_FALSE(file_util::PathExists(file_name_delete_2));
-  EXPECT_FALSE(file_util::PathExists(dir_name_delete));
+  EXPECT_FALSE(base::PathExists(file_name_delete_1));
+  EXPECT_FALSE(base::PathExists(file_name_delete_2));
+  EXPECT_FALSE(base::PathExists(dir_name_delete));
 
   work_item->Rollback();
   // everything should come back
-  EXPECT_TRUE(file_util::PathExists(file_name_delete_1));
-  EXPECT_TRUE(file_util::PathExists(file_name_delete_2));
-  EXPECT_TRUE(file_util::PathExists(dir_name_delete));
+  EXPECT_TRUE(base::PathExists(file_name_delete_1));
+  EXPECT_TRUE(base::PathExists(file_name_delete_2));
+  EXPECT_TRUE(base::PathExists(dir_name_delete));
 }
 
 
@@ -101,27 +101,27 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   base::FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete));
+  ASSERT_TRUE(base::PathExists(dir_name_delete));
 
   base::FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
   file_util::CreateDirectory(dir_name_delete_1);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
+  ASSERT_TRUE(base::PathExists(dir_name_delete_1));
 
   base::FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
   file_util::CreateDirectory(dir_name_delete_2);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
+  ASSERT_TRUE(base::PathExists(dir_name_delete_2));
 
   base::FilePath file_name_delete_1(dir_name_delete_1);
   file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
   CreateTextFile(file_name_delete_1.value(), text_content_1);
-  ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
+  ASSERT_TRUE(base::PathExists(file_name_delete_1));
 
   base::FilePath file_name_delete_2(dir_name_delete_2);
   file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
   CreateTextFile(file_name_delete_2.value(), text_content_1);
-  ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
+  ASSERT_TRUE(base::PathExists(file_name_delete_2));
 
   // test Do()
   base::ScopedTempDir temp_dir;
@@ -134,15 +134,15 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
-  EXPECT_FALSE(file_util::PathExists(file_name_delete_1));
-  EXPECT_FALSE(file_util::PathExists(file_name_delete_2));
-  EXPECT_FALSE(file_util::PathExists(dir_name_delete));
+  EXPECT_FALSE(base::PathExists(file_name_delete_1));
+  EXPECT_FALSE(base::PathExists(file_name_delete_2));
+  EXPECT_FALSE(base::PathExists(dir_name_delete));
 
   work_item->Rollback();
   // everything should come back
-  EXPECT_TRUE(file_util::PathExists(file_name_delete_1));
-  EXPECT_TRUE(file_util::PathExists(file_name_delete_2));
-  EXPECT_TRUE(file_util::PathExists(dir_name_delete));
+  EXPECT_TRUE(base::PathExists(file_name_delete_1));
+  EXPECT_TRUE(base::PathExists(file_name_delete_2));
+  EXPECT_TRUE(base::PathExists(dir_name_delete));
 }
 
 // Delete a tree with key_path in use. Everything should still be there.
@@ -151,27 +151,27 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   base::FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete));
+  ASSERT_TRUE(base::PathExists(dir_name_delete));
 
   base::FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
   file_util::CreateDirectory(dir_name_delete_1);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
+  ASSERT_TRUE(base::PathExists(dir_name_delete_1));
 
   base::FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
   file_util::CreateDirectory(dir_name_delete_2);
-  ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
+  ASSERT_TRUE(base::PathExists(dir_name_delete_2));
 
   base::FilePath file_name_delete_1(dir_name_delete_1);
   file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
   CreateTextFile(file_name_delete_1.value(), text_content_1);
-  ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
+  ASSERT_TRUE(base::PathExists(file_name_delete_1));
 
   base::FilePath file_name_delete_2(dir_name_delete_2);
   file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
   CreateTextFile(file_name_delete_2.value(), text_content_1);
-  ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
+  ASSERT_TRUE(base::PathExists(file_name_delete_2));
 
   // Create a key path file.
   base::FilePath key_path(dir_name_delete);
@@ -182,7 +182,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   base::FilePath exe_full_path(exe_full_path_str);
 
   base::CopyFile(exe_full_path, key_path);
-  ASSERT_TRUE(file_util::PathExists(key_path));
+  ASSERT_TRUE(base::PathExists(key_path));
 
   VLOG(1) << "copy ourself from " << exe_full_path.value()
           << " to " << key_path.value();
@@ -210,9 +210,9 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   }
 
   // verify everything is still there.
-  EXPECT_TRUE(file_util::PathExists(key_path));
-  EXPECT_TRUE(file_util::PathExists(file_name_delete_1));
-  EXPECT_TRUE(file_util::PathExists(file_name_delete_2));
+  EXPECT_TRUE(base::PathExists(key_path));
+  EXPECT_TRUE(base::PathExists(file_name_delete_1));
+  EXPECT_TRUE(base::PathExists(file_name_delete_2));
 
   TerminateProcess(pi.hProcess, 0);
   // make sure the handle is closed.

@@ -220,7 +220,7 @@ Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.Append(name);
 
-  if (!file_util::PathExists(path))
+  if (!base::PathExists(path))
     CHECK(file_util::CreateDirectory(path));
 
   Profile* profile =

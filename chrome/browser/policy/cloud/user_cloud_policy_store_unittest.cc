@@ -199,14 +199,14 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenClear) {
   EXPECT_FALSE(store_->policy_map().empty());
 
   // Policy file should exist.
-  ASSERT_TRUE(file_util::PathExists(policy_file()));
+  ASSERT_TRUE(base::PathExists(policy_file()));
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   store_->Clear();
   RunUntilIdle();
 
   // Policy file should not exist.
-  ASSERT_TRUE(!file_util::PathExists(policy_file()));
+  ASSERT_TRUE(!base::PathExists(policy_file()));
 
   // Policy should be gone.
   EXPECT_FALSE(store_->policy());

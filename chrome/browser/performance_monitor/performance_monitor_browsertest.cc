@@ -307,12 +307,12 @@ class PerformanceMonitorUncleanExitBrowserTest
     PathService::Get(chrome::DIR_TEST_DATA, &stock_prefs_file);
     stock_prefs_file = stock_prefs_file.AppendASCII("performance_monitor")
                                        .AppendASCII("unclean_exit_prefs");
-    CHECK(file_util::PathExists(stock_prefs_file));
+    CHECK(base::PathExists(stock_prefs_file));
 
     base::FilePath first_profile_prefs_file =
         first_profile.Append(chrome::kPreferencesFilename);
     CHECK(base::CopyFile(stock_prefs_file, first_profile_prefs_file));
-    CHECK(file_util::PathExists(first_profile_prefs_file));
+    CHECK(base::PathExists(first_profile_prefs_file));
 
     second_profile_name_ =
         std::string(chrome::kMultiProfileDirPrefix)
@@ -325,7 +325,7 @@ class PerformanceMonitorUncleanExitBrowserTest
     base::FilePath second_profile_prefs_file =
         second_profile.Append(chrome::kPreferencesFilename);
     CHECK(base::CopyFile(stock_prefs_file, second_profile_prefs_file));
-    CHECK(file_util::PathExists(second_profile_prefs_file));
+    CHECK(base::PathExists(second_profile_prefs_file));
 
     return true;
   }

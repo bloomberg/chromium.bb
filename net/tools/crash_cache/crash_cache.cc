@@ -118,7 +118,7 @@ bool CreateTargetFolder(const base::FilePath& path, RankCrashes action,
 
   *full_path = path.AppendASCII(folders[action]);
 
-  if (file_util::PathExists(*full_path))
+  if (base::PathExists(*full_path))
     return false;
 
   return file_util::CreateDirectory(*full_path);

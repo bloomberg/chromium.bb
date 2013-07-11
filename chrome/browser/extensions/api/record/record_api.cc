@@ -125,14 +125,14 @@ void RunPageCyclerFunction::RunTestBrowser() {
 
   // Run the test browser (or a mockup, depending on |process_strategy_|.
   while (repeat_count_-- && errors_.empty() &&
-      !file_util::PathExists(error_file_path))
+      !base::PathExists(error_file_path))
     process_strategy_->RunProcess(line, &errors_);
 
   // Read URL errors file if there is one, and save errors in |errors_|.
   // Odd extension handling needed because temp files have lots of "."s in
   // their names, and we need to cleanly add kURLErrorsSuffix as a final
   // extension.
-  if (errors_.empty() && file_util::PathExists(error_file_path)) {
+  if (errors_.empty() && base::PathExists(error_file_path)) {
     std::string error_content;
     file_util::ReadFileToString(error_file_path, &error_content);
 

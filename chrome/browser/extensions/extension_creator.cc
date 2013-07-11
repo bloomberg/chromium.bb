@@ -57,7 +57,7 @@ bool ExtensionCreator::InitializeInput(
 
   // Validate input |private_key| (if provided).
   if (!private_key_path.value().empty() &&
-      !file_util::PathExists(private_key_path)) {
+      !base::PathExists(private_key_path)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_INVALID_PATH);
     return false;
@@ -67,7 +67,7 @@ bool ExtensionCreator::InitializeInput(
   // an existing private key.
   if (private_key_path.value().empty() &&
       !private_key_output_path.value().empty() &&
-      file_util::PathExists(private_key_output_path)) {
+      base::PathExists(private_key_output_path)) {
       error_message_ =
           l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_EXISTS);
       return false;
@@ -75,7 +75,7 @@ bool ExtensionCreator::InitializeInput(
 
   // Check whether crx file already exists. Should be last check, as this is
   // a warning only.
-  if (!(run_flags & kOverwriteCRX) && file_util::PathExists(crx_path)) {
+  if (!(run_flags & kOverwriteCRX) && base::PathExists(crx_path)) {
     error_message_ = l10n_util::GetStringUTF8(IDS_EXTENSION_CRX_EXISTS);
     error_type_ = kCRXExists;
 
@@ -120,7 +120,7 @@ bool ExtensionCreator::ValidateManifest(const base::FilePath& extension_dir,
 
 crypto::RSAPrivateKey* ExtensionCreator::ReadInputKey(const base::FilePath&
     private_key_path) {
-  if (!file_util::PathExists(private_key_path)) {
+  if (!base::PathExists(private_key_path)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS);
     return NULL;
@@ -236,7 +236,7 @@ bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
                                 crypto::RSAPrivateKey* private_key,
                                 const std::vector<uint8>& signature,
                                 const base::FilePath& crx_path) {
-  if (file_util::PathExists(crx_path))
+  if (base::PathExists(crx_path))
     base::Delete(crx_path, false);
   ScopedStdioHandle crx_handle(file_util::OpenFile(crx_path, "wb"));
   if (!crx_handle.get()) {

@@ -92,7 +92,7 @@ void PageCycler::ReadURLsOnBackgroundThread() {
   std::string file_contents;
   std::vector<std::string> url_strings;
 
-  CHECK(file_util::PathExists(urls_file_)) << urls_file_.value();
+  CHECK(base::PathExists(urls_file_)) << urls_file_.value();
   file_util::ReadFileToString(urls_file_, &file_contents);
   base::SplitStringAlongWhitespace(file_contents, &url_strings);
 
@@ -209,7 +209,7 @@ void PageCycler::WriteResultsOnBackgroundThread(const std::string& output) {
 
   if (!output.empty()) {
     CHECK(!stats_file_.empty());
-    if (file_util::PathExists(stats_file_)) {
+    if (base::PathExists(stats_file_)) {
       VLOG(1) << "PageCycler: Previous stats file found; appending.";
       file_util::AppendToFile(stats_file_, output.c_str(), output.size());
     } else {
@@ -220,7 +220,7 @@ void PageCycler::WriteResultsOnBackgroundThread(const std::string& output) {
     if (!error_.empty()) {
       file_util::WriteFile(errors_file_, UTF16ToUTF8(error_).c_str(),
                            error_.size());
-    } else if (file_util::PathExists(errors_file_)) {
+    } else if (base::PathExists(errors_file_)) {
       // If there is an old error file, delete it to avoid confusion.
       base::Delete(errors_file_, false);
     }

@@ -101,7 +101,7 @@ MasterPreferences::MasterPreferences(const base::FilePath& prefs_path)
   // Failure to read the file is ignored as |json_data| will be the empty string
   // and the remainder of this MasterPreferences object should still be
   // initialized as best as possible.
-  if (file_util::PathExists(prefs_path) &&
+  if (base::PathExists(prefs_path) &&
       !file_util::ReadFileToString(prefs_path, &json_data)) {
     LOG(ERROR) << "Failed to read preferences from " << prefs_path.value();
   }

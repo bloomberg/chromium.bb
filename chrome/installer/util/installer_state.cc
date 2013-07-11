@@ -552,7 +552,7 @@ Version* InstallerState::GetCurrentVersion(
     // Be aware that there might be a pending "new_chrome.exe" already in the
     // installation path.  If so, we use old_version, which holds the version of
     // "chrome.exe" itself.
-    if (file_util::PathExists(target_path().Append(kChromeNewExe)))
+    if (base::PathExists(target_path().Append(kChromeNewExe)))
       version = product_state->old_version();
 
     if (version == NULL)
@@ -590,7 +590,7 @@ bool InstallerState::IsChromeFrameRunning(
     base::FilePath cf_install_path(
         target_path().AppendASCII(current_version->GetString())
                      .Append(kChromeFrameDll));
-    in_use = file_util::PathExists(cf_install_path) &&
+    in_use = base::PathExists(cf_install_path) &&
         IsFileInUse(cf_install_path);
   }
   return in_use;

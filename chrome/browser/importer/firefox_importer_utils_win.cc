@@ -78,5 +78,5 @@ base::FilePath GetProfilesINI() {
   ini_file = ini_file.AppendASCII("Firefox");
   ini_file = ini_file.AppendASCII("profiles.ini");
 
-  return file_util::PathExists(ini_file) ? ini_file : base::FilePath();
+  return base::PathExists(ini_file) ? ini_file : base::FilePath();
 }

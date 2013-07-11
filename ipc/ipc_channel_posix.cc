@@ -580,7 +580,7 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
 // static
 bool Channel::ChannelImpl::IsNamedServerInitialized(
     const std::string& channel_id) {
-  return file_util::PathExists(base::FilePath(channel_id));
+  return base::PathExists(base::FilePath(channel_id));
 }
 
 #if defined(OS_LINUX)

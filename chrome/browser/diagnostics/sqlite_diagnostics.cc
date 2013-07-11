@@ -63,7 +63,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
     else
       path = db_path_;
 
-    if (!file_util::PathExists(path)) {
+    if (!base::PathExists(path)) {
       if (critical_) {
         RecordOutcome(DIAG_SQLITE_FILE_NOT_FOUND,
                       "File not found",

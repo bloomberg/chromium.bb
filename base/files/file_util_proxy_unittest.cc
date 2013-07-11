@@ -128,13 +128,13 @@ TEST_F(FileUtilProxyTest, CreateOrOpen_Create) {
   EXPECT_EQ(PLATFORM_FILE_OK, error_);
   EXPECT_TRUE(created_);
   EXPECT_NE(kInvalidPlatformFileValue, file_);
-  EXPECT_TRUE(file_util::PathExists(test_path()));
+  EXPECT_TRUE(PathExists(test_path()));
 }
 
 TEST_F(FileUtilProxyTest, CreateOrOpen_Open) {
   // Creates a file.
   file_util::WriteFile(test_path(), NULL, 0);
-  ASSERT_TRUE(file_util::PathExists(test_path()));
+  ASSERT_TRUE(PathExists(test_path()));
 
   // Opens the created file.
   FileUtilProxy::CreateOrOpen(
@@ -159,7 +159,7 @@ TEST_F(FileUtilProxyTest, CreateOrOpen_OpenNonExistent) {
   EXPECT_EQ(PLATFORM_FILE_ERROR_NOT_FOUND, error_);
   EXPECT_FALSE(created_);
   EXPECT_EQ(kInvalidPlatformFileValue, file_);
-  EXPECT_FALSE(file_util::PathExists(test_path()));
+  EXPECT_FALSE(PathExists(test_path()));
 }
 
 TEST_F(FileUtilProxyTest, Close) {
@@ -190,7 +190,7 @@ TEST_F(FileUtilProxyTest, CreateTemporary) {
       Bind(&FileUtilProxyTest::DidCreateTemporary, weak_factory_.GetWeakPtr()));
   MessageLoop::current()->Run();
   EXPECT_EQ(PLATFORM_FILE_OK, error_);
-  EXPECT_TRUE(file_util::PathExists(path_));
+  EXPECT_TRUE(PathExists(path_));
   EXPECT_NE(kInvalidPlatformFileValue, file_);
 
   // The file should be writable.

@@ -24,7 +24,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("gfx"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
       cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!file_util::PathExists(cur))  // we don't want to create this
+      if (!base::PathExists(cur))  // we don't want to create this
         return false;
       break;
     default:

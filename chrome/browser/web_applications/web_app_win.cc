@@ -75,8 +75,8 @@ bool ShouldUpdateIcon(const base::FilePath& icon_file,
       icon_file.ReplaceExtension(kIconChecksumFileExt));
 
   // Returns true if icon_file or checksum file is missing.
-  if (!file_util::PathExists(icon_file) ||
-      !file_util::PathExists(checksum_file))
+  if (!base::PathExists(icon_file) ||
+      !base::PathExists(checksum_file))
     return true;
 
   base::MD5Digest persisted_image_checksum;
@@ -143,7 +143,7 @@ std::vector<base::FilePath> FindAppShortcutsByProfileAndTitle(
         shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
             base::StringPrintf(" (%d)", i));
       }
-      if (file_util::PathExists(shortcut_file) &&
+      if (base::PathExists(shortcut_file) &&
           IsAppShortcutForProfile(shortcut_file, profile_path)) {
         shortcut_paths.push_back(shortcut_file);
       }
@@ -166,7 +166,7 @@ bool CreateShortcutsInPaths(
     web_app::ShortcutCreationPolicy creation_policy,
     std::vector<base::FilePath>* out_filenames) {
   // Ensure web_app_path exists.
-  if (!file_util::PathExists(web_app_path) &&
+  if (!base::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
     return false;
   }
@@ -243,7 +243,7 @@ bool CreateShortcutsInPaths(
     shortcut_properties.set_icon(icon_file, 0);
     shortcut_properties.set_app_id(app_id);
     shortcut_properties.set_dual_mode(false);
-    if (!file_util::PathExists(shortcut_file.DirName()) &&
+    if (!base::PathExists(shortcut_file.DirName()) &&
         !file_util::CreateDirectory(shortcut_file.DirName())) {
       NOTREACHED();
       return false;
@@ -444,7 +444,7 @@ void UpdatePlatformShortcuts(
   // and let the shell know the icon has been modified.
   base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
       FILE_PATH_LITERAL(".ico"));
-  if (file_util::PathExists(icon_file)) {
+  if (base::PathExists(icon_file)) {
     web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
   }
 }

@@ -36,12 +36,12 @@ base::FilePath GetChromeFrameBuildPath() {
 
   base::FilePath dll_path = build_path.Append(kChromeFrameDllName);
 
-  if (!file_util::PathExists(dll_path)) {
+  if (!base::PathExists(dll_path)) {
     // Well, dang.. try looking in the current directory.
     dll_path = build_path.Append(kChromeFrameDllName);
   }
 
-  if (!file_util::PathExists(dll_path)) {
+  if (!base::PathExists(dll_path)) {
     // No luck, return something empty.
     dll_path = base::FilePath();
   }

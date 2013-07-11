@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
   content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 
   // Verify that README exists.
-  EXPECT_TRUE(file_util::PathExists(
+  EXPECT_TRUE(base::PathExists(
       temp_dir.path().Append(chrome::kReadmeFilename)));
 }
 

@@ -296,7 +296,7 @@ static bool IsScriptValid(const base::FilePath& path,
                           int message_id,
                           std::string* error) {
   std::string content;
-  if (!file_util::PathExists(path) ||
+  if (!base::PathExists(path) ||
       !file_util::ReadFileToString(path, &content)) {
     *error = l10n_util::GetStringFUTF8(
         message_id,

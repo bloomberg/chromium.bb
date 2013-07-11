@@ -96,7 +96,7 @@ bool IsPathInUse(const base::FilePath& path) {
     return true;
 
   // If the path exists in the file system, then the path is in use.
-  if (file_util::PathExists(path))
+  if (base::PathExists(path))
     return true;
 
   return false;

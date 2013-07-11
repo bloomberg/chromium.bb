@@ -1130,8 +1130,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   base::FilePath fake_path = all_downloads[1]->GetTargetFilePath();
 
   EXPECT_EQ(0, file_util::WriteFile(real_path, "", 0));
-  ASSERT_TRUE(file_util::PathExists(real_path));
-  ASSERT_FALSE(file_util::PathExists(fake_path));
+  ASSERT_TRUE(base::PathExists(real_path));
+  ASSERT_FALSE(base::PathExists(fake_path));
 
   for (DownloadManager::DownloadVector::iterator iter = all_downloads.begin();
        iter != all_downloads.end();

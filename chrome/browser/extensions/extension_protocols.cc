@@ -101,7 +101,7 @@ void ReadMimeTypeFromFile(const base::FilePath& filename,
 
 void GetLastModifiedTime(const base::FilePath& filename,
                          base::Time* last_modified_time) {
-  if (file_util::PathExists(filename)) {
+  if (base::PathExists(filename)) {
     base::PlatformFileInfo info;
     if (file_util::GetFileInfo(filename, &info))
       *last_modified_time = info.last_modified;

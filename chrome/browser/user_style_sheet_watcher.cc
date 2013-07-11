@@ -109,7 +109,7 @@ void UserStyleSheetLoader::LoadStyleSheet(
       return;
   }
   // Create the file if it doesn't exist.
-  if (!file_util::PathExists(style_sheet_file))
+  if (!base::PathExists(style_sheet_file))
     file_util::WriteFile(style_sheet_file, "", 0);
 
   std::string css;

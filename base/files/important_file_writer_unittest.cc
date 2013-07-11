@@ -61,11 +61,11 @@ class ImportantFileWriterTest : public testing::Test {
 
 TEST_F(ImportantFileWriterTest, Basic) {
   ImportantFileWriter writer(file_, MessageLoopProxy::current().get());
-  EXPECT_FALSE(file_util::PathExists(writer.path()));
+  EXPECT_FALSE(PathExists(writer.path()));
   writer.WriteNow("foo");
   RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(file_util::PathExists(writer.path()));
+  ASSERT_TRUE(PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));
 }
 
@@ -82,7 +82,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
-  ASSERT_TRUE(file_util::PathExists(writer.path()));
+  ASSERT_TRUE(PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));
 }
 
@@ -99,7 +99,7 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
-  ASSERT_TRUE(file_util::PathExists(writer.path()));
+  ASSERT_TRUE(PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));
 }
 
@@ -115,7 +115,7 @@ TEST_F(ImportantFileWriterTest, BatchingWrites) {
       MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
-  ASSERT_TRUE(file_util::PathExists(writer.path()));
+  ASSERT_TRUE(PathExists(writer.path()));
   EXPECT_EQ("baz", GetFileContent(writer.path()));
 }
 

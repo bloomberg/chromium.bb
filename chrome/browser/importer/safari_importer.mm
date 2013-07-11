@@ -61,9 +61,9 @@ bool SafariImporter::CanImport(const base::FilePath& library_dir,
   base::FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
   base::FilePath history_path = safari_dir.Append("History.plist");
 
-  if (file_util::PathExists(bookmarks_path))
+  if (base::PathExists(bookmarks_path))
     *services_supported |= importer::FAVORITES;
-  if (file_util::PathExists(history_path))
+  if (base::PathExists(history_path))
     *services_supported |= importer::HISTORY;
 
   return *services_supported != importer::NONE;

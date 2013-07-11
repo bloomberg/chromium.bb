@@ -107,7 +107,7 @@ static base::FilePath GetOobeCompleteFlagPath() {
 static void CreateOobeCompleteFlagFile() {
   // Create flag file for boot-time init scripts.
   base::FilePath oobe_complete_path = GetOobeCompleteFlagPath();
-  if (!file_util::PathExists(oobe_complete_path)) {
+  if (!base::PathExists(oobe_complete_path)) {
     FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
     if (oobe_flag_file == NULL)
       DLOG(WARNING) << oobe_complete_path.value() << " doesn't exist.";
@@ -133,7 +133,7 @@ bool StartupUtils::IsDeviceRegistered() {
     // IO on UI thread. But it's required for update from old versions.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath oobe_complete_flag_file_path = GetOobeCompleteFlagPath();
-    bool file_exists = file_util::PathExists(oobe_complete_flag_file_path);
+    bool file_exists = base::PathExists(oobe_complete_flag_file_path);
     SaveIntegerPreferenceForced(kDeviceRegistered, file_exists ? 1 : 0);
     return file_exists;
   }

@@ -112,7 +112,7 @@ void TestScrubber::CleanUpFromTestRun() {
                           default_data_directory_ :
                           data_directory_override_);
 
-  VLOG_IF(1, file_util::PathExists(data_directory))
+  VLOG_IF(1, base::PathExists(data_directory))
       << __FUNCTION__ << " deleting user data directory "
       << data_directory.value();
   bool deleted = base::Delete(data_directory, true);

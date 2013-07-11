@@ -127,7 +127,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
     base::FilePath cleartype(
         base_path.Append(verification_name + L"_cleartype.png"));
     // Looks for Cleartype override.
-    if (file_util::PathExists(cleartype) && IsClearTypeEnabled())
+    if (base::PathExists(cleartype) && IsClearTypeEnabled())
       png = cleartype;
 
     if (GenerateFiles()) {

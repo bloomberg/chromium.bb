@@ -660,13 +660,13 @@ class DownloadTest : public InProcessBrowserTest {
   bool CheckDownloadFullPaths(Browser* browser,
                               const base::FilePath& downloaded_file,
                               const base::FilePath& origin_file) {
-    bool origin_file_exists = file_util::PathExists(origin_file);
+    bool origin_file_exists = base::PathExists(origin_file);
     EXPECT_TRUE(origin_file_exists) << origin_file.value();
     if (!origin_file_exists)
       return false;
 
     // Confirm the downloaded data file exists.
-    bool downloaded_file_exists = file_util::PathExists(downloaded_file);
+    bool downloaded_file_exists = base::PathExists(downloaded_file);
     EXPECT_TRUE(downloaded_file_exists) << downloaded_file.value();
     if (!downloaded_file_exists)
       return false;
@@ -783,7 +783,7 @@ class DownloadTest : public InProcessBrowserTest {
         downloads_directory_.path().Append(basefilename);
     EXPECT_TRUE(browser->window()->IsDownloadShelfVisible());
 
-    bool downloaded_path_exists = file_util::PathExists(download_path);
+    bool downloaded_path_exists = base::PathExists(download_path);
     EXPECT_TRUE(downloaded_path_exists);
     if (!downloaded_path_exists)
       return false;
@@ -796,7 +796,7 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Delete the file we just downloaded.
     EXPECT_TRUE(file_util::DieFileDie(download_path, true));
-    EXPECT_FALSE(file_util::PathExists(download_path));
+    EXPECT_FALSE(base::PathExists(download_path));
 
     return true;
   }
@@ -958,7 +958,7 @@ class DownloadTest : public InProcessBrowserTest {
         // Clean up the file, in case it ended up in the My Documents folder.
         base::FilePath destination_folder = GetDownloadDirectory(browser());
         base::FilePath my_downloaded_file = item->GetTargetFilePath();
-        EXPECT_TRUE(file_util::PathExists(my_downloaded_file));
+        EXPECT_TRUE(base::PathExists(my_downloaded_file));
         EXPECT_TRUE(base::Delete(my_downloaded_file, false));
 
         EXPECT_EQ(download_info.should_redirect_to_documents ?
@@ -1209,7 +1209,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Check that we did not download the web page.
-  EXPECT_FALSE(file_util::PathExists(file_path));
+  EXPECT_FALSE(base::PathExists(file_path));
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -1295,7 +1295,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   // Check that we did not download the file.
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   base::FilePath file_path(DestinationFile(browser(), file));
-  EXPECT_FALSE(file_util::PathExists(file_path));
+  EXPECT_FALSE(base::PathExists(file_path));
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -1464,7 +1464,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   // later.
   base::FilePath origin(OriginFile(base::FilePath(FILE_PATH_LITERAL(
       "downloads/a_zip_file.zip"))));
-  ASSERT_TRUE(file_util::PathExists(origin));
+  ASSERT_TRUE(base::PathExists(origin));
   int64 origin_file_size = 0;
   EXPECT_TRUE(file_util::GetFileSize(origin, &origin_file_size));
   std::string original_contents;
@@ -1485,7 +1485,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   ASSERT_EQ(1UL, download_items.size());
   ASSERT_EQ(base::FilePath(FILE_PATH_LITERAL("a_zip_file.zip")),
             download_items[0]->GetTargetFilePath().BaseName());
-  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetTargetFilePath()));
+  ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
 
@@ -1517,7 +1517,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   ASSERT_EQ(1UL, download_items.size());
   ASSERT_EQ(base::FilePath(FILE_PATH_LITERAL("a_zip_file (1).zip")),
             download_items[0]->GetTargetFilePath().BaseName());
-  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetTargetFilePath()));
+  ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
 }
@@ -2010,7 +2010,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
   // Confirm the downloaded data exists.
   base::FilePath downloaded_file = GetDownloadDirectory(browser());
   downloaded_file = downloaded_file.Append(FILE_PATH_LITERAL("a_red_dot.png"));
-  EXPECT_TRUE(file_util::PathExists(downloaded_file));
+  EXPECT_TRUE(base::PathExists(downloaded_file));
 }
 
 // Test to make sure auto-open works.
@@ -2819,7 +2819,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
   content::DownloadManager* manager = DownloadManagerForBrowser(browser());
   base::FilePath origin_file(OriginFile(base::FilePath(FILE_PATH_LITERAL(
       "downloads/a_zip_file.zip"))));
-  ASSERT_TRUE(file_util::PathExists(origin_file));
+  ASSERT_TRUE(base::PathExists(origin_file));
   std::string origin_contents;
   ASSERT_TRUE(file_util::ReadFileToString(origin_file, &origin_contents));
 
@@ -2836,7 +2836,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
         (index == 0 ? std::string(".zip") :
                       base::StringPrintf(" (%d).zip", index)),
               target_path.BaseName().AsUTF8Unsafe());
-    ASSERT_TRUE(file_util::PathExists(target_path));
+    ASSERT_TRUE(base::PathExists(target_path));
     ASSERT_TRUE(VerifyFile(target_path, origin_contents,
                            origin_contents.size()));
   }
@@ -3021,7 +3021,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the file downloaded correctly.
-  ASSERT_TRUE(file_util::PathExists(download_items[0]->GetTargetFilePath()));
+  ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   int64 downloaded_size = 0;
   ASSERT_TRUE(file_util::GetFileSize(
       download_items[0]->GetTargetFilePath(), &downloaded_size));

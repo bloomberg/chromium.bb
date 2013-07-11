@@ -107,7 +107,7 @@ bool FindChrome(base::FilePath* browser_exe) {
     locations.push_back(module_dir);
   GetApplicationDirs(&locations);
   return internal::FindExe(
-      base::Bind(&file_util::PathExists),
+      base::Bind(&base::PathExists),
       browser_exes,
       locations,
       browser_exe);

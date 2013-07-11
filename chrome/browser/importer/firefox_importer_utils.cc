@@ -321,7 +321,7 @@ std::string GetPrefsJsValue(const std::string& content,
 string16 GetFirefoxImporterName(const base::FilePath& app_path) {
   const base::FilePath app_ini_file = app_path.AppendASCII("application.ini");
   std::string branding_name;
-  if (file_util::PathExists(app_ini_file)) {
+  if (base::PathExists(app_ini_file)) {
     std::string content;
     file_util::ReadFileToString(app_ini_file, &content);
     std::vector<std::string> lines;

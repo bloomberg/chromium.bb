@@ -100,7 +100,7 @@ EnterpriseInstallAttributes::~EnterpriseInstallAttributes() {}
 
 void EnterpriseInstallAttributes::ReadCacheFile(
     const base::FilePath& cache_file) {
-  if (device_locked_ || !file_util::PathExists(cache_file))
+  if (device_locked_ || !base::PathExists(cache_file))
     return;
 
   device_locked_ = true;

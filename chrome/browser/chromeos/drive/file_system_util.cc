@@ -122,7 +122,7 @@ void MoveAllFilesFromDirectory(const base::FilePath& directory_from,
   for (base::FilePath file_from = enumerator.Next(); !file_from.empty();
        file_from = enumerator.Next()) {
     const base::FilePath file_to = directory_to.Append(file_from.BaseName());
-    if (!file_util::PathExists(file_to))  // Do not overwrite existing files.
+    if (!base::PathExists(file_to))  // Do not overwrite existing files.
       base::Move(file_from, file_to);
   }
 }
@@ -315,7 +315,7 @@ void MigrateCacheFilesFromOldDirectories(
       cache_root_directory.AppendASCII("persistent");
   const base::FilePath tmp_directory =
       cache_root_directory.AppendASCII("tmp");
-  if (!file_util::PathExists(persistent_directory))
+  if (!base::PathExists(persistent_directory))
     return;
 
   const base::FilePath cache_file_directory =

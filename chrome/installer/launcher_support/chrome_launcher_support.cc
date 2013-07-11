@@ -50,7 +50,7 @@ base::FilePath GetDevelopmentExe(const wchar_t* exe_file) {
   base::FilePath current_directory;
   if (PathService::Get(base::DIR_EXE, &current_directory)) {
     base::FilePath chrome_exe_path(current_directory.Append(exe_file));
-    if (file_util::PathExists(chrome_exe_path))
+    if (base::PathExists(chrome_exe_path))
       return chrome_exe_path;
   }
   return base::FilePath();
@@ -113,7 +113,7 @@ base::FilePath GetSetupExeFromRegistry(InstallationLevel level,
   string16 uninstall;
   if (GetClientStateValue(level, app_guid, kUninstallStringField, &uninstall)) {
     base::FilePath setup_exe_path(uninstall);
-    if (file_util::PathExists(setup_exe_path))
+    if (base::PathExists(setup_exe_path))
       return setup_exe_path;
   }
   return base::FilePath();
@@ -130,12 +130,12 @@ base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
     // name) and look for chrome.exe from there.
     base::FilePath exe_path(
         setup_exe_path.DirName().DirName().DirName().Append(exe_file));
-    if (file_util::PathExists(exe_path))
+    if (base::PathExists(exe_path))
       return exe_path;
     // By way of mild future proofing, look up one to see if there's a
     // |exe_file| in the version directory
     exe_path = setup_exe_path.DirName().DirName().Append(exe_file);
-    if (file_util::PathExists(exe_path))
+    if (base::PathExists(exe_path))
       return exe_path;
   }
   return base::FilePath();

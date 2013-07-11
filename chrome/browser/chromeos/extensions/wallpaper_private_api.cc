@@ -83,7 +83,7 @@ bool SaveData(int key, const std::string& file_name, const std::string& data) {
   }
   base::FilePath file_path = data_dir.Append(file_name);
 
-  return file_util::PathExists(file_path) ||
+  return base::PathExists(file_path) ||
          (file_util::WriteFile(file_path, data.c_str(),
                                data.size()) != -1);
 }
@@ -98,7 +98,7 @@ bool GetData(const base::FilePath& path, std::string* data) {
       !file_util::CreateDirectory(data_dir))
     return false;
 
-  return !file_util::PathExists(path) ||
+  return !base::PathExists(path) ||
          file_util::ReadFileToString(path, data);
 }
 
@@ -382,10 +382,10 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
   std::string data;
   base::FilePath path = file_path;
 
-  if (!file_util::PathExists(file_path))
+  if (!base::PathExists(file_path))
     path = fallback_path;
 
-  if (file_util::PathExists(path) &&
+  if (base::PathExists(path) &&
       file_util::ReadFileToString(path, &data)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperPrivateSetWallpaperIfExistsFunction::StartDecode,
@@ -492,7 +492,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
     base::FilePath file_path = wallpaper_dir.Append(
         file_name).InsertBeforeExtension(chromeos::kSmallWallpaperSuffix);
-    if (file_util::PathExists(file_path))
+    if (base::PathExists(file_path))
       return;
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
     // maintain the aspect ratio after resize.
@@ -628,7 +628,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
   chromeos::UserImage wallpaper(*image.get());
-  if (!file_util::PathExists(thumbnail_path.DirName()))
+  if (!base::PathExists(thumbnail_path.DirName()))
     file_util::CreateDirectory(thumbnail_path.DirName());
 
   scoped_refptr<base::RefCountedBytes> data;

@@ -22,7 +22,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   // Create a file.
   base::FilePath file;
   file_util::CreateTemporaryFileInDir(temp_dir.path(), &file);
-  EXPECT_TRUE(file_util::PathExists(file));
+  EXPECT_TRUE(base::PathExists(file));
 
   // Create a first reference to that file.
   scoped_refptr<ShareableFileReference> reference1;
@@ -45,13 +45,13 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   reference1 = NULL;
   EXPECT_TRUE(ShareableFileReference::Get(file).get());
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(file_util::PathExists(file));
+  EXPECT_TRUE(base::PathExists(file));
 
   // Drop the second reference, the file and reference should get deleted.
   reference2 = NULL;
   EXPECT_FALSE(ShareableFileReference::Get(file).get());
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(file_util::PathExists(file));
+  EXPECT_FALSE(base::PathExists(file));
 
   // TODO(michaeln): add a test for files that aren't deletable behavior.
 }

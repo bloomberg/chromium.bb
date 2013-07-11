@@ -47,7 +47,7 @@ class SessionFileReader {
         buffer_position_(0),
         available_count_(0) {
     file_.reset(new net::FileStream(NULL));
-    if (file_util::PathExists(path))
+    if (base::PathExists(path))
       file_->OpenSync(path,
                       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
   }
@@ -274,9 +274,9 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
 
   const base::FilePath current_session_path = GetCurrentSessionPath();
   const base::FilePath last_session_path = GetLastSessionPath();
-  if (file_util::PathExists(last_session_path))
+  if (base::PathExists(last_session_path))
     base::Delete(last_session_path, false);
-  if (file_util::PathExists(current_session_path)) {
+  if (base::PathExists(current_session_path)) {
     int64 file_size;
     if (file_util::GetFileSize(current_session_path, &file_size)) {
       if (type_ == BaseSessionService::TAB_RESTORE) {
@@ -290,7 +290,7 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
     last_session_valid_ = base::Move(current_session_path, last_session_path);
   }
 
-  if (file_util::PathExists(current_session_path))
+  if (base::PathExists(current_session_path))
     base::Delete(current_session_path, false);
 
   // Create and open the file for the current session.

@@ -29,7 +29,7 @@ base::Value* LoadValue(const std::string& filename) {
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("json_schema_validator").AppendASCII(filename);
-  EXPECT_TRUE(file_util::PathExists(path));
+  EXPECT_TRUE(base::PathExists(path));
 
   std::string error_message;
   JSONFileValueSerializer serializer(path);

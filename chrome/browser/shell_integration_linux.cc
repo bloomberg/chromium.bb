@@ -552,7 +552,7 @@ ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
   // Determine whether there is a shortcut on desktop.
   if (!desktop_path.empty()) {
     locations.on_desktop =
-        file_util::PathExists(desktop_path.Append(shortcut_filename));
+        base::PathExists(desktop_path.Append(shortcut_filename));
   }
 
   // Determine whether there is a shortcut in the applications directory.
@@ -605,7 +605,7 @@ bool GetExistingShortcutContents(base::Environment* env,
        i != search_paths.end(); ++i) {
     base::FilePath path = i->Append("applications").Append(desktop_filename);
     VLOG(1) << "Looking for desktop file in " << path.value();
-    if (file_util::PathExists(path)) {
+    if (base::PathExists(path)) {
       VLOG(1) << "Found desktop file at " << path.value();
       return file_util::ReadFileToString(path, output);
     }
@@ -627,7 +627,7 @@ base::FilePath GetWebShortcutFilename(const GURL& url) {
   base::FilePath filepath = desktop_path.Append(filename);
   base::FilePath alternative_filepath(filepath.value() + ".desktop");
   for (size_t i = 1; i < 100; ++i) {
-    if (file_util::PathExists(base::FilePath(alternative_filepath))) {
+    if (base::PathExists(base::FilePath(alternative_filepath))) {
       alternative_filepath = base::FilePath(
           filepath.value() + "_" + base::IntToString(i) + ".desktop");
     } else {

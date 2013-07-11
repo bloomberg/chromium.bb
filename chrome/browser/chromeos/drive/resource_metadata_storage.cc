@@ -230,7 +230,7 @@ bool ResourceMetadataStorage::Initialize() {
   options.create_if_missing = false;
 
   DBInitStatus open_existing_result = DB_INIT_NOT_FOUND;
-  if (file_util::PathExists(resource_map_path)) {
+  if (base::PathExists(resource_map_path)) {
     leveldb::Status status =
         leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
     open_existing_result = LevelDBStatusToDBInitStatus(status);

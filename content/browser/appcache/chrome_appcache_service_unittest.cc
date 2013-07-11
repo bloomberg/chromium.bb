@@ -154,8 +154,8 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   // Create a ChromeAppCacheService and insert data into it
   scoped_refptr<ChromeAppCacheService> appcache_service =
       CreateAppCacheService(appcache_path, true);
-  ASSERT_TRUE(file_util::PathExists(appcache_path));
-  ASSERT_TRUE(file_util::PathExists(appcache_path.AppendASCII("Index")));
+  ASSERT_TRUE(base::PathExists(appcache_path));
+  ASSERT_TRUE(base::PathExists(appcache_path.AppendASCII("Index")));
   InsertDataIntoAppCache(appcache_service.get());
 
   // Test: delete the ChromeAppCacheService
@@ -166,7 +166,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   appcache_service = CreateAppCacheService(appcache_path, false);
 
   // The directory is still there
-  ASSERT_TRUE(file_util::PathExists(appcache_path));
+  ASSERT_TRUE(base::PathExists(appcache_path));
 
   // The appcache data is also there, except the session-only origin.
   AppCacheTestHelper appcache_helper;
@@ -191,8 +191,8 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
   // Create a ChromeAppCacheService and insert data into it
   scoped_refptr<ChromeAppCacheService> appcache_service =
       CreateAppCacheService(appcache_path, true);
-  ASSERT_TRUE(file_util::PathExists(appcache_path));
-  ASSERT_TRUE(file_util::PathExists(appcache_path.AppendASCII("Index")));
+  ASSERT_TRUE(base::PathExists(appcache_path));
+  ASSERT_TRUE(base::PathExists(appcache_path.AppendASCII("Index")));
   InsertDataIntoAppCache(appcache_service.get());
 
   // Save session state. This should bypass the destruction-time deletion.
@@ -206,7 +206,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
   appcache_service = CreateAppCacheService(appcache_path, false);
 
   // The directory is still there
-  ASSERT_TRUE(file_util::PathExists(appcache_path));
+  ASSERT_TRUE(base::PathExists(appcache_path));
 
   // No appcache data was deleted.
   AppCacheTestHelper appcache_helper;

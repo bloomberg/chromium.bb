@@ -73,7 +73,7 @@ bool ReturnsValidPath(int dir_type) {
     return false;
 #endif
   return result && !path.empty() && (!check_path_exists ||
-                                     file_util::PathExists(path));
+                                     base::PathExists(path));
 }
 
 #if defined(OS_WIN)
@@ -156,18 +156,18 @@ TEST_F(PathServiceTest, Override) {
   // PathService::Override should always create the path provided if it doesn't
   // exist.
   EXPECT_TRUE(PathService::Override(my_special_key, fake_cache_dir));
-  EXPECT_TRUE(file_util::PathExists(fake_cache_dir));
+  EXPECT_TRUE(base::PathExists(fake_cache_dir));
 
   base::FilePath fake_cache_dir2(temp_dir.path().AppendASCII("cache2"));
   // PathService::OverrideAndCreateIfNeeded should obey the |create| parameter.
   PathService::OverrideAndCreateIfNeeded(my_special_key,
                                          fake_cache_dir2,
                                          false);
-  EXPECT_FALSE(file_util::PathExists(fake_cache_dir2));
+  EXPECT_FALSE(base::PathExists(fake_cache_dir2));
   EXPECT_TRUE(PathService::OverrideAndCreateIfNeeded(my_special_key,
                                                      fake_cache_dir2,
                                                      true));
-  EXPECT_TRUE(file_util::PathExists(fake_cache_dir2));
+  EXPECT_TRUE(base::PathExists(fake_cache_dir2));
 }
 
 // Check if multiple overrides can co-exist.
@@ -177,21 +177,21 @@ TEST_F(PathServiceTest, OverrideMultiple) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath fake_cache_dir1(temp_dir.path().AppendASCII("1"));
   EXPECT_TRUE(PathService::Override(my_special_key, fake_cache_dir1));
-  EXPECT_TRUE(file_util::PathExists(fake_cache_dir1));
+  EXPECT_TRUE(base::PathExists(fake_cache_dir1));
   ASSERT_EQ(1, file_util::WriteFile(fake_cache_dir1.AppendASCII("t1"), ".", 1));
 
   base::FilePath fake_cache_dir2(temp_dir.path().AppendASCII("2"));
   EXPECT_TRUE(PathService::Override(my_special_key + 1, fake_cache_dir2));
-  EXPECT_TRUE(file_util::PathExists(fake_cache_dir2));
+  EXPECT_TRUE(base::PathExists(fake_cache_dir2));
   ASSERT_EQ(1, file_util::WriteFile(fake_cache_dir2.AppendASCII("t2"), ".", 1));
 
   base::FilePath result;
   EXPECT_TRUE(PathService::Get(my_special_key, &result));
   // Override might have changed the path representation but our test file
   // should be still there.
-  EXPECT_TRUE(file_util::PathExists(result.AppendASCII("t1")));
+  EXPECT_TRUE(base::PathExists(result.AppendASCII("t1")));
   EXPECT_TRUE(PathService::Get(my_special_key + 1, &result));
-  EXPECT_TRUE(file_util::PathExists(result.AppendASCII("t2")));
+  EXPECT_TRUE(base::PathExists(result.AppendASCII("t2")));
 }
 
 TEST_F(PathServiceTest, RemoveOverride) {

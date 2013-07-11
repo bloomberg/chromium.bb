@@ -202,7 +202,7 @@ base::FilePath GetMediaCachePath(const base::FilePath& base) {
 
 void EnsureReadmeFile(const base::FilePath& base) {
   base::FilePath readme_path = base.Append(chrome::kReadmeFilename);
-  if (file_util::PathExists(readme_path))
+  if (base::PathExists(readme_path))
     return;
   std::string product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   std::string readme_text = base::StringPrintf(
@@ -253,7 +253,7 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
     DCHECK(delegate);
     CreateProfileDirectory(sequenced_task_runner.get(), path);
   } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
-    if (!file_util::PathExists(path)) {
+    if (!base::PathExists(path)) {
       // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
       // profile directory.  We should eventually be able to run in this
       // situation.

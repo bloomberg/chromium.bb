@@ -271,7 +271,7 @@ class ThroughputTest : public BrowserPerfTest {
     test_path = test_path.Append(FILE_PATH_LITERAL("throughput"));
     test_path = test_path.AppendASCII(test_name);
     test_path = test_path.Append(FILE_PATH_LITERAL("index.html"));
-    ASSERT_TRUE(file_util::PathExists(test_path))
+    ASSERT_TRUE(base::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
     gurl_ = net::FilePathToFileURL(test_path);
@@ -286,7 +286,7 @@ class ThroughputTest : public BrowserPerfTest {
     test_path = test_path.Append(FILE_PATH_LITERAL("perf"));
     test_path = test_path.Append(FILE_PATH_LITERAL("canvas_bench"));
     test_path = test_path.AppendASCII(test_name + ".html");
-    ASSERT_TRUE(file_util::PathExists(test_path))
+    ASSERT_TRUE(base::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
     gurl_ = net::FilePathToFileURL(test_path);

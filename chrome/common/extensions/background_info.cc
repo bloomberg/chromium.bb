@@ -264,7 +264,7 @@ bool BackgroundManifestHandler::Validate(
   const std::vector<std::string>& background_scripts =
       extensions::BackgroundInfo::GetBackgroundScripts(extension);
   for (size_t i = 0; i < background_scripts.size(); ++i) {
-    if (!file_util::PathExists(
+    if (!base::PathExists(
             extension->GetResource(background_scripts[i]).GetFilePath())) {
       *error = l10n_util::GetStringFUTF8(
           IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
@@ -282,7 +282,7 @@ bool BackgroundManifestHandler::Validate(
         extension_file_util::ExtensionURLToRelativeFilePath(
             extensions::BackgroundInfo::GetBackgroundURL(extension));
     const base::FilePath path = extension->GetResource(page_path).GetFilePath();
-    if (path.empty() || !file_util::PathExists(path)) {
+    if (path.empty() || !base::PathExists(path)) {
       *error =
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED,

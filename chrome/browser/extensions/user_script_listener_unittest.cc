@@ -79,7 +79,7 @@ class SimpleTestJob : public net::URLRequestTestJob {
 // Yoinked from extension_manifest_unittest.cc.
 DictionaryValue* LoadManifestFile(const base::FilePath path,
                                   std::string* error) {
-  EXPECT_TRUE(file_util::PathExists(path));
+  EXPECT_TRUE(base::PathExists(path));
   JSONFileValueSerializer serializer(path);
   return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
 }

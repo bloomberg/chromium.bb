@@ -518,7 +518,7 @@ void AddChromeWorkItems(const InstallationState& original_state,
   // Install kVisualElementsManifest if it is present in |src_path|. No need to
   // make this a conditional work item as if the file is not there now, it will
   // never be.
-  if (file_util::PathExists(
+  if (base::PathExists(
           src_path.Append(installer::kVisualElementsManifest))) {
     install_list->AddMoveTreeWorkItem(
         src_path.Append(installer::kVisualElementsManifest).value(),

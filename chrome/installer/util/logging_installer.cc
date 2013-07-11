@@ -59,7 +59,7 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
             (bytes_read == file_util::WriteFile(log_file,
                                                 &old_log_data[0],
                                                 bytes_read) ||
-             file_util::PathExists(log_file))) {
+             base::PathExists(log_file))) {
           result = LOGFILE_TRUNCATED;
         }
       }

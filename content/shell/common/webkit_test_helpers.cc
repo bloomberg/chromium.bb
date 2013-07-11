@@ -114,15 +114,15 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
 base::FilePath GetWebKitRootDirFilePath() {
   base::FilePath base_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
-  if (file_util::PathExists(
+  if (base::PathExists(
           base_path.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
     // We're in a WebKit-in-chrome checkout.
     return base_path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-  } else if (file_util::PathExists(
+  } else if (base::PathExists(
           base_path.Append(FILE_PATH_LITERAL("chromium")))) {
     // We're in a WebKit-only checkout on Windows.
     return base_path.Append(FILE_PATH_LITERAL("../.."));
-  } else if (file_util::PathExists(
+  } else if (base::PathExists(
           base_path.Append(FILE_PATH_LITERAL("webkit/support")))) {
     // We're in a WebKit-only/xcodebuild checkout on Mac
     return base_path.Append(FILE_PATH_LITERAL("../../.."));
@@ -134,7 +134,7 @@ base::FilePath GetWebKitRootDirFilePath() {
 
 base::FilePath GetChromiumRootDirFilePath() {
   base::FilePath webkit_path = GetWebKitRootDirFilePath();
-  if (file_util::PathExists(webkit_path.Append(
+  if (base::PathExists(webkit_path.Append(
           FILE_PATH_LITERAL("Source/WebKit/chromium/webkit/support")))) {
     // We're in a WebKit-only checkout.
     return webkit_path.Append(FILE_PATH_LITERAL("Source/WebKit/chromium"));

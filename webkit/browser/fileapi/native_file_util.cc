@@ -126,10 +126,10 @@ PlatformFileError NativeFileUtil::CreateDirectory(
     bool exclusive,
     bool recursive) {
   // If parent dir of file doesn't exist.
-  if (!recursive && !file_util::PathExists(path.DirName()))
+  if (!recursive && !base::PathExists(path.DirName()))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  bool path_exists = file_util::PathExists(path);
+  bool path_exists = base::PathExists(path);
   if (exclusive && path_exists)
     return base::PLATFORM_FILE_ERROR_EXISTS;
 
@@ -149,7 +149,7 @@ PlatformFileError NativeFileUtil::CreateDirectory(
 PlatformFileError NativeFileUtil::GetFileInfo(
     const base::FilePath& path,
     base::PlatformFileInfo* file_info) {
-  if (!file_util::PathExists(path))
+  if (!base::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (!file_util::GetFileInfo(path, file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -195,7 +195,7 @@ PlatformFileError NativeFileUtil::Truncate(
 }
 
 bool NativeFileUtil::PathExists(const base::FilePath& path) {
-  return file_util::PathExists(path);
+  return base::PathExists(path);
 }
 
 bool NativeFileUtil::DirectoryExists(const base::FilePath& path) {
@@ -238,7 +238,7 @@ PlatformFileError NativeFileUtil::CopyOrMoveFile(
 }
 
 PlatformFileError NativeFileUtil::DeleteFile(const base::FilePath& path) {
-  if (!file_util::PathExists(path))
+  if (!base::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (file_util::DirectoryExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
@@ -248,7 +248,7 @@ PlatformFileError NativeFileUtil::DeleteFile(const base::FilePath& path) {
 }
 
 PlatformFileError NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
-  if (!file_util::PathExists(path))
+  if (!base::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (!file_util::DirectoryExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;

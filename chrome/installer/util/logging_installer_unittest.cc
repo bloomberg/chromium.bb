@@ -21,7 +21,7 @@ TEST(LoggingInstallerTest, TestTruncate) {
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
-  ASSERT_TRUE(file_util::PathExists(temp_file));
+  ASSERT_TRUE(base::PathExists(temp_file));
 
   int64 file_size = 0;
   EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
@@ -34,7 +34,7 @@ TEST(LoggingInstallerTest, TestTruncate) {
   EXPECT_EQ(installer::kTruncatedInstallerLogFileSize , file_size);
 
   // Check that the temporary file was deleted.
-  EXPECT_FALSE(file_util::PathExists(temp_file.Append(L".tmp")));
+  EXPECT_FALSE(base::PathExists(temp_file.Append(L".tmp")));
 }
 
 TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
@@ -46,7 +46,7 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
-  ASSERT_TRUE(file_util::PathExists(temp_file));
+  ASSERT_TRUE(base::PathExists(temp_file));
 
   int64 file_size = 0;
   EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
@@ -54,7 +54,7 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
 
   EXPECT_EQ(installer::LOGFILE_UNTOUCHED,
             installer::TruncateLogFileIfNeeded(temp_file));
-  EXPECT_TRUE(file_util::PathExists(temp_file));
+  EXPECT_TRUE(base::PathExists(temp_file));
   EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 }
@@ -68,7 +68,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
-  ASSERT_TRUE(file_util::PathExists(temp_file));
+  ASSERT_TRUE(base::PathExists(temp_file));
   int64 file_size = 0;
   EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
@@ -83,7 +83,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
 
   EXPECT_EQ(installer::LOGFILE_UNTOUCHED,
             installer::TruncateLogFileIfNeeded(temp_file));
-  EXPECT_TRUE(file_util::PathExists(temp_file));
+  EXPECT_TRUE(base::PathExists(temp_file));
   EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 }
@@ -97,7 +97,7 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
-  ASSERT_TRUE(file_util::PathExists(temp_file));
+  ASSERT_TRUE(base::PathExists(temp_file));
   int64 file_size = 0;
   EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
@@ -115,5 +115,5 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
 
   EXPECT_EQ(installer::LOGFILE_DELETED,
             installer::TruncateLogFileIfNeeded(temp_file));
-  EXPECT_FALSE(file_util::PathExists(temp_file));
+  EXPECT_FALSE(base::PathExists(temp_file));
 }

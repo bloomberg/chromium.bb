@@ -14,7 +14,7 @@ base::FilePath GetProfilesINI() {
   if (!home.empty()) {
     ini_file = home.Append(".mozilla/firefox/profiles.ini");
   }
-  if (file_util::PathExists(ini_file))
+  if (base::PathExists(ini_file))
     return ini_file;
 
   return base::FilePath();

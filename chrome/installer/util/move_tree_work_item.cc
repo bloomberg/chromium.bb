@@ -28,7 +28,7 @@ MoveTreeWorkItem::MoveTreeWorkItem(const base::FilePath& source_path,
 }
 
 bool MoveTreeWorkItem::Do() {
-  if (!file_util::PathExists(source_path_)) {
+  if (!base::PathExists(source_path_)) {
     LOG(ERROR) << source_path_.value() << " does not exist";
     return false;
   }
@@ -41,7 +41,7 @@ bool MoveTreeWorkItem::Do() {
   // 2) If the contents of src_path_ are NOT fully contained in dest_path_, we
   //    attempt to backup dest_path_ and replace it with src_path_. This will
   //    fail if files in dest_path_ are in use.
-  if (file_util::PathExists(dest_path_)) {
+  if (base::PathExists(dest_path_)) {
     // Generate a backup path that can keep the original files under dest_path_.
     if (!backup_path_.CreateUniqueTempDirUnderPath(temp_dir_)) {
       PLOG(ERROR) << "Failed to get backup path in folder "

@@ -449,9 +449,9 @@ bool Connection::Delete(const base::FilePath& path) {
   base::Delete(wal_path, false);
   base::Delete(path, false);
 
-  return !file_util::PathExists(journal_path) &&
-      !file_util::PathExists(wal_path) &&
-      !file_util::PathExists(path);
+  return !base::PathExists(journal_path) &&
+      !base::PathExists(wal_path) &&
+      !base::PathExists(path);
 }
 
 bool Connection::BeginTransaction() {

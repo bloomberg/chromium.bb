@@ -82,7 +82,7 @@ FileStream* CreateFileStreamForDrop(base::FilePath* file_path,
 
     // Explicitly (and redundantly check) for file -- despite the fact that our
     // open won't overwrite -- just to avoid log spew.
-    if (!file_util::PathExists(new_file_path) &&
+    if (!base::PathExists(new_file_path) &&
         file_stream->OpenSync(new_file_path, base::PLATFORM_FILE_CREATE |
                               base::PLATFORM_FILE_WRITE) == net::OK) {
       *file_path = new_file_path;

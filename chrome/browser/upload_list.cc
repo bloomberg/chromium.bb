@@ -49,7 +49,7 @@ void UploadList::LoadUploadListAndInformDelegateOfCompletion() {
 }
 
 void UploadList::LoadUploadList() {
-  if (file_util::PathExists(upload_log_path_)) {
+  if (base::PathExists(upload_log_path_)) {
     std::string contents;
     file_util::ReadFileToString(upload_log_path_, &contents);
     std::vector<std::string> log_entries;

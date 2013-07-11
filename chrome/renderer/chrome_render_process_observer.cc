@@ -289,7 +289,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   // Need to patch a few functions for font loading to work correctly.
   base::FilePath pdf;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
-      file_util::PathExists(pdf)) {
+      base::PathExists(pdf)) {
     g_iat_patch_createdca.Patch(
         pdf.value().c_str(), "gdi32.dll", "CreateDCA", CreateDCAPatch);
     g_iat_patch_get_font_data.Patch(

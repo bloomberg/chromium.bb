@@ -291,8 +291,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   EXPECT_EQ(3, LoadedWallpapers());
   base::FilePath new_wallpaper_path = GetCustomWallpaperPath(
       kOriginalWallpaperSubDir, kTestUser1, "DUMMY");
-  EXPECT_FALSE(file_util::PathExists(old_wallpaper_path));
-  EXPECT_TRUE(file_util::PathExists(new_wallpaper_path));
+  EXPECT_FALSE(base::PathExists(old_wallpaper_path));
+  EXPECT_TRUE(base::PathExists(new_wallpaper_path));
 }
 
 // Some users have old user profiles which may have legacy wallpapers. And these

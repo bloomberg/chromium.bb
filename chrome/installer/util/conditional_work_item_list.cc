@@ -32,7 +32,7 @@ void ConditionalWorkItemList::Rollback() {
 // Pre-defined conditions:
 //------------------------------------------------------------------------------
 bool ConditionRunIfFileExists::ShouldRun() const {
-  return file_util::PathExists(key_path_);
+  return base::PathExists(key_path_);
 }
 
 bool Not::ShouldRun() const {

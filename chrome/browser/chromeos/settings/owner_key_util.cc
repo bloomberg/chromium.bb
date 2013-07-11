@@ -71,7 +71,7 @@ crypto::RSAPrivateKey* OwnerKeyUtilImpl::FindPrivateKey(
 }
 
 bool OwnerKeyUtilImpl::IsPublicKeyPresent() {
-  return file_util::PathExists(key_file_);
+  return base::PathExists(key_file_);
 }
 
 }  // namespace chromeos

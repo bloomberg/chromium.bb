@@ -45,7 +45,7 @@ base::FilePath GetUserDataDir(const content::MainFunctionParams& parameters) {
   // prompt the user to pick a different directory, and restart chrome with
   // the new dir.
   // http://code.google.com/p/chromium/issues/detail?id=11510
-  if (!file_util::PathExists(user_data_dir)) {
+  if (!base::PathExists(user_data_dir)) {
 #if defined(USE_AURA)
     // TODO(beng):
     NOTIMPLEMENTED();

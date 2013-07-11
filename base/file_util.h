@@ -112,15 +112,15 @@ BASE_EXPORT bool CopyDirectory(const FilePath& from_path,
                                const FilePath& to_path,
                                bool recursive);
 
+// Returns true if the given path exists on the local filesystem,
+// false otherwise.
+BASE_EXPORT bool PathExists(const FilePath& path);
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
 
 namespace file_util {
-
-// Returns true if the given path exists on the local filesystem,
-// false otherwise.
-BASE_EXPORT bool PathExists(const base::FilePath& path);
 
 // Returns true if the given path is writable by the user, false otherwise.
 BASE_EXPORT bool PathIsWritable(const base::FilePath& path);

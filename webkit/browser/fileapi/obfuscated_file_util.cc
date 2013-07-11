@@ -1103,7 +1103,7 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
         src_file_path, dest_local_path, true /* copy */);
     created = true;
   } else {
-    if (file_util::PathExists(dest_local_path)) {
+    if (base::PathExists(dest_local_path)) {
       if (!base::Delete(dest_local_path, true /* recursive */)) {
         NOTREACHED();
         return base::PLATFORM_FILE_ERROR_FAILED;

@@ -66,15 +66,15 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   EXPECT_FALSE(db.LazyOpen(false));
   EXPECT_TRUE(db.LazyOpen(true));
 
-  EXPECT_TRUE(file_util::PathExists(kDbFile));
+  EXPECT_TRUE(base::PathExists(kDbFile));
   EXPECT_TRUE(file_util::DirectoryExists(kNestedDir));
-  EXPECT_TRUE(file_util::PathExists(kOtherFile));
+  EXPECT_TRUE(base::PathExists(kOtherFile));
 
   EXPECT_TRUE(db.DeleteExistingAndCreateNewDatabase());
 
-  EXPECT_TRUE(file_util::PathExists(kDbFile));
+  EXPECT_TRUE(base::PathExists(kDbFile));
   EXPECT_FALSE(file_util::DirectoryExists(kNestedDir));
-  EXPECT_FALSE(file_util::PathExists(kOtherFile));
+  EXPECT_FALSE(base::PathExists(kOtherFile));
 }
 
 TEST(AppCacheDatabaseTest, ExperimentalFlags) {
@@ -87,7 +87,7 @@ TEST(AppCacheDatabaseTest, ExperimentalFlags) {
   const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
   const base::FilePath kOtherFile =  temp_dir.path().AppendASCII("other_file");
   EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
-  EXPECT_TRUE(file_util::PathExists(kOtherFile));
+  EXPECT_TRUE(base::PathExists(kOtherFile));
 
   AppCacheDatabase db(kDbFile);
   EXPECT_TRUE(db.LazyOpen(true));
@@ -104,7 +104,7 @@ TEST(AppCacheDatabaseTest, ExperimentalFlags) {
   EXPECT_TRUE(db.LazyOpen(false));
   EXPECT_TRUE(db.meta_table_->GetValue(kExperimentFlagsKey, &flags));
   EXPECT_TRUE(flags.empty());
-  EXPECT_FALSE(file_util::PathExists(kOtherFile));
+  EXPECT_FALSE(base::PathExists(kOtherFile));
 }
 
 TEST(AppCacheDatabaseTest, EntryRecords) {

@@ -201,7 +201,7 @@ void SetTimezoneIDFromString(const std::string& id) {
   base::FilePath timezone_file(kTimezoneFilesDir + id);
 
   // Make sure timezone_file exists.
-  if (!file_util::PathExists(timezone_file)) {
+  if (!base::PathExists(timezone_file)) {
     LOG(ERROR) << "SetTimezoneID: Cannot find timezone file "
                << timezone_file.value();
     return;

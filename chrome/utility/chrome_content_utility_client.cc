@@ -81,7 +81,7 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   // only because we need this DLL only on Windows.
   base::FilePath pdf;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
-      file_util::PathExists(pdf)) {
+      base::PathExists(pdf)) {
     bool rv = !!LoadLibrary(pdf.value().c_str());
     DCHECK(rv) << "Couldn't load PDF plugin";
   }

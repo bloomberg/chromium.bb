@@ -408,7 +408,7 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("test_data"));
-      if (!file_util::PathExists(cur))  // We don't want to create this.
+      if (!base::PathExists(cur))  // We don't want to create this.
         return false;
       break;
     case chrome::DIR_TEST_DATA:
@@ -417,7 +417,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("chrome"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
       cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!file_util::PathExists(cur))  // We don't want to create this.
+      if (!base::PathExists(cur))  // We don't want to create this.
         return false;
       break;
     case chrome::DIR_TEST_TOOLS:
@@ -426,7 +426,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("chrome"));
       cur = cur.Append(FILE_PATH_LITERAL("tools"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
-      if (!file_util::PathExists(cur))  // We don't want to create this
+      if (!base::PathExists(cur))  // We don't want to create this
         return false;
       break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
@@ -448,7 +448,7 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!login)
         return false;
       cur = cur.AppendASCII(login);
-      if (!file_util::PathExists(cur))  // We don't want to create this.
+      if (!base::PathExists(cur))  // We don't want to create this.
         return false;
       break;
     }
@@ -500,7 +500,7 @@ bool PathProvider(int key, base::FilePath* result) {
       return false;
   }
 
-  if (create_dir && !file_util::PathExists(cur) &&
+  if (create_dir && !base::PathExists(cur) &&
       !file_util::CreateDirectory(cur))
     return false;
 

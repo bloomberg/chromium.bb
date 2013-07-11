@@ -20,7 +20,7 @@ bool GetTestDataPath(const std::string& component,
   path = path.Append(FILE_PATH_LITERAL("chromeos"));
   path = path.Append(FILE_PATH_LITERAL("test"));
   path = path.Append(FILE_PATH_LITERAL("data"));
-  if (!file_util::PathExists(path))  // We don't want to create this.
+  if (!base::PathExists(path))  // We don't want to create this.
     return false;
   DCHECK(data_dir);
   path = path.Append(component);

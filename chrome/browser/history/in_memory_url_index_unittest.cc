@@ -203,7 +203,7 @@ void InMemoryURLIndexTest::SetUp() {
   history_proto_path = history_proto_path.Append(
       FILE_PATH_LITERAL("History"));
   history_proto_path = history_proto_path.Append(TestDBName());
-  EXPECT_TRUE(file_util::PathExists(history_proto_path));
+  EXPECT_TRUE(base::PathExists(history_proto_path));
 
   std::ifstream proto_file(history_proto_path.value().c_str());
   static const size_t kCommandBufferMaxSize = 2048;

@@ -65,7 +65,7 @@ bool PathProviderMac(int key, base::FilePath* result) {
                                                  result);
 #if defined(OS_IOS)
       // On IOS, this directory does not exist unless it is created explicitly.
-      if (success && !file_util::PathExists(*result))
+      if (success && !base::PathExists(*result))
         success = file_util::CreateDirectory(*result);
 #endif  // defined(OS_IOS)
       return success;

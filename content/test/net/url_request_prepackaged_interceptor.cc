@@ -65,7 +65,7 @@ class URLRequestPrepackagedInterceptor::Delegate
     // It's ok to do a blocking disk access on this thread; this class
     // is just used for tests.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    EXPECT_TRUE(file_util::PathExists(path));
+    EXPECT_TRUE(base::PathExists(path));
     if (ignore_query) {
       ignore_query_responses_[url] = path;
     } else {

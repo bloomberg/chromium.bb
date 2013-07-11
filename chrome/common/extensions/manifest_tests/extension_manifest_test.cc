@@ -28,7 +28,7 @@ base::DictionaryValue* LoadManifestFile(const base::FilePath& filename_path,
   manifest_path = manifest_path.Append(filename_path);
   extension_path = manifest_path.DirName();
 
-  EXPECT_TRUE(file_util::PathExists(manifest_path)) <<
+  EXPECT_TRUE(base::PathExists(manifest_path)) <<
       "Couldn't find " << manifest_path.value();
 
   JSONFileValueSerializer serializer(manifest_path);

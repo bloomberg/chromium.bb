@@ -34,10 +34,10 @@ class FirstRunTest : public testing::Test {
 
 TEST_F(FirstRunTest, RemoveSentinel) {
   EXPECT_TRUE(CreateSentinel());
-  EXPECT_TRUE(file_util::PathExists(sentinel_path_));
+  EXPECT_TRUE(base::PathExists(sentinel_path_));
 
   EXPECT_TRUE(RemoveSentinel());
-  EXPECT_FALSE(file_util::PathExists(sentinel_path_));
+  EXPECT_FALSE(base::PathExists(sentinel_path_));
 }
 
 TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_VariationsSeed) {

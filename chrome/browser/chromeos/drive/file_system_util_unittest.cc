@@ -206,9 +206,9 @@ TEST(FileSystemUtilTest, MigrateCacheFilesFromOldDirectories) {
   // Migrate.
   MigrateCacheFilesFromOldDirectories(temp_dir.path());
 
-  EXPECT_FALSE(file_util::PathExists(persistent_directory));
-  EXPECT_TRUE(file_util::PathExists(files_directory.AppendASCII("foo.abc")));
-  EXPECT_TRUE(file_util::PathExists(files_directory.AppendASCII("bar.123")));
+  EXPECT_FALSE(base::PathExists(persistent_directory));
+  EXPECT_TRUE(base::PathExists(files_directory.AppendASCII("foo.abc")));
+  EXPECT_TRUE(base::PathExists(files_directory.AppendASCII("bar.123")));
 }
 
 TEST(FileSystemUtilTest, NeedsNamespaceMigration) {

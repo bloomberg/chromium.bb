@@ -49,7 +49,7 @@ TEST(ProcessExtensions, SingleExtension) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(command.HasSwitch("load-extension"));
   base::FilePath temp_ext_path = command.GetSwitchValuePath("load-extension");
-  ASSERT_TRUE(file_util::PathExists(temp_ext_path));
+  ASSERT_TRUE(base::PathExists(temp_ext_path));
 }
 
 TEST(ProcessExtensions, MultipleExtensions) {
@@ -84,8 +84,8 @@ TEST(ProcessExtensions, MultipleExtensions) {
   std::vector<CommandLine::StringType> ext_path_list;
   base::SplitString(ext_paths, FILE_PATH_LITERAL(','), &ext_path_list);
   ASSERT_EQ(2u, ext_path_list.size());
-  ASSERT_TRUE(file_util::PathExists(base::FilePath(ext_path_list[0])));
-  ASSERT_TRUE(file_util::PathExists(base::FilePath(ext_path_list[1])));
+  ASSERT_TRUE(base::PathExists(base::FilePath(ext_path_list[0])));
+  ASSERT_TRUE(base::PathExists(base::FilePath(ext_path_list[1])));
 }
 
 namespace {

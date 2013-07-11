@@ -895,7 +895,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   virtual bool SetUpUserDataDirectory() OVERRIDE {
     base::FilePath cookie_path(
         SafeBrowsingService::GetCookieFilePathForTesting());
-    EXPECT_FALSE(file_util::PathExists(cookie_path));
+    EXPECT_FALSE(base::PathExists(cookie_path));
 
     base::FilePath test_dir;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_dir)) {

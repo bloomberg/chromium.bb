@@ -112,7 +112,7 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
   if (current_version_.CompareTo(version) >= 0)
     return false;
   base::FilePath main_file = unpack_path.Append(kRecoveryFileName);
-  if (!file_util::PathExists(main_file))
+  if (!base::PathExists(main_file))
     return false;
   // Passed the basic tests. The installation continues with the
   // recovery component itself running from the temp directory.

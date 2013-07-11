@@ -79,9 +79,9 @@ TEST_F(ExtensionFromUserScript, Basic) {
   EXPECT_TRUE(script.emulate_greasemonkey());
 
   // Make sure the files actually exist on disk.
-  EXPECT_TRUE(file_util::PathExists(
+  EXPECT_TRUE(base::PathExists(
       extension->path().Append(script.js_scripts()[0].relative_path())));
-  EXPECT_TRUE(file_util::PathExists(
+  EXPECT_TRUE(base::PathExists(
       extension->path().Append(kManifestFilename)));
 }
 
@@ -128,9 +128,9 @@ TEST_F(ExtensionFromUserScript, NoMetadata) {
   EXPECT_EQ(expected, script.url_patterns());
 
   // Make sure the files actually exist on disk.
-  EXPECT_TRUE(file_util::PathExists(
+  EXPECT_TRUE(base::PathExists(
       extension->path().Append(script.js_scripts()[0].relative_path())));
-  EXPECT_TRUE(file_util::PathExists(
+  EXPECT_TRUE(base::PathExists(
       extension->path().Append(kManifestFilename)));
 }
 
@@ -230,7 +230,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentIdle) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_idle.user.js");
-  ASSERT_TRUE(file_util::PathExists(test_file)) << test_file.value();
+  ASSERT_TRUE(base::PathExists(test_file)) << test_file.value();
 
   string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(

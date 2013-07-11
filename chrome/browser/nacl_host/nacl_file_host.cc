@@ -108,7 +108,7 @@ void DoOpenPnaclFile(
   // PNaCl must be installed.
   base::FilePath pnacl_dir;
   if (!NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
-      !file_util::PathExists(pnacl_dir)) {
+      !base::PathExists(pnacl_dir)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TryInstallPnacl,

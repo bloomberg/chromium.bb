@@ -69,7 +69,7 @@ class FileThreadDeserializer
     JSONFileValueSerializer serializer(path);
     base::Value* value = serializer.Deserialize(&error_code, &error_msg);
     HandleErrors(value, path, error_code, error_msg, error);
-    *no_dir = !file_util::PathExists(path.DirName());
+    *no_dir = !base::PathExists(path.DirName());
     return value;
   }
 
@@ -128,7 +128,7 @@ void FileThreadDeserializer::HandleErrors(
         // If they've ever had a parse error before, put them in another bucket.
         // TODO(erikkay) if we keep this error checking for very long, we may
         // want to differentiate between recent and long ago errors.
-        if (file_util::PathExists(bad))
+        if (base::PathExists(bad))
           *error = PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT;
         base::Move(path, bad);
         break;

@@ -215,7 +215,7 @@ class InstallShortcutTest : public testing::Test {
 TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestNotCreated) {
   ASSERT_TRUE(
       installer::CreateVisualElementsManifest(test_dir_.path(), version_));
-  ASSERT_FALSE(file_util::PathExists(manifest_path_));
+  ASSERT_FALSE(base::PathExists(manifest_path_));
 }
 
 // Test that VisualElementsManifest.xml is created with the correct content when
@@ -225,7 +225,7 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
       version_dir_.Append(installer::kVisualElements)));
   ASSERT_TRUE(
       installer::CreateVisualElementsManifest(test_dir_.path(), version_));
-  ASSERT_TRUE(file_util::PathExists(manifest_path_));
+  ASSERT_TRUE(base::PathExists(manifest_path_));
 
   std::string read_manifest;
   ASSERT_TRUE(file_util::ReadFileToString(manifest_path_, &read_manifest));
@@ -289,7 +289,7 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsButDesktopShortcut) {
   installer::CreateOrUpdateShortcuts(
       chrome_exe_, *product_, *prefs_no_desktop, installer::CURRENT_USER,
       installer::INSTALL_SHORTCUT_CREATE_ALL);
-  ASSERT_FALSE(file_util::PathExists(user_desktop_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_desktop_shortcut_));
   base::win::ValidateShortcut(user_quick_launch_shortcut_,
                               expected_properties_);
   base::win::ValidateShortcut(user_start_menu_shortcut_,
@@ -303,7 +303,7 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsButQuickLaunchShortcut) {
       chrome_exe_, *product_, *prefs_no_ql, installer::CURRENT_USER,
       installer::INSTALL_SHORTCUT_CREATE_ALL);
   base::win::ValidateShortcut(user_desktop_shortcut_, expected_properties_);
-  ASSERT_FALSE(file_util::PathExists(user_quick_launch_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_quick_launch_shortcut_));
   base::win::ValidateShortcut(user_start_menu_shortcut_,
                               expected_start_menu_properties_);
 }
@@ -358,8 +358,8 @@ TEST_F(InstallShortcutTest, ReplaceExisting) {
       chrome_exe_, *product_, *prefs_, installer::CURRENT_USER,
       installer::INSTALL_SHORTCUT_REPLACE_EXISTING);
   base::win::ValidateShortcut(user_desktop_shortcut_, expected_properties_);
-  ASSERT_FALSE(file_util::PathExists(user_quick_launch_shortcut_));
-  ASSERT_FALSE(file_util::PathExists(user_start_menu_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_quick_launch_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_start_menu_shortcut_));
 }
 
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
@@ -384,9 +384,9 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
   installer::CreateOrUpdateShortcuts(
       chrome_exe_, *product_, *prefs_, installer::CURRENT_USER,
       installer::INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
-  ASSERT_FALSE(file_util::PathExists(user_desktop_shortcut_));
-  ASSERT_FALSE(file_util::PathExists(user_quick_launch_shortcut_));
-  ASSERT_FALSE(file_util::PathExists(user_start_menu_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_desktop_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_quick_launch_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_start_menu_shortcut_));
 }
 
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelNoSystemShortcutsExist) {
@@ -414,7 +414,7 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelSomeSystemShortcutsExist) {
   installer::CreateOrUpdateShortcuts(
       chrome_exe_, *product_, *prefs_, installer::CURRENT_USER,
       installer::INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
-  ASSERT_FALSE(file_util::PathExists(user_desktop_shortcut_));
+  ASSERT_FALSE(base::PathExists(user_desktop_shortcut_));
   base::win::ValidateShortcut(user_quick_launch_shortcut_,
                               expected_properties_);
   base::win::ValidateShortcut(user_start_menu_shortcut_,

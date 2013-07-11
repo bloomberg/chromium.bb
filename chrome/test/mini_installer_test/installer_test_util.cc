@@ -59,7 +59,7 @@ bool DeleteInstallDirectory(bool system_level,
   bool has_install_dir = GetInstallDirectory(system_level,
                                              ToBrowserDistributionType(type),
                                              &path);
-  if (!has_install_dir || !file_util::PathExists(path))
+  if (!has_install_dir || !base::PathExists(path))
     return false;
   path = path.AppendASCII(version);
   return base::Delete(path, true);
@@ -154,7 +154,7 @@ std::string GetVersion(InstallationValidator::InstallationType product) {
 }
 
 bool Install(const base::FilePath& installer) {
-  if (!file_util::PathExists(installer)) {
+  if (!base::PathExists(installer)) {
     LOG(ERROR) << "Installer does not exist: " << installer.MaybeAsASCII();
     return false;
   }
@@ -165,7 +165,7 @@ bool Install(const base::FilePath& installer) {
 }
 
 bool Install(const base::FilePath& installer, const SwitchBuilder& switches) {
-  if (!file_util::PathExists(installer)) {
+  if (!base::PathExists(installer)) {
     LOG(ERROR) << "Installer does not exist: " << installer.MaybeAsASCII();
     return false;
   }
@@ -279,7 +279,7 @@ bool Uninstall(bool system_level,
 
 
 bool RunAndWaitForCommandToFinish(CommandLine command) {
-  if (!file_util::PathExists(command.GetProgram())) {
+  if (!base::PathExists(command.GetProgram())) {
     LOG(ERROR) << "Command executable does not exist: "
                << command.GetProgram().MaybeAsASCII();
     return false;

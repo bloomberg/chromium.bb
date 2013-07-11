@@ -342,7 +342,7 @@ std::string WebRTCAudioDeviceTest::GetTestDataPath(
   base::FilePath path;
   EXPECT_TRUE(PathService::Get(DIR_TEST_DATA, &path));
   path = path.Append(file_name);
-  EXPECT_TRUE(file_util::PathExists(path));
+  EXPECT_TRUE(base::PathExists(path));
 #if defined(OS_WIN)
   return WideToUTF8(path.value());
 #else

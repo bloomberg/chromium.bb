@@ -66,7 +66,7 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
  protected:
   virtual Profile* CreateProfileHelper(
       const base::FilePath& file_path) OVERRIDE {
-    if (!file_util::PathExists(file_path)) {
+    if (!base::PathExists(file_path)) {
       if (!file_util::CreateDirectory(file_path))
         return NULL;
     }

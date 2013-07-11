@@ -94,7 +94,7 @@ void DeleteBackendImpl(disk_cache::Backend** backend,
 // 2. The Simple Backend has pickled file format for the index making it hacky
 //    to have the magic in the right place.
 bool FileStructureConsistent(const base::FilePath& path) {
-  if (!file_util::PathExists(path) && !file_util::CreateDirectory(path)) {
+  if (!base::PathExists(path) && !file_util::CreateDirectory(path)) {
     LOG(ERROR) << "Failed to create directory: " << path.LossyDisplayName();
     return false;
   }

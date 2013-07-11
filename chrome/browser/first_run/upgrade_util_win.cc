@@ -174,14 +174,14 @@ bool IsUpdatePendingRestart() {
   base::FilePath new_chrome_exe;
   if (!GetNewerChromeFile(&new_chrome_exe))
     return false;
-  return file_util::PathExists(new_chrome_exe);
+  return base::PathExists(new_chrome_exe);
 }
 
 bool SwapNewChromeExeIfPresent() {
   base::FilePath new_chrome_exe;
   if (!GetNewerChromeFile(&new_chrome_exe))
     return false;
-  if (!file_util::PathExists(new_chrome_exe))
+  if (!base::PathExists(new_chrome_exe))
     return false;
   base::FilePath cur_chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &cur_chrome_exe))

@@ -113,7 +113,7 @@ class PluginTest : public ContentBrowserTest {
 
   void TestPlugin(const char* filename) {
     base::FilePath path = GetTestFilePath("plugin", filename);
-    if (!file_util::PathExists(path)) {
+    if (!base::PathExists(path)) {
       const testing::TestInfo* const test_info =
           testing::UnitTest::GetInstance()->current_test_info();
       LOG(INFO) << "PluginTest." << test_info->name() <<

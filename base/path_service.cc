@@ -253,7 +253,7 @@ bool PathService::OverrideAndCreateIfNeeded(int key,
     // Make sure the directory exists. We need to do this before we translate
     // this to the absolute path because on POSIX, MakeAbsoluteFilePath fails
     // if called on a non-existent path.
-    if (!file_util::PathExists(file_path) &&
+    if (!base::PathExists(file_path) &&
         !file_util::CreateDirectory(file_path))
       return false;
   }

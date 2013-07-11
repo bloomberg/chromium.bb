@@ -561,7 +561,7 @@ Error* ElementValueCommand::DragAndDropFilePaths() const {
 
   // Check the files exist.
   for (size_t i = 0; i < paths.size(); ++i) {
-    if (!file_util::PathExists(base::FilePath(paths[i]))) {
+    if (!base::PathExists(base::FilePath(paths[i]))) {
       return new Error(
           kBadRequest,
           base::StringPrintf("'%s' does not exist on the file system",

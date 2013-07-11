@@ -239,7 +239,7 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &peerconnection_server));
     peerconnection_server = peerconnection_server.Append(kPeerConnectionServer);
 
-    EXPECT_TRUE(file_util::PathExists(peerconnection_server)) <<
+    EXPECT_TRUE(base::PathExists(peerconnection_server)) <<
         "Missing peerconnection_server. You must build "
         "it so it ends up next to the browser test binary.";
     EXPECT_TRUE(base::LaunchProcess(

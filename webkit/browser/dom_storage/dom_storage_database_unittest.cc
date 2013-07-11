@@ -122,7 +122,7 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
     EXPECT_EQ(file_name, db.file_path());
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
-  EXPECT_TRUE(file_util::PathExists(file_name));
+  EXPECT_TRUE(base::PathExists(file_name));
 
   {
     // Check that reading an existing db with data in it
@@ -133,14 +133,14 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
     EXPECT_EQ(storage.size(), values.size());
   }
 
-  EXPECT_TRUE(file_util::PathExists(file_name));
+  EXPECT_TRUE(base::PathExists(file_name));
   storage.clear();
 
   {
     DomStorageDatabase db(file_name);
     ASSERT_TRUE(db.CommitChanges(true, storage));
   }
-  EXPECT_FALSE(file_util::PathExists(file_name));
+  EXPECT_FALSE(base::PathExists(file_name));
 
   // Now ensure that a series of updates and removals whose net effect
   // is an empty database also triggers deletion.
@@ -150,7 +150,7 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
 
-  EXPECT_TRUE(file_util::PathExists(file_name));
+  EXPECT_TRUE(base::PathExists(file_name));
 
   {
     DomStorageDatabase db(file_name);
@@ -160,7 +160,7 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
       it->second = base::NullableString16();
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
-  EXPECT_FALSE(file_util::PathExists(file_name));
+  EXPECT_FALSE(base::PathExists(file_name));
 }
 
 TEST(DomStorageDatabaseTest, TestLazyOpenIsLazy) {
@@ -313,7 +313,7 @@ TEST(DomStorageDatabaseTest, TestCanOpenAndReadWebCoreDatabase) {
   webcore_database =
       webcore_database.AppendASCII("webcore_test_database.localstorage");
 
-  ASSERT_TRUE(file_util::PathExists(webcore_database));
+  ASSERT_TRUE(base::PathExists(webcore_database));
 
   DomStorageDatabase db(webcore_database);
   ValuesMap values;
@@ -374,7 +374,7 @@ TEST(DomStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
     EXPECT_EQ(0u, values.size());
     EXPECT_FALSE(db.IsOpen());
 
-    EXPECT_TRUE(file_util::PathExists(temp_dir.path()));
+    EXPECT_TRUE(base::PathExists(temp_dir.path()));
   }
 }
 

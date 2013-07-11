@@ -79,7 +79,7 @@ class SandboxedUnpackerTest : public testing::Test {
     original_path = original_path.AppendASCII("extensions")
         .AppendASCII("unpacker")
         .AppendASCII(crx_name);
-    ASSERT_TRUE(file_util::PathExists(original_path)) << original_path.value();
+    ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
 
     sandboxed_unpacker_ = new SandboxedUnpacker(
         original_path,
@@ -112,7 +112,7 @@ TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
   // Check that there is no _locales folder.
   base::FilePath install_path =
       GetInstallPath().Append(kLocaleFolder);
-  EXPECT_FALSE(file_util::PathExists(install_path));
+  EXPECT_FALSE(base::PathExists(install_path));
 }
 
 TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
@@ -120,7 +120,7 @@ TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
   // Check that there is _locales folder.
   base::FilePath install_path =
       GetInstallPath().Append(kLocaleFolder);
-  EXPECT_TRUE(file_util::PathExists(install_path));
+  EXPECT_TRUE(base::PathExists(install_path));
 }
 
 }  // namespace extensions

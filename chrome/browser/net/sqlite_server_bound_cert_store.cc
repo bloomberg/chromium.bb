@@ -200,7 +200,7 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
   // Ensure the parent directory for storing certs is created before reading
   // from it.
   const base::FilePath dir = path_.DirName();
-  if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir))
+  if (!base::PathExists(dir) && !file_util::CreateDirectory(dir))
     return;
 
   int64 db_size = 0;

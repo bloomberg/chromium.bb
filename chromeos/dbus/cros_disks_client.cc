@@ -456,7 +456,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   static MountError PerformFakeMount(const std::string& source_path,
                                      const base::FilePath& mounted_path) {
     // Check the source path exists.
-    if (!file_util::PathExists(base::FilePath::FromUTF8Unsafe(source_path))) {
+    if (!base::PathExists(base::FilePath::FromUTF8Unsafe(source_path))) {
       DLOG(ERROR) << "Source does not exist at " << source_path;
       return MOUNT_ERROR_INVALID_PATH;
     }
