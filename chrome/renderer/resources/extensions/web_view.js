@@ -76,16 +76,19 @@ var WEB_VIEW_EXT_EVENTS = {
 // We can't listen for the "readystatechange" event on the document (because
 // the object that it's dispatched on doesn't exist yet), but we can instead
 // do it at the window level in the capturing phase.
-window.addEventListener('readystatechange', function(e) {
-  if (document.readyState != 'loading') {
+//
+// The second window.readystatechange event (The first is fired right after
+// document's readyState changes to 'loading') is the earliest place to define
+// webview so that app has no chance to be earlier to fail its definition.
+var readyStateChangeListener = function(event) {
+  if (document.readyState == 'loading')
     return;
-  }
 
-  document.addEventListener('DOMContentLoaded', function(e) {
-    watchForTag('WEBVIEW', function(addedNode) { new WebView(addedNode); });
-  });
-}, true /* useCapture */);
-
+  watchForTag('WEBVIEW', function(addedNode) { new WebView(addedNode); });
+  window.removeEventListener(event.type, readyStateChangeListener, true);
+};
+window.addEventListener('readystatechange', readyStateChangeListener,
+                        true /* useCapture */);
 
 /** @type {number} */
 WebView.prototype.entryCount_;

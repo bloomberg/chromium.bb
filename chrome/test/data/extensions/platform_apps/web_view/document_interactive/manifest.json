@@ -1,0 +1,13 @@
+{
+  "name": "<webview> property setting on document interactive",
+  "description": "Checks webview property setting when document.readyState changes to interactive",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

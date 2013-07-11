@@ -1333,3 +1333,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_ready"))
                   << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentInteractive) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_interactive"))
+                  << message_;
+}
