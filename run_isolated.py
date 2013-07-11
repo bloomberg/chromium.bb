@@ -451,7 +451,7 @@ class HttpService(object):
   """
 
   # File to use to store all auth cookies.
-  COOKIE_FILE = os.path.join('~', '.isolated_cookies')
+  COOKIE_FILE = os.path.join(os.path.expanduser('~'), '.isolated_cookies')
 
   # CookieJar reused by all services + lock that protects its instantiation.
   _cookie_jar = None
@@ -474,7 +474,7 @@ class HttpService(object):
     with HttpService._cookie_jar_lock:
       if HttpService._cookie_jar is not None:
         return HttpService._cookie_jar
-      jar = ThreadSafeCookieJar(os.path.expanduser(HttpService.COOKIE_FILE))
+      jar = ThreadSafeCookieJar(HttpService.COOKIE_FILE)
       jar.load()
       HttpService._cookie_jar = jar
       return jar
