@@ -320,14 +320,8 @@ TEST_F(FilePathWatcherTest, DeleteDuringNotify) {
 
 // Verify that deleting the watcher works even if there is a pending
 // notification.
-// Flaky on MacOS. http://crbug.com/85930
-#if defined(OS_MACOSX)
-#define MAYBE_DestroyWithPendingNotification \
-    DISABLED_DestroyWithPendingNotification
-#else
-#define MAYBE_DestroyWithPendingNotification DestroyWithPendingNotification
-#endif
-TEST_F(FilePathWatcherTest, MAYBE_DestroyWithPendingNotification) {
+// Flaky on MacOS (and ARM linux): http://crbug.com/85930
+TEST_F(FilePathWatcherTest, DISABLED_DestroyWithPendingNotification) {
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   FilePathWatcher* watcher = new FilePathWatcher;
   ASSERT_TRUE(SetupWatch(test_file(), watcher, delegate.get(), false));
