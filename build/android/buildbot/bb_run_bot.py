@@ -213,29 +213,20 @@ def GetRunBotOptParser():
   return parser
 
 
-def main(argv):
-  parser = GetRunBotOptParser()
-  options, args = parser.parse_args(argv[1:])
-  if args:
-    parser.error('Unused args: %s' % args)
-
+def GetBotConfig(options, bot_step_map):
   bot_id = options.bot_id or options.factory_properties.get('android_bot_id')
   if not bot_id:
-    parser.error('A bot id must be specified through option or factory_props.')
+    print (sys.stderr,
+           'A bot id must be specified through option or factory_props.')
+    return
 
-  bot_config = GetBestMatch(GetBotStepMap(), bot_id)
+  bot_config = GetBestMatch(bot_step_map, bot_id)
   if not bot_config:
     print 'Error: config for id="%s" cannot be inferred.' % bot_id
-    return 1
+  return bot_config
 
-  print 'Using config:', bot_config
 
-  commands = GetCommands(options, bot_config)
-  for command in commands:
-    print 'Will run: ', bb_utils.CommandToString(command)
-  print
-
-  env = GetEnvironment(bot_config.host_obj, options.testing)
+def RunBotCommands(options, commands, env):
   print 'Environment changes:'
   print DictDiff(dict(os.environ), env)
 
@@ -247,6 +238,27 @@ def main(argv):
     return_code = subprocess.call(command, cwd=bb_utils.CHROME_SRC, env=env)
     if return_code != 0:
       return return_code
+
+
+def main(argv):
+  parser = GetRunBotOptParser()
+  options, args = parser.parse_args(argv[1:])
+  if args:
+    parser.error('Unused args: %s' % args)
+
+  bot_config = GetBotConfig(options, GetBotStepMap())
+  if not bot_config:
+    sys.exit(1)
+
+  print 'Using config:', bot_config
+
+  commands = GetCommands(options, bot_config)
+  for command in commands:
+    print 'Will run: ', bb_utils.CommandToString(command)
+  print
+
+  env = GetEnvironment(bot_config.host_obj, options.testing)
+  return RunBotCommands(options, commands, env)
 
 
 if __name__ == '__main__':

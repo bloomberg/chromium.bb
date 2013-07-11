@@ -11,14 +11,13 @@ BUILDBOT_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILDBOT_DIR)
 import bb_run_bot
 
-
-def main():
+def RunBotsWithTesting(bot_step_map):
   code = 0
   procs = [
       (bot, subprocess.Popen(
           [os.path.join(BUILDBOT_DIR, 'bb_run_bot.py'), '--bot-id', bot,
           '--testing'], stdout=subprocess.PIPE, stderr=subprocess.PIPE))
-      for bot in bb_run_bot.GetBotStepMap()]
+      for bot in bot_step_map]
   for bot, proc in procs:
     _, err = proc.communicate()
     code |= proc.returncode
@@ -26,6 +25,10 @@ def main():
       print 'Error running bb_run_bot with id="%s"' % bot, err
 
   return code
+
+
+def main():
+  return RunBotsWithTesting(bb_run_bot.GetBotStepMap())
 
 
 if __name__ == '__main__':
