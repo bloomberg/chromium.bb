@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -33,13 +34,17 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -61,6 +66,7 @@ using browser_sync::SessionDataTypeController;
 using browser_sync::SessionModelAssociator;
 using browser_sync::SyncBackendHost;
 using content::BrowserThread;
+using content::WebContents;
 using syncer::ChangeRecord;
 using testing::_;
 using testing::Return;
@@ -755,24 +761,26 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolEmpty) {
   ASSERT_TRUE(create_root.success());
 
   std::vector<int64> node_ids;
-  ASSERT_EQ(0U, model_associator_->tab_pool_.capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(0U, model_associator_->tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
     int64 id = model_associator_->tab_pool_.GetFreeTabNode();
     ASSERT_GT(id, -1);
     node_ids.push_back(id);
+    // Associate with a tab node.
+    model_associator_->tab_pool_.AssociateTabNode(id, i + 1);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.empty());
-  ASSERT_FALSE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
+  ASSERT_FALSE(model_associator_->tab_pool_.Full());
   for (size_t i = 0; i < num_ids; ++i) {
     model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
 }
 
 // TODO(jhorwich): Re-enable when crbug.com/121487 addressed
@@ -782,29 +790,34 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   ASSERT_TRUE(create_root.success());
 
   const size_t num_starting_nodes = 3;
+  SessionID session_id;
   for (size_t i = 0; i < num_starting_nodes; ++i) {
-    model_associator_->tab_pool_.AddTabNode(i);
+    session_id.set_id(i + 1);
+    model_associator_->tab_pool_.AddTabNode(i + 1, session_id, i);
   }
 
+  model_associator_->tab_pool_.FreeUnusedTabNodes(std::set<int64>());
   std::vector<int64> node_ids;
-  ASSERT_EQ(num_starting_nodes, model_associator_->tab_pool_.capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_starting_nodes, model_associator_->tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
     int64 id = model_associator_->tab_pool_.GetFreeTabNode();
     ASSERT_GT(id, -1);
     node_ids.push_back(id);
+    // Associate with a tab node.
+    model_associator_->tab_pool_.AssociateTabNode(id, i + 1);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.empty());
-  ASSERT_FALSE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
+  ASSERT_FALSE(model_associator_->tab_pool_.Full());
   for (size_t i = 0; i < num_ids; ++i) {
     model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
 }
 
 // Write a foreign session to a node, and then delete it.
@@ -1168,7 +1181,7 @@ TEST_F(ProfileSyncServiceSessionTest, MissingLocalTabNode) {
   ASSERT_FALSE(error.IsSet());
   {
     // Delete the first sync tab node.
-    std::string tab_tag = TabNodePool::TabIdToTag(local_tag, 0);
+    std::string tab_tag = TabNodePool::TabIdToTag(local_tag, 1);
 
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode root(&trans);
@@ -1254,6 +1267,62 @@ TEST_F(ProfileSyncServiceSessionTest, CorruptedLocalHeader) {
   // Ensure we associate properly despite the pre-existing node with our local
   // tag.
   error = model_associator_->AssociateModels(NULL, NULL);
+  ASSERT_FALSE(error.IsSet());
+}
+
+TEST_F(ProfileSyncServiceSessionTest, CheckPrerenderedWebContentsSwap) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  CreateRootHelper create_root(this);
+  // Test setup.
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+
+  syncer::SyncError error;
+  // Initial association.
+  EXPECT_TRUE(model_associator_->AssociateWindows(true, &error));
+  ASSERT_FALSE(error.IsSet());
+
+  // To simulate WebContents swap during prerendering, create new WebContents
+  // and swap with old WebContents.
+  content::WebContents* old_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create new WebContents, with the required tab helpers.
+  WebContents* new_web_contents = WebContents::CreateWithSessionStorage(
+      WebContents::CreateParams(profile()),
+      old_web_contents->GetController().GetSessionStorageNamespaceMap());
+  SessionTabHelper::CreateForWebContents(new_web_contents);
+  TabContentsSyncedTabDelegate::CreateForWebContents(new_web_contents);
+  new_web_contents->GetController()
+      .CopyStateFrom(old_web_contents->GetController());
+
+  // Swap the WebContents.
+  int index =
+      browser()->tab_strip_model()->GetIndexOfWebContents(old_web_contents);
+  browser()->tab_strip_model()->ReplaceWebContentsAt(index, new_web_contents);
+
+  EXPECT_TRUE(model_associator_->AssociateWindows(true, &error));
+  ASSERT_FALSE(error.IsSet());
+  // Navigate away.
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+  EXPECT_TRUE(model_associator_->AssociateWindows(true, &error));
+  ASSERT_FALSE(error.IsSet());
+
+  // Delete old WebContents. This should not crash.
+  delete old_web_contents;
+  EXPECT_TRUE(model_associator_->AssociateWindows(true, &error));
+  ASSERT_FALSE(error.IsSet());
+
+  // Try more navigations to make sure everything if fine.
+  NavigateAndCommitActiveTab(GURL("http://bar3"));
+  EXPECT_TRUE(model_associator_->AssociateWindows(true, &error));
+  ASSERT_FALSE(error.IsSet());
+
+  AddTab(browser(), GURL("http://bar4"));
+  EXPECT_TRUE(model_associator_->AssociateWindows(true, &error));
+  ASSERT_FALSE(error.IsSet());
+  NavigateAndCommitActiveTab(GURL("http://bar5"));
+  EXPECT_TRUE(model_associator_->AssociateWindows(true, &error));
   ASSERT_FALSE(error.IsSet());
 }
 

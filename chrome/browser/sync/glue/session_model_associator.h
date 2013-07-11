@@ -103,10 +103,10 @@ class SessionModelAssociator
   // Reassociates a single tab with the sync model. Will check if the tab
   // already is associated with a sync node and allocate one if necessary.
   // |error| gets set if any association error occurred.
+  // |tab| will be updated with sync id if necessary.
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
-  bool AssociateTab(const SyncedTabDelegate& tab,
-                    syncer::SyncError* error);
+  bool AssociateTab(SyncedTabDelegate* const tab, syncer::SyncError* error);
 
   // Load any foreign session info stored in sync db and update the sync db
   // with local client data. Processes/reuses any sync nodes owned by this
@@ -323,6 +323,9 @@ class SessionModelAssociator
   // want to sync a tab that is nothing but chrome:// and file:// navigations or
   // invalid url's.
   bool TabHasValidEntry(const SyncedTabDelegate& tab) const;
+
+  // Update the tab id of the node associated with |sync_id| to |new_tab_id|.
+  void UpdateTabIdIfNecessary(int64 sync_id, SessionID::id_type new_tab_id);
 
   // For testing only.
   void QuitLoopForSubtleTesting();

@@ -130,3 +130,10 @@ static jint Init(JNIEnv* env,
       reinterpret_cast<WindowAndroid*>(window_android_ptr));
   return reinterpret_cast<jint>(tab);
 }
+
+int64 TestShellTab::GetSyncId() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void TestShellTab::SetSyncId(int64 sync_id) { NOTIMPLEMENTED(); }

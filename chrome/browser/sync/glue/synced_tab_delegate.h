@@ -54,6 +54,9 @@ class SyncedTabDelegate {
   virtual bool IsPinned() const = 0;
   virtual bool HasWebContents() const = 0;
 
+  // Session sync related methods.
+  virtual int64 GetSyncId() const = 0;
+  virtual void SetSyncId(int64 sync_id) = 0;
   // Returns the SyncedTabDelegate associated with WebContents.
   static SyncedTabDelegate* ImplFromWebContents(
       content::WebContents* web_contents);
