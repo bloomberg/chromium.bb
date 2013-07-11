@@ -98,8 +98,8 @@ public class AutofillPopupTest extends ChromiumTestShellTestBase {
         waitForAnchorViewAdd(view);
         View anchorView = view.findViewById(R.id.autofill_popup_window);
 
-        assertTrue(anchorView.getTag(R.id.autofill_popup_window) instanceof AutofillPopup);
-        final AutofillPopup popup = (AutofillPopup) anchorView.getTag(R.id.autofill_popup_window);
+        assertTrue(anchorView.getTag() instanceof AutofillPopup);
+        final AutofillPopup popup = (AutofillPopup) anchorView.getTag();
 
         waitForAutofillPopopShow(popup);
 
