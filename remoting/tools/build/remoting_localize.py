@@ -10,7 +10,7 @@ variables and localizing strings.
 The script uses Jinja2 template processing library (src/third_party/jinja2).
 Variables available to the templates:
   - |languages| - the list of languages passed on the command line. ('-l').
-  - Each KEY=VALUE define ('-d') can be accesses as |KEY|.
+  - Each NAME=VALUE define ('-d') can be accesses as {{ NAME }}.
   - |official_build| is set to '1' when CHROME_BUILD_TYPE environment variable
     is set to "_official".
 
@@ -24,6 +24,7 @@ Filters:
     ID.
 
 Globals:
+  - IsRtlLanguage(language) - returns True if the language is right-to-left.
   - SelectLanguage(language) - allows to select the language to the used by
     {% trans %}{% endtrans %} statements.
 
@@ -34,6 +35,8 @@ import json
 from optparse import OptionParser
 import os
 import sys
+from string import Template
+
 
 # Win32 primary languages IDs.
 _LANGUAGE_PRIMARY = {
@@ -542,9 +545,20 @@ def NormalizeLanguageCode(language):
   return language.replace('_', '-', 1)
 
 
+def GetDataPackageSuffix(language):
+  lang = NormalizeLanguageCode(language)
+  if lang == 'en':
+    lang = 'en-US'
+  return lang
+
+
+def GetJsonSuffix(language):
+  return language.replace('-', '_', 1)
+
+
 def ReadValuesFromFile(values_dict, file_name):
   """
-  Reads KEYWORD=VALUE settings from the specified file.
+  Reads NAME=VALUE settings from the specified file.
 
   Everything to the left of the first '=' is the keyword,
   everything to the right is the value.  No stripping of
@@ -596,15 +610,15 @@ def WriteIfChanged(file_name, contents, encoding='utf-16'):
 
 class MessageMap:
   """ Provides a dictionary of localized messages for each language."""
-  def __init__(self, languages, messages_path):
+  def __init__(self, languages, locale_dir):
     self.language = None
     self.message_map = {}
 
     # Populate the message map
-    if messages_path:
+    if locale_dir:
       for language in languages:
-        file_name = os.path.join(messages_path,
-                                 language.replace('-', '_', 1),
+        file_name = os.path.join(locale_dir,
+                                 GetJsonSuffix(language),
                                  'messages.json')
         self.message_map[language] = ReadMessagesFromFile(file_name)
 
@@ -625,39 +639,13 @@ class MessageMap:
     return lambda message: self.GetText(message)
 
 
-def Localize(source, target, options):
-  # Load jinja2 library.
-  if options.jinja2:
-    jinja2_path = os.path.normpath(options.jinja2)
-  else:
-    jinja2_path = os.path.normpath(os.path.join(os.path.abspath(__file__),
-                                                '../../../third_party/jinja2'))
-  sys.path.append(os.path.split(jinja2_path)[0])
-  from jinja2 import Environment, FileSystemLoader
-
-  # Create jinja2 environment.
-  (template_path, template_name) = os.path.split(source)
-  env = Environment(loader=FileSystemLoader(template_path),
-                    extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
-
-  # Register custom filters.
-  env.filters['GetCodepage'] = GetCodepage
-  env.filters['GetCodepageDecimal'] = GetCodepageDecimal
-  env.filters['GetLangId'] = GetLangId
-  env.filters['GetPrimaryLanguage'] = GetPrimaryLanguage
-  env.filters['GetSublanguage'] = GetSublanguage
-
-  # Set the list of languages to use
-  languages = map(NormalizeLanguageCode, options.languages)
+def Localize(source, locales, options):
+  # Set the list of languages to use.
+  languages = map(NormalizeLanguageCode, locales)
   context = { 'languages' : languages }
-  env.globals['IsRtlLanguage'] = IsRtlLanguage
 
-  # Load the localized messages and register the message map with jinja2.i18n
-  # extension.
-  message_map = MessageMap(languages, options.messages_path)
-  env.globals['SelectLanguage'] = message_map.MakeSelectLanguage()
-  env.install_gettext_callables(message_map.MakeGetText(),
-                                message_map.MakeGetText());
+  # Load the localized messages.
+  message_map = MessageMap(languages, options.locale_dir)
 
   # Add OFFICIAL_BUILD variable the same way chrome/tools/build/version.py
   # does.
@@ -671,28 +659,79 @@ def Localize(source, target, options):
     for define in options.define:
       context.update(dict([define.split('=', 1)]));
 
-  # Read KEYWORD=VALUE variables from file.
-  if options.input:
-    for file_name in options.input:
+  # Read NAME=VALUE variables from file.
+  if options.variables:
+    for file_name in options.variables:
       ReadValuesFromFile(context, file_name)
 
-  template = env.get_template(template_name)
-  WriteIfChanged(target, template.render(context), options.encoding);
-  return 0;
+  env = None
+  template = None
+
+  if source:
+    # Load jinja2 library.
+    if options.jinja2:
+      jinja2_path = os.path.normpath(options.jinja2)
+    else:
+      jinja2_path = os.path.normpath(
+          os.path.join(os.path.abspath(__file__),
+                       '../../../../third_party/jinja2'))
+    sys.path.append(os.path.split(jinja2_path)[0])
+    from jinja2 import Environment, FileSystemLoader
+
+    # Create jinja2 environment.
+    (template_path, template_name) = os.path.split(source)
+    env = Environment(loader=FileSystemLoader(template_path),
+                      extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
+
+    # Register custom filters.
+    env.filters['GetCodepage'] = GetCodepage
+    env.filters['GetCodepageDecimal'] = GetCodepageDecimal
+    env.filters['GetLangId'] = GetLangId
+    env.filters['GetPrimaryLanguage'] = GetPrimaryLanguage
+    env.filters['GetSublanguage'] = GetSublanguage
+
+    # Register the message map with jinja2.i18n extension.
+    env.globals['IsRtlLanguage'] = IsRtlLanguage
+    env.globals['SelectLanguage'] = message_map.MakeSelectLanguage()
+    env.install_gettext_callables(message_map.MakeGetText(),
+                                  message_map.MakeGetText());
+
+    template = env.get_template(template_name)
+
+  # Generate a separate file per each locale if requested.
+  outputs = []
+  if options.locale_output:
+    target = Template(options.locale_output)
+    for lang in languages:
+      context['languages'] = [ lang ]
+      context['language'] = lang
+      context['pak_suffix'] = GetDataPackageSuffix(lang)
+      context['json_suffix'] = GetJsonSuffix(lang)
+
+      template_file_name = target.safe_substitute(context)
+      outputs.append(template_file_name)
+      if not options.print_only:
+        WriteIfChanged(template_file_name, template.render(context),
+                       options.encoding)
+  else:
+    outputs.append(options.output)
+    if not options.print_only:
+      WriteIfChanged(options.output, template.render(context), options.encoding)
+
+  if options.print_only:
+    # Quote each element so filename spaces don't mess up gyp's attempt to parse
+    # it into a list.
+    return " ".join(['"%s"' % x for x in outputs])
+
+  return
 
 
-def main():
-  usage = "Usage: localize [options] <input> <output>"
+def DoMain(argv):
+  usage = "Usage: localize [options] locales"
   parser = OptionParser(usage=usage)
   parser.add_option(
       '-d', '--define', dest='define', action='append', type='string',
-      help='define a variable (VAR=VALUE).')
-  parser.add_option(
-      '-i', '--input', dest='input', action='append', type='string',
-      help='read variables from INPUT.')
-  parser.add_option(
-      '-l', '--language', dest='languages', action='append', type='string',
-      help='add LANGUAGE to the list of languages to use.')
+      help='define a variable (NAME=VALUE).')
   parser.add_option(
       '--encoding', dest='encoding', type='string', default='utf-16',
       help="set the encoding of <output>. 'utf-16' is the default.")
@@ -700,19 +739,35 @@ def main():
       '--jinja2', dest='jinja2', type='string',
       help="specifies path to the jinja2 library.")
   parser.add_option(
-      '--messages_path', dest='messages_path', type='string',
-      help="set path to localized messages.")
+      '--locale_dir', dest='locale_dir', type='string',
+      help="set path to localized message files.")
+  parser.add_option(
+      '--locale_output', dest='locale_output',  type='string',
+      help='specify the per-locale output file name.')
+  parser.add_option(
+      '-o', '--output', dest='output', type='string',
+      help="specify the output file name.")
+  parser.add_option(
+      '--print_only', dest='print_only', action='store_true',
+      default=False, help='print the output file names only.')
+  parser.add_option(
+      '-t', '--template', dest='template', type='string',
+      help="specify the template file name.")
+  parser.add_option(
+      '--variables', dest='variables', action='append', type='string',
+      help='read variables (NAME=VALUE) from file.')
 
-  options, args = parser.parse_args()
-  if len(args) != 2:
-    parser.error('Two positional arguments (<input> and <output>) are expected')
-  if not options.languages:
-    parser.error('At least one language must be specified')
-  if not options.messages_path:
-    parser.error('--messages_path is required')
+  options, locales = parser.parse_args(argv)
+  if not locales:
+    parser.error('At least one locale must be specified')
+  if bool(options.output) == bool(options.locale_output):
+    parser.error(
+        'Either --output or --locale_output must be specified but not both')
+  if not options.template and not options.print_only:
+    parser.error('The template name is required unless --print_only is used')
 
-  return Localize(args[0], args[1], options)
+  return Localize(options.template, locales, options)
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(DoMain(sys.argv[1:]))
 
