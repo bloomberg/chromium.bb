@@ -17,6 +17,9 @@
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 
+namespace base {
+class Thread;
+}
 namespace IPC {
 class Sender;
 }
@@ -65,6 +68,7 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
                                       const std::string& source,
                                       const std::string& value) OVERRIDE;
   virtual MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
+  base::TaskRunner* GetFileTaskRunner(PP_Instance instance) OVERRIDE;
 
   // Returns the channel for sending to the browser.
   IPC::Sender* GetBrowserSender();
@@ -143,6 +147,10 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   std::string command_line_;
 
   scoped_ptr<BrowserSender> browser_sender_;
+
+  // Thread for performing potentially blocking file operations. It's created
+  // lazily, since it might not be needed.
+  scoped_ptr<base::Thread> file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginGlobals);
 };

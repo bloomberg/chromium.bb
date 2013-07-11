@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/plugin_globals.h"
 
+#include "base/task_runner.h"
+#include "base/threading/thread.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -150,6 +152,16 @@ void PluginGlobals::BroadcastLogWithSource(PP_Module /* module */,
 
 MessageLoopShared* PluginGlobals::GetCurrentMessageLoop() {
   return MessageLoopResource::GetCurrent();
+}
+
+base::TaskRunner* PluginGlobals::GetFileTaskRunner(PP_Instance instance) {
+  if (!file_thread_.get()) {
+    file_thread_.reset(new base::Thread("Plugin::File"));
+    base::Thread::Options options;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    file_thread_->StartWithOptions(options);
+  }
+  return file_thread_->message_loop_proxy();
 }
 
 IPC::Sender* PluginGlobals::GetBrowserSender() {

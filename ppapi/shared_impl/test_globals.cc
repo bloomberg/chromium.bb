@@ -75,6 +75,10 @@ MessageLoopShared* TestGlobals::GetCurrentMessageLoop() {
   return NULL;
 }
 
+base::TaskRunner* TestGlobals::GetFileTaskRunner(PP_Instance instance) {
+  return NULL;
+}
+
 bool TestGlobals::IsHostGlobals() const {
   // Pretend to be the host-side, for code that expects one or the other.
   // TODO(dmichael): just make it settable which one we're pretending to be?

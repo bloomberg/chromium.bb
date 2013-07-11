@@ -19,6 +19,7 @@
 namespace base {
 class Lock;
 class MessageLoopProxy;
+class TaskRunner;
 }
 
 namespace ppapi {
@@ -113,6 +114,11 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // always return NULL on the host side, where PPB_MessageLoop is not
   // supported.
   virtual MessageLoopShared* GetCurrentMessageLoop() = 0;
+
+  // Returns a task runner for file operations that may block.
+  // TODO(bbudge) Move this to PluginGlobals when we no longer support
+  // in-process plugins.
+  virtual base::TaskRunner* GetFileTaskRunner(PP_Instance instance) = 0;
 
   // Returns the command line for the process.
   virtual std::string GetCmdLine() = 0;

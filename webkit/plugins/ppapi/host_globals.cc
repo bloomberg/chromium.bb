@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -181,6 +182,14 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
   for (ContainerSet::iterator i = containers.begin();
        i != containers.end(); ++i)
      (*i)->element().document().frame()->addMessageToConsole(message);
+}
+
+base::TaskRunner* HostGlobals::GetFileTaskRunner(PP_Instance instance) {
+  scoped_refptr<PluginInstance> plugin_instance = GetInstance(instance);
+  DCHECK(plugin_instance.get());
+  scoped_refptr<base::MessageLoopProxy> message_loop =
+      plugin_instance->delegate()->GetFileThreadMessageLoopProxy();
+  return message_loop.get();
 }
 
 ::ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {
