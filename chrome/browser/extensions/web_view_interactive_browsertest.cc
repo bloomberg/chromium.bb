@@ -17,6 +17,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -50,6 +51,11 @@ class WebViewInteractiveTest
   void SendMouseClick(ui_controls::MouseButton button) {
     SendMouseEvent(button, ui_controls::DOWN);
     SendMouseEvent(button, ui_controls::UP);
+  }
+
+  void MoveMouseInsideWindow(const gfx::Point& point) {
+    ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
+        gfx::Point(corner_.x() + point.x(), corner_.y() + point.y())));
   }
 
   gfx::NativeWindow GetPlatformAppWindow() {
@@ -154,6 +160,16 @@ class WebViewInteractiveTest
     gfx::Rect offset;
     embedder_web_contents_->GetView()->GetContainerBounds(&offset);
     corner_ = gfx::Point(offset.x(), offset.y());
+
+    const testing::TestInfo* const test_info =
+            testing::UnitTest::GetInstance()->current_test_info();
+    const std::string& prefix = "DragDropWithinWebView";
+    if (!strncmp(test_info->name(), prefix.c_str(), prefix.size())) {
+      // In the drag drop test we add 20px padding to the page body because on
+      // windows if we get too close to the edge of the window the resize cursor
+      // appears and we start dragging the window edge.
+      corner_.Offset(20, 20);
+    }
   }
 
   content::WebContents* guest_web_contents() {
@@ -278,12 +294,66 @@ class WebViewInteractiveTest
     WaitForTitle("PASSED3");
   }
 
- private:
+  void DragTestStep1() {
+    // Move mouse to start of text.
+    MoveMouseInsideWindow(gfx::Point(45, 8));
+    SendMouseEvent(ui_controls::LEFT, ui_controls::DOWN);
+    MoveMouseInsideWindow(gfx::Point(76, 12));
+
+    // Now wait a bit before moving mouse to initiate drag/drop.
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&WebViewInteractiveTest::DragTestStep2,
+                   base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(200));
+  }
+
+  void DragTestStep2() {
+    // Drag source over target.
+    MoveMouseInsideWindow(gfx::Point(76, 76));
+
+    // Create a second mouse over the source to trigger the drag over event.
+    MoveMouseInsideWindow(gfx::Point(76, 77));
+
+    // Release mouse to drop.
+    SendMouseEvent(ui_controls::LEFT, ui_controls::UP);
+    SendMouseClick(ui_controls::LEFT);
+
+    quit_closure_.Run();
+
+    // Note that following ExtensionTestMessageListener and ExecuteScript*
+    // call must be after we quit |quit_closure_|. Otherwise the class
+    // here won't be able to receive messages sent by chrome.test.sendMessage.
+    // This is because of the nature of drag and drop code (esp. the
+    // MessageLoop) in it.
+
+    // Now verify we got a drop and correct drop data.
+    ExtensionTestMessageListener drop_listener("guest-got-drop", false);
+    EXPECT_TRUE(content::ExecuteScript(guest_web_contents_,
+                                       "window.pingEmbedder()"));
+    EXPECT_TRUE(drop_listener.WaitUntilSatisfied());
+
+    std::string last_drop_data;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        embedder_web_contents_,
+        "window.domAutomationController.send(getLastDropData())",
+        &last_drop_data));
+    EXPECT_EQ(last_drop_data, "Drop me");
+  }
+
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kEnableBrowserPluginDragDrop);
+    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
+  }
+
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
   gfx::Point corner_;
   bool mouse_click_result_;
   bool first_click_;
+  // Only used in drag/drop test.
+  base::Closure quit_closure_;
 };
 
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
@@ -470,3 +540,25 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 
   PopupTestHelper(gfx::Point(20, 0));
 }
+
+// Drag and drop inside a webview is currently only enabled for linux and mac,
+// but the tests don't work on anything except chromeos for now. This is because
+// of simulating mouse drag code's dependency on platforms.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
+  SetupTest(
+      "web_view/dnd_within_webview",
+      "/extensions/platform_apps/web_view/dnd_within_webview/guest.html");
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
+
+  // Flush any pending events to make sure we start with a clean slate.
+  content::RunAllPendingInMessageLoop();
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebViewInteractiveTest::DragTestStep1,
+                 base::Unretained(this)));
+  run_loop.Run();
+}
+#endif  // (defined(OS_CHROMEOS))

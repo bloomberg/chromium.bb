@@ -1,0 +1,13 @@
+{
+  "name": "<webview> drag and drop",
+  "description": "Drag and drop within a webview, currently requires --enable-browser-tag-drag-drop flag to work",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
