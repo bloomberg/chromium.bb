@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
+#include "ui/gfx/quad_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/gfx/vector3d_f.h"
 
@@ -2276,6 +2277,221 @@ TEST(XFormTest, verifyFlattenTo2d) {
   EXPECT_ROW2_EQ(11.0f, 15.0f, 0.0f, 23.0f, A);
   EXPECT_ROW3_EQ(0.0f,  0.0f,  1.0f, 0.0f,  A);
   EXPECT_ROW4_EQ(13.0f, 17.0f, 0.0f, 25.0f, A);
+}
+
+// Another implementation of Preserves2dAxisAlignment that isn't as fast,
+// good for testing the faster implementation.
+static bool EmpiricallyPreserves2dAxisAlignment(const Transform& transform) {
+  Point3F p1(5.0f, 5.0f, 0.0f);
+  Point3F p2(10.0f, 5.0f, 0.0f);
+  Point3F p3(10.0f, 20.0f, 0.0f);
+  Point3F p4(5.0f, 20.0f, 0.0f);
+
+  QuadF test_quad(PointF(p1.x(), p1.y()),
+                 PointF(p2.x(), p2.y()),
+                 PointF(p3.x(), p3.y()),
+                 PointF(p4.x(), p4.y()));
+  EXPECT_TRUE(test_quad.IsRectilinear());
+
+  transform.TransformPoint(p1);
+  transform.TransformPoint(p2);
+  transform.TransformPoint(p3);
+  transform.TransformPoint(p4);
+
+  QuadF transformedQuad(PointF(p1.x(), p1.y()),
+                        PointF(p2.x(), p2.y()),
+                        PointF(p3.x(), p3.y()),
+                        PointF(p4.x(), p4.y()));
+  return transformedQuad.IsRectilinear();
+}
+
+TEST(XFormTest, Preserves2dAxisAlignment) {
+  static const struct TestCase {
+    double a; // row 1, column 1
+    double b; // row 1, column 2
+    double c; // row 2, column 1
+    double d; // row 2, column 2
+    bool expected;
+  } test_cases[] = {
+    { 3.0, 0.0,
+      0.0, 4.0, true }, // basic case
+    { 0.0, 4.0,
+      3.0, 0.0, true }, // rotate by 90
+    { 0.0, 0.0,
+      0.0, 4.0, true }, // degenerate x
+    { 3.0, 0.0,
+      0.0, 0.0, true }, // degenerate y
+    { 0.0, 0.0,
+      3.0, 0.0, true }, // degenerate x + rotate by 90
+    { 0.0, 4.0,
+      0.0, 0.0, true }, // degenerate y + rotate by 90
+    { 3.0, 4.0,
+      0.0, 0.0, false },
+    { 0.0, 0.0,
+      3.0, 4.0, false },
+    { 0.0, 3.0,
+      0.0, 4.0, false },
+    { 3.0, 0.0,
+      4.0, 0.0, false },
+    { 3.0, 4.0,
+      5.0, 0.0, false },
+    { 3.0, 4.0,
+      0.0, 5.0, false },
+    { 3.0, 0.0,
+      4.0, 5.0, false },
+    { 0.0, 3.0,
+      4.0, 5.0, false },
+    { 2.0, 3.0,
+      4.0, 5.0, false },
+  };
+
+  Transform transform;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    const TestCase& value = test_cases[i];
+    transform.MakeIdentity();
+    transform.matrix().setDouble(0, 0, value.a);
+    transform.matrix().setDouble(0, 1, value.b);
+    transform.matrix().setDouble(1, 0, value.c);
+    transform.matrix().setDouble(1, 1, value.d);
+
+    if (value.expected) {
+      EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+      EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+    } else {
+      EXPECT_FALSE(EmpiricallyPreserves2dAxisAlignment(transform));
+      EXPECT_FALSE(transform.Preserves2dAxisAlignment());
+    }
+  }
+
+  // Try the same test cases again, but this time make sure that other matrix
+  // elements (except perspective) have entries, to test that they are ignored.
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    const TestCase& value = test_cases[i];
+    transform.MakeIdentity();
+    transform.matrix().setDouble(0, 0, value.a);
+    transform.matrix().setDouble(0, 1, value.b);
+    transform.matrix().setDouble(1, 0, value.c);
+    transform.matrix().setDouble(1, 1, value.d);
+
+    transform.matrix().setDouble(0, 2, 1.0);
+    transform.matrix().setDouble(0, 3, 2.0);
+    transform.matrix().setDouble(1, 2, 3.0);
+    transform.matrix().setDouble(1, 3, 4.0);
+    transform.matrix().setDouble(2, 0, 5.0);
+    transform.matrix().setDouble(2, 1, 6.0);
+    transform.matrix().setDouble(2, 2, 7.0);
+    transform.matrix().setDouble(2, 3, 8.0);
+
+    if (value.expected) {
+      EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+      EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+    } else {
+      EXPECT_FALSE(EmpiricallyPreserves2dAxisAlignment(transform));
+      EXPECT_FALSE(transform.Preserves2dAxisAlignment());
+    }
+  }
+
+  // Try the same test cases again, but this time add perspective which is
+  // always assumed to not-preserve axis alignment.
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    const TestCase& value = test_cases[i];
+    transform.MakeIdentity();
+    transform.matrix().setDouble(0, 0, value.a);
+    transform.matrix().setDouble(0, 1, value.b);
+    transform.matrix().setDouble(1, 0, value.c);
+    transform.matrix().setDouble(1, 1, value.d);
+
+    transform.matrix().setDouble(0, 2, 1.0);
+    transform.matrix().setDouble(0, 3, 2.0);
+    transform.matrix().setDouble(1, 2, 3.0);
+    transform.matrix().setDouble(1, 3, 4.0);
+    transform.matrix().setDouble(2, 0, 5.0);
+    transform.matrix().setDouble(2, 1, 6.0);
+    transform.matrix().setDouble(2, 2, 7.0);
+    transform.matrix().setDouble(2, 3, 8.0);
+    transform.matrix().setDouble(3, 0, 9.0);
+    transform.matrix().setDouble(3, 1, 10.0);
+    transform.matrix().setDouble(3, 2, 11.0);
+    transform.matrix().setDouble(3, 3, 12.0);
+
+    EXPECT_FALSE(EmpiricallyPreserves2dAxisAlignment(transform));
+    EXPECT_FALSE(transform.Preserves2dAxisAlignment());
+  }
+
+  // Try a few more practical situations to check precision
+  transform.MakeIdentity();
+  transform.RotateAboutZAxis(90.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutZAxis(180.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutZAxis(270.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutYAxis(90.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutXAxis(90.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutZAxis(90.0);
+  transform.RotateAboutYAxis(90.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutZAxis(90.0);
+  transform.RotateAboutXAxis(90.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutYAxis(90.0);
+  transform.RotateAboutZAxis(90.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutZAxis(45.0);
+  EXPECT_FALSE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_FALSE(transform.Preserves2dAxisAlignment());
+
+  // 3-d case; In 2d after an orthographic projection, this case does
+  // preserve 2d axis alignment. But in 3d, it does not preserve axis
+  // alignment.
+  transform.MakeIdentity();
+  transform.RotateAboutYAxis(45.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.RotateAboutXAxis(45.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+  // Perspective cases.
+  transform.MakeIdentity();
+  transform.ApplyPerspectiveDepth(10.0);
+  transform.RotateAboutYAxis(45.0);
+  EXPECT_FALSE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_FALSE(transform.Preserves2dAxisAlignment());
+
+  transform.MakeIdentity();
+  transform.ApplyPerspectiveDepth(10.0);
+  transform.RotateAboutZAxis(90.0);
+  EXPECT_TRUE(EmpiricallyPreserves2dAxisAlignment(transform));
+  EXPECT_TRUE(transform.Preserves2dAxisAlignment());
 }
 
 }  // namespace

@@ -1154,7 +1154,7 @@ static void CalculateDrawPropertiesInternal(
       : gfx::Vector2dF(layer_scale_factors, layer_scale_factors);
 
   if (SubtreeShouldRenderToSeparateSurface(
-          layer, combined_transform.IsScaleOrTranslation())) {
+          layer, combined_transform.Preserves2dAxisAlignment())) {
     // Check back-face visibility before continuing with this surface and its
     // subtree
     if (!layer->double_sided() && TransformToParentIsKnown(layer) &&

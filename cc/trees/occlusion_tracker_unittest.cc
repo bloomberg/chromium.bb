@@ -836,7 +836,7 @@ class OcclusionTrackerTestChildInRotatedChild
     typename Types::ContentLayerType* parent = this->CreateRoot(
         this->identity_matrix, gfx::PointF(), gfx::Size(100, 100));
     parent->SetMasksToBounds(true);
-    typename Types::LayerType* child = this->CreateLayer(
+    typename Types::LayerType* child = this->CreateSurface(
         parent, child_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500));
     child->SetMasksToBounds(true);
     typename Types::ContentLayerType* layer =
@@ -999,7 +999,7 @@ class OcclusionTrackerTestVisitTargetTwoTimes
     typename Types::ContentLayerType* parent = this->CreateDrawingLayer(
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
     parent->SetMasksToBounds(true);
-    typename Types::LayerType* child = this->CreateLayer(
+    typename Types::LayerType* child = this->CreateSurface(
         parent, child_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500));
     child->SetMasksToBounds(true);
     typename Types::ContentLayerType* layer =
@@ -1236,7 +1236,7 @@ class OcclusionTrackerTestSurfaceWithTwoOpaqueChildren
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
     parent->SetMasksToBounds(true);
     typename Types::ContentLayerType* child =
-        this->CreateDrawingLayer(parent,
+        this->CreateDrawingSurface(parent,
                                  child_transform,
                                  gfx::PointF(30.f, 30.f),
                                  gfx::Size(500, 500),

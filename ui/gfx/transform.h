@@ -122,6 +122,10 @@ class UI_EXPORT Transform {
     return (matrix_.getType() & ~mask) == 0;
   }
 
+  // Returns true if axis-aligned 2d rects will remain axis-aligned after being
+  // transformed by this matrix.
+  bool Preserves2dAxisAlignment() const;
+
   // Returns true if the matrix has any perspective component that would
   // change the w-component of a homogeneous point.
   bool HasPerspective() const {

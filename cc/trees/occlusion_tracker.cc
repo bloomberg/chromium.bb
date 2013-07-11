@@ -83,17 +83,15 @@ static Region TransformSurfaceOpaqueRegion(const Region& region,
   // surface after applying |transform|. If this is true, then apply |transform|
   // to each rect within |region| in order to transform the entire Region.
 
-  bool clipped;
-  gfx::QuadF transformed_bounds_quad =
-      MathUtil::MapQuad(transform, gfx::QuadF(region.bounds()), &clipped);
   // TODO(danakj): Find a rect interior to each transformed quad.
-  if (clipped || !transformed_bounds_quad.IsRectilinear())
+  if (!transform.Preserves2dAxisAlignment())
     return Region();
 
   // TODO(danakj): If the Region is too complex, degrade gracefully here by
   // skipping rects in it.
   Region transformed_region;
   for (Region::Iterator rects(region); rects.has_rect(); rects.next()) {
+    bool clipped;
     gfx::QuadF transformed_quad =
         MathUtil::MapQuad(transform, gfx::QuadF(rects.rect()), &clipped);
     gfx::Rect transformed_rect =
@@ -422,11 +420,8 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
 
   DCHECK(layer->visible_content_rect().Contains(opaque_contents.bounds()));
 
-  bool clipped;
-  gfx::QuadF visible_transformed_quad = MathUtil::MapQuad(
-      layer->draw_transform(), gfx::QuadF(opaque_contents.bounds()), &clipped);
   // TODO(danakj): Find a rect interior to each transformed quad.
-  if (clipped || !visible_transformed_quad.IsRectilinear())
+  if (!layer->draw_transform().Preserves2dAxisAlignment())
     return;
 
   gfx::Rect clip_rect_in_target = ScreenSpaceClipRectInTargetSurface(
@@ -441,6 +436,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   for (Region::Iterator opaque_content_rects(opaque_contents);
        opaque_content_rects.has_rect();
        opaque_content_rects.next()) {
+    bool clipped;
     gfx::QuadF transformed_quad = MathUtil::MapQuad(
         layer->draw_transform(),
         gfx::QuadF(opaque_content_rects.rect()),
@@ -485,6 +481,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     if (transformed_rect.IsEmpty())
       continue;
 
+    bool clipped;
     gfx::QuadF screen_space_quad = MathUtil::MapQuad(
         layer->render_target()->render_surface()->screen_space_transform(),
         gfx::QuadF(transformed_rect),
