@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_FAVICON_TYPES_H_
-#define CHROME_BROWSER_FAVICON_FAVICON_TYPES_H_
+#ifndef CHROME_COMMON_FAVICON_FAVICON_TYPES_H_
+#define CHROME_COMMON_FAVICON_FAVICON_TYPES_H_
 
 #include "base/memory/ref_counted_memory.h"
+#include "chrome/common/favicon/favicon_types.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
@@ -74,4 +75,4 @@ typedef FaviconBitmapResult FaviconBitmapData;
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_FAVICON_FAVICON_TYPES_H_
+#endif  // CHROME_COMMON_FAVICON_FAVICON_TYPES_H_

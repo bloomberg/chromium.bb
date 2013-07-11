@@ -13,7 +13,6 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #import "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
