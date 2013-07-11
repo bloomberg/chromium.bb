@@ -1101,7 +1101,7 @@ private:
     void pendingTasksTimerFired(Timer<Document>*);
 
     static void didReceiveTask(void*);
-    
+
     template <typename CharacterType>
     void displayBufferModifiedByEncodingInternal(CharacterType*, unsigned) const;
 
@@ -1118,8 +1118,13 @@ private:
     void addMutationEventListenerTypeIfEnabled(ListenerType);
 
     void didAssociateFormControlsTimerFired(Timer<Document>*);
-
     void styleResolverThrowawayTimerFired(Timer<Document>*);
+
+    void processHttpEquivDefaultStyle(const String& content);
+    void processHttpEquivRefresh(const String& content);
+    void processHttpEquivSetCookie(const String& content);
+    void processHttpEquivXFrameOptions(const String& content);
+
     Timer<Document> m_styleResolverThrowawayTimer;
     double m_lastStyleResolverAccessTime;
 

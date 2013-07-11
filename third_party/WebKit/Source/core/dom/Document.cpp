@@ -2613,58 +2613,19 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
 {
     ASSERT(!equiv.isNull() && !content.isNull());
 
-    Frame* frame = this->frame();
-
-    if (equalIgnoringCase(equiv, "default-style")) {
-        // The preferred style set has been overridden as per section
-        // 14.3.2 of the HTML4.0 specification.  We need to update the
-        // sheet used variable and then update our style selector.
-        // For more info, see the test at:
-        // http://www.hixie.ch/tests/evil/css/import/main/preferred.html
-        // -dwh
-        m_styleSheetCollection->setSelectedStylesheetSetName(content);
-        m_styleSheetCollection->setPreferredStylesheetSetName(content);
-        styleResolverChanged(DeferRecalcStyle);
-    } else if (equalIgnoringCase(equiv, "refresh")) {
-        double delay;
-        String url;
-        if (frame && parseHTTPRefresh(content, true, delay, url)) {
-            if (url.isEmpty())
-                url = m_url.string();
-            else
-                url = completeURL(url).string();
-            if (!protocolIsJavaScript(url)) {
-                frame->navigationScheduler()->scheduleRedirect(delay, url);
-            } else {
-                String message = "Refused to refresh " + m_url.elidedString() + " to a javascript: URL";
-                addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
-            }
-        }
-    } else if (equalIgnoringCase(equiv, "set-cookie")) {
-        // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
-        if (isHTMLDocument()) {
-            // Exception (for sandboxed documents) ignored.
-            toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION);
-        }
-    } else if (equalIgnoringCase(equiv, "content-language"))
+    if (equalIgnoringCase(equiv, "default-style"))
+        processHttpEquivDefaultStyle(content);
+    else if (equalIgnoringCase(equiv, "refresh"))
+        processHttpEquivRefresh(content);
+    else if (equalIgnoringCase(equiv, "set-cookie"))
+        processHttpEquivSetCookie(content);
+    else if (equalIgnoringCase(equiv, "content-language"))
         setContentLanguage(content);
     else if (equalIgnoringCase(equiv, "x-dns-prefetch-control"))
         parseDNSPrefetchControlHeader(content);
-    else if (equalIgnoringCase(equiv, "x-frame-options")) {
-        if (frame) {
-            FrameLoader* frameLoader = frame->loader();
-            unsigned long requestIdentifier = loader()->mainResourceIdentifier();
-            if (frameLoader->shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
-                String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-                frameLoader->stopAllLoaders();
-                // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
-                // intent, we must navigate away from the possibly partially-rendered document to a location that
-                // doesn't inherit the parent's SecurityOrigin.
-                frame->navigationScheduler()->scheduleLocationChange(securityOrigin(), SecurityOrigin::urlWithUniqueSecurityOrigin(), String());
-                addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, requestIdentifier);
-            }
-        }
-    } else if (equalIgnoringCase(equiv, "content-security-policy"))
+    else if (equalIgnoringCase(equiv, "x-frame-options"))
+        processHttpEquivXFrameOptions(content);
+    else if (equalIgnoringCase(equiv, "content-security-policy"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report);
@@ -2672,6 +2633,70 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedEnforce);
     else if (equalIgnoringCase(equiv, "x-webkit-csp-report-only"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedReport);
+}
+
+void Document::processHttpEquivDefaultStyle(const String& content)
+{
+    // The preferred style set has been overridden as per section
+    // 14.3.2 of the HTML4.0 specification. We need to update the
+    // sheet used variable and then update our style selector.
+    // For more info, see the test at:
+    // http://www.hixie.ch/tests/evil/css/import/main/preferred.html
+    // -dwh
+    m_styleSheetCollection->setSelectedStylesheetSetName(content);
+    m_styleSheetCollection->setPreferredStylesheetSetName(content);
+    styleResolverChanged(DeferRecalcStyle);
+}
+
+void Document::processHttpEquivRefresh(const String& content)
+{
+    Frame* frame = this->frame();
+    if (!frame)
+        return;
+
+    double delay;
+    String refreshUrl;
+    if (parseHTTPRefresh(content, true, delay, refreshUrl)) {
+        if (refreshUrl.isEmpty())
+            refreshUrl = m_url.string();
+        else
+            refreshUrl = completeURL(refreshUrl).string();
+        if (!protocolIsJavaScript(refreshUrl)) {
+            frame->navigationScheduler()->scheduleRedirect(delay, refreshUrl);
+        } else {
+            String message = "Refused to refresh " + m_url.elidedString() + " to a javascript: URL";
+            addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+        }
+    }
+}
+
+void Document::processHttpEquivSetCookie(const String& content)
+{
+    // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
+    if (!isHTMLDocument())
+        return;
+
+    // Exception (for sandboxed documents) ignored.
+    toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION);
+}
+
+void Document::processHttpEquivXFrameOptions(const String& content)
+{
+    Frame* frame = this->frame();
+    if (!frame)
+        return;
+
+    FrameLoader* frameLoader = frame->loader();
+    unsigned long requestIdentifier = loader()->mainResourceIdentifier();
+    if (frameLoader->shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
+        String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
+        frameLoader->stopAllLoaders();
+        // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
+        // intent, we must navigate away from the possibly partially-rendered document to a location that
+        // doesn't inherit the parent's SecurityOrigin.
+        frame->navigationScheduler()->scheduleLocationChange(securityOrigin(), SecurityOrigin::urlWithUniqueSecurityOrigin(), String());
+        addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, requestIdentifier);
+    }
 }
 
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't.
