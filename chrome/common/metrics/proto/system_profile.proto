@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 14
+// Next tag: 17
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -58,7 +58,12 @@ message SystemProfileProto {
   // The date the user enabled UMA, in seconds since the epoch.
   // If the user has toggled the UMA enabled state multiple times, this will
   // be the most recent date on which UMA was enabled.
+  // For privacy, this is rounded to the nearest hour.
   optional int64 uma_enabled_date = 3;
+
+  // The time when the client was installed, in seconds since the epoch.
+  // For privacy, this is rounded to the nearest hour.
+  optional int64 install_date = 16;
 
   // The user's selected application locale, i.e. the user interface language.
   // The locale includes a language code and, possibly, also a country code,

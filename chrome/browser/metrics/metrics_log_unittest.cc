@@ -9,6 +9,7 @@
 #include "base/port.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -42,6 +43,8 @@ using tracked_objects::TaskSnapshot;
 namespace {
 
 const char kClientId[] = "bogus client ID";
+const int64 kInstallDate = 1373051956;
+const int64 kEnabledDate = 1373001211;
 const int kSessionId = 127;
 const int kScreenWidth = 1024;
 const int kScreenHeight = 768;
@@ -61,6 +64,9 @@ class TestMetricsLog : public MetricsLog {
         brand_for_testing_(kBrandForTesting) {
     chrome::RegisterLocalState(prefs_.registry());
 
+    prefs_.SetInt64(prefs::kInstallDate, kInstallDate);
+    prefs_.SetString(prefs::kMetricsClientIDTimestamp,
+                     base::Int64ToString(kEnabledDate));
 #if defined(OS_CHROMEOS)
     prefs_.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
     prefs_.SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
@@ -132,6 +138,12 @@ class MetricsLogTest : public testing::Test {
       log.RecordEnvironmentProto(plugins, google_update_metrics);
     else
       log.RecordEnvironment(plugins, google_update_metrics, NULL);
+
+    // Computed from original time of 1373051956.
+    EXPECT_EQ(1373050800, log.system_profile().install_date());
+
+    // Computed from original time of 1373001211.
+    EXPECT_EQ(1373000400, log.system_profile().uma_enabled_date());
 
     const metrics::SystemProfileProto& system_profile = log.system_profile();
     ASSERT_EQ(arraysize(kFieldTrialIds),

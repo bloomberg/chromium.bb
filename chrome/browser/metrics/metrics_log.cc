@@ -347,6 +347,13 @@ PairedDevice::Type AsBluetoothDeviceType(
 }
 #endif  // defined(OS_CHROMEOS)
 
+// Round a timestamp measured in seconds since epoch to one with a granularity
+// of an hour. This can be used before uploaded potentially sensitive
+// timestamps.
+int64 RoundSecondsToHour(int64 time_in_seconds) {
+  return 3600 * (time_in_seconds / 3600);
+}
+
 }  // namespace
 
 GoogleUpdateMetrics::GoogleUpdateMetrics() : is_system_install(false) {}
@@ -799,7 +806,14 @@ void MetricsLog::RecordEnvironmentProto(
   bool success = base::StringToInt(GetMetricsEnabledDate(GetPrefService()),
                                    &enabled_date);
   DCHECK(success);
-  system_profile->set_uma_enabled_date(enabled_date);
+
+  // Reduce granularity of the enabled_date field to nearest hour.
+  system_profile->set_uma_enabled_date(RoundSecondsToHour(enabled_date));
+
+  int64 install_date = GetPrefService()->GetInt64(prefs::kInstallDate);
+
+  // Reduce granularity of the install_date field to nearest hour.
+  system_profile->set_install_date(RoundSecondsToHour(install_date));
 
   system_profile->set_application_locale(
       g_browser_process->GetApplicationLocale());
