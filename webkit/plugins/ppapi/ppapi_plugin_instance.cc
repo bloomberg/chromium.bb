@@ -72,6 +72,7 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "v8/include/v8.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/content_decryptor_delegate.h"
@@ -437,7 +438,8 @@ PluginInstance::PluginInstance(
       pending_user_gesture_(0.0),
       document_loader_(NULL),
       nacl_document_load_(false),
-      npp_(new NPP_t) {
+      npp_(new NPP_t),
+      isolate_(v8::Isolate::GetCurrent()) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -2527,6 +2529,10 @@ bool PluginInstance::IsValidInstanceOf(PluginModule* module) {
 
 NPP PluginInstance::instanceNPP() {
   return npp_.get();
+}
+
+v8::Isolate* PluginInstance::GetIsolate() const {
+  return isolate_;
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {

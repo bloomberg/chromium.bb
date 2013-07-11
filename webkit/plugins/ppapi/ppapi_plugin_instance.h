@@ -91,6 +91,10 @@ namespace ui {
 class Range;
 }
 
+namespace v8 {
+class Isolate;
+}
+
 namespace webkit {
 namespace ppapi {
 
@@ -497,6 +501,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // itself when making NPObject scripting calls to WebBindings.
   struct _NPP* instanceNPP();
 
+  // Returns the v8::Isolate that was current when this Instance was created.
+  // This is not inlined so as to avoid an unnecessary header include of v8.h.
+  v8::Isolate* GetIsolate() const;
+
  private:
   friend class PpapiUnittest;
 
@@ -832,6 +840,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Dummy NPP value used when calling in to WebBindings, to allow the bindings
   // to correctly track NPObjects belonging to this plugin instance.
   scoped_ptr<struct _NPP> npp_;
+
+  // We store the isolate at construction so that we can be sure to use the
+  // Isolate in which this Instance was created when interacting with v8.
+  v8::Isolate* isolate_;
 
   friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);

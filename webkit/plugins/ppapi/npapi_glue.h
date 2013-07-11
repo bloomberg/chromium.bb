@@ -68,6 +68,12 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id);
 WEBKIT_PLUGINS_EXPORT PP_Var NPObjectToPPVar(PluginInstance* instance,
                                              NPObject* object);
 
+// This version creates a default v8::Context rather than using the one from
+// the container of |instance|. It is only for use in unit tests, where we don't
+// have a real container for |instance|.
+WEBKIT_PLUGINS_EXPORT PP_Var NPObjectToPPVarForTest(PluginInstance* instance,
+                                                    NPObject* object);
+
 // PPResultAndExceptionToNPResult ----------------------------------------------
 
 // Convenience object for converting a PPAPI call that can throw an exception

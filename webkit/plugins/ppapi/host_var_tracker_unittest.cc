@@ -90,7 +90,7 @@ TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
 
   // Make an object var.
   NPObjectReleaser npobject(NewTrackedNPObject());
-  NPObjectToPPVar(instance2.get(), npobject.get());
+  NPObjectToPPVarForTest(instance2.get(), npobject.get());
 
   EXPECT_EQ(1, g_npobjects_alive);
   EXPECT_EQ(1, tracker().GetLiveNPObjectVarsForInstance(pp_instance2));
@@ -105,14 +105,14 @@ TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
 TEST_F(HostVarTrackerTest, ReuseVar) {
   NPObjectReleaser npobject(NewTrackedNPObject());
 
-  PP_Var pp_object1 = NPObjectToPPVar(instance(), npobject.get());
-  PP_Var pp_object2 = NPObjectToPPVar(instance(), npobject.get());
+  PP_Var pp_object1 = NPObjectToPPVarForTest(instance(), npobject.get());
+  PP_Var pp_object2 = NPObjectToPPVarForTest(instance(), npobject.get());
 
   // The two results should be the same.
   EXPECT_EQ(pp_object1.value.as_id, pp_object2.value.as_id);
 
   // The objects should be able to get us back to the associated NPObject.
-  // This ObjectVar must be released before we do NPObjectToPPVar again
+  // This ObjectVar must be released before we do NPObjectToPPVarForTest again
   // below so it gets freed and we get a new identifier.
   {
     scoped_refptr<NPObjectVar> check_object(NPObjectVar::FromPPVar(pp_object1));
@@ -129,7 +129,7 @@ TEST_F(HostVarTrackerTest, ReuseVar) {
 
   // Releasing the resource should free the internal ref, and so making a new
   // one now should generate a new ID.
-  PP_Var pp_object3 = NPObjectToPPVar(instance(), npobject.get());
+  PP_Var pp_object3 = NPObjectToPPVarForTest(instance(), npobject.get());
   EXPECT_NE(pp_object1.value.as_id, pp_object3.value.as_id);
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object3.value.as_id));
 }

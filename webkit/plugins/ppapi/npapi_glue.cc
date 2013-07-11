@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
+#include "ppapi/c/pp_var.h"
 #include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/host_var_tracker.h"
@@ -17,6 +18,11 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "v8/include/v8.h"
 
 using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;
@@ -24,6 +30,7 @@ using ppapi::StringVar;
 using ppapi::Var;
 using WebKit::WebArrayBuffer;
 using WebKit::WebBindings;
+using WebKit::WebPluginContainer;
 
 namespace webkit {
 namespace ppapi {
@@ -31,6 +38,33 @@ namespace ppapi {
 namespace {
 
 const char kInvalidPluginValue[] = "Error: Plugin returned invalid value.";
+
+PP_Var NPObjectToPPVarImpl(PluginInstance* instance,
+                           NPObject* object,
+                           v8::Local<v8::Context> context) {
+  DCHECK(object);
+  if (context.IsEmpty())
+    return PP_MakeUndefined();
+  v8::Context::Scope context_scope(context);
+
+  WebArrayBuffer buffer;
+  // TODO(dmichael): Should I protect against duplicate Vars representing the
+  // same array buffer? It's probably not worth the trouble, since it will only
+  // affect in-process plugins.
+  if (WebBindings::getArrayBuffer(object, &buffer)) {
+    scoped_refptr<HostArrayBufferVar> buffer_var(
+        new HostArrayBufferVar(buffer));
+    return buffer_var->GetPPVar();
+  }
+  scoped_refptr<NPObjectVar> object_var(
+      HostGlobals::Get()->host_var_tracker()->NPObjectVarForNPObject(
+          instance->pp_instance(), object));
+  if (!object_var.get()) {  // No object for this module yet, make a new one.
+    object_var = new NPObjectVar(instance->pp_instance(), object);
+  }
+  return object_var->GetPPVar();
+}
+
 
 }  // namespace
 
@@ -138,23 +172,28 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id) {
 }
 
 PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
-  DCHECK(object);
-  WebArrayBuffer buffer;
-  // TODO(dmichael): Should I protect against duplicate Vars representing the
-  // same array buffer? It's probably not worth the trouble, since it will only
-  // affect in-process plugins.
-  if (WebBindings::getArrayBuffer(object, &buffer)) {
-    scoped_refptr<HostArrayBufferVar> buffer_var(
-        new HostArrayBufferVar(buffer));
-    return buffer_var->GetPPVar();
+  WebPluginContainer* container = instance->container();
+  // It's possible that container() is NULL if the plugin has been removed from
+  // the DOM (but the PluginInstance is not destroyed yet).
+  if (!container)
+    return PP_MakeUndefined();
+  v8::HandleScope scope(instance->GetIsolate());
+  v8::Local<v8::Context> context =
+      container->element().document().frame()->mainWorldScriptContext();
+  return NPObjectToPPVarImpl(instance, object, context);
+}
+
+PP_Var NPObjectToPPVarForTest(PluginInstance* instance, NPObject* object) {
+  v8::Isolate* test_isolate = v8::Isolate::New();
+  PP_Var result = PP_MakeUndefined();
+  {
+    v8::HandleScope scope(test_isolate);
+    v8::Isolate::Scope isolate_scope(test_isolate);
+    v8::Local<v8::Context> context = v8::Context::New(test_isolate);
+    result = NPObjectToPPVarImpl(instance, object, context);
   }
-  scoped_refptr<NPObjectVar> object_var(
-      HostGlobals::Get()->host_var_tracker()->NPObjectVarForNPObject(
-          instance->pp_instance(), object));
-  if (!object_var.get()) {  // No object for this module yet, make a new one.
-    object_var = new NPObjectVar(instance->pp_instance(), object);
-  }
-  return object_var->GetPPVar();
+  test_isolate->Dispose();
+  return result;
 }
 
 // PPResultAndExceptionToNPResult ----------------------------------------------
