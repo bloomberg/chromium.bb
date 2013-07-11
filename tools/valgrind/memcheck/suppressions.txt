@@ -6219,7 +6219,7 @@
 {
    bug_173356
    Memcheck:Overlap
-   fun:memcpy
+   ...
    fun:_ZN3gpu5gles2*Immediate4InitE*
    fun:_ZN3gpu5gles2*GLES2ImplementationTest_*_Test8TestBodyEv
 }
@@ -7481,4 +7481,79 @@
    fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
    fun:_ZN9talk_base10TaskRunner8RunTasksEv
    fun:_ZN11jingle_glue8TaskPump16CheckAndRunTasksEv
+}
+{
+   bug_259350d
+   Memcheck:Leak
+   fun:malloc
+   obj:/lib/libexpat.so.1.5.2
+   fun:_ZN4buzz9XmlParserC1EPNS_15XmlParseHandlerE
+   fun:_ZN4buzz16XmppStanzaParserC1EPNS_22XmppStanzaParseHandlerE
+   fun:_ZN4buzz14XmppEngineImplC1Ev
+   fun:_ZN4buzz10XmppEngine6CreateEv
+   fun:_ZN4buzz10XmppClient7ConnectERKNS_18XmppClientSettingsERKSsPNS_11AsyncSocketEPNS_11PreXmppAuthE
+   fun:_ZN8notifier14XmppConnectionC1ERKN4buzz18XmppClientSettingsERK13scoped_refptrIN3net23URLRequestContextGetterEEPNS0_8DelegateEPNS1_11PreXmppAuthE
+   fun:_ZN8notifier18SingleLoginAttempt10TryConnectERKNS_18ConnectionSettingsE
+   fun:_ZN8notifier18SingleLoginAttempt7OnErrorEN4buzz10XmppEngine5ErrorEiPKNS1_10XmlElementE
+   fun:_ZN8notifier12_GLOBAL__N_144SingleLoginAttemptTest_ErrorThenSuccess_Test8TestBodyEv
+}
+{
+   bug_259357a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK15GpuProgramProto3NewEv
+   fun:_ZN*3gpu5gles218MemoryProgramCache*
+   fun:_ZN3gpu5gles2*MemoryProgramCacheTest_*
+}
+{
+   bug_259357b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3setIjSt4lessIjESaIjEE6insertERKj
+   fun:_ZN3gpu11IdAllocator*
+}
+{
+   bug_259357c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gpu19MappedMemoryManager5AllocEjPiPj
+   ...
+   fun:_ZN3gpu*_Test8TestBodyEv
+}
+{
+   bug_259357d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gpu5gles210ShareGroupC1Ebb
+   fun:_ZN3gpu5gles219GLES2ImplementationC1EPNS0_14GLES2CmdHelperEPNS0_10ShareGroupEPNS_23TransferBufferInterfaceEbbPNS0_12ImageFactoryE
+   fun:_ZN3gpu5gles223GLES2ImplementationTest10InitializeEbb
+   fun:_ZN3gpu5gles2*GLES2Implementation*Test5SetUpEv
+}
+{
+   bug_259357e
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN3gpu5gles239ShaderTranslatorTest_OptionsString_Test8TestBodyEv
+}
+{
+   bug_259357f
+   Memcheck:Uninitialized
+   fun:_ZNK3gpu12AsyncAPIMock6IsArgsclEPKv
+   fun:_ZNK7testing8internal12TrulyMatcherIN3gpu12AsyncAPIMock6IsArgsEE15MatchAndExplainIPKvEEbRT_PNS_19MatchResultListenerE
+   fun:_ZNK7testing18PolymorphicMatcherINS_8internal12TrulyMatcherIN3gpu12AsyncAPIMock6IsArgsEEEE15MonomorphicImplIPKvE15MatchAndExplainESA_PNS_19MatchResultListenerE
+   fun:_ZNK7testing8internal11MatcherBaseIPKvE15MatchAndExplainES3_PNS_19MatchResultListenerE
+   fun:_ZNK7testing8internal11MatcherBaseIPKvE7MatchesES3_
+   fun:_ZN7testing8internal11TuplePrefixILm3EE7MatchesINSt3tr15tupleIINS_7MatcherIjEES7_NS6_IPKvEEEEENS5_IIjjS9_EEEEEbRKT_RKT0_
+   fun:_ZN7testing8internal12TupleMatchesINSt3tr15tupleIINS_7MatcherIjEES5_NS4_IPKvEEEEENS3_IIjjS7_EEEEEbRKT_RKT0_
+   fun:_ZNK7testing8internal16TypedExpectationIFN3gpu5error5ErrorEjjPKvEE7MatchesERKNSt3tr15tupleIIjjS6_EEE
+   fun:_ZNK7testing8internal16TypedExpectationIFN3gpu5error5ErrorEjjPKvEE21ShouldHandleArgumentsERKNSt3tr15tupleIIjjS6_EEE
+   fun:_ZNK7testing8internal18FunctionMockerBaseIFN3gpu5error5ErrorEjjPKvEE29FindMatchingExpectationLockedERKNSt3tr15tupleIIjjS6_EEE
+   fun:_ZN7testing8internal18FunctionMockerBaseIFN3gpu5error5ErrorEjjPKvEE30UntypedFindMatchingExpectationES6_PS6_PbPSoSB_
+   fun:_ZN7testing8internal25UntypedFunctionMockerBase17UntypedInvokeWithEPKv
+   fun:_ZN7testing8internal18FunctionMockerBaseIFN3gpu5error5ErrorEjjPKvEE10InvokeWithERKNSt3tr15tupleIIjjS6_EEE
+   fun:_ZN7testing8internal14FunctionMockerIFN3gpu5error5ErrorEjjPKvEE6InvokeEjjS6_
+   fun:_ZN3gpu12AsyncAPIMock9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
 }
