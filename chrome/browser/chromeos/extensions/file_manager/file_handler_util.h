@@ -53,11 +53,6 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
                                       const std::string& mime_type,
                                       const std::string& suffix);
 
-// Gets read-write file access permission flags.
-int GetReadWritePermissions();
-// Gets read-only file access permission flags.
-int GetReadOnlyPermissions();
-
 // Generates task id for the action specified by the extension. The |task_type|
 // must be one of kTaskFile, kTaskDrive or kTaskApp.
 std::string MakeTaskID(const std::string& extension_id,

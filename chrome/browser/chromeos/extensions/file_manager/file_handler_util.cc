@@ -62,23 +62,6 @@ const char kDriveTaskExtensionPrefix[] = "drive-app:";
 const size_t kDriveTaskExtensionPrefixLength =
     arraysize(kDriveTaskExtensionPrefix) - 1;
 
-const int kReadWriteFilePermissions = base::PLATFORM_FILE_OPEN |
-                                      base::PLATFORM_FILE_CREATE |
-                                      base::PLATFORM_FILE_OPEN_ALWAYS |
-                                      base::PLATFORM_FILE_CREATE_ALWAYS |
-                                      base::PLATFORM_FILE_OPEN_TRUNCATED |
-                                      base::PLATFORM_FILE_READ |
-                                      base::PLATFORM_FILE_WRITE |
-                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
-                                      base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-                                      base::PLATFORM_FILE_ASYNC |
-                                      base::PLATFORM_FILE_WRITE_ATTRIBUTES;
-
-const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
-                                     base::PLATFORM_FILE_READ |
-                                     base::PLATFORM_FILE_EXCLUSIVE_READ |
-                                     base::PLATFORM_FILE_ASYNC;
-
 // Returns process id of the process the extension is running in.
 int ExtractProcessFromExtensionId(Profile* profile,
                                   const std::string& extension_id) {
@@ -107,22 +90,6 @@ const FileBrowserHandler* FindFileBrowserHandler(const Extension* extension,
       return action_iter->get();
   }
   return NULL;
-}
-
-unsigned int GetAccessPermissionsForFileBrowserHandler(
-    const Extension* extension,
-    const std::string& action_id) {
-  const FileBrowserHandler* action =
-      FindFileBrowserHandler(extension, action_id);
-  if (!action)
-    return 0;
-  unsigned int result = 0;
-  if (action->CanRead())
-    result |= kReadOnlyFilePermissions;
-  if (action->CanWrite())
-    result |= kReadWriteFilePermissions;
-  // TODO(tbarzic): We don't handle Create yet.
-  return result;
 }
 
 std::string EscapedUtf8ToLower(const std::string& str) {
@@ -274,14 +241,6 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
     suffix_task_prefs->GetStringWithoutPathExpansion(lower_suffix, &task_id);
   VLOG_IF(1, !task_id.empty()) << "Found suffix default handler: " << task_id;
   return task_id;
-}
-
-int GetReadWritePermissions() {
-  return kReadWriteFilePermissions;
-}
-
-int GetReadOnlyPermissions() {
-  return kReadOnlyFilePermissions;
 }
 
 std::string MakeTaskID(const std::string& extension_id,
@@ -833,14 +792,21 @@ void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
     const FileDefinitionList& file_list,
     const Extension* extension,
     int handler_pid) {
+  const FileBrowserHandler* action = FindFileBrowserHandler(extension_,
+                                                            action_id_);
   for (FileDefinitionList::const_iterator iter = file_list.begin();
        iter != file_list.end();
        ++iter) {
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        handler_pid,
-        iter->absolute_path,
-        GetAccessPermissionsForFileBrowserHandler(extension_.get(),
-                                                  action_id_));
+    if (!action)
+      continue;
+    if (action->CanRead()) {
+      content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
+          handler_pid, iter->absolute_path);
+    }
+    if (action->CanWrite()) {
+      content::ChildProcessSecurityPolicy::GetInstance()->
+          GrantCreateReadWriteFile(handler_pid, iter->absolute_path);
+    }
   }
 }
 

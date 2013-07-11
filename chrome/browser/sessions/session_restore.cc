@@ -1044,19 +1044,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     // Set up the file access rights for the selected navigation entry.
     const int id = web_contents->GetRenderProcessHost()->GetID();
-    const int read_file_permissions =
-        base::PLATFORM_FILE_OPEN |
-        base::PLATFORM_FILE_READ |
-        base::PLATFORM_FILE_EXCLUSIVE_READ |
-        base::PLATFORM_FILE_ASYNC;
     const content::PageState& page_state =
         tab.navigations.at(selected_index).page_state();
     const std::vector<base::FilePath>& file_paths =
         page_state.GetReferencedFiles();
     for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();
          file != file_paths.end(); ++file) {
-      content::ChildProcessSecurityPolicy::GetInstance()->
-          GrantPermissionsForFile(id, *file, read_file_permissions);
+      content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id,
+                                                                        *file);
     }
 
     if (schedule_load)

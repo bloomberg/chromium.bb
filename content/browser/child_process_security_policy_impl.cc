@@ -49,6 +49,30 @@ const int kEnumerateDirectoryPermissions =
     kReadFilePermissions |
     base::PLATFORM_FILE_ENUMERATE;
 
+const int kReadWriteFilePermissions =
+    base::PLATFORM_FILE_OPEN |
+    base::PLATFORM_FILE_CREATE |
+    base::PLATFORM_FILE_OPEN_ALWAYS |
+    base::PLATFORM_FILE_CREATE_ALWAYS |
+    base::PLATFORM_FILE_OPEN_TRUNCATED |
+    base::PLATFORM_FILE_READ |
+    base::PLATFORM_FILE_WRITE |
+    base::PLATFORM_FILE_EXCLUSIVE_READ |
+    base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+    base::PLATFORM_FILE_ASYNC |
+    base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
+const int kCreateWriteFilePermissions =
+      base::PLATFORM_FILE_CREATE |
+      base::PLATFORM_FILE_CREATE_ALWAYS |
+      base::PLATFORM_FILE_OPEN |
+      base::PLATFORM_FILE_OPEN_ALWAYS |
+      base::PLATFORM_FILE_OPEN_TRUNCATED |
+      base::PLATFORM_FILE_WRITE |
+      base::PLATFORM_FILE_WRITE_ATTRIBUTES |
+      base::PLATFORM_FILE_ASYNC;
+      // need EXCLUSIVE_WRITE in this mix?
+
 }  // namespace
 
 // The SecurityState class is used to maintain per-child process security state
@@ -406,6 +430,16 @@ void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
 void ChildProcessSecurityPolicyImpl::GrantReadFile(int child_id,
                                                    const base::FilePath& file) {
   GrantPermissionsForFile(child_id, file, kReadFilePermissions);
+}
+
+void ChildProcessSecurityPolicyImpl::GrantCreateReadWriteFile(
+    int child_id, const base::FilePath& file) {
+  GrantPermissionsForFile(child_id, file, kReadWriteFilePermissions);
+}
+
+void ChildProcessSecurityPolicyImpl::GrantCreateWriteFile(
+    int child_id, const base::FilePath& file) {
+  GrantPermissionsForFile(child_id, file, kCreateWriteFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadDirectory(

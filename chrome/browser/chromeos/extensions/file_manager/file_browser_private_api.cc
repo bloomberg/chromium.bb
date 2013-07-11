@@ -201,14 +201,6 @@ base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
   return mount_info;
 }
 
-// Gives the extension renderer |host| file |permissions| for the given |path|.
-void GrantFilePermissionsToHost(content::RenderViewHost* host,
-                                const base::FilePath& path,
-                                int permissions) {
-  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      host->GetProcess()->GetID(), path, permissions);
-}
-
 void SetDriveMountPointPermissions(
     Profile* profile,
     const std::string& extension_id,
@@ -228,9 +220,8 @@ void SetDriveMountPointPermissions(
   const base::FilePath mount_point = drive::util::GetDriveMountPointPath();
   // Grant R/W permissions to drive 'folder'. File API layer still
   // expects this to be satisfied.
-  GrantFilePermissionsToHost(render_view_host,
-                             mount_point,
-                             file_handler_util::GetReadWritePermissions());
+  ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
+      render_view_host->GetProcess()->GetID(), mount_point);
 
   base::FilePath mount_point_virtual;
   if (backend->GetVirtualPath(mount_point, &mount_point_virtual))
@@ -551,9 +542,8 @@ bool RequestFileSystemFunction::SetupFileSystemAccessPermissions(
   // extension for all paths exposed by our local file system backend.
   std::vector<base::FilePath> root_dirs = backend->GetRootDirectories();
   for (size_t i = 0; i < root_dirs.size(); ++i) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        child_id, root_dirs[i],
-        file_handler_util::GetReadWritePermissions());
+    ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
+        child_id, root_dirs[i]);
   }
   return true;
 }

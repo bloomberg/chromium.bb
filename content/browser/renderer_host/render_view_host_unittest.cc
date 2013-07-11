@@ -267,12 +267,8 @@ TEST_F(RenderViewHostTest, MessageWithBadHistoryItemFiles) {
   test_rvh()->TestOnUpdateStateWithFile(process()->GetID(), file_path);
   EXPECT_EQ(1, process()->bad_msg_count());
 
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      process()->GetID(), file_path,
-      base::PLATFORM_FILE_OPEN |
-      base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_EXCLUSIVE_READ |
-      base::PLATFORM_FILE_ASYNC);
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+      process()->GetID(), file_path);
   test_rvh()->TestOnUpdateStateWithFile(process()->GetID(), file_path);
   EXPECT_EQ(1, process()->bad_msg_count());
 }
@@ -286,12 +282,8 @@ TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
   test_rvh()->SendNavigateWithFile(1, url, file_path);
   EXPECT_EQ(1, process()->bad_msg_count());
 
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-      process()->GetID(), file_path,
-      base::PLATFORM_FILE_OPEN |
-      base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_EXCLUSIVE_READ |
-      base::PLATFORM_FILE_ASYNC);
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+      process()->GetID(), file_path);
   test_rvh()->SendNavigateWithFile(process()->GetID(), url, file_path);
   EXPECT_EQ(1, process()->bad_msg_count());
 }

@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
@@ -210,12 +211,11 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) = 0;
 
   // Notifies the Listener that one or more files have been chosen by the user
-  // from a file chooser dialog for the form. |permissions| are flags from the
-  // base::PlatformFileFlags enum which specify which file permissions should
-  // be granted to the renderer.
+  // from a file chooser dialog for the form. |permissions| is the file
+  // selection mode in which the chooser dialog was created.
   virtual void FilesSelectedInChooser(
       const std::vector<ui::SelectedFileInfo>& files,
-      int permissions) = 0;
+      FileChooserParams::Mode permissions) = 0;
 
   virtual RenderViewHostDelegate* GetDelegate() const = 0;
 

@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/file_chooser_params.h"
 #include "net/base/directory_lister.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -20,7 +21,6 @@ class Profile;
 namespace content {
 class RenderViewHost;
 class WebContents;
-struct FileChooserParams;
 }
 
 namespace ui {
@@ -147,6 +147,9 @@ class FileSelectHelper
 
   // The type of file dialog last shown.
   ui::SelectFileDialog::Type dialog_type_;
+
+  // The mode of file dialog last shown.
+  content::FileChooserParams::Mode dialog_mode_;
 
   // Maintain a list of active directory enumerations.  These could come from
   // the file select dialog or from drag-and-drop of directories, so there could

@@ -381,10 +381,8 @@ void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
   external_backend->GrantFileAccessToExtension(extension_id(), virtual_path_);
 
   // Grant access to the selected file to target extensions render view process.
-  content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      render_view_host()->GetProcess()->GetID(),
-      full_path_,
-      file_handler_util::GetReadWritePermissions());
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
+      render_view_host()->GetProcess()->GetID(), full_path_);
 }
 
 void FileBrowserHandlerInternalSelectFileFunction::Respond(bool success) {

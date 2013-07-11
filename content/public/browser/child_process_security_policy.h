@@ -40,12 +40,6 @@ class ChildProcessSecurityPolicy {
   // Returns true iff |scheme| has been registered as a web-safe scheme.
   virtual bool IsWebSafeScheme(const std::string& scheme) = 0;
 
-  // Grants certain permissions to a file. |permissions| must be a bit-set of
-  // base::PlatformFileFlags.
-  virtual void GrantPermissionsForFile(int child_id,
-                                       const base::FilePath& file,
-                                       int permissions) = 0;
-
   // Before servicing a child process's request to upload a file to the web, the
   // browser should call this method to determine whether the process has the
   // capability to upload the requested file.
@@ -53,8 +47,17 @@ class ChildProcessSecurityPolicy {
 
   // Whenever the user picks a file from a <input type="file"> element, the
   // browser should call this function to grant the child process the capability
-  // to upload the file to the web.
+  // to upload the file to the web. Grants FILE_PERMISSION_READ_ONLY.
   virtual void GrantReadFile(int child_id, const base::FilePath& file) = 0;
+
+  // This permission grants creation, read, and full write access to a file,
+  // including attributes.
+  virtual void GrantCreateReadWriteFile(int child_id,
+                                        const base::FilePath& file) = 0;
+
+  // This permission grants creation and write access to a file.
+  virtual void GrantCreateWriteFile(int child_id,
+                                    const base::FilePath& file) = 0;
 
   // Grants read access permission to the given isolated file system
   // identified by |filesystem_id|. An isolated file system can be

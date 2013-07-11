@@ -192,7 +192,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void FilesSelectedInChooser(
       const std::vector<ui::SelectedFileInfo>& files,
-      int permissions) OVERRIDE;
+      FileChooserParams::Mode permissions) OVERRIDE;
   virtual RenderViewHostDelegate* GetDelegate() const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual SiteInstance* GetSiteInstance() const OVERRIDE;

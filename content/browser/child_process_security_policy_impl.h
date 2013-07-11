@@ -42,10 +42,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // ChildProcessSecurityPolicy implementation.
   virtual void RegisterWebSafeScheme(const std::string& scheme) OVERRIDE;
   virtual bool IsWebSafeScheme(const std::string& scheme) OVERRIDE;
-  virtual void GrantPermissionsForFile(int child_id,
-                                       const base::FilePath& file,
-                                       int permissions) OVERRIDE;
   virtual void GrantReadFile(int child_id, const base::FilePath& file) OVERRIDE;
+  virtual void GrantCreateReadWriteFile(int child_id,
+                                  const base::FilePath& file) OVERRIDE;
+  virtual void GrantCreateWriteFile(int child_id,
+                                    const base::FilePath& file) OVERRIDE;
   virtual void GrantReadFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
@@ -167,14 +168,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // --site-per-process flags are used.
   void LockToOrigin(int child_id, const GURL& gurl);
 
-  // Grants access permission to the given isolated file system
-  // identified by |filesystem_id|.  See comments for
-  // ChildProcessSecurityPolicy::GrantReadFileSystem() for more details.
-  void GrantPermissionsForFileSystem(
-      int child_id,
-      const std::string& filesystem_id,
-      int permission);
-
   // Determines if certain permissions were granted for a file fystem.
   // |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
   bool HasPermissionsForFileSystem(
@@ -191,6 +184,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
+  friend class ChildProcessSecurityPolicyTest;
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest,
                            NoLeak);
 
@@ -214,6 +208,20 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool ChildProcessHasPermissionsForFile(int child_id,
                                          const base::FilePath& file,
                                          int permissions);
+
+  // Grant a particular permission set for a file. |permissions| is a bit-set
+  // of base::PlatformFileFlags.
+  void GrantPermissionsForFile(int child_id,
+                               const base::FilePath& file,
+                               int permissions);
+
+  // Grants access permission to the given isolated file system
+  // identified by |filesystem_id|.  See comments for
+  // ChildProcessSecurityPolicy::GrantReadFileSystem() for more details.
+  void GrantPermissionsForFileSystem(
+      int child_id,
+      const std::string& filesystem_id,
+      int permission);
 
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.

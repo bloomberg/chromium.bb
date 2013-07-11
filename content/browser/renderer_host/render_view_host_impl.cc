@@ -834,12 +834,17 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 
 void RenderViewHostImpl::FilesSelectedInChooser(
     const std::vector<ui::SelectedFileInfo>& files,
-    int permissions) {
+    FileChooserParams::Mode permissions) {
   // Grant the security access requested to the given files.
   for (size_t i = 0; i < files.size(); ++i) {
     const ui::SelectedFileInfo& file = files[i];
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-        GetProcess()->GetID(), file.local_path, permissions);
+    if (permissions == FileChooserParams::Save) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateWriteFile(
+          GetProcess()->GetID(), file.local_path);
+    } else {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+          GetProcess()->GetID(), file.local_path);
+    }
   }
   Send(new ViewMsg_RunFileChooserResponse(GetRoutingID(), files));
 }
