@@ -188,6 +188,16 @@ class CONTENT_EXPORT IndexedDBDatabase
   bool IsDeleteDatabaseBlocked() const;
   void DeleteDatabaseFinal(scoped_refptr<IndexedDBCallbacks> callbacks);
 
+  IndexedDBTransaction* GetTransaction(int64 transaction_id) const;
+
+  bool ValidateObjectStoreId(int64 object_store_id) const;
+  bool ValidateObjectStoreIdAndIndexId(int64 object_store_id,
+                                       int64 index_id) const;
+  bool ValidateObjectStoreIdAndOptionalIndexId(int64 object_store_id,
+                                               int64 index_id) const;
+  bool ValidateObjectStoreIdAndNewIndexId(int64 object_store_id,
+                                          int64 index_id) const;
+
   class VersionChangeOperation;
 
   // When a "versionchange" transaction aborts, these restore the back-end
