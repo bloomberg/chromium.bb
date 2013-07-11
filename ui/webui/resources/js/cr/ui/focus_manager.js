@@ -201,6 +201,8 @@ cr.define('cr.ui', function() {
       var type = node.type;
       if (type == 'button' || type == 'reset' || type == 'submit' ||
           type == 'radio' || type == 'checkbox') {
+        if (document.activeElement != node)
+          document.activeElement.blur();
         event.preventDefault();
       }
     }, false);
