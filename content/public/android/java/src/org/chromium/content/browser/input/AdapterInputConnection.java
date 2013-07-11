@@ -39,6 +39,17 @@ public class AdapterInputConnection extends BaseInputConnection {
     private int mNumNestedBatchEdits = 0;
     private boolean mIgnoreTextInputStateUpdates = false;
 
+    /**
+     * This flag is used to prevent IMEs from sending InputConnection#finishComposingText()
+     * calls right after restartInput(). The way finishComposingText() is implemented, it needs up
+     * to date IME state to work correctly, however after restartInput() the state can be
+     * incorrect.
+     *
+     * This flag is set to true when restartInput() is called and then set back to false on the
+     * next setEditableText().
+     */
+    private boolean mNeedsUpdateAfterRestart = false;
+
     private int mLastUpdateSelectionStart = INVALID_SELECTION;
     private int mLastUpdateSelectionEnd = INVALID_SELECTION;
     private int mLastUpdateCompositionStart = INVALID_COMPOSITION;
@@ -122,6 +133,8 @@ public class AdapterInputConnection extends BaseInputConnection {
             Log.w(TAG, "setEditableText [" + text + "] [" + selectionStart + " " + selectionEnd
                     + "] [" + compositionStart + " " + compositionEnd + "]");
         }
+        mNeedsUpdateAfterRestart = false;
+
         // Non-breaking spaces can cause the IME to get confused. Replace with normal spaces.
         text = text.replace('\u00A0', ' ');
 
@@ -346,6 +359,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean finishComposingText() {
+        if (mNeedsUpdateAfterRestart) return true;
         if (DEBUG) Log.w(TAG, "finishComposingText");
         Editable editable = getEditable();
         if (getComposingSpanStart(editable) == getComposingSpanEnd(editable)) {
@@ -386,6 +400,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     void restartInput() {
         if (DEBUG) Log.w(TAG, "restartInput");
         getInputMethodManagerWrapper().restartInput(mInternalView);
+        mNeedsUpdateAfterRestart = true;
         mIgnoreTextInputStateUpdates = false;
         mNumNestedBatchEdits = 0;
     }
