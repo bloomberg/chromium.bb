@@ -1107,11 +1107,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(const RenderStyle* eleme
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
     bool inheritedOnly = false;
-    if (keyframe->properties()) {
-        // FIXME: Can't keyframes contain variables?
-        applyMatchedProperties<AnimationProperties>(result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    if (keyframe->properties())
         applyMatchedProperties<HighPriorityProperties>(result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
-    }
 
     // If our font got dirtied, go ahead and update it now.
     updateFont();
@@ -1759,8 +1756,6 @@ Length StyleResolver::convertToFloatLength(CSSPrimitiveValue* primitiveValue, Re
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyAnimatedProperties(const Element* target)
 {
-    ASSERT(pass != VariableDefinitions);
-    ASSERT(pass != AnimationProperties);
     if (!target->hasActiveAnimations())
         return;
 
@@ -1771,10 +1766,22 @@ void StyleResolver::applyAnimatedProperties(const Element* target)
         const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
         for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
             CSSPropertyID property = iter->key;
-            if (!isPropertyForPass<pass>(property))
+            switch (pass) {
+            case VariableDefinitions:
+                ASSERT_NOT_REACHED();
                 continue;
+            case HighPriorityProperties:
+                if (property > CSSPropertyLineHeight)
+                    continue;
+                break;
+            case LowPriorityProperties:
+                if (property <= CSSPropertyLineHeight)
+                    continue;
+                break;
+            }
+            // FIXME: Composite onto the underlying value.
             RefPtr<CSSValue> value = iter->value->compositeOnto(AnimatableValue::neutralValue())->toCSSValue();
-            if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
+            if (property == CSSPropertyLineHeight)
                 m_state.setLineHeightValue(value.get());
             else
                 applyProperty(property, value.get());
@@ -1865,30 +1872,6 @@ static inline bool isValidCueStyleProperty(CSSPropertyID id)
 }
 
 template <StyleResolver::StyleApplicationPass pass>
-bool StyleResolver::isPropertyForPass(CSSPropertyID property)
-{
-    COMPILE_ASSERT(CSSPropertyVariable < firstCSSProperty, CSS_variable_is_before_first_property);
-    const CSSPropertyID firstAnimationProperty = CSSPropertyWebkitAnimation;
-    const CSSPropertyID lastAnimationProperty = CSSPropertyTransitionTimingFunction;
-    COMPILE_ASSERT(firstCSSProperty == firstAnimationProperty, CSS_first_animation_property_should_be_first_property);
-    const CSSPropertyID firstHighPriorityProperty = CSSPropertyColor;
-    const CSSPropertyID lastHighPriorityProperty = CSSPropertyLineHeight;
-    COMPILE_ASSERT(lastAnimationProperty + 1 == firstHighPriorityProperty, CSS_color_is_first_high_priority_property);
-    COMPILE_ASSERT(CSSPropertyLineHeight == firstHighPriorityProperty + 18, CSS_line_height_is_end_of_high_prioity_property_range);
-    COMPILE_ASSERT(CSSPropertyZoom == lastHighPriorityProperty - 1, CSS_zoom_is_before_line_height);
-    switch (pass) {
-    case VariableDefinitions:
-        return property == CSSPropertyVariable;
-    case AnimationProperties:
-        return property >= firstAnimationProperty && property <= lastAnimationProperty;
-    case HighPriorityProperties:
-        return property >= firstHighPriorityProperty && property <= lastHighPriorityProperty;
-    case LowPriorityProperties:
-        return property > lastHighPriorityProperty;
-    }
-}
-
-template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     ASSERT((propertyWhitelistType != PropertyWhitelistRegion) || m_state.regionForStyling());
@@ -1912,12 +1895,29 @@ void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRul
             continue;
         if (propertyWhitelistType == PropertyWhitelistCue && !isValidCueStyleProperty(property))
             continue;
-        if (!isPropertyForPass<pass>(property))
-            continue;
-        if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-            m_state.setLineHeightValue(current.value());
-        else
-            applyProperty(current.id(), current.value());
+        switch (pass) {
+        case VariableDefinitions:
+            COMPILE_ASSERT(CSSPropertyVariable < firstCSSProperty, CSS_variable_is_before_first_property);
+            if (property == CSSPropertyVariable)
+                applyProperty(current.id(), current.value());
+            break;
+        case HighPriorityProperties:
+            COMPILE_ASSERT(firstCSSProperty == CSSPropertyColor, CSS_color_is_first_property);
+            COMPILE_ASSERT(CSSPropertyZoom == CSSPropertyColor + 17, CSS_zoom_is_end_of_first_prop_range);
+            COMPILE_ASSERT(CSSPropertyLineHeight == CSSPropertyZoom + 1, CSS_line_height_is_after_zoom);
+            if (property == CSSPropertyVariable)
+                continue;
+            // give special priority to font-xxx, color properties, etc
+            if (property < CSSPropertyLineHeight)
+                applyProperty(current.id(), current.value());
+            // we apply line-height later
+            else if (property == CSSPropertyLineHeight)
+                m_state.setLineHeightValue(current.value());
+            break;
+        case LowPriorityProperties:
+            if (property > CSSPropertyLineHeight)
+                applyProperty(current.id(), current.value());
+        }
     }
     InspectorInstrumentation::didProcessRule(cookie);
 }
@@ -2014,13 +2014,6 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     applyMatchedProperties<VariableDefinitions>(matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<VariableDefinitions>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<VariableDefinitions>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-
-    // Apply animation properties in order to apply animation results and trigger transitions below.
-    applyMatchedProperties<AnimationProperties>(matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-    // FIXME: animations should be triggered here
 
     // Now we have all of the matched rules in the appropriate order. Walk the rules and apply
     // high-priority properties first, i.e., those properties that other properties depend on.
