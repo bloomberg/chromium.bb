@@ -981,6 +981,35 @@
    fun:v8::internal::Runtime_ParallelRecompile
 }
 {
+   bug_258113
+   Heapcheck:Leak
+   fun:ppapi::proxy::PPP_Class_Proxy::CreateProxiedObject
+   fun:ppapi::proxy::PPB_Var_Deprecated_Proxy::OnMsgCreateObjectDeprecated
+   fun:void DispatchToMethod
+   fun:IPC::SyncMessageSchema::DispatchWithSendParams
+   fun:PpapiHostMsg_PPBVar_CreateObjectDeprecated::Dispatch
+   fun:ppapi::proxy::PPB_Var_Deprecated_Proxy::OnMessageReceived
+   fun:ppapi::proxy::Dispatcher::OnMessageReceived
+   fun:ppapi::proxy::HostDispatcher::OnMessageReceived
+   fun:IPC::ChannelProxy::Context::OnDispatchMessage
+   fun:IPC::SyncChannel::ReceivedSyncMsgQueue::DispatchMessages
+   fun:IPC::SyncChannel::SyncContext::DispatchMessages
+   fun:IPC::SyncChannel::WaitForReply
+   fun:IPC::SyncChannel::SendWithTimeout
+   fun:IPC::SyncChannel::Send
+   fun:ppapi::proxy::ProxyChannel::Send
+   fun:ppapi::proxy::HostDispatcher::Send
+   fun:DidCreate
+   fun:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test::TestBody
+}
+{
+   bug_258132
+   Heapcheck:Leak
+   ...
+   fun:ppapi::proxy::PluginProxyMultiThreadTest::RunTest
+   fun:ppapi::ThreadAwareCallbackMultiThreadTest_RunOnTargetThread_Test::TestBody
+}
+{
    bug_259188
    Heapcheck:Leak
    ...
