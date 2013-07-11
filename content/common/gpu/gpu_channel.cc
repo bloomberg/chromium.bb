@@ -702,6 +702,13 @@ void GpuChannel::LoseAllContexts() {
   gpu_channel_manager_->LoseAllContexts();
 }
 
+void GpuChannel::MarkAllContextsLost() {
+  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->MarkContextLost();
+  }
+}
+
 void GpuChannel::DestroySoon() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&GpuChannel::OnDestroy, this));
