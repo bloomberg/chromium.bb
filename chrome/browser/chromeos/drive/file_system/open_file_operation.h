@@ -31,6 +31,7 @@ class FileCache;
 
 namespace file_system {
 
+class CreateFileOperation;
 class DownloadOperation;
 class OperationObserver;
 
@@ -45,14 +46,22 @@ class OpenFileOperation {
                     std::map<base::FilePath, int>* open_files);
   ~OpenFileOperation();
 
-  // Opens the file at |file_path|. If not found, failed to open.
-  // If the file is not actually downloaded, this method starts to download
-  // it to the cache, and then runs |callback| upon the completation with the
-  // path to the local cache file.
+  // Opens the file at |file_path|.
+  // If the file is not actually downloaded, this method starts
+  // to download it to the cache, and then runs |callback| upon the
+  // completation with the path to the local cache file.
+  // See also the definition of OpenMode for its meaning.
+  // |callback| must not be null.
   void OpenFile(const base::FilePath& file_path,
+                OpenMode open_mode,
                 const OpenFileCallback& callback);
 
  private:
+  // Part of OpenFile(). Called after file creation is completed.
+  void OpenFileAfterCreateFile(const base::FilePath& file_path,
+                               const OpenFileCallback& callback,
+                               FileError error);
+
   // Part of OpenFile(). Called after file downloading is completed.
   void OpenFileAfterFileDownloaded(const base::FilePath& file_path,
                                    const OpenFileCallback& callback,
@@ -69,6 +78,7 @@ class OpenFileOperation {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   internal::FileCache* cache_;
 
+  scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<DownloadOperation> download_operation_;
 
   // The map from paths for opened file to the number how many the file is

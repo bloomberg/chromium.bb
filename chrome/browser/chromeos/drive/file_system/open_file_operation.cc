@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,6 +46,8 @@ OpenFileOperation::OpenFileOperation(
     std::map<base::FilePath, int>* open_files)
     : blocking_task_runner_(blocking_task_runner),
       cache_(cache),
+      create_file_operation_(new CreateFileOperation(
+          blocking_task_runner, observer, scheduler, metadata, cache)),
       download_operation_(new DownloadOperation(
           blocking_task_runner, observer, scheduler,
           metadata, cache, temporary_file_directory)),
@@ -57,9 +60,46 @@ OpenFileOperation::~OpenFileOperation() {
 }
 
 void OpenFileOperation::OpenFile(const base::FilePath& file_path,
+                                 OpenMode open_mode,
                                  const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  switch (open_mode) {
+    case OPEN_FILE:
+      // It is not necessary to create a new file even if not exists.
+      // So call OpenFileAfterCreateFile directly with FILE_ERROR_OK
+      // to skip file creation.
+      OpenFileAfterCreateFile(file_path, callback, FILE_ERROR_OK);
+      break;
+    case CREATE_FILE:
+      create_file_operation_->CreateFile(
+          file_path,
+          true /* exclusive */,
+          base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
+                     weak_ptr_factory_.GetWeakPtr(), file_path, callback));
+      break;
+    case OPEN_OR_CREATE_FILE:
+      create_file_operation_->CreateFile(
+          file_path,
+          false /* not-exclusive */,
+          base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
+                     weak_ptr_factory_.GetWeakPtr(), file_path, callback));
+      break;
+  }
+}
+
+void OpenFileOperation::OpenFileAfterCreateFile(
+    const base::FilePath& file_path,
+    const OpenFileCallback& callback,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error, base::FilePath());
+    return;
+  }
 
   download_operation_->EnsureFileDownloadedByPath(
       file_path,

@@ -35,10 +35,6 @@ class FileWriteHelper {
   // Part of PrepareWritableFilePathAndRun(). It tries CreateFile for the case
   // file does not exist yet, does OpenFile to download and mark the file as
   // dirty, runs |callback|, and finally calls CloseFile.
-  void PrepareWritableFileAndRunAfterCreateFile(
-      const base::FilePath& file_path,
-      const OpenFileCallback& callback,
-      FileError result);
   void PrepareWritableFileAndRunAfterOpenFile(
       const base::FilePath& file_path,
       const OpenFileCallback& callback,

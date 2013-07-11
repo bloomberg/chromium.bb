@@ -23,45 +23,25 @@ const base::FilePath::CharType kLocalPath[] =
 
 class TestFileSystem : public DummyFileSystem {
  public:
-  // Mimics CreateFile. It always succeeds unless kInvalidPath is passed.
-  virtual void CreateFile(const base::FilePath& file_path,
-                          bool is_exclusive,
-                          const FileOperationCallback& callback) OVERRIDE {
-   if (file_path == base::FilePath(kInvalidPath)) {
-     callback.Run(FILE_ERROR_ACCESS_DENIED);
-     return;
-   }
-   created.insert(file_path);
-   callback.Run(FILE_ERROR_OK);
-  }
-
-  // Mimics OpenFile. It fails if the |file_path| is a path that is not
-  // passed to CreateFile before. This tests that FileWriteHelper always
-  // ensures file existence before trying to open. It also fails if the
-  // path is already opened, to match the behavior of real FileSystem.
+  // Mimics OpenFile. It fails if the |file_path| points to a hosted document.
   virtual void OpenFile(const base::FilePath& file_path,
+                        OpenMode open_mode,
                         const OpenFileCallback& callback) OVERRIDE {
-    // Files failed to create should never be opened.
-    EXPECT_TRUE(created.count(file_path));
-    created.erase(file_path);
-    if (opened.count(file_path)) {
-      callback.Run(FILE_ERROR_IN_USE, base::FilePath());
-    } else {
-      opened.insert(file_path);
-      callback.Run(FILE_ERROR_OK, base::FilePath(kLocalPath));
+    EXPECT_EQ(OPEN_OR_CREATE_FILE, open_mode);
+
+    // Emulate a case of opening a hosted document.
+    if (file_path == base::FilePath(kInvalidPath)) {
+      callback.Run(FILE_ERROR_INVALID_OPERATION, base::FilePath());
+      return;
     }
+
+    callback.Run(FILE_ERROR_OK, base::FilePath(kLocalPath));
   }
 
-  // Mimics CloseFile. It fails if it is passed a path not OpenFile'd.
   virtual void CloseFile(const base::FilePath& file_path,
                          const FileOperationCallback& callback) OVERRIDE {
-    // Files failed to open should never be closed.
-    EXPECT_TRUE(opened.count(file_path));
-    opened.erase(file_path);
     callback.Run(FILE_ERROR_OK);
   }
-  std::set<base::FilePath> created;
-  std::set<base::FilePath> opened;
 };
 
 }  // namespace
@@ -102,34 +82,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, error);
-  EXPECT_TRUE(path.empty());
-}
-
-TEST_F(FileWriteHelperTest, PrepareFileForWritingOpenFail) {
-  // Externally open the path beforehand.
-  FileError error = FILE_ERROR_FAILED;
-  base::FilePath path;
-  test_file_system_->CreateFile(
-      base::FilePath(kDrivePath),
-      false,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  ASSERT_EQ(FILE_ERROR_OK, error);
-  error = FILE_ERROR_FAILED;
-  test_file_system_->OpenFile(
-      base::FilePath(kDrivePath),
-      google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  ASSERT_EQ(FILE_ERROR_OK, error);
-
-  // Run FileWriteHelper on a file already opened in somewhere else.
-  // It should fail to open the file, and should not try to close it.
-  FileWriteHelper file_write_helper(test_file_system_.get());
-  file_write_helper.PrepareWritableFileAndRun(
-      base::FilePath(kDrivePath),
-      google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  test_util::RunBlockingPoolTask();
-
-  EXPECT_EQ(FILE_ERROR_IN_USE, error);
+  EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
   EXPECT_TRUE(path.empty());
 }
 

@@ -93,6 +93,7 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void OpenFile(const base::FilePath& file_path,
+                        OpenMode open_mode,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void CloseFile(const base::FilePath& file_path,
                          const FileOperationCallback& callback) OVERRIDE;

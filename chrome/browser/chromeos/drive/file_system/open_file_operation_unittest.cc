@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/open_file_operation.h"
 
-#include <set>
+#include <map>
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -32,7 +32,7 @@ class OpenFileOperationTest : public OperationTestBase {
   scoped_ptr<OpenFileOperation> operation_;
 };
 
-TEST_F(OpenFileOperationTest, OpenFile) {
+TEST_F(OpenFileOperationTest, OpenExistingFile) {
   const base::FilePath file_in_root(
       FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
@@ -43,6 +43,138 @@ TEST_F(OpenFileOperationTest, OpenFile) {
   base::FilePath file_path;
   operation_->OpenFile(
       file_in_root,
+      OPEN_FILE,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(file_util::PathExists(file_path));
+  int64 local_file_size;
+  ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
+  EXPECT_EQ(file_size, local_file_size);
+
+  // The file_path should be added into the set.
+  EXPECT_EQ(1, open_files_[file_in_root]);
+}
+
+TEST_F(OpenFileOperationTest, OpenNonExistingFile) {
+  const base::FilePath file_in_root(
+      FILE_PATH_LITERAL("drive/root/not-exist.txt"));
+
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath file_path;
+  operation_->OpenFile(
+      file_in_root,
+      OPEN_FILE,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
+
+  // The file shouldn't be in the set of opened files.
+  EXPECT_EQ(0U, open_files_.count(file_in_root));
+}
+
+TEST_F(OpenFileOperationTest, CreateExistingFile) {
+  const base::FilePath file_in_root(
+      FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  ResourceEntry src_entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
+
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath file_path;
+  operation_->OpenFile(
+      file_in_root,
+      CREATE_FILE,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_EXISTS, error);
+
+  // The file shouldn't be in the set of opened files.
+  EXPECT_EQ(0U, open_files_.count(file_in_root));
+}
+
+TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
+  const base::FilePath file_in_root(
+      FILE_PATH_LITERAL("drive/root/not-exist.txt"));
+
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath file_path;
+  operation_->OpenFile(
+      file_in_root,
+      CREATE_FILE,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(file_util::PathExists(file_path));
+  int64 local_file_size;
+  ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
+  EXPECT_EQ(0, local_file_size);  // Should be an empty file.
+
+  // The file_path should be added into the set.
+  EXPECT_EQ(1, open_files_[file_in_root]);
+}
+
+TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
+  const base::FilePath file_in_root(
+      FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  ResourceEntry src_entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
+  const int64 file_size = src_entry.file_info().size();
+
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath file_path;
+  operation_->OpenFile(
+      file_in_root,
+      OPEN_OR_CREATE_FILE,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(file_util::PathExists(file_path));
+  int64 local_file_size;
+  ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
+  EXPECT_EQ(file_size, local_file_size);
+
+  // The file_path should be added into the set.
+  EXPECT_EQ(1, open_files_[file_in_root]);
+}
+
+TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
+  const base::FilePath file_in_root(
+      FILE_PATH_LITERAL("drive/root/not-exist.txt"));
+
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath file_path;
+  operation_->OpenFile(
+      file_in_root,
+      OPEN_OR_CREATE_FILE,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(file_util::PathExists(file_path));
+  int64 local_file_size;
+  ASSERT_TRUE(file_util::GetFileSize(file_path, &local_file_size));
+  EXPECT_EQ(0, local_file_size);  // Should be an empty file.
+
+  // The file_path should be added into the set.
+  EXPECT_EQ(1, open_files_[file_in_root]);
+}
+
+TEST_F(OpenFileOperationTest, OpenFileTwice) {
+  const base::FilePath file_in_root(
+      FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  ResourceEntry src_entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
+  const int64 file_size = src_entry.file_info().size();
+
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath file_path;
+  operation_->OpenFile(
+      file_in_root,
+      OPEN_FILE,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   test_util::RunBlockingPoolTask();
 
@@ -59,6 +191,7 @@ TEST_F(OpenFileOperationTest, OpenFile) {
   error = FILE_ERROR_FAILED;
   operation_->OpenFile(
       file_in_root,
+      OPEN_FILE,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   test_util::RunBlockingPoolTask();
 
@@ -69,22 +202,6 @@ TEST_F(OpenFileOperationTest, OpenFile) {
 
   // The file_path should be added into the set.
   EXPECT_EQ(2, open_files_[file_in_root]);
-}
-
-TEST_F(OpenFileOperationTest, NotFound) {
-  const base::FilePath file_in_root(
-      FILE_PATH_LITERAL("drive/root/not-exist.txt"));
-
-  FileError error = FILE_ERROR_FAILED;
-  base::FilePath file_path;
-  operation_->OpenFile(
-      file_in_root,
-      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-
-  // The file shouldn't be in the set of opened files.
-  EXPECT_EQ(0U, open_files_.count(file_in_root));
 }
 
 }  // namespace file_system

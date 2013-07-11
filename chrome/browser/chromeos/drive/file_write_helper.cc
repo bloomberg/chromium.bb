@@ -42,34 +42,10 @@ void FileWriteHelper::PrepareWritableFileAndRun(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  file_system_->CreateFile(
-      file_path,
-      false,  // it is not an error, even if the path already exists.
-      base::Bind(&FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback));
-}
-
-void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
-    const base::FilePath& file_path,
-    const OpenFileCallback& callback,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, error, base::FilePath()));
-    return;
-  }
   file_system_->OpenFile(
-      file_path,
+      file_path, OPEN_OR_CREATE_FILE,
       base::Bind(&FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), file_path, callback));
 }
 
 void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(

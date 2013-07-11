@@ -353,6 +353,7 @@ void FileSystemProxy::CreateWritableSnapshotFile(
       base::Bind(&FileSystemInterface::OpenFile,
                  base::Unretained(file_system_),
                  file_path,
+                 OPEN_FILE,
                  google_apis::CreateRelayCallback(
                      base::Bind(
                          &FileSystemProxy::OnCreateWritableSnapshotFile,

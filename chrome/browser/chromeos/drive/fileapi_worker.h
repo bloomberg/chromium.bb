@@ -128,17 +128,7 @@ class FileApiWorker {
                  const StatusCallback& callback);
 
  private:
-  // Part of OpenFile(). Called after FileSystem::CreateFile().
-  void OpenFileAfterCreateFile(const base::FilePath& file_path,
-                               int file_flags,
-                               const OpenFileCallback& callback,
-                               FileError error);
-
   FileSystemInterface* file_system_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FileApiWorker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileApiWorker);
 };

@@ -759,6 +759,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   base::FilePath file_path;
   file_system_->OpenFile(
       kFileInRoot,
+      OPEN_FILE,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
   test_util::RunBlockingPoolTask();
   const base::FilePath opened_file_path = file_path;

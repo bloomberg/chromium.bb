@@ -108,6 +108,18 @@ typedef base::Callback<void(FileError error,
 typedef base::Callback<void(const FileSystemMetadata&)>
     GetFilesystemMetadataCallback;
 
+// The mode of opening a file.
+enum OpenMode {
+  // Open the file if exists. If not, failed.
+  OPEN_FILE,
+
+  // Create a new file if not exists, and then open it. If exists, failed.
+  CREATE_FILE,
+
+  // Open the file if exists. If not, create a new file and then open it.
+  OPEN_OR_CREATE_FILE,
+};
+
 // Priority of a job.  Higher values are lower priority.
 enum ContextType {
   USER_INITIATED,
@@ -184,6 +196,7 @@ class FileSystemInterface {
   //
   // |callback| must not be null.
   virtual void OpenFile(const base::FilePath& file_path,
+                        OpenMode open_mode,
                         const OpenFileCallback& callback) = 0;
 
   // Closes a file at the virtual path |file_path| on the Drive file system,

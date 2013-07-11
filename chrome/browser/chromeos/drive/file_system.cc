@@ -897,11 +897,12 @@ void FileSystem::InitializePreferenceObserver() {
 }
 
 void FileSystem::OpenFile(const base::FilePath& file_path,
+                          OpenMode open_mode,
                           const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  open_file_operation_->OpenFile(file_path, callback);
+  open_file_operation_->OpenFile(file_path, open_mode, callback);
 }
 
 void FileSystem::CloseFile(const base::FilePath& file_path,
