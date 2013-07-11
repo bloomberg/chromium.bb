@@ -36,7 +36,20 @@
   gestures_log(GESTURES_LOG_ERROR, "ERROR:%s:%d:" format "\n", \
                __FILE__, __LINE__, ## __VA_ARGS__)
 
-#define MTStatLog(tag, timestamp) \
-  gestures_log(GESTURES_LOG_INFO, "%f:MTStat:%s\n", (timestamp), (tag))
+#define MTStatSample(key, value, timestamp) \
+  gestures_log(GESTURES_LOG_INFO, "MTStat:%f:%s:%s\n", \
+               (timestamp), (key), (value))
+
+#define MTStatSampleInt(key, value, timestamp) \
+  gestures_log(GESTURES_LOG_INFO, "MTStat:%f:%s:%d\n", \
+               (timestamp), (key), (int)(value))
+
+#define MTStatUpdate(key, value, timestamp) \
+  gestures_log(GESTURES_LOG_INFO, "MTStat:%f:%s=%s\n", \
+               (timestamp), (key), value)
+
+#define MTStatUpdateInt(key, value, timestamp) \
+  gestures_log(GESTURES_LOG_INFO, "MTStat:%f:%s=%d\n", \
+               (timestamp), (key), (int)(value))
 
 #endif  // GESTURES_LOGGING_H__
