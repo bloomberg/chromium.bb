@@ -23,8 +23,10 @@ namespace WebCore {
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 {% if property.use_none %}
-    if (primitiveValue->getValueID() == CSSValueNone)
+    if (primitiveValue->getValueID() == CSSValueNone) {
         {{ set_value(property) }}(Length(Undefined));
+        return;
+    }
 {% endif %}
 
 {%- if property.use_intrinsic %}
@@ -43,8 +45,10 @@ namespace WebCore {
 {% endif %}
 
 {%- if property.use_auto %}
-    if (primitiveValue->getValueID() == CSSValueAuto)
+    if (primitiveValue->getValueID() == CSSValueAuto) {
         {{ set_value(property) }}(Length());
+        return;
+    }
 {%- endif %}
 
     if (primitiveValue->isLength()) {
