@@ -310,6 +310,29 @@ const char kSamplePacketAPrivet[] = {
   '\x00', '\x02',
 };
 
+const char kSamplePacketGoodbye[] = {
+  // Header
+  '\x00', '\x00',               // ID is zeroed out
+  '\x81', '\x80',               // Standard query response, RA, no error
+  '\x00', '\x00',               // No questions (for simplicity)
+  '\x00', '\x01',               // 2 RRs (answers)
+  '\x00', '\x00',               // 0 authority RRs
+  '\x00', '\x00',               // 0 additional RRs
+
+  // Answer 1
+  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
+  '\x04', '_', 't', 'c', 'p',
+  '\x05', 'l', 'o', 'c', 'a', 'l',
+  '\x00',
+  '\x00', '\x0c',        // TYPE is PTR.
+  '\x00', '\x01',        // CLASS is IN.
+  '\x00', '\x00',        // TTL (4 bytes) is zero;
+  '\x00', '\x00',
+  '\x00', '\x08',        // RDLENGTH is 8 bytes.
+  '\x05', 'z', 'z', 'z', 'z', 'z',
+  '\xc0', '\x0c',
+};
+
 class PtrRecordCopyContainer {
  public:
   PtrRecordCopyContainer() {}
@@ -783,6 +806,38 @@ TEST_F(MDnsTest, TransactionReentrantCacheLookupStart) {
   ASSERT_TRUE(transaction1->Start());
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
+}
+
+TEST_F(MDnsTest, GoodbyePacketNotification) {
+  StrictMock<MockListenerDelegate> delegate_privet;
+
+  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+      dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
+  ASSERT_TRUE(listener_privet->Start());
+
+  SimulatePacketReceive(kSamplePacketGoodbye, sizeof(kSamplePacketGoodbye));
+
+  RunFor(base::TimeDelta::FromSeconds(2));
+}
+
+TEST_F(MDnsTest, GoodbyePacketRemoval) {
+  StrictMock<MockListenerDelegate> delegate_privet;
+
+  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+      dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
+  ASSERT_TRUE(listener_privet->Start());
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
+      .Times(Exactly(1));
+
+  SimulatePacketReceive(kSamplePacket2, sizeof(kSamplePacket2));
+
+  SimulatePacketReceive(kSamplePacketGoodbye, sizeof(kSamplePacketGoodbye));
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_REMOVED, _))
+      .Times(Exactly(1));
+
+  RunFor(base::TimeDelta::FromSeconds(2));
 }
 
 // In order to reliably test reentrant listener deletes, we create two listeners

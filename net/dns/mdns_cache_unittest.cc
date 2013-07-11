@@ -107,6 +107,38 @@ static const uint8 kTestResponseTwoRecords[] = {
   '\x5f', '\x79', '\x5f', '\x79',
 };
 
+static const uint8 kTestResponsesGoodbyePacket[] = {
+  // Answer 1
+  // ghs.l.google.com in DNS format. (Goodbye packet)
+  '\x03', 'g', 'h', 's',
+  '\x01', 'l',
+  '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+  '\x03', 'c', 'o', 'm',
+  '\x00',
+  '\x00', '\x01',         // TYPE is A.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is zero.
+  '\x00', '\x00',
+  '\x00', '\x04',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d',         // RDATA is the IP: 74.125.95.121
+  '\x5f', '\x79',
+
+  // Answer 2
+  // ghs.l.google.com in DNS format.
+  '\x03', 'g', 'h', 's',
+  '\x01', 'l',
+  '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+  '\x03', 'c', 'o', 'm',
+  '\x00',
+  '\x00', '\x01',         // TYPE is A.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is 53 seconds.
+  '\x00', '\x35',
+  '\x00', '\x04',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d',         // RDATA is the IP: 74.125.95.121
+  '\x5f', '\x79',
+};
+
 class RecordRemovalMock {
  public:
   MOCK_METHOD1(OnRecordRemoved, void(const RecordParsed*));
@@ -264,6 +296,40 @@ TEST_F(MDnsCacheTest, RecordPreemptExpirationTime) {
   EXPECT_EQ(default_time_ + ttl2, cache_.next_expiration());
   EXPECT_EQ(MDnsCache::NoChange, cache_.UpdateDnsRecord(record1.Pass()));
   EXPECT_EQ(default_time_ + ttl1, cache_.next_expiration());
+}
+
+// Test that the cache handles mDNS "goodbye" packets correctly, not adding the
+// records to the cache if they are not already there, and eventually removing
+// records from the cache if they are.
+TEST_F(MDnsCacheTest, GoodbyePacket) {
+  DnsRecordParser parser(kTestResponsesGoodbyePacket,
+                         sizeof(kTestResponsesGoodbyePacket),
+                         0);
+
+  scoped_ptr<const RecordParsed> record_goodbye;
+  scoped_ptr<const RecordParsed> record_hello;
+  scoped_ptr<const RecordParsed> record_goodbye2;
+  std::vector<const RecordParsed*> results;
+
+  record_goodbye = RecordParsed::CreateFrom(&parser, default_time_);
+  record_hello = RecordParsed::CreateFrom(&parser, default_time_);
+  parser = DnsRecordParser(kTestResponsesGoodbyePacket,
+                           sizeof(kTestResponsesGoodbyePacket),
+                           0);
+  record_goodbye2 = RecordParsed::CreateFrom(&parser, default_time_);
+
+  base::TimeDelta ttl = base::TimeDelta::FromSeconds(record_hello->ttl());
+
+  EXPECT_EQ(base::Time(), cache_.next_expiration());
+  EXPECT_EQ(MDnsCache::NoChange, cache_.UpdateDnsRecord(record_goodbye.Pass()));
+  EXPECT_EQ(base::Time(), cache_.next_expiration());
+  EXPECT_EQ(MDnsCache::RecordAdded,
+            cache_.UpdateDnsRecord(record_hello.Pass()));
+  EXPECT_EQ(default_time_ + ttl, cache_.next_expiration());
+  EXPECT_EQ(MDnsCache::NoChange,
+            cache_.UpdateDnsRecord(record_goodbye2.Pass()));
+  EXPECT_EQ(default_time_ + base::TimeDelta::FromSeconds(1),
+            cache_.next_expiration());
 }
 
 TEST_F(MDnsCacheTest, AnyRRType) {

@@ -4,6 +4,7 @@
 
 #include "net/dns/mdns_cache.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/stl_util.h"
@@ -89,31 +90,32 @@ const RecordParsed* MDnsCache::LookupKey(const Key& key) {
 
 MDnsCache::UpdateType MDnsCache::UpdateDnsRecord(
     scoped_ptr<const RecordParsed> record) {
-  UpdateType type = NoChange;
-
   Key cache_key = Key::CreateFor(record.get());
 
-  base::Time expiration = GetEffectiveExpiration(record.get());
-  if (next_expiration_ == base::Time() || expiration < next_expiration_) {
-    next_expiration_ = expiration;
-  }
+  // Ignore "goodbye" packets for records not in cache.
+  if (record->ttl() == 0 && mdns_cache_.find(cache_key) == mdns_cache_.end())
+    return NoChange;
+
+  base::Time new_expiration = GetEffectiveExpiration(record.get());
+  if (next_expiration_ != base::Time())
+    new_expiration = std::min(new_expiration, next_expiration_);
 
   std::pair<RecordMap::iterator, bool> insert_result =
       mdns_cache_.insert(std::make_pair(cache_key, (const RecordParsed*)NULL));
-
+  UpdateType type = NoChange;
   if (insert_result.second) {
     type = RecordAdded;
-    insert_result.first->second = record.release();
   } else {
     const RecordParsed* other_record = insert_result.first->second;
 
-    if (!record->IsEqual(other_record, true)) {
+    if (record->ttl() != 0 && !record->IsEqual(other_record, true)) {
       type = RecordChanged;
     }
     delete other_record;
-    insert_result.first->second = record.release();
   }
 
+  insert_result.first->second = record.release();
+  next_expiration_ = new_expiration;
   return type;
 }
 
