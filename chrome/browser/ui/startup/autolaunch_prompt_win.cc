@@ -28,28 +28,23 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::BrowserThread;
-
 
 // AutolaunchInfoBarDelegate --------------------------------------------------
 
 namespace {
 
-// The delegate for the infobar shown when Chrome was auto-launched.
+// The delegate for the infobar shown when Chrome is auto-launched.
 class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates an autolaunch delegate and adds it to |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
-                     PrefService* prefs,
-                     Profile* profile);
+  static void Create(InfoBarService* infobar_service, Profile* profile);
 
  private:
   AutolaunchInfoBarDelegate(InfoBarService* infobar_service,
-                            PrefService* prefs,
                             Profile* profile);
   virtual ~AutolaunchInfoBarDelegate();
 
-  void AllowExpiry() { should_expire_ = true; }
+  void set_should_expire() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
@@ -60,14 +55,11 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;
 
-  // The prefs to use.
-  PrefService* prefs_;
+  // Weak pointer to the profile, not owned by us.
+  Profile* profile_;
 
   // Whether the info-bar should be dismissed on the next navigation.
   bool should_expire_;
-
-  // Weak pointer to the profile, not owned by us.
-  Profile* profile_;
 
   // Used to delay the expiration of the info-bar.
   base::WeakPtrFactory<AutolaunchInfoBarDelegate> weak_factory_;
@@ -77,29 +69,27 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 // static
 void AutolaunchInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                       PrefService* prefs,
                                        Profile* profile) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new AutolaunchInfoBarDelegate(infobar_service, prefs, profile)));
+      new AutolaunchInfoBarDelegate(infobar_service, profile)));
 }
 
 AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
     InfoBarService* infobar_service,
-    PrefService* prefs,
     Profile* profile)
     : ConfirmInfoBarDelegate(infobar_service),
-      prefs_(prefs),
-      should_expire_(false),
       profile_(profile),
+      should_expire_(false),
       weak_factory_(this) {
-  int count = prefs_->GetInteger(prefs::kShownAutoLaunchInfobar);
-  prefs_->SetInteger(prefs::kShownAutoLaunchInfobar, count + 1);
+  PrefService* prefs = profile->GetPrefs();
+  prefs->SetInteger(prefs::kShownAutoLaunchInfobar,
+                    prefs->GetInteger(prefs::kShownAutoLaunchInfobar) + 1);
 
   // We want the info-bar to stick-around for a few seconds and then be hidden
   // on the next navigation after that.
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AutolaunchInfoBarDelegate::AllowExpiry,
+      base::Bind(&AutolaunchInfoBarDelegate::set_should_expire,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(8));
 }
@@ -158,8 +148,8 @@ bool ShowAutolaunchPrompt(Browser* browser) {
 
   int infobar_shown =
       profile->GetPrefs()->GetInteger(prefs::kShownAutoLaunchInfobar);
-  const int kMaxInfobarShown = 5;
-  if (infobar_shown >= kMaxInfobarShown)
+  const int kMaxTimesToShowInfoBar = 5;
+  if (infobar_shown >= kMaxTimesToShowInfoBar)
     return false;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -173,17 +163,15 @@ bool ShowAutolaunchPrompt(Browser* browser) {
 
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   AutolaunchInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), profile->GetPrefs(),
-      profile);
+      InfoBarService::FromWebContents(web_contents),
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   return true;
 }
 
 void RegisterAutolaunchUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
-      prefs::kShownAutoLaunchInfobar,
-      0,
+      prefs::kShownAutoLaunchInfobar, 0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

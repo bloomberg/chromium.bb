@@ -873,15 +873,13 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
     chrome::ShowBadFlagsPrompt(browser);
     if (!command_line_.HasSwitch(switches::kTestType)) {
-      GoogleApiKeysInfoBarDelegate::Create(
-          InfoBarService::FromWebContents(
-              browser->tab_strip_model()->GetActiveWebContents()));
+      GoogleApiKeysInfoBarDelegate::Create(InfoBarService::FromWebContents(
+          browser->tab_strip_model()->GetActiveWebContents()));
 
       // TODO(phajdan.jr): Always enable after migrating bots:
       // http://crbug.com/170262 .
-      chrome::ObsoleteOSInfoBarDelegate::Create(
-          InfoBarService::FromWebContents(
-              browser->tab_strip_model()->GetActiveWebContents()));
+      ObsoleteOSInfoBarDelegate::Create(InfoBarService::FromWebContents(
+          browser->tab_strip_model()->GetActiveWebContents()));
     }
 
     if (browser_defaults::kOSSupportsOtherBrowsers &&

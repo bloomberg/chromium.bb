@@ -31,7 +31,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::BrowserThread;
 
 namespace {
 
@@ -155,9 +154,8 @@ bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {
 
 bool DefaultBrowserInfoBarDelegate::Accept() {
   action_taken_ = true;
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&SetChromeAsDefaultBrowser, interactive_flow_required_,
                  prefs_));
 
@@ -189,13 +187,12 @@ void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
   if (!web_contents)
     return;
 
-  bool interactive_flow = ShellIntegration::CanSetAsDefaultBrowser() ==
-      ShellIntegration::SET_DEFAULT_INTERACTIVE;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DefaultBrowserInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), profile->GetPrefs(),
-      interactive_flow);
+      InfoBarService::FromWebContents(web_contents),
+      Profile::FromBrowserContext(
+          web_contents->GetBrowserContext())->GetPrefs(),
+      (ShellIntegration::CanSetAsDefaultBrowser() ==
+          ShellIntegration::SET_DEFAULT_INTERACTIVE));
 }
 
 void CheckDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
@@ -204,7 +201,8 @@ void CheckDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
         ShellIntegration::CanSetAsDefaultBrowser();
 
     if (default_change_mode != ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
           base::Bind(&NotifyNotDefaultBrowserCallback, desktop_type));
     }
   }
@@ -232,8 +230,8 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
       prefs::kDefaultBrowserSettingEnabled)) {
     if (g_browser_process->local_state()->GetBoolean(
         prefs::kDefaultBrowserSettingEnabled)) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+      content::BrowserThread::PostTask(
+          content::BrowserThread::FILE, FROM_HERE,
           base::Bind(
               base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
     } else {
@@ -247,18 +245,16 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
       g_browser_process->local_state()->GetString(
           prefs::kBrowserSuppressDefaultBrowserPrompt);
   const Version disable_version(disable_version_string);
-
   DCHECK(disable_version_string.empty() || disable_version.IsValid());
   if (disable_version.IsValid()) {
     const chrome::VersionInfo version_info;
-    const Version chrome_version(version_info.Version());
-    if (disable_version.Equals(chrome_version))
+    if (disable_version.Equals(Version(version_info.Version())))
       return;
   }
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&CheckDefaultBrowserCallback,
-                                     desktop_type));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CheckDefaultBrowserCallback, desktop_type));
 
 }
 

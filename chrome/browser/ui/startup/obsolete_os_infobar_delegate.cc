@@ -14,10 +14,6 @@
 #include <gtk/gtk.h>
 #endif
 
-using content::OpenURLParams;
-using content::Referrer;
-
-namespace chrome {
 
 // static
 void ObsoleteOSInfoBarDelegate::Create(InfoBarService* infobar_service) {
@@ -39,29 +35,20 @@ void ObsoleteOSInfoBarDelegate::Create(InfoBarService* infobar_service) {
   return;
 #endif
 
-  string16 message = l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
-  // Link to an article in the help center on minimum system requirements.
-  const char* kLearnMoreURL =
-      "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new ObsoleteOSInfoBarDelegate(infobar_service, message,
-                                    GURL(kLearnMoreURL))));
+      new ObsoleteOSInfoBarDelegate(infobar_service)));
 }
 
 ObsoleteOSInfoBarDelegate::ObsoleteOSInfoBarDelegate(
-    InfoBarService* infobar_service,
-    const string16& message,
-    const GURL& url)
-    : ConfirmInfoBarDelegate(infobar_service),
-      message_(message),
-      learn_more_url_(url) {
+    InfoBarService* infobar_service)
+    : ConfirmInfoBarDelegate(infobar_service) {
 }
 
 ObsoleteOSInfoBarDelegate::~ObsoleteOSInfoBarDelegate() {
 }
 
 string16 ObsoleteOSInfoBarDelegate::GetMessageText() const {
-  return message_;
+  return l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
 }
 
 int ObsoleteOSInfoBarDelegate::GetButtons() const {
@@ -73,11 +60,10 @@ string16 ObsoleteOSInfoBarDelegate::GetLinkText() const {
 }
 
 bool ObsoleteOSInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  OpenURLParams params(learn_more_url_, Referrer(),
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL("http://www.google.com/support/chrome/bin/answer.py?answer=95411"),
+      content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
-
-}  // namespace chrome

@@ -17,6 +17,11 @@
 namespace chrome {
 
 void ShowBadFlagsPrompt(Browser* browser) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return;
+
   // Unsupported flags for which to display a warning that "stability and
   // security will suffer".
   static const char* kBadFlags[] = {
@@ -33,25 +38,17 @@ void ShowBadFlagsPrompt(Browser* browser) {
     NULL
   };
 
-  const char* bad_flag = NULL;
   for (const char** flag = kBadFlags; *flag; ++flag) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(*flag)) {
-      bad_flag = *flag;
-      break;
-    }
-  }
+      SimpleAlertInfoBarDelegate::Create(
+          InfoBarService::FromWebContents(web_contents),
+          InfoBarDelegate::kNoIconID,
+          l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
+                                      UTF8ToUTF16(std::string("--") + *flag)),
+          false);
 
-  if (bad_flag) {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    if (!web_contents)
       return;
-    SimpleAlertInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents),
-        InfoBarDelegate::kNoIconID,
-        l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
-                                    UTF8ToUTF16(std::string("--") + bad_flag)),
-        false);
+    }
   }
 }
 

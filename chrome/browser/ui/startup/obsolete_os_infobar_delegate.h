@@ -12,18 +12,15 @@
 
 class InfoBarService;
 
-namespace chrome {
-
-// An infobar that is run with a string and a "Learn More" link.
+// An infobar that displays a message saying the system is obsolete, along with
+// a "Learn More" link.
 class ObsoleteOSInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates an obsolete OS delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:
-  ObsoleteOSInfoBarDelegate(InfoBarService* infobar_service,
-                            const string16& message,
-                            const GURL& url);
+  explicit ObsoleteOSInfoBarDelegate(InfoBarService* infobar_service);
   virtual ~ObsoleteOSInfoBarDelegate();
 
   virtual string16 GetMessageText() const OVERRIDE;
@@ -31,12 +28,7 @@ class ObsoleteOSInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  const string16 message_;
-  const GURL learn_more_url_;
-
   DISALLOW_COPY_AND_ASSIGN(ObsoleteOSInfoBarDelegate);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_STARTUP_OBSOLETE_OS_INFOBAR_DELEGATE_H_
