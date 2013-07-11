@@ -1278,8 +1278,11 @@ void ResourceProvider::AcquireImage(ResourceId id) {
 
   if (resource->image_id != 0) {
     // If we had previously allocated an image for this resource,
-    // then just reuse same image.
-    return;
+    // release it first, before acquiring the new image.
+    // TODO(kaanb): This is a temporary workaround. We must return here
+    // immediately. Platform specific code needs to deal with this
+    // situation appropriately.
+    ReleaseImage(id);
   }
 
   WebGraphicsContext3D* context3d = output_surface_->context3d();
