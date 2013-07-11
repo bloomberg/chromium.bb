@@ -88,8 +88,8 @@
         'display/display_change_observer_x11.h',
         'display/display_controller.cc',
         'display/display_controller.h',
-        'display/display_error_dialog.cc',
-        'display/display_error_dialog.h',
+        'display/display_error_observer.cc',
+        'display/display_error_observer.h',
         'display/display_info.h',
         'display/display_info.cc',
         'display/display_layout.h',
@@ -559,8 +559,8 @@
         }, { # else: chromeos!=1
           'sources/': [
             ['exclude', '/chromeos/'],
-            ['exclude', 'display/display_error_dialog.cc'],
-            ['exclude', 'display/display_error_dialog.h'],
+            ['exclude', 'display/display_error_observer.cc'],
+            ['exclude', 'display/display_error_observer.h'],
             ['exclude', 'display/output_configurator_animation.cc'],
             ['exclude', 'display/output_configurator_animation.h'],
           ],
@@ -669,7 +669,7 @@
         'desktop_background/wallpaper_resizer_unittest.cc',
         'dip_unittest.cc',
         'display/display_controller_unittest.cc',
-        'display/display_error_dialog_unittest.cc',
+        'display/display_error_observer_unittest.cc',
         'display/display_info_unittest.cc',
         'display/display_manager_unittest.cc',
         'display/mirror_window_controller_unittest.cc',
@@ -799,7 +799,7 @@
         }],
         ['chromeos!=1', {
           'sources/': [
-            ['exclude', 'display/display_error_dialog_unittest.cc'],
+            ['exclude', 'display/display_error_observer_unittest.cc'],
           ],
         }, {  # chromeos==1
           'dependencies': [

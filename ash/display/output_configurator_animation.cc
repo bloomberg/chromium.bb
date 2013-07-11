@@ -4,7 +4,6 @@
 
 #include "ash/display/output_configurator_animation.h"
 
-#include "ash/display/display_error_dialog.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "base/bind.h"

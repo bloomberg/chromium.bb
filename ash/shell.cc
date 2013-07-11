@@ -110,7 +110,7 @@
 #if defined(USE_X11)
 #include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_x11.h"
-#include "ash/display/display_error_dialog.h"
+#include "ash/display/display_error_observer.h"
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/message_loop/message_pump_aurax11.h"
