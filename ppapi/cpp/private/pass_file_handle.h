@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_PASS_FILE_HANDLE_H_
 #define PPAPI_CPP_PRIVATE_PASS_FILE_HANDLE_H_
 
+#include <string.h>
+
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/cpp/output_traits.h"
 
@@ -66,6 +68,10 @@ struct CallbackOutputTraits<PassFileHandle> {
 
   static inline PassFileHandle StorageToPluginArg(StorageType& t) {
     return PassFileHandle(t);
+  }
+
+  static inline void Initialize(StorageType* t) {
+    memset(t, 0, sizeof(*t));
   }
 };
 

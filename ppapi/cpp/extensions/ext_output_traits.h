@@ -68,6 +68,8 @@ struct ExtCallbackOutputTraits {
   static inline T& StorageToPluginArg(StorageType& t) {
     return t.output();
   }
+
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 // This class provides storage for a PP_Var and a vector of objects which are
@@ -129,6 +131,8 @@ struct ExtCallbackOutputTraits< std::vector<T> > {
   static inline std::vector<T>& StorageToPluginArg(StorageType& t) {
     return t.output();
   }
+
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 }  // namespace internal

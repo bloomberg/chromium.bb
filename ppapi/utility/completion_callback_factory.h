@@ -728,10 +728,12 @@ class CompletionCallbackFactory {
     DispatcherWithOutput0()
         : method_(NULL),
           output_() {
+      Traits::Initialize(&output_);
     }
     DispatcherWithOutput0(Method method)
         : method_(method),
           output_() {
+      Traits::Initialize(&output_);
     }
     void operator()(T* object, int32_t result) {
       // We must call Traits::StorageToPluginArg() even if we don't need to call
@@ -779,11 +781,13 @@ class CompletionCallbackFactory {
         : method_(NULL),
           a_(),
           output_() {
+      Traits::Initialize(&output_);
     }
     DispatcherWithOutput1(Method method, const A& a)
         : method_(method),
           a_(a),
           output_() {
+      Traits::Initialize(&output_);
     }
     void operator()(T* object, int32_t result) {
       // We must call Traits::StorageToPluginArg() even if we don't need to call
@@ -840,12 +844,14 @@ class CompletionCallbackFactory {
           a_(),
           b_(),
           output_() {
+      Traits::Initialize(&output_);
     }
     DispatcherWithOutput2(Method method, const A& a, const B& b)
         : method_(method),
           a_(a),
           b_(b),
           output_() {
+      Traits::Initialize(&output_);
     }
     void operator()(T* object, int32_t result) {
       // We must call Traits::StorageToPluginArg() even if we don't need to call
@@ -908,6 +914,7 @@ class CompletionCallbackFactory {
           b_(),
           c_(),
           output_() {
+      Traits::Initialize(&output_);
     }
     DispatcherWithOutput3(Method method, const A& a, const B& b, const C& c)
         : method_(method),
@@ -915,6 +922,7 @@ class CompletionCallbackFactory {
           b_(b),
           c_(c),
           output_() {
+      Traits::Initialize(&output_);
     }
     void operator()(T* object, int32_t result) {
       // We must call Traits::StorageToPluginArg() even if we don't need to call

@@ -188,16 +188,22 @@ template <typename OutputT, typename CallbackT>
 class TestCompletionCallbackWithOutputBase {
  public:
   explicit TestCompletionCallbackWithOutputBase(PP_Instance instance)
-      : callback_(instance) {
+      : callback_(instance),
+        output_storage_() {
+    CallbackT::TraitsType::Initialize(&output_storage_);
   }
 
   TestCompletionCallbackWithOutputBase(PP_Instance instance, bool force_async)
-      : callback_(instance, force_async) {
+      : callback_(instance, force_async),
+        output_storage_() {
+    CallbackT::TraitsType::Initialize(&output_storage_);
   }
 
   TestCompletionCallbackWithOutputBase(PP_Instance instance,
                                        CallbackType callback_type)
-      : callback_(instance, callback_type) {
+      : callback_(instance, callback_type),
+        output_storage_() {
+    CallbackT::TraitsType::Initialize(&output_storage_);
   }
 
   CallbackT GetCallback();
@@ -217,7 +223,10 @@ class TestCompletionCallbackWithOutputBase {
   bool failed() { return callback_.failed(); }
   const std::string& errors() { return callback_.errors(); }
   int32_t result() const { return callback_.result(); }
-  void Reset() { return callback_.Reset(); }
+  void Reset() {
+    CallbackT::TraitsType::Initialize(&output_storage_);
+    return callback_.Reset();
+  }
 
  private:
   TestCompletionCallback callback_;
@@ -227,7 +236,7 @@ class TestCompletionCallbackWithOutputBase {
 template <typename OutputT, typename CallbackT>
 CallbackT
 TestCompletionCallbackWithOutputBase<OutputT, CallbackT>::GetCallback() {
-  callback_.Reset();
+  this->Reset();
   if (callback_.callback_type() == PP_BLOCKING) {
     CallbackT cc(&output_storage_);
     return cc;

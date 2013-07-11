@@ -208,6 +208,12 @@ struct CallbackOutputTraits<TrueTypeFontDesc_Dev> {
   static inline TrueTypeFontDesc_Dev StorageToPluginArg(StorageType& t) {
     return TrueTypeFontDesc_Dev(PASS_REF, t);
   }
+
+  static inline void Initialize(StorageType* t) {
+    // Use the same defaults as TrueTypeFontDesc_Dev does.
+    TrueTypeFontDesc_Dev dummy;
+    *t = dummy.pp_desc();
+  }
 };
 
 class TrueTypeFontDescArrayOutputAdapterWithStorage
@@ -255,6 +261,8 @@ struct CallbackOutputTraits< std::vector<TrueTypeFontDesc_Dev> > {
       StorageType& t) {
     return t.output();
   }
+
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 }  // namespace internal

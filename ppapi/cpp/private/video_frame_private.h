@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_VIDEO_FRAME_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_VIDEO_FRAME_PRIVATE_H_
 
+#include <string.h>
+
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/pp_video_frame_private.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -86,6 +88,11 @@ struct CallbackOutputTraits<pp::VideoFrame_Private> {
 
   static inline pp::VideoFrame_Private StorageToPluginArg(StorageType& t) {
     return pp::VideoFrame_Private(PASS_REF, t);
+  }
+
+  static inline void Initialize(StorageType* t) {
+    VideoFrame_Private dummy;
+    *t = dummy.pp_video_frame();
   }
 };
 

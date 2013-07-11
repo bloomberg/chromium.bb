@@ -119,6 +119,8 @@ struct CallbackOutputTraits< std::vector<DirectoryEntry> > {
       StorageType& t) {
     return t.output();
   }
+
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 }  // namespace internal

@@ -60,8 +60,7 @@ std::string TestNetworkProxy::TestGetProxyForURL() {
                                        callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
-  // TODO(dmichael): Add this check below when crbug.com/250046 is fixed.
-  // ASSERT_TRUE(callback.output().is_undefined());
+  ASSERT_TRUE(callback.output().is_undefined());
 
   callback.WaitForResult(
       pp::NetworkProxy::GetProxyForURL(instance_,
@@ -69,8 +68,7 @@ std::string TestNetworkProxy::TestGetProxyForURL() {
                                        callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
-  // TODO(dmichael): Add this check below when crbug.com/250046 is fixed.
-  // ASSERT_TRUE(callback.output().is_undefined());
+  ASSERT_TRUE(callback.output().is_undefined());
 
   PASS();
 }

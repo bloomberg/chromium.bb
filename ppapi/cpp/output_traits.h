@@ -85,6 +85,10 @@ struct GenericCallbackOutputTraits {
   // callbacks. This doesn't actually need to do anything in this case,
   // it's needed for some of more complex template specializations below.
   static inline T& StorageToPluginArg(StorageType& t) { return t; }
+
+  // Initializes the "storage type" to a default value, if necessary. Here,
+  // we do nothing, assuming that the default constructor for T suffices.
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 // Output traits for all resource types. It is implemented to pass a
@@ -112,6 +116,10 @@ struct ResourceCallbackOutputTraits {
   // resource object type.
   static inline T StorageToPluginArg(StorageType& t) {
     return T(PASS_REF, t);
+  }
+
+  static inline void Initialize(StorageType* t) {
+    *t = 0;
   }
 };
 
@@ -147,6 +155,10 @@ struct CallbackOutputTraits<Var> {
   static inline pp::Var StorageToPluginArg(StorageType& t) {
     return Var(PASS_REF, t);
   }
+
+  static inline void Initialize(StorageType* t) {
+    *t = PP_MakeUndefined();
+  }
 };
 
 // Array output parameters -----------------------------------------------------
@@ -175,6 +187,8 @@ struct GenericVectorCallbackOutputTraits {
   static inline std::vector<T>& StorageToPluginArg(StorageType& t) {
     return t.output();
   }
+
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 // Output traits for all vectors of resource types. It is implemented to pass
@@ -196,6 +210,8 @@ struct ResourceVectorCallbackOutputTraits {
   static inline std::vector<T>& StorageToPluginArg(StorageType& t) {
     return t.output();
   }
+
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 // Specialization of CallbackOutputTraits for vectors. This struct covers both
@@ -233,6 +249,8 @@ struct CallbackOutputTraits< std::vector<pp::Var> > {
   static inline std::vector<pp::Var>& StorageToPluginArg(StorageType& t) {
     return t.output();
   }
+
+  static inline void Initialize(StorageType* /* t */) {}
 };
 
 }  // namespace internal
