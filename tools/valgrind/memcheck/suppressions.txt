@@ -7429,3 +7429,16 @@
    fun:_ZN7WebCore16V8PerIsolateData17ensureInitializedEPN2v87IsolateE
    fun:_ZN6WebKit10initializeEPNS_8PlatformE
 }
+{
+   bug_259303
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC7Message23EnsureFileDescriptorSetEv
+   fun:_ZN3IPC7Message19file_descriptor_setEv
+   fun:_ZN3IPC7Channel11ChannelImpl24WillDispatchInputMessageEPNS_7MessageE
+   fun:_ZN3IPC8internal13ChannelReader17DispatchInputDataEPKci
+   fun:_ZN3IPC8internal13ChannelReader23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+}
