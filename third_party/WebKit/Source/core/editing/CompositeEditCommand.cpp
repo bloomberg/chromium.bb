@@ -393,11 +393,12 @@ void CompositeEditCommand::removeNodePreservingChildren(PassRefPtr<Node> node, S
     applyCommandToComposite(RemoveNodePreservingChildrenCommand::create(node, shouldAssumeContentIsAlwaysEditable));
 }
 
-void CompositeEditCommand::removeNodeAndPruneAncestors(PassRefPtr<Node> node)
+void CompositeEditCommand::removeNodeAndPruneAncestors(PassRefPtr<Node> node, Node* excludeNode)
 {
+    ASSERT(node.get() != excludeNode);
     RefPtr<ContainerNode> parent = node->parentNode();
     removeNode(node);
-    prune(parent.release());
+    prune(parent.release(), excludeNode);
 }
 
 void CompositeEditCommand::moveRemainingSiblingsToNewParent(Node* node, Node* pastLastNodeToMove, PassRefPtr<Element> prpNewParent)
@@ -436,9 +437,9 @@ HTMLElement* CompositeEditCommand::replaceElementWithSpanPreservingChildrenAndAt
     return command->spanElement();
 }
 
-void CompositeEditCommand::prune(PassRefPtr<Node> node)
+void CompositeEditCommand::prune(PassRefPtr<Node> node, Node* excludeNode)
 {
-    if (RefPtr<Node> highestNodeToRemove = highestNodeToRemoveInPruning(node.get()))
+    if (RefPtr<Node> highestNodeToRemove = highestNodeToRemoveInPruning(node.get(), excludeNode))
         removeNode(highestNodeToRemove.release());
 }
 
@@ -1044,13 +1045,14 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(Position& start, Positi
 void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
 {
     VisiblePosition caretAfterDelete = endingSelection().visibleStart();
+    Node* destinationNode = destination.deepEquivalent().anchorNode();
     if (caretAfterDelete != destination && isStartOfParagraph(caretAfterDelete) && isEndOfParagraph(caretAfterDelete)) {
         // Note: We want the rightmost candidate.
         Position position = caretAfterDelete.deepEquivalent().downstream();
         Node* node = position.deprecatedNode();
         // Normally deletion will leave a br as a placeholder.
         if (node->hasTagName(brTag))
-            removeNodeAndPruneAncestors(node);
+            removeNodeAndPruneAncestors(node, destinationNode);
         // If the selection to move was empty and in an empty block that 
         // doesn't require a placeholder to prop itself open (like a bordered
         // div or an li), remove it during the move (the list removal code
@@ -1059,17 +1061,17 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
             // If caret position after deletion and destination position coincides,
             // node should not be removed.
             if (!position.rendersInDifferentPosition(destination.deepEquivalent())) {
-                prune(node);
+                prune(node, destinationNode);
                 return;
             }
-            removeNodeAndPruneAncestors(node);
+            removeNodeAndPruneAncestors(node, destinationNode);
         }
         else if (lineBreakExistsAtPosition(position)) {
             // There is a preserved '\n' at caretAfterDelete.
             // We can safely assume this is a text node.
             Text* textNode = toText(node);
             if (textNode->length() == 1)
-                removeNodeAndPruneAncestors(node);
+                removeNodeAndPruneAncestors(node, destinationNode);
             else
                 deleteTextFromNode(textNode, position.deprecatedEditingOffset(), 1);
         }

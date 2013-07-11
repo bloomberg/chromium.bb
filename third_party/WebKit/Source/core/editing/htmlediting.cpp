@@ -653,13 +653,13 @@ static bool hasARenderedDescendant(Node* node, Node* excludedNode)
     return false;
 }
 
-Node* highestNodeToRemoveInPruning(Node* node)
+Node* highestNodeToRemoveInPruning(Node* node, Node* excludeNode)
 {
     Node* previousNode = 0;
     Node* rootEditableElement = node ? node->rootEditableElement() : 0;
     for (; node; node = node->parentNode()) {
         if (RenderObject* renderer = node->renderer()) {
-            if (!renderer->canHaveChildren() || hasARenderedDescendant(node, previousNode) || rootEditableElement == node)
+            if (!renderer->canHaveChildren() || hasARenderedDescendant(node, previousNode) || rootEditableElement == node || excludeNode == node)
                 return previousNode;
         }
         previousNode = node;

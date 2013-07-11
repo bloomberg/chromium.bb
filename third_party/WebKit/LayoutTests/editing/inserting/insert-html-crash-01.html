@@ -1,0 +1,20 @@
+<html>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<div id="editable" contenteditable="true">
+Foo
+<div style="overflow:scroll;">
+<div style="display:table"></div>
+</div>
+</div>
+<script>
+var editable = document.getElementById('editable');
+editable.focus();
+document.execCommand('SelectAll');
+document.execCommand('InsertText', false, 'SUCCEEDED');
+document.execCommand('SelectAll');
+testPassed('Not crashed');
+if (window.testRunner)
+    editable.outerHTML = '';
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
+</html>
