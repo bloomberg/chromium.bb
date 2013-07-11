@@ -19,6 +19,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsMemoryAllocation.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"

@@ -16,6 +16,8 @@
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
+namespace WebKit { struct WebGraphicsMemoryAllocation; }
+
 namespace cc {
 
 class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {

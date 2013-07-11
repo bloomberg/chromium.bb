@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/output/output_surface.h"
+
 #include "base/test/test_simple_task_runner.h"
 #include "cc/output/managed_memory_policy.h"
-#include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebGraphicsMemoryAllocation.h"
 
 using WebKit::WebGraphicsMemoryAllocation;
 
