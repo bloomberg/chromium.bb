@@ -509,6 +509,15 @@ def ValidateRegularInstruction(instruction, bitness):
     if op in ['%cs', '%ds', '%es', '%ss', '%fs', '%gs']:
       raise SandboxingError(
           'access to segment registers is not allowed', instruction)
+    if op.startswith('%cr'):
+      raise SandboxingError(
+          'access to control registers is not allowed', instruction)
+    if op.startswith('%db'):
+      raise SandboxingError(
+          'access to debug registers is not allowed', instruction)
+    if op.startswith('%tr'):
+      raise SandboxingError(
+          'access to test registers is not allowed', instruction)
 
     m = re.match(_MemoryRE() + r'$', op)
     if m is not None and m.group('memory_segment') is not None:
