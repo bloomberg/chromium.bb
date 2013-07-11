@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/metrics_service.h"
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/storage_monitor/storage_monitor_linux.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,8 +19,6 @@
 #include "base/linux_util.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/breakpad_linux.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
