@@ -93,13 +93,15 @@ class ChromeTests(object):
       "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
       "device": self.TestDevice,        "device_unittests": self.TestDevice,
       "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
-      "url": self.TestURL,              "url_unittests": self.TestURL,
+      "gpu": TestGPU,                   "gpu_unittests": TestGPU,
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
+      "jingle": TestJingle,             "jingle_unittests": TestJingle,
       "layout": self.TestLayout,        "layout_tests": self.TestLayout,
       "media": self.TestMedia,          "media_unittests": self.TestMedia,
       "message_center": self.TestMessageCenter,
       "message_center_unittests" : self.TestMessageCenter,
       "net": self.TestNet,              "net_unittests": self.TestNet,
+      "ppapi": TestPPAPI,               "ppapi_unittests": TestPPAPI,
       "printing": self.TestPrinting,    "printing_unittests": self.TestPrinting,
       "remoting": self.TestRemoting,    "remoting_unittests": self.TestRemoting,
       "sql": self.TestSql,              "sql_unittests": self.TestSql,
@@ -107,6 +109,7 @@ class ChromeTests(object):
       "sync": self.TestSync,            "sync_unit_tests": self.TestSync,
       "ui_unit": self.TestUIUnit,       "ui_unittests": self.TestUIUnit,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
+      "url": self.TestURL,              "url_unittests": self.TestURL,
       "views": self.TestViews,          "views_unittests": self.TestViews,
     }
 
@@ -286,14 +289,17 @@ class ChromeTests(object):
   def TestDevice(self):
     return self.SimpleTest("device", "device_unittests")
 
+  def TestGPU(self):
+    return self.SimpleTest("gpu", "gpu_unittests")
+
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
 
-  def TestURL(self):
-    return self.SimpleTest("chrome", "url_unittests")
-
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests")
+
+  def TestJingle(self):
+    return self.SimpleTest("chrome", "jingle_unittests")
 
   def TestMedia(self):
     return self.SimpleTest("chrome", "media_unittests")
@@ -303,6 +309,9 @@ class ChromeTests(object):
 
   def TestNet(self):
     return self.SimpleTest("net", "net_unittests")
+
+  def TestPPAPI(self):
+    return self.SimpleTest("chrome", "ppapi_unittests")
 
   def TestPrinting(self):
     return self.SimpleTest("chrome", "printing_unittests")
@@ -325,6 +334,9 @@ class ChromeTests(object):
 
   def TestUnit(self):
     return self.SimpleTest("chrome", "unit_tests")
+
+  def TestURL(self):
+    return self.SimpleTest("chrome", "url_unittests")
 
   def TestSql(self):
     return self.SimpleTest("chrome", "sql_unittests")

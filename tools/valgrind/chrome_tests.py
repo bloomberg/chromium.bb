@@ -292,9 +292,6 @@ class ChromeTests:
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
 
-  def TestURL(self):
-    return self.SimpleTest("chrome", "url_unittests")
-
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests",
                            valgrind_test_args=["--trace_children"])
@@ -346,6 +343,9 @@ class ChromeTests:
 
   def TestUIUnit(self):
     return self.SimpleTest("chrome", "ui_unittests")
+
+  def TestURL(self):
+    return self.SimpleTest("chrome", "url_unittests")
 
   def TestViews(self):
     return self.SimpleTest("views", "views_unittests")
@@ -532,10 +532,10 @@ class ChromeTests:
     "ffmpeg": TestFFmpeg,        "ffmpeg_unittests": TestFFmpeg,
     "ffmpeg_regression_tests": TestFFmpegRegressions,
     "googleurl": TestGURL,       "googleurl_unittests": TestGURL,
-    "url": TestURL,              "url_unittests": TestURL,
     "gpu": TestGPU,              "gpu_unittests": TestGPU,
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "interactive_ui": TestInteractiveUI,
+    "jingle": TestJingle,        "jingle_unittests": TestJingle,
     "layout": TestLayout,        "layout_tests": TestLayout,
     "webkit": TestLayout,
     "media": TestMedia,          "media_unittests": TestMedia,
@@ -543,7 +543,6 @@ class ChromeTests:
     "message_center_unittests" : TestMessageCenter,
     "net": TestNet,              "net_unittests": TestNet,
     "net_perf": TestNetPerf,     "net_perftests": TestNetPerf,
-    "jingle": TestJingle,        "jingle_unittests": TestJingle,
     "ppapi": TestPPAPI,          "ppapi_unittests": TestPPAPI,
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
     "reliability": TestReliability, "reliability_tests": TestReliability,
@@ -556,6 +555,7 @@ class ChromeTests:
     "sync_integration": TestSyncIntegration,
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
     "unit": TestUnit,            "unit_tests": TestUnit,
+    "url": TestURL,              "url_unittests": TestURL,
     "views": TestViews,          "views_unittests": TestViews,
   }
 
