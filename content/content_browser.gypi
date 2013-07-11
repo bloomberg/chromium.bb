@@ -31,6 +31,7 @@
     'port/browser/web_contents_view_port.h',
     'public/browser/access_token_store.h',
     'public/browser/android/compositor.h',
+    'public/browser/android/compositor_client.h',
     'public/browser/android/content_view_core.h',
     'public/browser/android/content_view_layer_renderer.h',
     'public/browser/android/devtools_auth.h',
