@@ -167,6 +167,7 @@
         'nso_target': 'libnacl_list_mappings.so',
         'build_glibc': 1,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'sources': ['list_mappings.c'],
       'dependencies': [

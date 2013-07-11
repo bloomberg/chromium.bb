@@ -19,6 +19,7 @@
         'nlib_target': 'libnosys.a',
         'build_glibc': 0,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'sources': [
         'access.c',
