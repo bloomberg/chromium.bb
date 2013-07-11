@@ -1275,6 +1275,9 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
   state.UpdateState(state.NextAction());
   EXPECT_TRUE(state.DrawSuspendedUntilCommit());
 
+  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
+
+  state.SetNeedsCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
             state.NextAction());
 

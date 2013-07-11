@@ -245,18 +245,14 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
 
   client.Reset();
   scheduler->SetMainThreadNeedsLayerTextures();
-  EXPECT_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
-                client,
-                0,
-                3);
-  // A commit was started by SetMainThreadNeedsLayerTextures().
-  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 3);
-  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 2, 3);
+  EXPECT_SINGLE_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
+                       client);
 
   // We should request a BeginFrame in anticipation of a draw.
   client.Reset();
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
   EXPECT_TRUE(client.needs_begin_frame());
 
   // No draw happens since the textures are acquired by the main thread.
@@ -264,6 +260,11 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
   EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_TRUE(client.needs_begin_frame());
+
+  scheduler->SetNeedsCommit();
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 2);
   EXPECT_TRUE(client.needs_begin_frame());
 
   // Commit will release the texture.
@@ -322,15 +323,29 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
   EXPECT_EQ(0, client.num_actions_());
   client.Reset();
 
-  // Once compositor draw complete, the delayed texture acquisition fires.
+  // No implicit commit is expected.
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 3);
   EXPECT_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
                 client,
                 1,
                 3);
-  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 2, 3);
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 2, 3);
   client.Reset();
+
+  // Compositor not scheduled to draw because textures are locked by main
+  // thread.
+  EXPECT_FALSE(client.needs_begin_frame());
+
+  // Needs an explicit commit from the main thread.
+  scheduler->SetNeedsCommit();
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 0, 2);
+  EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
+  client.Reset();
+
+  // Trigger the commit
+  scheduler->FinishCommit();
+  EXPECT_TRUE(client.needs_begin_frame());
 }
 
 TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
@@ -348,6 +363,7 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
   scheduler->SetNeedsCommit();
   scheduler->FinishCommit();
   scheduler->SetMainThreadNeedsLayerTextures();
+  scheduler->SetNeedsCommit();
   client.Reset();
   // Verify that pending texture acquisition fires when visibility
   // is lost in order to avoid a deadlock.

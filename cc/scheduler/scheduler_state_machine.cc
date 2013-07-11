@@ -330,8 +330,6 @@ void SchedulerStateMachine::UpdateState(Action action) {
     case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
       texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD;
       main_thread_needs_layer_textures_ = false;
-      if (commit_state_ != COMMIT_STATE_FRAME_IN_PROGRESS)
-        needs_commit_ = true;
       return;
   }
 }
