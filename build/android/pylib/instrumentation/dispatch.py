@@ -8,6 +8,7 @@ import logging
 import os
 
 from pylib import android_commands
+from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import shard
 from pylib.utils import report_results
@@ -36,8 +37,8 @@ def Dispatch(options):
   tests = test_pkg._GetAllMatchingTests(
       options.annotations, options.exclude_annotations, options.test_filter)
   if not tests:
-    logging.warning('No instrumentation tests to run with current args.')
-    return base_test_result.TestRunResults()
+    logging.error('No instrumentation tests to run with current args.')
+    return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
   attached_devices = android_commands.GetAttachedDevices()
   if not attached_devices:

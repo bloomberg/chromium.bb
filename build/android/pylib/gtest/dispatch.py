@@ -212,9 +212,11 @@ def Dispatch(options):
   Returns:
     base_test_result.TestRunResults object with the results of running the tests
   """
+  results = base_test_result.TestRunResults()
+
   if options.test_suite == 'help':
     _ListTestSuites()
-    return 0
+    return (results, 0)
 
   if options.use_xvfb:
     framebuffer = xvfb.Xvfb()
@@ -222,7 +224,6 @@ def Dispatch(options):
 
   all_test_suites = _FullyQualifiedTestSuites(options.exe, options.test_suite,
                                               options.build_type)
-  results = base_test_result.TestRunResults()
   exit_code = 0
   for suite_name, suite_path in all_test_suites:
     # Give each test suite its own copy of options.

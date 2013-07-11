@@ -12,6 +12,7 @@ from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import ports
+from pylib.base import base_test_result
 from pylib.base import shard
 from pylib.gtest import dispatch as gtest_dispatch
 from pylib.gtest import test_runner
@@ -41,7 +42,7 @@ def Dispatch(options):
 
   if not attached_devices:
     logging.critical('A device must be attached and online.')
-    return 1
+    return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
   # Reset the test port allocation. It's important to do it before starting
   # to dispatch any tests.
