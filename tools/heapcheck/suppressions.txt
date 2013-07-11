@@ -980,3 +980,12 @@
    fun:__RT_impl_Runtime_ParallelRecompile
    fun:v8::internal::Runtime_ParallelRecompile
 }
+{
+   bug_259188
+   Heapcheck:Leak
+   ...
+   fun:WebCore::V8PerIsolateData::create
+   fun:WebCore::V8PerIsolateData::ensureInitialized
+   fun:WebKit::initialize
+   fun:UnitTestTestSuite
+}

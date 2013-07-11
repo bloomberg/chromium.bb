@@ -7421,3 +7421,11 @@
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
    fun:ChromeMain
 }
+{
+   bug_259188
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore16V8PerIsolateData6createEPN2v87IsolateE
+   fun:_ZN7WebCore16V8PerIsolateData17ensureInitializedEPN2v87IsolateE
+   fun:_ZN6WebKit10initializeEPNS_8PlatformE
+}
