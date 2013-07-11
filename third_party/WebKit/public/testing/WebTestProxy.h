@@ -52,6 +52,7 @@
 
 namespace WebKit {
 class WebAccessibilityObject;
+class WebAudioDevice;
 class WebCachedURLRequest;
 class WebColorChooser;
 class WebColorChooserClient;

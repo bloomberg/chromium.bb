@@ -35,6 +35,7 @@
 #include <memory>
 
 namespace WebKit {
+class WebAudioDevice;
 class WebFrame;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -73,6 +74,8 @@ public:
     WebKit::WebRTCPeerConnectionHandler* createWebRTCPeerConnectionHandler(WebKit::WebRTCPeerConnectionHandlerClient*);
 
     WebKit::WebMIDIAccessor* createMIDIAccessor(WebKit::WebMIDIAccessorClient*);
+
+    WebKit::WebAudioDevice* createAudioDevice(double sampleRate);
 
 #if WEBTESTRUNNER_IMPLEMENTATION
     TestInterfaces* testInterfaces();

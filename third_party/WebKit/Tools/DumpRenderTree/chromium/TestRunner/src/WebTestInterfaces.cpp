@@ -30,6 +30,7 @@
 
 #include "public/testing/WebTestInterfaces.h"
 
+#include "MockWebAudioDevice.h"
 #include "MockWebMIDIAccessor.h"
 #include "MockWebMediaStreamCenter.h"
 #include "MockWebRTCPeerConnectionHandler.h"
@@ -107,6 +108,11 @@ WebRTCPeerConnectionHandler* WebTestInterfaces::createWebRTCPeerConnectionHandle
 WebMIDIAccessor* WebTestInterfaces::createMIDIAccessor(WebMIDIAccessorClient* client)
 {
     return new MockWebMIDIAccessor(client);
+}
+
+WebAudioDevice* WebTestInterfaces::createAudioDevice(double sampleRate)
+{
+    return new MockWebAudioDevice(sampleRate);
 }
 
 }
