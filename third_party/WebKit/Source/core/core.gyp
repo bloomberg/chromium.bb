@@ -356,7 +356,7 @@
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
         '../weborigin/weborigin.gyp:weborigin',
-        '<(angle_path)/src/build_angle.gyp:translator_glsl',
+        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
@@ -376,7 +376,7 @@
       'export_dependent_settings': [
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
-        '<(angle_path)/src/build_angle.gyp:translator_glsl',
+        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
@@ -402,7 +402,7 @@
         'include_dirs': [
           '<@(webcore_include_dirs)',
           '<(DEPTH)/gpu',
-          '<(angle_path)/include/GLSLANG',
+          '<(DEPTH)/third_party/angle_dx11/include/GLSLANG',
         ],
         'msvs_disabled_warnings': [
           4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
