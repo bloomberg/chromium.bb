@@ -664,7 +664,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // This must be done early enough since some helper functions like
     // IsTouchEnabled, needed to load resources, may call into the theme dll.
     EnableThemeSupportOnAllWindowStations();
-    ui::EnableHighDPISupport();
     SetupCRT(command_line);
 #endif
 
