@@ -7,7 +7,7 @@
 // DO NOT MANUALLY EDIT!
 %}
 struct DomainRule {
-  const char *name;
+  int name_offset;
   int type;  // flags: 1: exception, 2: wildcard, 4: private
 };
 %%

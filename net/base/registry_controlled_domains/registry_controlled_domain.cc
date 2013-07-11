@@ -65,7 +65,14 @@ const int kWildcardRule = 2;
 const int kPrivateRule = 4;
 
 const FindDomainPtr kDefaultFindDomainFunction = Perfect_Hash::FindDomain;
+
+// 'stringpool' is defined as a macro by the gperf-generated
+// "effective_tld_names.cc". Provide a real constant value for it instead.
+const char* const kDefaultStringPool = stringpool;
+#undef stringpool
+
 FindDomainPtr g_find_domain_function = kDefaultFindDomainFunction;
+const char* g_stringpool = kDefaultStringPool;
 
 size_t GetRegistryLengthImpl(
     const std::string& host,
@@ -106,35 +113,38 @@ size_t GetRegistryLengthImpl(
     // we're searching for arbitrary domains, there could be collisions.
     // Furthermore, if the apparent match is a private registry and we're not
     // including those, it can't be an actual match.
-    if (rule &&
-        (!(rule->type & kPrivateRule) ||
-            private_filter == INCLUDE_PRIVATE_REGISTRIES) &&
-        base::strncasecmp(domain_str, rule->name, domain_length) == 0) {
-      // Exception rules override wildcard rules when the domain is an exact
-      // match, but wildcards take precedence when there's a subdomain.
-      if (rule->type & kWildcardRule && (prev_start != std::string::npos)) {
-        // If prev_start == host_check_begin, then the host is the registry
-        // itself, so return 0.
-        return (prev_start == host_check_begin) ?
-            0 : (host.length() - prev_start);
-      }
-
-      if (rule->type & kExceptionRule) {
-        if (next_dot == std::string::npos) {
-          // If we get here, we had an exception rule with no dots (e.g.
-          // "!foo").  This would only be valid if we had a corresponding
-          // wildcard rule, which would have to be "*".  But we explicitly
-          // disallow that case, so this kind of rule is invalid.
-          NOTREACHED() << "Invalid exception rule";
-          return 0;
+    if (rule) {
+      bool do_check = !(rule->type & kPrivateRule) ||
+                      private_filter == INCLUDE_PRIVATE_REGISTRIES;
+      if (do_check && base::strncasecmp(domain_str,
+                                        g_stringpool + rule->name_offset,
+                                        domain_length) == 0) {
+        // Exception rules override wildcard rules when the domain is an exact
+        // match, but wildcards take precedence when there's a subdomain.
+        if (rule->type & kWildcardRule && (prev_start != std::string::npos)) {
+          // If prev_start == host_check_begin, then the host is the registry
+          // itself, so return 0.
+          return (prev_start == host_check_begin) ?
+              0 : (host.length() - prev_start);
         }
-        return host.length() - next_dot - 1;
-      }
 
-      // If curr_start == host_check_begin, then the host is the registry
-      // itself, so return 0.
-      return (curr_start == host_check_begin) ?
-          0 : (host.length() - curr_start);
+        if (rule->type & kExceptionRule) {
+          if (next_dot == std::string::npos) {
+            // If we get here, we had an exception rule with no dots (e.g.
+            // "!foo").  This would only be valid if we had a corresponding
+            // wildcard rule, which would have to be "*".  But we explicitly
+            // disallow that case, so this kind of rule is invalid.
+            NOTREACHED() << "Invalid exception rule";
+            return 0;
+          }
+          return host.length() - next_dot - 1;
+        }
+
+        // If curr_start == host_check_begin, then the host is the registry
+        // itself, so return 0.
+        return (curr_start == host_check_begin) ?
+            0 : (host.length() - curr_start);
+      }
     }
 
     if (next_dot >= host_check_len)  // Catches std::string::npos as well.
@@ -254,8 +264,10 @@ size_t GetRegistryLength(
   return GetRegistryLengthImpl(canon_host, unknown_filter, private_filter);
 }
 
-void SetFindDomainFunctionForTesting(FindDomainPtr function) {
+void SetFindDomainFunctionAndStringPoolForTesting(FindDomainPtr function,
+                                                  const char* stringpool) {
   g_find_domain_function = function ? function : kDefaultFindDomainFunction;
+  g_stringpool = stringpool ? stringpool : kDefaultStringPool;
 }
 
 }  // namespace registry_controlled_domains

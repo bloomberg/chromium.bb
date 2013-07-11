@@ -228,8 +228,8 @@ typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
 
 // Used for unit tests, so that a different perfect hash map from the full
 // list is used. Set to NULL to use the Default function.
-NET_EXPORT_PRIVATE void SetFindDomainFunctionForTesting(
-    FindDomainPtr fn);
+NET_EXPORT_PRIVATE void SetFindDomainFunctionAndStringPoolForTesting(
+    FindDomainPtr fn, const char* stringpool);
 
 }  // namespace registry_controlled_domains
 }  // namespace net

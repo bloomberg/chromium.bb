@@ -1,5 +1,5 @@
 /* C++ code produced by gperf version 3.0.3 */
-/* Command-line: gperf -a -L C++ -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D -T effective_tld_names_unittest2.gperf  */
+/* Command-line: gperf -a -L C++ -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -P -K name_offset -Q stringpool2 -D -T effective_tld_names_unittest2.gperf  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -35,7 +35,7 @@
 // found in the LICENSE file.
 // Test file used by registry_controlled_domain_unittest.
 // We edit this file manually, then run
-// gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -D -T effective_tld_names_unittest2.gperf >  effective_tld_names_unittest2.cc
+// gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -ZPerfect_Hash_Test2 -P -K name_offset -Q stringpool2 -D -T effective_tld_names_unittest2.gperf >  effective_tld_names_unittest2.cc
 // to generate the perfect hashmap.
 
 #define TOTAL_KEYWORDS 2
@@ -111,15 +111,26 @@ Perfect_Hash_Test2::hash (register const char *str, register unsigned int len)
   return hval;
 }
 
+struct stringpool2_t
+  {
+    char stringpool2_str0[sizeof("jp")];
+    char stringpool2_str1[sizeof("bar.jp")];
+  };
+static const struct stringpool2_t stringpool2_contents =
+  {
+    "jp",
+    "bar.jp"
+  };
+#define stringpool2 ((const char *) &stringpool2_contents)
 const struct DomainRule *
 Perfect_Hash_Test2::FindDomain (register const char *str, register unsigned int len)
 {
   static const struct DomainRule wordlist[] =
     {
 #line 15 "effective_tld_names_unittest2.gperf"
-      {"jp", 0},
+      {(int)(long)&((struct stringpool2_t *)0)->stringpool2_str0, 0},
 #line 16 "effective_tld_names_unittest2.gperf"
-      {"bar.jp", 0}
+      {(int)(long)&((struct stringpool2_t *)0)->stringpool2_str1, 0}
     };
 
   static const signed char lookup[] =
@@ -137,7 +148,7 @@ Perfect_Hash_Test2::FindDomain (register const char *str, register unsigned int 
 
           if (index >= 0)
             {
-              register const char *s = wordlist[index].name;
+              register const char *s = wordlist[index].name_offset + stringpool2;
 
               if (*str == *s && !strncmp (str + 1, s + 1, len - 1) && s[len] == '\0')
                 return &wordlist[index];

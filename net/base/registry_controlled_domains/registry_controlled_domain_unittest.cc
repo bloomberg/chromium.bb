@@ -7,12 +7,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "effective_tld_names_unittest1.cc"
+static const char* const Perfect_Hash_Test1_stringpool = stringpool1;
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH
 #undef MAX_WORD_LENGTH
 #undef MIN_HASH_VALUE
 #undef MAX_HASH_VALUE
 #include "effective_tld_names_unittest2.cc"
+static const char* const Perfect_Hash_Test2_stringpool = stringpool2;
 
 namespace net {
 namespace registry_controlled_domains {
@@ -58,17 +60,17 @@ bool CompareDomains(const std::string& url1, const std::string& url2) {
 
 class RegistryControlledDomainTest : public testing::Test {
  protected:
-  void UseDomainData(FindDomainPtr function) {
-    SetFindDomainFunctionForTesting(function);
+  void UseDomainData(FindDomainPtr function, const char* const stringpool) {
+    SetFindDomainFunctionAndStringPoolForTesting(function, stringpool);
   }
 
   virtual void TearDown() {
-    SetFindDomainFunctionForTesting(NULL);
+    SetFindDomainFunctionAndStringPoolForTesting(NULL, NULL);
   }
 };
 
 TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
-  UseDomainData(Perfect_Hash_Test1::FindDomain);
+  UseDomainData(Perfect_Hash_Test1::FindDomain, Perfect_Hash_Test1_stringpool);
 
   // Test GURL version of GetDomainAndRegistry().
   EXPECT_EQ("baz.jp", GetDomainFromURL("http://a.baz.jp/file.html"));    // 1
@@ -127,7 +129,7 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
-  UseDomainData(Perfect_Hash_Test1::FindDomain);
+  UseDomainData(Perfect_Hash_Test1::FindDomain, Perfect_Hash_Test1_stringpool);
 
   // Test GURL version of GetRegistryLength().
   EXPECT_EQ(2U, GetRegistryLengthFromURL("http://a.baz.jp/file.html",
@@ -246,7 +248,7 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
-  UseDomainData(Perfect_Hash_Test2::FindDomain);
+  UseDomainData(Perfect_Hash_Test2::FindDomain, Perfect_Hash_Test2_stringpool);
 
   EXPECT_TRUE(CompareDomains("http://a.b.bar.jp/file.html",
                              "http://a.b.bar.jp/file.html"));  // b.bar.jp
@@ -293,7 +295,8 @@ TEST_F(RegistryControlledDomainTest, TestDefaultData) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestPrivateRegistryHandling) {
-  UseDomainData(Perfect_Hash_Test1::FindDomain);
+  UseDomainData(Perfect_Hash_Test1::FindDomain, Perfect_Hash_Test1_stringpool);
+
   // Testing the same dataset for INCLUDE_PRIVATE_REGISTRIES and
   // EXCLUDE_PRIVATE_REGISTRIES arguments.
   // For the domain data used for this test, the private registries are

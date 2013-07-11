@@ -22,7 +22,7 @@ When updating src/net/base/registry_controlled_domains/effective_tld_names.dat:
 
 6. Run gperf on the new effective_tld_names.gperf:
      pushd src/net/base/registry_controlled_domains;
-     gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -D -m 10 \
+     gperf -a -L "C++" -C -c -o -t -k '*' -NFindDomain -P -K name_offset -D -m 10 \
          effective_tld_names.gperf > effective_tld_names.cc;
      popd;
    It will produce a new effective_tld_names.cc.
