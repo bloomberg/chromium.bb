@@ -1894,7 +1894,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
   {
     gfx::Vector2d scroll_delta(-8, -7);
     EXPECT_EQ(InputHandler::ScrollStarted,
-              host_impl_->ScrollBegin(gfx::Point(5, 5),
+              host_impl_->ScrollBegin(gfx::Point(),
                                       InputHandler::Wheel));
     host_impl_->ScrollBy(gfx::Point(), scroll_delta);
     host_impl_->ScrollEnd();
@@ -1933,7 +1933,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   {
     gfx::Vector2d scroll_delta(0, -10);
     EXPECT_EQ(InputHandler::ScrollStarted,
-              host_impl_->ScrollBegin(gfx::Point(5, 5),
+              host_impl_->ScrollBegin(gfx::Point(),
                                       InputHandler::NonBubblingGesture));
     host_impl_->ScrollBy(gfx::Point(), scroll_delta);
     host_impl_->ScrollEnd();
@@ -2362,7 +2362,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
   {
     gfx::Vector2d scroll_delta(0, -10);
     EXPECT_EQ(InputHandler::ScrollStarted,
-              host_impl_->ScrollBegin(gfx::Point(5, 5),
+              host_impl_->ScrollBegin(gfx::Point(),
                                       InputHandler::NonBubblingGesture));
     host_impl_->ScrollBy(gfx::Point(), scroll_delta);
     EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());

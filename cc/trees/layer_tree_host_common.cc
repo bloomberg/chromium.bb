@@ -1038,7 +1038,7 @@ static void CalculateDrawPropertiesInternal(
 
   gfx::Size bounds = layer->bounds();
   gfx::PointF anchor_point = layer->anchor_point();
-  gfx::PointF position = layer->position() - layer->ScrollDelta();
+  gfx::PointF position = layer->position() - layer->TotalScrollOffset();
 
   gfx::Transform combined_transform = parent_matrix;
   if (!layer->transform().IsIdentity()) {

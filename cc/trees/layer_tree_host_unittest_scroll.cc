@@ -97,6 +97,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->root_layer()->SetScrollable(true);
     layer_tree_host()->root_layer()->SetScrollOffset(initial_scroll_);
+    layer_tree_host()->root_layer()->SetBounds(gfx::Size(200, 200));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -238,7 +239,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     root_scroll_layer_ = ContentLayer::Create(&fake_content_layer_client_);
     root_scroll_layer_->SetBounds(gfx::Size(110, 110));
 
-    root_scroll_layer_->SetPosition(gfx::Point(0, 0));
+    root_scroll_layer_->SetPosition(gfx::Point());
     root_scroll_layer_->SetAnchorPoint(gfx::PointF());
 
     root_scroll_layer_->SetIsDrawable(true);
@@ -252,10 +253,15 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
                    base::Unretained(this)));
     child_layer_->SetBounds(gfx::Size(110, 110));
 
-    // Scrolls on the child layer will happen at 5, 5. If they are treated
-    // like device pixels, and device scale factor is 2, then they will
-    // be considered at 2.5, 2.5 in logical pixels, and will miss this layer.
-    child_layer_->SetPosition(gfx::Point(5, 5));
+    if (scroll_child_layer_) {
+      // Scrolls on the child layer will happen at 5, 5. If they are treated
+      // like device pixels, and device scale factor is 2, then they will
+      // be considered at 2.5, 2.5 in logical pixels, and will miss this layer.
+      child_layer_->SetPosition(gfx::Point(5, 5));
+    } else {
+      // Adjust the child layer horizontally so that scrolls will never hit it.
+      child_layer_->SetPosition(gfx::Point(60, 5));
+    }
     child_layer_->SetAnchorPoint(gfx::PointF());
 
     child_layer_->SetIsDrawable(true);
@@ -346,7 +352,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
       case 0: {
         // Gesture scroll on impl thread.
         InputHandler::ScrollStatus status = impl->ScrollBegin(
-            gfx::ToCeiledPoint(expected_scroll_layer_impl->position() +
+            gfx::ToCeiledPoint(expected_scroll_layer_impl->position() -
                                gfx::Vector2dF(0.5f, 0.5f)),
             InputHandler::Gesture);
         EXPECT_EQ(InputHandler::ScrollStarted, status);

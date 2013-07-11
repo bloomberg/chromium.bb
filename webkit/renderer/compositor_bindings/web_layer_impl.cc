@@ -227,11 +227,6 @@ void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {
 
 void WebLayerImpl::setScrollPosition(WebKit::WebPoint position) {
   layer_->SetScrollOffset(gfx::Point(position).OffsetFromOrigin());
-  // TODO(enne): Blink currently always updates scroll offset and layer position
-  // in tandem for frames in RenderLayerCompositor::frameViewDidScroll.
-  // So that this can be removed in Blink, temporarily do that work here.
-  // See: http://crbug.com/256381
-  layer_->SetPosition(gfx::PointAtOffsetFromOrigin(-layer_->scroll_offset()));
 }
 
 WebKit::WebPoint WebLayerImpl::scrollPosition() const {

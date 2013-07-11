@@ -426,7 +426,7 @@ TEST(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                identity_matrix,
                                identity_matrix,
                                gfx::PointF(),
-                               kScrollLayerPosition,
+                               gfx::PointF(),
                                gfx::Size(10, 20),
                                false);
   scroll_layer->SetScrollable(true);
@@ -465,7 +465,7 @@ TEST(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                arbitrary_translate,
                                identity_matrix,
                                gfx::PointF(),
-                               kScrollLayerPosition,
+                               gfx::PointF(),
                                gfx::Size(10, 20),
                                false);
   ExecuteCalculateDrawProperties(
