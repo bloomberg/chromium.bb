@@ -1108,6 +1108,7 @@ class Dump(object):
     self._stacktrace_lines = []
     self._global_stats = {} # used only in apply_policy
 
+    self._run_id = ''
     self._pagesize = 4096
     self._pageframe_length = 0
     self._pageframe_encoding = ''
@@ -1299,8 +1300,14 @@ class Dump(object):
             self._pageframe_encoding = 'base64'
           elif word == 'PageCount':
             self._has_pagecount = True
-      else:
+      elif self._lines[ln].startswith('RunID: '):
+        self._run_id = self._lines[ln][7:]
+      elif (self._lines[ln].startswith('MMAP_LIST:') or
+            self._lines[ln].startswith('GLOBAL_STATS:')):
+        # Skip until "MMAP_LIST:" or "GLOBAL_STATS" is found.
         break
+      else:
+        pass
       ln += 1
 
   def _parse_mmap_list(self):
