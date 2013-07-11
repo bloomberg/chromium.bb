@@ -34,6 +34,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/TraceEvent.h"
+#include "wtf/GetPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

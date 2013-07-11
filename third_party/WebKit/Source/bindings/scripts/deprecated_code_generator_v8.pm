@@ -167,9 +167,6 @@ my %nonWrapperTypes = ("CompareHow" => 1,
                        "DOMTimeStamp" => 1,
                        "Dictionary" => 1,
                        "EventListener" => 1,
-                       # FIXME: When EventTarget is an interface and not a mixin, fix this so that
-                       # EventTarget is treated as a wrapper type.
-                       "EventTarget" => 1,
                        "MediaQueryListListener" => 1,
                        "NodeFilter" => 1,
                        "SerializedScriptValue" => 1,
@@ -679,7 +676,7 @@ END
         $header{classPublic}->add("    static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);\n");
     }
 
-    if (InheritsExtendedAttribute($interface, "EventTarget")) {
+    if (InheritsInterface($interface, "EventTarget")) {
         $header{classPublic}->add("    static EventTarget* toEventTarget(v8::Handle<v8::Object>);\n");
     }
 
@@ -978,7 +975,7 @@ sub GetInternalFields
     my @customInternalFields = ();
     # Event listeners on DOM nodes are explicitly supported in the GC controller.
     if (!InheritsInterface($interface, "Node") &&
-        (InheritsExtendedAttribute($interface, "EventTarget") || HasEventListenerAttribute($interface))) {
+        (InheritsInterface($interface, "EventTarget") || HasEventListenerAttribute($interface))) {
         push(@customInternalFields, "eventListenerCacheIndex");
     }
     return @customInternalFields;
@@ -2797,7 +2794,7 @@ sub GenerateNamedConstructor
     }
 
     my $toEventTarget = "0";
-    if (InheritsExtendedAttribute($interface, "EventTarget")) {
+    if (InheritsInterface($interface, "EventTarget")) {
         $toEventTarget = "${v8ClassName}::toEventTarget";
     }
 
@@ -3866,7 +3863,7 @@ sub GenerateImplementation
     AddIncludesForType($interfaceName);
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
-    my $toEventTarget = InheritsExtendedAttribute($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
+    my $toEventTarget = InheritsInterface($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
     my $rootForGC = NeedsOpaqueRootForGC($interface) ? "${v8ClassName}::opaqueRootForGC" : "0";
 
     # Find the super descriptor.
@@ -4467,7 +4464,7 @@ ActiveDOMObject* ${v8ClassName}::toActiveDOMObject(v8::Handle<v8::Object> object
 END
     }
 
-    if (InheritsExtendedAttribute($interface, "EventTarget")) {
+    if (InheritsInterface($interface, "EventTarget")) {
         $implementation{nameSpaceWebCore}->add(<<END);
 EventTarget* ${v8ClassName}::toEventTarget(v8::Handle<v8::Object> object)
 {
@@ -5486,17 +5483,6 @@ sub NativeToJSValue
 
     AddIncludesForType($type);
 
-    if (IsDOMNodeType($type) || $type eq "EventTarget") {
-      if ($getScriptWrappable) {
-          # FIXME: Use safe handles
-          return "${indent}v8SetReturnValue(${getHolderContainer}, toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg));" if $isReturnValue;
-          return "$indent$receiver toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg);";
-      }
-      # FIXME: Use safe handles
-      return "${indent}v8SetReturnValue(${getHolderContainer}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
-      return "$indent$receiver toV8($nativeValue, $getCreationContext, $getIsolate);";
-    }
-
     if ($type eq "SerializedScriptValue") {
         AddToImplIncludes("$type.h");
         my $returnValue = "$nativeValue ? $nativeValue->deserialize() : v8::Handle<v8::Value>(v8::Null($getIsolate))";
@@ -5504,7 +5490,6 @@ sub NativeToJSValue
         return "$indent$receiver $returnValue;";
     }
 
-    AddToImplIncludes("wtf/RefCounted.h");
     AddToImplIncludes("wtf/RefPtr.h");
     AddToImplIncludes("wtf/GetPtr.h");
 

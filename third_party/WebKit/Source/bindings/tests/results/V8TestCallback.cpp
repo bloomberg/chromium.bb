@@ -28,7 +28,6 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "wtf/Assertions.h"
 #include "wtf/GetPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 namespace WebCore {
 
