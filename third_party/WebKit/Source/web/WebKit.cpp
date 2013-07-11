@@ -182,9 +182,11 @@ void shutdown()
         delete s_endOfTaskRunner;
         s_endOfTaskRunner = 0;
     }
-    v8::V8::Dispose();
 
     shutdownWithoutV8();
+
+    WebCore::V8PerIsolateData::dispose(v8::Isolate::GetCurrent());
+    v8::V8::Dispose();
 }
 
 void shutdownWithoutV8()
