@@ -53,6 +53,10 @@ FileError TruncateOnBlockingPool(internal::FileCache* cache,
                                  int64 length) {
   DCHECK(cache);
 
+  FileError error = cache->MarkDirty(resource_id, md5);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::PlatformFile file = base::CreatePlatformFile(
       local_cache_path,
@@ -68,7 +72,7 @@ FileError TruncateOnBlockingPool(internal::FileCache* cache,
   if (!base::TruncatePlatformFile(file, length))
     return FILE_ERROR_FAILED;
 
-  return cache->MarkDirty(resource_id, md5);
+  return FILE_ERROR_OK;
 }
 
 }  // namespace
@@ -159,8 +163,7 @@ void TruncateOperation::TruncateAfterTruncateOnBlockingPool(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == FILE_ERROR_OK)
-    observer_->OnCacheFileUploadNeededByOperation(resource_id);
+  observer_->OnCacheFileUploadNeededByOperation(resource_id);
 
   callback.Run(error);
 }
