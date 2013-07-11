@@ -30,6 +30,8 @@ define i32 @main() {
         return t, b
 
   def test_ll_bc_filetypes(self):
+    if not driver_test_utils.CanRunHost():
+      return
     ll, bc = self.getFakeLLAndBitcodeFile()
     self.assertTrue(filetype.FileType(ll.name) == 'll')
     self.assertTrue(filetype.FileType(bc.name) == 'po')
@@ -37,6 +39,8 @@ define i32 @main() {
     self.assertTrue(filetype.IsLLVMBitcode(bc.name))
 
   def test_inplace_finalize(self):
+    if not driver_test_utils.CanRunHost():
+      return
     ll, bc = self.getFakeLLAndBitcodeFile()
     self.assertTrue(filetype.FileType(bc.name) == 'po')
     self.assertTrue(filetype.IsLLVMBitcode(bc.name))
