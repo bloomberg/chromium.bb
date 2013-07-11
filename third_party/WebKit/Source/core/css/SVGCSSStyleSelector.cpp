@@ -128,10 +128,7 @@ void StyleResolver::applySVGProperty(CSSPropertyID id, CSSValue* value)
     if (value->isPrimitiveValue())
         primitiveValue = toCSSPrimitiveValue(value);
 
-    // FIXME: This should be a const StyleResolverState, but
-    // unfortunately colorFromPrimitiveValue
-    // has side-effects and is thus not const.
-    StyleResolverState& state = m_state;
+    const StyleResolverState& state = m_state;
     RenderStyle* style = state.style();
 
     bool isInherit = state.parentNode() && value->isInheritedValue();
