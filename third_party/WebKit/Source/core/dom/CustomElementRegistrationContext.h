@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,41 +28,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementRegistry_h
-#define CustomElementRegistry_h
+#ifndef CustomElementRegistrationContext_h
+#define CustomElementRegistrationContext_h
 
-#include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementDescriptor.h"
-#include "core/dom/CustomElementDescriptorHash.h"
 #include "core/dom/ExceptionCode.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
+#include "core/dom/QualifiedName.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
 class CustomElementConstructorBuilder;
 class Document;
+class Element;
 
-class CustomElementRegistry {
-    WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
+class CustomElementRegistrationContext : public RefCounted<CustomElementRegistrationContext> {
+public:
+    static PassRefPtr<CustomElementRegistrationContext> nullRegistrationContext();
+    static PassRefPtr<CustomElementRegistrationContext> create();
+
+    virtual ~CustomElementRegistrationContext() { }
+
+    // Model
+    static bool isValidTypeName(const AtomicString& type);
+    static bool isCustomTagName(const AtomicString& localName);
+    virtual CustomElementDescriptor describe(Element*) const = 0;
+
+    // Definitions
+    virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&) = 0;
+
+    // Instance creation
+    virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) = 0;
+    void setTypeExtension(Element*, const AtomicString& type);
+    virtual void didGiveTypeExtension(Element*, const AtomicString& type) = 0;
+
+    // Instance lifecycle
+    virtual void customElementAttributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
+    virtual void customElementDidEnterDocument(Element*) = 0;
+    virtual void customElementDidLeaveDocument(Element*) = 0;
+    virtual void customElementIsBeingDestroyed(Element*) = 0;
+
 protected:
-    friend class ActiveRegistrationContext;
-
-    CustomElementRegistry() { }
-    virtual ~CustomElementRegistry() { }
-
-    CustomElementDefinition* registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, ExceptionCode&);
-    CustomElementDefinition* find(const CustomElementDescriptor&) const;
-
-private:
-    typedef HashMap<CustomElementDescriptor, RefPtr<CustomElementDefinition> > DefinitionMap;
-    DefinitionMap m_definitions;
-    HashSet<AtomicString> m_registeredTypeNames;
+    CustomElementRegistrationContext() { }
 };
 
-} // namespace WebCore
+}
 
-#endif
+#endif // CustomElementRegistrationContext_h
+

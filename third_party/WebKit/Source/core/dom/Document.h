@@ -69,7 +69,7 @@ class CanvasRenderingContext;
 class CharacterData;
 class Comment;
 class ContextFeatures;
-class CustomElementRegistry;
+class CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMNamedFlowCollection;
 class DOMSecurityPolicy;
@@ -993,8 +993,7 @@ public:
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionCode&);
     ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionCode&);
     ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
-    CustomElementRegistry* registry() const { return m_registry.get(); }
-    CustomElementRegistry* ensureCustomElementRegistry();
+    CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
 
     void setImports(PassRefPtr<HTMLImportsController>);
     HTMLImportsController* imports() const { return m_imports.get(); }
@@ -1327,7 +1326,7 @@ private:
 
     OwnPtr<TextAutosizer> m_textAutosizer;
 
-    RefPtr<CustomElementRegistry> m_registry;
+    RefPtr<CustomElementRegistrationContext> m_registrationContext;
     RefPtr<HTMLImportsController> m_imports;
 
     bool m_scheduledTasksAreSuspended;

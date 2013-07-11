@@ -52,7 +52,7 @@
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/dom/CustomElementRegistry.h"
+#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
 #include "core/dom/DocumentEventQueue.h"
@@ -478,6 +478,13 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
         m_nodeListCounts[i] = 0;
 
     InspectorCounters::incrementCounter(InspectorCounters::DocumentCounter);
+
+    bool shouldProcessCustomElements =
+        (isHTMLDocument() || isXHTMLDocument())
+        && RuntimeEnabledFeatures::customDOMElementsEnabled();
+    m_registrationContext = shouldProcessCustomElements
+        ? CustomElementRegistrationContext::create()
+        : CustomElementRegistrationContext::nullRegistrationContext();
 }
 
 static void histogramMutationEventUsage(const unsigned short& listenerTypes)
@@ -584,7 +591,7 @@ void Document::dispose()
 
     detachParser();
 
-    m_registry.clear();
+    m_registrationContext.clear();
     m_imports.clear();
 
     // removeDetachedChildren() doesn't always unregister IDs,
@@ -704,15 +711,13 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     RefPtr<Element> element;
 
-    if (CustomElementRegistry::isCustomTagName(localName))
-        element = ensureCustomElementRegistry()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
+    if (CustomElementRegistrationContext::isCustomTagName(localName))
+        element = registrationContext()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     else
         element = createElement(localName, ec);
 
-    if (!typeExtension.isNull()) {
-        setTypeExtension(element.get(), typeExtension);
-        ensureCustomElementRegistry()->didGiveTypeExtension(element.get(), typeExtension);
-    }
+    if (!typeExtension.isNull())
+        registrationContext()->setTypeExtension(element.get(), typeExtension);
 
     return element;
 }
@@ -730,15 +735,13 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     }
 
     RefPtr<Element> element;
-    if (CustomElementRegistry::isCustomTagName(qName.localName()))
-        element = ensureCustomElementRegistry()->createCustomTagElement(this, qName);
+    if (CustomElementRegistrationContext::isCustomTagName(qName.localName()))
+        element = registrationContext()->createCustomTagElement(this, qName);
     else
         element = createElementNS(namespaceURI, qualifiedName, ec);
 
-    if (!typeExtension.isNull()) {
-        setTypeExtension(element.get(), typeExtension);
-        ensureCustomElementRegistry()->didGiveTypeExtension(element.get(), typeExtension);
-    }
+    if (!typeExtension.isNull())
+        registrationContext()->setTypeExtension(element.get(), typeExtension);
 
     return element;
 }
@@ -750,23 +753,9 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
 
 ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionCode& ec)
 {
-    if (!isHTMLDocument() && !isXHTMLDocument()) {
-        ec = NotSupportedError;
-        return ScriptValue();
-    }
-
     CustomElementConstructorBuilder constructorBuilder(state, &options);
-    ensureCustomElementRegistry()->registerElement(this, &constructorBuilder, name, ec);
+    registrationContext()->registerElement(this, &constructorBuilder, name, ec);
     return constructorBuilder.bindingsReturnValue();
-}
-
-CustomElementRegistry* Document::ensureCustomElementRegistry()
-{
-    if (!m_registry) {
-        ASSERT(isHTMLDocument() || isXHTMLDocument());
-        m_registry = adoptRef(new CustomElementRegistry());
-    }
-    return m_registry.get();
 }
 
 void Document::setImports(PassRefPtr<HTMLImportsController> imports)

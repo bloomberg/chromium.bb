@@ -1747,6 +1747,8 @@
             'dom/CustomElementDescriptor.h',
             'dom/CustomElementDescriptorHash.h',
             'dom/CustomElementLifecycleCallbacks.h',
+            'dom/CustomElementRegistrationContext.cpp',
+            'dom/CustomElementRegistrationContext.h',
             'dom/CustomElementRegistry.cpp',
             'dom/CustomElementRegistry.h',
             'dom/CustomElementUpgradeCandidateMap.cpp',

@@ -39,7 +39,7 @@ namespace WebCore {
 class HTMLElement;
 class SVGElement;
 
-template<typename ElementType>
+template<typename ElementType, typename WrapperType>
 class CustomElementWrapper {
 private:
     CustomElementWrapper();

@@ -31,11 +31,13 @@
 #include "config.h"
 #include "bindings/v8/CustomElementWrapper.h"
 
+#include "V8HTMLElement.h"
 #include "V8HTMLElementWrapperFactory.h"
+#include "V8SVGElement.h"
 #include "V8SVGElementWrapperFactory.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/V8PerContextData.h"
-#include "core/dom/CustomElementRegistry.h"
+#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGElement.h"
@@ -75,15 +77,15 @@ v8::Handle<v8::Object> createFallbackWrapper<SVGElement>(SVGElement* element, v8
 template<typename ElementType>
 v8::Handle<v8::Object> createUpgradeCandidateWrapper(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*))
 {
-    if (CustomElementRegistry::isCustomTagName(element->localName()))
+    if (CustomElementRegistrationContext::isCustomTagName(element->localName()))
         return createDirectWrapper(element, creationContext, isolate);
     if (createSpecificWrapper)
         return createSpecificWrapper(element, creationContext, isolate);
     return createFallbackWrapper(element, creationContext, isolate);
 }
 
-template<typename ElementType>
-v8::Handle<v8::Object> CustomElementWrapper<ElementType>::wrap(PassRefPtr<ElementType> element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*))
+template<typename ElementType, typename WrapperType>
+v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(PassRefPtr<ElementType> element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*))
 {
     ASSERT(DOMDataStore::getWrapper<V8Element>(element.get(), isolate).IsEmpty());
 
@@ -92,31 +94,30 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType>::wrap(PassRefPtr<Elemen
     // to never pass an empty creation context.
     v8::Handle<v8::Context> context = creationContext.IsEmpty() ? isolate->GetCurrentContext() : creationContext->CreationContext();
 
-    CustomElementRegistry* registry = element->document()->registry();
-    RefPtr<CustomElementDefinition> definition = registry->findFor(element.get());
-    if (!element->isUpgradedCustomElement() || !definition)
+    if (!element->isUpgradedCustomElement())
         return createUpgradeCandidateWrapper(element.get(), creationContext, isolate, createSpecificWrapper);
 
     V8PerContextData* perContextData = V8PerContextData::from(context);
     if (!perContextData)
         return v8::Handle<v8::Object>();
 
-    CustomElementBinding* customElementBinding = perContextData->customElementBinding(definition->descriptor().type());
+    CustomElementDescriptor descriptor = element->document()->registrationContext()->describe(element.get());
+    CustomElementBinding* binding = perContextData->customElementBinding(descriptor.type());
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, customElementBinding->wrapperType(), element.get(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, binding->wrapperType(), element.get(), isolate);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();
 
-    wrapper->SetPrototype(customElementBinding->prototype());
+    wrapper->SetPrototype(binding->prototype());
 
-    V8DOMWrapper::associateObjectWithWrapper<V8Element>(element, customElementBinding->wrapperType(), wrapper, isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<WrapperType>(element, binding->wrapperType(), wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
 
 template
-class CustomElementWrapper<HTMLElement>;
+class CustomElementWrapper<HTMLElement, V8HTMLElement>;
 
 template
-class CustomElementWrapper<SVGElement>;
+class CustomElementWrapper<SVGElement, V8SVGElement>;
 
 } // namespace WebCore

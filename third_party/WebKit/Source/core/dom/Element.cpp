@@ -42,8 +42,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
-#include "core/dom/CustomElementCallbackDispatcher.h"
-#include "core/dom/CustomElementRegistry.h"
+#include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentSharedObjectPool.h"
@@ -210,9 +209,8 @@ Element::~Element()
         data->clearShadow();
     }
 
-    if (isCustomElement() && document() && document()->registry()) {
-        document()->registry()->customElementWasDestroyed(this);
-    }
+    if (isCustomElement() && document() && document()->registrationContext())
+        document()->registrationContext()->customElementIsBeingDestroyed(this);
 
     if (hasSyntheticAttrChildNodes())
         detachAllAttrNodesFromElement();
@@ -948,9 +946,8 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 
 inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (RuntimeEnabledFeatures::customDOMElementsEnabled() && name == isAttr) {
-        document()->ensureCustomElementRegistry()->didGiveTypeExtension(this, newValue);
-    }
+    if (name == isAttr)
+        document()->registrationContext()->didGiveTypeExtension(this, newValue);
     attributeChanged(name, newValue, reason);
 }
 
@@ -1268,10 +1265,8 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (scope != treeScope())
         return InsertionDone;
 
-    if (isUpgradedCustomElement()) {
-        RefPtr<CustomElementDefinition> definition = document()->registry()->findFor(this);
-        CustomElementCallbackDispatcher::instance().enqueueEnteredDocumentCallback(definition->callbacks(), this);
-    }
+    if (isUpgradedCustomElement())
+        document()->registrationContext()->customElementDidEnterDocument(this);
 
     const AtomicString& idValue = getIdAttribute();
     if (!idValue.isNull())
@@ -1332,12 +1327,8 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (hasPendingResources())
             document()->accessSVGExtensions()->removeElementFromPendingResources(this);
 
-        if (isUpgradedCustomElement()) {
-            if (CustomElementRegistry* registry = document()->registry()) {
-                RefPtr<CustomElementDefinition> definition = registry->findFor(this);
-                CustomElementCallbackDispatcher::instance().enqueueLeftDocumentCallback(definition->callbacks(), this);
-            }
-        }
+        if (isUpgradedCustomElement() && document()->registrationContext())
+            document()->registrationContext()->customElementDidLeaveDocument(this);
     }
 }
 
@@ -2826,10 +2817,8 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
         if (attached() && document()->styleResolver() && document()->styleResolver()->hasSelectorForAttribute(name.localName()))
            setNeedsStyleRecalc();
 
-        if (isUpgradedCustomElement()) {
-            RefPtr<CustomElementDefinition> definition = document()->registry()->findFor(this);
-            CustomElementCallbackDispatcher::instance().enqueueAttributeChangedCallback(definition->callbacks(), this, name.localName(), oldValue, newValue);
-        }
+        if (isUpgradedCustomElement())
+            document()->registrationContext()->customElementAttributeDidChange(this, name.localName(), oldValue, newValue);
     }
 
     if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(this, name))

@@ -837,7 +837,7 @@ print F <<END
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 
-#include "CustomElementRegistry.h"
+#include "CustomElementRegistrationContext.h"
 
 namespace WebCore {
 
@@ -891,8 +891,8 @@ print F <<END
     if (!document)
         return 0;
 
-    if (RuntimeEnabledFeatures::customDOMElementsEnabled() && CustomElementRegistry::isCustomTagName(qName.localName())) {
-        RefPtr<Element> element = document->ensureCustomElementRegistry()->createCustomTagElement(document, qName);
+    if (CustomElementRegistrationContext::isCustomTagName(qName.localName())) {
+        RefPtr<Element> element = document->registrationContext()->createCustomTagElement(document, qName);
         ASSERT_WITH_SECURITY_IMPLICATION(element->is$parameters{namespace}Element());
         return static_pointer_cast<$parameters{namespace}Element>(element.release());
     }
@@ -1148,7 +1148,7 @@ END
 
     Create$parameters{namespace}ElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
     if (element->isCustomElement())
-        return CustomElementWrapper<$parameters{namespace}Element>::wrap(element, creationContext, isolate, createWrapperFunction);
+        return CustomElementWrapper<$parameters{namespace}Element, V8$parameters{namespace}Element>::wrap(element, creationContext, isolate, createWrapperFunction);
     if (createWrapperFunction)
     {
 END
