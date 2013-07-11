@@ -749,6 +749,8 @@
             'css/resolver/ElementStyleResources.h',
             'css/resolver/FilterOperationResolver.cpp',
             'css/resolver/FilterOperationResolver.h',
+            'css/resolver/MatchResult.cpp',
+            'css/resolver/MatchResult.h',
             'css/resolver/ScopedStyleResolver.cpp',
             'css/resolver/ScopedStyleResolver.h',
             'css/resolver/StyleBuilderCustom.cpp',

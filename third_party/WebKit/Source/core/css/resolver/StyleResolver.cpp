@@ -142,17 +142,6 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl.get();
 }
 
-
-void MatchResult::addMatchedProperties(const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
-{
-    matchedProperties.grow(matchedProperties.size() + 1);
-    MatchedProperties& newProperties = matchedProperties.last();
-    newProperties.properties = const_cast<StylePropertySet*>(properties);
-    newProperties.linkMatchType = linkMatchType;
-    newProperties.whitelistType = propertyWhitelistType;
-    matchedRules.append(rule);
-}
-
 StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     : m_document(document)
     , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
@@ -2276,15 +2265,6 @@ bool StyleResolver::affectedByViewportChange() const
             return true;
     }
     return false;
-}
-
-inline MatchedProperties::MatchedProperties()
-    : possiblyPaddedMember(0)
-{
-}
-
-inline MatchedProperties::~MatchedProperties()
-{
 }
 
 void MatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

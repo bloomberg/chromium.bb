@@ -34,6 +34,7 @@
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
+#include "core/css/resolver/MatchResult.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -114,52 +115,6 @@ enum RuleMatchingBehavior {
     MatchAllRules,
     MatchAllRulesExcludingSMIL,
     MatchOnlyUserAgentRules,
-};
-
-// FIXME: Move to separate file.
-struct RuleRange {
-    RuleRange(int& firstRuleIndex, int& lastRuleIndex): firstRuleIndex(firstRuleIndex), lastRuleIndex(lastRuleIndex) { }
-    int& firstRuleIndex;
-    int& lastRuleIndex;
-};
-
-struct MatchRanges {
-    MatchRanges() : firstUARule(-1), lastUARule(-1), firstAuthorRule(-1), lastAuthorRule(-1), firstUserRule(-1), lastUserRule(-1) { }
-    int firstUARule;
-    int lastUARule;
-    int firstAuthorRule;
-    int lastAuthorRule;
-    int firstUserRule;
-    int lastUserRule;
-    RuleRange UARuleRange() { return RuleRange(firstUARule, lastUARule); }
-    RuleRange authorRuleRange() { return RuleRange(firstAuthorRule, lastAuthorRule); }
-    RuleRange userRuleRange() { return RuleRange(firstUserRule, lastUserRule); }
-};
-
-struct MatchedProperties {
-    MatchedProperties();
-    ~MatchedProperties();
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
-    RefPtr<StylePropertySet> properties;
-    union {
-        struct {
-            unsigned linkMatchType : 2;
-            unsigned whitelistType : 2;
-        };
-        // Used to make sure all memory is zero-initialized since we compute the hash over the bytes of this object.
-        void* possiblyPaddedMember;
-    };
-};
-
-struct MatchResult {
-    MatchResult() : isCacheable(true) { }
-    Vector<MatchedProperties, 64> matchedProperties;
-    Vector<StyleRule*, 64> matchedRules;
-    MatchRanges ranges;
-    bool isCacheable;
-
-    void addMatchedProperties(const StylePropertySet* properties, StyleRule* = 0, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
 };
 
 // FIXME: Move to separate file.
