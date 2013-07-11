@@ -392,6 +392,28 @@ base::string16 WalletErrorMessage(wallet::WalletClient::ErrorType error_type) {
   return base::string16();
 }
 
+gfx::Image GetGeneratedCardImage(const string16& card_number) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::ImageSkia* card =
+      rb.GetImageSkiaNamed(IDR_AUTOFILL_GENERATED_CARD);
+  gfx::Canvas canvas(card->size(), ui::SCALE_FACTOR_100P, false);
+  canvas.DrawImageInt(*card, 0, 0);
+
+#if !defined(OS_ANDROID)
+  gfx::Rect display_rect(gfx::Point(), card->size());
+  display_rect.Inset(10, display_rect.height() / 5, 10, 0);
+  canvas.DrawStringInt(card_number,
+                       rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(5),
+                       SK_ColorBLACK,
+                       display_rect.x(), display_rect.y(),
+                       display_rect.width(), display_rect.height(),
+                       gfx::Canvas::NO_SUBPIXEL_RENDERING);
+#endif
+
+  gfx::ImageSkia skia(canvas.ExtractImageRep());
+  return gfx::Image(skia);
+}
+
 }  // namespace
 
 AutofillDialogController::~AutofillDialogController() {}
@@ -760,8 +782,6 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   DialogOverlayState state;
-  // TODO(estade): use the correct image and strings below.
-  state.image = rb.GetImageNamed(IDR_PRODUCT_LOGO_NAME_48);
 
   state.strings.push_back(DialogOverlayString());
   DialogOverlayString& string = state.strings.back();
@@ -772,20 +792,30 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
 
   // First-run, post-submit, Wallet expository page.
   if (full_wallet_ && full_wallet_->required_actions().empty()) {
-    string.text = ASCIIToUTF16("...consectetur adipisicing elit");
+    string16 cc_number = full_wallet_->GetInfo(CREDIT_CARD_NUMBER);
+    DCHECK_EQ(16U, cc_number.size());
+    state.image = GetGeneratedCardImage(
+        ASCIIToUTF16("xxxx xxxx xxxx ") +
+        cc_number.substr(cc_number.size() - 4));
+    string.text = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
 
     state.strings.push_back(DialogOverlayString());
     DialogOverlayString& subtext = state.strings.back();
     subtext.font = rb.GetFont(ui::ResourceBundle::BaseFont);
-    subtext.text = ASCIIToUTF16("sed do eiusmod tempor incididunt ut labore "
-        "et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
-        "exercitation ullamco laboris nisi ut aliquip ex ea commodo "
-        "consequat.");
+    subtext.text = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_CARD_GENERATION_EXPLANATION);
 
-    state.button_text = ASCIIToUTF16("OK, gotcha");
+    state.button_text = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_CARD_GENERATION_OK_BUTTON);
   } else {
+    // TODO(estade): fix this (animation?).
+    state.image =
+        GetGeneratedCardImage(ASCIIToUTF16("xxxx xxxx xx..."));
+
     // "Submitting" waiting page.
-    string.text = ASCIIToUTF16("Lorem ipsum dolor sit amet...");
+    string.text = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS);
     string.alignment = gfx::ALIGN_CENTER;
   }
 

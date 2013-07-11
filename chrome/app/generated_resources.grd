@@ -10825,6 +10825,20 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Warning: You are not connected to production Wallet servers. Issued cards are probably invalid.
       </message>
 
+      <!--- Autofill dialog: Wallet interstitials -->
+      <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS" desc="Text the user sees while waiting for the wallet servers to respond with a generated card number.">
+        Generating Google Wallet Virtual Online card...
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE" desc="Text the user sees after the wallet servers respond with a generated card number.">
+        Your card has been protected by Google Wallet.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_EXPLANATION" desc="More detailed text the user sees after the wallet servers respond with a generated card number.">
+        Google Wallet generates a new credit card number for each transaction, so the merchant never sees your personal card number.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_OK_BUTTON" desc="Text for the button users have to press to proceed past the wallet card generation text.">
+        OK, got it
+      </message>
+
       <!--- Autofill dialog: Wallet error messages -->
       <message name="IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR" desc="Text explaining that the user's Wallet account cannot be used.">
         There's something wrong with your Google Wallet account.

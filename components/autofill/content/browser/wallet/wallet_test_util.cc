@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -85,13 +86,17 @@ scoped_ptr<Address> GetTestMinimalAddress() {
 scoped_ptr<FullWallet> GetTestFullWallet() {
   base::Time::Exploded exploded;
   base::Time::Now().LocalExplode(&exploded);
-  return scoped_ptr<FullWallet>(new FullWallet(FutureYear(),
+  scoped_ptr<FullWallet> wallet(new FullWallet(FutureYear(),
                                                12,
-                                               "iin",
-                                               "rest",
+                                               "528512",
+                                               "5ec4feecf9d6",
                                                GetTestAddress(),
                                                GetTestShippingAddress(),
                                                std::vector<RequiredAction>()));
+  std::vector<uint8> one_time_pad;
+  base::HexStringToBytes("5F04A8704183", &one_time_pad);
+  wallet->set_one_time_pad(one_time_pad);
+  return wallet.Pass();
 }
 
 scoped_ptr<Instrument> GetTestInstrument() {
