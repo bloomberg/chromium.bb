@@ -95,7 +95,7 @@ const CGFloat kGestureCompleteProgress = 0.3;
 
 - (void)dealloc {
   [[BrowserWindowController
-      browserWindowControllerForView:[self view]] onHistoryOverlayHidden];
+      browserWindowControllerForView:[self view]] onOverlappedViewHidden];
   [self.view removeFromSuperview];
   [super dealloc];
 }
@@ -154,7 +154,7 @@ const CGFloat kGestureCompleteProgress = 0.3;
                        positioned:NSWindowAbove
                        relativeTo:parent_];
   [[BrowserWindowController
-      browserWindowControllerForView:[self view]] onHistoryOverlayShown];
+      browserWindowControllerForView:[self view]] onOverlappedViewShown];
 }
 
 - (void)dismiss {

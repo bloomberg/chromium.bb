@@ -1997,13 +1997,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
-- (void)onHistoryOverlayShown {
-  ++historyOverlayCount_;
+- (void)onOverlappedViewShown {
+  ++overlappedViewCount_;
   [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
-- (void)onHistoryOverlayHidden {
-  --historyOverlayCount_;
+- (void)onOverlappedViewHidden {
+  --overlappedViewCount_;
   [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
