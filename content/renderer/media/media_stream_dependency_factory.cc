@@ -14,6 +14,7 @@
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
+#include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -25,6 +26,7 @@
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "media/filters/gpu_video_decoder.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -490,13 +492,20 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     DCHECK(!audio_device_.get());
     audio_device_ = new WebRtcAudioDeviceImpl();
 
-    cricket::WebRtcVideoDecoderFactory* decoder_factory = NULL;
-    cricket::WebRtcVideoEncoderFactory* encoder_factory = NULL;
+    scoped_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
+    scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
+    const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding)) {
+      scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories =
+          RenderThreadImpl::current()->GetGpuFactories();
+      if (gpu_factories.get() != NULL)
+        decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
+    }
 #if defined(GOOGLE_TV)
     // PeerConnectionFactory will hold the ownership of this
     // VideoDecoderFactory.
-    decoder_factory = decoder_factory_tv_ = new RTCVideoDecoderFactoryTv;
+    decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv);
 #endif
 
 #if defined(ENABLE_WEBRTC) && defined(OS_CHROMEOS)
@@ -506,7 +515,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
       // encoder factory to |vc_manager_| because the manager outlives it.
       RtcEncodingVideoCapturerFactory* rtc_encoding_capturer_factory =
           new RtcEncodingVideoCapturerFactory();
-      encoder_factory = rtc_encoding_capturer_factory;
+      encoder_factory.reset(rtc_encoding_capturer_factory);
       vc_manager_->set_encoding_capturer_factory(
           rtc_encoding_capturer_factory->AsWeakPtr());
     }
@@ -516,8 +525,8 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,
                                             audio_device_.get(),
-                                            encoder_factory,
-                                            decoder_factory));
+                                            encoder_factory.release(),
+                                            decoder_factory.release()));
     if (factory.get())
       pc_factory_ = factory;
     else

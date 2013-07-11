@@ -367,8 +367,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     {
       base::AutoLock auto_lock(current_frame_lock_);
       DCHECK(!current_frame_used_);
-      current_frame_ =
-          media::VideoFrame::CreateBlackFrame(frame->natural_size());
+      current_frame_ = frame;
     }
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);

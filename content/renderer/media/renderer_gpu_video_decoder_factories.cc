@@ -30,6 +30,7 @@ RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
       render_thread_async_waiter_(false, false) {
   if (compositor_message_loop_->BelongsToCurrentThread()) {
     AsyncGetContext(context);
+    compositor_loop_async_waiter_.Reset();
     return;
   }
   // Threaded compositor requires us to wait for the context to be acquired.
@@ -64,7 +65,11 @@ media::VideoDecodeAccelerator*
 RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
     media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Client* client) {
-  DCHECK(!compositor_message_loop_->BelongsToCurrentThread());
+  if (compositor_message_loop_->BelongsToCurrentThread()) {
+    AsyncCreateVideoDecodeAccelerator(profile, client);
+    compositor_loop_async_waiter_.Reset();
+    return vda_.release();
+  }
   // The VDA is returned in the vda_ member variable by the
   // AsyncCreateVideoDecodeAccelerator() function.
   compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -104,7 +109,13 @@ uint32 RendererGpuVideoDecoderFactories::CreateTextures(
     uint32 texture_target) {
   uint32 sync_point = 0;
 
-  DCHECK(!compositor_message_loop_->BelongsToCurrentThread());
+  if (compositor_message_loop_->BelongsToCurrentThread()) {
+    AsyncCreateTextures(count, size, texture_target, &sync_point);
+    texture_ids->swap(created_textures_);
+    texture_mailboxes->swap(created_texture_mailboxes_);
+    compositor_loop_async_waiter_.Reset();
+    return sync_point;
+  }
   compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateTextures, this,
       count, size, texture_target, &sync_point));
@@ -160,7 +171,10 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
 }
 
 void RendererGpuVideoDecoderFactories::DeleteTexture(uint32 texture_id) {
-  DCHECK(!compositor_message_loop_->BelongsToCurrentThread());
+  if (compositor_message_loop_->BelongsToCurrentThread()) {
+    AsyncDeleteTexture(texture_id);
+    return;
+  }
   compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncDeleteTexture, this, texture_id));
 }
@@ -261,7 +275,9 @@ void RendererGpuVideoDecoderFactories::AsyncReadPixels(
 
 base::SharedMemory* RendererGpuVideoDecoderFactories::CreateSharedMemory(
     size_t size) {
-  DCHECK(!main_message_loop_->BelongsToCurrentThread());
+  if (main_message_loop_->BelongsToCurrentThread()) {
+    return ChildThread::current()->AllocateSharedMemory(size);
+  }
   main_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory, this,
       size));

@@ -2948,21 +2948,8 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink.get();
   }
 
-  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories;
-  WebGraphicsContext3DCommandBufferImpl* context3d = NULL;
-  if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
-    context3d = RenderThreadImpl::current()->GetGpuVDAContext3D();
-  if (context3d) {
-    scoped_refptr<base::MessageLoopProxy> factories_loop =
-        RenderThreadImpl::current()->compositor_message_loop_proxy();
-    if (!factories_loop.get())
-      factories_loop = base::MessageLoopProxy::current();
-    GpuChannelHost* gpu_channel_host =
-        RenderThreadImpl::current()->EstablishGpuChannelSync(
-            CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-    gpu_factories = new RendererGpuVideoDecoderFactories(
-        gpu_channel_host, factories_loop, context3d);
-  }
+  scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories =
+      RenderThreadImpl::current()->GetGpuFactories();
 
   WebMediaPlayerParams params(
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),

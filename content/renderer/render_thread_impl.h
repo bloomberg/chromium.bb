@@ -20,6 +20,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "media/filters/gpu_video_decoder.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GrContext;
@@ -252,6 +253,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // on the two next scheduled calls, so idle notifications are
   // not sent for at least one notification delay.
   void PostponeIdleNotification();
+
+  // Gets gpu factories. Returns NULL if VDA is disabled or a graphics context
+  // cannot be obtained.
+  scoped_refptr<media::GpuVideoDecoder::Factories> GetGpuFactories();
 
   // Returns a graphics context shared among all
   // RendererGpuVideoDecoderFactories, or NULL on error.  Context remains owned

@@ -229,6 +229,9 @@ const char kEnableSCTPDataChannels[]        = "enable-sctp-data-channels";
 // Enable WebRTC to open TCP server sockets.
 const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
 
+// Enables HW decode acceleration for WebRTC.
+const char kEnableWebRtcHWDecoding[]        = "enable-webrtc-hw-decoding";
+
 // Enable CSS Transitions / Animations on the Web Animations model.
 const char kEnableWebAnimationsCSS[]        = "enable-web-animations-css";
 

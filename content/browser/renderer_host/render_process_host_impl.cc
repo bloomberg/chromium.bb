@@ -918,6 +918,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(ENABLE_WEBRTC)
     switches::kEnableWebRtcAecRecordings,
     switches::kEnableWebRtcTcpServerSocket,
+    switches::kEnableWebRtcHWDecoding,
 #endif
 #if defined(ANDROID) && !defined(GOOGLE_TV)
     switches::kEnableWebKitMediaSource,
