@@ -1922,7 +1922,7 @@ bool Editor::setSelectionOffsets(int selectionStart, int selectionEnd)
     if (!range)
         return false;
 
-    return m_frame->selection()->setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, false);
+    return m_frame->selection()->setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, true);
 }
 
 void Editor::transpose()

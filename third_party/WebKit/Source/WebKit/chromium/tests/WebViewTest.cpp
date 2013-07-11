@@ -477,6 +477,43 @@ TEST_F(WebViewTest, ConfirmCompositionCursorPositionChange)
     webView->close();
 }
 
+TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("text_area_populated.html"));
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "text_area_populated.html");
+    webView->setInitialFocus(false);
+
+    WebVector<WebCompositionUnderline> emptyUnderlines;
+
+    webView->setEditableSelectionOffsets(4, 4);
+    webView->setCompositionFromExistingText(8, 12, emptyUnderlines);
+
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", std::string(info.value.utf8().data()));
+    EXPECT_EQ(4, info.selectionStart);
+    EXPECT_EQ(4, info.selectionEnd);
+    EXPECT_EQ(8, info.compositionStart);
+    EXPECT_EQ(12, info.compositionEnd);
+
+    webView->confirmComposition(WebWidget::KeepSelection);
+    info = webView->textInputInfo();
+    EXPECT_EQ(4, info.selectionStart);
+    EXPECT_EQ(4, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    std::string compositionText("\n");
+    webView->confirmComposition(WebString::fromUTF8(compositionText.c_str()));
+    info = webView->textInputInfo();
+    EXPECT_EQ(5, info.selectionStart);
+    EXPECT_EQ(5, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+    EXPECT_EQ("0123\n456789abcdefghijklmnopqrstuvwxyz", std::string(info.value.utf8().data()));
+
+    webView->close();
+}
+
 TEST_F(WebViewTest, FormChange)
 {
     FormChangeWebViewClient client;
