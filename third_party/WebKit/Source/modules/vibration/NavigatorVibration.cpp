@@ -23,11 +23,9 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebVibration.h"
 
 namespace WebCore {
-
-// Maximum duration of a vibration is 10 seconds.
-const unsigned kVibrationDurationMax = 10000;
 
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
@@ -55,7 +53,7 @@ bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
 
     // If any pattern entry is too long then abort.
     for (size_t i = 0; i < length; ++i) {
-        if (pattern[i] > kVibrationDurationMax)
+        if (pattern[i] > WebKit::kVibrationDurationMax)
             return false;
     }
 
