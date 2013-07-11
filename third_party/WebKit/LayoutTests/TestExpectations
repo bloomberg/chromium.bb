@@ -455,8 +455,8 @@ webkit.org/b/84719 [ Win ] svg/text/select-text-svgfont.html [ Failure Pass ]
 
 webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/84854 [ Win ] svg/batik/text/textOnPath.svg [ Failure ImageOnlyFailure Pass ]
-webkit.org/b/84854 [ Win ] svg/batik/text/verticalTextOnPath.svg [ Failure ImageOnlyFailure Pass ]
+webkit.org/b/84854 [ Win7 ] svg/batik/text/textOnPath.svg [ Failure ImageOnlyFailure Pass ]
+webkit.org/b/84854 [ Win7 ] svg/batik/text/verticalTextOnPath.svg [ Failure ImageOnlyFailure Pass ]
 
 webkit.org/b/85107 svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure Pass ]
 
