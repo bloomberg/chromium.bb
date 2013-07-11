@@ -25,8 +25,6 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       blur_observed_(false),
       advance_focus_observed_(false),
       was_hidden_observed_(false),
-      stop_observed_(false),
-      reload_observed_(false),
       set_damage_buffer_observed_(false),
       input_observed_(false),
       load_stop_observed_(false),
@@ -172,28 +170,6 @@ void TestBrowserPluginGuest::WaitUntilHidden() {
   was_hidden_observed_ = false;
 }
 
-void TestBrowserPluginGuest::WaitForReload() {
-  if (reload_observed_) {
-    reload_observed_ = false;
-    return;
-  }
-
-  reload_message_loop_runner_ = new MessageLoopRunner();
-  reload_message_loop_runner_->Run();
-  reload_observed_ = false;
-}
-
-void TestBrowserPluginGuest::WaitForStop() {
-  if (stop_observed_) {
-    stop_observed_ = false;
-    return;
-  }
-
-  stop_message_loop_runner_ = new MessageLoopRunner();
-  stop_message_loop_runner_->Run();
-  stop_observed_ = false;
-}
-
 void TestBrowserPluginGuest::WaitForInput() {
   if (input_observed_) {
     input_observed_ = false;
@@ -246,20 +222,6 @@ void TestBrowserPluginGuest::OnTakeFocus(bool reverse) {
   if (advance_focus_message_loop_runner_.get())
     advance_focus_message_loop_runner_->Quit();
   BrowserPluginGuest::OnTakeFocus(reverse);
-}
-
-void TestBrowserPluginGuest::OnReload(int instance_id) {
-  reload_observed_ = true;
-  if (reload_message_loop_runner_.get())
-    reload_message_loop_runner_->Quit();
-  BrowserPluginGuest::OnReload(instance_id);
-}
-
-void TestBrowserPluginGuest::OnStop(int instance_id) {
-  stop_observed_ = true;
-  if (stop_message_loop_runner_.get())
-    stop_message_loop_runner_->Quit();
-  BrowserPluginGuest::OnStop(instance_id);
 }
 
 void TestBrowserPluginGuest::SetDamageBuffer(

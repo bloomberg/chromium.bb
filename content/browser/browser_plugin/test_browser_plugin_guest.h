@@ -40,8 +40,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
                                   const WebKit::WebInputEvent* event) OVERRIDE;
   virtual void OnSetFocus(int instance_id, bool focused) OVERRIDE;
   virtual void OnTakeFocus(bool reverse) OVERRIDE;
-  virtual void OnReload(int instance_id) OVERRIDE;
-  virtual void OnStop(int instance_id) OVERRIDE;
   virtual void SetDamageBuffer(
       const BrowserPluginHostMsg_ResizeGuest_Params& params) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
@@ -63,10 +61,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitUntilHidden();
   // Waits until guest exits.
   void WaitForExit();
-  // Waits until a reload request is observed.
-  void WaitForReload();
-  // Waits until a stop request is observed.
-  void WaitForStop();
   // Waits until input is observed.
   void WaitForInput();
   // Waits until 'loadstop' is observed.
@@ -85,8 +79,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   bool blur_observed_;
   bool advance_focus_observed_;
   bool was_hidden_observed_;
-  bool stop_observed_;
-  bool reload_observed_;
   bool set_damage_buffer_observed_;
   bool input_observed_;
   bool load_stop_observed_;
@@ -104,8 +96,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   scoped_refptr<MessageLoopRunner> blur_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> advance_focus_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> was_hidden_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> reload_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> stop_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> damage_buffer_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> input_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> load_stop_message_loop_runner_;

@@ -80,4 +80,52 @@ class WebviewGoFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebviewGoFunction);
 };
 
+class WebviewReloadFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.reload", WEBVIEW_RELOAD);
+
+  WebviewReloadFunction();
+
+ protected:
+  virtual ~WebviewReloadFunction();
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewReloadFunction);
+};
+
+class WebviewStopFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.stop", WEBVIEW_STOP);
+
+  WebviewStopFunction();
+
+ protected:
+  virtual ~WebviewStopFunction();
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewStopFunction);
+};
+
+class WebviewTerminateFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.terminate", WEBVIEW_TERMINATE);
+
+  WebviewTerminateFunction();
+
+ protected:
+  virtual ~WebviewTerminateFunction();
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewTerminateFunction);
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_

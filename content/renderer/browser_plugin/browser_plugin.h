@@ -117,13 +117,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // renderer.
   void UpdateDeviceScaleFactor(float device_scale_factor);
 
-  // Tells the BrowserPlugin to terminate the guest process.
-  void TerminateGuest();
-
-  // A request from JavaScript has been made to stop the loading of the page.
-  void Stop();
-  // A request from JavaScript has been made to reload the page.
-  void Reload();
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
   // A request from content client to track lifetime of a JavaScript object.

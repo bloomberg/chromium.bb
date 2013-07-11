@@ -453,25 +453,6 @@ TEST_F(BrowserPluginTest, RemovePluginBeforeNavigation) {
       BrowserPluginHostMsg_PluginDestroyed::ID));
 }
 
-TEST_F(BrowserPluginTest, StopMethod) {
-  const char* kCallStop =
-    "document.getElementById('browserplugin').stop();";
-  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-  ExecuteJavaScript(kCallStop);
-  EXPECT_TRUE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_Stop::ID));
-}
-
-TEST_F(BrowserPluginTest, ReloadMethod) {
-  const char* kCallReload =
-    "document.getElementById('browserplugin').reload();";
-  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-  ExecuteJavaScript(kCallReload);
-  EXPECT_TRUE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_Reload::ID));
-}
-
-
 // Verify that the 'partition' attribute on the browser plugin is parsed
 // correctly.
 TEST_F(BrowserPluginTest, PartitionAttribute) {

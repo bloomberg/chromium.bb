@@ -311,40 +311,6 @@ class BrowserPluginBindingTrackObjectLifetime
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingTrackObjectLifetime);
 };
 
-class BrowserPluginBindingReload : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingReload()
-      : BrowserPluginMethodBinding(browser_plugin::kMethodReload, 0) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    bindings->instance()->Reload();
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingReload);
-};
-
-class BrowserPluginBindingStop : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingStop()
-      : BrowserPluginMethodBinding(browser_plugin::kMethodStop, 0) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    bindings->instance()->Stop();
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingStop);
-};
-
 // Note: This is a method that is used internally by the <webview> shim only.
 // This should not be exposed to developers.
 class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
@@ -365,23 +331,6 @@ class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingSetPermission);
-};
-
-class BrowserPluginBindingTerminate : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingTerminate()
-      : BrowserPluginMethodBinding(browser_plugin::kMethodTerminate, 0) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    bindings->instance()->TerminateGuest();
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingTerminate);
 };
 
 // BrowserPluginPropertyBinding ------------------------------------------------
@@ -743,10 +692,7 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
   method_bindings_.push_back(new BrowserPluginBindingGetInstanceID);
   method_bindings_.push_back(new BrowserPluginBindingGetGuestInstanceID);
-  method_bindings_.push_back(new BrowserPluginBindingReload);
   method_bindings_.push_back(new BrowserPluginBindingSetPermission);
-  method_bindings_.push_back(new BrowserPluginBindingStop);
-  method_bindings_.push_back(new BrowserPluginBindingTerminate);
   method_bindings_.push_back(new BrowserPluginBindingTrackObjectLifetime);
 
   property_bindings_.push_back(new BrowserPluginPropertyBindingAutoSize);

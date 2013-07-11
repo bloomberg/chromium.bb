@@ -169,23 +169,10 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_Attach,
                     BrowserPluginHostMsg_Attach_Params /* params */,
                     base::DictionaryValue /* extra_params */)
 
-// Tells the browser process to terminate the guest associated with the
-// browser plugin associated with the provided |instance_id|.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_TerminateGuest,
-                    int /* instance_id */)
-
 // Tells the guest to focus or defocus itself.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetFocus,
                     int /* instance_id */,
                     bool /* enable */)
-
-// Tell the guest to stop loading.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Stop,
-                    int /* instance_id */)
-
-// Tell the guest to reload.
-IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Reload,
-                    int /* instance_id */)
 
 // Sends an input event to the guest.
 IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,

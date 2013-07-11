@@ -107,3 +107,60 @@ bool WebviewGoFunction::RunImpl() {
   guest->Go(relative_index);
   return true;
 }
+
+WebviewStopFunction::WebviewStopFunction() {
+}
+
+WebviewStopFunction::~WebviewStopFunction() {
+}
+
+bool WebviewStopFunction::RunImpl() {
+  int instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  guest->Stop();
+  return true;
+}
+
+WebviewReloadFunction::WebviewReloadFunction() {
+}
+
+WebviewReloadFunction::~WebviewReloadFunction() {
+}
+
+bool WebviewReloadFunction::RunImpl() {
+  int instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  guest->Reload();
+  return true;
+}
+
+WebviewTerminateFunction::WebviewTerminateFunction() {
+}
+
+WebviewTerminateFunction::~WebviewTerminateFunction() {
+}
+
+bool WebviewTerminateFunction::RunImpl() {
+  int instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  guest->Terminate();
+  return true;
+}

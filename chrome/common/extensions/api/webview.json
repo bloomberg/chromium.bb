@@ -84,6 +84,36 @@
             "name": "relativeIndex"
           }
         ]
+      },
+      {
+        "name": "reload",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          }
+        ]
+      },
+      {
+        "name": "stop",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          }
+        ]
+      },
+      {
+        "name": "terminate",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          }
+        ]
       }
     ]
   }

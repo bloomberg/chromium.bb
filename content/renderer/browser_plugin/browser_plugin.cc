@@ -975,30 +975,6 @@ void BrowserPlugin::WeakCallbackForTrackedObject(
   }
 }
 
-void BrowserPlugin::TerminateGuest() {
-  if (!HasGuestInstanceID() || guest_crashed_)
-    return;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_TerminateGuest(render_view_routing_id_,
-                                              guest_instance_id_));
-}
-
-void BrowserPlugin::Stop() {
-  if (!HasGuestInstanceID())
-    return;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_Stop(render_view_routing_id_,
-                                    guest_instance_id_));
-}
-
-void BrowserPlugin::Reload() {
-  if (!HasGuestInstanceID())
-    return;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_Reload(render_view_routing_id_,
-                                      guest_instance_id_));
-}
-
 void BrowserPlugin::UpdateGuestFocusState() {
   if (!HasGuestInstanceID())
     return;

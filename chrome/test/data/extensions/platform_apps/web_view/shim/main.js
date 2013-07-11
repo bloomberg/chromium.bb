@@ -584,6 +584,31 @@ function testLoadAbortIllegalFileURL() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the reload method on webview functions as expected.
+function testReload() {
+  var triggerNavUrl = 'data:text/html,trigger navigation';
+  var webview = document.createElement('webview');
+
+  var loadCommitCount = 0;
+  webview.addEventListener('loadstop', function(e) {
+    if (loadCommitCount < 2) {
+      webview.reload();
+    } else if (loadCommitCount == 2) {
+      embedder.test.succeed();
+    } else {
+      embedder.test.fail();
+    }
+  });
+  webview.addEventListener('loadcommit', function(e) {
+    embedder.test.assertEq(triggerNavUrl, e.url);
+    embedder.test.assertTrue(e.isTopLevel);
+    loadCommitCount++;
+  });
+
+  webview.setAttribute('src', triggerNavUrl);
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testSize': testSize,
   'testAPIMethodExistence': testAPIMethodExistence,
@@ -607,7 +632,8 @@ embedder.test.testList = {
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
-  'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL
+  'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
+  'testReload': testReload
 };
 
 onload = function() {

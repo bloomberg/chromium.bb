@@ -55,6 +55,15 @@ class WebViewGuest : public GuestView,
   // current navigation entry.
   void Go(int relative_index);
 
+  // Reload the guest.
+  void Reload();
+
+  // Stop loading the guest.
+  void Stop();
+
+  // Kill the guest process.
+  void Terminate();
+
   extensions::ScriptExecutor* script_executor() {
     return script_executor_.get();
   }

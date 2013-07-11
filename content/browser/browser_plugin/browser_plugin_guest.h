@@ -330,8 +330,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnLockMouseAck(int instance_id, bool succeeded);
   void OnNavigateGuest(int instance_id, const std::string& src);
   void OnPluginDestroyed(int instance_id);
-  // Reload the guest. Overriden in tests.
-  virtual void OnReload(int instance_id);
   // Grab the new damage buffer from the embedder, and resize the guest's
   // web contents.
   void OnResizeGuest(int instance_id,
@@ -365,16 +363,12 @@ class CONTENT_EXPORT BrowserPluginGuest
   // collection. See RenderThreadImpl::IdleHandler (executed when hidden) and
   // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
   void OnSetVisibility(int instance_id, bool visible);
-  // Stop loading the guest. Overriden in tests.
-  virtual void OnStop(int instance_id);
   // Message from embedder acknowledging last HW buffer.
   void OnSwapBuffersACK(int instance_id,
                         int route_id,
                         int gpu_host_id,
                         const std::string& mailbox_name,
                         uint32 sync_point);
-
-  void OnTerminateGuest(int instance_id);
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
   void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);

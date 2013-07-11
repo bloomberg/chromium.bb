@@ -14,15 +14,6 @@ var eventBindings = require('event_bindings');
 var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
     'minwidth', 'maxheight', 'maxwidth'];
 
-
-// All exposed api methods for <webview>, these are forwarded to the browser
-// plugin.
-var WEB_VIEW_API_METHODS = [
-  'reload',
-  'stop',
-  'terminate'
-];
-
 var WEB_VIEW_EVENTS = {
   'exit' : ['processId', 'reason'],
   'responsive' : ['processId'],
@@ -208,17 +199,36 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
 
   webviewNode['go'] = function(relativeIndex) {
     var instanceId = browserPluginNode.getGuestInstanceId();
-    if (!instanceId)
+    if (!instanceId) {
       return;
+    }
     chrome.webview.go(instanceId, relativeIndex);
   };
 
-  $Array.forEach(WEB_VIEW_API_METHODS, function(apiMethod) {
-    webviewNode[apiMethod] = function(var_args) {
-      return $Function.apply(browserPluginNode[apiMethod],
-          browserPluginNode, arguments);
-    };
-  }, this);
+  webviewNode['reload'] = function() {
+    var instanceId = browserPluginNode.getGuestInstanceId();
+    if (!instanceId) {
+      return;
+    }
+    chrome.webview.reload(instanceId);
+  };
+
+  webviewNode['stop'] = function() {
+    var instanceId = browserPluginNode.getGuestInstanceId();
+    if (!instanceId) {
+      return;
+    }
+    chrome.webview.stop(instanceId);
+  };
+
+  webviewNode['terminate'] = function() {
+    var instanceId = browserPluginNode.getGuestInstanceId();
+    if (!instanceId) {
+      return;
+    }
+    chrome.webview.terminate(instanceId);
+  };
+
   this.setupExecuteCodeAPI_();
 };
 

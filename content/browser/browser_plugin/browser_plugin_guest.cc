@@ -347,7 +347,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest, OnNavigateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed, OnPluginDestroyed)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_RespondPermission,
                         OnRespondPermission)
@@ -357,8 +356,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_TerminateGuest, OnTerminateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateGeometry, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK)
@@ -938,7 +935,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_LockMouse_ACK::ID:
     case BrowserPluginHostMsg_NavigateGuest::ID:
     case BrowserPluginHostMsg_PluginDestroyed::ID:
-    case BrowserPluginHostMsg_Reload::ID:
     case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_RespondPermission::ID:
     case BrowserPluginHostMsg_SetAutoSize::ID:
@@ -946,8 +942,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_SetFocus::ID:
     case BrowserPluginHostMsg_SetName::ID:
     case BrowserPluginHostMsg_SetVisibility::ID:
-    case BrowserPluginHostMsg_Stop::ID:
-    case BrowserPluginHostMsg_TerminateGuest::ID:
     case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
     case BrowserPluginHostMsg_UpdateGeometry::ID:
     case BrowserPluginHostMsg_UpdateRect_ACK::ID:
@@ -1201,13 +1195,6 @@ void BrowserPluginGuest::OnPluginDestroyed(int instance_id) {
   Destroy();
 }
 
-void BrowserPluginGuest::OnReload(int instance_id) {
-  // TODO(fsamuel): Don't check for repost because we don't want to show
-  // Chromium's repost warning. We might want to implement a separate API
-  // for registering a callback if a repost is about to happen.
-  GetWebContents()->GetController().Reload(false);
-}
-
 void BrowserPluginGuest::OnResizeGuest(
     int instance_id,
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
@@ -1301,10 +1288,6 @@ void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
     GetWebContents()->WasHidden();
 }
 
-void BrowserPluginGuest::OnStop(int instance_id) {
-  GetWebContents()->Stop();
-}
-
 void BrowserPluginGuest::OnRespondPermission(
     int instance_id,
     BrowserPluginPermissionType permission_type,
@@ -1339,14 +1322,6 @@ void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
         RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
   render_widget_host->AcknowledgeSwapBuffersToRenderer();
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
-}
-
-void BrowserPluginGuest::OnTerminateGuest(int instance_id) {
-  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Terminate"));
-  base::ProcessHandle process_handle =
-      GetWebContents()->GetRenderProcessHost()->GetHandle();
-  if (process_handle)
-    base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
 }
 
 void BrowserPluginGuest::OnUnlockMouse() {
