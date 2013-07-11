@@ -95,6 +95,10 @@ public:
         return m_frameStatus;
     }
 
+    virtual size_t frameCount() { return 1; }
+    virtual int repetitionCount() const { return cAnimationNone; }
+    virtual float frameDuration() const { return 0; }
+
 protected:
     PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size)
     {
