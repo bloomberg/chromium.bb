@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
 #include "base/format_macros.h"
@@ -535,6 +537,29 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
   *out += "}";
 }
 
+void TraceEvent::AppendPrettyPrinted(std::ostringstream* out) const {
+  *out << name_ << "[";
+  *out << TraceLog::GetCategoryGroupName(category_group_enabled_);
+  *out << "]";
+  if (arg_names_[0]) {
+    *out << ", {";
+    for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
+      if (i > 0)
+        *out << ", ";
+      *out << arg_names_[i] << ":";
+      std::string value_as_text;
+
+      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
+        convertable_values_[i]->AppendAsTraceFormat(&value_as_text);
+      else
+        AppendValueAsJSON(arg_types_[i], arg_values_[i], &value_as_text);
+
+      *out << value_as_text;
+    }
+    *out << "}";
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TraceResultBuffer
@@ -798,6 +823,19 @@ TraceLog::TraceLog()
   SetProcessID(0);
 #else
   SetProcessID(static_cast<int>(GetCurrentProcId()));
+
+  // NaCl also shouldn't access the command line.
+  if (CommandLine::InitializedForCurrentProcess() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceToConsole)) {
+    std::string category_string =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kTraceToConsole);
+
+    if (category_string.empty())
+      category_string = "*";
+
+    SetEnabled(CategoryFilter(category_string), ECHO_TO_CONSOLE);
+  }
 #endif
 
   logged_events_.reset(GetTraceBuffer());
@@ -1064,7 +1102,7 @@ void TraceLog::SetNotificationCallback(
 TraceBuffer* TraceLog::GetTraceBuffer() {
   if (trace_options_ & RECORD_CONTINUOUSLY)
     return new TraceBufferRingBuffer();
-  else if (trace_options_ & ECHO_TO_VLOG)
+  else if (trace_options_ & ECHO_TO_CONSOLE)
     return new TraceBufferDiscardsEvents();
   return new TraceBufferVector();
 }
@@ -1136,7 +1174,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   DCHECK(name);
 
   TimeDelta duration;
-  if (phase == TRACE_EVENT_PHASE_END && trace_options_ & ECHO_TO_VLOG) {
+  if (phase == TRACE_EVENT_PHASE_END && trace_options_ & ECHO_TO_CONSOLE) {
     duration = timestamp - thread_event_start_times_[thread_id].top();
     thread_event_start_times_[thread_id].pop();
   }
@@ -1194,7 +1232,14 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       }
     }
 
-    if (trace_options_ & ECHO_TO_VLOG) {
+    TraceEvent trace_event(thread_id,
+        now, phase, category_group_enabled, name, id,
+        num_args, arg_names, arg_types, arg_values,
+        convertable_values, flags);
+
+    logged_events_->AddEvent(trace_event);
+
+    if (trace_options_ & ECHO_TO_CONSOLE) {
       std::string thread_name = thread_names_[thread_id];
       if (thread_colors_.find(thread_name) == thread_colors_.end())
         thread_colors_[thread_name] = (thread_colors_.size() % 6) + 1;
@@ -1212,18 +1257,12 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       for (size_t i = 0; i < depth; ++i)
         log << "| ";
 
-      log << base::StringPrintf("'%c', %s", phase, name);
-
+      trace_event.AppendPrettyPrinted(&log);
       if (phase == TRACE_EVENT_PHASE_END)
         log << base::StringPrintf(" (%.3f ms)", duration.InMillisecondsF());
 
-      VLOG(0) << log.str() << "\x1b[0;m";
+      LOG(ERROR) << log.str() << "\x1b[0;m";
     }
-
-    logged_events_->AddEvent(TraceEvent(thread_id,
-        now, phase, category_group_enabled, name, id,
-        num_args, arg_names, arg_types, arg_values,
-        convertable_values, flags));
 
     if (logged_events_->IsFull())
       notifier.AddNotificationWhileLocked(TRACE_BUFFER_FULL);
@@ -1232,7 +1271,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       notifier.AddNotificationWhileLocked(EVENT_WATCH_NOTIFICATION);
   } while (0); // release lock
 
-  if (phase == TRACE_EVENT_PHASE_BEGIN && trace_options_ & ECHO_TO_VLOG)
+  if (phase == TRACE_EVENT_PHASE_BEGIN && trace_options_ & ECHO_TO_CONSOLE)
     thread_event_start_times_[thread_id].push(timestamp);
 
   notifier.SendNotificationIfAny();

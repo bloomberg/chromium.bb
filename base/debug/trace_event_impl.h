@@ -101,6 +101,7 @@ class BASE_EXPORT TraceEvent {
                                  size_t count,
                                  std::string* out);
   void AppendAsJSON(std::string* out) const;
+  void AppendPrettyPrinted(std::ostringstream* out) const;
 
   static void AppendValueAsJSON(unsigned char type,
                                 TraceValue value,
@@ -290,8 +291,8 @@ class BASE_EXPORT TraceLog {
     // Enable the sampling profiler.
     ENABLE_SAMPLING = 1 << 2,
 
-    // Echo to VLOG. Events are discared.
-    ECHO_TO_VLOG = 1 << 3
+    // Echo to console. Events are discared.
+    ECHO_TO_CONSOLE = 1 << 3
   };
 
   static TraceLog* GetInstance();

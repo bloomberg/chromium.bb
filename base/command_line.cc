@@ -201,6 +201,11 @@ CommandLine* CommandLine::ForCurrentProcess() {
   return current_process_commandline_;
 }
 
+// static
+bool CommandLine::InitializedForCurrentProcess() {
+  return !!current_process_commandline_;
+}
+
 #if defined(OS_WIN)
 // static
 CommandLine CommandLine::FromString(const std::wstring& command_line) {

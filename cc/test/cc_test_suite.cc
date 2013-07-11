@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "cc/base/switches.h"
@@ -23,20 +22,6 @@ CCTestSuite::~CCTestSuite() {}
 void CCTestSuite::Initialize() {
   base::TestSuite::Initialize();
   RegisterPathProvider();
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kCCUnittestsTraceEventsToVLOG)) {
-    std::string category_string =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kCCUnittestsTraceEventsToVLOG);
-
-    if (!category_string.size())
-      category_string = "cc";
-
-    base::debug::TraceLog::GetInstance()->SetEnabled(
-        base::debug::CategoryFilter(category_string),
-        base::debug::TraceLog::ECHO_TO_VLOG);
-  }
 
   message_loop_.reset(new base::MessageLoop);
 

@@ -5,6 +5,7 @@
 #include "content/child/child_thread.h"
 
 #include "base/allocator/allocator_extension.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
@@ -149,6 +150,19 @@ void ChildThread::Init() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceToConsole)) {
+    std::string category_string =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kTraceToConsole);
+
+    if (!category_string.size())
+      category_string = "*";
+
+    base::debug::TraceLog::GetInstance()->SetEnabled(
+        base::debug::CategoryFilter(category_string),
+        base::debug::TraceLog::ECHO_TO_CONSOLE);
+  }
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,

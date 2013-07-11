@@ -72,6 +72,9 @@ class BASE_EXPORT CommandLine {
   // only mutate if you know what you're doing!
   static CommandLine* ForCurrentProcess();
 
+  // Returns true if the CommandLine has been initialized for the given process.
+  static bool InitializedForCurrentProcess();
+
 #if defined(OS_WIN)
   static CommandLine FromString(const std::wstring& command_line);
 #endif

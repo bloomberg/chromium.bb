@@ -147,6 +147,7 @@ void BrowserChildProcessHostImpl::Launch(
     switches::kEnableDCHECK,
     switches::kEnableLogging,
     switches::kLoggingLevel,
+    switches::kTraceToConsole,
     switches::kV,
     switches::kVModule,
 #if defined(OS_POSIX)
