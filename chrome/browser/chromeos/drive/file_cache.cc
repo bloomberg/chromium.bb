@@ -331,8 +331,8 @@ FileError FileCache::Pin(const std::string& resource_id) {
   FileCacheEntry cache_entry;
   storage_->GetCacheEntry(resource_id, &cache_entry);
   cache_entry.set_is_pinned(true);
-  storage_->PutCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
+  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 void FileCache::UnpinOnUIThread(const std::string& resource_id,
@@ -358,10 +358,12 @@ FileError FileCache::Unpin(const std::string& resource_id) {
   // Now that file operations have completed, update metadata.
   if (cache_entry.is_present()) {
     cache_entry.set_is_pinned(false);
-    storage_->PutCacheEntry(resource_id, cache_entry);
+    if (!storage_->PutCacheEntry(resource_id, cache_entry))
+      return FILE_ERROR_FAILED;
   } else {
     // Remove the existing entry if we are unpinning a non-present file.
-    storage_->RemoveCacheEntry(resource_id);
+    if  (!storage_->RemoveCacheEntry(resource_id))
+      return FILE_ERROR_FAILED;
   }
 
   // Now it's a chance to free up space if needed.
@@ -441,8 +443,8 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
 
   // Now that file operations have completed, update metadata.
   cache_entry.set_is_dirty(true);
-  storage_->PutCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
+  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 FileError FileCache::ClearDirty(const std::string& resource_id,
@@ -475,8 +477,8 @@ FileError FileCache::ClearDirty(const std::string& resource_id,
   // Now that file operations have completed, update metadata.
   cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(false);
-  storage_->PutCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
+  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 void FileCache::RemoveOnUIThread(const std::string& resource_id,
@@ -510,9 +512,8 @@ FileError FileCache::Remove(const std::string& resource_id) {
     return FILE_ERROR_FAILED;
 
   // Now that all file operations have completed, remove from metadata.
-  storage_->RemoveCacheEntry(resource_id);
-
-  return FILE_ERROR_OK;
+  return storage_->RemoveCacheEntry(resource_id) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 void FileCache::ClearAllOnUIThread(const InitializeCacheCallback& callback) {
@@ -611,8 +612,8 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
   cache_entry.set_md5(md5);
   cache_entry.set_is_present(true);
   cache_entry.set_is_dirty(false);
-  storage_->PutCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
+  return storage_->PutCacheEntry(resource_id, cache_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 FileError FileCache::MarkAsMounted(const std::string& resource_id,
@@ -630,12 +631,13 @@ FileError FileCache::MarkAsMounted(const std::string& resource_id,
 
   // Ensure the file is readable to cros_disks. See crbug.com/236994.
   base::FilePath path = GetCacheFilePath(resource_id);
-  file_util::SetPosixFilePermissions(
-      path,
-      file_util::FILE_PERMISSION_READ_BY_USER |
-      file_util::FILE_PERMISSION_WRITE_BY_USER |
-      file_util::FILE_PERMISSION_READ_BY_GROUP |
-      file_util::FILE_PERMISSION_READ_BY_OTHERS);
+  if (!file_util::SetPosixFilePermissions(
+          path,
+          file_util::FILE_PERMISSION_READ_BY_USER |
+          file_util::FILE_PERMISSION_WRITE_BY_USER |
+          file_util::FILE_PERMISSION_READ_BY_GROUP |
+          file_util::FILE_PERMISSION_READ_BY_OTHERS))
+    return FILE_ERROR_FAILED;
 
   mounted_files_.insert(resource_id);
 
@@ -668,8 +670,10 @@ bool FileCache::ClearAll() {
   // Remove entries on the metadata.
   scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
       storage_->GetCacheEntryIterator();
-  for (; !it->IsAtEnd(); it->Advance())
-    storage_->RemoveCacheEntry(it->GetID());
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (!storage_->RemoveCacheEntry(it->GetID()))
+      return false;
+  }
 
   if (it->HasError())
     return false;
