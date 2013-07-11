@@ -70,19 +70,20 @@ void LinkImport::process()
     if (!m_owner)
         return;
 
-    if (!m_owner->document()->frame() && !m_owner->document()->import())
+    if (!m_owner->document()->frame() && !m_owner->document()->imports())
         return;
 
     LinkRequestBuilder builder(m_owner);
     if (!builder.isValid())
         return;
 
-    if (!m_owner->document()->import()) {
+    HTMLImportsController* controller = m_owner->document()->imports();
+    if (!controller) {
         ASSERT(m_owner->document()->frame()); // The document should be the master.
-        HTMLImportsController::provideTo(m_owner->document());
+        m_owner->document()->setImports(HTMLImportsController::create(m_owner->document()));
+        controller = m_owner->document()->imports();
     }
 
-    HTMLImportsController* controller = m_owner->document()->import()->controller();
     if (RefPtr<HTMLImportLoader> found = controller->findLinkFor(builder.url())) {
         m_loader = found;
         return;
@@ -104,15 +105,15 @@ void LinkImport::ownerRemoved()
 }
 
 
-PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* parent, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
+PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImportsController* controller, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
 {
-    RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(parent, url, resource));
-    loader->controller()->addImport(loader);
-    return loader.release();
+    RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(controller, url, resource));
+    controller->addImport(loader);
+    return loader;
 }
 
-HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
-    : m_parent(parent)
+HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
+    : m_controller(controller)
     , m_state(StateLoading)
     , m_resource(resource)
     , m_url(url)
@@ -122,8 +123,6 @@ HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url, const Ca
 
 HTMLImportLoader::~HTMLImportLoader()
 {
-    ASSERT(!m_parent);
-    ASSERT(!m_importedDocument);
     if (m_resource)
         m_resource->removeClient(this);
 }
@@ -168,18 +167,18 @@ void HTMLImportLoader::dispose()
     }
 
 
-    if (HTMLImportsController* controller = this->controller())
-        controller->didLoad(this);
+    if (m_controller)
+        m_controller->didLoad();
 }
 
 HTMLImportLoader::State HTMLImportLoader::startParsing(const ResourceResponse& response)
 {
     // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
-    if (!controller()->cachedResourceLoader()->canAccess(m_resource.get()))
+    if (!m_controller->cachedResourceLoader()->canAccess(m_resource.get()))
         return StateError;
 
     m_importedDocument = HTMLDocument::create(0, response.url());
-    m_importedDocument->setImport(this);
+    m_importedDocument->setImports(m_controller);
     m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), response.textEncodingName());
 
     return StateLoading;
@@ -187,7 +186,7 @@ HTMLImportLoader::State HTMLImportLoader::startParsing(const ResourceResponse& r
 
 HTMLImportLoader::State HTMLImportLoader::finish()
 {
-    if (!m_parent)
+    if (!m_controller)
         return StateError;
     // The writer instance indicates that a part of the document can be already loaded.
     // We don't take such a case as an error because the partially-loaded document has been visible from script at this point.
@@ -205,32 +204,14 @@ Document* HTMLImportLoader::importedDocument() const
 
 void HTMLImportLoader::importDestroyed()
 {
-    m_parent = 0;
-    m_importedDocument->setImport(0);
+    m_controller = 0;
     m_importedDocument.clear();
 }
 
-HTMLImportsController* HTMLImportLoader::controller()
-{
-    return m_parent ? m_parent->controller() : 0;
-}
 
-HTMLImport* HTMLImportLoader::parent()
+PassRefPtr<HTMLImportsController> HTMLImportsController::create(Document* master)
 {
-    return m_parent;
-}
-
-Document* HTMLImportLoader::document()
-{
-    return m_importedDocument.get();
-}
-
-void HTMLImportsController::provideTo(Document* master)
-{
-    DEFINE_STATIC_LOCAL(const char*, name, ("HTMLImportsController"));
-    OwnPtr<HTMLImportsController> controller = adoptPtr(new HTMLImportsController(master));
-    master->setImport(controller.get());
-    Supplement<ScriptExecutionContext>::provideTo(master, name, controller.release());
+    return adoptRef(new HTMLImportsController(master));
 }
 
 HTMLImportsController::HTMLImportsController(Document* master)
@@ -242,7 +223,6 @@ HTMLImportsController::~HTMLImportsController()
 {
     for (size_t i = 0; i < m_imports.size(); ++i)
         m_imports[i]->importDestroyed();
-    m_master->setImport(0);
 }
 
 void HTMLImportsController::addImport(PassRefPtr<HTMLImportLoader> link)
@@ -256,12 +236,10 @@ void HTMLImportsController::showSecurityErrorMessage(const String& message)
     m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-void HTMLImportsController::didLoad(HTMLImportLoader* loadedImport)
+void HTMLImportsController::didLoad()
 {
-    for (HTMLImport* ancestorToNotify = loadedImport->parent(); ancestorToNotify; ancestorToNotify = ancestorToNotify->parent()) {
-        if (haveChildrenLoaded(ancestorToNotify))
-            ancestorToNotify->document()->didLoadAllImports();
-    }
+    if (haveLoaded())
+        m_master->didLoadAllImports();
 }
 
 PassRefPtr<HTMLImportLoader> HTMLImportsController::findLinkFor(const KURL& url) const
@@ -284,29 +262,14 @@ CachedResourceLoader* HTMLImportsController::cachedResourceLoader() const
     return m_master->cachedResourceLoader();
 }
 
-bool HTMLImportsController::haveChildrenLoaded(HTMLImport* parent) const
+bool HTMLImportsController::haveLoaded() const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
-        if (!m_imports[i]->isDone() && m_imports[i]->parent() == parent)
+        if (!m_imports[i]->isDone())
             return false;
     }
 
     return true;
-}
-
-HTMLImportsController* HTMLImportsController::controller()
-{
-    return this;
-}
-
-HTMLImport* HTMLImportsController::parent()
-{
-    return 0;
-}
-
-Document* HTMLImportsController::document()
-{
-    return m_master;
 }
 
 } // namespace WebCore
