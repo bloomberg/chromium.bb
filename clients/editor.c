@@ -1141,7 +1141,8 @@ key_handler(struct window *window,
 			new_char = utf8_prev_char(entry->text, entry->text + entry->cursor);
 			if (new_char != NULL) {
 				entry->cursor = new_char - entry->text;
-				entry->anchor = entry->cursor;
+				if (!(input_get_modifiers(input) & MOD_SHIFT_MASK))
+					entry->anchor = entry->cursor;
 				widget_schedule_redraw(entry->widget);
 			}
 			break;
@@ -1151,7 +1152,8 @@ key_handler(struct window *window,
 			new_char = utf8_next_char(entry->text + entry->cursor);
 			if (new_char != NULL) {
 				entry->cursor = new_char - entry->text;
-				entry->anchor = entry->cursor;
+				if (!(input_get_modifiers(input) & MOD_SHIFT_MASK))
+					entry->anchor = entry->cursor;
 				widget_schedule_redraw(entry->widget);
 			}
 			break;
