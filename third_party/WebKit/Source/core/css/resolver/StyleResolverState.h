@@ -56,7 +56,7 @@ public:
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)
     , m_fontDirty(false)
-    , m_styleMap(*this)
+    , m_styleMap(*this, m_elementStyleResources)
     { }
 
 public:

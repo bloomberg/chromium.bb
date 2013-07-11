@@ -58,10 +58,10 @@ bool CSSToStyleMap::useSVGZoomRules() const
     
 PassRefPtr<StyleImage> CSSToStyleMap::styleImage(CSSPropertyID propertyId, CSSValue* value)
 {
-    return m_state.elementStyleResources().styleImage(m_state.document()->textLinkColors(), m_state.style()->visitedDependentColor(CSSPropertyColor), propertyId, value);
+    return m_elementStyleResources.styleImage(m_state.document()->textLinkColors(), m_state.style()->visitedDependentColor(CSSPropertyColor), propertyId, value);
 }
 
-void CSSToStyleMap::mapFillAttachment(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillAttachment(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setAttachment(FillLayer::initialFillAttachment(layer->type()));
@@ -87,7 +87,7 @@ void CSSToStyleMap::mapFillAttachment(CSSPropertyID, FillLayer* layer, CSSValue*
     }
 }
 
-void CSSToStyleMap::mapFillClip(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillClip(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setClip(FillLayer::initialFillClip(layer->type()));
@@ -101,7 +101,7 @@ void CSSToStyleMap::mapFillClip(CSSPropertyID, FillLayer* layer, CSSValue* value
     layer->setClip(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillComposite(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillComposite(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setComposite(FillLayer::initialFillComposite(layer->type()));
@@ -115,7 +115,7 @@ void CSSToStyleMap::mapFillComposite(CSSPropertyID, FillLayer* layer, CSSValue* 
     layer->setComposite(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillBlendMode(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillBlendMode(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setBlendMode(FillLayer::initialFillBlendMode(layer->type()));
@@ -129,7 +129,7 @@ void CSSToStyleMap::mapFillBlendMode(CSSPropertyID, FillLayer* layer, CSSValue* 
     layer->setBlendMode(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillOrigin(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillOrigin(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setOrigin(FillLayer::initialFillOrigin(layer->type()));
@@ -154,7 +154,7 @@ void CSSToStyleMap::mapFillImage(CSSPropertyID property, FillLayer* layer, CSSVa
     layer->setImage(styleImage(property, value));
 }
 
-void CSSToStyleMap::mapFillRepeatX(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillRepeatX(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setRepeatX(FillLayer::initialFillRepeatX(layer->type()));
@@ -168,7 +168,7 @@ void CSSToStyleMap::mapFillRepeatX(CSSPropertyID, FillLayer* layer, CSSValue* va
     layer->setRepeatX(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillRepeatY(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillRepeatY(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setRepeatY(FillLayer::initialFillRepeatY(layer->type()));
@@ -182,7 +182,7 @@ void CSSToStyleMap::mapFillRepeatY(CSSPropertyID, FillLayer* layer, CSSValue* va
     layer->setRepeatY(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
     if (!value->isPrimitiveValue()) {
         layer->setSizeType(SizeNone);
@@ -225,7 +225,7 @@ void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value
     layer->setSizeLength(b);
 }
 
-void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setXPosition(FillLayer::initialFillXPosition(layer->type()));
@@ -261,7 +261,7 @@ void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer,
         layer->setBackgroundXOrigin(*(pair->first()));
 }
 
-void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setYPosition(FillLayer::initialFillYPosition(layer->type()));
@@ -297,7 +297,7 @@ void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer,
         layer->setBackgroundYOrigin(*(pair->first()));
 }
 
-void CSSToStyleMap::mapAnimationDelay(CSSAnimationData* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationDelay(CSSAnimationData* animation, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         animation->setDelay(CSSAnimationData::initialAnimationDelay());
@@ -311,7 +311,7 @@ void CSSToStyleMap::mapAnimationDelay(CSSAnimationData* animation, CSSValue* val
     animation->setDelay(primitiveValue->computeTime<double, CSSPrimitiveValue::Seconds>());
 }
 
-void CSSToStyleMap::mapAnimationDirection(CSSAnimationData* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationDirection(CSSAnimationData* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setDirection(CSSAnimationData::initialAnimationDirection());
@@ -340,7 +340,7 @@ void CSSToStyleMap::mapAnimationDirection(CSSAnimationData* layer, CSSValue* val
     }
 }
 
-void CSSToStyleMap::mapAnimationDuration(CSSAnimationData* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationDuration(CSSAnimationData* animation, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         animation->setDuration(CSSAnimationData::initialAnimationDuration());
@@ -354,7 +354,7 @@ void CSSToStyleMap::mapAnimationDuration(CSSAnimationData* animation, CSSValue* 
     animation->setDuration(primitiveValue->computeTime<double, CSSPrimitiveValue::Seconds>());
 }
 
-void CSSToStyleMap::mapAnimationFillMode(CSSAnimationData* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationFillMode(CSSAnimationData* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setFillMode(CSSAnimationData::initialAnimationFillMode());
@@ -383,7 +383,7 @@ void CSSToStyleMap::mapAnimationFillMode(CSSAnimationData* layer, CSSValue* valu
     }
 }
 
-void CSSToStyleMap::mapAnimationIterationCount(CSSAnimationData* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationIterationCount(CSSAnimationData* animation, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         animation->setIterationCount(CSSAnimationData::initialAnimationIterationCount());
@@ -400,7 +400,7 @@ void CSSToStyleMap::mapAnimationIterationCount(CSSAnimationData* animation, CSSV
         animation->setIterationCount(primitiveValue->getFloatValue());
 }
 
-void CSSToStyleMap::mapAnimationName(CSSAnimationData* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationName(CSSAnimationData* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setName(CSSAnimationData::initialAnimationName());
@@ -417,7 +417,7 @@ void CSSToStyleMap::mapAnimationName(CSSAnimationData* layer, CSSValue* value)
         layer->setName(primitiveValue->getStringValue());
 }
 
-void CSSToStyleMap::mapAnimationPlayState(CSSAnimationData* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationPlayState(CSSAnimationData* layer, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         layer->setPlayState(CSSAnimationData::initialAnimationPlayState());
@@ -432,7 +432,7 @@ void CSSToStyleMap::mapAnimationPlayState(CSSAnimationData* layer, CSSValue* val
     layer->setPlayState(playState);
 }
 
-void CSSToStyleMap::mapAnimationProperty(CSSAnimationData* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationProperty(CSSAnimationData* animation, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         animation->setAnimationMode(CSSAnimationData::AnimateAll);
@@ -456,7 +456,7 @@ void CSSToStyleMap::mapAnimationProperty(CSSAnimationData* animation, CSSValue* 
     }
 }
 
-void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSValue* value) const
 {
     if (value->isInitialValue()) {
         animation->setTimingFunction(CSSAnimationData::initialAnimationTimingFunction());
@@ -562,7 +562,7 @@ void CSSToStyleMap::mapNinePieceImage(CSSPropertyID property, CSSValue* value, N
     }
 }
 
-void CSSToStyleMap::mapNinePieceImageSlice(CSSValue* value, NinePieceImage& image)
+void CSSToStyleMap::mapNinePieceImageSlice(CSSValue* value, NinePieceImage& image) const
 {
     if (!value || !value->isBorderImageSliceValue())
         return;
@@ -595,7 +595,7 @@ void CSSToStyleMap::mapNinePieceImageSlice(CSSValue* value, NinePieceImage& imag
     image.setFill(borderImageSlice->m_fill);
 }
 
-LengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value)
+LengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
 {
     if (!value || !value->isPrimitiveValue())
         return LengthBox();
@@ -640,7 +640,7 @@ LengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value)
     return box;
 }
 
-void CSSToStyleMap::mapNinePieceImageRepeat(CSSValue* value, NinePieceImage& image)
+void CSSToStyleMap::mapNinePieceImageRepeat(CSSValue* value, NinePieceImage& image) const
 {
     if (!value || !value->isPrimitiveValue())
         return;
