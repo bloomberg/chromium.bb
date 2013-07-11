@@ -341,9 +341,12 @@ private:
 
     enum StyleApplicationPass {
         VariableDefinitions,
+        AnimationProperties,
         HighPriorityProperties,
         LowPriorityProperties
     };
+    template <StyleResolver::StyleApplicationPass pass>
+    static inline bool isPropertyForPass(CSSPropertyID);
     template <StyleApplicationPass pass>
     void applyMatchedProperties(const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
     template <StyleApplicationPass pass>
