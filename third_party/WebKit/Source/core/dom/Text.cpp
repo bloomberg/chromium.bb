@@ -277,7 +277,7 @@ void Text::attach(const AttachContext& context)
     CharacterData::attach(context);
 }
 
-void Text::recalcTextStyle(StyleChange change)
+bool Text::recalcTextStyle(StyleChange change)
 {
     RenderText* renderer = toRenderText(this->renderer());
 
@@ -286,11 +286,13 @@ void Text::recalcTextStyle(StyleChange change)
             renderer->setStyle(document()->styleResolver()->styleForText(this));
         if (needsStyleRecalc())
             renderer->setText(dataImpl());
+        clearNeedsStyleRecalc();
     } else if (needsStyleRecalc()) {
         reattach();
+        return true;
     }
 
-    clearNeedsStyleRecalc();
+    return false;
 }
 
 void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData)

@@ -1466,7 +1466,7 @@ PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
     return document()->styleResolver()->styleForElement(this);
 }
 
-void Element::recalcStyle(StyleChange change)
+bool Element::recalcStyle(StyleChange change)
 {
     ASSERT(document()->inStyleRecalc());
 
@@ -1508,7 +1508,7 @@ void Element::recalcStyle(StyleChange change)
 
             if (hasCustomStyleCallbacks())
                 didRecalcStyle(change);
-            return;
+            return true;
         }
 
         InspectorInstrumentation::didRecalculateStyleForElement(this);
@@ -1554,23 +1554,35 @@ void Element::recalcStyle(StyleChange change)
     // without doing way too much re-resolution.
     bool forceCheckOfNextElementSibling = false;
     bool forceCheckOfAnyElementSibling = false;
-    for (Node *n = firstChild(); n; n = n->nextSibling()) {
-        if (n->isTextNode()) {
-            toText(n)->recalcTextStyle(change);
-            continue;
+    bool forceReattachOfAnyWhitespaceSibling = false;
+    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+        bool didReattach = false;
+
+        if (child->renderer())
+            forceReattachOfAnyWhitespaceSibling = false;
+
+        if (child->isTextNode()) {
+            if (forceReattachOfAnyWhitespaceSibling && toText(child)->containsOnlyWhitespace())
+                child->reattach();
+            else
+                didReattach = toText(child)->recalcTextStyle(change);
+        } else if (child->isElementNode()) {
+            Element* element = toElement(child);
+
+            if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
+                element->setNeedsStyleRecalc();
+
+            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
+            forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
+            forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
+
+            if (shouldRecalcStyle(change, element)) {
+                parentPusher.push();
+                didReattach = element->recalcStyle(change);
+            }
         }
-        if (!n->isElementNode())
-            continue;
-        Element* element = toElement(n);
-        bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
-        if ((forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling))
-            element->setNeedsStyleRecalc();
-        if (shouldRecalcStyle(change, element)) {
-            parentPusher.push();
-            element->recalcStyle(change);
-        }
-        forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
-        forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
+
+        forceReattachOfAnyWhitespaceSibling = didReattach || forceReattachOfAnyWhitespaceSibling;
     }
 
     if (shouldRecalcStyle(change, this))
@@ -1581,6 +1593,7 @@ void Element::recalcStyle(StyleChange change)
 
     if (hasCustomStyleCallbacks())
         didRecalcStyle(change);
+    return false;
 }
 
 ElementShadow* Element::shadow() const

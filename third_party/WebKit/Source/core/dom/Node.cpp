@@ -1052,7 +1052,8 @@ void Node::attach(const AttachContext&)
 
     // If this node got a renderer it may be the previousRenderer() of sibling text nodes and thus affect the
     // result of Text::textRendererIsNeeded() for those nodes.
-    if (renderer()) {
+    // FIXME: This loop is no longer required once we lazy attach all the time.
+    if (renderer() && !document()->inStyleRecalc()) {
         for (Node* next = nextSibling(); next; next = next->nextSibling()) {
             if (next->renderer())
                 break;
