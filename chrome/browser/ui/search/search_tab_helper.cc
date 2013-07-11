@@ -164,10 +164,6 @@ void SearchTabHelper::DidNavigateMainFrame(
 bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxShowBars,
-                        OnSearchBoxShowBars)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxHideBars,
-                        OnSearchBoxHideBars)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetVoiceSearchSupported,
@@ -242,18 +238,6 @@ void SearchTabHelper::OnInstantSupportDetermined(int page_id,
     return;
 
   InstantSupportChanged(instant_support);
-}
-
-void SearchTabHelper::OnSearchBoxShowBars(int page_id) {
-  if (web_contents()->IsActiveEntry(page_id))
-    model_.SetTopBarsVisible(true);
-}
-
-void SearchTabHelper::OnSearchBoxHideBars(int page_id) {
-  if (web_contents()->IsActiveEntry(page_id)) {
-    model_.SetTopBarsVisible(false);
-    Send(new ChromeViewMsg_SearchBoxBarsHidden(routing_id()));
-  }
 }
 
 void SearchTabHelper::OnSetVoiceSearchSupported(int page_id, bool supported) {

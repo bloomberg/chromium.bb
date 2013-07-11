@@ -12,12 +12,11 @@
 #include "chrome/common/instant_restricted_id_cache.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
-#include "chrome/common/search_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 namespace content {
 class RenderView;
@@ -29,108 +28,11 @@ class SearchBox : public content::RenderViewObserver,
   explicit SearchBox(content::RenderView* render_view);
   virtual ~SearchBox();
 
-  // Sends ChromeViewHostMsg_SetSuggestion to the browser.
-  void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
-
-  // Sends ChromeViewHostMsg_SetVoiceSearchSupported to the browser.
-  void SetVoiceSearchSupported(bool supported);
-
-  // Marks the current query text as restricted, to make sure that it does
-  // not get communicated to the page.  The restricted status lasts until the
-  // query is next changed or cleared.
-  void MarkQueryAsRestricted();
-
-  // Sends ChromeViewHostMsg_ShowInstantOverlay to the browser.
-  void ShowInstantOverlay(int height, InstantSizeUnits units);
-
-  // Sends ChromeViewHostMsg_FocusOmnibox to the browser.
-  void FocusOmnibox();
-
-  // Sends ChromeViewHostMsg_StartCapturingKeyStrokes to the browser.
-  void StartCapturingKeyStrokes();
-
-  // Sends ChromeViewHostMsg_StopCapturingKeyStrokes to the browser.
-  void StopCapturingKeyStrokes();
-
-  // Sends ChromeViewHostMsg_SearchBoxNavigate to the browser.
-  void NavigateToURL(const GURL& url,
-                     content::PageTransition transition,
-                     WindowOpenDisposition disposition,
-                     bool is_search_type);
-
   // Sends ChromeViewHostMsg_CountMouseover to the browser.
   void CountMouseover();
 
-  // Shows any attached bars.
-  void ShowBars();
-
-  // Hides any attached bars.  When the bars are hidden, the "onbarshidden"
-  // event is fired to notify the page.
-  void HideBars();
-
-  const string16& query() const { return query_; }
-  bool verbatim() const { return verbatim_; }
-  bool query_is_restricted() const { return query_is_restricted_; }
-  size_t selection_start() const { return selection_start_; }
-  size_t selection_end() const { return selection_end_; }
-  bool is_focused() const { return is_focused_; }
-  bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
-  bool is_input_in_progress() const { return is_input_in_progress_; }
-  bool display_instant_results() const { return display_instant_results_; }
-  const string16& omnibox_font() const { return omnibox_font_; }
-  size_t omnibox_font_size() const { return omnibox_font_size_; }
-  bool app_launcher_enabled() const { return app_launcher_enabled_; }
-
-  // In extended Instant, returns the start-edge margin of the location bar in
-  // screen pixels.
-  int GetStartMargin() const;
-
-  // Returns the bounds of the omnibox popup in screen coordinates.
-  gfx::Rect GetPopupBounds() const;
-
-  const ThemeBackgroundInfo& GetThemeBackgroundInfo();
-
-  // --- Autocomplete result APIs.
-
-  // Returns the most recent InstantAutocompleteResults sent by the browser.
-  void GetAutocompleteResults(
-      std::vector<InstantAutocompleteResultIDPair>* results) const;
-
-  // If the |autocomplete_result_id| is found in the cache, sets |item| to it
-  // and returns true.
-  bool GetAutocompleteResultWithID(InstantRestrictedID autocomplete_result_id,
-                                   InstantAutocompleteResult* result) const;
-
-  // --- Most Visited items APIs.
-
-  // Returns the latest most visited items sent by the browser.
-  void GetMostVisitedItems(
-      std::vector<InstantMostVisitedItemIDPair>* items) const;
-
-  // If the |most_visited_item_id| is found in the cache, sets |item| to it
-  // and returns true.
-  bool GetMostVisitedItemWithID(InstantRestrictedID most_visited_item_id,
-                                InstantMostVisitedItem* item) const;
-
   // Sends ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem to the browser.
   void DeleteMostVisitedItem(InstantRestrictedID most_visited_item_id);
-
-  // Sends ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion to the browser.
-  void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
-
-  // Sends ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions to the
-  // browser.
-  void UndoAllMostVisitedDeletions();
-
-  // Generates the thumbnail URL of the most visited item specified by the
-  // |transient_url|. If the |transient_url| is valid, returns true and fills in
-  // |url|. If the |transient_url| is invalid, returns false  and |url| is not
-  // set.
-  //
-  // Valid form of |transient_url|:
-  //    chrome-search://thumb/<render_view_id>/<most_visited_item_id>
-  bool GenerateThumbnailURLFromTransientURL(const GURL& transient_url,
-                                            GURL* url) const;
 
   // Generates the favicon URL of the most visited item specified by the
   // |transient_url|. If the |transient_url| is valid, returns true and fills in
@@ -142,39 +44,76 @@ class SearchBox : public content::RenderViewObserver,
   bool GenerateFaviconURLFromTransientURL(const GURL& transient_url,
                                           GURL* url) const;
 
+  // Generates the thumbnail URL of the most visited item specified by the
+  // |transient_url|. If the |transient_url| is valid, returns true and fills in
+  // |url|. If the |transient_url| is invalid, returns false  and |url| is not
+  // set.
+  //
+  // Valid form of |transient_url|:
+  //    chrome-search://thumb/<render_view_id>/<most_visited_item_id>
+  bool GenerateThumbnailURLFromTransientURL(const GURL& transient_url,
+                                            GURL* url) const;
+
+  // Returns the latest most visited items sent by the browser.
+  void GetMostVisitedItems(
+      std::vector<InstantMostVisitedItemIDPair>* items) const;
+
+  // If the |most_visited_item_id| is found in the cache, sets |item| to it
+  // and returns true.
+  bool GetMostVisitedItemWithID(InstantRestrictedID most_visited_item_id,
+                                InstantMostVisitedItem* item) const;
+
+  // Returns the start-edge margin of the location bar in screen pixels.
+  int GetStartMargin() const;
+
+  // Sends ChromeViewHostMsg_SearchBoxNavigate to the browser.
+  void NavigateToURL(const GURL& url,
+                     content::PageTransition transition,
+                     WindowOpenDisposition disposition,
+                     bool is_search_type);
+
+  const ThemeBackgroundInfo& GetThemeBackgroundInfo();
+
+  // Sends ChromeViewHostMsg_SetVoiceSearchSupported to the browser.
+  void SetVoiceSearchSupported(bool supported);
+
+  // Sends ChromeViewHostMsg_StartCapturingKeyStrokes to the browser.
+  void StartCapturingKeyStrokes();
+
+  // Sends ChromeViewHostMsg_StopCapturingKeyStrokes to the browser.
+  void StopCapturingKeyStrokes();
+
+  // Sends ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions to the
+  // browser.
+  void UndoAllMostVisitedDeletions();
+
+  // Sends ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion to the browser.
+  void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
+
+  bool app_launcher_enabled() const { return app_launcher_enabled_; }
+  bool is_focused() const { return is_focused_; }
+  bool is_input_in_progress() const { return is_input_in_progress_; }
+  bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
+  const string16& omnibox_font() const { return omnibox_font_; }
+  const string16& query() const { return query_; }
+  size_t omnibox_font_size() const { return omnibox_font_size_; }
+
  private:
   // Overridden from content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnChange(const string16& query,
-                bool verbatim,
-                size_t selection_start,
-                size_t selection_end);
-  void OnSubmit(const string16& query);
-  void OnCancel(const string16& query);
-  void OnPopupResize(const gfx::Rect& bounds);
-  void OnMarginChange(int margin, int width);
-  void OnBarsHidden();
   void OnDetermineIfPageSupportsInstant();
-  void OnAutocompleteResults(
-      const std::vector<InstantAutocompleteResult>& results);
-  void OnUpOrDownKeyPressed(int count);
-  void OnEscKeyPressed();
-  void OnCancelSelection(const string16& query,
-                         bool verbatim,
-                         size_t selection_start,
-                         size_t selection_end);
   void OnFocusChanged(OmniboxFocusState new_focus_state,
                       OmniboxFocusChangeReason reason);
-  void OnSetInputInProgress(bool input_in_progress);
-  void OnSetDisplayInstantResults(bool display_instant_results);
-  void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
-  void OnThemeAreaHeightChanged(int height);
   void OnFontInformationReceived(const string16& omnibox_font,
                                  size_t omnibox_font_size);
-  void OnPromoInformationReceived(bool is_app_launcher_enabled);
+  void OnMarginChange(int margin, int width);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItem>& items);
+  void OnPromoInformationReceived(bool is_app_launcher_enabled);
+  void OnSetInputInProgress(bool input_in_progress);
+  void OnSubmit(const string16& query);
+  void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnToggleVoiceSearch();
 
   // Returns the current zoom factor of the render view or 1 on failure.
@@ -183,30 +122,20 @@ class SearchBox : public content::RenderViewObserver,
   // Sets the searchbox values to their initial value.
   void Reset();
 
-  // Sets the query to a new value.
-  void SetQuery(const string16& query, bool verbatim);
-
   // Returns the URL of the Most Visited item specified by the |item_id|.
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
-  string16 query_;
-  bool verbatim_;
-  bool query_is_restricted_;
-  size_t selection_start_;
-  size_t selection_end_;
-  int start_margin_;
-  gfx::Rect popup_bounds_;
+  bool app_launcher_enabled_;
   bool is_focused_;
-  bool is_key_capture_enabled_;
   bool is_input_in_progress_;
+  bool is_key_capture_enabled_;
+  InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
   ThemeBackgroundInfo theme_info_;
-  bool display_instant_results_;
   string16 omnibox_font_;
   size_t omnibox_font_size_;
-  bool app_launcher_enabled_;
-  InstantRestrictedIDCache<InstantAutocompleteResult>
-      autocomplete_results_cache_;
-  InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
+  string16 query_;
+  int start_margin_;
+  int width_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

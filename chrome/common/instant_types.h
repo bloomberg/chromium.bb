@@ -17,9 +17,6 @@
 // Visited items) that the Instant page needs access to.
 typedef int InstantRestrictedID;
 
-// The size of the InstantMostVisitedItem cache.
-const size_t kMaxInstantMostVisitedItemCacheSize = 100;
-
 const size_t kNoMatchIndex = -1;
 
 // Ways that the Instant suggested text is autocompleted into the omnibox.

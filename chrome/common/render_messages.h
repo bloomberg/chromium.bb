@@ -24,7 +24,6 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_provider.h"
-#include "chrome/common/search_types.h"
 #include "chrome/common/translate/language_detection_details.h"
 #include "chrome/common/translate/translate_errors.h"
 #include "content/public/common/common_param_traits.h"
@@ -118,11 +117,7 @@ struct ParamTraits<ContentSettingsPattern> {
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
-IPC_ENUM_TRAITS(AutocompleteMatchType::Type)
 IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
-IPC_ENUM_TRAITS(InstantCompleteBehavior)
-IPC_ENUM_TRAITS(InstantSizeUnits)
-IPC_ENUM_TRAITS(InstantSuggestionType)
 IPC_ENUM_TRAITS(OmniboxFocusChangeReason)
 IPC_ENUM_TRAITS(OmniboxFocusState)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
@@ -165,35 +160,9 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
   IPC_STRUCT_TRAITS_MEMBER(incognito)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(InstantAutocompleteResult)
-  IPC_STRUCT_TRAITS_MEMBER(provider)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(description)
-  IPC_STRUCT_TRAITS_MEMBER(destination_url)
-  IPC_STRUCT_TRAITS_MEMBER(search_query)
-  IPC_STRUCT_TRAITS_MEMBER(transition)
-  IPC_STRUCT_TRAITS_MEMBER(relevance)
-  IPC_STRUCT_TRAITS_MEMBER(autocomplete_match_index)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedItem)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(title)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
-  IPC_STRUCT_TRAITS_MEMBER(text)
-  IPC_STRUCT_TRAITS_MEMBER(behavior)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(query)
-  IPC_STRUCT_TRAITS_MEMBER(autocomplete_match_index)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS(SearchMode::Type)
-IPC_ENUM_TRAITS(SearchMode::Origin)
-IPC_STRUCT_TRAITS_BEGIN(SearchMode)
-  IPC_STRUCT_TRAITS_MEMBER(mode)
-  IPC_STRUCT_TRAITS_MEMBER(origin)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
@@ -304,80 +273,34 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_HandleMessageFromExternalHost,
                     std::string /* The origin */,
                     std::string /* The target*/)
 
-IPC_MESSAGE_ROUTED4(ChromeViewMsg_SearchBoxChange,
-                    string16 /* value */,
-                    bool /* verbatim */,
-                    size_t /* selection_start */,
-                    size_t /* selection_end */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
-                    string16 /* value */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxCancel,
-                    string16 /* value */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxPopupResize,
-                    gfx::Rect /* bounds */)
-
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxMarginChange,
-                    int /* start */,
-                    int /* end */)
-
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxBarsHidden)
-
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
-                    std::vector<InstantAutocompleteResult>
-                        /* native_suggestions */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
-                    int /* count */)
-
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxEscKeyPressed)
-
-IPC_MESSAGE_ROUTED4(ChromeViewMsg_SearchBoxCancelSelection,
-                    string16 /* value */,
-                    bool /* verbatim */,
-                    size_t /* selection_start */,
-                    size_t /* selection_end */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxModeChanged,
-                    SearchMode /* mode */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
-                    bool /* display_instant_results */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
-                    ThemeBackgroundInfo /* value */)
-
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
-                    string16 /* omnibox_font */,
-                    size_t /* omnibox_font_size */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxPromoInformation,
-                    bool /* is_app_launcher_enabled */)
 
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
                     OmniboxFocusState /* new_focus_state */,
                     OmniboxFocusChangeReason /* reason */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetInputInProgress,
-                    bool /* input_in_progress */)
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
+                    string16 /* omnibox_font */,
+                    size_t /* omnibox_font_size */)
+
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxMarginChange,
+                    int /* start */,
+                    int /* width */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                     std::vector<InstantMostVisitedItem> /* items */)
 
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
-                    int /* page_id */,
-                    GURL /* url */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxPromoInformation,
+                    bool /* is_app_launcher_enabled */)
 
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
-                    int /* page_id */,
-                    GURL /* url */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetInputInProgress,
+                    bool /* input_in_progress */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
-                    int /* page_id */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
+                    string16 /* value */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
+                    ThemeBackgroundInfo /* value */)
 
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxToggleVoiceSearch)
 
@@ -676,53 +599,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockRunningInsecureContent)
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusedNodeTouched,
                     bool /* editable */)
 
-// Suggest results -----------------------------------------------------------
-
-// Sent by Instant to populate the omnibox with query or URL suggestions.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetSuggestions,
-                    int /* page_id */,
-                    std::vector<InstantSuggestion> /* suggestions */)
-
-// Sent by Instant to indicate whether the page supports the Instant API
-// (http://dev.chromium.org/searchbox).
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
-                    int /* page_id */,
-                    bool /* result */)
-
-IPC_MESSAGE_ROUTED5(ChromeViewHostMsg_SearchBoxNavigate,
-                    int /* page_id */,
-                    GURL /* destination */,
-                    content::PageTransition /* transition */,
-                    WindowOpenDisposition /* disposition */,
-                    bool /* is_search_type */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CountMouseover,
-                    int /* page_id */)
-
-// Sent by the Instant overlay asking to show itself with the given height.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ShowInstantOverlay,
-                    int /* page_id */,
-                    int /* height */,
-                    InstantSizeUnits /* units */)
-
-// Sent by Instant to focus the omnibox.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FocusOmnibox,
-                    int /* page_id */,
-                    OmniboxFocusState /* state */)
-
-// Sent by Instant to show any attached bars.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxShowBars,
-                    int /* page_id */)
-
-// Sent by Instant to hide any attached bars.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxHideBars,
-                    int /* page_id */)
-
-// Sent by Instant to indicate whether the page supports voice search.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetVoiceSearchSupported,
-                    int /* page_id */,
-                    bool /* supported */)
-
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
 
@@ -753,3 +629,46 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetCookies,
 IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_FPS,
                      int /* routing id */,
                      float /* frames per second */)
+
+// Counts a mouseover event on an InstantExtended most visited tile.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CountMouseover,
+                    int /* page_id */)
+
+// Tells InstantExtended to set the omnibox focus state.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FocusOmnibox,
+                    int /* page_id */,
+                    OmniboxFocusState /* state */)
+
+// Tells InstantExtended whether the embedded search API is supported.
+// See http://dev.chromium.org/embeddedsearch
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
+                    int /* page_id */,
+                    bool /* result */)
+
+// Tells InstantExtended to delete a most visited item.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
+                    int /* page_id */,
+                    GURL /* url */)
+
+// Tells InstantExtended to navigate the active tab to a possibly priveleged
+// URL.
+IPC_MESSAGE_ROUTED5(ChromeViewHostMsg_SearchBoxNavigate,
+                    int /* page_id */,
+                    GURL /* destination */,
+                    content::PageTransition /* transition */,
+                    WindowOpenDisposition /* disposition */,
+                    bool /* is_search_type */)
+
+// Tells InstantExtended to undo all most visited item deletions.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
+                    int /* page_id */)
+
+// Tells InstantExtended to undo one most visited item deletion.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
+                    int /* page_id */,
+                    GURL /* url */)
+
+// Tells InstantExtended whether the page supports voice search.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetVoiceSearchSupported,
+                    int /* page_id */,
+                    bool /* supported */)

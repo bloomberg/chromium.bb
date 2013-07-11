@@ -34,8 +34,8 @@ class InstantIPCSender : public content::WebContentsObserver {
   // Tells the page that the user pressed Enter in the omnibox.
   virtual void Submit(const string16& text) {}
 
-  // Tells the page the bounds of the omnibox (in screen coordinates). This is
-  // used by the page to align text or assets properly with the omnibox.
+  // Tells the page the left and right margins of the omnibox. This is used by
+  // the page to align text or assets properly with the omnibox.
   virtual void SetOmniboxBounds(const gfx::Rect& bounds) {}
 
   // Tells the page about the font information.

@@ -25,28 +25,20 @@ class SearchBoxExtension {
   // if match-preview is not enabled. Caller takes ownership of returned object.
   static v8::Extension* Get();
 
-  static void DispatchChange(WebKit::WebFrame* frame);
-  static void DispatchSubmit(WebKit::WebFrame* frame);
-  static void DispatchCancel(WebKit::WebFrame* frame);
-  static void DispatchResize(WebKit::WebFrame* frame);
-
+  // Returns true if a page supports Instant, that is, if it has bound an
+  // onsubmit() handler.
   static bool PageSupportsInstant(WebKit::WebFrame* frame);
 
-  // Extended API.
-  static void DispatchAutocompleteResults(WebKit::WebFrame* frame);
-  static void DispatchUpOrDownKeyPress(WebKit::WebFrame* frame, int count);
-  static void DispatchEscKeyPress(WebKit::WebFrame* frame);
+  // Helpers to dispatch Javascript events.
+  static void DispatchFocusChange(WebKit::WebFrame* frame);
+  static void DispatchInputCancel(WebKit::WebFrame* frame);
+  static void DispatchInputStart(WebKit::WebFrame* frame);
   static void DispatchKeyCaptureChange(WebKit::WebFrame* frame);
   static void DispatchMarginChange(WebKit::WebFrame* frame);
-  static void DispatchThemeChange(WebKit::WebFrame* frame);
-  static void DispatchBarsHidden(WebKit::WebFrame* frame);
-  static void DispatchFocusChange(WebKit::WebFrame* frame);
-  static void DispatchInputStart(WebKit::WebFrame* frame);
-  static void DispatchInputCancel(WebKit::WebFrame* frame);
-  static void DispatchToggleVoiceSearch(WebKit::WebFrame* frame);
-
-  // New Tab Page API.
   static void DispatchMostVisitedChanged(WebKit::WebFrame* frame);
+  static void DispatchSubmit(WebKit::WebFrame* frame);
+  static void DispatchThemeChange(WebKit::WebFrame* frame);
+  static void DispatchToggleVoiceSearch(WebKit::WebFrame* frame);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtension);
