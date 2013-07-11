@@ -64,30 +64,30 @@ TEST_F(DocumentTimelineTest, EmptyKeyframeAnimation)
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector());
     RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
 
-    ASSERT_TRUE(isNull(timeline->currentTime()));
+    EXPECT_TRUE(isNull(timeline->currentTime()));
 
     timeline->play(anim.get());
-    ASSERT_TRUE(isNull(timeline->currentTime()));
+    EXPECT_TRUE(isNull(timeline->currentTime()));
 
     timeline->serviceAnimations(0);
-    ASSERT_EQ(0, timeline->currentTime());
-    ASSERT_TRUE(anim->compositableValues()->isEmpty());
+    EXPECT_FLOAT_EQ(0, timeline->currentTime());
+    EXPECT_TRUE(anim->compositableValues()->isEmpty());
 
     timeline->serviceAnimations(100);
-    ASSERT_FLOAT_EQ(100, timeline->currentTime());
+    EXPECT_FLOAT_EQ(100, timeline->currentTime());
 }
 
 TEST_F(DocumentTimelineTest, PauseForTesting)
 {
-    double seekTime = 1;
+    float seekTime = 1;
     RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
     RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
     RefPtr<Player> player1 = timeline->play(anim1.get());
     RefPtr<Player> player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
 
-    ASSERT_EQ(seekTime, player1->currentTime());
-    ASSERT_EQ(seekTime, player2->currentTime());
+    EXPECT_FLOAT_EQ(seekTime, player1->currentTime());
+    EXPECT_FLOAT_EQ(seekTime, player2->currentTime());
 }
 
 }
