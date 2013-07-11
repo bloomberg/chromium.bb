@@ -2090,11 +2090,6 @@ void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
   OnWalletOrSigninUpdate();
 }
 
-void AutofillDialogControllerImpl::OnAutomaticSigninSuccess(
-    const std::string& username) {
-  NOTIMPLEMENTED();
-}
-
 void AutofillDialogControllerImpl::OnPassiveSigninFailure(
     const GoogleServiceAuthError& error) {
   // TODO(aruslan): report an error.
@@ -2114,13 +2109,6 @@ void AutofillDialogControllerImpl::OnDidFetchWalletCookieValue(
   wallet_cookie_value_ = cookie_value;
   signin_helper_.reset();
   GetWalletItems();
-}
-
-void AutofillDialogControllerImpl::OnAutomaticSigninFailure(
-    const GoogleServiceAuthError& error) {
-  // TODO(aruslan): report an error.
-  LOG(ERROR) << "failed to automatically sign in: " << error.ToString();
-  OnWalletSigninError();
 }
 
 void AutofillDialogControllerImpl::OnDidGetWalletItems(

@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -18,7 +17,6 @@ class URLRequestContextGetter;
 class URLRequestStatus;
 }
 
-class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 
 namespace autofill {
@@ -29,13 +27,11 @@ class WalletSigninHelperDelegate;
 // Authenticates the user against the Online Wallet service.
 // This class is not thread-safe.  An instance may be used on any thread, but
 // should not be accessed from multiple threads.
-class WalletSigninHelper : public GaiaAuthConsumer,
-                           public net::URLFetcherDelegate {
+class WalletSigninHelper : public net::URLFetcherDelegate {
  public:
-  // Constructs a helper that works with a given |delegate| and uses
-  // a given |getter| to obtain a context for URL and GAIA fetchers.
-  // Both |delegate| and |getter| shall remain valid over the entire
-  // lifetime of the created instance.
+  // Constructs a helper that works with a given |delegate| and uses a given
+  // |getter| to obtain a context for URL. Both |delegate| and |getter| shall
+  // remain valid over the entire lifetime of the created instance.
   WalletSigninHelper(WalletSigninHelperDelegate* delegate,
                      net::URLRequestContextGetter* getter);
 
@@ -49,13 +45,6 @@ class WalletSigninHelper : public GaiaAuthConsumer,
   // Either OnPassiveSigninSuccess or OnPassiveSigninFailure will be called
   // on the original thread.
   void StartPassiveSignin();
-
-  // Initiates an attempt to automatically sign in a user into the service
-  // given the SID and LSID tokens obtained from the platform GAIA service.
-  // Please refer to GaiaAuthFetcher documentation for more details.
-  // Either OnAutomaticSigninSuccess or OnAutomaticSigninFailure will be called
-  // on the original thread.
-  void StartAutomaticSignin(const std::string& sid, const std::string& lsid);
 
   // Initiates a fetch of the user name of a signed-in user.
   // Either OnUserNameFetchSuccess or OnUserNameFetchFailure will
@@ -71,9 +60,6 @@ class WalletSigninHelper : public GaiaAuthConsumer,
     IDLE,
     PASSIVE_EXECUTING_SIGNIN,
     PASSIVE_FETCHING_USERINFO,
-    AUTOMATIC_FETCHING_USERINFO,
-    AUTOMATIC_ISSUING_AUTH_TOKEN,
-    AUTOMATIC_EXECUTING_SIGNIN,
     USERNAME_FETCHING_USERINFO,
   };
 
@@ -89,17 +75,6 @@ class WalletSigninHelper : public GaiaAuthConsumer,
 
   // Called if any other error occurs.
   void OnOtherError();
-
-  // GaiaAuthConsumer implementation.
-  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
-  virtual void OnGetUserInfoFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnIssueAuthTokenSuccess(
-      const std::string& service,
-      const std::string& auth_token) OVERRIDE;
-  virtual void OnIssueAuthTokenFailure(
-      const std::string& service,
-      const GoogleServiceAuthError& error) OVERRIDE;
 
   // URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* fetcher) OVERRIDE;
@@ -132,15 +107,6 @@ class WalletSigninHelper : public GaiaAuthConsumer,
 
   // While passive login/merge session URL fetches are going on:
   scoped_ptr<net::URLFetcher> url_fetcher_;
-
-  // While Gaia authentication/userinfo fetches are going on:
-  scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
-
-  // SID from StartAutomaticSignin().
-  std::string sid_;
-
-  // LSID from StartAutomaticSignin().
-  std::string lsid_;
 
   // User account name (email) fetched from OnGetUserInfoSuccess().
   std::string username_;

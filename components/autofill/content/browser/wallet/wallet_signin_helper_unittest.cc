@@ -50,11 +50,8 @@ const char kGetAccountInfoValidResponseFormat[] =
 class MockWalletSigninHelperDelegate : public WalletSigninHelperDelegate {
  public:
   MOCK_METHOD1(OnPassiveSigninSuccess, void(const std::string& username));
-  MOCK_METHOD1(OnAutomaticSigninSuccess, void(const std::string& username));
   MOCK_METHOD1(OnUserNameFetchSuccess, void(const std::string& username));
   MOCK_METHOD1(OnPassiveSigninFailure,
-               void(const GoogleServiceAuthError& error));
-  MOCK_METHOD1(OnAutomaticSigninFailure,
                void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnUserNameFetchFailure,
                void(const GoogleServiceAuthError& error));
@@ -112,36 +109,6 @@ class WalletSigninHelperTest : public testing::Test {
     fetcher->SetResponseString(response_string);
     fetcher->set_cookies(cookies);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
-  }
-
-  void MockSuccessfulOAuthLoginResponse() {
-    SetUpFetcherResponseAndCompleteRequest(
-        GaiaUrls::GetInstance()->client_login_url(), net::HTTP_OK,
-        net::ResponseCookies(),
-        "SID=sid\nLSID=lsid\nAuth=auth");
-  }
-
-  void MockFailedOAuthLoginResponse404() {
-    SetUpFetcherResponseAndCompleteRequest(
-        GaiaUrls::GetInstance()->client_login_url(),
-        net::HTTP_NOT_FOUND,
-        net::ResponseCookies(),
-        std::string());
-  }
-
-  void MockSuccessfulGaiaUserInfoResponse(const std::string& username) {
-    SetUpFetcherResponseAndCompleteRequest(
-        GaiaUrls::GetInstance()->get_user_info_url(), net::HTTP_OK,
-        net::ResponseCookies(),
-        "email=" + username);
-  }
-
-  void MockFailedGaiaUserInfoResponse404() {
-    SetUpFetcherResponseAndCompleteRequest(
-        GaiaUrls::GetInstance()->get_user_info_url(),
-        net::HTTP_NOT_FOUND,
-        net::ResponseCookies(),
-        std::string());
   }
 
   void MockSuccessfulGetAccountInfoResponse(const std::string& username) {
@@ -231,43 +198,6 @@ TEST_F(WalletSigninHelperTest, PassiveUserInfoFailedUserInfo) {
   EXPECT_CALL(mock_delegate_, OnUserNameFetchFailure(_));
   signin_helper_->StartUserNameFetch();
   MockFailedGetAccountInfoResponse404();
-}
-
-TEST_F(WalletSigninHelperTest, AutomaticSigninSuccessful) {
-  EXPECT_CALL(mock_delegate_, OnAutomaticSigninSuccess("user@gmail.com"));
-  signin_helper_->StartAutomaticSignin("123SID", "123LSID");
-  MockSuccessfulGaiaUserInfoResponse("user@gmail.com");
-  MockSuccessfulOAuthLoginResponse();
-  MockSuccessfulPassiveSignInResponse();
-}
-
-TEST_F(WalletSigninHelperTest, AutomaticSigninFailedGetUserInfo) {
-  EXPECT_CALL(mock_delegate_, OnAutomaticSigninFailure(_));
-  signin_helper_->StartAutomaticSignin("123SID", "123LSID");
-  MockFailedGaiaUserInfoResponse404();
-}
-
-TEST_F(WalletSigninHelperTest, AutomaticSigninFailedOAuthLogin) {
-  EXPECT_CALL(mock_delegate_, OnAutomaticSigninFailure(_));
-  signin_helper_->StartAutomaticSignin("123SID", "123LSID");
-  MockSuccessfulGaiaUserInfoResponse("user@gmail.com");
-  MockFailedOAuthLoginResponse404();
-}
-
-TEST_F(WalletSigninHelperTest, AutomaticSigninFailedSignin404) {
-  EXPECT_CALL(mock_delegate_, OnAutomaticSigninFailure(_));
-  signin_helper_->StartAutomaticSignin("123SID", "123LSID");
-  MockSuccessfulGaiaUserInfoResponse("user@gmail.com");
-  MockSuccessfulOAuthLoginResponse();
-  MockFailedPassiveSignInResponse404();
-}
-
-TEST_F(WalletSigninHelperTest, AutomaticSigninFailedSigninNo) {
-  EXPECT_CALL(mock_delegate_, OnAutomaticSigninFailure(_));
-  signin_helper_->StartAutomaticSignin("123SID", "123LSID");
-  MockSuccessfulGaiaUserInfoResponse("user@gmail.com");
-  MockSuccessfulOAuthLoginResponse();
-  MockFailedPassiveSignInResponseNo();
 }
 
 TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {

@@ -243,9 +243,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void OnPassiveSigninSuccess(const std::string& username) OVERRIDE;
   virtual void OnPassiveSigninFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnAutomaticSigninSuccess(const std::string& username) OVERRIDE;
-  virtual void OnAutomaticSigninFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnUserNameFetchSuccess(const std::string& username) OVERRIDE;
   virtual void OnUserNameFetchFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
@@ -326,7 +323,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void HideSignIn();
 
   // Handles the SignedInState() on Wallet or sign-in state update.
-  // Triggers the user name fetch and the passive/automatic sign-in.
+  // Triggers the user name fetch and passive sign-in.
   void SignedInStateUpdated();
 
   // Refreshes the model on Wallet or sign-in state update.
