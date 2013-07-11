@@ -48,14 +48,6 @@ namespace {
 const int  kExpectedReturnValue   = 42;
 const char kSandboxDebuggingEnv[] = "CHROME_SANDBOX_DEBUGGING";
 
-inline bool IsAndroid() {
-#if defined(OS_ANDROID)
-  return true;
-#else
-  return false;
-#endif
-}
-
 // This test should execute no matter whether we have kernel support. So,
 // we make it a TEST() instead of a BPF_TEST().
 TEST(SandboxBpf, CallSupports) {
@@ -265,7 +257,7 @@ BPF_TEST(SandboxBpf, ErrnoTest, ErrnoTestPolicy) {
   // On Android, errno is only supported up to 255, otherwise errno
   // processing is skipped.
   // We work around this (crbug.com/181647).
-  if (IsAndroid() && setgid(0) != -1) {
+  if (sandbox::IsAndroid() && setgid(0) != -1) {
     errno = 0;
     BPF_ASSERT(setgid(0) == -ErrorCode::ERR_MAX_ERRNO);
     BPF_ASSERT(errno == 0);

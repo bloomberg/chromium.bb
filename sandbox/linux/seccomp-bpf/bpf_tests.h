@@ -9,11 +9,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-
 
 namespace sandbox {
 
@@ -96,13 +94,14 @@ class BpfTests : public UnitTests {
 
       arg->test()(arg->aux_);
     } else {
-      // Only Android should be in the case where kernel support is not always
-      // available. Valgrind instrumentation will also prevent our tests from
-      // working.
-#if !defined(OS_ANDROID) && !defined(RUNNING_ON_VALGRIND)
-      const bool seccomp_bpf_is_supported = false;
-      BPF_ASSERT(seccomp_bpf_is_supported);
-#endif  // !defined(OS_ANDROID) && !defined(RUNNING_ON_VALGRIND)
+      printf("This BPF test is not fully running in this configuration!\n");
+      // Android, ARM and Valgrind are the three only configurations where we
+      // accept not having kernel BPF support.
+      // TODO(jln): remote ARM from this list when possible (crbug.com/243478).
+      if (!IsAndroid() && !IsRunningOnValgrind() && !IsArchitectureArm()) {
+        const bool seccomp_bpf_is_supported = false;
+        BPF_ASSERT(seccomp_bpf_is_supported);
+      }
       // Call the compiler and verify the policy. That's the least we can do,
       // if we don't have kernel support.
       playground2::Sandbox sandbox;

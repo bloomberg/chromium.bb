@@ -11,6 +11,14 @@
 
 namespace sandbox {
 
+// Has this been compiled to run on Android?
+bool IsAndroid();
+
+bool IsArchitectureArm();
+
+// Is Valgrind currently being used?
+bool IsRunningOnValgrind();
+
 #if defined(THREAD_SANITIZER)
 #define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
 #else

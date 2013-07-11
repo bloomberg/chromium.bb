@@ -7,6 +7,7 @@
 {
   'dependencies': [
     'sandbox',
+    '../base/base.gyp:base',
     '../testing/gtest.gyp:gtest',
   ],
   'include_dirs': [

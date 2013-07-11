@@ -41,6 +41,28 @@ int CountThreads() {
 
 namespace sandbox {
 
+bool IsAndroid() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool IsArchitectureArm() {
+#if defined(ARCH_CPU_ARM_FAMILY)
+  return true;
+#else
+  return false;
+#endif
+}
+
+// TODO(jln): figure out why base/.../dynamic_annotations.h's
+// RunningOnValgrind() cannot link.
+bool IsRunningOnValgrind() {
+  return RUNNING_ON_VALGRIND;
+}
+
 static const int kExpectedValue = 42;
 static const int kIgnoreThisTest = 43;
 static const int kExitWithAssertionFailure = 1;
@@ -116,7 +138,7 @@ void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
 
     // Don't set a timeout if running on Valgrind, since it's generally much
     // slower.
-    if (!RUNNING_ON_VALGRIND) {
+    if (!IsRunningOnValgrind()) {
       SetProcessTimeout(GetSubProcessTimeoutTimeInSeconds());
     }
 
