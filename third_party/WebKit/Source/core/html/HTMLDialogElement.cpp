@@ -44,6 +44,7 @@ HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document* doc
     : HTMLElement(tagName, document)
     , m_topIsValid(false)
     , m_top(0)
+    , m_returnValue("")
 {
     ASSERT(hasTagName(dialogTag));
     setHasCustomStyleCallbacks();
@@ -55,7 +56,7 @@ PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tag
     return adoptRef(new HTMLDialogElement(tagName, document));
 }
 
-void HTMLDialogElement::close(ExceptionCode& ec)
+void HTMLDialogElement::close(const String& returnValue, ExceptionCode& ec)
 {
     if (!fastHasAttribute(openAttr)) {
         ec = InvalidStateError;
@@ -64,6 +65,9 @@ void HTMLDialogElement::close(ExceptionCode& ec)
     setBooleanAttribute(openAttr, false);
     document()->removeFromTopLayer(this);
     m_topIsValid = false;
+
+    if (!returnValue.isNull())
+        m_returnValue = returnValue;
 }
 
 PassRefPtr<RenderStyle> HTMLDialogElement::customStyleForRenderer()

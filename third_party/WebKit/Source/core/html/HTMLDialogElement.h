@@ -37,9 +37,12 @@ class HTMLDialogElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLDialogElement> create(const QualifiedName&, Document*);
 
-    void close(ExceptionCode&);
+    void close(const String& returnValue, ExceptionCode&);
     void show();
     void showModal(ExceptionCode&);
+
+    String returnValue() const { return m_returnValue; }
+    void setReturnValue(const String& returnValue) { m_returnValue = returnValue; }
 
 private:
     HTMLDialogElement(const QualifiedName&, Document*);
@@ -51,6 +54,7 @@ private:
 
     bool m_topIsValid;
     LayoutUnit m_top;
+    String m_returnValue;
 };
 
 } // namespace WebCore
