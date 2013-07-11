@@ -375,6 +375,7 @@ class DeepHeapProfile {
   GlobalStats stats_;      // Stats about total memory.
   int dump_count_;         // The number of dumps.
   char* filename_prefix_;  // Output file prefix.
+  char run_id_[128];
 
   DeepBucketTable deep_table_;
 

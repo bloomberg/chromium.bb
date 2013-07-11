@@ -289,6 +289,8 @@ DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
       reinterpret_cast<char*>(heap_profile_->alloc_(prefix_length + 1));
   memcpy(filename_prefix_, prefix, prefix_length);
   filename_prefix_[prefix_length] = '\0';
+
+  strncpy(run_id_, "undetermined-run-id", sizeof(run_id_));
 }
 
 DeepHeapProfile::~DeepHeapProfile() {
@@ -316,7 +318,19 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
 
   // Re-open files in /proc/pid/ if the process is newly forked one.
   if (most_recent_pid_ != getpid()) {
+    char hostname[64];
+    if (0 == gethostname(hostname, sizeof(hostname))) {
+      char* dot = strchr(hostname, '.');
+      if (dot != NULL)
+        *dot = '\0';
+    } else {
+      strcpy(hostname, "unknown");
+    }
+
     most_recent_pid_ = getpid();
+
+    snprintf(run_id_, sizeof(run_id_), "%s-linux-%d-%lu",
+             hostname, most_recent_pid_, time(NULL));
 
     memory_residence_info_getter_->Initialize();
     deep_table_.ResetIsLogged();
@@ -353,6 +367,10 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
   }
 
   AppendCommandLine(&buffer);
+
+  buffer.AppendString("RunID: ", 0);
+  buffer.AppendString(run_id_, 0);
+  buffer.AppendChar('\n');
 
   buffer.AppendString("PageSize: ", 0);
   buffer.AppendInt(getpagesize(), 0, 0);
