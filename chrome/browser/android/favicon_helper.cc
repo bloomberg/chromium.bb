@@ -36,8 +36,10 @@ void FaviconImageCallback(
   ScopedJavaLocalRef<jstring> java_icon_url = ConvertUTF8ToJavaString(
       env, favicon_image_result.icon_url.spec());
   SkBitmap favicon_bitmap = favicon_image_result.image.AsBitmap();
-  ScopedJavaLocalRef<jobject> java_favicon_bitmap = gfx::ConvertToJavaBitmap(
-      &favicon_bitmap);
+  ScopedJavaLocalRef<jobject> java_favicon_bitmap;
+  if (!favicon_bitmap.isNull()) {
+    java_favicon_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
+  }
 
   // Call java side FaviconImageCallback method.
   Java_FaviconImageCallback_onFaviconAvailable(
