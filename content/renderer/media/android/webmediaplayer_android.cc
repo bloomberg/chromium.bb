@@ -33,8 +33,8 @@
 #include "webkit/renderer/media/crypto/key_systems.h"
 
 #if defined(GOOGLE_TV)
-#include "content/public/renderer/media_stream_audio_renderer.h"
-#include "content/public/renderer/media_stream_client.h"
+#include "content/renderer/media/media_stream_audio_renderer.h"
+#include "content/renderer/media/media_stream_client.h"
 #endif
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
