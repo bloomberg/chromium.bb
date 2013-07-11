@@ -62,7 +62,7 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
       raise Exception('Test suite %s not found in %s.\n'
                       'Supported test suites:\n %s\n'
                       'Ensure it has been built.\n' %
-                      (t, q, gtest_config.STABLE_TEST_SUITES))
+                      (t, q, [s.name for s in gtest_config.STABLE_TEST_SUITES]))
   return qualified_test_suites
 
 
