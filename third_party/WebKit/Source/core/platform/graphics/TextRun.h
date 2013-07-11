@@ -99,9 +99,9 @@ public:
         m_data.characters16 = c;
     }
     
-    TextRun(const String& s, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true, RoundingHacks roundingHacks = RunRounding | WordRounding)
-        : m_charactersLength(s.length())
-        , m_len(s.length())
+    TextRun(const String& string, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true, RoundingHacks roundingHacks = RunRounding | WordRounding)
+        : m_charactersLength(string.length())
+        , m_len(string.length())
         , m_xpos(xpos)
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
@@ -115,11 +115,14 @@ public:
         , m_disableSpacing(false)
         , m_tabSize(0)
     {
-        if (m_charactersLength && s.is8Bit()) {
-            m_data.characters8 = s.characters8();
+        if (!m_charactersLength) {
+            m_is8Bit = true;
+            m_data.characters8 = 0;
+        } else if (string.is8Bit()) {
+            m_data.characters8 = string.characters8();
             m_is8Bit = true;
         } else {
-            m_data.characters16 = s.bloatedCharacters();
+            m_data.characters16 = string.characters16();
             m_is8Bit = false;
         }
     }

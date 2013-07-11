@@ -8052,10 +8052,11 @@ TextRun RenderBlock::constructTextRun(RenderObject* context, const Font& font, c
 TextRun RenderBlock::constructTextRun(RenderObject* context, const Font& font, const String& string, RenderStyle* style, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
 {
     unsigned length = string.length();
-
-    if (length && string.is8Bit())
+    if (!length)
+        return constructTextRunInternal(context, font, static_cast<const LChar*>(0), length, style, expansion, flags);
+    if (string.is8Bit())
         return constructTextRunInternal(context, font, string.characters8(), length, style, expansion, flags);
-    return constructTextRunInternal(context, font, string.bloatedCharacters(), length, style, expansion, flags);
+    return constructTextRunInternal(context, font, string.characters16(), length, style, expansion, flags);
 }
 
 RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const RenderObject* parent, EDisplay display)
