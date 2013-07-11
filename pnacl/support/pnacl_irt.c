@@ -51,21 +51,30 @@ static int starts_with(const char *str, const char *prefix) {
 /*
  * This wraps the IRT interface query function in order to hide IRT
  * interfaces that are disallowed under PNaCl.
- *
- * Currently this only blacklists the "irt-mutex" and "irt-cond"
- * interfaces, which are deprecated and superseded by the "irt-futex"
- * interface.
- * See https://code.google.com/p/nativeclient/issues/detail?id=3484
  */
 static size_t irt_query_filter(const char *interface_ident,
                                void *table, size_t tablesize) {
   static const char common_prefix[] = "nacl-irt-";
   if (starts_with(interface_ident, common_prefix)) {
     const char *rest = interface_ident + sizeof(common_prefix) - 1;
+    /*
+     * "irt-mutex" and "irt-cond" are deprecated and are superseded by
+     * the "irt-futex" interface.
+     * See https://code.google.com/p/nativeclient/issues/detail?id=3484
+     */
     if (starts_with(rest, "mutex-") ||
         starts_with(rest, "cond-")) {
       return 0;
     }
+    /*
+     * "irt-blockhook" is deprecated.  It was provided for
+     * implementing thread suspension for conservative garbage
+     * collection, but this is probably not a portable use case under
+     * PNaCl, so this interface is disabled under PNaCl.
+     * See https://code.google.com/p/nativeclient/issues/detail?id=3539
+     */
+    if (starts_with(rest, "blockhook-"))
+      return 0;
   }
   return g_irt_query_func(interface_ident, table, tablesize);
 }
