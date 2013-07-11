@@ -34,6 +34,8 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
@@ -667,6 +669,19 @@ int BookmarkBarView::GetToolbarOverlap() const {
 
 gfx::Size BookmarkBarView::GetPreferredSize() {
   return LayoutItems(true);
+}
+
+bool BookmarkBarView::HitTestRect(const gfx::Rect& rect) const {
+  // If bookmark bar is attached and omnibox popup is open (on top of the bar),
+  // force hit-testing to fail.  This prevents hovers/clicks just above the
+  // omnibox popup from activating the top few pixels of items on the bookmark
+  // bar.
+  if (!IsDetached() && browser_view_ &&
+      browser_view_->GetLocationBar()->GetLocationEntry()->model()->
+          popup_model()->IsOpen()) {
+    return false;
+  }
+  return DetachableToolbarView::HitTestRect(rect);
 }
 
 gfx::Size BookmarkBarView::GetMinimumSize() {

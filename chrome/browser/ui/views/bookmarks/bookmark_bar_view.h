@@ -165,6 +165,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // View methods:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
