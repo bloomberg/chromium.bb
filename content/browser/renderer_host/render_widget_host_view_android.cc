@@ -1073,8 +1073,7 @@ void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
     content_view_core_->HasTouchEventHandlers(need_touch_events);
 }
 
-unsigned RenderWidgetHostViewAndroid::PrepareTexture(
-    cc::ResourceUpdateQueue* queue) {
+unsigned RenderWidgetHostViewAndroid::PrepareTexture() {
   RunAckCallbacks();
   return texture_id_in_layer_;
 }

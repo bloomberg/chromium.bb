@@ -20,10 +20,6 @@ void ResourceUpdateQueue::AppendPartialUpload(const ResourceUpdate& upload) {
   partial_entries_.push_back(upload);
 }
 
-void ResourceUpdateQueue::AppendCopy(TextureCopier::Parameters copy) {
-  copy_entries_.push_back(copy);
-}
-
 void ResourceUpdateQueue::ClearUploadsToEvictedResources() {
   ClearUploadsToEvictedResources(&full_entries_);
   ClearUploadsToEvictedResources(&partial_entries_);
@@ -53,15 +49,8 @@ ResourceUpdate ResourceUpdateQueue::TakeFirstPartialUpload() {
   return first;
 }
 
-TextureCopier::Parameters ResourceUpdateQueue::TakeFirstCopy() {
-  TextureCopier::Parameters first = copy_entries_.front();
-  copy_entries_.pop_front();
-  return first;
-}
-
 bool ResourceUpdateQueue::HasMoreUpdates() const {
-  return !full_entries_.empty() || !partial_entries_.empty() ||
-         !copy_entries_.empty();
+  return !full_entries_.empty() || !partial_entries_.empty();
 }
 
 }  // namespace cc

@@ -18,7 +18,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
-#include "cc/output/texture_copier.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -63,7 +62,6 @@ class CC_EXPORT ResourceProvider {
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
   WebKit::WebGraphicsContext3D* GraphicsContext3D();
-  TextureCopier* texture_copier() const { return texture_copier_.get(); }
   int max_texture_size() const { return max_texture_size_; }
   GLenum best_texture_format() const { return best_texture_format_; }
   unsigned num_resources() const { return resources_.size(); }
@@ -421,7 +419,6 @@ class CC_EXPORT ResourceProvider {
   bool use_texture_usage_hint_;
   bool use_shallow_flush_;
   scoped_ptr<TextureUploader> texture_uploader_;
-  scoped_ptr<AcceleratedTextureCopier> texture_copier_;
   int max_texture_size_;
   GLenum best_texture_format_;
 

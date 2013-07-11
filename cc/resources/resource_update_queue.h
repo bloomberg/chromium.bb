@@ -8,7 +8,6 @@
 #include <deque>
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/output/texture_copier.h"
 #include "cc/resources/resource_update.h"
 
 namespace cc {
@@ -20,17 +19,14 @@ class CC_EXPORT ResourceUpdateQueue {
 
   void AppendFullUpload(const ResourceUpdate& upload);
   void AppendPartialUpload(const ResourceUpdate& upload);
-  void AppendCopy(TextureCopier::Parameters copy);
 
   void ClearUploadsToEvictedResources();
 
   ResourceUpdate TakeFirstFullUpload();
   ResourceUpdate TakeFirstPartialUpload();
-  TextureCopier::Parameters TakeFirstCopy();
 
   size_t FullUploadSize() const { return full_entries_.size(); }
   size_t PartialUploadSize() const { return partial_entries_.size(); }
-  size_t CopySize() const { return copy_entries_.size(); }
 
   bool HasMoreUpdates() const;
 
@@ -38,7 +34,6 @@ class CC_EXPORT ResourceUpdateQueue {
   void ClearUploadsToEvictedResources(std::deque<ResourceUpdate>* entry_queue);
   std::deque<ResourceUpdate> full_entries_;
   std::deque<ResourceUpdate> partial_entries_;
-  std::deque<TextureCopier::Parameters> copy_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceUpdateQueue);
 };

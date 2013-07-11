@@ -177,7 +177,7 @@ class RenderWidgetHostViewAndroid
   virtual void FatalAccessibilityTreeError() OVERRIDE;
 
   // cc::TextureLayerClient implementation.
-  virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
+  virtual unsigned PrepareTexture() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
                                      bool use_shared_memory) OVERRIDE;

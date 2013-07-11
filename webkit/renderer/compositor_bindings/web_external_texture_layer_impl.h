@@ -29,24 +29,18 @@ class WebExternalTextureLayerImpl
       public base::SupportsWeakPtr<WebExternalTextureLayerImpl> {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebExternalTextureLayerImpl(
-      WebKit::WebExternalTextureLayerClient*,
-      bool mailbox);
+      WebKit::WebExternalTextureLayerClient*);
   virtual ~WebExternalTextureLayerImpl();
 
   // WebKit::WebExternalTextureLayer implementation.
   virtual WebKit::WebLayer* layer();
   virtual void clearTexture();
-  virtual void setTextureId(unsigned texture_id);
-  virtual void setFlipped(bool flipped);
-  virtual void setUVRect(const WebKit::WebFloatRect& uv_rect);
   virtual void setOpaque(bool opaque);
   virtual void setPremultipliedAlpha(bool premultiplied);
-
-  virtual void willModifyTexture();
   virtual void setRateLimitContext(bool rate_limit);
 
   // TextureLayerClient implementation.
-  virtual unsigned PrepareTexture(cc::ResourceUpdateQueue*) OVERRIDE;
+  virtual unsigned PrepareTexture() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
                                      bool use_shared_memory) OVERRIDE;
@@ -63,7 +57,6 @@ class WebExternalTextureLayerImpl
 
   WebKit::WebExternalTextureLayerClient* client_;
   scoped_ptr<WebLayerImpl> layer_;
-  bool uses_mailbox_;
   ScopedVector<WebExternalBitmapImpl> free_bitmaps_;
 
   DISALLOW_COPY_AND_ASSIGN(WebExternalTextureLayerImpl);

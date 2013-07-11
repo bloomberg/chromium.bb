@@ -318,7 +318,7 @@ class COMPOSITOR_EXPORT Layer
   cc::Layer* cc_layer() { return cc_layer_; }
 
   // TextureLayerClient
-  virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;
+  virtual unsigned PrepareTexture() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual bool PrepareTextureMailbox(cc::TextureMailbox* mailbox,
                                      bool use_shared_memory) OVERRIDE;

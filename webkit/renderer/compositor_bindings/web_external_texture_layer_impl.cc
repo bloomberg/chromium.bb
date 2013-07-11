@@ -19,16 +19,10 @@ using cc::ResourceUpdateQueue;
 namespace webkit {
 
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
-    WebKit::WebExternalTextureLayerClient* client,
-    bool mailbox)
-    : client_(client),
-      uses_mailbox_(mailbox) {
-  scoped_refptr<TextureLayer> layer;
+    WebKit::WebExternalTextureLayerClient* client)
+    : client_(client) {
   cc::TextureLayerClient* cc_client = client_ ? this : NULL;
-  if (mailbox)
-    layer = TextureLayer::CreateForMailbox(cc_client);
-  else
-    layer = TextureLayer::Create(cc_client);
+  scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(cc_client);
   layer->SetIsDrawable(true);
   layer_.reset(new WebLayerImpl(layer));
 }
@@ -40,27 +34,9 @@ WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl() {
 WebKit::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
 
 void WebExternalTextureLayerImpl::clearTexture() {
-  if (uses_mailbox_) {
-    TextureLayer *layer = static_cast<TextureLayer*>(layer_->layer());
-    layer->WillModifyTexture();
-    layer->SetTextureMailbox(cc::TextureMailbox());
-  } else {
-    static_cast<TextureLayer*>(layer_->layer())->SetTextureId(0);
-  }
-}
-
-void WebExternalTextureLayerImpl::setTextureId(unsigned id) {
-  static_cast<TextureLayer*>(layer_->layer())->SetTextureId(id);
-}
-
-void WebExternalTextureLayerImpl::setFlipped(bool flipped) {
-  static_cast<TextureLayer*>(layer_->layer())->SetFlipped(flipped);
-}
-
-void WebExternalTextureLayerImpl::setUVRect(const WebKit::WebFloatRect& rect) {
-  static_cast<TextureLayer*>(layer_->layer())->SetUV(
-      gfx::PointF(rect.x, rect.y),
-      gfx::PointF(rect.x + rect.width, rect.y + rect.height));
+  TextureLayer *layer = static_cast<TextureLayer*>(layer_->layer());
+  layer->WillModifyTexture();
+  layer->SetTextureMailbox(cc::TextureMailbox());
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque) {
@@ -73,35 +49,13 @@ void WebExternalTextureLayerImpl::setPremultipliedAlpha(
       premultiplied_alpha);
 }
 
-void WebExternalTextureLayerImpl::willModifyTexture() {
-  static_cast<TextureLayer*>(layer_->layer())->WillModifyTexture();
-}
-
 void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
   static_cast<TextureLayer*>(layer_->layer())->SetRateLimitContext(rate_limit);
 }
 
-class WebTextureUpdaterImpl : public WebKit::WebTextureUpdater {
- public:
-  explicit WebTextureUpdaterImpl(ResourceUpdateQueue* queue) : queue_(queue) {}
-
-  virtual void appendCopy(unsigned source_texture,
-                          unsigned destination_texture,
-                          WebKit::WebSize size) OVERRIDE {
-    cc::TextureCopier::Parameters copy = { source_texture, destination_texture,
-                                           size };
-    queue_->AppendCopy(copy);
-  }
-
- private:
-  ResourceUpdateQueue* queue_;
-};
-
-unsigned WebExternalTextureLayerImpl::PrepareTexture(
-    ResourceUpdateQueue* queue) {
-  DCHECK(client_);
-  WebTextureUpdaterImpl updater_impl(queue);
-  return client_->prepareTexture(updater_impl);
+unsigned WebExternalTextureLayerImpl::PrepareTexture() {
+  NOTREACHED();
+  return 0;
 }
 
 WebKit::WebGraphicsContext3D* WebExternalTextureLayerImpl::Context3d() {

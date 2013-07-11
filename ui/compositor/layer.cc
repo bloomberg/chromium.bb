@@ -650,7 +650,7 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
     canvas->Restore();
 }
 
-unsigned Layer::PrepareTexture(cc::ResourceUpdateQueue* queue) {
+unsigned Layer::PrepareTexture() {
   DCHECK(texture_layer_.get());
   return texture_->PrepareTexture();
 }

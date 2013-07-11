@@ -169,7 +169,6 @@ ResourceProvider::~ResourceProvider() {
   if (!context3d || !context3d->makeContextCurrent())
     return;
   texture_uploader_.reset();
-  texture_copier_.reset();
 }
 
 WebGraphicsContext3D* ResourceProvider::GraphicsContext3D() {
@@ -674,7 +673,6 @@ bool ResourceProvider::Initialize(int highp_threshold_min) {
   std::vector<std::string> extensions;
   base::SplitString(extensions_string, ' ', &extensions);
   bool use_map_sub = false;
-  bool use_bind_uniform = false;
   bool use_bgra = false;
   for (size_t i = 0; i < extensions.size(); ++i) {
     if (extensions[i] == "GL_EXT_texture_storage")
@@ -685,14 +683,9 @@ bool ResourceProvider::Initialize(int highp_threshold_min) {
       use_map_sub = true;
     else if (extensions[i] == "GL_CHROMIUM_shallow_flush")
       use_shallow_flush_ = true;
-    else if (extensions[i] == "GL_CHROMIUM_bind_uniform_location")
-      use_bind_uniform = true;
     else if (extensions[i] == "GL_EXT_texture_format_BGRA8888")
       use_bgra = true;
   }
-
-  texture_copier_ = AcceleratedTextureCopier::Create(
-      context3d, use_bind_uniform, highp_threshold_min);
 
   texture_uploader_ =
       TextureUploader::Create(context3d, use_map_sub, use_shallow_flush_);
@@ -708,7 +701,6 @@ bool ResourceProvider::Reinitialize(int highp_threshold_min) {
 
   // Only supports reinitializing from software mode.
   DCHECK(!texture_uploader_);
-  DCHECK(!texture_copier_);
 
   return Initialize(highp_threshold_min);
 }

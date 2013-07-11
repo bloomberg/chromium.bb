@@ -201,8 +201,6 @@
       'output/software_output_device.h',
       'output/software_renderer.cc',
       'output/software_renderer.h',
-      'output/texture_copier.cc',
-      'output/texture_copier.h',
       'quads/checkerboard_draw_quad.cc',
       'quads/checkerboard_draw_quad.h',
       'quads/content_draw_quad_base.cc',

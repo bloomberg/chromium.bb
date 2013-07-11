@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/output/texture_copier.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
 
@@ -107,18 +106,6 @@ void ResourceUpdateController::Finalize() {
     UpdateTexture(queue_->TakeFirstPartialUpload());
 
   resource_provider_->FlushUploads();
-
-  if (queue_->CopySize()) {
-    TextureCopier* copier = resource_provider_->texture_copier();
-    while (queue_->CopySize())
-      copier->CopyTexture(queue_->TakeFirstCopy());
-
-    // If we've performed any texture copies, we need to insert a flush
-    // here into the compositor context before letting the main thread
-    // proceed as it may make draw calls to the source texture of one of
-    // our copy operations.
-    copier->Flush();
-  }
 }
 
 void ResourceUpdateController::OnTimerFired() {

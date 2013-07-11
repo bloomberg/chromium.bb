@@ -177,7 +177,7 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
       }
     } else {
       DCHECK(client_->Context3d());
-      texture_id_ = client_->PrepareTexture(queue);
+      texture_id_ = client_->PrepareTexture();
       if (client_->Context3d() &&
           client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR)
         texture_id_ = 0;

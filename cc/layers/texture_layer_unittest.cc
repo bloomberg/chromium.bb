@@ -699,7 +699,7 @@ class TextureLayerClientTest
         context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
   }
 
-  virtual unsigned PrepareTexture(ResourceUpdateQueue* queue) OVERRIDE {
+  virtual unsigned PrepareTexture() OVERRIDE {
     return texture_;
   }
 
@@ -813,7 +813,7 @@ class TextureLayerLostContextTest
         context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
   }
 
-  virtual unsigned PrepareTexture(ResourceUpdateQueue* queue) OVERRIDE {
+  virtual unsigned PrepareTexture() OVERRIDE {
     if (draw_count_ == 0) {
       texture_context_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
           GL_INNOCENT_CONTEXT_RESET_ARB);
