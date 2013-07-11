@@ -123,6 +123,7 @@ CONTENT_EXPORT extern const char kEnableGestureTapHighlight[];
 CONTENT_EXPORT extern const char kDisableGestureTapHighlight[];
 extern const char kEnableGpuBenchmarking[];
 extern const char kEnableGpuClientTracing[];
+CONTENT_EXPORT extern const char kEnableInbandTextTracks[];
 extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];

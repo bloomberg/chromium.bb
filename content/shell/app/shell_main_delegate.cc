@@ -142,6 +142,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
       command_line.AppendSwitch(switches::kEnableSoftwareCompositingGLAdapter);
 
+    command_line.AppendSwitch(switches::kEnableInbandTextTracks);
+
     net::CookieMonster::EnableFileScheme();
 
     // Unless/until WebM files are added to the media layout tests, we need to

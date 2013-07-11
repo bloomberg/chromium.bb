@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "cc/layers/video_layer.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/texttrack_impl.h"
 #include "content/renderer/media/webaudiosourceprovider_impl.h"

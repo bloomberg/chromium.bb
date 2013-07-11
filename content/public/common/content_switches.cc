@@ -366,6 +366,9 @@ const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
 // Enables TRACE for GL calls in the renderer.
 const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
 
+// Enables support for inband text tracks in media content.
+const char kEnableInbandTextTracks[] = "enable-inband-text-tracks";
+
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
