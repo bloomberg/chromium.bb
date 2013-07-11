@@ -14,6 +14,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -25,7 +26,9 @@ UserPolicySigninServiceFactory::UserPolicySigninServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "UserPolicySigninService",
         BrowserContextDependencyManager::GetInstance()) {
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+#else
   DependsOn(TokenServiceFactory::GetInstance());
 #endif
   DependsOn(SigninManagerFactory::GetInstance());

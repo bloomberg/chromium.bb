@@ -10,10 +10,6 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
-#endif
-
 ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "ProfileOAuth2TokenService",
@@ -25,12 +21,21 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
 ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {
 }
 
+#if defined(OS_ANDROID)
+// static
+AndroidProfileOAuth2TokenService*
+    ProfileOAuth2TokenServiceFactory::GetForProfile(Profile* profile) {
+  return static_cast<AndroidProfileOAuth2TokenService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
+}
+#else
 // static
 ProfileOAuth2TokenService* ProfileOAuth2TokenServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<ProfileOAuth2TokenService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
+#endif  // defined(OS_ANDROID)
 
 // static
 ProfileOAuth2TokenServiceFactory*

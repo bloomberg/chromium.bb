@@ -10,6 +10,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -48,6 +49,14 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
       const OAuth2TokenService::ScopeSet& scopes,
       OAuth2TokenService::Consumer* consumer) OVERRIDE;
 
+  // StartRequest() fetches a token for the currently signed-in account; this
+  // version uses the account corresponding to |username|. This allows fetching
+  // tokens before a user is signed-in (e.g. during the sign-in flow).
+  scoped_ptr<OAuth2TokenService::Request> StartRequestForUsername(
+      const std::string& username,
+      const OAuth2TokenService::ScopeSet& scopes,
+      OAuth2TokenService::Consumer* consumer);
+
   virtual bool RefreshTokenIsAvailable() OVERRIDE;
   virtual void InvalidateToken(const ScopeSet& scopes,
                                const std::string& invalid_token) OVERRIDE;
@@ -62,8 +71,10 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
       net::URLRequestContextGetter* getter);
   virtual ~AndroidProfileOAuth2TokenService();
 
-  void FetchOAuth2Token(const std::string& scope,
-                        const FetchOAuth2TokenCallback& callback);
+  // virtual for testing.
+  virtual void FetchOAuth2Token(const std::string& username,
+                                const std::string& scope,
+                                const FetchOAuth2TokenCallback& callback);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AndroidProfileOAuth2TokenService);

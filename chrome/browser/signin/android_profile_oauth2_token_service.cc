@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
@@ -50,10 +51,24 @@ scoped_ptr<OAuth2TokenService::Request>
     AndroidProfileOAuth2TokenService::StartRequest(
         const OAuth2TokenService::ScopeSet& scopes,
         OAuth2TokenService::Consumer* consumer) {
+  const std::string& sync_username =
+      SigninManagerFactory::GetForProfile(profile())->
+          GetAuthenticatedUsername();
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!sync_username.empty());
+  return StartRequestForUsername(sync_username, scopes, consumer);
+}
+
+scoped_ptr<OAuth2TokenService::Request>
+    AndroidProfileOAuth2TokenService::StartRequestForUsername(
+        const std::string& username,
+        const OAuth2TokenService::ScopeSet& scopes,
+        OAuth2TokenService::Consumer* consumer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
   FetchOAuth2Token(
+      username,
       CombineScopes(scopes),
       base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr()));
   return request.PassAs<Request>();
@@ -79,14 +94,12 @@ void AndroidProfileOAuth2TokenService::InvalidateToken(
 }
 
 void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
-    const std::string& scope, const FetchOAuth2TokenCallback& callback) {
-  const std::string& sync_username =
-      SigninManagerFactory::GetForProfile(profile())->
-          GetAuthenticatedUsername();
-
+    const std::string& username,
+    const std::string& scope,
+    const FetchOAuth2TokenCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_sync_username =
-      ConvertUTF8ToJavaString(env, sync_username);
+  ScopedJavaLocalRef<jstring> j_username =
+      ConvertUTF8ToJavaString(env, username);
   ScopedJavaLocalRef<jstring> j_scope =
       ConvertUTF8ToJavaString(env, scope);
 
@@ -99,7 +112,7 @@ void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
   // Call into Java to get a new token.
   Java_AndroidProfileOAuth2TokenServiceHelper_getOAuth2AuthToken(
       env, base::android::GetApplicationContext(),
-      j_sync_username.obj(),
+      j_username.obj(),
       j_scope.obj(),
       reinterpret_cast<int>(heap_callback.release()));
 }

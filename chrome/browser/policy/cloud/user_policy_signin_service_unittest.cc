@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -22,11 +24,13 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -36,6 +40,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
+#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/signin/token_service.h"
@@ -52,6 +58,8 @@ namespace policy {
 
 namespace {
 
+const char kTestUser[] = "testuser@test.com";
+
 const char kValidTokenResponse[] =
     "{"
     "  \"access_token\": \"at1\","
@@ -63,6 +71,10 @@ const char kHostedDomainResponse[] =
     "{"
     "  \"hd\": \"test.com\""
     "}";
+
+const char kCombinedScopes[] =
+    "https://www.googleapis.com/auth/chromeosdevicemanagement "
+    "https://www.googleapis.com/auth/userinfo.email";
 
 class SigninManagerFake : public FakeSigninManager {
  public:
@@ -82,6 +94,50 @@ class SigninManagerFake : public FakeSigninManager {
   }
 };
 
+#if defined(OS_ANDROID)
+
+class FakeProfileOAuth2TokenService : public AndroidProfileOAuth2TokenService {
+ public:
+  explicit FakeProfileOAuth2TokenService(Profile* profile)
+      : AndroidProfileOAuth2TokenService(profile->GetRequestContext()) {
+    Initialize(profile);
+  }
+
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
+    return new FakeProfileOAuth2TokenService(static_cast<Profile*>(profile));
+  }
+
+  // AndroidProfileOAuth2TokenService overrides:
+  virtual void FetchOAuth2Token(
+      const std::string& username,
+      const std::string& scope,
+      const FetchOAuth2TokenCallback& callback) OVERRIDE {
+    ASSERT_TRUE(!HasPendingRequest());
+    ASSERT_EQ(kTestUser, username);
+    ASSERT_EQ(kCombinedScopes, scope);
+    pending_callback_ = callback;
+  }
+
+  void IssueToken(const std::string& token) {
+    ASSERT_TRUE(HasPendingRequest());
+    GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
+    if (token.empty())
+      error = GoogleServiceAuthError::FromServiceError("fail");
+    pending_callback_.Run(
+        error, token, base::Time::Now() + base::TimeDelta::FromDays(1));
+    pending_callback_.Reset();
+  }
+
+  bool HasPendingRequest() const {
+    return !pending_callback_.is_null();
+  }
+
+ private:
+  FetchOAuth2TokenCallback pending_callback_;
+};
+
+#endif
+
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
@@ -100,8 +156,10 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   void RegisterPolicyClientWithCallback(UserPolicySigninService* service) {
     service->RegisterPolicyClient(
-        "testuser@test.com",
+        kTestUser,
+#if !defined(OS_ANDROID)
         "mock_oauth_token",
+#endif
         base::Bind(&UserPolicySigninServiceTest::OnRegisterCompleted,
                    base::Unretained(this)));
     ASSERT_TRUE(IsRequestActive());
@@ -139,6 +197,14 @@ class UserPolicySigninServiceTest : public testing::Test {
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), SigninManagerFake::Build));
 
+#if defined(OS_ANDROID)
+    ProfileOAuth2TokenServiceFactory* factory =
+        ProfileOAuth2TokenServiceFactory::GetInstance();
+    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
+        factory->SetTestingFactoryAndUse(profile_.get(),
+                                         FakeProfileOAuth2TokenService::Build));
+#endif
+
     // Make sure the UserPolicySigninService is created.
     UserPolicySigninServiceFactory::GetForProfile(profile_.get());
     Mock::VerifyAndClearExpectations(mock_store_);
@@ -158,15 +224,24 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   bool IsRequestActive() {
+#if defined(OS_ANDROID)
+    if (token_service_->HasPendingRequest())
+      return true;
+#endif
     return url_factory_.GetFetcherByID(0);
   }
 
   void MakeOAuthTokenFetchSucceed() {
+#if defined(OS_ANDROID)
+    ASSERT_TRUE(token_service_->HasPendingRequest());
+    token_service_->IssueToken("fake_token");
+#else
     ASSERT_TRUE(IsRequestActive());
     net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
     fetcher->set_response_code(net::HTTP_OK);
     fetcher->SetResponseString(kValidTokenResponse);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
+#endif
   }
 
   void ReportHostedDomainStatus(bool is_hosted_domain) {
@@ -183,10 +258,8 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_CALL(*this, OnPolicyRefresh(true)).Times(0);
     RegisterPolicyClientWithCallback(signin_service);
 
-#if !defined(OS_ANDROID)
     // Mimic successful oauth token fetch.
     MakeOAuthTokenFetchSucceed();
-#endif
 
     // When the user is from a hosted domain, this should kick off client
     // registration.
@@ -276,6 +349,9 @@ class UserPolicySigninServiceTest : public testing::Test {
   net::TestURLFetcherFactory url_factory_;
 
   SigninManagerFake* signin_manager_;
+#if defined(OS_ANDROID)
+  FakeProfileOAuth2TokenService* token_service_;  // Not owned.
+#endif
 
   // Used in conjunction with OnRegisterCompleted() to test client registration
   // callbacks.
@@ -315,7 +391,7 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
 TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
   // Set the user as signed in.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
-      "testuser@test.com");
+      kTestUser);
 
   // Let the SigninService know that the profile has been created.
   content::NotificationService::current()->Notify(
@@ -354,7 +430,7 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
 
   // Now sign in the user.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
-      "testuser@test.com");
+      kTestUser);
 
   // Complete initialization of the store.
   mock_store_->NotifyStoreLoaded();
@@ -413,7 +489,7 @@ TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
 
   // Now sign in the user.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
-      "testuser@test.com");
+      kTestUser);
 
   // Make oauth token available.
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
@@ -447,7 +523,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
 
   // Now sign in the user.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
-      "testuser@test.com");
+      kTestUser);
 
   // Make oauth token available.
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
@@ -480,7 +556,7 @@ TEST_F(UserPolicySigninServiceTest, SignOutAfterInit) {
   EXPECT_CALL(*mock_store_, Clear());
   // Set the user as signed in.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
-      "testuser@test.com");
+      kTestUser);
 
   // Let the SigninService know that the profile has been created.
   content::NotificationService::current()->Notify(
@@ -510,9 +586,15 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientOAuthFailure) {
   EXPECT_FALSE(register_completed_);
 
   // Cause the access token fetch to fail - callback should be invoked.
+#if defined(OS_ANDROID)
+  ASSERT_TRUE(token_service_->HasPendingRequest());
+  token_service_->IssueToken("");
+#else
   net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -1));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+#endif
+
   EXPECT_TRUE(register_completed_);
   EXPECT_FALSE(created_client_.get());
   EXPECT_FALSE(IsRequestActive());
@@ -527,14 +609,12 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientNonHostedDomain) {
   ASSERT_FALSE(manager_->core()->service());
   ASSERT_TRUE(IsRequestActive());
 
-#if !defined(OS_ANDROID)
   // Cause the access token request to succeed.
   MakeOAuthTokenFetchSucceed();
 
   // Should be a follow-up fetch to check the hosted-domain status.
   ASSERT_TRUE(IsRequestActive());
   Mock::VerifyAndClearExpectations(this);
-#endif
 
   EXPECT_FALSE(register_completed_);
 
@@ -557,10 +637,8 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientFailedRegistration) {
   // UserCloudPolicyManager should not be initialized.
   ASSERT_FALSE(manager_->core()->service());
 
-#if !defined(OS_ANDROID)
   // Mimic successful oauth token fetch.
   MakeOAuthTokenFetchSucceed();
-#endif
 
   EXPECT_FALSE(register_completed_);
 
@@ -595,10 +673,8 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientSucceeded) {
       UserPolicySigninServiceFactory::GetForProfile(profile_.get());
   RegisterPolicyClientWithCallback(signin_service);
 
-#if !defined(OS_ANDROID)
   // Mimic successful oauth token fetch.
   MakeOAuthTokenFetchSucceed();
-#endif
 
   // When the user is from a hosted domain, this should kick off client
   // registration.

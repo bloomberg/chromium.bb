@@ -8,6 +8,10 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#endif
+
 class ProfileOAuth2TokenService;
 class Profile;
 
@@ -22,7 +26,11 @@ class ProfileOAuth2TokenServiceFactory
   // cannot have a ProfileOAuth2TokenService (for example, if |profile| is
   // incognito).  On Android, returns the AndroidProfileOAuth2TokenService
   // specialization.
+#if defined(OS_ANDROID)
+  static AndroidProfileOAuth2TokenService* GetForProfile(Profile* profile);
+#else
   static ProfileOAuth2TokenService* GetForProfile(Profile* profile);
+#endif
 
   // Returns an instance of the ProfileOAuth2TokenServiceFactory singleton.
   static ProfileOAuth2TokenServiceFactory* GetInstance();

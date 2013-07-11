@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 
 namespace policy {
 
@@ -22,10 +23,7 @@ UserPolicySigninService::~UserPolicySigninService() {}
 
 void UserPolicySigninService::RegisterPolicyClient(
     const std::string& username,
-    const std::string& services_token,
     const PolicyRegistrationCallback& callback) {
-  DCHECK(!services_token.empty());
-
   // Create a new CloudPolicyClient for fetching the DMToken.
   scoped_ptr<CloudPolicyClient> policy_client = PrepareToRegister(username);
   if (!policy_client) {
@@ -43,8 +41,9 @@ void UserPolicySigninService::RegisterPolicyClient(
       policy_client.get(),
       force_load_policy,
       enterprise_management::DeviceRegisterRequest::BROWSER));
-  registration_helper_->StartRegistrationWithServicesToken(
-      services_token,
+  registration_helper_->StartRegistration(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
+      username,
       base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
                  base::Unretained(this),
                  base::Passed(&policy_client),
