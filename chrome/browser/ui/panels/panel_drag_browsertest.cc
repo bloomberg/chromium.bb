@@ -1325,13 +1325,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   panel_manager->CloseAll();
 }
 
-// http://crbug.com/143247, http://crbug.com/175760
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_AttachWithSqueeze DISABLED_AttachWithSqueeze
-#else
-#define MAYBE_AttachWithSqueeze AttachWithSqueeze
-#endif
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
   DetachedPanelCollection* detached_collection =
@@ -1340,12 +1334,15 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   // Create some detached, docked panels.
   //   detached:  P1  P2  P3
   //   docked:    P4  P5  P6  P7
-  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 300, 200, 100));
-  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 300, 200, 100));
-  Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(400, 300, 200, 100));
-  Panel* panel4 = CreateDockedPanel("4", gfx::Rect(0, 0, 200, 100));
-  Panel* panel5 = CreateDockedPanel("5", gfx::Rect(0, 0, 200, 100));
-  Panel* panel6 = CreateDockedPanel("6", gfx::Rect(0, 0, 200, 100));
+  Panel* panel1 = CreateInactiveDetachedPanel(
+      "1", gfx::Rect(100, 300, 200, 100));
+  Panel* panel2 = CreateInactiveDetachedPanel(
+      "2", gfx::Rect(200, 300, 200, 100));
+  Panel* panel3 = CreateInactiveDetachedPanel(
+      "3", gfx::Rect(400, 300, 200, 100));
+  Panel* panel4 = CreateInactiveDockedPanel("4", gfx::Rect(0, 0, 200, 100));
+  Panel* panel5 = CreateInactiveDockedPanel("5", gfx::Rect(0, 0, 200, 100));
+  Panel* panel6 = CreateInactiveDockedPanel("6", gfx::Rect(0, 0, 200, 100));
   Panel* panel7 = CreateDockedPanel("7", gfx::Rect(0, 0, 200, 100));
   ASSERT_EQ(3, detached_collection->num_panels());
   ASSERT_EQ(4, docked_collection->num_panels());
