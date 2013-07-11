@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -513,19 +513,14 @@ NSColor* IdentityVerifiedTextColor() {
 // Handler for the link button to show certificate information.
 - (void)showCertificateInfo:(id)sender {
   DCHECK(certificateId_);
-  ShowCertificateViewerByID(webContents_,
-                            [self parentWindow],
-                            certificateId_);
+  ShowCertificateViewerByID(webContents_, [self parentWindow], certificateId_);
 }
 
 // Handler for the link to show help information about the connection tab.
 - (void)showHelpPage:(id)sender {
   webContents_->OpenURL(content::OpenURLParams(
-      GURL(chrome::kPageInfoHelpCenterURL),
-      content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK,
-      false));
+      GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
 }
 
 // Create the contents of the Connection tab and add it to the given tab view.

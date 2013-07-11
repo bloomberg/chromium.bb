@@ -563,8 +563,7 @@ void BrowserWindowCocoa::ShowWebsiteSettings(
     content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl) {
-  WebsiteSettingsUIBridge::Show(
-      window(), profile, web_contents, url, ssl);
+  WebsiteSettingsUIBridge::Show(window(), profile, web_contents, url, ssl);
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {
