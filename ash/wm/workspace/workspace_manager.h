@@ -140,8 +140,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
 
   // Sets the active workspace.
   void SetActiveWorkspace(Workspace* workspace,
-                          SwitchReason reason,
-                          base::TimeDelta duration);
+                          SwitchReason reason);
 
   // Returns the bounds of the work area.
   gfx::Rect GetWorkAreaBounds() const;
@@ -188,12 +187,6 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // indicates the window to stack the DesktopBackgroundFadeController's window
   // above.
   void FadeDesktop(aura::Window* window, base::TimeDelta duration);
-
-  // Shows or hides the desktop Window |window|.
-  void ShowOrHideDesktopBackground(aura::Window* window,
-                                   SwitchReason reason,
-                                   base::TimeDelta duration,
-                                   bool show) const;
 
   // Shows/hides |workspace| animating as necessary.
   void ShowWorkspace(Workspace* workspace,

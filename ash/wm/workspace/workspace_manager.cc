@@ -221,8 +221,7 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(Window* window) {
          !wm::IsWindowFullscreen(window) && !WillRestoreToWorkspace(window))) {
       ReparentWindow(window, active_workspace_->window(), NULL);
     } else {
-      SetActiveWorkspace(workspace, SWITCH_WINDOW_MADE_ACTIVE,
-                         base::TimeDelta());
+      SetActiveWorkspace(workspace, SWITCH_WINDOW_MADE_ACTIVE);
     }
   }
 
@@ -277,7 +276,7 @@ void WorkspaceManager::SetActiveWorkspaceFromCycler(Workspace* workspace) {
   if (!workspace || workspace == active_workspace_)
     return;
 
-  SetActiveWorkspace(workspace, SWITCH_WORKSPACE_CYCLER, base::TimeDelta());
+  SetActiveWorkspace(workspace, SWITCH_WORKSPACE_CYCLER);
 
   // Activate the topmost window in the newly activated workspace as
   // SetActiveWorkspace() does not do so.
@@ -288,17 +287,6 @@ void WorkspaceManager::SetActiveWorkspaceFromCycler(Workspace* workspace) {
 }
 
 void WorkspaceManager::DoInitialAnimation() {
-  if (active_workspace_->is_fullscreen()) {
-    RootWindowController* root_controller = GetRootWindowController(
-        contents_window_->GetRootWindow());
-    if (root_controller) {
-      aura::Window* background = root_controller->GetContainer(
-          kShellWindowId_DesktopBackgroundContainer);
-      background->Show();
-      ShowOrHideDesktopBackground(background, SWITCH_INITIAL,
-                                  base::TimeDelta(), false);
-    }
-  }
   ShowWorkspace(active_workspace_, active_workspace_, SWITCH_INITIAL);
 }
 
@@ -322,8 +310,7 @@ Workspace* WorkspaceManager::FindBy(Window* window) const {
 }
 
 void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
-                                          SwitchReason reason,
-                                          base::TimeDelta duration) {
+                                          SwitchReason reason) {
   DCHECK(workspace);
   if (active_workspace_ == workspace)
     return;
@@ -369,23 +356,10 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
     contents_window_->StackChildAtTop(last_active->window());
   }
 
-  // NOTE: duration supplied to this method is only used for desktop background.
   HideWorkspace(last_active, reason, is_unminimizing_fullscreen_window);
   ShowWorkspace(workspace, last_active, reason);
 
   UpdateShelfVisibility();
-
-  RootWindowController* root_controller = GetRootWindowController(
-      contents_window_->GetRootWindow());
-  if (root_controller) {
-    aura::Window* background = root_controller->GetContainer(
-        kShellWindowId_DesktopBackgroundContainer);
-    if (last_active == desktop_workspace()) {
-      ShowOrHideDesktopBackground(background, reason, duration, false);
-    } else if (active_workspace_ == desktop_workspace() && !app_terminating_) {
-      ShowOrHideDesktopBackground(background, reason, duration, true);
-    }
-  }
 
   // Showing or hiding a workspace may change the "solo window" status of
   // a window, requiring the header to be updated.
@@ -468,9 +442,9 @@ void WorkspaceManager::SelectNextWorkspace(SwitchReason reason) {
   Workspaces::const_iterator workspace_i(FindWorkspace(active_workspace_));
   Workspaces::const_iterator next_workspace_i(workspace_i + 1);
   if (next_workspace_i != workspaces_.end())
-    SetActiveWorkspace(*next_workspace_i, reason, base::TimeDelta());
+    SetActiveWorkspace(*next_workspace_i, reason);
   else
-    SetActiveWorkspace(*(workspace_i - 1), reason, base::TimeDelta());
+    SetActiveWorkspace(*(workspace_i - 1), reason);
 }
 
 void WorkspaceManager::ScheduleDelete(Workspace* workspace) {
@@ -524,44 +498,6 @@ void WorkspaceManager::FadeDesktop(aura::Window* window,
   desktop_fade_controller_.reset(
       new DesktopBackgroundFadeController(
           parent, stack_above, duration, direction));
-}
-
-void WorkspaceManager::ShowOrHideDesktopBackground(
-    aura::Window* window,
-    SwitchReason reason,
-    base::TimeDelta duration,
-    bool show) const {
-  WorkspaceAnimationDetails details;
-  details.direction = show ? WORKSPACE_ANIMATE_UP : WORKSPACE_ANIMATE_DOWN;
-  details.duration = duration;
-
-  switch (reason) {
-    case SWITCH_WORKSPACE_CYCLER:
-      // The workspace cycler has already animated the desktop background's
-      // opacity. Do not do any further animation.
-      break;
-    case SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE:
-    case SWITCH_MAXIMIZED_OR_RESTORED:
-      // FadeDesktop() fades the desktop background by animating the opacity of
-      // a black window immediately above the desktop background. Set the
-      // workspace as animated to delay hiding the desktop background by
-      // |duration|.
-      details.animate = true;
-      break;
-    case SWITCH_INITIAL:
-      details.animate = true;
-      details.animate_scale = true;
-      details.pause_time_ms = kInitialPauseTimeMS;
-      break;
-    default:
-      details.animate = true;
-      details.animate_scale = true;
-      break;
-  }
-  if (show)
-    ash::internal::ShowWorkspace(window, details);
-  else
-    ash::internal::HideWorkspace(window, details);
 }
 
 void WorkspaceManager::ShowWorkspace(
@@ -742,8 +678,7 @@ void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
         }
         DCHECK(!is_active || old_layer);
         new_workspace = desktop_workspace();
-        SetActiveWorkspace(new_workspace, SWITCH_MAXIMIZED_OR_RESTORED,
-                           duration);
+        SetActiveWorkspace(new_workspace, SWITCH_MAXIMIZED_OR_RESTORED);
         MoveWorkspaceToPendingOrDelete(workspace, child,
                                        SWITCH_MAXIMIZED_OR_RESTORED);
         if (FindWorkspace(workspace) == workspaces_.end())
@@ -763,8 +698,7 @@ void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
         SetActiveWorkspace(new_workspace,
                            full_count >= 2 ?
                                SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE :
-                               SWITCH_MAXIMIZED_OR_RESTORED,
-                           duration);
+                               SWITCH_MAXIMIZED_OR_RESTORED);
         CrossFadeWindowBetweenWorkspaces(new_workspace->window(), child,
                                          old_layer);
         if (workspace == desktop_workspace() ||
@@ -772,7 +706,7 @@ void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
           FadeDesktop(child, duration);
         }
       } else {
-        SetActiveWorkspace(new_workspace, SWITCH_OTHER, base::TimeDelta());
+        SetActiveWorkspace(new_workspace, SWITCH_OTHER);
       }
     } else {
       if (last_show_state == ui::SHOW_STATE_MINIMIZED)
@@ -814,8 +748,7 @@ void WorkspaceManager::OnTrackedByWorkspaceChanged(Workspace* workspace,
     new_workspace->window()->Show();
   ReparentWindow(window, new_workspace->window(), NULL);
   if (is_active) {
-    SetActiveWorkspace(new_workspace, SWITCH_TRACKED_BY_WORKSPACE_CHANGED,
-                       base::TimeDelta());
+    SetActiveWorkspace(new_workspace, SWITCH_TRACKED_BY_WORKSPACE_CHANGED);
   }
 }
 
