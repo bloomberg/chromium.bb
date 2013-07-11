@@ -27,14 +27,12 @@ void AutofillCCInfoBarDelegate::Create(
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new AutofillCCInfoBarDelegate(
           infobar_service, metric_logger, save_card_callback)));
-  metric_logger->LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
 }
 
 // static
 scoped_ptr<ConfirmInfoBarDelegate> AutofillCCInfoBarDelegate::CreateForTesting(
     const AutofillMetrics* metric_logger,
     const base::Closure& save_card_callback) {
-  metric_logger->LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
   return scoped_ptr<ConfirmInfoBarDelegate>(
       new AutofillCCInfoBarDelegate(NULL, metric_logger, save_card_callback));
 }
@@ -46,7 +44,9 @@ AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_service),
       metric_logger_(metric_logger),
       save_card_callback_(save_card_callback),
-      had_user_interaction_(false) {}
+      had_user_interaction_(false) {
+  metric_logger->LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
+}
 
 AutofillCCInfoBarDelegate::~AutofillCCInfoBarDelegate() {
   if (!had_user_interaction_)

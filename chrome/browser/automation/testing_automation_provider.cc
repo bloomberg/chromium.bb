@@ -2108,6 +2108,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     reply.SendError("Invalid or missing args");
     return;
   }
+  size_t infobar_index = static_cast<size_t>(infobar_index_int);
 
   WebContents* web_contents =
       browser->tab_strip_model()->GetWebContentsAt(tab_index);
@@ -2115,37 +2116,32 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     reply.SendError(base::StringPrintf("No such tab at index %d", tab_index));
     return;
   }
+
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-
-  InfoBarDelegate* infobar = NULL;
-  size_t infobar_index = static_cast<size_t>(infobar_index_int);
   if (infobar_index >= infobar_service->infobar_count()) {
     reply.SendError(base::StringPrintf("No such infobar at index %" PRIuS,
                                        infobar_index));
     return;
   }
-  infobar = infobar_service->infobar_at(infobar_index);
+  InfoBarDelegate* infobar = infobar_service->infobar_at(infobar_index);
 
-  if ("dismiss" == action) {
+  if (action == "dismiss") {
     infobar->InfoBarDismissed();
     infobar_service->RemoveInfoBar(infobar);
     reply.SendSuccess(NULL);
     return;
   }
-  if ("accept" == action || "cancel" == action) {
-    ConfirmInfoBarDelegate* confirm_infobar;
-    if (!(confirm_infobar = infobar->AsConfirmInfoBarDelegate())) {
+  if ((action == "accept") || (action == "cancel")) {
+    ConfirmInfoBarDelegate* delegate = infobar->AsConfirmInfoBarDelegate();
+    if (!delegate) {
       reply.SendError("Not a confirm infobar");
       return;
     }
-    if ("accept" == action) {
-      if (confirm_infobar->Accept())
-        infobar_service->RemoveInfoBar(infobar);
-    } else if ("cancel" == action) {
-      if (confirm_infobar->Cancel())
-        infobar_service->RemoveInfoBar(infobar);
-    }
+    bool remove_infobar = (action == "accept") ?
+        delegate->Accept() : delegate->Cancel();
+    if (remove_infobar)
+      infobar_service->RemoveInfoBar(infobar);
     reply.SendSuccess(NULL);
     return;
   }

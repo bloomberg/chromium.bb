@@ -51,11 +51,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-using content::RenderViewHost;
-using content::RenderViewHostTester;
-using content::WebContents;
-
-using testing::Invoke;
 
 namespace autofill {
 
@@ -138,7 +133,7 @@ class WindowedPersonalDataManagerObserver
   }
 
   virtual ~WindowedPersonalDataManagerObserver() {
-    if (infobar_service_ && infobar_service_->infobar_count() > 0)
+    if (infobar_service_ && (infobar_service_->infobar_count() > 0))
       infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
   }
 
@@ -168,14 +163,13 @@ class WindowedPersonalDataManagerObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    // Accept in the infobar.
+    EXPECT_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, type);
     infobar_service_ = InfoBarService::FromWebContents(
         browser_->tab_strip_model()->GetActiveWebContents());
-    InfoBarDelegate* infobar = infobar_service_->infobar_at(0);
-
-    ConfirmInfoBarDelegate* confirm_infobar =
-        infobar->AsConfirmInfoBarDelegate();
-    confirm_infobar->Accept();
+    ConfirmInfoBarDelegate* infobar_delegate =
+        infobar_service_->infobar_at(0)->AsConfirmInfoBarDelegate();
+    ASSERT_TRUE(infobar_delegate);
+    infobar_delegate->Accept();
   }
 
  private:
@@ -387,7 +381,7 @@ class AutofillTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_value, value);
   }
 
-  RenderViewHost* render_view_host() {
+  content::RenderViewHost* render_view_host() {
     return browser()->tab_strip_model()->GetActiveWebContents()->
         GetRenderViewHost();
   }
@@ -902,9 +896,10 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
 
   // Reload the page.
   LOG(WARNING) << "Reloading the page.";
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  tab->GetController().Reload(false);
-  content::WaitForLoadStop(tab);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  web_contents->GetController().Reload(false);
+  content::WaitForLoadStop(web_contents);
 
   // Invoke Autofill.
   LOG(WARNING) << "Trying to fill the form.";
@@ -951,19 +946,18 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillAfterTranslate) {
   // Get translation bar.
   LanguageDetectionDetails details;
   details.adopted_language = "ja";
-  RenderViewHostTester::TestOnMessageReceived(
+  content::RenderViewHostTester::TestOnMessageReceived(
       render_view_host(),
       ChromeViewHostMsg_TranslateLanguageDetermined(0, details, true));
-  TranslateInfoBarDelegate* infobar = InfoBarService::FromWebContents(
+  TranslateInfoBarDelegate* delegate = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents())->infobar_at(0)->
           AsTranslateInfoBarDelegate();
-
-  ASSERT_TRUE(infobar != NULL);
+  ASSERT_TRUE(delegate);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
-            infobar->infobar_type());
+            delegate->infobar_type());
 
   // Simulate translation button press.
-  infobar->Translate();
+  delegate->Translate();
 
   // Simulate the translate script being retrieved.
   // Pass fake google.translate lib as the translate script.

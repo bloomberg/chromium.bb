@@ -1240,9 +1240,8 @@ void InfoBarCountObserver::Observe(
 }
 
 void InfoBarCountObserver::CheckCount() {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
-  if (infobar_service->infobar_count() != target_count_)
+  if (InfoBarService::FromWebContents(web_contents_)->infobar_count() !=
+      target_count_)
     return;
 
   if (automation_.get()) {
