@@ -256,7 +256,6 @@
                 'app/chrome_main.cc',
                 'app/chrome_main_delegate.cc',
                 'app/chrome_main_delegate.h',
-                'app/chrome_main_app_mode_mac.mm',
                 'app/chrome_main_mac.mm',
                 'app/chrome_main_mac.h',
               ],
