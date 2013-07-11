@@ -325,8 +325,21 @@ class AutoInstaller(object):
         target_filename = os.path.basename(url_path)
         target_path = os.path.join(scratch_dir, target_filename)
 
+        should_clear_proxy = False
         with open(target_path, "wb") as stream:
-            self._download_to_stream(url, stream)
+            try:
+                # FIXME: This is a workaround for a weird curl limitation we're hitting downloading from pypi.
+                # We can delete this once we can check the libs directly into third_party and get rid of all of
+                # this code. See crbug.com/230706 .
+                if 'HTTPS_PROXY' in os.environ and not 'https_proxy' in os.environ:
+                    os.environ['https_proxy'] = os.environ['HTTPS_PROXY']
+                    should_clear_proxy = True
+
+                self._download_to_stream(url, stream)
+
+            finally:
+                if should_clear_proxy:
+                    del os.environ['https_proxy']
 
         return target_path
 
