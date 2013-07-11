@@ -14925,7 +14925,7 @@ other types of suffix sets.
   <int value="16" label="BOOKMARKS_UPDATE"/>
   <int value="17" label="FILEBROWSERPRIVATE_GETDRIVEFILES"/>
   <int value="18" label="TERMINALPRIVATE_ONTERMINALRESIZE"/>
-  <int value="19" label="FILEBROWSERPRIVATE_REQUESTDIRECTORYREFRESH"/>
+  <int value="19" label="DELETED_FILEBROWSERPRIVATE_REQUESTDIRECTORYREFRESH"/>
   <int value="20" label="BLUETOOTH_GETADAPTERSTATE"/>
   <int value="21" label="FILEBROWSERPRIVATE_CANCELFILETRANSFERS"/>
   <int value="22" label="FILEBROWSERPRIVATE_PINDRIVEFILE"/>
@@ -15219,7 +15219,7 @@ other types of suffix sets.
   <int value="310" label="BLUETOOTH_GETSERVICES"/>
   <int value="311" label="TABS_UPDATE"/>
   <int value="312" label="BROWSINGDATA_REMOVEFORMDATA"/>
-  <int value="313" label="FILEBROWSERPRIVATE_RELOADDRIVE"/>
+  <int value="313" label="DELETED_FILEBROWSERPRIVATE_RELOADDRIVE"/>
   <int value="314" label="ALARMS_GET"/>
   <int value="315" label="BROWSINGDATA_REMOVEINDEXEDDB"/>
   <int value="316" label="FILEBROWSERPRIVATE_ADDFILEWATCH"/>
@@ -15406,6 +15406,10 @@ other types of suffix sets.
   <int value="496" label="FILEBROWSERPRIVATE_ZOOM"/>
   <int value="497" label="WEBVIEW_GO"/>
   <int value="498" label="WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION"/>
+  <int value="499" label="FILEBROWSERPRIVATE_REQUESTACCESSTOKEN"/>
+  <int value="500" label="WEBVIEW_STOP"/>
+  <int value="501" label="WEBVIEW_RELOAD"/>
+  <int value="502" label="WEBVIEW_TERMINATE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
