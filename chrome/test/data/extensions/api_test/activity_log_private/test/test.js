@@ -41,6 +41,20 @@ testCases.push({
   ]
 });
 testCases.push({
+  func: function triggerInjectCSIncognito() {
+    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
+                               'inject_cs_incognito', function response() { });
+  },
+  is_incognito: true,
+  expected_activity: [
+    'windows.create',
+    'tabs.onUpdated',
+    'tabs.onUpdated',
+    'tabs.executeScript',
+    'tabs.remove'
+  ]
+});
+testCases.push({
   func: function triggerInsertBlob() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'inject_blob', function response() { });
@@ -263,6 +277,24 @@ testCases.push({
     'tabs.remove'
   ]
 });
+testCases.push({
+  name: 'tab_ids_incognito',
+  func: function triggerTabIdsIncognito() {
+    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
+                               'tab_ids_incognito', function response() { });
+  },
+  is_incognito: true,
+  expected_activity: [
+    'windows.create',
+    'tabs.onUpdated',
+    'tabs.onUpdated',
+    'tabs.executeScript',
+    'windows.create',
+    'tabs.onUpdated',
+    'tabs.onUpdated',
+    'tabs.remove'
+  ]
+});
 
 testCases.push({
   func: function triggerWebRequest() {
@@ -273,6 +305,25 @@ testCases.push({
     'webRequestInternal.addEventListener',
     'webRequestInternal.addEventListener',
     'webRequest.onBeforeSendHeaders/1',
+    'webRequestInternal.eventHandled',
+    'webRequest.onBeforeSendHeaders',
+    'tabs.onUpdated',
+    'tabs.onUpdated',
+    'tabs.remove'
+  ]
+});
+
+testCases.push({
+  func: function triggerWebRequestIncognito() {
+    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
+                               'webrequest_incognito', function response() { });
+  },
+  is_incognito: true,
+  expected_activity: [
+    'webRequestInternal.addEventListener',
+    'webRequestInternal.addEventListener',
+    'windows.create',
+    'webRequest.onBeforeSendHeaders/3',
     'webRequestInternal.eventHandled',
     'webRequest.onBeforeSendHeaders',
     'tabs.onUpdated',
@@ -328,6 +379,19 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
       }
       console.log('Logged:' + apiCall + ' Expected:' + expectedCall);
       chrome.test.assertEq(expectedCall, apiCall);
+
+      // Check that no real URLs are logged in incognito-mode tests.
+      if (activity['activityType'] == 'dom') {
+        var url = activity[activityDetailName]['url'];
+        if (url) {
+          if (testCases[testCaseIndx].is_incognito) {
+            chrome.test.assertEq('http://incognito/', url);
+          } else {
+            chrome.test.assertTrue(url != 'http://incognito/',
+                                   'Non-incognito URL was anonymized');
+          }
+        }
+      }
 
       // If all the expected calls have been logged for this test case then
       // mark as suceeded and move to the next. Otherwise look for the next

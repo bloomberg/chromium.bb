@@ -282,7 +282,9 @@ class ExtensionWebRequestEventRouter
   typedef std::map<uint64, BlockedRequest> BlockedRequestMap;
   // Map of request_id -> bit vector of EventTypes already signaled
   typedef std::map<uint64, int> SignaledRequestMap;
-  typedef std::map<void*, void*> CrossProfileMap;
+  // For each profile: a bool indicating whether it is an incognito profile,
+  // and a pointer to the corresponding (non-)incognito profile.
+  typedef std::map<void*, std::pair<bool, void*> > CrossProfileMap;
   typedef std::list<base::Closure> CallbacksForPageLoad;
 
   ExtensionWebRequestEventRouter();
@@ -390,6 +392,11 @@ class ExtensionWebRequestEventRouter
   // Returns the matching cross profile (the regular profile if |profile| is
   // OTR and vice versa).
   void* GetCrossProfile(void* profile) const;
+
+  // Determines whether the specified profile is an incognito profile (based on
+  // the contents of the cross-profile table and without dereferencing the
+  // profile pointer).
+  bool IsIncognitoProfile(void* profile) const;
 
   // Returns true if |request| was already signaled to some event handlers.
   bool WasSignaled(const net::URLRequest& request) const;

@@ -4,6 +4,20 @@
 
 var defaultUrl = 'http://www.google.com';
 
+
+// Utility function to open a URL in a new tab.  If the useIncognito global is
+// true, the URL is opened in a new incognito window, otherwise it is opened in
+// a new tab in the current window.  Alternatively, whether to use incognito
+// can be specified as a second argument which overrides the global setting.
+var useIncognito = false;
+function openTab(url, incognito) {
+  if (incognito == undefined ? useIncognito : incognito) {
+    chrome.windows.create({'url': url, 'incognito': true});
+  } else {
+    window.open(url);
+  }
+}
+
 // CHROME API TEST METHODS -- PUT YOUR TESTS BELOW HERE
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,7 +80,7 @@ function injectContentScript() {
         }
       }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Injects a blob of script into a page.
@@ -86,7 +100,7 @@ function injectScriptBlob() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Modifies the headers sent and received in an HTTP request using the
@@ -144,7 +158,7 @@ function doWebRequestModifications() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 function getSetObjectProperties() {
@@ -160,7 +174,7 @@ function getSetObjectProperties() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 function callObjectMethod() {
@@ -181,7 +195,7 @@ function sendMessageToCS() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 function sendMessageToSelf() {
@@ -229,7 +243,7 @@ function tabIdTranslation() {
             function() {
               chrome.tabs.onUpdated.removeListener(testSingleInt);
               tabIds[0] = tabId;
-              window.open('http://www.google.be');
+              openTab('http://www.google.be');
             });
       }
     }
@@ -248,7 +262,7 @@ function tabIdTranslation() {
     }
   );
 
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // DOM API TEST METHODS -- PUT YOUR TESTS BELOW HERE
@@ -290,7 +304,7 @@ function doContentScriptXHR() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Accesses the Location object from inside a content script.
@@ -315,7 +329,7 @@ function doLocationAccess() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Mutates the DOM tree from inside a content script.
@@ -340,7 +354,7 @@ function doDOMMutation1() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 function doDOMMutation2() {
@@ -362,7 +376,7 @@ function doDOMMutation2() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Accesses the HTML5 Navigator API from inside a content script.
@@ -387,7 +401,7 @@ function doNavigatorAPIAccess() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Accesses the HTML5 WebStorage API from inside a content script.
@@ -412,7 +426,7 @@ function doWebStorageAPIAccess1() {
       }
     }
    );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 function doWebStorageAPIAccess2() {
@@ -436,7 +450,7 @@ function doWebStorageAPIAccess2() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Accesses the HTML5 Notification API from inside a content script.
@@ -461,7 +475,7 @@ function doNotificationAPIAccess() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Accesses the HTML5 ApplicationCache API from inside a content script.
@@ -482,7 +496,7 @@ function doApplicationCacheAPIAccess() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Accesses the HTML5 WebDatabase API from inside a content script.
@@ -504,7 +518,7 @@ function doWebDatabaseAPIAccess() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // Accesses the HTML5 Canvas API from inside a content script.
@@ -526,7 +540,7 @@ function doCanvasAPIAccess() {
       }
     }
   );
-  window.open(defaultUrl);
+  openTab(defaultUrl);
 }
 
 // ADD TESTS CASES TO THE MAP HERE.
@@ -563,6 +577,13 @@ fnMap['canvas_access'] = doCanvasAPIAccess;
 try {
   chrome.runtime.onMessageExternal.addListener(
       function(message, sender, response) {
+        useIncognito = false;
+        if (message.match(/_incognito$/)) {
+          // Enable incognito windows for this test, then strip the _incognito
+          // suffix for the lookup below.
+          useIncognito = true;
+          message = message.slice(0, -10);
+        }
         if (fnMap.hasOwnProperty(message)) {
           fnMap[message]();
         } else {
@@ -599,6 +620,9 @@ function setupEvents() {
       $(key).addEventListener('click', fnMap[key]);
     }
   }
+  $('incognito_checkbox').addEventListener(
+      'click',
+      function() { useIncognito = $('incognito_checkbox').checked; });
   setCompleted('setup events');
   completed = 0;
 }

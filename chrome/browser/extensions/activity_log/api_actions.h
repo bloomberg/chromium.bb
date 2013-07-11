@@ -28,6 +28,8 @@ class APIAction : public Action {
   static const char* kAlwaysLog[];
   static const int kSizeAlwaysLog;
 
+  static const char* kIncognitoUrl;
+
   // Create the database table for storing APIActions, or update the schema if
   // it is out of date.  Any existing data is preserved.
   static bool InitializeTable(sql::Connection* db);

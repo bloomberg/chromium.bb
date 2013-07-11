@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/api_name_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -20,16 +21,23 @@ namespace {
 // Gets the URL for a given tab ID. Helper method for APIAction::LookupTabId.
 std::string GetURLForTabId(const int tab_id, Profile* profile) {
   content::WebContents* contents = NULL;
+  Browser* browser = NULL;
   bool found = ExtensionTabUtil::GetTabById(tab_id,
                                             profile,
-                                            false,  // no incognito URLs
-                                            NULL,
+                                            true,  // search incognito tabs too
+                                            &browser,
                                             NULL,
                                             &contents,
                                             NULL);
   if (found) {
-    GURL url = contents->GetURL();
-    return std::string(url.spec());
+    // Check whether the profile the tab was found in is a normal or incognito
+    // profile.
+    if (!browser->profile()->IsOffTheRecord()) {
+      GURL url = contents->GetURL();
+      return std::string(url.spec());
+    } else {
+      return std::string(extensions::APIAction::kIncognitoUrl);
+    }
   } else {
     return std::string();
   }
@@ -113,6 +121,12 @@ const char* APIAction::kAlwaysLog[] =
     {"extension.connect", "extension.sendMessage",
      "tabs.executeScript", "tabs.insertCSS" };
 const int APIAction::kSizeAlwaysLog = arraysize(kAlwaysLog);
+
+// A string used in place of the real URL when the URL is hidden because it is
+// in an incognito window.  Extension activity logs mentioning kIncognitoUrl
+// let the user know that an extension is manipulating incognito tabs without
+// recording specific data about the pages.
+const char* APIAction::kIncognitoUrl = "http://incognito/";
 
 APIAction::APIAction(const std::string& extension_id,
                      const base::Time& time,
