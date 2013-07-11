@@ -6,13 +6,13 @@
 
 #include "base/hash.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
@@ -371,3 +371,4 @@ void FaviconService::RunFaviconRawCallbackWithBitmapResults(
       &resized_bitmap_data);
   callback.Run(bitmap_result);
 }
+

@@ -32,8 +32,8 @@ specific_include_rules = {
   'favicon_util\.(h|cc)': [
     "-chrome",
     "-chrome/browser",
+    "+chrome/browser/favicon/favicon_types.h",
     "+chrome/browser/favicon/favicon_util.h",
-    "+chrome/common/favicon/favicon_types.h",
     "+chrome/common/icon_messages.h",
     "!chrome/browser/history/history_types.h",
     "!chrome/browser/history/select_favicon_frames.h",

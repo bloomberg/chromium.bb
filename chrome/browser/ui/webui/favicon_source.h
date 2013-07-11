@@ -117,6 +117,14 @@ class FaviconSource : public content::URLDataSource {
     NUM_SIZES
   };
 
+  // Parses |path|, which should be in the format described at the top of the
+  // file. Returns true if |path| could be parsed.
+  bool ParsePath(const std::string& path,
+                 bool* is_icon_url,
+                 GURL* url,
+                 int* size_in_dip,
+                 ui::ScaleFactor* scale_factor) const;
+
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(
       const IconRequest& request,
