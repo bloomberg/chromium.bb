@@ -119,7 +119,14 @@ public:
 
     // Creates a WebFileWriter that can be used to write to the given file.
     // This is a fast, synchronous call, and should not stat the filesystem.
+    // FIXME: deprecate this after async version of createFileWriter is
+    // implemented.
     virtual WebFileWriter* createFileWriter(const WebURL& path, WebFileWriterClient*) { WEBKIT_ASSERT_NOT_REACHED(); return 0; }
+
+    // Creates a WebFileWriter that can be used to write to the given file.
+    // WebFileSystemCallbacks::didCreateFileWriter() must be called with the created WebFileWriter when the operation is completed successfully.
+    // WebFileSystemCallbacks::didFail() must be called otherwise.
+    virtual void createFileWriter(const WebURL& path, WebFileWriterClient*, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Creates a snapshot file for a given file specified by |path|. It returns the metadata of the created snapshot file.
     // The returned metadata should include a local platform path to the snapshot image.
