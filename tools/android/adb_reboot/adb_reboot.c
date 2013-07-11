@@ -35,9 +35,7 @@ int main(int argc, char ** argv) {
     time(&ct);
     if (ct - ft.st_mtime  > 120) {
       /* File was not touched for some time. */
-      system("su -c stop adbd");
-      system("sleep 2");
-      system("su -c start adbd");
+      system("su -c reboot");
     }
   }
 
