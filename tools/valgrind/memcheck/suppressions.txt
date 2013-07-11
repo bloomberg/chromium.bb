@@ -5384,8 +5384,9 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3gpu5gles210ShareGroupC1Ebb
-   fun:_ZN3gpu5gles219GLES2ImplementationC1EPNS0_14GLES2CmdHelperEPNS0_10ShareGroupEPNS_23TransferBufferInterfaceEbb
-   fun:_ZN5ppapi21PPB_Graphics3D_Shared15CreateGLES2ImplEiiPN3gpu5gles219GLES2ImplementationE
+   fun:_ZN3gpu5gles219GLES2ImplementationC1EPNS0_14GLES2CmdHelperEPNS0_10ShareGroupEPNS_23TransferBufferInterfaceEbbPNS0_12ImageFactoryE
+   fun:_ZN3gpu5gles223GLES2ImplementationTest10InitializeEbb
+   fun:_ZN3gpu5gles2*GLES2Implementation*Test5SetUpEv
 }
 {
    bug_145703
@@ -7523,15 +7524,6 @@
 }
 {
    bug_259357d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3gpu5gles210ShareGroupC1Ebb
-   fun:_ZN3gpu5gles219GLES2ImplementationC1EPNS0_14GLES2CmdHelperEPNS0_10ShareGroupEPNS_23TransferBufferInterfaceEbbPNS0_12ImageFactoryE
-   fun:_ZN3gpu5gles223GLES2ImplementationTest10InitializeEbb
-   fun:_ZN3gpu5gles2*GLES2Implementation*Test5SetUpEv
-}
-{
-   bug_259357e
    Memcheck:Uninitialized
    ...
    fun:_ZN3gpu5gles239ShaderTranslatorTest_OptionsString_Test8TestBodyEv
