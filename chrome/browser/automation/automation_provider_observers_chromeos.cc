@@ -40,9 +40,10 @@ NetworkManagerInitObserver::~NetworkManagerInitObserver() {
 }
 
 bool NetworkManagerInitObserver::Init() {
-  if (!CrosLibrary::Get()->libcros_loaded()) {
-    // If cros library fails to load, don't wait for the network
-    // library to finish initializing, because it'll wait forever.
+  if (!CrosLibrary::Get()->GetNetworkLibrary()->IsCros()) {
+    // If the network library is not the production version, don't wait for
+    // the network library to finish initializing, because it'll wait
+    // forever.
     automation_->OnNetworkLibraryInit();
     return false;
   }
