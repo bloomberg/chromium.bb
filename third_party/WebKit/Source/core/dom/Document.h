@@ -102,7 +102,7 @@ class HTMLDocument;
 class HTMLElement;
 class HTMLFrameOwnerElement;
 class HTMLHeadElement;
-class HTMLImportsController;
+class HTMLImport;
 class HTMLIFrameElement;
 class HTMLMapElement;
 class HTMLNameCollection;
@@ -996,8 +996,8 @@ public:
     CustomElementRegistry* registry() const { return m_registry.get(); }
     CustomElementRegistry* ensureCustomElementRegistry();
 
-    void setImports(PassRefPtr<HTMLImportsController>);
-    HTMLImportsController* imports() const { return m_imports.get(); }
+    void setImport(HTMLImport*);
+    HTMLImport* import() const { return m_import; }
     bool haveImportsLoaded() const;
     void didLoadAllImports();
 
@@ -1328,7 +1328,7 @@ private:
     OwnPtr<TextAutosizer> m_textAutosizer;
 
     RefPtr<CustomElementRegistry> m_registry;
-    RefPtr<HTMLImportsController> m_imports;
+    HTMLImport* m_import;
 
     bool m_scheduledTasksAreSuspended;
     

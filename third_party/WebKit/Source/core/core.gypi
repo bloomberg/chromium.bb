@@ -2105,6 +2105,8 @@
             'html/HTMLImageElement.h',
             'html/HTMLImageLoader.cpp',
             'html/HTMLImageLoader.h',
+            'html/HTMLImport.cpp',
+            'html/HTMLImport.h',
             'html/HTMLImportsController.cpp',
             'html/HTMLImportsController.h',
             'html/HTMLInputElement.cpp',

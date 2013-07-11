@@ -31,15 +31,18 @@
 #ifndef HTMLImportsController_h
 #define HTMLImportsController_h
 
+#include "core/html/HTMLImport.h"
 #include "core/html/LinkResource.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
+#include "core/platform/Supplementable.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class ScriptExecutionContext;
 class CachedResourceLoader;
 class HTMLImportLoader;
 class HTMLImportsController;
@@ -68,8 +71,7 @@ private:
     RefPtr<HTMLImportLoader> m_loader;
 };
 
-
-class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public CachedRawResourceClient {
+class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImport, public CachedRawResourceClient {
 public:
     enum State {
         StateLoading,
@@ -77,7 +79,7 @@ public:
         StateReady
     };
 
-    static PassRefPtr<HTMLImportLoader> create(HTMLImportsController*, const KURL&, const CachedResourceHandle<CachedScript>&);
+    static PassRefPtr<HTMLImportLoader> create(HTMLImport* parent, const KURL&, const CachedResourceHandle<CachedScript>&);
     virtual ~HTMLImportLoader();
 
     Document* importedDocument() const;
@@ -86,8 +88,13 @@ public:
     void importDestroyed();
     bool isDone() const { return m_state == StateReady || m_state == StateError; }
 
+    // HTMLImport
+    virtual HTMLImportsController* controller() OVERRIDE;
+    virtual HTMLImport* parent() OVERRIDE;
+    virtual Document* document() OVERRIDE;
+
 private:
-    HTMLImportLoader(HTMLImportsController*, const KURL&, const CachedResourceHandle<CachedScript>&);
+    HTMLImportLoader(HTMLImport*, const KURL&, const CachedResourceHandle<CachedScript>&);
 
     // CachedRawResourceClient
     virtual void responseReceived(CachedResource*, const ResourceResponse&) OVERRIDE;
@@ -99,7 +106,7 @@ private:
     void setState(State);
     void dispose();
 
-    HTMLImportsController* m_controller;
+    HTMLImport* m_parent;
     State m_state;
     KURL m_url;
     CachedResourceHandle<CachedRawResource> m_resource;
@@ -107,22 +114,26 @@ private:
     RefPtr<DocumentWriter> m_writer;
 };
 
-
-class HTMLImportsController : public RefCounted<HTMLImportsController> {
+class HTMLImportsController : public HTMLImport, public Supplement<ScriptExecutionContext> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<HTMLImportsController> create(Document*);
+    static void provideTo(Document*);
 
     explicit HTMLImportsController(Document*);
     virtual ~HTMLImportsController();
+
+    // HTMLImport
+    virtual HTMLImportsController* controller() OVERRIDE;
+    virtual HTMLImport* parent() OVERRIDE;
+    virtual Document* document() OVERRIDE;
 
     void addImport(PassRefPtr<HTMLImportLoader>);
     void showSecurityErrorMessage(const String&);
     PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
     CachedResourceLoader* cachedResourceLoader() const;
-    bool haveLoaded() const;
-    void didLoad();
+    bool haveChildrenLoaded(HTMLImport* parent) const;
+    void didLoad(HTMLImportLoader*);
 
 private:
     Document* m_master;
