@@ -9,13 +9,16 @@
 # updates the copy in the toolchain/ tree.
 #
 
+import subprocess
+
 from driver_env import env
 from driver_log import Log
 import driver_tools
-import subprocess
+import filetype
 
 EXTRA_ENV = {
   'ARGS'   : '',
+  'INPUT'  : '',
   'OUTPUT' : '',
   # Binary output may go to stdout (when -o was not specified)
   'HAVE_OUTPUT' : '0',
@@ -31,7 +34,8 @@ PATTERNS  = [
   ( '--enable-simplify-libcalls', "env.set('DISABLE_SIMPLIFY_LIBCALLS', '0')"),
   (('-o','(.*)'),      "env.set('OUTPUT', pathtools.normalize($0))\n" +
                        "env.set('HAVE_OUTPUT', '1')"),
-  ( '(.*)',            "env.append('ARGS', $0)"),
+  ( '(-.*)',           "env.append('ARGS', $0)"),
+  ( '(.*)',            "env.set('INPUT', $0)"),
 ]
 
 def main(argv):
@@ -41,7 +45,14 @@ def main(argv):
   driver_tools.Run(
       '"${LLVM_OPT}" ${ARGS} ' +
       '${DISABLE_SIMPLIFY_LIBCALLS ? -disable-simplify-libcalls} ' +
-      '${HAVE_OUTPUT ? -o ${OUTPUT}}')
+      '${HAVE_OUTPUT ? -o ${OUTPUT}} ' +
+      '${INPUT}')
+
+  # Opt is the only tool that will modify a file in-place. If this happens we
+  # need to clear the filetype cache so future invocations of the type checking
+  # routines will re-check the file.
+  if env.getone('INPUT') == env.getone('OUTPUT'):
+    filetype.ClearFileTypeCaches()
 
   # only reached in case of no errors
   return 0

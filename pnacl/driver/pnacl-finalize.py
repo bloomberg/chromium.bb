@@ -9,17 +9,18 @@
 # updates the copy in the toolchain/ tree.
 #
 
-import driver_tools
-import pathtools
 import shutil
+
 from driver_env import env
 from driver_log import Log
+import driver_tools
+import filetype
+import pathtools
+
 
 EXTRA_ENV = {
   'INPUTS'             : '',
   'OUTPUT'             : '',
-  'OPT_FLAGS'          : '-disable-opt -strip -strip-metadata',
-  'RUN_OPT'            : '${LLVM_OPT} ${OPT_FLAGS} ${input} -o ${output}',
   'DISABLE_FINALIZE'   : '0',
 }
 
@@ -47,15 +48,16 @@ def main(argv):
   else:
     f_output = f_input
 
-  if env.getbool('DISABLE_FINALIZE'):
+  if env.getbool('DISABLE_FINALIZE') or filetype.IsPNaClBitcode(f_input):
     # Just copy the input file to the output file.
     if f_input != f_output:
       shutil.copyfile(f_input, f_output)
     return 0
 
+  opt_flags = ['-disable-opt', '-strip', '-strip-metadata',
+               '--bitcode-format=pnacl', f_input, '-o', f_output]
   # Transform the file, and convert it to a PNaCl bitcode file.
-  driver_tools.RunWithEnv(' '.join(['${RUN_OPT}', '--bitcode-format=pnacl']),
-                          input=inputs[0], output=f_output)
+  driver_tools.RunDriver('opt', opt_flags)
   return 0
 
 

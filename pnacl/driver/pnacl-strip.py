@@ -11,6 +11,7 @@
 
 import driver_tools
 import filetype
+import shutil
 import pathtools
 from driver_env import env
 from driver_log import Log
@@ -70,7 +71,11 @@ def main(argv):
       f_output = output
     else:
       f_output = f
-    if filetype.IsLLVMBitcode(f):
+    if filetype.IsPNaClBitcode(f):
+      # PNaCl-format bitcode has no symbols, i.e. it is already stripped.
+      if f != f_output:
+        shutil.copyfile(f, f_output)
+    elif filetype.IsLLVMBitcode(f):
       driver_tools.RunWithEnv('${RUN_OPT}', input=f, output=f_output)
     elif filetype.IsELF(f) or filetype.IsNativeArchive(f):
       driver_tools.RunWithEnv('${RUN_STRIP}', input=f, output=f_output)

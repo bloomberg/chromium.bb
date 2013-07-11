@@ -26,8 +26,18 @@ PNACL_BITCODE_MAGIC = 'PEXE'
 
 class SimpleCache(object):
   """ Cache results of a function using a dictionary. """
+
+  __all_caches = dict()
+
+  @classmethod
+  def ClearAllCaches(cls):
+    """ Clear cached results from all functions. """
+    for d in cls.__all_caches.itervalues():
+      d.clear()
+
   def __init__(self, f):
-    self.cache = dict()
+    SimpleCache.__all_caches[self] = dict()
+    self.cache = SimpleCache.__all_caches[self]
     self.func = f
 
   def __call__(self, *args):
@@ -46,7 +56,7 @@ class SimpleCache(object):
     self.cache[args] = value
 
   def ClearCache(self):
-    """ Clear all cached function results. """
+    """ Clear cached results for one instance (function). """
     self.cache.clear()
 
 
@@ -135,8 +145,11 @@ def ForceFileType(filename, newtype = None):
     newtype = FORCED_FILE_TYPE
   FileType.OverrideValue(newtype, filename)
 
-def ClearFileTypeCache():
-  FileType.ClearCache()
+def ClearFileTypeCaches():
+  """ Clear caches for all filetype functions (externally they must all be
+      cleared together because they can call each other)
+  """
+  SimpleCache.ClearAllCaches()
 
 # File Extension -> Type string
 # TODO(pdox): Add types for sources which should not be preprocessed.

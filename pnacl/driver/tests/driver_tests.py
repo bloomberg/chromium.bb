@@ -12,6 +12,7 @@ import unittest
 MODULES = [
     'driver_tools_test',
     'expand_response_file_test',
+    'filetype_test',
     'force_file_type_test',
     'help_message_test',
     'strip_test',

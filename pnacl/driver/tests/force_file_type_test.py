@@ -28,7 +28,7 @@ class TestForceFileType(unittest.TestCase):
   def setUp(self):
     driver_test_utils.ApplyTestEnvOverrides(env)
     # Reset some internal state.
-    filetype.ClearFileTypeCache()
+    filetype.ClearFileTypeCaches()
     filetype.SetForcedFileType(None)
 
   def tearDown(self):
@@ -36,7 +36,7 @@ class TestForceFileType(unittest.TestCase):
     # We don't want anything to exit, so we do not call DriverExit manually.
     driver_log.TempFiles.wipe()
     # Reset some internal state.
-    filetype.ClearFileTypeCache()
+    filetype.ClearFileTypeCaches()
     filetype.SetForcedFileType(None)
 
   def test_ForceFunction(self):
