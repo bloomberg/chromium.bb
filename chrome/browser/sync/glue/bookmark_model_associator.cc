@@ -501,25 +501,24 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
           GURL(sync_child_node.GetBookmarkSpecifics().url()),
           sync_child_node.GetTitle(),
           sync_child_node.GetIsFolder());
-      if (child_node)
+      if (child_node) {
         Associate(child_node, sync_child_id);
-      // All bookmarks are currently modified at association time (even if
-      // it doesn't change anything).
-      // TODO(sync): introduce logic to only modify the bookmark model if
-      // necessary.
-      const BookmarkNode* new_child_node =
-          BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
-              &sync_child_node,
-              bookmark_model_,
-              profile_,
-              this);
-      bookmark_model_->Move(new_child_node, parent_node, index);
-      if (new_child_node != child_node) {
-        local_merge_result->set_num_items_added(
-            local_merge_result->num_items_added() + 1);
-      } else {
+
+        // All bookmarks are currently modified at association time, even if
+        // nothing has changed.
+        // TODO(sync): Only modify the bookmark model if necessary.
+        BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
+            sync_child_node, bookmark_model_, child_node, profile_);
+        bookmark_model_->Move(child_node, parent_node, index);
         local_merge_result->set_num_items_modified(
             local_merge_result->num_items_modified() + 1);
+      } else {
+        child_node = BookmarkChangeProcessor::CreateBookmarkNode(
+            &sync_child_node, parent_node, bookmark_model_, profile_, index);
+        if (child_node)
+          Associate(child_node, sync_child_id);
+        local_merge_result->set_num_items_added(
+            local_merge_result->num_items_added() + 1);
       }
       if (sync_child_node.GetIsFolder())
         dfs_stack.push(sync_child_id);

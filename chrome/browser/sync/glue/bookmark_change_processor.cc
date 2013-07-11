@@ -559,6 +559,13 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   // A map to keep track of some reordering work we defer until later.
   std::multimap<int, const BookmarkNode*> to_reposition;
 
+  syncer::ReadNode synced_bookmarks(trans);
+  int64 synced_bookmarks_id = syncer::kInvalidId;
+  if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) ==
+      syncer::BaseNode::INIT_OK) {
+    synced_bookmarks_id = synced_bookmarks.GetId();
+  }
+
   // Continue iterating where the previous loop left off.
   for ( ; it != changes.Get().end(); ++it) {
     const BookmarkNode* dst =
@@ -569,10 +576,21 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     if (model->is_permanent_node(dst))
       continue;
 
+    // Because the Synced Bookmarks node can be created server side, it's
+    // possible it'll arrive at the client as an update. In that case it won't
+    // have been associated at startup, the GetChromeNodeFromSyncId call above
+    // will return NULL, and we won't detect it as a permanent node, resulting
+    // in us trying to create it here (which will fail). Therefore, we add
+    // special logic here just to detect the Synced Bookmarks folder.
+    if (synced_bookmarks_id != syncer::kInvalidId &&
+        it->id == synced_bookmarks_id) {
+      // This is a newly created Synced Bookmarks node. Associate it.
+      model_associator_->Associate(model->mobile_node(), it->id);
+      continue;
+    }
+
     DCHECK_NE(it->action, ChangeRecord::ACTION_DELETE)
         << "We should have passed all deletes by this point.";
-    DCHECK_EQ((it->action == ChangeRecord::ACTION_ADD), (dst == NULL))
-        << "ACTION_ADD should be seen if and only if the node is unknown.";
 
     syncer::ReadNode src(trans);
     if (src.InitByIdLookup(it->id) != syncer::BaseNode::INIT_OK) {
@@ -581,34 +599,45 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       return;
     }
 
-    const BookmarkNode* node = CreateOrUpdateBookmarkNode(&src, model,
-                                                          profile_,
-                                                          model_associator_);
-    if (node) {
-      to_reposition.insert(std::make_pair(src.GetPositionIndex(), node));
-      bookmark_model_->SetNodeMetaInfo(node, kBookmarkTransactionVersionKey,
-                                       base::Int64ToString(model_version));
+    const BookmarkNode* parent =
+        model_associator_->GetChromeNodeFromSyncId(src.GetParentId());
+    if (!parent) {
+      LOG(ERROR) << "Could not find parent of node being added/updated."
+        << " Node title: " << src.GetTitle()
+        << ", parent id = " << src.GetParentId();
+      continue;
+    }
+
+    if (dst) {
+      DCHECK(it->action == ChangeRecord::ACTION_UPDATE)
+          << "ACTION_UPDATE should be seen if and only if the node is known.";
+      UpdateBookmarkWithSyncData(src, model, dst, profile_);
+
+      // Move all modified entries to the right.  We'll fix it later.
+      model->Move(dst, parent, parent->child_count());
     } else {
-      // Because the Synced Bookmarks node can be created server side, it's
-      // possible it'll arrive at the client as an update. In that case it won't
-      // have been associated at startup, the GetChromeNodeFromSyncId call above
-      // will return NULL, and we won't detect it as a permanent node, resulting
-      // in us trying to create it here (which will fail). Therefore, we add
-      // special logic here just to detect the Synced Bookmarks folder.
-      syncer::ReadNode synced_bookmarks(trans);
-      if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) ==
-              syncer::BaseNode::INIT_OK &&
-          synced_bookmarks.GetId() == it->id) {
-        // This is a newly created Synced Bookmarks node. Associate it.
-        model_associator_->Associate(model->mobile_node(), it->id);
-      } else {
+      DCHECK(it->action == ChangeRecord::ACTION_ADD)
+          << "ACTION_ADD should be seen if and only if the node is unknown.";
+
+      dst = CreateBookmarkNode(&src,
+                               parent,
+                               model,
+                               profile_,
+                               parent->child_count());
+      if (!dst) {
         // We ignore bookmarks we can't add. Chances are this is caused by
         // a bookmark that was not fully associated.
         LOG(ERROR) << "Failed to create bookmark node with title "
                    << src.GetTitle() + " and url "
                    << src.GetBookmarkSpecifics().url();
+        continue;
       }
+      model_associator_->Associate(dst, src.GetId());
     }
+
+    to_reposition.insert(std::make_pair(src.GetPositionIndex(), dst));
+    bookmark_model_->SetNodeMetaInfo(dst, kBookmarkTransactionVersionKey,
+                                     base::Int64ToString(model_version));
   }
 
   // When we added or updated bookmarks in the previous loop, we placed them to
@@ -642,50 +671,24 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 }
 
 // Static.
-// Create a bookmark node corresponding to |src| if one is not already
-// associated with |src|.
-const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
-    syncer::BaseNode* src,
+// Update a bookmark node with specified sync data.
+void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
+    const syncer::BaseNode& sync_node,
     BookmarkModel* model,
-    Profile* profile,
-    BookmarkModelAssociator* model_associator) {
-  const BookmarkNode* parent =
-      model_associator->GetChromeNodeFromSyncId(src->GetParentId());
-  if (!parent) {
-    DLOG(WARNING) << "Could not find parent of node being added/updated."
-      << " Node title: " << src->GetTitle()
-      << ", parent id = " << src->GetParentId();
-
-    return NULL;
+    const BookmarkNode* node,
+    Profile* profile) {
+  DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
+  const sync_pb::BookmarkSpecifics& specifics =
+      sync_node.GetBookmarkSpecifics();
+  if (!sync_node.GetIsFolder())
+    model->SetURL(node, GURL(specifics.url()));
+  model->SetTitle(node, UTF8ToUTF16(sync_node.GetTitle()));
+  if (specifics.has_creation_time_us()) {
+    model->SetDateAdded(
+        node,
+        base::Time::FromInternalValue(specifics.creation_time_us()));
   }
-  const BookmarkNode* dst = model_associator->GetChromeNodeFromSyncId(
-      src->GetId());
-  if (!dst) {
-    dst = CreateBookmarkNode(src, parent, model, profile);
-    if (dst)
-      model_associator->Associate(dst, src->GetId());
-  } else {
-    // URL and is_folder are not expected to change.
-    // TODO(ncarter): Determine if such changes should be legal or not.
-    DCHECK_EQ(src->GetIsFolder(), dst->is_folder());
-
-    // Move all modified entries to the right.  The caller will fix this later.
-    model->Move(dst, parent, parent->child_count());
-
-    const sync_pb::BookmarkSpecifics& specifics = src->GetBookmarkSpecifics();
-    if (!src->GetIsFolder())
-      model->SetURL(dst, GURL(specifics.url()));
-    model->SetTitle(dst, UTF8ToUTF16(src->GetTitle()));
-    if (specifics.has_creation_time_us()) {
-      model->SetDateAdded(dst,
-                          base::Time::FromInternalValue(
-                              specifics.creation_time_us()));
-    }
-
-    SetBookmarkFavicon(src, dst, model, profile);
-  }
-
-  return dst;
+  SetBookmarkFavicon(&sync_node, node, model, profile);
 }
 
 // static
@@ -710,13 +713,13 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    Profile* profile) {
+    Profile* profile,
+    int index) {
   DCHECK(parent);
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddFolder(parent, parent->child_count(),
-                            UTF8ToUTF16(sync_node->GetTitle()));
+    node = model->AddFolder(parent, index, UTF8ToUTF16(sync_node->GetTitle()));
   } else {
     // 'creation_time_us' was added in m24. Assume a time of 0 means now.
     const sync_pb::BookmarkSpecifics& specifics =
@@ -724,7 +727,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const int64 create_time_internal = specifics.creation_time_us();
     base::Time create_time = (create_time_internal == 0) ?
         base::Time::Now() : base::Time::FromInternalValue(create_time_internal);
-    node = model->AddURLWithCreationTime(parent, parent->child_count(),
+    node = model->AddURLWithCreationTime(parent, index,
                                          UTF8ToUTF16(sync_node->GetTitle()),
                                          GURL(specifics.url()), create_time);
     if (node)
@@ -736,7 +739,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 // static
 // Sets the favicon of the given bookmark node from the given sync node.
 bool BookmarkChangeProcessor::SetBookmarkFavicon(
-    syncer::BaseNode* sync_node,
+    const syncer::BaseNode* sync_node,
     const BookmarkNode* bookmark_node,
     BookmarkModel* bookmark_model,
     Profile* profile) {

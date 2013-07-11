@@ -69,31 +69,32 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
       int64 model_version,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
 
-  // Create a bookmark node corresponding to |src| if one is not already
-  // associated with |src|.  Returns the node that was created or updated.  The
-  // bookmark will be placed at the far right position of its containing folder.
-  static const BookmarkNode* CreateOrUpdateBookmarkNode(
-      syncer::BaseNode* src,
-      BookmarkModel* model,
-      Profile* profile,
-      BookmarkModelAssociator* model_associator);
-
   // The following methods are static and hence may be invoked at any time, and
-  // do not depend on having a running ChangeProcessor.  Creates a bookmark node
-  // under the given parent node from the given sync node. Returns the newly
-  // created node.  The created node is placed in the far right position under
-  // the specified parent.
+  // do not depend on having a running ChangeProcessor.
+
+  // Updates the title, URL, creation time and favicon of the bookmark |node|
+  // with data taken from the |sync_node| sync node.
+  static void UpdateBookmarkWithSyncData(
+      const syncer::BaseNode& sync_node,
+      BookmarkModel* model,
+      const BookmarkNode* node,
+      Profile* profile);
+
+  // Creates a bookmark node under the given parent node from the given sync
+  // node. Returns the newly created node.  The created node is placed at the
+  // specified index among the parent's children.
   static const BookmarkNode* CreateBookmarkNode(
       syncer::BaseNode* sync_node,
       const BookmarkNode* parent,
       BookmarkModel* model,
-      Profile* profile);
+      Profile* profile,
+      int index);
 
   // Sets the favicon of the given bookmark node from the given sync node.
   // Returns whether the favicon was set in the bookmark node.
   // |profile| is the profile that contains the HistoryService and BookmarkModel
   // for the bookmark in question.
-  static bool SetBookmarkFavicon(syncer::BaseNode* sync_node,
+  static bool SetBookmarkFavicon(const syncer::BaseNode* sync_node,
                                  const BookmarkNode* bookmark_node,
                                  BookmarkModel* model,
                                  Profile* profile);
