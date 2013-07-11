@@ -1031,6 +1031,13 @@ class GitWrapper(SCMWrapper):
                                       kwargs.get('filter_fn'))
       kwargs.setdefault('print_stdout', False)
       # Don't prompt for passwords; just fail quickly and noisily.
+      # By default, git will use an interactive terminal prompt when a username/
+      # password is needed.  That shouldn't happen in the chromium workflow,
+      # and if it does, then gclient may hide the prompt in the midst of a flood
+      # of terminal spew.  The only indication that something has gone wrong
+      # will be when gclient hangs unresponsively.  Instead, we disable the
+      # password prompt and simply allow git to fail noisily.  The error
+      # message produced by git will be copied to gclient's output.
       env = kwargs.get('env') or kwargs.setdefault('env', os.environ.copy())
       env.setdefault('GIT_ASKPASS', 'true')
       env.setdefault('SSH_ASKPASS', 'true')
