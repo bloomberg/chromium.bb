@@ -716,7 +716,6 @@
             'css/RuleSet.h',
             'css/SVGCSSComputedStyleDeclaration.cpp',
             'css/SVGCSSParser.cpp',
-            'css/SVGCSSStyleSelector.cpp',
             'css/SelectorChecker.cpp',
             'css/SelectorChecker.h',
             'css/SelectorCheckerFastPath.cpp',
