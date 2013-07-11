@@ -325,11 +325,15 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
     FrameLoader* loader = m_frame->loader();
 
     // If the URL we're going to navigate to is the same as the current one, except for the
-    // fragment part, we don't need to schedule the location change.
-    KURL parsedURL(ParsedURLString, url);
-    if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
-        loader->changeLocation(securityOrigin, m_frame->document()->completeURL(url), referrer, lockBackForwardList);
-        return;
+    // fragment part, we don't need to schedule the location change. We'll skip this
+    // optimization for cross-origin navigations to minimize the navigator's ability to
+    // execute timing attacks.
+    if (securityOrigin->canAccess(m_frame->document()->securityOrigin())) {
+        KURL parsedURL(ParsedURLString, url);
+        if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
+            loader->changeLocation(securityOrigin, m_frame->document()->completeURL(url), referrer, lockBackForwardList);
+            return;
+        }
     }
 
     // Handle a location change of a page with no document as a special case.
