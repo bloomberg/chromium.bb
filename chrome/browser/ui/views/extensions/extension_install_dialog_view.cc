@@ -29,6 +29,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -51,6 +52,13 @@ namespace {
 // Size of extension icon in top left of dialog.
 const int kIconSize = 69;
 
+// The dialog width.
+const int kDialogWidth = 385;
+
+// The dialog will resize based on its content, but this sets a maximum height
+// before overflowing a scrollbar.
+const int kDialogMaxHeight = 300;
+
 // Width of the left column of the dialog when the extension requests
 // permissions.
 const int kPermissionsLeftColumnWidth = 250;
@@ -69,6 +77,8 @@ const int kExternalInstallLeftColumnWidth = 350;
 
 // Maximum height of the retained files view.
 const int kMaxRetainedFilesHeight = 100;
+
+typedef std::vector<string16> PermissionDetails;
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
@@ -94,9 +104,8 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
                              const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExtensionInstallDialogView();
 
-  // Changes the size of the containing widget to match the preferred size
-  // of this dialog.
-  void SizeToContents();
+  // Called when one of the child elements has expanded/collapsed.
+  void ContentsChanged();
 
  private:
   // views::DialogDelegateView:
@@ -105,10 +114,10 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
-
-  // views::WidgetDelegate:
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -129,34 +138,54 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   ExtensionInstallPrompt::Delegate* delegate_;
   ExtensionInstallPrompt::Prompt prompt_;
 
+  // The scroll view containing all the details for the dialog (including all
+  // collapsible/expandable sections).
+  views::ScrollView* scroll_view_;
+
+  // The container view for the scroll view.
+  views::View* scrollable_;
+
+  // The preferred size of the dialog.
+  gfx::Size dialog_size_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
 
-// A view to display a single IssueAdviceInfoEntry.
-class IssueAdviceView : public views::View,
-                        public ui::AnimationDelegate {
+// A view to display text with an expandable details section.
+class ExpandableContainerView : public views::View,
+                                public views::ButtonListener,
+                                public views::LinkListener,
+                                public ui::AnimationDelegate {
  public:
-  IssueAdviceView(ExtensionInstallDialogView* owner,
-                  const IssueAdviceInfoEntry& issue_advice,
-                  int horizontal_space);
-  virtual ~IssueAdviceView() {}
+  ExpandableContainerView(ExtensionInstallDialogView* owner,
+                          const string16& description,
+                          const PermissionDetails& details,
+                          int horizontal_space,
+                          bool show_bullets);
+  virtual ~ExpandableContainerView();
 
-  // Implementation of views::View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  // views::View:
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
 
-  // Implementation of ui::AnimationDelegate:
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  // ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
  private:
   // A view which displays all the details of an IssueAdviceInfoEntry.
   class DetailsView : public views::View {
    public:
-    explicit DetailsView(int horizontal_space);
+    explicit DetailsView(int horizontal_space, bool show_bullets);
     virtual ~DetailsView() {}
 
-    // Implementation of views::View:
+    // views::View:
     virtual gfx::Size GetPreferredSize() OVERRIDE;
 
     void AddDetail(const string16& detail);
@@ -168,8 +197,14 @@ class IssueAdviceView : public views::View,
     views::GridLayout* layout_;
     double state_;
 
+    // Whether to show bullets in front of each item in the details.
+    bool show_bullets_;
+
     DISALLOW_COPY_AND_ASSIGN(DetailsView);
   };
+
+  // Expand/Collapse the detail section for this ExpandableContainerView.
+  void ToggleDetailLevel();
 
   // The dialog that owns |this|. It's also an ancestor in the View hierarchy.
   ExtensionInstallDialogView* owner_;
@@ -182,7 +217,18 @@ class IssueAdviceView : public views::View,
 
   ui::SlideAnimation slide_animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(IssueAdviceView);
+  // The 'more details' link shown under the heading (changes to 'hide details'
+  // when the details section is expanded).
+  views::Link* more_details_;
+
+  // The up/down arrow next to the 'more detail' link (points up/down depending
+  // on whether the details section is expanded).
+  views::ImageButton* arrow_toggle_;
+
+  // Whether the details section is expanded.
+  bool expanded_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExpandableContainerView);
 };
 
 void ShowExtensionInstallDialogImpl(
@@ -288,8 +334,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // | oauth issue 2             |
   // +---------------------------+
 
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
+  scroll_view_ = new views::ScrollView();
+  AddChildView(scroll_view_);
+  scrollable_ = new views::View();
+  scroll_view_->SetContents(scrollable_);
+
+  views::GridLayout* layout = views::GridLayout::CreatePanel(scrollable_);
+  scrollable_->SetLayoutManager(layout);
 
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
@@ -360,9 +411,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       // have a padding row above it).
       icon_row_span = 3 + prompt.GetOAuthIssueCount() * 2;
     } else if (prompt.GetRetainedFileCount()) {
-      // Also span the permission header and each of the permission rows (all
-      // have a padding row above it).
-      icon_row_span = 3 + prompt.GetRetainedFileCount() * 2;
+      // Also span the permission header and the retained files container.
+      icon_row_span = 4;
     }
     layout->AddView(icon, 1, icon_row_span);
   }
@@ -397,7 +447,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   }
 
   if (is_bundle_install()) {
-    BundleInstaller::ItemList items = prompt_.bundle()->GetItemsWithState(
+    BundleInstaller::ItemList items = prompt.bundle()->GetItemsWithState(
         BundleInstaller::Item::STATE_PENDING);
     for (size_t i = 0; i < items.size(); ++i) {
       string16 extension_name = UTF8ToUTF16(items[i].localized_name);
@@ -450,6 +500,18 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
         permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         permission_label->SizeToFit(left_column_width);
         layout->AddView(permission_label);
+
+        // If we have more details to provide, show them in collapsed form.
+        if (!prompt.GetPermissionsDetails(i).empty()) {
+          layout->StartRow(0, column_set_id);
+          PermissionDetails details;
+          details.push_back(
+              PrepareForDisplay(prompt.GetPermissionsDetails(i), false));
+          ExpandableContainerView* details_container =
+              new ExpandableContainerView(
+                  this, string16(), details, left_column_width, false);
+          layout->AddView(details_container);
+        }
       }
     } else {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -493,8 +555,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
           0, column_set_id,
           0, views::kRelatedControlVerticalSpacing);
 
-      IssueAdviceView* issue_advice_view =
-          new IssueAdviceView(this, prompt.GetOAuthIssue(i), space_for_oauth);
+      PermissionDetails details;
+      const IssueAdviceInfoEntry& entry = prompt.GetOAuthIssue(i);
+      for (size_t x = 0; x < entry.details.size(); ++x)
+        details.push_back(entry.details[x]);
+      ExpandableContainerView* issue_advice_view =
+          new ExpandableContainerView(
+              this, entry.description, details, space_for_oauth, false);
       layout->AddView(issue_advice_view);
     }
   }
@@ -519,37 +586,34 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
     layout->StartRow(0, column_set_id);
     views::Label* retained_files_header = NULL;
-    retained_files_header = new views::Label(prompt.GetRetainedFilesHeading());
+    retained_files_header =
+        new views::Label(prompt.GetRetainedFilesHeadingWithCount());
     retained_files_header->SetMultiLine(true);
     retained_files_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     retained_files_header->SizeToFit(space_for_files);
     layout->AddView(retained_files_header);
 
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, column_set_id);
-    views::View* files_view = new views::View();
-    files_view->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical,
-        views::kRelatedControlHorizontalSpacing,
-        0,
-        0));
-    for (size_t i = 0; i < prompt.GetRetainedFileCount(); ++i) {
-      views::Label* retained_file_label = new views::Label(PrepareForDisplay(
-          prompt.GetRetainedFile(i), true));
-      retained_file_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      files_view->AddChildView(retained_file_label);
-    }
-    views::ScrollView* scroll_view =
-        new MaxSizeScrollView(kMaxRetainedFilesHeight, space_for_files);
-    scroll_view->SetContents(files_view);
-    layout->AddView(scroll_view);
+    PermissionDetails details;
+    for (size_t i = 0; i < prompt.GetRetainedFileCount(); ++i)
+      details.push_back(prompt.GetRetainedFile(i));
+    ExpandableContainerView* issue_advice_view =
+        new ExpandableContainerView(
+            this, string16(), details, space_for_files, false);
+    layout->AddView(issue_advice_view);
   }
+
+  gfx::Size scrollable_size = scrollable_->GetPreferredSize();
+  scrollable_->SetBoundsRect(gfx::Rect(scrollable_size));
+  dialog_size_ = gfx::Size(
+      kDialogWidth,
+      std::min(scrollable_size.height(), kDialogMaxHeight));
 }
 
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {}
 
-void ExtensionInstallDialogView::SizeToContents() {
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+void ExtensionInstallDialogView::ContentsChanged() {
+  Layout();
 }
 
 int ExtensionInstallDialogView::GetDialogButtons() const {
@@ -608,19 +672,40 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
   GetWidget()->Close();
 }
 
+void ExtensionInstallDialogView::Layout() {
+  views::View* contents_view = scroll_view_->contents();
+  int content_width = width();
+  int content_height = contents_view->GetHeightForWidth(content_width);
+  if (content_height > height()) {
+    content_width -= scroll_view_->GetScrollBarWidth();
+    content_height = contents_view->GetHeightForWidth(content_width);
+  }
+  contents_view->SetBounds(0, 0, content_width, content_height);
+  scroll_view_->SetBounds(0, 0, width(), height());
+
+  DialogDelegateView::Layout();
+}
+
+gfx::Size ExtensionInstallDialogView::GetPreferredSize() {
+  return dialog_size_;
+}
+
 // static
 ExtensionInstallPrompt::ShowDialogCallback
 ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
   return base::Bind(&ShowExtensionInstallDialogImpl);
 }
 
-// IssueAdviceView::DetailsView ------------------------------------------------
+// ExpandableContainerView::DetailsView ----------------------------------------
 
-IssueAdviceView::DetailsView::DetailsView(int horizontal_space)
+ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
+                                                  bool show_bullets)
     : layout_(new views::GridLayout(this)),
-      state_(0) {
+      state_(0),
+      show_bullets_(show_bullets) {
   SetLayoutManager(layout_);
   views::ColumnSet* column_set = layout_->AddColumnSet(0);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::LEADING,
                         0,
@@ -629,120 +714,158 @@ IssueAdviceView::DetailsView::DetailsView(int horizontal_space)
                         0);
 }
 
-void IssueAdviceView::DetailsView::AddDetail(const string16& detail) {
+void ExpandableContainerView::DetailsView::AddDetail(const string16& detail) {
   layout_->StartRowWithPadding(0, 0,
                                0, views::kRelatedControlSmallVerticalSpacing);
   views::Label* detail_label =
-      new views::Label(PrepareForDisplay(detail, true));
+      new views::Label(PrepareForDisplay(detail, show_bullets_));
   detail_label->SetMultiLine(true);
   detail_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout_->AddView(detail_label);
 }
 
-gfx::Size IssueAdviceView::DetailsView::GetPreferredSize() {
+gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() {
   gfx::Size size = views::View::GetPreferredSize();
   return gfx::Size(size.width(), size.height() * state_);
 }
 
-void IssueAdviceView::DetailsView::AnimateToState(double state) {
+void ExpandableContainerView::DetailsView::AnimateToState(double state) {
   state_ = state;
   PreferredSizeChanged();
   SchedulePaint();
 }
 
-// IssueAdviceView -------------------------------------------------------------
+// ExpandableContainerView -----------------------------------------------------
 
-IssueAdviceView::IssueAdviceView(ExtensionInstallDialogView* owner,
-                                 const IssueAdviceInfoEntry& issue_advice,
-                                 int horizontal_space)
+ExpandableContainerView::ExpandableContainerView(
+    ExtensionInstallDialogView* owner,
+    const string16& description,
+    const PermissionDetails& details,
+    int horizontal_space,
+    bool show_bullets)
     : owner_(owner),
       details_view_(NULL),
       arrow_view_(NULL),
-      slide_animation_(this) {
-  // TODO(estade): replace this with a more appropriate image.
-  const gfx::ImageSkia& image = *ui::ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_OMNIBOX_TTS);
-
+      slide_animation_(this),
+      expanded_(false) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  if (!issue_advice.details.empty()) {
-    column_set->AddColumn(views::GridLayout::LEADING,
-                          views::GridLayout::LEADING,
-                          0,
-                          views::GridLayout::FIXED,
-                          image.width(),
-                          0);
-    horizontal_space -= image.width();
-    details_view_ = new DetailsView(horizontal_space);
-  }
   column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::FILL,
+                        views::GridLayout::LEADING,
                         0,
-                        views::GridLayout::FIXED,
-                        horizontal_space,
+                        views::GridLayout::USE_PREF,
+                        0,
                         0);
-  layout->StartRow(0, column_set_id);
+  if (!description.empty()) {
+    layout->StartRow(0, column_set_id);
 
-  if (details_view_) {
-    arrow_view_ = new views::ImageView();
-    arrow_view_->SetImage(image);
-    arrow_view_->SetVerticalAlignment(views::ImageView::CENTER);
-    layout->AddView(arrow_view_);
+    views::Label* description_label =
+        new views::Label(PrepareForDisplay(description, true));
+    description_label->SetMultiLine(true);
+    description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    description_label->SizeToFit(horizontal_space);
+    layout->AddView(description_label);
   }
 
-  views::Label* description_label =
-      new views::Label(PrepareForDisplay(issue_advice.description,
-                                         !details_view_));
-  description_label->SetMultiLine(true);
-  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  description_label->SizeToFit(horizontal_space);
-  layout->AddView(description_label);
-
-  if (!details_view_)
+  if (details.empty())
     return;
 
+  details_view_ = new DetailsView(horizontal_space, show_bullets);
+
   layout->StartRow(0, column_set_id);
-  layout->SkipColumns(1);
   layout->AddView(details_view_);
 
-  for (size_t i = 0; i < issue_advice.details.size(); ++i)
-    details_view_->AddDetail(issue_advice.details[i]);
+  for (size_t i = 0; i < details.size(); ++i)
+    details_view_->AddDetail(details[i]);
+
+  // Prepare the columns for the More Details row.
+  column_set = layout->AddColumnSet(++column_set_id);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                       views::GridLayout::LEADING,
+                       0,
+                       views::GridLayout::USE_PREF,
+                       0,
+                       0);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+
+  // Add the More Details link.
+  layout->StartRow(0, column_set_id);
+  more_details_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+  more_details_->set_listener(this);
+  more_details_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->AddView(more_details_);
+
+  // Add the arrow after the More Details link.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  arrow_toggle_ = new views::ImageButton(this);
+  arrow_toggle_->SetImage(views::Button::STATE_NORMAL,
+                          rb.GetImageSkiaNamed(IDR_DOWN_ARROW));
+  layout->AddView(arrow_toggle_);
 }
 
-bool IssueAdviceView::OnMousePressed(const ui::MouseEvent& event) {
-  return details_view_ && event.IsLeftMouseButton();
+ExpandableContainerView::~ExpandableContainerView() {
 }
 
-void IssueAdviceView::OnMouseReleased(const ui::MouseEvent& event) {
+void ExpandableContainerView::ButtonPressed(
+    views::Button* sender, const ui::Event& event) {
+  ToggleDetailLevel();
+}
+
+void ExpandableContainerView::LinkClicked(
+    views::Link* source, int event_flags) {
+  ToggleDetailLevel();
+}
+
+void ExpandableContainerView::AnimationProgressed(
+    const ui::Animation* animation) {
+  DCHECK_EQ(&slide_animation_, animation);
+  if (details_view_)
+    details_view_->AnimateToState(animation->GetCurrentValue());
+}
+
+void ExpandableContainerView::AnimationEnded(const ui::Animation* animation) {
+  if (animation->GetCurrentValue() != 0.0) {
+    arrow_toggle_->SetImage(
+        views::Button::STATE_NORMAL,
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_UP_ARROW));
+  } else {
+    arrow_toggle_->SetImage(
+        views::Button::STATE_NORMAL,
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_DOWN_ARROW));
+  }
+
+  more_details_->SetText(expanded_ ?
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS) :
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+}
+
+void ExpandableContainerView::ChildPreferredSizeChanged(views::View* child) {
+  owner_->ContentsChanged();
+}
+
+void ExpandableContainerView::ToggleDetailLevel() {
+  expanded_ = !expanded_;
+
   if (slide_animation_.IsShowing())
     slide_animation_.Hide();
   else
     slide_animation_.Show();
-}
-
-void IssueAdviceView::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK_EQ(animation, &slide_animation_);
-
-  if (details_view_)
-    details_view_->AnimateToState(animation->GetCurrentValue());
-
-  if (arrow_view_) {
-    gfx::Transform rotate;
-    if (animation->GetCurrentValue() != 0.0) {
-      rotate.Translate(arrow_view_->width() / 2.0,
-                       arrow_view_->height() / 2.0);
-      // TODO(estade): for some reason there are rendering errors at 90 degrees.
-      // Figure out why.
-      rotate.Rotate(animation->GetCurrentValue() * 89);
-      rotate.Translate(-arrow_view_->width() / 2.0,
-                       -arrow_view_->height() / 2.0);
-    }
-    arrow_view_->SetTransform(rotate);
-  }
-}
-
-void IssueAdviceView::ChildPreferredSizeChanged(views::View* child) {
-  owner_->SizeToContents();
 }

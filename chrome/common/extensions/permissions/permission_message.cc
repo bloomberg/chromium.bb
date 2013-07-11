@@ -21,6 +21,7 @@ PermissionMessage PermissionMessage::CreateFromHostList(
   DCHECK_GT(host_list.size(), 0UL);
   ID message_id;
   string16 message;
+  string16 details;
 
   switch (host_list.size()) {
     case 1:
@@ -43,20 +44,44 @@ PermissionMessage PermissionMessage::CreateFromHostList(
       break;
     default:
       message_id = kHosts4OrMore;
-      message = l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
-          UTF8ToUTF16(host_list[0]),
-          UTF8ToUTF16(host_list[1]),
-          base::IntToString16(hosts.size() - 2));
-      break;
+
+#if defined(TOOLKIT_VIEWS)
+    message = l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PROMPT_WARNING_HOSTS,
+        base::IntToString16(host_list.size()));
+
+    for (size_t i = 0; i < host_list.size(); ++i) {
+      if (i > 0)
+        details += ASCIIToUTF16("\n");
+      details += l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY,
+          UTF8ToUTF16(host_list[i]));
+    }
+#else
+    // TODO(finnur): Remove once all platforms support expandible sections.
+    message = l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
+        UTF8ToUTF16(host_list[0]),
+        UTF8ToUTF16(host_list[1]),
+        base::IntToString16(hosts.size() - 2));
+    break;
+#endif
   }
 
-  return PermissionMessage(message_id, message);
+  return PermissionMessage(message_id, message, details);
 }
 
 PermissionMessage::PermissionMessage(
     PermissionMessage::ID id, const string16& message)
-  : id_(id), message_(message) {
+  : id_(id),
+    message_(message) {
+}
+
+PermissionMessage::PermissionMessage(
+    PermissionMessage::ID id, const string16& message, const string16& details)
+  : id_(id),
+    message_(message),
+    details_(details) {
 }
 
 PermissionMessage::~PermissionMessage() {}

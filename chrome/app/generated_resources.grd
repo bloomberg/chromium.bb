@@ -5091,6 +5091,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_RETAINED_FILES" desc="A line of explanatory text that precedes the list of files the app has permanent access to. This is shown when an app has persistent access to files.">
         It has permanent access to:
       </message>
+      <message name="IDS_EXTENSION_PROMPT_RETAINED_FILES_WITH_COUNT" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing how the number of files. This is shown when an app has persistent access to files.">
+        It has permanent access to <ph name="NUMBER_OF_FILES">$1<ex>5</ex></ph> files.
+      </message>
 
       <if expr="is_android">
         <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Mobile: Permission string for full access to the device and all websites.">
@@ -5116,6 +5119,15 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more websites.">
         Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.yahoo.com</ex></ph>, and <ph name="NUMBER_OF_OTHER_WEBSITES">$3<ex>3</ex></ph> other websites
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS" desc="Permission string for access to data on four or more websites.">
+        Access your data on <ph name="NUMBER_OF_OTHER_WEBSITES">$1<ex>5</ex></ph> website(s)
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST" desc="Permission string (heading) for a list of websites.">
+        Access your data on the following websites:
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY" desc="Single entry in a list of websites.">
+        - <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_FAVICON" desc="Permission string for access to favicons.">
         Access the icons of the websites you visit.

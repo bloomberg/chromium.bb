@@ -70,7 +70,10 @@ class ExtensionInstallPrompt
     explicit Prompt(PromptType type);
     ~Prompt();
 
+    // Sets the permission list for this prompt.
     void SetPermissions(const std::vector<string16>& permissions);
+    // Sets the permission list details for this prompt.
+    void SetPermissionsDetails(const std::vector<string16>& details);
     void SetInlineInstallWebstoreData(const std::string& localized_user_count,
                                       double average_rating,
                                       int rating_count);
@@ -91,6 +94,8 @@ class ExtensionInstallPrompt
     string16 GetPermissionsHeading() const;
     string16 GetOAuthHeading() const;
     string16 GetRetainedFilesHeading() const;
+    string16 GetRetainedFilesHeadingWithCount() const;
+
     bool ShouldShowPermissions() const;
 
     // Getters for webstore metadata. Only populated when the type is
@@ -105,7 +110,9 @@ class ExtensionInstallPrompt
     string16 GetRatingCount() const;
     string16 GetUserCount() const;
     size_t GetPermissionCount() const;
+    size_t GetPermissionsDetailsCount() const;
     string16 GetPermission(size_t index) const;
+    string16 GetPermissionsDetails(size_t index) const;
     size_t GetOAuthIssueCount() const;
     const IssueAdviceInfoEntry& GetOAuthIssue(size_t index) const;
     size_t GetRetainedFileCount() const;
@@ -139,6 +146,7 @@ class ExtensionInstallPrompt
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
     std::vector<string16> permissions_;
+    std::vector<string16> details_;
 
     // Descriptions and details for OAuth2 permissions to display to the user.
     // These correspond to permission scopes.

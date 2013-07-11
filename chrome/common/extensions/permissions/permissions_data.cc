@@ -444,6 +444,18 @@ std::vector<string16> PermissionsData::GetPermissionMessageStrings(
 }
 
 // static
+std::vector<string16> PermissionsData::GetPermissionMessageDetailsStrings(
+    const Extension* extension) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  if (ShouldSkipPermissionWarnings(extension)) {
+    return std::vector<string16>();
+  } else {
+    return GetActivePermissions(extension)->GetWarningMessagesDetails(
+        extension->GetType());
+  }
+}
+
+// static
 bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
                                              const GURL& document_url,
                                              const GURL& top_frame_url,

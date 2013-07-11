@@ -140,6 +140,12 @@ class PermissionsData {
   static std::vector<string16> GetPermissionMessageStrings(
       const Extension* extension);
 
+  // Returns the full list of permission details for messages that the given
+  // |extension| should display at install time. The messages are returned as
+  // strings for convenience.
+  static std::vector<string16> GetPermissionMessageDetailsStrings(
+      const Extension* extension);
+
   // Returns true if the given |extension| can execute script on a page. If a
   // UserScript object is passed, permission to run that specific script is
   // checked (using its matches list). Otherwise, permission to execute script

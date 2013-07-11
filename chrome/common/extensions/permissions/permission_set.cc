@@ -308,6 +308,18 @@ std::vector<string16> PermissionSet::GetWarningMessages(
   return messages;
 }
 
+std::vector<string16> PermissionSet::GetWarningMessagesDetails(
+    Manifest::Type extension_type) const {
+  std::vector<string16> messages;
+  PermissionMessages permissions = GetPermissionMessages(extension_type);
+
+  for (PermissionMessages::const_iterator i = permissions.begin();
+       i != permissions.end(); ++i)
+    messages.push_back(i->details());
+
+  return messages;
+}
+
 bool PermissionSet::IsEmpty() const {
   // Not default if any host permissions are present.
   if (!(explicit_hosts().is_empty() && scriptable_hosts().is_empty()))

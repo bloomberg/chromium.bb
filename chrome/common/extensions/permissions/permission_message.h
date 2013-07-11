@@ -76,6 +76,7 @@ class PermissionMessage {
 
   // Creates the corresponding permission message.
   PermissionMessage(ID id, const string16& message);
+  PermissionMessage(ID id, const string16& message, const string16& details);
   ~PermissionMessage();
 
   // Gets the id of the permission message, which can be used in UMA
@@ -86,6 +87,11 @@ class PermissionMessage {
   // the message will be empty for message types TYPE_NONE and TYPE_UNKNOWN.
   const string16& message() const { return message_; }
 
+  // Gets a localized message describing the details for this permission. Please
+  // note that the message will be empty for message types TYPE_NONE and
+  // TYPE_UNKNOWN.
+  const string16& details() const { return details_; }
+
   // Comparator to work with std::set.
   bool operator<(const PermissionMessage& that) const {
     return id_ < that.id_;
@@ -94,6 +100,7 @@ class PermissionMessage {
  private:
   ID id_;
   string16 message_;
+  string16 details_;
 };
 
 typedef std::vector<PermissionMessage> PermissionMessages;

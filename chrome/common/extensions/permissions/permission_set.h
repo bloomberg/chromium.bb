@@ -78,13 +78,17 @@ class PermissionSet
 
   // Gets the localized permission messages that represent this set.
   // The set of permission messages shown varies by extension type.
-  PermissionMessages GetPermissionMessages(Manifest::Type extension_type)
-      const;
+  PermissionMessages GetPermissionMessages(Manifest::Type extension_type) const;
 
   // Gets the localized permission messages that represent this set (represented
   // as strings). The set of permission messages shown varies by extension type.
-  std::vector<string16> GetWarningMessages(Manifest::Type extension_type)
-      const;
+  std::vector<string16> GetWarningMessages(Manifest::Type extension_type) const;
+
+  // Gets the localized permission details for messages that represent this set
+  // (represented as strings). The set of permission messages shown varies by
+  // extension type.
+  std::vector<string16> GetWarningMessagesDetails(
+      Manifest::Type extension_type) const;
 
   // Returns true if this is an empty set (e.g., the default permission set).
   bool IsEmpty() const;

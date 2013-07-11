@@ -214,6 +214,27 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
             UTF16ToUTF8(warnings[5]));
 }
 
+TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {
+  scoped_refptr<Extension> extension;
+  extension = LoadManifest("permissions", "more-than-3-hosts.json");
+  std::vector<string16> warnings =
+      PermissionsData::GetPermissionMessageStrings(extension.get());
+  std::vector<string16> warnings_details =
+      PermissionsData::GetPermissionMessageDetailsStrings(extension.get());
+  ASSERT_EQ(1u, warnings.size());
+  ASSERT_EQ(1u, warnings_details.size());
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_EQ("Access your data on 5 website(s)", UTF16ToUTF8(warnings[0]));
+  EXPECT_EQ("- www.a.com\n- www.b.com\n- www.c.com\n- www.d.com\n- www.e.com",
+            UTF16ToUTF8(warnings_details[0]));
+#else
+  // TODO(finnur): Remove once other platforms support expandable sections.
+  EXPECT_EQ("Access your data on www.a.com, www.b.com, and 3 other websites",
+            UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(warnings_details[0].empty());
+#endif
+}
+
 TEST(ExtensionPermissionsTest, GetPermissionMessages_LocationApiPermission) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions",
@@ -242,7 +263,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
   std::vector<string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
 // We don't parse the plugins key on Chrome OS, so it should not ask for any
-  // permissions.
+// permissions.
 #if defined(OS_CHROMEOS)
   ASSERT_EQ(0u, warnings.size());
 #else

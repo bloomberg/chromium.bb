@@ -197,6 +197,7 @@
       <structure type="chrome_scaled_image" name="IDR_DOCK_HIGH" file="dock_tab_high.png" />
       <structure type="chrome_scaled_image" name="IDR_DOCK_MAX" file="dock_tab_max.png" />
       <structure type="chrome_scaled_image" name="IDR_DOCK_WIDE" file="dock_tab_wide.png" />
+      <structure type="chrome_scaled_image" name="IDR_DOWN_ARROW" file="common/down_arrow.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOADS_FAVICON" file="common/favicon_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="download_animation_begin.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM" file="common/download_button_center_bottom.png" />
@@ -936,7 +937,7 @@
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_LOW" file="common/browser_tools_bar_low.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_MEDIUM" file="common/browser_tools_bar_medium.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_HIGH" file="common/browser_tools_bar_high.png" />
-
+      <structure type="chrome_scaled_image" name="IDR_UP_ARROW" file="common/up_arrow.png" />
       <if expr="not is_macosx and not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE" file="update_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE2" file="update_badge2.png" />

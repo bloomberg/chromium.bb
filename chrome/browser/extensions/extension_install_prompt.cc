@@ -202,6 +202,11 @@ void ExtensionInstallPrompt::Prompt::SetPermissions(
   permissions_ = permissions;
 }
 
+void ExtensionInstallPrompt::Prompt::SetPermissionsDetails(
+    const std::vector<string16>& details) {
+  details_ = details;
+}
+
 void ExtensionInstallPrompt::Prompt::SetOAuthIssueAdvice(
     const IssueAdviceInfo& issue_advice) {
   oauth_issue_advice_ = issue_advice;
@@ -316,7 +321,16 @@ string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
+  // TODO(finnur): Remove this once all platforms are using
+  // GetRetainedFilesHeadingWithCount().
   return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RETAINED_FILES);
+}
+
+string16
+ExtensionInstallPrompt::Prompt::GetRetainedFilesHeadingWithCount() const {
+  return l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_PROMPT_RETAINED_FILES_WITH_COUNT,
+      base::IntToString16(GetRetainedFileCount()));
 }
 
 bool ExtensionInstallPrompt::Prompt::ShouldShowPermissions() const {
@@ -370,9 +384,19 @@ size_t ExtensionInstallPrompt::Prompt::GetPermissionCount() const {
   return permissions_.size();
 }
 
+size_t ExtensionInstallPrompt::Prompt::GetPermissionsDetailsCount() const {
+  return details_.size();
+}
+
 string16 ExtensionInstallPrompt::Prompt::GetPermission(size_t index) const {
   CHECK_LT(index, permissions_.size());
   return permissions_[index];
+}
+
+string16 ExtensionInstallPrompt::Prompt::GetPermissionsDetails(
+    size_t index) const {
+  CHECK_LT(index, details_.size());
+  return details_[index];
 }
 
 size_t ExtensionInstallPrompt::Prompt::GetOAuthIssueCount() const {
@@ -719,7 +743,10 @@ void ExtensionInstallPrompt::ShowConfirmation() {
            extension_))) {
     Manifest::Type extension_type = extension_ ?
         extension_->GetType() : Manifest::TYPE_UNKNOWN;
-    prompt_.SetPermissions(permissions_->GetWarningMessages(extension_type));
+    prompt_.SetPermissions(
+        permissions_->GetWarningMessages(extension_type));
+    prompt_.SetPermissionsDetails(
+        permissions_->GetWarningMessagesDetails(extension_type));
   }
 
   switch (prompt_.type()) {
