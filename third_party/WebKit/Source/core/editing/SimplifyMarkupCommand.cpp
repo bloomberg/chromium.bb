@@ -53,6 +53,8 @@ void SimplifyMarkupCommand::doApply()
             continue;
         
         Node* startingNode = node->parentNode();
+        if (!startingNode)
+            continue;
         RenderStyle* startingStyle = startingNode->renderStyle();
         if (!startingStyle)
             continue;
