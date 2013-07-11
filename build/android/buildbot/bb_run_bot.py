@@ -45,7 +45,7 @@ def GetEnvironment(host_obj, testing):
   init_env['GOMA_DIR'] = bb_utils.GOMA_DIR
   envsetup_cmd = '. build/android/envsetup.sh'
   if host_obj.target_arch:
-    envsetup_cmd += ' --target_arch=%s' % host_obj.target_arch
+    envsetup_cmd += ' --target-arch=%s' % host_obj.target_arch
   if testing:
     # Skip envsetup to avoid presubmit dependence on android deps.
     print 'Testing mode - skipping "%s"' % envsetup_cmd
@@ -112,6 +112,7 @@ def GetBotStepMap():
   std_test_steps = ['extract_build']
   std_tests = ['ui', 'unit']
   flakiness_server = '--upload-to-flakiness-server'
+  experimental = ['--experimental']
 
   B = BotConfig
   H = (lambda steps, extra_args=None, extra_gyp=None, target_arch=None :
@@ -135,11 +136,13 @@ def GetBotStepMap():
         T(std_tests, ['--asan'])),
       B('chromedriver-fyi-tests-dbg', H(std_test_steps),
         T(['chromedriver'], ['--install=ChromiumTestShell'])),
+      B('fyi-x86-builder-dbg',
+        H(compile_step + std_host_tests, experimental, target_arch='x86')),
       B('fyi-builder-dbg',
-        H(std_build_steps + std_host_tests, ['--experimental'])),
-      B('fyi-builder-rel', H(std_build_steps,  ['--experimental'])),
-      B('fyi-tests-dbg-ics-gn', H(compile_step, [ '--experimental']),
-        T(std_tests, ['--experimental', flakiness_server])),
+        H(std_build_steps + std_host_tests, experimental)),
+      B('x86-builder-dbg',
+        H(compile_step + std_host_tests, target_arch='x86')),
+      B('fyi-builder-rel', H(std_build_steps,  experimental)),
       B('fyi-tests', H(std_test_steps),
         T(std_tests, ['--experimental', flakiness_server])),
       B('fyi-component-builder-tests-dbg',
@@ -166,6 +169,7 @@ def GetBotStepMap():
       ('try-builder-rel', 'main-builder-rel'),
       ('try-clang-builder', 'main-clang-builder'),
       ('try-fyi-builder-dbg', 'fyi-builder-dbg'),
+      ('try-x86-builder-dbg', 'x86-builder-dbg'),
       ('try-tests', 'main-tests'),
       ('try-fyi-tests', 'fyi-tests'),
       ('webkit-latest-tests', 'main-tests'),
