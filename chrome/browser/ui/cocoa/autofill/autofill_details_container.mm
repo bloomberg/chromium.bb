@@ -42,7 +42,7 @@
 }
 
 - (NSSize)preferredSize {
-  NSSize size = NSMakeSize(0, 0);
+  NSSize size = NSZeroSize;
   for (AutofillSectionContainer* container in details_.get()) {
     NSSize containerSize = [container preferredSize];
     size.height += containerSize.height;

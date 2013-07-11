@@ -270,7 +270,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
                                                            alpha:0.75]];
-  [shadow.get() setShadowOffset:NSMakeSize(0, 0)];
+  [shadow.get() setShadowOffset:NSZeroSize];
   [shadow.get() setShadowBlurRadius:3.0];
   [shadow.get() set];
 

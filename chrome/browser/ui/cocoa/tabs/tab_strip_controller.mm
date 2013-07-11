@@ -539,7 +539,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                                                        controller:self]);
     [self addSubviewToPermanentList:dragBlockingView_];
 
-    newTabTargetFrame_ = NSMakeRect(0, 0, 0, 0);
+    newTabTargetFrame_ = NSZeroRect;
     availableResizeWidth_ = kUseFullAvailableWidth;
 
     closingControllers_.reset([[NSMutableSet alloc] init]);

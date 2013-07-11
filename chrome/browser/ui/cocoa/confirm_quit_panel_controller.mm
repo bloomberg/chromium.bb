@@ -67,7 +67,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   if ((self = [super initWithFrame:frameRect])) {
     base::scoped_nsobject<NSTextField> message(
         // The frame will be fixed up when |-setMessageText:| is called.
-        [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 0, 0)]);
+        [[NSTextField alloc] initWithFrame:NSZeroRect]);
     message_ = message.get();
     [message_ setEditable:NO];
     [message_ setSelectable:NO];

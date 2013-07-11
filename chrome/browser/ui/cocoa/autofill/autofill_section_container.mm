@@ -167,7 +167,7 @@ void BreakSuggestionText(const string16& text,
 
 - (NSSize)preferredSize {
   if ([view_ isHidden])
-    return NSMakeSize(0, 0);
+    return NSZeroSize;
 
   NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
   CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];

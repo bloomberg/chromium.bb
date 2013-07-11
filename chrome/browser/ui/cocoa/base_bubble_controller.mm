@@ -77,7 +77,7 @@
     [theWindow setDelegate:self];
 
     base::scoped_nsobject<InfoBubbleView> contentView(
-        [[InfoBubbleView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0)]);
+        [[InfoBubbleView alloc] initWithFrame:NSZeroRect]);
     [theWindow setContentView:contentView.get()];
     bubble_ = contentView.get();
 
