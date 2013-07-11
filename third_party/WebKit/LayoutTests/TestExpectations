@@ -806,7 +806,7 @@ crbug.com/76550 [ Linux Debug ] fast/dom/Window/window-function-frame-getter-pre
 # Has been timing out, initiated at:
 # Webkit patches in range [r81976, r81981]
 # Chromium patches in range [r79428, r79442]
-crbug.com/77468 fast/forms/file/input-file-directory-upload.html [ Timeout ]
+crbug.com/77468 fast/forms/file/input-file-directory-upload.html [ Skip ]
 
 # Flaky, supposedly testRunner.setSerializeHTTPLoads would help.
 crbug.com/240970 fast/preloader/document-write-2.html [ Failure Pass ]
