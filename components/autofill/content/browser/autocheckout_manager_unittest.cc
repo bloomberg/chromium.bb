@@ -261,7 +261,8 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
  public:
   MockAutofillManagerDelegate()
       : request_autocomplete_dialog_open_(false),
-        autocheckout_bubble_shown_(false) {}
+        autocheckout_bubble_shown_(false),
+        should_autoclick_bubble_(true) {}
 
   virtual ~MockAutofillManagerDelegate() {}
 
@@ -275,9 +276,10 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       bool is_google_user,
-      const base::Callback<void(bool)>& callback) OVERRIDE {
+      const base::Callback<void(AutocheckoutBubbleState)>& callback) OVERRIDE {
     autocheckout_bubble_shown_ = true;
-    callback.Run(true);
+    if (should_autoclick_bubble_)
+      callback.Run(AUTOCHECKOUT_BUBBLE_ACCEPTED);
   }
 
   virtual void ShowRequestAutocompleteDialog(
@@ -317,6 +319,10 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
     return request_autocomplete_dialog_open_;
   }
 
+  void set_should_autoclick_bubble(bool should_autoclick_bubble) {
+    should_autoclick_bubble_ = should_autoclick_bubble;
+  }
+
   bool AutocheckoutStepExistsWithStatus(
       AutocheckoutStepType step_type,
       AutocheckoutStepStatus step_status) const {
@@ -326,9 +332,20 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   }
 
  private:
+  // Whether or not ShowRequestAutocompleteDialog method has been called.
   bool request_autocomplete_dialog_open_;
+
+  // Whether or not Autocheckout bubble is displayed to user.
   bool autocheckout_bubble_shown_;
+
+  // Whether or not to accept the Autocheckout bubble when offered.
+  bool should_autoclick_bubble_;
+
+  // User specified data that would be returned to AutocheckoutManager when
+  // dialog is accepted.
   scoped_ptr<FormStructure> user_supplied_data_;
+
+  // Step status of various Autocheckout steps in this checkout flow.
   std::map<AutocheckoutStepType, AutocheckoutStepStatus> autocheckout_steps_;
 };
 
@@ -367,10 +384,19 @@ class TestAutocheckoutManager: public AutocheckoutManager {
   const MockAutofillMetrics& metric_logger() const {
     return static_cast<const MockAutofillMetrics&>(
        AutocheckoutManager::metric_logger());
-   }
+  }
+
+  virtual void MaybeShowAutocheckoutBubble(
+      const GURL& frame_url,
+      const gfx::RectF& bounding_box) OVERRIDE {
+    AutocheckoutManager::MaybeShowAutocheckoutBubble(frame_url,
+                                                     bounding_box);
+    // Needed for AutocheckoutManager to post task on IO thread.
+    content::RunAllPendingInMessageLoop(BrowserThread::IO);
+  }
 
   using AutocheckoutManager::in_autocheckout_flow;
-  using AutocheckoutManager::autocheckout_offered;
+  using AutocheckoutManager::should_show_bubble;
   using AutocheckoutManager::MaybeShowAutocheckoutDialog;
   using AutocheckoutManager::ReturnAutocheckoutData;
 };
@@ -442,7 +468,9 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(autocheckout_manager_->metric_logger(),
                 LogAutocheckoutBuyFlowMetric(
                     AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED)).Times(1);
-    autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url, true);
+    autocheckout_manager_->MaybeShowAutocheckoutDialog(
+        frame_url,
+        AUTOCHECKOUT_BUBBLE_ACCEPTED);
     CheckFillFormsAndClickIpc();
     EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
     EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
@@ -543,12 +571,11 @@ TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {
                   AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
-  content::RunAllPendingInMessageLoop(BrowserThread::IO);
 
-  EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
+  EXPECT_FALSE(autocheckout_manager_->should_show_bubble());
   // OnFormsSeen resets whether or not the bubble was shown.
   autocheckout_manager_->OnFormsSeen();
-  EXPECT_FALSE(autocheckout_manager_->autocheckout_offered());
+  EXPECT_TRUE(autocheckout_manager_->should_show_bubble());
 }
 
 TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingAdvance) {
@@ -610,8 +637,7 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   // MaybeShowAutocheckoutBubble shows bubble if it has not been shown.
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
-  content::RunAllPendingInMessageLoop(BrowserThread::IO);
-  EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
+  EXPECT_FALSE(autocheckout_manager_->should_show_bubble());
   EXPECT_TRUE(autofill_manager_delegate_->autocheckout_bubble_shown());
 
   // Reset |autofill_manager_delegate_|.
@@ -621,8 +647,7 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   // MaybeShowAutocheckoutBubble does nothing if the bubble was already shown
   // for the current page.
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
-  content::RunAllPendingInMessageLoop(BrowserThread::IO);
-  EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
+  EXPECT_FALSE(autocheckout_manager_->should_show_bubble());
   EXPECT_FALSE(autofill_manager_delegate_->autocheckout_bubble_shown());
   EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
@@ -791,7 +816,9 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBuyFlowMetric(
                   AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
-  autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url, true);
+  autocheckout_manager_->MaybeShowAutocheckoutDialog(
+      frame_url,
+      AUTOCHECKOUT_BUBBLE_ACCEPTED);
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
@@ -804,6 +831,38 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
   EXPECT_TRUE(autofill_manager_delegate_
       ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
                                          AUTOCHECKOUT_STEP_COMPLETED));
+}
+
+TEST_F(AutocheckoutManagerTest, CancelAutocheckoutDialog) {
+  GURL frame_url;
+  gfx::RectF bounding_box;
+  autofill_manager_delegate_->set_should_autoclick_bubble(false);
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+  EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+  EXPECT_FALSE(autocheckout_manager_->is_autocheckout_bubble_showing());
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBubbleMetric(
+                  AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
+
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
+  EXPECT_TRUE(autocheckout_manager_->is_autocheckout_bubble_showing());
+  autocheckout_manager_->MaybeShowAutocheckoutDialog(
+      frame_url,
+      AUTOCHECKOUT_BUBBLE_IGNORED);
+  EXPECT_FALSE(autocheckout_manager_->is_autocheckout_bubble_showing());
+  EXPECT_TRUE(autocheckout_manager_->should_show_bubble());
+
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
+  EXPECT_TRUE(autocheckout_manager_->is_autocheckout_bubble_showing());
+  autocheckout_manager_->MaybeShowAutocheckoutDialog(
+      frame_url,
+      AUTOCHECKOUT_BUBBLE_CANCELED);
+  EXPECT_FALSE(autocheckout_manager_->is_autocheckout_bubble_showing());
+  EXPECT_FALSE(autocheckout_manager_->should_show_bubble());
+
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url, bounding_box);
+  EXPECT_FALSE(autocheckout_manager_->is_autocheckout_bubble_showing());
 }
 
 }  // namespace autofill

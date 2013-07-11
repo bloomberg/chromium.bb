@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/content/browser/autocheckout_statistic.h"
+#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 #include "components/autofill/core/common/autocheckout_status.h"
 
 class GURL;
@@ -70,6 +71,10 @@ class AutocheckoutManager {
   virtual void MaybeShowAutocheckoutBubble(const GURL& frame_url,
                                            const gfx::RectF& bounding_box);
 
+  void set_should_show_bubble(bool should_show_bubble) {
+    should_show_bubble_ = should_show_bubble;
+  }
+
   bool is_autocheckout_bubble_showing() const {
     return is_autocheckout_bubble_showing_;
   }
@@ -79,12 +84,13 @@ class AutocheckoutManager {
   bool in_autocheckout_flow() const { return in_autocheckout_flow_; }
 
   // Exposed for testing.
-  bool autocheckout_offered() const { return autocheckout_offered_; }
+  bool should_show_bubble() const { return should_show_bubble_; }
 
-  // Show the requestAutocomplete dialog if |show_dialog| is true. Also, does
-  // bookkeeping for whether or not the bubble is showing.
+  // Show the requestAutocomplete dialog if |state| is
+  // AUTOCHECKOUT_BUBBLE_ACCEPTED. Also, does bookkeeping for whether or not
+  // the bubble is showing.
   virtual void MaybeShowAutocheckoutDialog(const GURL& frame_url,
-                                           bool show_dialog);
+                                           AutocheckoutBubbleState state);
 
   // Callback called from AutofillDialogController on filling up the UI form.
   void ReturnAutocheckoutData(const FormStructure* result,
@@ -141,10 +147,8 @@ class AutocheckoutManager {
 
   scoped_ptr<AutofillMetrics> metric_logger_;
 
-  // Whether or not the Autocheckout bubble has been displayed to the user for
-  // the current forms. Ensures the Autocheckout bubble is only shown to a
-  // user once per pageview.
-  bool autocheckout_offered_;
+  // Whether or not the Autocheckout bubble should be shown to user.
+  bool should_show_bubble_;
 
   // Whether or not the Autocheckout bubble is being displayed to the user.
   bool is_autocheckout_bubble_showing_;

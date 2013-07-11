@@ -18,7 +18,7 @@ AutocheckoutBubbleController::AutocheckoutBubbleController(
     const gfx::RectF& anchor_rect,
     const gfx::NativeWindow& native_window,
     bool is_google_user,
-    const base::Callback<void(bool)>& callback)
+    const base::Callback<void(AutocheckoutBubbleState)>& callback)
     : anchor_rect_(gfx::ToEnclosingRect(anchor_rect)),
       native_window_(native_window),
       is_google_user_(is_google_user),
@@ -65,14 +65,14 @@ gfx::Image AutocheckoutBubbleController::PressedImage() {
 void AutocheckoutBubbleController::BubbleAccepted() {
   had_user_interaction_ = true;
   metric_logger_->LogAutocheckoutBubbleMetric(AutofillMetrics::BUBBLE_ACCEPTED);
-  callback_.Run(true);
+  callback_.Run(AUTOCHECKOUT_BUBBLE_ACCEPTED);
 }
 
 void AutocheckoutBubbleController::BubbleCanceled() {
   had_user_interaction_ = true;
   metric_logger_->LogAutocheckoutBubbleMetric(
       AutofillMetrics::BUBBLE_DISMISSED);
-  callback_.Run(false);
+  callback_.Run(AUTOCHECKOUT_BUBBLE_CANCELED);
 }
 
 void AutocheckoutBubbleController::BubbleCreated() const {
@@ -83,7 +83,7 @@ void AutocheckoutBubbleController::BubbleDestroyed() const {
   if (!had_user_interaction_) {
     metric_logger_->LogAutocheckoutBubbleMetric(
         AutofillMetrics::BUBBLE_IGNORED);
-    callback_.Run(false);
+    callback_.Run(AUTOCHECKOUT_BUBBLE_IGNORED);
   }
 }
 

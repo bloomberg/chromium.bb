@@ -26,7 +26,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/ssl_status.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -154,7 +153,7 @@ const char kTransactionIdNotSet[] = "transaction id not set";
 AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
     : autofill_manager_(autofill_manager),
       metric_logger_(new AutofillMetrics),
-      autocheckout_offered_(false),
+      should_show_bubble_(true),
       is_autocheckout_bubble_showing_(false),
       in_autocheckout_flow_(false),
       google_transaction_id_(kTransactionIdNotSet),
@@ -288,7 +287,7 @@ void AutocheckoutManager::OnLoadedPageMetaData(
 }
 
 void AutocheckoutManager::OnFormsSeen() {
-  autocheckout_offered_ = false;
+  should_show_bubble_ = true;
 }
 
 bool AutocheckoutManager::ShouldIgnoreAjax() {
@@ -298,7 +297,7 @@ bool AutocheckoutManager::ShouldIgnoreAjax() {
 void AutocheckoutManager::MaybeShowAutocheckoutBubble(
     const GURL& frame_url,
     const gfx::RectF& bounding_box) {
-  if (autocheckout_offered_ ||
+  if (!should_show_bubble_ ||
       is_autocheckout_bubble_showing_ ||
       !IsStartOfAutofillableFlow())
     return;
@@ -397,9 +396,14 @@ void AutocheckoutManager::set_metric_logger(
 
 void AutocheckoutManager::MaybeShowAutocheckoutDialog(
     const GURL& frame_url,
-    bool show_dialog) {
+    AutocheckoutBubbleState state) {
   is_autocheckout_bubble_showing_ = false;
-  if (!show_dialog)
+
+  // User has taken action on the bubble, don't offer bubble again.
+  if (state != AUTOCHECKOUT_BUBBLE_IGNORED)
+    should_show_bubble_ = false;
+
+  if (state != AUTOCHECKOUT_BUBBLE_ACCEPTED)
     return;
 
   base::Callback<void(const FormStructure*, const std::string&)> callback =
@@ -425,7 +429,7 @@ void AutocheckoutManager::ShowAutocheckoutBubble(
     const std::string& cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::Callback<void(bool)> callback = base::Bind(
+  base::Callback<void(AutocheckoutBubbleState)> callback = base::Bind(
       &AutocheckoutManager::MaybeShowAutocheckoutDialog,
       weak_ptr_factory_.GetWeakPtr(),
       frame_url);
@@ -434,7 +438,6 @@ void AutocheckoutManager::ShowAutocheckoutBubble(
       cookies.find("LSID") != std::string::npos,
       callback);
   is_autocheckout_bubble_showing_ = true;
-  autocheckout_offered_ = true;
 }
 
 bool AutocheckoutManager::IsStartOfAutofillableFlow() const {

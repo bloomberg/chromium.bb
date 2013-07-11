@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/content/browser/autocheckout_steps.h"
+#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 
 namespace content {
 struct PasswordForm;
@@ -99,7 +100,7 @@ class AutofillManagerDelegate {
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
       bool is_google_user,
-      const base::Callback<void(bool)>& callback) = 0;
+      const base::Callback<void(AutocheckoutBubbleState)>& callback) = 0;
 
   // Causes the dialog for request autocomplete feature to be shown.
   virtual void ShowRequestAutocompleteDialog(

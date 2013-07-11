@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/content/browser/autocheckout_steps.h"
+#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -52,7 +53,7 @@ class TabAutofillManagerDelegate
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       bool is_google_user,
-      const base::Callback<void(bool)>& callback) OVERRIDE;
+      const base::Callback<void(AutocheckoutBubbleState)>& callback) OVERRIDE;
   virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,

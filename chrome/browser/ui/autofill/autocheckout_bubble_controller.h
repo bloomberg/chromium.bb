@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -30,10 +31,11 @@ class AutocheckoutBubbleController {
   // been logged into accounts.google.com. |callback| is invoked if the bubble
   // is accepted. It brings up the requestAutocomplete dialog to collect user
   // input for Autocheckout.
-  AutocheckoutBubbleController(const gfx::RectF& anchor_rect,
-                               const gfx::NativeWindow& native_window,
-                               bool  is_google_user,
-                               const base::Callback<void(bool)>& callback);
+  AutocheckoutBubbleController(
+      const gfx::RectF& anchor_rect,
+      const gfx::NativeWindow& native_window,
+      bool  is_google_user,
+      const base::Callback<void(AutocheckoutBubbleState)>& callback);
   ~AutocheckoutBubbleController();
 
   static base::string16 AcceptText();
@@ -75,7 +77,7 @@ class AutocheckoutBubbleController {
   bool is_google_user_;
 
   // |callback_| is invoked if the bubble is accepted.
-  base::Callback<void(bool)> callback_;
+  base::Callback<void(AutocheckoutBubbleState)> callback_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

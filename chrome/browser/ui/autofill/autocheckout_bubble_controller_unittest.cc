@@ -35,8 +35,8 @@ class TestCallback {
   TestCallback() : accepted_count_(0), dismissed_count_(0) {}
   ~TestCallback() {}
 
-  void Run(bool accepted) {
-    if (accepted)
+  void Run(AutocheckoutBubbleState state) {
+    if (state == AUTOCHECKOUT_BUBBLE_ACCEPTED)
       accepted_count_++;
     else
       dismissed_count_++;
@@ -50,7 +50,7 @@ class TestCallback {
     return dismissed_count_;
   }
 
-  base::Callback<void(bool)> GetCallback() {
+  base::Callback<void(AutocheckoutBubbleState)> GetCallback() {
     return base::Bind(&TestCallback::Run, base::Unretained(this));
   }
 
@@ -63,7 +63,7 @@ class TestAutocheckoutBubbleController :
   public autofill::AutocheckoutBubbleController {
  public:
   explicit TestAutocheckoutBubbleController(
-      const base::Callback<void(bool)>& callback)
+      const base::Callback<void(AutocheckoutBubbleState)>& callback)
       : AutocheckoutBubbleController(gfx::RectF(),
                                      gfx::NativeWindow(),
                                      true /* is_google_user */,

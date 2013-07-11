@@ -3128,9 +3128,9 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       bool is_google_user,
-      const base::Callback<void(bool)>& callback) OVERRIDE {
+      const base::Callback<void(AutocheckoutBubbleState)>& callback) OVERRIDE {
     autocheckout_bubble_shown_ = true;
-    callback.Run(true);
+    callback.Run(AUTOCHECKOUT_BUBBLE_ACCEPTED);
   }
 
   virtual void ShowRequestAutocompleteDialog(

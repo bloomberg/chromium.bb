@@ -378,6 +378,7 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
     return;
 
   if (!user_did_type_) {
+    autocheckout_manager_.set_should_show_bubble(false);
     user_did_type_ = true;
     metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_TYPE);
   }

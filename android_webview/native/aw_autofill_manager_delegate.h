@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service_builder.h"
+#include "components/autofill/core/browser/autocheckout_bubble_state.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -75,7 +76,8 @@ class AwAutofillManagerDelegate
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       bool is_google_user,
-      const base::Callback<void(bool)>& callback) OVERRIDE;
+      const base::Callback<void(
+          autofill::AutocheckoutBubbleState)>& callback) OVERRIDE;
   virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const autofill::FormData& form,
