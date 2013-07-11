@@ -89,6 +89,26 @@ struct nacl_irt_filename {
 
 #define NACL_IRT_MEMORY_v0_1    "nacl-irt-memory-0.1"
 struct nacl_irt_memory_v0_1 {
+  /*
+   * sysbrk() allocates memory from the "brk" heap.  This function is
+   * deprecated; new programs should use mmap() instead.
+   *
+   * If |*newbrk| is NULL, sysbrk() sets |*newbrk| to the current
+   * break pointer and returns 0.
+   *
+   * If |*newbrk| is non-NULL and greater than the current break
+   * pointer, sysbrk() tries to allocate this memory.  If the
+   * allocation fails, it returns ENOMEM.  Otherwise, sysbrk():
+   *  * ensures the memory between the break pointer and |*newbrk| is
+   *    readable and writable, and zeroes it;
+   *  * sets the current break pointer to |*newbrk|; and
+   *  * returns 0 to indicate success.
+   *
+   * If |*newbrk| is non-NULL and less than the current break pointer,
+   * sysbrk() deallocates this memory.  sysbrk() sets the break
+   * pointer to |*newbrk| and returns 0.  If |*newbrk| is less than
+   * the process's initial break pointer, the behaviour is undefined.
+   */
   int (*sysbrk)(void **newbrk);
   /* Note: this version of mmap silently ignores PROT_EXEC bit.  */
   int (*mmap)(void **addr, size_t len, int prot, int flags, int fd, off_t off);

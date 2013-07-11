@@ -3027,6 +3027,7 @@ irt_only_tests = [
     'tests/irt/nacl.scons',
     'tests/irt_compatibility/nacl.scons',
     'tests/random/nacl.scons',
+    'tests/sbrk/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
     'tests/untrusted_minidump/nacl.scons',
     ]
@@ -3090,7 +3091,6 @@ irt_variant_tests = [
     'tests/pnacl_abi/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
-    'tests/sbrk/nacl.scons',
     'tests/sel_ldr/nacl.scons',
     'tests/sel_ldr_seccomp/nacl.scons',
     'tests/sel_main_chrome/nacl.scons',

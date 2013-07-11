@@ -10,51 +10,68 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "native_client/src/include/nacl_assert.h"
+#include "native_client/src/untrusted/irt/irt.h"
+
+/*
+ * This test checks that memory allocated via sysbrk() is zeroed, even
+ * if it was previously allocated and deallocated.
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2417
+ *
+ * sysbrk() is deprecated, so we test the IRT interface directly
+ * rather than testing any libc wrappers for it.
+ */
+
+static struct nacl_irt_memory irt_memory;
+
+static void *get_break(void) {
+  void *addr = NULL;
+  int rc = irt_memory.sysbrk(&addr);
+  ASSERT_EQ(rc, 0);
+  ASSERT_NE(addr, NULL);
+  return addr;
+}
+
+static void set_break(void *new_addr) {
+  void *addr_copy = new_addr;
+  int rc = irt_memory.sysbrk(&addr_copy);
+  ASSERT_EQ(rc, 0);
+  /* Check that sysbrk() does not modify the value in the success case. */
+  ASSERT_EQ(addr_copy, new_addr);
+}
+
 #define NUM_WORDS 512
 
 int main(void) {
-  void      *brk;
-  uintptr_t brk_addr;
-  int       *aligned;
   size_t    ix;
   int       status;
 
-  fprintf(stderr, "sbrk test\n");
-  brk = sbrk(0);
-  brk_addr = (uintptr_t) brk;
-  fprintf(stderr, "break at 0x%04x\n", brk_addr);
-  if (0 != (brk_addr & 0x3)) {
-    intptr_t incr = (sizeof aligned) - (brk_addr & ((sizeof aligned) - 1));
+  size_t query_result = nacl_interface_query(NACL_IRT_MEMORY_v0_2,
+                                             &irt_memory, sizeof(irt_memory));
+  ASSERT_EQ(query_result, sizeof(irt_memory));
 
-    fprintf(stderr, "break not word aligned, asking for %d more bytes\n",
-            (int) incr);
-    brk = sbrk(incr);
-    if (NULL == brk) {
-      fprintf(stderr, "sbrk for alignment failed\n");
-      return 1;
-    }
-  }
-  brk = sbrk(NUM_WORDS * sizeof *aligned);
-  brk_addr = (uintptr_t) brk;
-  fprintf(stderr, "allocated memory at 0x%04x\n", brk_addr);
-  aligned = (int *) brk;
+  /* Find the current break pointer. */
+  int *alloc_start = get_break();
+  fprintf(stderr, "initial break is at %p\n", (void *) alloc_start);
 
+  /* We expect that the initial break pointer is word-aligned. */
+  ASSERT_EQ((uintptr_t) alloc_start & 3, 0);
+
+  /* Allocate some memory and fill it with data. */
+  void *alloc_end = alloc_start + NUM_WORDS;
+  set_break(alloc_end);
   for (ix = 0; ix < NUM_WORDS; ++ix) {
-    aligned[ix] = 0xdeadbeef;
+    alloc_start[ix] = 0xdeadbeef;
   }
-  if ((void *) -1 == sbrk(-NUM_WORDS * (intptr_t) sizeof *aligned)) {
-    fprintf(stderr, "freeing memory failed\n");
-    return 2;
-  }
-  brk = sbrk(NUM_WORDS * sizeof *aligned);
-  brk_addr = (uintptr_t) brk;
-  fprintf(stderr, "break at 0x%04x\n", brk_addr);
-  aligned = (int *) brk;
+  /* Deallocate the memory. */
+  set_break(alloc_start);
+  /* Allocate the memory again.  The contents should have been zeroed. */
+  set_break(alloc_end);
   status = 0;
   for (ix = 0; ix < NUM_WORDS; ++ix) {
-    if (0 != aligned[ix]) {
+    if (0 != alloc_start[ix]) {
       fprintf(stderr, "new memory word at %zd contains 0x%04x\n",
-              ix, aligned[ix]);
+              ix, alloc_start[ix]);
       status = 3;
     }
   }
