@@ -15,7 +15,7 @@ public class MostVisitedSites {
     private Profile mProfile;
 
     /**
-     * Interface for callback object for fetching most visisted urls.
+     * Interface for callback object for fetching most visited urls.
      */
     public interface MostVisitedURLsCallback {
         /**
@@ -34,7 +34,7 @@ public class MostVisitedSites {
          * Callback method for fetching thumbnail of a most visited URL.
          * Parameter may be null.
          *
-         * @param Bitmap thumbnail Bitmap.
+         * @param thumbnail The bitmap thumbnail for the requested URL.
          */
         @CalledByNative("ThumbnailCallback")
         public void onMostVisitedURLsThumbnailAvailable(Bitmap thumbnail);
@@ -64,7 +64,6 @@ public class MostVisitedSites {
      *
      * @param url String representation of url.
      * @param callback Instance of a callback object.
-     * @return Bitmap Thumbnail image for specified url.
      */
     public void getURLThumbnail(String url, ThumbnailCallback callback) {
         nativeGetURLThumbnail(mProfile, url, callback);
