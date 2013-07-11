@@ -38,7 +38,6 @@ typedef struct _GtkWidget GtkWidget;
 class InfoBarContainerGtk : public InfoBarContainer {
  public:
   InfoBarContainerGtk(InfoBarContainer::Delegate* delegate,
-                      SearchModel* search_model,
                       Profile* profile);
   virtual ~InfoBarContainerGtk();
 

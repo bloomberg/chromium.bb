@@ -1663,9 +1663,7 @@ void BrowserWindowGtk::InitWidgets() {
     gtk_widget_show(toolbar_border_);
 
   infobar_container_.reset(
-      new InfoBarContainerGtk(this,
-                              browser_->search_model(),
-                              browser_->profile()));
+      new InfoBarContainerGtk(this, browser_->profile()));
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
                      infobar_container_->widget(),
                      FALSE, FALSE, 0);

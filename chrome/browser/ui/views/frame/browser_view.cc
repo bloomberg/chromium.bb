@@ -1973,8 +1973,7 @@ void BrowserView::InitViews() {
 
   LoadAccelerators();
 
-  infobar_container_ = new InfoBarContainerView(this,
-                                                browser()->search_model());
+  infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);
 
   contents_web_view_ = new views::WebView(browser_->profile());

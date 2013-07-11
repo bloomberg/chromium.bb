@@ -9,8 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/search/search_model_observer.h"
-#include "chrome/common/search_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -18,7 +16,6 @@
 class InfoBar;
 class InfoBarDelegate;
 class InfoBarService;
-class SearchModel;
 
 // InfoBarContainer is a cross-platform base class to handle the visibility-
 // related aspects of InfoBars.  While InfoBars own themselves, the
@@ -27,24 +24,7 @@ class SearchModel;
 //
 // Platforms need to subclass this to implement a few platform-specific
 // functions, which are pure virtual here.
-//
-// This class also observes changes to the SearchModel modes.  It hides infobars
-// temporarily if the user changes into |SEARCH_SUGGESTIONS| mode (refer to
-// SearchMode in chrome/common/search_types.h for all search modes)
-// when on a :
-// - |DEFAULT| page: when Instant overlay is ready;
-// - |NTP| or |SEARCH_RESULTS| page: immediately;
-//   TODO(kuan): this scenario requires more complex synchronization with
-//   renderer SearchBoxAPI and will be implemented as the next step;
-//   for now, hiding is immediate.
-// When the user changes back out of |SEARCH_SUGGESTIONS| mode, it reshows any
-// infobars, and starts a 50 ms window during which any attempts to re-hide any
-// infobars are handled without animation.  This prevents glitchy-looking
-// behavior when the user navigates following a mode change, which otherwise
-// would re-show the infobars only to instantly animate them closed.  The window
-// to re-hide infobars without animation is canceled if a tab change occurs.
-class InfoBarContainer : public content::NotificationObserver,
-                         public SearchModelObserver {
+class InfoBarContainer : public content::NotificationObserver {
  public:
   class Delegate {
    public:
@@ -63,9 +43,7 @@ class InfoBarContainer : public content::NotificationObserver,
     virtual ~Delegate();
   };
 
-  // |search_model| may be NULL if this class is used in a window that does not
-  // support Instant Extended.
-  InfoBarContainer(Delegate* delegate, SearchModel* search_model);
+  explicit InfoBarContainer(Delegate* delegate);
   virtual ~InfoBarContainer();
 
   // Changes the InfoBarService for which this container is showing infobars.
@@ -124,17 +102,12 @@ class InfoBarContainer : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // SearchModelObserver:
-  virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) OVERRIDE;
-
   // Hides an InfoBar for the specified delegate, in response to a notification
   // from the selected InfoBarService.  The InfoBar's disappearance will be
-  // animated if |use_animation| is true and it has been more than 50ms since
-  // infobars were reshown due to an Instant Extended mode change. The InfoBar
-  // will call back to RemoveInfoBar() to remove itself once it's hidden (which
-  // may mean synchronously).  Returns the position within |infobars_| the
-  // infobar was previously at.
+  // animated if |use_animation| is true. The InfoBar will call back to
+  // RemoveInfoBar() to remove itself once it's hidden (which may mean
+  // synchronously).  Returns the position within |infobars_| the infobar was
+  // previously at.
   size_t HideInfoBar(InfoBarDelegate* delegate, bool use_animation);
 
   // Hides all infobars in this container without animation.
@@ -162,17 +135,6 @@ class InfoBarContainer : public content::NotificationObserver,
   Delegate* delegate_;
   InfoBarService* infobar_service_;
   InfoBars infobars_;
-
-  // Tracks whether infobars in the container are shown or hidden.
-  bool infobars_shown_;
-
-  // Tracks the most recent time infobars were re-shown after being hidden due
-  // to Instant Extended's ModeChanged.
-  base::TimeTicks infobars_shown_time_;
-
-  // Tracks which search mode is active, as well as mode changes, for Instant
-  // Extended.
-  SearchModel* search_model_;
 
   // Calculated in SetMaxTopArrowHeight().
   int top_arrow_target_height_;

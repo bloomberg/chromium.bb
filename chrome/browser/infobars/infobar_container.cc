@@ -15,8 +15,6 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/search/instant_overlay_model.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -25,42 +23,21 @@
 InfoBarContainer::Delegate::~Delegate() {
 }
 
-InfoBarContainer::InfoBarContainer(Delegate* delegate,
-                                   SearchModel* search_model)
+InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
       infobar_service_(NULL),
-      infobars_shown_(true),
-      search_model_(search_model),
       top_arrow_target_height_(InfoBar::kDefaultArrowTargetHeight) {
-  if (search_model_)
-    search_model_->AddObserver(this);
 }
 
 InfoBarContainer::~InfoBarContainer() {
   // RemoveAllInfoBarsForDestruction() should have already cleared our infobars.
   DCHECK(infobars_.empty());
-  if (search_model_)
-    search_model_->RemoveObserver(this);
 }
 
 void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
-  // We have to call HideAllInfoBars() here and not after the early exit below,
-  // to handle the case we're switching from a tab with visible infobars to one
-  // where the SearchModel directs us to hide infobars.
   HideAllInfoBars();
 
   infobar_service_ = infobar_service;
-
-  if (search_model_ && !search_model_->top_bars_visible())
-    return;
-
-  // Note that HideAllInfoBars() sets |infobars_shown_| to false, because that's
-  // what the other, Instant-related callers want; but here we actually
-  // explicitly want to reset this variable to true.  So do that after calling
-  // the function.
-  infobars_shown_ = true;
-  infobars_shown_time_ = base::TimeTicks();
-
   if (infobar_service_) {
     content::Source<InfoBarService> source(infobar_service_);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
@@ -143,9 +120,6 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
 void InfoBarContainer::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  // When infobars are hidden, we shouldn't be listening for notifications.
-  DCHECK(infobars_shown_);
-
   switch (type) {
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
@@ -175,26 +149,8 @@ void InfoBarContainer::Observe(int type,
   }
 }
 
-void InfoBarContainer::ModelChanged(const SearchModel::State& old_state,
-                                    const SearchModel::State& new_state) {
-  if (!SearchModel::ShouldChangeTopBarsVisibility(old_state, new_state))
-    return;
-
-  if (new_state.top_bars_visible && !infobars_shown_) {
-    ChangeInfoBarService(infobar_service_);
-    infobars_shown_time_ = base::TimeTicks::Now();
-  } else if (!new_state.top_bars_visible && infobars_shown_) {
-    HideAllInfoBars();
-    OnInfoBarStateChanged(false);
-  }
-}
-
 size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
                                      bool use_animation) {
-  bool should_animate = use_animation &&
-      ((base::TimeTicks::Now() - infobars_shown_time_) >
-          base::TimeDelta::FromMilliseconds(50));
-
   // Search for the infobar associated with |delegate|.  We cannot search for
   // |delegate| in |tab_helper_|, because an InfoBar remains alive until its
   // close animation completes, while the delegate is removed from the tab
@@ -205,7 +161,7 @@ size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
       size_t position = i - infobars_.begin();
       // We merely need hide the infobar; it will call back to RemoveInfoBar()
       // itself once it's hidden.
-      infobar->Hide(should_animate);
+      infobar->Hide(use_animation);
       infobar->CloseSoon();
       UpdateInfoBarArrowTargetHeights();
       return position;
@@ -218,7 +174,6 @@ size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
 void InfoBarContainer::HideAllInfoBars() {
   registrar_.RemoveAll();
 
-  infobars_shown_ = false;
   while (!infobars_.empty()) {
     InfoBar* infobar = infobars_.front();
     // Inform the infobar that it's hidden.  If it was already closing, this

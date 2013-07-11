@@ -443,7 +443,6 @@ Browser::Browser(const CreateParams& params)
   }
 
   fullscreen_controller_.reset(new FullscreenController(this));
-  search_model_->AddObserver(this);
 }
 
 Browser::~Browser() {
@@ -451,7 +450,6 @@ Browser::~Browser() {
   if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers())
     DCHECK(tab_strip_model_->empty());
 
-  search_model_->RemoveObserver(this);
   tab_strip_model_->RemoveObserver(this);
 
   // Destroy the BrowserCommandController before removing the browser, so that
@@ -1812,12 +1810,6 @@ void Browser::Observe(int type,
   }
 }
 
-void Browser::ModelChanged(const SearchModel::State& old_state,
-                           const SearchModel::State& new_state) {
-  if (SearchModel::ShouldChangeTopBarsVisibility(old_state, new_state))
-    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):
 
@@ -2125,27 +2117,6 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
     else
       state = BookmarkBar::HIDDEN;
   }
-
-  // Bookmark bar may need to be hidden for |SEARCH_SUGGESTIONS| and
-  // |SEARCH_RESULTS| modes as per SearchBox API or Instant overlay or if it's
-  // detached when origin is not |NTP|.
-  // TODO(sail): remove conditional MACOSX flag when bookmark bar is actually
-  // hidden on mac; for now, mac keeps the bookmark bar shown but changes its
-  // z-order to stack it below contents.
-#if !defined(OS_MACOSX)
-  if (search_model_->mode().is_search() &&
-      ((state == BookmarkBar::DETACHED &&
-        !search_model_->mode().is_origin_ntp()) ||
-      !search_model_->top_bars_visible())) {
-    state = BookmarkBar::HIDDEN;
-  }
-#else
-  // TODO(sail): remove this when the above block is enabled for mac.
-  if (state == BookmarkBar::DETACHED && search_model_->mode().is_search() &&
-      !search_model_->mode().is_origin_ntp()) {
-    state = BookmarkBar::HIDDEN;
-  }
-#endif  // !defined(OS_MACOSX)
 
   if (state == bookmark_bar_state_)
     return;

@@ -35,19 +35,6 @@ SearchModel::SearchModel() {
 SearchModel::~SearchModel() {
 }
 
-// static.
-bool SearchModel::ShouldChangeTopBarsVisibility(const State& old_state,
-                                                const State& new_state) {
-  // If mode has changed, only change top bars visibility if new mode is not
-  // |SEARCH_SUGGESTIONS| or |SEARCH_RESULTS|.  Top bars visibility for
-  // these 2 modes is determined when the mode stays the same, and:
-  // - for |NTP/SERP| pages: by SearchBox API, or
-  // - for |DEFAULT| pages: by platform-specific implementation of
-  //   |InstantOverlayController| when it shows/hides the Instant overlay.
-  return old_state.mode != new_state.mode ?
-      !new_state.mode.is_search() : new_state.mode.is_search();
-}
-
 void SearchModel::SetState(const State& new_state) {
   DCHECK(chrome::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "

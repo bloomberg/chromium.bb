@@ -167,7 +167,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
         new OverlayContainer(NULL, immersive_mode_controller_.get());
     root_view_->AddChildView(overlay_container_);
 
-    infobar_container_ = new InfoBarContainerView(NULL, NULL);
+    infobar_container_ = new InfoBarContainerView(NULL);
     root_view_->AddChildView(infobar_container_);
 
     contents_split_ = new MockView(gfx::Size(800, 600));

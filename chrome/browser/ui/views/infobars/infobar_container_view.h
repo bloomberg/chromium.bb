@@ -14,8 +14,7 @@ class InfoBarContainerView : public views::AccessiblePaneView,
  public:
   static const char kViewClassName[];
 
-  explicit InfoBarContainerView(Delegate* delegate,
-                                SearchModel* search_model);
+  explicit InfoBarContainerView(Delegate* delegate);
   virtual ~InfoBarContainerView();
 
  private:

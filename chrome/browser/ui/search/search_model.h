@@ -47,11 +47,6 @@ class SearchModel {
   SearchModel();
   ~SearchModel();
 
-  // Returns true if visibility in top bars should be changed based on
-  // |old_state| and |new_state|.
-  static bool ShouldChangeTopBarsVisibility(const State& old_state,
-                                            const State& new_state);
-
   // Change the state.  Change notifications are sent to observers.
   void SetState(const State& state);
 
