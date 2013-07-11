@@ -39,6 +39,6 @@ chrome.tabs.onSelectionChanged.addListener(function(tabId, info) {
 });
 
 // Ensure the current selected tab is set up.
-chrome.tabs.getSelected(null, function(tab) {
-  updateAddress(tab.id);
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+  updateAddress(tabs[0].id);
 });

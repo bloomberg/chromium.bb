@@ -16,10 +16,10 @@ function setChildTextNode(elementId, text) {
 function testRequest() {
   setChildTextNode("resultsRequest", "running...");
 
-  chrome.tabs.getSelected(null, function(tab) {
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     var timer = new chrome.Interval();
     timer.start();
-
+    var tab = tabs[0];
     chrome.tabs.sendRequest(tab.id, {counter: 1}, function handler(response) {
       if (response.counter < 1000) {
         chrome.tabs.sendRequest(tab.id, {counter: response.counter}, handler);
@@ -36,11 +36,11 @@ function testRequest() {
 function testConnect() {
   setChildTextNode("resultsConnect", "running...");
 
-  chrome.tabs.getSelected(null, function(tab) {
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     var timer = new chrome.Interval();
     timer.start();
 
-    var port = chrome.tabs.connect(tab.id);
+    var port = chrome.tabs.connect(tabs[0].id);
     port.postMessage({counter: 1});
     port.onMessage.addListener(function getResp(response) {
       if (response.counter < 1000) {

@@ -96,31 +96,30 @@ function nextBenchmark() {
   return benchmarks[benchmarkIndex];
 }
 
-function show_options() {
-  chrome.tabs.getSelected(null, function(tab) {
-    if (window.testUrl == "") {
-      window.testUrl = tab.url;
+function show_options(tabs) {
+  var tab = tabs[0];
+  if (window.testUrl == "") {
+    window.testUrl = tab.url;
+  }
+  var tabs = chrome.extension.getViews({"type": "tab"});
+  if (tabs && tabs.length) {
+    // To avoid "Uncaught TypeError: Object Window has no method
+    // 'setUrl' ". Sometimes tabs are not the desired extension tabs.
+    if (tabs[0].$suburl != undefined) {
+      tabs[0].setUrl(testUrl);
     }
-    var tabs = chrome.extension.getViews({"type": "tab"});
-    if (tabs && tabs.length) {
-      // To avoid "Uncaught TypeError: Object Window has no method
-      // 'setUrl' ". Sometimes tabs are not the desired extension tabs.
-      if (tabs[0].$suburl != undefined) {
-        tabs[0].setUrl(testUrl);
-      }
-      var optionsUrl = chrome.extension.getURL("options.html");
-      chrome.tabs.getAllInWindow(null, function(all) {
-        for (var i = 0; i < all.length; i++) {
-          if (all[i].url == optionsUrl) {
-            chrome.tabs.update(all[i].id, {selected: true});
-            return;
-          }
+    var optionsUrl = chrome.extension.getURL("options.html");
+    chrome.tabs.getAllInWindow(null, function(all) {
+      for (var i = 0; i < all.length; i++) {
+        if (all[i].url == optionsUrl) {
+          chrome.tabs.update(all[i].id, {selected: true});
+          return;
         }
-      });
-    } else {
-      chrome.tabs.create({"url":"options.html"});
-    }
-  });
+      }
+    });
+  } else {
+    chrome.tabs.create({"url":"options.html"});
+  }
 }
 
 chrome.browserAction.onClicked.addListener(show_options);
@@ -191,7 +190,7 @@ function Benchmark() {
     if (benchmarks.length == 0) {
       chrome.tabs.remove(benchmarkWindow.id);
       benchmarkWindow = 0;
-      show_options();
+      chrome.tabs.query({active: true, currentWindow: true}, show_options);
     }
   };
 

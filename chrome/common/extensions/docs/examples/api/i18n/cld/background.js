@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 var selectedId = -1;
 function refreshLanguage() {
@@ -22,7 +22,7 @@ chrome.tabs.onSelectionChanged.addListener(function(tabId, props) {
   refreshLanguage();
 });
 
-chrome.tabs.getSelected(null, function(tab) {
-  selectedId = tab.id;
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+  selectedId = tabs[0].id;
   refreshLanguage();
 });

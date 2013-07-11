@@ -290,12 +290,13 @@ function removeWindow(windowId) {
 }
 
 function refreshSelectedTab(windowId) {
-  chrome.tabs.getSelected(windowId, function(tab) {
-    var input = new JsExprContext(tab);
-    var output = document.getElementById('tab_' + tab.id);
+  chrome.tabs.query({active: true, currentWindow: true} function(tabs) {
+    var input = new JsExprContext(tabs[0]);
+    var output = document.getElementById('tab_' + tabs[0].id);
     jstProcess(input, output);
     appendToLog(
-        'selected tab refreshed -- tabId: ' + tab.id + ' url:' + tab.url);
+        'selected tab refreshed -- tabId: ' + tabs[0].id +
+        ' url:' + tabs[0].url);
   });
 }
 

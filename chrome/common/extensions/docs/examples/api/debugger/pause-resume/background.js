@@ -8,13 +8,7 @@ var version = "1.0";
 chrome.debugger.onEvent.addListener(onEvent);
 chrome.debugger.onDetach.addListener(onDetach);
 
-chrome.browserAction.onClicked.addListener(function() {
-  chrome.windows.getCurrent(function(win) {
-    chrome.tabs.getSelected(win.id, actionClicked);
-  });
-});
-
-function actionClicked(tab) {
+chrome.browserAction.onClicked.addListener(function(tab) {
   var tabId = tab.id;
   var debuggeeId = {tabId:tabId};
 
@@ -25,7 +19,7 @@ function actionClicked(tab) {
     chrome.debugger.attach(debuggeeId, version, onAttach.bind(null, debuggeeId));
   else if (attachedTabs[tabId])
     chrome.debugger.detach(debuggeeId, onDetach.bind(null, debuggeeId));
-}
+});
 
 function onAttach(debuggeeId) {
   if (chrome.runtime.lastError) {

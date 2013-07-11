@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.browserAction.onClicked.addListener(function() {
-  chrome.windows.getCurrent(function(win) {
-    chrome.tabs.getSelected(win.id, actionClicked);
-  });
+chrome.browserAction.onClicked.addListener(function(tab) {
+  chrome.debugger.attach({tabId:tab.id}, version,
+      onAttach.bind(null, tab.id));
 });
 
 var version = "1.0";
-
-function actionClicked(tab) {
-  chrome.debugger.attach({tabId:tab.id}, version, onAttach.bind(null, tab.id));
-}
 
 function onAttach(tabId) {
   if (chrome.runtime.lastError) {

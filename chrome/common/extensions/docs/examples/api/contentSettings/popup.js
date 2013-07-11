@@ -18,9 +18,10 @@ function settingChanged() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  chrome.tabs.getSelected(undefined, function(tab) {
-    incognito = tab.incognito;
-    url = tab.url;
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    var current = tabs[0];
+    incognito = current.incognito;
+    url = current.url;
     var types = ['cookies', 'images', 'javascript', 'plugins', 'popups',
                  'notifications'];
     types.forEach(function(type) {

@@ -10,8 +10,8 @@ chrome.tabs.onSelectionChanged.addListener(function(tabId) {
   chrome.pageAction.show(lastTabId);
 });
 
-chrome.tabs.getSelected(null, function(tab) {
-  lastTabId = tab.id;
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+  lastTabId = tabs[0].id;
   chrome.pageAction.show(lastTabId);
 });
 

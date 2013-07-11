@@ -5,9 +5,10 @@
 chrome.commands.onCommand.addListener(function(command) {
   if (command == "toggle-pin") {
     // Get the currently selected tab
-    chrome.tabs.getSelected(null, function(tab) {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       // Toggle the pinned status
-      chrome.tabs.update(tab.id, {'pinned': !tab.pinned});
+      var current = tabs[0]
+      chrome.tabs.update(current.id, {'pinned': !current.pinned});
     });
   }
 });
