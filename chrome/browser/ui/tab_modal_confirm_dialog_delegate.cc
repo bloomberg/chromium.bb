@@ -19,8 +19,6 @@ TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
     : close_delegate_(NULL),
       closing_(false) {
   NavigationController* controller = &web_contents->GetController();
-  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::Source<NavigationController>(controller));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
                  content::Source<NavigationController>(controller));
 }
@@ -67,10 +65,8 @@ void TabModalConfirmDialogDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // Close the dialog if we load a page (because the action might not apply to
-  // the same page anymore) or if the tab is closed.
-  if (type == content::NOTIFICATION_LOAD_START ||
-      type == chrome::NOTIFICATION_TAB_CLOSING) {
+  // Close the dialog if the tab is closed.
+  if (type == chrome::NOTIFICATION_TAB_CLOSING) {
     Cancel();
   } else {
     NOTREACHED();

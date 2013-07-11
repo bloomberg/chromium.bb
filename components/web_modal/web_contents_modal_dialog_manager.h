@@ -87,9 +87,6 @@ class WebContentsModalDialogManager
   void CloseAllDialogs();
 
   // Overridden from content::WebContentsObserver:
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 

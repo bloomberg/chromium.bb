@@ -74,16 +74,19 @@ void WebContentsModalDialogManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED);
+  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
+    if (child_dialogs_.empty())
+      return;
 
-  if (child_dialogs_.empty())
-    return;
-
-  bool visible = *content::Details<bool>(details).ptr();
-  if (visible)
-    native_manager_->ShowDialog(child_dialogs_.front());
-  else
-    native_manager_->HideDialog(child_dialogs_.front());
+    bool visible = *content::Details<bool>(details).ptr();
+    if (visible)
+      native_manager_->ShowDialog(child_dialogs_.front());
+    else
+      native_manager_->HideDialog(child_dialogs_.front());
+  } else if (type == content::NOTIFICATION_LOAD_START) {
+    if (!child_dialogs_.empty())
+      native_manager_->CloseDialog(child_dialogs_.front());
+  }
 }
 
 WebContentsModalDialogManager::WebContentsModalDialogManager(
@@ -93,6 +96,11 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
       native_manager_(CreateNativeManager(this)),
       closing_all_dialogs_(false) {
   DCHECK(native_manager_);
+  content::NavigationController* controller =
+      &GetWebContents()->GetController();
+  registrar_.Add(this,
+                 content::NOTIFICATION_LOAD_START,
+                 content::Source<content::NavigationController>(controller));
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
                  content::Source<content::WebContents>(web_contents));
@@ -121,16 +129,6 @@ void WebContentsModalDialogManager::CloseAllDialogs() {
     native_manager_->CloseDialog(child_dialogs_.front());
 
   closing_all_dialogs_ = false;
-}
-
-void WebContentsModalDialogManager::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  // Close constrained windows if necessary.
-  if (!net::registry_controlled_domains::SameDomainOrHost(
-          details.previous_url, details.entry->GetURL(),
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
-    CloseAllDialogs();
 }
 
 void WebContentsModalDialogManager::DidGetIgnoredUIEvent() {
