@@ -53,8 +53,8 @@ class ScriptExecutionContext;
 //  2. Pass the promise object of the holder to a JavaScript program
 //     (such as XMLHttpRequest return value).
 //  3. Detach the promise object if you no long need it.
-//  4. Call fullfill or reject when the operaion completes or
-//     the operaion fails respectively.
+//  4. Call fullfill or reject when the operation completes or
+//     the operation fails respectively.
 class ScriptPromiseResolver : public RefCounted<ScriptPromiseResolver> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
@@ -62,7 +62,7 @@ public:
     static PassRefPtr<ScriptPromiseResolver> create();
     ~ScriptPromiseResolver();
 
-    // Deatch the promise object and reject the resolver object with undefined.
+    // Detach the promise object and reject the resolver object with undefined.
     void detach();
 
     // Detach the promise object.
