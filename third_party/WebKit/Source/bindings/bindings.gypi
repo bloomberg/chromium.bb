@@ -30,6 +30,8 @@
             'v8/ExceptionStatePlaceholder.cpp',
             'v8/IDBBindingUtilities.cpp',
             'v8/IDBBindingUtilities.h',
+            'v8/NPObjectWrapper.cpp',
+            'v8/NPObjectWrapper.h',
             'v8/NPV8Object.cpp',
             'v8/NPV8Object.h',
             'v8/PageScriptDebugServer.cpp',

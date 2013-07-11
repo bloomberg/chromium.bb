@@ -85,7 +85,6 @@
             'TestNetscapePlugIn/Tests/GetURLWithJavaScriptURL.cpp',
             'TestNetscapePlugIn/Tests/GetURLWithJavaScriptURLDestroyingPlugin.cpp',
             'TestNetscapePlugIn/Tests/GetUserAgentWithNullNPPFromNPPNew.cpp',
-            'TestNetscapePlugIn/Tests/LeakWindowScriptableObject.cpp',
             'TestNetscapePlugIn/Tests/LogNPPSetWindow.cpp',
             'TestNetscapePlugIn/Tests/NPDeallocateCalledBeforeNPShutdown.cpp',
             'TestNetscapePlugIn/Tests/NPPNewFails.cpp',

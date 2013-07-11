@@ -83,7 +83,7 @@ public:
     // The constructor should call BindMethod, BindProperty, and
     // SetFallbackMethod as needed to set up the methods, properties, and
     // fallback method.
-    CppBoundClass();
+    CppBoundClass() : m_boundToFrame(false) { }
     virtual ~CppBoundClass();
 
     // Return a CppVariant representing this class, for use with BindProperty().
@@ -208,9 +208,6 @@ protected:
             bindFallbackCallback(std::auto_ptr<Callback>());
     }
 
-    // Returns the NPP value to pass to WebBindings calls.
-    NPP npp() { return m_npp.get(); }
-
     // Some fields are protected because some tests depend on accessing them,
     // but otherwise they should be considered private.
 
@@ -238,8 +235,9 @@ private:
     // reference to this object, and it is released on deletion.
     CppVariant m_selfVariant;
 
-    // Dummy NPP to use to register as owner for NPObjects.
-    std::auto_ptr<struct _NPP> m_npp;
+    // True if our np_object has been bound to a WebFrame, in which case it must
+    // be unregistered with V8 when we delete it.
+    bool m_boundToFrame;
 
 private:
     CppBoundClass(CppBoundClass&);

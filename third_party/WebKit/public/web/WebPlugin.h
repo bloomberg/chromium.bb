@@ -64,7 +64,7 @@ public:
     virtual WebPluginContainer* container() const { return 0; }
 
     virtual NPObject* scriptableObject() = 0;
-    virtual struct _NPP* pluginNPP() = 0;
+    virtual struct _NPP* pluginNPP() { return 0; }
 
     // Returns true if the form submission value is successfully obtained
     // from the plugin. The value would be associated with the name attribute

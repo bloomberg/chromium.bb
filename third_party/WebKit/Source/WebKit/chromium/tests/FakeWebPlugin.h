@@ -52,7 +52,6 @@ public:
     virtual bool initialize(WebKit::WebPluginContainer*) OVERRIDE;
     virtual void destroy() OVERRIDE;
     virtual NPObject* scriptableObject() OVERRIDE { return 0; }
-    virtual struct _NPP* pluginNPP() OVERRIDE { return 0; }
     virtual bool canProcessDrag() const OVERRIDE { return false; }
     virtual void paint(WebKit::WebCanvas*, const WebKit::WebRect&) OVERRIDE { }
     virtual void updateGeometry(const WebKit::WebRect& frameRect, const WebKit::WebRect& clipRect, const WebKit::WebVector<WebKit::WebRect>& cutOutsRects, bool isVisible) OVERRIDE { }

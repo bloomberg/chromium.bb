@@ -55,26 +55,30 @@ void _NPN_DeallocateObject(NPObject*);
 // plugin can be destroyed, which can unload the DLL.  So, we must eliminate
 // all pointers to any object ever created by the plugin.
 
-// Each plugin is registered as an "object owner", by its unique NPP identifier.
-// When an object passes from a plugin to script, or vice versa, it is
-// registered with the runtime, tagged with its owning plugin's NPP. When the
-// owning plugin is eventually destroyed, its NPP identifier is unregistered
-// from the runtime, and the NPObjects it owns are released - V8 objects that
-// referred to them may remain, but will no longer be scriptable.
+// We generally associate NPObjects with an owner.  The owner of an NPObject
+// is an NPObject which, when destroyed, also destroys all objects it owns.
+// For example, if an NPAPI plugin creates 10 sub-NPObjects, all 11 objects
+// (the NPAPI plugin + its 10 sub-objects) should become inaccessible
+// simultaneously.
 
-// Registers the supplied plugin NPP identifier as a valid object owner.
-void _NPN_RegisterObjectOwner(NPP);
+// The ownership hierarchy is flat, and not a tree.  Imagine the following
+// object creation:
+//     PluginObject
+//          |
+//          +-- Creates -----> Object1
+//                                |
+//                                +-- Creates -----> Object2
+//
+// PluginObject will be the "owner" for both Object1 and Object2.
 
-// Unregisters the supplied plugin NPP identifier as an object owner. If there
-// are objects owned by this identifier then they are released.
-void _NPN_UnregisterObjectOwner(NPP);
+// Register an NPObject with the runtime.  If the owner is NULL, the
+// object is treated as an owning object.  If owner is not NULL,
+// this object will be registered as owned by owner's top-level owner.
+void _NPN_RegisterObject(NPObject*, NPObject* owner);
 
-// Returns true if the specified NPP identifier is a registered object owner.
-bool _NPN_IsObjectOwner(NPP);
-
-// Returns the NPP identifier of the specified object's owner, or null if the
-// object is not alive.
-NPP _NPN_GetObjectOwner(NPObject*);
+// Unregister an NPObject with the runtime.  If obj is an owning
+// object, this call will also unregister all of the owned objects.
+void _NPN_UnregisterObject(NPObject*);
 
 // Check to see if an object is registered with the runtime.
 // Return true if registered, false otherwise.

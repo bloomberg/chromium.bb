@@ -129,10 +129,10 @@ public:
     // _NPN_UnregisterObjectOwner
     WEBKIT_EXPORT static void unregisterObjectOwner(NPP);
 
-    // _NPN_GetObjectOwner
+    // Temporary dummy implementation of _NPN_GetObjectOwner.
     WEBKIT_EXPORT static NPP getObjectOwner(NPObject*);
 
-    // Remove this when the corresponding call has been removed from Chrome.
+    // _NPN_UnregisterObject
     WEBKIT_EXPORT static void unregisterObject(NPObject*);
 
     // NPN_UTF8FromIdentifier
@@ -180,7 +180,7 @@ public:
     WEBKIT_EXPORT static void popExceptionHandler();
 
     // Conversion utilities to/from V8 native objects and NPVariant wrappers.
-    WEBKIT_EXPORT static void toNPVariant(v8::Local<v8::Value>, NPP owner, NPVariant* result);
+    WEBKIT_EXPORT static void toNPVariant(v8::Local<v8::Value>, NPObject* root, NPVariant* result);
     WEBKIT_EXPORT static v8::Handle<v8::Value> toV8Value(const NPVariant*);
 };
 

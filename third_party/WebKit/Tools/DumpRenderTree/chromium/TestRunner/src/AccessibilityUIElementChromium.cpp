@@ -474,7 +474,7 @@ void AccessibilityUIElement::notificationReceived(const char* notificationName)
         CppVariant notificationNameArgument;
         notificationNameArgument.set(notificationName);
         CppVariant invokeResult;
-        m_notificationCallbacks[i].invokeDefault(npp(), &notificationNameArgument, 1, invokeResult);
+        m_notificationCallbacks[i].invokeDefault(&notificationNameArgument, 1, invokeResult);
     }
 }
 

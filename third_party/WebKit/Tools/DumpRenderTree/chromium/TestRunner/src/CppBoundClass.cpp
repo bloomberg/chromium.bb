@@ -205,11 +205,6 @@ bool CppNPObject::setProperty(NPObject* npObj, NPIdentifier ident, const NPVaria
     return obj->boundClass->setProperty(ident, value);
 }
 
-CppBoundClass::CppBoundClass() : m_npp(new NPP_t)
-{
-    WebBindings::registerObjectOwner(npp());
-}
-
 CppBoundClass::~CppBoundClass()
 {
     for (MethodList::iterator i = m_methods.begin(); i != m_methods.end(); ++i)
@@ -218,7 +213,9 @@ CppBoundClass::~CppBoundClass()
     for (PropertyList::iterator i = m_properties.begin(); i != m_properties.end(); ++i)
         delete i->second;
 
-    WebBindings::unregisterObjectOwner(npp());
+    // Unregister ourselves if we were bound to a frame.
+    if (m_boundToFrame)
+        WebBindings::unregisterObject(NPVARIANT_TO_OBJECT(m_selfVariant));
 }
 
 bool CppBoundClass::hasMethod(NPIdentifier ident) const
@@ -337,8 +334,10 @@ bool CppBoundClass::isMethodRegistered(const string& name) const
 CppVariant* CppBoundClass::getAsCppVariant()
 {
     if (!m_selfVariant.isObject()) {
-        // Create an NPObject using our static NPClass.
-        NPObject* npObj = WebBindings::createObject(npp(), &CppNPObject::npClass);
+        // Create an NPObject using our static NPClass. The first argument (a
+        // plugin's instance handle) is passed through to the allocate function
+        // directly, and we don't use it, so it's ok to be 0.
+        NPObject* npObj = WebBindings::createObject(0, &CppNPObject::npClass);
         CppNPObject* obj = reinterpret_cast<CppNPObject*>(npObj);
         obj->boundClass = this;
         m_selfVariant.set(npObj);
@@ -352,9 +351,9 @@ void CppBoundClass::bindToJavascript(WebFrame* frame, const WebString& classname
 {
     // BindToWindowObject will take its own reference to the NPObject, and clean
     // up after itself. It will also (indirectly) register the object with V8,
-    // against an owner pointer we supply, so we must register as an owner,
-    // and unregister when we teardown.
-    frame->bindToWindowObject(classname, NPVARIANT_TO_OBJECT(*getAsCppVariant()));
+    // so we must remember this so we can unregister it when we're destroyed.
+    frame->bindToWindowObject(classname, NPVARIANT_TO_OBJECT(*getAsCppVariant()), 0);
+    m_boundToFrame = true;
 }
 
 }

@@ -49,7 +49,6 @@
 #include "HTMLNames.h"
 #include "WebPrintParams.h"
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/npruntime_priv.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/GestureEvent.h"
 #include "core/dom/KeyboardEvent.h"
@@ -407,13 +406,14 @@ void WebPluginContainerImpl::reportGeometry()
 
 void WebPluginContainerImpl::allowScriptObjects()
 {
-    _NPN_RegisterObjectOwner(pluginNPP());
 }
 
 void WebPluginContainerImpl::clearScriptObjects()
 {
-    if (_NPN_IsObjectOwner(pluginNPP()))
-        _NPN_UnregisterObjectOwner(pluginNPP());
+    Frame* frame = m_element->document()->frame();
+    if (!frame)
+        return;
+    frame->script()->cleanupScriptObjectsForPlugin(this);
 }
 
 NPObject* WebPluginContainerImpl::scriptableObjectForElement()
@@ -563,11 +563,6 @@ WebLayer* WebPluginContainerImpl::platformLayer() const
 NPObject* WebPluginContainerImpl::scriptableObject()
 {
     return m_webPlugin->scriptableObject();
-}
-
-NPP WebPluginContainerImpl::pluginNPP()
-{
-    return m_webPlugin->pluginNPP();
 }
 
 bool WebPluginContainerImpl::getFormValue(String& value)

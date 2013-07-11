@@ -77,9 +77,8 @@ namespace {
 
 class InvokeCallbackTask : public WebMethodTask<TestRunner> {
 public:
-    InvokeCallbackTask(TestRunner* object, NPP npp, auto_ptr<CppVariant> callbackArguments)
+    InvokeCallbackTask(TestRunner* object, auto_ptr<CppVariant> callbackArguments)
         : WebMethodTask<TestRunner>(object)
-        , m_npp(npp)
         , m_callbackArguments(callbackArguments)
     {
     }
@@ -87,11 +86,10 @@ public:
     virtual void runIfValid()
     {
         CppVariant invokeResult;
-        m_callbackArguments->invokeDefault(m_npp, m_callbackArguments.get(), 1, invokeResult);
+        m_callbackArguments->invokeDefault(m_callbackArguments.get(), 1, invokeResult);
     }
 
 private:
-    NPP m_npp;
     auto_ptr<CppVariant> m_callbackArguments;
 };
 
@@ -1710,7 +1708,7 @@ void TestRunner::setBackingScaleFactor(const CppArgumentList& arguments, CppVari
     auto_ptr<CppVariant> callbackArguments(new CppVariant());
     callbackArguments->set(arguments[1]);
     result->setNull();
-    m_delegate->postTask(new InvokeCallbackTask(this, npp(), callbackArguments));
+    m_delegate->postTask(new InvokeCallbackTask(this, callbackArguments));
 }
 
 void TestRunner::setPOSIXLocale(const CppArgumentList& arguments, CppVariant* result)

@@ -347,8 +347,8 @@ crbug.com/38353 http/tests/plugins/plugin-document-has-focus.html [ Timeout ]
 
 # Tests differences from switching to webkit.org's test netscape plugin rather
 # than chromium's old forked copy.
-crbug.com/108833 plugins/geturlnotify-during-document-teardown.html [ Failure Slow ]
-webkit.org/b/48655 [ Mac Debug ] plugins/js-from-destroy.html [ Timeout ]
+crbug.com/108833 plugins/geturlnotify-during-document-teardown.html [ Crash Failure ]
+webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Crash ]
 
 # Requires testRunner.dispatchPendingLoadRequests
 crbug.com/33211 http/tests/loading/deleted-host-in-resource-load-delegate-callback.html [ Timeout ]
@@ -1563,7 +1563,8 @@ crbug.com/178709 plugins/document-open.html [ Failure ]
 crbug.com/178719 plugins/reloadplugins-and-pages.html [ Timeout ]
 crbug.com/178724 plugins/get-url-with-iframe-target-no-crash.html [ Timeout ]
 crbug.com/178744 plugins/npruntime/browser-object-identity.html [ Failure ]
-crbug.com/178745 plugins/open-and-close-window-with-plugin.html [ Failure Slow ]
+crbug.com/178745 [ Debug ] plugins/open-and-close-window-with-plugin.html [ Crash ]
+crbug.com/178745 [ Release ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Timeout ]
 crbug.com/231859 [ Win Linux ] compositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ Pass ImageOnlyFailure ]
@@ -1845,8 +1846,6 @@ Bug(enne) virtual/gpu/compositedscrolling/overflow/textarea-scroll-touch.html [ 
 Bug(enne) virtual/softwarecompositing/fixed-body-background-positioned.html [ Pass Failure ]
 Bug(enne) virtual/softwarecompositing/overflow/scrolling-without-painting.html [ Pass Failure ]
 Bug(enne) virtual/softwarecompositing/overflow/textarea-scroll-touch.html [ Pass Failure ]
-
-crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
 
 crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
 

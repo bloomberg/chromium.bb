@@ -69,7 +69,6 @@ int getTestObjectCount()
 typedef struct {
     NPObject header;
     NPObject* testObject;
-    NPP owner;
 } TestObject;
 
 static bool identifiersInitialized = false;
@@ -108,11 +107,10 @@ static void initializeIdentifiers(void)
     browser->getstringidentifiers(testMethodIdentifierNames, NUM_METHOD_IDENTIFIERS, testMethodIdentifiers);
 }
 
-static NPObject* testAllocate(NPP npp, NPClass* /*theClass*/)
+static NPObject* testAllocate(NPP /*npp*/, NPClass* /*theClass*/)
 {
     TestObject* newInstance = static_cast<TestObject*>(malloc(sizeof(TestObject)));
     newInstance->testObject = 0;
-    newInstance->owner = npp;
     ++testObjectCount;
 
     if (!identifiersInitialized) {
@@ -178,7 +176,7 @@ static bool testGetProperty(NPObject* npobj, NPIdentifier name, NPVariant* resul
     if (name == testIdentifiers[ID_PROPERTY_TEST_OBJECT]) {
         TestObject* testObject = reinterpret_cast<TestObject*>(npobj);
         if (!testObject->testObject)
-            testObject->testObject = browser->createobject(testObject->owner, &testClass);
+            testObject->testObject = browser->createobject(0, &testClass);
         browser->retainobject(testObject->testObject);
         OBJECT_TO_NPVARIANT(testObject->testObject, *result);
         return true;
