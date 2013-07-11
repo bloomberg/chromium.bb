@@ -17,11 +17,9 @@
 namespace extensions {
 namespace {
 
-void BindRequestDisplayInfoResult(DisplayInfo* target,
-                                  const DisplayInfo& result,
-                                  bool success) {
+void BindRequestDisplayInfoResult(DisplayInfo* target, bool success) {
   ASSERT_TRUE(success);
-  *target = result;
+  *target = DisplayInfoProvider::GetProvider()->display_info();
 }
 
 void BindSetDisplayUnitInfoResult(bool* success,

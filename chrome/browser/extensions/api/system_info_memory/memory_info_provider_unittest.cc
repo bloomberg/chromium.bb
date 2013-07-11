@@ -20,18 +20,17 @@ const struct TestMemoryInfo kTestingMemoryInfoData = { 4096.0, 1024.0 };
 
 class TestMemoryInfoProvider : public MemoryInfoProvider {
  public:
-  virtual bool QueryInfo(MemoryInfo* info) OVERRIDE;
+  virtual bool QueryInfo() OVERRIDE;
+
  private:
   virtual ~TestMemoryInfoProvider();
 };
 
 TestMemoryInfoProvider::~TestMemoryInfoProvider() {}
 
-bool TestMemoryInfoProvider::QueryInfo(MemoryInfo* info) {
-  if (info == NULL)
-    return false;
-  info->capacity = kTestingMemoryInfoData.capacity;
-  info->available_capacity = kTestingMemoryInfoData.available_capacity;
+bool TestMemoryInfoProvider::QueryInfo() {
+  info_.capacity = kTestingMemoryInfoData.capacity;
+  info_.available_capacity = kTestingMemoryInfoData.available_capacity;
   return true;
 }
 
@@ -48,11 +47,11 @@ MemoryInfoProviderTest::MemoryInfoProviderTest()
 }
 
 TEST_F(MemoryInfoProviderTest, QueryMemoryInfo) {
-  scoped_ptr<MemoryInfo> memory_info(new MemoryInfo());
-  EXPECT_TRUE(memory_info_provider_->QueryInfo(memory_info.get()));
-  EXPECT_DOUBLE_EQ(kTestingMemoryInfoData.capacity, memory_info->capacity);
+  EXPECT_TRUE(memory_info_provider_->QueryInfo());
+  EXPECT_DOUBLE_EQ(kTestingMemoryInfoData.capacity,
+                   memory_info_provider_->memory_info().capacity);
   EXPECT_DOUBLE_EQ(kTestingMemoryInfoData.available_capacity,
-                   memory_info->available_capacity);
+                   memory_info_provider_->memory_info().available_capacity);
 }
 
 }  // namespace extensions

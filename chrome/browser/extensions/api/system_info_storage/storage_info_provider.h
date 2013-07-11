@@ -33,9 +33,10 @@ void BuildStorageUnitInfo(const chrome::StorageInfo& info,
 }  // namespace systeminfo
 
 typedef std::vector<linked_ptr<
-    api::experimental_system_info_storage::StorageUnitInfo> > StorageInfo;
+    api::experimental_system_info_storage::StorageUnitInfo> >
+        StorageUnitInfoList;
 
-class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
+class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
  public:
   StorageInfoProvider();
 
@@ -47,11 +48,20 @@ class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
   void RemoveObserver(StorageFreeSpaceObserver* obs);
 
   // Start and stop watching the given storage |transient_id|.
-  virtual void StartWatching(const std::string& transient_id);
-  virtual void StopWatching(const std::string& transient_id);
+  void StartWatching(const std::string& transient_id);
+  void StopWatching(const std::string& transient_id);
+
+  // Start and stop watching all available storages.
+  void StartWatchingAllStorages();
+  void StopWatchingAllStorages();
 
   // Returns all available storages, including fixed and removable.
   virtual std::vector<chrome::StorageInfo> GetAllStorages() const;
+
+  // SystemInfoProvider implementations
+  virtual void PrepareQueryOnUIThread() OVERRIDE;
+  virtual void InitializeProvider(const base::Closure& do_query_info_callback)
+      OVERRIDE;
 
   // Get the amount of storage free space from |transient_id|, or -1 on failure.
   virtual int64 GetStorageFreeSpaceFromTransientId(
@@ -62,27 +72,26 @@ class StorageInfoProvider : public SystemInfoProvider<StorageInfo> {
   virtual std::string GetDeviceIdForTransientId(
       const std::string& transient_id) const;
 
+  const StorageUnitInfoList& storage_unit_info_list() const;
+
  protected:
   virtual ~StorageInfoProvider();
 
   // TODO(Haojian): Put this method in a testing subclass rather than here.
   void SetWatchingIntervalForTesting(size_t ms) { watching_interval_ = ms; }
 
-  // SystemInfoProvider implementations.
-  virtual bool QueryInfo(StorageInfo* info) OVERRIDE;
-  virtual void StartQueryInfoImpl() OVERRIDE;
+  // Put all available storages' information into |info_|.
+  virtual void GetAllStoragesIntoInfoList();
 
  private:
   typedef std::map<std::string, double> StorageTransientIdToSizeMap;
 
-  // Query the available capacity of all known storage devices on the blocking
-  // pool, including fixed and removable.
-  void QueryAvailableCapacityOnBlockingPool();
+  // SystemInfoProvider implementations.
+  // Override to query the available capacity of all known storage devices on
+  // the blocking pool, including fixed and removable devices.
+  virtual bool QueryInfo() OVERRIDE;
   // Query the new attached removable storage info on the blocking pool.
   void QueryAttachedStorageInfoOnBlockingPool(const std::string& transient_id);
-  // Run the QueryInfo() implementation after the StorageMonitor has been
-  // initialized.
-  void QueryInfoImplOnUIThread();
 
   // Posts a task to check for free space changes on the blocking pool.
   // Should be called on the UI thread.

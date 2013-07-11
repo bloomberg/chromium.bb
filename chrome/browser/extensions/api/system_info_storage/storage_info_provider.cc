@@ -42,6 +42,12 @@ void BuildStorageUnitInfo(const chrome::StorageInfo& info,
 const int kDefaultPollingIntervalMs = 1000;
 const char kWatchingTokenName[] = "_storage_info_watching_token_";
 
+// Static member intialization.
+template<>
+base::LazyInstance<scoped_refptr<SystemInfoProvider<StorageUnitInfoList> > >
+  SystemInfoProvider<StorageUnitInfoList>::provider_
+      = LAZY_INSTANCE_INITIALIZER;
+
 StorageInfoProvider::StorageInfoProvider()
     : observers_(new ObserverListThreadSafe<StorageFreeSpaceObserver>()),
       watching_interval_(kDefaultPollingIntervalMs) {
@@ -50,55 +56,50 @@ StorageInfoProvider::StorageInfoProvider()
 StorageInfoProvider::~StorageInfoProvider() {
 }
 
-void StorageInfoProvider::StartQueryInfoImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Register a callback to notify UI thread that StorageMonitor finishes the
-  // storage metadata retrieval on FILE thread. See the comments of
-  // StorageMonitor::Initialize about when the callback gets run.
-  StorageMonitor::GetInstance()->EnsureInitialized(
-      base::Bind(&StorageInfoProvider::QueryInfoImplOnUIThread, this));
+const StorageUnitInfoList& StorageInfoProvider::storage_unit_info_list() const {
+  return info_;
 }
 
-void StorageInfoProvider::QueryInfoImplOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // At this point, we can call StorageMonitor::GetAllAvailableStorages to
-  // get the correct results.
-  QueryInfo(&info_);
-  // The amount of available capacity should be queried on blocking pool.
-  PostQueryTaskToBlockingPool(FROM_HERE,
-      base::Bind(&StorageInfoProvider::QueryAvailableCapacityOnBlockingPool,
-          this));
+void StorageInfoProvider::PrepareQueryOnUIThread() {
+  // Get all available storage devices before invoking |QueryInfo()| to get
+  // available capacity.
+  GetAllStoragesIntoInfoList();
 }
 
-void StorageInfoProvider::QueryAvailableCapacityOnBlockingPool() {
+void StorageInfoProvider::InitializeProvider(
+    const base::Closure& do_query_info_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Register the |do_query_info_callback| callback to StorageMonitor.
+  // See the comments of StorageMonitor::EnsureInitialized about when the
+  // callback gets run.
+  StorageMonitor::GetInstance()->EnsureInitialized(do_query_info_callback);
+}
+
+bool StorageInfoProvider::QueryInfo() {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  for (StorageInfo::iterator it = info_.begin(); it != info_.end(); ++it) {
+  for (StorageUnitInfoList::iterator it = info_.begin();
+       it != info_.end(); ++it) {
     int64 amount = GetStorageFreeSpaceFromTransientId((*it)->id);
     if (amount > 0)
       (*it)->available_capacity = static_cast<double>(amount);
   }
 
-  // Notify UI thread that the querying operation has completed.
-  BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&StorageInfoProvider::OnQueryCompleted, this, true));
+  return true;
 }
 
 std::vector<chrome::StorageInfo> StorageInfoProvider::GetAllStorages() const {
   return StorageMonitor::GetInstance()->GetAllAvailableStorages();
 }
 
-bool StorageInfoProvider::QueryInfo(StorageInfo* info) {
+void StorageInfoProvider::GetAllStoragesIntoInfoList() {
+  info_.clear();
   std::vector<chrome::StorageInfo> storage_list = GetAllStorages();
-  StorageInfo results;
   std::vector<chrome::StorageInfo>::const_iterator it = storage_list.begin();
   for (; it != storage_list.end(); ++it) {
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
     systeminfo::BuildStorageUnitInfo(*it, unit.get());
-    results.push_back(unit);
+    info_.push_back(unit);
   }
-  info->swap(results);
-
-  return true;
 }
 
 void StorageInfoProvider::AddObserver(StorageFreeSpaceObserver* obs) {
@@ -126,6 +127,20 @@ void StorageInfoProvider::StopWatching(const std::string& transient_id) {
       FROM_HERE,
       base::Bind(&StorageInfoProvider::RemoveWatchedStorageOnBlockingPool,
                  this, transient_id));
+}
+
+void StorageInfoProvider::StartWatchingAllStorages() {
+  for (StorageUnitInfoList::const_iterator it = info_.begin();
+       it != info_.end(); ++it) {
+    StartWatching((*it)->id);
+  }
+}
+
+void StorageInfoProvider::StopWatchingAllStorages() {
+  for (StorageUnitInfoList::const_iterator it = info_.begin();
+       it != info_.end(); ++it) {
+    StopWatching((*it)->id);
+  }
 }
 
 int64 StorageInfoProvider::GetStorageFreeSpaceFromTransientId(

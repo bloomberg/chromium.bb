@@ -17,13 +17,10 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
  public:
   MockCpuInfoProviderImpl() {}
 
-  virtual bool QueryInfo(CpuInfo* info) OVERRIDE {
-    if (!info) return false;
-
-    info->num_of_processors = 4;
-    info->arch_name = "x86";
-    info->model_name = "unknown";
-
+  virtual bool QueryInfo() OVERRIDE {
+    info_.num_of_processors = 4;
+    info_.arch_name = "x86";
+    info_.model_name = "unknown";
     return true;
   }
 

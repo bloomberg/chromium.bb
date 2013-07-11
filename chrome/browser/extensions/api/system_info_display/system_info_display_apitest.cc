@@ -20,8 +20,8 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
   MockDisplayInfoProvider() {}
 
-  virtual bool QueryInfo(DisplayInfo* info) OVERRIDE {
-    info->clear();
+  virtual bool QueryInfo() OVERRIDE {
+    info_.clear();
     for (int i = 0; i < 4; i++) {
       linked_ptr<DisplayUnitInfo> unit(new DisplayUnitInfo());
       unit->id = base::IntToString(i);
@@ -48,7 +48,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
       unit->work_area.top = 0;
       unit->work_area.width = 960;
       unit->work_area.height = 720;
-      info->push_back(unit);
+      info_.push_back(unit);
     }
     return true;
   }

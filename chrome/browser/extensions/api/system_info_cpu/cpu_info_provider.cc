@@ -10,17 +10,23 @@ namespace extensions {
 
 using api::system_info_cpu::CpuInfo;
 
+// Static member intialization.
+template<>
+base::LazyInstance<scoped_refptr<SystemInfoProvider<CpuInfo> > >
+  SystemInfoProvider<CpuInfo>::provider_ = LAZY_INSTANCE_INITIALIZER;
+
 CpuInfoProvider::CpuInfoProvider() {}
 
 CpuInfoProvider::~CpuInfoProvider() {}
 
-bool CpuInfoProvider::QueryInfo(CpuInfo* info) {
-  if (info == NULL)
-    return false;
+const CpuInfo& CpuInfoProvider::cpu_info() const {
+  return info_;
+}
 
-  info->num_of_processors = base::SysInfo::NumberOfProcessors();
-  info->arch_name = base::SysInfo::OperatingSystemArchitecture();
-  info->model_name = base::SysInfo::CPUModelName();
+bool CpuInfoProvider::QueryInfo() {
+  info_.num_of_processors = base::SysInfo::NumberOfProcessors();
+  info_.arch_name = base::SysInfo::OperatingSystemArchitecture();
+  info_.model_name = base::SysInfo::CPUModelName();
   return true;
 }
 

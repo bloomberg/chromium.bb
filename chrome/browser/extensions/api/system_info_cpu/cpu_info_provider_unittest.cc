@@ -28,7 +28,7 @@ const struct TestCpuInfo kTestingCpuInfoData = {
 class TestCpuInfoProvider : public CpuInfoProvider {
  public:
   TestCpuInfoProvider();
-  virtual bool QueryInfo(CpuInfo* info) OVERRIDE;
+  virtual bool QueryInfo() OVERRIDE;
 
  private:
   virtual ~TestCpuInfoProvider();
@@ -38,12 +38,10 @@ TestCpuInfoProvider::TestCpuInfoProvider() {}
 
 TestCpuInfoProvider::~TestCpuInfoProvider() {}
 
-bool TestCpuInfoProvider::QueryInfo(CpuInfo* info) {
-  if (info == NULL)
-    return false;
-  info->arch_name = kTestingCpuInfoData.arch_name;
-  info->model_name = kTestingCpuInfoData.model_name;
-  info->num_of_processors = kTestingCpuInfoData.num_of_processors;
+bool TestCpuInfoProvider::QueryInfo() {
+  info_.arch_name = kTestingCpuInfoData.arch_name;
+  info_.model_name = kTestingCpuInfoData.model_name;
+  info_.num_of_processors = kTestingCpuInfoData.num_of_processors;
   return true;
 }
 
@@ -59,11 +57,13 @@ CpuInfoProviderTest::CpuInfoProviderTest() {}
 
 TEST_F(CpuInfoProviderTest, QueryCpuInfo) {
   cpu_info_provider_ = new TestCpuInfoProvider();
-  scoped_ptr<CpuInfo> cpu_info(new CpuInfo());
-  EXPECT_TRUE(cpu_info_provider_->QueryInfo(cpu_info.get()));
-  EXPECT_EQ(kTestingCpuInfoData.arch_name, cpu_info->arch_name);
-  EXPECT_EQ(kTestingCpuInfoData.model_name, cpu_info->model_name);
-  EXPECT_EQ(kTestingCpuInfoData.num_of_processors, cpu_info->num_of_processors);
+  EXPECT_TRUE(cpu_info_provider_->QueryInfo());
+  EXPECT_EQ(kTestingCpuInfoData.arch_name,
+            cpu_info_provider_->cpu_info().arch_name);
+  EXPECT_EQ(kTestingCpuInfoData.model_name,
+            cpu_info_provider_->cpu_info().model_name);
+  EXPECT_EQ(kTestingCpuInfoData.num_of_processors,
+            cpu_info_provider_->cpu_info().num_of_processors);
 }
 
 }

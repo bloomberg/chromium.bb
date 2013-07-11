@@ -6,6 +6,15 @@
 
 namespace extensions {
 
+// Static member intialization.
+template<>
+base::LazyInstance<scoped_refptr<SystemInfoProvider<DisplayInfo> > >
+  SystemInfoProvider<DisplayInfo>::provider_ = LAZY_INSTANCE_INITIALIZER;
+
+const DisplayInfo& DisplayInfoProvider::display_info() const {
+  return info_;
+}
+
 // static
 DisplayInfoProvider* DisplayInfoProvider::GetProvider() {
   return DisplayInfoProvider::GetInstance<DisplayInfoProvider>();

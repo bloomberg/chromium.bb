@@ -24,10 +24,9 @@ bool SystemInfoCpuGetFunction::RunImpl() {
   return true;
 }
 
-void SystemInfoCpuGetFunction::OnGetCpuInfoCompleted(const CpuInfo& info,
-    bool success) {
+void SystemInfoCpuGetFunction::OnGetCpuInfoCompleted(bool success) {
   if (success)
-    SetResult(info.ToValue().release());
+    SetResult(CpuInfoProvider::Get()->cpu_info().ToValue().release());
   else
     SetError("Error occurred when querying cpu information.");
   SendResponse(success);

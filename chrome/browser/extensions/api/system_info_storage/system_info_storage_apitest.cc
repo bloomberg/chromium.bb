@@ -22,7 +22,7 @@ using chrome::test::TestStorageMonitor;
 using extensions::api::experimental_system_info_storage::ParseStorageUnitType;
 using extensions::api::experimental_system_info_storage::StorageUnitInfo;
 using extensions::StorageInfoProvider;
-using extensions::StorageInfo;
+using extensions::StorageUnitInfoList;
 using extensions::systeminfo::kStorageTypeFixed;
 using extensions::systeminfo::kStorageTypeRemovable;
 using extensions::systeminfo::kStorageTypeUnknown;

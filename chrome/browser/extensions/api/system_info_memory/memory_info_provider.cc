@@ -10,13 +10,22 @@ namespace extensions {
 
 using api::system_info_memory::MemoryInfo;
 
+// Static member intialization.
+template<>
+base::LazyInstance<scoped_refptr<SystemInfoProvider<MemoryInfo> > >
+  SystemInfoProvider<MemoryInfo>::provider_ = LAZY_INSTANCE_INITIALIZER;
+
 MemoryInfoProvider::MemoryInfoProvider() {}
 
 MemoryInfoProvider::~MemoryInfoProvider() {}
 
-bool MemoryInfoProvider::QueryInfo(MemoryInfo* info) {
-  info->capacity = static_cast<double>(base::SysInfo::AmountOfPhysicalMemory());
-  info->available_capacity =
+const MemoryInfo& MemoryInfoProvider::memory_info() const {
+  return info_;
+}
+
+bool MemoryInfoProvider::QueryInfo() {
+  info_.capacity = static_cast<double>(base::SysInfo::AmountOfPhysicalMemory());
+  info_.available_capacity =
      static_cast<double>(base::SysInfo::AmountOfAvailablePhysicalMemory());
   return true;
 }

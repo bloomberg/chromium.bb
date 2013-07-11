@@ -17,7 +17,7 @@ typedef std::vector<linked_ptr<
 
 class DisplayInfoProvider : public SystemInfoProvider<DisplayInfo> {
  public:
-  typedef base::Callback<void(const DisplayInfo& info, bool success)>
+  typedef base::Callback<void(bool success)>
       RequestInfoCallback;
   typedef base::Callback<void(bool success, const std::string& error)>
       SetInfoCallback;
@@ -42,10 +42,12 @@ class DisplayInfoProvider : public SystemInfoProvider<DisplayInfo> {
       const api::system_info_display::DisplayProperties& info,
       const SetInfoCallback& callback);
 
+  const DisplayInfo& display_info() const;
+
  protected:
   // Overriden from SystemInfoProvider<DisplayInfo>.
   // The implementation is platform specific.
-  virtual bool QueryInfo(DisplayInfo* info) OVERRIDE;
+  virtual bool QueryInfo() OVERRIDE;
 
   friend class SystemInfoProvider<DisplayInfo>;
 

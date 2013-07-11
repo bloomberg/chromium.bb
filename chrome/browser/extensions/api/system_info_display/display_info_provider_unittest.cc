@@ -40,7 +40,7 @@ const struct TestDisplayInfo kTestingDisplayInfoData[] = {
 
 class TestDisplayInfoProvider : public DisplayInfoProvider {
  public:
-  virtual bool QueryInfo(DisplayInfo* info) OVERRIDE;
+  virtual bool QueryInfo() OVERRIDE;
 
  private:
   virtual ~TestDisplayInfoProvider();
@@ -48,10 +48,8 @@ class TestDisplayInfoProvider : public DisplayInfoProvider {
 
 TestDisplayInfoProvider::~TestDisplayInfoProvider() {}
 
-bool TestDisplayInfoProvider::QueryInfo(DisplayInfo* info) {
-  if (info == NULL)
-    return false;
-  info->clear();
+bool TestDisplayInfoProvider::QueryInfo() {
+  info_.clear();
   for (size_t i = 0; i < arraysize(kTestingDisplayInfoData); ++i) {
     linked_ptr<DisplayUnitInfo> unit(new DisplayUnitInfo());
     unit->id = kTestingDisplayInfoData[i].id;
@@ -69,7 +67,7 @@ bool TestDisplayInfoProvider::QueryInfo(DisplayInfo* info) {
     unit->work_area.top = kTestingDisplayInfoData[i].work_area.top;
     unit->work_area.width = kTestingDisplayInfoData[i].work_area.width;
     unit->work_area.height = kTestingDisplayInfoData[i].work_area.height;
-    info->push_back(unit);
+    info_.push_back(unit);
   }
   return true;
 }
@@ -87,12 +85,12 @@ DisplayInfoProviderTest::DisplayInfoProviderTest()
 }
 
 TEST_F(DisplayInfoProviderTest, QueryDisplayInfo) {
-  scoped_ptr<DisplayInfo> display_info(new DisplayInfo());
-  EXPECT_TRUE(display_info_provider_->QueryInfo(display_info.get()));
-  EXPECT_EQ(arraysize(kTestingDisplayInfoData), display_info->size());
+  EXPECT_TRUE(display_info_provider_->QueryInfo());
+  const DisplayInfo& display_info = display_info_provider_->display_info();
+  EXPECT_EQ(arraysize(kTestingDisplayInfoData), display_info.size());
   for (size_t i = 0; i < arraysize(kTestingDisplayInfoData); ++i) {
     const linked_ptr<api::system_info_display::DisplayUnitInfo> unit =
-        (*display_info.get())[i];
+        display_info[i];
     EXPECT_EQ(kTestingDisplayInfoData[i].id, unit->id);
     EXPECT_EQ(kTestingDisplayInfoData[i].name, unit->name);
     EXPECT_DOUBLE_EQ(kTestingDisplayInfoData[i].dpi_x, unit->dpi_x);

@@ -20,12 +20,11 @@ bool SystemInfoStorageGetFunction::RunImpl() {
   return true;
 }
 
-void SystemInfoStorageGetFunction::OnGetStorageInfoCompleted(
-    const StorageInfo& info, bool success) {
-
+void SystemInfoStorageGetFunction::OnGetStorageInfoCompleted(bool success) {
   if (success) {
     results_ =
-      api::experimental_system_info_storage::Get::Results::Create(info);
+      api::experimental_system_info_storage::Get::Results::Create(
+          StorageInfoProvider::Get()->storage_unit_info_list());
   } else {
     SetError("Error occurred when querying storage information.");
   }

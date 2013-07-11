@@ -17,8 +17,7 @@ class SystemInfoCpuGetFunction : public AsyncExtensionFunction {
  private:
   virtual ~SystemInfoCpuGetFunction();
   virtual bool RunImpl() OVERRIDE;
-  void OnGetCpuInfoCompleted(
-      const api::system_info_cpu::CpuInfo& info, bool success);
+  void OnGetCpuInfoCompleted(bool success);
 };
 
 }  // namespace extensions

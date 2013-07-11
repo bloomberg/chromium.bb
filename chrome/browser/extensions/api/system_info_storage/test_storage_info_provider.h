@@ -48,7 +48,7 @@ class TestStorageInfoProvider : public extensions::StorageInfoProvider {
   virtual ~TestStorageInfoProvider();
 
   // StorageInfoProvider implementations.
-  virtual bool QueryInfo(extensions::StorageInfo* info) OVERRIDE;
+  virtual void GetAllStoragesIntoInfoList() OVERRIDE;
   virtual std::vector<chrome::StorageInfo> GetAllStorages() const OVERRIDE;
   virtual int64 GetStorageFreeSpaceFromTransientId(
       const std::string& transient_id) OVERRIDE;

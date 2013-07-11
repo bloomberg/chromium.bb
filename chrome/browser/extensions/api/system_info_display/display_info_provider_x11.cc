@@ -21,7 +21,7 @@ void DisplayInfoProvider::SetInfo(
 }
 
 // TODO(hongbo): implement X11 display info querying.
-bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
+bool DisplayInfoProvider::QueryInfo() {
   return false;
 }
 

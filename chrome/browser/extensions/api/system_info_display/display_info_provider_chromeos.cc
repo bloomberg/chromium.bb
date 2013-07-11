@@ -411,12 +411,11 @@ bool SetInfoImpl(const std::string& display_id_str,
 }  // namespace
 
 void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
-  DisplayInfo requested_info;
-  bool success = QueryInfo(&requested_info);
+  bool success = QueryInfo();
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, requested_info, success));
+      base::Bind(callback, success));
 }
 
 void DisplayInfoProvider::SetInfo(const std::string& display_id,
@@ -429,9 +428,8 @@ void DisplayInfoProvider::SetInfo(const std::string& display_id,
       base::Bind(callback, success, error));
 }
 
-bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
-  DCHECK(info);
-  info->clear();
+bool DisplayInfoProvider::QueryInfo() {
+  info_.clear();
 
   DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
@@ -440,7 +438,7 @@ bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     AddInfoForDisplay(*display_manager->GetDisplayAt(i), display_manager,
-                      primary_id, info);
+                      primary_id, &info_);
   }
 
   return true;

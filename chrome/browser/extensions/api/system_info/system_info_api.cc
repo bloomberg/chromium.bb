@@ -95,8 +95,8 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
 
   // The callbacks of querying storage info to start and stop watching the
   // storages. Called from UI thread.
-  void StartWatchingStorages(const StorageInfo& info, bool success);
-  void StopWatchingStorages(const StorageInfo& info, bool success);
+  void StartWatchingStorages(bool success);
+  void StopWatchingStorages(bool success);
 
   // Called to dispatch the systemInfo.display.onDisplayChanged event.
   void OnDisplayChanged();
@@ -127,26 +127,20 @@ SystemInfoEventRouter::~SystemInfoEventRouter() {
     storage_monitor->RemoveObserver(this);
 }
 
-void SystemInfoEventRouter::StartWatchingStorages(
-    const StorageInfo& info, bool success) {
+void SystemInfoEventRouter::StartWatchingStorages(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success)
     return;
 
-  for (StorageInfo::const_iterator it = info.begin(); it != info.end(); ++it) {
-    StorageInfoProvider::Get()->StartWatching((*it)->id);
-  }
+  StorageInfoProvider::Get()->StartWatchingAllStorages();
 }
 
-void SystemInfoEventRouter::StopWatchingStorages(
-    const StorageInfo& info, bool success) {
+void SystemInfoEventRouter::StopWatchingStorages(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success)
     return;
 
-  for (StorageInfo::const_iterator it = info.begin(); it != info.end(); ++it) {
-    StorageInfoProvider::Get()->StopWatching((*it)->id);
-  }
+  StorageInfoProvider::Get()->StopWatchingAllStorages();
 }
 
 void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {

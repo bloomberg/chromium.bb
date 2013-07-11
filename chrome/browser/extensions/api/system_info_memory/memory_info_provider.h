@@ -17,8 +17,9 @@ class MemoryInfoProvider
   static MemoryInfoProvider* Get();
 
   // Overriden from SystemInfoProvider<MemoryInfo>.
-  virtual bool QueryInfo(
-      api::system_info_memory::MemoryInfo* info) OVERRIDE;
+  virtual bool QueryInfo() OVERRIDE;
+
+  const api::system_info_memory::MemoryInfo& memory_info() const;
 
  private:
   friend class SystemInfoProvider<

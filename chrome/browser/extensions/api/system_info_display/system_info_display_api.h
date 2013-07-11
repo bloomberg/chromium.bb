@@ -22,7 +22,7 @@ class SystemInfoDisplayGetDisplayInfoFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void OnGetDisplayInfoCompleted(const DisplayInfo& info, bool success);
+  void OnGetDisplayInfoCompleted(bool success);
 };
 
 class SystemInfoDisplaySetDisplayPropertiesFunction

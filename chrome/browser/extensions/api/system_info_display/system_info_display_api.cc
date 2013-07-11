@@ -22,9 +22,10 @@ bool SystemInfoDisplayGetDisplayInfoFunction::RunImpl() {
 }
 
 void SystemInfoDisplayGetDisplayInfoFunction::OnGetDisplayInfoCompleted(
-    const DisplayInfo& info, bool success) {
+    bool success) {
   if (success) {
-    results_ = api::system_info_display::GetDisplayInfo::Results::Create(info);
+    results_ = api::system_info_display::GetDisplayInfo::Results::Create(
+                   DisplayInfoProvider::GetProvider()->display_info());
   } else {
     SetError("Error occurred when querying display information.");
   }

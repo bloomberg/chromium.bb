@@ -21,7 +21,7 @@ void DisplayInfoProvider::SetInfo(
 }
 
 // TODO(hongbo): implement display info querying on Mac OS X.
-bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
+bool DisplayInfoProvider::QueryInfo() {
   return false;
 }
 

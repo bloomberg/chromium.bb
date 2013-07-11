@@ -18,9 +18,7 @@ class SystemInfoMemoryGetFunction : public AsyncExtensionFunction {
  private:
   virtual ~SystemInfoMemoryGetFunction();
   virtual bool RunImpl() OVERRIDE;
-  void OnGetMemoryInfoCompleted(
-      const api::system_info_memory::MemoryInfo& info,
-      bool success);
+  void OnGetMemoryInfoCompleted(bool success);
 };
 
 }  // namespace extensions

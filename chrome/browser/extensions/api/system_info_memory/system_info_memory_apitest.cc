@@ -20,9 +20,9 @@ class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
  public:
   MockMemoryInfoProviderImpl() {}
 
-  virtual bool QueryInfo(MemoryInfo* info) OVERRIDE {
-    info->capacity = 4096;
-    info->available_capacity = 1024;
+  virtual bool QueryInfo() OVERRIDE {
+    info_.capacity = 4096;
+    info_.available_capacity = 1024;
     return true;
   }
  private:

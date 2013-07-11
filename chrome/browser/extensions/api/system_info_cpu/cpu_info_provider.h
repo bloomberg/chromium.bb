@@ -16,11 +16,12 @@ class CpuInfoProvider
     : public SystemInfoProvider<api::system_info_cpu::CpuInfo> {
  public:
   // Overriden from SystemInfoProvider<CpuInfo>.
-  virtual bool QueryInfo(
-      api::system_info_cpu::CpuInfo* info) OVERRIDE;
+  virtual bool QueryInfo() OVERRIDE;
 
   // Return the single shared instance of CpuInfoProvider.
   static CpuInfoProvider* Get();
+
+  const api::system_info_cpu::CpuInfo& cpu_info() const;
 
  private:
   friend class SystemInfoProvider<api::system_info_cpu::CpuInfo>;

@@ -40,18 +40,16 @@ chrome::StorageInfo TestStorageInfoProvider::BuildStorageInfo(
   return info;
 }
 
-bool TestStorageInfoProvider::QueryInfo(extensions::StorageInfo* info) {
-  info->clear();
+void TestStorageInfoProvider::GetAllStoragesIntoInfoList() {
+  info_.clear();
   for (size_t i = 0; i < testing_data_.size(); ++i) {
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
     unit->id = testing_data_[i].transient_id;
     unit->name = testing_data_[i].name;
     unit->type = ParseStorageUnitType(testing_data_[i].type);
     unit->capacity = testing_data_[i].capacity;
-    unit->available_capacity = testing_data_[i].available_capacity;
-    info->push_back(unit);
+    info_.push_back(unit);
   }
-  return true;
 }
 
 std::vector<chrome::StorageInfo>

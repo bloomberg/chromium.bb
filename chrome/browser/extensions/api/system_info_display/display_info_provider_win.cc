@@ -81,12 +81,11 @@ void DisplayInfoProvider::SetInfo(
       base::Bind(callback, false, "Not implemented"));
 }
 
-bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
-  DCHECK(info);
-  info->clear();
+bool DisplayInfoProvider::QueryInfo() {
+  info_.clear();
 
   if (EnumDisplayMonitors(NULL, NULL, EnumMonitorCallback,
-        reinterpret_cast<LPARAM>(info)))
+        reinterpret_cast<LPARAM>(&info_)))
     return true;
   return false;
 }

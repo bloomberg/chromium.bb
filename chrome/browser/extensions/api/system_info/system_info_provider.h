@@ -34,36 +34,57 @@ namespace extensions {
 // class is being guarded by SystemInfoProvider.
 //
 // |info_| is accessed on the UI thread while |is_waiting_for_completion_| is
-// false and on the BlockingPool under |worker_pool_token_| while
-// |is_waiting_for_completion_| is true.
+// false and on the sequenced worker pool while |is_waiting_for_completion_| is
+// true.
 template<class T>
 class SystemInfoProvider
     : public base::RefCountedThreadSafe<SystemInfoProvider<T> > {
  public:
-  // Callback type for completing to get information. The callback accepts
-  // two arguments. The first one is the information got already, the second
-  // one indicates whether its contents are valid, for example, no error
-  // occurs in querying the information.
-  typedef base::Callback<void(const T&, bool)> QueryInfoCompletionCallback;
+  // Callback type for completing to get information. The argument indicates
+  // whether its contents are valid, for example, no error occurs in querying
+  // the information.
+  typedef base::Callback<void(bool)> QueryInfoCompletionCallback;
   typedef std::queue<QueryInfoCompletionCallback> CallbackQueue;
 
   SystemInfoProvider()
     : is_waiting_for_completion_(false) {
-    worker_pool_token_ =
-      content::BrowserThread::GetBlockingPool()->GetSequenceToken();
+    base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+    worker_pool_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
+                       pool->GetSequenceToken(),
+                       base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   }
 
   virtual ~SystemInfoProvider() {}
+
+  // Override to do any prepare work on UI thread before |QueryInfo()| gets
+  // called.
+  virtual void PrepareQueryOnUIThread() {}
+
+  // The parameter |do_query_info_callback| is query info task which is posts to
+  // SystemInfoProvider sequenced worker pool.
+  //
+  // You can do any initial things of *InfoProvider before start to query info.
+  // While overriding this method, |do_query_info_callback| *must* be called
+  // directly or indirectly.
+  //
+  // Sample usage please refer to StorageInfoProvider.
+  virtual void InitializeProvider(const base::Closure& do_query_info_callback) {
+    do_query_info_callback.Run();
+  }
 
   // For testing
   static void InitializeForTesting(
       scoped_refptr<SystemInfoProvider<T> > provider) {
     DCHECK(provider.get() != NULL);
-    single_shared_provider_.Get() = provider;
+    provider_.Get() = provider;
   }
 
   // Start to query the system information. Should be called on UI thread.
   // The |callback| will get called once the query is completed.
+  //
+  // If the parameter |callback| itself calls StartQueryInfo(callback2),
+  // callback2 will be called immediately rather than triggering another call to
+  // the system.
   void StartQueryInfo(const QueryInfoCompletionCallback& callback) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     DCHECK(!callback.is_null());
@@ -75,67 +96,23 @@ class SystemInfoProvider
 
     is_waiting_for_completion_ = true;
 
-    StartQueryInfoImpl();
+    InitializeProvider(base::Bind(
+          &SystemInfoProvider<T>::StartQueryInfoPostInitialization, this));
   }
 
  protected:
-  // Default implementation of querying system information.
-  //
-  // While overriding, there are two things need to do:
-  //   1). Bind custom callback function for query system information.
-  //   2). Post the custom task to blocking pool.
-  virtual void StartQueryInfoImpl() {
-    base::Closure callback =
-        base::Bind(&SystemInfoProvider<T>::QueryOnWorkerPool, this);
-    PostQueryTaskToBlockingPool(FROM_HERE, callback);
-  }
-
-  // Post a task to blocking pool for information querying.
-  //
-  // The parameter query_callback should invoke QueryInfo directly or indirectly
-  // to query the system information and return to UI thread when the query is
-  // completed.
-  void PostQueryTaskToBlockingPool(const tracked_objects::Location& from_here,
-                                   const base::Closure& query_callback) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    base::SequencedWorkerPool* worker_pool =
-        content::BrowserThread::GetBlockingPool();
-    // The query task posted to the worker pool won't block shutdown, and any
-    // running query task at shutdown time will be ignored.
-    worker_pool->PostSequencedWorkerTaskWithShutdownBehavior(
-          worker_pool_token_, from_here, query_callback,
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  }
-
-  // Query the system information synchronously and output the result to the
-  // |info| parameter. The |info| contents MUST be reset firstly in its
-  // platform specific implementation. Return true if it succeeds, otherwise
-  // false is returned.
-  // TODO(Haojian): Remove the parameter T-typed pointer, replacing with void
-  // QueryInfo().
-  virtual bool QueryInfo(T* info) = 0;
-
-  // Called on UI thread. The |success| parameter means whether it succeeds
-  // to get the information.
-  void OnQueryCompleted(bool success) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-    while (!callbacks_.empty()) {
-      QueryInfoCompletionCallback callback = callbacks_.front();
-      callback.Run(info_, success);
-      callbacks_.pop();
-    }
-
-    is_waiting_for_completion_ = false;
-  }
+  // Query the system information synchronously and put the result into |info_|.
+  // Return true if no error occurs.
+  // Should be called in the blocking pool.
+  virtual bool QueryInfo() = 0;
 
   // Template function for creating the single shared provider instance.
   // Template paramter I is the type of SystemInfoProvider implementation.
   template<class I>
   static I* GetInstance() {
-    if (!single_shared_provider_.Get().get())
-      single_shared_provider_.Get() = new I();
-    return static_cast<I*>(single_shared_provider_.Get().get());
+    if (!provider_.Get().get())
+      provider_.Get() = new I();
+    return static_cast<I*>(provider_.Get().get());
   }
 
   // The latest information filled up by QueryInfo implementation. Here we
@@ -144,17 +121,34 @@ class SystemInfoProvider
   T info_;
 
  private:
-  // TODO(Haojian): Use PostBlockingPoolTaskAndReply to avoid unnecessary
-  // trampolines trip.
-  void QueryOnWorkerPool() {
-    bool success = QueryInfo(&info_);
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&SystemInfoProvider<T>::OnQueryCompleted, this, success));
+  // Called on UI thread. The |success| parameter means whether it succeeds
+  // to get the information.
+  void OnQueryCompleted(bool success) {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+    while (!callbacks_.empty()) {
+      QueryInfoCompletionCallback callback = callbacks_.front();
+      callback.Run(success);
+      callbacks_.pop();
+    }
+
+    is_waiting_for_completion_ = false;
+  }
+
+  void StartQueryInfoPostInitialization() {
+    PrepareQueryOnUIThread();
+    // Post the custom query info task to blocking pool for information querying
+    // and reply with OnQueryCompleted.
+    base::PostTaskAndReplyWithResult(
+        worker_pool_,
+        FROM_HERE,
+        base::Bind(&SystemInfoProvider<T>::QueryInfo, this),
+        base::Bind(&SystemInfoProvider<T>::OnQueryCompleted, this));
   }
 
   // The single shared provider instance. We create it only when needed.
   static typename base::LazyInstance<
-      scoped_refptr<SystemInfoProvider<T> > > single_shared_provider_;
+      scoped_refptr<SystemInfoProvider<T> > > provider_;
 
   // The queue of callbacks waiting for the info querying completion. It is
   // maintained on the UI thread.
@@ -163,17 +157,12 @@ class SystemInfoProvider
   // Indicates if it is waiting for the querying completion.
   bool is_waiting_for_completion_;
 
-  // Unqiue sequence token so that the operation of querying inforation can
-  // be executed in order.
-  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
+  // Sequenced worker pool to make the operation of querying information get
+  // executed in order.
+  scoped_refptr<base::SequencedTaskRunner> worker_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemInfoProvider<T>);
 };
-
-// Static member intialization.
-template<class T>
-typename base::LazyInstance<scoped_refptr<SystemInfoProvider<T> > >
-  SystemInfoProvider<T>::single_shared_provider_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace extensions
 

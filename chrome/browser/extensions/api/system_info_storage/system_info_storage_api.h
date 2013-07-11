@@ -21,7 +21,7 @@ class SystemInfoStorageGetFunction : public AsyncExtensionFunction {
   virtual ~SystemInfoStorageGetFunction();
   virtual bool RunImpl() OVERRIDE;
 
-  void OnGetStorageInfoCompleted(const StorageInfo& info, bool success);
+  void OnGetStorageInfoCompleted(bool success);
 };
 
 class SystemInfoStorageAddWatchFunction : public AsyncExtensionFunction {

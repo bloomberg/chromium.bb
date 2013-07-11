@@ -20,10 +20,9 @@ bool SystemInfoMemoryGetFunction::RunImpl() {
   return true;
 }
 
-void SystemInfoMemoryGetFunction::OnGetMemoryInfoCompleted(
-    const MemoryInfo& info, bool success) {
+void SystemInfoMemoryGetFunction::OnGetMemoryInfoCompleted(bool success) {
   if (success)
-    SetResult(info.ToValue().release());
+    SetResult(MemoryInfoProvider::Get()->memory_info().ToValue().release());
   else
     SetError("Error occurred when querying memory information.");
   SendResponse(success);
