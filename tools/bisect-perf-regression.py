@@ -935,9 +935,39 @@ class BisectPerformanceMetrics(object):
 
     return not bisect_utils.RunGClient(['runhooks'])
 
-  def ParseMetricValuesFromOutput(self, metric, text):
-    """Parses output from performance_ui_tests and retrieves the results for
-    a given metric.
+  def TryParseHistogramValuesFromOutput(self, metric, text):
+    """Attempts to parse a metric in the format HISTOGRAM <graph: <trace>.
+
+    Args:
+      metric: The metric as a list of [<trace>, <value>] strings.
+      text: The text to parse the metric values from.
+
+    Returns:
+      A list of floating point numbers found.
+    """
+    metric_formatted = 'HISTOGRAM %s: %s= ' % (metric[0], metric[1])
+
+    text_lines = text.split('\n')
+    values_list = []
+
+    for current_line in text_lines:
+      if metric_formatted in current_line:
+        current_line = current_line[len(metric_formatted):]
+
+        try:
+          histogram_values = eval(current_line)
+
+          for b in histogram_values['buckets']:
+            average_for_bucket = float(b['high'] + b['low']) * 0.5
+            # Extends the list with N-elements with the average for that bucket.
+            values_list.extend([average_for_bucket] * b['count'])
+        except:
+          pass
+
+    return values_list
+
+  def TryParseResultValuesFromOutput(self, metric, text):
+    """Attempts to parse a metric in the format RESULT <graph: <trace>.
 
     Args:
       metric: The metric as a list of [<trace>, <value>] strings.
@@ -983,6 +1013,24 @@ class BisectPerformanceMetrics(object):
         values_list = [reduce(lambda x, y: float(x) + float(y), values_list)]
 
     return values_list
+
+  def ParseMetricValuesFromOutput(self, metric, text):
+    """Parses output from performance_ui_tests and retrieves the results for
+    a given metric.
+
+    Args:
+      metric: The metric as a list of [<trace>, <value>] strings.
+      text: The text to parse the metric values from.
+
+    Returns:
+      A list of floating point numbers found.
+    """
+    metric_values = self.TryParseResultValuesFromOutput(metric, text)
+
+    if not metric_values:
+      metric_values = self.TryParseHistogramValuesFromOutput(metric, text)
+
+    return metric_values
 
   def RunPerformanceTestAndParseResults(self, command_to_run, metric):
     """Runs a performance test on the current revision by executing the
