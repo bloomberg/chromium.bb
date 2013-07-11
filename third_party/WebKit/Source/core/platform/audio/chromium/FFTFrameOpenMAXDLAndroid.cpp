@@ -135,13 +135,16 @@ void FFTFrame::doFFT(const float* data)
         unsigned len = m_FFTSize / 2;
 
         // Split FFT data into real and imaginary arrays.
+        const float* c = complexFFT.data();
+        float* real = m_realData.data();
+        float* imag = m_imagData.data();
         for (unsigned k = 1; k < len; ++k) {
             int index = 2 * k;
-            m_realData[k] = complexFFT[index];
-            m_imagData[k] = complexFFT[index + 1];
+            real[k] = c[index];
+            imag[k] = c[index + 1];
         }
-        m_realData[0] = complexFFT[0];
-        m_imagData[0] = complexFFT[m_FFTSize];
+        real[0] = c[0];
+        imag[0] = c[m_FFTSize];
     }
 }
 
@@ -150,22 +153,25 @@ void FFTFrame::doInverseFFT(float* data)
     ASSERT(m_inverseContext);
 
     if (m_inverseContext) {
-        AudioFloatArray fftData(m_FFTSize + 2);
+        AudioFloatArray fftDataArray(m_FFTSize + 2);
 
         unsigned len = m_FFTSize / 2;
 
         // Pack the real and imaginary data into the complex array format
+        float* fftData = fftDataArray.data();
+        const float* real = m_realData.data();
+        const float* imag = m_imagData.data();
         for (unsigned k = 1; k < len; ++k) {
             int index = 2 * k;
-            fftData[index] = m_realData[k];
-            fftData[index + 1] = m_imagData[k];
+            fftData[index] = real[k];
+            fftData[index + 1] = imag[k];
         }
-        fftData[0] = m_realData[0];
+        fftData[0] = real[0];
         fftData[1] = 0;
-        fftData[m_FFTSize] = m_imagData[0];
+        fftData[m_FFTSize] = imag[0];
         fftData[m_FFTSize + 1] = 0;
     
-        omxSP_FFTInv_CCSToR_F32_Sfs(fftData.data(), data, m_inverseContext);
+        omxSP_FFTInv_CCSToR_F32_Sfs(fftData, data, m_inverseContext);
     }
 }
 
