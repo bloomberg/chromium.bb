@@ -1857,9 +1857,6 @@ const char kSyncKeystoreEncryptionBootstrapToken[] =
 // passphrase.
 const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";
 
-// Preferences that follow the status of sync server triggered experiments.
-const char kSyncFaviconsEnabled[] ="sync.favicons_syncing_enabled";
-
 // String the identifies the last user that logged into sync and other
 // google services. As opposed to kGoogleServicesUsername, this value is not
 // cleared on signout, but while the user is signed in the two values will

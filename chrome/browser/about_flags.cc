@@ -685,13 +685,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)
   },
   {
-    "enable-sync-favicons",
-    IDS_FLAGS_ENABLE_SYNC_FAVICONS_NAME,
-    IDS_FLAGS_ENABLE_SYNC_FAVICONS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncFavicons)
-  },
-  {
     "enable-gesture-tap-highlight",
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME,
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION,

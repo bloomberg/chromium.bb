@@ -59,6 +59,8 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
     // SESSIONS is lumped together with PROXY_TABS and
     // HISTORY_DELETE_DIRECTIVES.
+    // Favicons are lumped together with PROXY_TABS and
+    // HISTORY_DELETE_DIRECTIVES.
     if (it.Get() == syncer::AUTOFILL_PROFILE || it.Get() == syncer::SESSIONS) {
       continue;
     }
@@ -118,10 +120,14 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     // SESSIONS is lumped together with PROXY_TABS and TYPED_URLS.
     // HISTORY_DELETE_DIRECTIVES is lumped together with TYPED_URLS.
     // PRIORITY_PREFERENCES is lumped together with PREFERENCES.
+    // Favicons are lumped together with PROXY_TABS and
+    // HISTORY_DELETE_DIRECTIVES.
     if (it.Get() == syncer::AUTOFILL_PROFILE ||
         it.Get() == syncer::SESSIONS ||
         it.Get() == syncer::HISTORY_DELETE_DIRECTIVES ||
-        it.Get() == syncer::PRIORITY_PREFERENCES) {
+        it.Get() == syncer::PRIORITY_PREFERENCES ||
+        it.Get() == syncer::FAVICON_IMAGES ||
+        it.Get() == syncer::FAVICON_TRACKING) {
       continue;
     }
 

@@ -174,19 +174,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new SessionDataTypeController(this, profile_, pss));
   }
 
-  // Migrate sync flags that should be prefs.
-  // TODO(pastarmovj): Remove this code once enough time has passed to not need
-  // to migrate anymore.
-  about_flags::PrefServiceFlagsStorage flags_storage(
-      g_browser_process->local_state());
-  if (command_line_->HasSwitch(switches::kEnableSyncFavicons)) {
-    profile_->GetPrefs()->SetBoolean(prefs::kSyncFaviconsEnabled, true);
-    about_flags::SetExperimentEnabled(&flags_storage,
-                                      syncer::kFaviconSyncFlag,
-                                      false);
-  }
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncFaviconsEnabled)) {
+  // Favicon sync is enabled by default. Register unless explicitly disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncFavicons)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::FAVICON_IMAGES,
                                  this,

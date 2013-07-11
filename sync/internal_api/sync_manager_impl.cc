@@ -1275,15 +1275,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   }
   bool found_experiment = false;
 
-  ReadNode keystore_node(&trans);
-  if (keystore_node.InitByClientTagLookup(
-          syncer::EXPERIMENTS,
-          syncer::kKeystoreEncryptionTag) == BaseNode::INIT_OK &&
-      keystore_node.GetExperimentsSpecifics().keystore_encryption().enabled()) {
-    experiments->keystore_encryption = true;
-    found_experiment = true;
-  }
-
   ReadNode autofill_culling_node(&trans);
   if (autofill_culling_node.InitByClientTagLookup(
           syncer::EXPERIMENTS,
@@ -1298,8 +1289,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   if (favicon_sync_node.InitByClientTagLookup(
           syncer::EXPERIMENTS,
           syncer::kFaviconSyncTag) == BaseNode::INIT_OK) {
-    experiments->favicon_sync = favicon_sync_node.GetExperimentsSpecifics().
-        favicon_sync().enabled();
     experiments->favicon_sync_limit =
         favicon_sync_node.GetExperimentsSpecifics().favicon_sync().
             favicon_sync_limit();

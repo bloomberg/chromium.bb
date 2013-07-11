@@ -111,12 +111,6 @@ void SyncPrefs::RegisterProfilePrefs(
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  // Keeps track whether server experiments have been switched on for that user.
-  registry->RegisterBooleanPref(
-      prefs::kSyncFaviconsEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
   // We will start prompting people about new data types after the launch of
   // SESSIONS - all previously launched data types are treated as if they are
   // already acknowledged.

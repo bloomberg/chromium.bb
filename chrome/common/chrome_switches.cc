@@ -418,6 +418,9 @@ const char kDisableSyncExtensionSettings[]  = "disable-sync-extension-settings";
 // Disables syncing of extensions.
 const char kDisableSyncExtensions[]         = "disable-sync-extensions";
 
+// Disables syncing of favicons.
+const char kDisableSyncFavicons[]           = "disable-sync-favicons";
+
 // Disables syncing browser passwords.
 const char kDisableSyncPasswords[]          = "disable-sync-passwords";
 
@@ -683,9 +686,6 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
-
-// Enables synced favicons
-const char kEnableSyncFavicons[]            = "enable-sync-favicons";
 
 // Enables synced notifications.
 const char kEnableSyncSyncedNotifications[] =
@@ -1341,9 +1341,6 @@ const char kSyncAllowInsecureXmppConnection[] =
 
 // Invalidates any login info passed into sync's XMPP connection.
 const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
-
-// Enable support for keystore key based encryption.
-const char kSyncKeystoreEncryption[]        = "sync-keystore-encryption";
 
 // This flag causes sync to retry very quickly (see polling_constants.h) the
 // when it encounters an error, as the first step towards exponential backoff.

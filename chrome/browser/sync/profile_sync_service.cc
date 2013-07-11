@@ -1020,9 +1020,6 @@ void ProfileSyncService::OnExperimentsChanged(
     }
   }
 
-  if (experiments.favicon_sync)
-    profile_->GetPrefs()->SetBoolean(prefs::kSyncFaviconsEnabled, true);
-
   current_experiments_ = experiments;
 }
 

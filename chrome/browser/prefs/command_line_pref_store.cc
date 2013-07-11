@@ -74,7 +74,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
           prefs::kDisableCloudPolicyOnSignin, true },
       { switches::kDisableAsyncDns, prefs::kBuiltInDnsClientEnabled, false },
       { switches::kEnableAsyncDns, prefs::kBuiltInDnsClientEnabled, true },
-      { switches::kEnableSyncFavicons, prefs::kSyncFaviconsEnabled, false },
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

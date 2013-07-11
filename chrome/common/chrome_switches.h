@@ -124,6 +124,7 @@ extern const char kDisableSyncBookmarks[];
 extern const char kDisableSyncDictionary[];
 extern const char kDisableSyncExtensionSettings[];
 extern const char kDisableSyncExtensions[];
+extern const char kDisableSyncFavicons[];
 extern const char kDisableSyncPasswords[];
 extern const char kDisableSyncPreferences[];
 extern const char kDisableSyncPriorityPreferences[];
