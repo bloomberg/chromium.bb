@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
@@ -661,10 +663,13 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         pause_count_(2),
         cycle_count_(0),
         weak_ptr_factory_(this) {
-    const int kStatusUpdateMs = 1000;
-    update_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kStatusUpdateMs), this,
-        &PowerManagerClientStubImpl::UpdateStatus);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kEnableStubInteractive)) {
+      const int kStatusUpdateMs = 1000;
+      update_timer_.Start(FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kStatusUpdateMs), this,
+          &PowerManagerClientStubImpl::UpdateStatus);
+    }
   }
 
   virtual ~PowerManagerClientStubImpl() {}
