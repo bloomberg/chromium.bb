@@ -2,6 +2,13 @@
 <SCRIPT>
 if (window.testRunner)
   testRunner.dumpAsText();
+
+// Initialize clipboard
+document.body.innerHTML = '<input value=1>';
+document.querySelector('input').focus();
+document.execCommand('Copy');
+document.body.innerHTML = '';
+
 document.execCommand("Outdent", false, 262140);
 document.designMode = "on";
 document.execCommand("SelectAll", false, "https://www.example.com");
