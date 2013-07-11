@@ -2501,8 +2501,19 @@ bool GLES2DecoderImpl::Initialize(
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-  // Clear the backbuffer.
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  bool call_gl_clear = true;
+#if defined(OS_ANDROID)
+  // Temporary workaround for Android WebView because this clear ignores the
+  // clip and corrupts that external UI of the App. Not calling glClear is ok
+  // because the system already clears the buffer before each draw. Proper
+  // fix might be setting the scissor clip properly before initialize. See
+  // crbug.com/259023 for details.
+  call_gl_clear = surface_->GetHandle();
+#endif
+  if (call_gl_clear) {
+    // Clear the backbuffer.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  }
 
   if (feature_info_->workarounds().reverse_point_sprite_coord_origin) {
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);

@@ -234,10 +234,14 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
 
+  // TODO(boliu): Remove OS_ANDROID once crbug.com/259023 is fixed and the
+  // workaround has been reverted.
+#if !defined(OS_ANDROID)
   EXPECT_CALL(*gl_, Clear(
       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT))
       .Times(1)
       .RetiresOnSaturation();
+#endif
 
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   gpu::Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
