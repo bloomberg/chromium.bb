@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #reset-profile-settings-overlay {
-  min-width: 500px;
+  width: 500px;
 }
 
 #reset-profile-settings-throbber {

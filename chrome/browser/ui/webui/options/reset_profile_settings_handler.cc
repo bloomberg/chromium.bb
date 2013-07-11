@@ -21,7 +21,7 @@
 
 namespace {
 const char kResetProfileSettingsLearnMoreUrl[] =
-    "https://support.google.com/chrome/?p=settings_reset_profile_settings";
+    "https://support.google.com/chrome/?p=ui_reset_settings";
 }  // namespace
 
 namespace options {
@@ -43,6 +43,7 @@ void ResetProfileSettingsHandler::GetLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "resetProfileSettingsCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON },
+    { "resetProfileSettingsExplanation", IDS_RESET_PROFILE_SETTINGS_EXPLANATION}
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

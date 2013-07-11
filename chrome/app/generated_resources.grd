@@ -15574,6 +15574,9 @@ Do you accept?
     <message name="IDS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="A label describing the purpose of the 'reset profile settings' feature">
       Things got out of control? Revert your Chrome profile to a clean, post install state.
     </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_EXPLANATION" desc="A label describing the consequences of the 'reset profile settings' feature">
+      Your browser settings will be restored to their original defaults. This will reset your homepage, new tab page, and search engine, disable your extensions and clear your cookies, content settings and site data.
+    </message>    
     <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
       Reset profile settings...
     </message>
