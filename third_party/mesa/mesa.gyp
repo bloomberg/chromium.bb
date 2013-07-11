@@ -80,6 +80,9 @@
             'include_dirs': [
               'src/include/c99',
             ],
+            'defines': [
+              '_GLAPI_NO_EXPORTS',
+            ],
           }],
         ],
       },
