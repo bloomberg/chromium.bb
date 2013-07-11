@@ -109,13 +109,21 @@ public class ProfileSyncService {
     }
 
     /**
-     * Signs in to sync, using the existing auth token.
+     * Signs in to sync, using the currently signed-in account.
      */
-    public void syncSignIn(String account) {
-        nativeSignInSync(mNativeProfileSyncServiceAndroid, account);
+    public void syncSignIn() {
+        nativeSignInSync(mNativeProfileSyncServiceAndroid);
         // Notify listeners right away that the sync state has changed (native side does not do
         // this)
         syncStateChanged();
+    }
+
+    /**
+     * Signs in to sync, using the existing auth token.
+     */
+    @Deprecated
+    public void syncSignIn(String account) {
+        syncSignIn();
     }
 
     /**
@@ -484,8 +492,7 @@ public class ProfileSyncService {
     private native int nativeInit();
     private native void nativeEnableSync(int nativeProfileSyncServiceAndroid);
     private native void nativeDisableSync(int nativeProfileSyncServiceAndroid);
-    private native void nativeSignInSync(
-            int nativeProfileSyncServiceAndroid, String username);
+    private native void nativeSignInSync(int nativeProfileSyncServiceAndroid);
     private native void nativeSignOutSync(int nativeProfileSyncServiceAndroid);
     private native void nativeTokenAvailable(
             int nativeProfileSyncServiceAndroid, String username, String authToken);

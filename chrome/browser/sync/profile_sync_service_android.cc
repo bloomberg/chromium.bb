@@ -172,8 +172,7 @@ void ProfileSyncServiceAndroid::DisableSync(JNIEnv* env, jobject) {
   }
 }
 
-void ProfileSyncServiceAndroid::SignInSync(
-    JNIEnv* env, jobject, jstring username) {
+void ProfileSyncServiceAndroid::SignInSync(JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Just return if sync already has everything it needs to start up (sync
   // should start up automatically as long as it has credentials). This can
@@ -185,25 +184,6 @@ void ProfileSyncServiceAndroid::SignInSync(
     return;
   }
 
-  if (!sync_service_->IsSyncEnabledAndLoggedIn() ||
-      !sync_service_->IsOAuthRefreshTokenAvailable()) {
-    // Set the currently-signed-in username, fetch an auth token if necessary,
-    // and enable sync.
-    std::string name = ConvertJavaStringToUTF8(env, username);
-    // TODO(tim) It should be enough to only call
-    // SigninManager::SetAuthenticatedUsername here. See
-    // http://crbug.com/107160.
-    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, name);
-    SigninManagerFactory::GetForProfile(profile_)->
-        SetAuthenticatedUsername(name);
-
-    GoogleServiceSigninSuccessDetails details(name, std::string());
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-        content::Source<Profile>(profile_),
-        content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-  }
-
   // Enable sync (if we don't have credentials yet, this will enable sync but
   // will not start it up - sync will start once credentials arrive).
   sync_service_->UnsuppressAndStart();
@@ -213,9 +193,6 @@ void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   sync_service_->DisableForUser();
-
-  // Clear the tokens.
-  SigninManagerFactory::GetForProfile(profile_)->SignOut();
 
   // Need to clear suppress start flag manually
   sync_prefs_->SetStartSuppressed(false);

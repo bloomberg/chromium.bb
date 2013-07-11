@@ -50,7 +50,7 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   void DisableSync(JNIEnv* env, jobject obj);
 
   // Called from Java when the user signs in to Chrome. Starts up sync.
-  void SignInSync(JNIEnv* env, jobject obj, jstring username);
+  void SignInSync(JNIEnv* env, jobject obj);
 
   // Called from Java when the user signs out of Chrome
   void SignOutSync(JNIEnv* env, jobject obj);

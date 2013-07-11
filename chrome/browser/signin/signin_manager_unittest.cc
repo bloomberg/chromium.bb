@@ -658,3 +658,18 @@ TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
       prefs::kGoogleServicesUsernamePattern, ".*@google.com");
   EXPECT_EQ("", manager_->GetAuthenticatedUsername());
 }
+
+TEST_F(SigninManagerTest, ExternalSignIn) {
+  manager_->Initialize(profile_.get(), g_browser_process->local_state());
+  EXPECT_EQ("",
+            profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
+  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ(0u, google_login_success_.size());
+
+  manager_->OnExternalSigninCompleted("external@example.com");
+  EXPECT_EQ(1u, google_login_success_.size());
+  EXPECT_EQ(0u, google_login_failure_.size());
+  EXPECT_EQ("external@example.com",
+            profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
+  EXPECT_EQ("external@example.com", manager_->GetAuthenticatedUsername());
+}

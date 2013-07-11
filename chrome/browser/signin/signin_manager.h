@@ -124,6 +124,10 @@ class SigninManager : public SigninManagerBase,
   // Invoked from an OAuthTokenFetchedCallback to complete user signin.
   virtual void CompletePendingSignin();
 
+  // Invoked from SigninManagerAndroid to indicate that the sign-in process
+  // has completed for |username|.
+  void OnExternalSigninCompleted(const std::string& username);
+
   // Returns true if there's a signin in progress.
   virtual bool AuthInProgress() const OVERRIDE;
 
@@ -228,6 +232,10 @@ class SigninManager : public SigninManagerBase,
   // auto sign-in by exchanging cookies for an oauth code.
   void OnGaiaCookiesFetched(
       const std::string session_index, const net::CookieList& cookie_list);
+
+  // Persists |username| as the currently signed-in account, and triggers
+  // a sign-in success notification.
+  void OnSignedIn(const std::string& username);
 
   // Called when a new request to re-authenticate a user is in progress.
   // Will clear in memory data but leaves the db as such so when the browser

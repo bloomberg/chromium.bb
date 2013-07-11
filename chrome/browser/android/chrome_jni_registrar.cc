@@ -14,6 +14,7 @@
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
+#include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
@@ -74,6 +75,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     autofill::PersonalDataManagerAndroid::Register },
   { "ProfileAndroid", ProfileAndroid::RegisterProfileAndroid },
   { "ProfileSyncService", ProfileSyncServiceAndroid::Register },
+  { "SigninManager", SigninManagerAndroid::Register },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
   { "SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid },
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
