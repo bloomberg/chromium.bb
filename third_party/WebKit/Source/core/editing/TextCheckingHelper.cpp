@@ -339,7 +339,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
                 
                 Vector<TextCheckingResult> results;
                 TextCheckingTypeMask checkingTypes = checkGrammar ? (TextCheckingTypeSpelling | TextCheckingTypeGrammar) : TextCheckingTypeSpelling;
-                checkTextOfParagraph(m_client->textChecker(), paragraphString.bloatedCharacters(), paragraphString.length(), checkingTypes, results);
+                checkTextOfParagraph(m_client->textChecker(), paragraphString, checkingTypes, results);
                 
                 for (unsigned i = 0; i < results.size(); i++) {
                     const TextCheckingResult* result = &results[i];
@@ -532,12 +532,15 @@ bool TextCheckingHelper::unifiedTextCheckerEnabled() const
     return WebCore::unifiedTextCheckerEnabled(doc->frame());
 }
 
-void checkTextOfParagraph(TextCheckerClient* client, const UChar* text, int length,
-                          TextCheckingTypeMask checkingTypes, Vector<TextCheckingResult>& results)
+void checkTextOfParagraph(TextCheckerClient* client, const String& text, TextCheckingTypeMask checkingTypes, Vector<TextCheckingResult>& results)
 {
+    Vector<UChar> characters;
+    text.appendTo(characters);
+    unsigned length = text.length();
+
     Vector<TextCheckingResult> spellingResult;
     if (checkingTypes & TextCheckingTypeSpelling)
-        findMisspellings(client, text, 0, length, spellingResult);
+        findMisspellings(client, characters.data(), 0, length, spellingResult);
 
     Vector<TextCheckingResult> grammarResult;
     if (checkingTypes & TextCheckingTypeGrammar) {
@@ -548,7 +551,7 @@ void checkTextOfParagraph(TextCheckerClient* client, const UChar* text, int leng
                 grammarCheckLength = spellingResult[i].location;
         }
 
-        findBadGrammars(client, text, 0, grammarCheckLength, grammarResult);
+        findBadGrammars(client, characters.data(), 0, grammarCheckLength, grammarResult);
     }
 
     if (grammarResult.size())
