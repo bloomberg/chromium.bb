@@ -208,6 +208,10 @@ bool IsLenovoDCuteInstalled() {
 // Determines whether D3D11 won't work, either because it is not supported on
 // the machine or because it is known it is likely to crash.
 bool D3D11ShouldWork(const GPUInfo& gpu_info) {
+  // TODO(apatrick): This is a temporary change to see what impact disabling
+  // D3D11 stats collection has on Canary.
+  return false;
+
   // Windows XP never supports D3D11. It seems to be less stable that D3D9 on
   // Vista.
   if (base::win::GetVersion() <= base::win::VERSION_VISTA)
