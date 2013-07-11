@@ -230,7 +230,12 @@
        {
          'target_name': 'autofill_content_test_util',
          'type': 'static_library',
+         'dependencies': [
+            '../testing/gmock.gyp:gmock',
+         ],
          'sources': [
+           'autofill/content/browser/wallet/mock_wallet_client.cc',
+           'autofill/content/browser/wallet/mock_wallet_client.h',
            'autofill/content/browser/wallet/wallet_test_util.cc',
            'autofill/content/browser/wallet/wallet_test_util.h',
          ],

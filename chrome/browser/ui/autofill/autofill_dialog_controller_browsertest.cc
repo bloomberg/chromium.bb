@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/content/browser/wallet/mock_wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -99,6 +101,9 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      dialog_type,
                                      base::Bind(&MockCallback)),
         metric_logger_(metric_logger),
+        mock_wallet_client_(
+            Profile::FromBrowserContext(contents->GetBrowserContext())->
+                GetRequestContext(), this),
         message_loop_runner_(runner),
         use_validation_(false) {}
 
@@ -151,7 +156,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_manager_;
   }
 
-  using AutofillDialogControllerImpl::DisableWallet;
   using AutofillDialogControllerImpl::IsEditingExistingData;
   using AutofillDialogControllerImpl::IsManuallyEditingSection;
 
@@ -164,6 +168,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_manager_;
   }
 
+  virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
+    return &mock_wallet_client_;
+  }
+
  private:
   // To specify our own metric logger.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
@@ -172,6 +180,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
+  testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   bool use_validation_;
 
@@ -422,7 +431,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutCancelled) {
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        MAYBE_FillInputFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
   AutofillProfile full_profile(test::GetFullProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -472,8 +480,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
 // Test that Autocheckout steps are shown after submitting the
 // dialog for controller with type DIALOG_TYPE_AUTOCHECKOUT.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       DISABLED_AutocheckoutShowsSteps) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutShowsSteps) {
   InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
   controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
 
@@ -525,7 +532,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        MAYBE_FillComboboxFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
   CreditCard card1;
   test::SetCreditCardInfo(&card1, "JJ Smith", "4111111111111111", "12", "2018");
@@ -649,7 +655,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
 // Ensure that expired cards trigger invalid suggestions.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
   CreditCard verified_card(test::GetCreditCard());
   verified_card.set_origin("Chrome settings");
@@ -679,8 +684,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
 }
 
 // Notifications with long message text should not make the dialog bigger.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       DISABLED_LongNotifications) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
 
   const gfx::Size no_notification_size =
@@ -771,7 +775,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
   controller()->set_use_validation(true);
 
   CreditCard credit_card(test::GetVerifiedCreditCard());

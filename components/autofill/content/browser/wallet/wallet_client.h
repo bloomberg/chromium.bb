@@ -210,7 +210,7 @@ class WalletClient
   // where the purchase occured, and |google_transaction_id| is the same as the
   // one provided by GetWalletItems. |latency_statistics| contain statistics
   // required to measure Autocheckout process.
-  void SendAutocheckoutStatus(
+  virtual void SendAutocheckoutStatus(
       autofill::AutocheckoutStatus status,
       const GURL& source_url,
       const std::vector<AutocheckoutStatistic>& latency_statistics,

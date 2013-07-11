@@ -19,8 +19,8 @@
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
+#include "components/autofill/content/browser/wallet/mock_wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
-#include "components/autofill/content/browser/wallet/wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
@@ -160,61 +160,6 @@ class TestAutofillDialogView : public AutofillDialogView {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
 };
 
-class TestWalletClient : public wallet::WalletClient {
- public:
-  TestWalletClient(net::URLRequestContextGetter* context,
-                   wallet::WalletClientDelegate* delegate)
-      : wallet::WalletClient(context, delegate) {}
-  virtual ~TestWalletClient() {}
-
-  MOCK_METHOD3(AcceptLegalDocuments,
-      void(const std::vector<wallet::WalletItems::LegalDocument*>& documents,
-           const std::string& google_transaction_id,
-           const GURL& source_url));
-
-  MOCK_METHOD3(AuthenticateInstrument,
-      void(const std::string& instrument_id,
-           const std::string& card_verification_number,
-           const std::string& obfuscated_gaia_id));
-
-  MOCK_METHOD1(GetFullWallet,
-      void(const wallet::WalletClient::FullWalletRequest& request));
-
-  MOCK_METHOD1(GetWalletItems, void(const GURL& source_url));
-
-  MOCK_METHOD2(SaveAddress,
-      void(const wallet::Address& address, const GURL& source_url));
-
-  MOCK_METHOD3(SaveInstrument,
-      void(const wallet::Instrument& instrument,
-           const std::string& obfuscated_gaia_id,
-           const GURL& source_url));
-
-  MOCK_METHOD4(SaveInstrumentAndAddress,
-      void(const wallet::Instrument& instrument,
-           const wallet::Address& address,
-           const std::string& obfuscated_gaia_id,
-           const GURL& source_url));
-
-  MOCK_METHOD2(UpdateAddress,
-      void(const wallet::Address& address, const GURL& source_url));
-
-  virtual void UpdateInstrument(
-      const wallet::WalletClient::UpdateInstrumentRequest& update_request,
-      scoped_ptr<wallet::Address> billing_address) {
-    updated_billing_address_ = billing_address.Pass();
-  }
-
-  const wallet::Address* updated_billing_address() {
-    return updated_billing_address_.get();
-  }
-
- private:
-  scoped_ptr<wallet::Address> updated_billing_address_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWalletClient);
-};
-
 // Bring over command-ids from AccountChooserModel.
 class TestAccountChooserModel : public AccountChooserModel {
  public:
@@ -250,7 +195,7 @@ class TestAutofillDialogController
                                      dialog_type,
                                      callback),
         metric_logger_(metric_logger),
-        test_wallet_client_(
+        mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
                 GetRequestContext(), this),
         dialog_type_(dialog_type) {}
@@ -272,8 +217,8 @@ class TestAutofillDialogController
     return &test_manager_;
   }
 
-  TestWalletClient* GetTestingWalletClient() {
-    return &test_wallet_client_;
+  wallet::MockWalletClient* GetTestingWalletClient() {
+    return &mock_wallet_client_;
   }
 
   const GURL& open_tab_url() { return open_tab_url_; }
@@ -298,7 +243,7 @@ class TestAutofillDialogController
   }
 
   virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
-    return &test_wallet_client_;
+    return &mock_wallet_client_;
   }
 
   virtual void OpenTabWithUrl(const GURL& url) OVERRIDE {
@@ -319,7 +264,7 @@ class TestAutofillDialogController
 
   const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
-  testing::NiceMock<TestWalletClient> test_wallet_client_;
+  testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
   GURL open_tab_url_;
   DialogType dialog_type_;
 
