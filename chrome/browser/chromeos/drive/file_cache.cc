@@ -199,21 +199,6 @@ scoped_ptr<FileCache::Iterator> FileCache::GetIterator() {
   return storage_->GetCacheEntryIterator();
 }
 
-void FileCache::FreeDiskSpaceIfNeededForOnUIThread(
-    int64 num_bytes,
-    const InitializeCacheCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&FileCache::FreeDiskSpaceIfNeededFor,
-                 base::Unretained(this),
-                 num_bytes),
-      callback);
-}
-
 bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   AssertOnSequencedWorkerPool();
 
@@ -516,7 +501,7 @@ FileError FileCache::Remove(const std::string& resource_id) {
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-void FileCache::ClearAllOnUIThread(const InitializeCacheCallback& callback) {
+void FileCache::ClearAllOnUIThread(const ClearAllCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
