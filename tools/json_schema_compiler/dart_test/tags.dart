@@ -54,13 +54,13 @@ class TagsPlainDict extends ChromeObject {
    * Public constructor
    */
   TagsPlainDict({int inline_doc, String nodoc, double nocompile, fileEntry instance_of_tag}) {
-    if (?inline_doc)
+    if (inline_doc != null)
       this.inline_doc = inline_doc;
-    if (?nodoc)
+    if (nodoc != null)
       this.nodoc = nodoc;
-    if (?nocompile)
+    if (nocompile != null)
       this.nocompile = nocompile;
-    if (?instance_of_tag)
+    if (instance_of_tag != null)
       this.instance_of_tag = instance_of_tag;
   }
 

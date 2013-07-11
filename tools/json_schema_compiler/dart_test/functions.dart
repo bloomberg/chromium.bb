@@ -78,7 +78,7 @@ class API_functions {
   /// Function taking a dictionary callback.
   void dictCallbackFunc(void c(DictType dict)) {
     void __proxy_callback(dict) {
-      if (?c) {
+      if (c != null) {
         c(new DictType._proxy(dict));
       }
     }

@@ -15,29 +15,29 @@ class DictionariesInnerType extends ChromeObject {
    * Public constructor
    */
   DictionariesInnerType({String s, int b, int i, int l, double d, FileEntry f, String os, int ob, int oi, int ol, double od, FileEntry of}) {
-    if (?s)
+    if (s != null)
       this.s = s;
-    if (?b)
+    if (b != null)
       this.b = b;
-    if (?i)
+    if (i != null)
       this.i = i;
-    if (?l)
+    if (l != null)
       this.l = l;
-    if (?d)
+    if (d != null)
       this.d = d;
-    if (?f)
+    if (f != null)
       this.f = f;
-    if (?os)
+    if (os != null)
       this.os = os;
-    if (?ob)
+    if (ob != null)
       this.ob = ob;
-    if (?oi)
+    if (oi != null)
       this.oi = oi;
-    if (?ol)
+    if (ol != null)
       this.ol = ol;
-    if (?od)
+    if (od != null)
       this.od = od;
-    if (?of)
+    if (of != null)
       this.of = of;
   }
 
@@ -140,9 +140,9 @@ class DictionariesOuterType extends ChromeObject {
    * Public constructor
    */
   DictionariesOuterType({List<DictionariesInnerType> items, List<DictionariesInnerType> oitems}) {
-    if (?items)
+    if (items != null)
       this.items = items;
-    if (?oitems)
+    if (oitems != null)
       this.oitems = oitems;
   }
 
@@ -191,9 +191,9 @@ class DictionariesComplexType extends ChromeObject {
    * Public constructor
    */
   DictionariesComplexType({int i, DictionariesComplexType c}) {
-    if (?i)
+    if (i != null)
       this.i = i;
-    if (?c)
+    if (c != null)
       this.c = c;
   }
 

@@ -15,9 +15,9 @@ class Operatable_typeDictType extends ChromeObject {
    * Public constructor
    */
   Operatable_typeDictType({int x, int y}) {
-    if (?x)
+    if (x != null)
       this.x = x;
-    if (?y)
+    if (y != null)
       this.y = y;
   }
 

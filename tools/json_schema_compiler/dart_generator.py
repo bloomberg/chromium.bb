@@ -127,7 +127,7 @@ class _Generator(object):
       )
 
       for prop_name in type_.properties:
-        (c.Sblock('if (?%s)' % prop_name)
+        (c.Sblock('if (%s != null)' % prop_name)
           .Append('this.%s = %s;' % (prop_name, prop_name))
           .Eblock()
         )
@@ -325,7 +325,7 @@ class _Generator(object):
 
     (c.Sblock("void __proxy_callback(%s) {" % ', '.join(p.name for p in
                                                f.params))
-      .Sblock('if (?%s) {' % callback_name)
+      .Sblock('if (%s != null) {' % callback_name)
     )
 
     # Add the proxied lists.
