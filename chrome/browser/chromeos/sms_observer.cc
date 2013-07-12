@@ -28,10 +28,6 @@ SmsObserver::~SmsObserver() {
 }
 
 void SmsObserver::UpdateObservers(NetworkLibrary* library) {
-  // Guard against calls to libcros (http://crosbug.com/17863).
-  if (!CrosLibrary::Get()->libcros_loaded())
-    return;
-
   const CellularNetworkVector& networks = library->cellular_networks();
   // Remove monitors for networks that are not in the list anymore.
   for (ObserversMap::iterator it_observer = observers_.begin();
@@ -77,10 +73,6 @@ void SmsObserver::UpdateObservers(NetworkLibrary* library) {
 }
 
 void SmsObserver::DisconnectAll() {
-  // Guard against calls to libcros (http://crosbug.com/17863).
-  if (!CrosLibrary::Get()->libcros_loaded())
-    return;
-
   for (ObserversMap::iterator it = observers_.begin();
        it != observers_.end(); ++it) {
     VLOG(1) << "Remove SMS monitor for " << it->first;
