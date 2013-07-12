@@ -34,4 +34,7 @@ const char kGpuCompositingFieldTrialName[] = "ForceCompositingMode";
 const char kGpuCompositingFieldTrialForceCompositingEnabledName[] = "enabled";
 const char kGpuCompositingFieldTrialThreadEnabledName[] = "thread";
 
+const char kLowLatencyFlashAudioFieldTrialName[] = "LowLatencyFlashAudio";
+const char kLowLatencyFlashAudioFieldTrialEnabledName[] = "LowLatency";
+
 }  // namespace content

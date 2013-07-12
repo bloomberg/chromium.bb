@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
+#include "content/public/common/content_constants.h"
 #include "net/spdy/spdy_session.h"
 #include "ui/base/layout.h"
 
@@ -55,7 +56,7 @@ void AutoLaunchChromeFieldTrial() {
   }
 }
 
-void SetUpInfiniteCacheFieldTrial() {
+void SetupInfiniteCacheFieldTrial() {
   const base::FieldTrial::Probability kDivisor = 100;
 
   base::FieldTrial::Probability infinite_cache_probability = 0;
@@ -83,7 +84,7 @@ void DisableShowProfileSwitcherTrialIfNecessary() {
   }
 }
 
-void SetUpCacheSensitivityAnalysisFieldTrial() {
+void SetupCacheSensitivityAnalysisFieldTrial() {
   const base::FieldTrial::Probability kDivisor = 100;
 
   base::FieldTrial::Probability sensitivity_analysis_probability = 0;
@@ -141,6 +142,17 @@ void WindowsOverlappedTCPReadsFieldTrial(
 #endif
 }
 
+void SetupLowLatencyFlashAudioFieldTrial() {
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          content::kLowLatencyFlashAudioFieldTrialName,
+          100, "Standard", 2013, 9, 1, NULL));
+
+  // Trial is enabled for dev / beta / canary users only.
+  if (chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_STABLE)
+    trial->AppendGroup(content::kLowLatencyFlashAudioFieldTrialEnabledName, 25);
+}
+
 }  // namespace
 
 void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
@@ -150,11 +162,12 @@ void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
   OmniboxFieldTrial::ActivateStaticTrials();
-  SetUpInfiniteCacheFieldTrial();
-  SetUpCacheSensitivityAnalysisFieldTrial();
+  SetupInfiniteCacheFieldTrial();
+  SetupCacheSensitivityAnalysisFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
   WindowsOverlappedTCPReadsFieldTrial(parsed_command_line);
   SetupAppLauncherFieldTrial(local_state);
+  SetupLowLatencyFlashAudioFieldTrial();
 }
 
 }  // namespace chrome

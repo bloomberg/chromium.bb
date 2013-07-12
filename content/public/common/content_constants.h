@@ -58,6 +58,10 @@ CONTENT_EXPORT extern const char
     kGpuCompositingFieldTrialForceCompositingEnabledName[];
 CONTENT_EXPORT extern const char kGpuCompositingFieldTrialThreadEnabledName[];
 
+// Shared constants for the low latency flash audio field trial.
+CONTENT_EXPORT extern const char kLowLatencyFlashAudioFieldTrialName[];
+CONTENT_EXPORT extern const char kLowLatencyFlashAudioFieldTrialEnabledName[];
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_
