@@ -84,30 +84,7 @@ gfx::ImageSkia GetIcon(int unread_count) {
   if (!has_unread)
     return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_EMPTY);
 
-  // TODO(dewittj): Use scale factors other than 100P.
-  scoped_ptr<gfx::Canvas> canvas(
-      new gfx::Canvas(gfx::Size(kSystemTrayWidth, kSystemTrayHeight),
-                      ui::SCALE_FACTOR_100P,
-                      false));
-
-  // Draw the attention-grabbing background image.
-  canvas->DrawImageInt(
-      *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_ATTENTION), 0, 0);
-
-  // |numbers| is a sprite map with the image of a number from 1-9 and 9+. They
-  // are arranged horizontally, and have a transparent background.
-  gfx::ImageSkia* numbers = rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_NUMBERS);
-
-  // Assume that the last sprite is the catch-all for higher numbers of
-  // notifications.
-  int effective_unread = std::min(unread_count, kNumberOfSystemTraySprites);
-  int x_offset = (effective_unread - 1) * kSystemTrayWidth;
-
-  canvas->DrawImageInt(*numbers,
-                       x_offset, 0, kSystemTrayWidth, kSystemTrayHeight,
-                       0, 0, kSystemTrayWidth, kSystemTrayHeight,
-                       false);
-  return gfx::ImageSkia(canvas->ExtractImageRep());
+  return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_ATTENTION);
 }
 
 }  // namespace
