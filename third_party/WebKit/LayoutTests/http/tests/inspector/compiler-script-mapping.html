@@ -314,7 +314,7 @@ function test()
 
         function testSourceMapCouldNotBeLoaded(next)
         {
-            WebInspector.settings.sourceMapsEnabled.set(true);
+            WebInspector.settings.jsSourceMapsEnabled.get = function() { return true; }
             WebInspector.debuggerModel._reset();
             InspectorTest.createWorkspace();
             var debuggerScriptMapping = new WebInspector.DebuggerScriptMapping(InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);

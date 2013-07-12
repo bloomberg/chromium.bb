@@ -14,7 +14,7 @@ function addStylesheet()
 
 function test()
 {
-    WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
+    WebInspector.settings.cssSourceMapsEnabled.get = function() { return true; }
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, step1, this);
     InspectorTest.evaluateInPage("addStylesheet()");
 

@@ -20,8 +20,8 @@ function addStylesheet()
 
 function test()
 {
-    WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
-    InspectorTest.evaluateInPage("addStylesheet()", step1);
+    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, step1, this);
+    InspectorTest.evaluateInPage("addStylesheet()");
 
     function step1()
     {

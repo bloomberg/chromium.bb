@@ -59,7 +59,6 @@ function test()
         InspectorTest.addResult(uiLocation.uiSourceCode.url + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
     }
 
-    WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
     InspectorTest.createWorkspace();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
     cssModel = new WebInspector.CSSStyleModel(InspectorTest.testWorkspace);

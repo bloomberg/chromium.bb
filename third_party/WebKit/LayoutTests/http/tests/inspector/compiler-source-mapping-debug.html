@@ -16,7 +16,7 @@ function test()
     InspectorTest.runDebuggerTestSuite([
         function testSetBreakpoint(next)
         {
-            WebInspector.settings.sourceMapsEnabled.set(true);
+            WebInspector.settings.jsSourceMapsEnabled.get = function() { return true; };
             InspectorTest.reloadPage(pageReloaded);
 
             function pageReloaded()

@@ -8,7 +8,6 @@
 
 function test()
 {
-    WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
     InspectorTest.createWorkspace();
     var cssModel = new WebInspector.CSSStyleModel(InspectorTest.testWorkspace);
     var mapping = new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);

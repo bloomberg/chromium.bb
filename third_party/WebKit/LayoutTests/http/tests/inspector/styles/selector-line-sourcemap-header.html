@@ -7,16 +7,10 @@
 
 function test()
 {
-    WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
-    InspectorTest.reloadPage(step1);
+    WebInspector.showPanel("elements");
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
-    {
-        WebInspector.showPanel("elements");
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
-    }
-
-    function step2()
     {
         InspectorTest.dumpSelectedElementStyles(true);
         InspectorTest.completeTest();

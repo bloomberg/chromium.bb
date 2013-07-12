@@ -1,7 +1,6 @@
 Tests that selector line is computed correctly regardless of its start column. Bug 110732.
 
 Text
-Page reloaded.
 [expanded] 
 element.style  { ()
 
