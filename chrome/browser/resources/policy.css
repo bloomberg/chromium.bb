@@ -122,6 +122,10 @@ section:not(.empty) > div.no-policies-set {
   display: none;
 }
 
+#main-section {
+  -webkit-padding-start: 0;
+}
+
 section.policy-table-section {
   padding-bottom: 10px;
 }
