@@ -311,7 +311,7 @@ InspectorTest.clickRowAndGetRetainers = function(row, callback)
         }
     };
     this._currentGrid()._mouseDownInDataTable(event);
-    var rootNode = InspectorTest._currentProfileView().retainmentDataGrid.rootNode();
+    var rootNode = InspectorTest.currentProfileView().retainmentDataGrid.rootNode();
     function populateComplete()
     {
         rootNode.removeEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
@@ -713,14 +713,14 @@ InspectorTest.viewColumns = function()
     return InspectorTest._currentGrid()._columnsArray;
 };
 
-InspectorTest._currentProfileView = function()
+InspectorTest.currentProfileView = function()
 {
     return WebInspector.panels.profiles.visibleView;
 };
 
 InspectorTest._currentGrid = function()
 {
-    return this._currentProfileView().dataGrid;
+    return this.currentProfileView().dataGrid;
 };
 
 InspectorTest._snapshotViewShown = function()

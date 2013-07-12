@@ -1,0 +1,82 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="heap-snapshot-test.js"></script>
+<script>
+
+function test()
+{
+    var instanceCount = 25;
+    function createHeapSnapshot()
+    {
+        return InspectorTest.createHeapSnapshot(instanceCount);
+    }
+
+    InspectorTest.runHeapSnapshotTestSuite([
+        function testSearch(next)
+        {
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1a);
+
+            function step1a()
+            {
+                InspectorTest.switchToView("Summary", step1b);
+            }
+
+            function step1b()
+            {
+                var row = InspectorTest.findRow("object", "Window");
+                InspectorTest.assertEquals(true, !!row, "\"Window\" class row");
+                InspectorTest.expandRow(row, step1c);
+            }
+
+            function step1c(row)
+            {
+                InspectorTest.assertEquals(1, row.children.length, "single Window object");
+                var windowRow = row.children[0];
+                InspectorTest.assertEquals(true, !!windowRow, "\"Window\" instance row");
+                InspectorTest.expandRow(windowRow, step2);
+            }
+
+            function step2()
+            {
+                InspectorTest.currentProfileView().performSearch("A", step3);
+            }
+
+            function step3(view, resultCount)
+            {
+                InspectorTest.assertEquals(1, resultCount, "Search for existing node");
+                view.searchCanceled();
+                view.performSearch("foo", step4);
+            }
+
+            function step4(view, resultCount)
+            {
+                InspectorTest.assertEquals(0, resultCount, "Search for not-existing node");
+                view.searchCanceled();
+                view.performSearch("@999", step5);
+            }
+
+            function step5(view, resultCount)
+            {
+                InspectorTest.assertEquals(0, resultCount, "Search for not-existing node by id");
+                view.searchCanceled();
+                view.performSearch("@83", step6);
+            }
+
+            function step6(view, resultCount)
+            {
+                InspectorTest.assertEquals(1, resultCount, "Search for existing node by id");
+                next();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests search in Summary view of detailed heap snapshots.
+</p>
+</body>
+</html>
