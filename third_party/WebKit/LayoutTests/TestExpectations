@@ -1813,3 +1813,5 @@ crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li
 Bug(cbiesinger) [ Win ] fast/forms/button-default-title.html [ Failure ]
 
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
+
+crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
