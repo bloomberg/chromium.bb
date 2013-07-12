@@ -9,7 +9,7 @@
 <link id="spacebar-row" rel="import" href="spacebar-row.html">
 
 <template>
-  <kb-keyset id="dvorak-upper" toKeyset="lower">
+  <kb-keyset id="dvorak-upper">
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key-sequence keys="&quot;,.PYFGCRL" superscripts="1234567890"></kb-key-sequence>
@@ -21,14 +21,14 @@
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-shift dark" toKeyset="lower" char="Invalid" align="left">shift</kb-key>
+      <kb-key class="left-shift dark" toKeyset="up:lower" char="Invalid" align="left">shift</kb-key>
       <kb-key-sequence keys=";QJKXBMWVZ"></kb-key-sequence>
-      <kb-key class="right-shift dark" toKeyset="lower" char="Invalid" align="right">shift</kb-key>
+      <kb-key class="right-shift dark" toKeyset="up:lower" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:symbol" char="Invalid" align="left">#123</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:symbol" char="Invalid" align="right">#123</kb-key>
       <kb-layout-selector></kb-layout-selector>
     </kb-row>
     <kb-accent-container hidden>
@@ -47,14 +47,14 @@
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-shift dark" toKeyset="upper" char="Invalid" align="left">shift</kb-key>
+      <kb-key class="left-shift dark" toKeyset="up:upper:lower;long:upper" char="Invalid" align="left">shift</kb-key>
       <kb-key-sequence keys=";qjkxbmwvz"></kb-key-sequence>
-      <kb-key class="right-shift dark" toKeyset="upper" char="Invalid" align="right">shift</kb-key>
+      <kb-key class="right-shift dark" toKeyset="up:upper:lower;long:upper" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:symbol" char="Invalid" align="left">#123</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:symbol" char="Invalid" align="right">#123</kb-key>
       <kb-layout-selector></kb-layout-selector>
     </kb-row>
     <kb-accent-container hidden>
@@ -73,14 +73,14 @@
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-more dark" toKeyset="more" char="Invalid" align="left">more</kb-key>
+      <kb-key class="left-more dark" toKeyset="up:more" char="Invalid" align="left">more</kb-key>
       <kb-key-sequence keys="!&quot;':;/?"></kb-key-sequence>
-      <kb-key class="right-more dark" toKeyset="more" char="Invalid" align="right">more</kb-key>
+      <kb-key class="right-more dark" toKeyset="up:more" char="Invalid" align="right">more</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:lower" char="Invalid" align="left">abc</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:lower" char="Invalid" align="right">abc</kb-key>
       <kb-layout-selector></kb-layout-selector>
     </kb-row>
     <kb-accent-container hidden>
@@ -103,16 +103,16 @@
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-more dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
+      <kb-key class="left-more dark" toKeyset="up:symbol" char="Invalid" align="left">#123</kb-key>
       <kb-key>&#x00D7</kb-key><kb-key>&#x00F7</kb-key><kb-key>_</kb-key><kb-key>&#x00A7</kb-key>
       <kb-key>&#x00B6</kb-key><kb-key>&#x00A1</kb-key><kb-key>&#x00BF</kb-key><kb-key>&#x2022</kb-key>
       <kb-key>&#x0394</kb-key>
-      <kb-key class="right-more dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
+      <kb-key class="right-more dark" toKeyset="up:symbol" char="Invalid" align="right">#123</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:lower" char="Invalid" align="left">abc</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
-      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
+      <kb-key class="symbol dark" toKeyset="up:lower" char="Invalid" align="right">abc</kb-key>
       <kb-layout-selector></kb-layout-selector>
     </kb-row>
   </kb-keyset>

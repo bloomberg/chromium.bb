@@ -4,8 +4,8 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-keyset" attributes="toKeyset isDefault" on-key-up="keyUp"
-    on-key-longpress="keyLongpress">
+<element name="kb-keyset" attributes="nextKeyset isDefault"
+    on-key-up="keyUp" on-key-longpress="keyLongpress">
   <template>
     <style>
       @host {
@@ -23,6 +23,12 @@
   <script>
     Polymer.register(this, {
       isDefault: false,
+      nextKeyset: null,
+      // TODO(bshe): support select keyset on down, long and dbl events.
+      keyUp: function(event, detail) {
+        if (!detail.toKeyset)
+          detail.toKeyset = this.nextKeyset;
+      },
       keyLongpress: function(event, detail) {
         if (detail.accents) {
           var accentContainer = this.$.accentContainer.getDistributedNodes()[0];
@@ -41,10 +47,6 @@
               'px';
           accentContainer.hidden = false;
         }
-      },
-      keyUp: function(event, detail) {
-        if (!detail.toKeyset)
-          detail.toKeyset = this.toKeyset;
       }
     });
   </script>

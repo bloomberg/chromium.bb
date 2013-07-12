@@ -5,7 +5,8 @@
   -->
 
 <element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
-    on-key-down="keyDown" attributes="keyset layout rows">
+    on-key-down="keyDown" on-key-longpress="keyLongpress"
+    attributes="keyset layout rows">
   <template>
     <style>
       @host {
@@ -89,17 +90,25 @@
       },
 
       /**
-       * Handles key-down event that is sent by kb-key.
-       * @param {CustomEvent} event The key-down event dispatched by kb-key.
+       * Handles key-down event that is sent by kb-key-base.
+       * @param {CustomEvent} event The key-down event dispatched by
+       *     kb-key-base.
        * @param {Object} detail The detail of pressed kb-key.
        */
       keyDown: function(event, detail) {
-        var toKeyset = detail.toKeyset;
         if (this.lastPressedKey)
           this.lastPressedKey.classList.remove('active');
         this.lastPressedKey = event.target;
         this.lastPressedKey.classList.add('active');
         repeatKey.cancel();
+        var toKeyset = detail.toKeyset;
+        if (toKeyset) {
+          this.keyset = toKeyset;
+          this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
+              detail.nextKeyset;
+          return;
+        }
+
         if (detail.repeat) {
           insertText(detail.char);
           repeatKey.key = this.lastPressedKey;
@@ -113,8 +122,8 @@
       },
 
       /**
-       * Handles key-up event that is sent by kb-key.
-       * @param {CustomEvent} event The key-up event dispatched by kb-key.
+       * Handles key-up event that is sent by kb-key-base.
+       * @param {CustomEvent} event The key-up event dispatched by kb-key-base.
        * @param {Object} detail The detail of pressed kb-key.
        */
       keyUp: function(event, detail) {
@@ -127,8 +136,11 @@
         }
         var toKeyset = detail.toKeyset;
         // Keyset transition key.
-        if (toKeyset)
+        if (toKeyset) {
           this.keyset = toKeyset;
+          this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
+              detail.nextKeyset;
+        }
         var toLayout = detail.toLayout;
         // Layout transition key.
         if (toLayout)
@@ -154,6 +166,23 @@
             break;
         }
         insertText(char);
+      },
+
+      /*
+       * Handles key-longpress event that is sent by kb-key-base.
+       * @param {CustomEvent} event The key-longpress event dispatched by
+       *     kb-key-base.
+       * @param {Object} detail The detail of pressed key.
+       */
+      keyLongpress: function(event, detail) {
+        this.lastPressedKey.classList.remove('active');
+        var toKeyset = detail.toKeyset;
+        // Keyset transtion key.
+        if (toKeyset) {
+          this.keyset = toKeyset;
+          this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
+              detail.nextKeyset;
+        }
       },
 
       /**
