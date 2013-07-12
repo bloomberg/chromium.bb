@@ -226,23 +226,14 @@ bool ActivityLog::IsLogEnabled() {
   return enabled_;
 }
 
-void ActivityLog::OnExtensionInstalled(const Extension* extension) {
+void ActivityLog::OnExtensionLoaded(const Extension* extension) {
   if (extension->id() != kActivityLogExtensionId) return;
   enabled_ = true;
   LogIsEnabled::GetInstance()->SetProfileEnabled(true);
   ChooseDefaultPolicy();
 }
 
-void ActivityLog::OnExtensionUninstalled(const Extension* extension) {
-  if (extension->id() != kActivityLogExtensionId) return;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionActivityLogging))
-    enabled_ = false;
-}
-
-// Counter-intuitively, OnExtensionInstalled is also called when an extension
-// is reenabled.
-void ActivityLog::OnExtensionDisabled(const Extension* extension) {
+void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
   if (extension->id() != kActivityLogExtensionId) return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExtensionActivityLogging))

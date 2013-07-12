@@ -110,7 +110,7 @@ void AppsModelBuilder::OnInstallFailure(const std::string& extension_id) {
   model_->DeleteAt(i);
 }
 
-void AppsModelBuilder::OnExtensionInstalled(const Extension* extension) {
+void AppsModelBuilder::OnExtensionLoaded(const Extension* extension) {
   if (!extension->ShouldDisplayInAppLauncher())
     return;
 
@@ -129,18 +129,18 @@ void AppsModelBuilder::OnExtensionInstalled(const Extension* extension) {
   UpdateHighlight();
 }
 
+void AppsModelBuilder::OnExtensionUnloaded(const Extension* extension) {
+  int index = FindApp(extension->id());
+  if (index < 0)
+    return;
+  GetAppAt(index)->UpdateIcon();
+}
+
 void AppsModelBuilder::OnExtensionUninstalled(const Extension* extension) {
   int index = FindApp(extension->id());
   if (index < 0)
     return;
   model_->DeleteAt(index);
-}
-
-void AppsModelBuilder::OnExtensionDisabled(const Extension* extension) {
-  int index = FindApp(extension->id());
-  if (index < 0)
-    return;
-  GetAppAt(index)->UpdateIcon();
 }
 
 void AppsModelBuilder::OnAppsReordered() {

@@ -28,8 +28,9 @@ class InstallObserver {
   virtual void OnInstallFailure(const std::string& extension_id) = 0;
 
   virtual void OnExtensionInstalled(const Extension* extension) = 0;
+  virtual void OnExtensionLoaded(const Extension* extension) = 0;
+  virtual void OnExtensionUnloaded(const Extension* extension) = 0;
   virtual void OnExtensionUninstalled(const Extension* extension) = 0;
-  virtual void OnExtensionDisabled(const Extension* extension) = 0;
   virtual void OnAppsReordered() = 0;
   virtual void OnAppInstalledToAppList(const std::string& extension_id) = 0;
 

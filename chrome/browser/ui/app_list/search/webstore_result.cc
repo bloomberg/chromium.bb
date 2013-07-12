@@ -185,10 +185,13 @@ void WebstoreResult::OnExtensionInstalled(
   UpdateActions();
 }
 
-void WebstoreResult::OnExtensionUninstalled(
+void WebstoreResult::OnExtensionLoaded(
     const extensions::Extension* extension) {}
 
-void WebstoreResult::OnExtensionDisabled(
+void WebstoreResult::OnExtensionUnloaded(
+    const extensions::Extension* extension) {}
+
+void WebstoreResult::OnExtensionUninstalled(
     const extensions::Extension* extension) {}
 
 void WebstoreResult::OnAppsReordered() {}

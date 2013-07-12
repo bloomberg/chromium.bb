@@ -56,10 +56,12 @@ class AppsModelBuilder : public ui::ListModelObserver,
 
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
   virtual void OnExtensionInstalled(
+      const extensions::Extension* extension) OVERRIDE {}
+  virtual void OnExtensionLoaded(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnExtensionUninstalled(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void OnExtensionDisabled(
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnAppsReordered() OVERRIDE;
   virtual void OnAppInstalledToAppList(

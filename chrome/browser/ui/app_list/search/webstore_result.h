@@ -60,9 +60,11 @@ class WebstoreResult : public ChromeSearchResult,
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
   virtual void OnExtensionInstalled(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void OnExtensionUninstalled(
+  virtual void OnExtensionLoaded(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void OnExtensionDisabled(
+  virtual void OnExtensionUnloaded(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnAppsReordered() OVERRIDE;
   virtual void OnAppInstalledToAppList(
