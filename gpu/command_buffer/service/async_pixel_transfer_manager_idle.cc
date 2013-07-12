@@ -44,7 +44,8 @@ class AsyncPixelTransferDelegateIdle
  public:
   AsyncPixelTransferDelegateIdle(
       AsyncPixelTransferManagerIdle::SharedState* state,
-      GLuint texture_id);
+      GLuint texture_id,
+      const AsyncTexImage2DParams& define_params);
   virtual ~AsyncPixelTransferDelegateIdle();
 
   // Implement AsyncPixelTransferDelegate:
@@ -72,6 +73,7 @@ class AsyncPixelTransferDelegateIdle
   uint64 id_;
   GLuint texture_id_;
   bool transfer_in_progress_;
+  AsyncTexImage2DParams define_params_;
 
   // Safe to hold a raw pointer because SharedState is owned by the Manager
   // which owns the Delegate.
@@ -82,10 +84,12 @@ class AsyncPixelTransferDelegateIdle
 
 AsyncPixelTransferDelegateIdle::AsyncPixelTransferDelegateIdle(
     AsyncPixelTransferManagerIdle::SharedState* shared_state,
-    GLuint texture_id)
+    GLuint texture_id,
+    const AsyncTexImage2DParams& define_params)
     : id_(g_next_pixel_transfer_state_id++),
       texture_id_(texture_id),
       transfer_in_progress_(false),
+      define_params_(define_params),
       shared_state_(shared_state) {}
 
 AsyncPixelTransferDelegateIdle::~AsyncPixelTransferDelegateIdle() {}
@@ -206,7 +210,26 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   gfx::ScopedTextureBinder texture_binder(tex_params.target, texture_id_);
 
-  {
+  // If it's a full texture update, use glTexImage2D as it's faster.
+  // TODO(epenner): Make this configurable (http://crbug.com/259924)
+  if (tex_params.xoffset == 0 &&
+      tex_params.yoffset == 0 &&
+      tex_params.target == define_params_.target &&
+      tex_params.level  == define_params_.level &&
+      tex_params.width  == define_params_.width &&
+      tex_params.height == define_params_.height) {
+    TRACE_EVENT0("gpu", "glTexImage2D");
+    glTexImage2D(
+        define_params_.target,
+        define_params_.level,
+        define_params_.internal_format,
+        define_params_.width,
+        define_params_.height,
+        define_params_.border,
+        tex_params.format,
+        tex_params.type,
+        data);
+  } else {
     TRACE_EVENT0("gpu", "glTexSubImage2D");
     glTexSubImage2D(
         tex_params.target,
@@ -307,7 +330,9 @@ AsyncPixelTransferDelegate*
 AsyncPixelTransferManagerIdle::CreatePixelTransferDelegateImpl(
     gles2::TextureRef* ref,
     const AsyncTexImage2DParams& define_params) {
-  return new AsyncPixelTransferDelegateIdle(&shared_state_, ref->service_id());
+  return new AsyncPixelTransferDelegateIdle(&shared_state_,
+                                            ref->service_id(),
+                                            define_params);
 }
 
 }  // namespace gpu

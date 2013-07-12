@@ -5,8 +5,8 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
 #include "base/debug/trace_event.h"
-#include "base/sys_info.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_egl.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_idle.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_stub.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_sync.h"
 #include "ui/gl/gl_context.h"
@@ -50,11 +50,11 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
           context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
           context->HasExtension("GL_OES_EGL_image") &&
           !IsBroadcom() &&
-          (!IsImagination() || base::SysInfo::DalvikHeapSizeMB() > 128)) {
+          !IsImagination()) {
         return new AsyncPixelTransferManagerEGL;
       }
       LOG(INFO) << "Async pixel transfers not supported";
-      return new AsyncPixelTransferManagerSync;
+      return new AsyncPixelTransferManagerIdle;
     case gfx::kGLImplementationMockGL:
       return new AsyncPixelTransferManagerStub;
     default:
