@@ -18,7 +18,6 @@ class FakeTileManager : public TileManager {
   FakeTileManager(TileManagerClient* client,
                   ResourceProvider* resource_provider);
 
-  void ReassignMemoryToOOMTilesRequiredForActivation();
   bool HasBeenAssignedMemory(Tile* tile);
   void AssignMemoryToTiles();
 
@@ -26,7 +25,6 @@ class FakeTileManager : public TileManager {
 
   std::vector<Tile*> tiles_for_raster;
   std::vector<scoped_refptr<Tile> > all_tiles;
-  std::set<Tile*> oom_tiles_required_for_activation;
 };
 
 }  // namespace cc

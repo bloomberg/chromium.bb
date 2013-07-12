@@ -53,7 +53,8 @@ ManagedTileState::ManagedTileState()
       resolution(NON_IDEAL_RESOLUTION),
       required_for_activation(false),
       time_to_needed_in_seconds(std::numeric_limits<float>::infinity()),
-      distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()) {
+      distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()),
+      visible_and_ready_to_draw(false) {
   for (int i = 0; i < NUM_TREES; ++i) {
     tree_bin[i] = NEVER_BIN;
     bin[i] = NEVER_BIN;

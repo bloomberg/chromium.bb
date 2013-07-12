@@ -71,6 +71,8 @@ class TileManagerTest : public testing::Test {
     tile_manager_ = make_scoped_ptr(
         new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
 
+    memory_limit_policy_ = memory_limit_policy;
+    max_memory_tiles_ = max_memory_tiles;
     GlobalStateThatImpactsTilePriority state;
     gfx::Size tile_size = settings_.default_tile_size;
     state.memory_limit_in_bytes =
@@ -80,6 +82,16 @@ class TileManagerTest : public testing::Test {
 
     tile_manager_->SetGlobalState(state);
     picture_pile_ = make_scoped_refptr(new FakePicturePileImpl());
+  }
+
+  void SetTreePriority(TreePriority tree_priority) {
+    GlobalStateThatImpactsTilePriority state;
+    gfx::Size tile_size = settings_.default_tile_size;
+    state.memory_limit_in_bytes =
+        max_memory_tiles_ * 4 * tile_size.width() * tile_size.height();
+    state.memory_limit_policy = memory_limit_policy_;
+    state.tree_priority = tree_priority;
+    tile_manager_->SetGlobalState(state);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -144,6 +156,8 @@ class TileManagerTest : public testing::Test {
   scoped_refptr<FakePicturePileImpl> picture_pile_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  TileMemoryLimitPolicy memory_limit_policy_;
+  int max_memory_tiles_;
 };
 
 TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
@@ -246,7 +260,8 @@ TEST_F(TileManagerTest, PartialOOMMemoryToPending) {
   EXPECT_EQ(5, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(3, AssignedMemoryCount(pending_tree_tiles));
 
-  tile_manager()->ReassignMemoryToOOMTilesRequiredForActivation();
+  SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(3, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(5, AssignedMemoryCount(pending_tree_tiles));
@@ -286,7 +301,8 @@ TEST_F(TileManagerTest, TotalOOMMemoryToPending) {
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
 
-  tile_manager()->ReassignMemoryToOOMTilesRequiredForActivation();
+  SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
@@ -309,7 +325,8 @@ TEST_F(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
 
-  tile_manager()->ReassignMemoryToOOMTilesRequiredForActivation();
+  SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
+  tile_manager()->AssignMemoryToTiles();
 
   EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));

@@ -154,6 +154,7 @@ class CC_EXPORT ManagedTileState {
   bool required_for_activation;
   float time_to_needed_in_seconds;
   float distance_to_visible_in_pixels;
+  bool visible_and_ready_to_draw;
 };
 
 }  // namespace cc

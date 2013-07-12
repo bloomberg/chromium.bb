@@ -40,19 +40,12 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
 
 FakeTileManager::~FakeTileManager() {}
 
-void FakeTileManager::ReassignMemoryToOOMTilesRequiredForActivation() {
-  ReassignGpuMemoryToOOMTilesRequiredForActivation(
-      all_tiles, &tiles_for_raster, &oom_tiles_required_for_activation);
-}
-
 void FakeTileManager::AssignMemoryToTiles() {
   tiles_for_raster.clear();
-  oom_tiles_required_for_activation.clear();
   all_tiles.clear();
 
   GetSortedTiles(&all_tiles);
-  AssignGpuMemoryToTiles(
-      all_tiles, &tiles_for_raster, &oom_tiles_required_for_activation);
+  AssignGpuMemoryToTiles(all_tiles, &tiles_for_raster);
 }
 
 bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {

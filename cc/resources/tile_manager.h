@@ -96,14 +96,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   virtual void ScheduleTasks(
       const TileVector& tiles_that_need_to_be_rasterized);
 
-  void ReassignGpuMemoryToOOMTilesRequiredForActivation(
-      const TileRefVector& sorted_tiles,
-      TileVector* tiles_that_need_to_be_rasterized,
-      TileSet* oom_tiles_required_for_activation);
   void AssignGpuMemoryToTiles(
       const TileRefVector& sorted_tiles,
-      TileVector* tiles_that_need_to_be_rasterized,
-      TileSet* oom_tiles_required_for_activation);
+      TileVector* tiles_that_need_to_be_rasterized);
   void AssignBinsToTiles(TileRefVector* tiles);
   void SortTiles(TileRefVector* tiles);
   void GetSortedTiles(TileRefVector* tiles);

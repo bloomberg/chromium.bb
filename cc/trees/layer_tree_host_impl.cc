@@ -1393,6 +1393,9 @@ void LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
     return;
   }
 
+  // Manage tiles in case state affecting tile priority has changed.
+  ManageTiles();
+
   TRACE_EVENT_ASYNC_STEP1(
     "cc",
     "PendingTree", pending_tree_.get(), "activate",
