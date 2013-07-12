@@ -51,6 +51,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
@@ -454,7 +455,8 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url)
 {
     UserGestureIndicator indicator(DefinitelyProcessingNewUserGesture);
     Frame* frame = m_page->mainFrame();
-    frame->loader()->changeLocation(frame->document()->securityOrigin(), frame->document()->completeURL(url), "", false);
+    FrameLoadRequest request(frame->document()->securityOrigin(), ResourceRequest(frame->document()->completeURL(url)));
+    frame->loader()->load(request);
 }
 
 static PassRefPtr<TypeBuilder::Page::Cookie> buildObjectForCookie(const Cookie& cookie)

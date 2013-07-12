@@ -133,7 +133,7 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     CString content("");
     int length = static_cast<int>(content.length());
     RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), length));
-    webFrame->frame()->loader()->loadFrameRequest(FrameLoadRequest(0, ResourceRequest(url), SubstituteData(buffer, "text/html", "UTF-8", KURL())), false, 0, 0, MaybeSendReferrer);
+    webFrame->frame()->loader()->load(FrameLoadRequest(0, ResourceRequest(url), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 
     // This document will be used as 'loading context' for the worker.
     m_loadingDocument = webFrame->frame()->document();

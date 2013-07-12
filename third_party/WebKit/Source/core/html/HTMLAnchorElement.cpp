@@ -585,7 +585,10 @@ void HTMLAnchorElement::handleClick(Event* event)
         frame->loader()->client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));
     } else {
         FrameLoadRequest frameRequest(document()->securityOrigin(), request, target());
-        frame->loader()->loadFrameRequest(frameRequest, false, event, 0, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
+        frameRequest.setTriggeringEvent(event);
+        if (hasRel(RelationNoReferrer))
+            frameRequest.setShouldSendReferrer(NeverSendReferrer);
+        frame->loader()->load(frameRequest);
     }
 
     sendPings(completedURL);

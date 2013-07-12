@@ -89,6 +89,7 @@
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
 #include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -216,14 +217,6 @@ void FrameLoader::setDefersLoading(bool defers)
         m_frame->navigationScheduler()->startTimer();
         startCheckCompleteTimer();
     }
-}
-
-void FrameLoader::changeLocation(SecurityOrigin* securityOrigin, const KURL& url, const String& referrer, bool lockBackForwardList, bool refresh)
-{
-    m_startingClientRedirect = true;
-    loadFrameRequest(FrameLoadRequest(securityOrigin, ResourceRequest(url, referrer, refresh ? ReloadIgnoringCacheData : UseProtocolCachePolicy), "_self"),
-        lockBackForwardList, 0, 0, MaybeSendReferrer);
-    m_startingClientRedirect = false;
 }
 
 void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
@@ -936,8 +929,7 @@ void FrameLoader::prepareForHistoryNavigation()
     }
 }
 
-void FrameLoader::loadFrameRequest(const FrameLoadRequest& passedRequest, bool lockBackForwardList,
-    PassRefPtr<Event> event, PassRefPtr<FormState> formState, ShouldSendReferrer shouldSendReferrer)
+void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
     ASSERT(!m_suppressOpenerInNewFrame);
 
@@ -963,7 +955,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& passedRequest, bool l
         argsReferrer = outgoingReferrer();
 
     String referrer = request.requester() ? SecurityPolicy::generateReferrerHeader(m_frame->document()->referrerPolicy(), url, argsReferrer) : argsReferrer;
-    if (shouldSendReferrer == NeverSendReferrer)
+    if (request.shouldSendReferrer() == NeverSendReferrer)
         referrer = String();
 
     if (!referrer.isEmpty()) {
@@ -976,7 +968,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& passedRequest, bool l
     FrameLoadType loadType;
     if (resourceRequest.cachePolicy() == ReloadIgnoringCacheData)
         loadType = FrameLoadTypeReload;
-    else if (lockBackForwardList)
+    else if (request.lockBackForwardList())
         loadType = FrameLoadTypeRedirectWithLockedBackForwardList;
     else if (shouldTreatURLAsSameAsCurrent(request.substituteData().failingURL()) && m_loadType == FrameLoadTypeReload)
         loadType = FrameLoadTypeReload;
@@ -985,11 +977,10 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& passedRequest, bool l
 
     if (request.requester() && request.frameName().isEmpty())
         request.setFrameName(m_frame->document()->baseTarget());
-    if (shouldSendReferrer == NeverSendReferrer)
-        m_suppressOpenerInNewFrame = true;
+    TemporaryChange<bool> changeOpener(m_suppressOpenerInNewFrame, request.shouldSendReferrer() == NeverSendReferrer);
+    TemporaryChange<bool> changeClientRedirect(m_startingClientRedirect, request.clientRedirect());
 
-    loadURL(resourceRequest, request.frameName(), loadType, event, formState.get(), request.substituteData());
-    m_suppressOpenerInNewFrame = false;
+    loadURL(resourceRequest, request.frameName(), loadType, request.triggeringEvent(), request.formState(), request.substituteData());
 }
 
 void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType, PassRefPtr<Event> event, PassRefPtr<FormState> formState, const SubstituteData& substituteData)

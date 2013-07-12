@@ -110,7 +110,10 @@ protected:
     virtual void fire(Frame* frame)
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader()->changeLocation(m_securityOrigin.get(), KURL(ParsedURLString, m_url), m_referrer, lockBackForwardList(), false);
+        FrameLoadRequest request(m_securityOrigin.get(), ResourceRequest(KURL(ParsedURLString, m_url), m_referrer), "_self");
+        request.setLockBackForwardList(lockBackForwardList());
+        request.setClientRedirect(true);
+        frame->loader()->load(request);
     }
 
     virtual void didStartTimer(Frame* frame, Timer<NavigationScheduler>* timer)
@@ -148,8 +151,12 @@ public:
     virtual void fire(Frame* frame)
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        bool refresh = equalIgnoringFragmentIdentifier(frame->document()->url(), KURL(ParsedURLString, url()));
-        frame->loader()->changeLocation(securityOrigin(), KURL(ParsedURLString, url()), referrer(), lockBackForwardList(), refresh);
+        FrameLoadRequest request(securityOrigin(), ResourceRequest(KURL(ParsedURLString, url()), referrer()), "_self");
+        request.setLockBackForwardList(lockBackForwardList());
+        if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
+            request.resourceRequest().setCachePolicy(ReloadIgnoringCacheData);
+        request.setClientRedirect(true);
+        frame->loader()->load(request);
     }
 };
 
@@ -169,7 +176,10 @@ public:
     virtual void fire(Frame* frame)
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader()->changeLocation(securityOrigin(), KURL(ParsedURLString, url()), referrer(), lockBackForwardList(), true);
+        FrameLoadRequest request(securityOrigin(), ResourceRequest(KURL(ParsedURLString, url()), referrer(), ReloadIgnoringCacheData), "_self");
+        request.setLockBackForwardList(lockBackForwardList());
+        request.setClientRedirect(true);
+        frame->loader()->load(request);
     }
 };
 
@@ -187,9 +197,10 @@ public:
 
         if (!m_historySteps) {
             FrameLoadRequest frameRequest(frame->document()->securityOrigin(), ResourceRequest(frame->document()->url()));
+            frameRequest.setLockBackForwardList(lockBackForwardList());
             // Special case for go(0) from a frame -> reload only the frame
             // To follow Firefox and IE's behavior, history reload can only navigate the self frame.
-            frame->loader()->loadFrameRequest(frameRequest, lockBackForwardList(), 0, 0, MaybeSendReferrer);
+            frame->loader()->load(frameRequest);
             return;
         }
         // go(i!=0) from a frame navigates into the history of the frame only,
@@ -224,7 +235,10 @@ public:
             return;
         FrameLoadRequest frameRequest(requestingDocument->document()->securityOrigin());
         m_submission->populateFrameLoadRequest(frameRequest);
-        frame->loader()->loadFrameRequest(frameRequest, lockBackForwardList(), m_submission->event(), m_submission->state(), MaybeSendReferrer);
+        frameRequest.setLockBackForwardList(lockBackForwardList());
+        frameRequest.setTriggeringEvent(m_submission->event());
+        frameRequest.setFormState(m_submission->state());
+        frame->loader()->load(frameRequest);
     }
     
     virtual void didStartTimer(Frame* frame, Timer<NavigationScheduler>* timer)
@@ -331,7 +345,10 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
     if (securityOrigin->canAccess(m_frame->document()->securityOrigin())) {
         KURL parsedURL(ParsedURLString, url);
         if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
-            loader->changeLocation(securityOrigin, m_frame->document()->completeURL(url), referrer, lockBackForwardList);
+            FrameLoadRequest request(securityOrigin, ResourceRequest(m_frame->document()->completeURL(url), referrer), "_self");
+            request.setLockBackForwardList(lockBackForwardList);
+            request.setClientRedirect(true);
+            loader->load(request);
             return;
         }
     }

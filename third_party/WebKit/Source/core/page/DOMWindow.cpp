@@ -1899,10 +1899,12 @@ Frame* DOMWindow::createWindow(const String& urlString, const AtomicString& fram
     if (function)
         function(newFrame->document()->domWindow(), functionContext);
 
-    if (created)
-        newFrame->loader()->changeLocation(activeWindow->document()->securityOrigin(), completedURL, referrer, false);
-    else if (!urlString.isEmpty())
+    if (created) {
+        FrameLoadRequest request(activeWindow->document()->securityOrigin(), ResourceRequest(completedURL, referrer));
+        newFrame->loader()->load(request);
+    } else if (!urlString.isEmpty()) {
         newFrame->navigationScheduler()->scheduleLocationChange(activeWindow->document()->securityOrigin(), completedURL.string(), referrer, false);
+    }
 
     return newFrame;
 }

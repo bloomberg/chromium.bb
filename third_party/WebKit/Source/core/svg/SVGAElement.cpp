@@ -183,7 +183,8 @@ void SVGAElement::defaultEventHandler(Event* event)
             if (!frame)
                 return;
             FrameLoadRequest frameRequest(document()->securityOrigin(), ResourceRequest(document()->completeURL(url)), target);
-            frame->loader()->loadFrameRequest(frameRequest, false, event, 0, MaybeSendReferrer);
+            frameRequest.setTriggeringEvent(event);
+            frame->loader()->load(frameRequest);
             return;
         }
     }
