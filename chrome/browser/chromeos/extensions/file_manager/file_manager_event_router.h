@@ -56,10 +56,6 @@ class FileManagerEventRouter
   void RemoveFileWatch(const base::FilePath& local_path,
                        const std::string& extension_id);
 
-  // Mounts Drive on File browser. |callback| will be called after raising a
-  // mount request event to file manager on JS-side.
-  void MountDrive(const base::Closure& callback);
-
   // CrosDisksClient::Observer overrides.
   virtual void OnDiskEvent(
       chromeos::disks::DiskMountManager::DiskEvent event,

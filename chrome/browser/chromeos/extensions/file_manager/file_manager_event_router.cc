@@ -325,29 +325,6 @@ void FileManagerEventRouter::RemoveFileWatch(
   }
 }
 
-void FileManagerEventRouter::MountDrive(
-    const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Pass back the gdata mount point path as source path.
-  const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
-  DiskMountManager::MountPointInfo mount_info(
-      gdata_path,
-      gdata_path,
-      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
-      chromeos::disks::MOUNT_CONDITION_NONE);
-
-  // Raise mount event.
-  // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
-  // or network is unreachable. These two errors will be handled later.
-  OnMountEvent(DiskMountManager::MOUNTING,
-               chromeos::MOUNT_ERROR_NONE,
-               mount_info);
-
-  if (!callback.is_null())
-    callback.Run();
-}
-
 void FileManagerEventRouter::OnDiskEvent(
     DiskMountManager::DiskEvent event,
     const DiskMountManager::Disk* disk) {
@@ -578,7 +555,18 @@ void FileManagerEventRouter::OnDirectoryChanged(
 void FileManagerEventRouter::OnFileSystemMounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  MountDrive(base::Bind(&base::DoNothing));  // Callback does nothing.
+  const std::string& drive_path = drive::util::GetDriveMountPointPathAsString();
+  DiskMountManager::MountPointInfo mount_info(
+      drive_path,
+      drive_path,
+      chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
+      chromeos::disks::MOUNT_CONDITION_NONE);
+
+  // Raise mount event.
+  // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
+  // or network is unreachable. These two errors will be handled later.
+  OnMountEvent(DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
+               mount_info);
 }
 
 void FileManagerEventRouter::OnFileSystemBeingUnmounted() {

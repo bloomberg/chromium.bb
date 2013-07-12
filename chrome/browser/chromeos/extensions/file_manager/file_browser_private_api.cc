@@ -1420,15 +1420,16 @@ bool AddMountFunction::RunImpl() {
       break;
     }
     case chromeos::MOUNT_TYPE_GOOGLE_DRIVE: {
-      const bool success = true;
+      // Dispatch fake 'mounted' event because JS code depends on it.
+      // TODO(hashimoto): Remove this redanduncy.
+      FileBrowserPrivateAPI::Get(profile_)->event_router()->
+          OnFileSystemMounted();
+
       // Pass back the drive mount point path as source path.
       const std::string& drive_path =
           drive::util::GetDriveMountPointPathAsString();
       SetResult(new base::StringValue(drive_path));
-      FileBrowserPrivateAPI::Get(profile_)->event_router()->
-          MountDrive(base::Bind(&AddMountFunction::SendResponse,
-                                this,
-                                success));
+      SendResponse(true);
       break;
     }
     default: {
