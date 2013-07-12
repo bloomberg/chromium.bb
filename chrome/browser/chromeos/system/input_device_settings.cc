@@ -13,10 +13,12 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,6 +29,8 @@ namespace {
 
 const char kTpControl[] = "/opt/google/touchpad/tpcontrol";
 const char kMouseControl[] = "/opt/google/mouse/mousecontrol";
+
+typedef base::RefCountedData<bool> RefCountedBool;
 
 bool ScriptExists(const std::string& script) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
@@ -75,9 +79,10 @@ void SetTPControl(const char* control, bool enabled) {
   ExecuteScript(3, kTpControl, control, enabled ? "on" : "off");
 }
 
-void DeviceExistsBlockingPool(const char* script, bool* exists) {
+void DeviceExistsBlockingPool(const char* script,
+                              scoped_refptr<RefCountedBool> exists) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  *exists = false;
+  exists->data = false;
   if (!ScriptExists(script))
     return;
 
@@ -86,23 +91,32 @@ void DeviceExistsBlockingPool(const char* script, bool* exists) {
   argv.push_back("status");
   std::string output;
   // Output is empty if the device is not found.
-  *exists = base::GetAppOutput(CommandLine(argv), &output) && !output.empty();
-  DVLOG(1) << "DeviceExistsBlockingPool:" << script << "=" << *exists;
+  exists->data = base::GetAppOutput(CommandLine(argv), &output) &&
+      !output.empty();
+  DVLOG(1) << "DeviceExistsBlockingPool:" << script << "=" << exists->data;
 }
 
-void RunCallbackUIThread(bool* exists, const DeviceExistsCallback& callback) {
+void RunCallbackUIThread(scoped_refptr<RefCountedBool> exists,
+                         const DeviceExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DVLOG(1) << "RunCallbackUIThread " << *exists;
-  callback.Run(*exists);
+  DVLOG(1) << "RunCallbackUIThread " << exists->data;
+  callback.Run(exists->data);
 }
 
 void DeviceExists(const char* script, const DeviceExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  bool* exists = new bool(false);
-  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+  // One or both of the control scripts can apparently hang during shutdown
+  // (http://crbug.com/255546). Run the blocking pool task with
+  // CONTINUE_ON_SHUTDOWN so it won't be joined when Chrome shuts down.
+  scoped_refptr<RefCountedBool> exists(new RefCountedBool(false));
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  scoped_refptr<base::TaskRunner> runner =
+      pool->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  runner->PostTaskAndReply(FROM_HERE,
       base::Bind(&DeviceExistsBlockingPool, script, exists),
-      base::Bind(&RunCallbackUIThread, base::Owned(exists), callback));
+      base::Bind(&RunCallbackUIThread, exists, callback));
 }
 
 }  // namespace
