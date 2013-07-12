@@ -91,6 +91,9 @@ public:
     bool hasCurrentPoint() const;
     FloatPoint currentPoint() const;
 
+    WindRule windRule() const;
+    void setWindRule(const WindRule);
+
     void moveTo(const FloatPoint&);
     void addLineTo(const FloatPoint&);
     void addQuadCurveTo(const FloatPoint& controlPoint, const FloatPoint& endPoint);
@@ -120,6 +123,9 @@ public:
 
     void addPathForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius, RoundedRectStrategy = PreferNativeRoundedRect);
     void addBeziersForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
+
+    // Updates the path to the union (inclusive-or) of itself with the given argument.
+    bool unionPath(const Path& other);
 
 private:
     SkPath m_path;

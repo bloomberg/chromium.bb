@@ -460,6 +460,19 @@ webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequi
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 
+Bug(fmalita) svg/W3C-SVG-1.1/masking-intro-01-f.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/W3C-SVG-1.1/masking-path-01-b.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-child-clipped.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-css-transform-1.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-evenodd-nonzero.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-evenodd.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-nonzero.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-pixelation.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clip-path-transform-1.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/clip-path/clipper-placement-issue.svg [ NeedsRebaseline ]
+Bug(fmalita) svg/repaint/mask-clip-target-transform.svg [ NeedsRebaseline ]
+
 # -----------------------------------------------------------------
 # End SVG TESTS
 # -----------------------------------------------------------------

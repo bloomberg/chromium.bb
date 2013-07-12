@@ -37,6 +37,7 @@
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathMeasure.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {
@@ -233,6 +234,20 @@ FloatPoint Path::currentPoint() const
     return FloatPoint(quietNaN, quietNaN);
 }
 
+WindRule Path::windRule() const
+{
+    return m_path.getFillType() == SkPath::kEvenOdd_FillType
+        ? RULE_EVENODD
+        : RULE_NONZERO;
+}
+
+void Path::setWindRule(const WindRule rule)
+{
+    m_path.setFillType(rule == RULE_EVENODD
+        ? SkPath::kEvenOdd_FillType
+        : SkPath::kWinding_FillType);
+}
+
 void Path::moveTo(const FloatPoint& point)
 {
     m_path.moveTo(point);
@@ -405,6 +420,11 @@ void Path::addBeziersForRoundedRect(const FloatRect& rect, const FloatSize& topL
 void Path::translate(const FloatSize& size)
 {
     m_path.offset(WebCoreFloatToSkScalar(size.width()), WebCoreFloatToSkScalar(size.height()));
+}
+
+bool Path::unionPath(const Path& other)
+{
+    return Op(m_path, other.m_path, kUnion_PathOp, &m_path);
 }
 
 }

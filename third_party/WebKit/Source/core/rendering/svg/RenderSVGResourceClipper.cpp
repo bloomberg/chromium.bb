@@ -88,11 +88,6 @@ bool RenderSVGResourceClipper::pathOnlyClipping(GraphicsContext* context, const 
     WindRule clipRule = RULE_NONZERO;
     Path clipPath = Path();
 
-    // If clip-path only contains one visible shape or path, we can use path-based clipping. Invisible
-    // shapes don't affect the clipping and can be ignored. If clip-path contains more than one
-    // visible shape, the additive clipping may not work, caused by the clipRule. EvenOdd
-    // as well as NonZero can cause self-clipping of the elements.
-    // See also http://www.w3.org/TR/SVG/painting.html#FillRuleProperty
     for (Node* childNode = node()->firstChild(); childNode; childNode = childNode->nextSibling()) {
         RenderObject* renderer = childNode->renderer();
         if (!renderer)
@@ -110,11 +105,20 @@ bool RenderSVGResourceClipper::pathOnlyClipping(GraphicsContext* context, const 
         // Current shape in clip-path gets clipped too. Fallback to masking.
         if (!svgStyle->clipperResource().isEmpty())
             return false;
-        // Fallback to masking, if there is more than one clipping path.
+
         if (clipPath.isEmpty()) {
+            // First clip shape.
             styled->toClipPath(clipPath);
             clipRule = svgStyle->clipRule();
-        } else
+            clipPath.setWindRule(clipRule);
+            continue;
+        }
+
+        // Attempt to generate a combined clip path, fall back to masking if not possible.
+        Path subPath;
+        styled->toClipPath(subPath);
+        subPath.setWindRule(svgStyle->clipRule());
+        if (!clipPath.unionPath(subPath))
             return false;
     }
     // Only one visible shape/path was found. Directly continue clipping and transform the content to userspace if necessary.
