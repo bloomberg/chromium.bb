@@ -467,7 +467,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   // This is just initialization, but SetNeedsCommit behavior is verified anyway
   // to avoid warnings.
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBounds(test_bounds));
-  EXPECT_TRUE(test_layer->NeedsDisplayForTesting());
+  EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
 
   // The real test begins here.
   test_layer->ResetNeedsDisplayForTesting();
@@ -547,26 +547,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
 
   // As layers are removed from the tree, they will cause a tree sync.
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times((AnyNumber()));
-}
-
-TEST_F(LayerTest, SetBoundsTriggersSetNeedsRedrawAfterGettingNonEmptyBounds) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(
-      1, layer_tree_host_->SetRootLayer(test_layer));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
-
-  EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBounds(gfx::Size(0, 10)));
-  EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBounds(gfx::Size(10, 10)));
-  EXPECT_TRUE(test_layer->NeedsDisplayForTesting());
-
-  test_layer->ResetNeedsDisplayForTesting();
-  EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
-
-  // Calling SetBounds only invalidates on the first time.
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBounds(gfx::Size(7, 10)));
-  EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
 }
 
 TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {

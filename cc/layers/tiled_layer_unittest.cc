@@ -819,6 +819,8 @@ TEST_F(TiledLayerTest, VerifyInvalidationWhenContentsScaleChanges) {
   layer->SetBounds(gfx::Size(100, 100));
   CalcDrawProps(layer);
   layer->draw_properties().visible_content_rect = gfx::Rect(0, 0, 100, 100);
+  layer->Update(queue_.get(), NULL);
+  UpdateTextures();
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 100, 100),
                        layer->last_needs_display_rect());
 

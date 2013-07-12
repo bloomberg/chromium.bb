@@ -277,14 +277,8 @@ void Layer::SetBounds(gfx::Size size) {
   if (bounds() == size)
     return;
 
-  bool first_resize = bounds().IsEmpty() && !size.IsEmpty();
-
   bounds_ = size;
-
-  if (first_resize)
-    SetNeedsDisplay();
-  else
-    SetNeedsCommit();
+  SetNeedsCommit();
 }
 
 Layer* Layer::RootLayer() {
