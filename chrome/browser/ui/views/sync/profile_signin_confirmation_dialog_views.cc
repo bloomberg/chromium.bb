@@ -153,6 +153,10 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   if (!details.is_add || details.child != this)
     return;
 
+  const SkColor kPromptBarBackgroundColor =
+      ui::GetSigninConfirmationPromptBarColor(
+          ui::kSigninConfirmationPromptBarBackgroundAlpha);
+
   // Create the prompt label.
   size_t offset;
   const string16 domain = ASCIIToUTF16(gaia::ExtractDomainName(username_));
@@ -162,6 +166,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE,
           domain, &offset);
   views::StyledLabel* prompt_label = new views::StyledLabel(prompt_text, this);
+  prompt_label->SetDisplayedOnBackgroundColor(kPromptBarBackgroundColor);
+
   views::StyledLabel::RangeStyleInfo bold_style;
   bold_style.font_style = gfx::Font::BOLD;
   prompt_label->AddStyleRange(
@@ -174,11 +180,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           1, 0, 1, 0,
           ui::GetSigninConfirmationPromptBarColor(
               ui::kSigninConfirmationPromptBarBorderAlpha)));
-  // TODO(dconnelly): set the background color on the label (crbug.com/244630)
-  prompt_bar->set_background(
-      views::Background::CreateSolidBackground(
-          ui::GetSigninConfirmationPromptBarColor(
-              ui::kSigninConfirmationPromptBarBackgroundAlpha)));
+  prompt_bar->set_background(views::Background::CreateSolidBackground(
+      kPromptBarBackgroundColor));
 
   // Create the explanation label.
   std::vector<size_t> offsets;

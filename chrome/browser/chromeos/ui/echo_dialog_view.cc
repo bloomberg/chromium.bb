@@ -58,9 +58,9 @@ void EchoDialogView::InitForEnabledEcho(const string16& service_name,
       ui::Range(offsets[0], offsets[0] + service_name.length()),
       service_name_style);
 
-  views::StyledLabel::RangeStyleInfo link_style;
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.font_style = gfx::Font::NORMAL;
-  link_style.is_link = true;
   label_->AddStyleRange(ui::Range(offsets[1], offsets[1] + link.length()),
                         link_style);
 
@@ -82,9 +82,9 @@ void EchoDialogView::InitForDisabledEcho() {
 
   label_ = new views::StyledLabel(text, this);
 
-  views::StyledLabel::RangeStyleInfo link_style;
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.font_style = gfx::Font::NORMAL;
-  link_style.is_link = true;
   label_->AddStyleRange(ui::Range(offset, offset + link.length()), link_style);
 
   SetLabelBorderAndBounds();

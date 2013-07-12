@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -254,6 +255,58 @@ TEST_F(StyledLabelTest, StyledRangeBold) {
   EXPECT_EQ(0, styled()->child_at(1)->bounds().x());
   EXPECT_EQ(styled()->child_at(1)->bounds().right() - 2,
             styled()->child_at(2)->bounds().x());
+}
+
+TEST_F(StyledLabelTest, Color) {
+  const std::string text_red("RED");
+  const std::string text_link("link");
+  const std::string text("word");
+  InitStyledLabel(text_red + text_link + text);
+
+  StyledLabel::RangeStyleInfo style_info_red;
+  style_info_red.color = SK_ColorRED;
+  styled()->AddStyleRange(ui::Range(0, text_red.size()), style_info_red);
+
+  StyledLabel::RangeStyleInfo style_info_link =
+      StyledLabel::RangeStyleInfo::CreateForLink();
+  styled()->AddStyleRange(ui::Range(text_red.size(),
+                                    text_red.size() + text_link.size()),
+                          style_info_link);
+
+  // Obtain the default text color for a label.
+  Label label(ASCIIToUTF16(text));
+  const SkColor kDefaultTextColor = label.enabled_color();
+
+  // Obtain the default text color for a link;
+  Link link(ASCIIToUTF16(text_link));
+  const SkColor kDefaultLinkColor = link.enabled_color();
+
+  styled()->SetBounds(0, 0, 1000, 1000);
+  styled()->Layout();
+
+  EXPECT_EQ(SK_ColorRED,
+            static_cast<Label*>(styled()->child_at(0))->enabled_color());
+  EXPECT_EQ(kDefaultLinkColor,
+            static_cast<Label*>(styled()->child_at(1))->enabled_color());
+  EXPECT_EQ(kDefaultTextColor,
+            static_cast<Label*>(styled()->child_at(2))->enabled_color());
+}
+
+TEST_F(StyledLabelTest, ColorReadability) {
+  const std::string text(
+      "This is a block of text that needs color adjustment.");
+  InitStyledLabel(text);
+  styled()->SetDisplayedOnBackgroundColor(SK_ColorBLACK);
+
+  // Obtain the text color if it were a pure label.
+  Label label(ASCIIToUTF16(text));
+  label.SetBackgroundColor(SK_ColorBLACK);
+
+  styled()->SetBounds(0, 0, 1000, 1000);
+  styled()->Layout();
+
+  EXPECT_EQ(label.enabled_color(),
+            static_cast<Label*>(styled()->child_at(0))->enabled_color());
 }
 
 TEST_F(StyledLabelTest, StyledRangeWithTooltip) {

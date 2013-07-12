@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/label.h"
 
 namespace views {
@@ -26,6 +27,8 @@ class VIEWS_EXPORT Link : public Label {
   Link();
   explicit Link(const string16& title);
   virtual ~Link();
+
+  static SkColor GetDefaultEnabledColor();
 
   const LinkListener* listener() { return listener_; }
   void set_listener(LinkListener* listener) { listener_ = listener; }

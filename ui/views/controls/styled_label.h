@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/link_listener.h"
@@ -39,6 +40,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
     // values defined in gfx::Font::FontStyle (BOLD, ITALIC, UNDERLINE).
     int font_style;
 
+    // The text color for the range.
+    SkColor color;
+
     // Tooltip for the range.
     string16 tooltip;
 
@@ -59,6 +63,14 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
   void AddStyleRange(const ui::Range& range, const RangeStyleInfo& style_info);
+
+  // Sets the color of the background on which the label is drawn. This won't
+  // be explicitly drawn, but the label will force the text color to be
+  // readable over it.
+  void SetDisplayedOnBackgroundColor(SkColor color);
+  SkColor displayed_on_background_color() const {
+    return displayed_on_background_color_;
+  }
 
   // View implementation:
   virtual gfx::Insets GetInsets() const OVERRIDE;
@@ -105,6 +117,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // This variable saves the result of the last GetHeightForWidth call in order
   // to avoid repeated calculation.
   gfx::Size calculated_size_;
+
+  // Background color on which the label is drawn, for auto color readability.
+  SkColor displayed_on_background_color_;
+  bool displayed_on_background_color_set_;
 
   DISALLOW_COPY_AND_ASSIGN(StyledLabel);
 };

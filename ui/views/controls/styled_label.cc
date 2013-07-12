@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -23,9 +24,10 @@ int CalculateLineHeight() {
   return label.GetPreferredSize().height();
 }
 
-scoped_ptr<View> CreateLabelRange(const string16& text,
-                                  const StyledLabel::RangeStyleInfo& style_info,
-                                  views::LinkListener* link_listener) {
+scoped_ptr<Label> CreateLabelRange(
+    const string16& text,
+    const StyledLabel::RangeStyleInfo& style_info,
+    views::LinkListener* link_listener) {
   scoped_ptr<Label> result;
 
   if (style_info.is_link) {
@@ -42,12 +44,14 @@ scoped_ptr<View> CreateLabelRange(const string16& text,
     result.reset(label);
   }
 
+  result->SetEnabledColor(style_info.color);
+
   if (!style_info.tooltip.empty())
     result->SetTooltipText(style_info.tooltip);
   if (style_info.font_style != gfx::Font::NORMAL)
     result->SetFont(result->font().DeriveFont(0, style_info.font_style));
 
-  return scoped_ptr<View>(result.release());
+  return scoped_ptr<Label>(result.release());
 }
 
 }  // namespace
@@ -55,6 +59,8 @@ scoped_ptr<View> CreateLabelRange(const string16& text,
 
 StyledLabel::RangeStyleInfo::RangeStyleInfo()
     : font_style(gfx::Font::NORMAL),
+      color(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_LabelEnabledColor)),
       disable_line_wrapping(false),
       is_link(false) {
 }
@@ -67,6 +73,7 @@ StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink() {
   result.disable_line_wrapping = true;
   result.is_link = true;
   result.font_style = gfx::Font::UNDERLINE;
+  result.color = Link::GetDefaultEnabledColor();
   return result;
 }
 
@@ -77,7 +84,8 @@ bool StyledLabel::StyleRange::operator<(
 }
 
 StyledLabel::StyledLabel(const string16& text, StyledLabelListener* listener)
-    : listener_(listener) {
+    : listener_(listener),
+      displayed_on_background_color_set_(false) {
   TrimWhitespace(text, TRIM_TRAILING, &text_);
 }
 
@@ -101,6 +109,11 @@ void StyledLabel::AddStyleRange(const ui::Range& range,
 
   calculated_size_ = gfx::Size();
   PreferredSizeChanged();
+}
+
+void StyledLabel::SetDisplayedOnBackgroundColor(SkColor color) {
+  displayed_on_background_color_ = color;
+  displayed_on_background_color_set_ = true;
 }
 
 gfx::Insets StyledLabel::GetInsets() const {
@@ -196,7 +209,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       continue;
     }
 
-    scoped_ptr<View> view;
+    scoped_ptr<Label> label;
     if (position >= range.start()) {
       const RangeStyleInfo& style_info = style_ranges.top().style_info;
 
@@ -211,10 +224,10 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
       chunk = chunk.substr(0, std::min(chunk.size(), range.end() - position));
 
-      view = CreateLabelRange(chunk, style_info, this);
+      label = CreateLabelRange(chunk, style_info, this);
 
       if (style_info.is_link && !dry_run)
-        link_targets_[view.get()] = range;
+        link_targets_[label.get()] = range;
 
       if (position + chunk.size() >= range.end())
         style_ranges.pop();
@@ -222,20 +235,23 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       // This chunk is normal text.
       if (position + chunk.size() > range.start())
         chunk = chunk.substr(0, range.start() - position);
-      view = CreateLabelRange(chunk, RangeStyleInfo(), this);
+      label = CreateLabelRange(chunk, RangeStyleInfo(), this);
     }
+
+    if (displayed_on_background_color_set_)
+      label->SetBackgroundColor(displayed_on_background_color_);
 
     // Lay out the views to overlap by 1 pixel to compensate for their border
     // spacing. Otherwise, "<a>link</a>," will render as "link ,".
     const int overlap = 1;
-    const gfx::Size view_size = view->GetPreferredSize();
+    const gfx::Size view_size = label->GetPreferredSize();
     DCHECK_EQ(line_height, view_size.height() - 2 * overlap);
     if (!dry_run) {
-      view->SetBoundsRect(gfx::Rect(
+      label->SetBoundsRect(gfx::Rect(
           gfx::Point(GetInsets().left() + x - overlap,
                      GetInsets().top() + line * line_height - overlap),
           view_size));
-      AddChildView(view.release());
+      AddChildView(label.release());
     }
     x += view_size.width() - 2 * overlap;
 

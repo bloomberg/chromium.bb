@@ -1491,6 +1491,8 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
       views::Background::CreateSolidBackground(kShadingColor));
 
   legal_document_view_ = new views::StyledLabel(string16(), this);
+  legal_document_view_->SetDisplayedOnBackgroundColor(kShadingColor);
+
   footnote_view_->AddChildView(legal_document_view_);
   footnote_view_->SetVisible(false);
 

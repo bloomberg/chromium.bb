@@ -34,6 +34,14 @@ Link::Link(const string16& title) : Label(title) {
 Link::~Link() {
 }
 
+SkColor Link::GetDefaultEnabledColor() {
+#if defined(OS_WIN)
+  return color_utils::GetSysSkColor(COLOR_HOTLIGHT);
+#else
+  return SkColorSetRGB(0, 51, 153);
+#endif
+}
+
 void Link::OnEnabledChanged() {
   RecalculateFont();
   View::OnEnabledChanged();
@@ -164,31 +172,18 @@ void Link::SetUnderline(bool underline) {
 }
 
 void Link::Init() {
-  static bool initialized = false;
-  static SkColor kDefaultEnabledColor;
-  static SkColor kDefaultDisabledColor;
-  static SkColor kDefaultPressedColor;
-  if (!initialized) {
-#if defined(OS_WIN)
-    kDefaultEnabledColor = color_utils::GetSysSkColor(COLOR_HOTLIGHT);
-    kDefaultDisabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-    kDefaultPressedColor = SkColorSetRGB(200, 0, 0);
-#else
-    // TODO(beng): source from theme provider.
-    kDefaultEnabledColor = SkColorSetRGB(0, 51, 153);
-    kDefaultDisabledColor = SK_ColorBLACK;
-    kDefaultPressedColor = SK_ColorRED;
-#endif
-
-    initialized = true;
-  }
-
   listener_ = NULL;
   pressed_ = false;
   underline_ = true;
-  SetEnabledColor(kDefaultEnabledColor);
-  SetDisabledColor(kDefaultDisabledColor);
-  SetPressedColor(kDefaultPressedColor);
+  SetEnabledColor(GetDefaultEnabledColor());
+#if defined(OS_WIN)
+  SetDisabledColor(color_utils::GetSysSkColor(COLOR_WINDOWTEXT));
+  SetPressedColor(SkColorSetRGB(200, 0, 0));
+#else
+  // TODO(beng): source from theme provider.
+  SetDisabledColor(SK_ColorBLACK);
+  SetPressedColor(SK_ColorRED);
+#endif
   RecalculateFont();
   set_focusable(true);
 }
