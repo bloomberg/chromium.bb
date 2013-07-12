@@ -40,6 +40,7 @@ namespace WebCore { class HTMLInputElement; }
 namespace WebKit {
 
     class WebNodeCollection;
+    class WebTextFieldDecoratorClient;
 
     // Provides readonly access to some properties of a DOM input element node.
     class WebInputElement : public WebFormControlElement {
@@ -112,9 +113,8 @@ namespace WebKit {
         // Returns the direction of the text in this element.
         WEBKIT_EXPORT WebString directionForFormData() const;
 
-        // FIXME: Remove this once password_generation_manager.h stops using it.
-        WEBKIT_EXPORT WebElement decorationElementFor(void*) { return passwordGeneratorButtonElement(); }
-        WEBKIT_EXPORT WebElement passwordGeneratorButtonElement() const;
+        // Return the decoration added by the specified decorator if one exists.
+        WEBKIT_EXPORT WebElement decorationElementFor(WebTextFieldDecoratorClient*);
 
 #if WEBKIT_IMPLEMENTATION
         WebInputElement(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);

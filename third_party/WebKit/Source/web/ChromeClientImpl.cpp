@@ -32,6 +32,10 @@
 #include "config.h"
 #include "ChromeClientImpl.h"
 
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityObject.h"
+#include "core/platform/ColorChooser.h"
+#include "core/platform/ColorChooserClient.h"
 #include "ColorChooserPopupUIController.h"
 #include "ColorChooserUIController.h"
 #include "DateTimeChooserImpl.h"
@@ -43,18 +47,49 @@
 #include "RuntimeEnabledFeatures.h"
 #include "WebAccessibilityObject.h"
 #include "WebAutofillClient.h"
+#include "bindings/v8/ScriptController.h"
+#include "core/dom/Document.h"
+#include "core/dom/Node.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/shadow/TextFieldDecorationElement.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoadRequest.h"
+#include "core/loader/NavigationAction.h"
+#include "core/page/Console.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
+#include "core/page/PagePopupDriver.h"
+#include "core/page/Settings.h"
+#include "core/platform/Cursor.h"
+#include "core/platform/DateTimeChooser.h"
+#include "core/platform/FileChooser.h"
+#include "core/platform/FileIconLoader.h"
+#include "core/platform/PlatformScreen.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/Icon.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderWidget.h"
+#include "modules/geolocation/Geolocation.h"
+#include "weborigin/SecurityOrigin.h"
 #include "WebColorChooser.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebURLRequest.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringConcatenate.h"
+#include "wtf/unicode/CharacterNames.h"
 #include "WebConsoleMessage.h"
 #include "WebCursorInfo.h"
 #include "WebFileChooserCompletionImpl.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebIconLoadingCompletionImpl.h"
-#include "WebInputElement.h"
 #include "WebInputEvent.h"
 #include "WebKit.h"
 #include "WebNode.h"
-#include "WebPasswordGeneratorClient.h"
 #include "WebPlugin.h"
 #include "WebPluginContainerImpl.h"
 #include "WebPopupMenuImpl.h"
@@ -66,44 +101,8 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWindowFeatures.h"
-#include "bindings/v8/ScriptController.h"
-#include "core/accessibility/AXObjectCache.h"
-#include "core/accessibility/AccessibilityObject.h"
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoadRequest.h"
-#include "core/loader/NavigationAction.h"
-#include "core/page/Console.h"
-#include "core/page/FrameView.h"
-#include "core/page/Page.h"
-#include "core/page/PagePopupDriver.h"
-#include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
-#include "core/platform/ColorChooser.h"
-#include "core/platform/ColorChooserClient.h"
-#include "core/platform/Cursor.h"
-#include "core/platform/DateTimeChooser.h"
-#include "core/platform/FileChooser.h"
-#include "core/platform/FileIconLoader.h"
-#include "core/platform/PlatformScreen.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/Icon.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderWidget.h"
-#include "modules/geolocation/Geolocation.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebURLRequest.h"
-#include "weborigin/SecurityOrigin.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringConcatenate.h"
-#include "wtf/unicode/CharacterNames.h"
 
 using namespace WebCore;
 
@@ -913,16 +912,27 @@ void ChromeClientImpl::resetPagePopupDriver()
     m_pagePopupDriver = m_webView;
 }
 
-bool ChromeClientImpl::isPasswordGenerationEnabled() const
+bool ChromeClientImpl::willAddTextFieldDecorationsTo(HTMLInputElement* input)
 {
-    return m_webView->passwordGeneratorClient();
+    ASSERT(input);
+    const Vector<OwnPtr<TextFieldDecorator> >& decorators = m_webView->textFieldDecorators();
+    for (unsigned i = 0; i < decorators.size(); ++i) {
+        if (decorators[i]->willAddDecorationTo(input))
+            return true;
+    }
+    return false;
 }
 
-void ChromeClientImpl::openPasswordGenerator(HTMLInputElement* input)
+void ChromeClientImpl::addTextFieldDecorationsTo(HTMLInputElement* input)
 {
-    ASSERT(isPasswordGenerationEnabled());
-    WebInputElement webInput(input);
-    m_webView->passwordGeneratorClient()->openPasswordGenerator(webInput);
+    ASSERT(willAddTextFieldDecorationsTo(input));
+    const Vector<OwnPtr<TextFieldDecorator> >& decorators = m_webView->textFieldDecorators();
+    for (unsigned i = 0; i < decorators.size(); ++i) {
+        if (!decorators[i]->willAddDecorationTo(input))
+            continue;
+        RefPtr<TextFieldDecorationElement> decoration = TextFieldDecorationElement::create(input->document(), decorators[i].get());
+        decoration->decorate(input, decorators[i]->visibleByDefault());
+    }
 }
 
 bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, FrameLoader::PageDismissalType dismissalType) const

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,20 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPasswordGeneratorClient_h
-#define WebPasswordGeneratorClient_h
+#ifndef TextFieldDecoratorImpl_h
+#define TextFieldDecoratorImpl_h
+
+#include "core/html/shadow/TextFieldDecorationElement.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 
 namespace WebKit {
 
-class WebInputElement;
+class WebTextFieldDecoratorClient;
 
-class WebPasswordGeneratorClient {
+class TextFieldDecoratorImpl : public WebCore::TextFieldDecorator {
 public:
-    virtual void openPasswordGenerator(WebInputElement&) = 0;
+    static PassOwnPtr<TextFieldDecoratorImpl> create(WebTextFieldDecoratorClient*);
+    virtual ~TextFieldDecoratorImpl();
 
-    virtual ~WebPasswordGeneratorClient() { }
+    WebTextFieldDecoratorClient* decoratorClient();
+
+private:
+    virtual bool willAddDecorationTo(WebCore::HTMLInputElement*) OVERRIDE;
+    virtual bool visibleByDefault() OVERRIDE;
+    virtual WebCore::CachedImage* imageForNormalState() OVERRIDE;
+    virtual WebCore::CachedImage* imageForDisabledState() OVERRIDE;
+    virtual WebCore::CachedImage* imageForReadonlyState() OVERRIDE;
+    virtual WebCore::CachedImage* imageForHoverState() OVERRIDE;
+    virtual void handleClick(WebCore::HTMLInputElement*) OVERRIDE;
+    virtual void willDetach(WebCore::HTMLInputElement*) OVERRIDE;
+
+    TextFieldDecoratorImpl(WebTextFieldDecoratorClient*);
+
+    WebTextFieldDecoratorClient* m_client;
+    WebCore::CachedResourceHandle<WebCore::CachedImage> m_cachedImageForNormalState;
+    WebCore::CachedResourceHandle<WebCore::CachedImage> m_cachedImageForDisabledState;
+    WebCore::CachedResourceHandle<WebCore::CachedImage> m_cachedImageForReadonlyState;
+    WebCore::CachedResourceHandle<WebCore::CachedImage> m_cachedImageForHoverState;
 };
 
 }
 
-#endif // WebPasswordGeneratorClient_h
+#endif // TextFieldDecoratorImpl_h
