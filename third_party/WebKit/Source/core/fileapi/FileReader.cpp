@@ -161,7 +161,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
     m_loader = adoptPtr(new FileReaderLoader(m_readType, this));
     m_loader->setEncoding(m_encoding);
     m_loader->setDataType(m_blob->type());
-    m_loader->start(scriptExecutionContext(), m_blob.get());
+    m_loader->start(scriptExecutionContext(), *m_blob);
 }
 
 static void delayedAbort(ScriptExecutionContext*, FileReader* reader)

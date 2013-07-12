@@ -61,7 +61,7 @@ public:
     FileReaderLoader(ReadType, FileReaderLoaderClient*);
     ~FileReaderLoader();
 
-    void start(ScriptExecutionContext*, Blob*);
+    void start(ScriptExecutionContext*, const Blob&);
     void start(ScriptExecutionContext*, const Stream&);
     void cancel();
 

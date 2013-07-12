@@ -108,9 +108,9 @@ void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContex
         ThreadableLoader::loadResourceSynchronously(scriptExecutionContext, request, *this, options);
 }
 
-void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
+void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Blob& blob)
 {
-    startForURL(scriptExecutionContext, blob->url());
+    startForURL(scriptExecutionContext, blob.url());
 }
 
 void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Stream& stream)

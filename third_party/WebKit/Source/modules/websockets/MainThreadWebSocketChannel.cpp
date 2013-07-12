@@ -746,7 +746,7 @@ void MainThreadWebSocketChannel::processOutgoingFrameQueue()
                 ASSERT(!m_blobLoader);
                 m_blobLoader = adoptPtr(new FileReaderLoader(FileReaderLoader::ReadAsArrayBuffer, this));
                 m_blobLoaderStatus = BlobLoaderStarted;
-                m_blobLoader->start(m_document, frame->blobData.get());
+                m_blobLoader->start(m_document, *frame->blobData);
                 m_outgoingFrameQueue.prepend(frame.release());
                 return;
 

@@ -52,7 +52,7 @@ PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ScriptExecutionContext
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsArrayBuffer, 0);
-    startLoading(scriptExecutionContext, loader, blob, ec);
+    startLoading(scriptExecutionContext, loader, *blob, ec);
 
     return loader.arrayBufferResult();
 }
@@ -65,7 +65,7 @@ String FileReaderSync::readAsBinaryString(ScriptExecutionContext* scriptExecutio
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsBinaryString, 0);
-    startLoading(scriptExecutionContext, loader, blob, ec);
+    startLoading(scriptExecutionContext, loader, *blob, ec);
     return loader.stringResult();
 }
 
@@ -78,7 +78,7 @@ String FileReaderSync::readAsText(ScriptExecutionContext* scriptExecutionContext
 
     FileReaderLoader loader(FileReaderLoader::ReadAsText, 0);
     loader.setEncoding(encoding);
-    startLoading(scriptExecutionContext, loader, blob, ec);
+    startLoading(scriptExecutionContext, loader, *blob, ec);
     return loader.stringResult();
 }
 
@@ -91,11 +91,11 @@ String FileReaderSync::readAsDataURL(ScriptExecutionContext* scriptExecutionCont
 
     FileReaderLoader loader(FileReaderLoader::ReadAsDataURL, 0);
     loader.setDataType(blob->type());
-    startLoading(scriptExecutionContext, loader, blob, ec);
+    startLoading(scriptExecutionContext, loader, *blob, ec);
     return loader.stringResult();
 }
 
-void FileReaderSync::startLoading(ScriptExecutionContext* scriptExecutionContext, FileReaderLoader& loader, Blob* blob, ExceptionCode& ec)
+void FileReaderSync::startLoading(ScriptExecutionContext* scriptExecutionContext, FileReaderLoader& loader, const Blob& blob, ExceptionCode& ec)
 {
     loader.start(scriptExecutionContext, blob);
     ec = FileError::ErrorCodeToExceptionCode(loader.errorCode());

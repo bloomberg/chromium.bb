@@ -65,7 +65,7 @@ public:
 private:
     FileReaderSync();
 
-    void startLoading(ScriptExecutionContext*, FileReaderLoader&, Blob*, ExceptionCode&);
+    void startLoading(ScriptExecutionContext*, FileReaderLoader&, const Blob&, ExceptionCode&);
 };
 
 } // namespace WebCore
