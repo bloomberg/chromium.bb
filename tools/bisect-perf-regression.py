@@ -1574,6 +1574,33 @@ class BisectPerformanceMetrics(object):
                 'matching change to .DEPS.git')
     return (bad_revision, good_revision)
 
+  def CheckIfRevisionsInProperOrder(self,
+                                    target_depot,
+                                    good_revision,
+                                    bad_revision):
+    """Checks that |good_revision| is an earlier revision than |bad_revision|.
+
+    Args:
+        good_revision: Number/tag of the known good revision.
+        bad_revision: Number/tag of the known bad revision.
+
+    Returns:
+        True if the revisions are in the proper order (good earlier than bad).
+    """
+    if self.source_control.IsGit() and target_depot != 'cros':
+      cmd = ['log', '--format=%ct', '-1', good_revision]
+      output = CheckRunGit(cmd)
+      good_commit_time = int(output)
+
+      cmd = ['log', '--format=%ct', '-1', bad_revision]
+      output = CheckRunGit(cmd)
+      bad_commit_time = int(output)
+
+      return good_commit_time <= bad_commit_time
+    else:
+      # Cros/svn use integers
+      return int(good_revision) <= int(bad_revision)
+
   def Run(self, command_to_run, bad_revision_in, good_revision_in, metric):
     """Given known good and bad revisions, run a binary search on all
     intermediate revisions to determine the CL where the performance regression
@@ -1644,6 +1671,13 @@ class BisectPerformanceMetrics(object):
 
     if good_revision is None:
       results['error'] = 'Could\'t resolve [%s] to SHA1.' % (good_revision_in,)
+      return results
+
+    # Check that they didn't accidentally swap good and bad revisions.
+    if not self.CheckIfRevisionsInProperOrder(
+        target_depot, good_revision, bad_revision):
+      results['error'] = 'bad_revision < good_revision, did you swap these '\
+          'by mistake?'
       return results
 
     (bad_revision, good_revision) = self.NudgeRevisionsIfDEPSChange(
