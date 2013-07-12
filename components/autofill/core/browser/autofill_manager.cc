@@ -615,6 +615,9 @@ void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
 }
 
 void AutofillManager::OnHideAutofillUi() {
+  if (!IsAutofillEnabled())
+   return;
+
   manager_delegate_->HideAutofillPopup();
   manager_delegate_->HideAutocheckoutBubble();
 }
