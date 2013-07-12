@@ -16,7 +16,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/event_transformation_handler.h"
-#include "ash/display/mirror_window_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -214,7 +213,6 @@ Shell::Shell(ShellDelegate* delegate)
       is_touch_hud_projection_enabled_(false) {
   DCHECK(delegate_.get());
   display_manager_.reset(new internal::DisplayManager);
-  mirror_window_controller_.reset(new internal::MirrorWindowController);
 
   ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
@@ -306,8 +304,6 @@ Shell::~Shell() {
 
   power_button_controller_.reset();
   lock_state_controller_.reset();
-
-  mirror_window_controller_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
@@ -711,8 +707,10 @@ void Shell::RotateFocus(Direction direction) {
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  if (!display_manager_->UpdateWorkAreaOfDisplayNearestWindow(contains, insets))
+  if (!display_controller_->UpdateWorkAreaOfDisplayNearestWindow(
+          contains, insets)) {
     return;
+  }
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnDisplayWorkAreaInsetsChanged());
 }

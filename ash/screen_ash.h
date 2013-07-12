@@ -62,7 +62,7 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   void NotifyDisplayRemoved(const gfx::Display& display);
 
  protected:
-  // Implementation of gfx::Screen:
+  // gfx::Screen overrides:
   virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;

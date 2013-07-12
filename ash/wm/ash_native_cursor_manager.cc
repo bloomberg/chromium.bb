@@ -4,6 +4,7 @@
 
 #include "ash/wm/ash_native_cursor_manager.h"
 
+#include "ash/display/display_controller.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/image_cursors.h"
@@ -22,7 +23,8 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
        iter != root_windows.end(); ++iter)
     (*iter)->SetCursor(cursor);
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->mirror_window_controller()->SetMirroredCursor(cursor);
+  Shell::GetInstance()->display_controller()->
+      mirror_window_controller()->SetMirroredCursor(cursor);
 #endif
 }
 
@@ -33,7 +35,7 @@ void NotifyCursorVisibilityChange(bool visible) {
        iter != root_windows.end(); ++iter)
     (*iter)->OnCursorVisibilityChanged(visible);
 #if defined(OS_CHROMEOS)
-  Shell::GetInstance()->mirror_window_controller()->
+  Shell::GetInstance()->display_controller()->mirror_window_controller()->
       SetMirroredCursorVisibility(visible);
 #endif
 }

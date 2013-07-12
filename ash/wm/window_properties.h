@@ -32,6 +32,9 @@ extern const aura::WindowProperty<bool>* const kContinueDragAfterReparent;
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
     kCyclingThroughWorkspacesKey;
 
+// A property key to store display_id an aura::RootWindow is mapped to.
+extern const aura::WindowProperty<int64>* const kDisplayIdKey;
+
 // A property key to indicate whether there is any chrome at all that cannot be
 // hidden when the window is fullscreen. This is unrelated to whether the full
 // chrome can be revealed by hovering the mouse at the top of the screen.

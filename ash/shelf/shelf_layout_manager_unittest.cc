@@ -593,13 +593,12 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   gfx::Rect launcher_bounds(
       shelf->GetWindowBoundsInScreen());
   int shelf_height = manager->GetIdealBounds().height();
-
-  const gfx::Display& display = Shell::GetInstance()->display_manager()->
-      GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  gfx::Screen* screen = Shell::GetScreen();
+  gfx::Display display = screen->GetDisplayNearestWindow(
+      Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
   // Bottom inset should be the max of widget heights.
-  EXPECT_EQ(shelf_height,
-            display.bounds().bottom() - display.work_area().bottom());
+  EXPECT_EQ(shelf_height, display.GetWorkAreaInsets().bottom());
 
   // Hide the shelf.
   SetState(manager, SHELF_HIDDEN);
@@ -607,14 +606,16 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   StepWidgetLayerAnimatorToEnd(shelf);
   StepWidgetLayerAnimatorToEnd(shelf->status_area_widget());
   EXPECT_EQ(SHELF_HIDDEN, manager->visibility_state());
-  EXPECT_EQ(0,
-            display.bounds().bottom() - display.work_area().bottom());
+  display = screen->GetDisplayNearestWindow(
+      Shell::GetPrimaryRootWindow());
+
+  EXPECT_EQ(0, display.GetWorkAreaInsets().bottom());
 
   // Make sure the bounds of the two widgets changed.
   EXPECT_GE(shelf->GetNativeView()->bounds().y(),
-            Shell::GetScreen()->GetPrimaryDisplay().bounds().bottom());
+            screen->GetPrimaryDisplay().bounds().bottom());
   EXPECT_GE(shelf->status_area_widget()->GetNativeView()->bounds().y(),
-            Shell::GetScreen()->GetPrimaryDisplay().bounds().bottom());
+            screen->GetPrimaryDisplay().bounds().bottom());
 
   // And show it again.
   SetState(manager, SHELF_VISIBLE);
@@ -622,13 +623,14 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   StepWidgetLayerAnimatorToEnd(shelf);
   StepWidgetLayerAnimatorToEnd(shelf->status_area_widget());
   EXPECT_EQ(SHELF_VISIBLE, manager->visibility_state());
-  EXPECT_EQ(shelf_height,
-            display.bounds().bottom() - display.work_area().bottom());
+  display = screen->GetDisplayNearestWindow(
+      Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(shelf_height, display.GetWorkAreaInsets().bottom());
 
   // Make sure the bounds of the two widgets changed.
   launcher_bounds = shelf->GetNativeView()->bounds();
   int bottom =
-      Shell::GetScreen()->GetPrimaryDisplay().bounds().bottom() - shelf_height;
+      screen->GetPrimaryDisplay().bounds().bottom() - shelf_height;
   EXPECT_EQ(launcher_bounds.y(),
             bottom + (manager->GetIdealBounds().height() -
                       launcher_bounds.height()) / 2);
@@ -644,14 +646,13 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   shelf->shelf_layout_manager()->LayoutShelf();
   EXPECT_EQ(SHELF_VISIBLE, shelf->shelf_layout_manager()->visibility_state());
 
-  const gfx::Display& display = Shell::GetInstance()->display_manager()->
-      GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-
   // Hide the shelf.
   SetState(shelf->shelf_layout_manager(), SHELF_HIDDEN);
   shelf->shelf_layout_manager()->LayoutShelf();
   EXPECT_EQ(SHELF_HIDDEN, shelf->shelf_layout_manager()->visibility_state());
-  EXPECT_EQ(0, display.bounds().bottom() - display.work_area().bottom());
+  gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
+      Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(0, display.GetWorkAreaInsets().bottom());
 
   // Make sure the bounds of the two widgets changed.
   EXPECT_GE(shelf->GetNativeView()->bounds().y(),
@@ -1163,10 +1164,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   gfx::Rect launcher_bounds(
       GetShelfWidget()->GetWindowBoundsInScreen());
-  const internal::DisplayManager* manager =
-      Shell::GetInstance()->display_manager();
+  const gfx::Screen* screen = Shell::GetScreen();
   gfx::Display display =
-      manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+      screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
   EXPECT_EQ(shelf->GetIdealBounds().width(),
             display.GetWorkAreaInsets().left());
@@ -1187,16 +1187,16 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   EXPECT_EQ(display.bounds().y(), launcher_bounds.y());
   EXPECT_EQ(display.bounds().height(), launcher_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
       display.GetWorkAreaInsets().left());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize, display.work_area().x());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
-  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   launcher_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
   EXPECT_EQ(shelf->GetIdealBounds().width(),
             display.GetWorkAreaInsets().right());
@@ -1215,7 +1215,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   EXPECT_EQ(display.bounds().y(), launcher_bounds.y());
   EXPECT_EQ(display.bounds().height(), launcher_bounds.height());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
       display.GetWorkAreaInsets().right());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
@@ -1223,9 +1223,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->SetAlignment(SHELF_ALIGNMENT_TOP);
-  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   launcher_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
   EXPECT_EQ(shelf->GetIdealBounds().height(),
             display.GetWorkAreaInsets().top());
@@ -1244,7 +1244,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   EXPECT_EQ(display.bounds().x(), launcher_bounds.x());
   EXPECT_EQ(display.bounds().width(), launcher_bounds.width());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
       display.GetWorkAreaInsets().top());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,

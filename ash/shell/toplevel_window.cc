@@ -5,7 +5,7 @@
 #include "ash/shell/toplevel_window.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/display/display_manager.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +31,7 @@ void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
 
   gfx::Rect bounds(x, 150, 300, 300);
   gfx::Display display =
-      ash::Shell::GetInstance()->display_manager()->GetDisplayMatching(bounds);
+      ash::Shell::GetScreen()->GetDisplayMatching(bounds);
   aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display.id());
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(

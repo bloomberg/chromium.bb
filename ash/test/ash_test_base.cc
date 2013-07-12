@@ -9,7 +9,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
-#include "ash/display/display_manager.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/display_manager_test_api.h"
@@ -253,7 +253,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     SetDefaultParentByPrimaryRootWindow(window);
   } else {
     gfx::Display display =
-      ash::Shell::GetInstance()->display_manager()->GetDisplayMatching(bounds);
+        Shell::GetScreen()->GetDisplayMatching(bounds);
     aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
         GetRootWindowForDisplayId(display.id());
     gfx::Point origin = bounds.origin();

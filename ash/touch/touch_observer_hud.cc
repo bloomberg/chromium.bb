@@ -4,11 +4,11 @@
 
 #include "ash/touch/touch_observer_hud.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_properties.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"

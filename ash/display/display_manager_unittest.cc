@@ -97,9 +97,7 @@ class DisplayManagerTest : public test::AshTestBase,
   }
 
   const gfx::Display GetMirroredDisplay() {
-    test::MirrorWindowTestApi test_api;
-    return Shell::GetInstance()->display_manager()->
-        FindDisplayForRootWindow(test_api.GetRootWindow());
+    return Shell::GetInstance()->display_manager()->mirrored_display();
   }
 
   // aura::DisplayObserver overrides:

@@ -79,7 +79,8 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       event->type() != ui::ET_MOUSE_DRAGGED) {
       return;
   }
-  Shell::GetInstance()->mirror_window_controller()->UpdateCursorLocation();
+  Shell::GetInstance()->display_controller()->
+      mirror_window_controller()->UpdateCursorLocation();
 
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());

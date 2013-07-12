@@ -13,8 +13,7 @@
 #include "ash/display/display_layout.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "ui/aura/root_window_observer.h"
-#include "ui/aura/window.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display.h"
 
 #if defined(OS_CHROMEOS)
@@ -29,6 +28,8 @@ class Rect;
 
 namespace ash {
 class AcceleratorControllerTest;
+class DisplayController;
+
 namespace test {
 class DisplayManagerTestApi;
 class SystemGestureEventFilterTest;
@@ -38,17 +39,29 @@ class DisplayLayoutStore;
 
 // DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
-// This is exported for unittest.
 //
 // TODO(oshima): Make this non internal.
-class ASH_EXPORT DisplayManager :
+class ASH_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
-      public chromeos::OutputConfigurator::SoftwareMirroringController,
+    : public chromeos::OutputConfigurator::SoftwareMirroringController
 #endif
-      public aura::RootWindowObserver {
+      {
  public:
-  DisplayManager();
-  virtual ~DisplayManager();
+  class ASH_EXPORT Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Create or updates the mirror window with |display_info|.
+    virtual void CreateOrUpdateMirrorWindow(
+        const DisplayInfo& display_info) = 0;
+
+    // Closes the mirror window if exists.
+    virtual void CloseMirrorWindow() = 0;
+
+    // Called before and after the display configuration changes.
+    virtual void PreDisplayConfigurationChange() = 0;
+    virtual void PostDisplayConfigurationChange() = 0;
+  };
 
   // Returns the list of possible UI scales for the display.
   static std::vector<float> GetScalesForDisplay(const DisplayInfo& info);
@@ -62,9 +75,14 @@ class ASH_EXPORT DisplayManager :
       const gfx::Display& primary_display,
       gfx::Display* secondary_display);
 
+  DisplayManager();
+  virtual ~DisplayManager();
+
   DisplayLayoutStore* layout_store() {
     return layout_store_.get();
   }
+
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // When set to true, the MonitorManager calls OnDisplayBoundsChanged
   // even if the display's bounds didn't change. Used to swap primary
@@ -87,9 +105,6 @@ class ASH_EXPORT DisplayManager :
   bool HasInternalDisplay() const;
 
   bool IsInternalDisplayId(int64 id) const;
-
-  bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
-                                            const gfx::Insets& insets);
 
   // Returns display for given |id|;
   const gfx::Display& GetDisplayForId(int64 id) const;
@@ -158,18 +173,6 @@ class ASH_EXPORT DisplayManager :
   bool IsMirrored() const;
   const gfx::Display& mirrored_display() const { return mirrored_display_; }
 
-  // Returns the display object nearest given |window|.
-  const gfx::Display& GetDisplayNearestPoint(
-      const gfx::Point& point) const;
-
-  // Returns the display object nearest given |point|.
-  const gfx::Display& GetDisplayNearestWindow(
-      const aura::Window* window) const;
-
-  // Returns the display that most closely intersects |match_rect|.
-  const gfx::Display& GetDisplayMatching(
-      const gfx::Rect& match_rect)const;
-
   // Retuns the display info associated with |display_id|.
   const DisplayInfo& GetDisplayInfo(int64 display_id) const;
 
@@ -190,9 +193,6 @@ class ASH_EXPORT DisplayManager :
   void AddRemoveDisplay();
   void ToggleDisplayScaleFactor();
 
-  // RootWindowObserver overrides:
-  virtual void OnRootWindowHostResized(const aura::RootWindow* root) OVERRIDE;
-
   // SoftwareMirroringController override:
 #if defined(OS_CHROMEOS)
   virtual void SetSoftwareMirroring(bool enabled) OVERRIDE;
@@ -208,8 +208,12 @@ private:
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, AutomaticOverscanInsets);
   friend class ash::AcceleratorControllerTest;
   friend class test::DisplayManagerTestApi;
-  friend class DisplayManagerTest;
   friend class test::SystemGestureEventFilterTest;
+  friend class DisplayManagerTest;
+  // This is to allow DisplayController to modify the state of
+  // DisplayManager.  TODO(oshima): consider provide separate
+  // interface to modify the state.
+  friend class ash::DisplayController;
 
   typedef std::vector<gfx::Display> DisplayList;
 
@@ -217,8 +221,10 @@ private:
     change_display_upon_host_resize_ = value;
   }
 
-  gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
   gfx::Display& FindDisplayForId(int64 id);
+
+  // Updates the bounds of the display given by |display_id|.
+  bool UpdateDisplayBounds(int64 display_id, const gfx::Rect& new_bounds);
 
   // Add the mirror display's display info if the software based
   // mirroring is in use.
@@ -241,6 +247,9 @@ private:
   // value, or false otherwise.
   bool UpdateSecondaryDisplayBoundsForLayout(DisplayList* display_list,
                                              size_t* updated_index) const;
+
+
+  Delegate* delegate_;  // not owned.
 
   scoped_ptr<DisplayLayoutStore> layout_store_;
 
@@ -269,8 +278,6 @@ private:
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
-
-extern const aura::WindowProperty<int64>* const kDisplayIdKey;
 
 }  // namespace internal
 }  // namespace ash

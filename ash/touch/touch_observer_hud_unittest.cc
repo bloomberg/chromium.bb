@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace internal {

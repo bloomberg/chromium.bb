@@ -17,6 +17,7 @@
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/shell.h"
+#include "ash/wm/window_properties.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
@@ -156,11 +157,7 @@ MirrorWindowController::~MirrorWindowController() {
 }
 
 void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
-  if (Shell::GetInstance()->display_controller()->in_bootstrap())
-    return;
-
   static int mirror_root_window_count = 0;
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   if (!root_window_.get()) {
     const gfx::Rect& bounds_in_pixel = display_info.bounds_in_pixel();
@@ -172,8 +169,9 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
         base::StringPrintf("MirrorRootWindow-%d", mirror_root_window_count++));
     root_window_->compositor()->SetBackgroundColor(SK_ColorBLACK);
     // No need to remove RootWindowObserver because
-    // the DisplayManager object outlives RootWindow objects.
-    root_window_->AddRootWindowObserver(display_manager);
+    // the DisplayController object outlives RootWindow objects.
+    root_window_->AddRootWindowObserver(
+        Shell::GetInstance()->display_controller());
     root_window_->AddRootWindowObserver(this);
     // TODO(oshima): TouchHUD is using idkey.
     root_window_->SetProperty(internal::kDisplayIdKey, display_info.id());
@@ -205,6 +203,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     root_window_->SetHostBounds(display_info.bounds_in_pixel());
   }
 
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
       Shell::GetScreen()->GetPrimaryDisplay().id());
   DCHECK(display_manager->mirrored_display().is_valid());
@@ -235,7 +234,7 @@ void MirrorWindowController::Close() {
     delete capture_client;
 
     root_window_->RemoveRootWindowObserver(
-        Shell::GetInstance()->display_manager());
+        Shell::GetInstance()->display_controller());
     root_window_->RemoveRootWindowObserver(this);
     root_window_.reset();
     cursor_window_ = NULL;

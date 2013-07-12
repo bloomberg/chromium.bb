@@ -10,9 +10,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
-#include "ash/display/mirror_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
@@ -23,9 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
@@ -45,8 +40,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
-
-DECLARE_WINDOW_PROPERTY_TYPE(int64);
 
 namespace ash {
 namespace internal {
@@ -98,43 +91,47 @@ gfx::Display& GetInvalidDisplay() {
 // at specific timing.
 class MirrorWindowCreator {
  public:
-  explicit MirrorWindowCreator(const DisplayInfo& display_info)
-      : display_info_(display_info) {
+  MirrorWindowCreator(DisplayManager::Delegate* delegate,
+                      const DisplayInfo& display_info)
+      : delegate_(delegate),
+        display_info_(display_info) {
   }
 
   virtual ~MirrorWindowCreator() {
-    Shell::GetInstance()->mirror_window_controller()->
-        UpdateWindow(display_info_);
+    if (delegate_)
+      delegate_->CreateOrUpdateMirrorWindow(display_info_);
   }
 
  private:
+  DisplayManager::Delegate* delegate_;
   const DisplayInfo display_info_;
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowCreator);
 };
 
 class MirrorWindowCloser {
  public:
-  MirrorWindowCloser() {}
+  explicit MirrorWindowCloser(DisplayManager::Delegate* delegate)
+      : delegate_(delegate)  {}
+
   virtual ~MirrorWindowCloser() {
-    Shell::GetInstance()->mirror_window_controller()->Close();
+    if (delegate_)
+      delegate_->CloseMirrorWindow();
   }
 
  private:
+  DisplayManager::Delegate* delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowCloser);
 };
 
 }  // namespace
 
-using aura::RootWindow;
-using aura::Window;
 using std::string;
 using std::vector;
 
-DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey,
-                           gfx::Display::kInvalidDisplayID);
-
 DisplayManager::DisplayManager()
-    : layout_store_(new DisplayLayoutStore),
+    : delegate_(NULL),
+      layout_store_(new DisplayLayoutStore),
       first_display_id_(gfx::Display::kInvalidDisplayID),
       num_connected_displays_(0),
       force_bounds_changed_(false),
@@ -275,16 +272,6 @@ bool DisplayManager::HasInternalDisplay() const {
 
 bool DisplayManager::IsInternalDisplayId(int64 id) const {
   return gfx::Display::InternalDisplayId() == id;
-}
-
-bool DisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
-    const aura::Window* window,
-    const gfx::Insets& insets) {
-  const RootWindow* root = window->GetRootWindow();
-  gfx::Display& display = FindDisplayForRootWindow(root);
-  gfx::Rect old_work_area = display.work_area();
-  display.UpdateWorkAreaFromInsets(insets);
-  return old_work_area != display.work_area();
 }
 
 const gfx::Display& DisplayManager::GetDisplayForId(int64 id) const {
@@ -512,8 +499,8 @@ void DisplayManager::UpdateDisplays(
       InsertAndUpdateDisplayInfo(info);
 
       mirrored_display_ = CreateDisplayFromDisplayInfoById(new_info_iter->id());
-      mirror_window_creater.reset(
-          new MirrorWindowCreator(display_info_[new_info_iter->id()]));
+      mirror_window_creater.reset(new MirrorWindowCreator(
+          delegate_, display_info_[new_info_iter->id()]));
       ++new_info_iter;
       // Remove existing external dispaly if it is going to be mirrored.
       if (curr_iter != displays_.end() &&
@@ -581,7 +568,7 @@ void DisplayManager::UpdateDisplays(
   scoped_ptr<MirrorWindowCloser> mirror_window_closer;
   // Try to close mirror window unless mirror window is necessary.
   if (!mirror_window_creater.get())
-    mirror_window_closer.reset(new MirrorWindowCloser);
+    mirror_window_closer.reset(new MirrorWindowCloser(delegate_));
 
   // Do not update |displays_| if there's nothing to be updated. Without this,
   // it will not update the display layout, which causes the bug
@@ -590,10 +577,8 @@ void DisplayManager::UpdateDisplays(
       removed_displays.empty()) {
     return;
   }
-
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
-  display_controller->NotifyDisplayConfigurationChanging();
+  if (delegate_)
+    delegate_->PreDisplayConfigurationChange();
 
   size_t updated_index;
   if (UpdateSecondaryDisplayBoundsForLayout(&new_displays, &updated_index) &&
@@ -635,7 +620,8 @@ void DisplayManager::UpdateDisplays(
        iter != changed_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
   }
-  display_controller->NotifyDisplayConfigurationChanged();
+  if (delegate_)
+    delegate_->PostDisplayConfigurationChange();
 
 #if defined(USE_X11) && defined(OS_CHROMEOS)
   if (!changed_display_indices.empty() && base::chromeos::IsRunningOnChromeOS())
@@ -677,46 +663,6 @@ size_t DisplayManager::GetNumDisplays() const {
 
 bool DisplayManager::IsMirrored() const {
   return mirrored_display_.id() != gfx::Display::kInvalidDisplayID;
-}
-
-const gfx::Display& DisplayManager::GetDisplayNearestWindow(
-    const Window* window) const {
-  if (!window)
-    return DisplayController::GetPrimaryDisplay();
-  const RootWindow* root = window->GetRootWindow();
-  DisplayManager* manager = const_cast<DisplayManager*>(this);
-  return root ?
-      manager->FindDisplayForRootWindow(root) :
-      DisplayController::GetPrimaryDisplay();
-}
-
-const gfx::Display& DisplayManager::GetDisplayNearestPoint(
-    const gfx::Point& point) const {
-  // Fallback to the primary display if there is no root display containing
-  // the |point|.
-  const gfx::Display& display = FindDisplayContainingPoint(point);
-  return display.is_valid() ? display : DisplayController::GetPrimaryDisplay();
-}
-
-const gfx::Display& DisplayManager::GetDisplayMatching(
-    const gfx::Rect& rect) const {
-  if (rect.IsEmpty())
-    return GetDisplayNearestPoint(rect.origin());
-
-  int max = 0;
-  const gfx::Display* matching = 0;
-  for (std::vector<gfx::Display>::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
-    const gfx::Display& display = *iter;
-    gfx::Rect intersect = gfx::IntersectRects(display.bounds(), rect);
-    int area = intersect.width() * intersect.height();
-    if (area > max) {
-      max = area;
-      matching = &(*iter);
-    }
-  }
-  // Fallback to the primary display if there is no matching display.
-  return matching ? *matching : DisplayController::GetPrimaryDisplay();
 }
 
 const DisplayInfo& DisplayManager::GetDisplayInfo(int64 display_id) const {
@@ -778,14 +724,12 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
 void DisplayManager::AddRemoveDisplay() {
   DCHECK(!displays_.empty());
   std::vector<DisplayInfo> new_display_info_list;
-  new_display_info_list.push_back(
-      GetDisplayInfo(DisplayController::GetPrimaryDisplay().id()));
+  DisplayInfo first_display = GetDisplayInfo(displays_[0].id());
+  new_display_info_list.push_back(first_display);
   // Add if there is only one display connected.
   if (num_connected_displays() == 1) {
     // Layout the 2nd display below the primary as with the real device.
-    aura::RootWindow* primary = Shell::GetPrimaryRootWindow();
-    gfx::Rect host_bounds =
-        gfx::Rect(primary->GetHostOrigin(),  primary->GetHostSize());
+    gfx::Rect host_bounds = first_display.bounds_in_pixel();
     new_display_info_list.push_back(DisplayInfo::CreateFromSpec(
         base::StringPrintf(
             "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
@@ -809,40 +753,9 @@ void DisplayManager::ToggleDisplayScaleFactor() {
   UpdateDisplays(new_display_info_list);
 }
 
-void DisplayManager::OnRootWindowHostResized(const aura::RootWindow* root) {
-  if (change_display_upon_host_resize_) {
-    gfx::Display& display = FindDisplayForRootWindow(root);
-    gfx::Size old_display_size_in_pixel = display.GetSizeInPixel();
-    display_info_[display.id()].SetBounds(
-        gfx::Rect(root->GetHostOrigin(), root->GetHostSize()));
-    // It's tricky to support resizing mirror window on desktop.
-    if (software_mirroring_enabled_ && mirrored_display_.id() == display.id())
-      return;
-    display.SetSize(display_info_[display.id()].size_in_pixel());
-    Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
-    Shell::GetInstance()->mirror_window_controller()->UpdateWindow();
-  }
-}
-
 void DisplayManager::SetSoftwareMirroring(bool enabled) {
   software_mirroring_enabled_ = enabled;
   mirrored_display_ = gfx::Display();
-}
-
-gfx::Display& DisplayManager::FindDisplayForRootWindow(
-    const aura::RootWindow* root_window) {
-  int64 id = root_window->GetProperty(kDisplayIdKey);
-  // RootWindow needs Display to determine it's device scale factor.
-  // TODO(oshima): We don't need full display info for mirror
-  // window. Refactor so that RootWindow doesn't use it.
-  if (mirrored_display_.id() == id)
-    return mirrored_display_;
-
-  // if id is |kInvaildDisplayID|, it's being deleted.
-  DCHECK(id != gfx::Display::kInvalidDisplayID);
-  gfx::Display& display = FindDisplayForId(id);
-  DCHECK(display.is_valid());
-  return display;
 }
 
 gfx::Display& DisplayManager::FindDisplayForId(int64 id) {
@@ -853,6 +766,21 @@ gfx::Display& DisplayManager::FindDisplayForId(int64 id) {
   }
   DLOG(WARNING) << "Could not find display:" << id;
   return GetInvalidDisplay();
+}
+
+bool DisplayManager::UpdateDisplayBounds(int64 display_id,
+                                         const gfx::Rect& new_bounds) {
+  if (change_display_upon_host_resize_) {
+    display_info_[display_id].SetBounds(new_bounds);
+    // Don't notify observers if the mirrored window has changed.
+    if (software_mirroring_enabled_ && mirrored_display_.id() == display_id)
+      return false;
+    gfx::Display& display = FindDisplayForId(display_id);
+    display.SetSize(display_info_[display_id].size_in_pixel());
+    Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
+    return true;
+  }
+  return false;
 }
 
 void DisplayManager::AddMirrorDisplayInfoIfAny(
