@@ -794,13 +794,13 @@ enum NotificationType {
   NOTIFICATION_SYNC_CONFIGURE_START,
 
   // A service is requesting a sync datatype refresh for the current profile.
-  // The details value is a const syncer::ModelTypePayloadMap.
+  // The details value is a const syncer::ModelTypeSet.
   // If the payload map is empty, it should be treated as an invalidation for
   // all enabled types. This is used by session sync.
   NOTIFICATION_SYNC_REFRESH_LOCAL,
 
   // External notification requesting a sync datatype refresh for the current
-  // profile. The details value is a const syncer::ModelTypePayloadMap.
+  // profile. The details value is a const syncer::ObjectIdInvalidationMap.
   // If the payload map is empty, it should be treated as an invalidation for
   // all enabled types. This is used for notifications on Android.
   NOTIFICATION_SYNC_REFRESH_REMOTE,

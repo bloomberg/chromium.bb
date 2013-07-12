@@ -207,13 +207,10 @@ void SessionChangeProcessor::Observe(
         entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
       DVLOG(1) << "Triggering sync refresh for sessions datatype.";
       const syncer::ModelTypeSet types(syncer::SESSIONS);
-      const syncer::ModelTypeInvalidationMap& invalidation_map =
-          ModelTypeSetToInvalidationMap(types, std::string());
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
           content::Source<Profile>(profile_),
-          content::Details<const syncer::ModelTypeInvalidationMap>(
-              &invalidation_map));
+          content::Details<const syncer::ModelTypeSet>(&types));
     }
   }
 

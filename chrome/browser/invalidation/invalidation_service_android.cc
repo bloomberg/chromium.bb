@@ -63,16 +63,10 @@ void InvalidationServiceAndroid::Observe(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_REMOTE);
 
-  // TODO(akalin): Use ObjectIdInvalidationMap here instead.  We'll have to
-  // make sure all emitters of the relevant notifications also use
-  // ObjectIdInvalidationMap.
-  content::Details<const syncer::ModelTypeInvalidationMap>
+  content::Details<const syncer::ObjectIdInvalidationMap>
       state_details(details);
-  const syncer::ModelTypeInvalidationMap& model_type_invalidation_map =
+  const syncer::ObjectIdInvalidationMap object_invalidation_map =
       *(state_details.ptr());
-  syncer::ObjectIdInvalidationMap object_invalidation_map =
-      ModelTypeInvalidationMapToObjectIdInvalidationMap(
-          model_type_invalidation_map);
 
   // An empty map implies that we should invalidate all.
   const syncer::ObjectIdInvalidationMap& effective_invalidation_map =

@@ -41,13 +41,11 @@ class InvalidationServiceAndroidTestDelegate {
 
   void TriggerOnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) {
-    syncer::ModelTypeInvalidationMap model_invalidation_map =
-            ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
         content::Source<Profile>(profile_.get()),
-        content::Details<const syncer::ModelTypeInvalidationMap>(
-            &model_invalidation_map));
+        content::Details<const syncer::ObjectIdInvalidationMap>(
+            &invalidation_map));
   }
 
   scoped_ptr<TestingProfile> profile_;

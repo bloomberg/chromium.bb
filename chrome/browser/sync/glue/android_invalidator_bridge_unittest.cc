@@ -97,13 +97,13 @@ class AndroidInvalidatorBridgeTest : public testing::Test {
   }
 
   void TriggerRefreshNotification(
-      int type,
       const syncer::ModelTypeInvalidationMap& invalidation_map) {
     content::NotificationService::current()->Notify(
-        type,
+        chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
         content::Source<Profile>(&mock_profile_),
-        content::Details<const syncer::ModelTypeInvalidationMap>(
-            &invalidation_map));
+        content::Details<const syncer::ObjectIdInvalidationMap>(
+            ModelTypeInvalidationMapToObjectIdInvalidationMap(
+                &invalidation_map));
     BlockForSyncThread();
   }
 
@@ -168,8 +168,7 @@ TEST_F(AndroidInvalidatorBridgeTest, RemoteNotification) {
       ModelTypeSetToInvalidationMap(types, std::string());
   CreateObserver();
   UpdateEnabledTypes(syncer::ModelTypeSet(syncer::SESSIONS));
-  TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
-                             invalidation_map);
+  TriggerRefreshNotification(invalidation_map);
   VerifyAndDestroyObserver(invalidation_map);
 }
 
@@ -183,8 +182,7 @@ TEST_F(AndroidInvalidatorBridgeTest, RemoteNotificationEmptyPayloadMap) {
       syncer::ModelTypeSetToInvalidationMap(enabled_types, std::string());
   CreateObserver();
   UpdateEnabledTypes(enabled_types);
-  TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
-                             syncer::ModelTypeInvalidationMap());
+  TriggerRefreshNotification(syncer::ModelTypeInvalidationMap());
   VerifyAndDestroyObserver(enabled_types_invalidation_map);
 }
 

@@ -102,40 +102,30 @@ void ProfileSyncServiceAndroid::SendNudgeNotification(
 
   // TODO(nileshagrawal): Merge this with ChromeInvalidationClient::Invalidate.
   // Construct the ModelTypeStateMap and send it over with the notification.
-  syncer::ModelType model_type;
-  if (!syncer::NotificationTypeToRealModelType(str_object_id, &model_type)) {
-    DVLOG(1) << "Could not get invalidation model type; "
-            << "Sending notification with empty state map.";
-    syncer::ModelTypeInvalidationMap model_types_with_states;
-    content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
-          content::Source<Profile>(profile_),
-          content::Details<const syncer::ModelTypeInvalidationMap>(
-              &model_types_with_states));
-    return;
-  }
-
+  invalidation::ObjectId object_id(
+      ipc::invalidation::ObjectSource::CHROME_SYNC,
+      str_object_id);
   if (version != ipc::invalidation::Constants::UNKNOWN) {
-    std::map<syncer::ModelType, int64>::const_iterator it =
-        max_invalidation_versions_.find(model_type);
+    ObjectIdVersionMap::iterator it =
+        max_invalidation_versions_.find(object_id);
     if ((it != max_invalidation_versions_.end()) &&
         (version <= it->second)) {
       DVLOG(1) << "Dropping redundant invalidation with version " << version;
       return;
     }
-    max_invalidation_versions_[model_type] = version;
+    max_invalidation_versions_[object_id] = version;
   }
 
-  syncer::ModelTypeSet types;
-  types.Put(model_type);
-  syncer::ModelTypeInvalidationMap model_types_with_states =
-      syncer::ModelTypeSetToInvalidationMap(types, state);
+  syncer::ObjectIdSet object_ids;
+  object_ids.insert(object_id);
+  syncer::ObjectIdInvalidationMap object_ids_with_states =
+      syncer::ObjectIdSetToInvalidationMap(object_ids, state);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
       content::Source<Profile>(profile_),
-      content::Details<const syncer::ModelTypeInvalidationMap>(
-          &model_types_with_states));
+      content::Details<const syncer::ObjectIdInvalidationMap>(
+          &object_ids_with_states));
 }
 
 void ProfileSyncServiceAndroid::OnStateChanged() {

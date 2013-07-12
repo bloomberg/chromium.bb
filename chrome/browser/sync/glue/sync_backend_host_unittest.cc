@@ -240,14 +240,10 @@ class SyncBackendHostTest : public testing::Test {
   void IssueRefreshRequest(syncer::ModelTypeSet types) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    syncer::ModelTypeInvalidationMap invalidation_map(
-        ModelTypeSetToInvalidationMap(types, std::string()));
-
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
         content::Source<Profile>(profile_.get()),
-        content::Details<syncer::ModelTypeInvalidationMap>(
-            &invalidation_map));
+        content::Details<syncer::ModelTypeSet>(&types));
   }
 
  protected:

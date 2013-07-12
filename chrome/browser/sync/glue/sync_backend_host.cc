@@ -836,16 +836,10 @@ void SyncBackendHost::Observe(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL);
 
-  content::Details<const syncer::ModelTypeInvalidationMap>
-      state_details(details);
-  const syncer::ModelTypeInvalidationMap& invalidation_map =
-      *(state_details.ptr());
-  const syncer::ModelTypeSet types =
-      ModelTypeInvalidationMapToSet(invalidation_map);
+  content::Details<const syncer::ModelTypeSet> state_details(details);
+  const syncer::ModelTypeSet& types = *(state_details.ptr());
   registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoRefreshTypes,
-                 core_.get(),
-                 types));
+      base::Bind(&SyncBackendHost::Core::DoRefreshTypes, core_.get(), types));
 }
 
 SyncBackendHost::DoInitializeOptions::DoInitializeOptions(

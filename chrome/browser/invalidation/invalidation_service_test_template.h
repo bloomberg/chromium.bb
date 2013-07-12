@@ -84,14 +84,12 @@
 template <typename InvalidatorTestDelegate>
 class InvalidationServiceTest : public testing::Test {
  protected:
-  // Note: The IDs defined below must be valid.  Otherwise they won't make it
-  // through the round-trip to ModelTypeInvalidationMap and back that the
-  // AndroidInvalidation test requires.
   InvalidationServiceTest()
       : id1(ipc::invalidation::ObjectSource::CHROME_SYNC, "BOOKMARK"),
         id2(ipc::invalidation::ObjectSource::CHROME_SYNC, "PREFERENCE"),
         id3(ipc::invalidation::ObjectSource::CHROME_SYNC, "AUTOFILL"),
-        id4(ipc::invalidation::ObjectSource::CHROME_SYNC, "EXPERIMENTS") {
+        id4(ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
+            "PUSH_MESSAGE") {
   }
 
   invalidation::InvalidationService*

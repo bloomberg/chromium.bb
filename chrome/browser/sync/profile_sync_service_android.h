@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
+#include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 class Profile;
 class ProfileSyncService;
@@ -195,6 +195,10 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   static bool Register(JNIEnv* env);
 
  private:
+  typedef std::map<invalidation::ObjectId,
+                   int64,
+                   syncer::ObjectIdLessThan> ObjectIdVersionMap;
+
   virtual ~ProfileSyncServiceAndroid();
   // Remove observers to profile sync service.
   void RemoveObserver();
@@ -216,7 +220,7 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // The invalidation API spec allows for the possibility of redundant
   // invalidations, so keep track of the max versions and drop
   // invalidations with old versions.
-  std::map<syncer::ModelType, int64> max_invalidation_versions_;
+  ObjectIdVersionMap max_invalidation_versions_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceAndroid);
 };
