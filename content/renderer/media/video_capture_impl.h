@@ -69,6 +69,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
   virtual void OnDeviceInfoReceived(
       const media::VideoCaptureParams& device_info) OVERRIDE;
+  virtual void OnDeviceInfoChanged(
+      const media::VideoCaptureParams& device_info) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
   virtual void OnEncodingCapabilitiesAvailable(
           const media::VideoEncodingCapabilities& capabilities) OVERRIDE;
@@ -124,6 +126,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   void DoBufferReceivedOnCaptureThread(int buffer_id, base::Time timestamp);
   void DoStateChangedOnCaptureThread(VideoCaptureState state);
   void DoDeviceInfoReceivedOnCaptureThread(
+      const media::VideoCaptureParams& device_info);
+  void DoDeviceInfoChangedOnCaptureThread(
       const media::VideoCaptureParams& device_info);
   void DoDelegateAddedOnCaptureThread(int32 device_id);
 

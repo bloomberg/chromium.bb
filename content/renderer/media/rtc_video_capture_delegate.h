@@ -54,6 +54,9 @@ class RtcVideoCaptureDelegate
   virtual void OnDeviceInfoReceived(
       media::VideoCapture* capture,
       const media::VideoCaptureParams& device_info) OVERRIDE;
+  virtual void OnDeviceInfoChanged(
+      media::VideoCapture* capture,
+      const media::VideoCaptureParams& device_info) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<RtcVideoCaptureDelegate>;

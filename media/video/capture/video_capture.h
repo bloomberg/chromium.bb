@@ -72,6 +72,11 @@ class MEDIA_EXPORT VideoCapture {
         VideoCapture* capture,
         const VideoCaptureParams& device_info) = 0;
 
+    // Notify client about the newly changed device info.
+    virtual void OnDeviceInfoChanged(
+        VideoCapture* capture,
+        const VideoCaptureParams& device_info) {};
+
    protected:
     virtual ~EventHandler() {}
   };

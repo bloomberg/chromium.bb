@@ -72,6 +72,10 @@ class CONTENT_EXPORT VideoCaptureHost
                            int width,
                            int height,
                            int frame_per_second) OVERRIDE;
+  virtual void OnFrameInfoChanged(const VideoCaptureControllerID& id,
+                                  int width,
+                                  int height,
+                                  int frame_per_second) OVERRIDE;
   virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE;
 
  private:
@@ -121,6 +125,14 @@ class CONTENT_EXPORT VideoCaptureHost
   // Send information about frame resolution and frame rate
   // to the VideoCaptureMessageFilter.
   void DoSendFrameInfoOnIOThread(
+      const VideoCaptureControllerID& controller_id,
+      int width,
+      int height,
+      int frame_per_second);
+
+  // Send newly changed information about frame resolution and frame rate
+  // to the VideoCaptureMessageFilter.
+  void DoSendFrameInfoChangedOnIOThread(
       const VideoCaptureControllerID& controller_id,
       int width,
       int height,

@@ -508,6 +508,14 @@ void VideoCaptureController::OnFrameInfo(
       base::Bind(&VideoCaptureController::DoFrameInfoOnIOThread, this));
 }
 
+void VideoCaptureController::OnFrameInfoChanged(
+    const media::VideoCaptureCapability& info) {
+  BrowserThread::PostTask(BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&VideoCaptureController::DoFrameInfoChangedOnIOThread,
+                 this, info));
+}
+
 VideoCaptureController::~VideoCaptureController() {
   buffer_pool_ = NULL;  // Release all buffers.
   STLDeleteContainerPointers(controller_clients_.begin(),
@@ -587,6 +595,19 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
   for (ControllerClients::iterator client_it = controller_clients_.begin();
        client_it != controller_clients_.end(); ++client_it) {
     SendFrameInfoAndBuffers(*client_it);
+  }
+}
+
+void VideoCaptureController::DoFrameInfoChangedOnIOThread(
+    const media::VideoCaptureCapability& info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (ControllerClients::iterator client_it = controller_clients_.begin();
+       client_it != controller_clients_.end(); ++client_it) {
+    (*client_it)->event_handler->OnFrameInfoChanged(
+        (*client_it)->controller_id,
+        info.width,
+        info.height,
+        info.frame_rate);
   }
 }
 

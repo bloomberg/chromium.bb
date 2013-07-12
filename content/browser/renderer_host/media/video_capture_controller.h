@@ -80,6 +80,8 @@ class CONTENT_EXPORT VideoCaptureController
       base::Time timestamp) OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnFrameInfo(const media::VideoCaptureCapability& info) OVERRIDE;
+  virtual void OnFrameInfoChanged(
+      const media::VideoCaptureCapability& info) OVERRIDE;
 
  protected:
   virtual ~VideoCaptureController();
@@ -98,6 +100,7 @@ class CONTENT_EXPORT VideoCaptureController
       const scoped_refptr<media::VideoFrame>& captured_frame,
       base::Time timestamp);
   void DoFrameInfoOnIOThread();
+  void DoFrameInfoChangedOnIOThread(const media::VideoCaptureCapability& info);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
 

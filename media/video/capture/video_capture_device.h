@@ -176,6 +176,10 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // the resulting frame size.
     virtual void OnFrameInfo(const VideoCaptureCapability& info) = 0;
 
+    // Called when the native resolution of VideoCaptureDevice has been changed
+    // and it needs to inform its client of the new frame size.
+    virtual void OnFrameInfoChanged(const VideoCaptureCapability& info) {};
+
    protected:
     virtual ~EventHandler() {}
   };

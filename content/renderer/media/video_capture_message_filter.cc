@@ -62,6 +62,7 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnDeviceStateChanged)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnBufferCreated)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfo, OnDeviceInfoReceived)
+    IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfoChanged, OnDeviceInfoChanged)
     IPC_MESSAGE_HANDLER(EncodedVideoCaptureMsg_CapabilitiesAvailable,
                         OnCapabilitiesAvailable)
     IPC_MESSAGE_HANDLER(EncodedVideoCaptureMsg_BitstreamOpened,
@@ -167,6 +168,18 @@ void VideoCaptureMessageFilter::OnDeviceInfoReceived(
     return;
   }
   delegate->OnDeviceInfoReceived(params);
+}
+
+void VideoCaptureMessageFilter::OnDeviceInfoChanged(
+    int device_id,
+    const media::VideoCaptureParams& params) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnDeviceInfoChanged: Got video capture event for a "
+        "non-existent or removed video capture.";
+    return;
+  }
+  delegate->OnDeviceInfoChanged(params);
 }
 
 void VideoCaptureMessageFilter::OnCapabilitiesAvailable(

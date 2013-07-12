@@ -43,6 +43,11 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
     virtual void OnDeviceInfoReceived(
         const media::VideoCaptureParams& device_info) = 0;
 
+    // Called when newly changed device info is received from video capture
+    // device in the browser process.
+    virtual void OnDeviceInfoChanged(
+        const media::VideoCaptureParams& device_info) {};
+
     // Called when the delegate has been added to filter's delegate list.
     // |device_id| is the device id for the delegate.
     virtual void OnDelegateAdded(int32 device_id) = 0;
@@ -117,6 +122,10 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   // Receive device info from browser process.
   void OnDeviceInfoReceived(int device_id,
                             const media::VideoCaptureParams& params);
+
+  // Receive newly changed device info from browser process.
+  void OnDeviceInfoChanged(int device_id,
+                           const media::VideoCaptureParams& params);
 
   // Receive encoding capabilities from browser process.
   void OnCapabilitiesAvailable(int device_id,

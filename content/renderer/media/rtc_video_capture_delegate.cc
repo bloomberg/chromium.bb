@@ -97,6 +97,12 @@ void RtcVideoCaptureDelegate::OnDeviceInfoReceived(
   NOTIMPLEMENTED();
 }
 
+void RtcVideoCaptureDelegate::OnDeviceInfoChanged(
+    media::VideoCapture* capture,
+    const media::VideoCaptureParams& device_info) {
+  NOTIMPLEMENTED();
+}
+
 void RtcVideoCaptureDelegate::OnBufferReadyOnCaptureThread(
     media::VideoCapture* capture,
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) {

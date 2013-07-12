@@ -39,6 +39,12 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceInfo,
                      int /* device_id */,
                      media::VideoCaptureParams)
 
+// Tell the renderer process the newly changed width, height and frame rate
+// the video capture device will use.
+IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceInfoChanged,
+                     int /* device_id */,
+                     media::VideoCaptureParams)
+
 // Start the video capture specified by |device_id|.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_Start,
                      int /* device_id */,

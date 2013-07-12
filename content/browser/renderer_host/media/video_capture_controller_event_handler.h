@@ -45,6 +45,12 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
                            int height,
                            int frame_rate) = 0;
 
+  // The frame resolution the VideoCaptureDevice capture video in.
+  virtual void OnFrameInfoChanged(const VideoCaptureControllerID& id,
+                                  int width,
+                                  int height,
+                                  int frame_rate) {};
+
   // The capture session has ended and no more frames will be sent.
   virtual void OnEnded(const VideoCaptureControllerID& id) = 0;
 

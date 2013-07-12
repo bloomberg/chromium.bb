@@ -215,6 +215,13 @@ void VideoCaptureImpl::OnDeviceInfoReceived(
                  base::Unretained(this), device_info));
 }
 
+void VideoCaptureImpl::OnDeviceInfoChanged(
+    const media::VideoCaptureParams& device_info) {
+  capture_message_loop_proxy_->PostTask(FROM_HERE,
+      base::Bind(&VideoCaptureImpl::DoDeviceInfoChangedOnCaptureThread,
+                 base::Unretained(this), device_info));
+}
+
 void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoDelegateAddedOnCaptureThread,
@@ -440,6 +447,15 @@ void VideoCaptureImpl::DoDeviceInfoReceivedOnCaptureThread(
   device_info_available_ = true;
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it) {
     it->first->OnDeviceInfoReceived(this, device_info);
+  }
+}
+
+void VideoCaptureImpl::DoDeviceInfoChangedOnCaptureThread(
+    const media::VideoCaptureParams& device_info) {
+  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
+
+  for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it) {
+    it->first->OnDeviceInfoChanged(this, device_info);
   }
 }
 
