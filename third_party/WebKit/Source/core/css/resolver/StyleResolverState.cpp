@@ -31,60 +31,68 @@
 
 namespace WebCore {
 
+ElementResolveContext::ElementResolveContext(Element* element)
+    : m_element(element)
+    , m_styledElement(element && element->isStyledElement() ? element : 0)
+    , m_elementLinkState(element ? element->document()->visitedLinkState()->determineLinkState(element) : NotInsideLink)
+    , m_distributedToInsertionPoint(false)
+    , m_resetStyleInheritance(false)
+{
+    NodeRenderingContext context(element);
+    m_parentNode = context.parentNodeForRenderingAndStyle();
+    m_distributedToInsertionPoint = context.insertionPoint();
+    m_resetStyleInheritance = context.resetStyleInheritance();
+
+    Node* documentElement = document()->documentElement();
+    RenderStyle* documentStyle = document()->renderStyle();
+    m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
+}
+
 void StyleResolverState::clear()
 {
-    m_element = 0;
-    m_styledElement = 0;
+    // FIXME: Use m_elementContent = ElementContext() instead.
+    m_elementContext.deprecatedPartialClear();
+
     m_parentStyle = 0;
-    m_parentNode = 0;
     m_regionForStyling = 0;
     m_elementStyleResources.clear();
 }
 
-void StyleResolverState::initElement(Element* element)
+void StyleResolverState::initForStyleResolve(Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
 {
-    if (m_element == element)
-        return;
+    ASSERT(!element() || document() == newDocument);
+    if (newElement != element()) {
+        if (newElement)
+            m_elementContext = ElementResolveContext(newElement);
+        else
+            m_elementContext = ElementResolveContext();
 
-    m_element = element;
-    m_styledElement = element && element->isStyledElement() ? element : 0;
-    m_elementLinkState = element ? element->document()->visitedLinkState()->determineLinkState(element) : NotInsideLink;
-
-    if (!element || element != element->document()->documentElement())
-        return;
-
-    element->document()->setDirectionSetOnDocumentElement(false);
-    element->document()->setWritingModeSetOnDocumentElement(false);
-}
-
-void StyleResolverState::initForStyleResolve(Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
-{
-    initElement(e);
+        // FIXME: This method should not be modifying Document.
+        if (m_elementContext.isDocumentElement()) {
+            document()->setDirectionSetOnDocumentElement(false);
+            document()->setWritingModeSetOnDocumentElement(false);
+        }
+    }
 
     m_regionForStyling = regionForStyling;
 
-    if (e) {
-        NodeRenderingContext context(e);
-        m_parentNode = context.parentNodeForRenderingAndStyle();
-        m_parentStyle = context.resetStyleInheritance() ? 0 :
-            parentStyle ? parentStyle :
-            m_parentNode ? m_parentNode->renderStyle() : 0;
-        m_distributedToInsertionPoint = context.insertionPoint();
-    } else {
-        m_parentNode = 0;
+    if (m_elementContext.resetStyleInheritance())
+        m_parentStyle = 0;
+    else if (parentStyle)
         m_parentStyle = parentStyle;
-        m_distributedToInsertionPoint = false;
-    }
-
-    Node* docElement = e ? e->document()->documentElement() : 0;
-    RenderStyle* docStyle = document->renderStyle();
-    m_rootElementStyle = docElement && e != docElement ? docElement->renderStyle() : docStyle;
+    else if (m_elementContext.parentNode())
+        m_parentStyle = m_elementContext.parentNode()->renderStyle();
+    else
+        m_parentStyle = 0;
 
     m_style = 0;
     m_elementStyleResources.clear();
     m_fontDirty = false;
 
-    if (Page* page = document->page())
+    // FIXME: StyleResolverState is never passed between documents
+    // so we should be able to do this initialization at StyleResolverState
+    // createion time instead of now, correct?
+    if (Page* page = newDocument->page())
         m_elementStyleResources.setDeviceScaleFactor(page->deviceScaleFactor());
 }
 

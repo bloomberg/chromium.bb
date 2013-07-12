@@ -149,6 +149,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
     , m_styleBuilder(DeprecatedStyleBuilder::sharedStyleBuilder())
     , m_styleResourceLoader(document->cachedResourceLoader())
+    , m_elementAffectedByClassRules(false)
 {
     Element* root = document->documentElement();
 
@@ -556,15 +557,13 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(RuleSet* ruleSet)
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-bool StyleResolver::canShareStyleWithControl(Element* element) const
+bool StyleResolver::canShareStyleWithControl(const ElementResolveContext& context, Element* element) const
 {
-    const StyleResolverState& state = m_state;
-
-    if (!element->hasTagName(inputTag) || !state.element()->hasTagName(inputTag))
+    if (!element->hasTagName(inputTag) || !context.element()->hasTagName(inputTag))
         return false;
 
     HTMLInputElement* thisInputElement = toHTMLInputElement(element);
-    HTMLInputElement* otherInputElement = toHTMLInputElement(state.element());
+    HTMLInputElement* otherInputElement = toHTMLInputElement(context.element());
     if (thisInputElement->elementData() != otherInputElement->elementData()) {
         if (thisInputElement->fastGetAttribute(typeAttr) != otherInputElement->fastGetAttribute(typeAttr))
             return false;
@@ -581,25 +580,25 @@ bool StyleResolver::canShareStyleWithControl(Element* element) const
     if (thisInputElement->isRequired() != otherInputElement->isRequired())
         return false;
 
-    if (element->isDisabledFormControl() != state.element()->isDisabledFormControl())
+    if (element->isDisabledFormControl() != context.element()->isDisabledFormControl())
         return false;
 
-    if (element->isDefaultButtonForForm() != state.element()->isDefaultButtonForForm())
+    if (element->isDefaultButtonForForm() != context.element()->isDefaultButtonForForm())
         return false;
 
-    if (state.document()->containsValidityStyleRules()) {
+    if (context.document()->containsValidityStyleRules()) {
         bool willValidate = element->willValidate();
 
-        if (willValidate != state.element()->willValidate())
+        if (willValidate != context.element()->willValidate())
             return false;
 
-        if (willValidate && (element->isValidFormControlElement() != state.element()->isValidFormControlElement()))
+        if (willValidate && (element->isValidFormControlElement() != context.element()->isValidFormControlElement()))
             return false;
 
-        if (element->isInRange() != state.element()->isInRange())
+        if (element->isInRange() != context.element()->isInRange())
             return false;
 
-        if (element->isOutOfRange() != state.element()->isOutOfRange())
+        if (element->isOutOfRange() != context.element()->isOutOfRange())
             return false;
     }
 
@@ -612,54 +611,51 @@ static inline bool elementHasDirectionAuto(Element* element)
     return element->isHTMLElement() && toHTMLElement(element)->hasDirectionAuto();
 }
 
-bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(Element* sharingCandidate) const
+bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(const ElementResolveContext& context, Element* sharingCandidate) const
 {
-    const StyleResolverState& state = m_state;
-    if (state.element()->elementData() == sharingCandidate->elementData())
+    if (context.element()->elementData() == sharingCandidate->elementData())
         return true;
-    if (state.element()->fastGetAttribute(XMLNames::langAttr) != sharingCandidate->fastGetAttribute(XMLNames::langAttr))
+    if (context.element()->fastGetAttribute(XMLNames::langAttr) != sharingCandidate->fastGetAttribute(XMLNames::langAttr))
         return false;
-    if (state.element()->fastGetAttribute(langAttr) != sharingCandidate->fastGetAttribute(langAttr))
+    if (context.element()->fastGetAttribute(langAttr) != sharingCandidate->fastGetAttribute(langAttr))
         return false;
 
-    if (!state.elementAffectedByClassRules()) {
+    if (!m_elementAffectedByClassRules) {
         if (sharingCandidate->hasClass() && classNamesAffectedByRules(sharingCandidate->classNames()))
             return false;
     } else if (sharingCandidate->hasClass()) {
         // SVG elements require a (slow!) getAttribute comparision because "class" is an animatable attribute for SVG.
-        if (state.element()->isSVGElement()) {
-            if (state.element()->getAttribute(classAttr) != sharingCandidate->getAttribute(classAttr))
+        if (context.element()->isSVGElement()) {
+            if (context.element()->getAttribute(classAttr) != sharingCandidate->getAttribute(classAttr))
                 return false;
-        } else if (state.element()->classNames() != sharingCandidate->classNames()) {
+        } else if (context.element()->classNames() != sharingCandidate->classNames()) {
             return false;
         }
     } else {
         return false;
     }
 
-    if (state.styledElement()->presentationAttributeStyle() != sharingCandidate->presentationAttributeStyle())
+    if (context.styledElement()->presentationAttributeStyle() != sharingCandidate->presentationAttributeStyle())
         return false;
 
-    if (state.element()->hasTagName(progressTag)) {
-        if (state.element()->shouldAppearIndeterminate() != sharingCandidate->shouldAppearIndeterminate())
+    if (context.element()->hasTagName(progressTag)) {
+        if (context.element()->shouldAppearIndeterminate() != sharingCandidate->shouldAppearIndeterminate())
             return false;
     }
 
     return true;
 }
 
-bool StyleResolver::canShareStyleWithElement(Element* element) const
+bool StyleResolver::canShareStyleWithElement(const ElementResolveContext& context, Element* element) const
 {
     RenderStyle* style = element->renderStyle();
-    const StyleResolverState& state = m_state;
-
     if (!style)
         return false;
     if (style->unique())
         return false;
     if (style->hasUniquePseudoStyle())
         return false;
-    if (element->tagQName() != state.element()->tagQName())
+    if (element->tagQName() != context.element()->tagQName())
         return false;
     if (element->inlineStyle())
         return false;
@@ -667,21 +663,21 @@ bool StyleResolver::canShareStyleWithElement(Element* element) const
         return false;
     if (element->isSVGElement() && toSVGElement(element)->animatedSMILStyleProperties())
         return false;
-    if (element->isLink() != state.element()->isLink())
+    if (element->isLink() != context.element()->isLink())
         return false;
-    if (element->hovered() != state.element()->hovered())
+    if (element->hovered() != context.element()->hovered())
         return false;
-    if (element->active() != state.element()->active())
+    if (element->active() != context.element()->active())
         return false;
-    if (element->focused() != state.element()->focused())
+    if (element->focused() != context.element()->focused())
         return false;
-    if (element->shadowPseudoId() != state.element()->shadowPseudoId())
+    if (element->shadowPseudoId() != context.element()->shadowPseudoId())
         return false;
     if (element == element->document()->cssTarget())
         return false;
-    if (!sharingCandidateHasIdenticalStyleAffectingAttributes(element))
+    if (!sharingCandidateHasIdenticalStyleAffectingAttributes(context, element))
         return false;
-    if (element->additionalPresentationAttributeStyle() != state.styledElement()->additionalPresentationAttributeStyle())
+    if (element->additionalPresentationAttributeStyle() != context.styledElement()->additionalPresentationAttributeStyle())
         return false;
 
     if (element->hasID() && m_features.idsInRules.contains(element->idForStyleResolution().impl()))
@@ -697,10 +693,10 @@ bool StyleResolver::canShareStyleWithElement(Element* element) const
 
     bool isControl = element->isFormControlElement();
 
-    if (isControl != state.element()->isFormControlElement())
+    if (isControl != context.element()->isFormControlElement())
         return false;
 
-    if (isControl && !canShareStyleWithControl(element))
+    if (isControl && !canShareStyleWithControl(context, element))
         return false;
 
     if (style->transitions() || style->animations())
@@ -714,33 +710,33 @@ bool StyleResolver::canShareStyleWithElement(Element* element) const
     if (elementHasDirectionAuto(element))
         return false;
 
-    if (element->isLink() && state.elementLinkState() != style->insideLink())
+    if (element->isLink() && context.elementLinkState() != style->insideLink())
         return false;
 
-    if (element->isUnresolvedCustomElement() != state.element()->isUnresolvedCustomElement())
+    if (element->isUnresolvedCustomElement() != context.element()->isUnresolvedCustomElement())
         return false;
 
     // Deny sharing styles between WebVTT and non-WebVTT nodes.
-    if (element->isWebVTTElement() != state.element()->isWebVTTElement())
+    if (element->isWebVTTElement() != context.element()->isWebVTTElement())
         return false;
 
-    if (element->isWebVTTElement() && state.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(state.element())->isPastNode())
+    if (element->isWebVTTElement() && context.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(context.element())->isPastNode())
         return false;
 
-    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(state.document())) {
-        if (element == fullscreen->webkitCurrentFullScreenElement() || state.element() == fullscreen->webkitCurrentFullScreenElement())
+    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(context.document())) {
+        if (element == fullscreen->webkitCurrentFullScreenElement() || context.element() == fullscreen->webkitCurrentFullScreenElement())
             return false;
     }
 
     return true;
 }
 
-inline Element* StyleResolver::findSiblingForStyleSharing(Node* node, unsigned& count) const
+inline Element* StyleResolver::findSiblingForStyleSharing(const ElementResolveContext& context, Node* node, unsigned& count) const
 {
     for (; node; node = node->nextSibling()) {
         if (!node->isStyledElement())
             continue;
-        if (canShareStyleWithElement(toElement(node)))
+        if (canShareStyleWithElement(context, toElement(node)))
             break;
         if (count++ == cStyleSearchThreshold)
             return 0;
@@ -748,56 +744,55 @@ inline Element* StyleResolver::findSiblingForStyleSharing(Node* node, unsigned& 
     return toElement(node);
 }
 
-RenderStyle* StyleResolver::locateSharedStyle()
+RenderStyle* StyleResolver::locateSharedStyle(const ElementResolveContext& context)
 {
-    StyleResolverState& state = m_state;
-    if (!state.styledElement() || !state.parentStyle())
+    if (!context.styledElement())
         return 0;
 
     // If the element has inline style it is probably unique.
-    if (state.styledElement()->inlineStyle())
+    if (context.styledElement()->inlineStyle())
         return 0;
-    if (state.styledElement()->isSVGElement() && toSVGElement(state.styledElement())->animatedSMILStyleProperties())
+    if (context.styledElement()->isSVGElement() && toSVGElement(context.styledElement())->animatedSMILStyleProperties())
         return 0;
     // Ids stop style sharing if they show up in the stylesheets.
-    if (state.styledElement()->hasID() && m_features.idsInRules.contains(state.styledElement()->idForStyleResolution().impl()))
+    if (context.styledElement()->hasID() && m_features.idsInRules.contains(context.styledElement()->idForStyleResolution().impl()))
         return 0;
     // Active and hovered elements always make a chain towards the document node
     // and no siblings or cousins will have the same state.
-    if (state.styledElement()->hovered())
+    if (context.styledElement()->hovered())
         return 0;
-    if (state.styledElement()->active())
+    if (context.styledElement()->active())
         return 0;
     // There is always only one focused element.
-    if (state.styledElement()->focused())
+    if (context.styledElement()->focused())
         return 0;
-    if (parentElementPreventsSharing(state.element()->parentElement()))
+    if (parentElementPreventsSharing(context.element()->parentElement()))
         return 0;
-    if (state.styledElement()->hasScopedHTMLStyleChild())
+    if (context.styledElement()->hasScopedHTMLStyleChild())
         return 0;
-    if (state.element() == state.document()->cssTarget())
+    if (context.element() == context.document()->cssTarget())
         return 0;
-    if (elementHasDirectionAuto(state.element()))
+    if (elementHasDirectionAuto(context.element()))
         return 0;
-    if (state.element()->hasActiveAnimations())
+    if (context.element()->hasActiveAnimations())
         return 0;
     // When a dialog is first shown, its style is mutated to center it in the
     // viewport. So the styles can't be shared since the viewport position and
     // size may be different each time a dialog is opened.
-    if (state.element()->hasTagName(dialogTag))
+    if (context.element()->hasTagName(dialogTag))
         return 0;
 
-    // Cache whether state.element is affected by any known class selectors.
-    // FIXME: This shouldn't be a member variable. The style sharing code could be factored out of StyleResolver.
-    state.setElementAffectedByClassRules(state.element() && state.element()->hasClass() && classNamesAffectedByRules(state.element()->classNames()));
+    // Cache whether context.element() is affected by any known class selectors.
+    // FIXME: This should be an explicit out parameter, instead of a member variable.
+    m_elementAffectedByClassRules = context.element() && context.element()->hasClass() && classNamesAffectedByRules(context.element()->classNames());
 
     // Check next siblings and their cousins.
     unsigned count = 0;
     unsigned visitedNodeCount = 0;
     Element* shareElement = 0;
-    Node* cousinList = state.styledElement()->nextSibling();
+    Node* cousinList = context.styledElement()->nextSibling();
     while (cousinList) {
-        shareElement = findSiblingForStyleSharing(cousinList, count);
+        shareElement = findSiblingForStyleSharing(context, cousinList, count);
         if (shareElement)
             break;
         cousinList = locateCousinList(cousinList->parentElement(), visitedNodeCount);
@@ -814,7 +809,7 @@ RenderStyle* StyleResolver::locateSharedStyle()
     if (styleSharingCandidateMatchesRuleSet(m_uncommonAttributeRuleSet.get()))
         return 0;
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
-    if (parentElementPreventsSharing(state.element()->parentElement()))
+    if (parentElementPreventsSharing(context.element()->parentElement()))
         return 0;
     return shareElement->renderStyle();
 }
@@ -1014,8 +1009,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     StyleResolverState& state = m_state;
     state.initForStyleResolve(document(), element, defaultParent, regionForStyling);
-    if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint()) {
-        RenderStyle* sharedStyle = locateSharedStyle();
+    if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint() && state.parentStyle()) {
+        RenderStyle* sharedStyle = locateSharedStyle(state.elementContext());
         if (sharedStyle) {
             state.clear();
             return sharedStyle;
@@ -1238,10 +1233,10 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
     applyMatchedProperties(collector.matchedResult(), e);
 
     // Clean up our style object's display and text decorations (among other fixups).
-    adjustRenderStyle(state.style(), m_state.parentStyle(), 0);
+    adjustRenderStyle(state.style(), state.parentStyle(), 0);
 
     // Start loading resources referenced by this style.
-    m_styleResourceLoader.loadPendingResources(m_state.style(), m_state.elementStyleResources());
+    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
     document()->didAccessStyleResolver();
 

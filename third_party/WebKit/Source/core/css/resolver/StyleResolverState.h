@@ -39,19 +39,58 @@ namespace WebCore {
 class FontDescription;
 class RenderRegion;
 
+// ElementResolveContext is immutable and serves as an input to the style resolve process.
+class ElementResolveContext {
+public:
+    ElementResolveContext()
+        : m_element(0)
+        , m_styledElement(0)
+        , m_parentNode(0)
+        , m_rootElementStyle(0)
+        , m_elementLinkState(NotInsideLink)
+        , m_distributedToInsertionPoint(false)
+        , m_resetStyleInheritance(false)
+    {
+    }
+
+    explicit ElementResolveContext(Element*);
+
+    // FIXME: This should be removed, this exists to avoid changing behavior
+    // while refactoring, but callers should just assign a null context instead.
+    // FIXME: This is the only method making this class not immutable!
+    void deprecatedPartialClear()
+    {
+        m_element = 0;
+        m_styledElement = 0;
+        m_parentNode = 0;
+    }
+
+    Document* document() const { return m_element->document(); }
+    bool isDocumentElement() const { return m_element && m_element == m_element->document()->documentElement(); }
+
+    Element* element() const { return m_element; }
+    Element* styledElement() const { return m_styledElement; }
+    const ContainerNode* parentNode() const { return m_parentNode; }
+    RenderStyle* rootElementStyle() const { return m_rootElementStyle; }
+    EInsideLink elementLinkState() const { return m_elementLinkState; }
+    bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
+    bool resetStyleInheritance() const { return m_resetStyleInheritance; }
+
+private:
+    Element* m_element;
+    Element* m_styledElement;
+    ContainerNode* m_parentNode;
+    RenderStyle* m_rootElementStyle;
+    EInsideLink m_elementLinkState;
+    bool m_distributedToInsertionPoint;
+    bool m_resetStyleInheritance;
+};
+
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
     StyleResolverState()
-    : m_element(0)
-    , m_styledElement(0)
-    , m_parentNode(0)
-    , m_parentStyle(0)
-    , m_rootElementStyle(0)
-    , m_regionForStyling(0)
-    , m_elementLinkState(NotInsideLink)
-    , m_distributedToInsertionPoint(false)
-    , m_elementAffectedByClassRules(false)
+    : m_regionForStyling(0)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)
@@ -62,23 +101,25 @@ public:
     void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
 
-    Document* document() const { return m_element->document(); }
-    Element* element() const { return m_element; }
-    Element* styledElement() const { return m_styledElement; }
+    // These are all just pass-through methods to ElementResolveContext.
+    Document* document() const { return m_elementContext.document(); }
+    Element* element() const { return m_elementContext.element(); }
+    Element* styledElement() const { return m_elementContext.styledElement(); }
+    const ContainerNode* parentNode() const { return m_elementContext.parentNode(); }
+    RenderStyle* rootElementStyle() const { return m_elementContext.rootElementStyle(); }
+    EInsideLink elementLinkState() const { return m_elementContext.elementLinkState(); }
+    bool distributedToInsertionPoint() const { return m_elementContext.distributedToInsertionPoint(); }
+
+    const ElementResolveContext elementContext() const { return m_elementContext; }
+
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
     RenderStyle* style() const { return m_style.get(); }
     PassRefPtr<RenderStyle> takeStyle() { return m_style.release(); }
 
-    const ContainerNode* parentNode() const { return m_parentNode; }
     void setParentStyle(PassRefPtr<RenderStyle> parentStyle) { m_parentStyle = parentStyle; }
     RenderStyle* parentStyle() const { return m_parentStyle.get(); }
-    RenderStyle* rootElementStyle() const { return m_rootElementStyle; }
 
     const RenderRegion* regionForStyling() const { return m_regionForStyling; }
-    EInsideLink elementLinkState() const { return m_elementLinkState; }
-    bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
-    void setElementAffectedByClassRules(bool isAffected) { m_elementAffectedByClassRules = isAffected; }
-    bool elementAffectedByClassRules() const { return m_elementAffectedByClassRules; }
 
     // FIXME: These are effectively side-channel "out parameters" for the various
     // map functions. When we map from CSS to style objects we use this state object
@@ -137,34 +178,39 @@ public:
     // width/height/border/padding/... from the RenderStyle -> for SVG these values would never scale,
     // if we'd pass a 1.0 zoom factor everyhwere. So we only pass a zoom factor of 1.0 for specific
     // properties that are NOT allowed to scale within a zoomed SVG document (letter/word-spacing/font-size).
-    bool useSVGZoomRules() const { return m_element && m_element->isSVGElement(); }
+    bool useSVGZoomRules() const { return element() && element()->isSVGElement(); }
 
 private:
     void initElement(Element*);
 
-    Element* m_element;
+    ElementResolveContext m_elementContext;
+
+    // m_style is the primary output for each element's style resolve.
     RefPtr<RenderStyle> m_style;
-    Element* m_styledElement;
-    ContainerNode* m_parentNode;
+
+    // m_parentStyle is not always just element->parentNode()->style()
+    // so we keep it separate from m_elementContext.
     RefPtr<RenderStyle> m_parentStyle;
-    RenderStyle* m_rootElementStyle;
 
     // Required to ASSERT in applyProperties.
+    // FIXME: Regions should not need special state on StyleResolverState
+    // no other @rule does.
     RenderRegion* m_regionForStyling;
-
-    EInsideLink m_elementLinkState;
-
-    bool m_distributedToInsertionPoint;
-
-    bool m_elementAffectedByClassRules;
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;
 
     CSSValue* m_lineHeightValue;
+
+    // StyleResolver is responsbile for creating the Font()
+    // object on RenderStyle from various other font-related
+    // properties on RenderStyle. Whenever one of those
+    // is changed, StyleResolver tracks the need to update
+    // style->font() with this bool.
     bool m_fontDirty;
 
     CachedUAStyle m_cachedUAStyle;
+
     ElementStyleResources m_elementStyleResources;
     // CSSToStyleMap is a pure-logic class and only contains
     // a back-pointer to this object.

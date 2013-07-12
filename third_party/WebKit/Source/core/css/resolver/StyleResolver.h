@@ -218,11 +218,14 @@ public:
     }
 
 private:
-    RenderStyle* locateSharedStyle();
+    // FIXME: Move all of these into a separate style sharing controller object.
+    RenderStyle* locateSharedStyle(const ElementResolveContext&);
     bool styleSharingCandidateMatchesRuleSet(RuleSet*);
     Node* locateCousinList(Element* parent, unsigned& visitedNodeCount) const;
-    Element* findSiblingForStyleSharing(Node*, unsigned& count) const;
-    bool canShareStyleWithElement(Element*) const;
+    Element* findSiblingForStyleSharing(const ElementResolveContext&, Node*, unsigned& count) const;
+    bool canShareStyleWithElement(const ElementResolveContext&, Element* sharingCandidate) const;
+    bool canShareStyleWithControl(const ElementResolveContext&, Element* sharingCandidate) const;
+    bool sharingCandidateHasIdenticalStyleAffectingAttributes(const ElementResolveContext&, Element* sharingCandidate) const;
 
     PassRefPtr<RenderStyle> styleForKeyframe(const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
@@ -336,14 +339,11 @@ private:
     void cacheBorderAndBackground();
 
 private:
-    bool canShareStyleWithControl(Element*) const;
-
     void applyProperty(CSSPropertyID, CSSValue*);
 
     void applySVGProperty(CSSPropertyID, CSSValue*);
 
     bool classNamesAffectedByRules(const SpaceSplitString&) const;
-    bool sharingCandidateHasIdenticalStyleAffectingAttributes(Element*) const;
 
     MatchedPropertiesCache m_matchedPropertiesCache;
 
@@ -371,6 +371,8 @@ private:
 
     StyleResolverState m_state;
     StyleResourceLoader m_styleResourceLoader;
+
+    bool m_elementAffectedByClassRules; // FIXME: Move this into a style sharing controller object.
 
     friend class DeprecatedStyleBuilder;
     friend void StyleBuilder::oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
