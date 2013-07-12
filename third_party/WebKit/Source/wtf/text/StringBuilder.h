@@ -246,7 +246,7 @@ public:
         return m_buffer->characters16();
     }
     
-    const UChar* characters() const
+    const UChar* bloatedCharacters() const
     {
         if (!m_length)
             return 0;

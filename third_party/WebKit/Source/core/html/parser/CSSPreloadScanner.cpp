@@ -211,8 +211,8 @@ static String parseCSSStringOrURL(const UChar* characters, size_t length)
 
 void CSSPreloadScanner::emitRule(const SegmentedString& source)
 {
-    if (equalIgnoringCase("import", m_rule.characters(), m_rule.length())) {
-        String url = parseCSSStringOrURL(m_ruleValue.characters(), m_ruleValue.length());
+    if (equalIgnoringCase("import", m_rule.bloatedCharacters(), m_rule.length())) {
+        String url = parseCSSStringOrURL(m_ruleValue.bloatedCharacters(), m_ruleValue.length());
         if (!url.isEmpty()) {
             KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
             TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
@@ -221,7 +221,7 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
             m_requests->append(request.release());
         }
         m_state = Initial;
-    } else if (equalIgnoringCase("charset", m_rule.characters(), m_rule.length()))
+    } else if (equalIgnoringCase("charset", m_rule.bloatedCharacters(), m_rule.length()))
         m_state = Initial;
     else
         m_state = DoneParsingImportRules;

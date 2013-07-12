@@ -61,7 +61,7 @@ public:
         ASSERT(target);
         ASSERT(target->document());
         if (name == SVGNames::zoomAndPanAttr) {
-            const UChar* start = value.characters();
+            const UChar* start = value.bloatedCharacters();
             const UChar* end = start + value.length();
             SVGZoomAndPanType zoomAndPan = SVGZoomAndPanUnknown;
             parseZoomAndPan(start, end, zoomAndPan);

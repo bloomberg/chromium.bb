@@ -226,7 +226,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text* text)
 
         StringBuilder openTag;
         appendStyleNodeOpenTag(openTag, wrappingStyle->style(), text->document());
-        out.append(openTag.characters(), openTag.length());
+        out.append(openTag.bloatedCharacters(), openTag.length());
     }
 
     if (!shouldAnnotate() || parentIsTextarea)

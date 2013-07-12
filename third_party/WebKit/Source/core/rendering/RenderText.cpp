@@ -913,7 +913,7 @@ static float maxWordFragmentWidth(RenderText* renderer, RenderStyle* style, cons
         fragmentWithHyphen.append(word + suffixStart, fragmentLength);
         fragmentWithHyphen.append(style->hyphenString());
 
-        TextRun run = RenderBlock::constructTextRun(renderer, font, fragmentWithHyphen.characters(), fragmentWithHyphen.length(), style);
+        TextRun run = RenderBlock::constructTextRun(renderer, font, fragmentWithHyphen.bloatedCharacters(), fragmentWithHyphen.length(), style);
         run.setCharactersLength(fragmentWithHyphen.length());
         run.setCharacterScanForCodePath(!renderer->canUseSimpleFontCodePath());
         float fragmentWidth = font.width(run);
@@ -1068,7 +1068,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
             if (w > maxWordWidth) {
                 int suffixStart;
-                float maxFragmentWidth = maxWordFragmentWidth(this, styleToUse, f, characters() + i, wordLen, minimumPrefixLength, minimumSuffixLength, suffixStart);
+                float maxFragmentWidth = maxWordFragmentWidth(this, styleToUse, f, bloatedCharacters() + i, wordLen, minimumPrefixLength, minimumSuffixLength, suffixStart);
 
                 if (suffixStart) {
                     float suffixWidth;
@@ -1894,7 +1894,7 @@ bool RenderText::computeCanUseSimpleFontCodePath() const
 {
     if (isAllASCII() || m_text.is8Bit())
         return true;
-    return Font::characterRangeCodePath(characters(), length()) == Font::Simple;
+    return Font::characterRangeCodePath(bloatedCharacters(), length()) == Font::Simple;
 }
 
 #ifndef NDEBUG

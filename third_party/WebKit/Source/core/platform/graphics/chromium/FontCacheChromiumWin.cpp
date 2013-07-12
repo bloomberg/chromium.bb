@@ -589,7 +589,7 @@ void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigne
     LOGFONT logFont;
     logFont.lfCharSet = DEFAULT_CHARSET;
     unsigned familyLength = min(familyName.length(), static_cast<unsigned>(LF_FACESIZE - 1));
-    memcpy(logFont.lfFaceName, familyName.characters(), familyLength * sizeof(UChar));
+    memcpy(logFont.lfFaceName, familyName.bloatedCharacters(), familyLength * sizeof(UChar));
     logFont.lfFaceName[familyLength] = 0;
     logFont.lfPitchAndFamily = 0;
 

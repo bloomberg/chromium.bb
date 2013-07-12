@@ -432,7 +432,7 @@ TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFrag
     RenderText* text = textRenderer();
     ASSERT(text);
 
-    TextRun run(text->characters() + fragment.characterOffset
+    TextRun run(text->bloatedCharacters() + fragment.characterOffset
                 , fragment.length
                 , 0 /* xPos, only relevant with allowTabs=true */
                 , 0 /* padding, only relevant for justified text, not relevant for SVG */
