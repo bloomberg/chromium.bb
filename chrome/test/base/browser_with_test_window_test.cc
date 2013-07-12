@@ -130,6 +130,10 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   RenderViewHost* test_rvh = pending_rvh ? pending_rvh : old_rvh;
   RenderViewHostTester* test_rvh_tester = RenderViewHostTester::For(test_rvh);
 
+  // Simulate a SwapOut_ACK before the navigation commits.
+  if (pending_rvh)
+    RenderViewHostTester::For(old_rvh)->SimulateSwapOutACK();
+
   // For new navigations, we need to send a larger page ID. For renavigations,
   // we need to send the preexisting page ID. We can tell these apart because
   // renavigations will have a pending_entry_index while new ones won't (they'll
@@ -146,9 +150,6 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   }
-
-  if (pending_rvh)
-    RenderViewHostTester::For(old_rvh)->SimulateSwapOutACK();
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommit(

@@ -281,6 +281,11 @@ class CONTENT_EXPORT RenderViewHostManager
   // there could be Web UI switching as well. Call this for every commit.
   void CommitPending();
 
+  // Shutdown all RenderViewHosts in a SiteInstance. This is called
+  // to shutdown views when all the views in a SiteInstance are
+  // confirmed to be swapped out.
+  void ShutdownRenderViewHostsInSiteInstance(int32 site_instance_id);
+
   // Helper method to terminate the pending RenderViewHost.
   void CancelPending();
 

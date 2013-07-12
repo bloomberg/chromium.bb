@@ -44,6 +44,22 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // navigating to the URL.
   bool HasWrongProcessForURL(const GURL& url);
 
+  // Increase the number of active views in this SiteInstance. This is
+  // increased when a view is created, or a currently swapped out view
+  // is swapped in.
+  void increment_active_view_count() { active_view_count_++; }
+
+  // Decrease the number of active views in this SiteInstance. This is
+  // decreased when a view is destroyed, or a currently active view is
+  // swapped out.
+  void decrement_active_view_count() { active_view_count_--; }
+
+  // Get the number of active views which belong to this
+  // SiteInstance. If there is no active view left in this
+  // SiteInstance, all view in this SiteInstance can be safely
+  // discarded to save memory.
+  size_t active_view_count() { return active_view_count_; }
+
   // Sets the global factory used to create new RenderProcessHosts.  It may be
   // NULL, in which case the default BrowserRenderProcessHost will be created
   // (this is the behavior if you don't call this function).  The factory must
@@ -84,6 +100,9 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
   // A unique ID for this SiteInstance.
   int32 id_;
+
+  // The number of active views under this SiteInstance.
+  size_t active_view_count_;
 
   NotificationRegistrar registrar_;
 

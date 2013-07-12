@@ -106,12 +106,13 @@ class RenderViewHostManagerTest
     // Commit the navigation with a new page ID.
     int32 max_page_id = contents()->GetMaxPageIDForSiteInstance(
         active_rvh()->GetSiteInstance());
-    active_test_rvh()->SendNavigate(max_page_id + 1, url);
 
-    // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
-    // without making any network requests.
+    // Simulate the SwapOut_ACK that fires if you commit a cross-site
+    // navigation.
     if (old_rvh != active_rvh())
       old_rvh->OnSwappedOut(false);
+
+    active_test_rvh()->SendNavigate(max_page_id + 1, url);
   }
 
   bool ShouldSwapProcesses(RenderViewHostManager* manager,
@@ -134,6 +135,12 @@ class RenderViewHostManagerTest
     contents()->GetController().LoadURL(
         kDestUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
     EXPECT_TRUE(contents()->cross_navigation_pending());
+
+    // Manually increase the number of active views in the
+    // SiteInstance that ntp_rvh belongs to, to prevent it from being
+    // destroyed when it gets swapped out.
+    static_cast<SiteInstanceImpl*>(ntp_rvh->GetSiteInstance())->
+        increment_active_view_count();
 
     TestRenderViewHost* dest_rvh = static_cast<TestRenderViewHost*>(
         contents()->GetRenderManagerForTesting()->pending_render_view_host());
@@ -191,9 +198,10 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
       contents2->GetRenderManagerForTesting()->pending_render_view_host());
   ASSERT_TRUE(dest_rvh2);
+
   ntp_rvh2->SendShouldCloseACK(true);
-  dest_rvh2->SendNavigate(101, kDestUrl);
   ntp_rvh2->OnSwappedOut(false);
+  dest_rvh2->SendNavigate(101, kDestUrl);
 
   // The two RVH's should be different in every way.
   EXPECT_NE(active_rvh()->GetProcess(), dest_rvh2->GetProcess());
@@ -208,9 +216,9 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   contents2->GetController().LoadURL(
       kChromeUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
   dest_rvh2->SendShouldCloseACK(true);
+  dest_rvh2->OnSwappedOut(false);
   static_cast<TestRenderViewHost*>(contents2->GetRenderManagerForTesting()->
      pending_render_view_host())->SendNavigate(102, kChromeUrl);
-  dest_rvh2->OnSwappedOut(false);
 
   EXPECT_NE(active_rvh()->GetSiteInstance(),
             contents2->GetRenderViewHost()->GetSiteInstance());
@@ -247,6 +255,12 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
       contents()->GetRenderManagerForTesting()->pending_render_view_host());
   ASSERT_TRUE(dest_rvh);
   EXPECT_NE(ntp_rvh, dest_rvh);
+
+  // Create one more view in the same SiteInstance where dest_rvh2
+  // exists so that it doesn't get deleted on navigation to another
+  // site.
+  static_cast<SiteInstanceImpl*>(ntp_rvh->GetSiteInstance())->
+      increment_active_view_count();
 
   // BeforeUnload finishes.
   ntp_rvh->SendShouldCloseACK(true);
@@ -356,13 +370,59 @@ TEST_F(RenderViewHostManagerTest,
   for (size_t i = 0; i < widgets.size(); ++i) {
     bool found = false;
     for (size_t j = 0; j < all_widgets.size(); ++j) {
-      if (widgets[i] == widgets[j]) {
+      if (widgets[i] == all_widgets[j]) {
         found = true;
         break;
       }
     }
     EXPECT_TRUE(found);
   }
+}
+
+// Test if SiteInstanceImpl::active_view_count() is correctly updated
+// as views in a SiteInstance get swapped out and in.
+TEST_F(RenderViewHostManagerTest, ActiveViewCountWhileSwappingInandOut) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderViewHost* rvh1 = test_rvh();
+
+  SiteInstanceImpl* instance1 =
+      static_cast<SiteInstanceImpl*>(rvh1->GetSiteInstance());
+  EXPECT_EQ(instance1->active_view_count(), 1U);
+
+  // Create 2 new tabs and simulate them being the opener chain for the main
+  // tab.  They should be in the same SiteInstance.
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), instance1));
+  contents()->SetOpener(opener1.get());
+
+  scoped_ptr<TestWebContents> opener2(
+      TestWebContents::Create(browser_context(), instance1));
+  opener1->SetOpener(opener2.get());
+
+  EXPECT_EQ(instance1->active_view_count(), 3U);
+
+  // Navigate to a cross-site URL (different SiteInstance but same
+  // BrowsingInstance).
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderViewHost* rvh2 = test_rvh();
+  SiteInstanceImpl* instance2 =
+      static_cast<SiteInstanceImpl*>(rvh2->GetSiteInstance());
+
+  // rvh2 is on chromium.org which is different from google.com on
+  // which other tabs are.
+  EXPECT_EQ(instance2->active_view_count(), 1U);
+
+  // There are two active views on google.com now.
+  EXPECT_EQ(instance1->active_view_count(), 2U);
+
+  // Navigate to the original origin (google.com).
+  contents()->NavigateAndCommit(kUrl1);
+
+  EXPECT_EQ(instance1->active_view_count(), 3U);
 }
 
 // When there is an error with the specified page, renderer exits view-source
@@ -844,8 +904,16 @@ TEST_F(RenderViewHostManagerTest, NavigateAfterMissingSwapOutACK) {
   // Navigate to two pages.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderViewHost* rvh1 = test_rvh();
+
+  // Keep active_view_count nonzero so that no swapped out views in
+  // this SiteInstance get forcefully deleted.
+  static_cast<SiteInstanceImpl*>(rvh1->GetSiteInstance())->
+      increment_active_view_count();
+
   contents()->NavigateAndCommit(kUrl2);
   TestRenderViewHost* rvh2 = test_rvh();
+  static_cast<SiteInstanceImpl*>(rvh2->GetSiteInstance())->
+      increment_active_view_count();
 
   // Now go back, but suppose the SwapOut_ACK isn't received.  This shouldn't
   // happen, but we have seen it when going back quickly across many entries

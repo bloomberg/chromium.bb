@@ -772,9 +772,25 @@ void RenderViewHostManager::CommitPending() {
   // If the pending view was on the swapped out list, we can remove it.
   swapped_out_hosts_.erase(render_view_host_->GetSiteInstance()->GetId());
 
-  // If the old RVH is live, we are swapping it out and should keep track of it
-  // in case we navigate back to it.
-  if (old_render_view_host->IsRenderViewLive()) {
+  // Let the task manager know that we've swapped RenderViewHosts,
+  // since it might need to update its process groupings. We do this
+  // before shutting down the RVH so that we can clean up
+  // RendererResources related to the RVH first.
+  delegate_->NotifySwappedFromRenderManager(old_render_view_host);
+
+  // If there are no active RVHs in this SiteInstance, it means that
+  // this RVH was the last active one in the SiteInstance. Now that we
+  // know that all RVHs are swapped out, we can delete all the RVHs in
+  // this SiteInstance.
+  if (!static_cast<SiteInstanceImpl*>(old_render_view_host->GetSiteInstance())->
+          active_view_count()) {
+    ShutdownRenderViewHostsInSiteInstance(
+        old_render_view_host->GetSiteInstance()->GetId());
+    // This is deleted while cleaning up the SitaInstance's views.
+    old_render_view_host = NULL;
+  } else if (old_render_view_host->IsRenderViewLive()) {
+    // If the old RVH is live, we are swapping it out and should keep track of
+    // it in case we navigate back to it.
     DCHECK(old_render_view_host->is_swapped_out());
     // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
     // sure we don't get different rvh instances for the same site instance
@@ -794,10 +810,27 @@ void RenderViewHostManager::CommitPending() {
     old_render_view_host->Shutdown();
     old_render_view_host = NULL;  // Shutdown() deletes it.
   }
+}
 
-  // Let the task manager know that we've swapped RenderViewHosts, since it
-  // might need to update its process groupings.
-  delegate_->NotifySwappedFromRenderManager(old_render_view_host);
+void RenderViewHostManager::ShutdownRenderViewHostsInSiteInstance(
+    int32 site_instance_id) {
+  // First remove any swapped out RVH for this SiteInstance from our
+  // list.
+  swapped_out_hosts_.erase(site_instance_id);
+
+  RenderWidgetHost::List widgets =
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    if (!widgets[i]->IsRenderView())
+      continue;
+
+    RenderViewHostImpl* rvh =
+        static_cast<RenderViewHostImpl*>(RenderViewHost::From(widgets[i]));
+    if (site_instance_id == rvh->GetSiteInstance()->GetId()) {
+      DCHECK(rvh->is_swapped_out());
+      rvh->Shutdown();
+    }
+  }
 }
 
 RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(

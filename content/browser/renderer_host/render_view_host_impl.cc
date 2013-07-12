@@ -192,6 +192,9 @@ RenderViewHostImpl::RenderViewHostImpl(
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
 
+  if (!swapped_out)
+    instance_->increment_active_view_count();
+
 #if defined(OS_ANDROID)
   media_player_manager_ = media::MediaPlayerManager::Create(this);
 #endif
@@ -208,6 +211,11 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   // Be sure to clean up any leftover state from cross-site requests.
   CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
       GetProcess()->GetID(), GetRoutingID(), false);
+
+  // If this was swapped out, it already decremented the active view
+  // count of the SiteInstance it belongs to.
+  if (!is_swapped_out_)
+    instance_->decrement_active_view_count();
 }
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() const {
@@ -2052,6 +2060,13 @@ void RenderViewHostImpl::OnShowPopup(
 #endif
 
 void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
+  // We update the number of RenderViews in a SiteInstance when the
+  // swapped out status of this RenderView gets flipped.
+  if (is_swapped_out_ && !is_swapped_out)
+    instance_->increment_active_view_count();
+  else if (!is_swapped_out_ && is_swapped_out)
+    instance_->decrement_active_view_count();
+
   is_swapped_out_ = is_swapped_out;
 
   // Whenever we change swap out state, we should not be waiting for

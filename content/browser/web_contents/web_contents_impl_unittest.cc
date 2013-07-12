@@ -420,6 +420,12 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
       url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
 
+  // Keep the number of active views in orig_rvh's SiteInstance
+  // non-zero so that orig_rvh doesn't get deleted when it gets
+  // swapped out.
+  static_cast<SiteInstanceImpl*>(orig_rvh->GetSiteInstance())->
+      increment_active_view_count();
+
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
@@ -446,6 +452,12 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   contents()->TestDidNavigate(
       pending_rvh, 1, url2, PAGE_TRANSITION_TYPED);
   SiteInstance* instance2 = contents()->GetSiteInstance();
+
+  // Keep the number of active views in pending_rvh's SiteInstance
+  // non-zero so that orig_rvh doesn't get deleted when it gets
+  // swapped out.
+  static_cast<SiteInstanceImpl*>(pending_rvh->GetSiteInstance())->
+      increment_active_view_count();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
@@ -633,6 +645,13 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
   EXPECT_EQ(url, contents()->GetActiveURL());
   EXPECT_FALSE(contents()->GetPendingRenderViewHost());
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
+
+  // Keep the number of active views in orig_rvh's SiteInstance
+  // non-zero so that orig_rvh doesn't get deleted when it gets
+  // swapped out.
+  static_cast<SiteInstanceImpl*>(orig_rvh->GetSiteInstance())->
+      increment_active_view_count();
+
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
   EXPECT_TRUE(
       contents()->GetSiteInstance()->GetSiteURL().DomainIs("google.com"));
