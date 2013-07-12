@@ -48,6 +48,7 @@ public:
     virtual bool isEasyToRead() const OVERRIDE;
     virtual void setMode(const AtomicString&) OVERRIDE;
     size_t inbandTrackIndex();
+    void trackRemoved();
 
 private:
     InbandTextTrack(ScriptExecutionContext*, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);

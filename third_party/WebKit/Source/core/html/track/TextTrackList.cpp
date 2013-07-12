@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -79,7 +79,7 @@ int TextTrackList::getTrackIndexRelativeToRenderedTracks(TextTrack *textTrack)
     for (size_t i = 0; i < m_elementTracks.size(); ++i) {
         if (!m_elementTracks[i]->isRendered())
             continue;
-        
+
         if (m_elementTracks[i] == textTrack)
             return trackIndex;
         ++trackIndex;
@@ -88,7 +88,7 @@ int TextTrackList::getTrackIndexRelativeToRenderedTracks(TextTrack *textTrack)
     for (size_t i = 0; i < m_addTrackTracks.size(); ++i) {
         if (!m_addTrackTracks[i]->isRendered())
             continue;
-        
+
         if (m_addTrackTracks[i] == textTrack)
             return trackIndex;
         ++trackIndex;
@@ -97,7 +97,7 @@ int TextTrackList::getTrackIndexRelativeToRenderedTracks(TextTrack *textTrack)
     for (size_t i = 0; i < m_inbandTracks.size(); ++i) {
         if (!m_inbandTracks[i]->isRendered())
             continue;
-        
+
         if (m_inbandTracks[i] == textTrack)
             return trackIndex;
         ++trackIndex;
@@ -186,15 +186,18 @@ void TextTrackList::append(PassRefPtr<TextTrack> prpTrack)
 void TextTrackList::remove(TextTrack* track)
 {
     Vector<RefPtr<TextTrack> >* tracks = 0;
+    RefPtr<InbandTextTrack> inbandTrack;
 
-    if (track->trackType() == TextTrack::TrackElement)
+    if (track->trackType() == TextTrack::TrackElement) {
         tracks = &m_elementTracks;
-    else if (track->trackType() == TextTrack::AddTrack)
+    } else if (track->trackType() == TextTrack::AddTrack) {
         tracks = &m_addTrackTracks;
-    else if (track->trackType() == TextTrack::InBand)
+    } else if (track->trackType() == TextTrack::InBand) {
         tracks = &m_inbandTracks;
-    else
+        inbandTrack = static_cast<InbandTextTrack*>(track);
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
     size_t index = tracks->find(track);
     if (index == notFound)
@@ -206,12 +209,15 @@ void TextTrackList::remove(TextTrack* track)
     track->setMediaElement(0);
 
     tracks->remove(index);
+
+    if (inbandTrack)
+        inbandTrack->trackRemoved();
 }
 
 bool TextTrackList::contains(TextTrack* track) const
 {
     const Vector<RefPtr<TextTrack> >* tracks = 0;
-    
+
     if (track->trackType() == TextTrack::TrackElement)
         tracks = &m_elementTracks;
     else if (track->trackType() == TextTrack::AddTrack)
@@ -220,7 +226,7 @@ bool TextTrackList::contains(TextTrack* track) const
         tracks = &m_inbandTracks;
     else
         ASSERT_NOT_REACHED();
-    
+
     return tracks->find(track) != notFound;
 }
 
@@ -233,9 +239,9 @@ void TextTrackList::scheduleAddTrackEvent(PassRefPtr<TextTrack> track)
 {
     // 4.8.10.12.3 Sourcing out-of-band text tracks
     // 4.8.10.12.4 Text track API
-    // ... then queue a task to fire an event with the name addtrack, that does not 
-    // bubble and is not cancelable, and that uses the TrackEvent interface, with 
-    // the track attribute initialized to the text track's TextTrack object, at 
+    // ... then queue a task to fire an event with the name addtrack, that does not
+    // bubble and is not cancelable, and that uses the TrackEvent interface, with
+    // the track attribute initialized to the text track's TextTrack object, at
     // the media element's textTracks attribute's TextTrackList object.
 
     RefPtr<TextTrack> trackRef = track;
@@ -265,4 +271,3 @@ Node* TextTrackList::owner() const
 {
     return m_owner;
 }
-

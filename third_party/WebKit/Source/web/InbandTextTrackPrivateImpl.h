@@ -49,8 +49,6 @@ public:
     virtual ~InbandTextTrackPrivateImpl();
 
     // InbandTextTrackPrivate methods.
-    void setClient(WebCore::InbandTextTrackPrivateClient*);
-
     virtual void setMode(Mode);
     virtual InbandTextTrackPrivate::Mode mode() const;
 
