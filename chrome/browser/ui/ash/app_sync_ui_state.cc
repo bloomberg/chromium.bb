@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

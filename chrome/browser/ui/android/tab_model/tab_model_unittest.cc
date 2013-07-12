@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

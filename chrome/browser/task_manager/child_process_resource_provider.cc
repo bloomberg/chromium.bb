@@ -8,9 +8,9 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"

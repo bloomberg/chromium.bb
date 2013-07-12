@@ -4,13 +4,13 @@
 
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/user_share.h"

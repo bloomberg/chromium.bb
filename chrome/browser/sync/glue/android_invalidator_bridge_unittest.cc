@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "ash/magnifier/magnifier_constants.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 

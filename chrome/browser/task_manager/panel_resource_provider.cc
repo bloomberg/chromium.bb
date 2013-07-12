@@ -5,6 +5,7 @@
 #include "chrome/browser/task_manager/panel_resource_provider.h"
 
 #include "base/i18n/rtl.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"

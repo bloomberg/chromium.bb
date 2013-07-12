@@ -6,8 +6,8 @@
 
 #include "base/message_loop.h"
 #include "base/bind.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
 ContextMenuNotificationObserver::ContextMenuNotificationObserver(

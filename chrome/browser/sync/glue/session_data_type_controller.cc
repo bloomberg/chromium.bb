@@ -5,9 +5,9 @@
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"

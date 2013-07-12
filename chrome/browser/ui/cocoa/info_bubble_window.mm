@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"

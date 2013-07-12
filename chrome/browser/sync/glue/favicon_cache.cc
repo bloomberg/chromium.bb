@@ -6,11 +6,11 @@
 
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "sync/api/time.h"

@@ -5,12 +5,12 @@
 #include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "sync/api/syncable_service.h"
 

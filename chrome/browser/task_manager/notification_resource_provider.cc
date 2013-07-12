@@ -6,11 +6,11 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"

@@ -6,8 +6,8 @@
 
 #include "base/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/favicon_image_specifics.pb.h"

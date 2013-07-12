@@ -5,8 +5,8 @@
 #include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 
 #include "ash/wm/window_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
 ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(

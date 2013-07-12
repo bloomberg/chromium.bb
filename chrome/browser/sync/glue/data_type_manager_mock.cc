@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/location.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
-#include "chrome/common/chrome_notification_types.h"
 
 namespace browser_sync {
 
