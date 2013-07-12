@@ -105,7 +105,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/html/HTMLImportsController.h"
+#include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLNameCollection.h"
 #include "core/html/HTMLScriptElement.h"
@@ -441,6 +441,7 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_prerenderer(Prerenderer::create(this))
     , m_textAutosizer(TextAutosizer::create(this))
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
+    , m_import(0)
     , m_scheduledTasksAreSuspended(false)
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
 #ifndef NDEBUG
@@ -547,6 +548,11 @@ Document::~Document()
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
 
+    if (m_import) {
+        m_import->wasDetachedFromDocument();
+        m_import = 0;
+    }
+
     m_styleSheetCollection.clear();
 
     if (m_elemSheet)
@@ -592,7 +598,11 @@ void Document::dispose()
     detachParser();
 
     m_registrationContext.clear();
-    m_imports.clear();
+
+    if (m_import) {
+        m_import->wasDetachedFromDocument();
+        m_import = 0;
+    }
 
     // removeDetachedChildren() doesn't always unregister IDs,
     // so tear down scope information upfront to avoid having stale references in the map.
@@ -758,10 +768,10 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
     return constructorBuilder.bindingsReturnValue();
 }
 
-void Document::setImports(PassRefPtr<HTMLImportsController> imports)
+void Document::setImport(HTMLImport* import)
 {
-    ASSERT(!m_imports);
-    m_imports = imports;
+    ASSERT(!m_import || !import);
+    m_import = import;
 }
 
 void Document::didLoadAllImports()
@@ -771,7 +781,7 @@ void Document::didLoadAllImports()
 
 bool Document::haveImportsLoaded() const
 {
-    return !m_imports || m_imports->haveLoaded();
+    return !m_import || m_import->haveChildrenLoaded();
 }
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()

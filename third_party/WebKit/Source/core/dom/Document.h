@@ -102,7 +102,7 @@ class HTMLDocument;
 class HTMLElement;
 class HTMLFrameOwnerElement;
 class HTMLHeadElement;
-class HTMLImportsController;
+class HTMLImport;
 class HTMLIFrameElement;
 class HTMLMapElement;
 class HTMLNameCollection;
@@ -995,8 +995,8 @@ public:
     ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
 
-    void setImports(PassRefPtr<HTMLImportsController>);
-    HTMLImportsController* imports() const { return m_imports.get(); }
+    void setImport(HTMLImport*);
+    HTMLImport* import() const { return m_import; }
     bool haveImportsLoaded() const;
     void didLoadAllImports();
 
@@ -1332,7 +1332,7 @@ private:
     OwnPtr<TextAutosizer> m_textAutosizer;
 
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
-    RefPtr<HTMLImportsController> m_imports;
+    HTMLImport* m_import;
 
     bool m_scheduledTasksAreSuspended;
     
