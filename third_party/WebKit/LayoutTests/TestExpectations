@@ -1771,18 +1771,6 @@ crbug.com/254332 [ Linux Win ] fast/forms/range/range-focus-by-mouse.html [ Imag
 crbug.com/254332 [ Linux Win ] fast/forms/submit/submit-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
-crbug.com/245478 [ Mac ] editing/selection/caret-ltr-2-left.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] editing/selection/caret-ltr-2.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] editing/selection/caret-ltr-right.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] editing/selection/caret-ltr.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] editing/selection/caret-rtl-2-left.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] editing/selection/caret-rtl-2.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] editing/selection/caret-rtl-right.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] editing/selection/caret-rtl.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] fast/html/details-add-child-2.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac ] fast/html/details-open2.html [ NeedsRebaseline ]
-crbug.com/245478 [ Mac Win ] fast/html/details-replace-text.html [ NeedsRebaseline ]
-
 crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 
 crbug.com/251079 [ Debug ] fast/parser/fragment-parser.html [ Pass Timeout ]
