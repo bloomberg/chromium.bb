@@ -786,7 +786,10 @@ class GitWrapper(SCMWrapper):
       # git clone doesn't seem to insert a newline properly before printing
       # to stdout
       print('')
-    clone_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'clone', '--progress']
+    template_path = os.path.join(
+        os.path.dirname(THIS_FILE_PATH), 'git-templates')
+    clone_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'clone', '--progress',
+                 '--template=%s' % template_path]
     if self.cache_dir:
       clone_cmd.append('--shared')
     if revision.startswith('refs/heads/'):
