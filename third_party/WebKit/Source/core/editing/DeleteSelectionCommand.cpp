@@ -270,6 +270,12 @@ void DeleteSelectionCommand::initializePositionData()
     m_endBlock = enclosingNodeOfType(m_upstreamEnd.parentAnchoredEquivalent(), &isBlock, CanCrossEditingBoundary);
 }
 
+// We don't want to inherit style from an element which can't have contents.
+static bool shouldNotInheritStyleFrom(const Node& node)
+{
+    return !node.canContainRangeEndPoint();
+}
+
 void DeleteSelectionCommand::saveTypingStyleState()
 {
     // A common case is deleting characters that are all from the same text node. In 
@@ -280,6 +286,9 @@ void DeleteSelectionCommand::saveTypingStyleState()
     // compute the style at the start of the selection after deletion (see the 
     // early return in calculateTypingStyleAfterDelete).
     if (m_upstreamStart.deprecatedNode() == m_downstreamEnd.deprecatedNode() && m_upstreamStart.deprecatedNode()->isTextNode())
+        return;
+
+    if (shouldNotInheritStyleFrom(*m_selectionToDelete.start().anchorNode()))
         return;
 
     // Figure out the typing style in effect before the delete is done.
