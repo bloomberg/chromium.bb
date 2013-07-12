@@ -442,11 +442,6 @@ sub AddIncludesForType
     } else {
         AddToImplIncludes("V8${type}.h");
     }
-
-    # Additional includes
-    if ($type eq "CSSStyleSheet") {
-        AddToImplIncludes("core/css/CSSImportRule.h");
-    }
 }
 
 sub HeaderFilesForInterface

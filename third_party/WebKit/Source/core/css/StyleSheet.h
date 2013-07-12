@@ -27,7 +27,7 @@
 
 namespace WebCore {
 
-class CSSImportRule;
+class CSSRule;
 class KURL;
 class MediaList;
 class Node;
@@ -46,7 +46,7 @@ public:
     virtual MediaList* media() const { return 0; }
     virtual String type() const = 0;
 
-    virtual CSSImportRule* ownerRule() const { return 0; }
+    virtual CSSRule* ownerRule() const { return 0; }
     virtual void clearOwnerNode() = 0;
     virtual KURL baseURL() const = 0;
     virtual bool isLoading() const = 0;

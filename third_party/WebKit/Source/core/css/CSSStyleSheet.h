@@ -73,7 +73,7 @@ public:
     CSSRule* item(unsigned index);
 
     virtual void clearOwnerNode() OVERRIDE { didMutate(); m_ownerNode = 0; }
-    virtual CSSImportRule* ownerRule() const OVERRIDE { return m_ownerRule; }
+    virtual CSSRule* ownerRule() const OVERRIDE { return m_ownerRule; }
     virtual KURL baseURL() const OVERRIDE;
     virtual bool isLoading() const OVERRIDE;
     
@@ -124,7 +124,7 @@ private:
     RefPtr<MediaQuerySet> m_mediaQueries;
 
     Node* m_ownerNode;
-    CSSImportRule* m_ownerRule;
+    CSSRule* m_ownerRule;
 
     TextPosition m_startPosition;
 
