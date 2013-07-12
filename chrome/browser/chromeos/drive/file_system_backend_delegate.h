@@ -48,6 +48,9 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
  private:
   scoped_refptr<fileapi::ExternalMountPoints> mount_points_;
 
+  // The profile for processing Drive accesses. Should not be NULL.
+  void* profile_id_;
+
   DISALLOW_COPY_AND_ASSIGN(FileSystemBackendDelegate);
 };
 

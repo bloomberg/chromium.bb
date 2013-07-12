@@ -4,8 +4,13 @@
 
 #include "chrome/browser/chromeos/drive/file_system_backend_delegate.h"
 
+#include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/webkit_file_stream_reader_impl.h"
 #include "chrome/browser/chromeos/drive/webkit_file_stream_writer_impl.h"
 #include "chrome/browser/chromeos/fileapi/remote_file_system_operation.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
@@ -19,7 +24,9 @@ namespace drive {
 
 FileSystemBackendDelegate::FileSystemBackendDelegate(
     content::BrowserContext* browser_context)
-    : mount_points_(content::BrowserContext::GetMountPoints(browser_context)) {
+    : mount_points_(content::BrowserContext::GetMountPoints(browser_context)),
+      profile_id_(Profile::FromBrowserContext(browser_context)) {
+  DCHECK(profile_id_);
 }
 
 FileSystemBackendDelegate::~FileSystemBackendDelegate() {
@@ -44,14 +51,15 @@ FileSystemBackendDelegate::CreateFileStreamReader(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(fileapi::kFileSystemTypeDrive, url.type());
 
-  fileapi::RemoteFileSystemProxyInterface* proxy =
-      mount_points_->GetRemoteFileSystemProxy(url.filesystem_id());
-  if (!proxy)
+  base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
+  if (file_path.empty())
     return scoped_ptr<webkit_blob::FileStreamReader>();
 
-  return proxy->CreateFileStreamReader(
-      context->task_runners()->file_task_runner(),
-      url, offset, expected_modification_time);
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new internal::WebkitFileStreamReaderImpl(
+          base::Bind(&util::GetFileSystemByProfileId, profile_id_),
+          context->task_runners()->file_task_runner(),
+          file_path, offset, expected_modification_time));
 }
 
 scoped_ptr<fileapi::FileStreamWriter>

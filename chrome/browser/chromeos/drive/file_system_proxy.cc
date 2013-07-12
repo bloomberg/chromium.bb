@@ -357,17 +357,8 @@ FileSystemProxy::CreateFileStreamReader(
     const base::Time& expected_modification_time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  base::FilePath drive_file_path;
-  if (!ValidateUrl(url, &drive_file_path))
-    return scoped_ptr<webkit_blob::FileStreamReader>();
-
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      new internal::WebkitFileStreamReaderImpl(
-          base::Bind(&FileSystemProxy::GetFileSystemOnUIThread, this),
-          file_task_runner,
-          drive_file_path,
-          offset,
-          expected_modification_time));
+  NOTREACHED();
+  return scoped_ptr<webkit_blob::FileStreamReader>();
 }
 
 FileSystemProxy::~FileSystemProxy() {
@@ -452,11 +443,6 @@ void FileSystemProxy::CloseWritableSnapshotFile(
 
   CallFileApiInternalFunctionOnUIThread(
       base::Bind(&fileapi_internal::CloseFile, virtual_path));
-}
-
-FileSystemInterface* FileSystemProxy::GetFileSystemOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return file_system_;
 }
 
 }  // namespace drive

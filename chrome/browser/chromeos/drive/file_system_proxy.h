@@ -141,9 +141,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::FilePath& virtual_path,
       const base::FilePath& local_path);
 
-  // Returns |file_system_| on UI thread.
-  FileSystemInterface* GetFileSystemOnUIThread();
-
   FileSystemInterface* file_system_;
 };
 
