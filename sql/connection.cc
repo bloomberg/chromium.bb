@@ -860,7 +860,10 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
              << ": " << GetErrorMessage();
 
   if (!error_callback_.is_null()) {
-    error_callback_.Run(err, stmt);
+    // Fire from a copy of the callback in case of reentry into
+    // re/set_error_callback().
+    // TODO(shess): <http://crbug.com/254584>
+    ErrorCallback(error_callback_).Run(err, stmt);
     return err;
   }
 

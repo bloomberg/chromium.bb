@@ -9,55 +9,29 @@
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/test/error_callback_support.h"
+#include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace {
 
-void CaptureErrorCallback(int* error_pointer, std::string* sql_text,
-                          int error, sql::Statement* stmt) {
-  *error_pointer = error;
-  const char* text = stmt ? stmt->GetSQLStatement() : NULL;
-  *sql_text = text ? text : "no statement available";
-}
-
 class SQLStatementTest : public testing::Test {
  public:
-  SQLStatementTest() : error_(SQLITE_OK) {}
-
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(db_.Open(temp_dir_.path().AppendASCII("SQLStatementTest.db")));
-    // The error delegate will set |error_| and |sql_text_| when any sqlite
-    // statement operation returns an error code.
-    db_.set_error_callback(base::Bind(&CaptureErrorCallback,
-                                      &error_, &sql_text_));
   }
 
   virtual void TearDown() {
-    // If any error happened the original sql statement can be found in
-    // |sql_text_|.
-    EXPECT_EQ(SQLITE_OK, error_);
     db_.Close();
   }
 
   sql::Connection& db() { return db_; }
 
-  int sqlite_error() const { return error_; }
-
-  void ResetError() {
-    error_ = SQLITE_OK;
-    sql_text_.clear();
-  }
-
  private:
   base::ScopedTempDir temp_dir_;
   sql::Connection db_;
-
-  // The error code of the most recent error.
-  int error_;
-  // Original statement which caused the error.
-  std::string sql_text_;
 };
 
 }  // namespace
@@ -101,9 +75,14 @@ TEST_F(SQLStatementTest, Run) {
   EXPECT_TRUE(s.Succeeded());
 }
 
-TEST_F(SQLStatementTest, BasicErrorCallback) {
+// Error callback called for error running a statement.
+TEST_F(SQLStatementTest, ErrorCallback) {
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a INTEGER PRIMARY KEY, b)"));
-  EXPECT_EQ(SQLITE_OK, sqlite_error());
+
+  int error = SQLITE_OK;
+  sql::ScopedErrorCallback sec(
+      &db(), base::Bind(&sql::CaptureErrorCallback, &error));
+
   // Insert in the foo table the primary key. It is an error to insert
   // something other than an number. This error causes the error callback
   // handler to be called with SQLITE_MISMATCH as error code.
@@ -111,8 +90,21 @@ TEST_F(SQLStatementTest, BasicErrorCallback) {
   EXPECT_TRUE(s.is_valid());
   s.BindCString(0, "bad bad");
   EXPECT_FALSE(s.Run());
-  EXPECT_EQ(SQLITE_MISMATCH, sqlite_error());
-  ResetError();
+  EXPECT_EQ(SQLITE_MISMATCH, error);
+}
+
+// Error ignorer works for error running a statement.
+TEST_F(SQLStatementTest, ScopedIgnoreError) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a INTEGER PRIMARY KEY, b)"));
+
+  sql::Statement s(db().GetUniqueStatement("INSERT INTO foo (a) VALUES (?)"));
+  EXPECT_TRUE(s.is_valid());
+
+  sql::ScopedErrorIgnorer ignore_errors;
+  ignore_errors.IgnoreError(SQLITE_MISMATCH);
+  s.BindCString(0, "bad bad");
+  ASSERT_FALSE(s.Run());
+  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
 }
 
 TEST_F(SQLStatementTest, Reset) {

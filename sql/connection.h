@@ -125,6 +125,9 @@ class SQL_EXPORT Connection {
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;
   }
+  bool has_error_callback() const {
+    return !error_callback_.is_null();
+  }
   void reset_error_callback() {
     error_callback_.Reset();
   }

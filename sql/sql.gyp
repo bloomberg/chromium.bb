@@ -55,6 +55,8 @@
         '../base/base.gyp:base',
       ],
       'sources': [
+        'test/error_callback_support.cc',
+        'test/error_callback_support.h',
         'test/scoped_error_ignorer.cc',
         'test/scoped_error_ignorer.h',
       ],

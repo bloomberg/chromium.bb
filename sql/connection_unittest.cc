@@ -9,6 +9,7 @@
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -21,6 +22,53 @@ int SqliteMasterCount(sql::Connection* db) {
   const char* kMasterCount = "SELECT COUNT(*) FROM sqlite_master";
   sql::Statement s(db->GetUniqueStatement(kMasterCount));
   return s.Step() ? s.ColumnInt(0) : -1;
+}
+
+// Track the number of valid references which share the same pointer.
+// This is used to allow testing an implicitly use-after-free case by
+// explicitly having the ref count live longer than the object.
+class RefCounter {
+ public:
+  RefCounter(size_t* counter)
+      : counter_(counter) {
+    (*counter_)++;
+  }
+  RefCounter(const RefCounter& other)
+      : counter_(other.counter_) {
+    (*counter_)++;
+  }
+  ~RefCounter() {
+    (*counter_)--;
+  }
+
+ private:
+  size_t* counter_;
+
+  DISALLOW_ASSIGN(RefCounter);
+};
+
+// Empty callback for implementation of ErrorCallbackSetHelper().
+void IgnoreErrorCallback(int error, sql::Statement* stmt) {
+}
+
+void ErrorCallbackSetHelper(sql::Connection* db,
+                            size_t* counter,
+                            const RefCounter& r,
+                            int error, sql::Statement* stmt) {
+  // The ref count should not go to zero when changing the callback.
+  EXPECT_GT(*counter, 0u);
+  db->set_error_callback(base::Bind(&IgnoreErrorCallback));
+  EXPECT_GT(*counter, 0u);
+}
+
+void ErrorCallbackResetHelper(sql::Connection* db,
+                              size_t* counter,
+                              const RefCounter& r,
+                              int error, sql::Statement* stmt) {
+  // The ref count should not go to zero when clearing the callback.
+  EXPECT_GT(*counter, 0u);
+  db->reset_error_callback();
+  EXPECT_GT(*counter, 0u);
 }
 
 class SQLConnectionTest : public testing::Test {
@@ -165,6 +213,61 @@ TEST_F(SQLConnectionTest, ScopedIgnoreError) {
   ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
   ASSERT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
   ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+}
+
+TEST_F(SQLConnectionTest, ErrorCallback) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
+
+  int error = SQLITE_OK;
+  {
+    sql::ScopedErrorCallback sec(
+        &db(), base::Bind(&sql::CaptureErrorCallback, &error));
+
+    // Inserting something other than a number into the primary key
+    // should result in the callback seeing SQLITE_MISMATCH.
+    EXPECT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
+    EXPECT_EQ(SQLITE_CONSTRAINT, error);
+  }
+
+  // Callback is no longer in force due to reset.
+  {
+    error = SQLITE_OK;
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+    ASSERT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    EXPECT_EQ(SQLITE_OK, error);
+  }
+
+  // base::Bind() can curry arguments to be passed by const reference
+  // to the callback function.  If the callback function causes
+  // re/set_error_callback() to be called, the storage for those
+  // arguments can be deleted.
+  //
+  // RefCounter() counts how many objects are live using an external
+  // count.  The same counter is passed to the callback, so that it
+  // can check directly even if the RefCounter object is no longer
+  // live.
+  {
+    size_t count = 0;
+    sql::ScopedErrorCallback sec(
+        &db(), base::Bind(&ErrorCallbackSetHelper,
+                          &db(), &count, RefCounter(&count)));
+
+    EXPECT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
+  }
+
+  // Same test, but reset_error_callback() case.
+  {
+    size_t count = 0;
+    sql::ScopedErrorCallback sec(
+        &db(), base::Bind(&ErrorCallbackResetHelper,
+                          &db(), &count, RefCounter(&count)));
+
+    EXPECT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
+  }
 }
 
 // Test that sql::Connection::Raze() results in a database without the
