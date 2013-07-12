@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "cc/input/input_handler.h"
 #include "content/renderer/gpu/input_event_filter.h"
 #include "content/renderer/gpu/input_handler_manager_client.h"

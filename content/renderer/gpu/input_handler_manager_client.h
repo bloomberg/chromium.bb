@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_CLIENT_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/vector2d_f.h"

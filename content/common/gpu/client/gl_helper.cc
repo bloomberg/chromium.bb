@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "cc/resources/sync_point_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"

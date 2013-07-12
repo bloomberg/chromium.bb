@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/input_handler_wrapper.h"
 
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/gpu/input_event_filter.h"
 #include "content/renderer/gpu/input_handler_manager.h"
 #include "third_party/WebKit/public/platform/Platform.h"
