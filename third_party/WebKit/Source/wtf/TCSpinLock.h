@@ -39,51 +39,6 @@
 #include <sched.h>
 #endif
 
-#if ENABLE(COMPARE_AND_SWAP)
-
-static void TCMalloc_SlowLock(unsigned* lockword);
-
-// The following is a struct so that it can be initialized at compile time
-struct TCMalloc_SpinLock {
-    void Lock() {
-      if (!WTF::weakCompareAndSwap(&lockword_, 0, 1))
-        TCMalloc_SlowLock(&lockword_);
-      WTF::memoryBarrierAfterLock();
-    }
-
-    void Unlock() {
-      WTF::memoryBarrierBeforeUnlock();
-      lockword_ = 0;
-    }
-
-    // Report if we think the lock can be held by this thread.
-    // When the lock is truly held by the invoking thread
-    // we will always return true.
-    // Indended to be used as CHECK(lock.IsHeld());
-    bool IsHeld() const {
-        return lockword_ != 0;
-    }
-
-    void Init() { lockword_ = 0; }
-    void Finalize() { }
-
-    unsigned lockword_;
-};
-
-#define SPINLOCK_INITIALIZER { 0 }
-
-static void TCMalloc_SlowLock(unsigned* lockword) {
-  do {
-#if OS(WINDOWS)
-    Sleep(0);
-#else
-    sched_yield();
-#endif
-  } while (!WTF::weakCompareAndSwap(lockword, 0, 1));
-}
-
-#else
-
 #include <pthread.h>
 
 // Portable version
@@ -112,8 +67,6 @@ struct TCMalloc_SpinLock {
 };
 
 #define SPINLOCK_INITIALIZER { PTHREAD_MUTEX_INITIALIZER }
-
-#endif
 
 // Corresponding locker object that arranges to acquire a spinlock for
 // the duration of a C++ scope.

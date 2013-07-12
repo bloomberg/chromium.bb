@@ -61,8 +61,7 @@
 
 #include "wtf/CPU.h"
 #include "wtf/Platform.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/UnusedParam.h"
+#include <stdint.h>
 
 #if OS(WINDOWS)
 #include <windows.h>
@@ -96,110 +95,6 @@ inline int atomicDecrement(int volatile* addend) { return __sync_sub_and_fetch(a
 
 inline int64_t atomicIncrement(int64_t volatile* addend) { return __sync_add_and_fetch(addend, 1); }
 inline int64_t atomicDecrement(int64_t volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
-
-#endif
-
-#if OS(WINDOWS)
-inline bool weakCompareAndSwap(volatile unsigned* location, unsigned expected, unsigned newValue)
-{
-    return InterlockedCompareExchange(reinterpret_cast<LONG volatile*>(location), static_cast<LONG>(newValue), static_cast<LONG>(expected)) == static_cast<LONG>(expected);
-}
-
-inline bool weakCompareAndSwap(void*volatile* location, void* expected, void* newValue)
-{
-    return InterlockedCompareExchangePointer(location, newValue, expected) == expected;
-}
-#else // OS(WINDOWS) --> not windows
-#if COMPILER(GCC) && !COMPILER(CLANG) // Work around a gcc bug 
-inline bool weakCompareAndSwap(volatile unsigned* location, unsigned expected, unsigned newValue) 
-#else
-inline bool weakCompareAndSwap(unsigned* location, unsigned expected, unsigned newValue)
-#endif
-{
-#if ENABLE(COMPARE_AND_SWAP)
-#if CPU(X86) || CPU(X86_64)
-    unsigned char result;
-    asm volatile(
-        "lock; cmpxchgl %3, %2\n\t"
-        "sete %1"
-        : "+a"(expected), "=q"(result), "+m"(*location)
-        : "r"(newValue)
-        : "memory"
-        );
-#elif CPU(ARM_THUMB2)
-    unsigned tmp;
-    unsigned result;
-    asm volatile(
-        "movw %1, #1\n\t"
-        "ldrex %2, %0\n\t"
-        "cmp %3, %2\n\t"
-        "bne.n 0f\n\t"
-        "strex %1, %4, %0\n\t"
-        "0:"
-        : "+Q"(*location), "=&r"(result), "=&r"(tmp)
-        : "r"(expected), "r"(newValue)
-        : "memory");
-    result = !result;
-#else
-#error "Bad architecture for compare and swap."
-#endif
-    return result;
-#else
-    UNUSED_PARAM(location);
-    UNUSED_PARAM(expected);
-    UNUSED_PARAM(newValue);
-    CRASH();
-    return false;
-#endif
-}
-
-inline bool weakCompareAndSwap(void*volatile* location, void* expected, void* newValue)
-{
-#if ENABLE(COMPARE_AND_SWAP)
-#if CPU(X86_64)
-    bool result;
-    asm volatile(
-        "lock; cmpxchgq %3, %2\n\t"
-        "sete %1"
-        : "+a"(expected), "=q"(result), "+m"(*location)
-        : "r"(newValue)
-        : "memory"
-        );
-    return result;
-#else
-    return weakCompareAndSwap(bitwise_cast<unsigned*>(location), bitwise_cast<unsigned>(expected), bitwise_cast<unsigned>(newValue));
-#endif
-#else // ENABLE(COMPARE_AND_SWAP)
-    UNUSED_PARAM(location);
-    UNUSED_PARAM(expected);
-    UNUSED_PARAM(newValue);
-    CRASH();
-    return 0;
-#endif // ENABLE(COMPARE_AND_SWAP)
-}
-#endif // OS(WINDOWS) (end of the not-windows case)
-
-inline bool weakCompareAndSwapUIntPtr(volatile uintptr_t* location, uintptr_t expected, uintptr_t newValue)
-{
-    return weakCompareAndSwap(reinterpret_cast<void*volatile*>(location), reinterpret_cast<void*>(expected), reinterpret_cast<void*>(newValue));
-}
-
-#if CPU(ARM_THUMB2)
-
-inline void memoryBarrierAfterLock()
-{
-    asm volatile("dmb" ::: "memory");
-}
-
-inline void memoryBarrierBeforeUnlock()
-{
-    asm volatile("dmb" ::: "memory");
-}
-
-#else
-
-inline void memoryBarrierAfterLock() { }
-inline void memoryBarrierBeforeUnlock() { }
 
 #endif
 

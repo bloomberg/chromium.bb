@@ -72,7 +72,7 @@ HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document* doc
     , m_size(DefaultWidth, DefaultHeight)
     , m_rendererIsCanvas(false)
     , m_ignoreReset(false)
-    , m_deviceScaleFactor(targetDeviceScaleFactor())
+    , m_deviceScaleFactor(1)
     , m_originClean(true)
     , m_hasCreatedImageBuffer(false)
     , m_didClearImageBuffer(false)
@@ -246,7 +246,7 @@ void HTMLCanvasElement::reset()
 
     IntSize oldSize = size();
     IntSize newSize(w, h);
-    float newDeviceScaleFactor = targetDeviceScaleFactor();
+    float newDeviceScaleFactor = 1;
 
     // If the size of an existing buffer matches, we can just clear it instead of reallocating.
     // This optimization is only done for 2D canvases for now.
@@ -278,15 +278,6 @@ void HTMLCanvasElement::reset()
     HashSet<CanvasObserver*>::iterator end = m_observers.end();
     for (HashSet<CanvasObserver*>::iterator it = m_observers.begin(); it != end; ++it)
         (*it)->canvasResized(this);
-}
-
-float HTMLCanvasElement::targetDeviceScaleFactor() const
-{
-#if ENABLE(HIGH_DPI_CANVAS)
-    return document()->frame() ? document()->frame()->page()->deviceScaleFactor() : 1;
-#else
-    return 1;
-#endif
 }
 
 bool HTMLCanvasElement::paintsIntoCanvasBuffer() const

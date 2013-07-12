@@ -498,16 +498,12 @@ static TextBreakIterator* nonSharedCharacterBreakIterator;
 
 static inline bool compareAndSwapNonSharedCharacterBreakIterator(TextBreakIterator* expected, TextBreakIterator* newValue)
 {
-#if ENABLE(COMPARE_AND_SWAP)
-    return weakCompareAndSwap(reinterpret_cast<void**>(&nonSharedCharacterBreakIterator), expected, newValue);
-#else
     DEFINE_STATIC_LOCAL(Mutex, nonSharedCharacterBreakIteratorMutex, ());
     MutexLocker locker(nonSharedCharacterBreakIteratorMutex);
     if (nonSharedCharacterBreakIterator != expected)
         return false;
     nonSharedCharacterBreakIterator = newValue;
     return true;
-#endif
 }
 
 NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(const UChar* buffer, int length)

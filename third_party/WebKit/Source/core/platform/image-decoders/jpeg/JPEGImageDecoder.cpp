@@ -377,13 +377,6 @@ public:
 
             m_decoder->setOrientation(readImageOrientation(info()));
 
-#if ENABLE(IMAGE_DECODER_DOWN_SAMPLING) && defined(TURBO_JPEG_RGB_SWIZZLE)
-            // There's no point swizzle decoding if image down sampling will
-            // be applied. Revert to using JSC_RGB in that case.
-            if (m_decoder->willDownSample() && turboSwizzled(m_info.out_color_space))
-                m_info.out_color_space = JCS_RGB;
-#endif
-
 #if USE(QCMSLIB)
             // Allow color management of the decoded RGBA pixels if possible.
             if (!m_decoder->ignoresGammaAndColorProfile()) {
