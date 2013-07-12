@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
-import org.chromium.base.NativeClassQualifiedName;
 import org.chromium.base.ThreadUtils;
 import org.chromium.sync.signin.AccountManagerHelper;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * Helper class for working with access tokens from native code.
@@ -48,7 +51,6 @@ public class AndroidProfileOAuth2TokenServiceHelper {
      *
      * @param username The native username (full address).
      * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
-     * @param oldAuthToken If provided, the token will be invalidated before getting a new token.
      * @param nativeCallback The pointer to the native callback that should be run upon completion.
      */
     @CalledByNative
@@ -72,13 +74,67 @@ public class AndroidProfileOAuth2TokenServiceHelper {
             });
     }
 
-   /**
+    /**
+     * Call this method to retrieve an OAuth2 access token for the given account and scope.
+     *
+     * @param activity the current activity. May be null.
+     * @param account the account to get the access token for.
+     * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
+     * @param callback called on successful and unsuccessful fetching of auth token.
+     */
+    public static void getOAuth2AccessToken(Context context, @Nullable Activity activity,
+                                            Account account, String scope,
+                                            AccountManagerHelper.GetAuthTokenCallback callback) {
+        String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
+        AccountManagerHelper.get(context).getAuthTokenFromForeground(
+                activity, account, oauth2Scope, callback);
+    }
+
+    /**
+     * Call this method to retrieve an OAuth2 access token for the given account and scope. This
+     * method times out after the specified timeout, and will return null if that happens.
+     *
+     * Given that this is a blocking method call, this should never be called from the UI thread.
+     *
+     * @param activity the current activity. May be null.
+     * @param account the account to get the access token for.
+     * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
+     * @param timeout the timeout.
+     * @param unit the unit for |timeout|.
+     */
+    public static String getOAuth2AccessTokenWithTimeout(
+            Context context, @Nullable Activity activity, Account account, String scope,
+            long timeout, TimeUnit unit) {
+        assert !ThreadUtils.runningOnUiThread();
+        final BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+        getOAuth2AccessToken(
+                context, activity, account, scope,
+                new AccountManagerHelper.GetAuthTokenCallback() {
+                    @Override
+                    public void tokenAvailable(String token) {
+                        try {
+                            queue.put(token);
+                        } catch (InterruptedException e) {
+                            Log.d(TAG, "Got interrupted while trying to offer token", e);
+                        }
+                    }
+                });
+        try {
+            return queue.poll(timeout, unit);
+        } catch (InterruptedException e) {
+            Log.w(TAG, "Got interrupted while waiting for auth token");
+            return null;
+        }
+    }
+
+    /**
     * Called by native to invalidate an OAuth2 token.
     */
     @CalledByNative
-    public static void invalidateOAuth2AuthToken(
-            Context context, String accessToken) {
-        AccountManagerHelper.get(context).invalidateAuthToken(accessToken);
+    public static void invalidateOAuth2AuthToken(Context context, String accessToken) {
+        if (accessToken != null) {
+            AccountManagerHelper.get(context).invalidateAuthToken(accessToken);
+        }
     }
 
     private static native void nativeOAuth2TokenFetched(
