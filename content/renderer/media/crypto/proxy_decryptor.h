@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
+#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
+#define CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
 
 #include <string>
 #include <vector>
@@ -22,7 +22,7 @@ class WebMediaPlayerClient;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
-namespace webkit_media {
+namespace content {
 
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
@@ -107,6 +107,6 @@ class ProxyDecryptor : public media::MediaKeys {
   DISALLOW_COPY_AND_ASSIGN(ProxyDecryptor);
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
+#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_

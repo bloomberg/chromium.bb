@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_FACTORY_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_FACTORY_H_
 
 #include <string>
 
@@ -17,7 +17,7 @@ class WebMediaPlayerClient;
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-namespace webkit_media {
+namespace content {
 
 class ContentDecryptionModuleFactory {
  public:
@@ -44,6 +44,6 @@ class ContentDecryptionModuleFactory {
 #endif  // defined(ENABLE_PEPPER_CDMS)
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_FACTORY_H_

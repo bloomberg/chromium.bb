@@ -64,7 +64,6 @@ using WebKit::WebString;
 using media::PipelineStatus;
 using webkit_media::IsSupportedKeySystem;
 using webkit_media::KeySystemNameForUMA;
-using webkit_media::ProxyDecryptor;
 
 namespace {
 

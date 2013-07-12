@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/proxy_decryptor.h"
+#include "content/renderer/media/crypto/proxy_decryptor.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "webkit/renderer/media/crypto/content_decryption_module_factory.h"
+#include "content/renderer/media/crypto/content_decryption_module_factory.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
 
-namespace webkit_media {
+namespace content {
 
 #if defined(ENABLE_PEPPER_CDMS)
 void ProxyDecryptor::DestroyHelperPlugin() {
@@ -150,4 +150,4 @@ void ProxyDecryptor::KeyMessage(const std::string& session_id,
   key_message_cb_.Run(session_id, message, default_url);
 }
 
-}  // namespace webkit_media
+}  // namespace content

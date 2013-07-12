@@ -49,7 +49,6 @@ using media::MediaPlayerAndroid;
 using media::VideoFrame;
 using webkit_media::IsSupportedKeySystem;
 using webkit_media::KeySystemNameForUMA;
-using webkit_media::ProxyDecryptor;
 
 namespace {
 // Prefix for histograms related to Encrypted Media Extensions.

@@ -19,6 +19,7 @@
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/renderer/media/android/media_source_delegate.h"
 #include "content/renderer/media/android/stream_texture_factory_android.h"
+#include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/demuxer_stream.h"
@@ -28,7 +29,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/renderer/media/crypto/proxy_decryptor.h"
 
 namespace media {
 class Demuxer;
@@ -419,7 +419,7 @@ class WebMediaPlayerAndroid
   std::string init_data_type_;
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<webkit_media::ProxyDecryptor> decryptor_;
+  scoped_ptr<ProxyDecryptor> decryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

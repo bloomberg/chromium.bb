@@ -29,6 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
+#include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
@@ -42,7 +43,6 @@
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #include "url/gurl.h"
-#include "webkit/renderer/media/crypto/proxy_decryptor.h"
 
 class RenderAudioSourceProvider;
 
@@ -328,7 +328,7 @@ class WebMediaPlayerImpl
   bool supports_save_;
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<webkit_media::ProxyDecryptor> decryptor_;
+  scoped_ptr<ProxyDecryptor> decryptor_;
 
   bool starting_;
 

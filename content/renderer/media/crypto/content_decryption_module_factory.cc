@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/content_decryption_module_factory.h"
+#include "content/renderer/media/crypto/content_decryption_module_factory.h"
 
 #include "base/logging.h"
 #include "media/crypto/aes_decryptor.h"
@@ -15,9 +15,14 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/renderer/media/crypto/ppapi_decryptor.h"
+
+using webkit_media::GetPepperType;
+using webkit_media::PpapiDecryptor;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-namespace webkit_media {
+using webkit_media::CanUseAesDecryptor;
+
+namespace content {
 
 #if defined(ENABLE_PEPPER_CDMS)
 // Returns the PluginInstance associated with the Helper Plugin.
@@ -118,4 +123,4 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
-}  // namespace webkit_media
+}  // namespace content
