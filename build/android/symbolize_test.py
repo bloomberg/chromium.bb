@@ -21,6 +21,9 @@ import unittest
 
 import symbolize
 
+LIB_A_PATH = '/build/android/tests/symbolize/liba.so'
+LIB_B_PATH = '/build/android/tests/symbolize/libb.so'
+
 def RunSymbolizer(text):
   output = StringIO.StringIO()
   s = symbolize.Symbolizer(StringIO.StringIO(text), output)
@@ -31,87 +34,94 @@ def RunSymbolizer(text):
 class SymbolizerUnittest(unittest.TestCase):
   def testSingleLineNoMatch(self):
     # Leading '#' is required.
-    expected = '00 pc 00000254 /build/android/tests/symbolize/liba.so\n'
+    expected = '00 0x00000000 ' + LIB_A_PATH + '+0x00000254\n'
     self.assertEqual(expected, RunSymbolizer(expected))
 
     # Whitespace should be exactly one space.
-    expected = '#00  pc 00000254 /build/android/tests/symbolize/liba.so\n'
+    expected = '#00  0x00000000 ' + LIB_A_PATH + '+0x00000254\n'
     self.assertEqual(expected, RunSymbolizer(expected))
-    expected = '#00 pc  00000254 /build/android/tests/symbolize/liba.so\n'
-    self.assertEqual(expected, RunSymbolizer(expected))
-    expected = '#00 pc 00000254  /build/android/tests/symbolize/liba.so\n'
+    expected = '#00 0x00000000  ' + LIB_A_PATH + '+0x00000254\n'
     self.assertEqual(expected, RunSymbolizer(expected))
 
     # Decimal stack frame numbers are required.
-    expected = '#0a pc 00000254 /build/android/tests/symbolize/liba.so\n'
-    self.assertEqual(expected, RunSymbolizer(expected))
-
-    # Lowercase 'pc' token is required.
-    expected = '#00 PC 00000254 /build/android/tests/symbolize/liba.so\n'
+    expected = '#0a 0x00000000 ' + LIB_A_PATH + '+0x00000254\n'
     self.assertEqual(expected, RunSymbolizer(expected))
 
     # Hexadecimal addresses are required.
-    expected = '#00 pc ghijklmn /build/android/tests/symbolize/liba.so\n'
+    expected = '#00 0xghijklmn ' + LIB_A_PATH + '+0x00000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+    expected = '#00 0x00000000 ' + LIB_A_PATH + '+0xghijklmn\n'
     self.assertEqual(expected, RunSymbolizer(expected))
 
     # Addresses must be exactly 8 characters.
-    expected = '#00 pc 254 /build/android/tests/symbolize/liba.so\n'
+    expected = '#00 0x0000000 ' + LIB_A_PATH + '+0x00000254\n'
     self.assertEqual(expected, RunSymbolizer(expected))
-    expected = '#00 pc 0254 /build/android/tests/symbolize/liba.so\n'
-    self.assertEqual(expected, RunSymbolizer(expected))
-    expected = '#00 pc 00254 /build/android/tests/symbolize/liba.so\n'
-    self.assertEqual(expected, RunSymbolizer(expected))
-    expected = '#00 pc 000254 /build/android/tests/symbolize/liba.so\n'
-    self.assertEqual(expected, RunSymbolizer(expected))
-    expected = '#00 pc 0000254 /build/android/tests/symbolize/liba.so\n'
+    expected = '#00 0x000000000 ' + LIB_A_PATH + '+0x00000254\n'
     self.assertEqual(expected, RunSymbolizer(expected))
 
-    # Addresses must not be prefixed with '0x'.
-    expected = '#00 pc 0x00000254 /build/android/tests/symbolize/liba.so\n'
+    expected = '#00 0x0000000 ' + LIB_A_PATH + '+0x0000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+    expected = '#00 0x000000000 ' + LIB_A_PATH + '+0x000000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+
+    # Addresses must be prefixed with '0x'.
+    expected = '#00 00000000 ' + LIB_A_PATH + '+0x00000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+    expected = '#00 0x00000000 ' + LIB_A_PATH + '+00000254\n'
     self.assertEqual(expected, RunSymbolizer(expected))
 
     # Library name is required.
-    expected = '#00 pc 00000254\n'
+    expected = '#00 0x00000000\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+    expected = '#00 0x00000000 +0x00000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+
+    # Library name must be followed by offset with no spaces around '+'.
+    expected = '#00 0x00000000 ' + LIB_A_PATH + ' +0x00000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+    expected = '#00 0x00000000 ' + LIB_A_PATH + '+ 0x00000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+    expected = '#00 0x00000000 ' + LIB_A_PATH + ' 0x00000254\n'
+    self.assertEqual(expected, RunSymbolizer(expected))
+    expected = '#00 0x00000000 ' + LIB_A_PATH + '+\n'
     self.assertEqual(expected, RunSymbolizer(expected))
 
   def testSingleLine(self):
-    text = '#00 pc 00000254 /build/android/tests/symbolize/liba.so\n'
-    expected = '#00 pc 00000254 A::Bar(char const*)\n'
+    text = '#00 0x00000000 ' + LIB_A_PATH + '+0x00000254\n'
+    expected = '#00 0x00000000 A::Bar(char const*)\n'
     actual = RunSymbolizer(text)
     self.assertEqual(expected, actual)
 
   def testSingleLineWithSurroundingText(self):
-    text = 'LEFT #00 pc 00000254 /build/android/tests/symbolize/liba.so RIGHT\n'
-    expected = 'LEFT #00 pc 00000254 A::Bar(char const*) RIGHT\n'
+    text = 'LEFT #00 0x00000000 ' + LIB_A_PATH + '+0x00000254 RIGHT\n'
+    expected = 'LEFT #00 0x00000000 A::Bar(char const*) RIGHT\n'
     actual = RunSymbolizer(text)
     self.assertEqual(expected, actual)
 
   def testMultipleLinesSameLibrary(self):
-    text = '#00 pc 00000254 /build/android/tests/symbolize/liba.so\n'
-    text += '#01 pc 00000234 /build/android/tests/symbolize/liba.so\n'
-    expected = '#00 pc 00000254 A::Bar(char const*)\n'
-    expected += '#01 pc 00000234 A::Foo(int)\n'
+    text = '#00 0x00000000 ' + LIB_A_PATH + '+0x00000254\n'
+    text += '#01 0x00000000 ' + LIB_A_PATH + '+0x00000234\n'
+    expected = '#00 0x00000000 A::Bar(char const*)\n'
+    expected += '#01 0x00000000 A::Foo(int)\n'
     actual = RunSymbolizer(text)
     self.assertEqual(expected, actual)
 
   def testMultipleLinesDifferentLibrary(self):
-    text = '#00 pc 00000254 /build/android/tests/symbolize/liba.so\n'
-    text += '#01 pc 00000234 /build/android/tests/symbolize/libb.so\n'
-    expected = '#00 pc 00000254 A::Bar(char const*)\n'
-    expected += '#01 pc 00000234 B::Baz(float)\n'
+    text = '#00 0x00000000 ' + LIB_A_PATH + '+0x00000254\n'
+    text += '#01 0x00000000 ' + LIB_B_PATH + '+0x00000234\n'
+    expected = '#00 0x00000000 A::Bar(char const*)\n'
+    expected += '#01 0x00000000 B::Baz(float)\n'
     actual = RunSymbolizer(text)
     self.assertEqual(expected, actual)
 
   def testMultipleLinesWithSurroundingTextEverywhere(self):
     text = 'TOP\n'
-    text += ('LEFT #00 pc 00000254 '
-             '/build/android/tests/symbolize/liba.so RIGHT\n')
-    text += ('LEFT #01 pc 00000234 '
-             '/build/android/tests/symbolize/libb.so RIGHT\n')
+    text += 'LEFT #00 0x00000000 ' + LIB_A_PATH + '+0x00000254 RIGHT\n'
+    text += 'LEFT #01 0x00000000 ' + LIB_B_PATH + '+0x00000234 RIGHT\n'
     text += 'BOTTOM\n'
     expected = 'TOP\n'
-    expected += 'LEFT #00 pc 00000254 A::Bar(char const*) RIGHT\n'
-    expected += 'LEFT #01 pc 00000234 B::Baz(float) RIGHT\n'
+    expected += 'LEFT #00 0x00000000 A::Bar(char const*) RIGHT\n'
+    expected += 'LEFT #01 0x00000000 B::Baz(float) RIGHT\n'
     expected += 'BOTTOM\n'
     actual = RunSymbolizer(text)
     self.assertEqual(expected, actual)

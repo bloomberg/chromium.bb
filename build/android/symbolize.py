@@ -23,9 +23,9 @@ sys.path.insert(0,
 import symbol
 
 # Sample output from base/debug/stack_trace_android.cc
-#00 pc 000634c1 /data/app-lib/org.chromium.native_test-1/libbase_unittests.so
-TRACE_LINE = re.compile('(?P<frame>\#[0-9]+) pc (?P<addr>[0-9a-f]{8,8}) '
-                        '(?P<lib>[^\r\n \t]+)')
+#00 0x693cd34f /path/to/some/libfoo.so+0x0007434f
+TRACE_LINE = re.compile('(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,8}) '
+                        '(?P<lib>[^+]+)\+0x(?P<addr>[0-9a-f]{8,8})')
 
 class Symbolizer(object):
   def __init__(self, file_in, file_out):
@@ -65,9 +65,13 @@ class Symbolizer(object):
         continue
 
       pre = line[0:match.start('frame')]
-      post = line[match.end('lib'):]
+      post = line[match.end('addr'):]
 
-      self.file_out.write('%s%s pc %s %s%s' % (pre, frame, addr, sym, post))
+      self.file_out.write(pre)
+      self.file_out.write(frame)
+      self.file_out.write(' ')
+      self.file_out.write(sym)
+      self.file_out.write(post)
       self.file_out.flush()
 
 
