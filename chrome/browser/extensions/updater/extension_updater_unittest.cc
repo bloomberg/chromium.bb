@@ -50,7 +50,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/common/id_util.h"
 #include "libxml/globals.h"
 #include "net/base/backoff_entry.h"
@@ -71,6 +73,7 @@ using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
 using testing::DoAll;
+using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::Return;
 using testing::SetArgPointee;
@@ -142,6 +145,21 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
   MOCK_METHOD1(IsExtensionPending, bool(const std::string&));
   MOCK_METHOD2(GetExtensionExistingVersion,
                bool(const std::string&, std::string*));
+
+  void Wait() {
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+    quit_closure_ = runner->QuitClosure();
+    runner->Run();
+    quit_closure_.Reset();
+  }
+
+  void Quit() {
+    quit_closure_.Run();
+  }
+
+ private:
+  base::Closure quit_closure_;
 };
 
 const int kNotificationsObserved[] = {
@@ -177,10 +195,20 @@ class NotificationsObserver : public content::NotificationObserver {
     return updated_.find(id) != updated_.end();
   }
 
+  void Wait() {
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+    quit_closure_ = runner->QuitClosure();
+    runner->Run();
+    quit_closure_.Reset();
+  }
+
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
+    if (!quit_closure_.is_null())
+      quit_closure_.Run();
     for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
       if (kNotificationsObserved[i] == type) {
         count_[i]++;
@@ -197,6 +225,7 @@ class NotificationsObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   size_t count_[arraysize(kNotificationsObserved)];
   std::set<std::string> updated_;
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsObserver);
 };
@@ -469,16 +498,16 @@ static void VerifyQueryAndExtractParameters(
 class ExtensionUpdaterTest : public testing::Test {
  public:
   ExtensionUpdaterTest()
-      : ui_thread_(BrowserThread::UI, &loop_),
-        file_thread_(BrowserThread::FILE, &loop_),
-        io_thread_(BrowserThread::IO, &loop_) {
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
   virtual ~ExtensionUpdaterTest() {
   }
 
   virtual void SetUp() OVERRIDE {
-    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy().get()));
+    prefs_.reset(new TestExtensionPrefs(base::MessageLoopProxy::current()));
+    content::RenderProcessHost::SetRunRendererInProcess(true);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -487,11 +516,12 @@ class ExtensionUpdaterTest : public testing::Test {
     // those objects are released.
     RunUntilIdle();
     prefs_.reset();
+    content::RenderProcessHost::SetRunRendererInProcess(false);
   }
 
   void RunUntilIdle() {
     prefs_->pref_service()->CommitPendingWrite();
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SimulateTimerFired(ExtensionUpdater* updater) {
@@ -852,13 +882,15 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
     EXPECT_CALL(delegate, OnExtensionDownloadFailed(
-        "2222", ExtensionDownloaderDelegate::MANIFEST_INVALID, _, _));
+        "2222", ExtensionDownloaderDelegate::MANIFEST_INVALID, _, _))
+        .WillOnce(InvokeWithoutArgs(&delegate,
+                                    &MockExtensionDownloaderDelegate::Quit));
     fetcher->set_url(kUpdateUrl);
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(200);
     fetcher->SetResponseString(kInvalidXml);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
-    RunUntilIdle();
+    delegate.Wait();
     Mock::VerifyAndClearExpectations(&delegate);
 
     // The third fetcher doesn't have an update available.
@@ -879,13 +911,15 @@ class ExtensionUpdaterTest : public testing::Test {
         .WillOnce(DoAll(SetArgPointee<1>("3.0.0.0"),
                         Return(true)));
     EXPECT_CALL(delegate, OnExtensionDownloadFailed(
-        "3333", ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE, _, _));
+        "3333", ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE, _, _))
+        .WillOnce(InvokeWithoutArgs(&delegate,
+                                    &MockExtensionDownloaderDelegate::Quit));
     fetcher->set_url(kUpdateUrl);
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(200);
     fetcher->SetResponseString(kNoUpdate);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
-    RunUntilIdle();
+    delegate.Wait();
     Mock::VerifyAndClearExpectations(&delegate);
 
     // The last fetcher has an update.
@@ -910,7 +944,7 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher->set_response_code(200);
     fetcher->SetResponseString(kUpdateAvailable);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
-    RunUntilIdle();
+    observer.Wait();
     Mock::VerifyAndClearExpectations(&delegate);
 
     // Verify that the downloader decided to update this extension.
@@ -1308,7 +1342,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Set up 2 mock extensions, one with a google.com update url and one
     // without.
-    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy().get()));
+    prefs_.reset(new TestExtensionPrefs(base::MessageLoopProxy::current()));
     ServiceForManifestTests service(prefs_.get());
     ExtensionList tmp;
     GURL url1("http://clients2.google.com/service/update2/crx");
@@ -1468,10 +1502,7 @@ class ExtensionUpdaterTest : public testing::Test {
   scoped_ptr<TestExtensionPrefs> prefs_;
 
  private:
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

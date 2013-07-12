@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message_macros.h"
@@ -45,36 +44,11 @@ SafeManifestParser::~SafeManifestParser() {
 void SafeManifestParser::ParseInSandbox() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // TODO(asargent) we shouldn't need to do this branch here - instead
-  // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-  bool use_utility_process = content::ResourceDispatcherHost::Get() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-  if (use_utility_process) {
-    content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
-        this,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get());
-    host->EnableZygote();
-    host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml_));
-  } else {
-    UpdateManifest manifest;
-    if (manifest.Parse(xml_)) {
-      if (!BrowserThread::PostTask(
-              BrowserThread::UI, FROM_HERE,
-              base::Bind(
-                  &SafeManifestParser::OnParseUpdateManifestSucceeded, this,
-                  manifest.results()))) {
-        NOTREACHED();
-      }
-    } else {
-      if (!BrowserThread::PostTask(
-              BrowserThread::UI, FROM_HERE,
-              base::Bind(
-                  &SafeManifestParser::OnParseUpdateManifestFailed, this,
-                  manifest.errors()))) {
-        NOTREACHED();
-      }
-    }
-  }
+  content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
+      this,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get());
+  host->EnableZygote();
+  host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml_));
 }
 
 bool SafeManifestParser::OnMessageReceived(const IPC::Message& message) {
