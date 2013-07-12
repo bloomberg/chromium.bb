@@ -29,7 +29,6 @@ MappedMemoryManager::~MappedMemoryManager() {
        iter != chunks_.end(); ++iter) {
     MemoryChunk* chunk = *iter;
     cmd_buf->DestroyTransferBuffer(chunk->shm_id());
-    delete chunk;
   }
 }
 
