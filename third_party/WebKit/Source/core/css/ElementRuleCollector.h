@@ -22,9 +22,10 @@
 #ifndef ElementRuleCollector_h
 #define ElementRuleCollector_h
 
+#include "core/css/PseudoStyleRequest.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/resolver/MatchResult.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverState.h" // For ElementResolveContext
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -32,26 +33,23 @@ namespace WebCore {
 
 class CSSRuleList;
 class DocumentRuleSets;
+class MatchRequest;
 class RenderRegion;
 class RuleData;
 class RuleSet;
-class SelectorFilter;
 class ScopedStyleResolver;
+class SelectorFilter;
 class StaticCSSRuleList;
 
+// ElementRuleCollector is designed to be used as a stack object.
+// Create one, ask what rules the ElementResolveContext matches
+// and then let it go out of scope.
+// FIXME: Currently it modifies the RenderStyle but should not!
 class ElementRuleCollector {
+    WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 public:
-    ElementRuleCollector(StyleResolver* styleResolver, const StyleResolverState& state)
-        : m_state(state)
-        , m_selectorFilter(styleResolver->selectorFilter())
-        , m_inspectorCSSOMWrappers(styleResolver->inspectorCSSOMWrappers())
-        , m_regionForStyling(0)
-        , m_pseudoStyleRequest(NOPSEUDO)
-        , m_sameOriginOnly(false)
-        , m_mode(SelectorChecker::ResolvingStyle)
-        , m_canUseFastReject(m_selectorFilter.parentStackIsConsistent(state.parentNode()))
-        , m_behaviorAtBoundary(SelectorChecker::DoesNotCrossBoundary)
-        , m_matchingUARules(false) { }
+    // FIXME: This should not need an InspectorCSSOMWrappers parameter.
+    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle*, InspectorCSSOMWrappers&);
 
     void setBehaviorAtBoundary(SelectorChecker::BehaviorAtBoundary boundary) { m_behaviorAtBoundary = boundary; }
     SelectorChecker::BehaviorAtBoundary behaviorAtBoundary() const { return m_behaviorAtBoundary; }
@@ -61,7 +59,7 @@ public:
     void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
     void setPseudoStyleRequest(const PseudoStyleRequest& request) { m_pseudoStyleRequest = request; }
     void setSameOriginOnly(bool f) { m_sameOriginOnly = f; } 
-    void setRegionForStyling(RenderRegion* regionForStyling) { m_regionForStyling = regionForStyling; }
+    void setRegionForStyling(const RenderRegion* regionForStyling) { m_regionForStyling = regionForStyling; }
 
     void setMatchingUARules(bool matchingUARules) { m_matchingUARules = matchingUARules; }
     bool hasAnyMatchingRules(RuleSet*);
@@ -76,7 +74,7 @@ public:
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
 
 private:
-    Document* document() { return m_state.document(); }
+    Document* document() { return m_context.document(); }
 
     void collectRuleIfMatches(const RuleData&, const MatchRequest&, RuleRange&);
     void collectMatchingRulesForList(const Vector<RuleData>*, const MatchRequest&, RuleRange&);
@@ -90,16 +88,17 @@ private:
     StaticCSSRuleList* ensureRuleList();
         
 private:
-    const StyleResolverState& m_state;
-    SelectorFilter& m_selectorFilter;
-    InspectorCSSOMWrappers& m_inspectorCSSOMWrappers;
+    const ElementResolveContext& m_context;
+    const SelectorFilter& m_selectorFilter;
+    InspectorCSSOMWrappers& m_inspectorCSSOMWrappers; // This should not be needed.
+    RefPtr<RenderStyle> m_style; // FIXME: This can be mutated during matching!
 
-    RenderRegion* m_regionForStyling;
+    const RenderRegion* m_regionForStyling;
     PseudoStyleRequest m_pseudoStyleRequest;
-    bool m_sameOriginOnly;
     SelectorChecker::Mode m_mode;
-    bool m_canUseFastReject;
     SelectorChecker::BehaviorAtBoundary m_behaviorAtBoundary;
+    bool m_canUseFastReject;
+    bool m_sameOriginOnly;
     bool m_matchingUARules;
 
     OwnPtr<Vector<const RuleData*, 32> > m_matchedRules;

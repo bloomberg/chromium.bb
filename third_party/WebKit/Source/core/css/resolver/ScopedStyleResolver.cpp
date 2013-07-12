@@ -34,6 +34,7 @@
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/resolver/StyleResolver.h" // For MatchRequest.
 #include "core/dom/Document.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ContentDistributor.h"

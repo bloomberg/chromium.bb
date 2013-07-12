@@ -28,6 +28,7 @@
 namespace WebCore {
 
 class RenderScrollbar;
+class RenderStyle;
 
 class PseudoStyleRequest {
 public:

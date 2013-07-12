@@ -559,7 +559,7 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(RuleSet* ruleSet)
     if (!ruleSet)
         return false;
 
-    ElementRuleCollector collector(this, m_state);
+    ElementRuleCollector collector(m_state.elementContext(), m_selectorFilter, m_state.style(), m_inspectorCSSOMWrappers);
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
@@ -1057,16 +1057,17 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         m_inspectorCSSOMWrappers.reset();
     }
 
-    ElementRuleCollector collector(this, state);
-    collector.setRegionForStyling(regionForStyling);
+    {
+        ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), m_inspectorCSSOMWrappers);
+        collector.setRegionForStyling(regionForStyling);
 
-    if (matchingBehavior == MatchOnlyUserAgentRules)
-        matchUARules(collector);
-    else
-        matchAllRules(collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
+        if (matchingBehavior == MatchOnlyUserAgentRules)
+            matchUARules(collector);
+        else
+            matchAllRules(collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
 
-    applyMatchedProperties(collector.matchedResult(), element);
-
+        applyMatchedProperties(collector.matchedResult(), element);
+    }
     // Clean up our style object's display and text decorations (among other fixups).
     adjustRenderStyle(state.style(), state.parentStyle(), element);
 
@@ -1074,6 +1075,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     document()->didAccessStyleResolver();
 
+    // FIXME: Shouldn't this be on RenderBody::styleDidChange?
     if (element->hasTagName(bodyTag))
         document()->textLinkColors().setTextColor(state.style()->visitedDependentColor(CSSPropertyColor));
 
@@ -1218,26 +1220,27 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         state.setParentStyle(RenderStyle::clone(state.style()));
     }
 
-    // Since we don't use pseudo-elements in any of our quirk/print user agent rules, don't waste time walking
-    // those rules.
+    // Since we don't use pseudo-elements in any of our quirk/print
+    // user agent rules, don't waste time walking those rules.
 
-    // Check UA, user and author rules.
-    ElementRuleCollector collector(this, state);
-    collector.setPseudoStyleRequest(pseudoStyleRequest);
-    matchUARules(collector);
+    {
+        // Check UA, user and author rules.
+    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), m_inspectorCSSOMWrappers);
+        collector.setPseudoStyleRequest(pseudoStyleRequest);
 
-    if (m_matchAuthorAndUserStyles) {
-        matchUserRules(collector, false);
-        matchAuthorRules(collector, false);
+        matchUARules(collector);
+        if (m_matchAuthorAndUserStyles) {
+            matchUserRules(collector, false);
+            matchAuthorRules(collector, false);
+        }
+
+        if (collector.matchedResult().matchedProperties.isEmpty())
+            return 0;
+
+        state.style()->setStyleType(pseudoStyleRequest.pseudoId);
+
+        applyMatchedProperties(collector.matchedResult(), e);
     }
-
-    if (collector.matchedResult().matchedProperties.isEmpty())
-        return 0;
-
-    state.style()->setStyleType(pseudoStyleRequest.pseudoId);
-
-    applyMatchedProperties(collector.matchedResult(), e);
-
     // Clean up our style object's display and text decorations (among other fixups).
     adjustRenderStyle(state.style(), state.parentStyle(), 0);
 
@@ -1710,7 +1713,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
 
     m_state.initForStyleResolve(document(), e);
 
-    ElementRuleCollector collector(this, m_state);
+    ElementRuleCollector collector(m_state.elementContext(), m_selectorFilter, m_state.style(), m_inspectorCSSOMWrappers);
     collector.setMode(SelectorChecker::CollectingRules);
     collector.setPseudoStyleRequest(PseudoStyleRequest(pseudoId));
 
