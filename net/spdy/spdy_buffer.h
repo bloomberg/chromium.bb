@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
@@ -73,15 +74,25 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
   void Consume(size_t consume_size);
 
   // Returns an IOBuffer pointing to the data starting at
-  // GetRemainingData(). Use with care; the returned IOBuffer must not
-  // be used past the lifetime of this object, and it is not updated
-  // when Consume() is called.
+  // GetRemainingData(). Use with care; the returned IOBuffer is not
+  // updated when Consume() is called. However, it may still be used
+  // past the lifetime of this object.
+  //
+  // This is used with Socket::Write(), which takes an IOBuffer* that
+  // may be written to even after the socket itself is destroyed. (See
+  // http://crbug.com/249725 .)
   IOBuffer* GetIOBufferForRemainingData();
 
  private:
   void ConsumeHelper(size_t consume_size, ConsumeSource consume_source);
 
-  const scoped_ptr<SpdyFrame> frame_;
+  // Ref-count the passed-in SpdyFrame to support the semantics of
+  // |GetIOBufferForRemainingData()|.
+  typedef base::RefCountedData<scoped_ptr<SpdyFrame> > SharedFrame;
+
+  class SharedFrameIOBuffer;
+
+  const scoped_refptr<SharedFrame> shared_frame_;
   std::vector<ConsumeCallback> consume_callbacks_;
   size_t offset_;
 
