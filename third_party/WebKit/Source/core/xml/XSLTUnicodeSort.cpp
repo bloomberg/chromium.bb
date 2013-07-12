@@ -220,9 +220,11 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts, in
                                     tst = 1;
                                 else tst = -1;
                             } else {
-                                String str1 = String::fromUTF8((const char*)res[j]->stringval);
-                                String str2 = String::fromUTF8((const char*)res[j + incr]->stringval);
-                                tst = collator.collate(str1.bloatedCharacters(), str1.length(), str2.bloatedCharacters(), str2.length());
+                                Vector<UChar> string1;
+                                Vector<UChar> string2;
+                                String::fromUTF8(reinterpret_cast<const char*>(res[j]->stringval)).appendTo(string1);
+                                String::fromUTF8(reinterpret_cast<const char*>(res[j + incr]->stringval)).appendTo(string2);
+                                tst = collator.collate(string1.data(), string1.size(), string2.data(), string2.size());
                             }
                             if (desc)
                                 tst = -tst;
