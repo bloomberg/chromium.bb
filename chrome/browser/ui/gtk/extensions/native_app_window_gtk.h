@@ -103,7 +103,7 @@ class NativeAppWindowGtk : public NativeAppWindow,
   CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
-  void OnDebouncedBoundsChanged();
+  void OnConfigureDebounced();
 
   apps::ShellWindow* shell_window_;  // weak - ShellWindow owns NativeAppWindow.
 

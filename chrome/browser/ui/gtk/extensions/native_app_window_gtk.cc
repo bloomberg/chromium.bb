@@ -354,25 +354,32 @@ gboolean NativeAppWindowGtk::OnConfigure(GtkWidget* widget,
   // gtk_window_get_position() to get the right values. (Otherwise session
   // restore, if enabled, will restore windows to incorrect positions.) That's
   // a round trip to the X server though, so we set a debounce timer and only
-  // call it (in OnDebouncedBoundsChanged() below) after we haven't seen a
+  // call it (in OnConfigureDebounced() below) after we haven't seen a
   // reconfigure event in a short while.
   // We don't use Reset() because the timer may not yet be running.
   // (In that case Stop() is a no-op.)
   window_configure_debounce_timer_.Stop();
   window_configure_debounce_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
-      &NativeAppWindowGtk::OnDebouncedBoundsChanged);
+      &NativeAppWindowGtk::OnConfigureDebounced);
 
   return FALSE;
 }
 
-void NativeAppWindowGtk::OnDebouncedBoundsChanged() {
+void NativeAppWindowGtk::OnConfigureDebounced() {
   gtk_window_util::UpdateWindowPosition(this, &bounds_, &restored_bounds_);
   shell_window_->OnNativeWindowChanged();
 
   FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
                     observer_list_,
                     OnPositionRequiresUpdate());
+
+  // Fullscreen of non-resizable windows requires them to be made resizable
+  // first. After that takes effect and OnConfigure is called we transition
+  // to fullscreen.
+  if (!IsFullscreen() && IsFullscreenOrPending()) {
+    gtk_window_fullscreen(window_);
+  }
 }
 
 gboolean NativeAppWindowGtk::OnWindowState(GtkWidget* sender,
@@ -490,10 +497,19 @@ gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
 
 void NativeAppWindowGtk::SetFullscreen(bool fullscreen) {
   content_thinks_its_fullscreen_ = fullscreen;
-  if (fullscreen)
-    gtk_window_fullscreen(window_);
-  else
+  if (fullscreen){
+    if (resizable_) {
+      gtk_window_fullscreen(window_);
+    } else {
+      // We must first make the window resizable. That won't take effect
+      // immediately, so OnConfigureDebounced completes the fullscreen call.
+      gtk_window_set_resizable(window_, TRUE);
+    }
+  } else {
     gtk_window_unfullscreen(window_);
+    if (!resizable_)
+      gtk_window_set_resizable(window_, FALSE);
+  }
 }
 
 bool NativeAppWindowGtk::IsFullscreenOrPending() const {
