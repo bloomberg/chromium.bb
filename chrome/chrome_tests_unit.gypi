@@ -2434,6 +2434,7 @@
             'browser/google_apis/drive_api_requests_unittest.cc',
             'browser/google_apis/gdata_wapi_parser_unittest.cc',
             'browser/google_apis/gdata_wapi_requests_unittest.cc',
+            'browser/sync_file_system/drive_backend/api_util_unittest.cc',
             'browser/sync_file_system/drive_backend/drive_file_sync_service_sync_unittest.cc',
 
             'browser/user_style_sheet_watcher_unittest.cc',

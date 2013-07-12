@@ -15,6 +15,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,35 +41,21 @@ namespace {
 const char kOrigin[] = "chrome-extension://example";
 const char kOriginDirectoryName[] = "example";
 
-void DidRemoveResourceFromDirectory(GDataErrorCode error) {
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-}
+struct Output {
+  GDataErrorCode error;
+  std::string resource_id;
+  std::string file_md5;
+  int64 largest_changestamp;
+
+  Output() : error(google_apis::GDATA_OTHER_ERROR),
+             largest_changestamp(-1) {
+  }
+};
 
 void DidAddFileOrDirectoryForMakingConflict(GDataErrorCode error,
                                             scoped_ptr<ResourceEntry> entry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
-}
-
-void DidAddNewDirectory(std::string* resource_id_out,
-                        GDataErrorCode error,
-                        scoped_ptr<ResourceEntry> entry) {
-  ASSERT_TRUE(resource_id_out);
-  ASSERT_EQ(google_apis::HTTP_CREATED, error);
-  ASSERT_TRUE(entry);
-  *resource_id_out = entry->resource_id();
-}
-
-void DidAddNewFile(std::string* resource_id_out,
-                   std::string* file_md5_out,
-                   GDataErrorCode error,
-                   scoped_ptr<ResourceEntry> entry) {
-  ASSERT_TRUE(resource_id_out);
-  ASSERT_TRUE(file_md5_out);
-  ASSERT_EQ(google_apis::HTTP_CREATED, error);
-  ASSERT_TRUE(entry);
-  *resource_id_out = entry->resource_id();
-  *file_md5_out = entry->file_md5();
 }
 
 void DidAddFileForUploadNew(
@@ -97,41 +84,6 @@ void DidGetResourceEntryForUploadExisting(
                  google_apis::HTTP_SUCCESS,
                  GURL(),
                  base::Passed(&entry)));
-}
-
-void VerifyTitleUniqueness(const tracked_objects::Location& from_here,
-                           const std::string& resource_id,
-                           google_apis::DriveEntryKind kind,
-                           GDataErrorCode error,
-                           scoped_ptr<ResourceList> resource_list) {
-  std::string location(" failed at " + from_here.ToString());
-  ASSERT_FALSE(resource_id.empty()) << location;
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error) << location;
-  ASSERT_TRUE(resource_list) << location;
-
-  const ScopedVector<ResourceEntry>& entries = resource_list->entries();
-  ASSERT_EQ(1u, entries.size());
-  EXPECT_EQ(resource_id, entries[0]->resource_id());
-  switch (kind) {
-    case google_apis::ENTRY_KIND_FOLDER:
-      EXPECT_TRUE(entries[0]->is_folder()) << location;
-      return;
-    case google_apis::ENTRY_KIND_FILE:
-      EXPECT_TRUE(entries[0]->is_file()) << location;
-      return;
-    default:
-      NOTREACHED() << "Unexpected DriveEntryKind: " << kind << location;
-      return;
-  }
-}
-
-void VerifyFileDeletion(const tracked_objects::Location& from_here,
-                        GDataErrorCode error,
-                        scoped_ptr<ResourceList> resource_list) {
-  std::string location(" failed at " + from_here.ToString());
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error) << location;
-  ASSERT_TRUE(resource_list) << location;
-  EXPECT_TRUE(resource_list->entries().empty()) << location;
 }
 
 class FakeDriveServiceWrapper : public FakeDriveService {
@@ -259,6 +211,9 @@ class APIUtilTest : public testing::Test {
     fake_drive_service_ = new FakeDriveServiceWrapper;
     fake_drive_uploader_ = new FakeDriveUploader(fake_drive_service_);
 
+    fake_drive_helper_.reset(new FakeDriveServiceHelper(
+        fake_drive_service_, fake_drive_uploader_));
+
     api_util_ = APIUtil::CreateForTesting(
         &profile_,
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
@@ -273,55 +228,68 @@ class APIUtilTest : public testing::Test {
   }
 
  protected:
-  void SetUpSyncRootDirectory() {
-    fake_drive_service()->AddNewDirectory(
-        fake_drive_service_->GetRootResourceId(),
-        APIUtil::GetSyncRootDirectoryName(),
-        base::Bind(&DidAddNewDirectory, &sync_root_resource_id_));
-    base::MessageLoop::current()->RunUntilIdle();
-
-    ASSERT_TRUE(!sync_root_resource_id_.empty());
-    fake_drive_service()->RemoveResourceFromDirectory(
-        fake_drive_service_->GetRootResourceId(),
-        sync_root_resource_id_,
-        base::Bind(&DidRemoveResourceFromDirectory));
-    base::MessageLoop::current()->RunUntilIdle();
+  std::string SetUpSyncRootDirectory() {
+    std::string sync_root_id;
+    EXPECT_EQ(google_apis::HTTP_CREATED,
+              fake_drive_helper_->AddOrphanedFolder(
+                  APIUtil::GetSyncRootDirectoryName(),
+                  &sync_root_id));
+    return sync_root_id;
   }
 
-  void SetUpOriginRootDirectory() {
-    ASSERT_TRUE(!sync_root_resource_id_.empty());
-    fake_drive_service()->AddNewDirectory(
-        GetSyncRootResourceId(),
-        kOriginDirectoryName,
-        base::Bind(&DidAddNewDirectory, &origin_root_resource_id_));
-    base::MessageLoop::current()->RunUntilIdle();
+  std::string SetUpOriginRootDirectory(const std::string& sync_root_id) {
+    std::string origin_root_id;
+    EXPECT_EQ(google_apis::HTTP_CREATED,
+              fake_drive_helper_->AddFolder(
+                  sync_root_id,
+                  kOriginDirectoryName,
+                  &origin_root_id));
+    return origin_root_id;
   }
 
-  void SetUpFile(const std::string& content_data,
+  void SetUpFile(const std::string& origin_root_id,
+                 const std::string& content_data,
                  const std::string& title,
-                 std::string* resource_id_out,
-                 std::string* file_md5_out) {
-    ASSERT_TRUE(!origin_root_resource_id_.empty());
-    ASSERT_TRUE(resource_id_out);
-    ASSERT_TRUE(file_md5_out);
-    fake_drive_service()->AddNewFile(
-        "text/plain",
-        content_data,
-        origin_root_resource_id_,
-        title,
-        false,  // shared_with_me
-        base::Bind(&DidAddNewFile, resource_id_out, file_md5_out));
-    base::MessageLoop::current()->RunUntilIdle();
+                 scoped_ptr<ResourceEntry>* entry) {
+    ASSERT_TRUE(entry);
+    std::string file_resource_id;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->AddFile(
+                  origin_root_id,
+                  title,
+                  content_data,
+                  &file_resource_id));
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->GetResourceEntry(
+                  file_resource_id,
+                  entry));
   }
 
-  std::string GetSyncRootResourceId() {
-    DCHECK(!sync_root_resource_id_.empty());
-    return sync_root_resource_id_;
+  void LoadAccountMetadata() {
+    fake_drive_service_->LoadAccountMetadataForWapi(
+        "sync_file_system/account_metadata.json");
   }
 
-  std::string GetOriginRootResourceId() {
-    DCHECK(!origin_root_resource_id_.empty());
-    return origin_root_resource_id_;
+  void VerifyTitleUniqueness(const std::string& parent_resource_id,
+                             const std::string& title,
+                             const std::string& resource_id,
+                             google_apis::DriveEntryKind kind) {
+    ScopedVector<ResourceEntry> entries;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->SearchByTitle(
+                  parent_resource_id, title, &entries));
+    ASSERT_EQ(1u, entries.size());
+    EXPECT_EQ(resource_id, entries[0]->resource_id());
+    EXPECT_EQ(kind, entries[0]->kind());
+  }
+
+  void VerifyFileDeletion(const std::string& parent_resource_id,
+                          const std::string& title) {
+    ScopedVector<ResourceEntry> entries;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->SearchByTitle(
+                  parent_resource_id, title, &entries));
+    EXPECT_TRUE(entries.empty());
   }
 
   APIUtil* api_util() { return api_util_.get(); }
@@ -356,324 +324,254 @@ class APIUtilTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  std::string sync_root_resource_id_;
-  std::string origin_root_resource_id_;
-
   TestingProfile profile_;
   scoped_ptr<APIUtil> api_util_;
   FakeDriveServiceWrapper* fake_drive_service_;
   FakeDriveUploader* fake_drive_uploader_;
+  scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(APIUtilTest);
 };
 
-void DidGetResourceID(bool* done_out,
-                      GDataErrorCode* error_out,
-                      std::string* resource_id_out,
+void DidGetResourceID(Output* output,
                       GDataErrorCode error,
                       const std::string& resource_id) {
-  EXPECT_FALSE(*done_out);
-  *done_out = true;
-  *error_out = error;
-  *resource_id_out = resource_id;
+  ASSERT_TRUE(output);
+  output->error = error;
+  output->resource_id = resource_id;
 }
 
-#if !defined(OS_ANDROID)
-
-void DidGetLargestChangeStamp(bool* done_out,
-                              GDataErrorCode* error_out,
-                              int64* largest_changestamp_out,
+void DidGetLargestChangeStamp(Output* output,
                               GDataErrorCode error,
                               int64 largest_changestamp) {
-  EXPECT_FALSE(*done_out);
-  *done_out = true;
-  *error_out = error;
-  *largest_changestamp_out = largest_changestamp;
+  ASSERT_TRUE(output);
+  output->error = error;
+  output->largest_changestamp = largest_changestamp;
 }
 
-void DidGetResourceList(bool* done_out,
-                        GDataErrorCode* error_out,
+void DidGetResourceList(GDataErrorCode* error_out,
                         scoped_ptr<ResourceList>* document_feed_out,
                         GDataErrorCode error,
                         scoped_ptr<ResourceList> document_feed) {
-  EXPECT_FALSE(*done_out);
-  *done_out = true;
+  ASSERT_TRUE(error_out);
+  ASSERT_TRUE(document_feed_out);
   *error_out = error;
   *document_feed_out = document_feed.Pass();
 }
 
-void DidDownloadFile(bool* done_out,
-                     std::string* expected_file_md5_out,
-                     GDataErrorCode* error_out,
+void DidDownloadFile(Output* output,
                      GDataErrorCode error,
                      const std::string& file_md5,
                      int64 file_size,
                      const base::Time& updated_time) {
-  EXPECT_FALSE(*done_out);
-  *done_out = true;
-  *error_out = error;
-  *expected_file_md5_out = file_md5;
+  ASSERT_TRUE(output);
+  output->error = error;
+  output->file_md5 = file_md5;
 }
 
-void DidUploadFile(bool* done_out,
-                   GDataErrorCode* error_out,
-                   std::string* resource_id_out,
+void DidUploadFile(Output* output,
                    GDataErrorCode error,
                    const std::string& resource_id,
                    const std::string& file_md5) {
-  EXPECT_FALSE(*done_out);
-  *done_out = true;
-  *error_out = error;
-  *resource_id_out = resource_id;
+  ASSERT_TRUE(output);
+  output->error = error;
+  output->resource_id = resource_id;
+  output->file_md5 = file_md5;
 }
 
-void DidDeleteFile(bool* done_out,
-                   GDataErrorCode* error_out,
+void DidDeleteFile(GDataErrorCode* error_out,
                    GDataErrorCode error) {
-  EXPECT_FALSE(*done_out);
-  *done_out = true;
+  ASSERT_TRUE(error);
   *error_out = error;
 }
 
 void APIUtilTest::TestGetSyncRoot() {
-  fake_drive_service()->LoadAccountMetadataForWapi(
-      "sync_file_system/account_metadata.json");
-  SetUpSyncRootDirectory();
+  LoadAccountMetadata();
+  const std::string sync_root_id = SetUpSyncRootDirectory();
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->GetDriveDirectoryForSyncRoot(
-      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+      base::Bind(&DidGetResourceID, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_EQ(GetSyncRootResourceId(), resource_id);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
+  EXPECT_EQ(sync_root_id, output.resource_id);
 }
 
 void APIUtilTest::TestCreateSyncRoot() {
-  fake_drive_service()->LoadAccountMetadataForWapi(
-      "sync_file_system/account_metadata.json");
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  LoadAccountMetadata();
+
+  Output output;
   api_util()->GetDriveDirectoryForSyncRoot(
-      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+      base::Bind(&DidGetResourceID, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_CREATED, error);
-  EXPECT_FALSE(resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_CREATED, output.error);
+  EXPECT_FALSE(output.resource_id.empty());
 
-  fake_drive_service()->SearchByTitle(
-      APIUtil::GetSyncRootDirectoryName(),
-      std::string(),  // directory_resource_id
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 resource_id,
-                 google_apis::ENTRY_KIND_FOLDER));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(std::string(),  // directory_resource_id
+                        APIUtil::GetSyncRootDirectoryName(),
+                        output.resource_id,
+                        google_apis::ENTRY_KIND_FOLDER);
 }
 
 void APIUtilTest::TestCreateSyncRoot_Conflict() {
-  fake_drive_service()->LoadAccountMetadataForWapi(
-      "sync_file_system/account_metadata.json");
+  LoadAccountMetadata();
   fake_drive_service()->set_make_directory_conflict(true);
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->GetDriveDirectoryForSyncRoot(
-      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+      base::Bind(&DidGetResourceID, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_FALSE(resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
+  EXPECT_FALSE(output.resource_id.empty());
 
   // Verify that there is no duplicated directory on the remote side.
-  fake_drive_service()->SearchByTitle(
-      APIUtil::GetSyncRootDirectoryName(),
-      std::string(),  // directory_resource_id
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 resource_id,
-                 google_apis::ENTRY_KIND_FOLDER));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(std::string(),  // directory_resource_id
+                        APIUtil::GetSyncRootDirectoryName(),
+                        output.resource_id,
+                        google_apis::ENTRY_KIND_FOLDER);
 }
 
 void APIUtilTest::TestGetOriginDirectory() {
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->GetDriveDirectoryForOrigin(
-      GetSyncRootResourceId(),
+      sync_root_id,
       GURL(kOrigin),
-      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+      base::Bind(&DidGetResourceID, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_EQ(GetOriginRootResourceId(), resource_id);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
+  EXPECT_EQ(origin_root_id, output.resource_id);
 }
 
 void APIUtilTest::TestCreateOriginDirectory() {
-  SetUpSyncRootDirectory();
+  const std::string& sync_root_id = SetUpSyncRootDirectory();
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->GetDriveDirectoryForOrigin(
-      GetSyncRootResourceId(),
+      sync_root_id,
       GURL(kOrigin),
-      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+      base::Bind(&DidGetResourceID, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_CREATED, error);
-  EXPECT_FALSE(resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_CREATED, output.error);
+  EXPECT_FALSE(output.resource_id.empty());
 
-  fake_drive_service()->SearchByTitle(
-      kOriginDirectoryName,
-      GetSyncRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 resource_id,
-                 google_apis::ENTRY_KIND_FOLDER));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(sync_root_id,
+                        kOriginDirectoryName,
+                        output.resource_id,
+                        google_apis::ENTRY_KIND_FOLDER);
 }
 
 void APIUtilTest::TestCreateOriginDirectory_Conflict() {
-  SetUpSyncRootDirectory();
   fake_drive_service()->set_make_directory_conflict(true);
+  const std::string sync_root_id = SetUpSyncRootDirectory();
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->GetDriveDirectoryForOrigin(
-      GetSyncRootResourceId(),
+      sync_root_id,
       GURL(kOrigin),
-      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+      base::Bind(&DidGetResourceID, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_FALSE(resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
+  EXPECT_FALSE(output.resource_id.empty());
 
   // Verify that there is no duplicated directory on the remote side.
-  fake_drive_service()->SearchByTitle(
-      kOriginDirectoryName,
-      GetSyncRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 resource_id,
-                 google_apis::ENTRY_KIND_FOLDER));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(sync_root_id,
+                        kOriginDirectoryName,
+                        output.resource_id,
+                        google_apis::ENTRY_KIND_FOLDER);
 }
 
 void APIUtilTest::TestGetLargestChangeStamp() {
-  fake_drive_service()->LoadAccountMetadataForWapi(
-      "sync_file_system/account_metadata.json");
+  LoadAccountMetadata();
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  int64 largest_changestamp = -1;
-  api_util()->GetLargestChangeStamp(base::Bind(
-      &DidGetLargestChangeStamp, &done, &error, &largest_changestamp));
+  Output output;
+  api_util()->GetLargestChangeStamp(
+      base::Bind(&DidGetLargestChangeStamp, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_EQ(654321, largest_changestamp);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
+  EXPECT_EQ(654321, output.largest_changestamp);
 }
 
 void APIUtilTest::TestListFiles() {
   fake_drive_service()->set_default_max_results(3);
-
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
   int kNumberOfFiles = 5;
   for (int i = 0; i < kNumberOfFiles; ++i) {
-    std::string file_resource_id;
-    std::string file_md5;
+    scoped_ptr<ResourceEntry> file;
     std::string file_content = base::StringPrintf("test content %d", i);
     std::string file_title = base::StringPrintf("test_%d.txt", i);
-    SetUpFile(file_content, file_title, &file_resource_id, &file_md5);
+    SetUpFile(origin_root_id, file_content, file_title, &file);
   }
 
-  bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> document_feed;
   api_util()->ListFiles(
-      GetOriginRootResourceId(),
-      base::Bind(&DidGetResourceList, &done, &error, &document_feed));
+      origin_root_id,
+      base::Bind(&DidGetResourceList, &error, &document_feed));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
   EXPECT_EQ(3U, document_feed->entries().size());
 
   GURL feed_url;
   ASSERT_TRUE(document_feed->GetNextFeedURL(&feed_url));
 
-  done = false;
   error = google_apis::GDATA_OTHER_ERROR;
   document_feed.reset();
 
   api_util()->ContinueListing(
-      feed_url, base::Bind(&DidGetResourceList, &done, &error, &document_feed));
+      feed_url, base::Bind(&DidGetResourceList, &error, &document_feed));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
   EXPECT_EQ(2U, document_feed->entries().size());
 }
 
 void APIUtilTest::TestListChanges() {
   const int64 kStartChangestamp = 6;
-
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
   // Files should have changestamp #4+ since creating the sync root directory is
   // #1, moving it out of 'My Drive' is #2, and creating the origin root
   // directory is #3.
   const int kNumberOfFiles = 5;
   for (int i = 0; i < kNumberOfFiles; ++i) {
-    std::string file_resource_id;
-    std::string file_md5;
+    scoped_ptr<ResourceEntry> file;
     std::string file_content = base::StringPrintf("test content %d", i);
     std::string file_title = base::StringPrintf("test_%d.txt", i);
-    SetUpFile(file_content, file_title, &file_resource_id, &file_md5);
+    SetUpFile(origin_root_id, file_content, file_title, &file);
   }
 
-  bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> document_feed;
   api_util()->ListFiles(
-      GetOriginRootResourceId(),
-      base::Bind(&DidGetResourceList, &done, &error, &document_feed));
+      origin_root_id,
+      base::Bind(&DidGetResourceList, &error, &document_feed));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
   EXPECT_EQ(5U, document_feed->entries().size());
 
-  done = false;
   error = google_apis::GDATA_OTHER_ERROR;
   document_feed.reset();
   api_util()->ListChanges(
       kStartChangestamp,
-      base::Bind(&DidGetResourceList, &done, &error, &document_feed));
+      base::Bind(&DidGetResourceList, &error, &document_feed));
   base::MessageLoop::current()->RunUntilIdle();
 
   // There should be 3 files which have changestamp #6+.
-  EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
   EXPECT_EQ(3U, document_feed->entries().size());
 }
@@ -681,298 +579,231 @@ void APIUtilTest::TestListChanges() {
 void APIUtilTest::TestDownloadFile() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-  std::string file_resource_id;
-  std::string file_md5;
-  SetUpFile(kFileContent, kFileTitle, &file_resource_id, &file_md5);
+  scoped_ptr<ResourceEntry> file;
+  SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kOutputFilePath =
-      temp_dir.path().AppendASCII(kFileTitle);
+  base::FilePath output_file_path = temp_dir.path().AppendASCII(file->title());
 
-  bool done = false;
-  std::string downloaded_file_md5;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  Output output;
   api_util()->DownloadFile(
-      file_resource_id,
+      file->resource_id(),
       "",  // local_file_md5
-      kOutputFilePath,
-      base::Bind(&DidDownloadFile, &done, &downloaded_file_md5, &error));
+      output_file_path,
+      base::Bind(&DidDownloadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(file_md5, downloaded_file_md5);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+  EXPECT_EQ(file->file_md5(), output.file_md5);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
 }
 
 void APIUtilTest::TestDownloadFileInNotModified() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-  std::string file_resource_id;
-  std::string file_md5;
-  SetUpFile(kFileContent, kFileTitle, &file_resource_id, &file_md5);
+  scoped_ptr<ResourceEntry> file;
+  SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kOutputFilePath =
-      temp_dir.path().AppendASCII(kFileTitle);
-
-  bool done = false;
-  std::string downloaded_file_md5;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  base::FilePath output_file_path = temp_dir.path().AppendASCII(file->title());
 
   // Since local file's hash value is equal to remote file's one, it is expected
   // to cancel download the file and to return NOT_MODIFIED status code.
+  Output output;
   api_util()->DownloadFile(
-      file_resource_id,
-      file_md5,
-      kOutputFilePath,
-      base::Bind(&DidDownloadFile, &done, &downloaded_file_md5, &error));
+      file->resource_id(),
+      file->file_md5(),
+      output_file_path,
+      base::Bind(&DidDownloadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_NOT_MODIFIED, error);
-  // TODO(nhiroki): Compare |file_md5| and |downloaded_file_md5| after making
-  // FakeDriveService::AddNewEntry set the correct MD5.
+  EXPECT_EQ(file->file_md5(), output.file_md5);
+  EXPECT_EQ(google_apis::HTTP_NOT_MODIFIED, output.error);
 }
 
 void APIUtilTest::TestUploadNewFile() {
   const std::string kFileTitle = "test.txt";
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->UploadNewFile(
-      GetOriginRootResourceId(),
+      origin_root_id,
       kLocalFilePath,
       kFileTitle,
-      base::Bind(&DidUploadFile, &done, &error, &resource_id));
+      base::Bind(&DidUploadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_CREATED, error);
-  EXPECT_TRUE(!resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_CREATED, output.error);
+  EXPECT_TRUE(!output.resource_id.empty());
 
-  fake_drive_service()->SearchByTitle(
-      kFileTitle,
-      GetOriginRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 resource_id,
-                 google_apis::ENTRY_KIND_FILE));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(origin_root_id,
+                        kFileTitle,
+                        output.resource_id,
+                        google_apis::ENTRY_KIND_FILE);
 }
 
 void APIUtilTest::TestUploadNewFile_ConflictWithFile() {
   const std::string kFileTitle = "test.txt";
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
   fake_drive_uploader()->set_make_file_conflict(true);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->UploadNewFile(
-      GetOriginRootResourceId(),
+      origin_root_id,
       kLocalFilePath,
       kFileTitle,
-      base::Bind(&DidUploadFile, &done, &error, &resource_id));
+      base::Bind(&DidUploadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
   // HTTP_CONFLICT error must be returned with empty resource_id.
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
-  EXPECT_TRUE(!resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_CONFLICT, output.error);
+  EXPECT_TRUE(!output.resource_id.empty());
 
   // Verify that there is no duplicated file on the remote side.
-  fake_drive_service()->SearchByTitle(
-      kFileTitle,
-      GetOriginRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 resource_id,
-                 google_apis::ENTRY_KIND_FILE));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(origin_root_id,
+                        kFileTitle,
+                        output.resource_id,
+                        google_apis::ENTRY_KIND_FILE);
 }
 
 void APIUtilTest::TestUploadExistingFile() {
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-  std::string file_resource_id;
-  std::string file_md5;
-  SetUpFile(kFileContent, kFileTitle, &file_resource_id, &file_md5);
+  scoped_ptr<ResourceEntry> file;
+  SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->UploadExistingFile(
-      file_resource_id,
-      file_md5,
+      file->resource_id(),
+      file->file_md5(),
       kLocalFilePath,
-      base::Bind(&DidUploadFile, &done, &error, &resource_id));
+      base::Bind(&DidUploadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_EQ(file_resource_id, resource_id);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, output.error);
+  EXPECT_EQ(file->resource_id(), output.resource_id);
 
-  fake_drive_service()->SearchByTitle(
-      kFileTitle,
-      GetOriginRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 file_resource_id,
-                 google_apis::ENTRY_KIND_FILE));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(origin_root_id,
+                        file->title(),
+                        file->resource_id(),
+                        file->kind());
 }
 
 void APIUtilTest::TestUploadExistingFileInConflict() {
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-  std::string file_resource_id;
-  std::string file_md5;
-  SetUpFile(kFileContent, kFileTitle, &file_resource_id, &file_md5);
+  scoped_ptr<ResourceEntry> file;
+  SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
   // Since remote file's hash value is different from the expected one, it is
   // expected to cancel upload the file and to return CONFLICT status code.
   const std::string kExpectedRemoteFileMD5 = "123456";
 
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->UploadExistingFile(
-      file_resource_id,
+      file->resource_id(),
       kExpectedRemoteFileMD5,
       kLocalFilePath,
-      base::Bind(&DidUploadFile, &done, &error, &resource_id));
+      base::Bind(&DidUploadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
-  EXPECT_TRUE(resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_CONFLICT, output.error);
+  EXPECT_TRUE(output.resource_id.empty());
 
   // Verify that there is no duplicated file on the remote side.
-  fake_drive_service()->SearchByTitle(
-      kFileTitle,
-      GetOriginRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 file_resource_id,
-                 google_apis::ENTRY_KIND_FILE));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(origin_root_id,
+                        file->title(),
+                        file->resource_id(),
+                        file->kind());
 }
 
 void APIUtilTest::TestDeleteFile() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-  std::string file_resource_id;
-  std::string file_md5;
-  SetUpFile(kFileContent, kFileTitle, &file_resource_id, &file_md5);
+  scoped_ptr<ResourceEntry> file;
+  SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
-  bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
-  api_util()->DeleteFile(file_resource_id,
-                         file_md5,
-                         base::Bind(&DidDeleteFile, &done, &error));
+  api_util()->DeleteFile(file->resource_id(),
+                         file->file_md5(),
+                         base::Bind(&DidDeleteFile, &error));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
 
-  fake_drive_service()->SearchByTitle(
-      kFileTitle,
-      GetOriginRootResourceId(),
-      base::Bind(&VerifyFileDeletion, FROM_HERE));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyFileDeletion(origin_root_id, kFileTitle);
 }
 
 void APIUtilTest::TestDeleteFileInConflict() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-  std::string file_resource_id;
-  std::string file_md5;
-  SetUpFile(kFileContent, kFileTitle, &file_resource_id, &file_md5);
+  scoped_ptr<ResourceEntry> file;
+  SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
   // Since remote file's hash value is different from the expected one, it is
   // expected to cancel delete the file and to return CONFLICT status code.
   const std::string kExpectedRemoteFileMD5 = "123456";
 
-  bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  api_util()->DeleteFile(file_resource_id,
+  api_util()->DeleteFile(file->resource_id(),
                          kExpectedRemoteFileMD5,
-                         base::Bind(&DidDeleteFile, &done, &error));
+                         base::Bind(&DidDeleteFile, &error));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
 
   // Verify that the conflict file was not deleted on the remote side.
-  fake_drive_service()->SearchByTitle(
-      kFileTitle,
-      GetOriginRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 file_resource_id,
-                 google_apis::ENTRY_KIND_FILE));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(origin_root_id,
+                        file->title(),
+                        file->resource_id(),
+                        file->kind());
 }
 
 void APIUtilTest::TestCreateDirectory() {
   const std::string kDirectoryTitle("directory");
+  const std::string sync_root_id = SetUpSyncRootDirectory();
+  const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
-  SetUpSyncRootDirectory();
-  SetUpOriginRootDirectory();
-
-  bool done = false;
-  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  std::string resource_id;
+  Output output;
   api_util()->CreateDirectory(
-      GetOriginRootResourceId(),
+      origin_root_id,
       kDirectoryTitle,
-      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+      base::Bind(&DidGetResourceID, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_CREATED, error);
-  EXPECT_FALSE(resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_CREATED, output.error);
+  EXPECT_FALSE(output.resource_id.empty());
 
-  fake_drive_service()->SearchByTitle(
-      kDirectoryTitle,
-      GetOriginRootResourceId(),
-      base::Bind(&VerifyTitleUniqueness,
-                 FROM_HERE,
-                 resource_id,
-                 google_apis::ENTRY_KIND_FOLDER));
-  base::MessageLoop::current()->RunUntilIdle();
+  VerifyTitleUniqueness(origin_root_id,
+                        kDirectoryTitle,
+                        output.resource_id,
+                        google_apis::ENTRY_KIND_FOLDER);
 }
 
 TEST_F(APIUtilTest, GetSyncRoot) {
@@ -1154,8 +985,6 @@ TEST_F(APIUtilTest, CreateDirectory_WAPI) {
   ScopedDisableDriveAPI disable_drive_api;
   TestCreateDirectory();
 }
-
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
