@@ -776,7 +776,8 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
 
 DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
   bool show_wallet_interstitial = IsPayingWithWallet() && is_submitting_ &&
-      !IsSubmitPausedOn(wallet::VERIFY_CVV);
+      !IsSubmitPausedOn(wallet::VERIFY_CVV) &&
+      GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE;
   if (!show_wallet_interstitial)
     return DialogOverlayState();
 
@@ -3142,15 +3143,20 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
 void AutofillDialogControllerImpl::FinishSubmit() {
   if (IsPayingWithWallet() &&
       !profile_->GetPrefs()->GetBoolean(
-            ::prefs::kAutofillDialogHasPaidWithWallet)) {
-    // To get past this point, the view must call back OverlayButtonPressed.
+          ::prefs::kAutofillDialogHasPaidWithWallet)) {
+    if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
+      // To get past this point, the view must call back OverlayButtonPressed.
 #if defined(TOOLKIT_VIEWS)
-    view_->UpdateButtonStrip();
+      view_->UpdateButtonStrip();
 #else
-    // TODO(estade): implement overlays on other platforms.
-    OverlayButtonPressed();
+      // TODO(estade): implement overlays on other platforms.
+      OverlayButtonPressed();
 #endif
-    return;
+      return;
+    } else {
+      profile_->GetPrefs()->SetBoolean(
+        ::prefs::kAutofillDialogHasPaidWithWallet, true);
+    }
   }
 
   FillOutputForSection(SECTION_EMAIL);

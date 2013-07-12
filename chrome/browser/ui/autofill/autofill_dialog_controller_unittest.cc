@@ -1712,12 +1712,13 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
 
   AcceptAndLoadFakeFingerprint();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
-  controller()->OverlayButtonPressed();
+  EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
 
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).size());
 
   controller()->OnAutocheckoutSuccess();
+  EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -1727,6 +1728,8 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
       DialogNotification::AUTOCHECKOUT_ERROR).size());
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).size());
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogHasPaidWithWallet));
 }
 
 TEST_F(AutofillDialogControllerTest, ViewCancelDoesntSetPref) {
