@@ -55,6 +55,7 @@ def OutputAnnotationStepStart(name):
   print '@@@STEP_CURSOR %s@@@' % name
   print '@@@STEP_STARTED@@@'
   print
+  sys.stdout.flush()
 
 
 def OutputAnnotationStepClosed():
@@ -63,6 +64,7 @@ def OutputAnnotationStepClosed():
   print
   print '@@@STEP_CLOSED@@@'
   print
+  sys.stdout.flush()
 
 
 def CreateAndChangeToSourceDirectory(working_directory):
