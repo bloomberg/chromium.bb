@@ -138,8 +138,9 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
     return true;
   }
 
-  // Check if any block exception has been made for this request.
-  if (IsRequestBlockedByDefault()) {
+  // Filter any parts of the request that have been blocked by default and deny
+  // it if nothing is left to accept.
+  if (FilterBlockedByDefaultDevices() == 0) {
     Deny(false);
     return true;
   }
@@ -310,14 +311,16 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
   return true;
 }
 
-bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
+int MediaStreamDevicesController::FilterBlockedByDefaultDevices() {
+  int requested_devices = microphone_requested_ + webcam_requested_;
   if (microphone_requested_ &&
       profile_->GetHostContentSettingsMap()->GetContentSetting(
           request_.security_origin,
           request_.security_origin,
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_BLOCK) {
-    return false;
+          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
+    requested_devices--;
+    microphone_requested_ = false;
   }
 
   if (webcam_requested_ &&
@@ -325,11 +328,12 @@ bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
           request_.security_origin,
           request_.security_origin,
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_BLOCK) {
-    return false;
+          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
+    requested_devices--;
+    webcam_requested_ = false;
   }
 
-  return true;
+  return requested_devices;
 }
 
 bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
