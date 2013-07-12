@@ -29,8 +29,6 @@
 #include "config.h"
 #include "wtf/unicode/Collator.h"
 
-#if !UCONFIG_NO_COLLATION
-
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"
 #include "wtf/Threading.h"
@@ -144,5 +142,3 @@ void Collator::releaseCollator()
 }
 
 } // namespace WTF
-
-#endif // !UCONFIG_NO_COLLATION

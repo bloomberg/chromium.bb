@@ -217,7 +217,6 @@
             'text/WTFString.h',
             'unicode/CharacterNames.h',
             'unicode/Collator.h',
-            'unicode/CollatorDefault.cpp',
             'unicode/UTF8.cpp',
             'unicode/UTF8.h',
             'unicode/Unicode.h',

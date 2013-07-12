@@ -35,9 +35,7 @@
 #include "wtf/WTFExport.h"
 #include "wtf/unicode/Unicode.h"
 
-#if !UCONFIG_NO_COLLATION
 struct UCollator;
-#endif
 
 namespace WTF {
 
@@ -55,11 +53,9 @@ namespace WTF {
         Result collate(const ::UChar*, size_t, const ::UChar*, size_t) const;
 
     private:
-#if !UCONFIG_NO_COLLATION
         void createCollator() const;
         void releaseCollator();
         mutable UCollator* m_collator;
-#endif
         char* m_locale;
         bool m_lowerFirst;
     };
