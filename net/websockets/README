@@ -41,3 +41,7 @@ websocket_frame_parser.h
 websocket_frame_parser_unittest.cc
 websocket_frame_unittest.cc
 websocket_stream.h
+
+A pre-submit check helps us keep this README file up-to-date:
+
+PRESUBMIT.py
