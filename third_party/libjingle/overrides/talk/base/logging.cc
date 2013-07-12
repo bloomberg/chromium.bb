@@ -297,8 +297,13 @@ void InitDiagnosticLoggingDelegateFunction(
   DCHECK_EQ(g_init_logging_delegate_thread_id,
             base::PlatformThread::CurrentId());
 #endif
-  CHECK(!g_logging_delegate_function);
   CHECK(delegate);
+  // This function may be called with the same argument several times if the
+  // page is reloaded or there are several PeerConnections on one page with
+  // logging enabled. This is OK, we simply don't have to do anything.
+  if (delegate == g_logging_delegate_function)
+    return;
+  CHECK(!g_logging_delegate_function);
 #ifdef NDEBUG
   IPAddress::set_strip_sensitive(true);
 #endif
