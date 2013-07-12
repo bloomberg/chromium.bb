@@ -22,14 +22,14 @@ class Backend;
 
 namespace pnacl_cache {
 typedef base::Callback<void(int)> CompletionCallback;
-class PNaClTranslationCacheEntry;
+class PnaclTranslationCacheEntry;
 extern const int kMaxMemCacheSize;
 
-class PNaClTranslationCache
-    : public base::SupportsWeakPtr<PNaClTranslationCache> {
+class PnaclTranslationCache
+    : public base::SupportsWeakPtr<PnaclTranslationCache> {
  public:
-  PNaClTranslationCache();
-  virtual ~PNaClTranslationCache();
+  PnaclTranslationCache();
+  virtual ~PnaclTranslationCache();
 
   // Initialize the translation cache in |cache_dir| (or in memory if
   // |in_memory| is true). Call |callback| with a 0 argument on sucess and
@@ -58,10 +58,10 @@ class PNaClTranslationCache
   int Size();
 
  private:
-  friend class PNaClTranslationCacheEntry;
-  // PNaClTranslationCacheEntry should only use the
-  // OpComplete and backend methods on PNaClTranslationCache.
-  void OpComplete(PNaClTranslationCacheEntry* entry);
+  friend class PnaclTranslationCacheEntry;
+  // PnaclTranslationCacheEntry should only use the
+  // OpComplete and backend methods on PnaclTranslationCache.
+  void OpComplete(PnaclTranslationCacheEntry* entry);
   disk_cache::Backend* backend() { return disk_cache_; }
 
   int InitWithDiskBackend(const base::FilePath& disk_cache_dir,
@@ -80,9 +80,9 @@ class PNaClTranslationCache
   disk_cache::Backend* disk_cache_;
   CompletionCallback init_callback_;
   bool in_memory_;
-  std::map<void*, scoped_refptr<PNaClTranslationCacheEntry> > open_entries_;
+  std::map<void*, scoped_refptr<PnaclTranslationCacheEntry> > open_entries_;
 
-  DISALLOW_COPY_AND_ASSIGN(PNaClTranslationCache);
+  DISALLOW_COPY_AND_ASSIGN(PnaclTranslationCache);
 };
 
 }  // namespace pnacl_cache

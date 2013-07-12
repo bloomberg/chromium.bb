@@ -18,14 +18,14 @@ using base::FilePath;
 
 namespace pnacl_cache {
 
-class PNaClTranslationCacheTest : public testing::Test {
+class PnaclTranslationCacheTest : public testing::Test {
  protected:
-  PNaClTranslationCacheTest()
+  PnaclTranslationCacheTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-  virtual ~PNaClTranslationCacheTest() {}
-  virtual void SetUp() { cache_ = new PNaClTranslationCache(); }
+  virtual ~PnaclTranslationCacheTest() {}
+  virtual void SetUp() { cache_ = new PnaclTranslationCache(); }
   virtual void TearDown() {
-    // The destructor of PNaClTranslationCacheWriteEntry posts a task to the IO
+    // The destructor of PnaclTranslationCacheWriteEntry posts a task to the IO
     // thread to close the backend cache entry. We want to make sure the entries
     // are closed before we delete the backend (and in particular the destructor
     // for the memory backend has a DCHECK to verify this), so we run the loop
@@ -39,12 +39,12 @@ class PNaClTranslationCacheTest : public testing::Test {
   std::string GetNexe(const std::string& key);
 
  protected:
-  PNaClTranslationCache* cache_;
+  PnaclTranslationCache* cache_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 };
 
-void PNaClTranslationCacheTest::InitBackend(bool in_mem) {
+void PnaclTranslationCacheTest::InitBackend(bool in_mem) {
   net::TestCompletionCallback init_cb;
   if (!in_mem) {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -56,7 +56,7 @@ void PNaClTranslationCacheTest::InitBackend(bool in_mem) {
   ASSERT_EQ(0, cache_->Size());
 }
 
-void PNaClTranslationCacheTest::StoreNexe(const std::string& key,
+void PnaclTranslationCacheTest::StoreNexe(const std::string& key,
                                           const std::string& nexe) {
   net::TestCompletionCallback store_cb;
   cache_->StoreNexe(key, nexe, store_cb.callback());
@@ -66,7 +66,7 @@ void PNaClTranslationCacheTest::StoreNexe(const std::string& key,
   EXPECT_EQ(net::OK, store_cb.GetResult(net::ERR_IO_PENDING));
 }
 
-std::string PNaClTranslationCacheTest::GetNexe(const std::string& key) {
+std::string PnaclTranslationCacheTest::GetNexe(const std::string& key) {
   net::TestCompletionCallback load_cb;
   std::string nexe;
   cache_->GetNexe(key, &nexe, load_cb.callback());
@@ -78,21 +78,21 @@ static const std::string test_key("1");
 static const std::string test_store_val("testnexe");
 static const int kLargeNexeSize = 16 * 1024 *1024;
 
-TEST_F(PNaClTranslationCacheTest, StoreSmallInMem) {
+TEST_F(PnaclTranslationCacheTest, StoreSmallInMem) {
   // Test that a single store puts something in the mem backend
   InitBackend(true);
   StoreNexe(test_key, test_store_val);
   EXPECT_EQ(1, cache_->Size());
 }
 
-TEST_F(PNaClTranslationCacheTest, StoreSmallOnDisk) {
+TEST_F(PnaclTranslationCacheTest, StoreSmallOnDisk) {
   // Test that a single store puts something in the disk backend
   InitBackend(false);
   StoreNexe(test_key, test_store_val);
   EXPECT_EQ(1, cache_->Size());
 }
 
-TEST_F(PNaClTranslationCacheTest, StoreLargeOnDisk) {
+TEST_F(PnaclTranslationCacheTest, StoreLargeOnDisk) {
   // Test a value too large(?) for a single I/O operation
   // TODO(dschuff): we only seem to ever have one operation go through into the
   // backend. Find out what the 'offset' field means, and if it can ever require
@@ -103,7 +103,7 @@ TEST_F(PNaClTranslationCacheTest, StoreLargeOnDisk) {
   EXPECT_EQ(1, cache_->Size());
 }
 
-TEST_F(PNaClTranslationCacheTest, InMemSizeLimit) {
+TEST_F(PnaclTranslationCacheTest, InMemSizeLimit) {
   InitBackend(true);
   const std::string large_buffer(kMaxMemCacheSize + 1, 'a');
   net::TestCompletionCallback store_cb;
@@ -113,14 +113,14 @@ TEST_F(PNaClTranslationCacheTest, InMemSizeLimit) {
   EXPECT_EQ(0, cache_->Size());
 }
 
-TEST_F(PNaClTranslationCacheTest, GetOneInMem) {
+TEST_F(PnaclTranslationCacheTest, GetOneInMem) {
   InitBackend(true);
   StoreNexe(test_key, test_store_val);
   EXPECT_EQ(1, cache_->Size());
   EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val));
 }
 
-TEST_F(PNaClTranslationCacheTest, GetLargeOnDisk) {
+TEST_F(PnaclTranslationCacheTest, GetLargeOnDisk) {
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
   StoreNexe(test_key, large_buffer);
@@ -128,7 +128,7 @@ TEST_F(PNaClTranslationCacheTest, GetLargeOnDisk) {
   EXPECT_EQ(0, GetNexe(test_key).compare(large_buffer));
 }
 
-TEST_F(PNaClTranslationCacheTest, StoreTwice) {
+TEST_F(PnaclTranslationCacheTest, StoreTwice) {
   // Test that storing twice with the same key overwrites
   InitBackend(true);
   StoreNexe(test_key, test_store_val);
@@ -137,7 +137,7 @@ TEST_F(PNaClTranslationCacheTest, StoreTwice) {
   EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val + "aaa"));
 }
 
-TEST_F(PNaClTranslationCacheTest, StoreTwo) {
+TEST_F(PnaclTranslationCacheTest, StoreTwo) {
   InitBackend(true);
   StoreNexe(test_key, test_store_val);
   StoreNexe(test_key + "a", test_store_val + "aaa");
@@ -146,7 +146,7 @@ TEST_F(PNaClTranslationCacheTest, StoreTwo) {
   EXPECT_EQ(0, GetNexe(test_key + "a").compare(test_store_val + "aaa"));
 }
 
-TEST_F(PNaClTranslationCacheTest, GetMiss) {
+TEST_F(PnaclTranslationCacheTest, GetMiss) {
   InitBackend(true);
   StoreNexe(test_key, test_store_val);
   net::TestCompletionCallback load_cb;
