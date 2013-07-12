@@ -10,6 +10,7 @@ Keeps a local cache.
 
 import cookielib
 import ctypes
+import functools
 import hashlib
 import httplib
 import inspect
@@ -25,6 +26,8 @@ import Queue
 import random
 import re
 import shutil
+import socket
+import ssl
 import stat
 import subprocess
 import sys
@@ -88,6 +91,10 @@ URL_OPEN_MAX_ATTEMPTS = 30
 # Default timeout when retrying.
 URL_OPEN_TIMEOUT = 6*60.
 
+# Read timeout in seconds for downloads from isolate storage. If there's no
+# response from the server within this timeout whole download will be aborted.
+DOWNLOAD_READ_TIMEOUT = 60
+
 # Global (for now) map: server URL (http://example.com) -> HttpService instance.
 # Used by get_http_service to cache HttpService instances.
 _http_services = {}
@@ -112,6 +119,14 @@ class ConfigError(ValueError):
 class MappingError(OSError):
   """Failed to recreate the tree."""
   pass
+
+
+class TimeoutError(IOError):
+  """Timeout while reading HTTP response."""
+
+  def __init__(self, inner_exc=None):
+    super(TimeoutError, self).__init__(str(inner_exc or 'Timeout'))
+    self.inner_exc = inner_exc
 
 
 def get_flavor():
@@ -415,12 +430,28 @@ def url_open(url, **kwargs):
     -list for data to be encoded
     -dict for data to be encoded (COUNT_KEY will be added in this case)
 
-  Returns a file-like object, where the response may be read from, or None
+  Returns HttpResponse object, where the response may be read from, or None
   if it was unable to connect.
   """
   urlhost, urlpath = split_server_request_url(url)
   service = get_http_service(urlhost)
   return service.request(urlpath, **kwargs)
+
+
+def url_read(url, **kwargs):
+  """Attempts to open the given url multiple times and read all data from it.
+
+  Accepts same arguments as url_open function.
+
+  Returns all data read or None if it was unable to connect or read the data.
+  """
+  response = url_open(url, **kwargs)
+  if not response:
+    return None
+  try:
+    return response.read()
+  except TimeoutError:
+    return None
 
 
 def split_server_request_url(url):
@@ -554,7 +585,8 @@ class HttpService(object):
       max_attempts=URL_OPEN_MAX_ATTEMPTS,
       retry_404=False,
       retry_50x=True,
-      timeout=URL_OPEN_TIMEOUT):
+      timeout=URL_OPEN_TIMEOUT,
+      read_timeout=None):
     """Runs internal request-retry loop.
 
     - Optionally retries HTTP 404 and 50x.
@@ -564,6 +596,12 @@ class HttpService(object):
       limit in the time taken to do retries.
     - If both |max_attempts| and |timeout| are None or 0, this functions retries
       indefinitely.
+
+    If |read_timeout| is not None will configure underlying socket to
+    raise TimeoutError exception whenever there's no response from the server
+    for more than |read_timeout| seconds. It can happen during any read
+    operation so once you pass non-None |read_timeout| be prepared to handle
+    these exceptions in subsequent reads from the stream.
     """
     authenticated = False
     last_error = None
@@ -579,9 +617,9 @@ class HttpService(object):
       extra = {COUNT_KEY: attempt} if attempt else {}
       request = make_request(extra)
       try:
-        url_response = self._url_open(request)
+        url_response = self._url_open(request, timeout=read_timeout)
         logging.debug('url_open(%s) succeeded', request.get_full_url())
-        return url_response
+        return HttpResponse(url_response, request.get_full_url())
       except urllib2.HTTPError as e:
         # Unauthorized. Ask to authenticate and then try again.
         if e.code in (401, 403):
@@ -616,7 +654,8 @@ class HttpService(object):
                         self._format_exception(e))
         last_error = e
 
-      except (urllib2.URLError, httplib.HTTPException) as e:
+      except (urllib2.URLError, httplib.HTTPException,
+              socket.timeout, ssl.SSLError) as e:
         logging.warning('Unable to open url %s on attempt %d.\n%s',
                         request.get_full_url(), attempt,
                         self._format_exception(e))
@@ -636,12 +675,16 @@ class HttpService(object):
                   self._format_exception(last_error, verbose=True))
     return None
 
-  def _url_open(self, request):
+  def _url_open(self, request, timeout=None):
     """Low level method to execute urllib2.Request's.
 
     To be mocked in tests.
     """
-    return self.opener.open(request)
+    if timeout is not None:
+      return self.opener.open(request, timeout=timeout)
+    else:
+      # Leave original default value for |timeout|. It's nontrivial.
+      return self.opener.open(request)
 
   @staticmethod
   def _now():
@@ -687,6 +730,37 @@ class HttpService(object):
         out.append(exc.read() or '<empty body>')
         out.append('-' * 10)
     return '\n'.join(out)
+
+
+class HttpResponse(object):
+  """Response from HttpService."""
+
+  def __init__(self, url_response, url):
+    self._url_response = url_response
+    self._url = url
+    self._read = 0
+
+  @property
+  def content_length(self):
+    """Total length to the response or None if not known in advance."""
+    length = self._url_response.headers.get('Content-Length')
+    return int(length) if length is not None else None
+
+  def read(self, size=None):
+    """Reads up to |size| bytes from the stream and returns them.
+
+    If |size| is None reads all available bytes.
+
+    Raises TimeoutError on read timeout.
+    """
+    try:
+      data = self._url_response.read(size)
+      self._read += len(data)
+      return data
+    except (socket.timeout, ssl.SSLError) as e:
+      logging.error('Timeout while reading from %s, read %d of %s: %s',
+                    self._url, self._read, self.content_length, e)
+      raise TimeoutError(e)
 
 
 class AppEngineService(HttpService):
@@ -1251,6 +1325,9 @@ class Remote(object):
       return obj
     except IOError as e:
       logging.debug('Caught IOError: %s', e)
+      # Remove unfinished download.
+      if os.path.exists(dest):
+        os.remove(dest)
       # Retry a few times, lowering the priority.
       if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
         self._add_item(priority + 1, obj, dest, size)
@@ -1260,69 +1337,71 @@ class Remote(object):
   def get_file_handler(self, file_or_url):  # pylint: disable=R0201
     """Returns a object to retrieve objects from a remote."""
     if re.match(r'^https?://.+$', file_or_url):
-      def download_file(item, dest):
-        # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
-        # easy.
-        try:
-          zipped_source = file_or_url + item
-          logging.debug('download_file(%s)', zipped_source)
+      return functools.partial(self._download_file, file_or_url)
+    else:
+      return functools.partial(self._copy_file, file_or_url)
 
-          # Because the app engine DB is only eventually consistent, retry
-          # 404 errors because the file might just not be visible yet (even
-          # though it has been uploaded).
-          connection = url_open(zipped_source, retry_404=True)
-          if not connection:
-            raise IOError('Unable to open connection to %s' % zipped_source)
-          decompressor = zlib.decompressobj()
-          size = 0
-          with open(dest, 'wb') as f:
-            while True:
-              chunk = connection.read(ZIPPED_FILE_CHUNK)
-              if not chunk:
-                break
-              size += len(chunk)
-              f.write(decompressor.decompress(chunk))
-          # Ensure that all the data was properly decompressed.
-          uncompressed_data = decompressor.flush()
-          assert not uncompressed_data
-        except IOError as e:
-          logging.error(
-              'Failed to download %s at %s.\n%s', item, dest, e)
-          raise
-        except httplib.HTTPException as e:
-          msg = 'HTTPException while retrieving %s at %s.\n%s' % (
-              item, dest, e)
-          logging.error(msg)
-          raise IOError(msg)
-        except zlib.error as e:
-          remaining_size = len(connection.read())
-          msg = 'Corrupted zlib for item %s. Processed %d of %d bytes.\n%s' % (
-              item, size, size + remaining_size, e)
-          logging.error(msg)
+  @staticmethod
+  def _download_file(base_url, item, dest):
+    # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
+    # easy.
+    try:
+      zipped_source = base_url + item
+      logging.debug('download_file(%s)', zipped_source)
 
-          # Testing seems to show that if a few machines are trying to download
-          # the same blob, they can cause each other to fail. So if we hit a
-          # zip error, this is the most likely cause (it only downloads some of
-          # the data). Randomly sleep for between 5 and 25 seconds to try and
-          # spread out the downloads.
-          # TODO(csharp): Switch from blobstorage to cloud storage and see if
-          # that solves the issue.
-          sleep_duration = (random.random() * 20) + 5
-          time.sleep(sleep_duration)
+      # Because the app engine DB is only eventually consistent, retry
+      # 404 errors because the file might just not be visible yet (even
+      # though it has been uploaded).
+      connection = url_open(zipped_source, retry_404=True,
+                            read_timeout=DOWNLOAD_READ_TIMEOUT)
+      if not connection:
+        raise IOError('Unable to open connection to %s' % zipped_source)
 
-          raise IOError(msg)
+      content_length = connection.content_length
+      decompressor = zlib.decompressobj()
+      size = 0
+      with open(dest, 'wb') as f:
+        while True:
+          chunk = connection.read(ZIPPED_FILE_CHUNK)
+          if not chunk:
+            break
+          size += len(chunk)
+          f.write(decompressor.decompress(chunk))
+      # Ensure that all the data was properly decompressed.
+      uncompressed_data = decompressor.flush()
+      assert not uncompressed_data
+    except IOError as e:
+      logging.error('Failed to download %s at %s.\n%s', item, dest, e)
+      raise
+    except httplib.HTTPException as e:
+      msg = 'HTTPException while retrieving %s at %s.\n%s' % (item, dest, e)
+      logging.error(msg)
+      raise IOError(msg)
+    except zlib.error as e:
+      msg = 'Corrupted zlib for item %s. Processed %d of %s bytes.\n%s' % (
+          item, size, content_length, e)
+      logging.error(msg)
 
+      # Testing seems to show that if a few machines are trying to download
+      # the same blob, they can cause each other to fail. So if we hit a
+      # zip error, this is the most likely cause (it only downloads some of
+      # the data). Randomly sleep for between 5 and 25 seconds to try and
+      # spread out the downloads.
+      # TODO(csharp): Switch from blobstorage to cloud storage and see if
+      # that solves the issue.
+      sleep_duration = (random.random() * 20) + 5
+      time.sleep(sleep_duration)
 
-      return download_file
+      raise IOError(msg)
 
-    def copy_file(item, dest):
-      source = os.path.join(file_or_url, item)
-      if source == dest:
-        logging.info('Source and destination are the same, no action required')
-        return
-      logging.debug('copy_file(%s, %s)', source, dest)
-      shutil.copy(source, dest)
-    return copy_file
+  @staticmethod
+  def _copy_file(base_path, item, dest):
+    source = os.path.join(base_path, item)
+    if source == dest:
+      logging.info('Source and destination are the same, no action required')
+      return
+    logging.debug('copy_file(%s, %s)', source, dest)
+    shutil.copy(source, dest)
 
 
 class CachePolicies(object):

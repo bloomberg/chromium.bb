@@ -110,9 +110,9 @@ def sha1_file(filepath):
   return digest.hexdigest()
 
 
-def url_open(url, **kwargs):
-  result = run_isolated.url_open(url, **kwargs)
-  if not result:
+def url_read(url, **kwargs):
+  result = run_isolated.url_read(url, **kwargs)
+  if result is None:
     # If we get no response from the server, assume it is down and raise an
     # exception.
     raise run_isolated.MappingError('Unable to connect to server %s' % url)
@@ -121,7 +121,7 @@ def url_open(url, **kwargs):
 
 def upload_hash_content_to_blobstore(
     generate_upload_url, data, hash_key, content):
-  """Uploads the given hash contents directly to the blobsotre via a generated
+  """Uploads the given hash contents directly to the blobstore via a generated
   url.
 
   Arguments:
@@ -138,18 +138,17 @@ def upload_hash_content_to_blobstore(
       data, [('content', hash_key, content)])
   for attempt in xrange(run_isolated.URL_OPEN_MAX_ATTEMPTS):
     # Retry HTTP 50x here.
-    response = run_isolated.url_open(generate_upload_url, data=data)
-    if not response:
+    upload_url = run_isolated.url_read(generate_upload_url, data=data)
+    if not upload_url:
       raise run_isolated.MappingError(
           'Unable to connect to server %s' % generate_upload_url)
-    upload_url = response.read()
 
     # Do not retry this request on HTTP 50x. Regenerate an upload url each time
     # since uploading "consumes" the upload url.
-    result = run_isolated.url_open(
+    result = run_isolated.url_read(
         upload_url, data=body, content_type=content_type, retry_50x=False)
-    if result:
-      return result.read()
+    if result is not None:
+      return result
     if attempt != run_isolated.URL_OPEN_MAX_ATTEMPTS - 1:
       run_isolated.HttpService.sleep_before_retry(attempt, None)
   raise run_isolated.MappingError(
@@ -178,7 +177,7 @@ class UploadRemote(run_isolated.Remote):
       else:
         url = '%sstore/%s/%s?token=%s' % (
             content_url, self.namespace, hash_key, self._token)
-        url_open(url, data=content, content_type='application/octet-stream')
+        url_read(url, data=content, content_type='application/octet-stream')
     return upload_file
 
 
@@ -195,8 +194,8 @@ def check_files_exist_on_server(query_url, queries):
       (binascii.unhexlify(meta_data['h']) for (_, meta_data) in queries))
   assert (len(body) % 20) == 0, repr(body)
 
-  response = url_open(
-      query_url, data=body, content_type='application/octet-stream').read()
+  response = url_read(
+      query_url, data=body, content_type='application/octet-stream')
   if len(queries) != len(response):
     raise run_isolated.MappingError(
         'Got an incorrect number of responses from the server. Expected %d, '
@@ -293,7 +292,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
   # TODO(maruel): Make this request much earlier asynchronously while the files
   # are being enumerated.
-  token = urllib.quote(url_open(base_url + '/content/get_token').read())
+  token = urllib.quote(url_read(base_url + '/content/get_token'))
 
   # Create a pool of workers to zip and upload any files missing from
   # the server.

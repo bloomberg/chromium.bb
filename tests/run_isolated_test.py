@@ -21,6 +21,7 @@ import urllib2
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
+import auto_stub
 import run_isolated
 
 # Number of times self._now() is called per loop in HttpService._retry_loop().
@@ -35,6 +36,13 @@ class RemoteTest(run_isolated.Remote):
       elif isinstance(item, int):
         time.sleep(int(item) / 100)
     return upload_file
+
+
+def fake_http_response(content, url):
+  """Returns run_isolated.HttpResponse with predefined content."""
+  stream = StringIO.StringIO(content)
+  stream.headers = {'content-length': len(content)}
+  return run_isolated.HttpResponse(stream, url)
 
 
 def timeout(max_running_time):
@@ -263,7 +271,7 @@ class ThreadPoolTest(unittest.TestCase):
       pool.close()
 
 
-class RunIsolatedTest(unittest.TestCase):
+class RunIsolatedTest(auto_stub.TestCase):
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
     self.tempdir = tempfile.mkdtemp(prefix='run_isolated')
@@ -358,28 +366,25 @@ class RunIsolatedTest(unittest.TestCase):
     self.assertEqual([], remote.join())
 
   def test_zip_header_error(self):
-    old_urlopen = run_isolated.url_open
-    old_sleep = run_isolated.time.sleep
-    try:
-      run_isolated.url_open = lambda _url, **_kwargs: StringIO.StringIO('111')
-      run_isolated.time.sleep = lambda _x: None
-      remote = run_isolated.Remote('https://fake-CAD.com/')
+    self.mock(run_isolated, 'url_open',
+              lambda url, **_kwargs: fake_http_response('111', url))
+    self.mock(run_isolated.time, 'sleep', lambda _x: None)
 
-      # Both files will fail to be unzipped due to incorrect headers,
-      # ensure that we don't accept the files (even if the size is unknown)}.
-      remote.add_item(run_isolated.Remote.MED, 'zipped_A', 'A',
-                      run_isolated.UNKNOWN_FILE_SIZE)
-      remote.add_item(run_isolated.Remote.MED, 'zipped_B', 'B', 5)
-      self.assertRaises(IOError, remote.get_one_result)
-      self.assertRaises(IOError, remote.get_one_result)
-      # Need to use join here, since get_one_result will hang.
-      self.assertEqual([], remote.join())
-    finally:
-      run_isolated.url_open = old_urlopen
-      run_isolated.time.sleep = old_sleep
+    remote = run_isolated.Remote('https://fake-CAD.com/')
+
+    # Both files will fail to be unzipped due to incorrect headers,
+    # ensure that we don't accept the files (even if the size is unknown)}.
+    remote.add_item(run_isolated.Remote.MED, 'zipped_A', 'A',
+                    run_isolated.UNKNOWN_FILE_SIZE)
+    remote.add_item(run_isolated.Remote.MED, 'zipped_B', 'B', 5)
+    self.assertRaises(IOError, remote.get_one_result)
+    self.assertRaises(IOError, remote.get_one_result)
+    # Need to use join here, since get_one_result will hang.
+    self.assertEqual([], remote.join())
 
 
-class HttpServiceTest(unittest.TestCase):
+
+class HttpServiceTest(auto_stub.TestCase):
 
   # HttpService that doesn't sleep in retries and doesn't write cookie files.
   class HttpServiceNoSideEffects(run_isolated.HttpService):
@@ -415,7 +420,7 @@ class HttpServiceTest(unittest.TestCase):
     request_url = '/some_request'
     response = 'True'
 
-    def mock_url_open(request):
+    def mock_url_open(request, **_kwargs):
       self.assertTrue(request.get_full_url().startswith(service_url +
                                                         request_url))
       return StringIO.StringIO(response)
@@ -429,7 +434,7 @@ class HttpServiceTest(unittest.TestCase):
     request_url = '/some_request'
     response = 'True'
 
-    def mock_url_open(request):
+    def mock_url_open(request, **_kwargs):
       self.assertTrue(request.get_full_url().startswith(service_url +
                                                         request_url))
       self.assertEqual('', request.get_data())
@@ -442,7 +447,7 @@ class HttpServiceTest(unittest.TestCase):
   def test_request_success_after_failure(self):
     response = 'True'
 
-    def mock_url_open(request):
+    def mock_url_open(request, **_kwargs):
       if run_isolated.COUNT_KEY + '=1' not in request.get_data():
         raise urllib2.URLError('url')
       return StringIO.StringIO(response)
@@ -454,7 +459,7 @@ class HttpServiceTest(unittest.TestCase):
         service.sleeps)
 
   def test_request_failure_max_attempts_default(self):
-    def mock_url_open(_request):
+    def mock_url_open(_request, **_kwargs):
       raise urllib2.URLError('url')
     service = self.mocked_http_service(_url_open=mock_url_open)
     self.assertEqual(service.request('/'), None)
@@ -465,7 +470,7 @@ class HttpServiceTest(unittest.TestCase):
     self.assertEqual(retries, service.sleeps)
 
   def test_request_failure_max_attempts(self):
-    def mock_url_open(_request):
+    def mock_url_open(_request, **_kwargs):
       raise urllib2.URLError('url')
     service = self.mocked_http_service(_url_open=mock_url_open)
     self.assertEqual(service.request('/', max_attempts=23), None)
@@ -476,7 +481,7 @@ class HttpServiceTest(unittest.TestCase):
     self.assertEqual(retries, service.sleeps)
 
   def test_request_failure_timeout(self):
-    def mock_url_open(_request):
+    def mock_url_open(_request, **_kwargs):
       raise urllib2.URLError('url')
     service = self.mocked_http_service(_url_open=mock_url_open)
     self.assertEqual(service.request('/', max_attempts=10000), None)
@@ -489,7 +494,7 @@ class HttpServiceTest(unittest.TestCase):
     self.assertEqual(retries, service.sleeps)
 
   def test_request_failure_timeout_default(self):
-    def mock_url_open(_request):
+    def mock_url_open(_request, **_kwargs):
       raise urllib2.URLError('url')
     service = self.mocked_http_service(_url_open=mock_url_open)
     self.assertEqual(service.request('/', timeout=10.), None)
@@ -498,7 +503,7 @@ class HttpServiceTest(unittest.TestCase):
 
   def test_request_HTTP_error_no_retry(self):
     count = []
-    def mock_url_open(request):
+    def mock_url_open(request, **_kwargs):
       count.append(request)
       raise urllib2.HTTPError(
           'url', 400, 'error message', None, StringIO.StringIO())
@@ -510,7 +515,7 @@ class HttpServiceTest(unittest.TestCase):
 
   def test_request_HTTP_error_retry_404(self):
     response = 'data'
-    def mock_url_open(request):
+    def mock_url_open(request, **_kwargs):
       if run_isolated.COUNT_KEY + '=1' in request.get_data():
         return StringIO.StringIO(response)
       raise urllib2.HTTPError(
@@ -526,7 +531,7 @@ class HttpServiceTest(unittest.TestCase):
   def test_request_HTTP_error_with_retry(self):
     response = 'response'
 
-    def mock_url_open(request):
+    def mock_url_open(request, **_kwargs):
       if run_isolated.COUNT_KEY + '=1' not in request.get_data():
         raise urllib2.HTTPError(
             'url', 500, 'error message', None, StringIO.StringIO())
@@ -547,7 +552,7 @@ class HttpServiceTest(unittest.TestCase):
   def test_auth_success(self):
     count = []
     response = 'response'
-    def mock_url_open(_request):
+    def mock_url_open(_request, **_kwargs):
       if not count:
         raise urllib2.HTTPError(
           'url', 403, 'error message', None, StringIO.StringIO())
@@ -564,7 +569,7 @@ class HttpServiceTest(unittest.TestCase):
 
   def test_auth_failure(self):
     count = []
-    def mock_url_open(_request):
+    def mock_url_open(_request, **_kwargs):
       raise urllib2.HTTPError(
           'url', 403, 'error message', None, StringIO.StringIO())
     def mock_authenticate():
@@ -578,7 +583,7 @@ class HttpServiceTest(unittest.TestCase):
 
   def test_request_attempted_before_auth(self):
     calls = []
-    def mock_url_open(_request):
+    def mock_url_open(_request, **_kwargs):
       calls.append('url_open')
       raise urllib2.HTTPError(
           'url', 403, 'error message', None, StringIO.StringIO())
@@ -602,6 +607,30 @@ class HttpServiceTest(unittest.TestCase):
     self.assertTrue(a < 1.5 + math.pow(1.5, -1), a)
     self.assertTrue(b < 1.5 + math.pow(1.5, -1), b)
     self.assertNotEqual(a, b)
+
+  def test_url_read(self):
+    # Successfully reads the data.
+    self.mock(run_isolated, 'url_open',
+              lambda url, **_kwargs: fake_http_response('111', url))
+    self.assertEqual(run_isolated.url_read('https://fake_url.com/test'), '111')
+
+    # Respects url_open connection errors.
+    self.mock(run_isolated, 'url_open', lambda _url, **_kwargs: None)
+    self.assertIsNone(run_isolated.url_read('https://fake_url.com/test'))
+
+    # Respects read timeout errors.
+    def timeouting_http_response(url):
+      def read_mock(_size=None):
+        raise run_isolated.TimeoutError()
+      stream = StringIO.StringIO('')
+      stream.headers = {'content-length': 0}
+      response = run_isolated.HttpResponse(stream, url)
+      response.read = read_mock
+      return response
+
+    self.mock(run_isolated, 'url_open',
+              lambda url, **_kwargs: timeouting_http_response(url))
+    self.assertIsNone(run_isolated.url_read('https://fake_url.com/test'))
 
 
 if __name__ == '__main__':
