@@ -4,7 +4,6 @@
 
 #import "ui/message_center/cocoa/settings_controller.h"
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/fake_notifier_settings_provider.h"
@@ -37,6 +36,7 @@ Notifier* NewNotifier(const std::string& id,
 }  // namespace
 
 TEST_F(CocoaTest, Basic) {
+  // Notifiers are owned by settings controller.
   std::vector<Notifier*> notifiers;
   notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
   notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
@@ -48,11 +48,10 @@ TEST_F(CocoaTest, Basic) {
   [controller view];
 
   EXPECT_EQ(notifiers.size(), [controller scrollViewItemCount]);
-
-  STLDeleteElements(&notifiers);
 }
 
 TEST_F(CocoaTest, Toggle) {
+  // Notifiers are owned by settings controller.
   std::vector<Notifier*> notifiers;
   notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
   notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
@@ -74,8 +73,6 @@ TEST_F(CocoaTest, Toggle) {
   EXPECT_EQ(0, provider.closed_called_count());
   controller.reset();
   EXPECT_EQ(1, provider.closed_called_count());
-
-  STLDeleteElements(&notifiers);
 }
 
 }  // namespace message_center

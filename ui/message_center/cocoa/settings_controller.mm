@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -125,6 +126,7 @@ void NotifierSettingsObserverMac::UpdateIconImage(const NotifierId& notifier_id,
 - (void)dealloc {
   provider_->RemoveObserver(observer_.get());
   provider_->OnNotifierSettingsClosing();
+  STLDeleteElements(&notifiers_);
   [super dealloc];
 }
 
@@ -139,6 +141,7 @@ void NotifierSettingsObserverMac::UpdateIconImage(const NotifierId& notifier_id,
 }
 
 - (void)loadView {
+  DCHECK(notifiers_.empty());
   provider_->GetNotifierList(&notifiers_);
   CGFloat maxHeight = [MCTrayViewController maxTrayClientHeight];
 
