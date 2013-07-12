@@ -43,7 +43,8 @@ extern "C" {
 #define XRAY_MAX_LABEL (64)
 #define XRAY_DEFAULT_SYMBOL_TABLE_SIZE (4096)
 #define XRAY_SYMBOL_POOL_NODE_SIZE (1024)
-#define XRAY_GUARD_VALUE (0x12345678)
+#define XRAY_GUARD_VALUE_0x12345678 (0x12345678)
+#define XRAY_GUARD_VALUE_0x87654321 (0x87654321)
 #define XRAY_EXTRACT_ADDR(x) (((x) & XRAY_ADDR_MASK) >> XRAY_ADDR_SHIFT)
 #define XRAY_EXTRACT_DEPTH(x) ((x) & XRAY_DEPTH_MASK)
 #define XRAY_PACK_ADDR(x) (((x) << XRAY_ADDR_SHIFT) & XRAY_ADDR_MASK)
@@ -61,7 +62,8 @@ struct XRayTraceCapture;
 struct XRayTraceBufferEntry {
   uint32_t depth_addr;
   uint32_t annotation_index;
-  uint64_t ticks;
+  uint64_t start_tick;
+  uint64_t end_tick;
 };
 
 

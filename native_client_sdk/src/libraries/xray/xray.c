@@ -88,8 +88,9 @@ struct XRayTraceCapture {
   uint32_t guard0;
   struct XRayTraceStackEntry stack[XRAY_TRACE_STACK_SIZE] XRAY_ALIGN64;
   uint32_t guard1;
-  char annotation[XRAY_ANNOTATION_STACK_SIZE] XRAY_ALIGN64;
   uint32_t guard2;
+  char annotation[XRAY_ANNOTATION_STACK_SIZE] XRAY_ALIGN64;
+  uint32_t guard3;
   struct XRayTraceBufferEntry* buffer;
   struct XRayTraceFrame frame;
 } XRAY_ALIGN64;
@@ -115,9 +116,10 @@ XRAY_NO_INSTRUMENT void __xray_profile_append_annotation(
 
 /* Asserts that the guard values haven't changed. */
 void XRayCheckGuards(struct XRayTraceCapture* capture) {
-  assert(capture->guard0 == XRAY_GUARD_VALUE);
-  assert(capture->guard1 == XRAY_GUARD_VALUE);
-  assert(capture->guard2 == XRAY_GUARD_VALUE);
+  assert(capture->guard0 == XRAY_GUARD_VALUE_0x12345678);
+  assert(capture->guard1 == XRAY_GUARD_VALUE_0x12345678);
+  assert(capture->guard2 == XRAY_GUARD_VALUE_0x87654321);
+  assert(capture->guard3 == XRAY_GUARD_VALUE_0x12345678);
 }
 
 /* Decrements the trace index, wrapping around if needed. */
@@ -339,7 +341,8 @@ void __cyg_profile_func_exit(void* this_fn, void* call_site) {
       struct XRayTraceBufferEntry* be = &capture->buffer[buffer_index];
       GTSC(tsc);
       be->depth_addr = se->depth_addr;
-      be->ticks = tsc - se->tsc;
+      be->start_tick = se->tsc;
+      be->end_tick = tsc;
       be->annotation_index = 0;
       if (0 != se->annotation_index)
         __xray_profile_append_annotation(capture, se, be);
@@ -681,9 +684,10 @@ struct XRayTraceCapture* XRayInit(int stack_depth,
   capture->frame.tail = 0;
   capture->disabled = 0;
   capture->annotation_filter = 0xFFFFFFFF;
-  capture->guard0 = XRAY_GUARD_VALUE;
-  capture->guard1 = XRAY_GUARD_VALUE;
-  capture->guard2 = XRAY_GUARD_VALUE;
+  capture->guard0 = XRAY_GUARD_VALUE_0x12345678;
+  capture->guard1 = XRAY_GUARD_VALUE_0x12345678;
+  capture->guard2 = XRAY_GUARD_VALUE_0x87654321;
+  capture->guard3 = XRAY_GUARD_VALUE_0x12345678;
   capture->initialized = true;
   capture->recording = false;
   XRaySetMaxStackDepth(capture, stack_depth);

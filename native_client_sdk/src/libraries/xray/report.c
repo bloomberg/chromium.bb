@@ -63,7 +63,7 @@ void XRayTraceReport(struct XRayTraceCapture* capture,
       struct XRayTraceBufferEntry* e = XRayTraceGetEntry(capture, index);
       uint32_t depth = XRAY_EXTRACT_DEPTH(e->depth_addr);
       uint32_t addr = XRAY_EXTRACT_ADDR(e->depth_addr);
-      uint32_t ticks = e->ticks;
+      uint32_t ticks = e->end_tick - e->start_tick;
       uint32_t annotation_index = e->annotation_index;
       float percent = 100.0f * (float)ticks / total;
       if (percent >= percent_cutoff && ticks >= ticks_cutoff) {
