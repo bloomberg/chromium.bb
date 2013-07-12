@@ -95,6 +95,7 @@ void BreakSuggestionText(const string16& text,
 @implementation AutofillSectionContainer
 
 @synthesize section = section_;
+@synthesize validationDelegate = validationDelegate_;
 
 - (id)initWithController:(autofill::AutofillDialogController*)controller
               forSection:(autofill::DialogSection)section {
@@ -228,6 +229,11 @@ void BreakSuggestionText(const string16& text,
   [view_ setFrameSize:viewFrame.size];
 }
 
+
+- (void)fieldBecameFirstResponder:(NSControl<AutofillInputField>*)field {
+  [validationDelegate_ updateMessageForField:field];
+}
+
 - (void)didChange:(id)sender {
   // TODO(groby): This is part of TextfieldEditedOrActivated. Combine once that
   // is implemented.
@@ -245,7 +251,8 @@ void BreakSuggestionText(const string16& text,
     string16 message = controller_->InputValidityMessage(section_,
                                                          type,
                                                          fieldValue);
-    [textfield setInvalid:!message.empty()];
+    [textfield setValidityMessage:base::SysUTF16ToNSString(message)];
+    [validationDelegate_ updateMessageForField:textfield];
 
     // If the field transitioned from invalid to valid, re-validate the group,
     // since inter-field checks become meaningful with valid fields.
@@ -323,8 +330,11 @@ void BreakSuggestionText(const string16& text,
 
   for (NSControl<AutofillInputField>* input in fields) {
     const autofill::AutofillFieldType type = [self fieldTypeForControl:input];
-    BOOL isInvalid = invalidInputs.count(type) != 0;
-    [input setInvalid:isInvalid];
+    if (invalidInputs.count(type))
+      [input setValidityMessage:base::SysUTF16ToNSString(invalidInputs[type])];
+    else
+      [input setValidityMessage:@""];
+    [validationDelegate_ updateMessageForField:input];
   }
 
   return invalidInputs.empty();

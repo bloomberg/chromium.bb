@@ -7,11 +7,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 
 @interface AutofillPopUpButton : NSPopUpButton<AutofillInputField> {
  @private
   id<AutofillInputDelegate> delegate_;
+  base::scoped_nsobject<NSString> validityMessage_;
 }
 
 @end

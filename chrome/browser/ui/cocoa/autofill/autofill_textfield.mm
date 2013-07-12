@@ -35,6 +35,13 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
   return self;
 }
 
+- (BOOL)becomeFirstResponder {
+  BOOL result = [super becomeFirstResponder];
+  if (result && delegate_)
+    [delegate_ fieldBecameFirstResponder:self];
+  return result;
+}
+
 - (void)controlTextDidEndEditing:(NSNotification*)notification {
   if (delegate_)
     [delegate_ didEndEditing:self];
@@ -45,21 +52,26 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
     [delegate_ didChange:self];
 }
 
-- (BOOL)invalid {
-  return [[self cell] invalid];
-}
-
-- (void)setInvalid:(BOOL)invalid {
-  [[self cell] setInvalid:invalid];
-  [self setNeedsDisplay:YES];
-}
-
 - (NSString*)fieldValue {
   return [[self cell] fieldValue];
 }
 
 - (void)setFieldValue:(NSString*)fieldValue {
   [[self cell] setFieldValue:fieldValue];
+}
+
+- (NSString*)validityMessage {
+  return validityMessage_;
+}
+
+- (void)setValidityMessage:(NSString*)validityMessage {
+  validityMessage_.reset([validityMessage copy]);
+  [[self cell] setInvalid:[self invalid]];
+  [self setNeedsDisplay:YES];
+}
+
+- (BOOL)invalid {
+  return [validityMessage_ length] != 0;
 }
 
 @end

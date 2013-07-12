@@ -16,6 +16,7 @@
                                            NSTextFieldDelegate> {
  @private
    id<AutofillInputDelegate> delegate_;
+   base::scoped_nsobject<NSString> validityMessage_;
 }
 
 @end

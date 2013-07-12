@@ -28,8 +28,8 @@ TEST_VIEW(AutofillPopUpButtonTest, button_)
 
 // Test invalid, mostly to ensure nothing leaks or crashes.
 TEST_F(AutofillPopUpButtonTest, DisplayWithInvalid) {
-  [button_ setInvalid:YES];
+  [button_ setValidityMessage:nil];
   [button_ display];
-  [button_ setInvalid:NO];
+  [button_ setValidityMessage:@"Something is rotten in the state of Denmark"];
   [button_ display];
 }

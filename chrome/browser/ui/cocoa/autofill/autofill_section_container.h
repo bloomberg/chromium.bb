@@ -23,6 +23,15 @@ namespace autofill {
 @class MenuButton;
 @class MenuController;
 
+// Delegate to handle display of validation messages.
+@protocol AutofillValidationDisplay
+
+// Updates the validation message for a given field.
+- (void)updateMessageForField:(NSControl<AutofillInputField>*)field;
+
+@end
+
+
 // View controller for a section of the payment details. Contains a label
 // describing the section as well as associated inputs and controls. Built
 // dynamically based on data retrieved from AutofillDialogController.
@@ -40,12 +49,16 @@ namespace autofill {
   // List of weak pointers, which constitute unique field IDs.
   std::vector<const autofill::DetailInput*> detailInputs_;
 
+  // A delegate to handle display of validation messages. Not owned.
+  id<AutofillValidationDisplay> validationDelegate_;
+
   base::scoped_nsobject<MenuController> menuController_;
   autofill::DialogSection section_;
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
 
 @property(readonly, nonatomic) autofill::DialogSection section;
+@property(assign, nonatomic) id<AutofillValidationDisplay> validationDelegate;
 
 // Designated initializer. Queries |controller| for the list of desired input
 // fields for |section|.

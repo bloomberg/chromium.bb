@@ -10,18 +10,26 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
+
 
 namespace autofill {
 class AutofillDialogController;
 }
 
-@class AutofillSectionContainer;
+@class InfoBubbleView;
 
 // UI controller for details for current payment instrument.
-@interface AutofillDetailsContainer : NSViewController<AutofillLayout> {
+@interface AutofillDetailsContainer
+    : NSViewController<AutofillLayout,
+                       AutofillValidationDisplay> {
  @private
-  base::scoped_nsobject<NSMutableArray> details_;   // The individual detail
-                                                    // sections.
+  // The individual detail sections.
+  base::scoped_nsobject<NSMutableArray> details_;
+
+  // An info bubble to display validation errors.
+  base::scoped_nsobject<InfoBubbleView> infoBubble_;
+
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
 
