@@ -43,7 +43,9 @@ class RemoteFileSystemProxyInterface;
 class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
  public:
   // Callback for OpenFileSystem.
-  typedef base::Callback<void(base::PlatformFileError error)>
+  typedef base::Callback<void(const GURL& root_url,
+                              const std::string& name,
+                              base::PlatformFileError error)>
       OpenFileSystemCallback;
   virtual ~FileSystemBackend() {}
 

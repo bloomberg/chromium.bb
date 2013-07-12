@@ -29,7 +29,9 @@ typedef FileSystemOperation::FileEntryList FileEntryList;
 
 namespace {
 
-void ExpectOk(base::PlatformFileError error) {
+void ExpectOk(const GURL& origin_url,
+              const std::string& name,
+              base::PlatformFileError error) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 }
 

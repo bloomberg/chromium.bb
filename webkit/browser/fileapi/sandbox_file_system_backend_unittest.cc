@@ -73,6 +73,8 @@ FileSystemURL CreateFileSystemURL(const char* path) {
 }
 
 void DidOpenFileSystem(base::PlatformFileError* error_out,
+                       const GURL& origin_url,
+                       const std::string& name,
                        base::PlatformFileError error) {
   *error_out = error;
 }

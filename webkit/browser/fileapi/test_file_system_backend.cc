@@ -104,7 +104,9 @@ void TestFileSystemBackend::OpenFileSystem(
     FileSystemType type,
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
-  callback.Run(base::PLATFORM_FILE_OK);
+  callback.Run(GetFileSystemRootURI(origin_url, type),
+               GetFileSystemName(origin_url, type),
+               base::PLATFORM_FILE_OK);
 }
 
 FileSystemFileUtil* TestFileSystemBackend::GetFileUtil(FileSystemType type) {

@@ -27,7 +27,6 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
@@ -270,16 +269,8 @@ void FileSystemContext::OpenFileSystem(
     return;
   }
 
-  GURL root_url;
-  if (type == kFileSystemTypeSyncable)
-    root_url = sync_file_system::GetSyncableFileSystemRootURI(origin_url);
-  else
-    root_url = GetFileSystemRootURI(origin_url, type);
-  std::string name = GetFileSystemName(origin_url, type);
-
-  backend->OpenFileSystem(
-      origin_url, type, mode,
-      base::Bind(&DidOpenFileSystem, callback, root_url, name));
+  backend->OpenFileSystem(origin_url, type, mode,
+                          base::Bind(&DidOpenFileSystem, callback));
 }
 
 void FileSystemContext::DeleteFileSystem(

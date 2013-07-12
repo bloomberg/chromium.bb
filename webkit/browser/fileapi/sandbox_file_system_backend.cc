@@ -28,6 +28,7 @@
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_operation.h"
+#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -98,7 +99,7 @@ class ObfuscatedOriginEnumerator
 
 void DidOpenFileSystem(
     base::WeakPtr<SandboxFileSystemBackend> mount_point_provider,
-    const FileSystemBackend::OpenFileSystemCallback& callback,
+    const base::Callback<void(base::PlatformFileError error)>& callback,
     base::PlatformFileError* error) {
   if (mount_point_provider.get())
     mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
@@ -176,14 +177,15 @@ bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
 }
 
 void SandboxFileSystemBackend::OpenFileSystem(
-    const GURL& origin_url, fileapi::FileSystemType type,
+    const GURL& origin_url,
+    fileapi::FileSystemType type,
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   if (file_system_options_.is_incognito() &&
       !(type == kFileSystemTypeTemporary &&
         enable_temporary_file_system_in_incognito_)) {
     // TODO(kinuko): return an isolated temporary directory.
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kIncognito,
                               kFileSystemErrorMax);
@@ -191,12 +193,19 @@ void SandboxFileSystemBackend::OpenFileSystem(
   }
 
   if (!IsAllowedScheme(origin_url)) {
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kInvalidSchemeError,
                               kFileSystemErrorMax);
     return;
   }
+
+  // TODO(nhiroki): Factor out SyncFS related code to SyncFileSystemBackend we
+  // plan to introduce. (http://crbug.com/242422/)
+  GURL root_url = (type == kFileSystemTypeSyncable)
+      ? sync_file_system::GetSyncableFileSystemRootURI(origin_url)
+      : GetFileSystemRootURI(origin_url, type);
+  std::string name = GetFileSystemName(origin_url, type);
 
   base::PlatformFileError* error_ptr = new base::PlatformFileError;
   sandbox_context_->file_task_runner()->PostTaskAndReply(
@@ -207,7 +216,8 @@ void SandboxFileSystemBackend::OpenFileSystem(
                  base::Unretained(error_ptr)),
       base::Bind(&DidOpenFileSystem,
                  weak_factory_.GetWeakPtr(),
-                 callback, base::Owned(error_ptr)));
+                 base::Bind(callback, root_url, name),
+                 base::Owned(error_ptr)));
 
   if (enable_usage_tracking_)
     return;

@@ -113,7 +113,9 @@ void FileSystemBackend::OpenFileSystem(
     const OpenFileSystemCallback& callback) {
   DCHECK(fileapi::IsolatedContext::IsIsolatedType(type));
   // Nothing to validate for external filesystem.
-  callback.Run(base::PLATFORM_FILE_OK);
+  callback.Run(GetFileSystemRootURI(origin_url, type),
+               GetFileSystemName(origin_url, type),
+               base::PLATFORM_FILE_OK);
 }
 
 fileapi::FileSystemQuotaUtil* FileSystemBackend::GetQuotaUtil() {

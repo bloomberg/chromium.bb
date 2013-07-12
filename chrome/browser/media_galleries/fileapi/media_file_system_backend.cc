@@ -111,7 +111,10 @@ void MediaFileSystemBackend::OpenFileSystem(
   // We never allow opening a new isolated FileSystem via usual OpenFileSystem.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_SECURITY));
+      base::Bind(callback,
+                 GetFileSystemRootURI(origin_url, type),
+                 GetFileSystemName(origin_url, type),
+                 base::PLATFORM_FILE_ERROR_SECURITY));
 }
 
 fileapi::FileSystemFileUtil* MediaFileSystemBackend::GetFileUtil(
