@@ -58,6 +58,12 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual size_t highMemoryUsageMB() OVERRIDE;
   virtual size_t highUsageDeltaMB() OVERRIDE;
 #endif
+
+  virtual void startHeapProfiling(const WebKit::WebString& /*prefix*/) OVERRIDE;
+  virtual void stopHeapProfiling() OVERRIDE;
+  virtual void dumpHeapProfiling(const WebKit::WebString& /*reason*/) OVERRIDE;
+  virtual WebKit::WebString getHeapProfile() OVERRIDE;
+
   virtual bool processMemorySizesInBytes(size_t* private_bytes,
                                          size_t* shared_bytes);
   virtual bool memoryAllocatorWasteInBytes(size_t* size);

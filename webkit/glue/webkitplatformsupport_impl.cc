@@ -42,6 +42,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #include "ui/base/layout.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
@@ -864,6 +865,38 @@ size_t WebKitPlatformSupportImpl::highUsageDeltaMB() {
   return base::SysInfo::DalvikHeapSizeMB() / 8;
 }
 #endif
+
+void WebKitPlatformSupportImpl::startHeapProfiling(
+  const WebKit::WebString& prefix) {
+  // FIXME(morrita): Make this built on windows.
+#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
+  HeapProfilerStart(prefix.utf8().data());
+#endif
+}
+
+void WebKitPlatformSupportImpl::stopHeapProfiling() {
+#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
+  HeapProfilerStop();
+#endif
+}
+
+void WebKitPlatformSupportImpl::dumpHeapProfiling(
+  const WebKit::WebString& reason) {
+#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
+  HeapProfilerDump(reason.utf8().data());
+#endif
+}
+
+WebString WebKitPlatformSupportImpl::getHeapProfile() {
+#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
+  char* data = GetHeapProfile();
+  WebString result = WebString::fromUTF8(std::string(data));
+  free(data);
+  return result;
+#else
+  return WebString();
+#endif
+}
 
 bool WebKitPlatformSupportImpl::processMemorySizesInBytes(
     size_t* private_bytes,
