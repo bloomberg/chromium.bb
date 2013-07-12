@@ -204,13 +204,19 @@ class RawCheckout(CheckoutBase):
               cmd = ['patch', '-u', '--binary', '-p%s' % p.patchlevel]
               if verbose:
                 cmd.append('--verbose')
-              stdout.append(
-                  subprocess2.check_output(
-                      cmd,
-                      stdin=p.get(False),
-                      stderr=subprocess2.STDOUT,
-                      cwd=self.project_path,
-                      timeout=GLOBAL_TIMEOUT))
+              env = os.environ.copy()
+              env['TMPDIR'] = tempfile.mkdtemp(prefix='crpatch')
+              try:
+                stdout.append(
+                    subprocess2.check_output(
+                        cmd,
+                        stdin=p.get(False),
+                        stderr=subprocess2.STDOUT,
+                        cwd=self.project_path,
+                        timeout=GLOBAL_TIMEOUT,
+                        env=env))
+              finally:
+                shutil.rmtree(env['TMPDIR'])
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file.
               open(filepath, 'w').close()
@@ -400,12 +406,19 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
                 '--force',
                 '--no-backup-if-mismatch',
               ]
-              stdout.append(
-                  subprocess2.check_output(
-                    cmd,
-                    stdin=p.get(False),
-                    cwd=self.project_path,
-                    timeout=GLOBAL_TIMEOUT))
+              env = os.environ.copy()
+              env['TMPDIR'] = tempfile.mkdtemp(prefix='crpatch')
+              try:
+                stdout.append(
+                    subprocess2.check_output(
+                      cmd,
+                      stdin=p.get(False),
+                      cwd=self.project_path,
+                      timeout=GLOBAL_TIMEOUT,
+                      env=env))
+              finally:
+                shutil.rmtree(env['TMPDIR'])
+
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file if it doesn't
               # exist.
