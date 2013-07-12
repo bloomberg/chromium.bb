@@ -1214,6 +1214,7 @@ import java.util.Map;
     @Override
     public boolean sendGesture(int type, long timeMs, int x, int y, boolean lastInputEventForVSync,
                                Bundle b) {
+        if (offerGestureToEmbedder(type)) return false;
         if (mNativeContentViewCore == 0) return false;
         updateTextHandlesForGesture(type);
         updatePinchGestureStateListener(type);
@@ -2948,6 +2949,21 @@ import java.util.Map;
                 topLeft.getYPix(),
                 bottomRight.getXPix() - topLeft.getXPix(),
                 bottomRight.getYPix() - topLeft.getYPix());
+    }
+
+    /**
+     * Offer a subset of gesture events to the embedding View,
+     * primarily for WebView compatibility.
+     *
+     * @param type The type of the event.
+     *
+     * @return true if the embedder handled the event.
+     */
+    private boolean offerGestureToEmbedder(int type) {
+        if (type == ContentViewGestureHandler.GESTURE_LONG_PRESS) {
+            return mContainerView.performLongClick();
+        }
+        return false;
     }
 
     private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
