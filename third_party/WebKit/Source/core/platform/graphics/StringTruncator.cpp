@@ -42,18 +42,18 @@ namespace WebCore {
 
 typedef unsigned TruncationFunction(const String&, unsigned length, unsigned keepCount, UChar* buffer);
 
-static inline int textBreakAtOrPreceding(TextBreakIterator* it, int offset)
+static inline int textBreakAtOrPreceding(const NonSharedCharacterBreakIterator& it, int offset)
 {
-    if (isTextBreak(it, offset))
+    if (it.isBreak(offset))
         return offset;
 
-    int result = textBreakPreceding(it, offset);
+    int result = it.preceding(offset);
     return result == TextBreakDone ? 0 : result;
 }
 
-static inline int boundedTextBreakFollowing(TextBreakIterator* it, int offset, int length)
+static inline int boundedTextBreakFollowing(const NonSharedCharacterBreakIterator& it, int offset, int length)
 {
-    int result = textBreakFollowing(it, offset);
+    int result = it.following(offset);
     return result == TextBreakDone ? length : result;
 }
 
@@ -63,16 +63,16 @@ static unsigned centerTruncateToBuffer(const String& string, unsigned length, un
     ASSERT(keepCount < STRING_BUFFER_SIZE);
     
     unsigned omitStart = (keepCount + 1) / 2;
-    NonSharedCharacterBreakIterator it(string.bloatedCharacters(), length);
+    NonSharedCharacterBreakIterator it(string);
     unsigned omitEnd = boundedTextBreakFollowing(it, omitStart + (length - keepCount) - 1, length);
     omitStart = textBreakAtOrPreceding(it, omitStart);
     
     unsigned truncatedLength = omitStart + 1 + (length - omitEnd);
     ASSERT(truncatedLength <= length);
 
-    memcpy(buffer, string.bloatedCharacters(), sizeof(UChar) * omitStart);
+    string.copyTo(buffer, 0, omitStart);
     buffer[omitStart] = horizontalEllipsis;
-    memcpy(&buffer[omitStart + 1], &string.bloatedCharacters()[omitEnd], sizeof(UChar) * (length - omitEnd));
+    string.copyTo(&buffer[omitStart + 1], omitEnd, length - omitEnd);
     
     return truncatedLength;
 }
@@ -82,14 +82,22 @@ static unsigned rightTruncateToBuffer(const String& string, unsigned length, uns
     ASSERT(keepCount < length);
     ASSERT(keepCount < STRING_BUFFER_SIZE);
     
-    NonSharedCharacterBreakIterator it(string.bloatedCharacters(), length);
+    NonSharedCharacterBreakIterator it(string);
     unsigned keepLength = textBreakAtOrPreceding(it, keepCount);
     unsigned truncatedLength = keepLength + 1;
-    
-    memcpy(buffer, string.bloatedCharacters(), sizeof(UChar) * keepLength);
+
+    string.copyTo(buffer, 0, keepLength);
     buffer[keepLength] = horizontalEllipsis;
     
     return truncatedLength;
+}
+
+static float stringWidth(const Font& renderer, const String& string, bool disableRoundingHacks)
+{
+    TextRun run(string);
+    if (disableRoundingHacks)
+        run.disableRoundingHacks();
+    return renderer.width(run);
 }
 
 static float stringWidth(const Font& renderer, const UChar* characters, unsigned length, bool disableRoundingHacks)
@@ -119,7 +127,7 @@ static String truncateString(const String& string, float maxWidth, const Font& f
         truncatedLength = centerTruncateToBuffer(string, length, keepCount, stringBuffer);
     } else {
         keepCount = length;
-        memcpy(stringBuffer, string.bloatedCharacters(), sizeof(UChar) * length);
+        string.copyTo(stringBuffer, 0, length);
         truncatedLength = length;
     }
 
@@ -137,7 +145,7 @@ static String truncateString(const String& string, float maxWidth, const Font& f
         keepCountForLargestKnownToFit = 1;
         keepCountForSmallestKnownToNotFit = 2;
     }
-    
+
     while (keepCountForLargestKnownToFit + 1 < keepCountForSmallestKnownToNotFit) {
         ASSERT(widthForLargestKnownToFit <= maxWidth);
         ASSERT(widthForSmallestKnownToNotFit > maxWidth);
@@ -193,7 +201,7 @@ String StringTruncator::rightTruncate(const String& string, float maxWidth, cons
 
 float StringTruncator::width(const String& string, const Font& font, EnableRoundingHacksOrNot enableRoundingHacks)
 {
-    return stringWidth(font, string.bloatedCharacters(), string.length(), !enableRoundingHacks);
+    return stringWidth(font, string, !enableRoundingHacks);
 }
 
 } // namespace WebCore

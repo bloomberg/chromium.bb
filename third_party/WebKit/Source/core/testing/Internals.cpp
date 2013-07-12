@@ -1919,7 +1919,7 @@ PassRefPtr<ArrayBuffer> Internals::serializeObject(PassRefPtr<SerializedScriptVa
 {
     String stringValue = value->toWireString();
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::createUninitialized(stringValue.length(), sizeof(UChar));
-    stringValue.copyTo(static_cast<UChar*>(buffer->data()), stringValue.length());
+    stringValue.copyTo(static_cast<UChar*>(buffer->data()), 0, stringValue.length());
     return buffer.release();
 }
 

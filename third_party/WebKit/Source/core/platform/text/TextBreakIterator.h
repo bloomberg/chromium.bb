@@ -179,12 +179,52 @@ private:
 class NonSharedCharacterBreakIterator {
     WTF_MAKE_NONCOPYABLE(NonSharedCharacterBreakIterator);
 public:
-    NonSharedCharacterBreakIterator(const UChar*, int length);
+    explicit NonSharedCharacterBreakIterator(const String&);
+    NonSharedCharacterBreakIterator(const UChar*, unsigned length);
     ~NonSharedCharacterBreakIterator();
 
-    operator TextBreakIterator*() const { return m_iterator; }
+    int next();
+    int current();
+
+    bool isBreak(int offset) const;
+    int preceding(int offset) const;
+    int following(int offset) const;
+
+    bool operator!() const
+    {
+        return !m_is8Bit && !m_iterator;
+    }
 
 private:
+    void createIteratorForBuffer(const UChar*, unsigned length);
+
+    unsigned clusterLengthStartingAt(unsigned offset) const
+    {
+        ASSERT(m_is8Bit);
+        // The only Latin-1 Extended Grapheme Cluster is CR LF
+        return isCRBeforeLF(offset) ? 2 : 1;
+    }
+
+    bool isCRBeforeLF(unsigned offset) const
+    {
+        ASSERT(m_is8Bit);
+        return m_charaters8[offset] == '\r' && offset + 1 < m_length && m_charaters8[offset + 1] == '\n';
+    }
+
+    bool isLFAfterCR(unsigned offset) const
+    {
+        ASSERT(m_is8Bit);
+        return m_charaters8[offset] == '\n' && offset >= 1 && m_charaters8[offset - 1] == '\r';
+    }
+
+    bool m_is8Bit;
+
+    // For 8 bit strings, we implement the iterator ourselves.
+    const LChar* m_charaters8;
+    unsigned m_offset;
+    unsigned m_length;
+
+    // For 16 bit strings, we use a TextBreakIterator.
     TextBreakIterator* m_iterator;
 };
 

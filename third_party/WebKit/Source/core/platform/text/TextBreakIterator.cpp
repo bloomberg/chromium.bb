@@ -24,47 +24,47 @@
 
 namespace WebCore {
 
-unsigned numGraphemeClusters(const String& s)
+unsigned numGraphemeClusters(const String& string)
 {
-    unsigned stringLength = s.length();
+    unsigned stringLength = string.length();
     
     if (!stringLength)
         return 0;
 
     // The only Latin-1 Extended Grapheme Cluster is CR LF
-    if (s.is8Bit() && !s.contains('\r'))
+    if (string.is8Bit() && !string.contains('\r'))
         return stringLength;
 
-    NonSharedCharacterBreakIterator it(s.bloatedCharacters(), stringLength);
+    NonSharedCharacterBreakIterator it(string);
     if (!it)
         return stringLength;
 
     unsigned num = 0;
-    while (textBreakNext(it) != TextBreakDone)
+    while (it.next() != TextBreakDone)
         ++num;
     return num;
 }
 
-unsigned numCharactersInGraphemeClusters(const String& s, unsigned numGraphemeClusters)
+unsigned numCharactersInGraphemeClusters(const String& string, unsigned numGraphemeClusters)
 {
-    unsigned stringLength = s.length();
+    unsigned stringLength = string.length();
 
     if (!stringLength)
         return 0;
 
     // The only Latin-1 Extended Grapheme Cluster is CR LF
-    if (s.is8Bit() && !s.contains('\r'))
+    if (string.is8Bit() && !string.contains('\r'))
         return std::min(stringLength, numGraphemeClusters);
 
-    NonSharedCharacterBreakIterator it(s.bloatedCharacters(), stringLength);
+    NonSharedCharacterBreakIterator it(string);
     if (!it)
         return std::min(stringLength, numGraphemeClusters);
 
     for (unsigned i = 0; i < numGraphemeClusters; ++i) {
-        if (textBreakNext(it) == TextBreakDone)
+        if (it.next() == TextBreakDone)
             return stringLength;
     }
-    return textBreakCurrent(it);
+    return it.current();
 }
 
 } // namespace WebCore

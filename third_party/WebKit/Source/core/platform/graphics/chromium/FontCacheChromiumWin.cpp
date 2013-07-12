@@ -235,7 +235,7 @@ static bool LookupAltName(const String& name, String& altName)
 
 static HFONT createFontIndirectAndGetWinName(const String& family, LOGFONT* winfont, String* winName)
 {
-    unsigned len = family.copyTo(winfont->lfFaceName, LF_FACESIZE - 1);
+    unsigned len = family.copyTo(winfont->lfFaceName, 0, LF_FACESIZE - 1);
     winfont->lfFaceName[len] = '\0';
 
     HFONT hfont = CreateFontIndirect(winfont);

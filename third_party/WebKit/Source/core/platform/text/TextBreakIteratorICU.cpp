@@ -506,7 +506,39 @@ static inline bool compareAndSwapNonSharedCharacterBreakIterator(TextBreakIterat
     return true;
 }
 
-NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(const UChar* buffer, int length)
+NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(const String& string)
+    : m_is8Bit(true)
+    , m_charaters8(0)
+    , m_offset(0)
+    , m_length(0)
+    , m_iterator(0)
+{
+    if (string.isEmpty())
+        return;
+
+    m_is8Bit = string.is8Bit();
+
+    if (m_is8Bit) {
+        m_charaters8 = string.characters8();
+        m_offset = 0;
+        m_length = string.length();
+        return;
+    }
+
+    createIteratorForBuffer(string.characters16(), string.length());
+}
+
+NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(const UChar* buffer, unsigned length)
+    : m_is8Bit(false)
+    , m_charaters8(0)
+    , m_offset(0)
+    , m_length(0)
+    , m_iterator(0)
+{
+    createIteratorForBuffer(buffer, length);
+}
+
+void NonSharedCharacterBreakIterator::createIteratorForBuffer(const UChar* buffer, unsigned length)
 {
     m_iterator = nonSharedCharacterBreakIterator;
     bool createdIterator = m_iterator && compareAndSwapNonSharedCharacterBreakIterator(m_iterator, 0);
@@ -515,8 +547,56 @@ NonSharedCharacterBreakIterator::NonSharedCharacterBreakIterator(const UChar* bu
 
 NonSharedCharacterBreakIterator::~NonSharedCharacterBreakIterator()
 {
+    if (m_is8Bit)
+        return;
     if (!compareAndSwapNonSharedCharacterBreakIterator(0, m_iterator))
         ubrk_close(reinterpret_cast<UBreakIterator*>(m_iterator));
+}
+
+int NonSharedCharacterBreakIterator::next()
+{
+    if (!m_is8Bit)
+        return textBreakNext(m_iterator);
+
+    if (m_offset >= m_length)
+        return TextBreakDone;
+
+    m_offset += clusterLengthStartingAt(m_offset);
+    return m_offset;
+}
+
+int NonSharedCharacterBreakIterator::current()
+{
+    if (!m_is8Bit)
+        return textBreakCurrent(m_iterator);
+    return m_offset;
+}
+
+bool NonSharedCharacterBreakIterator::isBreak(int offset) const
+{
+    if (!m_is8Bit)
+        return isTextBreak(m_iterator, offset);
+    return !isLFAfterCR(offset);
+}
+
+int NonSharedCharacterBreakIterator::preceding(int offset) const
+{
+    if (!m_is8Bit)
+        return textBreakPreceding(m_iterator, offset);
+    if (offset <= 0)
+        return TextBreakDone;
+    if (isLFAfterCR(offset))
+        return offset - 2;
+    return offset - 1;
+}
+
+int NonSharedCharacterBreakIterator::following(int offset) const
+{
+    if (!m_is8Bit)
+        return textBreakFollowing(m_iterator, offset);
+    if (static_cast<unsigned>(offset) >= m_length)
+        return TextBreakDone;
+    return offset + clusterLengthStartingAt(offset);
 }
 
 TextBreakIterator* sentenceBreakIterator(const UChar* string, int length)

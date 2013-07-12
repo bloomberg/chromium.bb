@@ -390,15 +390,17 @@ Vector<UChar> String::charactersWithNullTermination() const
     return result;
 }
 
-unsigned String::copyTo(UChar* buffer, unsigned maxLength) const
+unsigned String::copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const
 {
-    unsigned numCharacters = std::min(length(), maxLength);
+    unsigned length = this->length();
+    RELEASE_ASSERT(pos <= length);
+    unsigned numCharacters = std::min(length - pos, maxLength);
     if (!numCharacters)
         return 0;
     if (is8Bit())
-        StringImpl::copyChars(buffer, characters8(), numCharacters);
+        StringImpl::copyChars(buffer, characters8() + pos, numCharacters);
     else
-        StringImpl::copyChars(buffer, characters16(), numCharacters);
+        StringImpl::copyChars(buffer, characters16() + pos, numCharacters);
     return numCharacters;
 }
 

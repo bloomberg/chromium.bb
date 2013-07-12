@@ -267,7 +267,7 @@ public:
         { return caseSensitive ? reverseFind(str, start) : reverseFindIgnoringCase(str, start); }
 
     Vector<UChar> charactersWithNullTermination() const;
-    unsigned copyTo(UChar* buffer, unsigned maxLength) const;
+    unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
 
     template<size_t inlineCapacity>
     void appendTo(Vector<UChar, inlineCapacity>&, unsigned pos = 0, unsigned len = UINT_MAX) const;

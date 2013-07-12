@@ -623,8 +623,8 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const WebCore::PlatformKeyboard
     windowsKeyCode = windowsKeyCodeWithoutLocation(event.windowsVirtualKeyCode());
     modifiers |= locationModifiersFromWindowsKeyCode(event.windowsVirtualKeyCode());
 
-    event.text().copyTo(text, textLengthCap);
-    event.unmodifiedText().copyTo(unmodifiedText, textLengthCap);
+    event.text().copyTo(text, 0, textLengthCap);
+    event.unmodifiedText().copyTo(unmodifiedText, 0, textLengthCap);
     memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), std::min(static_cast<unsigned>(keyIdentifierLengthCap), event.keyIdentifier().length()));
 }
 
