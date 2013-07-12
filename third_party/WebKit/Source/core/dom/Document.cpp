@@ -104,6 +104,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
@@ -684,7 +685,7 @@ DOMImplementation* Document::implementation()
 
 bool Document::hasManifest() const
 {
-    return documentElement() && documentElement()->hasTagName(htmlTag) && documentElement()->hasAttribute(manifestAttr);
+    return documentElement() && isHTMLHtmlElement(documentElement()) && documentElement()->hasAttribute(manifestAttr);
 }
 
 void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -2312,7 +2313,7 @@ bool Document::shouldScheduleLayout()
     //    (b) Only schedule layout once we have a body element.
 
     return (haveStylesheetsLoaded() && body())
-        || (documentElement() && !documentElement()->hasTagName(htmlTag));
+        || (documentElement() && !isHTMLHtmlElement(documentElement()));
 }
 
 bool Document::isLayoutTimerActive()

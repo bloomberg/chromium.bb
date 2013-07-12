@@ -37,6 +37,7 @@
 #include "core/dom/OverflowEvent.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLFrameElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLPlugInImageElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
@@ -615,7 +616,7 @@ void FrameView::applyPaginationToViewport()
     Node* body = document->body();
     if (body && body->renderer()) {
         if (body->hasTagName(bodyTag))
-            documentOrBodyRenderer = documentRenderer->style()->overflowX() == OVISIBLE && documentElement->hasTagName(htmlTag) ? body->renderer() : documentRenderer;
+            documentOrBodyRenderer = documentRenderer->style()->overflowX() == OVISIBLE && isHTMLHtmlElement(documentElement) ? body->renderer() : documentRenderer;
     }
 
     Pagination pagination;
@@ -669,7 +670,7 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
             } else if (body->hasTagName(bodyTag)) {
                 // It's sufficient to just check the X overflow,
                 // since it's illegal to have visible in only one direction.
-                RenderObject* o = rootRenderer->style()->overflowX() == OVISIBLE && document->documentElement()->hasTagName(htmlTag) ? body->renderer() : rootRenderer;
+                RenderObject* o = rootRenderer->style()->overflowX() == OVISIBLE && isHTMLHtmlElement(document->documentElement()) ? body->renderer() : rootRenderer;
                 applyOverflowToViewport(o, hMode, vMode);
             }
         } else if (rootRenderer)

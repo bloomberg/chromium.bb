@@ -88,6 +88,7 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -146,7 +147,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
                     *needSkip = true;
                 }
             }
-        } else if (element->hasTagName(HTMLNames::htmlTag)) {
+        } else if (isHTMLHtmlElement(element)) {
             // Check something before processing the open tag of HEAD element.
             // First we add doc type declaration if original document has it.
             if (!param->haveSeenDocType) {

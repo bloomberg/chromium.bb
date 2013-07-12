@@ -35,6 +35,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
@@ -2287,7 +2288,7 @@ bool RenderObject::isRooted(RenderView** view) const
 RenderObject* RenderObject::rendererForRootBackground()
 {
     ASSERT(isRoot());
-    if (!hasBackground() && node() && node()->hasTagName(HTMLNames::htmlTag)) {
+    if (!hasBackground() && node() && isHTMLHtmlElement(node())) {
         // Locate the <body> element using the DOM. This is easier than trying
         // to crawl around a render tree with potential :before/:after content and
         // anonymous blocks created by inline <body> tags etc. We can locate the <body>

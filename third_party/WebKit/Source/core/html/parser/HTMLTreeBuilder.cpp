@@ -35,6 +35,7 @@
 #include "XMLNames.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
@@ -1633,7 +1634,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
         if (item->hasTagName(framesetTag)) {
             return setInsertionMode(InFramesetMode);
         }
-        if (item->hasTagName(htmlTag)) {
+        if (isHTMLHtmlElement(item->node())) {
             ASSERT(isParsingFragment());
             return setInsertionMode(BeforeHeadMode);
         }

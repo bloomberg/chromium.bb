@@ -41,6 +41,22 @@ private:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 };
 
+inline bool isHTMLHtmlElement(const Node* node)
+{
+    return node->hasTagName(HTMLNames::htmlTag);
+}
+
+inline bool isHTMLHtmlElement(const Element* element)
+{
+    return element->hasTagName(HTMLNames::htmlTag);
+}
+
+inline HTMLHtmlElement* toHTMLHtmlElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLHtmlElement(node));
+    return static_cast<HTMLHtmlElement*>(node);
+}
+
 } // namespace
 
 #endif

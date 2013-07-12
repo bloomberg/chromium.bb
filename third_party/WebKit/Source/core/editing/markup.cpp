@@ -51,6 +51,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/page/Frame.h"
@@ -843,7 +844,7 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
     bool useClonesOfEnclosingBlock = blockNode
         && blockNode->isElementNode()
         && !block->hasTagName(bodyTag)
-        && !block->hasTagName(htmlTag)
+        && !isHTMLHtmlElement(block)
         && block != editableRootForPosition(context->startPosition());
     bool useLineBreak = enclosingTextFormControl(context->startPosition());
 
@@ -1022,7 +1023,7 @@ PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTML
     RefPtr<Node> nextNode;
     for (RefPtr<Node> node = fragment->firstChild(); node; node = nextNode) {
         nextNode = node->nextSibling();
-        if (node->hasTagName(htmlTag) || node->hasTagName(headTag) || node->hasTagName(bodyTag)) {
+        if (isHTMLHtmlElement(node.get()) || node->hasTagName(headTag) || node->hasTagName(bodyTag)) {
             HTMLElement* element = toHTMLElement(node.get());
             if (Node* firstChild = element->firstChild())
                 nextNode = firstChild;

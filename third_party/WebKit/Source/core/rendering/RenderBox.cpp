@@ -34,6 +34,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -210,7 +211,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyl
         // The background of the root element or the body element could propagate up to
         // the canvas.  Just dirty the entire canvas when our style changes substantially.
         if (diff >= StyleDifferenceRepaint && node() &&
-            (node()->hasTagName(htmlTag) || node()->hasTagName(bodyTag))) {
+            (isHTMLHtmlElement(node()) || node()->hasTagName(bodyTag))) {
             view()->repaint();
             
             if (oldStyle->hasEntirelyFixedBackground() != newStyle->hasEntirelyFixedBackground())
@@ -348,12 +349,12 @@ void RenderBox::updateFromStyle()
             // (1) The root element is <html>.
             // (2) We are the primary <body> (can be checked by looking at document.body).
             // (3) The root element has visible overflow.
-            if (document()->documentElement()->hasTagName(htmlTag) &&
-                document()->body() == node() &&
-                document()->documentElement()->renderer()->style()->overflowX() == OVISIBLE)
+            if (isHTMLHtmlElement(document()->documentElement())
+                && document()->body() == node()
+                && document()->documentElement()->renderer()->style()->overflowX() == OVISIBLE)
                 boxHasOverflowClip = false;
         }
-        
+
         // Check for overflow clip.
         // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
         if (boxHasOverflowClip) {

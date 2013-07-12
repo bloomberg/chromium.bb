@@ -35,6 +35,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/FullscreenController.h"
 #include "core/html/HTMLAnchorElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/rendering/RenderTheme.h"
 
@@ -60,7 +61,7 @@ static const char* simpleUserAgentStyleSheet = "html,body,div{display:block}head
 
 static inline bool elementCanUseSimpleDefaultStyle(Element* e)
 {
-    return e->hasTagName(htmlTag) || e->hasTagName(headTag) || e->hasTagName(bodyTag) || e->hasTagName(divTag) || e->hasTagName(spanTag) || e->hasTagName(brTag) || isHTMLAnchorElement(e);
+    return isHTMLHtmlElement(e) || e->hasTagName(headTag) || e->hasTagName(bodyTag) || e->hasTagName(divTag) || e->hasTagName(spanTag) || e->hasTagName(brTag) || isHTMLAnchorElement(e);
 }
 
 static const MediaQueryEvaluator& screenEval()

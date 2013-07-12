@@ -974,8 +974,8 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     if (m_view && currentNode->attached() && !newElement->attached())
         newElement->attach();
 
-    if (newElement->hasTagName(HTMLNames::htmlTag))
-        static_cast<HTMLHtmlElement*>(newElement.get())->insertedByParser();
+    if (isHTMLHtmlElement(newElement.get()))
+        toHTMLHtmlElement(newElement.get())->insertedByParser();
 
     if (!m_parsingFragment && isFirstElement && document()->frame())
         document()->frame()->loader()->dispatchDocumentElementAvailable();

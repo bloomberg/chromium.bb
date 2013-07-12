@@ -29,6 +29,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Node.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
@@ -159,7 +160,7 @@ bool PositionIterator::isCandidate() const
     if (isTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
 
-    if (!m_anchorNode->hasTagName(htmlTag) && renderer->isBlockFlow()) {
+    if (!isHTMLHtmlElement(m_anchorNode) && renderer->isBlockFlow()) {
         if (toRenderBlock(renderer)->logicalHeight() || m_anchorNode->hasTagName(bodyTag)) {
             if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atStartOfNode() && !Position::nodeIsUserSelectNone(m_anchorNode);

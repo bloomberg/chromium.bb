@@ -39,6 +39,7 @@
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -432,7 +433,7 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
         return LandmarkContentInfoRole;
 
     // The HTML element should not be exposed as an element. That's what the RenderView element does.
-    if (node && node->hasTagName(htmlTag))
+    if (node && isHTMLHtmlElement(node))
         return IgnoredRole;
 
     // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section

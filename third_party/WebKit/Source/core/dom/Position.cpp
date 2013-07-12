@@ -35,6 +35,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/platform/Logging.h"
 #include "core/rendering/InlineIterator.h"
@@ -902,7 +903,7 @@ bool Position::isCandidate() const
     if (isTableElement(deprecatedNode()) || editingIgnoresContent(deprecatedNode()))
         return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(deprecatedNode()->parentNode());
 
-    if (m_anchorNode->hasTagName(htmlTag))
+    if (isHTMLHtmlElement(m_anchorNode.get()))
         return false;
 
     if (renderer->isBlockFlow()) {

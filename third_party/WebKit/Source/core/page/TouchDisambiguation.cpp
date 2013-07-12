@@ -38,6 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -125,7 +126,7 @@ void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntR
         for (Node* node = it->get(); node; node = node->parentNode()) {
             if (blackList.contains(node))
                 continue;
-            if (node->isDocumentNode() || node->hasTagName(HTMLNames::htmlTag) || node->hasTagName(HTMLNames::bodyTag))
+            if (node->isDocumentNode() || isHTMLHtmlElement(node) || node->hasTagName(HTMLNames::bodyTag))
                 break;
             if (node->willRespondToMouseClickEvents()) {
                 TouchTargetData& targetData = touchTargets.add(node, TouchTargetData()).iterator->value;
