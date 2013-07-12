@@ -19,8 +19,7 @@
               (bounds 189.00 124.00)
               (children 1
                 (GraphicsLayer
-                  (position 0.00 -50.00)
-                  (bounds 189.00 328.00)
+                  (bounds 189.00 308.00)
                   (drawsContent 1)
                 )
               )
@@ -49,8 +48,7 @@
               (bounds 189.00 124.00)
               (children 1
                 (GraphicsLayer
-                  (position 0.00 -50.00)
-                  (bounds 189.00 328.00)
+                  (bounds 189.00 308.00)
                   (drawsContent 1)
                 )
               )

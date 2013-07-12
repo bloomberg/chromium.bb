@@ -461,18 +461,6 @@ webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequi
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 
-Bug(fmalita) svg/W3C-SVG-1.1/masking-intro-01-f.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/W3C-SVG-1.1/masking-path-01-b.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-child-clipped.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-css-transform-1.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-evenodd-nonzero.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-evenodd.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-nonzero-evenodd.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-nonzero.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-pixelation.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clip-path-transform-1.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/clip-path/clipper-placement-issue.svg [ NeedsRebaseline ]
-Bug(fmalita) svg/repaint/mask-clip-target-transform.svg [ NeedsRebaseline ]
 Bug(fmalita) [ MountainLion ] svg/transforms/transformed-text-fill-pattern.html [ ImageOnlyFailure ]
 
 # -----------------------------------------------------------------
@@ -1807,15 +1795,6 @@ crbug.com/254219 [ MountainLion ] fast/multicol/newmulticol/columns-shorthand-pa
 crbug.com/254985 [ Win ] fast/events/space-scroll-event.html [ Crash Pass ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Failure ]
-
-Bug(enne) compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-Bug(enne) compositing/overflow/scrolling-without-painting.html [ NeedsRebaseline ]
-Bug(enne) compositing/overflow/textarea-scroll-touch.html [ NeedsRebaseline ]
-Bug(enne) virtual/gpu/compositedscrolling/overflow/scrolling-without-painting.html [ NeedsRebaseline ]
-Bug(enne) virtual/gpu/compositedscrolling/overflow/textarea-scroll-touch.html [ NeedsRebaseline ]
-Bug(enne) virtual/softwarecompositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-Bug(enne) virtual/softwarecompositing/overflow/scrolling-without-painting.html [ NeedsRebaseline ]
-Bug(enne) virtual/softwarecompositing/overflow/textarea-scroll-touch.html [ NeedsRebaseline ]
 
 crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
 
