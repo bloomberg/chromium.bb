@@ -2236,7 +2236,8 @@ void GLES2Implementation::ReadPixels(
     if (buffer && buffer->shm_id() != -1) {
       helper_->ReadPixels(xoffset, yoffset, width, height, format, type,
                           buffer->shm_id(), buffer->shm_offset(),
-                          0, 0, true);
+                          0, 0);
+      buffer->set_transfer_ready_token(helper_->InsertToken());
       CheckGLError();
     }
     return;
@@ -2268,8 +2269,7 @@ void GLES2Implementation::ReadPixels(
     helper_->ReadPixels(
         xoffset, yoffset, width, num_rows, format, type,
         buffer.shm_id(), buffer.offset(),
-        GetResultShmId(), GetResultShmOffset(),
-        false);
+        GetResultShmId(), GetResultShmOffset());
     WaitForCmd();
     if (*result != 0) {
       // when doing a y-flip we have to iterate through top-to-bottom chunks
