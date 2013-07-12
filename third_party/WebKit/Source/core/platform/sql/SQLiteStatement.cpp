@@ -175,16 +175,9 @@ int SQLiteStatement::bindBlob(int index, const void* blob, int size)
 
 int SQLiteStatement::bindBlob(int index, const String& text)
 {
-    // String::bloatedCharacters() returns 0 for the empty string, which SQLite
-    // treats as a null, so we supply a non-null pointer for that case.
-    UChar anyCharacter = 0;
-    const UChar* characters;
-    if (text.isEmpty() && !text.isNull())
-        characters = &anyCharacter;
-    else
-        characters = text.bloatedCharacters();
-
-    return bindBlob(index, characters, text.length() * sizeof(UChar));
+    // SQLite treats uses zero pointers to represent null strings, which means we need to make sure to map null WTFStrings to zero pointers.
+    ASSERT(!String().charactersWithNullTermination().data());
+    return bindBlob(index, text.charactersWithNullTermination().data(), text.length() * sizeof(UChar));
 }
 
 int SQLiteStatement::bindText(int index, const String& text)
@@ -193,16 +186,9 @@ int SQLiteStatement::bindText(int index, const String& text)
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
-    // String::bloatedCharacters() returns 0 for the empty string, which SQLite
-    // treats as a null, so we supply a non-null pointer for that case.
-    UChar anyCharacter = 0;
-    const UChar* characters;
-    if (text.isEmpty() && !text.isNull())
-        characters = &anyCharacter;
-    else
-        characters = text.bloatedCharacters();
-
-    return sqlite3_bind_text16(m_statement, index, characters, sizeof(UChar) * text.length(), SQLITE_TRANSIENT);
+    // SQLite treats uses zero pointers to represent null strings, which means we need to make sure to map null WTFStrings to zero pointers.
+    ASSERT(!String().charactersWithNullTermination().data());
+    return sqlite3_bind_text16(m_statement, index, text.charactersWithNullTermination().data(), sizeof(UChar) * text.length(), SQLITE_TRANSIENT);
 }
 
 int SQLiteStatement::bindInt(int index, int integer)
