@@ -459,12 +459,13 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   bool flipped = true;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_7_NEW(TextureDrawQuad,
+  CREATE_QUAD_8_NEW(TextureDrawQuad,
                     opaque_rect,
                     resource_id,
                     premultiplied_alpha,
                     uv_top_left,
                     uv_bottom_right,
+                    SK_ColorTRANSPARENT,
                     vertex_opacity,
                     flipped);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
@@ -476,11 +477,12 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copy_quad->vertex_opacity, 4);
   EXPECT_EQ(flipped, copy_quad->flipped);
 
-  CREATE_QUAD_6_ALL(TextureDrawQuad,
+  CREATE_QUAD_7_ALL(TextureDrawQuad,
                     resource_id,
                     premultiplied_alpha,
                     uv_top_left,
                     uv_bottom_right,
+                    SK_ColorTRANSPARENT,
                     vertex_opacity,
                     flipped);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
@@ -521,19 +523,21 @@ TEST(DrawQuadTest, ClipTextureDrawQuad) {
   // This the vertex opacity for the vertices 'ABCD'.
   const float vertex_opacity[] = { 0.3f, 0.4f, 0.7f, 0.8f };
   {
-    CREATE_QUAD_7_NEW(TextureDrawQuad,
+    CREATE_QUAD_8_NEW(TextureDrawQuad,
                       opaque_rect,
                       resource_id,
                       premultiplied_alpha,
                       uv_top_left,
                       uv_bottom_right,
+                      SK_ColorTRANSPARENT,
                       vertex_opacity,
                       flipped);
-    CREATE_QUAD_6_ALL(TextureDrawQuad,
+    CREATE_QUAD_7_ALL(TextureDrawQuad,
                       resource_id,
                       premultiplied_alpha,
                       uv_top_left,
                       uv_bottom_right,
+                      SK_ColorTRANSPARENT,
                       vertex_opacity,
                       flipped);
     EXPECT_TRUE(quad_all->PerformClipping());
@@ -557,19 +561,21 @@ TEST(DrawQuadTest, ClipTextureDrawQuad) {
   uv_top_left = gfx::PointF(0.8f, 0.7f);
   uv_bottom_right = gfx::PointF(0.2f, 0.1f);
   {
-    CREATE_QUAD_7_NEW(TextureDrawQuad,
+    CREATE_QUAD_8_NEW(TextureDrawQuad,
                       opaque_rect,
                       resource_id,
                       premultiplied_alpha,
                       uv_top_left,
                       uv_bottom_right,
+                      SK_ColorTRANSPARENT,
                       vertex_opacity,
                       flipped);
-    CREATE_QUAD_6_ALL(TextureDrawQuad,
+    CREATE_QUAD_7_ALL(TextureDrawQuad,
                       resource_id,
                       premultiplied_alpha,
                       uv_top_left,
                       uv_bottom_right,
+                      SK_ColorTRANSPARENT,
                       vertex_opacity,
                       flipped);
     EXPECT_TRUE(quad_all->PerformClipping());
@@ -821,12 +827,13 @@ TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
   bool flipped = true;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_7_NEW(TextureDrawQuad,
+  CREATE_QUAD_8_NEW(TextureDrawQuad,
                     opaque_rect,
                     resource_id,
                     premultiplied_alpha,
                     uv_top_left,
                     uv_bottom_right,
+                    SK_ColorTRANSPARENT,
                     vertex_opacity,
                     flipped);
   EXPECT_EQ(resource_id, quad_new->resource_id);

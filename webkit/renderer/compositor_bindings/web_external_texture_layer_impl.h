@@ -37,6 +37,7 @@ class WebExternalTextureLayerImpl
   virtual void clearTexture();
   virtual void setOpaque(bool opaque);
   virtual void setPremultipliedAlpha(bool premultiplied);
+  virtual void setBlendBackgroundColor(bool blend);
   virtual void setRateLimitContext(bool rate_limit);
 
   // TextureLayerClient implementation.

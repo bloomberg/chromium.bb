@@ -196,6 +196,7 @@ TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetVertexOpacity(
       0.5f, 0.5f, 0.5f, 0.5f));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetPremultipliedAlpha(false));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendBackgroundColor(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTextureId(1));
 
   // Calling SetTextureId can call AcquireLayerTextures.

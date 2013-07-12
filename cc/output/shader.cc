@@ -788,6 +788,68 @@ std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderString(
   );  // NOLINT(whitespace/parens)
 }
 
+FragmentTexBackgroundBinding::FragmentTexBackgroundBinding()
+    : background_color_location_(-1),
+      sampler_location_(-1) {
+}
+
+void FragmentTexBackgroundBinding::Init(WebGraphicsContext3D* context,
+                                        unsigned program,
+                                        bool using_bind_uniform,
+                                        int* base_uniform_index) {
+  static const char* uniforms[] = {
+    "s_texture",
+    "background_color",
+  };
+  int locations[arraysize(uniforms)];
+
+  GetProgramUniformLocations(context,
+                             program,
+                             arraysize(uniforms),
+                             uniforms,
+                             locations,
+                             using_bind_uniform,
+                             base_uniform_index);
+
+  sampler_location_ = locations[0];
+  DCHECK_NE(sampler_location_, -1);
+
+  background_color_location_ = locations[1];
+  DCHECK_NE(background_color_location_, -1);
+}
+
+std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderString(
+    TexCoordPrecision precision) const {
+  return FRAGMENT_SHADER(
+    precision mediump float;
+    varying TexCoordPrecision vec2 v_texCoord;
+    varying float v_alpha;
+    uniform vec4 background_color;
+    uniform sampler2D s_texture;
+    void main() {
+      vec4 texColor = texture2D(s_texture, v_texCoord);
+      texColor += background_color * (1.0 - texColor.a);
+      gl_FragColor = texColor * v_alpha;
+    }
+  );  // NOLINT(whitespace/parens)
+}
+
+std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderString(
+    TexCoordPrecision precision) const {
+  return FRAGMENT_SHADER(
+    precision mediump float;
+    varying TexCoordPrecision vec2 v_texCoord;
+    varying float v_alpha;
+    uniform sampler2D s_texture;
+    void main() {
+      vec4 texColor = texture2D(s_texture, v_texCoord);
+      texColor.rgb *= texColor.a;
+      texColor += background_color * (1.0 - texColor.a);
+      gl_FragColor = texColor * v_alpha;
+    }
+  );  // NOLINT(whitespace/parens)
+}
+
 std::string FragmentShaderRGBATexRectVaryingAlpha::GetShaderString(
     TexCoordPrecision precision) const {
   return "#extension GL_ARB_texture_rectangle : require\n" +

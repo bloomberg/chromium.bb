@@ -54,6 +54,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  false,
                  gfx::PointF(0.f, 0.f),
                  gfx::PointF(1.f, 1.f),
+                 SK_ColorTRANSPARENT,
                  vertex_opacity,
                  false);
     frame->render_pass_list[0]->shared_quad_state_list.push_back(sqs.Pass());

@@ -7,6 +7,7 @@
 #include "cc/output/gl_renderer.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/sync_point_helper.h"
 #include "cc/test/fake_picture_pile_impl.h"
@@ -92,6 +93,42 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
                FilterOperations());  // background filters
 
   return quad.PassAs<DrawQuad>();
+}
+
+scoped_ptr<TextureDrawQuad> CreateTestTextureDrawQuad(
+    gfx::Rect rect,
+    SkColor texel_color,
+    SkColor background_color,
+    bool premultiplied_alpha,
+    SharedQuadState* shared_state,
+    ResourceProvider* resource_provider) {
+  uint32_t pixel_color = premultiplied_alpha ?
+      SkPreMultiplyColor(texel_color) : texel_color;
+  std::vector<uint32_t> pixels(rect.size().GetArea(), pixel_color);
+
+  ResourceProvider::ResourceId resource = resource_provider->CreateResource(
+      rect.size(), GL_RGBA, ResourceProvider::TextureUsageAny);
+  resource_provider->SetPixels(
+      resource,
+      reinterpret_cast<uint8_t*>(&pixels.front()),
+      rect,
+      rect,
+      gfx::Vector2d());
+
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+  scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+  quad->SetNew(shared_state,
+               rect,
+               gfx::Rect(),
+               resource,
+               premultiplied_alpha,
+               gfx::PointF(0.0f, 0.0f),  // uv_top_left
+               gfx::PointF(1.0f, 1.0f),  // uv_bottom_right
+               background_color,
+               vertex_opacity,
+               false);  // flipped
+  return quad.Pass();
 }
 
 typedef ::testing::Types<GLRenderer,
@@ -216,6 +253,138 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
       child_pass_ptr,
       base::FilePath(FILE_PATH_LITERAL("green_small.png")),
       ExactPixelComparator(true)));
+}
+
+TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+
+  scoped_ptr<TextureDrawQuad> texture_quad = CreateTestTextureDrawQuad(
+      gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(128, 0, 255, 0),  // Texel color.
+      SK_ColorTRANSPARENT,  // Background color.
+      true,  // Premultiplied alpha.
+      shared_state.get(),
+      this->resource_provider_.get());
+  pass->quad_list.push_back(texture_quad.PassAs<DrawQuad>());
+
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(shared_state.get(), rect, SK_ColorWHITE, false);
+  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
+      FuzzyPixelOffByOneComparator(true)));
+}
+
+TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  scoped_ptr<SharedQuadState> texture_quad_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  texture_quad_state->opacity = 0.5f;
+
+  scoped_ptr<TextureDrawQuad> texture_quad = CreateTestTextureDrawQuad(
+      gfx::Rect(this->device_viewport_size_),
+      SK_ColorTRANSPARENT,  // Texel color.
+      SK_ColorGREEN,  // Background color.
+      true,  // Premultiplied alpha.
+      texture_quad_state.get(),
+      this->resource_provider_.get());
+  pass->quad_list.push_back(texture_quad.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> color_quad_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(color_quad_state.get(), rect, SK_ColorWHITE, false);
+  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
+      FuzzyPixelOffByOneComparator(true)));
+}
+
+// TODO(skaslev): The software renderer does not support non-premultplied alpha.
+TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithoutBackground) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+
+  scoped_ptr<TextureDrawQuad> texture_quad = CreateTestTextureDrawQuad(
+      gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(128, 0, 255, 0),  // Texel color.
+      SK_ColorTRANSPARENT,  // Background color.
+      false,  // Premultiplied alpha.
+      shared_state.get(),
+      this->resource_provider_.get());
+  pass->quad_list.push_back(texture_quad.PassAs<DrawQuad>());
+
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(shared_state.get(), rect, SK_ColorWHITE, false);
+  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
+      FuzzyPixelOffByOneComparator(true)));
+}
+
+// TODO(skaslev): The software renderer does not support non-premultplied alpha.
+TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithBackground) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  scoped_ptr<SharedQuadState> texture_quad_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  texture_quad_state->opacity = 0.5f;
+
+  scoped_ptr<TextureDrawQuad> texture_quad = CreateTestTextureDrawQuad(
+      gfx::Rect(this->device_viewport_size_),
+      SK_ColorTRANSPARENT,  // Texel color.
+      SK_ColorGREEN,  // Background color.
+      false,  // Premultiplied alpha.
+      texture_quad_state.get(),
+      this->resource_provider_.get());
+  pass->quad_list.push_back(texture_quad.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> color_quad_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(color_quad_state.get(), rect, SK_ColorWHITE, false);
+  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
+      FuzzyPixelOffByOneComparator(true)));
 }
 
 class VideoGLRendererPixelTest : public GLRendererPixelTest {

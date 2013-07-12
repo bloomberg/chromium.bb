@@ -179,7 +179,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_top_left.origin(),
                uv_top_left.bottom_right(),
-               vertex_opacity, flipped);
+               SK_ColorTRANSPARENT,
+               vertex_opacity,
+               flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
@@ -190,7 +192,9 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_top_right.origin(),
                uv_top_right.bottom_right(),
-               vertex_opacity, flipped);
+               SK_ColorTRANSPARENT,
+               vertex_opacity,
+               flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
@@ -201,6 +205,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_bottom_left.origin(),
                uv_bottom_left.bottom_right(),
+               SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -213,6 +218,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_bottom_right.origin(),
                uv_bottom_right.bottom_right(),
+               SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -225,6 +231,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_top.origin(),
                uv_top.bottom_right(),
+               SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -237,6 +244,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_left.origin(),
                uv_left.bottom_right(),
+               SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -249,6 +257,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_right.origin(),
                uv_right.bottom_right(),
+               SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -261,6 +270,7 @@ void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_bottom.origin(),
                uv_bottom.bottom_right(),
+               SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);

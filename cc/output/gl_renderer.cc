@@ -96,6 +96,19 @@ Float4 UVTransform(const TextureDrawQuad* quad) {
   return xform;
 }
 
+Float4 PremultipliedColor(SkColor color) {
+  const float factor = 1.0f / 255.0f;
+  const float alpha = SkColorGetA(color) * factor;
+
+  Float4 result = { {
+      SkColorGetR(color) * factor * alpha,
+      SkColorGetG(color) * factor * alpha,
+      SkColorGetB(color) * factor * alpha,
+      alpha
+  } };
+  return result;
+}
+
 // Smallest unit that impact anti-aliasing output. We use this to
 // determine when anti-aliasing is unnecessary.
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
@@ -1685,12 +1698,13 @@ struct TextureProgramBinding {
     program_id = program->program();
     sampler_location = program->fragment_shader().sampler_location();
     matrix_location = program->vertex_shader().matrix_location();
-    alpha_location = program->fragment_shader().alpha_location();
+    background_color_location =
+        program->fragment_shader().background_color_location();
   }
   int program_id;
   int sampler_location;
   int matrix_location;
-  int alpha_location;
+  int background_color_location;
 };
 
 struct TexTransformTextureProgramBinding : TextureProgramBinding {
@@ -1744,6 +1758,14 @@ void GLRenderer::FlushTextureQuadCache() {
           static_cast<int>(draw_cache_.uv_xform_location),
           static_cast<int>(draw_cache_.uv_xform_data.size()),
           reinterpret_cast<float*>(&draw_cache_.uv_xform_data.front())));
+
+  if (draw_cache_.background_color != SK_ColorTRANSPARENT) {
+    Float4 background_color = PremultipliedColor(draw_cache_.background_color);
+    GLC(context_,
+        context_->uniform4fv(
+            draw_cache_.background_color_location, 1, background_color.data));
+  }
+
   GLC(context_,
       context_->uniform1fv(
           static_cast<int>(draw_cache_.vertex_opacity_location),
@@ -1773,10 +1795,20 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   // Choose the correct texture program binding
   TexTransformTextureProgramBinding binding;
   if (quad->premultiplied_alpha) {
-    binding.Set(GetTextureProgram(tex_coord_precision), Context());
+    if (quad->background_color == SK_ColorTRANSPARENT) {
+      binding.Set(GetTextureProgram(tex_coord_precision), Context());
+    } else {
+      binding.Set(GetTextureBackgroundProgram(tex_coord_precision), Context());
+    }
   } else {
-    binding.Set(GetNonPremultipliedTextureProgram(tex_coord_precision),
-                Context());
+    if (quad->background_color == SK_ColorTRANSPARENT) {
+      binding.Set(GetNonPremultipliedTextureProgram(tex_coord_precision),
+                  Context());
+    } else {
+      binding.Set(
+          GetNonPremultipliedTextureBackgroundProgram(tex_coord_precision),
+          Context());
+    }
   }
 
   int resource_id = quad->resource_id;
@@ -1784,13 +1816,16 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   if (draw_cache_.program_id != binding.program_id ||
       draw_cache_.resource_id != resource_id ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
+      draw_cache_.background_color != quad->background_color ||
       draw_cache_.matrix_data.size() >= 8) {
     FlushTextureQuadCache();
     draw_cache_.program_id = binding.program_id;
     draw_cache_.resource_id = resource_id;
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
+    draw_cache_.background_color = quad->background_color;
 
     draw_cache_.uv_xform_location = binding.tex_transform_location;
+    draw_cache_.background_color_location = binding.background_color_location;
     draw_cache_.vertex_opacity_location = binding.vertex_opacity_location;
     draw_cache_.matrix_location = binding.matrix_location;
     draw_cache_.sampler_location = binding.sampler_location;
@@ -2783,6 +2818,41 @@ const GLRenderer::NonPremultipliedTextureProgram*
   return program.get();
 }
 
+const GLRenderer::TextureBackgroundProgram*
+GLRenderer::GetTextureBackgroundProgram(TexCoordPrecision precision) {
+  scoped_ptr<TextureBackgroundProgram>& program =
+      (precision == TexCoordPrecisionHigh) ? texture_background_program_highp_
+                                           : texture_background_program_;
+  if (!program) {
+    program = make_scoped_ptr(
+        new TextureBackgroundProgram(context_, precision));
+  }
+  if (!program->initialized()) {
+    TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
+    program->Initialize(context_, is_using_bind_uniform_);
+  }
+  return program.get();
+}
+
+const GLRenderer::NonPremultipliedTextureBackgroundProgram*
+GLRenderer::GetNonPremultipliedTextureBackgroundProgram(
+    TexCoordPrecision precision) {
+  scoped_ptr<NonPremultipliedTextureBackgroundProgram>& program =
+      (precision == TexCoordPrecisionHigh) ?
+         nonpremultiplied_texture_background_program_highp_ :
+         nonpremultiplied_texture_background_program_;
+  if (!program) {
+    program = make_scoped_ptr(
+        new NonPremultipliedTextureBackgroundProgram(context_, precision));
+  }
+  if (!program->initialized()) {
+    TRACE_EVENT0("cc",
+                 "GLRenderer::NonPremultipliedTextureProgram::Initialize");
+    program->Initialize(context_, is_using_bind_uniform_);
+  }
+  return program.get();
+}
+
 const GLRenderer::TextureIOSurfaceProgram*
 GLRenderer::GetTextureIOSurfaceProgram(TexCoordPrecision precision) {
   scoped_ptr<TextureIOSurfaceProgram>& program =
@@ -2914,6 +2984,10 @@ void GLRenderer::CleanupSharedObjects() {
     texture_program_->Cleanup(context_);
   if (nonpremultiplied_texture_program_)
     nonpremultiplied_texture_program_->Cleanup(context_);
+  if (texture_background_program_)
+    texture_background_program_->Cleanup(context_);
+  if (nonpremultiplied_texture_background_program_)
+    nonpremultiplied_texture_background_program_->Cleanup(context_);
   if (texture_io_surface_program_)
     texture_io_surface_program_->Cleanup(context_);
 
@@ -2921,6 +2995,10 @@ void GLRenderer::CleanupSharedObjects() {
     texture_program_highp_->Cleanup(context_);
   if (nonpremultiplied_texture_program_highp_)
     nonpremultiplied_texture_program_highp_->Cleanup(context_);
+  if (texture_background_program_highp_)
+    texture_background_program_highp_->Cleanup(context_);
+  if (nonpremultiplied_texture_background_program_highp_)
+    nonpremultiplied_texture_background_program_highp_->Cleanup(context_);
   if (texture_io_surface_program_highp_)
     texture_io_surface_program_highp_->Cleanup(context_);
 

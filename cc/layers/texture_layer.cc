@@ -31,6 +31,7 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
       uv_top_left_(0.f, 0.f),
       uv_bottom_right_(1.f, 1.f),
       premultiplied_alpha_(true),
+      blend_background_color_(false),
       rate_limit_context_(false),
       content_committed_(false),
       texture_id_(0),
@@ -98,6 +99,13 @@ void TextureLayer::SetPremultipliedAlpha(bool premultiplied_alpha) {
   if (premultiplied_alpha_ == premultiplied_alpha)
     return;
   premultiplied_alpha_ = premultiplied_alpha;
+  SetNeedsCommit();
+}
+
+void TextureLayer::SetBlendBackgroundColor(bool blend) {
+  if (blend_background_color_ == blend)
+    return;
+  blend_background_color_ = blend;
   SetNeedsCommit();
 }
 
@@ -207,6 +215,7 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->set_uv_bottom_right(uv_bottom_right_);
   texture_layer->set_vertex_opacity(vertex_opacity_);
   texture_layer->set_premultiplied_alpha(premultiplied_alpha_);
+  texture_layer->set_blend_background_color(blend_background_color_);
   if (uses_mailbox_ && needs_set_mailbox_) {
     TextureMailbox texture_mailbox;
     if (holder_ref_) {

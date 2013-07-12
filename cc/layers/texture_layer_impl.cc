@@ -19,6 +19,7 @@ TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* tree_impl,
       texture_id_(0),
       external_texture_resource_(0),
       premultiplied_alpha_(true),
+      blend_background_color_(false),
       flipped_(true),
       uv_top_left_(0.f, 0.f),
       uv_bottom_right_(1.f, 1.f),
@@ -104,8 +105,12 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
+  SkColor bg_color = blend_background_color_ ?
+      background_color() : SK_ColorTRANSPARENT;
+  bool opaque = contents_opaque() || (SkColorGetA(bg_color) == 0xFF);
+
   gfx::Rect quad_rect(content_bounds());
-  gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
+  gfx::Rect opaque_rect = opaque ? quad_rect : gfx::Rect();
   scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
                quad_rect,
@@ -114,6 +119,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha_,
                uv_top_left_,
                uv_bottom_right_,
+               bg_color,
                vertex_opacity_,
                flipped_);
 

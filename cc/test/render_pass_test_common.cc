@@ -165,6 +165,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        false,
                        gfx::PointF(0.f, 0.f),
                        gfx::PointF(1.f, 1.f),
+                       SK_ColorTRANSPARENT,
                        vertex_opacity,
                        false);
   AppendQuad(texture_quad.PassAs<DrawQuad>());

@@ -156,6 +156,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            premultiplied_alpha,
                            uv_top_left,
                            uv_bottom_right,
+                           SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
       quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
@@ -196,6 +197,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            premultiplied_alpha,
                            uv_top_left,
                            uv_bottom_right,
+                           SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
       quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);

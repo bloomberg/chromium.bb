@@ -118,6 +118,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                  premultipled_alpha,
                  uv_top_left,
                  uv_bottom_right,
+                 SK_ColorTRANSPARENT,
                  opacity,
                  flipped);
     quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
@@ -141,6 +142,7 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                  premultipled_alpha,
                  uv_top_left,
                  uv_bottom_right,
+                 SK_ColorTRANSPARENT,
                  opacity,
                  flipped);
     quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);

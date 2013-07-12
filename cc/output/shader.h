@@ -326,6 +326,7 @@ class FragmentTexOpaqueBinding {
             int* base_uniform_index);
   int alpha_location() const { return -1; }
   int fragment_tex_transform_location() const { return -1; }
+  int background_color_location() const { return -1; }
   int sampler_location() const { return sampler_location_; }
 
  private:
@@ -334,12 +335,42 @@ class FragmentTexOpaqueBinding {
   DISALLOW_COPY_AND_ASSIGN(FragmentTexOpaqueBinding);
 };
 
+class FragmentTexBackgroundBinding {
+ public:
+  FragmentTexBackgroundBinding();
+
+  void Init(WebKit::WebGraphicsContext3D* context,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+  int background_color_location() const { return background_color_location_; }
+  int sampler_location() const { return sampler_location_; }
+
+ private:
+  int background_color_location_;
+  int sampler_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentTexBackgroundBinding);
+};
+
 class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
  public:
   std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
 class FragmentShaderRGBATexPremultiplyAlpha : public FragmentTexOpaqueBinding {
+ public:
+  std::string GetShaderString(TexCoordPrecision precision) const;
+};
+
+class FragmentShaderTexBackgroundVaryingAlpha
+    : public FragmentTexBackgroundBinding {
+ public:
+  std::string GetShaderString(TexCoordPrecision precision) const;
+};
+
+class FragmentShaderTexBackgroundPremultiplyAlpha
+    : public FragmentTexBackgroundBinding {
  public:
   std::string GetShaderString(TexCoordPrecision precision) const;
 };
@@ -355,7 +386,7 @@ class FragmentShaderRGBATexColorMatrixAlpha
     std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
-class FragmentShaderRGBATexRectVaryingAlpha : public FragmentTexAlphaBinding {
+class FragmentShaderRGBATexRectVaryingAlpha : public FragmentTexOpaqueBinding {
  public:
   std::string GetShaderString(TexCoordPrecision precision) const;
 };

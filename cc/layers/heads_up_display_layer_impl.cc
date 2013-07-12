@@ -124,6 +124,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
                premultiplied_alpha,
                uv_top_left,
                uv_bottom_right,
+               SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);

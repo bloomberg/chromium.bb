@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 
@@ -32,9 +33,11 @@ struct TexturedQuadDrawCache {
   int program_id;
   int resource_id;
   bool needs_blending;
+  SkColor background_color;
 
   // Information about the program binding that is required to draw.
   int uv_xform_location;
+  int background_color_location;
   int vertex_opacity_location;
   int matrix_location;
   int sampler_location;

@@ -49,6 +49,10 @@ void WebExternalTextureLayerImpl::setPremultipliedAlpha(
       premultiplied_alpha);
 }
 
+void WebExternalTextureLayerImpl::setBlendBackgroundColor(bool blend) {
+  static_cast<TextureLayer*>(layer_->layer())->SetBlendBackgroundColor(blend);
+}
+
 void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
   static_cast<TextureLayer*>(layer_->layer())->SetRateLimitContext(rate_limit);
 }

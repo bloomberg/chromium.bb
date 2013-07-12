@@ -153,6 +153,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->premultiplied_alpha, b->premultiplied_alpha);
     EXPECT_EQ(a->uv_top_left, b->uv_top_left);
     EXPECT_EQ(a->uv_bottom_right, b->uv_bottom_right);
+    EXPECT_EQ(a->background_color, b->background_color);
     EXPECT_EQ(a->vertex_opacity[0], b->vertex_opacity[0]);
     EXPECT_EQ(a->vertex_opacity[1], b->vertex_opacity[1]);
     EXPECT_EQ(a->vertex_opacity[2], b->vertex_opacity[2]);
@@ -346,6 +347,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                      arbitrary_bool2,
                      arbitrary_pointf1,
                      arbitrary_pointf2,
+                     arbitrary_color,
                      arbitrary_float_array,
                      arbitrary_bool3);
   scoped_ptr<DrawQuad> texture_cmp = texture_in->Copy(
