@@ -506,6 +506,20 @@ void NaClProcessHost::OnResourcesReady() {
 
 bool NaClProcessHost::ReplyToRenderer(
     const IPC::ChannelHandle& channel_handle) {
+#if defined(OS_WIN)
+  // If we are on 64-bit Windows, the NaCl process's sandbox is
+  // managed by a different process from the renderer's sandbox.  We
+  // need to inform the renderer's sandbox about the NaCl process so
+  // that the renderer can send handles to the NaCl process using
+  // BrokerDuplicateHandle().
+  if (RunningOnWOW64()) {
+    if (!content::BrokerAddTargetPeer(process_->GetData().handle)) {
+      LOG(ERROR) << "Failed to add NaCl process PID";
+      return false;
+    }
+  }
+#endif
+
   nacl::FileDescriptor handle_for_renderer;
 #if defined(OS_WIN)
   // Copy the handle into the renderer process.
@@ -530,20 +544,6 @@ bool NaClProcessHost::ReplyToRenderer(
   imc_handle.fd = internal_->socket_for_renderer;
   imc_handle.auto_close = true;
   handle_for_renderer = imc_handle;
-#endif
-
-#if defined(OS_WIN)
-  // If we are on 64-bit Windows, the NaCl process's sandbox is
-  // managed by a different process from the renderer's sandbox.  We
-  // need to inform the renderer's sandbox about the NaCl process so
-  // that the renderer can send handles to the NaCl process using
-  // BrokerDuplicateHandle().
-  if (RunningOnWOW64()) {
-    if (!content::BrokerAddTargetPeer(process_->GetData().handle)) {
-      LOG(ERROR) << "Failed to add NaCl process PID";
-      return false;
-    }
-  }
 #endif
 
   const ChildProcessData& data = process_->GetData();
