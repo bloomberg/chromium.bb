@@ -369,6 +369,11 @@ def RunTestsCommand(command, options, args, option_parser):
         individual test runner.
   """
 
+  # Check for extra arguments
+  if len(args) > 2:
+    option_parser.error('Unrecognized arguments: %s' % (' '.join(args[2:])))
+    return constants.ERROR_EXIT_CODE
+
   ProcessCommonOptions(options)
 
   if command == 'gtest':
@@ -443,6 +448,10 @@ def HelpCommand(command, options, args, option_parser):
   if len(args) < 3:
     option_parser.print_help()
     return 0
+  # If we have too many args, print an error
+  if len(args) > 3:
+    option_parser.error('Unrecognized arguments: %s' % (' '.join(args[3:])))
+    return constants.ERROR_EXIT_CODE
 
   command = args[2]
 
