@@ -472,6 +472,7 @@ Bug(fmalita) svg/clip-path/clip-path-pixelation.svg [ NeedsRebaseline ]
 Bug(fmalita) svg/clip-path/clip-path-transform-1.svg [ NeedsRebaseline ]
 Bug(fmalita) svg/clip-path/clipper-placement-issue.svg [ NeedsRebaseline ]
 Bug(fmalita) svg/repaint/mask-clip-target-transform.svg [ NeedsRebaseline ]
+Bug(fmalita) [ MountainLion ] svg/transforms/transformed-text-fill-pattern.html [ ImageOnlyFailure ]
 
 # -----------------------------------------------------------------
 # End SVG TESTS
