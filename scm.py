@@ -97,13 +97,14 @@ class GIT(object):
   current_version = None
 
   @staticmethod
-  def Capture(args, cwd, **kwargs):
+  def Capture(args, cwd, strip_out=True, **kwargs):
     env = os.environ.copy()
     # 'cat' is a magical git string that disables pagers on all platforms.
     env['GIT_PAGER'] = 'cat'
-    return subprocess2.check_output(
+    output = subprocess2.check_output(
         ['git'] + args,
-        cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs).strip()
+        cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs)
+    return output.strip() if strip_out else output
 
   @staticmethod
   def CaptureStatus(files, cwd, upstream_branch):
@@ -359,7 +360,7 @@ class GIT(object):
     if files:
       command.append('--')
       command.extend(files)
-    diff = GIT.Capture(command, cwd=cwd).splitlines(True)
+    diff = GIT.Capture(command, cwd=cwd, strip_out=False).splitlines(True)
     for i in range(len(diff)):
       # In the case of added files, replace /dev/null with the path to the
       # file being added.
