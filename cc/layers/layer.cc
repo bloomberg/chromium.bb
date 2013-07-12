@@ -68,6 +68,9 @@ Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
   // way for us to be destroyed while we still have a parent.
   DCHECK(!parent());
+  // Similarly we shouldn't have a layer tree host since it also keeps a
+  // reference to us.
+  DCHECK(!layer_tree_host());
 
   layer_animation_controller_->RemoveValueObserver(this);
 

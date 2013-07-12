@@ -38,6 +38,8 @@ class MockLayerTreeHost : public LayerTreeHost {
 
   MOCK_METHOD0(AcquireLayerTextures, void());
   MOCK_METHOD0(SetNeedsCommit, void());
+  MOCK_METHOD1(StartRateLimiter, void(WebKit::WebGraphicsContext3D* context));
+  MOCK_METHOD1(StopRateLimiter, void(WebKit::WebGraphicsContext3D* context));
 };
 
 class TextureLayerTest : public testing::Test {
@@ -184,7 +186,7 @@ TEST_F(TextureLayerTest, SyncImplWhenRemovingFromTree) {
 
 TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   scoped_refptr<TextureLayer> test_layer = TextureLayer::Create(NULL);
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  layer_tree_host_->SetRootLayer(test_layer);
 
   // Test properties that should call SetNeedsCommit.  All properties need to
   // be set to new values in order for SetNeedsCommit to be called.
@@ -198,6 +200,78 @@ TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
 
   // Calling SetTextureId can call AcquireLayerTextures.
   EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(AnyNumber());
+}
+
+class FakeTextureLayerClient : public TextureLayerClient {
+ public:
+  FakeTextureLayerClient() : context_(TestWebGraphicsContext3D::Create()) {}
+
+  virtual unsigned PrepareTexture() OVERRIDE {
+    return 0;
+  }
+
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    return context_.get();
+  }
+
+  virtual bool PrepareTextureMailbox(TextureMailbox* mailbox,
+                                     bool use_shared_memory) OVERRIDE {
+    *mailbox = TextureMailbox();
+    return true;
+  }
+
+ private:
+  scoped_ptr<TestWebGraphicsContext3D> context_;
+  DISALLOW_COPY_AND_ASSIGN(FakeTextureLayerClient);
+};
+
+TEST_F(TextureLayerTest, RateLimiter) {
+  FakeTextureLayerClient client;
+  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(
+      &client);
+  test_layer->SetIsDrawable(true);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
+  layer_tree_host_->SetRootLayer(test_layer);
+
+  // Don't rate limit until we invalidate.
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(_)).Times(0);
+  test_layer->SetRateLimitContext(true);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Do rate limit after we invalidate.
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(client.Context3d()));
+  test_layer->SetNeedsDisplay();
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Stop rate limiter when we don't want it any more.
+  EXPECT_CALL(*layer_tree_host_, StopRateLimiter(client.Context3d()));
+  test_layer->SetRateLimitContext(false);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Or we clear the client.
+  test_layer->SetRateLimitContext(true);
+  EXPECT_CALL(*layer_tree_host_, StopRateLimiter(client.Context3d()));
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
+  test_layer->ClearClient();
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Reset to a layer with a client, that started the rate limiter.
+  test_layer = TextureLayer::CreateForMailbox(
+      &client);
+  test_layer->SetIsDrawable(true);
+  test_layer->SetRateLimitContext(true);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
+  layer_tree_host_->SetRootLayer(test_layer);
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(_)).Times(0);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(client.Context3d()));
+  test_layer->SetNeedsDisplay();
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Stop rate limiter when we're removed from the tree.
+  EXPECT_CALL(*layer_tree_host_, StopRateLimiter(client.Context3d()));
+  layer_tree_host_->SetRootLayer(NULL);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
 class MockMailboxCallback {

@@ -220,8 +220,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetImplTransform(const gfx::Transform& transform);
   void SetLatencyInfo(const ui::LatencyInfo& latency_info);
 
-  void StartRateLimiter(WebKit::WebGraphicsContext3D* context3d);
-  void StopRateLimiter(WebKit::WebGraphicsContext3D* context3d);
+  virtual void StartRateLimiter(WebKit::WebGraphicsContext3D* context3d);
+  virtual void StopRateLimiter(WebKit::WebGraphicsContext3D* context3d);
 
   // RateLimiterClient implementation.
   virtual void RateLimit() OVERRIDE;

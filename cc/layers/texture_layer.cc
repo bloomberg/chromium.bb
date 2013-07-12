@@ -42,15 +42,11 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
 }
 
 TextureLayer::~TextureLayer() {
-  if (layer_tree_host()) {
-    if (texture_id_)
-      layer_tree_host()->AcquireLayerTextures();
-    if (rate_limit_context_ && client_)
-      layer_tree_host()->StopRateLimiter(client_->Context3d());
-  }
 }
 
 void TextureLayer::ClearClient() {
+  if (rate_limit_context_ && client_ && layer_tree_host())
+    layer_tree_host()->StopRateLimiter(client_->Context3d());
   client_ = NULL;
   if (uses_mailbox_)
     SetTextureMailbox(TextureMailbox());
@@ -150,8 +146,17 @@ void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
 }
 
 void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
-  if (texture_id_ && layer_tree_host() && host != layer_tree_host())
-    layer_tree_host()->AcquireLayerTextures();
+  if (layer_tree_host() == host) {
+    Layer::SetLayerTreeHost(host);
+    return;
+  }
+
+  if (layer_tree_host()) {
+    if (texture_id_)
+      layer_tree_host()->AcquireLayerTextures();
+    if (rate_limit_context_ && client_)
+      layer_tree_host()->StopRateLimiter(client_->Context3d());
+  }
   // If we're removed from the tree, the TextureLayerImpl will be destroyed, and
   // we will need to set the mailbox again on a new TextureLayerImpl the next
   // time we push.

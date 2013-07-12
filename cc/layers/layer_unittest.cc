@@ -147,6 +147,10 @@ TEST_F(LayerTest, BasicCreateAndDestroy) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
   test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
+  test_layer->SetLayerTreeHost(NULL);
 }
 
 TEST_F(LayerTest, AddAndRemoveChild) {
@@ -194,7 +198,7 @@ TEST_F(LayerTest, InsertChild) {
   scoped_refptr<Layer> child3 = Layer::Create();
   scoped_refptr<Layer> child4 = Layer::Create();
 
-  parent->SetLayerTreeHost(layer_tree_host_.get());
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
 
   ASSERT_EQ(0U, parent->children().size());
 
@@ -229,7 +233,7 @@ TEST_F(LayerTest, InsertChild) {
   EXPECT_EQ(child4, parent->children()[3]);
   EXPECT_EQ(parent.get(), child4->parent());
 
-  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
 }
 
 TEST_F(LayerTest, InsertChildPastEndOfList) {
@@ -258,7 +262,7 @@ TEST_F(LayerTest, InsertSameChildTwice) {
   scoped_refptr<Layer> child1 = Layer::Create();
   scoped_refptr<Layer> child2 = Layer::Create();
 
-  parent->SetLayerTreeHost(layer_tree_host_.get());
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
 
   ASSERT_EQ(0U, parent->children().size());
 
@@ -278,7 +282,7 @@ TEST_F(LayerTest, InsertSameChildTwice) {
   EXPECT_EQ(child2, parent->children()[0]);
   EXPECT_EQ(child1, parent->children()[1]);
 
-  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
 }
 
 TEST_F(LayerTest, ReplaceChildWithNewChild) {
@@ -371,7 +375,8 @@ TEST_F(LayerTest, SetChildren) {
   EXPECT_EQ(old_parent.get(), child1->parent());
   EXPECT_FALSE(child2->parent());
 
-  new_parent->SetLayerTreeHost(layer_tree_host_.get());
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(
+      1, layer_tree_host_->SetRootLayer(new_parent));
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(
       AtLeast(1), new_parent->SetChildren(new_children));
@@ -380,7 +385,7 @@ TEST_F(LayerTest, SetChildren) {
   EXPECT_EQ(new_parent.get(), child1->parent());
   EXPECT_EQ(new_parent.get(), child2->parent());
 
-  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
 }
 
 TEST_F(LayerTest, GetRootLayerAfterTreeManipulations) {
@@ -445,7 +450,8 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   //      SetNeedsDisplay.
 
   scoped_refptr<Layer> test_layer = Layer::Create();
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(
+      1, layer_tree_host_->SetRootLayer(test_layer));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
 
   gfx::Size test_bounds = gfx::Size(501, 508);
@@ -492,7 +498,8 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
 
 TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   scoped_refptr<Layer> test_layer = Layer::Create();
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(
+      1, layer_tree_host_->SetRootLayer(test_layer));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
 
   scoped_refptr<Layer> dummy_layer1 = Layer::Create();
@@ -544,7 +551,8 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
 
 TEST_F(LayerTest, SetBoundsTriggersSetNeedsRedrawAfterGettingNonEmptyBounds) {
   scoped_refptr<Layer> test_layer = Layer::Create();
-  test_layer->SetLayerTreeHost(layer_tree_host_.get());
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(
+      1, layer_tree_host_->SetRootLayer(test_layer));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
 
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
@@ -964,7 +972,6 @@ TEST(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create(settings);
   layer_tree_host->SetRootLayer(layer);
-  layer->SetLayerTreeHost(layer_tree_host.get());
   AssertLayerTreeHostMatchesForSubtree(layer.get(), layer_tree_host.get());
 
   // Case 3: with a LayerTreeHost where accelerated animation is disabled, the
