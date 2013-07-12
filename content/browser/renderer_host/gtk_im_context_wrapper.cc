@@ -438,7 +438,8 @@ void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
       // Send an IME event.
       // Unlike a Char event, an IME event is NOT dispatched to onkeypress()
       // handlers or autofill.
-      host->ImeConfirmComposition(commit_text_);
+      host->ImeConfirmComposition(
+          commit_text_,ui::Range::InvalidRange(),false);
       // Set this flag to false, as this composition session has been
       // finished.
       is_composing_text_ = false;
@@ -475,7 +476,8 @@ void GtkIMContextWrapper::ConfirmComposition() {
   if (is_composing_text_) {
     if (host_view_->GetRenderWidgetHost()) {
       RenderWidgetHostImpl::From(
-          host_view_->GetRenderWidgetHost())->ImeConfirmComposition();
+          host_view_->GetRenderWidgetHost())->ImeConfirmComposition(
+              string16(), ui::Range::InvalidRange(), false);
     }
 
     // Reset the input method.
@@ -500,7 +502,8 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
     // Workaround http://crbug.com/45478 by sending fake key down/up events.
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
     RenderWidgetHostImpl::From(
-        host_view_->GetRenderWidgetHost())->ImeConfirmComposition(text);
+        host_view_->GetRenderWidgetHost())->ImeConfirmComposition(
+            text, ui::Range::InvalidRange(), false);
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
   }
 }

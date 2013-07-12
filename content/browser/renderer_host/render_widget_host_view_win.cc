@@ -1051,7 +1051,9 @@ void RenderWidgetHostViewWin::InsertText(const string16& text) {
     return;
   }
   if (render_widget_host_)
-    render_widget_host_->ImeConfirmComposition(text);
+    render_widget_host_->ImeConfirmComposition(text,
+                                               ui::Range::InvalidRange(),
+                                               false);
 }
 
 void RenderWidgetHostViewWin::InsertChar(char16 ch, int flags) {
@@ -1691,7 +1693,8 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // and send it to a renderer process.
   ui::CompositionText composition;
   if (ime_input_.GetResult(m_hWnd, lparam, &composition.text)) {
-    render_widget_host_->ImeConfirmComposition(composition.text);
+    render_widget_host_->ImeConfirmComposition(
+        composition.text, ui::Range::InvalidRange(), false);
     ime_input_.ResetComposition(m_hWnd);
     // Fall though and try reading the composition string.
     // Japanese IMEs send a message containing both GCS_RESULTSTR and

@@ -259,12 +259,10 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 4, "hllo ", 1, 1, 0, 4);
 
         mConnection.finishComposingText();
-        // finishComposingText() is a two step IME event.
-        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 5, "hllo ", 1, 1, 0, 1);
-        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 6, "hllo ", 1, 1, -1, -1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 5, "hllo ", 1, 1, -1, -1);
 
         mConnection.commitText("\n", 1);
-        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 7, "h\nllo ", 2, 2, -1, -1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 6, "h\nllo ", 2, 2, -1, -1);
     }
 
     private void performShowImeIfNeeded() {

@@ -1058,9 +1058,10 @@ IPC_MESSAGE_ROUTED4(
     int /* selection_end */)
 
 // This message confirms an ongoing composition.
-IPC_MESSAGE_ROUTED2(ViewMsg_ImeConfirmComposition,
+IPC_MESSAGE_ROUTED3(ViewMsg_ImeConfirmComposition,
                     string16 /* text */,
-                    ui::Range /* replacement_range */)
+                    ui::Range /* replacement_range */,
+                    bool /* keep_selection */)
 
 // Sets the text composition to be between the given start and end offsets
 // in the currently focused editable field.

@@ -325,13 +325,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   //   (on Windows);
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
-  void ImeConfirmComposition(const string16& text);
   void ImeConfirmComposition(const string16& text,
-                             const ui::Range& replacement_range);
-
-  // Finishes an ongoing composition with the composition text set by last
-  // SetComposition() call.
-  void ImeConfirmComposition();
+                             const ui::Range& replacement_range,
+                             bool keep_selection);
 
   // Cancels an ongoing composition.
   void ImeCancelComposition();

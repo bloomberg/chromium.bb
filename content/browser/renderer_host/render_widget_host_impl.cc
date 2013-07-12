@@ -1586,18 +1586,12 @@ void RenderWidgetHostImpl::ImeSetComposition(
             GetRoutingID(), text, underlines, selection_start, selection_end));
 }
 
-void RenderWidgetHostImpl::ImeConfirmComposition(const string16& text) {
-  ImeConfirmComposition(text, ui::Range::InvalidRange());
-}
-
 void RenderWidgetHostImpl::ImeConfirmComposition(
-    const string16& text, const ui::Range& replacement_range) {
+    const string16& text,
+    const ui::Range& replacement_range,
+    bool keep_selection) {
   Send(new ViewMsg_ImeConfirmComposition(
-        GetRoutingID(), text, replacement_range));
-}
-
-void RenderWidgetHostImpl::ImeConfirmComposition() {
-  ImeConfirmComposition(string16());
+        GetRoutingID(), text, replacement_range, keep_selection));
 }
 
 void RenderWidgetHostImpl::ImeCancelComposition() {

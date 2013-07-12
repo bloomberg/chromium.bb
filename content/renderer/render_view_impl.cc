@@ -6144,7 +6144,7 @@ void RenderViewImpl::SimulateImeSetComposition(
 void RenderViewImpl::SimulateImeConfirmComposition(
     const string16& text,
     const ui::Range& replacement_range) {
-  OnImeConfirmComposition(text, replacement_range);
+  OnImeConfirmComposition(text, replacement_range, false);
 }
 
 void RenderViewImpl::PpapiPluginCancelComposition() {
@@ -6208,8 +6208,9 @@ void RenderViewImpl::OnImeSetComposition(
   }
 }
 
-void RenderViewImpl::OnImeConfirmComposition(
-      const string16& text, const ui::Range& replacement_range) {
+void RenderViewImpl::OnImeConfirmComposition(const string16& text,
+                                             const ui::Range& replacement_range,
+                                             bool keep_selection) {
   if (pepper_helper_->IsPluginFocused()) {
     // When a PPAPI plugin has focus, we bypass WebKit.
     pepper_helper_->OnImeConfirmComposition(text);
@@ -6238,7 +6239,9 @@ void RenderViewImpl::OnImeConfirmComposition(
           frame->selectRange(webrange);
       }
     }
-    RenderWidget::OnImeConfirmComposition(text, replacement_range);
+    RenderWidget::OnImeConfirmComposition(text,
+                                          replacement_range,
+                                          keep_selection);
   }
 }
 

@@ -1814,13 +1814,19 @@ void RenderWidget::OnImeSetComposition(
 #endif
 }
 
-void RenderWidget::OnImeConfirmComposition(
-    const string16& text, const ui::Range& replacement_range) {
+void RenderWidget::OnImeConfirmComposition(const string16& text,
+                                           const ui::Range& replacement_range,
+                                           bool keep_selection) {
   if (!webwidget_)
     return;
   ImeEventGuard guard(this);
   handling_input_event_ = true;
-  webwidget_->confirmComposition(text);
+  if (text.length())
+    webwidget_->confirmComposition(text);
+  else if (keep_selection)
+    webwidget_->confirmComposition(WebWidget::KeepSelection);
+  else
+    webwidget_->confirmComposition(WebWidget::DoNotKeepSelection);
   handling_input_event_ = false;
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   UpdateCompositionInfo(true);
@@ -2331,6 +2337,7 @@ void RenderWidget::resetInputMethod() {
   if (!input_method_is_active_)
     return;
 
+  ImeEventGuard guard(this);
   // If the last text input type is not None, then we should finish any
   // ongoing composition regardless of the new text input type.
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE) {

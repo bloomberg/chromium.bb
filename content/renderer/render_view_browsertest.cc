@@ -994,7 +994,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       case IME_CONFIRMCOMPOSITION:
         view()->OnImeConfirmComposition(
             WideToUTF16Hack(ime_message->ime_string),
-            ui::Range::InvalidRange());
+            ui::Range::InvalidRange(),
+            false);
         break;
 
       case IME_CANCELCOMPOSITION:
@@ -1755,7 +1756,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ASSERT_EQ(ascii_composition.size(), bounds.size());
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+  view()->OnImeConfirmComposition(
+      empty_string, ui::Range::InvalidRange(), false);
 
   // Non surrogate pair unicode character.
   const string16 unicode_composition = UTF8ToUTF16(
@@ -1765,7 +1767,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ASSERT_EQ(unicode_composition.size(), bounds.size());
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+  view()->OnImeConfirmComposition(
+      empty_string, ui::Range::InvalidRange(), false);
 
   // Surrogate pair character.
   const string16 surrogate_pair_char = UTF8ToUTF16("\xF0\xA0\xAE\x9F");
@@ -1777,7 +1780,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ASSERT_EQ(surrogate_pair_char.size(), bounds.size());
   EXPECT_LT(0, bounds[0].width());
   EXPECT_EQ(0, bounds[1].width());
-  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+  view()->OnImeConfirmComposition(
+      empty_string, ui::Range::InvalidRange(), false);
 
   // Mixed string.
   const string16 surrogate_pair_mixed_composition =
@@ -1799,7 +1803,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       EXPECT_LT(0, bounds[i].width());
     }
   }
-  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+  view()->OnImeConfirmComposition(
+      empty_string, ui::Range::InvalidRange(), false);
 }
 #endif
 

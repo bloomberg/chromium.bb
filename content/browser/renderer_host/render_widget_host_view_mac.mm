@@ -2234,7 +2234,8 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   BOOL textInserted = NO;
   if (textToBeInserted_.length() >
       ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
-    widgetHost->ImeConfirmComposition(textToBeInserted_);
+    widgetHost->ImeConfirmComposition(
+        textToBeInserted_, ui::Range::InvalidRange(), false);
     textInserted = YES;
   }
 
@@ -2249,10 +2250,12 @@ void RenderWidgetHostViewMac::FrameSwapped() {
                                   selectedRange_.location,
                                   NSMaxRange(selectedRange_));
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
-    if (unmarkTextCalled_)
-      widgetHost->ImeConfirmComposition();
-    else
+    if (unmarkTextCalled_) {
+      widgetHost->ImeConfirmComposition(
+          string16(), ui::Range::InvalidRange(), false);
+    } else {
       widgetHost->ImeCancelComposition();
+    }
   }
 
   // If the key event was handled by the input method but it also generated some
@@ -3312,10 +3315,12 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   // If we are handling a key down event, then ConfirmComposition() will be
   // called in keyEvent: method.
-  if (!handlingKeyDown_)
-    renderWidgetHostView_->render_widget_host_->ImeConfirmComposition();
-  else
+  if (!handlingKeyDown_) {
+    renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
+        string16(), ui::Range::InvalidRange(), false);
+  } else {
     unmarkTextCalled_ = YES;
+  }
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)newSelRange
@@ -3407,7 +3412,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   } else {
     ui::Range replacement_range(replacementRange);
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        base::SysNSStringToUTF16(im_text), replacement_range);
+        base::SysNSStringToUTF16(im_text), replacement_range, false);
   }
 
   // Inserting text will delete all marked text automatically.
@@ -3549,7 +3554,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     return;
 
   if (renderWidgetHostView_->render_widget_host_)
-    renderWidgetHostView_->render_widget_host_->ImeConfirmComposition();
+    renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
+        string16(), ui::Range::InvalidRange(), false);
 
   [self cancelComposition];
 }

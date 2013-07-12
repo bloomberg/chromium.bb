@@ -1993,7 +1993,7 @@ void RenderWidgetHostViewAura::SetCompositionText(
 
 void RenderWidgetHostViewAura::ConfirmCompositionText() {
   if (host_ && has_composition_text_)
-    host_->ImeConfirmComposition();
+    host_->ImeConfirmComposition(string16(), ui::Range::InvalidRange(), false);
   has_composition_text_ = false;
 }
 
@@ -2006,7 +2006,7 @@ void RenderWidgetHostViewAura::ClearCompositionText() {
 void RenderWidgetHostViewAura::InsertText(const string16& text) {
   DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
   if (host_)
-    host_->ImeConfirmComposition(text);
+    host_->ImeConfirmComposition(text, ui::Range::InvalidRange(), false);
   has_composition_text_ = false;
 }
 
@@ -2925,7 +2925,7 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
   if (!has_composition_text_)
     return;
   if (host_)
-    host_->ImeConfirmComposition();
+    host_->ImeConfirmComposition(string16(), ui::Range::InvalidRange(), false);
   ImeCancelComposition();
 }
 
