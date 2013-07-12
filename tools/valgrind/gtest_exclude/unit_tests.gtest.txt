@@ -31,3 +31,6 @@ NativeMessagingTest.*
 
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
+
+# Fails under Valgrind, probably timing-related. http://crbug.com/259679
+WhitelistManagerTest.DownloadWhitelistRetry
