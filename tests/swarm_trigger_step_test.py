@@ -69,7 +69,7 @@ def GenerateExpectedJSON(options):
           u'--hash', FILE_HASH,
           u'--remote', retrieval_url + u'default-gzip/',
         ],
-        u'decorate_output': True,
+        u'decorate_output': False,
         u'test_name': u'Run Test',
         u'time_out': 600,
       },
@@ -77,7 +77,7 @@ def GenerateExpectedJSON(options):
         u'action' : [
             u'python', CLEANUP_SCRIPT_NAME,
         ],
-        u'decorate_output': True,
+        u'decorate_output': False,
         u'test_name': u'Clean Up',
         u'time_out': 600,
       }
