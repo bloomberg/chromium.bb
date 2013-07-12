@@ -37,6 +37,7 @@
 #include "core/fileapi/BlobRegistry.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/fileapi/Stream.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -76,7 +77,7 @@ FileReaderLoader::~FileReaderLoader()
         BlobRegistry::unregisterBlobURL(m_urlForReading);
 }
 
-void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
+void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContext, const KURL& url)
 {
     // The blob is read by routing through the request handling layer given a temporary public url.
     m_urlForReading = BlobURL::createPublicURL(scriptExecutionContext->securityOrigin());
@@ -84,7 +85,7 @@ void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, Blo
         failed(FileError::SECURITY_ERR);
         return;
     }
-    BlobRegistry::registerBlobURL(scriptExecutionContext->securityOrigin(), m_urlForReading, blob->url());
+    BlobRegistry::registerBlobURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
 
     // Construct and load the request.
     ResourceRequest request(m_urlForReading);
@@ -105,6 +106,16 @@ void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, Blo
         m_loader = ThreadableLoader::create(scriptExecutionContext, this, request, options);
     else
         ThreadableLoader::loadResourceSynchronously(scriptExecutionContext, request, *this, options);
+}
+
+void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
+{
+    startForURL(scriptExecutionContext, blob->url());
+}
+
+void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Stream& stream)
+{
+    startForURL(scriptExecutionContext, stream.url());
 }
 
 void FileReaderLoader::cancel()

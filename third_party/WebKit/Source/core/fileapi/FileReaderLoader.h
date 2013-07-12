@@ -43,6 +43,7 @@ namespace WebCore {
 class Blob;
 class FileReaderLoaderClient;
 class ScriptExecutionContext;
+class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
 
@@ -61,6 +62,7 @@ public:
     ~FileReaderLoader();
 
     void start(ScriptExecutionContext*, Blob*);
+    void start(ScriptExecutionContext*, const Stream&);
     void cancel();
 
     // ThreadableLoaderClient
@@ -85,6 +87,10 @@ public:
 #endif // ENABLE(STREAM)
 
 private:
+    // We have start() methods for Blob and Stream instead of exposing this
+    // method so that users don't misuse this by calling with non Blob/Stream
+    // URL.
+    void startForURL(ScriptExecutionContext*, const KURL&);
     void terminate();
     void cleanup();
     void failed(FileError::ErrorCode);
