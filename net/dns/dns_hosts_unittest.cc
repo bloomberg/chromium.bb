@@ -64,6 +64,18 @@ TEST(DnsHostsTest, ParseHosts) {
   ASSERT_EQ(expected, hosts);
 }
 
+TEST(DnsHostsTest, HostsParser_Empty) {
+  DnsHosts hosts;
+  ParseHosts("", &hosts);
+  EXPECT_EQ(0u, hosts.size());
+}
+
+TEST(DnsHostsTest, HostsParser_OnlyWhitespace) {
+  DnsHosts hosts;
+  ParseHosts(" ", &hosts);
+  EXPECT_EQ(0u, hosts.size());
+}
+
 }  // namespace
 
 }  // namespace net

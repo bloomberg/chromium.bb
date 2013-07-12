@@ -33,8 +33,12 @@ class HostsParser {
   bool Advance() {
     bool next_is_ip = (pos_ == 0);
     while (pos_ < end_ && pos_ != std::string::npos) {
-      SkipWhitespace();
       switch (text_[pos_]) {
+        case ' ':
+        case '\t':
+          SkipWhitespace();
+          break;
+
         case '\r':
         case '\n':
           next_is_ip = true;
