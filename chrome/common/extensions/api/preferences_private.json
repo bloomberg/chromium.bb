@@ -8,8 +8,8 @@
     "description": "none",
     "properties": {
       "googleGeolocationAccessEnabled": {
-        "$ref": "types.ChromeSetting",
-        "value": ["googlegeolocationaccessEnabled", {"type":"boolean"}],
+        "$ref": "types.private.ChromeDirectSetting",
+        "value": ["googlegeolocationaccess.enabled", {"type":"boolean"}],
         "description": "If enabled, Google services can access the user's location. This preference's value is a boolean, defaulting to <code>false</code>."
       }
     }

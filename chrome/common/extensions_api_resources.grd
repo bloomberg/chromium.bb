@@ -32,6 +32,7 @@
       <include name="IDR_EXTENSION_API_JSON_TTS" file="extensions\api\tts.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TTSENGINE" file="extensions\api\tts_engine.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TYPES" file="extensions\api\types.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_TYPES_PRIVATE" file="extensions\api\types_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL" file="extensions\api\web_request_internal.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTORE" file="extensions\api\webstore.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE" file="extensions\api\webstore_private.json" type="BINDATA" />

@@ -953,6 +953,8 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
   source_map_.RegisterSource("StorageArea", IDR_STORAGE_AREA_JS);
   source_map_.RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
+  source_map_.RegisterSource("ChromeDirectSetting",
+                             IDR_CHROME_DIRECT_SETTING_JS);
 
   // Platform app sources that are not API-specific..
   source_map_.RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);

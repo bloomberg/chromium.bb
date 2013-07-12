@@ -504,6 +504,11 @@
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
+  "types.private": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "location": "component"
+  },
   "usb": {
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]

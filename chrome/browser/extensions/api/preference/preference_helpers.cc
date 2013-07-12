@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -73,10 +72,7 @@ const char* GetLevelOfControl(
     return kControlledByThisExtension;
   }
 
-  extensions::ComponentLoader* component_loader =
-      profile->GetExtensionService()->component_loader();
-  if (component_loader->Exists(extension_id) ||
-      PreferenceAPI::Get(profile)->CanExtensionControlPref(extension_id,
+  if (PreferenceAPI::Get(profile)->CanExtensionControlPref(extension_id,
                                                            browser_pref,
                                                            incognito)) {
     return kControllableByThisExtension;

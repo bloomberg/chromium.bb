@@ -265,6 +265,7 @@ void ExtensionAPI::InitDefaultConfiguration() {
   RegisterSchemaResource("ttsEngine", IDR_EXTENSION_API_JSON_TTSENGINE);
   RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
   RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);
+  RegisterSchemaResource("types.private", IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
   RegisterSchemaResource("webRequestInternal",
       IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL);
   RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/api/identity/experimental_identity_api.h"
+#include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
@@ -62,6 +63,12 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::GetPreferenceFunction>();
   RegisterFunction<extensions::SetPreferenceFunction>();
   RegisterFunction<extensions::ClearPreferenceFunction>();
+
+  // Direct Preference Access for Component Extensions.
+  RegisterFunction<extensions::chromedirectsetting::GetDirectSettingFunction>();
+  RegisterFunction<extensions::chromedirectsetting::SetDirectSettingFunction>();
+  RegisterFunction<
+      extensions::chromedirectsetting::ClearDirectSettingFunction>();
 
   // WebstorePrivate.
   RegisterFunction<extensions::GetBrowserLoginFunction>();

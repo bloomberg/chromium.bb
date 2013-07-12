@@ -180,6 +180,7 @@
         'renderer/resources/extensions/app_window_custom_bindings.js',
         'renderer/resources/extensions/binding.js',
         'renderer/resources/extensions/browser_action_custom_bindings.js',
+        'renderer/resources/extensions/chrome_direct_setting.js',
         'renderer/resources/extensions/chrome_setting.js',
         'renderer/resources/extensions/content_setting.js',
         'renderer/resources/extensions/content_watcher.js',
