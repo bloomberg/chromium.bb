@@ -12,10 +12,10 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/animation/slide_animation.h"

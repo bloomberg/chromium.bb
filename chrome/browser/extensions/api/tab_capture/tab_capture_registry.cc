@@ -6,12 +6,12 @@
 
 #include <utility>
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"

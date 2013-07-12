@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/balloon_host.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/notification.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"

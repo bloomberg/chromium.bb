@@ -18,9 +18,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "crypto/apple_keychain.h"
 

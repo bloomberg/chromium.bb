@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 
 #include "base/values.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 

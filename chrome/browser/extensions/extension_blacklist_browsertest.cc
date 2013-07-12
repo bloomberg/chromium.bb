@@ -4,12 +4,12 @@
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_details.h"

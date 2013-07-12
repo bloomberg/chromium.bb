@@ -9,12 +9,12 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/idle.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 

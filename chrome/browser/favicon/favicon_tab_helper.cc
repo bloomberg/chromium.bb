@@ -4,6 +4,7 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_util.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 
 #include "base/logging.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 
 using base::Time;

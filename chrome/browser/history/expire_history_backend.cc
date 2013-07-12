@@ -15,13 +15,13 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/text_database.h"
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
-#include "chrome/common/chrome_notification_types.h"
 
 using base::Time;
 using base::TimeDelta;

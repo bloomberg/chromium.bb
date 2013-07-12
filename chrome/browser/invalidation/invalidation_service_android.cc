@@ -4,7 +4,7 @@
 
 #include "chrome/browser/invalidation/invalidation_service_android.h"
 
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
 namespace invalidation {

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/invalidation/invalidation_service_android.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

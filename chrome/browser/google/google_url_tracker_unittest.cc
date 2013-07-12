@@ -9,12 +9,12 @@
 
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"

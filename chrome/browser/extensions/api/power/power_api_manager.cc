@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/power/power_api_manager.h"
 
 #include "base/bind.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 

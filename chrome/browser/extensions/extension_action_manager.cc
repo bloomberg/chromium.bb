@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/extension_action_manager.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/script_badge_handler.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/importer/external_process_importer_host.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/importer/external_process_importer_client.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 

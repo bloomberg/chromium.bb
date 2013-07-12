@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <vector>
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 

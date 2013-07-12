@@ -4,10 +4,10 @@
 
 #include "chrome/browser/google/google_url_tracker_map_entry.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 

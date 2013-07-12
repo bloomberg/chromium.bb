@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/system_indicator.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"

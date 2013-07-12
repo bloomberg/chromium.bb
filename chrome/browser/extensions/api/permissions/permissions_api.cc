@@ -5,11 +5,11 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"

@@ -8,12 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_test_util.h"
 #include "chrome/browser/value_store/value_store.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

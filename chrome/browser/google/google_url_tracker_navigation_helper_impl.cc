@@ -4,9 +4,9 @@
 
 #include "chrome/browser/google/google_url_tracker_navigation_helper_impl.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"

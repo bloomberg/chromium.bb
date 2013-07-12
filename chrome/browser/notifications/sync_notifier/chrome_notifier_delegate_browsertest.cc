@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/sync_notifier_test_utils.h"
@@ -9,7 +10,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
