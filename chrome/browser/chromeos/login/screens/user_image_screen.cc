@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

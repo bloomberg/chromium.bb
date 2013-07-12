@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/page_action_controller.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"

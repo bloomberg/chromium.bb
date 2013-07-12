@@ -5,8 +5,9 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 

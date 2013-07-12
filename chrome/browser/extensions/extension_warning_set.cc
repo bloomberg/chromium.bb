@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"

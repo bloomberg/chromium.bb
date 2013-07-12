@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/idle/idle_api_constants.h"
 #include "chrome/browser/extensions/api/idle/idle_manager.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"

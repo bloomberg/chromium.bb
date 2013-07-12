@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

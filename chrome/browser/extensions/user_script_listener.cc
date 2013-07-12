@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/user_script_listener.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "content/public/browser/browser_thread.h"

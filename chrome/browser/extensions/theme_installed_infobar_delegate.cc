@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"

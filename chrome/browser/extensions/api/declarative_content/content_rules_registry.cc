@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"

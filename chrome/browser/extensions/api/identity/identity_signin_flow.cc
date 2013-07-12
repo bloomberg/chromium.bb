@@ -5,11 +5,11 @@
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"

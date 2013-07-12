@@ -6,8 +6,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/browser/browser_thread.h"

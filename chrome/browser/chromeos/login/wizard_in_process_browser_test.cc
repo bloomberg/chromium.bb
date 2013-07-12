@@ -6,11 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"

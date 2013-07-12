@@ -6,11 +6,11 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 
 #include "content/public/browser/browser_thread.h"

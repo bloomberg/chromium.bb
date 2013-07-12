@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/screen.h"
