@@ -26,7 +26,7 @@ TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
 AutoLoginInfoBarDelegateAndroid::AutoLoginInfoBarDelegateAndroid(
     InfoBarService* owner,
     const AutoLoginInfoBarDelegate::Params& params)
-    : AutoLoginInfoBarDelegate(owner, params) {}
+    : AutoLoginInfoBarDelegate(owner, params), params_() {}
 
 AutoLoginInfoBarDelegateAndroid::~AutoLoginInfoBarDelegateAndroid() {}
 
