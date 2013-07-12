@@ -229,22 +229,20 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
 }
 
 static void CopyLevelDBToProfile(Shell* shell,
-                                 scoped_refptr<IndexedDBContext> context,
+                                 scoped_refptr<IndexedDBContextImpl> context,
                                  const std::string& test_directory) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   base::FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
   base::FilePath test_data_dir =
       GetTestFilePath("indexeddb", test_directory.c_str()).Append(leveldb_dir);
-  IndexedDBContextImpl* context_impl =
-      static_cast<IndexedDBContextImpl*>(context.get());
-  base::FilePath dest = context_impl->data_path().Append(leveldb_dir);
+  base::FilePath dest = context->data_path().Append(leveldb_dir);
   // If we don't create the destination directory first, the contents of the
   // leveldb directory are copied directly into profile/IndexedDB instead of
   // profile/IndexedDB/file__0.xxx/
   ASSERT_TRUE(file_util::CreateDirectory(dest));
   const bool kRecursive = true;
   ASSERT_TRUE(base::CopyDirectory(test_data_dir,
-                                  context_impl->data_path(),
+                                  context->data_path(),
                                   kRecursive));
 }
 
@@ -344,16 +342,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   // Any page that opens an IndexedDB will work here.
   SimpleTest(GetTestUrl("indexeddb", "database_test.html"));
-  scoped_refptr<IndexedDBContext> context =
-      BrowserContext::GetDefaultStoragePartition(
-          shell()->web_contents()->GetBrowserContext())->
-              GetIndexedDBContext();
-  IndexedDBContextImpl* context_impl =
-      static_cast<IndexedDBContextImpl*>(context.get());
   base::FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
   base::FilePath log_file(FILE_PATH_LITERAL("LOG"));
   base::FilePath log_file_path =
-      context_impl->data_path().Append(leveldb_dir).Append(log_file);
+      GetContext()->data_path().Append(leveldb_dir).Append(log_file);
   int64 size;
   EXPECT_TRUE(file_util::GetFileSize(log_file_path, &size));
   EXPECT_GT(size, 0);
@@ -419,6 +411,23 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ConnectionsClosedOnTabClose) {
       shell()->web_contents()->GetRenderProcessHost()->GetHandle(), 0, true);
   shell()->Close();
 
+  EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
+}
+
+// Verify that a "close" event is fired at database connections when
+// the backing store is deleted.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
+  NavigateAndWaitForTitle(shell(), "force_close_event.html", NULL,
+                          "connection ready");
+
+  GetContext()->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
+                 GetContext(),
+                 GURL("file:///")));
+
+  string16 expected_title16(ASCIIToUTF16("connection closed"));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 
