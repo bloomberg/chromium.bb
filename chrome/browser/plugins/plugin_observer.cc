@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
@@ -297,7 +298,8 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   PluginInstaller* installer = NULL;
   scoped_ptr<PluginMetadata> plugin;
   bool ret = finder->FindPluginWithIdentifier(identifier, &installer, &plugin);
-  DCHECK(ret);
+  base::debug::ScopedCrashKey identifier_key("plugin_identifier", identifier);
+  CHECK(ret);
 
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id,
@@ -404,7 +406,8 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
   scoped_ptr<PluginMetadata> plugin;
   bool ret = PluginFinder::GetInstance()->FindPluginWithIdentifier(
           identifier, NULL, &plugin);
-  DCHECK(ret);
+  base::debug::ScopedCrashKey identifier_key("plugin_identifier", identifier);
+  CHECK(ret);
 
   PluginMetroModeInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),

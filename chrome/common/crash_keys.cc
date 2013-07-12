@@ -50,6 +50,7 @@ size_t RegisterChromeCrashKeys() {
     // content/:
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
+    { "plugin_identifier", kSmallSize },
 #if defined(OS_MACOSX)
     { mac::kFirstNSException, kMediumSize },
     { mac::kFirstNSExceptionTrace, kMediumSize },
