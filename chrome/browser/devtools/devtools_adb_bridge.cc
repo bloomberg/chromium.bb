@@ -374,7 +374,7 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
         continue;
       std::string socket = path_field.substr(1, path_field.size() - 2);
       sockets_.push_back(socket);
-      std::string package = path_field.substr(1, socket_name_pos - 2);
+      std::string package = path_field.substr(1, socket_name_pos - 1);
       if (socket_name_pos + channel_pattern.size() < path_field.size() - 1) {
         package += path_field.substr(
             socket_name_pos + channel_pattern.size(), path_field.size() - 1);
@@ -552,7 +552,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
       return;
 
     if (result <= 0) {
-      CloseIfNecessary(net::ERR_CONNECTION_CLOSED);
+      CloseConnection(net::ERR_CONNECTION_CLOSED, true);
       return;
     }
 
@@ -576,7 +576,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
 
     if (parse_result == WebSocket::FRAME_ERROR ||
         parse_result == WebSocket::FRAME_CLOSE) {
-      CloseIfNecessary(net::ERR_CONNECTION_CLOSED);
+      CloseConnection(net::ERR_CONNECTION_CLOSED, true);
       return;
     }
 
@@ -592,16 +592,29 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
     tethering_adb_filter_.ProcessOutgoingMessage(data);
     int mask = base::RandInt(0, 0x7FFFFFFF);
     std::string encoded_frame = WebSocket::EncodeFrameHybi17(data, mask);
-    scoped_refptr<net::StringIOBuffer> request_buffer =
-        new net::StringIOBuffer(encoded_frame);
+    request_buffer_ += encoded_frame;
+    if (request_buffer_.length() == encoded_frame.length())
+      SendPendingRequests(0);
+  }
+
+  void SendPendingRequests(int result) {
     if (!socket_)
       return;
-    int result =
-        socket_->Write(request_buffer.get(),
-                       request_buffer->size(),
-                       base::Bind(&AgentHostDelegate::CloseIfNecessary, this));
+    if (result < 0) {
+      CloseConnection(result, true);
+      return;
+    }
+    request_buffer_ = request_buffer_.substr(result);
+    if (request_buffer_.empty())
+      return;
+
+    scoped_refptr<net::StringIOBuffer> buffer =
+        new net::StringIOBuffer(request_buffer_);
+    result = socket_->Write(buffer.get(), buffer->size(),
+                            base::Bind(&AgentHostDelegate::SendPendingRequests,
+                                       this));
     if (result != net::ERR_IO_PENDING)
-      CloseIfNecessary(result);
+      SendPendingRequests(result);
   }
 
   void CloseConnection(int result, bool initiated_by_me) {
@@ -621,12 +634,6 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
     Release();  // Balanced in constructor.
   }
 
-  void CloseIfNecessary(int result) {
-    if (result >= 0)
-      return;
-    CloseConnection(result, true);
-  }
-
   void OnFrameRead(const std::string& message) {
     proxy_->DispatchOnClientHost(message);
   }
@@ -641,6 +648,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
   scoped_ptr<net::StreamSocket> socket_;
   scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;
   std::string response_buffer_;
+  std::string request_buffer_;
   TetheringAdbFilter tethering_adb_filter_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
 };

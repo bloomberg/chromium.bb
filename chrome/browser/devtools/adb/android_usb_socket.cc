@@ -59,10 +59,19 @@ void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
       }
       break;
     case AdbMessage::kCommandWRTE:
+      device_->Send(AdbMessage::kCommandOKAY, local_id_, message->arg0, "");
       read_buffer_ += message->body;
-      device_->Send(AdbMessage::kCommandOKAY, local_id_, remote_id_, "");
-      RespondToReaders(false);
-      // Can be NULL after response.
+      // Allow WRTE over new connection even though OKAY ack was not received.
+      // TODO(pfeldman): fix libusb for Mac so that it did not happen.
+      if (!is_connected_) {
+        remote_id_ = message->arg0;
+        is_connected_ = true;
+        connect_callback_.Run(net::OK);
+        // "this" can be NULL after response.
+      } else {
+        RespondToReaders(false);
+        // "this" can be NULL after response.
+      }
       break;
     case AdbMessage::kCommandCLSE:
       if (is_connected_)

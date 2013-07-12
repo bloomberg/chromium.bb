@@ -922,7 +922,7 @@ const Experiment kExperiments[] = {
     "remote-debugging-raw-usb",
     IDS_FLAGS_REMOTE_DEBUGGING_RAW_USB_NAME,
     IDS_FLAGS_REMOTE_DEBUGGING_RAW_USB_DESCRIPTION,
-    kOsLinux | kOsCrOS,
+    kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kRemoteDebuggingRawUSB)
   },
   {
