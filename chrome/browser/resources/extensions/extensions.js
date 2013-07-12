@@ -48,21 +48,23 @@ cr.define('extensions', function() {
     /** @override */
     doDrop: function(e) {
       ExtensionSettings.showOverlay(null);
+      if (e.dataTransfer.files.length != 1)
+        return;
 
-      var items = e.dataTransfer.items;
-      // Set which item index holds the file we need to check.
+      var toSend = null;
+      // Files lack a check if they're a directory, but we can find out through
+      // its item entry.
       var fileIndex = e.dataTransfer.types.indexOf('Files');
-      if (items.length && items[fileIndex].webkitGetAsEntry().isDirectory) {
+      if (e.dataTransfer.items[fileIndex].webkitGetAsEntry().isDirectory)
+        toSend = 'installDroppedDirectory';
+      // Only process files that look like extensions. Other files should
+      // navigate the browser normally.
+      else if (/\.(crx|user\.js)$/i.test(e.dataTransfer.files[0].name))
+        toSend = 'installDroppedFile';
+
+      if (toSend) {
         e.preventDefault();
-        chrome.send('installDroppedDirectory');
-      } else {
-        // Only process files that look like extensions. Other files should
-        // navigate the browser normally.
-        var files = e.dataTransfer.files;
-        if (files.length && /\.(crx|user\.js)$/i.test(files[fileIndex].name)) {
-          e.preventDefault();
-          chrome.send('installDroppedFile');
-        }
+        chrome.send(toSend);
       }
     }
   };
