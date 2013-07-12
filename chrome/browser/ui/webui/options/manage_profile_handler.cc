@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -262,7 +263,7 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
 
   Profile* profile =
       g_browser_process->profile_manager()->GetProfile(profile_file_path);
-  if (!profile)
+  if (!profile || ManagedUserService::ProfileIsManaged(profile))
     return;
 
   string16 new_profile_name;

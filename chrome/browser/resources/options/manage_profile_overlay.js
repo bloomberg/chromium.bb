@@ -346,6 +346,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-create').hidden = true;
       $('manage-profile-overlay-manage').hidden = false;
       $('manage-profile-overlay-delete').hidden = true;
+      $('manage-profile-name').disabled = profileInfo.isManaged;
       this.hideErrorBubble_('manage');
     },
 
