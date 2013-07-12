@@ -6,9 +6,9 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

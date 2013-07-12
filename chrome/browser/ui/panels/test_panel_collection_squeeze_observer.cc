@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/panels/test_panel_collection_squeeze_observer.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/panels/docked_panel_collection.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 
 PanelCollectionSqueezeObserver::PanelCollectionSqueezeObserver(

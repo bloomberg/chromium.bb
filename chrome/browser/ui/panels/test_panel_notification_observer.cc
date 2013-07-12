@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/panels/test_panel_notification_observer.h"
 
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

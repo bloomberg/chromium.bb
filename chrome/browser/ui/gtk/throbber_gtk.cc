@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/gtk/throbber_gtk.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/ui_resources.h"
 #include "ui/base/animation/tween.h"
