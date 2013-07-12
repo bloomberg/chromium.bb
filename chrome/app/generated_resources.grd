@@ -10915,16 +10915,16 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Error filling billing details
       </message>
       <message name="IDS_AUTOFILL_STEP_PROXY_CARD_UNSTARTED" desc="Text describing the task of generating a proxy card in an Autocheckout flow.">
-        Google Google Wallet Virtual OneTime Card
+        Google Wallet Virtual Online Card
       </message>
       <message name="IDS_AUTOFILL_STEP_PROXY_CARD_STARTED" desc="Text describing that the task of generating a proxy card in an Autocheckout flow is in progress.">
-        Generating Google Wallet Virtual OneTime Card
+        Generating Google Wallet Virtual Online Card
       </message>
       <message name="IDS_AUTOFILL_STEP_PROXY_CARD_COMPLETE" desc="Text describing that the task of generating a proxy card in an Autocheckout flow is complete.">
-        Google Wallet Virtual OneTime Card generated
+        Google Wallet Virtual Online Card generated
       </message>
       <message name="IDS_AUTOFILL_STEP_PROXY_CARD_FAILED" desc="Text describing that the task of generating a proxy card in an Autocheckout flow has failed.">
-        Error generating Google Wallet Virtual OneTime Card
+        Error generating Google Wallet Virtual Online Card
       </message>
 
       <!-- Autofill dialog: detail section -->
