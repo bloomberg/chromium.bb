@@ -454,6 +454,65 @@ void SandboxFileSystemBackend::StickyInvalidateUsageCache(
   InvalidateUsageCache(origin, type);
 }
 
+void SandboxFileSystemBackend::AddFileUpdateObserver(
+    FileSystemType type,
+    FileUpdateObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  DCHECK(CanHandleType(type));
+  UpdateObserverList* list = &update_observers_;
+  if (type == kFileSystemTypeSyncable)
+    list = &syncable_update_observers_;
+  UpdateObserverList::Source observer_source = list->source();
+  observer_source.AddObserver(observer, task_runner);
+  *list = UpdateObserverList(observer_source);
+}
+
+void SandboxFileSystemBackend::AddFileChangeObserver(
+    FileSystemType type,
+    FileChangeObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  DCHECK(CanHandleType(type));
+  ChangeObserverList* list = &change_observers_;
+  if (type == kFileSystemTypeSyncable)
+    list = &syncable_change_observers_;
+  ChangeObserverList::Source observer_source = list->source();
+  observer_source.AddObserver(observer, task_runner);
+  *list = ChangeObserverList(observer_source);
+}
+
+void SandboxFileSystemBackend::AddFileAccessObserver(
+    FileSystemType type,
+    FileAccessObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  DCHECK(CanHandleType(type));
+  AccessObserverList* list = &access_observers_;
+  AccessObserverList::Source observer_source = list->source();
+  observer_source.AddObserver(observer, task_runner);
+  *list = AccessObserverList(observer_source);
+}
+
+const UpdateObserverList* SandboxFileSystemBackend::GetUpdateObservers(
+    FileSystemType type) const {
+  DCHECK(CanHandleType(type));
+  if (type == kFileSystemTypeSyncable)
+    return &syncable_update_observers_;
+  return &update_observers_;
+}
+
+const ChangeObserverList* SandboxFileSystemBackend::GetChangeObservers(
+    FileSystemType type) const {
+  DCHECK(CanHandleType(type));
+  if (type == kFileSystemTypeSyncable)
+    return &syncable_change_observers_;
+  return &change_observers_;
+}
+
+const AccessObserverList* SandboxFileSystemBackend::GetAccessObservers(
+    FileSystemType type) const {
+  DCHECK(CanHandleType(type));
+  return &access_observers_;
+}
+
 void SandboxFileSystemBackend::CollectOpenFileSystemMetrics(
     base::PlatformFileError error_code) {
   base::Time now = base::Time::Now();
@@ -489,45 +548,6 @@ void SandboxFileSystemBackend::CollectOpenFileSystemMetrics(
       break;
   }
 #undef REPORT
-}
-
-const UpdateObserverList* SandboxFileSystemBackend::GetUpdateObservers(
-    FileSystemType type) const {
-  DCHECK(CanHandleType(type));
-  if (type == kFileSystemTypeSyncable)
-    return &syncable_update_observers_;
-  return &update_observers_;
-}
-
-const AccessObserverList* SandboxFileSystemBackend::GetAccessObservers(
-    FileSystemType type) const {
-  DCHECK(CanHandleType(type));
-  return &access_observers_;
-}
-
-void SandboxFileSystemBackend::AddFileUpdateObserver(
-    FileSystemType type,
-    FileUpdateObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  DCHECK(CanHandleType(type));
-  UpdateObserverList* list = &update_observers_;
-  if (type == kFileSystemTypeSyncable)
-    list = &syncable_update_observers_;
-  UpdateObserverList::Source observer_source = list->source();
-  observer_source.AddObserver(observer, task_runner);
-  *list = UpdateObserverList(observer_source);
-}
-
-void SandboxFileSystemBackend::AddFileChangeObserver(
-    FileSystemType type,
-    FileChangeObserver* observer,
-    base::SequencedTaskRunner* task_runner) {
-  ChangeObserverList* list = &change_observers_;
-  if (type == kFileSystemTypeSyncable)
-    list = &syncable_change_observers_;
-  ChangeObserverList::Source observer_source = list->source();
-  observer_source.AddObserver(observer, task_runner);
-  *list = ChangeObserverList(observer_source);
 }
 
 bool SandboxFileSystemBackend::IsAccessValid(

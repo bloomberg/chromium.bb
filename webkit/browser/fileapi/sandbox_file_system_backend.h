@@ -130,24 +130,32 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
-
-  virtual void InvalidateUsageCache(const GURL& origin_url,
-                                    FileSystemType type) OVERRIDE;
-  virtual void StickyInvalidateUsageCache(const GURL& origin_url,
-                                          FileSystemType type) OVERRIDE;
+  virtual void InvalidateUsageCache(
+      const GURL& origin_url,
+      FileSystemType type) OVERRIDE;
+  virtual void StickyInvalidateUsageCache(
+      const GURL& origin_url,
+      FileSystemType type) OVERRIDE;
+  virtual void AddFileUpdateObserver(
+      FileSystemType type,
+      FileUpdateObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE;
+  virtual void AddFileChangeObserver(
+      FileSystemType type,
+      FileChangeObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE;
+  virtual void AddFileAccessObserver(
+      FileSystemType type,
+      FileAccessObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE;
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const OVERRIDE;
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const OVERRIDE;
 
   void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
-
-  // Returns observers for the given type.
-  const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
-  const AccessObserverList* GetAccessObservers(FileSystemType type) const;
-
-  void AddFileUpdateObserver(FileSystemType type,
-                             FileUpdateObserver* observer,
-                             base::SequencedTaskRunner* task_runner);
-  void AddFileChangeObserver(FileSystemType type,
-                             FileChangeObserver* observer,
-                             base::SequencedTaskRunner* task_runner);
 
   // Performs API-specific validity checks on the given path |url|.
   // Returns true if access to |url| is valid in this filesystem.

@@ -29,7 +29,13 @@ class TestFileSystemBackend::QuotaUtil
     : public FileSystemQuotaUtil,
       public FileUpdateObserver {
  public:
-  QuotaUtil() : usage_(0) {}
+  QuotaUtil(base::SequencedTaskRunner* task_runner)
+      : usage_(0),
+        task_runner_(task_runner) {
+    UpdateObserverList::Source source;
+    source.AddObserver(this, task_runner_.get());
+    update_observers_ = UpdateObserverList(source);
+  }
   virtual ~QuotaUtil() {}
 
   // FileSystemQuotaUtil overrides.
@@ -41,31 +47,75 @@ class TestFileSystemBackend::QuotaUtil
     NOTREACHED();
     return base::PLATFORM_FILE_OK;
   }
+
   virtual void GetOriginsForTypeOnFileThread(
       FileSystemType type,
       std::set<GURL>* origins) OVERRIDE {
     NOTREACHED();
   }
+
   virtual void GetOriginsForHostOnFileThread(
       FileSystemType type,
       const std::string& host,
       std::set<GURL>* origins) OVERRIDE {
     NOTREACHED();
   }
+
   virtual int64 GetOriginUsageOnFileThread(
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE {
     return usage_;
   }
+
   virtual void InvalidateUsageCache(const GURL& origin_url,
                                     FileSystemType type) OVERRIDE {
     // Do nothing.
   }
+
   virtual void StickyInvalidateUsageCache(
       const GURL& origin,
       FileSystemType type) OVERRIDE {
     // Do nothing.
+  }
+
+  virtual void AddFileUpdateObserver(
+      FileSystemType type,
+      FileUpdateObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
+  virtual void AddFileChangeObserver(
+      FileSystemType type,
+      FileChangeObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE {
+    ChangeObserverList::Source source = change_observers_.source();
+    source.AddObserver(observer, task_runner);
+    change_observers_ = ChangeObserverList(source);
+  }
+
+  virtual void AddFileAccessObserver(
+      FileSystemType type,
+      FileAccessObserver* observer,
+      base::SequencedTaskRunner* task_runner) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const OVERRIDE {
+    return &update_observers_;
+  }
+
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const OVERRIDE {
+    return &change_observers_;
+  }
+
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
   }
 
   // FileUpdateObserver overrides.
@@ -75,21 +125,24 @@ class TestFileSystemBackend::QuotaUtil
   }
   virtual void OnEndUpdate(const FileSystemURL& url) OVERRIDE {}
 
+  base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
+
  private:
   int64 usage_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  UpdateObserverList update_observers_;
+  ChangeObserverList change_observers_;
 };
 
 TestFileSystemBackend::TestFileSystemBackend(
     base::SequencedTaskRunner* task_runner,
     const base::FilePath& base_path)
     : base_path_(base_path),
-      task_runner_(task_runner),
       local_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
-      quota_util_(new QuotaUtil),
+      quota_util_(new QuotaUtil(task_runner)),
       require_copy_or_move_validator_(false) {
-  UpdateObserverList::Source source;
-  source.AddObserver(quota_util_.get(), task_runner_.get());
-  update_observers_ = UpdateObserverList(source);
 }
 
 TestFileSystemBackend::~TestFileSystemBackend() {
@@ -147,8 +200,9 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
     base::PlatformFileError* error_code) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
-  operation_context->set_update_observers(update_observers_);
-  operation_context->set_change_observers(change_observers_);
+  operation_context->set_update_observers(*GetUpdateObservers(url.type()));
+  operation_context->set_change_observers(
+      *quota_util_->GetChangeObservers(url.type()));
   operation_context->set_root_path(base_path_);
   return new LocalFileSystemOperation(url, context, operation_context.Pass());
 }
@@ -170,7 +224,8 @@ TestFileSystemBackend::CreateFileStreamWriter(
     int64 offset,
     FileSystemContext* context) const {
   return scoped_ptr<fileapi::FileStreamWriter>(
-      new SandboxFileStreamWriter(context, url, offset, update_observers_));
+      new SandboxFileStreamWriter(context, url, offset,
+                                  *GetUpdateObservers(url.type())));
 }
 
 FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
@@ -179,14 +234,13 @@ FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
 
 const UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
-  return &update_observers_;
+  return quota_util_->GetUpdateObservers(type);
 }
 
 void TestFileSystemBackend::AddFileChangeObserver(
     FileChangeObserver* observer) {
-  ChangeObserverList::Source source = change_observers_.source();
-  source.AddObserver(observer, task_runner_.get());
-  change_observers_ = ChangeObserverList(source);
+  quota_util_->AddFileChangeObserver(
+      kFileSystemTypeTest, observer, quota_util_->task_runner());
 }
 
 }  // namespace fileapi

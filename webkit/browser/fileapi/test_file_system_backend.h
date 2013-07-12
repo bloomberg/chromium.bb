@@ -82,8 +82,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestFileSystemBackend
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<AsyncFileUtilAdapter> local_file_util_;
   scoped_ptr<QuotaUtil> quota_util_;
-  UpdateObserverList update_observers_;
-  ChangeObserverList change_observers_;
 
   bool require_copy_or_move_validator_;
   scoped_ptr<CopyOrMoveFileValidatorFactory>

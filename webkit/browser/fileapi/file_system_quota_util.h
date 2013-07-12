@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/platform_file.h"
 #include "url/gurl.h"
+#include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
@@ -59,6 +60,25 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
                                     fileapi::FileSystemType type) = 0;
   virtual void StickyInvalidateUsageCache(const GURL& origin,
                                           fileapi::FileSystemType type) = 0;
+
+  virtual void AddFileUpdateObserver(
+      FileSystemType type,
+      FileUpdateObserver* observer,
+      base::SequencedTaskRunner* task_runner) = 0;
+  virtual void AddFileChangeObserver(
+      FileSystemType type,
+      FileChangeObserver* observer,
+      base::SequencedTaskRunner* task_runner) = 0;
+  virtual void AddFileAccessObserver(
+      FileSystemType type,
+      FileAccessObserver* observer,
+      base::SequencedTaskRunner* task_runner) = 0;
+  virtual const UpdateObserverList* GetUpdateObservers(
+      FileSystemType type) const = 0;
+  virtual const ChangeObserverList* GetChangeObservers(
+      FileSystemType type) const = 0;
+  virtual const AccessObserverList* GetAccessObservers(
+      FileSystemType type) const = 0;
 };
 
 }  // namespace fileapi
