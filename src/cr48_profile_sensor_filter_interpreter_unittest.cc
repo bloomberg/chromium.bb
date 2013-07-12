@@ -88,6 +88,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
     { 0, 0, 0, 0, 20, 0, 2, 2, 5, 0 },
     { 0, 0, 0, 0, 40, 0, 3, 3, 5, 0 },
     { 0, 0, 0, 0, 20, 0, 1, 1, 5, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   };
   HardwareState hs[] = {
     { 0.000, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
@@ -349,6 +350,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest) {
     { 0, 0, 0, 0, 60, 0, 5570, 3088, 1481, 0},
     { 0, 0, 0, 0, 60, 0, 4118, 1210, 1481, 0},
     { 0, 0, 0, 0, 60, 0, 4118, 4580, 1481, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   };
   HardwareState hs[] = {
     { 0.00, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
@@ -586,6 +588,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest) {
     { 0, 0, 0, 0, 65, 0, 3134, 2894, 67, 0},
     { 0, 0, 0, 0, 65, 0, 3132, 1891, 68, 0},
     { 0, 0, 0, 0, 65, 0, 3134, 2894, 68, 0},  // fs[0] position w/ fs[1] tid
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   };
 
   HardwareState hs[] = {
@@ -702,6 +705,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest) {
     { 0, 0, 0, 0, 97, 0, 3268, 2763, 25, 0 },
     { 0, 0, 0, 0, 101, 0, 3204, 4443, 24, 0 },  // 10
     { 0, 0, 0, 0, 102, 0, 3200, 4443, 24, 0 },  // 11
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   };
 
   HardwareState hs[] = {
@@ -813,6 +817,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
     { 0, 0, 0, 0, 76, 0, 3152, 1901, 5805, 0 },  // 9 (jump left)
     { 0, 0, 0, 0, 76, 0, 4152, 1908, 5805, 0 },  // 10 (expect the same id)
     { 0, 0, 0, 0, 76, 0, 4152, 1914, 5805, 0 },  // 11
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   };
 
   HardwareState hs[] = {
@@ -884,6 +889,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FastMoveTest) {
     { 0, 0, 0, 0, 79, 0, 3497, 2079, 5824, 0 },  // 1  fast move starts here
     { 0, 0, 0, 0, 79, 0, 3503, 2339, 5824, 0 },  // 2
     { 0, 0, 0, 0, 55, 0, 3534, 2742, 5824, 0 },  // 3
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   };
 
   HardwareState hs[] = {
