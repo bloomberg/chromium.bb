@@ -34,6 +34,7 @@
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
+#include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
@@ -43,11 +44,38 @@ using WebKit::WebGraphicsContext3D;
 
 namespace WebCore {
 
+static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& size)
+{
+    ASSERT(!context3D->webContext()->isContextLost());
+    GrContext* gr = context3D->grContext();
+    if (!gr)
+        return 0;
+    gr->resetContext();
+    SkImage::Info info;
+    info.fWidth = size.width();
+    info.fHeight = size.height();
+    info.fColorType = SkImage::kPMColor_ColorType;
+    info.fAlphaType = SkImage::kPremul_AlphaType;
+    return SkSurface::NewRenderTarget(gr, info);
+}
+
+PassOwnPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsContext3D> context, const IntSize& size, OpacityMode opacityMode)
+{
+    TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
+    SkAutoTUnref<SkSurface> surface(createSurface(context.get(), size));
+    if (!surface.get())
+        return PassOwnPtr<Canvas2DLayerBridge>();
+    SkDeferredCanvas* canvas = new SkDeferredCanvas(surface);
+    OwnPtr<Canvas2DLayerBridge> layerBridge = adoptPtr(new Canvas2DLayerBridge(context, canvas, opacityMode));
+    return layerBridge.release();
+}
+
 Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
     : m_canvas(canvas)
     , m_context(context)
     , m_bytesAllocated(0)
     , m_didRecordDrawCommand(false)
+    , m_surfaceIsValid(true)
     , m_framesPending(0)
     , m_rateLimitingEnabled(false)
     , m_next(0)
@@ -62,6 +90,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     m_layer->setOpaque(opacityMode == Opaque);
     GraphicsLayer::registerContentsLayer(m_layer->layer());
     m_layer->setRateLimitContext(m_rateLimitingEnabled);
+    m_canvas->setNotificationClient(this);
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
@@ -69,9 +98,9 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     Canvas2DLayerManager::get().layerToBeDestroyed(this);
     m_canvas->setNotificationClient(0);
+    m_mailboxes.clear();
     m_layer->clearTexture();
     m_layer.clear();
-    m_mailboxes.clear();
 }
 
 void Canvas2DLayerBridge::limitPendingFrames()
@@ -92,6 +121,14 @@ void Canvas2DLayerBridge::limitPendingFrames()
 
 void Canvas2DLayerBridge::prepareForDraw()
 {
+    ASSERT(m_layer);
+    if (!isValid()) {
+        if (m_canvas) {
+            // drop pending commands because there is no surface to draw to
+            m_canvas->silentFlush();
+        }
+        return;
+    }
     m_context->makeContextCurrent();
 }
 
@@ -148,12 +185,43 @@ void Canvas2DLayerBridge::flush()
 
 WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
-    return m_context->webContext();
+    return isValid() ? m_context->webContext() : 0;
+}
+
+bool Canvas2DLayerBridge::isValid()
+{
+    ASSERT(m_layer);
+    if (m_context->webContext()->isContextLost() || !m_surfaceIsValid) {
+        // Attempt to recover.
+        m_layer->clearTexture();
+        RefPtr<GraphicsContext3D> sharedContext = SharedGraphicsContext3D::get();
+        if (!sharedContext || sharedContext->webContext()->isContextLost()) {
+            m_surfaceIsValid = false;
+            return false;
+        }
+        m_context = sharedContext;
+        IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
+        SkAutoTUnref<SkSurface> surface(createSurface(m_context.get(), size));
+        if (surface.get()) {
+            m_canvas->setSurface(surface.get());
+            m_surfaceIsValid = true;
+            // FIXME: draw sad canvas picture into new buffer crbug.com/243842
+        } else {
+            // Surface allocation failed. Set m_surfaceIsValid to false to
+            // trigger subsequent retry.
+            m_surfaceIsValid = false;
+            return false;
+        }
+    }
+    return true;
+
 }
 
 bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox, WebKit::WebExternalBitmap* bitmap)
 {
     ASSERT(!bitmap);
+    if (!isValid())
+        return false;
     // Release to skia textures that were previouosly released by the
     // compositor. We do this before acquiring the next snapshot in
     // order to cap maximum gpu memory consumption.
@@ -246,6 +314,7 @@ void Canvas2DLayerBridge::mailboxReleased(const WebKit::WebExternalTextureMailbo
 
 WebKit::WebLayer* Canvas2DLayerBridge::layer()
 {
+    ASSERT(m_layer);
     return m_layer->layer();
 }
 
@@ -257,6 +326,8 @@ void Canvas2DLayerBridge::contextAcquired()
 
 unsigned Canvas2DLayerBridge::backBufferTexture()
 {
+    if (!isValid())
+        return 0;
     contextAcquired();
     m_canvas->flush();
     m_context->flush();

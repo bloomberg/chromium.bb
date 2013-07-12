@@ -51,10 +51,7 @@ public:
         NonOpaque
     };
 
-    static PassOwnPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
-    {
-        return adoptPtr(new Canvas2DLayerBridge(context, canvas, opacityMode));
-    }
+    static PassOwnPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D>, const IntSize&, OpacityMode);
 
     virtual ~Canvas2DLayerBridge();
 
@@ -78,8 +75,11 @@ public:
 
     WebKit::WebLayer* layer();
     void contextAcquired();
+    SkCanvas* getCanvas() { return m_canvas; }
 
     unsigned backBufferTexture();
+
+    bool isValid();
 
 protected:
     Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas*, OpacityMode);
@@ -90,6 +90,7 @@ protected:
     RefPtr<GraphicsContext3D> m_context;
     size_t m_bytesAllocated;
     bool m_didRecordDrawCommand;
+    bool m_surfaceIsValid;
     int m_framesPending;
     bool m_rateLimitingEnabled;
 
