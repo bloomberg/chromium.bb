@@ -66,6 +66,9 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual void EnableAppList() OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
 
+  // AppListServiceImpl override:
+  virtual void OnSigninStatusChanged() OVERRIDE;
+
   // AppShimHandler overrides:
   virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
                             apps::AppShimLaunchType launch_type) OVERRIDE;
@@ -323,6 +326,10 @@ void AppListServiceMac::EnableAppList() {
 
 NSWindow* AppListServiceMac::GetAppListWindow() {
   return [window_controller_ window];
+}
+
+void AppListServiceMac::OnSigninStatusChanged() {
+  [[window_controller_ appListViewController] onSigninStatusChanged];
 }
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,

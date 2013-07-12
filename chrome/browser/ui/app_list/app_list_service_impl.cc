@@ -184,6 +184,8 @@ void AppListServiceImpl::SetProfile(Profile* new_profile) {
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                 content::Source<Profile>(profile_));
 }
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {

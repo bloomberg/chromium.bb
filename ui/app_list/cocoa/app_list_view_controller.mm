@@ -75,7 +75,6 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
 
 - (void)loadAndSetView;
 - (void)revealSearchResults:(BOOL)show;
-- (void)onSigninStatusChanged;
 - (app_list::SigninDelegate*)signinDelegate;
 
 @end

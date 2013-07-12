@@ -52,6 +52,7 @@ APP_LIST_EXPORT
 
 - (app_list::AppListViewDelegate*)delegate;
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate;
+- (void)onSigninStatusChanged;
 
 @end
 
