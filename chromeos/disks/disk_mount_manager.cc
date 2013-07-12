@@ -69,7 +69,6 @@ class DiskMountManagerImpl : public DiskMountManager {
         source_path,
         source_format,
         mount_label,
-        type,
         // When succeeds, OnMountCompleted will be called by
         // "MountCompleted" signal instead.
         base::Bind(&base::DoNothing),

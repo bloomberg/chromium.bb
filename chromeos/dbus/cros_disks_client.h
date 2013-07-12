@@ -238,7 +238,6 @@ class CHROMEOS_EXPORT CrosDisksClient {
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
-                     MountType type,
                      const base::Closure& callback,
                      const base::Closure& error_callback) = 0;
 

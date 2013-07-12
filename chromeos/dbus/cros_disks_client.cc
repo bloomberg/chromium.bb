@@ -90,7 +90,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
-                     MountType type,
                      const base::Closure& callback,
                      const base::Closure& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
@@ -367,15 +366,10 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
-                     MountType type,
                      const base::Closure& callback,
                      const base::Closure& error_callback) OVERRIDE {
     // This stub implementation only accepts archive mount requests.
-    if (type != MOUNT_TYPE_ARCHIVE) {
-      FinishMount(MOUNT_ERROR_INTERNAL, source_path, type, std::string(),
-                  callback);
-      return;
-    }
+    const MountType type = MOUNT_TYPE_ARCHIVE;
 
     const base::FilePath mounted_path = GetArchiveMountPoint().Append(
         base::FilePath::FromUTF8Unsafe(mount_label));
