@@ -18,11 +18,23 @@
     }
     ]]>
    </style>
+   <!-- Masking away the micro-gaps between the Ahem characters that may occur due to rounding
+        which causes this test to fail on platforms that run reftests with zero tolerance. -->
+   <clipPath id="clipHack">
+     <rect x="3" y="0" width="24" height="600"></rect>
+     <rect x="33" y="10" width="24" height="600"></rect>
+     <rect x="63" y="0" width="24" height="600"></rect>
+     <rect x="93" y="0" width="24" height="600"></rect>
+     <rect x="123" y="0" width="24" height="600"></rect>
+     <!-- This only works as a ref-test when clipping is a applied as a mask. Adding an empty text
+          node in order to force mask-based clipping. -->
+     <text></text>
+   </clipPath>
  </defs>
- <g transform="scale(4)">
+ <g transform="scale(4)" clip-path="url(#clipHack)">
   <text class="ahemblock"  y="50" fill="url(#hatch)">AAAAA</text>
  </g>
- <g transform="scale(6)">
+ <g transform="scale(6)" clip-path="url(#clipHack)">
   <text class="ahemblock" y="90" x="0" fill="url(#hatch)">AAAAA</text>
  </g>
 </svg>
