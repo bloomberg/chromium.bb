@@ -699,6 +699,14 @@ def Main(argv):
       source_list_handle.close()
       files = files + source_list
 
+    # Use set instead of list not to compile the same file twice.
+    # To keep in mind that the order of files may differ from the .gypcmd file,
+    # the set is not converted to a list.
+    # Having duplicated files can cause race condition of compiling during
+    # parallel build using goma.
+    # TODO(sbc): remove the duplication and turn it into an error.
+    files = set(files)
+
     # Fix slash style to insulate invoked toolchains.
     options.toolpath = os.path.normpath(options.toolpath)
 
@@ -709,7 +717,7 @@ def Main(argv):
       # Just translate a pexe to a nexe
       if len(files) != 1:
         parser.error('Pexe translation requires exactly one input file.')
-      build.Translate(files[0])
+      build.Translate(list(files)[0])
       return 0
 
     if build.gomacc:  # use goma build.
