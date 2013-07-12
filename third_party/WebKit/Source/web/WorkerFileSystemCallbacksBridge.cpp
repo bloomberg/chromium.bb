@@ -140,6 +140,11 @@ public:
         delete this;
     }
 
+    virtual bool shouldBlockUntilCompletion() const
+    {
+        return false;
+    }
+
 private:
     MainThreadFileSystemCallbacks(PassRefPtr<WorkerFileSystemCallbacksBridge> bridge, const String& mode)
         : m_bridge(bridge)

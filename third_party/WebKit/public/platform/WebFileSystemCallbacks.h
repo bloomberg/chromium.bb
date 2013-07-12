@@ -75,6 +75,10 @@ public:
     // completed.
     virtual void didFail(WebFileError) = 0;
 
+    // Returns true if the caller expects to be blocked until the request
+    // is fullfilled.
+    virtual bool shouldBlockUntilCompletion() const = 0;
+
 protected:
     virtual ~WebFileSystemCallbacks() { }
 };

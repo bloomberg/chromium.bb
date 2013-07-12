@@ -68,6 +68,10 @@ public:
     // Called when there was an error.
     virtual void didFail(int code) = 0;
 
+    // Returns true if the caller expects that the calling thread blocks
+    // until completion.
+    virtual bool shouldBlockUntilCompletion() const { return false; }
+
     virtual ~AsyncFileSystemCallbacks() { }
 };
 

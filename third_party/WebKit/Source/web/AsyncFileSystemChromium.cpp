@@ -160,6 +160,11 @@ public:
         delete this;
     }
 
+    virtual bool shouldBlockUntilCompletion() const
+    {
+        return m_callbacks->shouldBlockUntilCompletion();
+    }
+
 private:
     AsyncFileWriterClient* m_client;
     KURL m_path;

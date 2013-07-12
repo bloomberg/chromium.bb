@@ -121,4 +121,9 @@ void WebFileSystemCallbacksImpl::didFail(WebFileError error)
     delete this;
 }
 
+bool WebFileSystemCallbacksImpl::shouldBlockUntilCompletion() const
+{
+    return m_callbacks->shouldBlockUntilCompletion();
+}
+
 } // namespace WebKit

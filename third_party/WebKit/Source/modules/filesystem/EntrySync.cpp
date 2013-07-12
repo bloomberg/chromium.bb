@@ -53,7 +53,7 @@ PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionCode& ec)
 {
     ec = 0;
     MetadataSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
-    if (!m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback())) {
+    if (!m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
         ec = InvalidModificationError;
         return 0;
     }
@@ -64,7 +64,7 @@ PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, c
 {
     ec = 0;
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
-    if (!m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback())) {
+    if (!m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
         ec = InvalidModificationError;
         return 0;
     }
@@ -75,7 +75,7 @@ PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, c
 {
     ec = 0;
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
-    if (!m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback())) {
+    if (!m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
         ec = InvalidModificationError;
         return 0;
     }
@@ -86,7 +86,7 @@ void EntrySync::remove(ExceptionCode& ec) const
 {
     ec = 0;
     VoidSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
-    if (!m_fileSystem->remove(this, helper.successCallback(), helper.errorCallback())) {
+    if (!m_fileSystem->remove(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
         ec = InvalidModificationError;
         return;
     }

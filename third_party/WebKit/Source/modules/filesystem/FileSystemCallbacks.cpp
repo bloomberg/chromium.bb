@@ -56,6 +56,7 @@ namespace WebCore {
 
 FileSystemCallbacksBase::FileSystemCallbacksBase(PassRefPtr<ErrorCallback> errorCallback)
     : m_errorCallback(errorCallback)
+    , m_blockUntilCompletion(false)
 {
 }
 

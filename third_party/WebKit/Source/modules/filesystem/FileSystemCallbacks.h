@@ -59,13 +59,24 @@ public:
     virtual ~FileSystemCallbacksBase();
 
     // For ErrorCallback.
-    virtual void didFail(int code);
+    virtual void didFail(int code) OVERRIDE;
 
     // Other callback methods are implemented by each subclass.
+
+    virtual bool shouldBlockUntilCompletion() const OVERRIDE
+    {
+        return m_blockUntilCompletion;
+    }
+
+    void setShouldBlockUntilCompletion(bool flag)
+    {
+        m_blockUntilCompletion = flag;
+    }
 
 protected:
     FileSystemCallbacksBase(PassRefPtr<ErrorCallback>);
     RefPtr<ErrorCallback> m_errorCallback;
+    bool m_blockUntilCompletion;
 };
 
 // Subclasses ----------------------------------------------------------------

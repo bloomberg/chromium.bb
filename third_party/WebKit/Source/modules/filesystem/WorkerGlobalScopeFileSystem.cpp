@@ -79,7 +79,10 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
     }
 
     FileSystemSyncCallbackHelper helper;
-    LocalFileSystem::localFileSystem().requestFileSystem(worker, fileSystemType, size, FileSystemCallbacks::create(helper.successCallback(), helper.errorCallback(), worker, fileSystemType), SynchronousFileSystem);
+    OwnPtr<FileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper.successCallback(), helper.errorCallback(), worker, fileSystemType);
+    callbacks->setShouldBlockUntilCompletion(true);
+
+    LocalFileSystem::localFileSystem().requestFileSystem(worker, fileSystemType, size, callbacks.release(), SynchronousFileSystem);
     return helper.getResult(ec);
 }
 

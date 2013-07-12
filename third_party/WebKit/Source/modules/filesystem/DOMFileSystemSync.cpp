@@ -245,6 +245,8 @@ PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* 
     RefPtr<LocalErrorCallback> errorCallback = LocalErrorCallback::create();
 
     OwnPtr<FileWriterBaseCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback, errorCallback);
+    callbacks->setShouldBlockUntilCompletion(true);
+
     m_asyncFileSystem->createWriter(fileWriter.get(), createFileSystemURL(fileEntry), callbacks.release());
     if (!m_asyncFileSystem->waitForOperationToComplete()) {
         ec = FSAbortError;

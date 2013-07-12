@@ -55,6 +55,11 @@ class VoidCallback;
 // A common base class for DOMFileSystem and DOMFileSystemSync.
 class DOMFileSystemBase : public RefCounted<DOMFileSystemBase> {
 public:
+    enum SynchronousType {
+        Synchronous,
+        Asynchronous,
+    };
+
     // Path prefixes that are used in the filesystem URLs (that can be obtained by toURL()).
     // http://www.w3.org/TR/file-system-api/#widl-Entry-toURL
     static const char persistentPathPrefix[];
@@ -88,15 +93,15 @@ public:
 
     // Actual FileSystem API implementations. All the validity checks on virtual paths are done at this level.
     // They return false for immediate errors that don't involve lower AsyncFileSystem layer (e.g. for name validation errors). Otherwise they return true (but later may call back with an runtime error).
-    bool getMetadata(const EntryBase*, PassRefPtr<MetadataCallback>, PassRefPtr<ErrorCallback>);
-    bool move(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
-    bool copy(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
-    bool remove(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>);
-    bool removeRecursively(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>);
+    bool getMetadata(const EntryBase*, PassRefPtr<MetadataCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    bool move(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    bool copy(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    bool remove(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    bool removeRecursively(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
     bool getParent(const EntryBase*, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
-    bool getFile(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
-    bool getDirectory(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
-    bool readDirectory(PassRefPtr<DirectoryReaderBase>, const String& path, PassRefPtr<EntriesCallback>, PassRefPtr<ErrorCallback>);
+    bool getFile(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    bool getDirectory(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    bool readDirectory(PassRefPtr<DirectoryReaderBase>, const String& path, PassRefPtr<EntriesCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
 
 protected:
     DOMFileSystemBase(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL, PassOwnPtr<AsyncFileSystem>);

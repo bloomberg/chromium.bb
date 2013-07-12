@@ -62,6 +62,7 @@ public:
     virtual void didReadDirectory(const WebVector<WebFileSystemEntry>& entries, bool hasMore);
     virtual void didOpenFileSystem(const WebString& name, const WebURL& rootURL);
     virtual void didFail(WebFileError error);
+    virtual bool shouldBlockUntilCompletion() const;
 
     // This internal overload is used by WorkerFileSystemCallbacksBridge to deliver a blob data handle
     // created on the main thread to an AsyncFileSystemCallback on a background worker thread. The other
