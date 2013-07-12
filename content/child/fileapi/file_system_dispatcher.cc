@@ -218,15 +218,24 @@ void FileSystemDispatcher::ReadMetadata(
       new FileSystemHostMsg_ReadMetadata(request_id, path));
 }
 
-void FileSystemDispatcher::Create(
+void FileSystemDispatcher::CreateFile(
     const GURL& path,
     bool exclusive,
-    bool is_directory,
+    const StatusCallback& callback) {
+  int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
+  ChildThread::current()->Send(new FileSystemHostMsg_Create(
+      request_id, path, exclusive,
+      false /* is_directory */, false /* recursive */));
+}
+
+void FileSystemDispatcher::CreateDirectory(
+    const GURL& path,
+    bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
   ChildThread::current()->Send(new FileSystemHostMsg_Create(
-      request_id, path, exclusive, is_directory, recursive));
+      request_id, path, exclusive, true /* is_directory */, recursive));
 }
 
 void FileSystemDispatcher::Exists(

@@ -1038,7 +1038,8 @@ void PepperPluginDelegateImpl::MakeDirectory(
     const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  file_system_dispatcher->Create(path, false, true, recursive, callback);
+  file_system_dispatcher->CreateDirectory(
+      path, false /* exclusive */, recursive, callback);
 }
 
 void PepperPluginDelegateImpl::Query(

@@ -82,11 +82,13 @@ class FileSystemDispatcher : public IPC::Listener {
   void ReadMetadata(const GURL& path,
                     const MetadataCallback& success_callback,
                     const StatusCallback& error_callback);
-  void Create(const GURL& path,
-              bool exclusive,
-              bool is_directory,
-              bool recursive,
-              const StatusCallback& callback);
+  void CreateFile(const GURL& path,
+                  bool exclusive,
+                  const StatusCallback& callback);
+  void CreateDirectory(const GURL& path,
+                       bool exclusive,
+                       bool recursive,
+                       const StatusCallback& callback);
   void Exists(const GURL& path,
               bool for_directory,
               const StatusCallback& callback);

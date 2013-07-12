@@ -82,8 +82,8 @@ void WebFileSystemImpl::createFile(const WebURL& path,
                                    WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Create(
-      GURL(path), exclusive, false /* directory */, false /* recursive */,
+  dispatcher->CreateFile(
+      GURL(path), exclusive,
       base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
@@ -92,8 +92,8 @@ void WebFileSystemImpl::createDirectory(const WebURL& path,
                                         WebFileSystemCallbacks* callbacks) {
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Create(
-      GURL(path), exclusive, true /* directory */, false /* recursive */,
+  dispatcher->CreateDirectory(
+      GURL(path), exclusive, false /* recursive */,
       base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
