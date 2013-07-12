@@ -397,6 +397,8 @@ namespace WebCore {
         void willDetachDocumentFromFrame();
         DOMWindow* anonymousIndexedGetter(uint32_t);
 
+        bool isInsecureScriptAccess(DOMWindow* activeWindow, const String& urlString);
+
     private:
         explicit DOMWindow(Frame*);
 
@@ -409,11 +411,6 @@ namespace WebCore {
         virtual void derefEventTarget() { deref(); }
         virtual EventTargetData* eventTargetData();
         virtual EventTargetData* ensureEventTargetData();
-
-        static Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures&,
-            DOMWindow* activeWindow, Frame* firstFrame, Frame* openerFrame,
-            PrepareDialogFunction = 0, void* functionContext = 0);
-        bool isInsecureScriptAccess(DOMWindow* activeWindow, const String& urlString);
 
         void resetDOMWindowProperties();
         void willDestroyDocumentInFrame();

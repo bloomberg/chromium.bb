@@ -1153,6 +1153,8 @@
             'page/ContentSecurityPolicy.cpp',
             'page/ContextMenuController.cpp',
             'page/ContextMenuProvider.h',
+            'page/CreateWindow.cpp',
+            'page/CreateWindow.h',
             'page/DeviceClient.h',
             'page/DeviceController.cpp',
             'page/DeviceController.h',
