@@ -490,6 +490,11 @@ Error SpdySession::InitializeWithSocket(
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
   UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol, kProtoMaximumVersion);
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessions_DataReductionProxy",
+                        host_port_pair().Equals(HostPortPair::FromURL(
+                            GURL(SPDY_PROXY_AUTH_ORIGIN))));
+#endif
 
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_INITIALIZED,

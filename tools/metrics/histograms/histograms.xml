@@ -6083,6 +6083,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.SpdySessions_DataReductionProxy"
+    enum="BooleanDataReductionProxy">
+  <summary>
+    The count of SPDY sessions using the data reduction proxy and the count of
+    other SPDY sessions.
+  </summary>
+</histogram>
+
 <histogram name="Net.SpdySessionSocketNotConnectedGetLocalAddress"
     enum="BooleanSuccess">
   <summary>
@@ -6197,6 +6205,14 @@ other types of suffix sets.
 
 <histogram name="Net.SSL_Connection_Latency" units="milliseconds">
   <summary>Time from when the Connect() starts until it completes.</summary>
+</histogram>
+
+<histogram name="Net.SSL_Connection_Latency_DataReductionProxy"
+    units="milliseconds">
+  <summary>
+    Time from when the Connect() starts until it completes when using the data
+    reduction proxy. This includes certificate retrieval and verification.
+  </summary>
 </histogram>
 
 <histogram name="Net.SSL_Connection_Latency_Google" units="milliseconds">
@@ -13785,6 +13801,11 @@ other types of suffix sets.
 <enum name="BooleanCredentialsLost" type="int">
   <int value="0" label="Found Credentials"/>
   <int value="1" label="Missing Credentials"/>
+</enum>
+
+<enum name="BooleanDataReductionProxy" type="int">
+  <int value="0" label="Not Data Reduction Proxy"/>
+  <int value="1" label="Data Reduction Proxy"/>
 </enum>
 
 <enum name="BooleanDelete" type="int">
