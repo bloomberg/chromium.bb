@@ -26,7 +26,7 @@ TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
 AutoLoginInfoBarDelegateAndroid::AutoLoginInfoBarDelegateAndroid(
     InfoBarService* owner,
     const AutoLoginInfoBarDelegate::Params& params)
-    : AutoLoginInfoBarDelegate(owner, params) {}
+    : AutoLoginInfoBarDelegate(owner, params), params_() {}
 
 AutoLoginInfoBarDelegateAndroid::~AutoLoginInfoBarDelegateAndroid() {}
 
