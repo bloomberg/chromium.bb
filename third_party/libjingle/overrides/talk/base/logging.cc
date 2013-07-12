@@ -20,14 +20,13 @@
 #include "third_party/libjingle/source/talk/base/timeutils.h"
 
 // From this file we can't use VLOG since it expands into usage of the __FILE__
-// macro (for correct filtering). The actual logging call from LOG_E is in
-// ~LogEHelper, and from DIAGNOSTIC_LOG in ~DiagnosticLogMessage. Note that the
-// second parameter to the LAZY_STREAM macro is true since the filter check has
-// already been done for LOG_E and DIAGNOSTIC_LOG.
+// macro (for correct filtering). The actual logging call from DIAGNOSTIC_LOG in
+// ~DiagnosticLogMessage. Note that the second parameter to the LAZY_STREAM
+// macro is true since the filter check has already been done for
+// DIAGNOSTIC_LOG.
 #define LOG_LAZY_STREAM_DIRECT(file_name, line_number, sev) \
   LAZY_STREAM(logging::LogMessage(file_name, line_number, \
                                   -sev).stream(), true)
-#define LOG_E_BASE LOG_LAZY_STREAM_DIRECT
 
 namespace talk_base {
 
@@ -64,10 +63,10 @@ std::string ErrorName(int err, const ConstantLabel* err_table) {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// LogEHelper
+// Log helper functions
 /////////////////////////////////////////////////////////////////////////////
 
-// Summarizes LOG_E messages as strings.
+// Generates extra information for LOG_E.
 static std::string GenerateExtra(LogErrorContext err_ctx,
                                  int err,
                                  const char* module) {
@@ -120,42 +119,37 @@ static std::string GenerateExtra(LogErrorContext err_ctx,
   return "";
 }
 
-LogEHelper::LogEHelper(const char* file,
-                       int line,
-                       LoggingSeverity severity,
-                       LogErrorContext err_ctx,
-                       int err,
-                       const char* module)
+DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
+                                           int line,
+                                           LoggingSeverity severity,
+                                           bool log_to_chrome,
+                                           LogErrorContext err_ctx,
+                                           int err)
     : file_name_(file),
       line_(line),
-      severity_(severity) {
-  extra_ = GenerateExtra(err_ctx, err, module);
-}
-
-LogEHelper::~LogEHelper() {
-  print_stream_ << extra_;
-  const std::string& str = print_stream_.str();
-  LOG_E_BASE(file_name_.c_str(), line_, severity_) << str;
+      severity_(severity),
+      log_to_chrome_(log_to_chrome) {
+  extra_ = GenerateExtra(err_ctx, err, NULL);
+  CreateTimestamp();
 }
 
 DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
                                            int line,
                                            LoggingSeverity severity,
-                                           bool log_to_chrome)
+                                           bool log_to_chrome,
+                                           LogErrorContext err_ctx,
+                                           int err,
+                                           const char* module)
     : file_name_(file),
       line_(line),
       severity_(severity),
       log_to_chrome_(log_to_chrome) {
-#if !defined(ANDROID)
-  uint32 time = talk_base::TimeSince(LogStartTime());
-  print_stream_with_timestamp_ << "[" << std::setfill('0')
-                               << std::setw(3) << (time / 1000)
-                               << ":" << std::setw(3) << (time % 1000)
-                               << std::setfill(' ') << "] ";
-#endif
+  extra_ = GenerateExtra(err_ctx, err, module);
+  CreateTimestamp();
 }
 
 DiagnosticLogMessage::~DiagnosticLogMessage() {
+  print_stream_ << extra_;
   const std::string& str = print_stream_.str();
   if (log_to_chrome_)
     LOG_LAZY_STREAM_DIRECT(file_name_, line_, severity_) << str;
@@ -165,9 +159,15 @@ DiagnosticLogMessage::~DiagnosticLogMessage() {
   }
 }
 
-uint32 DiagnosticLogMessage::LogStartTime() {
-  static const uint32 g_start = talk_base::Time();
-  return g_start;
+void DiagnosticLogMessage::CreateTimestamp() {
+#if !defined(ANDROID)
+  static const uint32 g_logging_start_time = talk_base::Time();
+  uint32 time = talk_base::TimeSince(g_logging_start_time);
+  print_stream_with_timestamp_ << "[" << std::setfill('0')
+                               << std::setw(3) << (time / 1000)
+                               << ":" << std::setw(3) << (time % 1000)
+                               << std::setfill(' ') << "] ";
+#endif
 }
 
 // Note: this function is a copy from the overriden libjingle implementation.
