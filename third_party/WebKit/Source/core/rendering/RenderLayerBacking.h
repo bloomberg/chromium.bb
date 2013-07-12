@@ -70,8 +70,6 @@ public:
     bool updateGraphicsLayerConfiguration();
     // Update graphics layer position and bounds.
     void updateGraphicsLayerGeometry(); // make private
-    // Update contents and clipping structure.
-    void updateDrawsContent();
     // Update whether layer needs blending.
     void updateContentsOpaque();
 
@@ -212,7 +210,7 @@ private:
     // Returns true if this compositing layer has no visible content.
     bool isSimpleContainerCompositingLayer() const;
     // Returns true if this layer has content that needs to be rendered by painting into the backing store.
-    bool containsPaintedContent() const;
+    bool containsPaintedContent(bool isSimpleContainer) const;
     // Returns true if the RenderLayer just contains an image that we can composite directly.
     bool isDirectlyCompositedImage() const;
     void updateImageContents();
