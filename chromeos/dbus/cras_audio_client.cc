@@ -286,8 +286,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
                        << response->ToString();
           break;
         }
-
-        node_list.push_back(node);
+        // Filter out the "UNKNOWN" type of audio devices.
+        if (node.type != "UNKNOWN")
+          node_list.push_back(node);
       }
     }
 
