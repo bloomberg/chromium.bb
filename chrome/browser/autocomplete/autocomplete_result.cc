@@ -33,19 +33,6 @@ AutocompleteResult::AutocompleteResult() {
 
 AutocompleteResult::~AutocompleteResult() {}
 
-void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
-  if (this == &rhs)
-    return;
-
-  matches_ = rhs.matches_;
-  // Careful!  You can't just copy iterators from another container, you have to
-  // reconstruct them.
-  default_match_ = (rhs.default_match_ == rhs.end()) ?
-      end() : (begin() + (rhs.default_match_ - rhs.begin()));
-
-  alternate_nav_url_ = rhs.alternate_nav_url_;
-}
-
 void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
                                         const AutocompleteResult& old_matches,
                                         Profile* profile) {
@@ -97,20 +84,6 @@ void AutocompleteResult::AppendMatches(const ACMatches& matches) {
   std::copy(matches.begin(), matches.end(), std::back_inserter(matches_));
   default_match_ = end();
   alternate_nav_url_ = GURL();
-}
-
-void AutocompleteResult::AddMatch(const AutocompleteMatch& match) {
-  DCHECK(default_match_ != end());
-  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents), match.contents);
-  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
-            match.description);
-  ACMatches::iterator insertion_point =
-      std::upper_bound(begin(), end(), match, &AutocompleteMatch::MoreRelevant);
-  matches_difference_type default_offset = default_match_ - begin();
-  if ((insertion_point - begin()) <= default_offset)
-    ++default_offset;
-  matches_.insert(insertion_point, match);
-  default_match_ = begin() + default_offset;
 }
 
 void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
@@ -212,6 +185,33 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
           (match.transition != content::PAGE_TRANSITION_KEYWORD) &&
           (input.canonicalized_url() != match.destination_url)) ?
       input.canonicalized_url() : GURL();
+}
+
+void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
+  if (this == &rhs)
+    return;
+
+  matches_ = rhs.matches_;
+  // Careful!  You can't just copy iterators from another container, you have to
+  // reconstruct them.
+  default_match_ = (rhs.default_match_ == rhs.end()) ?
+      end() : (begin() + (rhs.default_match_ - rhs.begin()));
+
+  alternate_nav_url_ = rhs.alternate_nav_url_;
+}
+
+void AutocompleteResult::AddMatch(const AutocompleteMatch& match) {
+  DCHECK(default_match_ != end());
+  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents), match.contents);
+  DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
+            match.description);
+  ACMatches::iterator insertion_point =
+      std::upper_bound(begin(), end(), match, &AutocompleteMatch::MoreRelevant);
+  matches_difference_type default_offset = default_match_ - begin();
+  if ((insertion_point - begin()) <= default_offset)
+    ++default_offset;
+  matches_.insert(insertion_point, match);
+  default_match_ = begin() + default_offset;
 }
 
 void AutocompleteResult::BuildProviderToMatches(

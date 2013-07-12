@@ -66,19 +66,11 @@ class AutocompleteResult {
   AutocompleteResult();
   ~AutocompleteResult();
 
-  // operator=() by another name.
-  void CopyFrom(const AutocompleteResult& rhs);
-
   // Copies matches from |old_matches| to provide a consistant result set. See
   // comments in code for specifics.
   void CopyOldMatches(const AutocompleteInput& input,
                       const AutocompleteResult& old_matches,
                       Profile* profile);
-
-  // Adds a single match. The match is inserted at the appropriate position
-  // based on relevancy and display order. This is ONLY for use after
-  // SortAndCull() has been invoked, and preserves default_match_.
-  void AddMatch(const AutocompleteMatch& match);
 
   // Adds a new set of matches to the result set.  Does not re-sort.
   void AppendMatches(const ACMatches& matches);
@@ -126,6 +118,8 @@ class AutocompleteResult {
                                      const AutocompleteMatch& match);
 
  private:
+  friend class AutocompleteProviderTest;
+
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
 #if defined(OS_ANDROID)
@@ -135,6 +129,14 @@ class AutocompleteResult {
 #else
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
+
+  // operator=() by another name.
+  void CopyFrom(const AutocompleteResult& rhs);
+
+  // Adds a single match. The match is inserted at the appropriate position
+  // based on relevancy and display order. This is ONLY for use after
+  // SortAndCull() has been invoked, and preserves default_match_.
+  void AddMatch(const AutocompleteMatch& match);
 
   // Populates |provider_to_matches| from |matches_|.
   void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
