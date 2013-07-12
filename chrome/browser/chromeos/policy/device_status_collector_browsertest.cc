@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -20,12 +21,16 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/network/network_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using ::testing::DoAll;
 using ::testing::NotNull;
@@ -580,6 +585,121 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   // Allow the new pref to propagate to the status collector.
   message_loop_.RunUntilIdle();
   CheckThatALocationErrorIsReported();
+}
+
+// Fake device state.
+struct FakeDeviceData {
+  const char* device_path;
+  const char* type;
+  const char* object_path;
+  const char* mac_address;
+  const char* meid;
+  const char* imei;
+  int expected_type; // proto enum type value, -1 for not present.
+};
+
+static const FakeDeviceData kFakeDevices[] = {
+  { "/device/ethernet", flimflam::kTypeEthernet, "ethernet",
+    "112233445566", "", "",
+    em::NetworkInterface::TYPE_ETHERNET },
+  { "/device/cellular1", flimflam::kTypeCellular, "cellular1",
+    "abcdefabcdef", "A10000009296F2", "",
+    em::NetworkInterface::TYPE_CELLULAR },
+  { "/device/cellular2", flimflam::kTypeCellular, "cellular2",
+    "abcdefabcdef", "", "352099001761481",
+    em::NetworkInterface::TYPE_CELLULAR },
+  { "/device/wifi", flimflam::kTypeWifi, "wifi",
+    "aabbccddeeff", "", "",
+    em::NetworkInterface::TYPE_WIFI },
+  { "/device/bluetooth", flimflam::kTypeBluetooth, "bluetooth",
+    "", "", "",
+    em::NetworkInterface::TYPE_BLUETOOTH },
+  { "/device/vpn", flimflam::kTypeVPN, "vpn",
+    "", "", "",
+    -1 },
+};
+
+class DeviceStatusCollectorNetworkInterfacesTest
+    : public DeviceStatusCollectorTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    chromeos::DBusThreadManager::InitializeWithStub();
+    chromeos::NetworkHandler::Initialize();
+    chromeos::ShillDeviceClient::TestInterface* test_device_client =
+        chromeos::DBusThreadManager::Get()->GetShillDeviceClient()->
+            GetTestInterface();
+    test_device_client->ClearDevices();
+    for (size_t i = 0; i < arraysize(kFakeDevices); ++i) {
+      const FakeDeviceData& dev = kFakeDevices[i];
+      test_device_client->AddDevice(dev.device_path, dev.type,
+                                    dev.object_path);
+      if (*dev.mac_address) {
+        test_device_client->SetDeviceProperty(
+            dev.device_path, flimflam::kAddressProperty,
+            base::StringValue(dev.mac_address));
+      }
+      if (*dev.meid) {
+        test_device_client->SetDeviceProperty(
+            dev.device_path, flimflam::kMeidProperty,
+            base::StringValue(dev.meid));
+      }
+      if (*dev.imei) {
+        test_device_client->SetDeviceProperty(
+            dev.device_path, flimflam::kImeiProperty,
+            base::StringValue(dev.imei));
+      }
+    }
+
+    // Flush out pending state updates.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    chromeos::NetworkHandler::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
+  }
+};
+
+TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
+  // No interfaces should be reported if the policy is off.
+  GetStatus();
+  EXPECT_EQ(0, status_.network_interface_size());
+
+  // Switch the policy on and verify the interface list is present.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
+  GetStatus();
+
+  int count = 0;
+  for (size_t i = 0; i < arraysize(kFakeDevices); ++i) {
+    const FakeDeviceData& dev = kFakeDevices[i];
+    if (dev.expected_type == -1)
+      continue;
+
+    // Find the corresponding entry in reporting data.
+    bool found_match = false;
+    google::protobuf::RepeatedPtrField<em::NetworkInterface>::const_iterator
+        iface;
+    for (iface = status_.network_interface().begin();
+         iface != status_.network_interface().end();
+         ++iface) {
+      // Check whether type, field presence and field values match.
+      if (dev.expected_type == iface->type() &&
+          iface->has_mac_address() == !!*dev.mac_address &&
+          iface->has_meid() == !!*dev.meid &&
+          iface->has_imei() == !!*dev.imei &&
+          iface->mac_address() == dev.mac_address &&
+          iface->meid() == dev.meid &&
+          iface->imei() == dev.imei) {
+        found_match = true;
+        break;
+      }
+    }
+
+    EXPECT_TRUE(found_match) << "No matching interface for fake device " << i;
+    count++;
+  }
+
+  EXPECT_EQ(count, status_.network_interface_size());
 }
 
 }  // namespace policy

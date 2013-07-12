@@ -373,6 +373,14 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     Value::CreateBooleanValue(container.report_location()),
                     NULL);
     }
+    if (container.has_report_network_interfaces()) {
+      policies->Set(key::kReportDeviceNetworkInterfaces,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.report_network_interfaces()),
+                    NULL);
+    }
   }
 }
 

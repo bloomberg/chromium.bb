@@ -1853,6 +1853,9 @@
   "ReportDeviceBootMode": {
   },
 
+  "ReportDeviceNetworkInterfaces": {
+  },
+
   "DeviceAllowNewUsers": {
   },
 

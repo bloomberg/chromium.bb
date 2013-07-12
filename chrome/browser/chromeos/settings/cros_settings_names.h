@@ -43,6 +43,7 @@ extern const char kReportDeviceVersionInfo[];
 extern const char kReportDeviceActivityTimes[];
 extern const char kReportDeviceBootMode[];
 extern const char kReportDeviceLocation[];
+extern const char kReportDeviceNetworkInterfaces[];
 
 extern const char kAppPack[];
 extern const char kAppPackKeyExtensionId[];

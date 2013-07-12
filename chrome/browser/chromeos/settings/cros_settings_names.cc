@@ -78,6 +78,11 @@ const char kReportDeviceBootMode[] = "cros.device_status.report_boot_mode";
 // along with device policy requests.
 const char kReportDeviceLocation[] = "cros.device_status.report_location";
 
+// Determines whether the device reports network interface types and addresses
+// in device status reports to the device management server.
+const char kReportDeviceNetworkInterfaces[] =
+    "cros.device_status.report_network_interfaces";
+
 // A list of dictionaries, each detailing one extension to install as part of
 // the AppPack and including the following fields:
 // "extension-id": ID of the extension to install

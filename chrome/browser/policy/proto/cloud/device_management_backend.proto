@@ -359,6 +359,33 @@ message DeviceLocation {
   optional string error_message = 10;
 }
 
+// Details about a network interface.
+message NetworkInterface {
+  // Indicates the type of network device.
+  enum NetworkDeviceType {
+    TYPE_ETHERNET = 0;
+    TYPE_WIFI = 1;
+    TYPE_WIMAX = 2;
+    TYPE_BLUETOOTH = 3;
+    TYPE_CELLULAR = 4;
+  }
+
+  // Network device type.
+  optional NetworkDeviceType type = 1;
+
+  // MAC address (if applicable) of the corresponding network device. This is
+  // formatted as an ASCII string with 12 hex digits. Example: A0B1C2D3E4F5.
+  optional string mac_address = 2;
+
+  // MEID (if applicable) of the corresponding network device. Formatted as
+  // ASCII string composed of 14 hex digits. Example: A10000009296F2.
+  optional string meid = 3;
+
+  // IMEI (if applicable) of the corresponding network device. 15-16 decimal
+  // digits encoded as ASCII string. Example: 355402040158759.
+  optional string imei = 4;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   // The OS version reported by the device is a platform version
@@ -383,6 +410,9 @@ message DeviceStatusReportRequest {
 
   // The device location.
   optional DeviceLocation device_location = 7;
+
+  // List of network interfaces.
+  repeated NetworkInterface network_interface = 8;
 }
 
 // Report session (a user on one device) level status.

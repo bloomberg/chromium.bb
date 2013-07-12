@@ -265,13 +265,23 @@ std::string NetworkStateHandler::FormattedHardwareAddressForType(
 
 void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
   DCHECK(list);
-  NetworkStateList result;
   list->clear();
   for (ManagedStateList::const_iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
     list->push_back(network);
+  }
+}
+
+void NetworkStateHandler::GetDeviceList(DeviceStateList* list) const {
+  DCHECK(list);
+  list->clear();
+  for (ManagedStateList::const_iterator iter = device_list_.begin();
+       iter != device_list_.end(); ++iter) {
+    const DeviceState* device = (*iter)->AsDeviceState();
+    DCHECK(device);
+    list->push_back(device);
   }
 }
 
