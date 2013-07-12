@@ -6,15 +6,14 @@
 
 #include <android/bitmap.h>
 
+#include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/synchronous_compositor.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,172 +21,19 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_conversions.h"
 #include "ui/gfx/vector2d_f.h"
-#include "ui/gl/gl_bindings.h"
-
-// TODO(leandrogracia): Borrowed from gl2ext.h. Cannot be included due to
-// conflicts with  gl_bindings.h and the EGL library methods
-// (eglGetCurrentContext).
-#ifndef GL_TEXTURE_EXTERNAL_OES
-#define GL_TEXTURE_EXTERNAL_OES 0x8D65
-#endif
-
-#ifndef GL_TEXTURE_BINDING_EXTERNAL_OES
-#define GL_TEXTURE_BINDING_EXTERNAL_OES 0x8D67
-#endif
 
 using base::android::AttachCurrentThread;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using content::ContentViewCore;
 
 namespace android_webview {
 
 namespace {
 
-class GLStateRestore {
- public:
-  GLStateRestore() {
-#if !defined(NDEBUG)
-    {
-      GLint vertex_array_buffer_binding;
-      glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding);
-      DCHECK_EQ(0, vertex_array_buffer_binding);
-
-      GLint index_array_buffer_binding;
-      glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING,
-                    &index_array_buffer_binding);
-      DCHECK_EQ(0, index_array_buffer_binding);
-    }
-#endif  // !defined(NDEBUG)
-    glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
-                  &texture_external_oes_binding_);
-    glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_);
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
-
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib_); ++i) {
-      glGetVertexAttribiv(
-          i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &vertex_attrib_[i].enabled);
-      glGetVertexAttribiv(
-          i, GL_VERTEX_ATTRIB_ARRAY_SIZE, &vertex_attrib_[i].size);
-      glGetVertexAttribiv(
-          i, GL_VERTEX_ATTRIB_ARRAY_TYPE, &vertex_attrib_[i].type);
-      glGetVertexAttribiv(
-          i, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &vertex_attrib_[i].normalized);
-      glGetVertexAttribiv(
-          i, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &vertex_attrib_[i].stride);
-      glGetVertexAttribPointerv(
-          i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &vertex_attrib_[i].pointer);
-    }
-
-    glGetBooleanv(GL_DEPTH_TEST, &depth_test_);
-    glGetBooleanv(GL_CULL_FACE, &cull_face_);
-    glGetBooleanv(GL_COLOR_WRITEMASK, color_mask_);
-    glGetBooleanv(GL_BLEND, &blend_enabled_);
-    glGetIntegerv(GL_BLEND_SRC_RGB, &blend_src_rgb_);
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &blend_src_alpha_);
-    glGetIntegerv(GL_BLEND_DST_RGB, &blend_dest_rgb_);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &blend_dest_alpha_);
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
-    glGetIntegerv(GL_VIEWPORT, viewport_);
-    glGetBooleanv(GL_SCISSOR_TEST, &scissor_test_);
-    glGetIntegerv(GL_SCISSOR_BOX, scissor_box_);
-    glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_);
-  }
-
-  ~GLStateRestore() {
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding_);
-    glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment_);
-
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib_); ++i) {
-      glVertexAttribPointer(i,
-                            vertex_attrib_[i].size,
-                            vertex_attrib_[i].type,
-                            vertex_attrib_[i].normalized,
-                            vertex_attrib_[i].stride,
-                            vertex_attrib_[i].pointer);
-
-      if (vertex_attrib_[i].enabled) {
-        glEnableVertexAttribArray(i);
-      } else {
-        glDisableVertexAttribArray(i);
-      }
-    }
-
-    if (depth_test_) {
-      glEnable(GL_DEPTH_TEST);
-    } else {
-      glDisable(GL_DEPTH_TEST);
-    }
-
-    if (cull_face_) {
-      glEnable(GL_CULL_FACE);
-    } else {
-      glDisable(GL_CULL_FACE);
-    }
-
-    glColorMask(color_mask_[0], color_mask_[1], color_mask_[2], color_mask_[3]);
-
-    if (blend_enabled_) {
-      glEnable(GL_BLEND);
-    } else {
-      glDisable(GL_BLEND);
-    }
-
-    glBlendFuncSeparate(
-        blend_src_rgb_, blend_dest_rgb_, blend_src_alpha_, blend_dest_alpha_);
-    glActiveTexture(active_texture_);
-
-    glViewport(viewport_[0], viewport_[1], viewport_[2], viewport_[3]);
-
-    if (scissor_test_) {
-      glEnable(GL_SCISSOR_TEST);
-    } else {
-      glDisable(GL_SCISSOR_TEST);
-    }
-
-    glScissor(
-        scissor_box_[0], scissor_box_[1], scissor_box_[2], scissor_box_[3]);
-
-    glUseProgram(current_program_);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  }
-
- private:
-  GLint texture_external_oes_binding_;
-  GLint pack_alignment_;
-  GLint unpack_alignment_;
-
-  struct {
-    GLint enabled;
-    GLint size;
-    GLint type;
-    GLint normalized;
-    GLint stride;
-    GLvoid* pointer;
-  } vertex_attrib_[3];
-
-  GLboolean depth_test_;
-  GLboolean cull_face_;
-  GLboolean color_mask_[4];
-  GLboolean blend_enabled_;
-  GLint blend_src_rgb_;
-  GLint blend_src_alpha_;
-  GLint blend_dest_rgb_;
-  GLint blend_dest_alpha_;
-  GLint active_texture_;
-  GLint viewport_[4];
-  GLboolean scissor_test_;
-  GLint scissor_box_[4];
-  GLint current_program_;
-};
 
 const void* kUserDataKey = &kUserDataKey;
 
@@ -382,7 +228,7 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     return;
   }
 
-  GLStateRestore state_restore;
+  ScopedAppGLStateRestore state_restore;
 
   if (attached_to_window_ && compositor_ && !hardware_initialized_) {
     TRACE_EVENT0("android_webview", "InitializeHwDraw");

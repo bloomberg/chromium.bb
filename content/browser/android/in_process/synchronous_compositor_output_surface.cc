@@ -172,14 +172,6 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
   DCHECK(HasClient());
   DCHECK(context3d());
 
-  // Force a GL state restore next time a GLContextVirtual is made current.
-  // TODO(boliu): Move this to the end of this function after we have fixed
-  // all cases of MakeCurrent calls outside of draws. Tracked in
-  // crbug.com/239856.
-  gfx::GLContext* current_context = gfx::GLContext::GetCurrent();
-  if (current_context)
-    current_context->ReleaseCurrent(NULL);
-
   gfx::Transform adjusted_transform = transform;
   AdjustTransformForClip(&adjusted_transform, clip);
   surface_size_ = surface_size;
