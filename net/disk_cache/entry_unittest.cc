@@ -3117,6 +3117,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheInFlightRead) {
 
 TEST_F(DiskCacheEntryTest, SimpleCacheOpenCreateRaceWithNoIndex) {
   SetSimpleCacheMode();
+  DisableSimpleCacheWaitForIndex();
   DisableIntegrityCheck();
   InitCache();
 

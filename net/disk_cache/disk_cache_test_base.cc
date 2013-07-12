@@ -16,6 +16,7 @@
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/mem_backend_impl.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
+#include "net/disk_cache/simple/simple_index.h"
 
 DiskCacheTest::DiskCacheTest() {
   CHECK(temp_dir_.CreateUniqueTempDir());
@@ -58,6 +59,7 @@ DiskCacheTestWithCache::DiskCacheTestWithCache()
       type_(net::DISK_CACHE),
       memory_only_(false),
       simple_cache_mode_(false),
+      simple_cache_wait_for_index_(true),
       force_creation_(false),
       new_eviction_(false),
       first_cleanup_(true),
@@ -278,6 +280,12 @@ void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
     int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     cache_ = simple_cache_impl_ = simple_backend;
+    if (simple_cache_wait_for_index_) {
+      net::TestCompletionCallback wait_for_index_cb;
+      rv = simple_backend->index()->ExecuteWhenReady(
+          wait_for_index_cb.callback());
+      ASSERT_EQ(net::OK, wait_for_index_cb.GetResult(rv));
+    }
     return;
   }
 

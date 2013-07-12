@@ -89,6 +89,10 @@ class DiskCacheTestWithCache : public DiskCacheTest {
     new_eviction_ = true;
   }
 
+  void DisableSimpleCacheWaitForIndex() {
+    simple_cache_wait_for_index_ = false;
+  }
+
   void DisableFirstCleanup() {
     first_cleanup_ = false;
   }
@@ -152,6 +156,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   net::CacheType type_;
   bool memory_only_;
   bool simple_cache_mode_;
+  bool simple_cache_wait_for_index_;
   bool force_creation_;
   bool new_eviction_;
   bool first_cleanup_;
