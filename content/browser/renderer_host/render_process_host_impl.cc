@@ -889,6 +889,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(ENABLE_WEBRTC)
     switches::kEnableSCTPDataChannels,
 #endif
+    switches::kEnableWebAnimationsCSS,
+    switches::kEnableWebAnimationsSVG,
     switches::kEnableWebMIDI,
     switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebSocket,
