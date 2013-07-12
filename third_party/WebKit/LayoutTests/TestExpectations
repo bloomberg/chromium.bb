@@ -247,12 +247,14 @@ crbug.com/246105 [ Release ] fast/events/scale-and-scroll-iframe-body.html [ Ima
 crbug.com/246105 [ Release ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 crbug.com/246105 [ Release ] fast/events/scale-and-scroll-window.html [ ImageOnlyFailure ]
 crbug.com/246105 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
-crbug.com/246107 [ Release ] fast/events/selectionchange-iframe.html [ Timeout ]
+
+# This test consistently times out in Release builders on the bots and passes locally and/or in debug. :(
+crbug.com/246107 [ Release ] fast/events/selectionchange-iframe.html [ Skip ]
 
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]
 
-webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Failure Pass Timeout ]
-webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Failure Pass Timeout ]
+crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Skip ]
+crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Skip ]
 
 # Unskip after implementing DRT support for setDefersLoading and goBack.
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
@@ -684,12 +686,6 @@ webkit.org/b/111031 fast/history/visited-link-background-color.html [ ImageOnlyF
 # Chromium does not support cancel for notifications permissions.
 webkit.org/b/42798 fast/notifications/notifications-cancel-request-permission.html [ Pass Timeout ]
 
-crbug.com/46603 [ Release ] fast/frames/lots-of-iframes.html [ Pass Timeout ]
-crbug.com/46603 [ Release ] fast/frames/lots-of-objects.html [ Timeout ]
-# These tests are really slow in debug.
-crbug.com/46603 [ Debug ] fast/frames/lots-of-iframes.html [ Skip ]
-crbug.com/46603 [ Debug ] fast/frames/lots-of-objects.html [ Skip ]
-
 webkit.org/b/42598 http/tests/misc/401-alternative-content.php [ Failure ]
 webkit.org/b/42598 http/tests/xmlhttprequest/failed-auth.html [ Failure Timeout ]
 
@@ -701,7 +697,6 @@ crbug.com/51571 [ Win ] http/tests/misc/bad-charset-alias.html [ Pass Timeout ]
 # Mark as flaky initially while tuning on trybots
 Bug(nbarth) [ Release ] perf/ [ Failure Pass Timeout ]
 Bug(nbarth) perf/accessibility-title-ui-element.html [ Failure Pass Timeout ]
-Bug(nbarth) [ Release ] perf/adding-radio-buttons.html [ Failure Pass Timeout ]
 Bug(nbarth) [ Release ] perf/append-text-nodes-without-renderers.html [ Failure Pass Timeout ]
 Bug(nbarth) [ Release ] perf/array-nested-loop.html [ Failure Pass Timeout ]
 Bug(nbarth) [ Release ] perf/array-push-pop.html [ Failure Pass Timeout ]
@@ -744,21 +739,7 @@ crbug.com/62138 animations/stop-animation-on-suspend.html [ Failure Pass Timeout
 
 crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Failure Pass ]
 
-#/////////////////////////////////////////////////////////////////////////
-# Regressions caused by switching to DRT.
-#/////////////////////////////////////////////////////////////////////////
-
-# This test needs enhanced eventSender.contextMenu() return value.
-# See https://bugs.webkit.org/show_bug.cgi?id=45021 for more info.
-# UNIMPLEMENTED for chrome
-crbug.com/59665 webkit.org/b/45021 media/context-menu-actions.html [ Skip ]
-
-webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ Timeout ]
-webkit.org/b/91429 [ Linux Mac Win ] http/tests/plugins/post-url-file.html [ Timeout ]
-
-#///////////////////////////////////////////////////////////////////////////
-# End DRT failures
-#///////////////////////////////////////////////////////////////////////////
+webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ Skip ]
 
 crbug.com/66087 [ Win ] fast/dom/Geolocation/timestamp.html [ Failure Pass ]
 crbug.com/66087 [ Win ] http/tests/misc/no-last-modified.html [ Pass Timeout ]
@@ -792,9 +773,9 @@ webkit.org/b/52061 [ Linux Release ] transitions/change-values-during-transition
 
 # These tests are too slow with our MESA backend.  We can re-enable when we have
 # bots running tests on real hardware.
-webkit.org/b/49629 compositing/lots-of-img-layers.html [ Failure Timeout ]
+webkit.org/b/49629 compositing/lots-of-img-layers.html [ Skip ]
 webkit.org/b/49629 [ Win Debug ] virtual/softwarecompositing/lots-of-img-layers.html [ Slow ]
-webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Failure Timeout ]
+webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Skip ]
 
 crbug.com/76550 [ Win Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Slow ]
 crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
@@ -861,8 +842,9 @@ Bug(crogers) webaudio/waveshaper-oversample-4x.html [ Pass Failure ]
 
 webkit.org/b/111023 fast/loader/unload-hyperlink-targeted.html [ Pass Timeout ]
 webkit.org/b/111023 fast/dom/Window/Location/set-location-after-close.html [ Pass Timeout ]
-webkit.org/b/111044 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Pass Timeout ]
-webkit.org/b/111044 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Pass Timeout ]
+# These tests time out 50% of the time.
+crbug.com/259546 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
+crbug.com/259546 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Skip ]
 
 webkit.org/b/70988 [ Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
@@ -874,7 +856,7 @@ webkit.org/b/91415 [ Win Debug ] fast/frames/calculate-fixed.html [ Slow ]
 # Opera-submitted tests to W3C for <track>, a lot of failures still.
 webkit.org/b/103926 media/track/opera/idl/media-idl-tests.html [ Failure Pass ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure Pass ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Timeout ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Crash Pass Timeout ]
 webkit.org/b/103926 [ Release ] media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Failure Pass ]
 webkit.org/b/103926 [ Debug ] media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Crash Timeout ]
@@ -1539,12 +1521,10 @@ crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ 
 
 # Switching to content shell failures
 crbug.com/178709 plugins/document-open.html [ Failure ]
-crbug.com/178719 plugins/reloadplugins-and-pages.html [ Timeout ]
-crbug.com/178724 plugins/get-url-with-iframe-target-no-crash.html [ Timeout ]
 crbug.com/178744 plugins/npruntime/browser-object-identity.html [ Failure ]
 crbug.com/178745 [ Debug ] plugins/open-and-close-window-with-plugin.html [ Crash ]
 crbug.com/178745 [ Release ] plugins/open-and-close-window-with-plugin.html [ Failure ]
-crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Timeout ]
+crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Skip ]
 crbug.com/231859 [ Win Linux ] compositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ Pass ImageOnlyFailure ]
 crbug.com/231864 [ Linux ] css3/font-feature-settings-rendering.html [ ImageOnlyFailure ]
@@ -1577,7 +1557,7 @@ crbug.com/231932 http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure
 crbug.com/231940 [ Mac ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/231942 svg/dom/fuzz-path-parser.html [ Failure ]
 crbug.com/231859 [ Win Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure ]
-crbug.com/231950 editing/pasteboard/drag-and-drop-objectimage-contenteditable.html [ Timeout ]
+crbug.com/231950 editing/pasteboard/drag-and-drop-objectimage-contenteditable.html [ Skip ]
 crbug.com/233884 animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/233887 plugins/call-as-function.html [ Failure ]
 crbug.com/233888 virtual/softwarecompositing/reflections/nested-reflection-animated.html [ Pass ImageOnlyFailure ]
@@ -1719,7 +1699,7 @@ crbug.com/245670 fast/forms/access-key-for-all-elements.html [ Crash Pass ]
 crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pass ]
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
-crbug.com/24182 inspector/timeline/timeline-decode-resize.html [ Pass Failure Timeout ]
+crbug.com/259560 inspector/timeline/timeline-decode-resize.html [ Skip ]
 
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
