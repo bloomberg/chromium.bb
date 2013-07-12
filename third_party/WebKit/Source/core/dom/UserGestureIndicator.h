@@ -26,9 +26,9 @@
 #ifndef UserGestureIndicator_h
 #define UserGestureIndicator_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

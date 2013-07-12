@@ -21,10 +21,10 @@
 #ifndef QualifiedName_h
 #define QualifiedName_h
 
-#include <wtf/Forward.h>
-#include <wtf/HashTraits.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/Forward.h"
+#include "wtf/HashTraits.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

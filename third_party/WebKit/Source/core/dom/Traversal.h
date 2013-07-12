@@ -26,7 +26,7 @@
 #define Traversal_h
 
 #include "bindings/v8/ScriptState.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

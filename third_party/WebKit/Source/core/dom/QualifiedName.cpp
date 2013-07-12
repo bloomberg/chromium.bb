@@ -32,9 +32,9 @@
 #include "XMLNames.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/Assertions.h>
-#include <wtf/HashSet.h>
-#include <wtf/StaticConstructors.h>
+#include "wtf/Assertions.h"
+#include "wtf/HashSet.h"
+#include "wtf/StaticConstructors.h"
 
 namespace WebCore {
 

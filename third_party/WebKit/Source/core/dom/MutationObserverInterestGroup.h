@@ -35,8 +35,8 @@
 #include "core/dom/MutationObserver.h"
 #include "core/dom/Node.h"
 #include "core/dom/QualifiedName.h"
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

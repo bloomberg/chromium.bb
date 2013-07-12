@@ -29,8 +29,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/TextPosition.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

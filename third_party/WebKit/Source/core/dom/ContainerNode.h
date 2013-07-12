@@ -26,9 +26,8 @@
 
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Node.h"
-
-#include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #define WebCoreMemoryInstrumentation_h
 
 #include "core/platform/PlatformMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationString.h>
+#include "wtf/MemoryInstrumentationString.h"
 
 namespace WebCore {
 

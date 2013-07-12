@@ -31,9 +31,9 @@
 #ifndef EventDispatchMediator_h
 #define EventDispatchMediator_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

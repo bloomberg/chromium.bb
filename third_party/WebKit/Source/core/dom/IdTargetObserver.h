@@ -26,7 +26,7 @@
 #ifndef IdTargetObserver_h
 #define IdTargetObserver_h
 
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

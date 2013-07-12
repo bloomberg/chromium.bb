@@ -31,10 +31,10 @@
 #ifndef ScopedEventQueue_h
 #define ScopedEventQueue_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

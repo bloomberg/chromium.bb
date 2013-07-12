@@ -26,8 +26,8 @@
 #ifndef UserTypingGestureIndicator_h
 #define UserTypingGestureIndicator_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

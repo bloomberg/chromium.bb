@@ -26,8 +26,8 @@
 #ifndef EventFactory_h
 #define EventFactory_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

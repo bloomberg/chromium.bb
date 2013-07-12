@@ -24,7 +24,7 @@
 #define CharacterData_h
 
 #include "core/dom/Node.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

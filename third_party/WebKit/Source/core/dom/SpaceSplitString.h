@@ -21,9 +21,9 @@
 #ifndef SpaceSplitString_h
 #define SpaceSplitString_h
 
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

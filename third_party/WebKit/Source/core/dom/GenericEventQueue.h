@@ -29,9 +29,9 @@
 #include "core/dom/EventQueue.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/Timer.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

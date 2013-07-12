@@ -33,9 +33,9 @@
 
 #include "core/dom/MessagePortChannel.h"
 
-#include <wtf/MessageQueue.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Threading.h>
+#include "wtf/MessageQueue.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

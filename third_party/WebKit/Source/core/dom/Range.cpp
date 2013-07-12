@@ -44,10 +44,10 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderText.h"
-#include <wtf/RefCountedLeakCounter.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "wtf/RefCountedLeakCounter.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

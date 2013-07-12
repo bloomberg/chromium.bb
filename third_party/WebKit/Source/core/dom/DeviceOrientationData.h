@@ -26,8 +26,8 @@
 #ifndef DeviceOrientationData_h
 #define DeviceOrientationData_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

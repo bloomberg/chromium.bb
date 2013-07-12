@@ -28,8 +28,8 @@
 #define TreeScope_h
 
 #include "core/dom/DocumentOrderedMap.h"
-#include <wtf/Forward.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/Forward.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

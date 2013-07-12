@@ -24,8 +24,8 @@
 #ifndef DocumentParser_h
 #define DocumentParser_h
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

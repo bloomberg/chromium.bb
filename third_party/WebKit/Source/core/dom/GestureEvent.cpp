@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/dom/Element.h"
 #include "core/dom/GestureEvent.h"
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

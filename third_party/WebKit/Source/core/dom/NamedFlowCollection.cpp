@@ -35,9 +35,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/NamedFlow.h"
 #include "core/inspector/InspectorInstrumentation.h"
-
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

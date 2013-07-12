@@ -28,8 +28,8 @@
 #define ActiveDOMObject_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include <wtf/Assertions.h>
-#include <wtf/Forward.h>
+#include "wtf/Assertions.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

@@ -27,9 +27,9 @@
 #ifndef DocumentSharedObjectPool_h
 #define DocumentSharedObjectPool_h
 
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

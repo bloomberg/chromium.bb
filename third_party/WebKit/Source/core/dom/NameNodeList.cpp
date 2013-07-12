@@ -25,7 +25,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

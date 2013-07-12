@@ -28,7 +28,7 @@
 
 #include "core/dom/DecodedDataDocumentParser.h"
 #include "core/dom/ParserContentPolicy.h"
-#include <wtf/text/TextPosition.h>
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

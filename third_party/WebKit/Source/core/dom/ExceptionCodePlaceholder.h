@@ -31,8 +31,8 @@
 #ifndef ExceptionCodePlaceholder_h
 #define ExceptionCodePlaceholder_h
 
-#include <wtf/Assertions.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/Assertions.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

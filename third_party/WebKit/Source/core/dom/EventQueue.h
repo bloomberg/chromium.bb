@@ -27,9 +27,9 @@
 #ifndef EventQueue_h
 #define EventQueue_h
 
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

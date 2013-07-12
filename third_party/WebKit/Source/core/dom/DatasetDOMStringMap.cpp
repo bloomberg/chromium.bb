@@ -29,8 +29,8 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #define ErrorEvent_h
 
 #include "core/dom/Event.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

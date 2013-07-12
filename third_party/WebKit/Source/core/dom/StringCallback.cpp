@@ -32,7 +32,7 @@
 #include "core/dom/StringCallback.h"
 
 #include "core/dom/ScriptExecutionContext.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -32,9 +32,9 @@
 #define MutationObserverRegistration_h
 
 #include "core/dom/MutationObserver.h"
-#include <wtf/HashSet.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/HashSet.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

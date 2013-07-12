@@ -34,9 +34,9 @@
 #define EventListenerMap_h
 
 #include "core/dom/RegisteredEventListener.h"
-#include <wtf/Forward.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

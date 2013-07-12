@@ -27,8 +27,8 @@
 #include "core/dom/EventTarget.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
