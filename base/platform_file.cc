@@ -14,6 +14,7 @@ PlatformFileInfo::PlatformFileInfo()
 
 PlatformFileInfo::~PlatformFileInfo() {}
 
+#if !defined(OS_NACL)
 PlatformFile CreatePlatformFile(const FilePath& name,
                                 int flags,
                                 bool* created,
@@ -25,5 +26,6 @@ PlatformFile CreatePlatformFile(const FilePath& name,
   }
   return CreatePlatformFileUnsafe(name, flags, created, error);
 }
+#endif
 
 }  // namespace base

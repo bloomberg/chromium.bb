@@ -27,7 +27,9 @@ COMPILE_ASSERT(PLATFORM_FILE_FROM_BEGIN   == SEEK_SET &&
                PLATFORM_FILE_FROM_CURRENT == SEEK_CUR &&
                PLATFORM_FILE_FROM_END     == SEEK_END, whence_matches_system);
 
-#if defined(OS_BSD) || defined(OS_MACOSX)
+namespace {
+
+#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
 typedef struct stat stat_wrapper_t;
 static int CallFstat(int fd, stat_wrapper_t *sb) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -41,6 +43,86 @@ static int CallFstat(int fd, stat_wrapper_t *sb) {
 }
 #endif
 
+// NaCl doesn't provide the following system calls, so either simulate them or
+// wrap them in order to minimize the number of #ifdef's in this file.
+#if !defined(OS_NACL)
+static int DoPread(PlatformFile file, char* data, int size, int64 offset) {
+  return HANDLE_EINTR(pread(file, data, size, offset));
+}
+
+static int DoPwrite(PlatformFile file, const char* data, int size,
+                      int64 offset) {
+  return HANDLE_EINTR(pwrite(file, data, size, offset));
+}
+
+static bool IsOpenAppend(PlatformFile file) {
+  return (fcntl(file, F_GETFL) & O_APPEND) != 0;
+}
+
+static int CallFtruncate(PlatformFile file, int64 length) {
+  return HANDLE_EINTR(ftruncate(file, length));
+}
+
+static int CallFsync(PlatformFile file) {
+  return HANDLE_EINTR(fsync(file));
+}
+
+static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
+#ifdef __USE_XOPEN2K8
+  // futimens should be available, but futimes might not be
+  // http://pubs.opengroup.org/onlinepubs/9699919799/
+
+  timespec ts_times[2];
+  ts_times[0].tv_sec  = times[0].tv_sec;
+  ts_times[0].tv_nsec = times[0].tv_usec * 1000;
+  ts_times[1].tv_sec  = times[1].tv_sec;
+  ts_times[1].tv_nsec = times[1].tv_usec * 1000;
+
+  return futimens(file, ts_times);
+#else
+  return futimes(file, times);
+#endif
+}
+#else  // defined(OS_NACL)
+// TODO(bbudge) Remove DoPread, DoPwrite when NaCl implements pread, pwrite.
+static int DoPread(PlatformFile file, char* data, int size, int64 offset) {
+  lseek(file, static_cast<off_t>(offset), SEEK_SET);
+  return HANDLE_EINTR(read(file, data, size));
+}
+
+static int DoPwrite(PlatformFile file, const char* data, int size,
+                      int64 offset) {
+  lseek(file, static_cast<off_t>(offset), SEEK_SET);
+  return HANDLE_EINTR(write(file, data, size));
+}
+
+static bool IsOpenAppend(PlatformFile file) {
+  // NaCl doesn't implement fcntl. Since NaCl's write conforms to the POSIX
+  // standard and always appends if the file is opened with O_APPEND, just
+  // return false here.
+  return false;
+}
+
+static int CallFtruncate(PlatformFile file, int64 length) {
+  NOTIMPLEMENTED();  // NaCl doesn't implement ftruncate.
+  return 0;
+}
+
+static int CallFsync(PlatformFile file) {
+  NOTIMPLEMENTED();  // NaCl doesn't implement fsync.
+  return 0;
+}
+
+static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
+  NOTIMPLEMENTED();  // NaCl doesn't implement futimes.
+  return 0;
+}
+#endif  // defined(OS_NACL)
+
+}  // namespace
+
+// NaCl doesn't implement system calls to open files directly.
+#if !defined(OS_NACL)
 // TODO(erikkay): does it make sense to support PLATFORM_FILE_EXCLUSIVE_* here?
 PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
                                       int flags,
@@ -139,6 +221,7 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
 FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
   return fdopen(file, mode);
 }
+#endif  // !defined(OS_NACL)
 
 bool ClosePlatformFile(PlatformFile file) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -163,8 +246,8 @@ int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pread(file, data + bytes_read,
-                            size - bytes_read, offset + bytes_read));
+    rv = DoPread(file, data + bytes_read,
+                 size - bytes_read, offset + bytes_read);
     if (rv <= 0)
       break;
 
@@ -198,7 +281,7 @@ int ReadPlatformFileNoBestEffort(PlatformFile file, int64 offset,
   if (file < 0)
     return -1;
 
-  return HANDLE_EINTR(pread(file, data, size, offset));
+  return DoPread(file, data, size, offset);
 }
 
 int ReadPlatformFileCurPosNoBestEffort(PlatformFile file,
@@ -214,7 +297,7 @@ int WritePlatformFile(PlatformFile file, int64 offset,
                       const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (fcntl(file, F_GETFL) & O_APPEND)
+  if (IsOpenAppend(file))
     return WritePlatformFileAtCurrentPos(file, data, size);
 
   if (file < 0 || size < 0)
@@ -223,8 +306,8 @@ int WritePlatformFile(PlatformFile file, int64 offset,
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pwrite(file, data + bytes_written,
-                             size - bytes_written, offset + bytes_written));
+    rv = DoPwrite(file, data + bytes_written,
+                  size - bytes_written, offset + bytes_written);
     if (rv <= 0)
       break;
 
@@ -264,12 +347,12 @@ int WritePlatformFileCurPosNoBestEffort(PlatformFile file,
 
 bool TruncatePlatformFile(PlatformFile file, int64 length) {
   base::ThreadRestrictions::AssertIOAllowed();
-  return ((file >= 0) && !HANDLE_EINTR(ftruncate(file, length)));
+  return ((file >= 0) && !CallFtruncate(file, length));
 }
 
 bool FlushPlatformFile(PlatformFile file) {
   base::ThreadRestrictions::AssertIOAllowed();
-  return !HANDLE_EINTR(fsync(file));
+  return !CallFsync(file);
 }
 
 bool TouchPlatformFile(PlatformFile file, const base::Time& last_access_time,
@@ -282,20 +365,7 @@ bool TouchPlatformFile(PlatformFile file, const base::Time& last_access_time,
   times[0] = last_access_time.ToTimeVal();
   times[1] = last_modified_time.ToTimeVal();
 
-#ifdef __USE_XOPEN2K8
-  // futimens should be available, but futimes might not be
-  // http://pubs.opengroup.org/onlinepubs/9699919799/
-
-  timespec ts_times[2];
-  ts_times[0].tv_sec  = times[0].tv_sec;
-  ts_times[0].tv_nsec = times[0].tv_usec * 1000;
-  ts_times[1].tv_sec  = times[1].tv_sec;
-  ts_times[1].tv_nsec = times[1].tv_usec * 1000;
-
-  return !futimens(file, ts_times);
-#else
-  return !futimes(file, times);
-#endif
+  return !CallFutimes(file, times);
 }
 
 bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
@@ -322,8 +392,10 @@ PlatformFileError ErrnoToPlatformFileError(int saved_errno) {
     case EROFS:
     case EPERM:
       return PLATFORM_FILE_ERROR_ACCESS_DENIED;
+#if !defined(OS_NACL)  // ETXTBSY not defined by NaCl.
     case ETXTBSY:
       return PLATFORM_FILE_ERROR_IN_USE;
+#endif
     case EEXIST:
       return PLATFORM_FILE_ERROR_EXISTS;
     case ENOENT:
