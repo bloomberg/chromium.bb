@@ -363,7 +363,7 @@ function onThemeChange() {
  */
 function updateAttribution(url) {
   if (!url) {
-    attribution.hidden = true;
+    setAttributionVisibility_(false);
     return;
   }
   var attributionImage = new Image();
@@ -372,12 +372,24 @@ function updateAttribution(url) {
     if (oldAttributionImage)
       removeNode(oldAttributionImage);
     attribution.appendChild(attributionImage);
-    attribution.hidden = false;
+    setAttributionVisibility_(true);
   };
   attributionImage.onerror = function() {
-    attribution.hidden = true;
+    setAttributionVisibility_(false);
   };
   attributionImage.src = url;
+}
+
+
+/**
+ * Sets the visibility of the theme attribution.
+ * @param {boolean} show True to show the attribution.
+ * @private
+ */
+function setAttributionVisibility_(show) {
+  if (attribution) {
+    attribution.style.display = show ? '' : 'none';
+  }
 }
 
 
