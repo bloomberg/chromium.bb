@@ -25,6 +25,7 @@ class DatagramClientSocket;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicStreamFactory;
+class SSLInfo;
 
 namespace test {
 class QuicClientSessionPeer;
@@ -51,6 +52,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   virtual QuicCryptoClientStream* GetCryptoStream() OVERRIDE;
   virtual void CloseStream(QuicStreamId stream_id) OVERRIDE;
   virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) OVERRIDE;
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
   // QuicConnectionVisitorInterface methods:
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;

@@ -13,6 +13,8 @@
 
 namespace net {
 
+class CertVerifyResult;
+
 // A ProofVerifier checks the signature on a server config, and the certificate
 // chain that backs the public key.
 class NET_EXPORT_PRIVATE ProofVerifier {
@@ -37,6 +39,7 @@ class NET_EXPORT_PRIVATE ProofVerifier {
                           const std::vector<std::string>& certs,
                           const std::string& signature,
                           std::string* error_details,
+                          CertVerifyResult* cert_verify_result,
                           const CompletionCallback& callback) = 0;
 };
 

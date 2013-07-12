@@ -155,6 +155,10 @@ QuicSpdyCompressor* ReliableQuicStream::compressor() {
   return session_->compressor();
 }
 
+bool ReliableQuicStream::GetSSLInfo(SSLInfo* ssl_info) {
+  return session_->GetSSLInfo(ssl_info);
+}
+
 QuicConsumedData ReliableQuicStream::WriteData(StringPiece data, bool fin) {
   DCHECK(data.size() > 0 || fin);
   return WriteOrBuffer(data, fin);

@@ -6,6 +6,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/cert_status_flags.h"
+#include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_source.h"
 #include "net/quic/crypto/proof_verifier.h"
@@ -31,6 +33,7 @@ TEST(Proof, Verify) {
   const vector<string>* certs;
   const vector<string>* first_certs;
   string error_details, signature, first_signature;
+  CertVerifyResult cert_verify_result;
 
   ASSERT_TRUE(source->GetProof(hostname, server_config, &first_certs,
                                &first_signature));
@@ -43,27 +46,31 @@ TEST(Proof, Verify) {
   int rv;
   TestCompletionCallback callback;
   rv = verifier->VerifyProof(hostname, server_config, *certs, signature,
-                             &error_details, callback.callback());
+                             &error_details, &cert_verify_result,
+                             callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(OK, rv);
   ASSERT_EQ("", error_details);
+  ASSERT_FALSE(IsCertStatusError(cert_verify_result.cert_status));
 
   rv = verifier->VerifyProof("foo.com", server_config, *certs, signature,
-                             &error_details, callback.callback());
+                             &error_details, &cert_verify_result,
+                             callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
 
   rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
                              *certs, signature, &error_details,
-                             callback.callback());
+                             &cert_verify_result, callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
 
   const string corrupt_signature = "1" + signature;
   rv = verifier->VerifyProof(hostname, server_config, *certs, corrupt_signature,
-                             &error_details, callback.callback());
+                             &error_details, &cert_verify_result,
+                             callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
@@ -73,7 +80,8 @@ TEST(Proof, Verify) {
     wrong_certs.push_back((*certs)[i]);
   }
   rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
-                             &error_details, callback.callback());
+                             &error_details, &cert_verify_result,
+                             callback.callback());
   rv = callback.GetResult(rv);
   ASSERT_EQ(ERR_FAILED, rv);
   ASSERT_NE("", error_details);
@@ -200,6 +208,7 @@ TEST(Proof, VerifyRSAKnownAnswerTest) {
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
   string error_details;
+  CertVerifyResult cert_verify_result;
 
   vector<string> certs(2);
   certs[0] = PEMCertFileToDER("quic_test.example.com.crt");
@@ -220,20 +229,23 @@ TEST(Proof, VerifyRSAKnownAnswerTest) {
     int rv;
     TestCompletionCallback callback;
     rv = verifier->VerifyProof(hostname, server_config, certs, signature,
-                               &error_details, callback.callback());
+                               &error_details, &cert_verify_result,
+                               callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(OK, rv);
     ASSERT_EQ("", error_details);
+    ASSERT_FALSE(IsCertStatusError(cert_verify_result.cert_status));
 
     rv = verifier->VerifyProof("foo.com", server_config, certs, signature,
-                               &error_details, callback.callback());
+                               &error_details, &cert_verify_result,
+                               callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
 
     rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
                                certs, signature, &error_details,
-                               callback.callback());
+                               &cert_verify_result, callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
@@ -241,7 +253,7 @@ TEST(Proof, VerifyRSAKnownAnswerTest) {
     const string corrupt_signature = "1" + signature;
     rv = verifier->VerifyProof(hostname, server_config, certs,
                                corrupt_signature, &error_details,
-                               callback.callback());
+                               &cert_verify_result, callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
@@ -251,7 +263,8 @@ TEST(Proof, VerifyRSAKnownAnswerTest) {
       wrong_certs.push_back(certs[i]);
     }
     rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
-                               &error_details, callback.callback());
+                               &error_details, &cert_verify_result,
+                               callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
@@ -308,6 +321,7 @@ TEST(Proof, MAYBE_VerifyECDSAKnownAnswerTest) {
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
   string error_details;
+  CertVerifyResult cert_verify_result;
 
   vector<string> certs(2);
   certs[0] = PEMCertFileToDER("quic_test_ecc.example.com.crt");
@@ -328,20 +342,23 @@ TEST(Proof, MAYBE_VerifyECDSAKnownAnswerTest) {
     int rv;
     TestCompletionCallback callback;
     rv = verifier->VerifyProof(hostname, server_config, certs, signature,
-                               &error_details, callback.callback());
+                               &error_details, &cert_verify_result,
+                               callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(OK, rv);
     ASSERT_EQ("", error_details);
+    ASSERT_FALSE(IsCertStatusError(cert_verify_result.cert_status));
 
     rv = verifier->VerifyProof("foo.com", server_config, certs, signature,
-                               &error_details, callback.callback());
+                               &error_details, &cert_verify_result,
+                               callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
 
     rv = verifier->VerifyProof(hostname, server_config.substr(1, string::npos),
                                certs, signature, &error_details,
-                               callback.callback());
+                               &cert_verify_result, callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
@@ -352,7 +369,7 @@ TEST(Proof, MAYBE_VerifyECDSAKnownAnswerTest) {
     corrupt_signature[corrupt_signature.size() - 1] += 1;
     rv = verifier->VerifyProof(hostname, server_config, certs,
                                corrupt_signature, &error_details,
-                               callback.callback());
+                               &cert_verify_result, callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
@@ -361,7 +378,7 @@ TEST(Proof, MAYBE_VerifyECDSAKnownAnswerTest) {
     const string bad_der_signature1 = "1" + signature;
     rv = verifier->VerifyProof(hostname, server_config, certs,
                                bad_der_signature1, &error_details,
-                               callback.callback());
+                               &cert_verify_result, callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);
@@ -371,7 +388,8 @@ TEST(Proof, MAYBE_VerifyECDSAKnownAnswerTest) {
       wrong_certs.push_back(certs[i]);
     }
     rv = verifier->VerifyProof("foo.com", server_config, wrong_certs, signature,
-                               &error_details, callback.callback());
+                               &error_details, &cert_verify_result,
+                               callback.callback());
     rv = callback.GetResult(rv);
     ASSERT_EQ(ERR_FAILED, rv);
     ASSERT_NE("", error_details);

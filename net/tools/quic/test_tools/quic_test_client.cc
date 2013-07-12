@@ -6,6 +6,7 @@
 
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/tools/flip_server/balsa_headers.h"
@@ -28,10 +29,11 @@ class RecordingProofVerifier : public net::ProofVerifier {
                           const vector<string>& certs,
                           const string& signature,
                           string* error_details,
+                          net::CertVerifyResult* cert_verify_result,
                           const net::CompletionCallback& callback) OVERRIDE {
     common_name_.clear();
     if (certs.empty()) {
-      return false;
+      return net::ERR_FAILED;
     }
 
     // Convert certs to X509Certificate.

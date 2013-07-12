@@ -17,6 +17,7 @@
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
+#include "net/ssl/ssl_info.h"
 
 namespace net {
 
@@ -217,7 +218,7 @@ bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 
 void QuicHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
   DCHECK(stream_);
-  NOTIMPLEMENTED();
+  stream_->GetSSLInfo(ssl_info);
 }
 
 void QuicHttpStream::GetSSLCertRequestInfo(

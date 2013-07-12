@@ -16,6 +16,7 @@
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_stream_factory.h"
+#include "net/ssl/ssl_info.h"
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
@@ -116,6 +117,11 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
 QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
   return crypto_stream_.get();
 };
+
+bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) {
+  DCHECK(crypto_stream_.get());
+  return crypto_stream_->GetSSLInfo(ssl_info);
+}
 
 int QuicClientSession::CryptoConnect(const CompletionCallback& callback) {
   RecordHandshakeState(STATE_STARTED);

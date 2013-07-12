@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/ssl/ssl_info.h"
 
 using base::StringPiece;
 using base::hash_map;
@@ -366,6 +367,11 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id) {
 void QuicSession::MarkDecompressionBlocked(QuicHeaderId header_id,
                                            QuicStreamId stream_id) {
   decompression_blocked_streams_[header_id] = stream_id;
+}
+
+bool QuicSession::GetSSLInfo(SSLInfo* ssl_info) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void QuicSession::PostProcessAfterData() {

@@ -37,6 +37,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
                           const std::vector<std::string>& certs,
                           const std::string& signature,
                           std::string* error_details,
+                          CertVerifyResult* cert_verify_result,
                           const CompletionCallback& callback) OVERRIDE;
 
  private:
@@ -65,7 +66,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   CompletionCallback callback_;
 
   // The result of certificate verification.
-  CertVerifyResult cert_verify_result_;
+  CertVerifyResult* cert_verify_result_;
   std::string* error_details_;
 
   // X509Certificate from a chain of DER encoded certificates.

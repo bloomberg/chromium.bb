@@ -25,6 +25,7 @@ namespace net {
 
 class QuicCryptoStream;
 class ReliableQuicStream;
+class SSLInfo;
 class VisitorShim;
 
 namespace test {
@@ -144,6 +145,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   QuicSpdyDecompressor* decompressor() { return &decompressor_; }
   QuicSpdyCompressor* compressor() { return &compressor_; }
+
+  // Gets the SSL connection information.
+  virtual bool GetSSLInfo(SSLInfo* ssl_info);
 
   QuicErrorCode error() const { return error_; }
 

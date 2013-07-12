@@ -12,6 +12,8 @@
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_info.h"
 
 namespace net {
 
@@ -44,6 +46,45 @@ bool QuicCryptoClientStream::CryptoConnect() {
 
 int QuicCryptoClientStream::num_sent_client_hellos() const {
   return num_client_hellos_;
+}
+
+bool QuicCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
+  ssl_info->Reset();
+  QuicCryptoClientConfig::CachedState* cached =
+      crypto_config_->LookupOrCreate(server_hostname_);
+  DCHECK(cached);
+  if (!cached) {
+    return false;
+  }
+  const CertVerifyResult* cert_verify_result =
+      cached->cert_verify_result();
+
+  ssl_info->cert_status = cert_verify_result->cert_status;
+  ssl_info->cert = cert_verify_result->verified_cert;
+
+  // TODO(rtenneti): Figure out what to set for the following.
+  // Temporarily hard coded cipher_suite as 0xc031 to represent
+  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (from
+  // net/ssl/ssl_cipher_suite_names.cc) and encryption as 256.
+  int cipher_suite = 0xc02f;
+  int ssl_connection_status = 0;
+  ssl_connection_status |=
+      (cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK) <<
+       SSL_CONNECTION_CIPHERSUITE_SHIFT;
+  ssl_connection_status |=
+      (SSL_CONNECTION_VERSION_TLS1_2 & SSL_CONNECTION_VERSION_MASK) <<
+       SSL_CONNECTION_VERSION_SHIFT;
+
+  ssl_info->public_key_hashes = cert_verify_result->public_key_hashes;
+  ssl_info->is_issued_by_known_root =
+      cert_verify_result->is_issued_by_known_root;
+
+  ssl_info->connection_status = ssl_connection_status;
+  ssl_info->client_cert_sent = false;
+  ssl_info->channel_id_sent = false;
+  ssl_info->security_bits = 256;
+  ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
+  return true;
 }
 
 // kMaxClientHellos is the maximum number of times that we'll send a client
@@ -170,6 +211,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             cached->certs(),
             cached->signature(),
             &error_details_,
+            &cert_verify_result_,
             base::Bind(&QuicCryptoClientStream::OnVerifyProofComplete,
                        weak_factory_.GetWeakPtr()));
         if (result == ERR_IO_PENDING) {
@@ -190,6 +232,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           next_state_ = STATE_VERIFY_PROOF;
         } else {
           cached->SetProofValid();
+          cached->SetCertVerifyResult(cert_verify_result_);
           next_state_ = STATE_SEND_CHLO;
         }
         break;

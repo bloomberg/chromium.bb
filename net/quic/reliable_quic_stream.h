@@ -26,6 +26,7 @@ class ReliableQuicStreamPeer;
 
 class IPEndPoint;
 class QuicSession;
+class SSLInfo;
 
 // All this does right now is send data to subclasses via the sequencer.
 class NET_EXPORT_PRIVATE ReliableQuicStream : public
@@ -111,6 +112,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
 
   QuicSpdyCompressor* compressor();
+
+  // Gets the SSL connection information.
+  bool GetSSLInfo(SSLInfo* ssl_info);
 
  protected:
   // Returns a pair with the number of bytes consumed from data, and a boolean
