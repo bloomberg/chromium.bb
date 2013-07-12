@@ -79,4 +79,10 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(disconnectNative)(JNIEnv* env,
   remoting::ChromotingJNIInstance::GetInstance()->DisconnectFromHost();
 }
 
+JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(JNIEnv* env,
+                                                                  jobject that,
+                                                                  jstring pin) {
+  remoting::ChromotingJNIInstance::GetInstance()->AuthenticateWithPin(pin);
+}
+
 }  // extern "C"
