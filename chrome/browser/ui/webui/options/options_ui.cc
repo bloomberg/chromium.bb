@@ -296,7 +296,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options::DisplayOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DisplayOverscanHandler());
-  AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options::InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::LanguageChewingHandler());
   AddOptionsPageUIHandler(localized_strings,

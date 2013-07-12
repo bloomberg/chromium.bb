@@ -24,7 +24,7 @@ namespace {
 
 class NetworkEventLog;
 NetworkEventLog* g_network_event_log = NULL;
-size_t g_max_network_event_log_entries = 1000;
+size_t g_max_network_event_log_entries = 4000;
 
 struct LogEntry {
   LogEntry(const std::string& file,

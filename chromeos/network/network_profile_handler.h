@@ -52,6 +52,8 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   const NetworkProfile* GetProfileForUserhash(
       const std::string& userhash) const;
 
+  static const char kSharedProfilePath[];
+
  protected:
   friend class NetworkHandler;
   NetworkProfileHandler();

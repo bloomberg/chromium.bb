@@ -415,19 +415,28 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   // Set the properties for an IP Config object.
   const std::string kTestIPConfigPath("test_ip_config_path");
+
   base::StringValue ip_address("192.168.1.1");
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
-      flimflam::kAddressProperty,
-      ip_address,
+      flimflam::kAddressProperty, ip_address,
       base::Bind(&DoNothingWithCallStatus));
   base::ListValue dns_servers;
   dns_servers.Append(base::Value::CreateStringValue("192.168.1.100"));
   dns_servers.Append(base::Value::CreateStringValue("192.168.1.101"));
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
-      flimflam::kNameServersProperty,
-      dns_servers,
+      flimflam::kNameServersProperty, dns_servers,
+      base::Bind(&DoNothingWithCallStatus));
+  base::FundamentalValue prefixlen(8);
+  DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
+      dbus::ObjectPath(kTestIPConfigPath),
+      flimflam::kPrefixlenProperty, prefixlen,
+      base::Bind(&DoNothingWithCallStatus));
+  base::StringValue gateway("192.0.0.1");
+  DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
+      dbus::ObjectPath(kTestIPConfigPath),
+      flimflam::kGatewayProperty, gateway,
       base::Bind(&DoNothingWithCallStatus));
   message_loop_.RunUntilIdle();
 
@@ -447,8 +456,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   // IPConfig property change on the service should trigger property updates for
-  // IP Address and DNS.
-  EXPECT_EQ(2, listener_->property_updates(
+  // IP Address, DNS, prefixlen, and gateway.
+  EXPECT_EQ(4, listener_->property_updates(
       flimflam::kServicesProperty)[kTestServicePath1]);
 
   // Now, Add a new watched service with the IPConfig already set.
@@ -456,9 +465,9 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   AddServiceWithIPConfig(flimflam::kTypeWifi, kTestServicePath2,
                          flimflam::kStateIdle, kTestIPConfigPath, true);
   message_loop_.RunUntilIdle();
-  // A watched service with the IPConfig property already set must
-  // trigger property updates for IP Address and DNS when added.
-  EXPECT_EQ(2, listener_->property_updates(
+  // A watched service with the IPConfig property already set must trigger
+  // property updates for IP Address, DNS, prefixlen, and gateway when added.
+  EXPECT_EQ(4, listener_->property_updates(
       flimflam::kServicesProperty)[kTestServicePath2]);
 }
 

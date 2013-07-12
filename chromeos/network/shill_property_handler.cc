@@ -558,6 +558,10 @@ void ShillPropertyHandler::GetIPConfigCallback(
                          flimflam::kAddressProperty);
   UpdateIPConfigProperty(service_path, properties,
                          flimflam::kNameServersProperty);
+  UpdateIPConfigProperty(service_path, properties,
+                         flimflam::kPrefixlenProperty);
+  UpdateIPConfigProperty(service_path, properties,
+                         flimflam::kGatewayProperty);
 }
 
 void ShillPropertyHandler::UpdateIPConfigProperty(

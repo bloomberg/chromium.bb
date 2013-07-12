@@ -16,6 +16,7 @@ DeviceState::DeviceState(const std::string& path)
       provider_requires_roaming_(false),
       support_network_scan_(false),
       scanning_(false),
+      sim_lock_enabled_(false),
       sim_present_(true) {
 }
 
@@ -24,6 +25,9 @@ DeviceState::~DeviceState() {
 
 bool DeviceState::PropertyChanged(const std::string& key,
                                   const base::Value& value) {
+  // All property values get stored in |properties_|.
+  properties_.Set(key, value.DeepCopy());
+
   if (ManagedStatePropertyChanged(key, value))
     return true;
   if (key == flimflam::kAddressProperty) {
@@ -59,6 +63,8 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return true;
   } else if (key == flimflam::kTechnologyFamilyProperty) {
     return GetStringValue(key, value, &technology_family_);
+  } else if (key == flimflam::kCarrierProperty) {
+    return GetStringValue(key, value, &carrier_);
   } else if (key == flimflam::kSIMLockStatusProperty) {
     const base::DictionaryValue* dict = NULL;
     if (!value.GetAsDictionary(&dict))
@@ -70,17 +76,24 @@ bool DeviceState::PropertyChanged(const std::string& key,
     if (!dict->GetWithoutPathExpansion(flimflam::kSIMLockRetriesLeftProperty,
                                        &out_value))
       return false;
-    if (GetUInt32Value(key, *out_value, &sim_retries_left_))
+    if (GetUInt32Value(flimflam::kSIMLockRetriesLeftProperty,
+                       *out_value, &sim_retries_left_))
       property_changed = true;
 
     if (!dict->GetWithoutPathExpansion(flimflam::kSIMLockTypeProperty,
                                        &out_value))
       return false;
-    if (GetStringValue(key, *out_value, &sim_lock_type_))
+    if (GetStringValue(flimflam::kSIMLockTypeProperty,
+                       *out_value, &sim_lock_type_))
       property_changed = true;
 
-    // Ignore other SIMLockStatus properties.
-    // TODO(armansito): Also handle kSIMLockEnabledProperty.
+    if (!dict->GetWithoutPathExpansion(flimflam::kSIMLockEnabledProperty,
+                                       &out_value))
+      return false;
+    if (GetBooleanValue(flimflam::kSIMLockEnabledProperty,
+                        *out_value, &sim_lock_enabled_))
+      property_changed = true;
+
     return property_changed;
   } else if (key == flimflam::kMeidProperty) {
     return GetStringValue(key, value, &meid_);

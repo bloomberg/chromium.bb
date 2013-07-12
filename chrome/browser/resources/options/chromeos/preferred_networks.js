@@ -125,7 +125,7 @@ cr.define('options', function() {
       if (item) {
         // Inform the network library that we are forgetting this network.
         chrome.send('networkCommand',
-                    [String(item.networkType),
+                    [item.networkType,
                     item.servicePath,
                     'forget']);
       }
@@ -162,4 +162,3 @@ cr.define('options', function() {
   };
 
 });
-

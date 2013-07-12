@@ -19,13 +19,13 @@ cr.define('options.network', function() {
   function Constants() {}
 
   // Network types:
-  Constants.TYPE_UNKNOWN = 0;
-  Constants.TYPE_ETHERNET = 1;
-  Constants.TYPE_WIFI = 2;
-  Constants.TYPE_WIMAX = 3;
-  Constants.TYPE_BLUETOOTH = 4;
-  Constants.TYPE_CELLULAR = 5;
-  Constants.TYPE_VPN = 6;
+  Constants.TYPE_UNKNOWN = 'UNKNOWN';
+  Constants.TYPE_ETHERNET = 'ethernet';
+  Constants.TYPE_WIFI = 'wifi';
+  Constants.TYPE_WIMAX = 'wimax';
+  Constants.TYPE_BLUETOOTH = 'bluetooth';
+  Constants.TYPE_CELLULAR = 'cellular';
+  Constants.TYPE_VPN = 'vpn';
 
   // Cellular activation states:
   Constants.ACTIVATION_STATE_UNKNOWN = 0;
@@ -721,7 +721,7 @@ cr.define('options.network', function() {
     button.appendChild(buttonLabel);
     var callback = null;
     if (typeof command == 'string') {
-      var type = String(data.networkType);
+      var type = data.networkType;
       var path = data.servicePath;
       callback = function() {
         chrome.send('networkCommand',

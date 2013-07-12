@@ -14,13 +14,13 @@ cr.define('options.internet', function() {
   function Constants() {}
 
   // Network types:
-  Constants.TYPE_UNKNOWN = 0;
-  Constants.TYPE_ETHERNET = 1;
-  Constants.TYPE_WIFI = 2;
-  Constants.TYPE_WIMAX = 3;
-  Constants.TYPE_BLUETOOTH = 4;
-  Constants.TYPE_CELLULAR = 5;
-  Constants.TYPE_VPN = 6;
+  Constants.TYPE_UNKNOWN = 'UNKNOWN';
+  Constants.TYPE_ETHERNET = 'ethernet';
+  Constants.TYPE_WIFI = 'wifi';
+  Constants.TYPE_WIMAX = 'wimax';
+  Constants.TYPE_BLUETOOTH = 'bluetooth';
+  Constants.TYPE_CELLULAR = 'cellular';
+  Constants.TYPE_VPN = 'vpn';
 
   /*
    * Helper function to set hidden attribute for elements matching a selector.
@@ -1129,8 +1129,8 @@ cr.define('options.internet', function() {
       detailsPage.ethernet = false;
       detailsPage.cellular = false;
       detailsPage.gsm = false;
-      $('inet-service-name').textContent = data.service_name;
-      $('inet-provider-type').textContent = data.provider_type;
+      $('inet-service-name').textContent = data.serviceName;
+      $('inet-provider-type').textContent = data.providerType;
       $('inet-username').textContent = data.username;
       var inetServerHostname = $('inet-server-hostname');
       inetServerHostname.value = data.serverHostname.value;

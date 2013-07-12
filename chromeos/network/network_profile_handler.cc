@@ -55,6 +55,9 @@ class ProfilePathEquals {
 
 }  // namespace
 
+// static
+const char NetworkProfileHandler::kSharedProfilePath[] = "/profile/default";
+
 void NetworkProfileHandler::AddObserver(NetworkProfileObserver* observer) {
   observers_.AddObserver(observer);
 }

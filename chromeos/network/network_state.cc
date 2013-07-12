@@ -61,6 +61,7 @@ NetworkState::NetworkState(const std::string& path)
       favorite_(false),
       priority_(0),
       onc_source_(onc::ONC_SOURCE_NONE),
+      prefix_length_(0),
       signal_strength_(0),
       connectable_(false),
       passphrase_required_(false),
@@ -109,6 +110,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &error_details_);
   } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
     return GetStringValue(key, value, &ip_address_);
+  } else if (key == IPConfigProperty(flimflam::kGatewayProperty)) {
+    return GetStringValue(key, value, &gateway_);
   } else if (key == IPConfigProperty(flimflam::kNameServersProperty)) {
     const base::ListValue* dns_servers;
     if (!value.GetAsList(&dns_servers))
@@ -116,6 +119,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     dns_servers_.clear();
     ConvertListValueToStringVector(*dns_servers, &dns_servers_);
     return true;
+  } else if (key == IPConfigProperty(flimflam::kPrefixlenProperty)) {
+    return GetIntegerValue(key, value, &prefix_length_);
   } else if (key == flimflam::kActivationStateProperty) {
     return GetStringValue(key, value, &activation_state_);
   } else if (key == flimflam::kRoamingStateProperty) {
@@ -152,22 +157,10 @@ bool NetworkState::PropertyChanged(const std::string& key,
     }
     return true;
   } else if (key == flimflam::kUIDataProperty) {
-    std::string ui_data_str;
-    if (!value.GetAsString(&ui_data_str)) {
+    if (!GetOncSource(value, &onc_source_)) {
       NET_LOG_ERROR("Failed to parse " + key, path());
       return false;
     }
-
-    onc_source_ = onc::ONC_SOURCE_NONE;
-    if (ui_data_str.empty())
-      return true;
-
-    scoped_ptr<base::DictionaryValue> ui_data_dict(
-        onc::ReadDictionaryFromJson(ui_data_str));
-    if (ui_data_dict)
-      onc_source_ = NetworkUIData(*ui_data_dict).onc_source();
-    else
-      NET_LOG_ERROR("Failed to parse " + key, path());
     return true;
   } else if (key == flimflam::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &technology_);
@@ -242,10 +235,15 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   base::DictionaryValue* ipconfig_properties = new base::DictionaryValue;
   ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kAddressProperty,
                                                      ip_address_);
+  ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kGatewayProperty,
+                                                     gateway_);
   base::ListValue* name_servers = new base::ListValue;
   name_servers->AppendStrings(dns_servers_);
   ipconfig_properties->SetWithoutPathExpansion(flimflam::kNameServersProperty,
                                                name_servers);
+  ipconfig_properties->SetIntegerWithoutPathExpansion(
+      flimflam::kPrefixlenProperty, prefix_length_);
+
   dictionary->SetWithoutPathExpansion(shill::kIPConfigProperty,
                                       ipconfig_properties);
 
@@ -308,6 +306,29 @@ bool NetworkState::IsConnectedState() const {
 
 bool NetworkState::IsConnectingState() const {
   return StateIsConnecting(connection_state_);
+}
+
+bool NetworkState::IsManaged() const {
+  return onc_source_ == onc::ONC_SOURCE_DEVICE_POLICY ||
+         onc_source_ == onc::ONC_SOURCE_USER_POLICY;
+}
+
+bool NetworkState::IsShared() const {
+  return profile_path_ == NetworkProfileHandler::kSharedProfilePath;
+}
+
+std::string NetworkState::GetDnsServersAsString() const {
+  std::string result;
+  for (size_t i = 0; i < dns_servers_.size(); ++i) {
+    if (i != 0)
+      result += ",";
+    result += dns_servers_[i];
+  }
+  return result;
+}
+
+std::string NetworkState::GetNetmask() const {
+  return network_util::PrefixLengthToNetmask(prefix_length_);
 }
 
 bool NetworkState::HasAuthenticationError() const {
@@ -395,6 +416,24 @@ bool NetworkState::StateIsConnecting(const std::string& connection_state) {
 // static
 std::string NetworkState::IPConfigProperty(const char* key) {
   return base::StringPrintf("%s.%s", shill::kIPConfigProperty, key);
+}
+
+// static
+bool NetworkState::GetOncSource(const base::Value& value,
+                                onc::ONCSource* out) {
+  std::string ui_data_str;
+  if (!value.GetAsString(&ui_data_str))
+    return false;
+  if (ui_data_str.empty()) {
+    *out = onc::ONC_SOURCE_NONE;
+    return true;
+  }
+  scoped_ptr<base::DictionaryValue> ui_data_dict(
+      onc::ReadDictionaryFromJson(ui_data_str));
+  if (!ui_data_dict)
+    return false;
+  *out = NetworkUIData(*ui_data_dict).onc_source();
+  return true;
 }
 
 }  // namespace chromeos

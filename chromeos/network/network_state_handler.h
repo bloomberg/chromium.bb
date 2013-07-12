@@ -87,6 +87,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Returns the state for technology |type|. kMatchTypeMobile (only) is
   // also supported.
   TechnologyState GetTechnologyState(const std::string& type) const;
+  bool IsTechnologyAvailable(const std::string& type) const {
+    return GetTechnologyState(type) != TECHNOLOGY_UNAVAILABLE;
+  }
   bool IsTechnologyEnabled(const std::string& type) const {
     return GetTechnologyState(type) == TECHNOLOGY_ENABLED;
   }

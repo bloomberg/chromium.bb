@@ -44,30 +44,31 @@ void ClearPropertiesCallback(
     bool success;
     if (result.GetBoolean(i, &success)) {
       if (!success) {
+        NET_LOG_ERROR("ClearProperties Failed: " + names[i], service_path);
         some_failed = true;
-        break;
       }
     } else {
       NOTREACHED() << "Result garbled from ClearProperties";
     }
   }
 
-  if (some_failed && !error_callback.is_null()) {
-    DCHECK(names.size() == result.GetSize())
-        << "Result wrong size from ClearProperties.";
-    scoped_ptr<base::DictionaryValue> error_data(
-        network_handler::CreateErrorData(service_path,
-                                         kClearPropertiesFailedError,
-                                         kClearPropertiesFailedErrorMessage));
-    LOG(ERROR) << "ClearPropertiesCallback failed for service path: "
-               << service_path;
-    error_data->Set("errors", result.DeepCopy());
-    scoped_ptr<base::ListValue> name_list(new base::ListValue);
-    name_list->AppendStrings(names);
-    error_data->Set("names", name_list.release());
-    error_callback.Run(kClearPropertiesFailedError, error_data.Pass());
-  } else if (!callback.is_null()) {
-    callback.Run();
+  if (some_failed) {
+    if (!error_callback.is_null()) {
+      DCHECK(names.size() == result.GetSize())
+          << "Result wrong size from ClearProperties.";
+      scoped_ptr<base::DictionaryValue> error_data(
+          network_handler::CreateErrorData(service_path,
+                                           kClearPropertiesFailedError,
+                                           kClearPropertiesFailedErrorMessage));
+      error_data->Set("errors", result.DeepCopy());
+      scoped_ptr<base::ListValue> name_list(new base::ListValue);
+      name_list->AppendStrings(names);
+      error_data->Set("names", name_list.release());
+      error_callback.Run(kClearPropertiesFailedError, error_data.Pass());
+    }
+  } else {
+    if (!callback.is_null())
+      callback.Run();
   }
 }
 
