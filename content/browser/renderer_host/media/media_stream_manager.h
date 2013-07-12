@@ -158,6 +158,9 @@ class CONTENT_EXPORT MediaStreamManager
   // This object gets deleted on the UI thread after the IO thread has been
   // destroyed. So we need to know when IO thread is being destroyed so that
   // we can delete VideoCaptureManager and AudioInputDeviceManager.
+  // We also must call this function explicitly in tests which use
+  // TestBrowserThreadBundle, because the notification happens too late in that
+  // case (see http://crbug.com/247525#c14).
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
  private:

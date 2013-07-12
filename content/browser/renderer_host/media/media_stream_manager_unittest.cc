@@ -75,7 +75,9 @@ class MediaStreamManagerTest : public ::testing::Test {
     media_stream_manager_->UseFakeDevice();
   }
 
-  virtual ~MediaStreamManagerTest() {}
+  virtual ~MediaStreamManagerTest() {
+    media_stream_manager_->WillDestroyCurrentMessageLoop();
+  }
 
   MOCK_METHOD1(Response, void(int index));
   void ResponseCallback(int index,

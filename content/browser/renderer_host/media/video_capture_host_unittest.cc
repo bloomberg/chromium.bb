@@ -223,6 +223,8 @@ class VideoCaptureHostTest : public testing::Test {
     // Release the reference to the mock object. The object will be destructed
     // on the current message loop.
     host_ = NULL;
+
+    media_stream_manager_->WillDestroyCurrentMessageLoop();
   }
 
  protected:
