@@ -23,7 +23,6 @@
 #include "core/platform/text/TextBreakIterator.h"
 
 #include "core/platform/text/LineBreakIteratorPoolICU.h"
-#include <wtf/Atomics.h>
 #include <wtf/text/WTFString.h>
 
 using namespace WTF;
