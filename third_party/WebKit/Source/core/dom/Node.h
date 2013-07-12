@@ -205,8 +205,6 @@ public:
     Node* pseudoAwareLastChild() const;
 
     virtual KURL baseURI() const;
-    
-    void getSubresourceURLs(ListHashSet<KURL>&) const;
 
     // These should all actually return a node, but this is only important for language bindings,
     // which will already know and hold a ref on the right node to return. Returning bool allows
