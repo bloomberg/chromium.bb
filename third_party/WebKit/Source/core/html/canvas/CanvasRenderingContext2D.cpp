@@ -131,6 +131,10 @@ void CanvasRenderingContext2D::reset()
     m_unrealizedSaveCount = 0;
 }
 
+// Important: Several of these properties are also stored in GraphicsContext's
+// StrokeData. The default values that StrokeData uses may not the same values
+// that the canvas 2d spec specifies. Make sure to sync the initial state of the
+// GraphicsContext in HTMLCanvasElement::createImageBuffer()!
 CanvasRenderingContext2D::State::State()
     : m_strokeStyle(CanvasStyle::createFromRGBA(Color::black))
     , m_fillStyle(CanvasStyle::createFromRGBA(Color::black))

@@ -493,6 +493,9 @@ void HTMLCanvasElement::createImageBuffer()
     m_imageBuffer->context()->setImageInterpolationQuality(DefaultInterpolationQuality);
     if (document()->settings() && !document()->settings()->antialiased2dCanvasEnabled())
         m_imageBuffer->context()->setShouldAntialias(false);
+    // GraphicsContext's defaults don't always agree with the 2d canvas spec.
+    // See CanvasRenderingContext2D::State::State() for more information.
+    m_imageBuffer->context()->setMiterLimit(10);
     m_imageBuffer->context()->setStrokeThickness(1);
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
 

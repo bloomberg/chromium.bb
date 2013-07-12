@@ -42,7 +42,6 @@ crbug.com/24182 [ Debug ] virtual/gpu/fast/canvas/canvas-strokeRect-gradient-sha
 crbug.com/24182 [ Linux ] fast/canvas/canvas-clip-rule.html [ Slow ]
 crbug.com/24182 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html [ Slow ]
-crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Slow ]
 crbug.com/24182 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
@@ -1792,6 +1791,9 @@ crbug.com/254219 [ MountainLion ] fast/multicol/newmulticol/columns-shorthand-pa
 crbug.com/254985 [ Win ] fast/events/space-scroll-event.html [ Crash Pass ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Failure ]
+
+Bug(dcheng) fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+Bug(dcheng) virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
 
 crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
 
