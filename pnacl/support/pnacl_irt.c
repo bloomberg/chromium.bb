@@ -58,12 +58,13 @@ static size_t irt_query_filter(const char *interface_ident,
   if (starts_with(interface_ident, common_prefix)) {
     const char *rest = interface_ident + sizeof(common_prefix) - 1;
     /*
-     * "irt-mutex" and "irt-cond" are deprecated and are superseded by
-     * the "irt-futex" interface.
+     * "irt-mutex", "irt-cond" and "irt-sem" are deprecated and are
+     * superseded by the "irt-futex" interface.
      * See https://code.google.com/p/nativeclient/issues/detail?id=3484
      */
     if (starts_with(rest, "mutex-") ||
-        starts_with(rest, "cond-")) {
+        starts_with(rest, "cond-") ||
+        starts_with(rest, "sem-")) {
       return 0;
     }
     /*
