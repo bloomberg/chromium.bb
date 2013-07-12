@@ -12,3 +12,6 @@ SSLClientSocketTest.ConnectClientAuthSendNullCert
 # These tests are broken http://crbug.com/118883
 *SpdyNetworkTransactionSpdy*Test.*
 *SpdyHttpStreamSpdy*Test.*
+
+# Fails flakily. http://crbug.com/255775
+SimpleIndexFileTest.WriteThenLoadIndex

@@ -23,5 +23,5 @@ URLRequestTest.FileTest
 # http://crbug.com/92439
 ServerBoundCertServiceTest.*
 
-# Fails flakily. http://crbug.com/255775
-SimpleIndexFileTest.WriteThenLoadIndex
+# Flaky, see http://crbug.com/259781
+EmbeddedTestServerTest.DefaultNotFoundResponse
