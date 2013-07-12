@@ -101,8 +101,8 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests.
 #
-TOTAL_TESTS = 104
-TOTAL_SKIPS = 26
+TOTAL_TESTS = 106
+TOTAL_SKIPS = 27
 TOTAL_RETRIES = 14
 
 UNEXPECTED_PASSES = 6
@@ -116,6 +116,7 @@ def unit_test_list():
     tests.add('failures/expected/hang.html', hang=True)
     tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/needsrebaseline.html', actual_text='needsrebaseline text')
+    tests.add('failures/expected/needsmanualrebaseline.html', actual_text='needsmanualrebaseline text')
     tests.add('failures/expected/image.html',
               actual_image='image_fail-pngtEXtchecksum\x00checksum_fail',
               expected_image='image-pngtEXtchecksum\x00checksum-png')
@@ -276,6 +277,7 @@ def add_unit_tests_to_mock_filesystem(filesystem):
 Bug(test) failures/expected/crash.html [ Crash ]
 Bug(test) failures/expected/image.html [ ImageOnlyFailure ]
 Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
+Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/audio.html [ Failure ]
 Bug(test) failures/expected/image_checksum.html [ ImageOnlyFailure ]
 Bug(test) failures/expected/mismatch.html [ ImageOnlyFailure ]

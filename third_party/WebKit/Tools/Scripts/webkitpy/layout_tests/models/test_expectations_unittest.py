@@ -60,6 +60,7 @@ class Base(unittest.TestCase):
                 self.get_test('failures/expected/image_checksum.html'),
                 self.get_test('failures/expected/crash.html'),
                 self.get_test('failures/expected/needsrebaseline.html'),
+                self.get_test('failures/expected/needsmanualrebaseline.html'),
                 self.get_test('failures/expected/missing_text.html'),
                 self.get_test('failures/expected/image.html'),
                 self.get_test('passes/text.html')]
@@ -69,6 +70,7 @@ class Base(unittest.TestCase):
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/crash.html [ WontFix ]
 Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
+Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/missing_image.html [ Rebaseline Missing ]
 Bug(test) failures/expected/image_checksum.html [ WontFix ]
 Bug(test) failures/expected/image.html [ WontFix Mac ]
@@ -245,6 +247,8 @@ class MiscTests(Base):
         self.assertTrue(match('failures/expected/crash.html', PASS, False))
         self.assertTrue(match('failures/expected/needsrebaseline.html', TEXT, True))
         self.assertFalse(match('failures/expected/needsrebaseline.html', CRASH, True))
+        self.assertTrue(match('failures/expected/needsmanualrebaseline.html', TEXT, True))
+        self.assertFalse(match('failures/expected/needsmanualrebaseline.html', CRASH, True))
         self.assertTrue(match('passes/text.html', PASS, False))
 
     def test_more_specific_override_resets_skip(self):

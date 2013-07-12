@@ -43,7 +43,7 @@ _log = logging.getLogger(__name__)
 # FIXME: range() starts with 0 which makes if expectation checks harder
 # as PASS is 0.
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, TIMEOUT, CRASH, SKIP, WONTFIX,
- SLOW, REBASELINE, NEEDS_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(17)
+ SLOW, REBASELINE, NEEDS_REBASELINE, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(18)
 
 # FIXME: Perhas these two routines should be part of the Port instead?
 BASELINE_SUFFIX_LIST = ('png', 'wav', 'txt')
@@ -70,6 +70,7 @@ class TestExpectationParser(object):
 
     REBASELINE_MODIFIER = 'rebaseline'
     NEEDS_REBASELINE_MODIFIER = 'needsrebaseline'
+    NEEDS_MANUAL_REBASELINE_MODIFIER = 'needsmanualrebaseline'
     PASS_EXPECTATION = 'pass'
     SKIP_MODIFIER = 'skip'
     SLOW_MODIFIER = 'slow'
@@ -240,6 +241,7 @@ class TestExpectationParser(object):
         'Pass': 'PASS',
         'Rebaseline': 'REBASELINE',
         'NeedsRebaseline': 'NeedsRebaseline',
+        'NeedsManualRebaseline': 'NeedsManualRebaseline',
         'Skip': 'SKIP',
         'Slow': 'SLOW',
         'Timeout': 'TIMEOUT',
@@ -358,7 +360,7 @@ class TestExpectationParser(object):
             # FIXME: This is really a semantic warning and shouldn't be here. Remove when we drop the old syntax.
             warnings.append('A test marked Skip must not have other expectations.')
         elif not expectations:
-            if 'SKIP' not in modifiers and 'REBASELINE' not in modifiers and 'NeedsRebaseline' not in modifiers and 'SLOW' not in modifiers:
+            if 'SKIP' not in modifiers and 'REBASELINE' not in modifiers and 'NeedsRebaseline' not in modifiers  and 'NeedsManualRebaseline' not in modifiers and 'SLOW' not in modifiers:
                 modifiers.append('SKIP')
             expectations = ['PASS']
 
@@ -515,7 +517,7 @@ class TestExpectationLine(object):
             else:
                 # FIXME: Make this all work with the mixed-cased modifiers (e.g. WontFix, Slow, etc).
                 modifier = modifier.upper()
-                if modifier in ('SLOW', 'SKIP', 'REBASELINE', 'NeedsRebaseline', 'WONTFIX'):
+                if modifier in ('SLOW', 'SKIP', 'REBASELINE', 'NeedsRebaseline', 'NeedsManualRebaseline', 'WONTFIX'):
                     new_expectations.append(TestExpectationParser._inverted_expectation_tokens.get(modifier))
                 else:
                     new_modifiers.append(TestExpectationParser._inverted_configuration_tokens.get(modifier, modifier))
@@ -837,7 +839,8 @@ class TestExpectations(object):
                     'crash': CRASH,
                     'missing': MISSING,
                     'skip': SKIP,
-                    'needsrebaseline': NEEDS_REBASELINE}
+                    'needsrebaseline': NEEDS_REBASELINE,
+                    'needsmanualrebaseline': NEEDS_MANUAL_REBASELINE}
 
     EXPECTATIONS_TO_STRING = dict((k, v) for (v, k) in EXPECTATIONS.iteritems())
 
@@ -862,6 +865,7 @@ class TestExpectations(object):
                  TestExpectationParser.SLOW_MODIFIER: SLOW,
                  TestExpectationParser.REBASELINE_MODIFIER: REBASELINE,
                  TestExpectationParser.NEEDS_REBASELINE_MODIFIER: NEEDS_REBASELINE,
+                 TestExpectationParser.NEEDS_MANUAL_REBASELINE_MODIFIER: NEEDS_MANUAL_REBASELINE,
                  'none': NONE}
 
     MODIFIERS_TO_STRING = dict((k, v) for (v, k) in MODIFIERS.iteritems())
@@ -888,7 +892,7 @@ class TestExpectations(object):
             test_needs_rebaselining: whether test was marked as REBASELINE"""
         if result in expected_results:
             return True
-        if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and (NEEDS_REBASELINE in expected_results):
+        if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and (NEEDS_REBASELINE in expected_results or NEEDS_MANUAL_REBASELINE in expected_results):
             return True
         if result in (TEXT, IMAGE_PLUS_TEXT, AUDIO) and (FAIL in expected_results):
             return True
