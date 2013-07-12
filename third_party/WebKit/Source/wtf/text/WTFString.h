@@ -272,7 +272,7 @@ public:
     template<size_t inlineCapacity>
     void appendTo(Vector<UChar, inlineCapacity>&, unsigned pos = 0, unsigned len = UINT_MAX) const;
 
-    UChar32 characterStartingAt(unsigned) const; // Ditto.
+    UChar32 characterStartingAt(unsigned) const;
     
     bool contains(UChar c) const { return find(c) != notFound; }
     bool contains(const LChar* str, bool caseSensitive = true) const { return find(str, 0, caseSensitive) != notFound; }
