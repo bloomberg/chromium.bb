@@ -140,13 +140,13 @@ void SVGComponentTransferFunctionElement::svgAttributeChanged(const QualifiedNam
 ComponentTransferFunction SVGComponentTransferFunctionElement::transferFunction() const
 {
     ComponentTransferFunction func;
-    func.type = type();
-    func.slope = slope();
-    func.intercept = intercept();
-    func.amplitude = amplitude();
-    func.exponent = exponent();
-    func.offset = offset();
-    func.tableValues = tableValues();
+    func.type = typeCurrentValue();
+    func.slope = slopeCurrentValue();
+    func.intercept = interceptCurrentValue();
+    func.amplitude = amplitudeCurrentValue();
+    func.exponent = exponentCurrentValue();
+    func.offset = offsetCurrentValue();
+    func.tableValues = tableValuesCurrentValue();
     return func;
 }
 

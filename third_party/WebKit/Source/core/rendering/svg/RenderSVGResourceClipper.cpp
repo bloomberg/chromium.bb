@@ -118,7 +118,7 @@ bool RenderSVGResourceClipper::pathOnlyClipping(GraphicsContext* context, const 
             return false;
     }
     // Only one visible shape/path was found. Directly continue clipping and transform the content to userspace if necessary.
-    if (static_cast<SVGClipPathElement*>(node())->clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (static_cast<SVGClipPathElement*>(node())->clipPathUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
@@ -200,7 +200,7 @@ bool RenderSVGResourceClipper::drawContentIntoMaskImage(ClipperData* clipperData
 
     AffineTransform maskContentTransformation;
     SVGClipPathElement* clipPath = static_cast<SVGClipPathElement*>(node());
-    if (clipPath->clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPath->clipPathUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         maskContentTransformation.translate(objectBoundingBox.x(), objectBoundingBox.y());
         maskContentTransformation.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
         maskContext->concatCTM(maskContentTransformation);
@@ -278,7 +278,7 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
         return false;
 
     SVGClipPathElement* clipPathElement = static_cast<SVGClipPathElement*>(node());
-    if (clipPathElement->clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathElement->clipPathUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
@@ -311,7 +311,7 @@ FloatRect RenderSVGResourceClipper::resourceBoundingBox(RenderObject* object)
     if (m_clipBoundaries.isEmpty())
         calculateClipContentRepaintRect();
 
-    if (static_cast<SVGClipPathElement*>(node())->clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (static_cast<SVGClipPathElement*>(node())->clipPathUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         FloatRect objectBoundingBox = object->objectBoundingBox();
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());

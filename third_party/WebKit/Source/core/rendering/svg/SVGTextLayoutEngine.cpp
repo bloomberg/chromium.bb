@@ -148,7 +148,7 @@ bool SVGTextLayoutEngine::parentDefinesTextLength(RenderObject* parent) const
     while (currentParent) {
         if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromRenderer(currentParent)) {
             SVGLengthContext lengthContext(textContentElement);
-            if (textContentElement->lengthAdjust() == SVGLengthAdjustSpacing && textContentElement->specifiedTextLength().value(lengthContext) > 0)
+            if (textContentElement->lengthAdjustCurrentValue() == SVGLengthAdjustSpacing && textContentElement->specifiedTextLength().value(lengthContext) > 0)
                 return true;
         }
 
@@ -206,7 +206,7 @@ void SVGTextLayoutEngine::beginTextPathLayout(RenderObject* object, SVGTextLayou
 
     if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromRenderer(textPath)) {
         SVGLengthContext lengthContext(textContentElement);
-        lengthAdjust = textContentElement->lengthAdjust();
+        lengthAdjust = textContentElement->lengthAdjustCurrentValue();
         desiredTextLength = textContentElement->specifiedTextLength().value(lengthContext);
     }
 

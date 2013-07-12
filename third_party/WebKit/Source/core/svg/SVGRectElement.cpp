@@ -150,12 +150,12 @@ void SVGRectElement::svgAttributeChanged(const QualifiedName& attrName)
 
 bool SVGRectElement::selfHasRelativeLengths() const
 {
-    return x().isRelative()
-        || y().isRelative()
-        || width().isRelative()
-        || height().isRelative()
-        || rx().isRelative()
-        || ry().isRelative();
+    return xCurrentValue().isRelative()
+        || yCurrentValue().isRelative()
+        || widthCurrentValue().isRelative()
+        || heightCurrentValue().isRelative()
+        || rxCurrentValue().isRelative()
+        || ryCurrentValue().isRelative();
 }
 
 RenderObject* SVGRectElement::createRenderer(RenderStyle*)

@@ -142,11 +142,11 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
             continue;
 
         effectElement->setStandardAttributes(effect.get());
-        effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnits(), parentFilter->sourceImageRect()));
+        effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnitsCurrentValue(), parentFilter->sourceImageRect()));
         ColorSpace colorSpace = filterColorSpace;
         if (useFilterColorSpace || getSVGStyledElementColorSpace(effectElement, colorSpace))
             effect->setOperatingColorSpace(colorSpace);
-        builder->add(effectElement->result(), effect);
+        builder->add(effectElement->resultCurrentValue(), effect);
     }
     return builder->lastEffect();
 }

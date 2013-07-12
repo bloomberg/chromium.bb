@@ -59,7 +59,7 @@ public:
 
     FloatPoint referencePoint() const;
     float angle() const;
-    SVGMarkerUnitsType markerUnits() const { return static_cast<SVGMarkerElement*>(node())->markerUnits(); }
+    SVGMarkerUnitsType markerUnits() const { return static_cast<SVGMarkerElement*>(node())->markerUnitsCurrentValue(); }
 
     virtual RenderSVGResourceType resourceType() const { return s_resourceType; }
     static RenderSVGResourceType s_resourceType;

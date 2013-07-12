@@ -230,10 +230,10 @@ bool SVGFilterElement::childShouldCreateRenderer(const NodeRenderingContext& chi
 
 bool SVGFilterElement::selfHasRelativeLengths() const
 {
-    return x().isRelative()
-        || y().isRelative()
-        || width().isRelative()
-        || height().isRelative();
+    return xCurrentValue().isRelative()
+        || yCurrentValue().isRelative()
+        || widthCurrentValue().isRelative()
+        || heightCurrentValue().isRelative();
 }
 
 }

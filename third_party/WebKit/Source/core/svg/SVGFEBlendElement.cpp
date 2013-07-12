@@ -97,7 +97,7 @@ bool SVGFEBlendElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 {
     FEBlend* blend = static_cast<FEBlend*>(effect);
     if (attrName == SVGNames::modeAttr)
-        return blend->setBlendMode(mode());
+        return blend->setBlendMode(modeCurrentValue());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -127,13 +127,13 @@ void SVGFEBlendElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFEBlendElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1());
-    FilterEffect* input2 = filterBuilder->getEffectById(in2());
+    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
+    FilterEffect* input2 = filterBuilder->getEffectById(in2CurrentValue());
 
     if (!input1 || !input2)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEBlend::create(filter, mode());
+    RefPtr<FilterEffect> effect = FEBlend::create(filter, modeCurrentValue());
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);

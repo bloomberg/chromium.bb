@@ -40,7 +40,7 @@ PassRefPtr<SVGFEPointLightElement> SVGFEPointLightElement::create(const Qualifie
 
 PassRefPtr<LightSource> SVGFEPointLightElement::lightSource() const
 {
-    return PointLightSource::create(FloatPoint3D(x(), y(), z()));
+    return PointLightSource::create(FloatPoint3D(xCurrentValue(), yCurrentValue(), zCurrentValue()));
 }
 
 }

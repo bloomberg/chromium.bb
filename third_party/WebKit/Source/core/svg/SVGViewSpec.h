@@ -71,14 +71,14 @@ public:
     SVGTransformList transformBaseValue() const { return m_transform; }
 
     // Custom animated 'viewBox' property.
-    PassRefPtr<SVGAnimatedRect> viewBoxAnimated();
-    FloatRect& viewBox() { return m_viewBox; }
+    PassRefPtr<SVGAnimatedRect> viewBox();
+    FloatRect& viewBoxCurrentValue() { return m_viewBox; }
     FloatRect viewBoxBaseValue() const { return m_viewBox; }
     void setViewBoxBaseValue(const FloatRect& viewBox) { m_viewBox = viewBox; }
 
     // Custom animated 'preserveAspectRatio' property.
-    PassRefPtr<SVGAnimatedPreserveAspectRatio> preserveAspectRatioAnimated();
-    SVGPreserveAspectRatio& preserveAspectRatio() { return m_preserveAspectRatio; }
+    PassRefPtr<SVGAnimatedPreserveAspectRatio> preserveAspectRatio();
+    SVGPreserveAspectRatio& preserveAspectRatioCurrentValue() { return m_preserveAspectRatio; }
     SVGPreserveAspectRatio preserveAspectRatioBaseValue() const { return m_preserveAspectRatio; }
     void setPreserveAspectRatioBaseValue(const SVGPreserveAspectRatio& preserveAspectRatio) { m_preserveAspectRatio = preserveAspectRatio; }
 

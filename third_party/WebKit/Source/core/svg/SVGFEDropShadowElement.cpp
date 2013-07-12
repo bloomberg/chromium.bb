@@ -154,7 +154,7 @@ PassRefPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuilder* filterB
     if (!renderer)
         return 0;
 
-    if (stdDeviationX() < 0 || stdDeviationY() < 0)
+    if (stdDeviationXCurrentValue() < 0 || stdDeviationYCurrentValue() < 0)
         return 0;
 
     ASSERT(renderer->style());
@@ -163,11 +163,11 @@ PassRefPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuilder* filterB
     Color color = svgStyle->floodColor();
     float opacity = svgStyle->floodOpacity();
 
-    FilterEffect* input1 = filterBuilder->getEffectById(in1());
+    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
     if (!input1)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEDropShadow::create(filter, stdDeviationX(), stdDeviationY(), dx(), dy(), color, opacity);
+    RefPtr<FilterEffect> effect = FEDropShadow::create(filter, stdDeviationXCurrentValue(), stdDeviationYCurrentValue(), dxCurrentValue(), dyCurrentValue(), color, opacity);
     effect->inputEffects().append(input1);
     return effect.release();
 }

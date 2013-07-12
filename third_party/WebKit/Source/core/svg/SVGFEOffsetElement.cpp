@@ -109,12 +109,12 @@ void SVGFEOffsetElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFEOffsetElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1());
+    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
 
     if (!input1)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEOffset::create(filter, dx(), dy());
+    RefPtr<FilterEffect> effect = FEOffset::create(filter, dxCurrentValue(), dyCurrentValue());
     effect->inputEffects().append(input1);
     return effect.release();
 }

@@ -188,7 +188,7 @@ void SVGUseElement::removedFrom(ContainerNode* rootParent)
 
 Document* SVGUseElement::referencedDocument() const
 {
-    if (!isExternalURIReference(href(), document()))
+    if (!isExternalURIReference(hrefCurrentValue(), document()))
         return document();
     return externalDocument();
 }
@@ -229,9 +229,9 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
-        bool isExternalReference = isExternalURIReference(href(), document());
+        bool isExternalReference = isExternalURIReference(hrefCurrentValue(), document());
         if (isExternalReference) {
-            KURL url = document()->completeURL(href());
+            KURL url = document()->completeURL(hrefCurrentValue());
             if (url.hasFragmentIdentifier()) {
                 CachedResourceRequest request(ResourceRequest(url.string()), localName());
                 setCachedDocument(document()->cachedResourceLoader()->requestSVGDocument(request));
@@ -398,7 +398,7 @@ void SVGUseElement::buildPendingResource()
         return;
 
     String id;
-    Element* target = SVGURIReference::targetElementFromIRIString(href(), document(), &id, externalDocument());
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id, externalDocument());
     if (!target || !target->inDocument()) {
         // If we can't find the target of an external element, just give up.
         // We can't observe if the target somewhen enters the external document, nor should we do it.
@@ -551,7 +551,7 @@ void SVGUseElement::toClipPath(Path& path)
             toSVGGraphicsElement(n)->toClipPath(path);
             // FIXME: Avoid manual resolution of x/y here. Its potentially harmful.
             SVGLengthContext lengthContext(this);
-            path.translate(FloatSize(x().value(lengthContext), y().value(lengthContext)));
+            path.translate(FloatSize(xCurrentValue().value(lengthContext), yCurrentValue().value(lengthContext)));
             path.transform(animatedLocalTransform());
         }
     }
@@ -633,7 +633,7 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
 
 bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, SVGElementInstance* targetInstance, SVGElement*& newTarget)
 {
-    Element* targetElement = SVGURIReference::targetElementFromIRIString(use->href(), referencedDocument());
+    Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefCurrentValue(), referencedDocument());
     newTarget = 0;
     if (targetElement && targetElement->isSVGElement())
         newTarget = toSVGElement(targetElement);
@@ -705,7 +705,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         SVGUseElement* use = static_cast<SVGUseElement*>(element);
         ASSERT(!use->cachedDocumentIsStillLoading());
 
-        Element* targetElement = SVGURIReference::targetElementFromIRIString(use->href(), referencedDocument());
+        Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefCurrentValue(), referencedDocument());
         SVGElement* target = 0;
         if (targetElement && targetElement->isSVGElement())
             target = toSVGElement(targetElement);
@@ -918,10 +918,10 @@ void SVGUseElement::transferUseAttributesToReplacedElement(SVGElement* from, SVG
 
 bool SVGUseElement::selfHasRelativeLengths() const
 {
-    if (x().isRelative()
-     || y().isRelative()
-     || width().isRelative()
-     || height().isRelative())
+    if (xCurrentValue().isRelative()
+        || yCurrentValue().isRelative()
+        || widthCurrentValue().isRelative()
+        || heightCurrentValue().isRelative())
         return true;
 
     if (!m_targetElementInstance)

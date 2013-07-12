@@ -63,7 +63,7 @@ void RenderSVGViewportContainer::calcViewport()
     FloatRect oldViewport = m_viewport;
 
     SVGLengthContext lengthContext(element);
-    m_viewport = FloatRect(svg->x().value(lengthContext), svg->y().value(lengthContext), svg->width().value(lengthContext), svg->height().value(lengthContext));
+    m_viewport = FloatRect(svg->xCurrentValue().value(lengthContext), svg->yCurrentValue().value(lengthContext), svg->widthCurrentValue().value(lengthContext), svg->heightCurrentValue().value(lengthContext));
 
     SVGElement* correspondingElement = svg->correspondingElement();
     if (correspondingElement && svg->isInShadowTree()) {
@@ -97,14 +97,14 @@ void RenderSVGViewportContainer::calcViewport()
 
         SVGLengthContext lengthContext(element);
         if (useElement->hasAttribute(SVGNames::widthAttr))
-            m_viewport.setWidth(useElement->width().value(lengthContext));
+            m_viewport.setWidth(useElement->widthCurrentValue().value(lengthContext));
         else if (isSymbolElement && svg->hasAttribute(SVGNames::widthAttr)) {
             SVGLength containerWidth(LengthModeWidth, "100%");
             m_viewport.setWidth(containerWidth.value(lengthContext));
         }
 
         if (useElement->hasAttribute(SVGNames::heightAttr))
-            m_viewport.setHeight(useElement->height().value(lengthContext));
+            m_viewport.setHeight(useElement->heightCurrentValue().value(lengthContext));
         else if (isSymbolElement && svg->hasAttribute(SVGNames::heightAttr)) {
             SVGLength containerHeight(LengthModeHeight, "100%");
             m_viewport.setHeight(containerHeight.value(lengthContext));

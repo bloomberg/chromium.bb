@@ -429,7 +429,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGLocatable::CTMSc
     AffineTransform transform;
     if (!isOutermostSVGSVGElement()) {
         SVGLengthContext lengthContext(this);
-        transform.translate(x().value(lengthContext), y().value(lengthContext));
+        transform.translate(xCurrentValue().value(lengthContext), yCurrentValue().value(lengthContext));
     } else if (mode == SVGLocatable::ScreenScope) {
         if (RenderObject* renderer = this->renderer()) {
             FloatPoint location;
@@ -537,19 +537,19 @@ void SVGSVGElement::setCurrentTime(float seconds)
 
 bool SVGSVGElement::selfHasRelativeLengths() const
 {
-    return x().isRelative()
-        || y().isRelative()
-        || width().isRelative()
-        || height().isRelative()
+    return xCurrentValue().isRelative()
+        || yCurrentValue().isRelative()
+        || widthCurrentValue().isRelative()
+        || heightCurrentValue().isRelative()
         || hasAttribute(SVGNames::viewBoxAttr);
 }
 
 FloatRect SVGSVGElement::currentViewBoxRect() const
 {
     if (m_useCurrentView)
-        return m_viewSpec ? m_viewSpec->viewBox() : FloatRect();
+        return m_viewSpec ? m_viewSpec->viewBoxCurrentValue() : FloatRect();
 
-    FloatRect useViewBox = viewBox();
+    FloatRect useViewBox = viewBoxCurrentValue();
     if (!useViewBox.isEmpty())
         return useViewBox;
     if (!renderer() || !renderer()->isSVGRoot())
@@ -637,11 +637,11 @@ bool SVGSVGElement::heightAttributeEstablishesViewport() const
 Length SVGSVGElement::intrinsicWidth(ConsiderCSSMode mode) const
 {
     if (widthAttributeEstablishesViewport() || mode == IgnoreCSSProperties) {
-        if (width().unitType() == LengthTypePercentage)
-            return Length(width().valueAsPercentage() * 100, Percent);
+        if (widthCurrentValue().unitType() == LengthTypePercentage)
+            return Length(widthCurrentValue().valueAsPercentage() * 100, Percent);
 
         SVGLengthContext lengthContext(this);
-        return Length(width().value(lengthContext), Fixed);
+        return Length(widthCurrentValue().value(lengthContext), Fixed);
     }
 
     ASSERT(renderer());
@@ -651,11 +651,11 @@ Length SVGSVGElement::intrinsicWidth(ConsiderCSSMode mode) const
 Length SVGSVGElement::intrinsicHeight(ConsiderCSSMode mode) const
 {
     if (heightAttributeEstablishesViewport() || mode == IgnoreCSSProperties) {
-        if (height().unitType() == LengthTypePercentage)
-            return Length(height().valueAsPercentage() * 100, Percent);
+        if (heightCurrentValue().unitType() == LengthTypePercentage)
+            return Length(heightCurrentValue().valueAsPercentage() * 100, Percent);
 
         SVGLengthContext lengthContext(this);
-        return Length(height().value(lengthContext), Fixed);
+        return Length(heightCurrentValue().value(lengthContext), Fixed);
     }
 
     ASSERT(renderer());
@@ -665,9 +665,9 @@ Length SVGSVGElement::intrinsicHeight(ConsiderCSSMode mode) const
 AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
     if (!m_useCurrentView || !m_viewSpec)
-        return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio(), viewWidth, viewHeight);
+        return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatioCurrentValue(), viewWidth, viewHeight);
 
-    AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio(), viewWidth, viewHeight);
+    AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatioCurrentValue(), viewWidth, viewHeight);
     const SVGTransformList& transformList = m_viewSpec->transformBaseValue();
     if (transformList.isEmpty())
         return ctm;
@@ -738,9 +738,9 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
     m_useCurrentView = true;
 
     if (viewElement->hasAttribute(SVGNames::viewBoxAttr))
-        view->setViewBoxBaseValue(viewElement->viewBox());
+        view->setViewBoxBaseValue(viewElement->viewBoxCurrentValue());
     else
-        view->setViewBoxBaseValue(viewBox());
+        view->setViewBoxBaseValue(viewBoxCurrentValue());
 
     if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr))
         view->setPreserveAspectRatioBaseValue(viewElement->preserveAspectRatioBaseValue());

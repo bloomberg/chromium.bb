@@ -135,7 +135,7 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
     // as none of the other properties changes the linking behaviour for our <a> element.
     if (SVGURIReference::isKnownAttribute(attrName)) {
         bool wasLink = isLink();
-        setIsLink(!href().isNull());
+        setIsLink(!hrefCurrentValue().isNull());
 
         if (wasLink != isLink())
             setNeedsStyleRecalc();
@@ -160,7 +160,7 @@ void SVGAElement::defaultEventHandler(Event* event)
         }
 
         if (isLinkClick(event)) {
-            String url = stripLeadingAndTrailingHTMLSpaces(href());
+            String url = stripLeadingAndTrailingHTMLSpaces(hrefCurrentValue());
 
             if (url[0] == '#') {
                 Element* targetElement = treeScope()->getElementById(url.substring(1));

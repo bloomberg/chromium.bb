@@ -136,10 +136,10 @@ void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
  
 bool SVGEllipseElement::selfHasRelativeLengths() const
 {
-    return cx().isRelative()
-        || cy().isRelative()
-        || rx().isRelative()
-        || ry().isRelative();
+    return cxCurrentValue().isRelative()
+        || cyCurrentValue().isRelative()
+        || rxCurrentValue().isRelative()
+        || ryCurrentValue().isRelative();
 }
 
 RenderObject* SVGEllipseElement::createRenderer(RenderStyle*)

@@ -129,9 +129,9 @@ void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 
 bool SVGCircleElement::selfHasRelativeLengths() const
 {
-    return cx().isRelative()
-        || cy().isRelative()
-        || r().isRelative();
+    return cxCurrentValue().isRelative()
+        || cyCurrentValue().isRelative()
+        || rCurrentValue().isRelative();
 }
 
 RenderObject* SVGCircleElement::createRenderer(RenderStyle*)

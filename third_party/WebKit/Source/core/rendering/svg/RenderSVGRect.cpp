@@ -55,18 +55,18 @@ void RenderSVGRect::updateShapeFromElement()
 
     SVGLengthContext lengthContext(rect);
     // Fallback to RenderSVGShape if rect has rounded corners or a non-scaling stroke.
-    if (rect->rx().value(lengthContext) > 0 || rect->ry().value(lengthContext) > 0 || hasNonScalingStroke()) {
+    if (rect->rxCurrentValue().value(lengthContext) > 0 || rect->ryCurrentValue().value(lengthContext) > 0 || hasNonScalingStroke()) {
         RenderSVGShape::updateShapeFromElement();
         m_usePathFallback = true;
         return;
     }
 
     m_usePathFallback = false;
-    FloatSize boundingBoxSize(rect->width().value(lengthContext), rect->height().value(lengthContext));
+    FloatSize boundingBoxSize(rect->widthCurrentValue().value(lengthContext), rect->heightCurrentValue().value(lengthContext));
     if (boundingBoxSize.isEmpty())
         return;
 
-    m_fillBoundingBox = FloatRect(FloatPoint(rect->x().value(lengthContext), rect->y().value(lengthContext)), boundingBoxSize);
+    m_fillBoundingBox = FloatRect(FloatPoint(rect->xCurrentValue().value(lengthContext), rect->yCurrentValue().value(lengthContext)), boundingBoxSize);
 
     // To decide if the stroke contains a point we create two rects which represent the inner and
     // the outer stroke borders. A stroke contains the point, if the point is between them.

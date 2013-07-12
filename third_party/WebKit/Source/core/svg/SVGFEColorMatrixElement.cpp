@@ -100,9 +100,9 @@ bool SVGFEColorMatrixElement::setFilterEffectAttribute(FilterEffect* effect, con
 {
     FEColorMatrix* colorMatrix = static_cast<FEColorMatrix*>(effect);
     if (attrName == SVGNames::typeAttr)
-        return colorMatrix->setType(type());
+        return colorMatrix->setType(typeCurrentValue());
     if (attrName == SVGNames::valuesAttr)
-        return colorMatrix->setValues(values());
+        return colorMatrix->setValues(valuesCurrentValue());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -132,13 +132,13 @@ void SVGFEColorMatrixElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1());
+    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
 
     if (!input1)
         return 0;
 
     Vector<float> filterValues;
-    ColorMatrixType filterType = type();
+    ColorMatrixType filterType = typeCurrentValue();
 
     // Use defaults if values is empty (SVG 1.1 15.10).
     if (!hasAttribute(SVGNames::valuesAttr)) {
@@ -157,7 +157,7 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
             break;
         }
     } else {
-        filterValues = values();
+        filterValues = valuesCurrentValue();
         unsigned size = filterValues.size();
 
         if ((filterType == FECOLORMATRIX_TYPE_MATRIX && size != 20)

@@ -106,7 +106,7 @@ const SVGPropertyInfo* OwnerType::LowerProperty##PropertyInfo() { \
                          &OwnerType::lookupOrCreate##UpperProperty##Wrapper)); \
     return &s_propertyInfo; \
 } \
-PropertyType& OwnerType::LowerProperty() const \
+PropertyType& OwnerType::LowerProperty##CurrentValue() const \
 { \
     if (TearOffType* wrapper = SVGAnimatedProperty::lookupWrapper<UseOwnerType, TearOffType>(this, LowerProperty##PropertyInfo())) { \
         if (wrapper->isAnimating()) \
@@ -126,7 +126,7 @@ void OwnerType::set##UpperProperty##BaseValue(const PropertyType& type, const bo
     m_##LowerProperty.isValid = validValue; \
 } \
 \
-PassRefPtr<TearOffType> OwnerType::LowerProperty##Animated() \
+PassRefPtr<TearOffType> OwnerType::LowerProperty() \
 { \
     m_##LowerProperty.shouldSynchronize = true; \
     return static_pointer_cast<TearOffType>(lookupOrCreate##UpperProperty##Wrapper(this)); \
@@ -169,10 +169,10 @@ public: \
 #define DECLARE_ANIMATED_PROPERTY(TearOffType, PropertyType, UpperProperty, LowerProperty) \
 public: \
     static const SVGPropertyInfo* LowerProperty##PropertyInfo(); \
-    PropertyType& LowerProperty() const; \
+    PropertyType& LowerProperty##CurrentValue() const; \
     PropertyType& LowerProperty##BaseValue() const; \
     void set##UpperProperty##BaseValue(const PropertyType& type, const bool = true); \
-    PassRefPtr<TearOffType> LowerProperty##Animated(); \
+    PassRefPtr<TearOffType> LowerProperty(); \
     bool LowerProperty##IsValid() const; \
 \
 private: \

@@ -135,10 +135,10 @@ void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName)
 
 bool SVGLineElement::selfHasRelativeLengths() const
 {
-    return x1().isRelative()
-        || y1().isRelative()
-        || x2().isRelative()
-        || y2().isRelative();
+    return x1CurrentValue().isRelative()
+        || y1CurrentValue().isRelative()
+        || x2CurrentValue().isRelative()
+        || y2CurrentValue().isRelative();
 }
 
 }

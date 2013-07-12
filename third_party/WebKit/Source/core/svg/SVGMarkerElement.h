@@ -155,10 +155,10 @@ public:
     // Custom 'orientType' property.
     static void synchronizeOrientType(SVGElement* contextElement);
     static PassRefPtr<SVGAnimatedProperty> lookupOrCreateOrientTypeWrapper(SVGElement* contextElement);
-    SVGMarkerOrientType& orientType() const { return m_orientType.value; }
+    SVGMarkerOrientType& orientTypeCurrentValue() const { return m_orientType.value; }
     SVGMarkerOrientType& orientTypeBaseValue() const { return m_orientType.value; }
     void setOrientTypeBaseValue(const SVGMarkerOrientType& type) { m_orientType.value = type; }
-    PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > orientTypeAnimated();
+    PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > orientType();
 
 private:
     mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;

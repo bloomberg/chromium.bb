@@ -127,15 +127,15 @@ void SVGFEGaussianBlurElement::svgAttributeChanged(const QualifiedName& attrName
 
 PassRefPtr<FilterEffect> SVGFEGaussianBlurElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1());
+    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
 
     if (!input1)
         return 0;
 
-    if (stdDeviationX() < 0 || stdDeviationY() < 0)
+    if (stdDeviationXCurrentValue() < 0 || stdDeviationYCurrentValue() < 0)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEGaussianBlur::create(filter, stdDeviationX(), stdDeviationY());
+    RefPtr<FilterEffect> effect = FEGaussianBlur::create(filter, stdDeviationXCurrentValue(), stdDeviationYCurrentValue());
     effect->inputEffects().append(input1);
     return effect.release();
 }

@@ -79,7 +79,7 @@ void SVGFEImageElement::clearResourceReferences()
 
 void SVGFEImageElement::requestImageResource()
 {
-    CachedResourceRequest request(ResourceRequest(ownerDocument()->completeURL(href())), localName());
+    CachedResourceRequest request(ResourceRequest(ownerDocument()->completeURL(hrefCurrentValue())), localName());
     m_cachedImage = document()->cachedResourceLoader()->requestImage(request);
 
     if (m_cachedImage)
@@ -93,7 +93,7 @@ void SVGFEImageElement::buildPendingResource()
         return;
 
     String id;
-    Element* target = SVGURIReference::targetElementFromIRIString(href(), document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id);
     if (!target) {
         if (id.isEmpty())
             requestImageResource();
@@ -199,15 +199,15 @@ void SVGFEImageElement::notifyFinished(CachedResource*)
 PassRefPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
 {
     if (m_cachedImage)
-        return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), preserveAspectRatio());
-    return FEImage::createWithIRIReference(filter, document(), href(), preserveAspectRatio());
+        return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), preserveAspectRatioCurrentValue());
+    return FEImage::createWithIRIReference(filter, document(), hrefCurrentValue(), preserveAspectRatioCurrentValue());
 }
 
 void SVGFEImageElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 {
     SVGFilterPrimitiveStandardAttributes::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document()->completeURL(href()));
+    addSubresourceURL(urls, document()->completeURL(hrefCurrentValue()));
 }
 
 }

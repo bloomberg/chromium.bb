@@ -130,14 +130,14 @@ bool SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
             return false;
 
         if (!attributes.hasSpreadMethod() && current->hasAttribute(SVGNames::spreadMethodAttr))
-            attributes.setSpreadMethod(current->spreadMethod());
+            attributes.setSpreadMethod(current->spreadMethodCurrentValue());
 
         if (!attributes.hasGradientUnits() && current->hasAttribute(SVGNames::gradientUnitsAttr))
-            attributes.setGradientUnits(current->gradientUnits());
+            attributes.setGradientUnits(current->gradientUnitsCurrentValue());
 
         if (!attributes.hasGradientTransform() && current->hasAttribute(SVGNames::gradientTransformAttr)) {
             AffineTransform transform;
-            current->gradientTransform().concatenate(transform);
+            current->gradientTransformCurrentValue().concatenate(transform);
             attributes.setGradientTransform(transform);
         }
 
@@ -151,22 +151,22 @@ bool SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
             SVGLinearGradientElement* linear = static_cast<SVGLinearGradientElement*>(current);
 
             if (!attributes.hasX1() && current->hasAttribute(SVGNames::x1Attr))
-                attributes.setX1(linear->x1());
+                attributes.setX1(linear->x1CurrentValue());
 
             if (!attributes.hasY1() && current->hasAttribute(SVGNames::y1Attr))
-                attributes.setY1(linear->y1());
+                attributes.setY1(linear->y1CurrentValue());
 
             if (!attributes.hasX2() && current->hasAttribute(SVGNames::x2Attr))
-                attributes.setX2(linear->x2());
+                attributes.setX2(linear->x2CurrentValue());
 
             if (!attributes.hasY2() && current->hasAttribute(SVGNames::y2Attr))
-                attributes.setY2(linear->y2());
+                attributes.setY2(linear->y2CurrentValue());
         }
 
         processedGradients.add(current);
 
         // Respect xlink:href, take attributes from referenced element
-        Node* refNode = SVGURIReference::targetElementFromIRIString(current->href(), document());
+        Node* refNode = SVGURIReference::targetElementFromIRIString(current->hrefCurrentValue(), document());
         if (refNode && (refNode->hasTagName(SVGNames::linearGradientTag) || refNode->hasTagName(SVGNames::radialGradientTag))) {
             current = static_cast<SVGGradientElement*>(refNode);
 
@@ -186,10 +186,10 @@ bool SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
 
 bool SVGLinearGradientElement::selfHasRelativeLengths() const
 {
-    return x1().isRelative()
-        || y1().isRelative()
-        || x2().isRelative()
-        || y2().isRelative();
+    return x1CurrentValue().isRelative()
+        || y1CurrentValue().isRelative()
+        || x2CurrentValue().isRelative()
+        || y2CurrentValue().isRelative();
 }
 
 }

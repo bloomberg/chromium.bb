@@ -121,7 +121,7 @@ bool RenderSVGResourceMasker::drawContentIntoMaskImage(MaskerData* maskerData, C
 
     // Eventually adjust the mask image context according to the target objectBoundingBox.
     AffineTransform maskContentTransformation;
-    if (maskElement->maskContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (maskElement->maskContentUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         FloatRect objectBoundingBox = object->objectBoundingBox();
         maskContentTransformation.translate(objectBoundingBox.x(), objectBoundingBox.y());
         maskContentTransformation.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
@@ -171,7 +171,7 @@ FloatRect RenderSVGResourceMasker::resourceBoundingBox(RenderObject* object)
     ASSERT(maskElement);
 
     FloatRect objectBoundingBox = object->objectBoundingBox();
-    FloatRect maskBoundaries = SVGLengthContext::resolveRectangle<SVGMaskElement>(maskElement, maskElement->maskUnits(), objectBoundingBox);
+    FloatRect maskBoundaries = SVGLengthContext::resolveRectangle<SVGMaskElement>(maskElement, maskElement->maskUnitsCurrentValue(), objectBoundingBox);
 
     // Resource was not layouted yet. Give back clipping rect of the mask.
     if (selfNeedsLayout())
@@ -181,7 +181,7 @@ FloatRect RenderSVGResourceMasker::resourceBoundingBox(RenderObject* object)
         calculateMaskContentRepaintRect();
 
     FloatRect maskRect = m_maskContentBoundaries;
-    if (maskElement->maskContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (maskElement->maskContentUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());

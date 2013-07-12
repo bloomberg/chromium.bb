@@ -104,7 +104,7 @@ const AtomicString& SVGMarkerElement::orientAngleIdentifier()
 
 AffineTransform SVGMarkerElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
-    return SVGFitToViewBox::viewBoxToViewTransform(viewBox(), preserveAspectRatio(), viewWidth, viewHeight);
+    return SVGFitToViewBox::viewBoxToViewTransform(viewBoxCurrentValue(), preserveAspectRatioCurrentValue(), viewWidth, viewHeight);
 }
 
 bool SVGMarkerElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -217,10 +217,10 @@ RenderObject* SVGMarkerElement::createRenderer(RenderStyle*)
 
 bool SVGMarkerElement::selfHasRelativeLengths() const
 {
-    return refX().isRelative()
-        || refY().isRelative()
-        || markerWidth().isRelative()
-        || markerHeight().isRelative();
+    return refXCurrentValue().isRelative()
+        || refYCurrentValue().isRelative()
+        || markerWidthCurrentValue().isRelative()
+        || markerHeightCurrentValue().isRelative();
 }
 
 void SVGMarkerElement::synchronizeOrientType(SVGElement* contextElement)
@@ -246,7 +246,7 @@ PassRefPtr<SVGAnimatedProperty> SVGMarkerElement::lookupOrCreateOrientTypeWrappe
            (ownerType, orientTypePropertyInfo(), ownerType->m_orientType.value);
 }
   
-PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > SVGMarkerElement::orientTypeAnimated()
+PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > SVGMarkerElement::orientType()
 {
     m_orientType.shouldSynchronize = true;
     return static_pointer_cast<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> >(lookupOrCreateOrientTypeWrapper(this));

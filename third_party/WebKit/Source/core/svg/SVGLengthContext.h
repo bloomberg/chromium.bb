@@ -57,7 +57,7 @@ public:
     template<typename T>
     static FloatRect resolveRectangle(const T* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport)
     {
-        return SVGLengthContext::resolveRectangle(context, type, viewport, context->x(), context->y(), context->width(), context->height());
+        return SVGLengthContext::resolveRectangle(context, type, viewport, context->xCurrentValue(), context->yCurrentValue(), context->widthCurrentValue(), context->heightCurrentValue());
     }
 
     static FloatRect resolveRectangle(const SVGElement*, SVGUnitTypes::SVGUnitType, const FloatRect& viewport, const SVGLength& x, const SVGLength& y, const SVGLength& width, const SVGLength& height);

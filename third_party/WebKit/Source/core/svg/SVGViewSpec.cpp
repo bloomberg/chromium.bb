@@ -156,14 +156,14 @@ SVGTransformListPropertyTearOff* SVGViewSpec::transform()
     return static_cast<SVGTransformListPropertyTearOff*>(static_pointer_cast<SVGAnimatedTransformList>(lookupOrCreateTransformWrapper(this))->animVal());
 }
 
-PassRefPtr<SVGAnimatedRect> SVGViewSpec::viewBoxAnimated()
+PassRefPtr<SVGAnimatedRect> SVGViewSpec::viewBox()
 {
     if (!m_contextElement)
         return 0;
     return static_pointer_cast<SVGAnimatedRect>(lookupOrCreateViewBoxWrapper(this));
 }
 
-PassRefPtr<SVGAnimatedPreserveAspectRatio> SVGViewSpec::preserveAspectRatioAnimated()
+PassRefPtr<SVGAnimatedPreserveAspectRatio> SVGViewSpec::preserveAspectRatio()
 {
     if (!m_contextElement)
         return 0;

@@ -75,7 +75,7 @@ AffineTransform SVGGraphicsElement::animatedLocalTransform() const
         // Flatten any 3D transform.
         matrix = transform.toAffineTransform();
     } else {
-        transform().concatenate(matrix);
+        transformCurrentValue().concatenate(matrix);
     }
 
     if (m_supplementalTransform)

@@ -108,7 +108,7 @@ void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
-        m_loader->handleSourceAttribute(href());
+        m_loader->handleSourceAttribute(hrefCurrentValue());
         return;
     }
 
@@ -158,12 +158,12 @@ void SVGScriptElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
 {
     SVGElement::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document()->completeURL(href()));
+    addSubresourceURL(urls, document()->completeURL(hrefCurrentValue()));
 }
 
 String SVGScriptElement::sourceAttributeValue() const
 {
-    return href();
+    return hrefCurrentValue();
 }
 
 String SVGScriptElement::charsetAttributeValue() const

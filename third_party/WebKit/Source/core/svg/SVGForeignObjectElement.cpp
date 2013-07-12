@@ -158,10 +158,10 @@ bool SVGForeignObjectElement::rendererIsNeeded(const NodeRenderingContext& conte
 
 bool SVGForeignObjectElement::selfHasRelativeLengths() const
 {
-    return x().isRelative()
-        || y().isRelative()
-        || width().isRelative()
-        || height().isRelative();
+    return xCurrentValue().isRelative()
+        || yCurrentValue().isRelative()
+        || widthCurrentValue().isRelative()
+        || heightCurrentValue().isRelative();
 }
 
 }

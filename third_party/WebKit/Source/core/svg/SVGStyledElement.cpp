@@ -330,7 +330,7 @@ void SVGStyledElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (attrName == HTMLNames::classAttr) {
-        classAttributeChanged(className());
+        classAttributeChanged(classNameCurrentValue());
         SVGElementInstance::invalidateAllInstancesOfElement(this);
         return;
     }

@@ -55,7 +55,7 @@ bool RenderSVGTransformableContainer::calculateLocalTransform()
 
     if (useElement) {
         SVGLengthContext lengthContext(useElement);
-        FloatSize translation(useElement->x().value(lengthContext), useElement->y().value(lengthContext));
+        FloatSize translation(useElement->xCurrentValue().value(lengthContext), useElement->yCurrentValue().value(lengthContext));
         if (translation != m_lastTranslation)
             m_needsTransformUpdate = true;
         m_lastTranslation = translation;

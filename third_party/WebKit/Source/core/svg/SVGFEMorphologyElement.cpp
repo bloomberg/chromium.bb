@@ -122,11 +122,11 @@ bool SVGFEMorphologyElement::setFilterEffectAttribute(FilterEffect* effect, cons
 {
     FEMorphology* morphology = static_cast<FEMorphology*>(effect);
     if (attrName == SVGNames::operatorAttr)
-        return morphology->setMorphologyOperator(_operator());
+        return morphology->setMorphologyOperator(_operatorCurrentValue());
     if (attrName == SVGNames::radiusAttr) {
         // Both setRadius functions should be evaluated separately.
-        bool isRadiusXChanged = morphology->setRadiusX(radiusX());
-        bool isRadiusYChanged = morphology->setRadiusY(radiusY());
+        bool isRadiusXChanged = morphology->setRadiusX(radiusXCurrentValue());
+        bool isRadiusYChanged = morphology->setRadiusY(radiusYCurrentValue());
         return isRadiusXChanged || isRadiusYChanged;
     }
 
@@ -158,9 +158,9 @@ void SVGFEMorphologyElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1());
-    float xRadius = radiusX();
-    float yRadius = radiusY();
+    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
+    float xRadius = radiusXCurrentValue();
+    float yRadius = radiusYCurrentValue();
 
     if (!input1)
         return 0;
@@ -168,7 +168,7 @@ PassRefPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterB
     if (xRadius < 0 || yRadius < 0)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEMorphology::create(filter, _operator(), xRadius, yRadius);
+    RefPtr<FilterEffect> effect = FEMorphology::create(filter, _operatorCurrentValue(), xRadius, yRadius);
     effect->inputEffects().append(input1);
     return effect.release();
 }

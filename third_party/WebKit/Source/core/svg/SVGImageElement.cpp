@@ -175,10 +175,10 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 
 bool SVGImageElement::selfHasRelativeLengths() const
 {
-    return x().isRelative()
-        || y().isRelative()
-        || width().isRelative()
-        || height().isRelative();
+    return xCurrentValue().isRelative()
+        || yCurrentValue().isRelative()
+        || widthCurrentValue().isRelative()
+        || heightCurrentValue().isRelative();
 }
 
 RenderObject* SVGImageElement::createRenderer(RenderStyle*)
@@ -223,7 +223,7 @@ void SVGImageElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 {
     SVGGraphicsElement::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document()->completeURL(href()));
+    addSubresourceURL(urls, document()->completeURL(hrefCurrentValue()));
 }
 
 void SVGImageElement::didMoveToNewDocument(Document* oldDocument)

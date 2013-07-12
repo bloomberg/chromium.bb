@@ -129,15 +129,15 @@ bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const
 {
     FEComposite* composite = static_cast<FEComposite*>(effect);
     if (attrName == SVGNames::operatorAttr)
-        return composite->setOperation(_operator());
+        return composite->setOperation(_operatorCurrentValue());
     if (attrName == SVGNames::k1Attr)
-        return composite->setK1(k1());
+        return composite->setK1(k1CurrentValue());
     if (attrName == SVGNames::k2Attr)
-        return composite->setK2(k2());
+        return composite->setK2(k2CurrentValue());
     if (attrName == SVGNames::k3Attr)
-        return composite->setK3(k3());
+        return composite->setK3(k3CurrentValue());
     if (attrName == SVGNames::k4Attr)
-        return composite->setK4(k4());
+        return composite->setK4(k4CurrentValue());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -172,13 +172,13 @@ void SVGFECompositeElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1());
-    FilterEffect* input2 = filterBuilder->getEffectById(in2());
+    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
+    FilterEffect* input2 = filterBuilder->getEffectById(in2CurrentValue());
     
     if (!input1 || !input2)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEComposite::create(filter, _operator(), k1(), k2(), k3(), k4());
+    RefPtr<FilterEffect> effect = FEComposite::create(filter, _operatorCurrentValue(), k1CurrentValue(), k2CurrentValue(), k3CurrentValue(), k4CurrentValue());
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);

@@ -280,10 +280,10 @@ void SVGImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrin
 
     intrinsicWidth = rootElement->intrinsicWidth();
     intrinsicHeight = rootElement->intrinsicHeight();
-    if (rootElement->preserveAspectRatio().align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
+    if (rootElement->preserveAspectRatioCurrentValue().align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
         return;
 
-    intrinsicRatio = rootElement->viewBox().size();
+    intrinsicRatio = rootElement->viewBoxCurrentValue().size();
     if (intrinsicRatio.isEmpty() && intrinsicWidth.isFixed() && intrinsicHeight.isFixed())
         intrinsicRatio = FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0));
 }

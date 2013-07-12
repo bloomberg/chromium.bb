@@ -102,13 +102,13 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
         // FIXME: This will override hot spot specified in CSS, which is probably incorrect.
         SVGLengthContext lengthContext(0);
         m_hasHotSpot = true;
-        float x = roundf(cursorElement->x().value(lengthContext));
+        float x = roundf(cursorElement->xCurrentValue().value(lengthContext));
         m_hotSpot.setX(static_cast<int>(x));
 
-        float y = roundf(cursorElement->y().value(lengthContext));
+        float y = roundf(cursorElement->yCurrentValue().value(lengthContext));
         m_hotSpot.setY(static_cast<int>(y));
 
-        if (cachedImageURL() != element->document()->completeURL(cursorElement->href()))
+        if (cachedImageURL() != element->document()->completeURL(cursorElement->hrefCurrentValue()))
             clearCachedImage();
 
         SVGElement* svgElement = toSVGElement(element);
@@ -136,7 +136,7 @@ StyleImage* CSSCursorImageValue::cachedImage(CachedResourceLoader* loader, float
             RefPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
             if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), loader->document())) {
-                RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(cursorElement->href());
+                RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(cursorElement->hrefCurrentValue());
                 StyleCachedImage* cachedImage = svgImageValue->cachedImage(loader);
                 m_image = cachedImage;
                 return cachedImage;

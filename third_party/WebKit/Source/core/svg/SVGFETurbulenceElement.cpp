@@ -134,18 +134,18 @@ bool SVGFETurbulenceElement::setFilterEffectAttribute(FilterEffect* effect, cons
 {
     FETurbulence* turbulence = static_cast<FETurbulence*>(effect);
     if (attrName == SVGNames::typeAttr)
-        return turbulence->setType(type());
+        return turbulence->setType(typeCurrentValue());
     if (attrName == SVGNames::stitchTilesAttr)
-        return turbulence->setStitchTiles(stitchTiles());
+        return turbulence->setStitchTiles(stitchTilesCurrentValue());
     if (attrName == SVGNames::baseFrequencyAttr) {
-        bool baseFrequencyXChanged = turbulence->setBaseFrequencyX(baseFrequencyX());
-        bool baseFrequencyYChanged = turbulence->setBaseFrequencyY(baseFrequencyY());
+        bool baseFrequencyXChanged = turbulence->setBaseFrequencyX(baseFrequencyXCurrentValue());
+        bool baseFrequencyYChanged = turbulence->setBaseFrequencyY(baseFrequencyYCurrentValue());
         return (baseFrequencyXChanged || baseFrequencyYChanged);
     }
     if (attrName == SVGNames::seedAttr)
-        return turbulence->setSeed(seed());
+        return turbulence->setSeed(seedCurrentValue());
     if (attrName == SVGNames::numOctavesAttr)
-       return turbulence->setNumOctaves(numOctaves());
+        return turbulence->setNumOctaves(numOctavesCurrentValue());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -174,9 +174,9 @@ void SVGFETurbulenceElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)
 {
-    if (baseFrequencyX() < 0 || baseFrequencyY() < 0)
+    if (baseFrequencyXCurrentValue() < 0 || baseFrequencyYCurrentValue() < 0)
         return 0;
-    return FETurbulence::create(filter, type(), baseFrequencyX(), baseFrequencyY(), numOctaves(), seed(), stitchTiles() == SVG_STITCHTYPE_STITCH);
+    return FETurbulence::create(filter, typeCurrentValue(), baseFrequencyXCurrentValue(), baseFrequencyYCurrentValue(), numOctavesCurrentValue(), seedCurrentValue(), stitchTilesCurrentValue() == SVG_STITCHTYPE_STITCH);
 }
 
 }

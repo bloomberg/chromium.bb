@@ -5845,10 +5845,6 @@ sub AttributeNameForGetterAndSetter
     # To solve this issue the SVGAElement method was renamed to "svgTarget", take care of that when calling this method.
     $attributeName = "svgTarget" if $attributeName eq "target" and $attributeType eq "SVGAnimatedString";
 
-    # SVG animated types need to use a special attribute name.
-    # The rest of the special casing for SVG animated types is handled in the language-specific code generators.
-    $attributeName .= "Animated" if IsSVGAnimatedType($attributeType);
-
     return $attributeName;
 }
 
