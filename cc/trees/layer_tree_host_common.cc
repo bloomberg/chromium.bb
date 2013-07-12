@@ -769,10 +769,15 @@ static inline void RemoveSurfaceForEarlyExit(
 }
 
 struct PreCalculateMetaInformationRecursiveData {
-  bool layer_or_descendent_has_copy_request;
+  bool layer_or_descendant_has_copy_request;
 
   PreCalculateMetaInformationRecursiveData()
-      : layer_or_descendent_has_copy_request(false) {}
+      : layer_or_descendant_has_copy_request(false) {}
+
+  void Merge(const PreCalculateMetaInformationRecursiveData& data) {
+    layer_or_descendant_has_copy_request |=
+        data.layer_or_descendant_has_copy_request;
+  }
 };
 
 // Recursively walks the layer tree to compute any information that is needed
@@ -797,7 +802,9 @@ static void PreCalculateMetaInformation(
   for (size_t i = 0; i < layer->children().size(); ++i) {
     LayerType* child_layer =
         LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
-    PreCalculateMetaInformation<LayerType>(child_layer, recursive_data);
+
+    PreCalculateMetaInformationRecursiveData data_for_child;
+    PreCalculateMetaInformation(child_layer, &data_for_child);
 
     if (!has_delegated_content) {
       bool sublayer_transform_prevents_clip =
@@ -813,17 +820,19 @@ static void PreCalculateMetaInformation(
           !child_layer->transform().IsPositiveScaleOrTranslation())
         descendants_can_clip_selves = false;
     }
+
+    recursive_data->Merge(data_for_child);
   }
 
   if (layer->HasCopyRequest())
-    recursive_data->layer_or_descendent_has_copy_request = true;
+    recursive_data->layer_or_descendant_has_copy_request = true;
 
   layer->draw_properties().num_descendants_that_draw_content =
       num_descendants_that_draw_content;
   layer->draw_properties().descendants_can_clip_selves =
       descendants_can_clip_selves;
   layer->draw_properties().layer_or_descendant_has_copy_request =
-      recursive_data->layer_or_descendent_has_copy_request;
+      recursive_data->layer_or_descendant_has_copy_request;
 }
 
 static void RoundTranslationComponents(gfx::Transform* transform) {
@@ -1609,7 +1618,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   DCHECK(IsRootLayer(root_layer));
 
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation<Layer>(root_layer, &recursive_data);
+  PreCalculateMetaInformation(root_layer, &recursive_data);
 
   CalculateDrawPropertiesInternal<Layer, LayerList, RenderSurface>(
       root_layer,
@@ -1670,7 +1679,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   DCHECK(IsRootLayer(root_layer));
 
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation<LayerImpl>(root_layer, &recursive_data);
+  PreCalculateMetaInformation(root_layer, &recursive_data);
 
   CalculateDrawPropertiesInternal<LayerImpl,
                                   LayerImplList,

@@ -8205,14 +8205,38 @@ TEST(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                false);
   copy_child->SetIsDrawable(true);
 
+  scoped_refptr<Layer> copy_grand_parent_sibling_before = Layer::Create();
+  SetLayerPropertiesForTesting(copy_grand_parent_sibling_before.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               false);
+  copy_grand_parent_sibling_before->SetIsDrawable(true);
+
+  scoped_refptr<Layer> copy_grand_parent_sibling_after = Layer::Create();
+  SetLayerPropertiesForTesting(copy_grand_parent_sibling_after.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(40, 40),
+                               false);
+  copy_grand_parent_sibling_after->SetIsDrawable(true);
+
   copy_layer->AddChild(copy_child);
   copy_parent->AddChild(copy_layer);
   copy_grand_parent->AddChild(copy_parent);
+  root->AddChild(copy_grand_parent_sibling_before);
   root->AddChild(copy_grand_parent);
+  root->AddChild(copy_grand_parent_sibling_after);
 
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
   // hidden subtree on copy_layer.
   copy_grand_parent->SetHideLayerAndSubtree(true);
+  copy_grand_parent_sibling_before->SetHideLayerAndSubtree(true);
+  copy_grand_parent_sibling_after->SetHideLayerAndSubtree(true);
   copy_layer->RequestCopyOfOutput(CopyOutputRequest::CreateRequest(
       base::Bind(&EmptyCopyOutputCallback)));
   EXPECT_TRUE(copy_layer->HasCopyRequest());
@@ -8230,6 +8254,20 @@ TEST(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                                true,  // can_adjust_raster_scale
                                                &render_surface_layer_list);
 
+  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);
+  EXPECT_TRUE(copy_grand_parent->draw_properties().
+              layer_or_descendant_has_copy_request);
+  EXPECT_TRUE(copy_parent->draw_properties().
+              layer_or_descendant_has_copy_request);
+  EXPECT_TRUE(copy_layer->draw_properties().
+              layer_or_descendant_has_copy_request);
+  EXPECT_FALSE(copy_child->draw_properties().
+               layer_or_descendant_has_copy_request);
+  EXPECT_FALSE(copy_grand_parent_sibling_before->draw_properties().
+               layer_or_descendant_has_copy_request);
+  EXPECT_FALSE(copy_grand_parent_sibling_after->draw_properties().
+               layer_or_descendant_has_copy_request);
+
   // We should have three render surfaces, one for the root, one for the parent
   // since it owns a surface, and one for the copy_layer.
   ASSERT_EQ(3u, render_surface_layer_list.size());
@@ -8238,8 +8276,9 @@ TEST(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   EXPECT_EQ(copy_layer->id(), render_surface_layer_list[2]->id());
 
   // The root render surface should have 2 contributing layers. The
-  // copy_grand_parent is hidden, but the copy_parent will appear since
-  // something in its subtree needs to be drawn for a copy request.
+  // copy_grand_parent is hidden along with its siblings, but the copy_parent
+  // will appear since something in its subtree needs to be drawn for a copy
+  // request.
   ASSERT_EQ(2u, root->render_surface()->layer_list().size());
   EXPECT_EQ(root->id(), root->render_surface()->layer_list()[0]->id());
   EXPECT_EQ(copy_parent->id(), root->render_surface()->layer_list()[1]->id());
