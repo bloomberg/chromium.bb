@@ -27,14 +27,13 @@
 #include "core/css/CSSToStyleMap.h"
 #include "core/css/DocumentRuleSets.h"
 #include "core/css/InspectorCSSOMWrappers.h"
-#include "core/css/MediaQueryExp.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
-#include "core/css/resolver/MatchResult.h"
+#include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -70,6 +69,8 @@ class FrameView;
 class KeyframeList;
 class KeyframeValue;
 class MediaQueryEvaluator;
+class MediaQueryExp;
+class MediaQueryResult;
 class Node;
 class RenderRegion;
 class RuleData;
@@ -88,19 +89,7 @@ class StyleShader;
 class StyleSheet;
 class StyleSheetList;
 
-class MediaQueryResult {
-    WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;
-public:
-    MediaQueryResult(const MediaQueryExp& expr, bool result)
-        : m_expression(expr)
-        , m_result(result)
-    {
-    }
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
-    MediaQueryExp m_expression;
-    bool m_result;
-};
+struct MatchResult;
 
 enum StyleSharingBehavior {
     AllowStyleSharing,
@@ -110,7 +99,6 @@ enum StyleSharingBehavior {
 // MatchOnlyUserAgentRules is used in media queries, where relative units
 // are interpreted according to the document root element style, and styled only
 // from the User Agent Stylesheet rules.
-
 enum RuleMatchingBehavior {
     MatchAllRules,
     MatchAllRulesExcludingSMIL,
@@ -133,40 +121,6 @@ public:
     const RuleSet* ruleSet;
     const bool includeEmptyRules;
     const ContainerNode* scope;
-};
-
-// FIXME: Move to separate file.
-struct CachedMatchedProperties {
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-    Vector<MatchedProperties> matchedProperties;
-    MatchRanges ranges;
-    RefPtr<RenderStyle> renderStyle;
-    RefPtr<RenderStyle> parentRenderStyle;
-};
-
-class MatchedPropertiesCache {
-    WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
-public:
-    MatchedPropertiesCache();
-
-    const CachedMatchedProperties* find(unsigned hash, const StyleResolverState&, const MatchResult&);
-    void add(const RenderStyle*, const RenderStyle* parentStyle, unsigned hash, const MatchResult&);
-
-    void clear();
-
-    static bool isCacheable(const Element*, const RenderStyle*, const RenderStyle* parentStyle);
-
-private:
-    // Every N additions to the matched declaration cache trigger a sweep where entries holding
-    // the last reference to a style declaration are garbage collected.
-    void sweep(Timer<MatchedPropertiesCache>*);
-
-    unsigned m_additionsSinceLastSweep;
-
-    typedef HashMap<unsigned, CachedMatchedProperties> Cache;
-    Cache m_cache;
-
-    Timer<MatchedPropertiesCache> m_sweepTimer;
 };
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.

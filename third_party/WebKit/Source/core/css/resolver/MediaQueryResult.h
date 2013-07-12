@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -19,40 +20,28 @@
  *
  */
 
-#ifndef PageRuleCollector_h
-#define PageRuleCollector_h
+#ifndef MediaQueryResult_h
+#define MediaQueryResult_h
 
-#include "core/css/resolver/MatchResult.h"
-#include "wtf/Vector.h"
+#include "core/css/MediaQueryExp.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-class StyleResolverState;
-class StyleRulePage;
-
-class PageRuleCollector {
+class MediaQueryResult {
+    WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;
 public:
-    PageRuleCollector(const StyleResolverState&, int pageIndex);
+    MediaQueryResult(const MediaQueryExp& expr, bool result)
+        : m_expression(expr)
+        , m_result(result)
+    {
+    }
+    void reportMemoryUsage(MemoryObjectInfo*) const;
 
-    void matchPageRules(RuleSet* rules);
-    MatchResult& matchedResult() { return m_result; }
-
-private:
-    bool isLeftPage(int pageIndex) const;
-    bool isRightPage(int pageIndex) const { return !isLeftPage(pageIndex); }
-    bool isFirstPage(int pageIndex) const;
-    String pageName(int pageIndex) const;
-
-    void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>& rules, bool isLeftPage, bool isFirstPage, const String& pageName);
-
-    const StyleResolverState& m_state;
-    const bool m_isLeftPage;
-    const bool m_isFirstPage;
-    const String m_pageName;
-
-    MatchResult m_result;
+    MediaQueryExp m_expression;
+    bool m_result;
 };
 
-} // namespace WebCore
+}
 
-#endif // PageRuleCollector_h
+#endif

@@ -27,39 +27,16 @@
  */
 
 #include "config.h"
-#include "core/css/resolver/MatchResult.h"
+#include "core/css/resolver/MediaQueryResult.h"
 
-#include "core/css/StylePropertySet.h"
-#include "core/css/StyleRule.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
-MatchedProperties::MatchedProperties()
-    : possiblyPaddedMember(0)
-{
-}
-
-MatchedProperties::~MatchedProperties()
-{
-}
-
-void MatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void MediaQueryResult::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(properties, "properties");
+    info.addMember(m_expression, "expression");
 }
 
-void MatchResult::addMatchedProperties(const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
-{
-    matchedProperties.grow(matchedProperties.size() + 1);
-    MatchedProperties& newProperties = matchedProperties.last();
-    newProperties.properties = const_cast<StylePropertySet*>(properties);
-    newProperties.linkMatchType = linkMatchType;
-    newProperties.whitelistType = propertyWhitelistType;
-    matchedRules.append(rule);
 }
-
-} // namespace WebCore

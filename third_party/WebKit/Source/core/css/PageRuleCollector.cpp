@@ -31,6 +31,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/resolver/StyleResolverState.h"
 
 namespace WebCore {
 

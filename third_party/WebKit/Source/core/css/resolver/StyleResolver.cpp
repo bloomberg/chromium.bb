@@ -67,6 +67,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FilterOperationResolver.h"
+#include "core/css/resolver/MatchResult.h"
+#include "core/css/resolver/MediaQueryResult.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -1934,31 +1936,6 @@ static unsigned computeMatchedPropertiesHash(const MatchedProperties* properties
     return StringHasher::hashMemory(properties, sizeof(MatchedProperties) * size);
 }
 
-bool operator==(const MatchRanges& a, const MatchRanges& b)
-{
-    return a.firstUARule == b.firstUARule
-        && a.lastUARule == b.lastUARule
-        && a.firstAuthorRule == b.firstAuthorRule
-        && a.lastAuthorRule == b.lastAuthorRule
-        && a.firstUserRule == b.firstUserRule
-        && a.lastUserRule == b.lastUserRule;
-}
-
-bool operator!=(const MatchRanges& a, const MatchRanges& b)
-{
-    return !(a == b);
-}
-
-bool operator==(const MatchedProperties& a, const MatchedProperties& b)
-{
-    return a.properties == b.properties && a.linkMatchType == b.linkMatchType;
-}
-
-bool operator!=(const MatchedProperties& a, const MatchedProperties& b)
-{
-    return !(a == b);
-}
-
 void StyleResolver::invalidateMatchedPropertiesCache()
 {
     m_matchedPropertiesCache.clear();
@@ -2265,18 +2242,6 @@ bool StyleResolver::affectedByViewportChange() const
     return false;
 }
 
-void MatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(properties, "properties");
-}
-
-void MediaQueryResult::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_expression, "expression");
-}
-
 void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
@@ -2300,113 +2265,6 @@ void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(CSSDefaultStyleSheets::defaultQuirksStyle, "defaultQuirksStyle");
     info.addMember(CSSDefaultStyleSheets::defaultPrintStyle, "defaultPrintStyle");
     info.addMember(CSSDefaultStyleSheets::defaultViewSourceStyle, "defaultViewSourceStyle");
-}
-
-MatchedPropertiesCache::MatchedPropertiesCache()
-    : m_additionsSinceLastSweep(0)
-    , m_sweepTimer(this, &MatchedPropertiesCache::sweep)
-{
-}
-
-const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const StyleResolverState& styleResolverState, const MatchResult& matchResult)
-{
-    ASSERT(hash);
-
-    Cache::iterator it = m_cache.find(hash);
-    if (it == m_cache.end())
-        return 0;
-    CachedMatchedProperties& cacheItem = it->value;
-
-    size_t size = matchResult.matchedProperties.size();
-    if (size != cacheItem.matchedProperties.size())
-        return 0;
-    if (cacheItem.renderStyle->insideLink() != styleResolverState.style()->insideLink())
-        return 0;
-    for (size_t i = 0; i < size; ++i) {
-        if (matchResult.matchedProperties[i] != cacheItem.matchedProperties[i])
-            return 0;
-    }
-    if (cacheItem.ranges != matchResult.ranges)
-        return 0;
-    return &cacheItem;
-}
-
-void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* parentStyle, unsigned hash, const MatchResult& matchResult)
-{
-    static const unsigned maxAdditionsBetweenSweeps = 100;
-    if (++m_additionsSinceLastSweep >= maxAdditionsBetweenSweeps
-        && !m_sweepTimer.isActive()) {
-        static const unsigned sweepTimeInSeconds = 60;
-        m_sweepTimer.startOneShot(sweepTimeInSeconds);
-    }
-
-    ASSERT(hash);
-    CachedMatchedProperties cacheItem;
-    cacheItem.matchedProperties.append(matchResult.matchedProperties);
-    cacheItem.ranges = matchResult.ranges;
-    // Note that we don't cache the original RenderStyle instance. It may be further modified.
-    // The RenderStyle in the cache is really just a holder for the substructures and never used as-is.
-    cacheItem.renderStyle = RenderStyle::clone(style);
-    cacheItem.parentRenderStyle = RenderStyle::clone(parentStyle);
-    m_cache.add(hash, cacheItem);
-}
-
-void MatchedPropertiesCache::clear()
-{
-    m_cache.clear();
-}
-
-void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
-{
-    // Look for cache entries containing a style declaration with a single ref and remove them.
-    // This may happen when an element attribute mutation causes it to generate a new inlineStyle()
-    // or presentationAttributeStyle(), potentially leaving this cache with the last ref on the old one.
-    Vector<unsigned, 16> toRemove;
-    Cache::iterator it = m_cache.begin();
-    Cache::iterator end = m_cache.end();
-    for (; it != end; ++it) {
-        Vector<MatchedProperties>& matchedProperties = it->value.matchedProperties;
-        for (size_t i = 0; i < matchedProperties.size(); ++i) {
-            if (matchedProperties[i].properties->hasOneRef()) {
-                toRemove.append(it->key);
-                break;
-            }
-        }
-    }
-    for (size_t i = 0; i < toRemove.size(); ++i)
-        m_cache.remove(toRemove[i]);
-
-    m_additionsSinceLastSweep = 0;
-}
-
-bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderStyle* style, const RenderStyle* parentStyle)
-{
-    // FIXME: CSSPropertyWebkitWritingMode modifies state when applying to document element. We can't skip the applying by caching.
-    if (element == element->document()->documentElement() && element->document()->writingModeSetOnDocumentElement())
-        return false;
-    if (style->unique() || (style->styleType() != NOPSEUDO && parentStyle->unique()))
-        return false;
-    if (style->hasAppearance())
-        return false;
-    if (style->zoom() != RenderStyle::initialZoom())
-        return false;
-    if (style->writingMode() != RenderStyle::initialWritingMode())
-        return false;
-    if (style->hasCurrentColor())
-        return false;
-    // The cache assumes static knowledge about which properties are inherited.
-    if (parentStyle->hasExplicitlyInheritedProperties())
-        return false;
-    return true;
-}
-
-void CachedMatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(matchedProperties, "matchedProperties");
-    info.addMember(ranges, "ranges");
-    info.addMember(renderStyle, "renderStyle");
-    info.addMember(parentRenderStyle, "parentRenderStyle");
 }
 
 } // namespace WebCore

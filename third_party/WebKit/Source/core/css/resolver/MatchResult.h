@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -78,7 +79,31 @@ struct MatchResult {
     void addMatchedProperties(const StylePropertySet* properties, StyleRule* = 0, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
 };
 
+inline bool operator==(const MatchRanges& a, const MatchRanges& b)
+{
+    return a.firstUARule == b.firstUARule
+        && a.lastUARule == b.lastUARule
+        && a.firstAuthorRule == b.firstAuthorRule
+        && a.lastAuthorRule == b.lastAuthorRule
+        && a.firstUserRule == b.firstUserRule
+        && a.lastUserRule == b.lastUserRule;
+}
+
+inline bool operator!=(const MatchRanges& a, const MatchRanges& b)
+{
+    return !(a == b);
+}
+
+inline bool operator==(const MatchedProperties& a, const MatchedProperties& b)
+{
+    return a.properties == b.properties && a.linkMatchType == b.linkMatchType;
+}
+
+inline bool operator!=(const MatchedProperties& a, const MatchedProperties& b)
+{
+    return !(a == b);
+}
+
 } // namespace WebCore
 
 #endif // MatchResult_h
-
