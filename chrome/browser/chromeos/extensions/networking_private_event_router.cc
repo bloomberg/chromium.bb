@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/networking_private.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -96,8 +97,14 @@ void NetworkingPrivateEventRouter::NetworkListChanged() {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   NetworkStateHandler::NetworkStateList networks;
   NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
-  if (!event_router->HasEventListener(kOnNetworkListChanged))
+  if (!event_router->HasEventListener(kOnNetworkListChanged)) {
+    // TODO(stevenjb): Remove logging once crbug.com/256881 is fixed
+    // (or at least reduce to LOG_DEBUG). Same with NET_LOG events below.
+    NET_LOG_EVENT("NetworkingPrivate.NetworkListChanged: No Listeners", "");
     return;
+  }
+
+  NET_LOG_EVENT("NetworkingPrivate.NetworkListChanged", "");
 
   std::vector<std::string> changes;
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
@@ -117,9 +124,13 @@ void NetworkingPrivateEventRouter::NetworkListChanged() {
 void NetworkingPrivateEventRouter::NetworkPropertiesUpdated(
     const NetworkState* network) {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
-  if (!event_router->HasEventListener(kOnNetworksChanged))
+  if (!event_router->HasEventListener(kOnNetworksChanged)) {
+    NET_LOG_EVENT("NetworkingPrivate.NetworkPropertiesUpdated: No Listeners",
+                  network->path());
     return;
-
+  }
+  NET_LOG_EVENT("NetworkingPrivate.NetworkPropertiesUpdated",
+                network->path());
   scoped_ptr<base::ListValue> args(api::OnNetworksChanged::Create(
       std::vector<std::string>(1, network->path())));
   scoped_ptr<extensions::Event> extension_event(
