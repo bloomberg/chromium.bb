@@ -66,8 +66,13 @@ var test = function()
         InspectorTest.addResult("Set timer for test function.");
         InspectorTest.waitUntilMessageReceived(didReceive);
 
-        function didReceive(message)
+        function didReceive(message, isFromBackend)
         {
+            if (!isFromBackend) {
+                InspectorTest.waitUntilMessageReceived(didReceive);
+                return;
+            }
+
             InspectorTest.addResult("Console message received: " + message.message);
             InspectorTest.evaluateInConsole("unmonitor(" + functionName + ")");
             InspectorTest.addResult("Stop monitoring.");

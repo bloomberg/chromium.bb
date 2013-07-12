@@ -11,7 +11,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
     var result = [];
     var visibleMessagesIndices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < visibleMessagesIndices.length; ++i) {
-        var message = WebInspector.consoleView._messages[visibleMessagesIndices[i]];
+        var message = WebInspector.console.messages[visibleMessagesIndices[i]];
         var element = message.toMessageElement();
 
         if (dumpClassNames) {
@@ -36,7 +36,7 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
     var result = [];
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
-        var element = WebInspector.consoleView._messages[indices[i]].toMessageElement();
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         InspectorTest.addResult(element.textContent.replace(/\u200b/g, ""));
         var spans = element.querySelectorAll(".console-message-text > span > span");
         for (var j = 0; j < spans.length; j++)
@@ -48,7 +48,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
-        var element = WebInspector.consoleView._messages[indices[i]].toMessageElement();
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         result.push(element.textContent.replace(/\u200b/g, "") + " " + element.getAttribute("class"));
     }
     if (sortMessages)
@@ -61,7 +61,7 @@ InspectorTest.expandConsoleMessages = function()
 {
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
-        var element = WebInspector.consoleView._messages[indices[i]].toMessageElement();
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         var node = element;
         while (node) {
             if (node.treeElementForTest)
@@ -75,7 +75,7 @@ InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
-        var m = WebInspector.consoleView._messages[indices[i]];
+        var m = WebInspector.console.messages[indices[i]];
         InspectorTest.addResult("Message[" + i + "]:");
         InspectorTest.addResult("Message: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
         if ("_parameters" in m) {

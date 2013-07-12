@@ -13,7 +13,7 @@ var test = function()
         {
             var consoleMessagesCount = 2;
 
-            var messages = WebInspector.consoleView._messages;
+            var messages = WebInspector.console.messages;
             for (var i = 0; i < messages.length; ++i)
                 processMessage(messages[i]);
             checkWhenScriptsLoaded();
