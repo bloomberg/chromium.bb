@@ -6,8 +6,10 @@
 
 import copy
 import fnmatch
+import glob
 import logging
 import os
+import shutil
 
 from pylib import android_commands
 from pylib import cmd_helper
@@ -21,6 +23,120 @@ from pylib.utils import xvfb
 
 import gtest_config
 import test_runner
+
+
+# TODO(frankf): Add more test targets here after making sure we don't
+# blow up the dependency size (and the world).
+_ISOLATE_FILE_PATHS = {
+    'base_unittests': 'base/base_unittests.isolate',
+    'unit_tests': 'chrome/unit_tests.isolate',
+}
+
+# Used for filtering large data deps at a finer grain than what's allowed in
+# isolate files since pushing deps to devices is expensive.
+# Wildcards are allowed.
+_DEPS_EXCLUSION_LIST = [
+    'chrome/test/data/extensions/api_test',
+    'chrome/test/data/extensions/secure_shell',
+    'chrome/test/data/firefox*',
+    'chrome/test/data/gpu',
+    'chrome/test/data/image_decoding',
+    'chrome/test/data/import',
+    'chrome/test/data/page_cycler',
+    'chrome/test/data/perf',
+    'chrome/test/data/pyauto_private',
+    'chrome/test/data/safari_import',
+    'chrome/test/data/scroll',
+    'chrome/test/data/third_party',
+    'third_party/hunspell_dictionaries/*.dic',
+]
+
+_ISOLATE_SCRIPT = os.path.join(
+    constants.DIR_SOURCE_ROOT, 'tools', 'swarm_client', 'isolate.py')
+
+
+def _GenerateDepsDirUsingIsolate(test_suite, build_type):
+  """Generate the dependency dir for the test suite using isolate.
+
+  Args:
+    test_suite: The test suite basename (e.g. base_unittests).
+    build_type: Release/Debug
+
+  Returns:
+    If an isolate file exists, returns path to dependency dir on the host.
+    Otherwise, returns False.
+  """
+  product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
+  assert os.path.isabs(product_dir)
+  isolate_rel_path = _ISOLATE_FILE_PATHS.get(test_suite)
+  if not isolate_rel_path:
+    return False
+
+  isolate_abs_path = os.path.join(constants.DIR_SOURCE_ROOT, isolate_rel_path)
+  isolated_abs_path = os.path.join(
+      product_dir, '%s.isolated' % test_suite)
+  assert os.path.exists(isolate_abs_path)
+  deps_dir = os.path.join(product_dir, 'isolate_deps_dir')
+  if os.path.isdir(deps_dir):
+    shutil.rmtree(deps_dir)
+  isolate_cmd = [
+      'python', _ISOLATE_SCRIPT,
+      'remap',
+      '--isolate', isolate_abs_path,
+      '--isolated', isolated_abs_path,
+      '-V', 'PRODUCT_DIR=%s' % product_dir,
+      '-V', 'OS=android',
+      '--outdir', deps_dir,
+  ]
+  assert not cmd_helper.RunCmd(isolate_cmd)
+
+  # We're relying on the fact that timestamps are preserved
+  # by the remap command (hardlinked). Otherwise, all the data
+  # will be pushed to the device once we move to using time diff
+  # instead of md5sum. Perform a sanity check here.
+  for root, _, filenames in os.walk(deps_dir):
+    if filenames:
+      linked_file = os.path.join(root, filenames[0])
+      orig_file = os.path.join(
+          constants.DIR_SOURCE_ROOT,
+          os.path.relpath(linked_file, deps_dir))
+      if os.stat(linked_file).st_ino == os.stat(orig_file).st_ino:
+        break
+      else:
+        raise Exception('isolate remap command did not use hardlinks.')
+
+  # Delete excluded files as defined by _DEPS_EXCLUSION_LIST.
+  old_cwd = os.getcwd()
+  try:
+    os.chdir(deps_dir)
+    excluded_paths = [x for y in _DEPS_EXCLUSION_LIST for x in glob.glob(y)]
+    if excluded_paths:
+      logging.info('Excluding the following from dependency list: %s',
+                   excluded_paths)
+    for p in excluded_paths:
+      if os.path.isdir(p):
+        shutil.rmtree(p)
+      else:
+        os.remove(p)
+  finally:
+    os.chdir(old_cwd)
+
+  # On Android, all pak files need to be in the top-level 'paks' directory.
+  paks_dir = os.path.join(deps_dir, 'paks')
+  os.mkdir(paks_dir)
+  for root, _, filenames in os.walk(os.path.join(deps_dir, 'out')):
+    for filename in fnmatch.filter(filenames, '*.pak'):
+      shutil.move(os.path.join(root, filename), paks_dir)
+
+  # Move everything in PRODUCT_DIR to top level.
+  deps_product_dir = os.path.join(deps_dir, 'out', build_type)
+  if os.path.isdir(deps_product_dir):
+    for p in os.listdir(deps_product_dir):
+      shutil.move(os.path.join(deps_product_dir, p), deps_dir)
+    os.rmdir(deps_product_dir)
+    os.rmdir(os.path.join(deps_dir, 'out'))
+
+  return deps_dir
 
 
 def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
@@ -150,6 +266,8 @@ def _RunATestSuite(options, suite_name):
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
+  deps_dir = _GenerateDepsDirUsingIsolate(suite_name, options.build_type)
+
   # Constructs a new TestRunner with the current options.
   def RunnerFactory(device, shard_index):
     return test_runner.TestRunner(
@@ -164,7 +282,8 @@ def _RunATestSuite(options, suite_name):
         options.push_deps,
         constants.GTEST_TEST_PACKAGE_NAME,
         constants.GTEST_TEST_ACTIVITY_NAME,
-        constants.GTEST_COMMAND_LINE_FILE)
+        constants.GTEST_COMMAND_LINE_FILE,
+        deps_dir=deps_dir)
 
   # Get tests and split them up based on the number of devices.
   if options.test_filter:

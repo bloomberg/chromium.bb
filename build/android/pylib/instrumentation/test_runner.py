@@ -104,8 +104,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if test_data:
       # Make sure SD card is ready.
       self.adb.WaitForSdCardReady(20)
-      for data in test_data:
-        self.CopyTestData([data], self.adb.GetExternalStorage())
+      for p in test_data:
+        self.adb.PushIfNeeded(
+            os.path.join(constants.DIR_SOURCE_ROOT, p),
+            os.path.join(self.adb.GetExternalStorage(), p))
 
     # TODO(frankf): Specify test data in this file as opposed to passing
     # as command-line.

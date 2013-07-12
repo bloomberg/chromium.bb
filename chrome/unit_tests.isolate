@@ -3,6 +3,42 @@
 # found in the LICENSE file.
 {
   'conditions': [
+    ['OS=="android" or OS=="linux"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome.pak',
+        ],
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/test_data/',
+        ],
+      },
+    }],
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/resources.pak',
+        ],
+        'isolate_dependency_untracked': [
+          '../base/test/data/',
+          '../components/test/data/',
+          '../extensions/test/data/',
+          '../net/data/',
+          '../third_party/accessibility-developer-tools/gen/',
+          '../third_party/hunspell_dictionaries/',
+          '../third_party/zlib/google/test/data/',
+          'test/data/',
+          'third_party/mock4js/',
+        ],
+      },
+    }],
+    ['OS=="android" or OS=="linux" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
+          '<(PRODUCT_DIR)/locales/en-US.pak',
+        ],
+      },
+    }],
     ['OS=="linux"', {
       'variables': {
         'command': [
@@ -13,13 +49,9 @@
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
-        ],
-        'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/test_data/',
         ],
         'isolate_dependency_touched': [
           '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
@@ -30,34 +62,16 @@
       'variables': {
         'isolate_dependency_tracked': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
           'browser/safe_browsing/two_phase_testserver.py',
         ],
         'isolate_dependency_untracked': [
-          '../base/test/data/',
-          '../components/test/data/',
-          '../extensions/test/data/',
-          '../net/data/',
           '../net/tools/testserver/',
-          '../third_party/accessibility-developer-tools/gen/',
-          '../third_party/hunspell_dictionaries/',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
-          '../third_party/zlib/google/test/data/',
           '../tools/swarm_client/',
           '<(PRODUCT_DIR)/pyproto/',
-          'test/data/',
-          'third_party/mock4js/',
-        ],
-      },
-    }],
-    ['OS=="linux" or OS=="win"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/locales/en-US.pak',
         ],
       },
     }],

@@ -725,9 +725,10 @@ class AndroidCommands(object):
       assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
       self._md5sum_build_dir = build_dir
 
+    cmd = (MD5SUM_LD_LIBRARY_PATH + ' ' + self._util_wrapper + ' ' +
+           MD5SUM_DEVICE_PATH + ' ' + device_path)
     hashes_on_device = _ComputeFileListHash(
-        self.RunShellCommand(MD5SUM_LD_LIBRARY_PATH + ' ' + self._util_wrapper +
-            ' ' + MD5SUM_DEVICE_PATH + ' ' + device_path))
+        self.RunShellCommand(cmd, timeout_time=2 * 60))
     assert os.path.exists(local_path), 'Local path not found %s' % local_path
     md5sum_output = cmd_helper.GetCmdOutput(
         ['%s/md5sum_bin_host' % self._md5sum_build_dir, local_path])
