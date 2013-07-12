@@ -196,7 +196,12 @@
           <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_linux.json" type="BINDATA" />
         </if>
       </if>
-      <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
+      <if expr="is_android">
+        <include name="IDR_POLICY_CSS" file="resources\policy_android.css" type="BINDATA"/>
+      </if>
+      <if expr="not is_android">
+        <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
+      </if>
       <include name="IDR_POLICY_HTML" file="resources\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA"/>
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA"/>
       <include name="IDR_PRERENDER_URL_WHITELIST"

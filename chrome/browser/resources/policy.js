@@ -1,8 +1,18 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 cr.define('policy', function() {
+
+  /**
+   * A hack to check if we are displaying the mobile version of this page by
+   * checking if the first column is hidden.
+   * @return {boolean} True if this is the mobile version.
+   */
+  var isMobilePage = function() {
+    return document.defaultView.getComputedStyle(document.querySelector(
+        '.scope-column')).display == 'none';
+  }
+
   /**
    * A box that shows the status of cloud policy for a device or user.
    * @constructor
@@ -126,6 +136,16 @@ cr.define('policy', function() {
         status = loadTimeData.getString('ok');
       }
       this.querySelector('.status').textContent = status;
+
+      if (isMobilePage()) {
+        // The number of columns which are hidden by the css file for the mobile
+        // (Android) version of this page.
+        /** @const */ var HIDDEN_COLUMNS_IN_MOBILE_VERSION = 2;
+
+        var expandedValue = this.querySelector('.expanded-value');
+        expandedValue.setAttribute('colspan',
+            expandedValue.colSpan - HIDDEN_COLUMNS_IN_MOBILE_VERSION);
+      }
     },
 
     /**
@@ -479,11 +499,12 @@ cr.define('policy', function() {
       var newTable = window.document.createElement('table');
       var tableHead = window.document.createElement('thead');
       var tableRow = window.document.createElement('tr');
-      var tableHeadings = ['headerScope', 'headerLevel',
-                           'headerName', 'headerValue', 'headerStatus'];
+      var tableHeadings = ['Scope', 'Level', 'Name', 'Value', 'Status'];
       for (var i = 0; i < tableHeadings.length; i++) {
         var tableHeader = window.document.createElement('th');
-        tableHeader.textContent = loadTimeData.getString(tableHeadings[i]);
+        tableHeader.classList.add(tableHeadings[i].toLowerCase() + '-column');
+        tableHeader.textContent = loadTimeData.getString('header' +
+                                                         tableHeadings[i]);
         tableRow.appendChild(tableHeader);
       }
       tableHead.appendChild(tableRow);

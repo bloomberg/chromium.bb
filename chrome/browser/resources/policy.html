@@ -2,6 +2,7 @@
 <html i18n-values="dir:textdirection">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no">
 <title i18n-content="title"></title>
 
 <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
@@ -79,22 +80,22 @@
     <table>
       <tbody id="policy-template">
         <tr>
-          <td>
+          <td class="scope-column">
             <div class="scope elide"></div>
           </td>
-          <td>
+          <td class="level-column">
             <div class="level elide"></div>
           </td>
-          <td>
+          <td class="name-column">
             <div class="name elide"></div>
           </td>
-          <td>
+          <td class="value-column">
             <div class="value-container">
               <span class="value"></span>
               <button class="toggle-expanded-value link-button"></button>
             </div>
           </td>
-          <td class="status-container">
+          <td class="status-column">
             <div class="status elide"></div>
           </td>
         </tr>
