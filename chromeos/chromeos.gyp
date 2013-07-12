@@ -403,6 +403,8 @@
         'dbus/fake_power_manager_client.h',
         'dbus/fake_session_manager_client.cc',
         'dbus/fake_session_manager_client.h',
+        'dbus/fake_shill_device_client.cc',
+        'dbus/fake_shill_device_client.h',
         'dbus/fake_shill_manager_client.cc',
         'dbus/fake_shill_manager_client.h',
         'dbus/fake_system_clock_client.cc',

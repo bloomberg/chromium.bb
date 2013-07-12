@@ -30,6 +30,7 @@ class FakeGsmSMSClient;
 class FakePowerManagerClient;
 class FakeImageBurnerClient;
 class FakeSessionManagerClient;
+class FakeShillDeviceClient;
 class FakeShillManagerClient;
 class FakeSystemClockClient;
 class FakeUpdateEngineClient;
@@ -134,6 +135,10 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return fake_session_manager_client_.get();
   }
 
+  FakeShillDeviceClient* fake_shill_device_client() {
+    return fake_shill_device_client_.get();
+  }
+
   FakeShillManagerClient* fake_shill_manager_client() {
     return fake_shill_manager_client_.get();
   }
@@ -195,6 +200,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
   scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
   scoped_ptr<FakeSessionManagerClient> fake_session_manager_client_;
+  scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
   scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;
   scoped_ptr<FakeSystemClockClient> fake_system_clock_client_;
   scoped_ptr<FakePowerManagerClient> fake_power_manager_client_;

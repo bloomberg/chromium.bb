@@ -16,6 +16,7 @@
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -41,6 +42,7 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
     fake_gsm_sms_client_(new FakeGsmSMSClient),
     fake_image_burner_client_(new FakeImageBurnerClient),
     fake_session_manager_client_(new FakeSessionManagerClient),
+    fake_shill_device_client_(new FakeShillDeviceClient),
     fake_shill_manager_client_(new FakeShillManagerClient),
     fake_system_clock_client_(new FakeSystemClockClient),
     fake_power_manager_client_(new FakePowerManagerClient),
@@ -132,8 +134,7 @@ DebugDaemonClient* MockDBusThreadManagerWithoutGMock::GetDebugDaemonClient() {
 
 ShillDeviceClient*
     MockDBusThreadManagerWithoutGMock::GetShillDeviceClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_shill_device_client_.get();
 }
 
 ShillIPConfigClient*
