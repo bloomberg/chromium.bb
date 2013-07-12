@@ -256,6 +256,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
+    // TODO(hajimehoshi): 0 is a magic number.
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     net::URLRequestStatus status;
@@ -268,7 +269,10 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   }
 
   void SimulateSupportedLanguagesURLFetch(
-      bool success, const std::vector<std::string>& languages) {
+      bool success,
+      const std::vector<std::string>& languages,
+      bool use_alpha_languages,
+      const std::vector<std::string>& alpha_languages) {
     net::URLRequestStatus status;
     status.set_status(success ? net::URLRequestStatus::SUCCESS :
                                 net::URLRequestStatus::FAILED);
@@ -286,17 +290,29 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
         if (i == 0)
           comma = ",";
       }
+
+      if (use_alpha_languages) {
+        data += base::StringPrintf("},\"%s\": {",
+                                   TranslateLanguageList::kAlphaLanguagesKey);
+        comma = "";
+        for (size_t i = 0; i < alpha_languages.size(); ++i) {
+          data += base::StringPrintf("%s\"%s\": 1", comma,
+                                     alpha_languages[i].c_str());
+          if (i == 0)
+            comma = ",";
+        }
+      }
+
       data += "}})";
     }
-    for (int id = 1; id <= 2; ++id) {
-      net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(id);
-      ASSERT_TRUE(fetcher);
-      fetcher->set_url(fetcher->GetOriginalURL());
-      fetcher->set_status(status);
-      fetcher->set_response_code(success ? 200 : 500);
-      fetcher->SetResponseString(data);
-      fetcher->delegate()->OnURLFetchComplete(fetcher);
-    }
+    // TODO(hajimehoshi): 1 is a magic number.
+    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(1);
+    ASSERT_TRUE(fetcher != NULL);
+    fetcher->set_url(fetcher->GetOriginalURL());
+    fetcher->set_status(status);
+    fetcher->set_response_code(success ? 200 : 500);
+    fetcher->SetResponseString(data);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
   void SetPrefObserverExpectation(const char* path) {
@@ -627,6 +643,10 @@ TEST_F(TranslateManagerBrowserTest, FetchLanguagesFromTranslateServer) {
   server_languages.push_back("fr-FR");
   server_languages.push_back("xx");
 
+  std::vector<std::string> alpha_languages;
+  alpha_languages.push_back("aa");
+  alpha_languages.push_back("yi");
+
   // First, get the default languages list. Note that calling
   // GetSupportedLanguages() invokes RequestLanguageList() internally.
   std::vector<std::string> default_supported_languages;
@@ -640,47 +660,76 @@ TEST_F(TranslateManagerBrowserTest, FetchLanguagesFromTranslateServer) {
   EXPECT_EQ(default_supported_languages, current_supported_languages);
 
   // Also check that it didn't change if we failed the URL fetch.
-  SimulateSupportedLanguagesURLFetch(false, std::vector<std::string>());
+  SimulateSupportedLanguagesURLFetch(false, std::vector<std::string>(),
+                                     true, std::vector<std::string>());
   current_supported_languages.clear();
   TranslateManager::GetSupportedLanguages(&current_supported_languages);
   EXPECT_EQ(default_supported_languages, current_supported_languages);
 
   // Now check that we got the appropriate set of languages from the server.
-  SimulateSupportedLanguagesURLFetch(true, server_languages);
+  SimulateSupportedLanguagesURLFetch(true, server_languages,
+                                     true, alpha_languages);
   current_supported_languages.clear();
   TranslateManager::GetSupportedLanguages(&current_supported_languages);
   // "xx" can't be displayed in the Translate inforbar, so this is eliminated.
   EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
   // Not sure we need to guarantee the order of languages, so we find them.
   for (size_t i = 0; i < server_languages.size(); ++i) {
-    if (server_languages[i] == "xx")
+    const std::string& lang = server_languages[i];
+    if (lang == "xx")
       continue;
     EXPECT_NE(current_supported_languages.end(),
               std::find(current_supported_languages.begin(),
                         current_supported_languages.end(),
-                        server_languages[i]));
+                        lang));
+    bool is_alpha = std::find(alpha_languages.begin(),
+                              alpha_languages.end(),
+                              lang) != alpha_languages.end();
+    EXPECT_EQ(TranslateManager::IsAlphaLanguage(lang), is_alpha);
   }
 }
 
-std::string GetLanguageListString(
-    const std::vector<std::string>& language_list) {
-  // The translate manager is expecting a JSON string like:
-  // sl({'sl': {'XX': 'LanguageName', ...}, 'tl': {'XX': 'LanguageName', ...}})
-  // We only need to set the tl (target languages) dictionary.
-  scoped_ptr<DictionaryValue> target_languages_dict(new DictionaryValue);
-  for (size_t i = 0; i < language_list.size(); ++i) {
-    // The value is ignored, we only use the key.
-    target_languages_dict->Set(language_list[i], Value::CreateNullValue());
-  }
+// Test the fetching of languages from the translate server without 'al'
+// parameter.
+TEST_F(TranslateManagerBrowserTest,
+       FetchLanguagesFromTranslateServerWithoutAlpha) {
+  std::vector<std::string> server_languages;
+  server_languages.push_back("aa");
+  server_languages.push_back("ak");
+  server_languages.push_back("ab");
+  server_languages.push_back("en-CA");
+  server_languages.push_back("zh");
+  server_languages.push_back("yi");
+  server_languages.push_back("fr-FR");
+  server_languages.push_back("xx");
 
-  DictionaryValue language_list_dict;
-  language_list_dict.Set("tl", target_languages_dict.release());
-  std::string language_list_json_str;
-  base::JSONWriter::Write(&language_list_dict, &language_list_json_str);
-  std::string language_list_str("sl(");
-  language_list_str += language_list_json_str;
-  language_list_str += ")";
-  return language_list_str;
+  std::vector<std::string> alpha_languages;
+  alpha_languages.push_back("aa");
+  alpha_languages.push_back("yi");
+
+  // call GetSupportedLanguages to call RequestLanguageList internally.
+  std::vector<std::string> default_supported_languages;
+  TranslateManager::GetSupportedLanguages(&default_supported_languages);
+
+  SimulateSupportedLanguagesURLFetch(true, server_languages,
+                                     false, alpha_languages);
+
+  std::vector<std::string> current_supported_languages;
+  TranslateManager::GetSupportedLanguages(&current_supported_languages);
+
+  // "xx" can't be displayed in the Translate inforbar, so this is eliminated.
+  EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
+
+  for (size_t i = 0; i < server_languages.size(); ++i) {
+    const std::string& lang = server_languages[i];
+    if (lang == "xx")
+      continue;
+    EXPECT_NE(current_supported_languages.end(),
+              std::find(current_supported_languages.begin(),
+                        current_supported_languages.end(),
+                        lang));
+    EXPECT_FALSE(TranslateManager::IsAlphaLanguage(lang));
+  }
 }
 
 // Tests auto-translate on page.
