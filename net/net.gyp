@@ -2916,29 +2916,11 @@
             'net_unittests',
           ],
           'includes': [
+            '../build/isolate.gypi',
             'net_unittests.isolate',
           ],
-          'actions': [
-            {
-              'action_name': 'isolate',
-              'inputs': [
-                'net_unittests.isolate',
-                '<@(isolate_dependency_tracked)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/net_unittests.isolated',
-              ],
-              'action': [
-                'python',
-                '../tools/swarm_client/isolate.py',
-                '<(test_isolation_mode)',
-                '--outdir', '<(test_isolation_outdir)',
-                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-                '--variable', 'OS', '<(OS)',
-                '--result', '<@(_outputs)',
-                '--isolate', 'net_unittests.isolate',
-              ],
-            },
+          'sources': [
+            'net_unittests.isolate',
           ],
         },
       ],
