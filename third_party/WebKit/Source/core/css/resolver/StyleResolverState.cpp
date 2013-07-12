@@ -33,7 +33,6 @@ namespace WebCore {
 
 ElementResolveContext::ElementResolveContext(Element* element)
     : m_element(element)
-    , m_styledElement(element && element->isStyledElement() ? element : 0)
     , m_elementLinkState(element ? element->document()->visitedLinkState()->determineLinkState(element) : NotInsideLink)
     , m_distributedToInsertionPoint(false)
     , m_resetStyleInheritance(false)

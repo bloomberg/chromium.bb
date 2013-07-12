@@ -89,10 +89,9 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
 
     const StyleResolverState& state = m_state;
     Element* element = state.element();
-    const Element* styledElement = state.styledElement();
     const AtomicString& pseudoId = element->shadowPseudoId();
     if (!pseudoId.isEmpty()) {
-        ASSERT(styledElement);
+        ASSERT(element->isStyledElement());
         collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId.impl()), matchRequest, ruleRange);
     }
 
@@ -113,9 +112,9 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     // then sort the buffer.
     if (element->hasID())
         collectMatchingRulesForList(matchRequest.ruleSet->idRules(element->idForStyleResolution().impl()), matchRequest, ruleRange);
-    if (styledElement && styledElement->hasClass()) {
-        for (size_t i = 0; i < styledElement->classNames().size(); ++i)
-            collectMatchingRulesForList(matchRequest.ruleSet->classRules(styledElement->classNames()[i].impl()), matchRequest, ruleRange);
+    if (element->isStyledElement() && element->hasClass()) {
+        for (size_t i = 0; i < element->classNames().size(); ++i)
+            collectMatchingRulesForList(matchRequest.ruleSet->classRules(element->classNames()[i].impl()), matchRequest, ruleRange);
     }
 
     if (element->isLink())

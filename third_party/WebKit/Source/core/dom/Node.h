@@ -85,7 +85,7 @@ class TouchEvent;
 
 typedef int ExceptionCode;
 
-const int nodeStyleChangeShift = 15;
+const int nodeStyleChangeShift = 14;
 
 enum StyleChangeType {
     NoStyleChange = 0,
@@ -258,11 +258,20 @@ public:
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
     virtual bool isWebVTTElement() const { return false; }
-    bool isStyledElement() const { return getFlag(IsStyledElementFlag); }
     virtual bool isAttributeNode() const { return false; }
     virtual bool isCharacterDataNode() const { return false; }
     virtual bool isFrameOwnerElement() const { return false; }
     virtual bool isPluginElement() const { return false; }
+
+    // StyledElements allow inline style (style="border: 1px"), presentational attributes (ex. color),
+    // class names (ex. class="foo bar") and other non-basic styling features. They and also control
+    // if this element can participate in style sharing.
+    //
+    // FIXME: The only things that ever go through StyleResolver that aren't StyledElements are
+    // PseudoElements and WebVTTElements. It's possible we can just eliminate all the checks
+    // since those elements will never have class names, inline style, or other things that
+    // this apparently guards against.
+    bool isStyledElement() const { return isHTMLElement() || isSVGElement(); }
 
     bool isDocumentNode() const;
     bool isTreeScope() const { return treeScope()->rootNode() == this; }
@@ -716,46 +725,45 @@ private:
         IsTextFlag = 1,
         IsContainerFlag = 1 << 1,
         IsElementFlag = 1 << 2,
-        IsStyledElementFlag = 1 << 3,
-        IsHTMLFlag = 1 << 4,
-        IsSVGFlag = 1 << 5,
-        IsAttachedFlag = 1 << 6,
-        ChildNeedsStyleRecalcFlag = 1 << 7,
-        InDocumentFlag = 1 << 8,
-        IsLinkFlag = 1 << 9,
-        IsUserActionElement = 1 << 10,
-        HasRareDataFlag = 1 << 11,
-        IsDocumentFragmentFlag = 1 << 12,
+        IsHTMLFlag = 1 << 3,
+        IsSVGFlag = 1 << 4,
+        IsAttachedFlag = 1 << 5,
+        ChildNeedsStyleRecalcFlag = 1 << 6,
+        InDocumentFlag = 1 << 7,
+        IsLinkFlag = 1 << 8,
+        IsUserActionElement = 1 << 9,
+        HasRareDataFlag = 1 << 10,
+        IsDocumentFragmentFlag = 1 << 11,
 
         // These bits are used by derived classes, pulled up here so they can
         // be stored in the same memory word as the Node bits above.
-        IsParsingChildrenFinishedFlag = 1 << 13, // Element
-        HasSVGRareDataFlag = 1 << 14, // SVGElement
+        IsParsingChildrenFinishedFlag = 1 << 12, // Element
+        HasSVGRareDataFlag = 1 << 13, // SVGElement
 
         StyleChangeMask = 1 << nodeStyleChangeShift | 1 << (nodeStyleChangeShift + 1),
 
-        SelfOrAncestorHasDirAutoFlag = 1 << 17,
+        SelfOrAncestorHasDirAutoFlag = 1 << 16,
 
-        HasNameOrIsEditingTextFlag = 1 << 18,
+        HasNameOrIsEditingTextFlag = 1 << 17,
 
-        InNamedFlowFlag = 1 << 19,
-        HasSyntheticAttrChildNodesFlag = 1 << 20,
-        HasCustomStyleCallbacksFlag = 1 << 21,
-        HasScopedHTMLStyleChildFlag = 1 << 22,
-        HasEventTargetDataFlag = 1 << 23,
-        V8CollectableDuringMinorGCFlag = 1 << 24,
-        IsInsertionPointFlag = 1 << 25,
-        IsInShadowTreeFlag = 1 << 26,
-        IsCustomElement = 1 << 27,
+        InNamedFlowFlag = 1 << 18,
+        HasSyntheticAttrChildNodesFlag = 1 << 19,
+        HasCustomStyleCallbacksFlag = 1 << 20,
+        HasScopedHTMLStyleChildFlag = 1 << 21,
+        HasEventTargetDataFlag = 1 << 22,
+        V8CollectableDuringMinorGCFlag = 1 << 23,
+        IsInsertionPointFlag = 1 << 24,
+        IsInShadowTreeFlag = 1 << 25,
+        IsCustomElement = 1 << 26,
 
-        NotifyRendererWithIdenticalStyles = 1 << 28,
+        NotifyRendererWithIdenticalStyles = 1 << 27,
 
-        IsUpgradedCustomElement = 1 << 29,
+        IsUpgradedCustomElement = 1 << 28,
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 2 bits remaining
+    // 3 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 
@@ -771,9 +779,8 @@ protected:
         CreatePseudoElement =  CreateElement | InDocumentFlag,
         CreateShadowRoot = CreateContainer | IsDocumentFragmentFlag | IsInShadowTreeFlag,
         CreateDocumentFragment = CreateContainer | IsDocumentFragmentFlag,
-        CreateStyledElement = CreateElement | IsStyledElementFlag, 
-        CreateHTMLElement = CreateStyledElement | IsHTMLFlag,
-        CreateSVGElement = CreateStyledElement | IsSVGFlag,
+        CreateHTMLElement = CreateElement | IsHTMLFlag,
+        CreateSVGElement = CreateElement | IsSVGFlag,
         CreateDocument = CreateContainer | InDocumentFlag,
         CreateInsertionPoint = CreateHTMLElement | IsInsertionPointFlag,
         CreateEditingText = CreateText | HasNameOrIsEditingTextFlag,

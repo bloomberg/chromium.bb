@@ -44,7 +44,6 @@ class ElementResolveContext {
 public:
     ElementResolveContext()
         : m_element(0)
-        , m_styledElement(0)
         , m_parentNode(0)
         , m_rootElementStyle(0)
         , m_elementLinkState(NotInsideLink)
@@ -61,7 +60,6 @@ public:
     void deprecatedPartialClear()
     {
         m_element = 0;
-        m_styledElement = 0;
         m_parentNode = 0;
     }
 
@@ -69,7 +67,6 @@ public:
     bool isDocumentElement() const { return m_element && m_element == m_element->document()->documentElement(); }
 
     Element* element() const { return m_element; }
-    Element* styledElement() const { return m_styledElement; }
     const ContainerNode* parentNode() const { return m_parentNode; }
     RenderStyle* rootElementStyle() const { return m_rootElementStyle; }
     EInsideLink elementLinkState() const { return m_elementLinkState; }
@@ -78,7 +75,6 @@ public:
 
 private:
     Element* m_element;
-    Element* m_styledElement;
     ContainerNode* m_parentNode;
     RenderStyle* m_rootElementStyle;
     EInsideLink m_elementLinkState;
@@ -104,7 +100,6 @@ public:
     // These are all just pass-through methods to ElementResolveContext.
     Document* document() const { return m_elementContext.document(); }
     Element* element() const { return m_elementContext.element(); }
-    Element* styledElement() const { return m_elementContext.styledElement(); }
     const ContainerNode* parentNode() const { return m_elementContext.parentNode(); }
     RenderStyle* rootElementStyle() const { return m_elementContext.rootElementStyle(); }
     EInsideLink elementLinkState() const { return m_elementContext.elementLinkState(); }

@@ -456,17 +456,17 @@ void StyleResolver::matchAllRules(ElementRuleCollector& collector, bool matchAut
         matchUserRules(collector, false);
 
     // Now check author rules, beginning first with presentational attributes mapped from HTML.
-    if (m_state.styledElement()) {
-        collector.addElementStyleProperties(m_state.styledElement()->presentationAttributeStyle());
+    if (m_state.element()->isStyledElement()) {
+        collector.addElementStyleProperties(m_state.element()->presentationAttributeStyle());
 
         // Now we check additional mapped declarations.
         // Tables and table cells share an additional mapped rule that must be applied
         // after all attributes, since their mapped style depends on the values of multiple attributes.
-        collector.addElementStyleProperties(m_state.styledElement()->additionalPresentationAttributeStyle());
+        collector.addElementStyleProperties(m_state.element()->additionalPresentationAttributeStyle());
 
-        if (m_state.styledElement()->isHTMLElement()) {
+        if (m_state.element()->isHTMLElement()) {
             bool isAuto;
-            TextDirection textDirection = toHTMLElement(m_state.styledElement())->directionalityIfhasDirAutoAttribute(isAuto);
+            TextDirection textDirection = toHTMLElement(m_state.element())->directionalityIfhasDirAutoAttribute(isAuto);
             if (isAuto)
                 collector.matchedResult().addMatchedProperties(textDirection == LTR ? leftToRightDeclaration() : rightToLeftDeclaration());
         }
@@ -476,21 +476,23 @@ void StyleResolver::matchAllRules(ElementRuleCollector& collector, bool matchAut
     if (matchAuthorAndUserStyles)
         matchAuthorRules(collector, false);
 
-    // Now check our inline style attribute.
-    if (matchAuthorAndUserStyles && m_state.styledElement() && m_state.styledElement()->inlineStyle()) {
-        // Inline style is immutable as long as there is no CSSOM wrapper.
-        // FIXME: Media control shadow trees seem to have problems with caching.
-        bool isInlineStyleCacheable = !m_state.styledElement()->inlineStyle()->isMutable() && !m_state.styledElement()->isInShadowTree();
-        // FIXME: Constify.
-        collector.addElementStyleProperties(m_state.styledElement()->inlineStyle(), isInlineStyleCacheable);
+    if (m_state.element()->isStyledElement()) {
+        // Now check our inline style attribute.
+        if (matchAuthorAndUserStyles && m_state.element()->inlineStyle()) {
+            // Inline style is immutable as long as there is no CSSOM wrapper.
+            // FIXME: Media control shadow trees seem to have problems with caching.
+            bool isInlineStyleCacheable = !m_state.element()->inlineStyle()->isMutable() && !m_state.element()->isInShadowTree();
+            // FIXME: Constify.
+            collector.addElementStyleProperties(m_state.element()->inlineStyle(), isInlineStyleCacheable);
+        }
+
+        // Now check SMIL animation override style.
+        if (includeSMILProperties && matchAuthorAndUserStyles && m_state.element()->isSVGElement())
+            collector.addElementStyleProperties(toSVGElement(m_state.element())->animatedSMILStyleProperties(), false /* isCacheable */);
+
+        if (m_state.element()->hasActiveAnimations())
+            collector.matchedResult().isCacheable = false;
     }
-
-    // Now check SMIL animation override style.
-    if (includeSMILProperties && matchAuthorAndUserStyles && m_state.styledElement() && m_state.styledElement()->isSVGElement())
-        collector.addElementStyleProperties(toSVGElement(m_state.styledElement())->animatedSMILStyleProperties(), false /* isCacheable */);
-
-    if (m_state.styledElement() && m_state.styledElement()->hasActiveAnimations())
-        collector.matchedResult().isCacheable = false;
 }
 
 static const unsigned cStyleSearchThreshold = 10;
@@ -635,7 +637,7 @@ bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(const E
         return false;
     }
 
-    if (context.styledElement()->presentationAttributeStyle() != sharingCandidate->presentationAttributeStyle())
+    if (context.element()->presentationAttributeStyle() != sharingCandidate->presentationAttributeStyle())
         return false;
 
     if (context.element()->hasTagName(progressTag)) {
@@ -677,7 +679,7 @@ bool StyleResolver::canShareStyleWithElement(const ElementResolveContext& contex
         return false;
     if (!sharingCandidateHasIdenticalStyleAffectingAttributes(context, element))
         return false;
-    if (element->additionalPresentationAttributeStyle() != context.styledElement()->additionalPresentationAttributeStyle())
+    if (element->additionalPresentationAttributeStyle() != context.element()->additionalPresentationAttributeStyle())
         return false;
 
     if (element->hasID() && m_features.idsInRules.contains(element->idForStyleResolution().impl()))
@@ -746,29 +748,29 @@ inline Element* StyleResolver::findSiblingForStyleSharing(const ElementResolveCo
 
 RenderStyle* StyleResolver::locateSharedStyle(const ElementResolveContext& context)
 {
-    if (!context.styledElement())
+    if (!context.element() || !context.element()->isStyledElement())
         return 0;
 
     // If the element has inline style it is probably unique.
-    if (context.styledElement()->inlineStyle())
+    if (context.element()->inlineStyle())
         return 0;
-    if (context.styledElement()->isSVGElement() && toSVGElement(context.styledElement())->animatedSMILStyleProperties())
+    if (context.element()->isSVGElement() && toSVGElement(context.element())->animatedSMILStyleProperties())
         return 0;
     // Ids stop style sharing if they show up in the stylesheets.
-    if (context.styledElement()->hasID() && m_features.idsInRules.contains(context.styledElement()->idForStyleResolution().impl()))
+    if (context.element()->hasID() && m_features.idsInRules.contains(context.element()->idForStyleResolution().impl()))
         return 0;
     // Active and hovered elements always make a chain towards the document node
     // and no siblings or cousins will have the same state.
-    if (context.styledElement()->hovered())
+    if (context.element()->hovered())
         return 0;
-    if (context.styledElement()->active())
+    if (context.element()->active())
         return 0;
     // There is always only one focused element.
-    if (context.styledElement()->focused())
+    if (context.element()->focused())
         return 0;
     if (parentElementPreventsSharing(context.element()->parentElement()))
         return 0;
-    if (context.styledElement()->hasScopedHTMLStyleChild())
+    if (context.element()->hasScopedHTMLStyleChild())
         return 0;
     if (context.element() == context.document()->cssTarget())
         return 0;
@@ -790,7 +792,7 @@ RenderStyle* StyleResolver::locateSharedStyle(const ElementResolveContext& conte
     unsigned count = 0;
     unsigned visitedNodeCount = 0;
     Element* shareElement = 0;
-    Node* cousinList = context.styledElement()->nextSibling();
+    Node* cousinList = context.element()->nextSibling();
     while (cousinList) {
         shareElement = findSiblingForStyleSharing(context, cousinList, count);
         if (shareElement)
