@@ -24,6 +24,23 @@ using WebKit::WebVector;
 
 namespace content {
 
+namespace {
+
+void DidReadMetadataForCreateFileWriter(
+    const GURL& path,
+    WebKit::WebFileWriterClient* client,
+    WebKit::WebFileSystemCallbacks* callbacks,
+    const base::PlatformFileInfo& file_info) {
+  if (file_info.is_directory || file_info.size < 0) {
+    callbacks->didFail(WebKit::WebFileErrorInvalidState);
+    return;
+  }
+  callbacks->didCreateFileWriter(new WebFileWriterImpl(path, client),
+                                 file_info.size);
+}
+
+}  // namespace
+
 WebFileSystemImpl::WebFileSystemImpl() {
 }
 
@@ -128,6 +145,19 @@ void WebFileSystemImpl::readDirectory(const WebURL& path,
 WebKit::WebFileWriter* WebFileSystemImpl::createFileWriter(
     const WebURL& path, WebKit::WebFileWriterClient* client) {
   return new WebFileWriterImpl(GURL(path), client);
+}
+
+void WebFileSystemImpl::createFileWriter(
+    const WebURL& path,
+    WebKit::WebFileWriterClient* client,
+    WebKit::WebFileSystemCallbacks* callbacks) {
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->ReadMetadata(
+      GURL(path),
+      base::Bind(&DidReadMetadataForCreateFileWriter,
+                 GURL(path), client, callbacks),
+      base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
 void WebFileSystemImpl::createSnapshotFileAndReadMetadata(

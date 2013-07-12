@@ -59,6 +59,10 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
       WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual WebKit::WebFileWriter* createFileWriter(
       const WebKit::WebURL& path, WebKit::WebFileWriterClient*) OVERRIDE;
+  virtual void createFileWriter(
+      const WebKit::WebURL& path,
+      WebKit::WebFileWriterClient*,
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void createSnapshotFileAndReadMetadata(
       const WebKit::WebURL& path,
       WebKit::WebFileSystemCallbacks*);
