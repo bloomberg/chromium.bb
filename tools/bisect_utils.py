@@ -24,6 +24,24 @@ GCLIENT_SPEC_DATA = [
                            "chrome/data/dom_perf/.git",
       "src/tools/perf/data": "https://chrome-internal.googlesource.com/"
                              "chrome/tools/perf/data/.git",
+      "src/third_party/adobe/flash/binaries/ppapi/linux":
+          "https://chrome-internal.googlesource.com/"
+          "chrome/deps/adobe/flash/binaries/ppapi/linux/.git",
+      "src/third_party/adobe/flash/binaries/ppapi/linux_x64":
+          "https://chrome-internal.googlesource.com/"
+          "chrome/deps/adobe/flash/binaries/ppapi/linux_x64/.git",
+      "src/third_party/adobe/flash/binaries/ppapi/mac":
+          "https://chrome-internal.googlesource.com/"
+          "chrome/deps/adobe/flash/binaries/ppapi/mac/.git",
+      "src/third_party/adobe/flash/binaries/ppapi/mac_64":
+          "https://chrome-internal.googlesource.com/"
+          "chrome/deps/adobe/flash/binaries/ppapi/mac_64/.git",
+      "src/third_party/adobe/flash/binaries/ppapi/win":
+          "https://chrome-internal.googlesource.com/"
+          "chrome/deps/adobe/flash/binaries/ppapi/win/.git",
+      "src/third_party/adobe/flash/binaries/ppapi/win_x64":
+          "https://chrome-internal.googlesource.com/"
+          "chrome/deps/adobe/flash/binaries/ppapi/win_x64/.git",
     },
     "safesync_url": "",
   },
