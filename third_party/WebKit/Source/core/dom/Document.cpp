@@ -2098,45 +2098,39 @@ PassRefPtr<DocumentParser> Document::implicitOpen()
 
 HTMLElement* Document::body() const
 {
-    Node* de = documentElement();
-    if (!de)
+    if (!documentElement())
         return 0;
 
-    // try to prefer a FRAMESET element over BODY
-    Node* body = 0;
-    for (Node* i = de->firstChild(); i; i = i->nextSibling()) {
-        if (i->hasTagName(framesetTag))
-            return toHTMLElement(i);
-
-        if (i->hasTagName(bodyTag) && !body)
-            body = i;
+    for (Node* child = documentElement()->firstChild(); child; child = child->nextSibling()) {
+        if (child->hasTagName(framesetTag) || child->hasTagName(bodyTag))
+            return toHTMLElement(child);
     }
-    return toHTMLElement(body);
+
+    return 0;
 }
 
 void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionCode& ec)
 {
     RefPtr<HTMLElement> newBody = prpNewBody;
 
-    if (!newBody || !documentElement() || !newBody->hasTagName(bodyTag)) {
+    if (!newBody || !documentElement()) {
         ec = HierarchyRequestError;
         return;
     }
 
-    if (newBody->document() && newBody->document() != this) {
-        ec = 0;
-        RefPtr<Node> node = importNode(newBody.get(), true, ec);
-        if (ec)
-            return;
-
-        newBody = toHTMLElement(node.get());
+    if (!newBody->hasTagName(bodyTag) && !newBody->hasTagName(framesetTag)) {
+        ec = HierarchyRequestError;
+        return;
     }
 
-    HTMLElement* b = body();
-    if (!b)
-        documentElement()->appendChild(newBody.release(), ec);
+    HTMLElement* oldBody = body();
+    if (oldBody == newBody)
+        return;
+
+    if (oldBody)
+        documentElement()->replaceChild(newBody.release(), oldBody, ec, AttachLazily);
     else
-        documentElement()->replaceChild(newBody.release(), b, ec);
+        documentElement()->appendChild(newBody.release(), ec, AttachLazily);
 }
 
 HTMLHeadElement* Document::head()
