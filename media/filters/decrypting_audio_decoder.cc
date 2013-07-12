@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
@@ -28,9 +29,9 @@ static inline bool IsOutOfSync(const base::TimeDelta& timestamp_1,
                                const base::TimeDelta& timestamp_2) {
   // Out of sync of 100ms would be pretty noticeable and we should keep any
   // drift below that.
-  const int64 kOutOfSyncThresholdInMicroseconds = 100000;
-  return std::abs(timestamp_1.InMicroseconds() - timestamp_2.InMicroseconds()) >
-         kOutOfSyncThresholdInMicroseconds;
+  const int64 kOutOfSyncThresholdInMilliseconds = 100;
+  return std::abs(timestamp_1.InMilliseconds() - timestamp_2.InMilliseconds()) >
+         kOutOfSyncThresholdInMilliseconds;
 }
 
 DecryptingAudioDecoder::DecryptingAudioDecoder(
@@ -45,10 +46,7 @@ DecryptingAudioDecoder::DecryptingAudioDecoder(
       key_added_while_decode_pending_(false),
       bits_per_channel_(0),
       channel_layout_(CHANNEL_LAYOUT_NONE),
-      samples_per_second_(0),
-      bytes_per_sample_(0),
-      output_timestamp_base_(kNoTimestamp()),
-      total_samples_decoded_(0) {
+      samples_per_second_(0) {
 }
 
 void DecryptingAudioDecoder::Initialize(
@@ -311,9 +309,9 @@ void DecryptingAudioDecoder::DecryptAndDecodeBuffer(
 
   // Initialize the |next_output_timestamp_| to be the timestamp of the first
   // non-EOS buffer.
-  if (output_timestamp_base_ == kNoTimestamp() && !buffer->IsEndOfStream()) {
-    DCHECK_EQ(total_samples_decoded_, 0);
-    output_timestamp_base_ = buffer->GetTimestamp();
+  if (timestamp_helper_->base_timestamp() == kNoTimestamp() &&
+      !buffer->IsEndOfStream()) {
+    timestamp_helper_->SetBaseTimestamp(buffer->GetTimestamp());
   }
 
   pending_buffer_to_decode_ = buffer;
@@ -431,8 +429,7 @@ void DecryptingAudioDecoder::OnKeyAdded() {
 void DecryptingAudioDecoder::DoReset() {
   DCHECK(init_cb_.is_null());
   DCHECK(read_cb_.is_null());
-  output_timestamp_base_ = kNoTimestamp();
-  total_samples_decoded_ = 0;
+  timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
   state_ = kIdle;
   base::ResetAndReturn(&reset_cb_).Run();
 }
@@ -442,11 +439,7 @@ void DecryptingAudioDecoder::UpdateDecoderConfig() {
   bits_per_channel_ = kSupportedBitsPerChannel;
   channel_layout_ = config.channel_layout();
   samples_per_second_ = config.samples_per_second();
-  const int kBitsPerByte = 8;
-  bytes_per_sample_ = ChannelLayoutToChannelCount(channel_layout_) *
-      bits_per_channel_ / kBitsPerByte;
-  output_timestamp_base_ = kNoTimestamp();
-  total_samples_decoded_ = 0;
+  timestamp_helper_.reset(new AudioTimestampHelper(samples_per_second_));
 }
 
 void DecryptingAudioDecoder::EnqueueFrames(
@@ -461,31 +454,19 @@ void DecryptingAudioDecoder::EnqueueFrames(
     DCHECK(!frame->end_of_stream()) << "EOS frame returned.";
     DCHECK_GT(frame->frame_count(), 0) << "Empty frame returned.";
 
-    base::TimeDelta cur_timestamp = output_timestamp_base_ +
-        NumberOfSamplesToDuration(total_samples_decoded_);
-    if (IsOutOfSync(cur_timestamp, frame->timestamp())) {
-      DVLOG(1)  << "Timestamp returned by the decoder ("
-                << frame->timestamp().InMilliseconds() << " ms)"
-                << " does not match the input timestamp and number of samples"
-                << " decoded (" << cur_timestamp.InMilliseconds() << " ms).";
+    base::TimeDelta current_time = timestamp_helper_->GetTimestamp();
+    if (IsOutOfSync(current_time, frame->timestamp())) {
+      DVLOG(1) << "Timestamp returned by the decoder ("
+               << frame->timestamp().InMilliseconds() << " ms)"
+               << " does not match the input timestamp and number of samples"
+               << " decoded (" << current_time.InMilliseconds() << " ms).";
     }
-    frame->set_timestamp(cur_timestamp);
 
-    total_samples_decoded_ += frame->frame_count();
-
-    base::TimeDelta next_timestamp = output_timestamp_base_ +
-        NumberOfSamplesToDuration(total_samples_decoded_);
-    base::TimeDelta duration = next_timestamp - cur_timestamp;
-    frame->set_duration(duration);
+    frame->set_timestamp(current_time);
+    frame->set_duration(
+        timestamp_helper_->GetFrameDuration(frame->frame_count()));
+    timestamp_helper_->AddFrames(frame->frame_count());
   }
-}
-
-base::TimeDelta DecryptingAudioDecoder::NumberOfSamplesToDuration(
-    int number_of_samples) const {
-  DCHECK(samples_per_second_);
-  return base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond *
-                                           number_of_samples /
-                                           samples_per_second_);
 }
 
 }  // namespace media

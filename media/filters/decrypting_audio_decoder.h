@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
@@ -19,6 +20,7 @@ class MessageLoopProxy;
 
 namespace media {
 
+class AudioTimestampHelper;
 class DecoderBuffer;
 class Decryptor;
 
@@ -103,9 +105,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // renderer always receives continuous frames without gaps and overlaps.
   void EnqueueFrames(const Decryptor::AudioBuffers& frames);
 
-  // Converts number of samples to duration.
-  base::TimeDelta NumberOfSamplesToDuration(int number_of_samples) const;
-
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_;
   base::WeakPtr<DecryptingAudioDecoder> weak_this_;
@@ -142,10 +141,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   ChannelLayout channel_layout_;
   int samples_per_second_;
 
-  int bytes_per_sample_;
-
-  base::TimeDelta output_timestamp_base_;
-  int total_samples_decoded_;
+  scoped_ptr<AudioTimestampHelper> timestamp_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingAudioDecoder);
 };
