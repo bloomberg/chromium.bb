@@ -163,15 +163,15 @@ def _GetTombstonesForDevice(adb, options):
 
 def main():
   parser = optparse.OptionParser()
+  parser.add_option('--device',
+                    help='The serial number of the device. If not specified '
+                         'will use all devices.')
   parser.add_option('-a', '--all-tombstones', action='store_true',
-                    dest='all_tombstones', default=False,
                     help="""Resolve symbols for all tombstones, rather than just
                          the most recent""")
   parser.add_option('-s', '--stack', action='store_true',
-                    dest='stack', default=False,
                     help='Also include symbols for stack data')
   parser.add_option('-w', '--wipe-tombstones', action='store_true',
-                    dest='wipe_tombstones', default=False,
                     help='Erase all tombstones from device after processing')
   parser.add_option('-j', '--jobs', type='int',
                     default=4,
@@ -179,7 +179,11 @@ def main():
                          'crash stacks.')
   options, args = parser.parse_args()
 
-  devices = android_commands.GetAttachedDevices()
+  if options.device:
+    devices = [options.device]
+  else:
+    devices = android_commands.GetAttachedDevices()
+
   tombstones = []
   for device in devices:
     adb = android_commands.AndroidCommands(device)
