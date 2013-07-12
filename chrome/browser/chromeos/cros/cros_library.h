@@ -9,10 +9,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace base {
-template <typename T> struct DefaultLazyInstanceTraits;
-}
-
 namespace chromeos {
 
 class NetworkLibrary;
@@ -41,11 +37,6 @@ class CrosLibrary {
   // CrosLibrary will take the ownership. The existing network library will
   // be deleted. Passing NULL will just delete the existing network library.
   void SetNetworkLibrary(NetworkLibrary* network_library);
-
-  // Note: Since we are no longer loading Libcros, we can return true here
-  // whenever the used libraries are not stub.
-  // TODO(hashimoto): Remove this method.
-  bool libcros_loaded() { return !use_stub_impl_; }
 
  private:
   explicit CrosLibrary(bool use_stub);
