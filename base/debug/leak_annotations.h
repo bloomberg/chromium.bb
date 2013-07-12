@@ -28,7 +28,7 @@
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-checker.h"
 
 #define ANNOTATE_SCOPED_MEMORY_LEAK \
-    HeapLeakChecker::Disabler heap_leak_checker_disabler
+    HeapLeakChecker::Disabler heap_leak_checker_disabler; static_cast<void>(0)
 
 #define ANNOTATE_LEAKING_OBJECT_PTR(X) \
     HeapLeakChecker::IgnoreObject(X)
@@ -50,7 +50,7 @@ class ScopedLeakSanitizerDisabler {
 };
 
 #define ANNOTATE_SCOPED_MEMORY_LEAK \
-    ScopedLeakSanitizerDisabler leak_sanitizer_disabler
+    ScopedLeakSanitizerDisabler leak_sanitizer_disabler; static_cast<void>(0)
 
 #define ANNOTATE_LEAKING_OBJECT_PTR(X) __lsan_ignore_object(X);
 
