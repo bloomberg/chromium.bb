@@ -117,8 +117,8 @@ int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
 }
 
 static int GetVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
-  FFmpegVideoDecoder* vd = static_cast<FFmpegVideoDecoder*>(s->opaque);
-  return vd->GetVideoBuffer(s, frame);
+  FFmpegVideoDecoder* decoder = static_cast<FFmpegVideoDecoder*>(s->opaque);
+  return decoder->GetVideoBuffer(s, frame);
 }
 
 static void ReleaseVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
