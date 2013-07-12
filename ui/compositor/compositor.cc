@@ -255,24 +255,12 @@ DefaultContextFactory::CreateContextCommon(Compositor* compositor,
   attrs.antialias = false;
   attrs.shareResources = true;
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebKit::WebGraphicsContext3D> context(
-      offscreen
-          ? WebGraphicsContext3DInProcessCommandBufferImpl::
-                CreateOffscreenContext(attrs)
-          : WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-                attrs, compositor->widget()));
-  if (!context)
-    return context.Pass();
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!offscreen) {
-    context->makeContextCurrent();
-    gfx::GLContext* gl_context = gfx::GLContext::GetCurrent();
-    bool vsync = !command_line->HasSwitch(switches::kDisableGpuVsync);
-    gl_context->SetSwapInterval(vsync ? 1 : 0);
-    gl_context->ReleaseCurrent(NULL);
+  if (offscreen) {
+    return WebGraphicsContext3DInProcessCommandBufferImpl::
+        CreateOffscreenContext(attrs);
   }
-  return context.Pass();
+  return WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
+      attrs, compositor->widget());
 }
 
 TestContextFactory::TestContextFactory() {}
