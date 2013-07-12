@@ -34,6 +34,7 @@ class HTMLImageLoader;
 
 class HTMLVideoElement FINAL : public HTMLMediaElement {
 public:
+    static PassRefPtr<HTMLVideoElement> create(Document* document) { return create(HTMLNames::videoTag, document, false); }
     static PassRefPtr<HTMLVideoElement> create(const QualifiedName&, Document*, bool);
 
     unsigned width() const;
