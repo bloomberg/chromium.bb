@@ -121,7 +121,7 @@ cr.define('mobile', function() {
         case SimUnlock.SIM_LOCKED_NO_PUK_TRIES_LEFT:
           $('locked-puk-no-tries-overlay').hidden = false;
           break;
-        case SimUnlock.SimUnlock.SIM_DISABLED:
+        case SimUnlock.SIM_DISABLED:
           $('sim-disabled-overlay').hidden = false;
           break;
       }
