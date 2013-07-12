@@ -198,7 +198,7 @@ def CheckCallAndFilterAndHeader(args, always=False, header=None, **kwargs):
   stdout = kwargs.setdefault('stdout', sys.stdout)
   if header is None:
     header = "\n________ running '%s' in '%s'\n" % (
-                 CommandToStr(args), kwargs.get('cwd', '.'))
+                 ' '.join(args), kwargs.get('cwd', '.'))
 
   if always:
     stdout.write(header)
