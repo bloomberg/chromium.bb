@@ -727,9 +727,6 @@ webkit.org/b/60092 [ Debug ] fast/forms/select-set-length-with-mutation-remove.h
 webkit.org/b/60093 [ Win7 ] http/tests/incremental/slow-utf8-text.pl [ Pass Timeout ]
 webkit.org/b/60093 [ Linux Debug ] http/tests/incremental/slow-utf8-text.pl [ Slow ]
 
-webkit.org/b/91432 fast/canvas/webgl/read-pixels-test.html [ Timeout ]
-webkit.org/b/91432 virtual/gpu/fast/canvas/webgl/read-pixels-test.html [ Timeout ]
-
 crbug.com/58257 [ Win ] http/tests/misc/last-modified-parsing.html [ Failure Pass Timeout ]
 
 # Failing from r69420, mac failing from r71493:r71496

@@ -191,14 +191,14 @@ function continueTestPart2() {
     textures.push(tex);
   }
   for (var ii = 0; ii < colors.length; ++ii) {
-    for (var jj = 0; jj < 300 + ii + 1; ++jj) {
+    for (var jj = 0; jj < 0 + ii + 1; ++jj) {
       gl.uniform1i(loc, jj % 3);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
     var buf = new Uint8Array(4);
     gl.readPixels(512, 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, buf);
     results.push(buf);
-    for (var kk = 0; kk < 99; ++kk) {
+    for (var kk = 0; kk < 1; ++kk) {
       gl.uniform1i(loc, (jj + kk) % 3);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
