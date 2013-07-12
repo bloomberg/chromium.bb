@@ -9,9 +9,12 @@ $reportFile = fopen("csp-report.txt.tmp", 'w');
 $httpHeaders = $_SERVER;
 ksort($httpHeaders, SORT_STRING);
 foreach ($httpHeaders as $name => $value) {
-    if ($name === "CONTENT_TYPE" || $name === "HTTP_REFERER" || $name === "REQUEST_METHOD" || $name === "HTTP_COOKIE") {
+    if ($name === "CONTENT_TYPE" || $name === "HTTP_REFERER" || $name === "REQUEST_METHOD") {
         $value = undoMagicQuotes($value);
         fwrite($reportFile, "$name: $value\n");
+    }
+    if ($name === "HTTP_COOKIE" && $_COOKIE["cspViolationReportCookie"]) {
+        fwrite($reportFile, "Cookie: cspViolationReportCookie=" . $_COOKIE["cspViolationReportCookie"] . "\n");
     }
 }
 

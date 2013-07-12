@@ -7,7 +7,7 @@
 <script>
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "/cookies/resources/setCookies.cgi", false);
-    xhr.setRequestHeader("SET-COOKIE", "hello=world;path=/");
+    xhr.setRequestHeader("SET-COOKIE", "cspViolationReportCookie=sameOrigin;path=/");
     xhr.send(null);
 </script>
 

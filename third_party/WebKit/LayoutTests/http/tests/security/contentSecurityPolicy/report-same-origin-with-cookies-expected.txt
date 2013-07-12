@@ -2,7 +2,7 @@ CONSOLE MESSAGE: Refused to load the image 'http://127.0.0.1:8000/security/resou
 
 CSP report received:
 CONTENT_TYPE: application/json
-HTTP_COOKIE: hello=world
+Cookie: cspViolationReportCookie=sameOrigin
 HTTP_REFERER: http://127.0.0.1:8000/security/contentSecurityPolicy/report-same-origin-with-cookies.html
 REQUEST_METHOD: POST
 === POST DATA ===
