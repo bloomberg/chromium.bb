@@ -17,6 +17,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
+#include "ui/base/win/hwnd_subclass.h"
 #endif
 
 namespace ui {
@@ -33,6 +34,7 @@ class PanelStackView : public NativePanelStackWindow,
                        public views::WidgetDelegateView,
                        public views::WidgetFocusChangeListener,
 #if defined(OS_WIN)
+                       public ui::HWNDMessageFilter,
                        public TaskbarWindowThumbnailerDelegateWin,
 #endif
                        public ui::AnimationDelegate {
@@ -104,6 +106,13 @@ class PanelStackView : public NativePanelStackWindow,
                                             PanelStackView* stack_window);
 
 #if defined(OS_WIN)
+  // Overridden from ui::HWNDMessageFilter:
+  virtual bool FilterMessage(HWND hwnd,
+                             UINT message,
+                             WPARAM w_param,
+                             LPARAM l_param,
+                             LRESULT* l_result) OVERRIDE;
+
   // Overridden from TaskbarWindowThumbnailerDelegateWin:
   virtual std::vector<HWND> GetSnapshotWindowHandles() const OVERRIDE;
 

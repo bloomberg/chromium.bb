@@ -52,6 +52,9 @@ PanelStackView::PanelStackView(NativePanelStackWindowDelegate* delegate)
 }
 
 PanelStackView::~PanelStackView() {
+#if defined(OS_WIN)
+  ui::HWNDSubclass::RemoveFilterFromAllTargets(this);
+#endif
 }
 
 void PanelStackView::Close() {
@@ -460,6 +463,14 @@ views::Widget* PanelStackView::CreateWindowWithBounds(const gfx::Rect& bounds) {
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
       views::HWNDForWidget(window));
+
+  // Remove the filter for old window in case that we're recreating the window.
+  ui::HWNDSubclass::RemoveFilterFromAllTargets(this);
+
+  // Listen to WM_MOVING message in order to move all panels windows on top of
+  // the background window altogether when the background window is being moved
+  // by the user.
+  ui::HWNDSubclass::AddFilterToTarget(views::HWNDForWidget(window), this);
 #endif
 
   return window;
@@ -483,6 +494,23 @@ void PanelStackView::EnsureWindowCreated() {
 }
 
 #if defined(OS_WIN)
+bool PanelStackView::FilterMessage(HWND hwnd,
+                                   UINT message,
+                                   WPARAM w_param,
+                                   LPARAM l_param,
+                                   LRESULT* l_result) {
+  switch (message) {
+    case WM_MOVING:
+      // When the background window is being moved by the user, all panels
+      // should also move.
+      gfx::Rect new_stack_bounds(*(reinterpret_cast<LPRECT>(l_param)));
+      MovePanelsBy(
+          new_stack_bounds.origin() - panels_.front()->GetBounds().origin());
+      break;
+  }
+  return false;
+}
+
 std::vector<HWND> PanelStackView::GetSnapshotWindowHandles() const {
   std::vector<HWND> native_panel_windows;
   for (Panels::const_iterator iter = panels_.begin();
