@@ -74,17 +74,21 @@ class RendererDetails : public content::NotificationObserver {
          iter != web_contents_.end(); ++iter)
       (*iter)->GetRenderViewHost()->Send(new ChromeViewMsg_GetV8HeapStats);
   }
+
   void AddWebContents(content::WebContents* content) {
     web_contents_.insert(content);
   }
+
   void Clear() {
     web_contents_.clear();
   }
-  void RemoveWebContents() {
+
+  void RemoveWebContents(base::ProcessId) {
     // We don't have to detect which content is the caller of this method.
     if (!web_contents_.empty())
       web_contents_.erase(web_contents_.begin());
   }
+
   int IsClean() {
     return web_contents_.empty();
   }
@@ -114,8 +118,7 @@ class RendererDetails : public content::NotificationObserver {
 MemoryInternalsProxy::MemoryInternalsProxy()
     : information_(new base::DictionaryValue()),
       renderer_details_(new RendererDetails(
-          base::Bind(&MemoryInternalsProxy::OnV8MemoryUpdate, this))) {
-}
+          base::Bind(&MemoryInternalsProxy::OnRendererAvailable, this))) {}
 
 void MemoryInternalsProxy::Attach(MemoryInternalsHandler* handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -127,27 +130,69 @@ void MemoryInternalsProxy::Detach() {
   handler_ = NULL;
 }
 
-void MemoryInternalsProxy::GetInfo(const base::ListValue* list) {
+void MemoryInternalsProxy::StartFetch(const base::ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_refptr<ProcessDetails> browsers(new ProcessDetails(
-      base::Bind(&MemoryInternalsProxy::OnDetailsAvailable, this)));
-  browsers->StartFetch(MemoryDetails::SKIP_USER_METRICS);
+  // Clear previous information before fetching new information.
+  information_->Clear();
+  scoped_refptr<ProcessDetails> process(new ProcessDetails(
+      base::Bind(&MemoryInternalsProxy::OnProcessAvailable, this)));
+  process->StartFetch(MemoryDetails::SKIP_USER_METRICS);
 }
 
 MemoryInternalsProxy::~MemoryInternalsProxy() {}
 
-void MemoryInternalsProxy::UpdateUIOnUIThread(const string16& update) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void MemoryInternalsProxy::RequestRendererDetails() {
+  renderer_details_->Clear();
 
-  // Don't forward updates to a destructed UI.
-  if (handler_)
-    handler_->OnUpdate(update);
+#if defined(OS_ANDROID)
+  for (TabModelList::const_iterator iter = TabModelList::begin();
+       iter != TabModelList::end(); ++iter) {
+    TabModel* model = *iter;
+    for (int i = 0; i < model->GetTabCount(); ++i)
+      renderer_details_->AddWebContents(model->GetWebContentsAt(i));
+  }
+#else
+  for (TabContentsIterator iter; !iter.done(); iter.Next())
+    renderer_details_->AddWebContents(*iter);
+#endif
+
+  renderer_details_->Request();
 }
 
-void MemoryInternalsProxy::OnV8MemoryUpdate(const base::ProcessId pid,
-                                            const size_t v8_allocated,
-                                            const size_t v8_used) {
+void MemoryInternalsProxy::OnProcessAvailable(const ProcessData& browser) {
+  base::ListValue* process_info = new ListValue();
+  base::ListValue* extension_info = new ListValue();
+  information_->Set("processes", process_info);
+  information_->Set("extensions", extension_info);
+  for (PMIIterator iter = browser.processes.begin();
+       iter != browser.processes.end(); ++iter) {
+    base::DictionaryValue* process = new DictionaryValue();
+    if (iter->renderer_type == ProcessMemoryInformation::RENDERER_EXTENSION)
+      extension_info->Append(process);
+    else
+      process_info->Append(process);
+
+    // Information from MemoryDetails.
+    process->SetInteger("pid", iter->pid);
+    process->SetString("type",
+                       ProcessMemoryInformation::GetFullTypeNameInEnglish(
+                           iter->process_type, iter->renderer_type));
+    process->SetInteger("memory_private", iter->working_set.priv);
+
+    // TODO(peria): Replace |titles| with navigation histories.
+    base::ListValue* titles = new ListValue();
+    process->Set("titles", titles);
+    for (size_t i = 0; i < iter->titles.size(); ++i)
+      titles->AppendString(iter->titles[i]);
+  }
+
+  RequestRendererDetails();
+}
+
+void MemoryInternalsProxy::OnRendererAvailable(const base::ProcessId pid,
+                                               const size_t v8_allocated,
+                                               const size_t v8_used) {
   // Do not update while no renderers are registered.
   if (renderer_details_->IsClean())
     return;
@@ -169,76 +214,28 @@ void MemoryInternalsProxy::OnV8MemoryUpdate(const base::ProcessId pid,
     break;
   }
 
-  renderer_details_->RemoveWebContents();
+  renderer_details_->RemoveWebContents(pid);
   if (renderer_details_->IsClean())
-    CallJavaScriptFunctionOnUIThread("g_main_view.onSetSnapshot", information_);
+    FinishCollection();
 }
 
-void MemoryInternalsProxy::RequestV8MemoryUpdate() {
-  renderer_details_->Clear();
-#if defined(OS_ANDROID)
-  for (TabModelList::const_iterator iter = TabModelList::begin();
-       iter != TabModelList::end(); ++iter) {
-    TabModel* model = *iter;
-    for (int i = 0; i < model->GetTabCount(); ++i)
-      renderer_details_->AddWebContents(model->GetWebContentsAt(i));
-  }
-#else
-  for (TabContentsIterator iter; !iter.done(); iter.Next())
-    renderer_details_->AddWebContents(*iter);
-#endif
-
-  // if no contents are shown, update UI.
-  if (renderer_details_->IsClean())
-    CallJavaScriptFunctionOnUIThread("g_main_view.onSetSnapshot", information_);
-
-  renderer_details_->Request();
-}
-
-void MemoryInternalsProxy::OnDetailsAvailable(const ProcessData& browser) {
-  information_->Clear();
-
+void MemoryInternalsProxy::FinishCollection() {
   // System information, which is independent from processes.
   information_->SetInteger("uptime", base::SysInfo::Uptime());
   information_->SetString("os", base::SysInfo::OperatingSystemName());
   information_->SetString("os_version",
                           base::SysInfo::OperatingSystemVersion());
 
-  base::ListValue* processes = new ListValue();
-  base::ListValue* extensions = new ListValue();
-  information_->Set("processes", processes);
-  information_->Set("extensions", extensions);
-  for (ProcessMemoryInformationList::const_iterator
-           iter = browser.processes.begin();
-       iter != browser.processes.end(); ++iter) {
-    base::DictionaryValue* process = new DictionaryValue();
-    if (iter->process_type == content::PROCESS_TYPE_RENDERER &&
-        iter->renderer_type == ProcessMemoryInformation::RENDERER_EXTENSION)
-      extensions->Append(process);
-    else
-      processes->Append(process);
-
-    // Information from MemoryDetails.
-    process->SetInteger("pid", iter->pid);
-    process->SetString("type",
-                    ProcessMemoryInformation::GetFullTypeNameInEnglish(
-                        iter->process_type, iter->renderer_type));
-    process->SetInteger("memory_private", iter->working_set.priv);
-    base::ListValue* titles = new ListValue();
-    process->Set("titles", titles);
-    for (size_t i = 0; i < iter->titles.size(); ++i)
-      titles->AppendString(iter->titles[i]);
-  }
-
-  RequestV8MemoryUpdate();
+  CallJavaScriptFunctionOnUIThread("g_main_view.onSetSnapshot", *information_);
 }
 
 void MemoryInternalsProxy::CallJavaScriptFunctionOnUIThread(
-    const std::string& function, base::Value* args) {
+    const std::string& function, const base::Value& args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::vector<const base::Value*> args_vector;
-  args_vector.push_back(args);
+  std::vector<const base::Value*> args_vector(1, &args);
   string16 update = content::WebUI::GetJavascriptCall(function, args_vector);
-  UpdateUIOnUIThread(update);
+  // Don't forward updates to a destructed UI.
+  if (handler_)
+    handler_->OnUpdate(update);
 }

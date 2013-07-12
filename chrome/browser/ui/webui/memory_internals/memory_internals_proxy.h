@@ -27,36 +27,42 @@ class MemoryInternalsProxy
  public:
   MemoryInternalsProxy();
 
-  // Register a handler and start receiving callbacks from memory internals.
+  // Registers a handler.
   void Attach(MemoryInternalsHandler* handler);
 
-  // Unregister the same and stop receiving callbacks.
+  // Unregisters a handler.
   void Detach();
 
-  // Have memory internal clients send all the data they have.
-  void GetInfo(const base::ListValue* list);
+  // Sends a message to an internal client to send all process information it
+  // knows.
+  void StartFetch(const base::ListValue* list);
 
  private:
   friend struct
       content::BrowserThread::DeleteOnThread<content::BrowserThread::UI>;
   friend class base::DeleteHelper<MemoryInternalsProxy>;
+
+  typedef ProcessMemoryInformationList::const_iterator PMIIterator;
+
   virtual ~MemoryInternalsProxy();
 
-  // Sends a message from IO thread to update UI on UI thread.
-  void UpdateUIOnUIThread(const string16& update);
+  // Enumerates all processes information, appending a few common information.
+  void OnProcessAvailable(const ProcessData& browser);
 
-  // Measure memory usage of V8.
-  void OnV8MemoryUpdate(const base::ProcessId pid,
-                        const size_t v8_allocated,
-                        const size_t v8_used);
-  void RequestV8MemoryUpdate();
+  // Measures memory usage of V8.
+  void OnRendererAvailable(const base::ProcessId pid,
+                           const size_t v8_allocated,
+                           const size_t v8_used);
 
-  // Convert memory information into DictionaryValue format.
-  void OnDetailsAvailable(const ProcessData& browser);
+  // Requests all renderer processes to get detailed memory information.
+  void RequestRendererDetails();
 
-  // Call a JavaScript function on the page. Takes ownership of |args|.
+  // Be called on finish of collection.
+  void FinishCollection();
+
+  // Calls a JavaScript function on a UI page.
   void CallJavaScriptFunctionOnUIThread(const std::string& function,
-                                        base::Value* args);
+                                        const base::Value& args);
 
   MemoryInternalsHandler* handler_;
   base::DictionaryValue* information_;

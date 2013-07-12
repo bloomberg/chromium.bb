@@ -35,7 +35,7 @@ void MemoryInternalsHandler::RegisterMessages() {
 }
 
 void MemoryInternalsHandler::OnJSUpdate(const base::ListValue* list) {
-  proxy_->GetInfo(list);
+  proxy_->StartFetch(list);
 }
 
 void MemoryInternalsHandler::OnUpdate(const string16& update) {
