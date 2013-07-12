@@ -529,7 +529,7 @@ def ValidateRegularInstruction(instruction, bitness):
     if _InstructionNameIn(
         name,
         ['mov',  # including MOVQ
-         'movbe', 'movd',
+         'movd',
          'add', 'sub', 'and', 'or', 'xor',
          'xchg', 'xadd',
          'inc', 'dec', 'neg', 'not',
@@ -542,6 +542,7 @@ def ValidateRegularInstruction(instruction, bitness):
          'prefetchw',
          'adc', 'sbb', 'bsf', 'bsr',
          'lzcnt', 'tzcnt', 'popcnt', 'crc32', 'cmpxchg',
+         'movbe',
          'movmskpd', 'movmskps', 'movnti',
          'btc', 'btr', 'bts', 'bt',
          'cmp', 'test',
@@ -593,7 +594,7 @@ def ValidateRegularInstruction(instruction, bitness):
           name, [
             'mov',  # including MOVQ
             'movabs',
-            'movbe', 'movd',
+            'movd',
             'add', 'sub', 'and', 'or', 'xor']):
       # Technically, movabs is not allowed, it's ok to accept it here, because
       # it will later be rejected because of improper memory access.
@@ -656,6 +657,7 @@ def ValidateRegularInstruction(instruction, bitness):
         name,
         ['adc', 'sbb', 'bsf', 'bsr',
          'lzcnt', 'tzcnt', 'popcnt', 'crc32', 'cmpxchg',
+         'movbe',
          'movmskpd', 'movmskps', 'movnti']):
       # Note: some versions of objdump (including one that is currently used
       # in targeted tests) decode 'tzcnt' as 'repz bsf'
