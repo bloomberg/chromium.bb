@@ -14,7 +14,7 @@
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -65,29 +65,11 @@ void SandboxedZipAnalyzer::AnalyzeInSandbox() {
     return;
   }
 
-  // TODO(asargent) we shouldn't need to do this branch here - instead
-  // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-  bool use_utility_process = content::ResourceDispatcherHost::Get() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-  if (use_utility_process) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &SandboxedZipAnalyzer::StartProcessOnIOThread, this));
-    // The file will be closed on the IO thread once it has been handed
-    // off to the child process.
-  } else {
-    zip_analyzer::Results results;
-    zip_analyzer::AnalyzeZipFile(zip_platform_file_, &results);
-    base::ClosePlatformFile(zip_platform_file_);
-    if (!BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(
-                &SandboxedZipAnalyzer::OnAnalyzeZipFileFinished, this,
-                results))) {
-      NOTREACHED();
-    }
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SandboxedZipAnalyzer::StartProcessOnIOThread, this));
+  // The file will be closed on the IO thread once it has been handed
+  // off to the child process.
 }
 
 bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
@@ -126,14 +108,19 @@ void SandboxedZipAnalyzer::StartProcessOnIOThread() {
 
 void SandboxedZipAnalyzer::OnUtilityProcessStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (utility_process_host_->GetData().handle == base::kNullProcessHandle) {
+  base::ProcessHandle utility_process =
+      content::RenderProcessHost::run_renderer_in_process() ?
+          base::GetCurrentProcessHandle() :
+          utility_process_host_->GetData().handle;
+
+  if (utility_process == base::kNullProcessHandle) {
     DLOG(ERROR) << "Child process handle is null";
   }
   utility_process_host_->Send(
       new ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection(
           IPC::GetFileHandleForProcess(
               zip_platform_file_,
-              utility_process_host_->GetData().handle,
+              utility_process,
               true /* close_source_handle */)));
 }
 

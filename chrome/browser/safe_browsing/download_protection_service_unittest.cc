@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
@@ -26,8 +27,9 @@
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/test/mock_download_item.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/x509_certificate.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -47,6 +49,7 @@ using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::_;
+using base::MessageLoop;
 using content::BrowserThread;
 namespace safe_browsing {
 namespace {
@@ -148,22 +151,23 @@ ACTION_P(CheckDownloadUrlDone, threat_type) {
 
 class DownloadProtectionServiceTest : public testing::Test {
  protected:
+  DownloadProtectionServiceTest()
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {
+  }
   virtual void SetUp() {
+    content::RenderProcessHost::SetRunRendererInProcess(true);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kSbEnableDownloadFeedback);
-    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
-                                                    &msg_loop_));
     // Start real threads for the IO and File threads so that the DCHECKs
     // to test that we're on the correct thread work.
-    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
-    ASSERT_TRUE(io_thread_->Start());
     sb_service_ = new StrictMock<FakeSafeBrowsingService>();
     sb_service_->Initialize();
     signature_util_ = new StrictMock<MockSignatureUtil>();
     download_service_ = sb_service_->download_protection_service();
     download_service_->signature_util_ = signature_util_;
     download_service_->SetEnabled(true);
-    msg_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     has_result_ = false;
 
     base::FilePath source_path;
@@ -182,8 +186,7 @@ class DownloadProtectionServiceTest : public testing::Test {
     // tasks currently running.
     FlushThreadMessageLoops();
     sb_service_ = NULL;
-    io_thread_.reset();
-    ui_thread_.reset();
+    content::RenderProcessHost::SetRunRendererInProcess(false);
   }
 
   bool RequestContainsResource(const ClientDownloadRequest& request,
@@ -219,7 +222,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   void FlushThreadMessageLoops() {
     BrowserThread::GetBlockingPool()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
-    msg_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Proxy for private method.
@@ -277,7 +280,7 @@ class DownloadProtectionServiceTest : public testing::Test {
         FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
                    base::Unretained(this), thread));
-    msg_loop_.Run();
+    MessageLoop::current()->Run();
   }
 
  public:
@@ -285,7 +288,7 @@ class DownloadProtectionServiceTest : public testing::Test {
       DownloadProtectionService::DownloadCheckResult result) {
     result_ = result;
     has_result_ = true;
-    msg_loop_.Quit();
+    MessageLoop::current()->Quit();
   }
 
   void SyncCheckDoneCallback(
@@ -313,11 +316,9 @@ class DownloadProtectionServiceTest : public testing::Test {
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
   scoped_refptr<MockSignatureUtil> signature_util_;
   DownloadProtectionService* download_service_;
-  base::MessageLoop msg_loop_;
   DownloadProtectionService::DownloadCheckResult result_;
   bool has_result_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::FilePath testdata_path_;
 };
 
@@ -338,7 +339,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(&item);
 
@@ -353,7 +354,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 }
 
@@ -384,7 +385,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 
   // Check that the referrer is matched against the whitelist.
@@ -394,7 +395,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 }
 
@@ -432,7 +433,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 }
 
@@ -474,7 +475,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 
   // Invalid response should be safe too.
@@ -488,7 +489,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   std::string feedback_ping;
   std::string feedback_response;
@@ -506,7 +507,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
       item, &feedback_ping, &feedback_response));
 #if defined(OS_WIN)
@@ -526,7 +527,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNCOMMON));
   EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
@@ -551,7 +552,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS_HOST));
   EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
@@ -599,7 +600,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
@@ -653,7 +654,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(sb_service_.get());
   Mock::VerifyAndClearExpectations(signature_util_.get());
@@ -672,7 +673,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(signature_util_.get());
 
@@ -688,7 +689,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
@@ -728,7 +729,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(sb_service_.get());
   Mock::VerifyAndClearExpectations(signature_util_.get());
@@ -776,7 +777,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 }
 
@@ -816,7 +817,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
 
 #if !defined(OS_WIN)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(NULL, fetcher);
 #else
@@ -851,7 +852,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
 #endif
 }
 
@@ -892,7 +893,7 @@ TEST_F(DownloadProtectionServiceTest,
 
 #if !defined(OS_WIN)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(NULL, fetcher);
 #else
@@ -922,7 +923,7 @@ TEST_F(DownloadProtectionServiceTest,
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
 #endif
 }
 
@@ -948,7 +949,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
       item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(sb_service_.get());
 
@@ -960,7 +961,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
       item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(sb_service_.get());
 
@@ -973,7 +974,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
       item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   Mock::VerifyAndClearExpectations(sb_service_.get());
 
@@ -987,7 +988,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
       item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 }
 
@@ -1026,7 +1027,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
 
   // The request should time out because the HTTP request hasn't returned
   // anything yet.
-  msg_loop_.Run();
+  MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 }
 
