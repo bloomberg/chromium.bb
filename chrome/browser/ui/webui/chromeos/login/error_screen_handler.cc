@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time/time.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {

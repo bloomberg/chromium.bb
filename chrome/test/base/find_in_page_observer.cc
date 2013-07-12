@@ -4,8 +4,8 @@
 
 #include "chrome/test/base/find_in_page_observer.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/test/test_utils.h"
 
 namespace ui_test_utils {

@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_win.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "win8/util/win8_util.h"
 

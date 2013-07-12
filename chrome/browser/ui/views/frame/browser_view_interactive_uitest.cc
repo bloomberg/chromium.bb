@@ -29,7 +29,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"

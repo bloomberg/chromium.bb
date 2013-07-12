@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/accessibility/accessibility_types.h"

@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class PrefRegistrySimple;
