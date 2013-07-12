@@ -294,6 +294,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindProperty("titleTextDirection", &m_titleTextDirection);
     bindProperty("platformName", &m_platformName);
     bindProperty("tooltipText", &m_tooltipText);
+    bindProperty("disableNotifyDone", &m_disableNotifyDone);
 
     // webHistoryItemCount is used by tests in LayoutTests\http\tests\history
     bindProperty("webHistoryItemCount", &m_webHistoryItemCount);
@@ -415,6 +416,7 @@ void TestRunner::reset()
     m_interceptPostMessage.set(false);
     m_platformName.set("chromium");
     m_tooltipText.set("");
+    m_disableNotifyDone.set(false);
 
     m_userStyleSheetLocation = WebURL();
 
@@ -751,6 +753,9 @@ void TestRunner::waitUntilDone(const CppArgumentList&, CppVariant* result)
 
 void TestRunner::notifyDone(const CppArgumentList&, CppVariant* result)
 {
+    if (m_disableNotifyDone.toBoolean())
+        return;
+
     // Test didn't timeout. Kill the timeout timer.
     taskList()->revokeAll();
 
