@@ -941,7 +941,7 @@ bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionCode& ec)
 
     // FIXME: We should be using hasTagName instead but Windows port doesn't link QualifiedNames properly.
     if (textField->tagName() == "TEXTAREA")
-        return static_cast<HTMLTextAreaElement*>(textField)->lastChangeWasUserEdit();
+        return toHTMLTextAreaElement(textField)->lastChangeWasUserEdit();
 
     ec = InvalidNodeTypeError;
     return false;

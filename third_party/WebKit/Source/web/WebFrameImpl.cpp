@@ -133,6 +133,7 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -2292,7 +2293,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         Node* node = m_activeMatch->firstNode();
         if (node && node->isInShadowTree()) {
             Node* host = node->deprecatedShadowAncestorNode();
-            if (host->hasTagName(HTMLNames::inputTag) || host->hasTagName(HTMLNames::textareaTag))
+            if (host->hasTagName(HTMLNames::inputTag) || isHTMLTextAreaElement(host))
                 node = host;
         }
         for (; node; node = node->parentNode()) {

@@ -82,6 +82,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/track/WebVTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/CachedDocument.h"
@@ -1524,7 +1525,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         style->setZIndex(0);
 
     // Textarea considers overflow visible as auto.
-    if (e && e->hasTagName(textareaTag)) {
+    if (e && isHTMLTextAreaElement(e)) {
         style->setOverflowX(style->overflowX() == OVISIBLE ? OAUTO : style->overflowX());
         style->setOverflowY(style->overflowY() == OVISIBLE ? OAUTO : style->overflowY());
     }

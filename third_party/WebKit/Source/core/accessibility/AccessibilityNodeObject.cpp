@@ -201,7 +201,7 @@ AccessibilityRole AccessibilityNodeObject::determineAccessibilityRole()
         HTMLSelectElement* selectElement = toHTMLSelectElement(node());
         return selectElement->multiple() ? ListBoxRole : PopUpButtonRole;
     }
-    if (node()->hasTagName(textareaTag))
+    if (isHTMLTextAreaElement(node()))
         return TextAreaRole;
     if (headingLevel())
         return HeadingRole;
@@ -582,7 +582,7 @@ bool AccessibilityNodeObject::isNativeTextControl() const
     if (!node)
         return false;
 
-    if (node->hasTagName(textareaTag))
+    if (isHTMLTextAreaElement(node))
         return true;
 
     if (node->hasTagName(inputTag)) {
@@ -697,7 +697,7 @@ bool AccessibilityNodeObject::isReadOnly() const
     if (!node)
         return true;
 
-    if (node->hasTagName(textareaTag))
+    if (isHTMLTextAreaElement(node))
         return toHTMLFormControlElement(node)->isReadOnly();
 
     if (node->hasTagName(inputTag)) {
@@ -831,7 +831,7 @@ String AccessibilityNodeObject::text() const
     if (!node)
         return String();
 
-    if (isNativeTextControl() && (node->hasTagName(textareaTag) || node->hasTagName(inputTag)))
+    if (isNativeTextControl() && (isHTMLTextAreaElement(node) || node->hasTagName(inputTag)))
         return toHTMLTextFormControlElement(node)->value();
 
     if (!node->isElementNode())

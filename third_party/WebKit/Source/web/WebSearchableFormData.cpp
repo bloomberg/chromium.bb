@@ -42,6 +42,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/platform/network/FormDataBuilder.h"
@@ -166,7 +167,7 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
         if (control->isDisabledFormControl() || control->name().isNull())
             continue;
 
-        if (!IsInDefaultState(control) || control->hasTagName(HTMLNames::textareaTag))
+        if (!IsInDefaultState(control) || isHTMLTextAreaElement(control))
             return 0;
 
         if (control->hasTagName(HTMLNames::inputTag) && control->willValidate()) {

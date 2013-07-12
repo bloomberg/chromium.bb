@@ -2288,8 +2288,8 @@ WebTextInputType WebViewImpl::textInputType()
         return WebTextInputTypeNone;
     }
 
-    if (node->hasTagName(HTMLNames::textareaTag)) {
-        if (static_cast<HTMLTextAreaElement*>(node)->isDisabledOrReadOnly())
+    if (isHTMLTextAreaElement(node)) {
+        if (toHTMLTextAreaElement(node)->isDisabledOrReadOnly())
             return WebTextInputTypeNone;
         return WebTextInputTypeTextArea;
     }

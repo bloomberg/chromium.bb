@@ -44,6 +44,7 @@
 #include "core/editing/htmlediting.h" // For firstPositionInOrBeforeNode
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
@@ -558,7 +559,7 @@ static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFram
     Node* selectionStartNode = s->selection().start().deprecatedNode();
     if (selectionStartNode == newFocusedNode || selectionStartNode->isDescendantOf(newFocusedNode) || selectionStartNode->deprecatedShadowAncestorNode() == newFocusedNode)
         return;
-        
+
     if (Node* mousePressNode = newFocusedFrame->eventHandler()->mousePressNode()) {
         if (mousePressNode->renderer() && !mousePressNode->canStartSelection()) {
             // Don't clear the selection for contentEditable elements, but do clear it for input and textarea. See bug 38696.
@@ -567,12 +568,12 @@ static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFram
                 return;
 
             if (Node* shadowAncestorNode = root->deprecatedShadowAncestorNode()) {
-                if (!shadowAncestorNode->hasTagName(inputTag) && !shadowAncestorNode->hasTagName(textareaTag))
+                if (!shadowAncestorNode->hasTagName(inputTag) && !isHTMLTextAreaElement(shadowAncestorNode))
                     return;
             }
         }
     }
-    
+
     s->clear();
 }
 

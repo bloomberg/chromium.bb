@@ -34,6 +34,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
@@ -385,7 +386,7 @@ bool HitTestResult::isContentEditable() const
     if (!m_innerNonSharedNode)
         return false;
 
-    if (m_innerNonSharedNode->hasTagName(textareaTag))
+    if (isHTMLTextAreaElement(m_innerNonSharedNode.get()))
         return true;
 
     if (m_innerNonSharedNode->hasTagName(inputTag))
