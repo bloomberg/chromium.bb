@@ -148,11 +148,18 @@ PickerIndicatorElement* BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorE
     return toPickerIndicatorElement(elementById(ShadowElementNames::pickerIndicator()));
 }
 
+inline bool BaseMultipleFieldsDateAndTimeInputType::containsFocusedShadowElement() const
+{
+    return element()->userAgentShadowRoot()->contains(element()->document()->focusedNode());
+}
+
 void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
 {
     // We don't need to call blur(). This function is called when control
     // lost focus.
 
+    if (containsFocusedShadowElement())
+        return;
     RefPtr<HTMLInputElement> protector(element());
     // Remove focus ring by CSS "focus" pseudo class.
     element()->setFocus(false);
@@ -163,6 +170,8 @@ void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
     // We don't need to call focus(). This function is called when control
     // got focus.
 
+    if (!containsFocusedShadowElement())
+        return;
     // Add focus ring by CSS "focus" pseudo class.
     // FIXME: Setting the focus flag to non-focused element is too tricky.
     element()->setFocus(true);
@@ -355,7 +364,7 @@ void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
 
     // If a field element has focus, set focus back to the <input> itself before
     // deleting the field. This prevents unnecessary focusout/blur events.
-    if (element()->focused())
+    if (containsFocusedShadowElement())
         element()->focus();
 
     BaseDateAndTimeInputType::destroyShadowSubtree();
