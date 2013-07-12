@@ -345,7 +345,7 @@ cr.define('print_preview', function() {
           numberFormatSymbols[1] || '.',
           unitType,
           initialSettings['previewModifiable'] || false,
-          initialSettings['initiatorTitle'] || '',
+          initialSettings['initiatorTabTitle'] || '',
           initialSettings['documentHasSelection'] || false,
           initialSettings['shouldPrintSelectionOnly'] || false,
           initialSettings['printerName'] || null,
@@ -417,7 +417,7 @@ cr.define('print_preview', function() {
     /**
      * Called from the C++ layer.
      * Take the PDF data handed to us and submit it to the cloud, closing the
-     * print preview dialog once the upload is successful.
+     * print preview tab once the upload is successful.
      * @param {string} data Data to send as the print job.
      * @private
      */
@@ -430,7 +430,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called from PrintPreviewUI::OnFileSelectionCancelled to notify the print
-     * preview dialog regarding the file selection cancel event.
+     * preview tab regarding the file selection cancel event.
      * @private
      */
     onFileSelectionCancelled_: function() {
@@ -439,12 +439,12 @@ cr.define('print_preview', function() {
 
     /**
      * Called from PrintPreviewUI::OnFileSelectionCompleted to notify the print
-     * preview dialog regarding the file selection completed event.
+     * preview tab regarding the file selection completed event.
      * @private
      */
     onFileSelectionCompleted_: function() {
-      // If the file selection is completed and the dialog is not already closed
-      // it means that a pending print to pdf request exists.
+      // If the file selection is completed and the tab is not already closed it
+      // means that a pending print to pdf request exists.
       cr.dispatchSimpleEvent(
           this, NativeLayer.EventType.FILE_SELECTION_COMPLETE);
     },
