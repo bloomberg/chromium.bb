@@ -204,11 +204,6 @@ HTMLElement* HTMLInputElement::speechButtonElement() const
 }
 #endif
 
-HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const
-{
-    return m_inputType->passwordGeneratorButtonElement();
-}
-
 HTMLElement* HTMLInputElement::sliderThumbElement() const
 {
     return m_inputType->sliderThumbElement();

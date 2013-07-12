@@ -172,9 +172,8 @@ public:
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
     virtual void setPagePopupDriver(WebCore::PagePopupDriver*) OVERRIDE;
     virtual void resetPagePopupDriver() OVERRIDE;
-
-    virtual bool isPasswordGenerationEnabled() const OVERRIDE;
-    virtual void openPasswordGenerator(WebCore::HTMLInputElement*) OVERRIDE;
+    virtual bool willAddTextFieldDecorationsTo(WebCore::HTMLInputElement*) OVERRIDE;
+    virtual void addTextFieldDecorationsTo(WebCore::HTMLInputElement*) OVERRIDE;
 
     virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, WebCore::FrameLoader::PageDismissalType) const;
 

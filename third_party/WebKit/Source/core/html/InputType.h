@@ -221,7 +221,6 @@ public:
 #if ENABLE(INPUT_SPEECH)
     virtual HTMLElement* speechButtonElement() const { return 0; }
 #endif
-    virtual HTMLElement* passwordGeneratorButtonElement() const { return 0; }
     virtual HTMLElement* sliderThumbElement() const { return 0; }
     virtual HTMLElement* sliderTrackElement() const { return 0; }
     virtual HTMLElement* placeholderElement() const;

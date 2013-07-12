@@ -33,13 +33,15 @@
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "TextFieldDecoratorImpl.h"
 #include "WebNodeCollection.h"
-#include "core/dom/NodeTraversal.h"
+#include "WebTextFieldDecoratorClient.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/html/shadow/TextFieldDecorationElement.h"
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 
@@ -250,9 +252,16 @@ WebString WebInputElement::directionForFormData() const
     return constUnwrap<HTMLInputElement>()->directionForFormData();
 }
 
-WebElement WebInputElement::passwordGeneratorButtonElement() const
+WebElement WebInputElement::decorationElementFor(WebTextFieldDecoratorClient* decoratorClient)
 {
-    return WebElement(constUnwrap<HTMLInputElement>()->passwordGeneratorButtonElement());
+    ShadowRoot* shadowRoot = unwrap<HTMLInputElement>()->youngestShadowRoot();
+    while (shadowRoot) {
+        TextFieldDecorationElement* decoration = TextFieldDecorationElement::fromShadowRoot(shadowRoot);
+        if (decoration && decoratorClient->isClientFor(decoration->textFieldDecorator()))
+            return WebElement(decoration);
+        shadowRoot = shadowRoot->olderShadowRoot();
+    }
+    return WebElement();
 }
 
 WebInputElement::WebInputElement(const PassRefPtr<HTMLInputElement>& elem)
