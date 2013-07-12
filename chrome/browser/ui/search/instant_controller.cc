@@ -489,8 +489,7 @@ void InstantController::FocusOmnibox(const content::WebContents* contents,
       browser_->FocusOmnibox(false);
       break;
     case OMNIBOX_FOCUS_NONE:
-      if (omnibox_focus_state_ != OMNIBOX_FOCUS_INVISIBLE)
-        contents->GetView()->Focus();
+      contents->GetView()->Focus();
       break;
   }
 }
