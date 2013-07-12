@@ -26,6 +26,7 @@
 
 #include "CSSPropertyNames.h"
 #include "FontFamilyNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
@@ -1534,7 +1535,7 @@ PassRefPtr<RenderStyle> CSSComputedStyleDeclaration::computeRenderStyle(CSSPrope
     Node* styledNode = this->styledNode();
     ASSERT(styledNode);
     RenderObject* renderer = styledNode->renderer();
-    if (renderer && renderer->isComposited() && AnimationController::supportsAcceleratedAnimationOfProperty(propertyID)) {
+    if (renderer && renderer->isComposited() && AnimationController::supportsAcceleratedAnimationOfProperty(propertyID) && !RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
         AnimationUpdateBlock animationUpdateBlock(renderer->animation());
         if (m_pseudoElementSpecifier && !styledNode->isPseudoElement()) {
             // FIXME: This cached pseudo style will only exist if the animation has been run at least once.

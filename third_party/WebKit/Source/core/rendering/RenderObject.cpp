@@ -1723,7 +1723,7 @@ void RenderObject::handleDynamicFloatPositionChange()
 
 void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
 {
-    if (!isText() && style)
+    if (!isText() && style && !RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         setStyle(animation()->updateAnimations(this, style.get()));
     else
         setStyle(style);

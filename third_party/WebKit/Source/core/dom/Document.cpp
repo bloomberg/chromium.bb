@@ -2211,7 +2211,7 @@ void Document::implicitClose()
     detachParser();
 
     Frame* f = frame();
-    if (f)
+    if (f && !RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         f->animation()->resumeAnimationsForDocument(this);
 
     if (f && f->script()->canExecuteScripts(NotAboutToExecuteScript)) {

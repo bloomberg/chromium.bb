@@ -386,8 +386,10 @@ unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node
 unsigned Internals::numberOfActiveAnimations() const
 {
     Frame* contextFrame = frame();
-    if (AnimationController* controller = contextFrame->animation())
-        return controller->numberOfActiveAnimations(contextFrame->document());
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+        if (AnimationController* controller = contextFrame->animation())
+            return controller->numberOfActiveAnimations(contextFrame->document());
+    }
     return 0;
 }
 
@@ -398,11 +400,13 @@ void Internals::suspendAnimations(Document* document, ExceptionCode& ec) const
         return;
     }
 
-    AnimationController* controller = document->frame()->animation();
-    if (!controller)
-        return;
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+        AnimationController* controller = document->frame()->animation();
+        if (!controller)
+            return;
 
-    controller->suspendAnimations();
+        controller->suspendAnimations();
+    }
 }
 
 void Internals::resumeAnimations(Document* document, ExceptionCode& ec) const
@@ -412,11 +416,13 @@ void Internals::resumeAnimations(Document* document, ExceptionCode& ec) const
         return;
     }
 
-    AnimationController* controller = document->frame()->animation();
-    if (!controller)
-        return;
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+        AnimationController* controller = document->frame()->animation();
+        if (!controller)
+            return;
 
-    controller->resumeAnimations();
+        controller->resumeAnimations();
+    }
 }
 
 void Internals::pauseAnimations(double pauseTime, ExceptionCode& ec)
@@ -426,7 +432,8 @@ void Internals::pauseAnimations(double pauseTime, ExceptionCode& ec)
         return;
     }
 
-    frame()->animation()->pauseAnimationsForTesting(pauseTime);
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+        frame()->animation()->pauseAnimationsForTesting(pauseTime);
 }
 
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionCode& ec) const

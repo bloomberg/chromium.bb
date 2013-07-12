@@ -2015,7 +2015,8 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
     for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree()->traverseNext()) {
         frame->view()->serviceScrollAnimations();
-        frame->animation()->serviceAnimations();
+        if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+            frame->animation()->serviceAnimations();
         if (RuntimeEnabledFeatures::webAnimationsEnabled())
             frame->document()->timeline()->serviceAnimations(monotonicAnimationStartTime);
     }

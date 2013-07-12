@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/page/Frame.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Event.h"
@@ -319,7 +320,8 @@ void Frame::clearTimers(FrameView *view, Document *document)
     if (view) {
         view->unscheduleRelayout();
         if (view->frame()) {
-            view->frame()->animation()->suspendAnimationsForDocument(document);
+            if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+                view->frame()->animation()->suspendAnimationsForDocument(document);
             view->frame()->eventHandler()->stopAutoscrollTimer();
         }
     }
