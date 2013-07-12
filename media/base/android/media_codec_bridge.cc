@@ -53,10 +53,8 @@ static const char* VideoCodecToMimeType(const VideoCodec codec) {
 
 static ScopedJavaLocalRef<jintArray> ToJavaIntArray(
     JNIEnv* env, scoped_ptr<jint[]> native_array, int size) {
-  ScopedJavaLocalRef<jintArray> j_array;
-  j_array.Reset(env, env->NewIntArray(size));
-  env->SetIntArrayRegion(j_array.obj(), 0, size,
-                         native_array.get());
+  ScopedJavaLocalRef<jintArray> j_array(env, env->NewIntArray(size));
+  env->SetIntArrayRegion(j_array.obj(), 0, size, native_array.get());
   return j_array;
 }
 
@@ -151,6 +149,7 @@ size_t MediaCodecBridge::QueueSecureInputBuffer(
       env, j_media_codec_.obj(), index, 0, j_iv.obj(), j_key_id.obj(),
       clear_array.obj(), cypher_array.obj(), subsamples_size,
       presentation_time.InMicroseconds());
+
   return size_to_copy;
 }
 
