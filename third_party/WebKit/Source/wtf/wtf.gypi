@@ -43,7 +43,6 @@
             'FastMalloc.h',
             'FilePrintStream.cpp',
             'FilePrintStream.h',
-            'FixedArray.h',
             'Float32Array.h',
             'Float64Array.h',
             'Forward.h',

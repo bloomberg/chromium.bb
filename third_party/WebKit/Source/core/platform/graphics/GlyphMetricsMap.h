@@ -30,11 +30,11 @@
 #define GlyphMetricsMap_h
 
 #include "core/platform/graphics/Glyph.h"
-#include <wtf/FixedArray.h>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/Assertions.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
@@ -55,9 +55,9 @@ public:
     }
 
 private:
-    struct GlyphMetricsPage {
+    class GlyphMetricsPage {
+    public:
         static const size_t size = 256; // Usually covers Latin-1 in a single page.
-        FixedArray<T, size> m_metrics;
 
         T metricsForGlyph(Glyph glyph) const { return m_metrics[glyph % size]; }
         void setMetricsForGlyph(Glyph glyph, const T& metrics)
@@ -66,8 +66,12 @@ private:
         }
         void setMetricsForIndex(unsigned index, const T& metrics)
         {
+            ASSERT_WITH_SECURITY_IMPLICATION(index < size);
             m_metrics[index] = metrics;
         }
+
+    private:
+        T m_metrics[size];
     };
     
     GlyphMetricsPage* locatePage(unsigned pageNumber)
