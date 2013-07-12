@@ -20,15 +20,19 @@ import time
 from pylib import android_commands
 from pylib import constants
 
-
-def LaunchHostHeartbeat():
+def KillHostHeartbeat():
   ps = subprocess.Popen(['ps', 'aux'], stdout = subprocess.PIPE)
   stdout, _ = ps.communicate()
   matches = re.findall('\\n.*host_heartbeat.*', stdout)
   for match in matches:
-    print 'An instance of host heart beart already running... will kill'
+    print 'An instance of host heart beart running... will kill'
     pid = re.findall('(\d+)', match)[1]
     subprocess.call(['kill', str(pid)])
+
+
+def LaunchHostHeartbeat():
+  # Kill if existing host_heartbeat
+  KillHostHeartbeat()
   # Launch a new host_heartbeat
   print 'Spawning host heartbeat...'
   subprocess.Popen([os.path.join(constants.DIR_SOURCE_ROOT,
@@ -53,11 +57,11 @@ def PushAndLaunchAdbReboot(devices, target):
     print '  Pushing adb_reboot ...'
     adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
                               'out/%s/adb_reboot' % target)
-    android_cmd.PushIfNeeded(adb_reboot, '/data/local/')
+    android_cmd.PushIfNeeded(adb_reboot, '/data/local/tmp/')
     # Launch adb_reboot
     print '  Launching adb_reboot ...'
     p = subprocess.Popen(['adb', '-s', device, 'shell'], stdin=subprocess.PIPE)
-    p.communicate('/data/local/adb_reboot; exit\n')
+    p.communicate('/data/local/tmp/adb_reboot; exit\n')
   LaunchHostHeartbeat()
 
 

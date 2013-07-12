@@ -14,6 +14,7 @@ import bb_utils
 import bb_annotations
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import provision_devices
 from pylib import android_commands
 from pylib import constants
 from pylib.gtest import gtest_config
@@ -251,7 +252,10 @@ def ProvisionDevices(options):
   bb_annotations.PrintNamedStep('provision_devices')
   if options.reboot:
     RebootDevices()
-  RunCmd(['build/android/provision_devices.py', '-t', options.target])
+  provision_cmd = ['build/android/provision_devices.py', '-t', options.target]
+  if options.auto_reconnect:
+    provision_cmd.append('--auto-reconnect')
+  RunCmd(provision_cmd)
 
 
 def DeviceStatusCheck(_):
@@ -379,6 +383,7 @@ def main(argv):
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
 
   MainTestWrapper(options)
+  provision_devices.KillHostHeartbeat()
 
 
 if __name__ == '__main__':

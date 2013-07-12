@@ -152,8 +152,9 @@ def GetBotStepMap():
       B('perf-tests-rel', H(std_test_steps),
         T([], ['--install=ChromiumTestShell'])),
       B('webkit-latest-webkit-tests', H(std_test_steps),
-        T(['webkit_layout', 'webkit'])),
-      B('webkit-latest-contentshell', H(compile_step), T(['webkit_layout'])),
+        T(['webkit_layout', 'webkit'], ['--auto-reconnect'])),
+      B('webkit-latest-contentshell', H(compile_step),
+        T(['webkit_layout'], ['--auto-reconnect'])),
       B('builder-unit-tests', H(compile_step), T(['unit'])),
 
       # Generic builder config (for substring match).
