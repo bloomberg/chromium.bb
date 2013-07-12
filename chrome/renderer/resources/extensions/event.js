@@ -150,6 +150,12 @@
     this.listeners_ = [];
     this.eventOptions_ = parseEventOptions(opt_eventOptions);
 
+    // Track whether the event has been destroyed to help track down the cause
+    // of http://crbug.com/258526.
+    // TODO(kalman): Delete this and replace with more sound logic that catches
+    // when events are used without being *attached*.
+    this.destroyed_ = false;
+
     if (this.eventOptions_.supportsRules && !opt_eventName)
       throw new Error("Events that support rules require an event name.");
 
@@ -298,6 +304,10 @@
   };
 
   Event.prototype.dispatch_ = function(args, listenerIDs) {
+    if (this.destroyed_) {
+      throw new Error((this.eventName_ || "(anonymous)") +
+                      ' has been destroyed');
+    }
     if (!this.eventOptions_.supportsListeners)
       throw new Error("This event does not support listeners.");
     var validationErrors = this.validateEventArgs_(args);
@@ -346,9 +356,9 @@
   };
 
   Event.prototype.destroy_ = function() {
-    this.listeners_ = [];
-    this.validateEventArgs_ = [];
-    this.detach_(false);
+    this.listeners_.length = 0;
+    this.detach_();
+    this.destroyed_ = true;
   };
 
   Event.prototype.addRules = function(rules, opt_cb) {
