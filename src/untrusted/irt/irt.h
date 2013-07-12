@@ -163,6 +163,12 @@ struct nacl_irt_futex {
   int (*futex_wake)(volatile int *addr, int nwake, int *count);
 };
 
+/*
+ * "irt-mutex" is deprecated and is disabled under PNaCl (see
+ * https://code.google.com/p/nativeclient/issues/detail?id=3484 and
+ * pnacl_irt.c).  nacl-newlib's libpthread no longer uses it.  Note,
+ * however, that nacl-glibc's futex_emulation.c still uses it.
+ */
 #define NACL_IRT_MUTEX_v0_1        "nacl-irt-mutex-0.1"
 struct nacl_irt_mutex {
   int (*mutex_create)(int *mutex_handle);
@@ -172,6 +178,12 @@ struct nacl_irt_mutex {
   int (*mutex_trylock)(int mutex_handle);
 };
 
+/*
+ * "irt-cond" is deprecated and is disabled under PNaCl (see
+ * https://code.google.com/p/nativeclient/issues/detail?id=3484 and
+ * pnacl_irt.c).  nacl-newlib's libpthread no longer uses it.  Note,
+ * however, that nacl-glibc's futex_emulation.c still uses it.
+ */
 #define NACL_IRT_COND_v0_1      "nacl-irt-cond-0.1"
 struct nacl_irt_cond {
   int (*cond_create)(int *cond_handle);
@@ -183,6 +195,14 @@ struct nacl_irt_cond {
                              const struct timespec *abstime);
 };
 
+/*
+ * The "irt-sem" interface provides semaphores.  This interface is
+ * deprecated and is disabled under PNaCl (see
+ * https://code.google.com/p/nativeclient/issues/detail?id=3484 and
+ * pnacl_irt.c).  New versions of nacl-newlib's libpthread no longer
+ * use it, and nacl-glibc has never used it.  They implement
+ * semaphores using futexes instead.
+ */
 #define NACL_IRT_SEM_v0_1       "nacl-irt-sem-0.1"
 struct nacl_irt_sem {
   int (*sem_create)(int *sem_handle, int32_t value);
@@ -197,6 +217,12 @@ struct nacl_irt_tls {
   void *(*tls_get)(void);
 };
 
+/*
+ * The "irt-blockhook" interface is disabled under PNaCl because it
+ * does not have a known-portable use case (see
+ * https://code.google.com/p/nativeclient/issues/detail?id=3539 and
+ * pnacl_irt.c).
+ */
 #define NACL_IRT_BLOCKHOOK_v0_1 "nacl-irt-blockhook-0.1"
 struct nacl_irt_blockhook {
   int (*register_block_hooks)(void (*pre)(void), void (*post)(void));
