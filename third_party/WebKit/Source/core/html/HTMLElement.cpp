@@ -494,9 +494,8 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
     // Opera also appears to disallow such usage.
 
     if (equalIgnoringCase(where, "beforeBegin")) {
-        ContainerNode* parent = this->parentNode();
-        if (parent) {
-            parent->insertBefore(newChild, this, ec);
+        if (ContainerNode* parent = this->parentNode()) {
+            parent->insertBefore(newChild, this, ec, AttachLazily);
             if (!ec)
                 return newChild;
         }
@@ -504,19 +503,18 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
     }
 
     if (equalIgnoringCase(where, "afterBegin")) {
-        insertBefore(newChild, firstChild(), ec);
+        insertBefore(newChild, firstChild(), ec, AttachLazily);
         return ec ? 0 : newChild;
     }
 
     if (equalIgnoringCase(where, "beforeEnd")) {
-        appendChild(newChild, ec);
+        appendChild(newChild, ec, AttachLazily);
         return ec ? 0 : newChild;
     }
 
     if (equalIgnoringCase(where, "afterEnd")) {
-        ContainerNode* parent = this->parentNode();
-        if (parent) {
-            parent->insertBefore(newChild, nextSibling(), ec);
+        if (ContainerNode* parent = this->parentNode()) {
+            parent->insertBefore(newChild, nextSibling(), ec, AttachLazily);
             if (!ec)
                 return newChild;
         }
@@ -537,7 +535,6 @@ Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChi
     }
 
     Node* returnValue = insertAdjacent(where, newChild, ec);
-    ASSERT_WITH_SECURITY_IMPLICATION(!returnValue || returnValue->isElementNode());
     return toElement(returnValue); 
 }
 
@@ -550,7 +547,6 @@ static Element* contextElementForInsertion(const String& where, Element* element
             ec = NoModificationAllowedError;
             return 0;
         }
-        ASSERT_WITH_SECURITY_IMPLICATION(!parent || parent->isElementNode());
         return toElement(parent);
     }
     if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
