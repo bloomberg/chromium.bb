@@ -25,7 +25,7 @@ embedder.setUpGuest_ = function() {
       '<webview style="width: 100px; height: 100px;"></webview>';
   var webview = document.querySelector('webview');
   if (!webview) {
-    chrome.test.fail('No <webview> element created');
+    embedder.test.fail('No <webview> element created');
   }
   return webview;
 };
@@ -73,6 +73,7 @@ embedder.test.assertFalse = function(condition) {
 
 function testNavigation() {
   var webview = embedder.setUpGuest_();
+
   var step = 1;
   console.log('run step: ' + step);
 
@@ -146,7 +147,7 @@ function testNavigation() {
     });
   };
 
-  // Verify that webview.go works as expected.
+  // Verify that webview.go works as expected. Test the forward key.
   var runStep7 = function() {
     step = 7;
     console.log('run step: ' + step);
@@ -189,8 +190,94 @@ function testNavigation() {
   webview.src = embedder.getHTMLForGuestWithTitle_('step1');
 }
 
+function testBackForwardKeys() {
+  var webview = embedder.setUpGuest_();
+
+  var step = 1;
+  console.log('run step: ' + step);
+
+  // Verify that canGoBack and canGoForward work as expected.
+  var runStep2 = function() {
+    step = 2;
+    console.log('run step: ' + step);
+    webview.executeScript({
+      code: 'document.title'
+    }, function(results) {
+      embedder.test.assertEq('step1', results[0]);
+      embedder.test.assertFalse(webview.canGoBack());
+      embedder.test.assertFalse(webview.canGoForward());
+      webview.src = embedder.getHTMLForGuestWithTitle_('step2');
+    });
+  };
+
+  // Verify that webview.go works as expected. Test the forward key.
+  var runStep3 = function() {
+    step = 3;
+    console.log('run step: ' + step);
+    webview.executeScript({
+      code: 'document.title'
+    }, function(results) {
+      embedder.test.assertEq('step2', results[0]);
+      embedder.test.assertTrue(webview.canGoBack());
+      embedder.test.assertFalse(webview.canGoForward());
+      // Focus the webview to make sure it gets the forward key.
+      webview.focus();
+      chrome.test.sendMessage('ReadyForBackKey');
+    });
+  };
+
+  var runStep4 = function() {
+    step = 4;
+    console.log('run step: ' + step);
+    webview.executeScript({
+      code: 'document.title'
+    }, function(results) {
+      embedder.test.assertEq('step1', results[0]);
+      embedder.test.assertFalse(webview.canGoBack());
+      embedder.test.assertTrue(webview.canGoForward());
+      chrome.test.sendMessage('ReadyForForwardKey');
+    });
+  };
+
+  var runStep5 = function() {
+    step = 5;
+    console.log('run step: ' + step);
+    webview.executeScript({
+      code: 'document.title'
+    }, function(results) {
+      embedder.test.assertEq('step2', results[0]);
+      embedder.test.assertTrue(webview.canGoBack());
+      embedder.test.assertFalse(webview.canGoForward());
+      embedder.test.succeed();
+    });
+  };
+
+  var onLoadStop = function(e) {
+    switch (step) {
+      case 1:
+        runStep2();
+        break;
+      case 2:
+        runStep3();
+        break;
+      case 3:
+        runStep4();
+        break;
+      case 4:
+        runStep5();
+        break;
+      default:
+        console.log('unexpected step: ' + step);
+        embedder.test.fail();
+    }
+  };
+  webview.addEventListener('loadstop', onLoadStop);
+  webview.src = embedder.getHTMLForGuestWithTitle_('step1');
+}
+
 embedder.test.testList = {
-  'testNavigation': testNavigation
+  'testNavigation': testNavigation,
+  'testBackForwardKeys': testBackForwardKeys
 };
 
 onload = function() {

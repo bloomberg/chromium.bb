@@ -1260,13 +1260,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationRequestGone) {
             << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Navigation) {
-  TestHelper("testNavigation",
-             "DoneNavigationTest.PASSED",
-             "DoneNavigationTest.FAILED",
-             "web_view/navigation");
-}
-
 IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(

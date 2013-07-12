@@ -579,6 +579,9 @@ void BrowserPluginGuest::HandleKeyboardEvent(
   if (UnlockMouseIfNecessary(event))
     return;
 
+  if (delegate_ && delegate_->HandleKeyboardEvent(event))
+    return;
+
   // Send the unhandled keyboard events back to the embedder to reprocess them.
   // TODO(fsamuel): This introduces the possibility of out-of-order keyboard
   // events because the guest may be arbitrarily delayed when responding to

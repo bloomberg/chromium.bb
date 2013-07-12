@@ -10,6 +10,7 @@
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -98,6 +99,38 @@ void WebViewGuest::AddMessageToConsole(int32 level,
 void WebViewGuest::Close() {
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventClose, args.Pass()));
+}
+
+bool WebViewGuest::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  if (event.type != WebKit::WebInputEvent::RawKeyDown)
+    return false;
+
+#if defined(OS_MACOSX)
+  if (event.modifiers != WebKit::WebInputEvent::MetaKey)
+    return false;
+
+  if (event.windowsKeyCode == ui::VKEY_OEM_4) {
+    Go(-1);
+    return true;
+  }
+
+  if (event.windowsKeyCode == ui::VKEY_OEM_6) {
+    Go(1);
+    return true;
+  }
+#else
+  if (event.windowsKeyCode == ui::VKEY_BROWSER_BACK) {
+    Go(-1);
+    return true;
+  }
+
+  if (event.windowsKeyCode == ui::VKEY_BROWSER_FORWARD) {
+    Go(1);
+    return true;
+  }
+#endif
+  return false;
 }
 
 void WebViewGuest::Observe(int type,

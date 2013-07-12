@@ -96,20 +96,48 @@ class WebViewInteractiveTest
 #endif
   }
 
-  void SendMouseEvent(ui_controls::MouseButton button,
-                      ui_controls::MouseButtonState state) {
-   if (first_click_) {
-     mouse_click_result_ = ui_test_utils::SendMouseEventsSync(button,
-                                                              state);
-     first_click_ = false;
-   } else {
-     ASSERT_EQ(mouse_click_result_, ui_test_utils::SendMouseEventsSync(
-         button, state));
-   }
+  void SendBackShortcutToPlatformApp() {
+#if defined(OS_MACOSX)
+    // Send Cmd+[ on MacOSX.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_OEM_4, false, false, false, true));
+#else
+    // Send browser back key on Linux/Windows.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_BROWSER_BACK,
+        false, false, false, false));
+#endif
   }
 
-  void NewWindowTestHelper(const std::string& test_name,
-                           const std::string& app_location) {
+  void SendForwardShortcutToPlatformApp() {
+#if defined(OS_MACOSX)
+    // Send Cmd+] on MacOSX.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_OEM_6, false, false, false, true));
+#else
+    // Send browser back key on Linux/Windows.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_BROWSER_FORWARD,
+        false, false, false, false));
+#endif
+  }
+
+  void SendMouseEvent(ui_controls::MouseButton button,
+                      ui_controls::MouseButtonState state) {
+    if (first_click_) {
+      mouse_click_result_ = ui_test_utils::SendMouseEventsSync(button,
+                                                                state);
+      first_click_ = false;
+    } else {
+      ASSERT_EQ(mouse_click_result_, ui_test_utils::SendMouseEventsSync(
+          button, state));
+    }
+  }
+
+  void TestHelper(const std::string& test_name,
+                  const std::string& test_passed_msg,
+                  const std::string& test_failed_msg,
+                  const std::string& app_location) {
     ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
     ExtensionTestMessageListener launched_listener("Launched", false);
     LoadAndLaunchPlatformApp(app_location.c_str());
@@ -119,13 +147,11 @@ class WebViewInteractiveTest
         GetFirstShellWindowWebContents();
     ASSERT_TRUE(embedder_web_contents);
 
-    ExtensionTestMessageListener done_listener("DoneNewWindowTest.PASSED",
-                                               false);
-    done_listener.AlsoListenForFailureMessage("DoneNewWindowTest.FAILED");
+    ExtensionTestMessageListener done_listener(test_passed_msg, false);
+    done_listener.AlsoListenForFailureMessage(test_failed_msg);
     EXPECT_TRUE(content::ExecuteScript(
                     embedder_web_contents,
-                    base::StringPrintf("runNewWindowTest('%s')",
-                                       test_name.c_str())));
+                    base::StringPrintf("runTest('%s')", test_name.c_str())));
     ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
@@ -480,32 +506,53 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommandsNoMenu) {
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_NewWindowNameTakesPrecedence) {
-  NewWindowTestHelper("testNewWindowNameTakesPrecedence", "web_view/newwindow");
+  TestHelper("testNewWindowNameTakesPrecedence",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_WebViewNameTakesPrecedence) {
-  NewWindowTestHelper("testWebViewNameTakesPrecedence", "web_view/newwindow");
+  TestHelper("testWebViewNameTakesPrecedence",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_NoName) {
-  NewWindowTestHelper("testNoName", "web_view/newwindow");
+  TestHelper("testNoName",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Redirect) {
-  NewWindowTestHelper("testNewWindowRedirect", "web_view/newwindow");
+  TestHelper("testNewWindowRedirect",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Close) {
-  NewWindowTestHelper("testNewWindowClose", "web_view/newwindow");
+  TestHelper("testNewWindowClose",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_ExecuteScript) {
-  NewWindowTestHelper("testNewWindowExecuteScript", "web_view/newwindow");
+  TestHelper("testNewWindowExecuteScript",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_WebRequest) {
-  NewWindowTestHelper("testNewWindowWebRequest", "web_view/newwindow");
+  TestHelper("testNewWindowWebRequest",
+             "DoneNewWindowTest.PASSED",
+             "DoneNewWindowTest.FAILED",
+             "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
@@ -564,3 +611,46 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
   run_loop.Run();
 }
 #endif  // (defined(OS_CHROMEOS))
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation) {
+  TestHelper("testNavigation",
+             "DoneNavigationTest.PASSED",
+             "DoneNavigationTest.FAILED",
+             "web_view/navigation");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  LoadAndLaunchPlatformApp("web_view/navigation");
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      GetPlatformAppWindow()));
+  // Flush any pending events to make sure we start with a clean slate.
+  content::RunAllPendingInMessageLoop();
+
+  content::WebContents* embedder_web_contents =
+      GetFirstShellWindowWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+
+  ExtensionTestMessageListener done_listener(
+      "DoneNavigationTest.PASSED", false);
+  done_listener.AlsoListenForFailureMessage("DoneNavigationTest.FAILED");
+  ExtensionTestMessageListener ready_back_key_listener(
+      "ReadyForBackKey", false);
+  ExtensionTestMessageListener ready_forward_key_listener(
+      "ReadyForForwardKey", false);
+
+  EXPECT_TRUE(content::ExecuteScript(
+                  embedder_web_contents,
+                  "runTest('testBackForwardKeys')"));
+
+  ASSERT_TRUE(ready_back_key_listener.WaitUntilSatisfied());
+  SendBackShortcutToPlatformApp();
+
+  ASSERT_TRUE(ready_forward_key_listener.WaitUntilSatisfied());
+  SendForwardShortcutToPlatformApp();
+
+  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+}

@@ -7,7 +7,7 @@ embedder.test = {};
 embedder.baseGuestURL = '';
 embedder.guestURL = '';
 
-window.runNewWindowTest = function(testName) {
+window.runTest = function(testName) {
   if (!embedder.test.testList[testName]) {
     console.log('Incorrect testName: ' + testName);
     embedder.test.fail();
