@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -105,6 +106,7 @@ struct MessageService::OpenChannelParams {
 namespace {
 
 static base::StaticAtomicSequenceNumber g_next_channel_id;
+static base::StaticAtomicSequenceNumber g_channel_id_overflow_count;
 
 static content::RenderProcessHost* GetExtensionProcess(
     Profile* profile, const std::string& extension_id) {
@@ -128,9 +130,17 @@ content::RenderProcessHost*
 
 // static
 void MessageService::AllocatePortIdPair(int* port1, int* port2) {
-  int channel_id = g_next_channel_id.GetNext();
-  int port1_id = channel_id * 2;
-  int port2_id = channel_id * 2 + 1;
+  unsigned channel_id =
+      static_cast<unsigned>(g_next_channel_id.GetNext()) % (kint32max/2);
+
+  if (channel_id == 0) {
+    int overflow_count = g_channel_id_overflow_count.GetNext();
+    if (overflow_count > 0)
+      UMA_HISTOGRAM_BOOLEAN("Extensions.AllocatePortIdPairOverflow", true);
+  }
+
+  unsigned port1_id = channel_id * 2;
+  unsigned port2_id = channel_id * 2 + 1;
 
   // Sanity checks to make sure our channel<->port converters are correct.
   DCHECK(IS_OPENER_PORT_ID(port1_id));

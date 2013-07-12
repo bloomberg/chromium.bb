@@ -2374,6 +2374,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.AllocatePortIdPairOverflow">
+  <summary>
+    Records when the allocation of IDs for chrome.runtime.Port overflows.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.APIUse_RelativeURL" enum="UrlResolutionResult">
   <summary>
     Captures the results of URL resolution when relative urls are used in the
