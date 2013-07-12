@@ -106,8 +106,8 @@ std::string AudioDevice::ToString() const {
                       "is_input = %s ",
                       is_input ? "true" : "false");
   base::StringAppendF(&result,
-                      "id = %s ",
-                      base::Uint64ToString(id).c_str());
+                      "id = 0x%"PRIx64" ",
+                      id);
   base::StringAppendF(&result,
                       "display_name = %s ",
                       display_name.c_str());

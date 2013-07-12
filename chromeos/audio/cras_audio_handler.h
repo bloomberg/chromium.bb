@@ -177,9 +177,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
  private:
   // Overriden from CrasAudioClient::Observer.
   virtual void AudioClientRestarted() OVERRIDE;
-  virtual void OutputVolumeChanged(int volume) OVERRIDE;
   virtual void OutputMuteChanged(bool mute_on) OVERRIDE;
-  virtual void InputGainChanged(int gain) OVERRIDE;
   virtual void InputMuteChanged(bool mute_on) OVERRIDE;
   virtual void NodesChanged() OVERRIDE;
   virtual void ActiveOutputNodeChanged(uint64 node_id) OVERRIDE;
@@ -203,15 +201,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // change notification is received.
   void ApplyAudioPolicy();
 
-  // Sets output volume to specified value of |volume|.
-  void SetOutputVolumeInternal(int volume);
+  // Sets output volume of |node_id| to |volume|.
+  void SetOutputNodeVolume(uint64 node_id, int volume);
 
   // Sets output mute state to |mute_on| internally, returns true if output mute
   // is set.
   bool SetOutputMuteInternal(bool mute_on);
 
-  // Sets output volume to specified value and notifies observers.
-  void SetInputGainInternal(int gain);
+  // Sets input gain of |node_id| to |gain|.
+  void SetInputNodeGain(uint64 node_id, int gain);
 
   // Sets input mute state to |mute_on| internally, returns true if input mute
   // is set.
@@ -223,6 +221,11 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Updates the current audio nodes list and switches the active device
   // if needed.
   void UpdateDevicesAndSwitchActive(const AudioNodeList& nodes);
+
+  // Returns true if *|current_active_node_id| device is changed to
+  // |new_active_device|.
+  bool ChangeActiveDevice(const AudioDevice& new_active_device,
+                          uint64* current_active_node_id);
 
   void SwitchToDevice(const AudioDevice& device);
 

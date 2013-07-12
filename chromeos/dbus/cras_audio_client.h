@@ -14,7 +14,7 @@
 
 namespace dbus {
 class Bus;
-}  // namespace
+}
 
 namespace chromeos {
 
@@ -28,14 +28,8 @@ class CHROMEOS_EXPORT CrasAudioClient {
     // cros device powers up or restarted.
     virtual void AudioClientRestarted();
 
-    // Called when audio output device volume changed to new value of |volume|.
-    virtual void OutputVolumeChanged(int volume);
-
     // Called when audio output mute state changed to new state of |mute_on|.
     virtual void OutputMuteChanged(bool mute_on);
-
-    // Called when audio input gain changes to new value of |gain|.
-    virtual void InputGainChanged(int gain);
 
     // Called when audio input mute state changed to new state of |mute_on|.
     virtual void InputMuteChanged(bool mute_on);
@@ -78,14 +72,16 @@ class CHROMEOS_EXPORT CrasAudioClient {
   // Gets an array of audio input and output nodes.
   virtual void GetNodes(const GetNodesCallback& callback) = 0;
 
-  // Sets output volume to |volume|, in the range of [0, 100].
-  virtual void  SetOutputVolume(int32 volume) = 0;
+  // Sets output volume of the given |node_id| to |volume|, in the rage of
+  // [0, 100].
+  virtual void SetOutputNodeVolume(uint64 node_id, int32 volume) = 0;
 
   // Sets output mute from user action.
   virtual void SetOutputUserMute(bool mute_on) = 0;
 
-  // Sets input gain to |input_gain|. |input_gain| is specified in dBFS * 100.
-  virtual void SetInputGain(int32 input_gain) = 0;
+  // Sets input gain of the given |node_id| to |gain|, in the range of
+  // [0, 100].
+  virtual void SetInputNodeGain(uint64 node_id, int32 gain) = 0;
 
   // Sets input mute state to |mute_on| value.
   virtual void SetInputMute(bool mute_on) = 0;

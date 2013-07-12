@@ -22,7 +22,7 @@ using api::audio::OutputDeviceInfo;
 using api::audio::InputDeviceInfo;
 
 class AudioServiceImpl : public AudioService,
-                         public chromeos::CrasAudioHandler::Observer {
+                         public chromeos::CrasAudioHandler::AudioObserver {
  public:
   AudioServiceImpl();
   virtual ~AudioServiceImpl();
@@ -40,14 +40,14 @@ class AudioServiceImpl : public AudioService,
                                    int gain) OVERRIDE;
 
  protected:
-  // chromeos::CrasAudioClient::Observer overrides.
-  virtual void OutputVolumeChanged(int volume) OVERRIDE;
-  virtual void OutputMuteChanged(bool mute_on) OVERRIDE;
-  virtual void InputGainChanged(int gain) OVERRIDE;
-  virtual void InputMuteChanged(bool mute_on) OVERRIDE;
-  virtual void NodesChanged() OVERRIDE;
-  virtual void ActiveOutputNodeChanged(uint64 node_id) OVERRIDE;
-  virtual void ActiveInputNodeChanged(uint64 node_id) OVERRIDE;
+  // chromeos::CrasAudioHandler::AudioObserver overrides.
+  virtual void OnOutputVolumeChanged() OVERRIDE;
+  virtual void OnInputGainChanged() OVERRIDE;
+  virtual void OnOutputMuteChanged() OVERRIDE;
+  virtual void OnInputMuteChanged() OVERRIDE;
+  virtual void OnAudioNodesChanged() OVERRIDE;
+  virtual void OnActiveOutputNodeChanged() OVERRIDE;
+  virtual void OnActiveInputNodeChanged() OVERRIDE;
 
  private:
   void NotifyDeviceChanged();
@@ -81,16 +81,17 @@ AudioServiceImpl::AudioServiceImpl()
       chromeos::DBusThreadManager::Get()) {
     cras_audio_client_ =
         chromeos::DBusThreadManager::Get()->GetCrasAudioClient();
-    if (cras_audio_client_)
-      cras_audio_client_->AddObserver(this);
-    if (chromeos::CrasAudioHandler::IsInitialized())
+    if (chromeos::CrasAudioHandler::IsInitialized()) {
       cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
+      cras_audio_handler_->AddAudioObserver(this);
+    }
   }
 }
 
 AudioServiceImpl::~AudioServiceImpl() {
-  if (cras_audio_client_)
-    cras_audio_client_->RemoveObserver(this);
+  if (cras_audio_handler_ && chromeos::CrasAudioHandler::IsInitialized()) {
+    cras_audio_handler_->RemoveAudioObserver(this);
+  }
 }
 
 void AudioServiceImpl::AddObserver(AudioService::Observer* observer) {
@@ -215,31 +216,31 @@ uint64 AudioServiceImpl::GetIdFromStr(const std::string& id_str) {
     return device_id;
 }
 
-void AudioServiceImpl::OutputVolumeChanged(int volume) {
+void AudioServiceImpl::OnOutputVolumeChanged() {
   NotifyDeviceChanged();
 }
 
-void AudioServiceImpl::OutputMuteChanged(bool mute_on) {
+void AudioServiceImpl::OnOutputMuteChanged() {
   NotifyDeviceChanged();
 }
 
-void AudioServiceImpl::InputGainChanged(int gain) {
+void AudioServiceImpl::OnInputGainChanged() {
   NotifyDeviceChanged();
 }
 
-void AudioServiceImpl::InputMuteChanged(bool mute_on) {
+void AudioServiceImpl::OnInputMuteChanged() {
   NotifyDeviceChanged();
 }
 
-void AudioServiceImpl::NodesChanged() {
+void AudioServiceImpl::OnAudioNodesChanged() {
   NotifyDeviceChanged();
 }
 
-void AudioServiceImpl::ActiveOutputNodeChanged(uint64 node_id) {
+void AudioServiceImpl::OnActiveOutputNodeChanged() {
   NotifyDeviceChanged();
 }
 
-void AudioServiceImpl::ActiveInputNodeChanged(uint64 node_id) {
+void AudioServiceImpl::OnActiveInputNodeChanged() {
   NotifyDeviceChanged();
 }
 
