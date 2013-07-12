@@ -2271,7 +2271,7 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
       compositor->SetLatencyInfo(software_latency_info_);
       software_latency_info_.Clear();
     }
-  } else if (aura::Env::GetInstance()->render_white_bg()) {
+  } else {
     // For non-opaque windows, we don't draw anything, since we depend on the
     // canvas coming from the compositor to already be initialized as
     // transparent.

@@ -61,7 +61,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event_utils.h"
@@ -217,9 +216,6 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   initialize_webui_hidden_ =
       kHiddenWebUIInitializationDefault && !zero_delay_enabled;
-
-  // Prevents white flashing on OOBE (http://crbug.com/131569).
-  aura::Env::GetInstance()->set_render_white_bg(false);
 
   // Check if WebUI init type is overriden.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshWebUIInit)) {

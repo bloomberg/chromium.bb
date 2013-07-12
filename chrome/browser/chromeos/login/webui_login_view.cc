@@ -36,7 +36,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/aura/env.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/webview/webview.h"
@@ -464,11 +463,8 @@ void WebUILoginView::OnLoginPromptVisible() {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         EmitLoginPromptVisible();
   }
-  login_prompt_visible_handled_ = true;
 
-  // Let RenderWidgetHostViewAura::OnPaint() show white background when
-  // loading page and when backing store is not present.
-  aura::Env::GetInstance()->set_render_white_bg(true);
+  login_prompt_visible_handled_ = true;
 }
 
 void WebUILoginView::ReturnFocus(bool reverse) {
