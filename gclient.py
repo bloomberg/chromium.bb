@@ -81,6 +81,7 @@ import posixpath
 import pprint
 import re
 import sys
+import time
 import urllib
 import urlparse
 
@@ -780,6 +781,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._hooks_ran = True
     for hook in self.GetHooks(options):
       try:
+        start_time = time.time()
         gclient_utils.CheckCallAndFilterAndHeader(
             hook, cwd=self.root.root_dir, always=True)
       except (gclient_utils.Error, subprocess2.CalledProcessError), e:
@@ -788,6 +790,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # differently from VC failures.
         print >> sys.stderr, 'Error: %s' % str(e)
         sys.exit(2)
+      finally:
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 10:
+          print "Hook '%s' took %.2f secs" % (
+              gclient_utils.CommandToStr(hook), elapsed_time)
 
   def subtree(self, include_all):
     """Breadth first recursion excluding root node."""

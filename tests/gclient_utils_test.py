@@ -28,7 +28,7 @@ class GclientUtilsUnittest(GclientUtilBase):
   """General gclient_utils.py tests."""
   def testMembersChanged(self):
     members = [
-        'Annotated', 'AutoFlush', 'CheckCallAndFilter',
+        'Annotated', 'AutoFlush', 'CheckCallAndFilter', 'CommandToStr',
         'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'GetEditor', 'IsDateRevision',
@@ -37,9 +37,9 @@ class GclientUtilsUnittest(GclientUtilBase):
         'PrintableObject', 'RunEditor', 'GCLIENT_CHILDREN',
         'GCLIENT_CHILDREN_LOCK', 'GClientChildren',
         'SplitUrlRevision', 'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper',
-        'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'Queue', 're',
-        'rmtree', 'safe_makedirs', 'stat', 'subprocess', 'subprocess2', 'sys',
-        'tempfile', 'threading', 'time', 'urlparse',
+        'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'pipes', 'Queue',
+        're', 'rmtree', 'safe_makedirs', 'stat', 'subprocess', 'subprocess2',
+        'sys', 'tempfile', 'threading', 'time', 'urlparse',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)

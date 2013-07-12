@@ -7,6 +7,7 @@
 import codecs
 import logging
 import os
+import pipes
 import Queue
 import re
 import stat
@@ -182,6 +183,11 @@ def safe_makedirs(tree):
         raise
 
 
+def CommandToStr(args):
+  """Converts an arg list into a shell escaped string."""
+  return ' '.join(pipes.quote(arg) for arg in args)
+
+
 def CheckCallAndFilterAndHeader(args, always=False, header=None, **kwargs):
   """Adds 'header' support to CheckCallAndFilter.
 
@@ -192,7 +198,7 @@ def CheckCallAndFilterAndHeader(args, always=False, header=None, **kwargs):
   stdout = kwargs.setdefault('stdout', sys.stdout)
   if header is None:
     header = "\n________ running '%s' in '%s'\n" % (
-                 ' '.join(args), kwargs.get('cwd', '.'))
+                 CommandToStr(args), kwargs.get('cwd', '.'))
 
   if always:
     stdout.write(header)
