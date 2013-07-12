@@ -137,16 +137,18 @@ if not env.Bit('nacl_glibc'):
       'private_blockhook', '${MAIN_DIR}/src/untrusted/irt/irt_blockhook.c'))
   # We must combine these all into a single .o file so that there is no
   # danger of some of this code not being brought in from the archive, and
-  # later getting the IRT-based versions from libnacl instead.  e.g., if
-  # your test calls only malloc (defined in -lc) and malloc is the only
-  # caller of sbrk, then when processing -lsys_private (before -lc) the
-  # linker will omit sbrk_private.o, and only when processing -lc (which
-  # implicitly includes -lnacl) will it try to pull in some definition of
-  # sbrk--so it will get the libnacl one instead of the libsys_private one.
-  # Putting everything important into a single .o file avoids this scenario.
+  # later getting the IRT-based versions from libnacl instead.
+  #
+  # For example, suppose mmap() were in a separate mmap.o file in
+  # libnacl_sys_private.o.  If your test calls only malloc() (defined in
+  # -lc) and malloc() is the only caller of mmap(), then when processing
+  # -lsys_private (before -lc) the linker will omit mmap.o, and only when
+  # processing -lc (which implicitly includes -lnacl) will it try to pull
+  # in some definition of mmap()--so it will get the libnacl one instead of
+  # the libnacl_sys_private one.  Putting everything important into a
+  # single .o file avoids this scenario.
   private_combine = [env.ComponentObject(module, '%s.c' % module)
                      for module in ['gc_hooks_private',
-                                    'sbrk_private',
                                     'sys_private']]
   sys_private.append(env.Command('combined_private${OBJSUFFIX}',
                                  private_combine,

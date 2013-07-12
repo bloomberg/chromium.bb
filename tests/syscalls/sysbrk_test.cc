@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// These tests excersize sysbrk() and sbrk().  The expected return values and
-// the values for errno are as described here:
-//   http://manpages.courier-mta.org/htmlman2/brk.2.html
+// These tests exercise NaCl's sysbrk() system call.
 
 #include <errno.h>
 #include <stdlib.h>
@@ -77,48 +75,6 @@ int TestSysbrk() {
   END_TEST();
 }
 
-// Make sure the current break address changes correctly
-// on expansion and contraction.
-int TestSbrk() {
-  START_TEST("TestSbrkExpandContract");
-
-  // Clear errno incase a previous function set it.
-  errno = 0;
-
-  // Get the start address.
-  char *start_addr = reinterpret_cast<char *>(sbrk(0));
-  EXPECT(NULL != start_addr);
-  EXPECT(kSysbrkErrorAddress != start_addr)
-  EXPECT(0 == errno);
-
-  errno = 0;
-
-  // Return the previous (start) address on increment.
-  char *inc_addr = reinterpret_cast<char *>(sbrk(kAddrDelta));
-  EXPECT(inc_addr == start_addr);
-  EXPECT(0 == errno);
-  errno = 0;
-
-  // Verify that we actually did increment.
-  char *cur_addr = reinterpret_cast<char *>(sbrk(0));
-  EXPECT(cur_addr == (start_addr + kAddrDelta));
-  EXPECT(0 == errno);
-  errno = 0;
-
-  // Return the previous (cur) address on decrement.
-  char *dec_addr = reinterpret_cast<char *>(sbrk(-kAddrDelta));
-  EXPECT(dec_addr == cur_addr);
-  EXPECT(0 == errno);
-  errno = 0;
-
-  // Verify that we actually did decrement and are back where we started.
-  cur_addr = reinterpret_cast<char *>(sbrk(0));
-  EXPECT(cur_addr == start_addr);
-  EXPECT(0 == errno);
-
-  END_TEST();
-}
-
 
 // Try to reset the program's break address to something illegal using sysbrk().
 // When sysbrk() fails, it is supposed to return the old break address and set
@@ -137,26 +93,6 @@ int TestIllegalSysbrk() {
   EXPECT(current_break == break_addr);
   END_TEST();
 }
-
-// Try to reset the program's break address to something illegal using sbrk().
-int TestIllegalSbrk() {
-  START_TEST("TestIllegalSbrk");
-
-  // Clear errno incase a previous function set it.
-  errno = 0;
-
-  void* current_break = sbrk(0);
-  /*
-   * sbrk(reinterpret_cast<ptrdiff_t>(kIllegalBreakAddress))
-   * would just decrement by 1 the break!
-   */
-  void* break_addr = sbrk((char *) kIllegalBreakAddress
-                          - (char *) current_break);
-  EXPECT((void *) (-1) == break_addr);
-  EXPECT(errno == ENOMEM);
-  EXPECT(current_break != break_addr);
-  END_TEST();
-}
 }  // namespace
 
 // Run through the complete sequence of sysbrk tests.  Sets the exit code to
@@ -165,8 +101,6 @@ int main() {
   int fail_count = 0;
   fail_count += TestCurrentBreakAddr();
   fail_count += TestSysbrk();
-  fail_count += TestSbrk();
   fail_count += TestIllegalSysbrk();
-  fail_count += TestIllegalSbrk();
   return fail_count;
 }
