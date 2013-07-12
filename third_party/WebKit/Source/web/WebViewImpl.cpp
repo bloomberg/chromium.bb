@@ -62,7 +62,6 @@
 #include "PrerendererClientImpl.h"
 #include "SpeechInputClientImpl.h"
 #include "SpeechRecognitionClientProxy.h"
-#include "TextFieldDecoratorImpl.h"
 #include "ValidationMessageClientImpl.h"
 #include "ViewportAnchor.h"
 #include "WebAccessibilityObject.h"
@@ -355,16 +354,9 @@ void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient)
     m_spellCheckClient = spellCheckClient;
 }
 
-void WebViewImpl::addTextFieldDecoratorClient(WebTextFieldDecoratorClient* client)
+void WebViewImpl::setPasswordGeneratorClient(WebPasswordGeneratorClient* client)
 {
-    ASSERT(client);
-    // We limit the number of decorators because it affects performance of text
-    // field creation. If you'd like to add more decorators, consider moving
-    // your decorator or existing decorators to WebCore.
-    const unsigned maximumNumberOfDecorators = 8;
-    if (m_textFieldDecorators.size() >= maximumNumberOfDecorators)
-        CRASH();
-    m_textFieldDecorators.append(TextFieldDecoratorImpl::create(client));
+    m_passwordGeneratorClient = client;
 }
 
 WebViewImpl::WebViewImpl(WebViewClient* client)
@@ -372,6 +364,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_autofillClient(0)
     , m_permissionClient(0)
     , m_spellCheckClient(0)
+    , m_passwordGeneratorClient(0)
     , m_chromeClientImpl(this)
     , m_contextMenuClientImpl(this)
     , m_dragClientImpl(this)

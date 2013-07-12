@@ -244,13 +244,10 @@ public:
     // For testing.
     virtual void setPagePopupDriver(PagePopupDriver*) = 0;
     virtual void resetPagePopupDriver() = 0;
-    // This function is called whenever a text field <input> is created. The
-    // implementation should return true if it wants to do something in
-    // addTextFieldDecorationsTo().
-    // The argument is always non-0.
-    virtual bool willAddTextFieldDecorationsTo(HTMLInputElement*) { return false; }
-    // The argument is always non-0.
-    virtual void addTextFieldDecorationsTo(HTMLInputElement*) { }
+
+    // FIXME: Should these be on a different client interface?
+    virtual bool isPasswordGenerationEnabled() const { return false; }
+    virtual void openPasswordGenerator(HTMLInputElement*) { }
 
     virtual void postAccessibilityNotification(AccessibilityObject*, AXObjectCache::AXNotification) { }
     virtual String acceptLanguages() = 0;

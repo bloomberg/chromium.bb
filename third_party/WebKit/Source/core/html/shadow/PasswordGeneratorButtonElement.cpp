@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/html/shadow/TextFieldDecorationElement.h"
+#include "core/html/shadow/PasswordGeneratorButtonElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -39,47 +39,27 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
+#include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderImage.h"
 
 namespace WebCore {
 
 using namespace HTMLNames;
 
-// TextFieldDecorator ----------------------------------------------------------------
+// FIXME: This class is only used in Chromium and has no layout tests.
 
-TextFieldDecorator::~TextFieldDecorator()
-{
-}
-
-// TextFieldDecorationElement ----------------------------------------------------------------
-
-// FIXME: This class is only used in Chromium, and has no layout tests!!
-
-TextFieldDecorationElement::TextFieldDecorationElement(Document* document, TextFieldDecorator* decorator)
+PasswordGeneratorButtonElement::PasswordGeneratorButtonElement(Document* document)
     : HTMLDivElement(HTMLNames::divTag, document)
-    , m_textFieldDecorator(decorator)
     , m_isInHoverState(false)
 {
-    ASSERT(decorator);
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<TextFieldDecorationElement> TextFieldDecorationElement::create(Document* document, TextFieldDecorator* decorator)
-{
-    return adoptRef(new TextFieldDecorationElement(document, decorator));
-}
-
-TextFieldDecorationElement* TextFieldDecorationElement::fromShadowRoot(ShadowRoot* shadowRoot)
-{
-    if (!shadowRoot->firstChild()
-        || !shadowRoot->firstChild()->lastChild()
-        || !shadowRoot->firstChild()->lastChild()->isElementNode()
-        || !toElement(shadowRoot->firstChild()->lastChild())->isTextFieldDecoration())
-        return 0;
-    return toTextFieldDecorationElement(shadowRoot->firstChild()->lastChild());
-}
-
-static inline void getDecorationRootAndDecoratedRoot(HTMLInputElement* input, ShadowRoot*& decorationRoot, ShadowRoot*& decoratedRoot)
+static void getDecorationRootAndDecoratedRoot(HTMLInputElement* input, ShadowRoot*& decorationRoot, ShadowRoot*& decoratedRoot)
 {
     ShadowRoot* existingRoot = input->youngestShadowRoot();
     ShadowRoot* newRoot = 0;
@@ -88,9 +68,9 @@ static inline void getDecorationRootAndDecoratedRoot(HTMLInputElement* input, Sh
         existingRoot = existingRoot->olderShadowRoot();
         ASSERT(existingRoot);
     }
-    if (newRoot)
+    if (newRoot) {
         newRoot->removeChild(newRoot->firstChild());
-    else {
+    } else {
         // FIXME: This interacts really badly with author shadow roots because now
         // we can interleave user agent and author shadow roots on the element meaning
         // input.shadowRoot may be inaccessible if the browser has decided to decorate
@@ -101,7 +81,7 @@ static inline void getDecorationRootAndDecoratedRoot(HTMLInputElement* input, Sh
     decoratedRoot = existingRoot;
 }
 
-void TextFieldDecorationElement::decorate(HTMLInputElement* input, bool visible)
+void PasswordGeneratorButtonElement::decorate(HTMLInputElement* input)
 {
     ASSERT(input);
     ShadowRoot* existingRoot;
@@ -116,41 +96,28 @@ void TextFieldDecorationElement::decorate(HTMLInputElement* input, bool visible)
     ASSERT(existingRoot->childNodeCount() == 1);
     toHTMLElement(existingRoot->firstChild())->setInlineStyleProperty(CSSPropertyFlexGrow, 1.0, CSSPrimitiveValue::CSS_NUMBER);
     box->appendChild(HTMLShadowElement::create(HTMLNames::shadowTag, input->document()));
-    setInlineStyleProperty(CSSPropertyDisplay, visible ? CSSValueBlock : CSSValueNone);
+    setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
     box->appendChild(this);
 }
 
-inline HTMLInputElement* TextFieldDecorationElement::hostInput()
+inline HTMLInputElement* PasswordGeneratorButtonElement::hostInput()
 {
-    // TextFieldDecorationElement is created only by C++ code, and it is always
+    // PasswordGeneratorButtonElement is created only by C++ code, and it is always
     // in <input> shadow.
     return toHTMLInputElement(shadowHost());
 }
 
-bool TextFieldDecorationElement::isTextFieldDecoration() const
-{
-    return true;
-}
-
-void TextFieldDecorationElement::updateImage()
+void PasswordGeneratorButtonElement::updateImage()
 {
     if (!renderer() || !renderer()->isImage())
         return;
     RenderImageResource* resource = toRenderImage(renderer())->imageResource();
-    CachedImage* image;
-    if (hostInput()->isDisabledFormControl())
-        image = m_textFieldDecorator->imageForDisabledState();
-    else if (hostInput()->isReadOnly())
-        image = m_textFieldDecorator->imageForReadonlyState();
-    else if (m_isInHoverState)
-        image = m_textFieldDecorator->imageForHoverState();
-    else
-        image = m_textFieldDecorator->imageForNormalState();
+    CachedImage* image = m_isInHoverState ? imageForHoverState() : imageForNormalState();
     ASSERT(image);
     resource->setCachedImage(image);
 }
 
-PassRefPtr<RenderStyle> TextFieldDecorationElement::customStyleForRenderer()
+PassRefPtr<RenderStyle> PasswordGeneratorButtonElement::customStyleForRenderer()
 {
     RefPtr<RenderStyle> originalStyle = originalStyleForRenderer();
     RefPtr<RenderStyle> style = RenderStyle::clone(originalStyle.get());
@@ -162,42 +129,50 @@ PassRefPtr<RenderStyle> TextFieldDecorationElement::customStyleForRenderer()
     return style.release();
 }
 
-RenderObject* TextFieldDecorationElement::createRenderer(RenderStyle*)
+RenderObject* PasswordGeneratorButtonElement::createRenderer(RenderStyle*)
 {
     RenderImage* image = new (document()->renderArena()) RenderImage(this);
     image->setImageResource(RenderImageResource::create());
     return image;
 }
 
-void TextFieldDecorationElement::attach(const AttachContext& context)
+void PasswordGeneratorButtonElement::attach(const AttachContext& context)
 {
     HTMLDivElement::attach(context);
     updateImage();
 }
 
-void TextFieldDecorationElement::detach(const AttachContext& context)
+CachedImage* PasswordGeneratorButtonElement::imageForNormalState()
 {
-    m_textFieldDecorator->willDetach(hostInput());
-    HTMLDivElement::detach(context);
+    if (!m_cachedImageForNormalState) {
+        RefPtr<Image> image = Image::loadPlatformResource("generatePassword");
+        m_cachedImageForNormalState = new CachedImage(image.get());
+    }
+    return m_cachedImageForNormalState.get();
 }
 
-bool TextFieldDecorationElement::isMouseFocusable() const
+CachedImage* PasswordGeneratorButtonElement::imageForHoverState()
 {
-    return false;
+    if (!m_cachedImageForHoverState) {
+        RefPtr<Image> image = Image::loadPlatformResource("generatePasswordHover");
+        m_cachedImageForHoverState = new CachedImage(image.get());
+    }
+    return m_cachedImageForHoverState.get();
 }
 
-void TextFieldDecorationElement::defaultEventHandler(Event* event)
+void PasswordGeneratorButtonElement::defaultEventHandler(Event* event)
 {
-    RefPtr<HTMLInputElement> input(hostInput());
+    RefPtr<HTMLInputElement> input = hostInput();
     if (!input || input->isDisabledOrReadOnly() || !event->isMouseEvent()) {
         if (!event->defaultHandled())
             HTMLDivElement::defaultEventHandler(event);
         return;
     }
 
-    RefPtr<TextFieldDecorationElement> protector(this);
+    RefPtr<PasswordGeneratorButtonElement> protector(this);
     if (event->type() == eventNames().clickEvent) {
-        m_textFieldDecorator->handleClick(input.get());
+        if (ChromeClient* chromeClient = document()->page() ? document()->page()->chrome().client() : 0)
+            chromeClient->openPasswordGenerator(input.get());
         event->setDefaultHandled();
     }
 
@@ -215,7 +190,7 @@ void TextFieldDecorationElement::defaultEventHandler(Event* event)
         HTMLDivElement::defaultEventHandler(event);
 }
 
-bool TextFieldDecorationElement::willRespondToMouseMoveEvents()
+bool PasswordGeneratorButtonElement::willRespondToMouseMoveEvents()
 {
     const HTMLInputElement* input = hostInput();
     if (!input->isDisabledOrReadOnly())
@@ -224,7 +199,7 @@ bool TextFieldDecorationElement::willRespondToMouseMoveEvents()
     return HTMLDivElement::willRespondToMouseMoveEvents();
 }
 
-bool TextFieldDecorationElement::willRespondToMouseClickEvents()
+bool PasswordGeneratorButtonElement::willRespondToMouseClickEvents()
 {
     const HTMLInputElement* input = hostInput();
     if (!input->isDisabledOrReadOnly())
