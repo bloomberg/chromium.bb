@@ -46,6 +46,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void OnVisibilityChanged(bool visible) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
   virtual void ScrollTo(gfx::Vector2d new_value) OVERRIDE;
+  virtual void SetPageScaleFactor(float page_scale_factor) OVERRIDE;
   virtual void OnAttachedToWindow(int width, int height) OVERRIDE;
   virtual void OnDetachedFromWindow() OVERRIDE;
   virtual void SetDipScale(float dip_scale) OVERRIDE;
@@ -85,6 +86,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
   bool visible_;
   float dip_scale_;
+  float page_scale_factor_;
 
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation.

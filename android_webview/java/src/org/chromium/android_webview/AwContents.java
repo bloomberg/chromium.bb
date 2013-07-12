@@ -325,10 +325,15 @@ public class AwContents {
     //--------------------------------------------------------------------------------------------
     // NOTE: This content size change notification comes from the compositor and reflects the size
     // of the content on screen (but not neccessarily in the renderer main thread).
-    private class AwContentSizeChangeListener implements ContentViewCore.ContentSizeChangeListener {
+    private class AwContentUpdateFrameInfoListener
+                implements ContentViewCore.UpdateFrameInfoListener {
         @Override
-        public void onContentSizeChanged(int widthPix, int heightPix) {
+        public void onFrameInfoUpdated(float widthCss, float heightCss, float pageScaleFactor) {
+            int widthPix = (int) Math.floor(widthCss * mDIPScale * pageScaleFactor);
+            int heightPix = (int) Math.floor(heightCss * mDIPScale * pageScaleFactor);
             mScrollOffsetManager.setContentSize(widthPix, heightPix);
+
+            nativeSetDisplayedPageScaleFactor(mNativeAwContents, pageScaleFactor);
         }
     }
 
@@ -504,7 +509,7 @@ public class AwContents {
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
         mContentsClient.installWebContentsObserver(mContentViewCore);
-        mContentViewCore.setContentSizeChangeListener(new AwContentSizeChangeListener());
+        mContentViewCore.setUpdateFrameInfoListener(new AwContentUpdateFrameInfoListener());
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
    }
@@ -1531,9 +1536,9 @@ public class AwContents {
     }
 
     @CalledByNative
-    private void onPageScaleFactorChanged(float pageScaleFactor) {
+    private void onWebLayoutPageScaleFactorChanged(float webLayoutPageScaleFactor) {
         // This change notification comes from the renderer thread, not from the cc/ impl thread.
-        mLayoutSizer.onPageScaleChanged(pageScaleFactor);
+        mLayoutSizer.onPageScaleChanged(webLayoutPageScaleFactor);
     }
 
     @CalledByNative
@@ -1644,6 +1649,8 @@ public class AwContents {
     private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
     private native void nativeOnDetachedFromWindow(int nativeAwContents);
     private native void nativeSetDipScale(int nativeAwContents, float dipScale);
+    private native void nativeSetDisplayedPageScaleFactor(int nativeAwContents,
+            float pageScaleFactor);
 
     // Returns null if save state fails.
     private native byte[] nativeGetOpaqueState(int nativeAwContents);

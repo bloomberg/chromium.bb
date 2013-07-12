@@ -211,15 +211,20 @@ import java.util.Map;
     }
 
     /**
-     * An interface that allows the embedder to be notified when the content size changes.
+     * An interface that allows the embedder to be notified of changes to the parameters of the
+     * currently displayed contents.
      * These notifications are consistent with respect to the UI thread (the size is the size of
      * the contents currently displayed on screen).
      */
-    public interface ContentSizeChangeListener {
+    public interface UpdateFrameInfoListener {
         /**
-         * Called when the content size changes.
+         * Called each time any of the parameters are changed.
+         *
+         * @param widthCss The content width in logical (CSS) pixels.
+         * @param heightCss The content height in logical (CSS) pixels.
+         * @param pageScaleFactor The page scale.
          */
-        void onContentSizeChanged(int widthPix, int heightPix);
+        void onFrameInfoUpdated(float widthCss, float heightCss, float pageScaleFactor);
     }
 
     private VSyncManager.Provider mVSyncProvider;
@@ -327,7 +332,7 @@ import java.util.Map;
 
     private ContentViewGestureHandler mContentViewGestureHandler;
     private PinchGestureStateListener mPinchGestureStateListener;
-    private ContentSizeChangeListener mContentSizeChangeListener;
+    private UpdateFrameInfoListener mUpdateFrameInfoListener;
     private ZoomManager mZoomManager;
     private ZoomControlsDelegate mZoomControlsDelegate;
 
@@ -2154,8 +2159,8 @@ import java.util.Map;
         if (mNativeContentViewCore != 0) nativeShowImeIfNeeded(mNativeContentViewCore);
     }
 
-    public void setContentSizeChangeListener(ContentSizeChangeListener contentSizeChangeListener) {
-        mContentSizeChangeListener = contentSizeChangeListener;
+    public void setUpdateFrameInfoListener(UpdateFrameInfoListener updateFrameInfoListener) {
+        mUpdateFrameInfoListener = updateFrameInfoListener;
     }
 
     @SuppressWarnings("unused")
@@ -2213,10 +2218,9 @@ import java.util.Map;
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
                 contentOffsetYPix);
 
-        if (contentSizeChanged && mContentSizeChangeListener != null) {
-            mContentSizeChangeListener.onContentSizeChanged(
-                    mRenderCoordinates.getContentWidthPixInt(),
-                    mRenderCoordinates.getContentHeightPixInt());
+        if ((contentSizeChanged || pageScaleChanged) && mUpdateFrameInfoListener != null) {
+            mUpdateFrameInfoListener.onFrameInfoUpdated(
+                    contentWidth, contentHeight, pageScaleFactor);
         }
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();

@@ -714,16 +714,23 @@ void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dipScale) {
   browser_view_renderer_->SetDipScale(dipScale);
 }
 
+void AwContents::SetDisplayedPageScaleFactor(JNIEnv* env,
+                                             jobject obj,
+                                             jfloat pageScaleFactor) {
+  browser_view_renderer_->SetPageScaleFactor(pageScaleFactor);
+}
+
 void AwContents::ScrollTo(JNIEnv* env, jobject obj, jint xPix, jint yPix) {
   browser_view_renderer_->ScrollTo(gfx::Vector2d(xPix, yPix));
 }
 
-void AwContents::OnPageScaleFactorChanged(float page_scale_factor) {
+void AwContents::OnWebLayoutPageScaleFactorChanged(float page_scale_factor) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwContents_onPageScaleFactorChanged(env, obj.obj(), page_scale_factor);
+  Java_AwContents_onWebLayoutPageScaleFactorChanged(env, obj.obj(),
+                                                         page_scale_factor);
 }
 
 ScopedJavaLocalRef<jobject> AwContents::CapturePicture(JNIEnv* env,

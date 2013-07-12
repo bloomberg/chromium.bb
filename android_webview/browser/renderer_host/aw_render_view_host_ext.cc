@@ -140,7 +140,7 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
 }
 
 void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {
-  client_->OnPageScaleFactorChanged(page_scale_factor);
+  client_->OnWebLayoutPageScaleFactorChanged(page_scale_factor);
 }
 
 }  // namespace android_webview

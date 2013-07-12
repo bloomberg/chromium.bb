@@ -140,7 +140,8 @@ class AwContents : public FindHelper::Listener,
                                       const bool precomposed) OVERRIDE;
 
   // AwRenderViewHostExtClient implementation.
-  virtual void OnPageScaleFactorChanged(float page_scale_factor) OVERRIDE;
+  virtual void OnWebLayoutPageScaleFactorChanged(
+      float page_scale_factor) OVERRIDE;
 
   // BrowserViewRenderer::Client implementation.
   virtual bool RequestDrawGL(jobject canvas) OVERRIDE;
@@ -156,6 +157,9 @@ class AwContents : public FindHelper::Listener,
 
   void ScrollTo(JNIEnv* env, jobject obj, jint xPix, jint yPix);
   void SetDipScale(JNIEnv* env, jobject obj, jfloat dipScale);
+  void SetDisplayedPageScaleFactor(JNIEnv* env,
+                                   jobject obj,
+                                   jfloat pageScaleFactor);
 
   void SetSaveFormData(bool enabled);
 

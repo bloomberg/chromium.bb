@@ -156,6 +156,7 @@ InProcessViewRenderer::InProcessViewRenderer(
       compositor_(NULL),
       visible_(false),
       dip_scale_(0.0),
+      page_scale_factor_(1.0),
       continuous_invalidate_(false),
       block_invalidates_(false),
       do_ensure_continuous_invalidation_task_pending_(false),
@@ -506,6 +507,11 @@ void InProcessViewRenderer::SetDipScale(float dip_scale) {
   CHECK(dip_scale_ > 0);
 }
 
+void InProcessViewRenderer::SetPageScaleFactor(float page_scale_factor) {
+  page_scale_factor_ = page_scale_factor;
+  CHECK(page_scale_factor_ > 0);
+}
+
 void InProcessViewRenderer::ScrollTo(gfx::Vector2d new_value) {
   DCHECK(dip_scale_ > 0);
   // In general we don't guarantee that the scroll offset transforms are
@@ -515,7 +521,7 @@ void InProcessViewRenderer::ScrollTo(gfx::Vector2d new_value) {
   // The reason we explicitly do rounding here is that it seems to yeld the
   // most stabile transformation.
   gfx::Vector2dF new_value_css = gfx::ToRoundedVector2d(
-      gfx::ScaleVector2d(new_value, 1.0f / dip_scale_));
+      gfx::ScaleVector2d(new_value, 1.0f / (dip_scale_ * page_scale_factor_)));
 
   DCHECK(scroll_offset_css_ != new_value_css);
 
@@ -537,9 +543,10 @@ void InProcessViewRenderer::SetTotalRootLayerScrollOffset(
   scroll_offset_css_ = new_value_css;
 
   DCHECK(dip_scale_ > 0);
+  DCHECK(page_scale_factor_ > 0);
 
-  gfx::Vector2d scroll_offset =
-      gfx::ToRoundedVector2d(gfx::ScaleVector2d(new_value_css, dip_scale_));
+  gfx::Vector2d scroll_offset = gfx::ToRoundedVector2d(
+      gfx::ScaleVector2d(new_value_css, dip_scale_ * page_scale_factor_));
 
   client_->ScrollContainerViewTo(scroll_offset);
 }
@@ -553,10 +560,12 @@ void InProcessViewRenderer::DidOverscroll(
     gfx::Vector2dF current_fling_velocity) {
   // TODO(mkosiba): Enable this once flinging is handled entirely Java-side.
   // DCHECK(current_fling_velocity.IsZero());
+  const float physical_pixel_scale = dip_scale_ * page_scale_factor_;
   gfx::Vector2d overscroll_delta = gfx::ToRoundedVector2d(gfx::ScaleVector2d(
-      accumulated_overscroll - previous_accumulated_overscroll_, dip_scale_));
+      accumulated_overscroll - previous_accumulated_overscroll_,
+      physical_pixel_scale));
   previous_accumulated_overscroll_ +=
-      gfx::ScaleVector2d(overscroll_delta, 1.0f / dip_scale_);
+      gfx::ScaleVector2d(overscroll_delta, 1.0f / physical_pixel_scale);
   client_->DidOverscroll(overscroll_delta);
 }
 

@@ -23,7 +23,7 @@ namespace android_webview {
 class AwRenderViewHostExtClient {
  public:
   // Called when the RenderView page scale changes.
-  virtual void OnPageScaleFactorChanged(float page_scale_factor) = 0;
+  virtual void OnWebLayoutPageScaleFactorChanged(float page_scale_factor) = 0;
 
  protected:
   virtual ~AwRenderViewHostExtClient() {}
