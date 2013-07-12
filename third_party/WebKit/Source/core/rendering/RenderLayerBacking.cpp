@@ -652,11 +652,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         if (scrollingContentsOffset != m_scrollingContentsLayer->offsetFromRenderer() || scrollSize != m_scrollingContentsLayer->size()) {
             bool scrollingCoordinatorHandlesOffset = compositor()->scrollingLayerDidChange(m_owningLayer);
 
-#ifndef BLINK_SCROLLING_POSITION_NO_OFFSET
-            // FIXME: Remove when possible.
-            // Only required to stage multi-repo change.
-            scrollingCoordinatorHandlesOffset = false;
-#endif
             if (scrollingCoordinatorHandlesOffset)
                 m_scrollingContentsLayer->setPosition(-m_owningLayer->scrollOrigin());
             else

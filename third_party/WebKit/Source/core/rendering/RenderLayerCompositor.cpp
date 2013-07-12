@@ -1162,11 +1162,6 @@ void RenderLayerCompositor::frameViewDidScroll()
         }
     }
 
-#ifndef BLINK_SCROLLING_POSITION_NO_OFFSET
-    // FIXME: Remove when possible. Only required to stage multi-repo change.
-    scrollingCoordinatorHandlesOffset = false;
-#endif
-
     // Scroll position = scroll minimum + scroll offset. Adjust the layer's
     // position to handle whatever the scroll coordinator isn't handling.
     // The minimum scroll position is non-zero for RTL pages with overflow.

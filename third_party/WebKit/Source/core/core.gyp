@@ -39,7 +39,6 @@
 
   'variables': {
     'enable_wexit_time_destructors': 1,
-    'blink_scrolling_position_no_offset%': 0,
 
     'webcore_include_dirs': [
       '../..',
@@ -962,11 +961,6 @@
           'sources/': [
             ['exclude', 'Android\\.cpp$'],
           ],
-        }],
-        ['blink_scrolling_position_no_offset==1', {
-          'defines': [
-            'BLINK_SCROLLING_POSITION_NO_OFFSET',
-          ]
         }],
       ],
     },
