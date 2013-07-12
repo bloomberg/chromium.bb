@@ -90,14 +90,16 @@ VolumeListModel.prototype = {
 /**
  * Returns the item at the given index.
  * @param {number} index The index of the entry to get.
- * @return {Entry} The entry at the given index.
+ * @return {?string} The path at the given index.
  */
 VolumeListModel.prototype.item = function(index) {
   var offset = this.volumesList_.length;
-  if (index < offset)
-    return this.volumesList_.item(index);
-  else
+  if (index < offset) {
+    var entry = this.volumesList_.item(index);
+    return entry ? entry.fullPath : undefined;
+  } else {
     return this.pinnedList_.item(index - offset);
+  }
 };
 
 /**
@@ -196,8 +198,8 @@ VolumeList.prototype.decorate = function(directoryModel, pinnedFolderModel) {
   this.setAttribute('role', 'listbox');
 
   var self = this;
-  this.itemConstructor = function(entry) {
-    return self.renderRoot_(entry);
+  this.itemConstructor = function(path) {
+    return self.renderRoot_(path);
   };
 
   this.pinnedItemList_ = pinnedFolderModel;
@@ -210,12 +212,11 @@ VolumeList.prototype.decorate = function(directoryModel, pinnedFolderModel) {
 /**
  * Creates an element of a volume. This method is called from cr.ui.List
  * internally.
- * @param {DirectoryEntry} entry Entry of the directory to be rendered.
+ * @param {string} path Path of the directory to be rendered.
  * @return {HTMLElement} Rendered element.
  * @private
  */
-VolumeList.prototype.renderRoot_ = function(entry) {
-  var path = entry.fullPath;
+VolumeList.prototype.renderRoot_ = function(path) {
   var li = cr.doc.createElement('li');
   li.className = 'root-item';
   li.setAttribute('role', 'option');
@@ -273,7 +274,7 @@ VolumeList.prototype.renderRoot_ = function(entry) {
   // If the current directory is already set.
   if (this.currentVolume_ == path) {
     setTimeout(function() {
-      this.selectedItem = entry;
+      this.selectedItem = path;
     }.bind(this), 0);
   }
 
@@ -290,9 +291,9 @@ VolumeList.prototype.setContextMenu = function(menu) {
   this.contextMenu_ = menu;
 
   for (var i = 0; i < this.dataModel.length; i++) {
-    var item = this.dataModel.item(i);
+    var path = this.dataModel.item(i);
     var itemType = this.dataModel.getItemType(i);
-    var type = PathUtil.getRootType(item.fullPath);
+    var type = PathUtil.getRootType(path);
     // Context menu is set only to archive and removable volumes.
     if (itemType == VolumeListModel.ItemType.PINNED ||
         type == RootType.ARCHIVE || type == RootType.REMOVABLE) {
@@ -311,11 +312,11 @@ VolumeList.prototype.selectByIndex = function(index) {
   if (index < 0 || index > this.dataModel.length - 1)
     return false;
 
-  var newRootDir = this.dataModel.item(index);
-  if (!newRootDir || this.currentVolume_ == newRootDir.fullPath)
+  var newPath = this.dataModel.item(index);
+  if (!newPath || this.currentVolume_ == newPath)
     return false;
 
-  this.currentVolume_ = newRootDir.fullPath;
+  this.currentVolume_ = newPath;
   this.directoryModel_.changeDirectory(this.currentVolume_);
   return true;
 };
@@ -364,11 +365,11 @@ VolumeList.prototype.onCurrentDirectoryChanged_ = function(event) {
   var bestMatchIndex = -1;
   var bestMatchSubStringLen = 0;
   for (var i = 0; i < this.dataModel.length; i++) {
-    var item = this.dataModel.item(i);
-    if (path.indexOf(item.fullPath) == 0) {
-      if (bestMatchSubStringLen < item.fullPath.length) {
+    var itemPath = this.dataModel.item(i);
+    if (path.indexOf(itemPath) == 0) {
+      if (bestMatchSubStringLen < itemPath.length) {
         bestMatchIndex = i;
-        bestMatchSubStringLen = item.fullPath.length;
+        bestMatchSubStringLen = itemPath.length;
       }
     }
   }
@@ -382,8 +383,8 @@ VolumeList.prototype.onCurrentDirectoryChanged_ = function(event) {
 
   // (2) Selects the volume of the current directory.
   for (var i = 0; i < this.dataModel.length; i++) {
-    var item = this.dataModel.item(i);
-    if (PathUtil.getRootPath(item.fullPath) == newRootPath) {
+    var itemPath = this.dataModel.item(i);
+    if (PathUtil.getRootPath(itemPath) == newRootPath) {
       // Not to invoke the handler of this instance, sets the guard.
       this.dontHandleSelectionEvent_ = true;
       this.selectionModel.selectedIndex = i;

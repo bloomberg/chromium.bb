@@ -12,7 +12,7 @@ var CommandUtil = {};
  * @param {Event} event Command event for which to retrieve root to operate on.
  * @param {DirectoryTree|VolumeList} list Directory tree or volume list to
  *     extract root node.
- * @return {DirectoryEntry} Found root.
+ * @return {string} Path of the found root.
  */
 CommandUtil.getCommandRoot = function(event, list) {
   if (list instanceof VolumeList) {
@@ -24,7 +24,7 @@ CommandUtil.getCommandRoot = function(event, list) {
     var entry = list.selectedItem;
 
     if (entry && PathUtil.isRootPath(entry.fullPath))
-      return entry;
+      return entry.fullPath;
     else
       return null;
   }
@@ -37,7 +37,7 @@ CommandUtil.getCommandRoot = function(event, list) {
  */
 CommandUtil.getCommandRootType = function(event, directoryTree) {
   var root = CommandUtil.getCommandRoot(event, directoryTree);
-  return root && PathUtil.getRootType(root.fullPath);
+  return root && PathUtil.getRootType(root);
 };
 
 /**
@@ -164,7 +164,7 @@ Commands.unmountCommand = {
   execute: function(event, directoryTree, fileManager) {
     var root = CommandUtil.getCommandRoot(event, directoryTree);
     if (root)
-      fileManager.unmountVolume(PathUtil.getRootPath(root.fullPath));
+      fileManager.unmountVolume(PathUtil.getRootPath(root));
   },
   /**
    * @param {Event} event Command event.
@@ -193,7 +193,7 @@ Commands.formatCommand = {
     var root = CommandUtil.getCommandRoot(event, directoryTree);
 
     if (root) {
-      var url = util.makeFilesystemUrl(PathUtil.getRootPath(root.fullPath));
+      var url = util.makeFilesystemUrl(PathUtil.getRootPath(root));
       fileManager.confirm.show(
           loadTimeData.getString('FORMATTING_WARNING'),
           chrome.fileBrowserPrivate.formatDevice.bind(null, url));
@@ -206,8 +206,8 @@ Commands.formatCommand = {
   canExecute: function(event, directoryTree, fileManager, directoryModel) {
     var root = CommandUtil.getCommandRoot(event, directoryTree);
     var removable = root &&
-                    PathUtil.getRootType(root.fullPath) == RootType.REMOVABLE;
-    var isReadOnly = root && directoryModel.isPathReadOnly(root.fullPath);
+                    PathUtil.getRootType(root) == RootType.REMOVABLE;
+    var isReadOnly = root && directoryModel.isPathReadOnly(root);
     event.canExecute = removable && !isReadOnly;
     event.command.setHidden(!removable);
   }
@@ -578,10 +578,10 @@ Commands.unpinCommand = {
    * @param {DirectoryTree} directoryTree Target directory tree.
    */
   execute: function(event, fileManager, directoryTree) {
-    var entry = CommandUtil.getCommandRoot(event, directoryTree);
+    var path = CommandUtil.getCommandRoot(event, directoryTree);
 
-    if (entry)
-      fileManager.unpinFolder(entry.fullPath);
+    if (path)
+      fileManager.unpinFolder(path);
   },
   /**
    * @param {Event} event Command event.
@@ -589,8 +589,8 @@ Commands.unpinCommand = {
    * @param {DirectoryTree} directoryTree Target directory tree.
    */
   canExecute: function(event, fileManager, directoryTree) {
-    var entry = CommandUtil.getCommandRoot(event, directoryTree);
-    var isPinned = entry && !PathUtil.isRootPath(entry.fullPath);
+    var path = CommandUtil.getCommandRoot(event, directoryTree);
+    var isPinned = path && !PathUtil.isRootPath(path);
     event.canExecute = isPinned;
     event.command.setHidden(!isPinned);
   }

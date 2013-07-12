@@ -2221,7 +2221,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.isFolderPinned(entry.fullPath))
       return;
 
-    this.pinnedFolderModel_.splice(0, 0, entry);
+    this.pinnedFolderModel_.splice(0, 0, entry.fullPath);
     this.pinnedFolderModel_.sort('name', 'asc');
   };
 
@@ -2231,8 +2231,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.isFolderPinned = function(path) {
     for (var i = 0; i < this.pinnedFolderModel_.length; i++) {
-      var entry = this.pinnedFolderModel_.item(i);
-      if (entry.fullPath == path) {
+      var pinnedPath = this.pinnedFolderModel_.item(i);
+      if (pinnedPath == path) {
         return true;
       }
     }
@@ -2245,8 +2245,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.unpinFolder = function(path) {
     for (var i = 0; i < this.pinnedFolderModel_.length; i++) {
-      var entry = this.pinnedFolderModel_.item(i);
-      if (entry.fullPath == path) {
+      var pinnedPath = this.pinnedFolderModel_.item(i);
+      if (pinnedPath == path) {
         this.pinnedFolderModel_.splice(i, 1);
         return;
       }
