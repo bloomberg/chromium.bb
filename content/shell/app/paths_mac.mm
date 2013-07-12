@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/paths_mac.h"
+#include "content/shell/app/paths_mac.h"
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -11,7 +11,7 @@
 
 namespace {
 
-base::FilePath GetFrameworksPath() {
+base::FilePath GetContentsPath() {
   // Start out with the path to the running executable.
   base::FilePath path;
   PathService::Get(base::FILE_EXE, &path);
@@ -26,10 +26,13 @@ base::FilePath GetFrameworksPath() {
     // One step up to MacOS, another to Contents.
     path = path.DirName().DirName();
   }
-  DCHECK_EQ(path.BaseName().value(), "Contents");
+  DCHECK_EQ("Contents", path.BaseName().value());
 
-  // Go into the frameworks directory.
-  return path.Append("Frameworks");
+  return path;
+}
+
+base::FilePath GetFrameworksPath() {
+  return GetContentsPath().Append("Frameworks");
 }
 
 }  // namespace
@@ -57,4 +60,8 @@ base::FilePath GetResourcesPakFilePath() {
                                              ofType:@"pak"];
 
   return base::FilePath([pak_path fileSystemRepresentation]);
+}
+
+base::FilePath GetInfoPlistPath() {
+  return GetContentsPath().Append("Info.plist");
 }

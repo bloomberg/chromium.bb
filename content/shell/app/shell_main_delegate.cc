@@ -40,7 +40,8 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/shell/paths_mac.h"
+#include "content/shell/app/paths_mac.h"
+#include "content/shell/app/shell_main_delegate_mac.h"
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
@@ -99,6 +100,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   // WebKitTestPlatformInitialize() are called.
   OverrideFrameworkBundlePath();
   OverrideChildProcessPath();
+  EnsureCorrectResolutionSettings();
 #endif  // OS_MACOSX
 
   InitLogging();
