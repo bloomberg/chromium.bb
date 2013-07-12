@@ -55,7 +55,7 @@ class ByContextFinder : public content::RenderViewVisitor {
 
 // Writes |message| to stack to show up in minidump, then crashes.
 void CheckWithMinidump(const std::string& message) {
-  char minidump[256];
+  char minidump[1024];
   base::debug::Alias(&minidump);
   base::snprintf(minidump, arraysize(minidump),
                  "e::console: %s", message.c_str());

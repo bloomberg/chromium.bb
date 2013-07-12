@@ -28,23 +28,16 @@ const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
-// Prepends |extension_id| if it's non-empty to |message|.
-std::string PrependExtensionID(const std::string& extension_id,
-                               const std::string& message) {
-  std::string with_extension_id;
-  if (!extension_id.empty()) {
-    with_extension_id += "(";
-    with_extension_id += extension_id;
-    with_extension_id += ") ";
-  }
-  with_extension_id += message;
-  return with_extension_id;
-}
-
-void Fatal(const std::string& extension_id, const std::string& message) {
-  // Only crash web pages in dev channel.
-  // Always crash extension processes, or when in single process mode (since
-  // typically it's used to debug renderer crashes).
+// Logs a fatal error for the calling context, with some added metadata about
+// the context:
+//  - Its type (blessed, unblessed, etc).
+//  - Whether it's valid.
+//  - The extension ID, if one exists.
+//
+// This will crash web pages, but only in dev channel. It will always crash
+// extension processes. It will always crash in single process mode (since
+// typically it's used to debug renderer crashes).
+void Fatal(ChromeV8Context* context, const std::string& message) {
   bool is_fatal = false;
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kExtensionProcess) ||
@@ -54,23 +47,35 @@ void Fatal(const std::string& extension_id, const std::string& message) {
     // <= dev means dev, canary, and trunk.
     is_fatal = Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV;
   }
-  std::string with_extension_id = PrependExtensionID(extension_id, message);
+
+  // Prepend some context metadata.
+  std::string full_message = "(";
+  if (!context->is_valid())
+    full_message += "Invalid ";
+  full_message += context->GetContextTypeDescription();
+  full_message += " context";
+  if (context->extension()) {
+    full_message += " for ";
+    full_message += context->extension()->id();
+  }
+  full_message += ") ";
+  full_message += message;
+
   if (is_fatal)
-    console::Fatal(v8::Context::GetCalling(), with_extension_id);
+    console::Fatal(v8::Context::GetCalling(), full_message);
   else
-    console::Error(v8::Context::GetCalling(), with_extension_id);
+    console::Error(v8::Context::GetCalling(), full_message);
 }
 
-void Warn(const std::string& extension_id, const std::string& message) {
-  console::Warn(v8::Context::GetCalling(),
-                PrependExtensionID(extension_id, message));
+void Warn(const std::string& message) {
+  console::Warn(v8::Context::GetCalling(), message);
 }
 
 // Default exception handler which logs the exception.
 class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
  public:
-  explicit DefaultExceptionHandler(const std::string& extension_id)
-      : extension_id_(extension_id) {}
+  explicit DefaultExceptionHandler(ChromeV8Context* context)
+      : context_(context) {}
 
   // Fatally dumps the debug info from |try_catch| to the console.
   // Make sure this is never used for exceptions that originate in external
@@ -85,12 +90,11 @@ class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
       else
         stack_trace = "<could not convert stack trace to string>";
     }
-    Fatal(extension_id_,
-          CreateExceptionString(try_catch) + "{" + stack_trace + "}");
+    Fatal(context_, CreateExceptionString(try_catch) + "{" + stack_trace + "}");
   }
 
  private:
-  std::string extension_id_;
+  ChromeV8Context* context_;
 };
 
 } // namespace
@@ -127,8 +131,7 @@ ModuleSystem::ModuleSystem(ChromeV8Context* context,
       context_(context),
       source_map_(source_map),
       natives_enabled_(0),
-      exception_handler_(
-          new DefaultExceptionHandler(context->GetExtensionID())) {
+      exception_handler_(new DefaultExceptionHandler(context)) {
   RouteFunction("require",
       base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
   RouteFunction("requireNative",
@@ -206,7 +209,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   v8::Handle<v8::Value> modules_value =
       global->GetHiddenValue(v8::String::New(kModulesField));
   if (modules_value.IsEmpty() || modules_value->IsUndefined()) {
-    Warn(context_->GetExtensionID(), "Extension view no longer exists");
+    Warn("Extension view no longer exists");
     return v8::Undefined();
   }
 
@@ -218,8 +221,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   std::string module_name_str = *v8::String::AsciiValue(module_name);
   v8::Handle<v8::Value> source(GetSource(module_name_str));
   if (source.IsEmpty() || source->IsUndefined()) {
-    Fatal(context_->GetExtensionID(),
-          "No source for require(" + module_name_str + ")");
+    Fatal(context_, "No source for require(" + module_name_str + ")");
     return v8::Undefined();
   }
   v8::Handle<v8::String> wrapped_source(WrapSource(
@@ -227,8 +229,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   // Modules are wrapped in (function(){...}) so they always return functions.
   v8::Handle<v8::Value> func_as_value = RunString(wrapped_source, module_name);
   if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
-    Fatal(context_->GetExtensionID(),
-          "Bad source for require(" + module_name_str + ")");
+    Fatal(context_, "Bad source for require(" + module_name_str + ")");
     return v8::Undefined();
   }
 
@@ -301,7 +302,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
   }
 
   if (module.IsEmpty() || !module->IsObject()) {
-    Fatal(context_->GetExtensionID(),
+    Fatal(context_,
           "Failed to get module " + module_name + " to call " + method_name);
     return handle_scope.Close(v8::Undefined());
   }
@@ -310,8 +311,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
       v8::Handle<v8::Object>::Cast(module)->Get(
           v8::String::New(method_name.c_str()));
   if (value.IsEmpty() || !value->IsFunction()) {
-    Fatal(context_->GetExtensionID(),
-          module_name + "." + method_name + " is not a function");
+    Fatal(context_, module_name + "." + method_name + " is not a function");
     return handle_scope.Close(v8::Undefined());
   }
 
@@ -375,7 +375,7 @@ void ModuleSystem::LazyFieldGetterInner(
   if (module_system_value.IsEmpty() || !module_system_value->IsExternal()) {
     // ModuleSystem has been deleted.
     // TODO(kalman): See comment in header file.
-    Warn("", "Module system has been deleted, does extension view exist?");
+    Warn("Module system has been deleted, does extension view exist?");
     return;
   }
 
@@ -407,9 +407,9 @@ void ModuleSystem::LazyFieldGetterInner(
 
   if (!module->Has(field)) {
     std::string field_str = *v8::String::AsciiValue(field);
-    Fatal(module_system->context_->GetExtensionID(),
-          "Lazy require of " + name + "." + field_str + " did not " +
-              "set the " + field_str + " field");
+    Fatal(module_system->context_,
+          "Lazy require of " + name + "." + field_str + " did not set the " +
+              field_str + " field");
     return;
   }
 
@@ -509,8 +509,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
     // we could crash.
     if (exception_handler_)
       return v8::ThrowException(v8::String::New("Natives disabled"));
-    Fatal(context_->GetExtensionID(),
-          "Natives disabled for requireNative(" + native_name + ")");
+    Fatal(context_, "Natives disabled for requireNative(" + native_name + ")");
     return v8::Undefined();
   }
 
@@ -519,7 +518,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
 
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
   if (i == native_handler_map_.end()) {
-    Fatal(context_->GetExtensionID(),
+    Fatal(context_,
           "Couldn't find native for requireNative(" + native_name + ")");
     return v8::Undefined();
   }
