@@ -12,6 +12,7 @@ Name: Fontconfig
 Description: Font configuration and customization library
 Version: @VERSION@
 Requires: @PKGCONFIG_REQUIRES@
-Libs: -L${libdir} -lfontconfig @PKGCONFIG_LIBS@
-Libs.private: @EXPAT_LIBS@ @FREETYPE_LIBS@ @LIBXML2_LIBS@
-Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
+Requires.private: @PKGCONFIG_REQUIRES_PRIVATELY@
+Libs: -L${libdir} -lfontconfig
+Libs.private: @EXPAT_LIBS@ @FREETYPE_LIBS@ @ICONV_LIBS@ @LIBXML2_LIBS@
+Cflags: -I${includedir} @EXPAT_CFLAGS@ @FREETYPE_CFLAGS@ @ICONV_CFLAGS@ @LIBXML2_CFLAGS@

@@ -55,8 +55,7 @@ LIBT_CURRENT_MINUS_AGE=`expr $LIBT_CURRENT - $LIBT_AGE`
 AC_SUBST(LIBT_CURRENT_MINUS_AGE)
 
 PKGCONFIG_REQUIRES=
-PKGCONFIG_CFLAGS=
-PKGCONFIG_LIBS=
+PKGCONFIG_REQUIRES_PRIVATELY=
 
 dnl ==========================================================================
 
@@ -289,8 +288,6 @@ if test "x$enable_iconv" != "xno"; then
 			 use_iconv=1
 			 ICONV_CFLAGS="$libiconv_cflags"
 			 ICONV_LIBS="$libiconv_libs"
-			 PKGCONFIG_CFLAGS="$PKGCONFIG_CFLAGS $ICONV_CFLAGS"
-			 PKGCONFIG_LIBS="$PKGCONFIG_LIBS $ICONV_LIBS"
 			 ],
 			[use_iconv=0])
 
@@ -375,10 +372,8 @@ if test "$enable_libxml2" != "yes"; then
 		else
 			EXPAT_LIBS="-lexpat"
 		fi
-		PKGCONFIG_CFLAGS="$PKGCONFIG_CFLAGS $EXPAT_CFLAGS"
-		PKGCONFIG_LIBS="$PKGCONFIG_LIBS $EXPAT_LIBS"
 	else
-		PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES expat"
+		PKGCONFIG_REQUIRES_PRIVATELY="$PKGCONFIG_REQUIRES_PRIVATELY expat"
 	fi
 
 	expatsaved_CPPFLAGS="$CPPFLAGS"
@@ -420,7 +415,7 @@ AC_ARG_ENABLE(libxml2,
 
 if test "$enable_libxml2" = "yes"; then
     PKG_CHECK_MODULES([LIBXML2], [libxml-2.0 >= 2.6])
-    PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES libxml-2.0"
+    PKGCONFIG_REQUIRES_PRIVATELY="$PKGCONFIG_REQUIRES_PRIVATELY libxml-2.0"
     AC_DEFINE_UNQUOTED(ENABLE_LIBXML2,1,[Use libxml2 instead of Expat])
 
     AC_SUBST(LIBXML2_CFLAGS)
@@ -731,8 +726,7 @@ AH_BOTTOM([#include "config-fixups.h"])
 dnl
 dnl
 AC_SUBST(PKGCONFIG_REQUIRES)
-AC_SUBST(PKGCONFIG_CFLAGS)
-AC_SUBST(PKGCONFIG_LIBS)
+AC_SUBST(PKGCONFIG_REQUIRES_PRIVATELY)
 
 dnl
 AC_CONFIG_FILES([
