@@ -8,6 +8,7 @@ include_rules = [
   "+chrome/browser/signin",
 
   # TODO(joi): Get this list to zero.
+  "!chrome/browser/chrome_notification_types.h",
   "!chrome/browser/policy/cloud/user_policy_signin_service.h",
   "!chrome/browser/policy/cloud/user_policy_signin_service_factory.h",
   "!chrome/browser/profiles/profile.h",
@@ -32,7 +33,6 @@ include_rules = [
   "!chrome/browser/ui/webui/signin_internals_ui.h",
   "!chrome/browser/webdata/token_web_data.h",
   "!chrome/browser/webdata/web_data_service_factory.h",
-  "!chrome/common/chrome_notification_types.h",
   "!chrome/common/chrome_switches.h",
   "!chrome/common/chrome_version_info.h",
   "!chrome/common/pref_names.h",

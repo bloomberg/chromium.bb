@@ -6,7 +6,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"

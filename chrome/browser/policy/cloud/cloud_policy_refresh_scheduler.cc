@@ -12,8 +12,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 
 namespace policy {

@@ -5,11 +5,11 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/oauth2_token_service_test_util.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/signin/token_service_unittest.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
