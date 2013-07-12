@@ -124,13 +124,12 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
     // TODO: If we feel confident that our code otherwise works correctly, we
     //       could actually make an argument that spurious SIGSYS should
     //       just get silently ignored. TBD
-  sigsys_err:
-    SANDBOX_DIE("Unexpected SIGSYS received");
+    SANDBOX_DIE("Unexpected SIGSYS received.");
   }
 
   // Signal handlers should always preserve "errno". Otherwise, we could
   // trigger really subtle bugs.
-  int old_errno   = errno;
+  const int old_errno   = errno;
 
   // Obtain the signal context. This, most notably, gives us access to
   // all CPU registers at the time of the signal.
@@ -146,14 +145,14 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
   if (sigsys.ip != reinterpret_cast<void *>(SECCOMP_IP(ctx)) ||
       sigsys.nr != static_cast<int>(SECCOMP_SYSCALL(ctx)) ||
       sigsys.arch != SECCOMP_ARCH) {
-    goto sigsys_err;
+    SANDBOX_DIE("Sanity checks are failing after receiving SIGSYS.");
   }
 
   intptr_t rc;
   if (has_unsafe_traps_ && GetIsInSigHandler(ctx)) {
     errno = old_errno;
     if (sigsys.nr == __NR_clone) {
-      SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler");
+      SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler.");
     }
     rc = SandboxSyscall(sigsys.nr,
                         SECCOMP_PARM1(ctx), SECCOMP_PARM2(ctx),
