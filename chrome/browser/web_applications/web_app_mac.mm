@@ -23,9 +23,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -235,6 +237,69 @@ void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
     base::Delete(apps_folder, false);
 }
 
+bool IsShimForProfile(const base::FilePath& base_name,
+                      const std::string& profile_base_name) {
+  if (!StartsWithASCII(base_name.value(), profile_base_name, true))
+    return false;
+
+  if (base_name.Extension() != ".app")
+    return false;
+
+  std::string app_id = base_name.RemoveExtension().value();
+  // Strip (profile_base_name + " ") from the start.
+  app_id = app_id.substr(profile_base_name.size() + 1);
+  return extensions::Extension::IdIsValid(app_id);
+}
+
+std::vector<base::FilePath> GetAllAppBundlesInPath(
+    const base::FilePath& internal_shortcut_path,
+    const std::string& profile_base_name) {
+  std::vector<base::FilePath> bundle_paths;
+
+  base::FileEnumerator enumerator(internal_shortcut_path,
+                                  true /* recursive */,
+                                  base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath bundle_path = enumerator.Next();
+       !bundle_path.empty(); bundle_path = enumerator.Next()) {
+    if (IsShimForProfile(bundle_path.BaseName(), profile_base_name))
+      bundle_paths.push_back(bundle_path);
+  }
+
+  return bundle_paths;
+}
+
+ShellIntegration::ShortcutInfo BuildShortcutInfoFromBundle(
+    const base::FilePath& bundle_path) {
+  NSString* plist_path = base::mac::FilePathToNSString(
+      bundle_path.Append("Contents").Append("Info.plist"));
+  NSMutableDictionary* plist =
+      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+
+  ShellIntegration::ShortcutInfo shortcut_info;
+  shortcut_info.extension_id = base::SysNSStringToUTF8(
+      [plist valueForKey:app_mode::kCrAppModeShortcutIDKey]);
+  shortcut_info.is_platform_app = true;
+  shortcut_info.url = GURL(base::SysNSStringToUTF8(
+      [plist valueForKey:app_mode::kCrAppModeShortcutURLKey]));
+  shortcut_info.title = base::SysNSStringToUTF16(
+      [plist valueForKey:app_mode::kCrAppModeShortcutNameKey]);
+  shortcut_info.profile_name = base::SysNSStringToUTF8(
+      [plist valueForKey:app_mode::kCrAppModeProfileNameKey]);
+
+  // Figure out the profile_path. Since the user_data_dir could contain the
+  // path to the web app data dir.
+  base::FilePath user_data_dir = base::mac::NSStringToFilePath(
+      [plist valueForKey:app_mode::kCrAppModeUserDataDirKey]);
+  base::FilePath profile_base_name = base::mac::NSStringToFilePath(
+      [plist valueForKey:app_mode::kCrAppModeProfileDirKey]);
+  if (user_data_dir.DirName().DirName().BaseName() == profile_base_name)
+    shortcut_info.profile_path = user_data_dir.DirName().DirName();
+  else
+    shortcut_info.profile_path = user_data_dir.Append(profile_base_name);
+
+  return shortcut_info;
+}
+
 }  // namespace
 
 namespace web_app {
@@ -354,6 +419,8 @@ bool WebAppShortcutCreator::CreateShortcuts() {
 }
 
 void WebAppShortcutCreator::DeleteShortcuts() {
+  // TODO(jackhou): For the first two cases, we need to check if the
+  // user_data_dir matches that of the current browser process.
   base::FilePath dst_path = GetDestinationPath();
   if (!dst_path.empty())
     DeletePathAndParentIfEmpty(dst_path.Append(GetShortcutName()));
@@ -626,7 +693,18 @@ void UpdatePlatformShortcuts(
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
-  // TODO(mgiuca): Implement this on Mac.
+  const std::string profile_base_name = profile_path.BaseName().value();
+  std::vector<base::FilePath> bundles = GetAllAppBundlesInPath(
+      profile_path.Append(chrome::kWebAppDirname), profile_base_name);
+
+  for (std::vector<base::FilePath>::const_iterator it = bundles.begin();
+       it != bundles.end(); ++it) {
+    ShellIntegration::ShortcutInfo shortcut_info =
+        BuildShortcutInfoFromBundle(*it);
+    WebAppShortcutCreator shortcut_creator(
+        it->DirName(), shortcut_info, base::mac::BaseBundleID());
+    shortcut_creator.DeleteShortcuts();
+  }
 }
 
 }  // namespace internals
