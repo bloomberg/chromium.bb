@@ -2058,14 +2058,15 @@ class MapCommand(Command):
           out.write('None\n')
         elif value[0] == 'hooked':
           component_match, _ = policy.find_mmap(value, bucket_set)
-          out.write('hooked %s: %s @ %d\n' % (
-              value[1]['type'] if 'type' in value[1] else 'None',
-              component_match, value[1]['bucket_id']))
+          out.write('%s @ %d\n' % (component_match, value[1]['bucket_id']))
         else:
+          component_match = policy.find_unhooked(value)
           region_info = value[1]
           size = region_info['committed']
-          out.write('unhooked %s: %d bytes committed\n' % (
-              region_info['type'] if 'type' in region_info else 'None', size))
+          out.write('%s [%d bytes] %s%s%s%s %s\n' % (
+              component_match, size, value[1]['vma']['readable'],
+              value[1]['vma']['writable'], value[1]['vma']['executable'],
+              value[1]['vma']['private'], value[1]['vma']['name']))
 
 
 class ExpandCommand(Command):
