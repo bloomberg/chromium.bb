@@ -180,7 +180,6 @@ protected:
     virtual bool paintMediaPlayButton(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaMuteButton(RenderObject*, const PaintInfo&, const IntRect&);
     virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual String extraMediaControlsStyleSheet();
     virtual String extraFullScreenStyleSheet();
   
     virtual bool paintMediaSliderThumb(RenderObject*, const PaintInfo&, const IntRect&);

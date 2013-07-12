@@ -1962,11 +1962,6 @@ bool RenderThemeChromiumMac::paintMediaSliderTrack(RenderObject* object, const P
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
-String RenderThemeChromiumMac::extraMediaControlsStyleSheet()
-{
-    return String(mediaControlsChromiumUserAgentStyleSheet, sizeof(mediaControlsChromiumUserAgentStyleSheet));
-}
-
 String RenderThemeChromiumMac::extraFullScreenStyleSheet()
 {
     // FIXME: Chromium may wish to style its default media controls differently in fullscreen.

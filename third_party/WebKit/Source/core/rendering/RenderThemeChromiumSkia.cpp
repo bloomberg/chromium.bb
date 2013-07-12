@@ -80,11 +80,6 @@ String RenderThemeChromiumSkia::extraQuirksStyleSheet()
     return String(themeWinQuirksUserAgentStyleSheet, sizeof(themeWinQuirksUserAgentStyleSheet));
 }
 
-String RenderThemeChromiumSkia::extraMediaControlsStyleSheet()
-{
-    return String(mediaControlsChromiumUserAgentStyleSheet, sizeof(mediaControlsChromiumUserAgentStyleSheet));
-}
-
 bool RenderThemeChromiumSkia::supportsHover(const RenderStyle* style) const
 {
     return true;

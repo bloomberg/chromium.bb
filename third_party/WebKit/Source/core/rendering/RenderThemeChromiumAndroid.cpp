@@ -69,7 +69,7 @@ Color RenderThemeChromiumAndroid::systemColor(CSSValueID cssValueId) const
 
 String RenderThemeChromiumAndroid::extraMediaControlsStyleSheet()
 {
-    return String(mediaControlsChromiumAndroidUserAgentStyleSheet, sizeof(mediaControlsChromiumAndroidUserAgentStyleSheet));
+    return String(mediaControlsAndroidUserAgentStyleSheet, sizeof(mediaControlsAndroidUserAgentStyleSheet));
 }
 
 String RenderThemeChromiumAndroid::extraDefaultStyleSheet()

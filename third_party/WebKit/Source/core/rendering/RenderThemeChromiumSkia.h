@@ -41,7 +41,6 @@ public:
 
     virtual String extraDefaultStyleSheet();
     virtual String extraQuirksStyleSheet();
-    virtual String extraMediaControlsStyleSheet();
 
     virtual Color platformTapHighlightColor() const OVERRIDE
     {
