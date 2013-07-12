@@ -489,8 +489,8 @@ bool HistoryDeleteAllFunction::RunAsyncImpl() {
                                            Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
-      base::Time::UnixEpoch(),     // From the beginning of the epoch.
-      base::Time::Now(),           // To the current time.
+      base::Time(),      // Unbounded beginning...
+      base::Time(),      // ...and the end.
       base::Bind(&HistoryDeleteAllFunction::DeleteComplete,
                  base::Unretained(this)),
       &task_tracker_);
