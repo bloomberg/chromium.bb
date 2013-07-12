@@ -279,6 +279,15 @@ OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
       .get();
 }
 
+void OffTheRecordProfileImpl::RequestMIDISysExPermission(
+      int render_process_id,
+      int render_view_id,
+      const GURL& requesting_frame,
+      const MIDISysExPermissionCallback& callback) {
+  // TODO(toyoshim): Implement.
+  callback.Run(false);
+}
+
 net::URLRequestContextGetter*
     OffTheRecordProfileImpl::GetRequestContextForExtensions() {
   return io_data_.GetExtensionsRequestContextGetter().get();

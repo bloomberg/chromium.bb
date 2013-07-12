@@ -44,10 +44,6 @@ class StoragePartition;
 // thread.
 class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
-  // Used in ForEachStoragePartition(). The first argument is the partition id.
-  // The second argument is the StoragePartition object for that partition id.
-  typedef base::Callback<void(StoragePartition*)> StoragePartitionCallback;
-
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
 
   // Returns BrowserContext specific external mount points. It may return NULL
@@ -59,6 +55,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context, SiteInstance* site_instance);
   static content::StoragePartition* GetStoragePartitionForSite(
       BrowserContext* browser_context, const GURL& site);
+  typedef base::Callback<void(StoragePartition*)> StoragePartitionCallback;
   static void ForEachStoragePartition(
       BrowserContext* browser_context,
       const StoragePartitionCallback& callback);
@@ -127,6 +124,16 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       GetMediaRequestContextForStoragePartition(
           const base::FilePath& partition_path,
           bool in_memory) = 0;
+
+  typedef base::Callback<void(bool)> MIDISysExPermissionCallback;
+
+  // Requests a permission to use system exclusive messages in MIDI events.
+  // |callback| will be invoked when the request is resolved.
+  virtual void RequestMIDISysExPermission(
+      int render_process_id,
+      int render_view_id,
+      const GURL& requesting_frame,
+      const MIDISysExPermissionCallback& callback) = 0;
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;

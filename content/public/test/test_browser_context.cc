@@ -99,6 +99,15 @@ TestBrowserContext::GetMediaRequestContextForStoragePartition(
   return NULL;
 }
 
+void TestBrowserContext::RequestMIDISysExPermission(
+      int render_process_id,
+      int render_view_id,
+      const GURL& requesting_frame,
+      const MIDISysExPermissionCallback& callback) {
+  // Always reject requests for testing.
+  callback.Run(false);
+}
+
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_)
     resource_context_.reset(new MockResourceContext());

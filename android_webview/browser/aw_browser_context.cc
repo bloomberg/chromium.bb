@@ -180,6 +180,15 @@ net::URLRequestContextGetter* AwBrowserContext::GetMediaRequestContext() {
   return GetRequestContext();
 }
 
+void AwBrowserContext::RequestMIDISysExPermission(
+      int render_process_id,
+      int render_view_id,
+      const GURL& requesting_frame,
+      const MIDISysExPermissionCallback& callback) {
+  // TODO(toyoshim): Android is not supported yet.
+  callback.Run(false);
+}
+
 net::URLRequestContextGetter*
 AwBrowserContext::GetMediaRequestContextForRenderProcess(
     int renderer_child_id) {
