@@ -9,12 +9,9 @@ description("This test checks that the page visibility event propagation does no
 
 var jsTestIsAsync = true;
 
-var numVisibilityChanges = 0;
 var frame1, frame2, frame3, frame4, frame5, subframe1, subFrame2, subFrame3;
 
 var docsLoaded = 0;
-var mainPageVisibilityChangeDone = false;
-var frame2VisiblityChangeDone = false;
 
 function startTest() {
     ++docsLoaded;
@@ -36,62 +33,34 @@ function startTest() {
     frame2.contentDocument.addEventListener(
         "webkitvisibilitychange", onFrame2VisibilityChange, false);
     // Change the visibility of the current page to invisible.
-    if (window.testRunner) {
-        numVisibilityChanges++;
-        testRunner.setPageVisibility("hidden");
-    }
-}
-
-function finishTest() {
     if (window.testRunner)
-        testRunner.resetPageVisibility();
+        testRunner.setPageVisibility("hidden");
     finishJSTest();
 }
 
 function onMainPageVisibilityChange() {
-    if (mainPageVisibilityChangeDone && frame2VisiblityChangeDone) {
-        finishTest();
-    } else if (!mainPageVisibilityChangeDone) {
-        debug("Visibility of main document changed.");
-        // Delete frame 4.
-        document.body.removeChild(frame4);
+    debug("Visibility of main document changed.");
+    // Delete frame 4.
+    document.body.removeChild(frame4);
 
-        // Delete subframe 2.
-        frame3.contentDocument.body.removeChild(subFrame2);
+    // Delete subframe 2.
+    frame3.contentDocument.body.removeChild(subFrame2);
 
-        // Add a new frame to top level.
-        frame5 = document.createElement("iframe");
-        frame5.src = '';
-        document.body.appendChild(frame5);
+    // Add a new frame to top level.
+    frame5 = document.createElement("iframe");
+    frame5.src = '';
+    document.body.appendChild(frame5);
 
-        // Add a new frame to frame2.
-        subFrame3 = frame2.contentDocument.createElement("iframe");
-        subFrame3.src = '';
-        frame2.contentDocument.body.appendChild(subFrame3);
-
-        mainPageVisibilityChangeDone = true;
-    }
-
-    if (mainPageVisibilityChangeDone && frame2VisiblityChangeDone) {
-        finishTest();
-    }
+    // Add a new frame to frame2.
+    subFrame3 = frame2.contentDocument.createElement("iframe");
+    subFrame3.src = '';
+    frame2.contentDocument.body.appendChild(subFrame3);
 }
 
 function onFrame2VisibilityChange() {
-    if (mainPageVisibilityChangeDone && frame2VisiblityChangeDone) {
-        finishTest();
-    } else if (!frame2VisiblityChangeDone) {
-        debug("Visibility of sub frame 2 changed.");
-
-        // Delete frame 1.
-        document.body.removeChild(frame1);
-
-        frame2VisiblityChangeDone = true;
-    }
-
-    if (mainPageVisibilityChangeDone && frame2VisiblityChangeDone) {
-        finishTest();
-    }
+    debug("Visibility of sub frame 2 changed.");
+    // Delete frame 1.
+    document.body.removeChild(frame1);
 }
 
 </script>

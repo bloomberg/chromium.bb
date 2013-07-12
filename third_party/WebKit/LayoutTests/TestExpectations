@@ -250,9 +250,6 @@ crbug.com/246105 [ Release ] fast/events/scale-and-scroll-iframe-window.html [ I
 crbug.com/246105 [ Release ] fast/events/scale-and-scroll-window.html [ ImageOnlyFailure ]
 crbug.com/246105 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
 
-# This test consistently times out in Release builders on the bots and passes locally and/or in debug. :(
-crbug.com/246107 [ Release ] fast/events/selectionchange-iframe.html [ Skip ]
-
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]
 
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Skip ]

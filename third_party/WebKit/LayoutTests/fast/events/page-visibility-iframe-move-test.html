@@ -43,7 +43,7 @@ function onVisibilityChange() {
 
     window2.close();
 
-    finishTest();
+    finishJSTest();
 }
 
 function startTest() {
@@ -58,13 +58,6 @@ function startTest() {
 
     window2 = window.open("resources/page-visibility-iframe-move-new-page.html");
     window2.addEventListener("load", window2Loaded, false);
-}
-
-function finishTest() {
-    if (window.testRunner) {
-        testRunner.resetPageVisibility();
-    }
-    finishJSTest();
 }
 
 </script>

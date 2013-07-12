@@ -257,7 +257,6 @@ private:
 
     // Switch the visibility of the page.
     void setPageVisibility(const CppArgumentList&, CppVariant*);
-    void resetPageVisibility(const CppArgumentList&, CppVariant*);
 
     // Changes the direction of the focused element.
     void setTextDirection(const CppArgumentList&, CppVariant*);

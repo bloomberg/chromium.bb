@@ -636,13 +636,13 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         return;
     m_visibilityState = visibilityState;
 
-    if (!isInitialState && m_mainFrame)
-        m_mainFrame->dispatchVisibilityStateChangeEvent();
-
     if (visibilityState == WebCore::PageVisibilityStateHidden)
         setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
     else
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
+
+    if (!isInitialState && m_mainFrame)
+        m_mainFrame->dispatchVisibilityStateChangeEvent();
 }
 
 PageVisibilityState Page::visibilityState() const

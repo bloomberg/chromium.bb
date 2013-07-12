@@ -41,7 +41,7 @@
                 testRunner.setPageVisibility("hidden");
                 isPageVisible = false;
             } else if (timerCount == 3) {
-                testRunner.resetPageVisibility();
+                testRunner.setPageVisibility("visible");
                 isPageVisible = true;
             } else if (timerCount >= 4){
                 finishJSTest();

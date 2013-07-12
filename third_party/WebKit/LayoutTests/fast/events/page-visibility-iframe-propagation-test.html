@@ -73,10 +73,6 @@ function finishTest() {
     if (numFinishes < 2) {
       return;
     }
-
-    if (window.testRunner) {
-        testRunner.resetPageVisibility();
-    }
     finishJSTest();
 }
 

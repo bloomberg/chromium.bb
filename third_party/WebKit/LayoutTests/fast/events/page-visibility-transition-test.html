@@ -67,13 +67,6 @@ function startTest() {
     makePageHidden();
 }
 
-function finishTest() {
-    if (window.testRunner) {
-        testRunner.resetPageVisibility();
-    }
-    finishJSTest();
-}
-
 function onVisibilityChange() {
     if (numVisibilityChanges == 1) {
         checkIsPageHidden();
@@ -85,7 +78,7 @@ function onVisibilityChange() {
         return;
     } else if (numVisibilityChanges == 2) {
         testFailed("Invalid event fired on same state change.");
-        finishTest();
+        finishJSTest();
         return;
     } else if (numVisibilityChanges == 3) {
         checkIsPagePrerendering();
@@ -105,11 +98,11 @@ function onVisibilityChange() {
     } else if (numVisibilityChanges == 6) {
         checkIsPageVisible();
         numVisibilityChanges++;
-        finishTest();
+        finishJSTest();
         return;
     } else {
         testFailed("Too many visibility transitions");
-        finishTest();
+        finishJSTest();
         return;
     }
 }

@@ -8,9 +8,6 @@ if (window.testRunner) {
 }
 
 function finish() {
-    if (window.testRunner)
-        testRunner.resetPageVisibility();
-
     document.open();
     document.write("PASS. WebKit didn't crash");
     document.close();

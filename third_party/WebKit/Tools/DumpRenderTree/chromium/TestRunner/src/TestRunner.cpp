@@ -199,7 +199,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setFixedLayoutSize", &TestRunner::setFixedLayoutSize);
     bindMethod("selectionAsMarkup", &TestRunner::selectionAsMarkup);
     bindMethod("setTextSubpixelPositioning", &TestRunner::setTextSubpixelPositioning);
-    bindMethod("resetPageVisibility", &TestRunner::resetPageVisibility);
     bindMethod("setPageVisibility", &TestRunner::setPageVisibility);
     bindMethod("setTextDirection", &TestRunner::setTextDirection);
     bindMethod("textSurroundingNode", &TestRunner::textSurroundingNode);
@@ -359,7 +358,9 @@ void TestRunner::reset()
         m_webView->setSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif
         m_webView->removeAllUserContent();
+        m_webView->setVisibilityState(WebPageVisibilityStateVisible, true);
     }
+
     m_topLoadingFrame = 0;
     m_waitUntilDone = false;
     m_policyDelegateEnabled = false;
@@ -1374,11 +1375,6 @@ void TestRunner::setTextSubpixelPositioning(const CppArgumentList& arguments, Cp
         WebFontRendering::setSubpixelPositioning(arguments[0].value.boolValue);
 #endif
     result->setNull();
-}
-
-void TestRunner::resetPageVisibility(const CppArgumentList& arguments, CppVariant* result)
-{
-    m_webView->setVisibilityState(WebPageVisibilityStateVisible, true);
 }
 
 void TestRunner::setPageVisibility(const CppArgumentList& arguments, CppVariant* result)
