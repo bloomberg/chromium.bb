@@ -80,7 +80,7 @@ void ViewCacheHelper::HexDump(const char *buf, size_t buf_len,
 
   const unsigned char *p;
   while (buf_len) {
-    base::StringAppendF(result, "%08x:  ", offset);
+    base::StringAppendF(result, "%08x: ", offset);
     offset += kMaxRows;
 
     p = (const unsigned char *) buf;
@@ -90,9 +90,10 @@ void ViewCacheHelper::HexDump(const char *buf, size_t buf_len,
 
     // print hex codes:
     for (i = 0; i < row_max; ++i)
-      base::StringAppendF(result, "%02x  ", *p++);
+      base::StringAppendF(result, "%02x ", *p++);
     for (i = row_max; i < kMaxRows; ++i)
-      result->append("    ");
+      result->append("   ");
+    result->append(" ");
 
     // print ASCII glyphs if possible:
     p = (const unsigned char *) buf;
