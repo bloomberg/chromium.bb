@@ -1577,6 +1577,16 @@
     }
   }
 
+  void FramebufferTexture2DMultisampleEXT(
+      GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+      GLint level, GLsizei samples) {
+    gles2::cmds::FramebufferTexture2DMultisampleEXT* c =
+        GetCmdSpace<gles2::cmds::FramebufferTexture2DMultisampleEXT>();
+    if (c) {
+      c->Init(target, attachment, textarget, texture, level, samples);
+    }
+  }
+
   void TexStorage2DEXT(
       GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width,
       GLsizei height) {

@@ -237,6 +237,13 @@ GLvoid StubGLFramebufferTexture2D(GLenum target, GLenum attachment,
   glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
 }
 
+GLvoid StubGLFramebufferTexture2DMultisample(GLenum target, GLenum attachment,
+                                  GLenum textarget, GLuint texture,
+                                  GLint level, GLsizei samples) {
+  glFramebufferTexture2DMultisampleEXT(target, attachment, textarget, texture,
+      level, samples);
+}
+
 GLvoid StubGLFrontFace(GLenum mode) {
   glFrontFace(mode);
 }
@@ -685,6 +692,8 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fDeleteRenderbuffers = StubGLDeleteRenderbuffers;
   interface->fFramebufferRenderbuffer = StubGLFramebufferRenderbuffer;
   interface->fFramebufferTexture2D = StubGLFramebufferTexture2D;
+  interface->fFramebufferTexture2DMultisample =
+    StubGLFramebufferTexture2DMultisample;
   interface->fGenFramebuffers = StubGLGenFramebuffers;
   interface->fGenRenderbuffers = StubGLGenRenderbuffers;
   interface->fGetFramebufferAttachmentParameteriv =

@@ -77,6 +77,9 @@ struct FormatInfo {
 TEST_F(FeatureInfoTest, Basic) {
   // Test it starts off uninitialized.
   EXPECT_FALSE(info_->feature_flags().chromium_framebuffer_multisample);
+  EXPECT_FALSE(info_->feature_flags().multisampled_render_to_texture);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_img_for_multisampled_render_to_texture);
   EXPECT_FALSE(info_->feature_flags().oes_standard_derivatives);
   EXPECT_FALSE(info_->feature_flags().npot_ok);
   EXPECT_FALSE(info_->feature_flags().enable_texture_float_linear);
@@ -525,6 +528,40 @@ TEST_F(FeatureInfoTest, InitializeEXT_framebuffer_multisample) {
       GL_MAX_SAMPLES_EXT));
   EXPECT_TRUE(info_->validators()->render_buffer_parameter.IsValid(
       GL_RENDERBUFFER_SAMPLES_EXT));
+}
+
+TEST_F(FeatureInfoTest, InitializeEXT_multisampled_render_to_texture) {
+  SetupInitExpectations("GL_EXT_multisampled_render_to_texture");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->feature_flags(
+      ).multisampled_render_to_texture);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_img_for_multisampled_render_to_texture);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_EXT_multisampled_render_to_texture"));
+  EXPECT_TRUE(info_->validators()->g_l_state.IsValid(
+      GL_MAX_SAMPLES_EXT));
+  EXPECT_TRUE(info_->validators()->render_buffer_parameter.IsValid(
+      GL_RENDERBUFFER_SAMPLES_EXT));
+  EXPECT_TRUE(info_->validators()->frame_buffer_parameter.IsValid(
+      GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT));
+}
+
+TEST_F(FeatureInfoTest, InitializeIMG_multisampled_render_to_texture) {
+  SetupInitExpectations("GL_IMG_multisampled_render_to_texture");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->feature_flags(
+      ).use_img_for_multisampled_render_to_texture);
+  EXPECT_TRUE(info_->feature_flags(
+      ).use_img_for_multisampled_render_to_texture);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_EXT_multisampled_render_to_texture"));
+  EXPECT_TRUE(info_->validators()->g_l_state.IsValid(
+      GL_MAX_SAMPLES_EXT));
+  EXPECT_TRUE(info_->validators()->render_buffer_parameter.IsValid(
+      GL_RENDERBUFFER_SAMPLES_EXT));
+  EXPECT_TRUE(info_->validators()->frame_buffer_parameter.IsValid(
+      GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_texture_filter_anisotropic) {

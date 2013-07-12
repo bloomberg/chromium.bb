@@ -854,6 +854,14 @@ void GLES2TraceImplementation::RenderbufferStorageMultisampleEXT(
       target, samples, internalformat, width, height);
 }
 
+void GLES2TraceImplementation::FramebufferTexture2DMultisampleEXT(
+    GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+    GLint level, GLsizei samples) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::FramebufferTexture2DMultisampleEXT");  // NOLINT
+  gl_->FramebufferTexture2DMultisampleEXT(
+      target, attachment, textarget, texture, level, samples);
+}
+
 void GLES2TraceImplementation::TexStorage2DEXT(
     GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width,
     GLsizei height) {

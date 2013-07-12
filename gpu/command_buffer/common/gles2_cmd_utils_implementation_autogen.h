@@ -86,6 +86,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x2601, "GL_LINEAR", },
   { 0x8C03, "GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG", },
   { 0x9242, "GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM", },
+  { 0x88BA, "GL_READ_WRITE", },
   { 0x88BB, "GL_BUFFER_ACCESS_OES", },
   { 0x88BC, "GL_BUFFER_MAPPED_OES", },
   { 0x88BD, "GL_BUFFER_MAP_POINTER_OES", },

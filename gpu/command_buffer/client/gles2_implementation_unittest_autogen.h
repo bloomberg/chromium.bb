@@ -1529,6 +1529,19 @@ TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleEXT) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, FramebufferTexture2DMultisampleEXT) {
+  struct Cmds {
+    cmds::FramebufferTexture2DMultisampleEXT cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4, 0, 6);
+
+  gl_->FramebufferTexture2DMultisampleEXT(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4, 0, 6);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, TexStorage2DEXT) {
   struct Cmds {
     cmds::TexStorage2DEXT cmd;

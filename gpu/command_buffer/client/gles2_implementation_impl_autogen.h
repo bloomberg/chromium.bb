@@ -1445,6 +1445,21 @@ void GLES2Implementation::RenderbufferStorageMultisampleEXT(
   CheckGLError();
 }
 
+void GLES2Implementation::FramebufferTexture2DMultisampleEXT(
+    GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+    GLint level, GLsizei samples) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFramebufferTexture2DMultisampleEXT(" << GLES2Util::GetStringFrameBufferTarget(target) << ", " << GLES2Util::GetStringAttachment(attachment) << ", " << GLES2Util::GetStringTextureTarget(textarget) << ", " << texture << ", " << level << ", " << samples << ")");  // NOLINT
+  if (samples < 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glFramebufferTexture2DMultisampleEXT", "samples < 0");  // NOLINT
+    return;
+  }
+  helper_->FramebufferTexture2DMultisampleEXT(
+      target, attachment, textarget, texture, level, samples);
+  CheckGLError();
+}
+
 void GLES2Implementation::TexStorage2DEXT(
     GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width,
     GLsizei height) {

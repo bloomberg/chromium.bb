@@ -74,7 +74,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   // Attaches a texture to a particlar attachment. Pass null to detach.
   void AttachTexture(
       GLenum attachment, TextureRef* texture_ref, GLenum target,
-      GLint level);
+      GLint level, GLsizei samples);
 
   // Unbinds the given renderbuffer if it is bound.
   void UnbindRenderbuffer(

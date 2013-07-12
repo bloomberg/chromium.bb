@@ -159,6 +159,8 @@
 #define glBlitFramebufferEXT GLES2_GET_FUN(BlitFramebufferEXT)
 #define glRenderbufferStorageMultisampleEXT GLES2_GET_FUN( \
     RenderbufferStorageMultisampleEXT)
+#define glFramebufferTexture2DMultisampleEXT GLES2_GET_FUN( \
+    FramebufferTexture2DMultisampleEXT)
 #define glTexStorage2DEXT GLES2_GET_FUN(TexStorage2DEXT)
 #define glGenQueriesEXT GLES2_GET_FUN(GenQueriesEXT)
 #define glDeleteQueriesEXT GLES2_GET_FUN(DeleteQueriesEXT)

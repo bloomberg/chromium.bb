@@ -459,6 +459,10 @@ void GLES2InterfaceStub::RenderbufferStorageMultisampleEXT(
     GLenum /* target */, GLsizei /* samples */, GLenum /* internalformat */,
     GLsizei /* width */, GLsizei /* height */) {
 }
+void GLES2InterfaceStub::FramebufferTexture2DMultisampleEXT(
+    GLenum /* target */, GLenum /* attachment */, GLenum /* textarget */,
+    GLuint /* texture */, GLint /* level */, GLsizei /* samples */) {
+}
 void GLES2InterfaceStub::TexStorage2DEXT(
     GLenum /* target */, GLsizei /* levels */, GLenum /* internalFormat */,
     GLsizei /* width */, GLsizei /* height */) {

@@ -435,7 +435,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
 
   // check adding one attachment
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1, kLevel1, kSamples1);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
@@ -518,7 +518,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
                                 true);
 
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget2, kLevel2);
+      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget2, kLevel2, kSamples2);
   EXPECT_EQ(static_cast<GLenum>(kFormat2),
             framebuffer_->GetColorAttachmentFormat());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
@@ -574,7 +574,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
             framebuffer_->IsPossiblyComplete());
 
   // Check removing it.
-  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT0, NULL, 0, 0);
+  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT0, NULL, 0, 0, 0);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
   EXPECT_EQ(static_cast<GLenum>(0), framebuffer_->GetColorAttachmentFormat());
 
@@ -625,6 +625,7 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
   const GLuint kTextureService2Id = 334;
   const GLenum kTarget1 = GL_TEXTURE_2D;
   const GLint kLevel1 = 0;
+  const GLint kSamples1 = 0;
 
   texture_manager_.CreateTexture(kTextureClient1Id, kTextureService1Id);
   scoped_refptr<TextureRef> texture1(
@@ -637,9 +638,9 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
 
   // Attach to 2 attachment points.
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1, kLevel1, kSamples1);
   framebuffer_->AttachTexture(
-      GL_DEPTH_ATTACHMENT, texture1.get(), kTarget1, kLevel1);
+      GL_DEPTH_ATTACHMENT, texture1.get(), kTarget1, kLevel1, kSamples1);
   // Check they were attached.
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
@@ -662,6 +663,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   const GLuint kTextureService2Id = 334;
   const GLenum kTarget1 = GL_TEXTURE_2D;
   const GLint kLevel1 = 0;
+  const GLint kSamples1 = 0;
 
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
@@ -679,7 +681,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
 
   // Check at attaching marks as not complete.
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget1, kLevel1, kSamples1);
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
   manager_.MarkAsComplete(framebuffer_);
   EXPECT_TRUE(manager_.IsComplete(framebuffer_));
@@ -707,6 +709,7 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   const GLuint kTextureService2Id = 334;
   const GLenum kTarget1 = GL_TEXTURE_2D;
   const GLint kLevel1 = 0;
+  const GLint kSamples1 = 0;
 
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
@@ -734,7 +737,7 @@ TEST_F(FramebufferInfoTest, GetStatus) {
 
   // Check changing the attachments calls CheckFramebufferStatus.
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget1, kLevel1, kSamples1);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE)).RetiresOnSaturation();
   framebuffer_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);

@@ -2233,7 +2233,7 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
   scoped_refptr<Framebuffer> framebuffer1 =
       framebuffer_manager1.GetFramebuffer(10);
   framebuffer1->AttachTexture(
-      GL_COLOR_ATTACHMENT0, ref1.get(), GL_TEXTURE_2D, 0);
+      GL_COLOR_ATTACHMENT0, ref1.get(), GL_TEXTURE_2D, 0, 0);
   EXPECT_FALSE(framebuffer_manager1.IsComplete(framebuffer1.get()));
   EXPECT_NE(kCompleteValue, framebuffer1->IsPossiblyComplete());
 
@@ -2261,7 +2261,7 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
   scoped_refptr<Framebuffer> framebuffer2 =
       framebuffer_manager2.GetFramebuffer(20);
   framebuffer2->AttachTexture(
-      GL_COLOR_ATTACHMENT0, ref2.get(), GL_TEXTURE_2D, 0);
+      GL_COLOR_ATTACHMENT0, ref2.get(), GL_TEXTURE_2D, 0, 0);
   EXPECT_FALSE(framebuffer_manager2.IsComplete(framebuffer2.get()));
   EXPECT_EQ(kCompleteValue, framebuffer2->IsPossiblyComplete());
   framebuffer_manager2.MarkAsComplete(framebuffer2.get());

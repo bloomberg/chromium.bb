@@ -228,8 +228,12 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
       return 1;
+    // -- glGetFramebufferAttachmentParameteriv with
+    //    GL_EXT_multisampled_render_to_texture
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT:
+      return 1;
 
-    // -- glGetFramebufferAttachmentParameteriv
+    // -- glGetProgramiv
     case GL_DELETE_STATUS:
       return 1;
     case GL_LINK_STATUS:
@@ -268,6 +272,10 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_RENDERBUFFER_DEPTH_SIZE:
       return 1;
     case GL_RENDERBUFFER_STENCIL_SIZE:
+      return 1;
+    // -- glGetRenderbufferAttachmentParameteriv with
+    //    GL_EXT_multisampled_render_to_texture
+    case GL_RENDERBUFFER_SAMPLES_EXT:
       return 1;
 
     // -- glGetShaderiv

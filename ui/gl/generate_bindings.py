@@ -230,6 +230,16 @@ GL_FUNCTIONS = [
       'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
       'GLint level', },
 { 'return_type': 'void',
+  'names': ['glFramebufferTexture2DMultisampleEXT'],
+  'arguments':
+      'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
+      'GLint level, GLsizei samples', },
+{ 'return_type': 'void',
+  'names': ['glFramebufferTexture2DMultisampleIMG'],
+  'arguments':
+      'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
+      'GLint level, GLsizei samples', },
+{ 'return_type': 'void',
   'names': ['glFrontFace'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
@@ -463,6 +473,10 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glRenderbufferStorageMultisampleANGLE',
             'glRenderbufferStorageMultisample'],
+  'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
+               'GLsizei width, GLsizei height', },
+{ 'return_type': 'void',
+  'names': ['glRenderbufferStorageMultisampleIMG'],
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',

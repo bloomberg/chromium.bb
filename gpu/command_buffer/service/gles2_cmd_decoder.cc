@@ -1231,12 +1231,27 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
       GLint level);
 
+  // Wrapper for glFramebufferTexture2DMultisampleEXT.
+  void DoFramebufferTexture2DMultisample(
+      GLenum target, GLenum attachment, GLenum textarget,
+      GLuint texture, GLint level, GLsizei samples);
+
+  // Common implementation for both DoFramebufferTexture2D wrappers.
+  void DoFramebufferTexture2DCommon(const char* name,
+      GLenum target, GLenum attachment, GLenum textarget,
+      GLuint texture, GLint level, GLsizei samples);
+
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
 
   // Helper for GenSharedIdsCHROMIUM commands.
   void DoGenSharedIdsCHROMIUM(
       GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
+
+  // Helper for DoGetBooleanv, Floatv, and Intergerv to adjust pname
+  // to account for different pname values defined in different extension
+  // variants.
+  GLenum AdjustGetPname(GLenum pname);
 
   // Wrapper for DoGetBooleanv.
   void DoGetBooleanv(GLenum pname, GLboolean* params);
@@ -4338,6 +4353,14 @@ bool GLES2DecoderImpl::GetNumValuesReturnedForGLGet(
   return GetHelper(pname, NULL, num_values);
 }
 
+GLenum GLES2DecoderImpl::AdjustGetPname(GLenum pname) {
+  if (GL_MAX_SAMPLES == pname &&
+      features().use_img_for_multisampled_render_to_texture) {
+    return GL_MAX_SAMPLES_IMG;
+  }
+  return pname;
+}
+
 void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
   DCHECK(params);
   GLsizei num_written = 0;
@@ -4350,6 +4373,7 @@ void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
       params[ii] = static_cast<GLboolean>(values[ii]);
     }
   } else {
+    pname = AdjustGetPname(pname);
     glGetBooleanv(pname, params);
   }
 }
@@ -4365,6 +4389,7 @@ void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
         params[ii] = static_cast<GLfloat>(values[ii]);
       }
     } else {
+      pname = AdjustGetPname(pname);
       glGetFloatv(pname, params);
     }
   }
@@ -4375,6 +4400,7 @@ void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {
   GLsizei num_written;
   if (!state_.GetStateAsGLint(pname, params, &num_written) &&
       !GetHelper(pname, params, &num_written)) {
+    pname = AdjustGetPname(pname);
     glGetIntegerv(pname, params);
   }
 }
@@ -4850,11 +4876,39 @@ GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
 void GLES2DecoderImpl::DoFramebufferTexture2D(
     GLenum target, GLenum attachment, GLenum textarget,
     GLuint client_texture_id, GLint level) {
+  DoFramebufferTexture2DCommon(
+    "glFramebufferTexture2D", target, attachment,
+    textarget, client_texture_id, level, 0);
+}
+
+void GLES2DecoderImpl::DoFramebufferTexture2DMultisample(
+    GLenum target, GLenum attachment, GLenum textarget,
+    GLuint client_texture_id, GLint level, GLsizei samples) {
+  if (!features().multisampled_render_to_texture) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glFramebufferTexture2DMultisample", "function not available");
+    return;
+  }
+  DoFramebufferTexture2DCommon(
+    "glFramebufferTexture2DMultisample", target, attachment,
+    textarget, client_texture_id, level, samples);
+}
+
+void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
+    const char* name, GLenum target, GLenum attachment, GLenum textarget,
+    GLuint client_texture_id, GLint level, GLsizei samples) {
+  if (samples > renderbuffer_manager()->max_samples()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE,
+        "glFramebufferTexture2DMultisample", "samples too large");
+    return;
+  }
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
-        "glFramebufferTexture2D", "no framebuffer bound.");
+        name, "no framebuffer bound.");
     return;
   }
   GLuint service_id = 0;
@@ -4864,7 +4918,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
     if (!texture_ref) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,
-          "glFramebufferTexture2D", "unknown texture_ref");
+          name, "unknown texture_ref");
       return;
     }
     service_id = texture_ref->service_id();
@@ -4873,15 +4927,26 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
   if (!texture_manager()->ValidForTarget(textarget, level, 0, 0, 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
-        "glFramebufferTexture2D", "level out of range");
+        name, "level out of range");
     return;
   }
 
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glFramebufferTexture2D");
-  glFramebufferTexture2DEXT(target, attachment, textarget, service_id, level);
-  GLenum error = LOCAL_PEEK_GL_ERROR("glFramebufferTexture2D");
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(name);
+  if (0 == samples) {
+    glFramebufferTexture2DEXT(target, attachment, textarget, service_id, level);
+  } else {
+    if (features().use_img_for_multisampled_render_to_texture) {
+      glFramebufferTexture2DMultisampleIMG(target, attachment, textarget,
+          service_id, level, samples);
+    } else {
+      glFramebufferTexture2DMultisampleEXT(target, attachment, textarget,
+          service_id, level, samples);
+    }
+  }
+  GLenum error = LOCAL_PEEK_GL_ERROR(name);
   if (error == GL_NO_ERROR) {
-    framebuffer->AttachTexture(attachment, texture_ref, textarget, level);
+    framebuffer->AttachTexture(attachment, texture_ref, textarget, level,
+         samples);
   }
   if (framebuffer == state_.bound_draw_framebuffer.get()) {
     clear_state_dirty_ = true;
@@ -4903,6 +4968,10 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
         framebuffer->GetAttachment(attachment);
     *params = attachment_object ? attachment_object->object_name() : 0;
   } else {
+    if (pname == GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT &&
+        features().use_img_for_multisampled_render_to_texture) {
+      pname = GL_TEXTURE_SAMPLES_IMG;
+    }
     glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
   }
 }
@@ -4927,6 +4996,14 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
     case GL_RENDERBUFFER_HEIGHT:
       *params = renderbuffer->height();
       break;
+    case GL_RENDERBUFFER_SAMPLES_EXT:
+      if (features().use_img_for_multisampled_render_to_texture) {
+        glGetRenderbufferParameterivEXT(target, GL_RENDERBUFFER_SAMPLES_IMG,
+            params);
+      } else {
+        glGetRenderbufferParameterivEXT(target, GL_RENDERBUFFER_SAMPLES_EXT,
+            params);
+      }
     default:
       glGetRenderbufferParameterivEXT(target, pname, params);
       break;
@@ -4962,7 +5039,8 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     GLenum target, GLsizei samples, GLenum internalformat,
     GLsizei width, GLsizei height) {
-  if (!features().chromium_framebuffer_multisample) {
+  if (!features().chromium_framebuffer_multisample &&
+      !features().multisampled_render_to_texture) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glRenderbufferStorageMultisample", "function not available");
@@ -5014,6 +5092,9 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorageMultisample");
   if (IsAngle()) {
     glRenderbufferStorageMultisampleANGLE(
+        target, samples, impl_format, width, height);
+  } else if (features().use_img_for_multisampled_render_to_texture) {
+    glRenderbufferStorageMultisampleIMG(
         target, samples, impl_format, width, height);
   } else {
     glRenderbufferStorageMultisampleEXT(

@@ -112,6 +112,8 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   interface->fDeleteRenderbuffers = glDeleteRenderbuffers;
   interface->fFramebufferRenderbuffer = glFramebufferRenderbuffer;
   interface->fFramebufferTexture2D = glFramebufferTexture2D;
+  interface->fFramebufferTexture2DMultisample =
+    glFramebufferTexture2DMultisampleEXT;
   interface->fGenFramebuffers = glGenFramebuffers;
   interface->fGenRenderbuffers = glGenRenderbuffers;
   interface->fGetFramebufferAttachmentParameteriv =

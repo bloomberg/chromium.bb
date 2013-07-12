@@ -8468,6 +8468,66 @@ COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, width) == 16,
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, height) == 20,
                OffsetOf_RenderbufferStorageMultisampleEXT_height_not_20);
 
+struct FramebufferTexture2DMultisampleEXT {
+  typedef FramebufferTexture2DMultisampleEXT ValueType;
+  static const CommandId kCmdId = kFramebufferTexture2DMultisampleEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLenum _attachment, GLenum _textarget, GLuint _texture,
+      GLint _level, GLsizei _samples) {
+    SetHeader();
+    target = _target;
+    attachment = _attachment;
+    textarget = _textarget;
+    texture = _texture;
+    level = _level;
+    samples = _samples;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLenum _attachment, GLenum _textarget,
+      GLuint _texture, GLint _level, GLsizei _samples) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _target, _attachment, _textarget, _texture, _level, _samples);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  uint32 attachment;
+  uint32 textarget;
+  uint32 texture;
+  int32 level;
+  int32 samples;
+};
+
+COMPILE_ASSERT(sizeof(FramebufferTexture2DMultisampleEXT) == 28,
+               Sizeof_FramebufferTexture2DMultisampleEXT_is_not_28);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, header) == 0,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_header_not_0);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, target) == 4,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_target_not_4);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, attachment) == 8,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_attachment_not_8);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, textarget) == 12,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_textarget_not_12);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, texture) == 16,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_texture_not_16);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, level) == 20,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_level_not_20);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, samples) == 24,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_samples_not_24);
+
 struct TexStorage2DEXT {
   typedef TexStorage2DEXT ValueType;
   static const CommandId kCmdId = kTexStorage2DEXT;

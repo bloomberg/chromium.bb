@@ -1534,6 +1534,13 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoFramebufferTexture2D',
     'gl_test_func': 'glFramebufferTexture2DEXT',
   },
+  'FramebufferTexture2DMultisampleEXT': {
+    'decoder_func': 'DoFramebufferTexture2DMultisample',
+    'gl_test_func': 'glFramebufferTexture2DMultisampleEXT',
+    'expectation': False,
+    'unit_test': False,
+    'extension': True,
+  },
   'GenerateMipmap': {
     'decoder_func': 'DoGenerateMipmap',
     'gl_test_func': 'glGenerateMipmapEXT',

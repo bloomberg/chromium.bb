@@ -1741,6 +1741,7 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 }
 // TODO(gman): BlitFramebufferEXT
 // TODO(gman): RenderbufferStorageMultisampleEXT
+// TODO(gman): FramebufferTexture2DMultisampleEXT
 // TODO(gman): TexStorage2DEXT
 // TODO(gman): GenQueriesEXT
 // TODO(gman): GenQueriesEXTImmediate
@@ -1762,6 +1763,5 @@ TEST_F(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-// TODO(gman): GenVertexArraysOES
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

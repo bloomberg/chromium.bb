@@ -169,6 +169,19 @@
 #define GL_NUM_PROGRAM_BINARY_FORMATS_OES                0x87FE
 #define GL_PROGRAM_BINARY_FORMATS_OES                    0x87FF
 
+#ifndef GL_EXT_multisampled_render_to_texture
+#define GL_RENDERBUFFER_SAMPLES_EXT                      0x8CAB
+#define GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT        0x8D56
+#define GL_MAX_SAMPLES_EXT                               0x8D57
+#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT    0x8D6C
+#endif
+
+#ifndef GL_IMG_multisampled_render_to_texture
+#define GL_RENDERBUFFER_SAMPLES_IMG                      0x9133
+#define GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_IMG        0x9134
+#define GL_MAX_SAMPLES_IMG                               0x9135
+#define GL_TEXTURE_SAMPLES_IMG                           0x9136
+#endif
 
 #define GL_GLEXT_PROTOTYPES 1
 

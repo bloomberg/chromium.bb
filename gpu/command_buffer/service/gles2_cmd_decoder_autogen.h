@@ -2757,6 +2757,42 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleFramebufferTexture2DMultisampleEXT(
+    uint32 immediate_data_size,
+    const gles2::cmds::FramebufferTexture2DMultisampleEXT& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum attachment = static_cast<GLenum>(c.attachment);
+  GLenum textarget = static_cast<GLenum>(c.textarget);
+  GLuint texture = c.texture;
+  GLint level = static_cast<GLint>(c.level);
+  GLsizei samples = static_cast<GLsizei>(c.samples);
+  if (!validators_->frame_buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTexture2DMultisampleEXT", target, "target");  // NOLINT
+    return error::kNoError;
+  }
+  if (!validators_->attachment.IsValid(attachment)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTexture2DMultisampleEXT", attachment, "attachment");  // NOLINT
+    return error::kNoError;
+  }
+  if (!validators_->texture_target.IsValid(textarget)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTexture2DMultisampleEXT", textarget, "textarget");  // NOLINT
+    return error::kNoError;
+  }
+  if (!validators_->zero_only.IsValid(level)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glFramebufferTexture2DMultisampleEXT", "level GL_INVALID_VALUE");  // NOLINT
+    return error::kNoError;
+  }
+  if (samples < 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glFramebufferTexture2DMultisampleEXT", "samples < 0");  // NOLINT
+    return error::kNoError;
+  }
+  DoFramebufferTexture2DMultisample(
+      target, attachment, textarget, texture, level, samples);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleTexStorage2DEXT(
     uint32 immediate_data_size, const gles2::cmds::TexStorage2DEXT& c) {
   GLenum target = static_cast<GLenum>(c.target);
