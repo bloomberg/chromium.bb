@@ -70,7 +70,8 @@
         'input_method_ibus.cc',
         'input_method_ibus.h',
       ],
-    }, {
+    }],
+    ['chromeos==1', {
       'dependencies': [
         '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
       ],
