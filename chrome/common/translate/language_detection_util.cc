@@ -170,6 +170,10 @@ std::string DeterminePageLanguage(const std::string& code,
     TranslateCommonMetrics::ReportLanguageVerification(
         TranslateCommonMetrics::LANGUAGE_VERIFICATION_UNKNOWN);
     return language;
+  } else if (CanCLDComplementSubCode(language, cld_language)) {
+    TranslateCommonMetrics::ReportLanguageVerification(
+        TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_COMPLEMENT_SUB_CODE);
+    return cld_language;
   } else if (IsSameOrSimilarLanguages(language, cld_language)) {
     TranslateCommonMetrics::ReportLanguageVerification(
         TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_AGREE);
@@ -177,10 +181,6 @@ std::string DeterminePageLanguage(const std::string& code,
   } else if (MaybeServerWrongConfiguration(language, cld_language)) {
     TranslateCommonMetrics::ReportLanguageVerification(
         TranslateCommonMetrics::LANGUAGE_VERIFICATION_TRUST_CLD);
-    return cld_language;
-  } else if (CanCLDComplementSubCode(language, cld_language)) {
-    TranslateCommonMetrics::ReportLanguageVerification(
-        TranslateCommonMetrics::LANGUAGE_VERIFICATION_CLD_COMPLEMENT_SUB_CODE);
     return cld_language;
   } else {
     TranslateCommonMetrics::ReportLanguageVerification(
