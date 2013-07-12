@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/css/CSSImageSetValue.h"
 
+#include "CachedResourceInitiatorTypeNames.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
@@ -33,7 +34,6 @@
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
-#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include "wtf/MemoryInstrumentationVector.h"
@@ -104,7 +104,7 @@ StyleCachedImageSet* CSSImageSetValue::cachedImageSet(CachedResourceLoader* load
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
         ImageWithScale image = bestImageForScaleFactor();
         if (Document* document = loader->document()) {
-            CachedResourceRequest request(ResourceRequest(document->completeURL(image.imageURL)), cachedResourceRequestInitiators().css);
+            CachedResourceRequest request(ResourceRequest(document->completeURL(image.imageURL)), CachedResourceInitiatorTypeNames::css);
             if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request)) {
                 m_imageSet = StyleCachedImageSet::create(cachedImage.get(), image.scaleFactor, this);
                 m_accessedBestFitImage = true;

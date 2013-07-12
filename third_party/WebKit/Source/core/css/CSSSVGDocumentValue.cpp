@@ -26,13 +26,13 @@
 
 #include "core/css/CSSSVGDocumentValue.h"
 
+#include "CachedResourceInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
-#include "core/loader/cache/CachedResourceRequestInitiators.h"
 
 namespace WebCore {
 
@@ -54,7 +54,7 @@ CachedDocument* CSSSVGDocumentValue::load(CachedResourceLoader* loader)
     if (!m_loadRequested) {
         m_loadRequested = true;
 
-        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)), cachedResourceRequestInitiators().css);
+        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)), CachedResourceInitiatorTypeNames::css);
         m_document = loader->requestSVGDocument(request);
     }
 

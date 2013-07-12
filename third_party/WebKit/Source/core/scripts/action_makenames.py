@@ -137,7 +137,7 @@ def main(args):
             assert False
 
     assert makeNamesInput != None
-    assert tagInput != None or attrInput != None or eventsInput != None or ('--fonts' in options)
+    assert tagInput != None or attrInput != None or eventsInput != None or ('--fonts' in options) or ('--resourceTypes' in options)
 
     # scriptsPath is a Perl include directory, located relative to
     # makeNamesInput.

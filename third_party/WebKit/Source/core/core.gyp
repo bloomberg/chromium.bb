@@ -264,6 +264,7 @@
         # Additional .cpp files from make_derived_sources actions.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLElementFactory.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/CachedResourceInitiatorTypeNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/Event.cpp',

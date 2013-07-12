@@ -23,6 +23,7 @@
 #include "config.h"
 #include "core/xml/XMLHttpRequest.h"
 
+#include "CachedResourceInitiatorTypeNames.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/RefCountedLeakCounter.h>
@@ -45,7 +46,6 @@
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/HistogramSupport.h"
@@ -737,7 +737,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
     options.credentialsRequested = m_includeCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
     options.crossOriginRequestPolicy = m_allowCrossOriginRequests ? AllowCrossOriginRequests : UseAccessControl;
     options.securityOrigin = securityOrigin();
-    options.initiator = cachedResourceRequestInitiators().xmlhttprequest;
+    options.initiator = CachedResourceInitiatorTypeNames::xmlhttprequest;
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(scriptExecutionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
     options.timeoutMilliseconds = m_timeoutMilliseconds;
 

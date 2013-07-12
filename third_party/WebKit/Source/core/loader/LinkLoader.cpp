@@ -32,12 +32,12 @@
 #include "config.h"
 #include "core/loader/LinkLoader.h"
 
+#include "CachedResourceInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/Prerenderer.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
-#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/page/Settings.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/network/DNS.h"
@@ -118,7 +118,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
         if (!m_client->shouldLoadLink())
             return false;
         CachedResource::Type type = relAttribute.isLinkSubresource() ?  CachedResource::LinkSubresource : CachedResource::LinkPrefetch;
-        CachedResourceRequest linkRequest(ResourceRequest(document->completeURL(href)), cachedResourceRequestInitiators().link);
+        CachedResourceRequest linkRequest(ResourceRequest(document->completeURL(href)), CachedResourceInitiatorTypeNames::link);
         if (m_cachedLinkResource) {
             m_cachedLinkResource->removeClient(this);
             m_cachedLinkResource = 0;

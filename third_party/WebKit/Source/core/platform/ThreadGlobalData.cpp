@@ -29,7 +29,6 @@
 
 #include "core/dom/EventNames.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/platform/ThreadTimers.h"
 #include "wtf/MainThread.h"
 #include "wtf/ThreadSpecific.h"
@@ -44,8 +43,7 @@ namespace WebCore {
 ThreadSpecific<ThreadGlobalData>* ThreadGlobalData::staticData;
 
 ThreadGlobalData::ThreadGlobalData()
-    : m_cachedResourceRequestInitiators(adoptPtr(new CachedResourceRequestInitiators))
-    , m_eventNames(adoptPtr(new EventNames))
+    : m_eventNames(adoptPtr(new EventNames))
     , m_threadTimers(adoptPtr(new ThreadTimers))
 #ifndef NDEBUG
     , m_isMainThread(isMainThread())

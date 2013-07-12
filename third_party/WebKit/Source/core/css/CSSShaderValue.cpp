@@ -31,12 +31,12 @@
 
 #include "core/css/CSSShaderValue.h"
 
+#include "CachedResourceInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
-#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/rendering/style/StyleCachedShader.h"
 #include "core/rendering/style/StylePendingShader.h"
 
@@ -65,7 +65,7 @@ StyleCachedShader* CSSShaderValue::cachedShader(CachedResourceLoader* loader)
     if (!m_accessedShader) {
         m_accessedShader = true;
 
-        CachedResourceRequest request(ResourceRequest(completeURL(loader)), cachedResourceRequestInitiators().css);
+        CachedResourceRequest request(ResourceRequest(completeURL(loader)), CachedResourceInitiatorTypeNames::css);
         if (CachedResourceHandle<CachedShader> cachedShader = loader->requestShader(request))
             m_shader = StyleCachedShader::create(cachedShader.get());
     }

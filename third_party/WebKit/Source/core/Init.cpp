@@ -31,6 +31,7 @@
 #include "config.h"
 #include "Init.h"
 
+#include "CachedResourceInitiatorTypeNames.h"
 #include "FontFamilyNames.h"
 #include "HTMLNames.h"
 #include "MathMLNames.h"
@@ -60,6 +61,7 @@ void init()
     XMLNSNames::init();
     XMLNames::init();
     FontFamilyNames::init();
+    CachedResourceInitiatorTypeNames::init();
     MediaFeatureNames::init();
     WTF::StringStatics::init();
     QualifiedName::init();

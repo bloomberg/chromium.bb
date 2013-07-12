@@ -456,6 +456,29 @@
           'msvs_cygwin_shell': 1,
         },
         {
+          'action_name': 'CachedResourceInitiatorTypeNames',
+          'inputs': [
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'loader/cache/CachedResourceInitiatorTypeNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CachedResourceInitiatorTypeNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CachedResourceInitiatorTypeNames.h',
+          ],
+          'action': [
+            'python',
+            'scripts/action_makenames.py',
+            '<@(_outputs)',
+            '--',
+            '<@(_inputs)',
+            '--',
+            '--resourceTypes',
+          ],
+          'msvs_cygwin_shell': 1,
+        },
+        {
           'action_name': 'PickerCommon',
           'inputs': [
             'Resources/pagepopups/pickerCommon.css',
