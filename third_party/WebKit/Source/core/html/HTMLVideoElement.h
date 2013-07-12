@@ -93,6 +93,22 @@ private:
     AtomicString m_defaultPosterURL;
 };
 
+inline bool isHTMLVideoElement(const Node* node)
+{
+    return node->hasTagName(HTMLNames::videoTag);
+}
+
+inline bool isHTMLVideoElement(const Element* element)
+{
+    return element->hasTagName(HTMLNames::videoTag);
+}
+
+inline HTMLVideoElement* toHTMLVideoElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLVideoElement(node));
+    return static_cast<HTMLVideoElement*>(node);
+}
+
 } //namespace
 
 #endif

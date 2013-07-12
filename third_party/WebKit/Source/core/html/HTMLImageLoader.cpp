@@ -27,6 +27,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/html/HTMLObjectElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 
@@ -44,7 +45,7 @@ HTMLImageLoader::~HTMLImageLoader()
 void HTMLImageLoader::dispatchLoadEvent()
 {
     // HTMLVideoElement uses this class to load the poster image, but it should not fire events for loading or failure.
-    if (element()->hasTagName(HTMLNames::videoTag))
+    if (isHTMLVideoElement(element()))
         return;
 
     bool errorOccurred = image()->errorOccurred();

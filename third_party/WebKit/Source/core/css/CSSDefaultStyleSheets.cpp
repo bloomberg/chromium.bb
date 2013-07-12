@@ -35,6 +35,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/FullscreenController.h"
 #include "core/html/HTMLAnchorElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
@@ -166,7 +167,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
         changedDefaultStyle = true;
     }
 
-    if (!mediaControlsStyleSheet && (element->hasTagName(videoTag) || element->hasTagName(audioTag))) {
+    if (!mediaControlsStyleSheet && (isHTMLVideoElement(element) || element->hasTagName(audioTag))) {
         String mediaRules = String(mediaControlsUserAgentStyleSheet, sizeof(mediaControlsUserAgentStyleSheet)) + RenderTheme::themeForPage(element->document()->page())->extraMediaControlsStyleSheet();
         mediaControlsStyleSheet = parseUASheet(mediaRules);
         defaultStyle->addRulesFromSheet(mediaControlsStyleSheet, screenEval());

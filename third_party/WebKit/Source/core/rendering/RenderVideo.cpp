@@ -216,11 +216,11 @@ void RenderVideo::layout()
     RenderMedia::layout();
     updatePlayer();
 }
-    
+
 HTMLVideoElement* RenderVideo::videoElement() const
 {
-    ASSERT(node()->hasTagName(videoTag));
-    return static_cast<HTMLVideoElement*>(node()); 
+    ASSERT(isHTMLVideoElement(node()));
+    return toHTMLVideoElement(node());
 }
 
 void RenderVideo::updateFromElement()
