@@ -111,15 +111,21 @@ State.prototype = {
 
   /**
    * Reset to initial state.
-   * @param {number} deviceCount Device count information.
+   * @param {Array} devices Array of device information.
    */
-  gotoInitialState: function(deviceCount) {
-    if (deviceCount == 0)
+  gotoInitialState: function(devices) {
+    if (devices.length == 0) {
       this.changeState(State.StatesEnum.DEVICE_NONE);
-    else if (deviceCount == 1)
-      this.changeState(State.StatesEnum.DEVICE_USB);
-    else
+    } else if (devices.length == 1) {
+      // If a device type is not specified for some reason, we should
+      // default to display a USB device.
+      var initialState = State.StatesEnum.DEVICE_USB;
+      if (devices[0].type == 'sd')
+        initialState = State.StatesEnum.DEVICE_SD;
+      this.changeState(initialState);
+    } else {
       this.changeState(State.StatesEnum.DEVICE_MUL);
+    }
   },
 
   /**
@@ -148,30 +154,20 @@ State.prototype = {
  * @constructor
  */
 function DeviceSelection() {
-  this.deviceCount = 0;
+  this.selectedDevice = undefined;
+  this.devices = [];
 }
 
 DeviceSelection.prototype = {
   /**
-   * Clears the given selection list.
-   * @param {Array} list Device selection list.
-   */
-  clearSelectList: function(list) {
-    list.innerHtml = '';
-  },
-
-  /**
    * Shows the currently selected device.
-   * @return {number} Selected device count.
    */
   showDeviceSelection: function() {
-    if (this.deviceCount == 0) {
+    if (this.devices.length == 0) {
       this.selectedDevice = undefined;
     } else {
-      var devices = document.getElementsByClassName('selection-element');
-      this.selectDevice(devices[0].devicePath);
+      this.selectDevice(this.devices[0].devicePath);
     }
-    return this.deviceCount;
   },
 
   /**
@@ -196,7 +192,7 @@ DeviceSelection.prototype = {
    * @param {string} path Device path.
    */
   selectDevice: function(path) {
-    var element = $('radio ' + path);
+    var element = $('radio-' + path);
     element.checked = true;
     element.onclick.apply(element);
   },
@@ -212,7 +208,7 @@ DeviceSelection.prototype = {
     radioButton.type = 'radio';
     radioButton.name = 'device';
     radioButton.value = device.label;
-    radioButton.id = 'radio ' + device.devicePath;
+    radioButton.id = 'radio-' + device.devicePath;
     radioButton.className = 'float-start';
     var deviceLabelText = document.createElement('p');
     deviceLabelText.textContent = device.label;
@@ -222,8 +218,7 @@ DeviceSelection.prototype = {
     element.appendChild(radioButton);
     element.appendChild(deviceLabelText);
     element.appendChild(newLine);
-    element.id = 'select ' + device.devicePath;
-    element.devicePath = device.devicePath;
+    element.id = 'select-' + device.devicePath;
     element.className = 'selection-element';
     radioButton.onclick = this.onDeviceSelected.bind(this,
         device.label, device.filePath, device.devicePath);
@@ -233,60 +228,73 @@ DeviceSelection.prototype = {
   /**
    * Updates the list of selected devices.
    * @param {Array} devices List of devices.
-   * @return {number} Device count.
    */
-  getDevicesCallback: function(devices) {
+  devicesUpdated: function(newDevices) {
+    this.devices = newDevices;
     var selectListDOM = $('device-selection');
-    this.clearSelectList(selectListDOM);
-    this.deviceCount = devices.length;
-    if (devices.length > 0) {
-      for (var i = 0; i < devices.length; i++) {
-        var element = this.createNewDeviceElement(devices[i]);
+    selectListDOM.innerHTML = '';
+    if (this.devices.length > 0) {
+      for (var i = 0; i < this.devices.length; i++) {
+        var element = this.createNewDeviceElement(this.devices[i]);
         selectListDOM.appendChild(element);
       }
-      this.selectDevice(devices[0].devicePath);
+      this.selectDevice(this.devices[0].devicePath);
     } else {
       this.selectedDevice = undefined;
     }
-    return this.deviceCount;
   },
 
   /**
    * Handles device added event.
    * @param {Object} device Device information.
    * @param {boolean} allowSelect True to update the selected device info.
-   * @return {number} Device count.
    */
   deviceAdded: function(device, allowSelect) {
+    this.devices.push(device);
     var selectListDOM = $('device-selection');
     selectListDOM.appendChild(this.createNewDeviceElement(device));
-    this.deviceCount++;
-    if (allowSelect && this.deviceCount == 1)
+    if (allowSelect && this.devices.length == 1)
       this.selectDevice(device.devicePath);
-    return this.deviceCount;
   },
 
   /**
    * Handles device removed event.
-   * @param {string} devicePath Selected device path.
+   * @param {string} devicePath Device path to be removed.
    * @param {boolean} allowSelect True to update the selected device info.
-   * @return {number} Device count.
    */
   deviceRemoved: function(devicePath, allowSelect) {
-    var deviceSelectElement = $('select ' + devicePath);
-    deviceSelectElement.parentNode.removeChild(deviceSelectElement);
-    this.deviceCount--;
-    var devices = document.getElementsByClassName('selection-element');
+    device = this.findDevice(devicePath);
+    if (!device)
+      return;
+    this.devices.splice(this.devices.indexOf(device), 1);
 
+    // Remove device selection element from DOM.
+    var deviceSelectElement = $('select-' + devicePath);
+    deviceSelectElement.parentNode.removeChild(deviceSelectElement);
+
+    // Update selected device element.
     if (allowSelect) {
-      if (devices.length > 0) {
+      if (this.devices.length > 0) {
         if (this.selectedDevice == devicePath)
-          this.selectDevice(devices[0].devicePath);
+          this.selectDevice(this.devices[0].devicePath);
       } else {
         this.selectedDevice = undefined;
       }
     }
-    return this.deviceCount;
+  },
+
+  /**
+   * Finds device with given device path property.
+   * @param {string} devicePath Device path of device to find.
+   * @return {Object} Matching device information or undefined if not found.
+   */
+  findDevice: function(devicePath) {
+    for (var i = 0; i < this.devices.length; ++i) {
+      if (this.devices[i].devicePath == devicePath) {
+        return this.devices[i];
+      }
+    }
+    return undefined;
   }
 };
 
@@ -296,7 +304,7 @@ DeviceSelection.prototype = {
  */
 function BrowserBridge() {
   this.currentState = new State(localStrings);
-  this.devices = new DeviceSelection();
+  this.deviceSelection = new DeviceSelection();
   // We will use these often so it makes sence making them class members to
   // avoid frequent document.getElementById calls.
   this.progressElement = $('progress-div');
@@ -347,20 +355,20 @@ BrowserBridge.prototype = {
    */
   deviceAdded: function(device) {
     var inInitialState = this.currentState.isInitialState();
-    var deviceCount = this.devices.deviceAdded(device, inInitialState);
+    this.deviceSelection.deviceAdded(device, inInitialState);
     if (inInitialState)
-      this.currentState.gotoInitialState(deviceCount);
+      this.currentState.gotoInitialState(this.deviceSelection.devices);
   },
 
   /**
    * Handles device removed event.
-   * @param {Object} device Device information.
+   * @param {string} devicePath Device path to be removed.
    */
-  deviceRemoved: function(device) {
+  deviceRemoved: function(devicePath) {
     var inInitialState = this.currentState.isInitialState();
-    var deviceCount = this.devices.deviceRemoved(device, inInitialState);
+    this.deviceSelection.deviceRemoved(devicePath, inInitialState);
     if (inInitialState)
-      this.currentState.gotoInitialState(deviceCount);
+      this.currentState.gotoInitialState(this.deviceSelection.devices);
   },
 
   /**
@@ -368,8 +376,8 @@ BrowserBridge.prototype = {
    * @param {Array} devices List of devices.
    */
   getDevicesCallback: function(devices) {
-    var deviceCount = this.devices.getDevicesCallback(devices);
-    this.currentState.gotoInitialState(deviceCount);
+    this.deviceSelection.devicesUpdated(devices);
+    this.currentState.gotoInitialState(this.deviceSelection.devices);
     this.sendWebuiInitializedMessage();
   },
 
@@ -406,8 +414,8 @@ BrowserBridge.prototype = {
 
   reportNetworkDetected: function() {
     if (this.currentState.equals(State.StatesEnum.ERROR_NO_NETWORK)) {
-      var deviceCount = this.devices.showDeviceSelection();
-      this.currentState.gotoInitialState(deviceCount);
+      this.deviceSelection.showDeviceSelection();
+      this.currentState.gotoInitialState(this.deviceSelection.devices);
     }
   },
 
@@ -425,8 +433,8 @@ BrowserBridge.prototype = {
    * Processes click on 'Retry' button in FAIL state.
    */
   onBurnRetry: function() {
-    var deviceCount = this.devices.showDeviceSelection();
-    this.currentState.gotoInitialState(deviceCount);
+    this.deviceSelection.showDeviceSelection();
+    this.currentState.gotoInitialState(this.deviceSelection.devices);
   }
 };
 
