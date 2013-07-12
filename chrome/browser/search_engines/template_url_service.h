@@ -381,7 +381,11 @@ class TemplateURLService : public WebDataServiceConsumer,
     // certain changes were intentionally from the system, or possibly some
     // unintentional change from when we were Syncing.
     DSP_CHANGE_SYNC_UNINTENTIONAL,
-    DSP_CHANGE_NOT_SYNC,
+    // All non-sync changes save PROFILE_RESET; we can't reorder the list for
+    // clarity as this would screw up stat collection.
+    DSP_CHANGE_OTHER,
+    // Changed through "Profile Reset" feature.
+    DSP_CHANGE_PROFILE_RESET,
     // Boundary value.
     DSP_CHANGE_MAX,
   };

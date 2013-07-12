@@ -1434,6 +1434,7 @@
 0x4641db18f24b11e1	ReloadIgnoringCache
 0xbcc54eb67cab2ae9	RemoveFormat
 0xa728f2892204aabc	ReportBug
+0x4129a29cb4b8675d	ResetProfile
 0x8f83bd601e845bc1	RestoreTab
 0x665cc78aff3f37f5	SBInterstitialMalwareDontProceed
 0xb00e7625ea2bc160	SBInterstitialMalwareDontProceed_V1

@@ -281,7 +281,7 @@ TemplateURLService::TemplateURLService(Profile* profile)
       models_associated_(false),
       processing_syncer_changes_(false),
       pending_synced_default_search_(false),
-      dsp_change_origin_(DSP_CHANGE_NOT_SYNC) {
+      dsp_change_origin_(DSP_CHANGE_OTHER) {
   DCHECK(profile_);
   Init(NULL, 0);
 }
@@ -301,7 +301,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       models_associated_(false),
       processing_syncer_changes_(false),
       pending_synced_default_search_(false),
-      dsp_change_origin_(DSP_CHANGE_NOT_SYNC) {
+      dsp_change_origin_(DSP_CHANGE_OTHER) {
   Init(initializers, count);
 }
 
@@ -721,6 +721,8 @@ void TemplateURLService::ResetNonExtensionURLs() {
   STLDeleteContainerPointers(extensions, entries_to_process.end());
   entries_to_process.erase(extensions, entries_to_process.end());
   // Setup search engines and a default one.
+  base::AutoReset<DefaultSearchChangeOrigin> change_origin(
+      &dsp_change_origin_, DSP_CHANGE_PROFILE_RESET);
   AddTemplateURLsAndSetupDefaultEngine(&entries_to_process,
                                        default_search_provider);
 
@@ -2001,9 +2003,10 @@ void TemplateURLService::UpdateDefaultSearch() {
       base::AutoReset<DefaultSearchChangeOrigin> change_origin(
           &dsp_change_origin_, DSP_CHANGE_SYNC_NOT_MANAGED);
       pending_synced_default_search_ = false;
+      SetDefaultSearchProviderNoNotify(synced_default);
+    } else {
+      SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
     }
-    SetDefaultSearchProviderNoNotify(synced_default ? synced_default :
-        FindNewDefaultSearchProvider());
   }
   NotifyObservers();
 }

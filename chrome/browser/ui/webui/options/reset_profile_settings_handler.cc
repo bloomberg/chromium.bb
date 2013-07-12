@@ -15,6 +15,7 @@
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -113,6 +114,7 @@ void ResetProfileSettingsHandler::ResetProfile() {
       default_settings.Pass(),
       base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
                  AsWeakPtr()));
+  content::RecordAction(content::UserMetricsAction("ResetProfile"));
 }
 
 }  // namespace options
