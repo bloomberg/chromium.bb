@@ -338,15 +338,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
   EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger().dialog_type());
 }
 
-#if defined(OS_MACOSX)
-// TODO(groby): Implement the necessary functionality and enable this test:
-// http://crbug.com/256864
-#define MAYBE_Hide DISABLED_Hide
-#else
-#define MAYBE_Hide Hide
-#endif
 // Take some other action that dismisses the dialog.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_Hide) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->Hide();
 

@@ -56,8 +56,12 @@ void AutofillDialogCocoa::Show() {
       new ConstrainedWindowMac(this, controller_->web_contents(), sheet));
 }
 
-// Closes the sheet and ends the modal loop. Triggers cleanup sequence.
 void AutofillDialogCocoa::Hide() {
+  [sheet_controller_ hide];
+}
+
+// Closes the sheet and ends the modal loop. Triggers cleanup sequence.
+void AutofillDialogCocoa::PerformClose() {
   constrained_window_->CloseWebContentsModalDialog();
 }
 
@@ -287,16 +291,21 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (IBAction)cancel:(id)sender {
   autofillDialog_->controller()->OnCancel();
-  autofillDialog_->Hide();
+  autofillDialog_->PerformClose();
+}
+
+- (void)hide {
+  autofillDialog_->controller()->OnCancel();
+  autofillDialog_->PerformClose();
+}
+
+- (void)updateNotificationArea {
+  [mainContainer_ updateNotificationArea];
 }
 
 - (void)updateAccountChooser {
   [accountChooser_ update];
   [mainContainer_ updateLegalDocuments];
-}
-
-- (void)updateNotificationArea {
-  [mainContainer_ updateNotificationArea];
 }
 
 - (void)updateSection:(autofill::DialogSection)section {

@@ -117,8 +117,9 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (IBAction)cancel:(id)sender;
 
 // Forwarding AutofillDialogView calls.
-- (void)updateAccountChooser;
+- (void)hide;
 - (void)updateNotificationArea;
+- (void)updateAccountChooser;
 - (void)updateSection:(autofill::DialogSection)section;
 - (void)getInputs:(autofill::DetailOutputMap*)outputs
        forSection:(autofill::DialogSection)section;
