@@ -309,6 +309,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyStrokeWidth:
     case CSSPropertyTabSize:
     case CSSPropertyTextAlign:
+    case CSSPropertyTextAlignLast:
     case CSSPropertyTextAnchor:
     case CSSPropertyTextDecoration:
     case CSSPropertyTextDecorationLine:
@@ -344,7 +345,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextCombine:
 #if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextAlignLast:
     case CSSPropertyWebkitTextUnderlinePosition:
 #endif // CSS3_TEXT
     case CSSPropertyWebkitTextDecorationsInEffect:

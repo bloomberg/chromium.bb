@@ -1,83 +1,83 @@
-This test checks that -webkit-text-align-last parses properly the properties from CSS 3 Text.
+This test checks that text-align-last parses properly the properties from CSS 3 Text.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 Test the initial value:
-FAIL computedStyle.webkitTextAlignLast should be auto (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS computedStyle.textAlignLast is 'auto'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'auto'
 
 Value 'start':
-PASS e.style.webkitTextAlignLast is 'start'
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be start. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be start (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be start. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'start'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'start'
+PASS computedStyle.textAlignLast is 'start'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'start'
 
 Value 'end':
-PASS e.style.webkitTextAlignLast is 'end'
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be end. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be end (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be end. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'end'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'end'
+PASS computedStyle.textAlignLast is 'end'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'end'
 
 Value 'left':
-PASS e.style.webkitTextAlignLast is 'left'
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be left. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be left (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be left. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'left'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'left'
+PASS computedStyle.textAlignLast is 'left'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'left'
 
 Value 'right':
-PASS e.style.webkitTextAlignLast is 'right'
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be right. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be right (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be right. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'right'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'right'
+PASS computedStyle.textAlignLast is 'right'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'right'
 
 Value 'center':
-PASS e.style.webkitTextAlignLast is 'center'
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be center. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be center (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be center. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'center'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'center'
+PASS computedStyle.textAlignLast is 'center'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'center'
 
 Value 'justify':
-PASS e.style.webkitTextAlignLast is 'justify'
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be justify. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be justify (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be justify. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'justify'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'justify'
+PASS computedStyle.textAlignLast is 'justify'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'justify'
 
 Value 'auto':
-PASS e.style.webkitTextAlignLast is 'auto'
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be auto (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'auto'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'auto'
+PASS computedStyle.textAlignLast is 'auto'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'auto'
 
 Invalid value test - '-webkit-left':
-FAIL e.style.webkitTextAlignLast should be auto. Was -webkit-left.
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be auto (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'auto'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'auto'
+PASS computedStyle.textAlignLast is 'auto'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'auto'
 
 Invalid value test - '-webkit-right':
-FAIL e.style.webkitTextAlignLast should be auto. Was -webkit-right.
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be auto (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'auto'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'auto'
+PASS computedStyle.textAlignLast is 'auto'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'auto'
 
 Invalid value test - '-webkit-center':
-FAIL e.style.webkitTextAlignLast should be auto. Was -webkit-center.
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be auto (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'auto'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'auto'
+PASS computedStyle.textAlignLast is 'auto'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'auto'
 
 Invalid value test - '-webkit-match-parent':
-FAIL e.style.webkitTextAlignLast should be auto. Was -webkit-match-parent.
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be auto (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'auto'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'auto'
+PASS computedStyle.textAlignLast is 'auto'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'auto'
 
 Invalid value test - '-webkit-auto':
-FAIL e.style.webkitTextAlignLast should be auto. Was -webkit-auto.
-FAIL e.style.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
-FAIL computedStyle.webkitTextAlignLast should be auto (of type string). Was undefined (of type undefined).
-FAIL computedStyle.getPropertyCSSValue('-webkit-text-align-last').cssText should be auto. Threw exception TypeError: Cannot read property 'cssText' of null
+PASS e.style.textAlignLast is 'auto'
+PASS e.style.getPropertyCSSValue('text-align-last').cssText is 'auto'
+PASS computedStyle.textAlignLast is 'auto'
+PASS computedStyle.getPropertyCSSValue('text-align-last').cssText is 'auto'
 
 PASS successfullyParsed is true
 

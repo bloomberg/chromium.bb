@@ -89,6 +89,7 @@ right apply_type=length, initial=initialOffset, use_auto
 speak
 table-layout
 tab-size type_name=unsigned
+text-align-last type_name=TextAlignLast
 text-decoration-color custom_all
 text-decoration-style type_name=TextDecorationStyle
 text-overflow type_name=TextOverflow
@@ -193,7 +194,6 @@ z-index type_name=int, custom_all
 -webkit-ruby-position type_name=RubyPosition
 -webkit-shape-margin apply_type=length
 -webkit-shape-padding apply_type=length
--webkit-text-align-last type_name=TextAlignLast, condition=CSS3_TEXT
 -webkit-text-combine type_name=TextCombine
 -webkit-text-emphasis-color custom_all
 -webkit-text-emphasis-position type_name=TextEmphasisPosition

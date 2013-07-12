@@ -1101,6 +1101,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     case CSSPropertyTabSize:
     case CSSPropertyTableLayout:
     case CSSPropertyTextAlign:
+    case CSSPropertyTextAlignLast:
     case CSSPropertyTextDecoration:
     case CSSPropertyTextDecorationLine:
     case CSSPropertyTextDecorationStyle:
@@ -1213,7 +1214,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:
 #if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextAlignLast:
     case CSSPropertyWebkitTextUnderlinePosition:
 #endif // CSS3_TEXT
     case CSSPropertyWebkitTextEmphasisColor:

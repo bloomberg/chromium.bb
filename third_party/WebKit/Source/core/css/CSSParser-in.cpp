@@ -686,6 +686,12 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueAuto || valueID == CSSValueFixed)
             return true;
         break;
+    case CSSPropertyTextAlignLast:
+        // auto | start | end | left | right | center | justify
+        if (RuntimeEnabledFeatures::css3TextEnabled()
+            && ((valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto))
+            return true;
+        break;
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextOverlineMode:
     case CSSPropertyTextUnderlineMode:
@@ -857,13 +863,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
             return true;
         break;
 
-#if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextAlignLast:
-        // auto | start | end | left | right | center | justify
-        if ((valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto)
-            return true;
-        break;
-#endif // CSS3_TEXT
     case CSSPropertyWebkitTextCombine:
         if (valueID == CSSValueNone || valueID == CSSValueHorizontal)
             return true;
@@ -929,6 +928,8 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     switch (propertyId) {
     case CSSPropertyMixBlendMode:
         return RuntimeEnabledFeatures::cssCompositingEnabled();
+    case CSSPropertyTextAlignLast:
+        return RuntimeEnabledFeatures::css3TextEnabled();
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
@@ -1011,9 +1012,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitRegionFragment:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
-#if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextAlignLast:
-#endif // CSS3_TEXT
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
@@ -2766,6 +2764,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyResize:
     case CSSPropertySpeak:
     case CSSPropertyTableLayout:
+    case CSSPropertyTextAlignLast:
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextOverflow:
@@ -2821,9 +2820,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitRegionFragment:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
-#if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextAlignLast:
-#endif // CSS3_TEXT
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:

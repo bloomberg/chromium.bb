@@ -95,6 +95,7 @@ public:
     unsigned textEmphasisFill : 1; // TextEmphasisFill
     unsigned textEmphasisMark : 3; // TextEmphasisMark
     unsigned textEmphasisPosition : 1; // TextEmphasisPosition
+    unsigned m_textAlignLast : 3; // TextAlignLast
     unsigned m_textOrientation : 2; // TextOrientation
 #if ENABLE(CSS3_TEXT)
     unsigned m_textIndentLine : 1; // TextIndentEachLine
@@ -105,7 +106,6 @@ public:
     unsigned m_lineSnap : 2; // LineSnap
     unsigned m_lineAlign : 1; // LineAlign
 #if ENABLE(CSS3_TEXT)
-    unsigned m_textAlignLast : 3; // TextAlignLast
     unsigned m_textUnderlinePosition : 3; // TextUnderlinePosition
 #endif // CSS3_TEXT
     unsigned m_rubyPosition : 1; // RubyPosition

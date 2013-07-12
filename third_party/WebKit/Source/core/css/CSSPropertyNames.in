@@ -176,6 +176,7 @@ speak
 table-layout
 tab-size
 text-align
+text-align-last
 text-decoration
 text-decoration-line
 text-decoration-style
@@ -374,7 +375,6 @@ order
 -webkit-ruby-position
 -webkit-text-combine
 -epub-text-combine alias_for=-webkit-text-combine
--webkit-text-align-last condition=CSS3_TEXT
 -webkit-text-underline-position condition=CSS3_TEXT
 -webkit-text-decorations-in-effect
 -webkit-text-emphasis

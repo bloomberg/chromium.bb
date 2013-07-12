@@ -465,8 +465,8 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyTextDecorationLine: return 401;
     case CSSPropertyTextDecorationStyle: return 402;
     case CSSPropertyTextDecorationColor: return 403;
+    case CSSPropertyTextAlignLast: return 404;
 #if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
-    case CSSPropertyWebkitTextAlignLast: return 404;
     case CSSPropertyWebkitTextUnderlinePosition: return 405;
 #endif
     case CSSPropertyMaxZoom: return 406;

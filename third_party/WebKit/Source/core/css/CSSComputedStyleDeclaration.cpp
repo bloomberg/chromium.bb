@@ -170,12 +170,12 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyTableLayout,
     CSSPropertyTabSize,
     CSSPropertyTextAlign,
+    CSSPropertyTextAlignLast,
     CSSPropertyTextDecoration,
     CSSPropertyTextDecorationLine,
     CSSPropertyTextDecorationStyle,
     CSSPropertyTextDecorationColor,
 #if ENABLE(CSS3_TEXT)
-    CSSPropertyWebkitTextAlignLast,
     CSSPropertyWebkitTextUnderlinePosition,
 #endif // CSS3_TEXT
     CSSPropertyTextIndent,
@@ -2160,6 +2160,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->tableLayout());
         case CSSPropertyTextAlign:
             return cssValuePool().createValue(style->textAlign());
+        case CSSPropertyTextAlignLast:
+            return cssValuePool().createValue(style->textAlignLast());
         case CSSPropertyTextDecoration:
         case CSSPropertyTextDecorationLine:
             return renderTextDecorationFlagsToCSSValue(style->textDecoration());
@@ -2168,8 +2170,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTextDecorationColor:
             return currentColorOrValidColor(style.get(), style->textDecorationColor());
 #if ENABLE(CSS3_TEXT)
-        case CSSPropertyWebkitTextAlignLast:
-            return cssValuePool().createValue(style->textAlignLast());
         case CSSPropertyWebkitTextUnderlinePosition:
             return cssValuePool().createValue(style->textUnderlinePosition());
 #endif // CSS3_TEXT

@@ -353,11 +353,11 @@ enum TextDecorationStyle {
     TextDecorationStyleWavy
 };
 
-#if ENABLE(CSS3_TEXT)
 enum TextAlignLast {
     TextAlignLastAuto, TextAlignLastStart, TextAlignLastEnd, TextAlignLastLeft, TextAlignLastRight, TextAlignLastCenter, TextAlignLastJustify
 };
 
+#if ENABLE(CSS3_TEXT)
 enum TextUnderlinePosition {
     // FIXME: Implement support for 'under left' and 'under right' values.
     TextUnderlinePositionAuto = 0x1, TextUnderlinePositionAlphabetic = 0x2, TextUnderlinePositionUnder = 0x4

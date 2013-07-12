@@ -76,6 +76,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , textEmphasisFill(TextEmphasisFillFilled)
     , textEmphasisMark(TextEmphasisMarkNone)
     , textEmphasisPosition(TextEmphasisPositionOver)
+    , m_textAlignLast(RenderStyle::initialTextAlignLast())
     , m_textOrientation(TextOrientationVerticalRight)
 #if ENABLE(CSS3_TEXT)
     , m_textIndentLine(RenderStyle::initialTextIndentLine())
@@ -85,7 +86,6 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_lineSnap(RenderStyle::initialLineSnap())
     , m_lineAlign(RenderStyle::initialLineAlign())
 #if ENABLE(CSS3_TEXT)
-    , m_textAlignLast(RenderStyle::initialTextAlignLast())
     , m_textUnderlinePosition(RenderStyle::initialTextUnderlinePosition())
 #endif // CSS3_TEXT
     , m_rubyPosition(RenderStyle::initialRubyPosition())
@@ -130,6 +130,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textEmphasisFill(o.textEmphasisFill)
     , textEmphasisMark(o.textEmphasisMark)
     , textEmphasisPosition(o.textEmphasisPosition)
+    , m_textAlignLast(o.m_textAlignLast)
     , m_textOrientation(o.m_textOrientation)
 #if ENABLE(CSS3_TEXT)
     , m_textIndentLine(o.m_textIndentLine)
@@ -139,7 +140,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_lineSnap(o.m_lineSnap)
     , m_lineAlign(o.m_lineAlign)
 #if ENABLE(CSS3_TEXT)
-    , m_textAlignLast(o.m_textAlignLast)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
 #endif // CSS3_TEXT
     , m_rubyPosition(o.m_rubyPosition)
@@ -203,6 +203,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && textEmphasisFill == o.textEmphasisFill
         && textEmphasisMark == o.textEmphasisMark
         && textEmphasisPosition == o.textEmphasisPosition
+        && m_textAlignLast == o.m_textAlignLast
         && m_textOrientation == o.m_textOrientation
 #if ENABLE(CSS3_TEXT)
         && m_textIndentLine == o.m_textIndentLine
@@ -216,7 +217,6 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_lineGrid == o.m_lineGrid
         && m_imageRendering == o.m_imageRendering
 #if ENABLE(CSS3_TEXT)
-        && m_textAlignLast == o.m_textAlignLast
         && m_textUnderlinePosition == o.m_textUnderlinePosition
 #endif // CSS3_TEXT
         && m_rubyPosition == o.m_rubyPosition

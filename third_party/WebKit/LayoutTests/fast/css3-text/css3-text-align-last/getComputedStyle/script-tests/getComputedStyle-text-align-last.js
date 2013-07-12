@@ -14,27 +14,27 @@ function testComputedStyle(propertyJS, propertyCSS, type, value)
 function valueSettingTest(value)
 {
     debug("Value '" + value + "':");
-    e.style.webkitTextAlignLast = value;
-    testElementStyle("webkitTextAlignLast", "-webkit-text-align-last", "[object CSSPrimitiveValue]", value);
-    testComputedStyle("webkitTextAlignLast", "-webkit-text-align-last", "[object CSSPrimitiveValue]", value);
+    e.style.textAlignLast = value;
+    testElementStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", value);
+    testComputedStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", value);
     debug('');
 }
 
 function invalidValueSettingTest(value, defaultValue)
 {
     debug("Invalid value test - '" + value + "':");
-    e.style.webkitTextAlignLast = value;
-    testElementStyle("webkitTextAlignLast", "-webkit-text-align-last", "[object CSSPrimitiveValue]", defaultValue);
-    testComputedStyle("webkitTextAlignLast", "-webkit-text-align-last", "[object CSSPrimitiveValue]", defaultValue);
+    e.style.textAlignLast = value;
+    testElementStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", defaultValue);
+    testComputedStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", defaultValue);
     debug('');
 }
 
-description("This test checks that -webkit-text-align-last parses properly the properties from CSS 3 Text.");
+description("This test checks that text-align-last parses properly the properties from CSS 3 Text.");
 
 e = document.getElementById('test');
 
 debug("Test the initial value:");
-testComputedStyle("webkitTextAlignLast", "-webkit-text-align-last", "[object CSSPrimitiveValue]", 'auto');
+testComputedStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", 'auto');
 debug('');
 
 valueSettingTest('start');
