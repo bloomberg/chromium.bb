@@ -21,8 +21,6 @@ TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
       bubble_view_(bubble_view) {
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
-  bubble_widget_->GetNativeView()->
-      SetProperty(internal::kStayInSameRootWindowKey, true);
 
   tray_->InitializeBubbleAnimations(bubble_widget_);
   tray_->UpdateBubbleViewArrow(bubble_view_);

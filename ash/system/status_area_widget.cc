@@ -40,7 +40,6 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container)
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);
   GetNativeView()->SetName(kNativeViewName);
-  GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey, true);
 }
 
 StatusAreaWidget::~StatusAreaWidget() {

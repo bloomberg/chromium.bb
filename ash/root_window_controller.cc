@@ -605,11 +605,12 @@ void RootWindowController::CreateContainersInRootWindow(
       non_lock_screen_containers);
   SetUsesScreenCoordinates(panel_container);
 
-  aura::Window* launcher_container =
+  aura::Window* shelf_container =
       CreateContainer(kShellWindowId_ShelfContainer,
-                      "LauncherContainer",
+                      "ShelfContainer",
                       non_lock_screen_containers);
-  SetUsesScreenCoordinates(launcher_container);
+  SetUsesScreenCoordinates(shelf_container);
+  DescendantShouldStayInSameRootWindow(shelf_container);
 
   aura::Window* app_list_container =
       CreateContainer(kShellWindowId_AppListContainer,

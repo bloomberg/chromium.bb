@@ -491,7 +491,6 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
       new internal::StatusAreaLayoutManager(this));
 
   views::Widget::AddObserver(this);
-  GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey, true);
 }
 
 ShelfWidget::~ShelfWidget() {
