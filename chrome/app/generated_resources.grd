@@ -7065,6 +7065,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION" desc="Description for the flag to enable experiments in Developer Tools.">
         Enable Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.
       </message>
+      <message name="IDS_FLAGS_REMOTE_DEBUGGING_RAW_USB_NAME" desc="Name for the flag to enable remote debugging of Chrome for Android over raw USB interface.">
+        Enable Remote Debugging over USB.
+      </message>
+      <message name="IDS_FLAGS_REMOTE_DEBUGGING_RAW_USB_DESCRIPTION" desc="Description for the flag to enable remote debugging of Chrome for Android over raw USB interface.">
+        Enable Remote Debugging of Chrome for Android over raw USB interface (no need to install / run Android Debug Bridge).
+      </message>
       <message name="IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_NAME" desc="Name for the flag to enable silent debugging via chrome.debugger extension API.">
         Enable Silent Debugging.
       </message>

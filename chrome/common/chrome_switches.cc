@@ -1176,9 +1176,8 @@ const char kRecordMode[]                    = "record-mode";
 // Uses custom front-end URL for the remote debugging.
 const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 
-// Does not show an infobar when an extension attaches to a page using
-// chrome.debugger page. Required to attach to extension background pages.
-const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";
+// Enables remote debugging of Chrome for Android via raw USB.
+const char kRemoteDebuggingRawUSB[]       = "remote-debugging-raw-usb";
 
 // Enables print preview in the renderer. This flag is generated internally by
 // Chrome and does nothing when directly passed to the browser.
@@ -1259,6 +1258,10 @@ const char kShowLauncherAlignmentMenu[]     = "show-launcher-alignment-menu";
 
 // Marks a renderer as the signin process.
 const char kSigninProcess[]                 = "signin-process";
+
+// Does not show an infobar when an extension attaches to a page using
+// chrome.debugger page. Required to attach to extension background pages.
+const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";
 
 // Changes the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,7 +196,9 @@ void BnDiv(uint32* a, uint32* b, uint32** pq, uint32** pr) {
     BnFree(ca);
 }
 
-crypto::RSAPrivateKey* GetOrCreatePrivateKey(Profile* profile) {
+}  // namespace
+
+crypto::RSAPrivateKey* AndroidRSAPrivateKey(Profile* profile) {
   std::string encoded_key =
       profile->GetPrefs()->GetString(prefs::kDevToolsAdbKey);
   std::string decoded_key;
@@ -220,14 +222,11 @@ crypto::RSAPrivateKey* GetOrCreatePrivateKey(Profile* profile) {
   return key.release();
 }
 
-}  // namespace
-
-std::string AndroidRSAPublicKey(Profile* profile) {
-  scoped_ptr<crypto::RSAPrivateKey> key(GetOrCreatePrivateKey(profile));
+std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key) {
+  std::vector<uint8> public_key;
   if (!key)
     return kDummyRSAPublicKey;
 
-  std::vector<uint8> public_key;
   key->ExportPublicKey(&public_key);
   std::string asn1(public_key.begin(), public_key.end());
 
@@ -278,14 +277,11 @@ std::string AndroidRSAPublicKey(Profile* profile) {
   return output;
 }
 
-std::string AndroidRSASign(Profile* profile, const std::string& body) {
-  scoped_ptr<crypto::RSAPrivateKey> key(GetOrCreatePrivateKey(profile));
-  if (!key)
-    return std::string();
-
+std::string AndroidRSASign(crypto::RSAPrivateKey* key,
+                           const std::string& body) {
   std::vector<uint8> digest(body.begin(), body.end());
   std::vector<uint8> result;
-  if (!crypto::SignatureCreator::Sign(key.get(), vector_as_array(&digest),
+  if (!crypto::SignatureCreator::Sign(key, vector_as_array(&digest),
                                       digest.size(), &result)) {
     return std::string();
   }

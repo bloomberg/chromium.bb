@@ -11,13 +11,24 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "net/socket/tcp_client_socket.h"
+
+template<typename T> struct DefaultSingletonTraits;
 
 namespace base {
 class MessageLoop;
 class DictionaryValue;
 class Thread;
+}
+
+namespace content {
+class BrowserContext;
+}
+
+namespace crypto {
+class RSAPrivateKey;
 }
 
 class Profile;
@@ -28,10 +39,42 @@ extern const char kDevToolsChannelNameFormat[];
 typedef base::Callback<void(int, const std::string&)> CommandCallback;
 typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
 
-class DevToolsAdbBridge {
+class DevToolsAdbBridge :
+    public base::RefCountedThreadSafe<DevToolsAdbBridge> {
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
+
+  class Wrapper : public BrowserContextKeyedService {
+   public:
+    Wrapper(Profile* profile);
+    virtual ~Wrapper();
+
+    DevToolsAdbBridge* Get();
+   private:
+    scoped_refptr<DevToolsAdbBridge> bridge_;
+  };
+
+  class Factory : public BrowserContextKeyedServiceFactory {
+   public:
+    // Returns singleton instance of DevToolsAdbBridge.
+    static Factory* GetInstance();
+
+    // Returns DevToolsAdbBridge associated with |profile|.
+    static DevToolsAdbBridge* GetForProfile(Profile* profile);
+
+   private:
+    friend struct DefaultSingletonTraits<Factory>;
+    friend class DevToolsAdbBridge;
+
+    Factory();
+    virtual ~Factory();
+
+    // BrowserContextKeyedServiceFactory overrides:
+    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+        content::BrowserContext* context) const OVERRIDE;
+    DISALLOW_COPY_AND_ASSIGN(Factory);
+  };
 
   class RemotePage : public base::RefCounted<RemotePage> {
    public:
@@ -113,9 +156,12 @@ class DevToolsAdbBridge {
     DISALLOW_COPY_AND_ASSIGN(AndroidDevice);
   };
 
-  explicit DevToolsAdbBridge(Profile* profile);
-  ~DevToolsAdbBridge();
+  typedef std::vector<scoped_refptr<AndroidDevice> > AndroidDevices;
+  typedef base::Callback<void(const AndroidDevices&)> AndroidDevicesCallback;
 
+  explicit DevToolsAdbBridge(Profile* profile);
+
+  void EnumerateDevices(const AndroidDevicesCallback& callback);
   void Query(const std::string query, const Callback& callback);
   void Pages(const PagesCallback& callback);
   void Attach(const std::string& serial,
@@ -124,8 +170,11 @@ class DevToolsAdbBridge {
               const std::string& frontend_url);
 
  private:
+  friend class base::RefCountedThreadSafe<DevToolsAdbBridge>;
   friend class AdbAttachCommand;
   friend class AgentHostDelegate;
+
+  virtual ~DevToolsAdbBridge();
 
   class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
    public:
@@ -142,10 +191,14 @@ class DevToolsAdbBridge {
     base::Thread* thread_;
   };
 
+  void ReceivedDevices(const AndroidDevicesCallback& callback,
+                       int result,
+                       const std::string& response);
+
   Profile* profile_;
   scoped_refptr<RefCountedAdbThread> adb_thread_;
-  base::WeakPtrFactory<DevToolsAdbBridge> weak_factory_;
   bool has_message_loop_;
+  scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };
 

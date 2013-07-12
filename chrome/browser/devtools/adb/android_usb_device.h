@@ -15,6 +15,10 @@ namespace base {
 class MessageLoop;
 }
 
+namespace crypto {
+class RSAPrivateKey;
+}
+
 namespace net {
 class StreamSocket;
 }
@@ -56,15 +60,16 @@ class AdbMessage : public base::RefCounted<AdbMessage> {
   DISALLOW_COPY_AND_ASSIGN(AdbMessage);
 };
 
-typedef base::Callback<void(int, AdbMessage*)> AdbCallback;
+class AndroidUsbDevice;
+typedef std::vector<scoped_refptr<AndroidUsbDevice> > AndroidUsbDevices;
 
 class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
  public:
-  typedef std::vector<scoped_refptr<AndroidUsbDevice> > Devices;
+  static void Enumerate(Profile* profile,
+                        crypto::RSAPrivateKey* rsa_key,
+                        AndroidUsbDevices* devices);
 
-  static void Enumerate(Profile* profile, Devices* devices);
-
-  AndroidUsbDevice(Profile* profile,
+  AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
                    scoped_refptr<UsbDevice> device,
                    const std::string& serial,
                    int inbound_address,
@@ -115,7 +120,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   base::MessageLoop* message_loop_;
 
-  Profile* profile_;
+  scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
 
   // Device info
   scoped_refptr<UsbDevice> usb_device_;
@@ -129,6 +134,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   // Created sockets info
   uint32 last_socket_id_;
+  bool terminated_;
   typedef std::map<uint32, AndroidUsbSocket*> AndroidUsbSockets;
   AndroidUsbSockets sockets_;
 

@@ -370,8 +370,8 @@ InspectUI::InspectUI(content::WebUI* web_ui)
       weak_factory_(this) {
   observer_->Init(this);
   Profile* profile = Profile::FromWebUI(web_ui);
-  adb_bridge_.reset(new DevToolsAdbBridge(profile));
-  web_ui->AddMessageHandler(new InspectMessageHandler(adb_bridge_.get()));
+  adb_bridge_ = DevToolsAdbBridge::Factory::GetForProfile(profile);
+  web_ui->AddMessageHandler(new InspectMessageHandler(adb_bridge_));
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 
   registrar_.Add(this,
@@ -416,7 +416,7 @@ void InspectUI::StopListeningNotifications()
 {
   if (!observer_.get())
     return;
-  adb_bridge_.reset();
+  adb_bridge_ = NULL;
   observer_->InspectUIDestroyed();
   observer_ = NULL;
   registrar_.RemoveAll();

@@ -9,10 +9,12 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,17 +22,21 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/browser/devtools/adb/android_rsa.h"
 #include "chrome/browser/devtools/adb/android_usb_device.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/tethering_adb_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager.h"
+#include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/server/web_socket.h"
 
@@ -185,50 +191,18 @@ class AdbQueryCommand : public base::RefCounted<AdbQueryCommand> {
   Callback callback_;
 };
 
-static void ReceivedDevices(const AndroidDevicesCallback& callback,
-                            Profile* profile,
-                            int result,
-                            const std::string& response) {
-  AndroidDevices devices;
-#if defined(DEBUG_DEVTOOLS)
-  devices.push_back(new AdbDeviceImpl(""));  // For desktop remote debugging.
-  std::vector<scoped_refptr<AndroidUsbDevice> > usb_devices;
-  AndroidUsbDevice::Enumerate(profile, &usb_devices);
-  for (size_t i = 0; i < usb_devices.size(); ++i)
-    devices.push_back(new UsbDeviceImpl(usb_devices[i]));
-#endif  // defined(DEBUG_DEVTOOLS)
-  if (result != net::OK) {
-    callback.Run(devices);
-    return;
-  }
-
-  std::vector<std::string> serials;
-  Tokenize(response, "\n", &serials);
-  for (size_t i = 0; i < serials.size(); ++i) {
-    std::vector<std::string> tokens;
-    Tokenize(serials[i], "\t ", &tokens);
-    devices.push_back(new AdbDeviceImpl(tokens[0]));
-  }
-  callback.Run(devices);
-}
-
-static void EnumerateDevices(Profile* profile,
-                             const AndroidDevicesCallback& callback) {
-  AdbClientSocket::AdbQuery(
-      kAdbPort, kHostDevicesCommand,
-      base::Bind(&ReceivedDevices, callback, profile));
-}
-
 class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
  public:
-  explicit AdbPagesCommand(const PagesCallback& callback)
-     : callback_(callback) {
+  explicit AdbPagesCommand(DevToolsAdbBridge* bridge,
+                           const PagesCallback& callback)
+     : bridge_(bridge),
+       callback_(callback) {
     pages_.reset(new DevToolsAdbBridge::RemotePages());
   }
 
-  void Run(Profile* profile) {
-    EnumerateDevices(profile,
-                     base::Bind(&AdbPagesCommand::ReceivedDevices, this));
+  void Run() {
+    bridge_->EnumerateDevices(base::Bind(&AdbPagesCommand::ReceivedDevices,
+                                         this));
   }
 
  private:
@@ -410,6 +384,7 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
     }
   }
 
+  scoped_refptr<DevToolsAdbBridge> bridge_;
   PagesCallback callback_;
   AndroidDevices devices_;
   std::vector<std::string> sockets_;
@@ -427,6 +402,42 @@ typedef std::map<std::string, AgentHostDelegate*> AgentHostDelegates;
 
 base::LazyInstance<AgentHostDelegates>::Leaky g_host_delegates =
     LAZY_INSTANCE_INITIALIZER;
+
+DevToolsAdbBridge::Wrapper::Wrapper(Profile* profile)
+    : bridge_(new DevToolsAdbBridge(profile)) {
+}
+
+DevToolsAdbBridge::Wrapper::~Wrapper() {
+}
+
+DevToolsAdbBridge* DevToolsAdbBridge::Wrapper::Get() {
+  return bridge_.get();
+}
+
+// static
+DevToolsAdbBridge::Factory* DevToolsAdbBridge::Factory::GetInstance() {
+  return Singleton<DevToolsAdbBridge::Factory>::get();
+}
+
+// static
+DevToolsAdbBridge* DevToolsAdbBridge::Factory::GetForProfile(
+    Profile* profile) {
+  return static_cast<DevToolsAdbBridge::Wrapper*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true))->Get();
+}
+
+DevToolsAdbBridge::Factory::Factory()
+    : BrowserContextKeyedServiceFactory(
+          "DevToolsAdbBridge",
+          BrowserContextDependencyManager::GetInstance()) {}
+
+DevToolsAdbBridge::Factory::~Factory() {}
+
+BrowserContextKeyedService*
+DevToolsAdbBridge::Factory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new DevToolsAdbBridge::Wrapper(Profile::FromBrowserContext(context));
+}
 
 DevToolsAdbBridge::AndroidDevice::AndroidDevice(const std::string& serial)
     : serial_(serial) {
@@ -636,7 +647,7 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
 
 class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
  public:
-  AdbAttachCommand(const base::WeakPtr<DevToolsAdbBridge>& bridge,
+  AdbAttachCommand(DevToolsAdbBridge* bridge,
                    const std::string& serial,
                    const std::string& socket,
                    const std::string& debug_url,
@@ -648,16 +659,8 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
         frontend_url_(frontend_url) {
   }
 
-  void Run(Profile* profile) {
-
-    // scoped_refptr<DevToolsAdbBridge::AndroidDevice> device =
-    // new AdbDeviceImpl(serial_);
-
-    DevToolsAdbBridge* bridge = bridge_.get();
-    if (!bridge)
-      return;
-
-    EnumerateDevices(profile, base::Bind(&AdbAttachCommand::ReceivedDevices,
+  void Run() {
+    bridge_->EnumerateDevices(base::Bind(&AdbAttachCommand::ReceivedDevices,
                                          this));
   }
 
@@ -689,10 +692,6 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
   void OpenDevToolsWindow(net::StreamSocket* socket) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    DevToolsAdbBridge* bridge = bridge_.get();
-    if (!bridge)
-      return;
-
     std::string id = base::StringPrintf("%s:%s", serial_.c_str(),
                                         debug_url_.c_str());
     AgentHostDelegates::iterator it = g_host_delegates.Get().find(id);
@@ -700,13 +699,13 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
     if (it != g_host_delegates.Get().end())
       delegate = it->second;
     else
-      delegate = new AgentHostDelegate(id, serial_, bridge->adb_thread_,
+      delegate = new AgentHostDelegate(id, serial_, bridge_->adb_thread_,
                                        socket);
     DevToolsWindow::OpenExternalFrontend(
-        bridge->profile_, frontend_url_, delegate->GetAgentHost().get());
+        bridge_->profile_, frontend_url_, delegate->GetAgentHost().get());
   }
 
-  base::WeakPtr<DevToolsAdbBridge> bridge_;
+  scoped_refptr<DevToolsAdbBridge> bridge_;
   std::string serial_;
   std::string socket_;
   std::string debug_url_;
@@ -791,12 +790,15 @@ DevToolsAdbBridge::RefCountedAdbThread::~RefCountedAdbThread() {
 DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
     : profile_(profile),
       adb_thread_(RefCountedAdbThread::GetInstance()),
-      weak_factory_(this),
       has_message_loop_(adb_thread_->message_loop() != NULL) {
+  rsa_key_.reset(AndroidRSAPrivateKey(profile));
 }
 
-DevToolsAdbBridge::~DevToolsAdbBridge() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void DevToolsAdbBridge::EnumerateDevices(
+    const AndroidDevicesCallback& callback) {
+  AdbClientSocket::AdbQuery(
+      kAdbPort, kHostDevicesCommand,
+      base::Bind(&DevToolsAdbBridge::ReceivedDevices, this, callback));
 }
 
 void DevToolsAdbBridge::Query(
@@ -818,9 +820,9 @@ void DevToolsAdbBridge::Pages(const PagesCallback& callback) {
     return;
 
   scoped_refptr<AdbPagesCommand> command(
-      new AdbPagesCommand(callback));
+      new AdbPagesCommand(this, callback));
   adb_thread_->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AdbPagesCommand::Run, command, profile_));
+      base::Bind(&AdbPagesCommand::Run, command));
 }
 
 void DevToolsAdbBridge::Attach(const std::string& serial,
@@ -832,9 +834,46 @@ void DevToolsAdbBridge::Attach(const std::string& serial,
     return;
 
   scoped_refptr<AdbAttachCommand> command(
-      new AdbAttachCommand(weak_factory_.GetWeakPtr(), serial, socket,
+      new AdbAttachCommand(this, serial, socket,
                            debug_url, frontend_url));
   adb_thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&AdbAttachCommand::Run, command, profile_));
+      base::Bind(&AdbAttachCommand::Run, command));
+}
+
+DevToolsAdbBridge::~DevToolsAdbBridge() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void DevToolsAdbBridge::ReceivedDevices(const AndroidDevicesCallback& callback,
+                                        int result,
+                                        const std::string& response) {
+  AndroidDevices devices;
+#if defined(DEBUG_DEVTOOLS)
+  devices.push_back(new AdbDeviceImpl(""));  // For desktop remote debugging.
+#endif  // defined(DEBUG_DEVTOOLS)
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRemoteDebuggingRawUSB)) {
+    AndroidUsbDevices usb_devices;
+    AndroidUsbDevice::Enumerate(profile_, rsa_key_.get(), &usb_devices);
+    for (AndroidUsbDevices::iterator it = usb_devices.begin();
+         it != usb_devices.end(); ++it) {
+      devices.push_back(new UsbDeviceImpl(*it));
+    }
+  }
+
+  if (result != net::OK) {
+    callback.Run(devices);
+    return;
+  }
+
+  std::vector<std::string> serials;
+  Tokenize(response, "\n", &serials);
+  for (size_t i = 0; i < serials.size(); ++i) {
+    std::vector<std::string> tokens;
+    Tokenize(serials[i], "\t ", &tokens);
+    devices.push_back(new AdbDeviceImpl(tokens[0]));
+  }
+  callback.Run(devices);
 }
