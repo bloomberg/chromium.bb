@@ -276,6 +276,14 @@ void FrameLoaderClientImpl::detachedFromParent()
     m_webFrame->setClient(0);
 }
 
+void FrameLoaderClientImpl::dispatchWillRequestAfterPreconnect(ResourceRequest& request)
+{
+    if (m_webFrame->client()) {
+        WrappedResourceRequest webreq(request);
+        m_webFrame->client()->willRequestAfterPreconnect(m_webFrame, webreq);
+    }
+}
+
 void FrameLoaderClientImpl::dispatchWillSendRequest(
     DocumentLoader* loader, unsigned long identifier, ResourceRequest& request,
     const ResourceResponse& redirectResponse)
@@ -526,7 +534,6 @@ void FrameLoaderClientImpl::postProgressEstimateChangedNotification()
         webview->client()->didChangeLoadProgress(
             m_webFrame, m_webFrame->frame()->page()->progress()->estimatedProgress());
     }
-
 }
 
 void FrameLoaderClientImpl::postProgressFinishedNotification()

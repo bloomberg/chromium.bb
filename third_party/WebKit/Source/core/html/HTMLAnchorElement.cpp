@@ -78,13 +78,14 @@ public:
         return adoptPtr(new HTMLAnchorElement::PrefetchEventHandler(anchorElement));
     }
 
+    void reset();
+
     void handleEvent(Event* e);
     void didChangeHREF() { m_hadHREFChanged = true; }
+    bool hasIssuedPreconnect() const { return m_hasIssuedPreconnect; }
 
 private:
     explicit PrefetchEventHandler(HTMLAnchorElement*);
-
-    void reset();
 
     void handleMouseOver(Event* event);
     void handleMouseOut(Event* event);
@@ -222,6 +223,7 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
 
         if (isLinkClick(event) && treatLinkAsLiveForEventType(eventType(event))) {
             handleClick(event);
+            prefetchEventHandler()->reset();
             return;
         }
 
@@ -570,9 +572,10 @@ void HTMLAnchorElement::handleClick(Event* event)
     appendServerMapMousePosition(url, event);
     KURL completedURL = document()->completeURL(url.toString());
 
+    ResourceRequest request(completedURL);
+    if (prefetchEventHandler()->hasIssuedPreconnect())
+        frame->loader()->client()->dispatchWillRequestAfterPreconnect(request);
     if (hasAttribute(downloadAttr)) {
-        ResourceRequest request(completedURL);
-
         if (!hasRel(RelationNoReferrer)) {
             String referrer = SecurityPolicy::generateReferrerHeader(document()->referrerPolicy(), completedURL, frame->loader()->outgoingReferrer());
             if (!referrer.isEmpty())
@@ -581,7 +584,7 @@ void HTMLAnchorElement::handleClick(Event* event)
 
         frame->loader()->client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));
     } else {
-        FrameLoadRequest frameRequest(document()->securityOrigin(), ResourceRequest(completedURL), target());
+        FrameLoadRequest frameRequest(document()->securityOrigin(), request, target());
         frame->loader()->loadFrameRequest(frameRequest, false, event, 0, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
     }
 
@@ -794,8 +797,6 @@ void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
 
     int flags = (m_hadTapUnconfirmed ? 2 : 0) | (capturedTapDown ? 1 : 0);
     HistogramSupport::histogramEnumeration("MouseEventPrefetch.PreTapEventsFollowedByClick", flags, 4);
-
-    reset();
 }
 
 bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
@@ -842,6 +843,7 @@ void HTMLAnchorElement::PrefetchEventHandler::prefetch(WebKit::WebPreconnectMoti
         return;
 
     preconnectToURL(url, motivation);
+    m_hasIssuedPreconnect = true;
 }
 
 }
