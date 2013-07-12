@@ -682,9 +682,11 @@ class ThreadSanitizerBase(object):
 
     # This should shorten filepaths on bots.
     ret += ["--file-prefix-to-cut=build/src/"]
+    ret += ["--file-prefix-to-cut=out/Release/../../"]
 
     # This should shorten filepaths for functions intercepted in TSan.
     ret += ["--file-prefix-to-cut=scripts/tsan/tsan/"]
+    ret += ["--file-prefix-to-cut=src/tsan/tsan/"]
 
     ret += ["--gen-suppressions=true"]
 

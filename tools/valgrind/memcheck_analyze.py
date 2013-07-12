@@ -60,7 +60,7 @@ def getCDATAOf(top_node, name):
 def shortenFilePath(source_dir, directory):
   '''Returns a string with the string prefix |source_dir| removed from
   |directory|.'''
-  prefixes_to_cut = ["build/src/", "valgrind/coregrind/"]
+  prefixes_to_cut = ["build/src/", "valgrind/coregrind/", "out/Release/../../"]
 
   if source_dir:
     prefixes_to_cut.append(source_dir)
