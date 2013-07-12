@@ -18,6 +18,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
@@ -635,6 +636,9 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
 
   texture_size_in_layer_ = frame->gl_frame_data->size;
   ComputeContentsSize(frame->metadata);
+
+  if (layer_->layer_tree_host())
+    layer_->layer_tree_host()->SetLatencyInfo(frame->metadata.latency_info);
 
   BuffersSwapped(frame->gl_frame_data->mailbox, callback);
 }

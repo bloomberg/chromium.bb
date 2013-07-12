@@ -19,12 +19,14 @@
 #include "base/threading/thread.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -66,6 +68,17 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
   OutputSurfaceWithoutParent(scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
       : cc::OutputSurface(context3d.Pass()) {
     capabilities_.adjust_deadline_for_parent = false;
+  }
+
+  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
+    content::WebGraphicsContext3DCommandBufferImpl* command_buffer =
+      static_cast<content::WebGraphicsContext3DCommandBufferImpl*>(context3d());
+    content::CommandBufferProxyImpl* command_buffer_proxy =
+        command_buffer->GetCommandBufferProxy();
+    DCHECK(command_buffer_proxy);
+    command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
+
+    OutputSurface::SwapBuffers(frame);
   }
 };
 
