@@ -7,11 +7,13 @@
   }
   @-webkit-keyframes test2 {
     0% { left: 10px; }
-    50% { left: 30px; }
-    100% { left: 20px; }
+    50% , 60% { left: 30px; }
+    -10% { left: 50px; }
+    90%, 100% { left: 20px; }
   }
   @-webkit-keyframes test-from-to {
     from { left: 10px; }
+    -10% { left: 50px; }
     50% { left: 30px; }
     to { left: 20px; }
   }
@@ -87,12 +89,12 @@ shouldBe("rules2.length", "3");
 
 shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rules2.item(0).keyText", "'0%'");
-shouldBe("rules2.item(1).keyText", "'50%'");
-shouldBe("rules2.item(2).keyText", "'100%'");
+shouldBe("rules2.item(1).keyText", "'50%,60%'");
+shouldBe("rules2.item(2).keyText", "'90%,100%'");
 
 shouldBe("rules2.item(0).cssText", "'0% { left: 10px; }'");
-shouldBe("rules2.item(1).cssText", "'50% { left: 30px; }'");
-shouldBe("rules2.item(2).cssText", "'100% { left: 20px; }'");
+shouldBe("rules2.item(1).cssText", "'50%,60% { left: 30px; }'");
+shouldBe("rules2.item(2).cssText", "'90%,100% { left: 20px; }'");
 
 debug("");
 
@@ -102,13 +104,24 @@ shouldBe("rules2.item(0).style.length", "1");
 debug("");
 debug("Find a rule");
 
-var rule = keyframes2.findRule("50%");
+var rule = keyframes2.findRule("0%");
 
 if (!rule) 
-  testFailed("Could not extract '50%' keyframe rule");
+  testFailed("Could not extract '0%' keyframe rule");
 
 shouldBe("rule.type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
-shouldBe("rule.cssText", "'50% { left: 30px; }'");
+shouldBe("rule.cssText", "'0% { left: 10px; }'");
+
+debug("");
+debug("Find a rule with multiple key values");
+
+var rule = keyframes2.findRule("50%,60%");
+
+if (!rule) 
+  testFailed("Could not extract '50%,60%' keyframe rule");
+
+shouldBe("rule.type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+shouldBe("rule.cssText", "'50%,60% { left: 30px; }'");
 
 debug("");
 debug("Find a rule using from and to");
@@ -136,11 +149,11 @@ else
 debug("");
 debug("Delete a rule");
 
-keyframes2.deleteRule("50%");
+keyframes2.deleteRule("50%,60%");
 shouldBe("rules2.length", "2");
 shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rules2.item(0).keyText", "'0%'");
-shouldBe("rules2.item(1).keyText", "'100%'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
 
 debug("");
 debug("Delete a from rule");
@@ -159,9 +172,46 @@ keyframes2.deleteRule("70%");
 shouldBe("rules2.length", "2");
 shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 shouldBe("rules2.item(0).keyText", "'0%'");
-shouldBe("rules2.item(1).keyText", "'100%'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
 
 debug("");
+debug("Set a keyframe key");
+
+rules2.item(0).keyText = "70%";
+shouldBe("rules2.length", "2");
+shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+shouldBe("rules2.item(0).keyText", "'70%'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
+
+debug("");
+debug("Set a keyframe key with 'from'");
+
+rules2.item(0).keyText = "from";
+shouldBe("rules2.length", "2");
+shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+// FIXME: Should this be converted to '0px'?
+shouldBe("rules2.item(0).keyText", "'from'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
+
+debug("");
+debug("Set a keyframe key with multiple values");
+
+rules2.item(0).keyText = "10%, 20%, 30%";
+shouldBe("rules2.length", "2");
+shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+// FIXME: Should we strip spaces to match the keyText parsed from a keyframe rule?
+shouldBe("rules2.item(0).keyText", "'10%, 20%, 30%'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
+
+debug("");
+debug("Set a keyframe key with an out-of-range value");
+
+rules2.item(0).keyText = "40%, -50%, 60%";
+shouldBe("rules2.length", "2");
+shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+// FIXME: Should we leave keyText unchanged when attempting to set to an invalid string?
+shouldBe("rules2.item(0).keyText", "'40%, -50%, 60%'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
 
 </script>
 <script src="../fast/js/resources/js-test-post.js"></script>

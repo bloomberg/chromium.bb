@@ -30,18 +30,22 @@ PASS keyframes2.name is 'test2'
 PASS rules2.length is 3
 PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rules2.item(0).keyText is '0%'
-PASS rules2.item(1).keyText is '50%'
-PASS rules2.item(2).keyText is '100%'
+PASS rules2.item(1).keyText is '50%,60%'
+PASS rules2.item(2).keyText is '90%,100%'
 PASS rules2.item(0).cssText is '0% { left: 10px; }'
-PASS rules2.item(1).cssText is '50% { left: 30px; }'
-PASS rules2.item(2).cssText is '100% { left: 20px; }'
+PASS rules2.item(1).cssText is '50%,60% { left: 30px; }'
+PASS rules2.item(2).cssText is '90%,100% { left: 20px; }'
 
 PASS rules2.item(0).style is an instance of CSSStyleDeclaration
 PASS rules2.item(0).style.length is 1
 
 Find a rule
 PASS rule.type is window.CSSRule.WEBKIT_KEYFRAME_RULE
-PASS rule.cssText is '50% { left: 30px; }'
+PASS rule.cssText is '0% { left: 10px; }'
+
+Find a rule with multiple key values
+PASS rule.type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rule.cssText is '50%,60% { left: 30px; }'
 
 Find a rule using from and to
 PASS keyframesFromTo.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
@@ -57,7 +61,7 @@ Delete a rule
 PASS rules2.length is 2
 PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rules2.item(0).keyText is '0%'
-PASS rules2.item(1).keyText is '100%'
+PASS rules2.item(1).keyText is '90%,100%'
 
 Delete a from rule
 PASS rulesFromTo.length is 2
@@ -69,8 +73,31 @@ Delete a rule that doesn't exist
 PASS rules2.length is 2
 PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rules2.item(0).keyText is '0%'
-PASS rules2.item(1).keyText is '100%'
+PASS rules2.item(1).keyText is '90%,100%'
 
+Set a keyframe key
+PASS rules2.length is 2
+PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules2.item(0).keyText is '70%'
+PASS rules2.item(1).keyText is '90%,100%'
+
+Set a keyframe key with 'from'
+PASS rules2.length is 2
+PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules2.item(0).keyText is 'from'
+PASS rules2.item(1).keyText is '90%,100%'
+
+Set a keyframe key with multiple values
+PASS rules2.length is 2
+PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules2.item(0).keyText is '10%, 20%, 30%'
+PASS rules2.item(1).keyText is '90%,100%'
+
+Set a keyframe key with an out-of-range value
+PASS rules2.length is 2
+PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules2.item(0).keyText is '40%, -50%, 60%'
+PASS rules2.item(1).keyText is '90%,100%'
 PASS successfullyParsed is true
 
 TEST COMPLETE

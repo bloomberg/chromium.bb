@@ -46,6 +46,9 @@ public:
     ~StyleKeyframe();
 
     String keyText() const { return m_key; }
+    // FIXME: Should we trim whitespace?
+    // FIXME: Should we leave keyText unchanged when attempting to set to an
+    // invalid string?
     void setKeyText(const String& s) { m_key = s; }
 
     void getKeys(Vector<float>& keys) const   { parseKeyString(m_key, keys); }
