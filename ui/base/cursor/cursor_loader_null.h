@@ -27,8 +27,6 @@ class UI_EXPORT CursorLoaderNull : public CursorLoader {
   virtual void UnloadAll() OVERRIDE;
   virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
 
-  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderNull);
 };
