@@ -47,6 +47,8 @@ namespace mediaGalleriesPrivate {
   callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
   callback GetAllGalleryWatchCallback = void (DOMString[] galleryIds);
 
+  // These enum bits have moved to experimental.systemInfo.storage namespace.
+  // See experimental_system_info_storage.idl.
   [inline_doc] enum EjectDeviceResultCode {
     // The ejection command is successful -- the application can prompt the user
     // to remove the device.
@@ -86,6 +88,8 @@ namespace mediaGalleriesPrivate {
     static void removeGalleryWatch(DOMString galleryId);
     static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
     static void removeAllGalleryWatch();
+    // The function has moved to experimental.systemInfo.storage namespace.
+    // See experimental_system_info_storage.idl.
     static void ejectDevice(DOMString deviceId, EjectDeviceCallback callback);
     static void getHandlers(GetHandlersCallback callback);
   };

@@ -30,6 +30,20 @@ namespace experimental.systemInfo.storage {
     double availableCapacity;
   };
 
+  [inline_doc] enum EjectDeviceResultCode {
+    // The ejection command is successful -- the application can prompt the user
+    // to remove the device.
+    success,
+    // The device is in use by another application. The ejection did not
+    // succeed; the user should not remove the device until the other
+    // application is done with the device.
+    in_use,
+    // There is no such device known.
+    no_such_device,
+    // The ejection command failed.
+    failure
+  };
+
   dictionary StorageFreeSpaceChangeInfo {
     // The transient id of the storage unit already changed.
     DOMString id;
@@ -46,6 +60,8 @@ namespace experimental.systemInfo.storage {
 
   callback StorageInfoCallback = void (StorageUnitInfo[] info);
 
+  callback EjectDeviceCallback = void (EjectDeviceResultCode result);
+
   callback AddWatchCallback = void (AddWatchResult info);
 
   callback GetAllWatchCallback = void (DOMString[] storageIds);
@@ -54,6 +70,12 @@ namespace experimental.systemInfo.storage {
     // Get the storage information from the system. The argument passed to the
     // callback is an array of StorageUnitInfo objects.
     static void get(StorageInfoCallback callback);
+
+    // Ejects a removable storage device.
+    // Note: We plan to move this function into a namespace that indicates it
+    // that modifies the state of the system rather than just gathering
+    // information.
+    static void ejectDevice(DOMString id, EjectDeviceCallback callback);
 
     // Monitor a particular storage device available change capacity.
     static void addWatch(DOMString id, AddWatchCallback callback);

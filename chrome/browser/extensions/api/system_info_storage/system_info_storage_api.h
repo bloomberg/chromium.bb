@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace extensions {
 
@@ -22,6 +23,25 @@ class SystemInfoStorageGetFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   void OnGetStorageInfoCompleted(bool success);
+};
+
+class SystemInfoStorageEjectDeviceFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("experimental.systemInfo.storage.ejectDevice",
+                             EXPERIMENTAL_SYSTEMINFO_STORAGE_EJECTDEVICE);
+
+ protected:
+  virtual ~SystemInfoStorageEjectDeviceFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void OnStorageMonitorInit(const std::string& transient_device_id);
+
+  // Eject device request handler.
+  void HandleResponse(chrome::StorageMonitor::EjectStatus status);
 };
 
 class SystemInfoStorageAddWatchFunction : public AsyncExtensionFunction {

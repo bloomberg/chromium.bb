@@ -22,6 +22,7 @@ class MediaGalleriesPlatformAppBrowserTest;
 class MediaGalleriesPrivateApiTest;
 class MediaGalleriesPrivateEjectApiTest;
 class SystemInfoStorageApiTest;
+class SystemInfoStorageEjectApiTest;
 
 namespace device {
 class MediaTransferProtocolManager;
@@ -130,6 +131,7 @@ class StorageMonitor {
   friend class ::MediaGalleriesPrivateEjectApiTest;
   friend class MediaFileSystemRegistryTest;
   friend class ::SystemInfoStorageApiTest;
+  friend class ::SystemInfoStorageEjectApiTest;
 
   StorageMonitor();
   virtual ~StorageMonitor();

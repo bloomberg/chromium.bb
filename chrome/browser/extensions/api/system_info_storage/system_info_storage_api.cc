@@ -6,6 +6,7 @@
 namespace extensions {
 
 using api::experimental_system_info_storage::StorageUnitInfo;
+namespace EjectDevice = api::experimental_system_info_storage::EjectDevice;
 
 SystemInfoStorageGetFunction::SystemInfoStorageGetFunction() {
 }
@@ -30,6 +31,68 @@ void SystemInfoStorageGetFunction::OnGetStorageInfoCompleted(bool success) {
   }
 
   SendResponse(success);
+}
+
+SystemInfoStorageEjectDeviceFunction::~SystemInfoStorageEjectDeviceFunction() {
+}
+
+bool SystemInfoStorageEjectDeviceFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
+      &SystemInfoStorageEjectDeviceFunction::OnStorageMonitorInit,
+      this,
+      params->id));
+  return true;
+}
+
+void SystemInfoStorageEjectDeviceFunction::OnStorageMonitorInit(
+    const std::string& transient_device_id) {
+  DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
+  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
+  std::string device_id_str =
+      StorageInfoProvider::Get()->GetDeviceIdForTransientId(
+          transient_device_id);
+
+  if (device_id_str == "") {
+    HandleResponse(chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE);
+    return;
+  }
+
+  monitor->EjectDevice(
+      device_id_str,
+      base::Bind(&SystemInfoStorageEjectDeviceFunction::HandleResponse,
+                 this));
+}
+
+void SystemInfoStorageEjectDeviceFunction::HandleResponse(
+    chrome::StorageMonitor::EjectStatus status) {
+  api::experimental_system_info_storage:: EjectDeviceResultCode result =
+      api::experimental_system_info_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
+  switch (status) {
+    case chrome::StorageMonitor::EJECT_OK:
+      result = api::experimental_system_info_storage::
+          EJECT_DEVICE_RESULT_CODE_SUCCESS;
+      break;
+    case chrome::StorageMonitor::EJECT_IN_USE:
+      result = api::experimental_system_info_storage::
+          EJECT_DEVICE_RESULT_CODE_IN_USE;
+      break;
+    case chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE:
+      result = api::experimental_system_info_storage::
+          EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
+      break;
+    case chrome::StorageMonitor::EJECT_FAILURE:
+      result = api::experimental_system_info_storage::
+          EJECT_DEVICE_RESULT_CODE_FAILURE;
+  }
+
+  SetResult(base::StringValue::CreateStringValue(
+      api::experimental_system_info_storage::ToString(result)));
+  SendResponse(true);
 }
 
 SystemInfoStorageAddWatchFunction::SystemInfoStorageAddWatchFunction() {

@@ -1339,6 +1339,7 @@
         'browser/extensions/api/system_info_memory/system_info_memory_apitest.cc',
         'browser/extensions/api/system_info_storage/system_info_storage_apitest.cc',
         'browser/extensions/api/system_private/system_private_apitest.cc',
+        'browser/extensions/api/system_info_storage/system_info_storage_eject_apitest.cc',
         'browser/extensions/api/tab_capture/tab_capture_apitest.cc',
         'browser/extensions/api/tabs/tabs_test.cc',
         'browser/extensions/api/terminal/terminal_private_apitest.cc',
