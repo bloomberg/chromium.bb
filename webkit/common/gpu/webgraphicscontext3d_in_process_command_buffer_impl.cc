@@ -221,7 +221,7 @@ int WebGraphicsContext3DInProcessCommandBufferImpl::height() {
 void WebGraphicsContext3DInProcessCommandBufferImpl::prepareTexture() {
   if (!isContextLost()) {
     gl_->SwapBuffers();
-    gl_->Finish();
+    gl_->ShallowFlushCHROMIUM();
   }
 }
 
@@ -1255,7 +1255,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::signalQuery(
 void WebGraphicsContext3DInProcessCommandBufferImpl::loseContextCHROMIUM(
     WGC3Denum current, WGC3Denum other) {
   gl_->LoseContextCHROMIUM(current, other);
-  gl_->Finish();
+  gl_->ShallowFlushCHROMIUM();
   DCHECK(isContextLost());
 }
 
