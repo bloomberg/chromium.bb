@@ -48,7 +48,19 @@
 
 namespace WebCore {
 
-const char IDBDatabase::notFoundErrorMessage[] = "An operation failed because the requested database object could not be found.";
+const char IDBDatabase::indexDeletedErrorMessage[] = "The index or its object store has been deleted.";
+const char IDBDatabase::isKeyCursorErrorMessage[] = "The cursor is a key cursor.";
+const char IDBDatabase::noKeyOrKeyRangeErrorMessage[] = "No key or key range specified.";
+const char IDBDatabase::noSuchIndexErrorMessage[] = "The specified index was not found.";
+const char IDBDatabase::noSuchObjectStoreErrorMessage[] = "The specified object store was not found.";
+const char IDBDatabase::noValueErrorMessage[] = "The cursor is being iterated or has iterated past its end.";
+const char IDBDatabase::notValidKeyErrorMessage[] = "The parameter is not a valid key.";
+const char IDBDatabase::notVersionChangeTransactionErrorMessage[] = "The database is not running a version change transaction.";
+const char IDBDatabase::objectStoreDeletedErrorMessage[] = "The object store has been deleted.";
+const char IDBDatabase::requestNotFinishedErrorMessage[] = "The request has not finished.";
+const char IDBDatabase::sourceDeletedErrorMessage[] = "The cursor's source or effective object store has been deleted.";
+const char IDBDatabase::transactionInactiveErrorMessage[] = "The transaction is not active.";
+const char IDBDatabase::transactionFinishedErrorMessage[] = "The transaction has finished.";
 
 PassRefPtr<IDBDatabase> IDBDatabase::create(ScriptExecutionContext* context, PassRefPtr<IDBDatabaseBackendInterface> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
 {
@@ -176,26 +188,30 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
     IDB_TRACE("IDBDatabase::createObjectStore");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
+        return 0;
+    }
+    if (m_versionChangeTransaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
 
     if (containsObjectStore(name)) {
-        es.throwDOMException(ConstraintError);
+        es.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
         return 0;
     }
 
     if (!keyPath.isNull() && !keyPath.isValid()) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "The keyPath option is not a valid key path.");
         return 0;
     }
 
     if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
-        es.throwDOMException(InvalidAccessError);
+        es.throwDOMException(InvalidAccessError, "The autoIncrement option was set but the keyPath option was empty or an array.");
         return 0;
     }
 
@@ -216,17 +232,21 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& es)
     IDB_TRACE("IDBDatabase::deleteObjectStore");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
+        return;
+    }
+    if (m_versionChangeTransaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return;
     }
 
     int64_t objectStoreId = findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-        es.throwDOMException(NotFoundError, IDBDatabase::notFoundErrorMessage);
+        es.throwDOMException(NotFoundError, "The specified object store was not found.");
         return;
     }
 
@@ -240,7 +260,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     IDB_TRACE("IDBDatabase::transaction");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
     if (!scope.size()) {
-        es.throwDOMException(InvalidAccessError);
+        es.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
         return 0;
     }
 
@@ -248,8 +268,13 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     if (es.hadException())
         return 0;
 
-    if (m_versionChangeTransaction || m_closePending) {
-        es.throwDOMException(InvalidStateError);
+    if (m_versionChangeTransaction) {
+        es.throwDOMException(InvalidStateError, "A version change transaction is running.");
+        return 0;
+    }
+
+    if (m_closePending) {
+        es.throwDOMException(InvalidStateError, "The database connection is closing.");
         return 0;
     }
 
@@ -257,7 +282,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     for (size_t i = 0; i < scope.size(); ++i) {
         int64_t objectStoreId = findObjectStoreId(scope[i]);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-            es.throwDOMException(NotFoundError, IDBDatabase::notFoundErrorMessage);
+            es.throwDOMException(NotFoundError, "One of the specified object stores was not found.");
             return 0;
         }
         objectStoreIds.append(objectStoreId);

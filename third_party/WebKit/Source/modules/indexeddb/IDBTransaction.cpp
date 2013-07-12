@@ -139,7 +139,7 @@ void IDBTransaction::setError(PassRefPtr<DOMError> error)
 PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, ExceptionState& es)
 {
     if (m_state == Finished) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
 
@@ -148,14 +148,14 @@ PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, Excep
         return it->value;
 
     if (!isVersionChange() && !m_objectStoreNames.contains(name)) {
-        es.throwDOMException(NotFoundError, IDBDatabase::notFoundErrorMessage);
+        es.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
         return 0;
     }
 
     int64_t objectStoreId = m_database->findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
         ASSERT(isVersionChange());
-        es.throwDOMException(NotFoundError, IDBDatabase::notFoundErrorMessage);
+        es.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
         return 0;
     }
 
@@ -204,7 +204,7 @@ void IDBTransaction::setActive(bool active)
 void IDBTransaction::abort(ExceptionState& es)
 {
     if (m_state == Finishing || m_state == Finished) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
         return;
     }
 

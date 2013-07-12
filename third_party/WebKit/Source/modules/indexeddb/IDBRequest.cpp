@@ -95,7 +95,7 @@ IDBRequest::~IDBRequest()
 PassRefPtr<IDBAny> IDBRequest::result(ExceptionState& es) const
 {
     if (m_readyState != DONE) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
         return 0;
     }
     return m_result;
@@ -104,7 +104,7 @@ PassRefPtr<IDBAny> IDBRequest::result(ExceptionState& es) const
 PassRefPtr<DOMError> IDBRequest::error(ExceptionState& es) const
 {
     if (m_readyState != DONE) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
         return 0;
     }
     return m_error;

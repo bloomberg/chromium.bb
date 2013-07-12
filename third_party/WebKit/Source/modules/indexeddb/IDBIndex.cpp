@@ -60,11 +60,15 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ScriptExecutionContext* context, Pas
 {
     IDB_TRACE("IDBIndex::openCursor");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
     IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, es);
@@ -90,11 +94,15 @@ PassRefPtr<IDBRequest> IDBIndex::count(ScriptExecutionContext* context, PassRefP
 {
     IDB_TRACE("IDBIndex::count");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -115,11 +123,15 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ScriptExecutionContext* context, 
 {
     IDB_TRACE("IDBIndex::openKeyCursor");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
     IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, es);
@@ -154,15 +166,19 @@ PassRefPtr<IDBRequest> IDBIndex::get(ScriptExecutionContext* context, PassRefPtr
 {
     IDB_TRACE("IDBIndex::get");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
     if (!keyRange) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
         return 0;
     }
 
@@ -185,15 +201,19 @@ PassRefPtr<IDBRequest> IDBIndex::getKey(ScriptExecutionContext* context, PassRef
 {
     IDB_TRACE("IDBIndex::getKey");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished()) {
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError);
+        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
     if (!keyRange) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
         return 0;
     }
 

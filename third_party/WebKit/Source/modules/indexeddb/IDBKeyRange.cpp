@@ -30,6 +30,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBKey.h"
 
 namespace WebCore {
@@ -65,7 +66,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(PassRefPtr<IDBKey> prpKey, ExceptionSt
 {
     RefPtr<IDBKey> key = prpKey;
     if (!key || !key->isValid()) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }
 
@@ -77,7 +78,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(ScriptExecutionContext* context, const
     DOMRequestState requestState(context);
     RefPtr<IDBKey> key = scriptValueToIDBKey(&requestState, keyValue);
     if (!key || !key->isValid()) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }
 
@@ -89,7 +90,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::lowerBound(ScriptExecutionContext* context,
     DOMRequestState requestState(context);
     RefPtr<IDBKey> bound = scriptValueToIDBKey(&requestState, boundValue);
     if (!bound || !bound->isValid()) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }
 
@@ -101,7 +102,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::upperBound(ScriptExecutionContext* context,
     DOMRequestState requestState(context);
     RefPtr<IDBKey> bound = scriptValueToIDBKey(&requestState, boundValue);
     if (!bound || !bound->isValid()) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }
 
@@ -115,15 +116,15 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::bound(ScriptExecutionContext* context, cons
     RefPtr<IDBKey> upper = scriptValueToIDBKey(&requestState, upperValue);
 
     if (!lower || !lower->isValid() || !upper || !upper->isValid()) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }
     if (upper->isLessThan(lower.get())) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, "The lower key is greater than the upper key.");
         return 0;
     }
     if (upper->isEqual(lower.get()) && (lowerOpen || upperOpen)) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, "The lower key and upper key are equal and one of the bounds is open.");
         return 0;
     }
 

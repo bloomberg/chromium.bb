@@ -107,7 +107,19 @@ public:
 
     static int64_t nextTransactionId();
 
-    static const char notFoundErrorMessage[];
+    static const char indexDeletedErrorMessage[];
+    static const char isKeyCursorErrorMessage[];
+    static const char noKeyOrKeyRangeErrorMessage[];
+    static const char noSuchIndexErrorMessage[];
+    static const char noSuchObjectStoreErrorMessage[];
+    static const char noValueErrorMessage[];
+    static const char notValidKeyErrorMessage[];
+    static const char notVersionChangeTransactionErrorMessage[];
+    static const char objectStoreDeletedErrorMessage[];
+    static const char requestNotFinishedErrorMessage[];
+    static const char sourceDeletedErrorMessage[];
+    static const char transactionFinishedErrorMessage[];
+    static const char transactionInactiveErrorMessage[];
 
     using RefCounted<IDBDatabase>::ref;
     using RefCounted<IDBDatabase>::deref;

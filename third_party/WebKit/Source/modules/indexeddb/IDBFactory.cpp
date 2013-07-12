@@ -158,7 +158,7 @@ short IDBFactory::cmp(ScriptExecutionContext* context, const ScriptValue& firstV
     ASSERT(second);
 
     if (!first->isValid() || !second->isValid()) {
-        es.throwDOMException(DataError);
+        es.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }
 
