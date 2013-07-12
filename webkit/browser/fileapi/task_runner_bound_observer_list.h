@@ -34,36 +34,31 @@ void NotifyWrapper(T obj, Method m, const Params& p) {
 template <class Observer, class ObserverStoreType = Observer*>
 class TaskRunnerBoundObserverList {
  public:
-  // A constructor parameter class.
-  class Source {
-   public:
-    typedef scoped_refptr<base::SequencedTaskRunner> TaskRunnerPtr;
-    typedef std::map<ObserverStoreType, TaskRunnerPtr> ObserversListMap;
-
-    // Add |observer| to the list parameter. The |observer| will be notified on
-    // the |runner_to_notify| runner.  It is valid to give NULL as
-    // |runner_to_notify| (in such case notifications are dispatched on
-    // the current runner).
-    void AddObserver(Observer* observer,
-                     base::SequencedTaskRunner* runner_to_notify) {
-      observers_.insert(std::make_pair(observer, runner_to_notify));
-    }
-
-    const ObserversListMap& observers() const { return observers_; }
-
-   private:
-    ObserversListMap observers_;
-  };
+  typedef scoped_refptr<base::SequencedTaskRunner> TaskRunnerPtr;
+  typedef std::map<ObserverStoreType, TaskRunnerPtr> ObserversListMap;
 
   // Creates an empty list.
   TaskRunnerBoundObserverList<Observer, ObserverStoreType>() {}
 
-  // Creates a new list with given |observers_param|.
+  // Creates a new list with given |observers|.
   explicit TaskRunnerBoundObserverList<Observer, ObserverStoreType>(
-      const Source& observers)
-      : source_(observers) {}
+      const ObserversListMap& observers)
+      : observers_(observers) {}
 
   virtual ~TaskRunnerBoundObserverList<Observer, ObserverStoreType>() {}
+
+  // Returns a new observer list with given observer.
+  // It is valid to give NULL as |runner_to_notify|, and in that case
+  // notifications are dispatched on the current runner.
+  // Note that this is a const method and does NOT change 'this' observer
+  // list but returns a new list.
+  TaskRunnerBoundObserverList<Observer, ObserverStoreType> AddObserver(
+      Observer* observer,
+      base::SequencedTaskRunner* runner_to_notify) const {
+    ObserversListMap observers = observers_;
+    observers.insert(std::make_pair(observer, runner_to_notify));
+    return TaskRunnerBoundObserverList<Observer, ObserverStoreType>(observers);
+  }
 
   // Notify on the task runner that is given to AddObserver.
   // If we're already on the runner this just dispatches the method.
@@ -72,9 +67,8 @@ class TaskRunnerBoundObserverList {
     COMPILE_ASSERT(
         (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
         badunboundmethodparams);
-    for (typename ObserversListMap::const_iterator it =
-            source_.observers().begin();
-         it != source_.observers().end(); ++it) {
+    for (typename ObserversListMap::const_iterator it = observers_.begin();
+         it != observers_.end(); ++it) {
       if (!it->second.get() || it->second->RunsTasksOnCurrentThread()) {
         DispatchToMethod(UnwrapTraits::Unwrap(it->first), method, params);
         continue;
@@ -86,14 +80,10 @@ class TaskRunnerBoundObserverList {
     }
   }
 
-  const Source& source() const { return source_; }
-
  private:
   typedef base::internal::UnwrapTraits<ObserverStoreType> UnwrapTraits;
-  typedef scoped_refptr<base::SequencedTaskRunner> TaskRunnerPtr;
-  typedef std::map<ObserverStoreType, TaskRunnerPtr> ObserversListMap;
 
-  Source source_;
+  ObserversListMap observers_;
 };
 
 class FileAccessObserver;

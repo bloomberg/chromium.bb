@@ -19,9 +19,8 @@ MockFileChangeObserver::~MockFileChangeObserver() {}
 // static
 ChangeObserverList MockFileChangeObserver::CreateList(
     MockFileChangeObserver* observer) {
-  ChangeObserverList::Source source;
-  source.AddObserver(observer, base::MessageLoopProxy::current().get());
-  return ChangeObserverList(source);
+  ChangeObserverList list;
+  return list.AddObserver(observer, base::MessageLoopProxy::current().get());
 }
 
 void MockFileChangeObserver::OnCreateFile(const FileSystemURL& url) {

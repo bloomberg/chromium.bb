@@ -32,9 +32,7 @@ class TestFileSystemBackend::QuotaUtil
   QuotaUtil(base::SequencedTaskRunner* task_runner)
       : usage_(0),
         task_runner_(task_runner) {
-    UpdateObserverList::Source source;
-    source.AddObserver(this, task_runner_.get());
-    update_observers_ = UpdateObserverList(source);
+    update_observers_ = update_observers_.AddObserver(this, task_runner_.get());
   }
   virtual ~QuotaUtil() {}
 
@@ -90,9 +88,7 @@ class TestFileSystemBackend::QuotaUtil
       FileSystemType type,
       FileChangeObserver* observer,
       base::SequencedTaskRunner* task_runner) OVERRIDE {
-    ChangeObserverList::Source source = change_observers_.source();
-    source.AddObserver(observer, task_runner);
-    change_observers_ = ChangeObserverList(source);
+    change_observers_ = change_observers_.AddObserver(observer, task_runner);
   }
 
   virtual void AddFileAccessObserver(

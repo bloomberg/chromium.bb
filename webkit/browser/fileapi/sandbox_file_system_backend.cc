@@ -143,18 +143,15 @@ SandboxFileSystemBackend::SandboxFileSystemBackend(
               kDisableUsageTracking)),
       weak_factory_(this) {
   // Set quota observers.
-  UpdateObserverList::Source update_observers_src;
-  AccessObserverList::Source access_observers_src;
-
   if (enable_usage_tracking_) {
-    update_observers_src.AddObserver(sandbox_context_->quota_observer(),
-                                     sandbox_context_->file_task_runner());
-    access_observers_src.AddObserver(sandbox_context_->quota_observer(), NULL);
+    update_observers_ = update_observers_.AddObserver(
+        sandbox_context_->quota_observer(),
+        sandbox_context_->file_task_runner());
+    access_observers_ = access_observers_.AddObserver(
+        sandbox_context_->quota_observer(), NULL);
   }
 
-  update_observers_ = UpdateObserverList(update_observers_src);
-  access_observers_ = AccessObserverList(access_observers_src);
-  syncable_update_observers_ = UpdateObserverList(update_observers_src);
+  syncable_update_observers_ = update_observers_;
 
   if (!sandbox_context_->file_task_runner()->RunsTasksOnCurrentThread()) {
     // Post prepopulate task only if it's not already running on
@@ -462,9 +459,7 @@ void SandboxFileSystemBackend::AddFileUpdateObserver(
   UpdateObserverList* list = &update_observers_;
   if (type == kFileSystemTypeSyncable)
     list = &syncable_update_observers_;
-  UpdateObserverList::Source observer_source = list->source();
-  observer_source.AddObserver(observer, task_runner);
-  *list = UpdateObserverList(observer_source);
+  *list = list->AddObserver(observer, task_runner);
 }
 
 void SandboxFileSystemBackend::AddFileChangeObserver(
@@ -475,9 +470,7 @@ void SandboxFileSystemBackend::AddFileChangeObserver(
   ChangeObserverList* list = &change_observers_;
   if (type == kFileSystemTypeSyncable)
     list = &syncable_change_observers_;
-  ChangeObserverList::Source observer_source = list->source();
-  observer_source.AddObserver(observer, task_runner);
-  *list = ChangeObserverList(observer_source);
+  *list = list->AddObserver(observer, task_runner);
 }
 
 void SandboxFileSystemBackend::AddFileAccessObserver(
@@ -485,10 +478,7 @@ void SandboxFileSystemBackend::AddFileAccessObserver(
     FileAccessObserver* observer,
     base::SequencedTaskRunner* task_runner) {
   DCHECK(CanHandleType(type));
-  AccessObserverList* list = &access_observers_;
-  AccessObserverList::Source observer_source = list->source();
-  observer_source.AddObserver(observer, task_runner);
-  *list = AccessObserverList(observer_source);
+  access_observers_ = access_observers_.AddObserver(observer, task_runner);
 }
 
 const UpdateObserverList* SandboxFileSystemBackend::GetUpdateObservers(
