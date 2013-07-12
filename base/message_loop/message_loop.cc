@@ -97,6 +97,16 @@ uint64 GetTaskTraceID(const PendingTask& task, MessageLoop* loop) {
          static_cast<uint64>(reinterpret_cast<intptr_t>(loop));
 }
 
+// Returns true if MessagePump::ScheduleWork() must be called one
+// time for every task that is added to the MessageLoop incoming queue.
+bool AlwaysNotifyPump(MessageLoop::Type type) {
+#if defined(OS_ANDROID)
+  return type == MessageLoop::TYPE_UI;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 //------------------------------------------------------------------------------
@@ -627,7 +637,9 @@ bool MessageLoop::AddToIncomingQueue(PendingTask* pending_task,
     bool was_empty = incoming_queue_.empty();
     incoming_queue_.push(*pending_task);
     pending_task->task.Reset();
-    if (!was_empty)
+    // The Android UI message loop needs to get notified each time
+    // a task is added to the incoming queue.
+    if (!was_empty && !AlwaysNotifyPump(type_))
       return true;  // Someone else should have started the sub-pump.
 
     pump = pump_;

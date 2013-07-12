@@ -21,7 +21,7 @@ using base::android::ScopedJavaLocalRef;
 // ----------------------------------------------------------------------------
 // This method can not move to anonymous namespace as it has been declared as
 // 'static' in system_message_handler_jni.h.
-static jboolean DoRunLoopOnce(JNIEnv* env, jobject obj, jint native_delegate) {
+static void DoRunLoopOnce(JNIEnv* env, jobject obj, jint native_delegate) {
   base::MessagePump::Delegate* delegate =
       reinterpret_cast<base::MessagePump::Delegate*>(native_delegate);
   DCHECK(delegate);
@@ -31,26 +31,27 @@ static jboolean DoRunLoopOnce(JNIEnv* env, jobject obj, jint native_delegate) {
   // we call DoWork() / DoDelayedWork().
   // On Android, the java message queue may contain messages for other handlers
   // that will be processed before calling here again.
-  bool more_work_is_plausible = delegate->DoWork();
+  bool did_work = delegate->DoWork();
 
   // This is the time when we need to do delayed work.
   base::TimeTicks delayed_work_time;
-  more_work_is_plausible |= delegate->DoDelayedWork(&delayed_work_time);
+  did_work |= delegate->DoDelayedWork(&delayed_work_time);
+
+  // Always call this if there is a delayed message waiting in the queue
+  // since is at most one delayed message in the Java message handler, and this
+  // function call may be the result of that message being handled.
+  if (!delayed_work_time.is_null()) {
+    Java_SystemMessageHandler_setDelayedTimer(env, obj,
+        (delayed_work_time - base::TimeTicks::Now()).InMillisecondsRoundedUp());
+  }
 
   // This is a major difference between android and other platforms: since we
   // can't inspect it and process just one single message, instead we'll yeld
-  // the callstack, and post a message to call us back soon.
-  if (more_work_is_plausible)
-    return true;
+  // the callstack.
+  if (did_work)
+    return;
 
-  more_work_is_plausible = delegate->DoIdleWork();
-  if (!more_work_is_plausible && !delayed_work_time.is_null()) {
-    // We only set the timer here as returning true would post a message.
-    jlong millis =
-        (delayed_work_time - base::TimeTicks::Now()).InMillisecondsRoundedUp();
-    Java_SystemMessageHandler_setDelayedTimer(env, obj, millis);
-  }
-  return more_work_is_plausible;
+  delegate->DoIdleWork();
 }
 
 namespace base {
