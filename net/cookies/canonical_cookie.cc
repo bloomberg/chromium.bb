@@ -48,10 +48,10 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
 
 using base::Time;
 using base::TimeDelta;

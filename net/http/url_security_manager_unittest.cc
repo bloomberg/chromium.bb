@@ -5,10 +5,10 @@
 #include "net/http/url_security_manager.h"
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 

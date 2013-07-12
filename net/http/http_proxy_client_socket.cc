@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -21,6 +20,7 @@
 #include "net/http/http_stream_parser.h"
 #include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/socket/client_socket_handle.h"
+#include "url/gurl.h"
 
 namespace net {
 

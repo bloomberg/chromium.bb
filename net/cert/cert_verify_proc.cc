@@ -7,7 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "build/build_config.h"
-#include "googleurl/src/url_canon.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -16,6 +15,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/x509_certificate.h"
+#include "url/url_canon.h"
 
 #if defined(USE_NSS) || defined(OS_IOS)
 #include "net/cert/cert_verify_proc_nss.h"

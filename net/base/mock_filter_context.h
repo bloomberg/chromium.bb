@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
 #include "net/base/filter.h"
+#include "url/gurl.h"
 
 namespace net {
 

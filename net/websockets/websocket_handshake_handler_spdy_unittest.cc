@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 

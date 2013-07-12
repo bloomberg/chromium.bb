@@ -5,9 +5,9 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #include "base/stl_util.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_job_manager.h"
+#include "url/gurl.h"
 
 namespace net {
 

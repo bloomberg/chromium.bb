@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -14,6 +13,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "url/gurl.h"
 
 namespace net {
 

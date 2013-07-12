@@ -7,11 +7,11 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier_factory.h"
 #include "net/dns/dns_config_service.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "net/base/network_change_notifier_win.h"

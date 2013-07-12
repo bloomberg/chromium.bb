@@ -16,12 +16,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_util.h"
 #include "base/strings/string_tokenizer.h"
-#include "googleurl/src/url_parse.h"
+#include "base/strings/string_util.h"
 #include "jni/ProxyChangeListener_jni.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
+#include "url/url_parse.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

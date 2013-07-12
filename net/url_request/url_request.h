@@ -15,7 +15,6 @@
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
@@ -29,6 +28,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 // Temporary layering violation to allow existing users of a deprecated
 // interface.

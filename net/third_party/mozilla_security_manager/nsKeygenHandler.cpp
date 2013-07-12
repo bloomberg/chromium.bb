@@ -50,7 +50,7 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "crypto/nss_util.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace {
 

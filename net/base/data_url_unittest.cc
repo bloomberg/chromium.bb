@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/data_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 

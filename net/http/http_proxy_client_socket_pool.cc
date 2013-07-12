@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
@@ -25,6 +24,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "url/gurl.h"
 
 namespace net {
 

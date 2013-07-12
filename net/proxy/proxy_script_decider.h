@@ -12,12 +12,12 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_resolver.h"
+#include "url/gurl.h"
 
 namespace net {
 

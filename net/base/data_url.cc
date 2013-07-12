@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "url/gurl.h"
 
 namespace net {
 

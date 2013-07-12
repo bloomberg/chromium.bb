@@ -11,13 +11,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/dns/host_resolver.h"
 #include "net/socket/stream_socket.h"
+#include "url/gurl.h"
 
 namespace net {
 

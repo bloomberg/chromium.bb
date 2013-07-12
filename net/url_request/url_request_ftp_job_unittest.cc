@@ -7,7 +7,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
-#include "googleurl/src/gurl.h"
 #include "net/ftp/ftp_auth_cache.h"
 #include "net/http/http_transaction_unittest.h"
 #include "net/proxy/mock_proxy_resolver.h"
@@ -21,6 +20,7 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 

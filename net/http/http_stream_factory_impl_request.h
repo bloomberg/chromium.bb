@@ -7,11 +7,11 @@
 
 #include <set>
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_log.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
+#include "url/gurl.h"
 
 namespace net {
 

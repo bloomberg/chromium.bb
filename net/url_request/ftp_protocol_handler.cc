@@ -11,7 +11,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_ftp_job.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 

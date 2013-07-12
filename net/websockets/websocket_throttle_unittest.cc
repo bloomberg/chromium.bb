@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket_stream/socket_stream.h"
@@ -15,6 +14,7 @@
 #include "net/websockets/websocket_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 class DummySocketStreamDelegate : public net::SocketStream::Delegate {
  public:

@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
+#include "url/gurl.h"
 
 namespace net {
 

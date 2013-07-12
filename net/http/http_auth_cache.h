@@ -10,9 +10,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
+#include "url/gurl.h"
 
 namespace net {
 

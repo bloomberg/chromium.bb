@@ -5,8 +5,8 @@
 #include "net/base/url_util.h"
 
 #include "base/strings/string_piece.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "url/gurl.h"
 
 namespace net {
 

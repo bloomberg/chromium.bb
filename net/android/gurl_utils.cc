@@ -5,8 +5,8 @@
 #include "net/android/gurl_utils.h"
 
 #include "base/android/jni_string.h"
-#include "googleurl/src/gurl.h"
 #include "jni/GURLUtils_jni.h"
+#include "url/gurl.h"
 
 namespace net {
 

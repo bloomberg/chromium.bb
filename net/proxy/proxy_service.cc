@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -29,6 +28,7 @@
 #include "net/proxy/proxy_script_decider.h"
 #include "net/proxy/proxy_script_fetcher.h"
 #include "net/url_request/url_request_context.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "net/proxy/proxy_config_service_win.h"

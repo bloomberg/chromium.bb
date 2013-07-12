@@ -7,14 +7,14 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "googleurl/src/gurl.h"
+#include "base/strings/string_util.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/flip_server/balsa_headers.h"
+#include "url/gurl.h"
 
 using base::StringPiece;
 using std::pair;

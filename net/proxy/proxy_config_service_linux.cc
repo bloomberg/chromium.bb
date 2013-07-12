@@ -31,11 +31,11 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
-#include "googleurl/src/url_canon.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_server.h"
+#include "url/url_canon.h"
 
 #if defined(USE_GIO)
 #include "library_loaders/libgio.h"

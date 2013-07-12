@@ -4,8 +4,8 @@
 
 #include "net/base/url_util.h"
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 namespace {

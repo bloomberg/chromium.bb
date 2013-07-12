@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_config_source.h"
 #include "net/proxy/proxy_list.h"
 #include "net/proxy/proxy_server.h"
+#include "url/gurl.h"
 
 namespace base {
 class Value;

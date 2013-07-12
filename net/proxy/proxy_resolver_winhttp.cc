@@ -10,9 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
+#include "url/gurl.h"
 
 #pragma comment(lib, "winhttp.lib")
 

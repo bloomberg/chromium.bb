@@ -11,10 +11,10 @@
 #include "base/process_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/test/python_utils.h"
+#include "url/gurl.h"
 
 namespace net {
 

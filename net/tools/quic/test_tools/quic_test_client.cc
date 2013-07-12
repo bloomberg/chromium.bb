@@ -4,13 +4,13 @@
 
 #include "net/tools/quic/test_tools/quic_test_client.h"
 
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
+#include "url/gurl.h"
 
 using std::string;
 using std::vector;

@@ -12,10 +12,10 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
 #include <ifaddrs.h>

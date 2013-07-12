@@ -21,11 +21,11 @@
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "crypto/ec_private_key.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "url/gurl.h"
 
 #if defined(USE_NSS)
 #include <private/pprthred.h>  // PR_DetachThread

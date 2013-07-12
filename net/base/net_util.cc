@@ -52,11 +52,11 @@
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_canon_ip.h"
-#include "googleurl/src/url_parse.h"
 #include "grit/net_resources.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
+#include "url/url_canon_ip.h"
+#include "url/url_parse.h"
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
 #endif

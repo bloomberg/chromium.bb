@@ -6,10 +6,10 @@
 #define NET_PROXY_PROXY_RESOLVER_MAC_H_
 
 #include "base/compiler_specific.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/net_export.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_export.h"
 #include "net/proxy/proxy_resolver.h"
+#include "url/gurl.h"
 
 namespace net {
 

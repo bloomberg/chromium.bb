@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_parse.h"
+#include "url/gurl.h"
+#include "url/url_parse.h"
 
 namespace {
 

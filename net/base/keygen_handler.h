@@ -9,8 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
+#include "url/gurl.h"
 
 #if defined(USE_NSS)
 #include "crypto/crypto_module_blocking_password_delegate.h"

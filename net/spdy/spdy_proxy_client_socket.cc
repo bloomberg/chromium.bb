@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
@@ -21,6 +20,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/spdy/spdy_http_utils.h"
+#include "url/gurl.h"
 
 namespace net {
 

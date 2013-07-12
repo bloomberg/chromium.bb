@@ -7,9 +7,9 @@
 
 #include <list>
 
-#include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
 #include "net/base/net_export.h"
+#include "url/gurl.h"
 
 namespace net {
 

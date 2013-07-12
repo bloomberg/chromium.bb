@@ -6,7 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 

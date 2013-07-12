@@ -9,11 +9,11 @@
 #include "base/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/threading/thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 // This file declares unittest templates that can be used to test common
 // behavior of any CookieStore implementation.

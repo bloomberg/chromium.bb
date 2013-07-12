@@ -10,8 +10,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/http/http_auth_filter.h"
+#include "url/gurl.h"
 
 // The Windows implementation of URLSecurityManager uses WinINet/IE's
 // URL security zone manager.  See the MSDN page "URL Security Zones" at

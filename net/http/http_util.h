@@ -10,10 +10,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_tokenizer.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_version.h"
+#include "url/gurl.h"
 
 // This is a macro to support extending this string literal at compile time.
 // Please excuse me polluting your global namespace!

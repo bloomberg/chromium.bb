@@ -8,8 +8,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/ip_endpoint.h"
+#include "url/gurl.h"
 
 namespace net {
 

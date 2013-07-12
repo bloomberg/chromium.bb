@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -24,6 +23,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/tools/dump_cache/cache_dumper.h"
+#include "url/gurl.h"
 
 namespace {
 

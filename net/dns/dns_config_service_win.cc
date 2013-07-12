@@ -25,12 +25,12 @@
 #include "base/win/object_watcher.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/serial_worker.h"
+#include "url/url_canon.h"
 
 #pragma comment(lib, "iphlpapi.lib")
 

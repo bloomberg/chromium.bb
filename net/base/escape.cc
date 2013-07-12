@@ -74,8 +74,8 @@ std::string Escape(const std::string& text, const Charmap& charmap,
 // you could get different behavior if you copy and paste the URL, or press
 // enter in the URL bar. The list of characters that fall into this category
 // are the ones labeled PASS (allow either escaped or unescaped) in the big
-// lookup table at the top of googleurl/src/url_canon_path.cc.  Also, characters
-// that have CHAR_QUERY set in googleurl/src/url_canon_internal.cc but are not
+// lookup table at the top of url/url_canon_path.cc.  Also, characters
+// that have CHAR_QUERY set in url/url_canon_internal.cc but are not
 // allowed in query strings according to http://www.ietf.org/rfc/rfc3261.txt are
 // not unescaped, to avoid turning a valid url according to spec into an
 // invalid one.

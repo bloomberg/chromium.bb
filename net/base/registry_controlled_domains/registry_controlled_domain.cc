@@ -48,10 +48,10 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_parse.h"
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
+#include "url/gurl.h"
+#include "url/url_parse.h"
 
 #include "effective_tld_names.cc"
 

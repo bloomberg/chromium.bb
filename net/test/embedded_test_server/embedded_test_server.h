@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "googleurl/src/gurl.h"
 #include "net/socket/tcp_listen_socket.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;

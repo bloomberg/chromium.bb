@@ -6,8 +6,8 @@
 #define NET_PROXY_MOCK_PROXY_SCRIPT_FETCHER_H_
 
 #include "base/compiler_specific.h"
-#include "googleurl/src/gurl.h"
 #include "net/proxy/proxy_script_fetcher.h"
+#include "url/gurl.h"
 
 #include <string>
 
