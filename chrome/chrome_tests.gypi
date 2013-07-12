@@ -3117,6 +3117,7 @@
             # Disabling for now (enabled on linux/windows below).
             # 'browser_tests',
             '../ipc/ipc.gyp:ipc_tests',
+            '../media/media.gyp:media_unittests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
@@ -3126,10 +3127,6 @@
             '../sync/sync.gyp:sync_unit_tests',
           ],  # 'dependencies'
           'conditions': [
-            ['OS!="ios"', {
-              'dependencies': [
-                '../media/media.gyp:media_unittests',
-              ]}],
             ['OS=="win"', {
               'dependencies': [
                 # Courgette has not been ported from Windows.

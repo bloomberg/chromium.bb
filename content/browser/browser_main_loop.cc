@@ -403,7 +403,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
 
-#if !defined(OS_IOS)
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MediaFeatures")
     media::InitializeCPUSpecificMediaFeatures();
@@ -416,6 +415,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MIDIManager")
     midi_manager_.reset(media::MIDIManager::Create());
   }
+
+#if !defined(OS_IOS)
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:ContentWebUIController")
     WebUIControllerFactory::RegisterFactory(

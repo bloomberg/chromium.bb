@@ -13,6 +13,7 @@
 #include "content/common/url_schemes.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
+#include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor_setup.h"
@@ -26,10 +27,6 @@
 #include "ui/android/ui_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
-#endif
-
-#if !defined(OS_IOS)
-#include "media/base/media.h"
 #endif
 
 namespace content {
@@ -64,10 +61,8 @@ void ContentTestSuiteBase::Initialize() {
   ui::shell_dialogs::RegisterJni(env);
 #endif
 
-#if !defined(OS_IOS)
   if (external_libraries_enabled_)
     media::InitializeMediaLibraryForTesting();
-#endif
 
   scoped_ptr<ContentClient> client_for_init(CreateClientForInitialization());
   SetContentClient(client_for_init.get());
