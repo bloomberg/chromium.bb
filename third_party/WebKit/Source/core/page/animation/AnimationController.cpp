@@ -144,6 +144,9 @@ void AnimationControllerPrivate::scheduleService()
 
 void AnimationControllerPrivate::scheduleService(double timeToNextService, double timeToNextEvent)
 {
+    if (!m_frame->page())
+        return;
+
     bool visible = m_frame->page()->visibilityState() == WebCore::PageVisibilityStateVisible;
 
     if (!visible)
