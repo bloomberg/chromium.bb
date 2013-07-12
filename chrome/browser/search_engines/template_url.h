@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -47,6 +48,7 @@ class TemplateURLRef {
     SEARCH,
     SUGGEST,
     INSTANT,
+    IMAGE,
     INDEXED
   };
 
@@ -94,6 +96,14 @@ class TemplateURLRef {
     // indeed TemplateURL know whether a TemplateURL is the default search
     // engine, callers instead must set this manually.
     bool append_extra_query_params;
+
+    // The raw content of an image thumbnail that will be used as a query for
+    // search-by-image frontend.
+    std::string image_thumbnail_content;
+
+    // When searching for an image, the URL of the original image. Callers
+    // should leave this empty for images specified via data: URLs.
+    GURL image_url;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -103,7 +113,11 @@ class TemplateURLRef {
   // Returns the raw URL. None of the parameters will have been replaced.
   std::string GetURL() const;
 
-  // Returns true if this URL supports replacement.
+  // Returns the raw string of the post params. Please see comments in
+  // prepopulated_engines_schema.json for the format.
+  std::string GetPostParamsString() const;
+
+  // Returns true if this URL supports search term replacement.
   bool SupportsReplacement() const;
 
   // Like SupportsReplacement but usable on threads other than the UI thread.
@@ -115,15 +129,27 @@ class TemplateURLRef {
   //
   // If this TemplateURLRef does not support replacement (SupportsReplacement
   // returns false), an empty string is returned.
+  // If this TemplateURLRef uses POST, and |post_data| is not NULL, the
+  // |post_params_| will be replaced, encoded in "multipart/form-data" format
+  // and stored into |post_data|.
   std::string ReplaceSearchTerms(
-      const SearchTermsArgs& search_terms_args) const;
+      const SearchTermsArgs& search_terms_args,
+      std::string* post_data) const;
+  // TODO(jnd): remove the following ReplaceSearchTerms definition which does
+  // not have |post_data| parameter once all reference callers pass |post_data|
+  // parameter.
+  std::string ReplaceSearchTerms(
+      const SearchTermsArgs& search_terms_args) const {
+    return ReplaceSearchTerms(search_terms_args, NULL);
+  }
 
   // Just like ReplaceSearchTerms except that it takes SearchTermsData to supply
   // the data for some search terms. Most of the time ReplaceSearchTerms should
   // be called.
   std::string ReplaceSearchTermsUsingTermsData(
       const SearchTermsArgs& search_terms_args,
-      const SearchTermsData& search_terms_data) const;
+      const SearchTermsData& search_terms_data,
+      std::string* post_data) const;
 
   // Returns true if the TemplateURLRef is valid. An invalid TemplateURLRef is
   // one that contains unknown terms, or invalid characters.
@@ -171,6 +197,13 @@ class TemplateURLRef {
       url_parse::Parsed::ComponentType* search_term_component,
       url_parse::Component* search_terms_position) const;
 
+  // Whether the URL uses POST (as opposed to GET).
+  bool UsesPOSTMethodUsingTermsData(
+      const SearchTermsData* search_terms_data) const;
+  bool UsesPOSTMethod() const {
+    return UsesPOSTMethodUsingTermsData(NULL);
+  }
+
  private:
   friend class TemplateURL;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, SetPrepopulatedAndParse);
@@ -181,6 +214,7 @@ class TemplateURLRef {
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNoKnownParameters);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLTwoParameters);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNestedParameter);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, URLRefTestImageURLWithPOST);
 
   // Enumeration of the known types.
   enum ReplacementType {
@@ -189,6 +223,9 @@ class TemplateURLRef {
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
     GOOGLE_CURSOR_POSITION,
+    GOOGLE_IMAGE_SEARCH_SOURCE,
+    GOOGLE_IMAGE_THUMBNAIL,
+    GOOGLE_IMAGE_URL,
     GOOGLE_INSTANT_ENABLED,
     GOOGLE_INSTANT_EXTENDED_ENABLED,
     GOOGLE_NTP_IS_THEMED,
@@ -207,13 +244,20 @@ class TemplateURLRef {
   // Used to identify an element of the raw url that can be replaced.
   struct Replacement {
     Replacement(ReplacementType type, size_t index)
-        : type(type), index(index) {}
+        : type(type), index(index), is_post_param(false) {}
     ReplacementType type;
     size_t index;
+    // Indicates the location in where the replacement is replaced. If
+    // |is_post_param| is false, |index| indicates the byte position in
+    // |parsed_url_|. Otherwise, |index| is the index of |post_params_|.
+    bool is_post_param;
   };
 
   // The list of elements to replace.
   typedef std::vector<struct Replacement> Replacements;
+  // Type to store <key, value> pairs for POST URLs.
+  typedef std::pair<std::string, std::string> PostParam;
+  typedef std::vector<PostParam> PostParams;
 
   // TemplateURLRef internally caches values to make replacement quick. This
   // method invalidates any cached values.
@@ -237,9 +281,13 @@ class TemplateURLRef {
   // successful, valid is set to true, and the parsed url is returned. For all
   // known parameters that are encountered an entry is added to replacements.
   // If there is an error parsing the url, valid is set to false, and an empty
-  // string is returned.
+  // string is returned.  If the URL has the POST parameters, they will be
+  // parsed into |post_params| which will be further replaced with real search
+  // terms data and encoded in "multipart/form-data" format to generate the
+  // POST data.
   std::string ParseURL(const std::string& url,
                        Replacements* replacements,
+                       PostParams* post_params,
                        bool* valid) const;
 
   // If the url has not yet been parsed, ParseURL is invoked.
@@ -255,12 +303,28 @@ class TemplateURLRef {
   void ParseHostAndSearchTermKey(
       const SearchTermsData& search_terms_data) const;
 
+  // Encode post parameters in "multipart/form-data" format and store it
+  // inside |post_data|. Returns false if errors are encountered during
+  // encoding. This method is called each time ReplaceSearchTerms gets called.
+  bool EncodeFormData(const PostParams& post_params,
+                      std::string* post_data) const;
+
+  // Handles a replacement by using real term data. If the replacement
+  // belongs to a PostParam, the PostParam will be replaced by the term data.
+  // Otherwise, the term data will be inserted at the place that the
+  // replacement points to.
+  void HandleReplacement(const std::string& name,
+                         const std::string& value,
+                         const Replacement& replacement,
+                         std::string* url) const;
+
   // Replaces all replacements in |parsed_url_| with their actual values and
   // returns the result.  This is the main functionality of
   // ReplaceSearchTermsUsingTermsData().
   std::string HandleReplacements(
       const SearchTermsArgs& search_terms_args,
-      const SearchTermsData& search_terms_data) const;
+      const SearchTermsData& search_terms_data,
+      std::string* post_data) const;
 
   // The TemplateURL that contains us.  This should outlive us.
   TemplateURL* const owner_;
@@ -282,7 +346,7 @@ class TemplateURLRef {
   // replacements_ giving the index of the terms to replace.
   mutable std::string parsed_url_;
 
-  // Do we support replacement?
+  // Do we support search term replacement?
   mutable bool supports_replacements_;
 
   // The replaceable parts of url (parsed_url_). These are ordered by index
@@ -295,6 +359,8 @@ class TemplateURLRef {
   mutable std::string path_;
   mutable std::string search_term_key_;
   mutable url_parse::Parsed::ComponentType search_term_key_location_;
+
+  mutable PostParams post_params_;
 
   // Whether the contained URL is a pre-populated URL.
   bool prepopulated_;
@@ -329,6 +395,14 @@ struct TemplateURLData {
   // Optional additional raw URLs.
   std::string suggestions_url;
   std::string instant_url;
+  std::string image_url;
+
+  // The following post_params are comma-separated lists used to specify the
+  // post parameters for the corresponding URL.
+  std::string search_url_post_params;
+  std::string suggestions_url_post_params;
+  std::string instant_url_post_params;
+  std::string image_url_post_params;
 
   // Optional favicon for the TemplateURL.
   GURL favicon_url;
@@ -438,6 +512,19 @@ class TemplateURL {
   const std::string& url() const { return data_.url(); }
   const std::string& suggestions_url() const { return data_.suggestions_url; }
   const std::string& instant_url() const { return data_.instant_url; }
+  const std::string& image_url() const { return data_.image_url; }
+  const std::string& search_url_post_params() const {
+    return data_.search_url_post_params;
+  }
+  const std::string& suggestions_url_post_params() const {
+    return data_.suggestions_url_post_params;
+  }
+  const std::string& instant_url_post_params() const {
+    return data_.instant_url_post_params;
+  }
+  const std::string& image_url_post_params() const {
+    return data_.image_url_post_params;
+  }
   const std::vector<std::string>& alternate_urls() const {
     return data_.alternate_urls;
   }
@@ -479,6 +566,7 @@ class TemplateURL {
     return suggestions_url_ref_;
   }
   const TemplateURLRef& instant_url_ref() const { return instant_url_ref_; }
+  const TemplateURLRef& image_url_ref() const { return image_url_ref_; }
 
   // Returns true if |url| supports replacement.
   bool SupportsReplacement() const;
@@ -599,6 +687,7 @@ class TemplateURL {
   TemplateURLRef url_ref_;
   TemplateURLRef suggestions_url_ref_;
   TemplateURLRef instant_url_ref_;
+  TemplateURLRef image_url_ref_;
 
   // TODO(sky): Add date last parsed OSD file.
 

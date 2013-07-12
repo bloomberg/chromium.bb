@@ -377,9 +377,12 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
   if (!search_ref.SupportsReplacementUsingTermsData(search_terms_data))
     return GURL(t_url->url());
 
+  // TODO(jnd): Adds additional parameters to get post data when the search URL
+  // has post parameters.
   return GURL(search_ref.ReplaceSearchTermsUsingTermsData(
       TemplateURLRef::SearchTermsArgs(ASCIIToUTF16(kReplacementTerm)),
-      search_terms_data));
+      search_terms_data,
+      NULL));
 }
 
 bool TemplateURLService::CanReplaceKeyword(

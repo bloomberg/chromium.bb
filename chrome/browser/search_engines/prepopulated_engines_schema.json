@@ -26,8 +26,26 @@
     { "field": "suggest_url", "type": "string", "optional": true },
     // If omitted, this engine does not support instant.
     { "field": "instant_url", "type": "string", "optional": true },
+    // If omitted, this engine does not support image search.
+    { "field": "image_url", "type": "string", "optional": true },
+    // The followings are post parameters for the corresponding search URL.
+    // If omitted, a GET request will be sent when using the corresponding
+    // search URL. Otherwise, a POST request will be sent.
+    // The string of post parameters consists of comma-separated name/value
+    // pairs, e.g.:
+    // "name1=value1,name2={template1},...".
+    // In each name/value pair, the equal sign('=') must be delimiter between
+    // name and value. In above example, the "value1" is the constant value for
+    // "name1", which is not replaceable. The {template1} is a replaceable value
+    // for name2, the actual value will be replaced with real search terms data.
+    { "field": "search_url_post_params", "type": "string", "optional": true },
+    { "field": "suggest_url_post_params", "type": "string", "optional": true },
+    { "field": "instant_url_post_params", "type": "string", "optional": true },
+    { "field": "image_url_post_params", "type": "string", "optional": true },
     // A list of URL patterns that can be used, in addition to |search_url|,
     // to extract search terms from a URL.
+    // If "search_url_post_params" is not empty, then all alternate URLs are
+    // sent using POST with using same post parameters as the search URL.
     {
       "field": "alternate_urls",
       "type": "array",

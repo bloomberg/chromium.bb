@@ -224,6 +224,8 @@ TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
   EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
   EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url_post_params().empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
       TemplateURLPrepopulateData::GetEngineType(t_urls[default_index]->url()));
 }
@@ -254,6 +256,8 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
   EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
   EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url_post_params().empty());
   // Expect at least 2 alternate_urls.
   // This caught a bug with static initialization of arrays, so leave this in.
   EXPECT_GT(t_urls[default_index]->alternate_urls().size(), 1u);

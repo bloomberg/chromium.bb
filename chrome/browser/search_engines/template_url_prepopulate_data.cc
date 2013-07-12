@@ -1121,6 +1121,11 @@ TemplateURL* MakePrepopulatedTemplateURL(
     const base::StringPiece& search_url,
     const base::StringPiece& suggest_url,
     const base::StringPiece& instant_url,
+    const base::StringPiece& image_url,
+    const base::StringPiece& search_url_post_params,
+    const base::StringPiece& suggest_url_post_params,
+    const base::StringPiece& instant_url_post_params,
+    const base::StringPiece& image_url_post_params,
     const base::StringPiece& favicon_url,
     const base::StringPiece& encoding,
     const ListValue& alternate_urls,
@@ -1134,6 +1139,11 @@ TemplateURL* MakePrepopulatedTemplateURL(
   data.SetURL(search_url.as_string());
   data.suggestions_url = suggest_url.as_string();
   data.instant_url = instant_url.as_string();
+  data.image_url = image_url.as_string();
+  data.search_url_post_params = search_url_post_params.as_string();
+  data.suggestions_url_post_params = suggest_url_post_params.as_string();
+  data.instant_url_post_params = instant_url_post_params.as_string();
+  data.image_url_post_params = image_url_post_params.as_string();
   data.favicon_url = GURL(favicon_url.as_string());
   data.show_in_default_list = true;
   data.safe_for_autoreplace = true;
@@ -1182,17 +1192,30 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
       // These fields are optional.
       std::string suggest_url;
       std::string instant_url;
+      std::string image_url;
+      std::string search_url_post_params;
+      std::string suggest_url_post_params;
+      std::string instant_url_post_params;
+      std::string image_url_post_params;
       ListValue empty_list;
       const ListValue* alternate_urls = &empty_list;
       std::string search_terms_replacement_key;
       engine->GetString("suggest_url", &suggest_url);
       engine->GetString("instant_url", &instant_url);
+      engine->GetString("image_url", &image_url);
+      engine->GetString("search_url_post_params", &search_url_post_params);
+      engine->GetString("suggest_url_post_params", &suggest_url_post_params);
+      engine->GetString("instant_url_post_params", &instant_url_post_params);
+      engine->GetString("image_url_post_params", &image_url_post_params);
       engine->GetList("alternate_urls", &alternate_urls);
       engine->GetString("search_terms_replacement_key",
           &search_terms_replacement_key);
       t_urls->push_back(MakePrepopulatedTemplateURL(profile, name, keyword,
-          search_url, suggest_url, instant_url, favicon_url, encoding,
-          *alternate_urls, search_terms_replacement_key, id));
+          search_url, suggest_url, instant_url, image_url,
+          search_url_post_params, suggest_url_post_params,
+          instant_url_post_params, image_url_post_params,
+          favicon_url, encoding, *alternate_urls, search_terms_replacement_key,
+          id));
     }
   }
 }
@@ -1220,8 +1243,10 @@ TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
 
   return MakePrepopulatedTemplateURL(profile, WideToUTF16(engine.name),
       WideToUTF16(engine.keyword), engine.search_url, engine.suggest_url,
-      engine.instant_url, engine.favicon_url, engine.encoding, alternate_urls,
-      engine.search_terms_replacement_key, engine.id);
+      engine.instant_url, engine.image_url, engine.search_url_post_params,
+      engine.suggest_url_post_params, engine.instant_url_post_params,
+      engine.image_url_post_params, engine.favicon_url, engine.encoding,
+      alternate_urls, engine.search_terms_replacement_key, engine.id);
 }
 
 void GetPrepopulatedEngines(Profile* profile,
