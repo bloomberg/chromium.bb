@@ -230,9 +230,4 @@ void Extensions3D::vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor)
     m_context->webContext()->vertexAttribDivisorANGLE(index, divisor);
 }
 
-void Extensions3D::loseContextCHROMIUM(GC3Denum current, GC3Denum other)
-{
-    m_context->webContext()->loseContextCHROMIUM(current, other);
-}
-
 } // namespace WebCore

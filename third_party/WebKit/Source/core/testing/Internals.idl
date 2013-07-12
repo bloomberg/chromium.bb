@@ -254,6 +254,4 @@
     boolean isSelectPopupVisible(Node node);
 
     [RaisesException] ClientRect selectionBounds();
-
-    boolean loseSharedGraphicsContext3D();
 };

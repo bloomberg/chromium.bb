@@ -133,8 +133,6 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    bool isValid() const;
-
     void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
     void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&);
 
