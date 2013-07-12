@@ -55,7 +55,7 @@ public:
 
     struct SelectorCheckingContext {
         // Initial selector constructor
-        SelectorCheckingContext(const CSSSelector* selector, Element* element, VisitedMatchType visitedMatchType, int childIndex = 0)
+        SelectorCheckingContext(const CSSSelector* selector, Element* element, VisitedMatchType visitedMatchType)
             : selector(selector)
             , element(element)
             , scope(0)
@@ -68,7 +68,6 @@ public:
             , hasScrollbarPseudo(false)
             , hasSelectionPseudo(false)
             , behaviorAtBoundary(DoesNotCrossBoundary)
-            , childIndex(childIndex)
         { }
 
         const CSSSelector* selector;
@@ -83,7 +82,6 @@ public:
         bool hasScrollbarPseudo;
         bool hasSelectionPseudo;
         BehaviorAtBoundary behaviorAtBoundary;
-        int childIndex;
     };
 
     template<typename SiblingTraversalStrategy>

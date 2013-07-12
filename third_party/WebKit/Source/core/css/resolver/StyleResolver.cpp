@@ -998,7 +998,7 @@ static inline bool isAtShadowBoundary(const Element* element)
 }
 
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
-    RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling, int childIndex)
+    RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
 {
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
@@ -1013,7 +1013,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     }
 
     StyleResolverState& state = m_state;
-    state.initForStyleResolve(document(), element, childIndex, defaultParent, regionForStyling);
+    state.initForStyleResolve(document(), element, defaultParent, regionForStyling);
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint()) {
         RenderStyle* sharedStyle = locateSharedStyle();
         if (sharedStyle) {
@@ -1207,7 +1207,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     StyleResolverState& state = m_state;
 
-    state.initForStyleResolve(document(), e, 0, parentStyle);
+    state.initForStyleResolve(document(), e, parentStyle);
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());
@@ -2060,7 +2060,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
 void StyleResolver::applyPropertyToStyle(CSSPropertyID id, CSSValue* value, RenderStyle* style)
 {
-    m_state.initForStyleResolve(document(), 0, 0, style);
+    m_state.initForStyleResolve(document(), 0, style);
     m_state.setStyle(style);
     applyPropertyToCurrentStyle(id, value);
 }

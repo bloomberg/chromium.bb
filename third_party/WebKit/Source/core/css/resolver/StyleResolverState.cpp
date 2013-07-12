@@ -34,7 +34,6 @@ namespace WebCore {
 void StyleResolverState::clear()
 {
     m_element = 0;
-    m_childIndex = 0;
     m_styledElement = 0;
     m_parentStyle = 0;
     m_parentNode = 0;
@@ -42,7 +41,7 @@ void StyleResolverState::clear()
     m_elementStyleResources.clear();
 }
 
-void StyleResolverState::initElement(Element* element, int childIndex)
+void StyleResolverState::initElement(Element* element)
 {
     if (m_element == element)
         return;
@@ -58,9 +57,9 @@ void StyleResolverState::initElement(Element* element, int childIndex)
     element->document()->setWritingModeSetOnDocumentElement(false);
 }
 
-void StyleResolverState::initForStyleResolve(Document* document, Element* e, int childIndex, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+void StyleResolverState::initForStyleResolve(Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
 {
-    initElement(e, childIndex);
+    initElement(e);
 
     m_regionForStyling = regionForStyling;
 
