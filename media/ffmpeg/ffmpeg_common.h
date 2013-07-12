@@ -94,6 +94,9 @@ void VideoDecoderConfigToAVCodecContext(
 ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout,
                                                  int channels);
 
+// Converts FFmpeg's audio sample format to Chrome's SampleFormat.
+SampleFormat AVSampleFormatToSampleFormat(AVSampleFormat sample_format);
+
 // Converts FFmpeg's pixel formats to its corresponding supported video format.
 VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format);
 

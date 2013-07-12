@@ -49,9 +49,8 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
       channels_(0),
       samples_per_second_(0),
       av_sample_format_(0),
-      bytes_per_frame_(0),
       last_input_timestamp_(kNoTimestamp()),
-      output_bytes_to_drop_(0),
+      output_frames_to_drop_(0),
       av_frame_(NULL) {
 }
 
@@ -198,9 +197,8 @@ void FFmpegAudioDecoder::BufferReady(
       if (is_vorbis && (input->GetTimestamp() < base::TimeDelta())) {
         // Dropping frames for negative timestamps as outlined in section A.2
         // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
-        int frames_to_drop = floor(
+        output_frames_to_drop_ = floor(
             0.5 + -input->GetTimestamp().InSecondsF() * samples_per_second_);
-        output_bytes_to_drop_ = bytes_per_frame_ * frames_to_drop;
       } else {
         last_input_timestamp_ = input->GetTimestamp();
       }
@@ -280,17 +278,17 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   // Success!
   av_frame_ = avcodec_alloc_frame();
-  bits_per_channel_ = config.bits_per_channel();
   channel_layout_ = config.channel_layout();
   samples_per_second_ = config.samples_per_second();
   output_timestamp_helper_.reset(
       new AudioTimestampHelper(config.samples_per_second()));
-  bytes_per_frame_ = config.bytes_per_frame();
 
   // Store initial values to guard against midstream configuration changes.
   channels_ = codec_context_->channels;
   av_sample_format_ = codec_context_->sample_fmt;
-  sample_format_ = config.sample_format();
+  sample_format_ = AVSampleFormatToSampleFormat(
+      static_cast<AVSampleFormat>(av_sample_format_));
+  bits_per_channel_ = SampleFormatToBytesPerChannel(sample_format_) * 8;
 
   return true;
 }
@@ -311,7 +309,7 @@ void FFmpegAudioDecoder::ReleaseFFmpegResources() {
 void FFmpegAudioDecoder::ResetTimestampState() {
   output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
   last_input_timestamp_ = kNoTimestamp();
-  output_bytes_to_drop_ = 0;
+  output_frames_to_drop_ = 0;
 }
 
 void FFmpegAudioDecoder::RunDecodeLoop(
@@ -364,7 +362,7 @@ void FFmpegAudioDecoder::RunDecodeLoop(
     if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
         !input->IsEndOfStream()) {
       DCHECK(input->GetTimestamp() != kNoTimestamp());
-      if (output_bytes_to_drop_ > 0) {
+      if (output_frames_to_drop_ > 0) {
         // Currently Vorbis is the only codec that causes us to drop samples.
         // If we have to drop samples it always means the timeline starts at 0.
         DCHECK_EQ(codec_context_->codec_id, AV_CODEC_ID_VORBIS);
@@ -374,7 +372,7 @@ void FFmpegAudioDecoder::RunDecodeLoop(
       }
     }
 
-    int decoded_audio_size = 0;
+    int decoded_frames = 0;
 #ifdef CHROMIUM_NO_AVFRAME_CHANNELS
     int channels = av_get_channel_layout_nb_channels(
         av_frame_->channel_layout);
@@ -398,36 +396,37 @@ void FFmpegAudioDecoder::RunDecodeLoop(
         queued_audio_.push_back(queue_entry);
         break;
       }
-
-      decoded_audio_size = av_samples_get_buffer_size(
-          NULL, codec_context_->channels, av_frame_->nb_samples,
-          codec_context_->sample_fmt, 1);
+      decoded_frames = av_frame_->nb_samples;
     }
 
-    if (decoded_audio_size > 0 && output_bytes_to_drop_ > 0) {
-      DCHECK_EQ(decoded_audio_size % bytes_per_frame_, 0)
-          << "Decoder didn't output full frames";
-
-      int dropped_size = std::min(decoded_audio_size, output_bytes_to_drop_);
-      decoded_audio_size -= dropped_size;
-      output_bytes_to_drop_ -= dropped_size;
+    int frames_to_skip = 0;
+    if (decoded_frames > 0 && output_frames_to_drop_ > 0) {
+      frames_to_skip = std::min(decoded_frames, output_frames_to_drop_);
+      output_frames_to_drop_ -= frames_to_skip;
     }
 
     scoped_refptr<AudioBuffer> output;
-    if (decoded_audio_size > 0) {
-      DCHECK_EQ(decoded_audio_size % bytes_per_frame_, 0)
-          << "Decoder didn't output full frames";
-
-      int decoded_frames = decoded_audio_size / bytes_per_frame_;
+    if (frames_to_skip < decoded_frames) {
+      DCHECK_EQ(sample_format_,
+                AVSampleFormatToSampleFormat(
+                    static_cast<AVSampleFormat>(av_frame_->format)));
+      base::TimeDelta start_time = output_timestamp_helper_->GetTimestamp();
       output = AudioBuffer::CopyFrom(
           sample_format_,
           channels_,
           decoded_frames,
           av_frame_->extended_data,
-          output_timestamp_helper_->GetTimestamp(),
+          start_time,
           output_timestamp_helper_->GetFrameDuration(decoded_frames));
-      output_timestamp_helper_->AddFrames(decoded_frames);
-    } else if (IsEndOfStream(result, decoded_audio_size, input) &&
+      if (frames_to_skip > 0) {
+        output->TrimStart(frames_to_skip);
+        // Reset the timestamp to the correct value since the previous frames
+        // are to be ignored, not skipped. Duration will have been adjusted
+        // correctly.
+        output->set_timestamp(start_time);
+      }
+      output_timestamp_helper_->AddFrames(decoded_frames - frames_to_skip);
+    } else if (IsEndOfStream(result, decoded_frames, input) &&
                !skip_eos_append) {
       DCHECK_EQ(packet.size, 0);
       output = AudioBuffer::CreateEOSBuffer();

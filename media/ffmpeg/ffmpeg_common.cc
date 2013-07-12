@@ -223,7 +223,7 @@ static int VideoCodecProfileToProfileID(VideoCodecProfile profile) {
   return FF_PROFILE_UNKNOWN;
 }
 
-static SampleFormat AVSampleFormatToSampleFormat(AVSampleFormat sample_format) {
+SampleFormat AVSampleFormatToSampleFormat(AVSampleFormat sample_format) {
   switch (sample_format) {
     case AV_SAMPLE_FMT_U8:
       return kSampleFormatU8;

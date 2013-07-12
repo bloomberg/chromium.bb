@@ -75,12 +75,10 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
 
   // Used for computing output timestamps.
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
-  int bytes_per_frame_;
   base::TimeDelta last_input_timestamp_;
 
-  // Number of output sample bytes to drop before generating
-  // output buffers.
-  int output_bytes_to_drop_;
+  // Number of frames to drop before generating output buffers.
+  int output_frames_to_drop_;
 
   // Holds decoded audio.
   AVFrame* av_frame_;
