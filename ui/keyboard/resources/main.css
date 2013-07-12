@@ -87,6 +87,11 @@ kb-accent-key::x-key {
   */
 }
 
+/**
+ * TODO(kevers): Use weight attribute for kb-key rather than CSS rules to
+ * enable special keys to be used for multiple layouts when the weights
+ * need to vary.
+ */
 .at,
 .com,
 .comma,
@@ -121,10 +126,6 @@ kb-accent-key::x-key {
   -webkit-box-flex: 1.8 !important;
 }
 
-.space {
-  -webkit-box-flex: 6.0 !important;
-}
-
 .bar {
   -webkit-box-flex: 0.6 !important;
 }
@@ -150,6 +151,6 @@ kb-accent-key::x-key {
   background-image: url('images/microphone-green.svg');
 }
 
-.hide {
+.layout-selector {
   background-image: url('images/keyboard.svg');
 }

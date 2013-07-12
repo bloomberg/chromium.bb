@@ -9,7 +9,7 @@
 <link id="spacebar-row" rel="import" href="spacebar-row.html">
 
 <template>
-  <kb-keyset id="upper" toKeyset="lower">
+  <kb-keyset id="qwerty-upper" toKeyset="lower">
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key-sequence keys="QWERTYUIOP" superscripts="1234567890"></kb-key-sequence>
@@ -31,7 +31,7 @@
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
-      <kb-key class="hide dark"></kb-key>
+      <kb-layout-selector toLayout="dvorak"></kb-layout-selector>
     </kb-row>
     <kb-accent-container hidden>
       <kb-accent-set id="Q" offset=1>
@@ -122,7 +122,7 @@
     </kb-accent-container>
   </kb-keyset>
 
-  <kb-keyset id="lower">
+  <kb-keyset id="qwerty-lower" isDefault=true>
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key-sequence keys="qwertyuiop" superscripts="1234567890"></kb-key-sequence>
@@ -143,7 +143,7 @@
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
-      <kb-key class="hide dark"></kb-key>
+      <kb-layout-selector toLayout="dvorak"></kb-layout-selector>
     </kb-row>
     <kb-accent-container hidden>
       <kb-accent-set id="q" offset=1>
@@ -242,7 +242,7 @@
     </kb-accent-container>
   </kb-keyset>
 
-  <kb-keyset id="symbol">
+  <kb-keyset id="qwerty-symbol">
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key accents="one">1</kb-key><kb-key accents="two">2</kb-key>
@@ -270,7 +270,7 @@
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
-      <kb-key class="hide dark"></kb-key>
+      <kb-layout-selector toLayout="dvorak"></kb-layout-selector>
     </kb-row>
     <kb-accent-container hidden>
       <kb-accent-set id="one" offset=1>
@@ -364,7 +364,7 @@
     </kb-accent-container>
   </kb-keyset>
 
-  <kb-keyset id="more">
+  <kb-keyset id="qwerty-more">
     <kb-row>
     <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
       <kb-key>~</kb-key><kb-key>`</kb-key><kb-key>|</kb-key><kb-key>^</kb-key>
@@ -390,7 +390,7 @@
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
-      <kb-key class="hide dark"></kb-key>
+      <kb-layout-selector toLayout="dvorak"></kb-layout-selector>
     </kb-row>
   </kb-keyset>
 </template>

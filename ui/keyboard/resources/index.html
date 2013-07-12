@@ -21,11 +21,15 @@
     <link rel="import" href="elements/kb-keyboard.html">
     <link rel="import" href="elements/kb-keyset.html">
     <link rel="import" href="elements/kb-row.html">
-    <link id="keysets" rel="import" href="layouts/qwerty.html">
+    <!-- TODO(kevers|biao): Switch to dynamic loading strategy once supported
+    in Polymer -->
+    <link id="dvorak" rel="import" href="layouts/dvorak.html">
+    <link id="qwerty" rel="import" href="layouts/qwerty.html">
     <!--TODO(stevet): Import 'Open Sans' font. -->
     <script src="main.js"></script>
   </head>
   <body>
-    <kb-keyboard id="keyboard" touch-action="none" keyset="lower"></kb-keyboard>
+    <kb-keyboard id="keyboard" touch-action="none" layout="qwerty">
+    </kb-keyboard>
   </body>
 </html>

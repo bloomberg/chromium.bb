@@ -4,12 +4,12 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-key" extends="kb-key-base">
+<element name="kb-key" extends="kb-key-base" attributes="weight">
   <template>
     <style>
       @host {
         * {
-          -webkit-box-flex: 1;
+          -webkit-box-flex: {{weight}};
           display: -webkit-box;
           position: relative;
           background-position: center center;
@@ -24,6 +24,23 @@
     <div pseudo="x-superscript" inverted?={{invert}}>{{superscript}}</div>
   </template>
   <script>
-    Polymer.register(this);
+    Polymer.register(this, {
+      weight: 1
+    });
+  </script>
+</element>
+
+<!-- Special keys -->
+
+<!-- 
+  -- TODO(kevers): Display popup menu for selecting layout on keypress. Display
+  -- code for keyboard layout in place of image. 
+  -->
+<element name="kb-layout-selector" class="layout-selector dark" char="Invalid"
+    extends="kb-key">
+  <script>
+   Polymer.register(this, {
+     toLayout: 'qwerty'
+   });
   </script>
 </element>

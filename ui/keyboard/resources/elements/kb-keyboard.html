@@ -5,7 +5,7 @@
   -->
 
 <element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
-    on-key-down="keyDown" attributes="keyset rows">
+    on-key-down="keyDown" attributes="keyset layout rows">
   <template>
     <style>
       @host {
@@ -14,7 +14,13 @@
         }
       }
     </style>
-    <content select="#{{keyset}}"></content>
+    <!-- The ID for a keyset follows the naming convention of combining the
+      -- layout name with a base keyset name. This convention is used to
+      -- allow multiple layouts to be loaded (enablign fast switching) while
+      -- allowing the shift and spacebar keys to be common across multiple
+      -- keyboard layouts.
+      -->
+    <content select="#{{layout}}-{{keyset}}"></content>
   </template>
   <script>
     /**
@@ -120,10 +126,13 @@
           return;
         }
         var toKeyset = detail.toKeyset;
-        // Keyset transtion key.
-        if (toKeyset) {
+        // Keyset transition key.
+        if (toKeyset)
           this.keyset = toKeyset;
-        }
+        var toLayout = detail.toLayout;
+        // Layout transition key.
+        if (toLayout)
+          this.layout = toLayout;
         var char = detail.char;
         if (enterUpperOnSpace) {
           enterUpperOnSpace = false;
@@ -145,6 +154,48 @@
             break;
         }
         insertText(char);
+      },
+
+      /**
+       * Handles a change in the keyboard layout.  Auto-selects the default
+       * keyset for the new layout.
+       */
+      layoutChanged: function() {
+        if (!this.selectDefaultKeyset()) {
+          // Keyset selection fails if the keysets have not been loaded yet.
+          var keysets = document.querySelector('#' + this.layout);
+          if (keysets) {
+            keyboard.appendChild(flattenKeysets(keysets.content));
+            this.selectDefaultKeyset();
+          } else {
+            console.error('Unable to find layout ' + this.layout);
+          }
+        }
+      },
+
+      /**
+       * Selects the default keyset for a layout.
+       * @return {boolean} True if successful.  This method can fail if the
+       *     keysets corresponding to the layout have not been injected.
+       */
+      selectDefaultKeyset: function() {
+        var keysets = this.querySelectorAll('kb-keyset');
+        // Full name of the keyset is of the form 'layout-keyset'.
+        var regex = new RegExp('^' + this.layout + '-(.+)');
+        var keysetsLoaded = false;
+        for (var i = 0; i < keysets.length; i++) {
+          var matches = keysets[i].id.match(regex);
+          if (matches && matches.length == 2) {
+             keysetsLoaded = true;
+             if (keysets[i].isDefault) {
+               this.keyset = matches[1];
+               return true;
+             }
+          }
+        }
+        if (keysetsLoaded)
+          console.error('No default keyset found for ' + this.layout);
+        return false;
       }
     });
   </script>

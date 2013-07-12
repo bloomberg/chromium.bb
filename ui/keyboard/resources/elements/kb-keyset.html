@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-keyset" attributes="toKeyset" on-key-up="keyUp"
+<element name="kb-keyset" attributes="toKeyset isDefault" on-key-up="keyUp"
     on-key-longpress="keyLongpress">
   <template>
     <style>
@@ -22,6 +22,7 @@
   </template>
   <script>
     Polymer.register(this, {
+      isDefault: false,
       keyLongpress: function(event, detail) {
         if (detail.accents) {
           var accentContainer = this.$.accentContainer.getDistributedNodes()[0];

@@ -56,10 +56,6 @@ function flattenKeysets(content) {
   return importedContent;
 };
 
-addEventListener('WebComponentsReady', function() {
-  keyboard.appendChild(flattenKeysets(keysets.content));
-});
-
 addEventListener('resize', onResize);
 
 addEventListener('load', onResize);

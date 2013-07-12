@@ -5,7 +5,7 @@
   -->
 
 <element name="kb-key-base" on-pointerdown="down" on-pointerup="up" on-pointerout="out"
-    attributes="accents char invert repeat superscript toKeyset">
+    attributes="accents char invert repeat superscript toKeyset toLayout">
   <template>
   </template>
   <script>
@@ -24,6 +24,7 @@
         var detail = {
             char: this.char || this.textContent,
             toKeyset: this.toKeyset,
+            toLayout: this.toLayout,
             repeat: this.repeat
         };
         this.send('key-down', detail);
@@ -44,7 +45,8 @@
         clearTimeout(this.longPressTimer);
         var detail = {
             char: this.char || this.textContent,
-            toKeyset: this.toKeyset
+            toKeyset: this.toKeyset,
+            toLayout: this.toLayout
         };
         this.send('key-up', detail);
       }
