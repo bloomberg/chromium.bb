@@ -540,8 +540,11 @@ void TileManager::AssignGpuMemoryToTiles(
     // 1. Tile size should not impact raster priority.
     // 2. Tile with unreleasable memory could otherwise incorrectly
     //    be added as it's not affected by |bytes_allocatable|.
-    if (higher_priority_tile_oomed)
+    if (higher_priority_tile_oomed) {
+      if (tile->required_for_activation())
+        all_tiles_required_for_activation_have_memory_ = false;
       continue;
+    }
 
     if (!tile_version.resource_)
       tiles_that_need_to_be_rasterized->push_back(tile);
