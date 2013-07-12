@@ -527,7 +527,8 @@ TEST_F(CertVerifyProcTest, DigiNotarCerts) {
   }
 }
 
-TEST_F(CertVerifyProcTest, TestKnownRoot) {
+// The certse.pem certificate has been revoked. crbug.com/259723.
+TEST_F(CertVerifyProcTest, DISABLED_TestKnownRoot) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "certse.pem", X509Certificate::FORMAT_AUTO);
@@ -556,7 +557,8 @@ TEST_F(CertVerifyProcTest, TestKnownRoot) {
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
 }
 
-TEST_F(CertVerifyProcTest, PublicKeyHashes) {
+// The certse.pem certificate has been revoked. crbug.com/259723.
+TEST_F(CertVerifyProcTest, DISABLED_PublicKeyHashes) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "certse.pem", X509Certificate::FORMAT_AUTO);
