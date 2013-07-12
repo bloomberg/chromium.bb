@@ -579,9 +579,11 @@ void AutofillDialogViews::OverlayView::SetState(
   message_stack_->RemoveAllChildViews(true);
   for (size_t i = 0; i < state.strings.size(); ++i) {
     views::Label* label = new views::Label();
+    label->SetAutoColorReadabilityEnabled(false);
     label->SetMultiLine(true);
     label->SetText(state.strings[i].text);
     label->SetFont(state.strings[i].font);
+    label->SetEnabledColor(state.strings[i].text_color);
     label->SetHorizontalAlignment(state.strings[i].alignment);
     message_stack_->AddChildView(label);
   }
@@ -649,7 +651,7 @@ void AutofillDialogViews::OverlayView::Layout() {
   message_stack_->SetBounds(bounds.x(), y, bounds.width(), message_height);
 
   gfx::Size image_size = image_view_->GetPreferredSize();
-  const int kImageBottomMargin = 40;
+  const int kImageBottomMargin = 50;
   y -= image_size.height() + kImageBottomMargin;
   image_view_->SetBounds(bounds.x(), y, bounds.width(), image_size.height());
 }

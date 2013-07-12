@@ -401,13 +401,18 @@ gfx::Image GetGeneratedCardImage(const string16& card_number) {
 
 #if !defined(OS_ANDROID)
   gfx::Rect display_rect(gfx::Point(), card->size());
-  display_rect.Inset(10, display_rect.height() / 5, 10, 0);
-  canvas.DrawStringInt(card_number,
-                       rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(5),
-                       SK_ColorBLACK,
-                       display_rect.x(), display_rect.y(),
-                       display_rect.width(), display_rect.height(),
-                       gfx::Canvas::NO_SUBPIXEL_RENDERING);
+  display_rect.Inset(14, 0, 14, 0);
+  // TODO(estade): fallback font for systems that don't have Helvetica?
+  gfx::Font helvetica("Helvetica", 14);
+  gfx::ShadowValues shadows;
+  shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1),
+                    0.0,
+                    SkColorSetARGB(85, 0, 0, 0)));
+  canvas.DrawStringWithShadows(
+      card_number,
+      helvetica,
+      SK_ColorWHITE,
+      display_rect, 0, 0, shadows);
 #endif
 
   gfx::ImageSkia skia(canvas.ExtractImageRep());
@@ -800,10 +805,14 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
         cc_number.substr(cc_number.size() - 4));
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
+    // TODO(estade): figure out correct color.
+    string.text_color = SK_ColorGRAY;
 
     state.strings.push_back(DialogOverlayString());
     DialogOverlayString& subtext = state.strings.back();
     subtext.font = rb.GetFont(ui::ResourceBundle::BaseFont);
+    // TODO(estade): figure out correct color.
+    subtext.text_color = SK_ColorGRAY;
     subtext.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_EXPLANATION);
 
@@ -817,6 +826,8 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
     // "Submitting" waiting page.
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS);
+    // TODO(estade): figure out correct color.
+    string.text_color = SK_ColorGRAY;
     string.alignment = gfx::ALIGN_CENTER;
   }
 

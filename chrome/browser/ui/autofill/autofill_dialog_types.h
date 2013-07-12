@@ -196,6 +196,7 @@ struct DialogOverlayString {
   ~DialogOverlayString();
   // TODO(estade): need to set a color as well.
   base::string16 text;
+  SkColor text_color;
   gfx::Font font;
   gfx::HorizontalAlignment alignment;
 };
