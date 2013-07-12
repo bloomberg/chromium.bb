@@ -753,11 +753,10 @@ function disposeNtp(wasFakeboxInput) {
 
 
 /**
- * Restores the NTP (reloads the custom theme, shows the top visible bars,
- * re-enables the fakebox and unhides all NTP elements.)
+ * Restores the NTP (reloads the custom theme, re-enables the fakebox and
+ * unhides the logo.)
  */
 function restoreNtp() {
-  searchboxApiHandle.showBars();
   setFakeboxActive(true);
   setFakeboxAndLogoVisibility(true);
   onThemeChange();
