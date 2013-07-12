@@ -32,50 +32,28 @@
 #define WebTextFieldDecoratorClient_h
 
 #include "../platform/WebCString.h"
-
-#if WEBKIT_IMPLEMENTATION
-namespace WebCore { class TextFieldDecorator; }
-#endif
+#include "WebPasswordGeneratorClient.h"
 
 namespace WebKit {
 
-class WebInputElement;
-
-class WebTextFieldDecoratorClient {
+// FIXME: This is only here until the Chromium side change removes the usage in
+// favor of WebPasswordGeneratorClient.
+class WebTextFieldDecoratorClient : public WebPasswordGeneratorClient {
 public:
-    // The function should return true if the specified input element should
-    // have a decoration icon. This function is called whenever a text field is
-    // created, and should not take much time.
-    virtual bool shouldAddDecorationTo(const WebInputElement&) = 0;
-    // Returns true if the decoration should be visible when it's created.
-    virtual bool visibleByDefault() = 0;
-
-    // Image resource name for the normal state. The image is stretched to
-    // font-size x font-size square. The function must return an existing
-    // resource name.
-    virtual WebCString imageNameForNormalState() = 0;
-    // Image resource name for the disabled state. If this function returns an
-    // empty string, imageNameForNormalState() is used even for the disabled
-    // state.
-    virtual WebCString imageNameForDisabledState() = 0;
-    // Image resource name for the read only state. If this function returns an
-    // empty string, the image same as imageNameForDisabledState() is used.
-    virtual WebCString imageNameForReadOnlyState() = 0;
-    // Image resource name for when the imaged is being hovered over. If this
-    // function returns an empty string, imageNameForNormalState() is used
-    // instead.
-    virtual WebCString imageNameForHoverState() {return WebCString();}
+    // Delegate to the handleClick method until the Chrome side patch can land.
+    virtual void openPasswordGenerator(WebInputElement& input) { handleClick(input); }
 
     // This is called when the decoration icon is clicked.
     virtual void handleClick(WebInputElement&) = 0;
-    // This is called when the input element loses its renderer. An
-    // implementation of this function should not do something which updates
-    // state of WebKit objects.
-    virtual void willDetach(const WebInputElement&) = 0;
 
-#if WEBKIT_IMPLEMENTATION
-    bool isClientFor(WebCore::TextFieldDecorator*);
-#endif
+    // FIXME: These are never called.
+    virtual void willDetach(const WebInputElement&) = 0;
+    virtual bool visibleByDefault() = 0;
+    virtual WebCString imageNameForReadOnlyState() = 0;
+    virtual WebCString imageNameForDisabledState() = 0;
+    virtual bool shouldAddDecorationTo(const WebInputElement&) = 0;
+    virtual WebCString imageNameForNormalState() = 0;
+    virtual WebCString imageNameForHoverState() = 0;
 
     virtual ~WebTextFieldDecoratorClient() { }
 };

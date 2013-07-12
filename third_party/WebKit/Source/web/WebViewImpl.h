@@ -84,7 +84,6 @@ class PopupMenuClient;
 class Range;
 class RenderLayerCompositor;
 class RenderTheme;
-class TextFieldDecorator;
 class Widget;
 }
 
@@ -193,7 +192,7 @@ public:
     virtual void setPrerendererClient(WebPrerendererClient*) OVERRIDE;
     virtual void setSpellCheckClient(WebSpellCheckClient*);
     virtual void setValidationMessageClient(WebValidationMessageClient*) OVERRIDE;
-    virtual void addTextFieldDecoratorClient(WebTextFieldDecoratorClient*) OVERRIDE;
+    virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) OVERRIDE;
     virtual WebSettings* settings();
     virtual WebString pageEncoding() const;
     virtual void setPageEncoding(const WebString& encoding);
@@ -361,7 +360,10 @@ public:
         return m_spellCheckClient;
     }
 
-    const Vector<OwnPtr<WebCore::TextFieldDecorator> >& textFieldDecorators() const { return m_textFieldDecorators; }
+    WebPasswordGeneratorClient* passwordGeneratorClient() const
+    {
+        return m_passwordGeneratorClient;
+    }
 
     // Returns the page object associated with this view. This may be null when
     // the page is shutting down, but will be valid at all other times.
@@ -646,7 +648,7 @@ private:
     WebAutofillClient* m_autofillClient;
     WebPermissionClient* m_permissionClient;
     WebSpellCheckClient* m_spellCheckClient;
-    Vector<OwnPtr<WebCore::TextFieldDecorator> > m_textFieldDecorators;
+    WebPasswordGeneratorClient* m_passwordGeneratorClient;
 
     ChromeClientImpl m_chromeClientImpl;
     ContextMenuClientImpl m_contextMenuClientImpl;

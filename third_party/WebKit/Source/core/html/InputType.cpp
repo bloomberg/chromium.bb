@@ -465,7 +465,7 @@ void InputType::destroyShadowSubtree()
     root->removeChildren();
 
     // It's ok to clear contents of all other ShadowRoots because they must have
-    // been created by TextFieldDecorationElement, and we don't allow adding
+    // been created by InputFieldPasswordGeneratorButtonElement, and we don't allow adding
     // AuthorShadowRoot to HTMLInputElement.
     while ((root = root->youngerShadowRoot())) {
         root->removeChildren();

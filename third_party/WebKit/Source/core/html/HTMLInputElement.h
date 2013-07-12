@@ -128,6 +128,7 @@ public:
 #endif
     HTMLElement* sliderThumbElement() const;
     HTMLElement* sliderTrackElement() const;
+    HTMLElement* passwordGeneratorButtonElement() const;
     virtual HTMLElement* placeholderElement() const;
 
     bool checked() const { return m_isChecked; }
