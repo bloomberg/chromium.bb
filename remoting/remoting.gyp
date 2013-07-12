@@ -391,6 +391,7 @@
             'host/me2me_desktop_environment.h',
             'host/mouse_clamping_filter.cc',
             'host/mouse_clamping_filter.h',
+            'host/pairing_registry_delegate.cc',
             'host/pairing_registry_delegate.h',
             'host/pairing_registry_delegate_linux.cc',
             'host/pairing_registry_delegate_linux.h',

@@ -9,10 +9,14 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/host/logging.h"
+#include "remoting/host/pairing_registry_delegate.h"
+#include "remoting/protocol/pairing_registry.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>
 #endif
+
+using remoting::protocol::PairingRegistry;
 
 int main(int argc, char** argv) {
   // This object instance is required by Chrome code (such as MessageLoop).
@@ -33,7 +37,10 @@ int main(int argc, char** argv) {
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
   base::RunLoop run_loop;
+  scoped_refptr<PairingRegistry> pairing_registry =
+      remoting::CreatePairingRegistry(message_loop.message_loop_proxy());
   remoting::NativeMessagingHost host(remoting::DaemonController::Create(),
+                                     pairing_registry,
                                      read_file, write_file,
                                      message_loop.message_loop_proxy(),
                                      run_loop.QuitClosure());

@@ -16,17 +16,23 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 class SingleThreadTaskRunner;
 class Value;
 }  // namespace base
 
 namespace remoting {
 
+namespace protocol {
+class PairingRegistry;
+}  // namespace protocol
+
 // Implementation of the native messaging host process.
 class NativeMessagingHost {
  public:
   NativeMessagingHost(
       scoped_ptr<DaemonController> daemon_controller,
+      scoped_refptr<protocol::PairingRegistry> pairing_registry,
       base::PlatformFile input,
       base::PlatformFile output,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
@@ -49,6 +55,10 @@ class NativeMessagingHost {
   // response already known ("id" and "type" fields).
   bool ProcessHello(const base::DictionaryValue& message,
                     scoped_ptr<base::DictionaryValue> response);
+  bool ProcessClearPairedClients(const base::DictionaryValue& message,
+                                 scoped_ptr<base::DictionaryValue> response);
+  bool ProcessDeletePairedClient(const base::DictionaryValue& message,
+                                 scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetHostName(const base::DictionaryValue& message,
                           scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetPinHash(const base::DictionaryValue& message,
@@ -59,6 +69,8 @@ class NativeMessagingHost {
                                  scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetDaemonConfig(const base::DictionaryValue& message,
                               scoped_ptr<base::DictionaryValue> response);
+  bool ProcessGetPairedClients(const base::DictionaryValue& message,
+                               scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetUsageStatsConsent(const base::DictionaryValue& message,
                                    scoped_ptr<base::DictionaryValue> response);
   bool ProcessStartDaemon(const base::DictionaryValue& message,
@@ -73,19 +85,22 @@ class NativeMessagingHost {
   // PostTask()s to the main thread if necessary.
   void SendResponse(scoped_ptr<base::DictionaryValue> response);
 
-  // These Send... methods get called on the DaemonController's internal thread
+  // These Send... methods get called on the DaemonController's internal thread,
+  // or on the calling thread if called by the PairingRegistry.
   // These methods fill in the |response| dictionary from the other parameters,
   // and pass it to SendResponse().
-  void SendUpdateConfigResponse(scoped_ptr<base::DictionaryValue> response,
-                                DaemonController::AsyncResult result);
   void SendConfigResponse(scoped_ptr<base::DictionaryValue> response,
                           scoped_ptr<base::DictionaryValue> config);
+  void SendPairedClientsResponse(scoped_ptr<base::DictionaryValue> response,
+                                 scoped_ptr<base::ListValue> pairings);
   void SendUsageStatsConsentResponse(scoped_ptr<base::DictionaryValue> response,
                                      bool supported,
                                      bool allowed,
                                      bool set_by_policy);
   void SendAsyncResult(scoped_ptr<base::DictionaryValue> response,
                        DaemonController::AsyncResult result);
+  void SendAsyncResultFromBoolean(scoped_ptr<base::DictionaryValue> response,
+                                  bool result);
 
   // Callbacks may be invoked by e.g. DaemonController during destruction,
   // which use |weak_ptr_|, so it's important that it be the last member to be
@@ -102,6 +117,9 @@ class NativeMessagingHost {
   // not afterwards), so it needs to be destroyed before other members of this
   // class (except for |weak_factory_|).
   scoped_ptr<remoting::DaemonController> daemon_controller_;
+
+  // Used to load and update the paired clients for this host.
+  scoped_refptr<protocol::PairingRegistry> pairing_registry_;
 
   base::WeakPtrFactory<NativeMessagingHost> weak_factory_;
 

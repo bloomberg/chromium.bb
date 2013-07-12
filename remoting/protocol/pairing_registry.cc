@@ -12,18 +12,16 @@
 #include "base/values.h"
 #include "crypto/random.h"
 
-namespace {
-const char kCreatedTimeKey[] = "created-time";
-const char kClientIdKey[] = "client-id";
-const char kClientNameKey[] = "client-name";
-const char kSharedSecretKey[] = "shared-secret";
-}  // namespace
-
 namespace remoting {
 namespace protocol {
 
 // How many bytes of random data to use for the shared secret.
 const int kKeySize = 16;
+
+const char PairingRegistry::kCreatedTimeKey[] = "createdTime";
+const char PairingRegistry::kClientIdKey[] = "clientId";
+const char PairingRegistry::kClientNameKey[] = "clientName";
+const char PairingRegistry::kSharedSecretKey[] = "sharedSecret";
 
 PairingRegistry::Pairing::Pairing() {
 }
@@ -89,6 +87,25 @@ void PairingRegistry::GetPairing(const std::string& client_id,
       base::Bind(&PairingRegistry::DoGetPairing, this, client_id, callback));
 }
 
+void PairingRegistry::GetAllPairings(const GetAllPairingsCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  delegate_->Load(
+      base::Bind(&PairingRegistry::SanitizePairings, this, callback));
+}
+
+void PairingRegistry::DeletePairing(const std::string& client_id,
+                                    const SaveCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  delegate_->Load(
+      base::Bind(&PairingRegistry::DoDeletePairing,
+                 this, client_id, callback));
+}
+
+void PairingRegistry::ClearAllPairings(const SaveCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  delegate_->Save(EncodeJson(PairedClients()), callback);
+}
+
 void PairingRegistry::AddPairing(const Pairing& pairing) {
   delegate_->Load(
       base::Bind(&PairingRegistry::MergePairingAndSave, this, pairing));
@@ -111,6 +128,22 @@ void PairingRegistry::DoGetPairing(const std::string& client_id,
   callback.Run(result);
 }
 
+void PairingRegistry::SanitizePairings(const GetAllPairingsCallback& callback,
+                                       const std::string& pairings_json) {
+  PairedClients clients = DecodeJson(pairings_json);
+  callback.Run(ConvertToListValue(clients, false));
+}
+
+void PairingRegistry::DoDeletePairing(const std::string& client_id,
+                                      const SaveCallback& callback,
+                                      const std::string& pairings_json) {
+  PairedClients clients = DecodeJson(pairings_json);
+  clients.erase(client_id);
+  std::string new_pairings_json = EncodeJson(clients);
+  delegate_->Save(new_pairings_json, callback);
+}
+
+// static
 PairingRegistry::PairedClients PairingRegistry::DecodeJson(
     const std::string& pairings_json) {
   PairedClients result;
@@ -156,23 +189,33 @@ PairingRegistry::PairedClients PairingRegistry::DecodeJson(
   return result;
 }
 
+// static
 std::string PairingRegistry::EncodeJson(const PairedClients& clients) {
-  base::ListValue root;
+  scoped_ptr<base::ListValue> root = ConvertToListValue(clients, true);
+  std::string result;
+  JSONStringValueSerializer serializer(&result);
+  serializer.Serialize(*root);
+
+  return result;
+}
+
+// static
+scoped_ptr<base::ListValue> PairingRegistry::ConvertToListValue(
+    const PairedClients& clients,
+    bool include_shared_secrets) {
+  scoped_ptr<base::ListValue> root(new base::ListValue());
   for (PairedClients::const_iterator i = clients.begin();
        i != clients.end(); ++i) {
     base::DictionaryValue* pairing = new base::DictionaryValue();
     pairing->SetDouble(kCreatedTimeKey, i->second.created_time().ToJsTime());
     pairing->SetString(kClientNameKey, i->second.client_name());
     pairing->SetString(kClientIdKey, i->second.client_id());
-    pairing->SetString(kSharedSecretKey, i->second.shared_secret());
-    root.Append(pairing);
+    if (include_shared_secrets) {
+      pairing->SetString(kSharedSecretKey, i->second.shared_secret());
+    }
+    root->Append(pairing);
   }
-
-  std::string result;
-  JSONStringValueSerializer serializer(&result);
-  serializer.Serialize(root);
-
-  return result;
+  return root.Pass();
 }
 
 }  // namespace protocol

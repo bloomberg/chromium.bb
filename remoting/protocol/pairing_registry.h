@@ -7,12 +7,18 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+
+namespace base {
+class ListValue;
+}  // namespace base
 
 namespace remoting {
 namespace protocol {
@@ -61,7 +67,14 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
   // Delegate callbacks.
   typedef base::Callback<void(const std::string& pairings_json)> LoadCallback;
   typedef base::Callback<void(bool success)> SaveCallback;
-  typedef base::Callback<void(Pairing pariring)> GetPairingCallback;
+  typedef base::Callback<void(Pairing pairing)> GetPairingCallback;
+  typedef base::Callback<void(scoped_ptr<base::ListValue> pairings)>
+      GetAllPairingsCallback;
+
+  static const char kCreatedTimeKey[];
+  static const char kClientIdKey[];
+  static const char kClientNameKey[];
+  static const char kSharedSecretKey[];
 
   // Interface representing the persistent storage back-end.
   class Delegate {
@@ -94,22 +107,44 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
   void GetPairing(const std::string& client_id,
                   const GetPairingCallback& callback);
 
+  // Gets all pairings with the shared secrets removed as a base::ListValue.
+  void GetAllPairings(const GetAllPairingsCallback& callback);
+
+  // Delete a pairing, identified by its client ID. |callback| is called with
+  // the result of saving the new config, which occurs even if the client ID
+  // did not match any pairing.
+  void DeletePairing(const std::string& client_id,
+                     const SaveCallback& callback);
+
+  // Clear all pairings from the registry.
+  void ClearAllPairings(const SaveCallback& callback);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PairingRegistryTest, AddPairing);
+  FRIEND_TEST_ALL_PREFIXES(PairingRegistryTest, GetAllPairingsJSON);
   friend class NegotiatingAuthenticatorTest;
   friend class base::RefCountedThreadSafe<PairingRegistry>;
 
   virtual ~PairingRegistry();
 
-  void AddPairing(const Pairing& pairing);;
+  void AddPairing(const Pairing& pairing);
   void MergePairingAndSave(const Pairing& pairing,
                            const std::string& pairings_json);
   void DoGetPairing(const std::string& client_id,
                     const GetPairingCallback& callback,
                     const std::string& pairings_json);
+  void SanitizePairings(const GetAllPairingsCallback& callback,
+                        const std::string& pairings_json);
+  void DoDeletePairing(const std::string& client_id,
+                       const SaveCallback& callback,
+                       const std::string& pairings_json);
 
+  // Translate between the structured and serialized forms of the pairing data.
   static PairedClients DecodeJson(const std::string& pairings_json);
   static std::string EncodeJson(const PairedClients& clients);
+  static scoped_ptr<base::ListValue> ConvertToListValue(
+      const PairedClients& clients,
+      bool include_shared_secrets);
 
   scoped_ptr<Delegate> delegate_;
 
