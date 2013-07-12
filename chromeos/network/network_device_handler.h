@@ -46,6 +46,21 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
 
   virtual ~NetworkDeviceHandler();
 
+  // Gets the properties of the device with id |device_path|. See note on
+  // |callback| and |error_callback|, in class description above.
+  void GetDeviceProperties(
+      const std::string& device_path,
+      const network_handler::DictionaryResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) const;
+
+  // Requests a refresh of the IP configuration for the device specified by
+  // |device_path| if it exists. This will apply any newly configured
+  // properties and renew the DHCP lease.
+  void RequestRefreshIPConfigs(
+      const std::string& device_path,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback);
+
   // Tells the device to set the modem carrier firmware, as specified by
   // |carrier|.
   //
@@ -143,7 +158,7 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
 
   NetworkDeviceHandler();
 
-  void HandleShillCallFailure(
+  void HandleShillCallFailureForTest(
       const std::string& device_path,
       const network_handler::ErrorCallback& error_callback,
       const std::string& error_name,

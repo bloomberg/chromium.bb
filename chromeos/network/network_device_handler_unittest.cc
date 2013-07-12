@@ -17,6 +17,8 @@ namespace chromeos {
 
 namespace {
 
+const char kDefaultCellularDevicePath[] = "stub_cellular_device";
+const char kDefaultWifiDevicePath[] = "stub_wifi_device";
 const char kResultSuccess[] = "success";
 
 }  // namespace
@@ -31,9 +33,24 @@ class NetworkDeviceHandlerTest : public testing::Test {
     message_loop_.RunUntilIdle();
     success_callback_ = base::Bind(&NetworkDeviceHandlerTest::SuccessCallback,
                                    base::Unretained(this));
+    properties_success_callback_ =
+        base::Bind(&NetworkDeviceHandlerTest::PropertiesSuccessCallback,
+                   base::Unretained(this));
     error_callback_ = base::Bind(&NetworkDeviceHandlerTest::ErrorCallback,
                                  base::Unretained(this));
     network_device_handler_.reset(new NetworkDeviceHandler());
+
+    ShillDeviceClient::TestInterface* device_test =
+        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
+    device_test->ClearDevices();
+    device_test->AddDevice(
+        kDefaultCellularDevicePath, flimflam::kTypeCellular, "cellular1");
+    device_test->AddDevice(
+        kDefaultWifiDevicePath, flimflam::kTypeWifi, "wifi1");
+    base::ListValue test_ip_configs;
+    test_ip_configs.AppendString("ip_config1");
+    device_test->SetDeviceProperty(
+        kDefaultWifiDevicePath, flimflam::kIPConfigsProperty, test_ip_configs);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -61,34 +78,33 @@ class NetworkDeviceHandlerTest : public testing::Test {
     result_ = kResultSuccess;
   }
 
+  void PropertiesSuccessCallback(const std::string& device_path,
+                                 const base::DictionaryValue& properties) {
+    result_ = kResultSuccess;
+    properties_.reset(properties.DeepCopy());
+  }
+
   void InvokeDBusErrorCallback(
       const std::string& device_path,
       const network_handler::ErrorCallback& callback,
       const std::string& error_name) {
-    network_device_handler_->HandleShillCallFailure(
+    network_device_handler_->HandleShillCallFailureForTest(
         device_path, callback, error_name, "Error message.");
   }
 
  protected:
-
-  static const char kDefaultCellularDevicePath[];
-  static const char kDefaultWifiDevicePath[];
-
   std::string result_;
 
   scoped_ptr<NetworkDeviceHandler> network_device_handler_;
   base::MessageLoopForUI message_loop_;
   base::Closure success_callback_;
+  network_handler::DictionaryResultCallback properties_success_callback_;
   network_handler::ErrorCallback error_callback_;
+  scoped_ptr<base::DictionaryValue> properties_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerTest);
 };
-
-const char NetworkDeviceHandlerTest::kDefaultCellularDevicePath[] =
-    "/device/stub_cellular_device";
-const char NetworkDeviceHandlerTest::kDefaultWifiDevicePath[] =
-    "/device/stub_wifi_device";
 
 TEST_F(NetworkDeviceHandlerTest, ErrorTranslation) {
   EXPECT_TRUE(result_.empty());
@@ -96,47 +112,70 @@ TEST_F(NetworkDeviceHandlerTest, ErrorTranslation) {
       base::Bind(&NetworkDeviceHandlerTest::ErrorCallback,
                  base::Unretained(this));
 
-  network_device_handler_->HandleShillCallFailure(
+  network_device_handler_->HandleShillCallFailureForTest(
       kDefaultCellularDevicePath,
       callback,
       "org.chromium.flimflam.Error.Failure",
       "Error happened.");
   EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
 
-  network_device_handler_->HandleShillCallFailure(
+  network_device_handler_->HandleShillCallFailureForTest(
       kDefaultCellularDevicePath,
       callback,
       "org.chromium.flimflam.Error.IncorrectPin",
       "Incorrect pin.");
   EXPECT_EQ(NetworkDeviceHandler::kErrorIncorrectPin, result_);
 
-  network_device_handler_->HandleShillCallFailure(
+  network_device_handler_->HandleShillCallFailureForTest(
       kDefaultCellularDevicePath,
       callback,
       "org.chromium.flimflam.Error.NotSupported",
       "Operation not supported.");
   EXPECT_EQ(NetworkDeviceHandler::kErrorNotSupported, result_);
 
-  network_device_handler_->HandleShillCallFailure(
+  network_device_handler_->HandleShillCallFailureForTest(
       kDefaultCellularDevicePath,
       callback,
       "org.chromium.flimflam.Error.PinBlocked",
       "PIN is blocked.");
   EXPECT_EQ(NetworkDeviceHandler::kErrorPinBlocked, result_);
 
-  network_device_handler_->HandleShillCallFailure(
+  network_device_handler_->HandleShillCallFailureForTest(
       kDefaultCellularDevicePath,
       callback,
       "org.chromium.flimflam.Error.PinRequired",
       "A PIN error has occurred.");
   EXPECT_EQ(NetworkDeviceHandler::kErrorPinRequired, result_);
 
-  network_device_handler_->HandleShillCallFailure(
+  network_device_handler_->HandleShillCallFailureForTest(
       kDefaultCellularDevicePath,
       callback,
       "org.chromium.flimflam.Error.WorldExploded",
       "The earth is no more.");
   EXPECT_EQ(NetworkDeviceHandler::kErrorUnknown, result_);
+}
+
+TEST_F(NetworkDeviceHandlerTest, GetDeviceProperties) {
+  network_device_handler_->GetDeviceProperties(
+      kDefaultWifiDevicePath,
+      properties_success_callback_,
+      error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+  std::string type;
+  properties_->GetString(flimflam::kTypeProperty, &type);
+  EXPECT_EQ(flimflam::kTypeWifi, type);
+}
+
+TEST_F(NetworkDeviceHandlerTest, RequestRefreshIPConfigs) {
+  network_device_handler_->RequestRefreshIPConfigs(
+      kDefaultWifiDevicePath,
+      success_callback_,
+      error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+  // TODO(stevenjb): Add test interface to ShillIPConfigClient and test
+  // refresh calls.
 }
 
 TEST_F(NetworkDeviceHandlerTest, SetCarrier) {

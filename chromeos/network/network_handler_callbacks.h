@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace base {
 class DictionaryValue;
@@ -55,6 +56,17 @@ CHROMEOS_EXPORT void ShillErrorCallbackFunction(
     const ErrorCallback& error_callback,
     const std::string& dbus_error_name,
     const std::string& dbus_error_message);
+
+// Callback for property getters used by NetworkConfigurationHandler
+// (for Network Services) and by NetworkDeviceHandler. Used to translate
+// the DBus Dictionary callback into one that calls the error callback
+// if |call_status| != DBUS_METHOD_CALL_SUCCESS.
+CHROMEOS_EXPORT void GetPropertiesCallback(
+    const network_handler::DictionaryResultCallback& callback,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& path,
+    DBusMethodCallStatus call_status,
+    const base::DictionaryValue& value);
 
 }  // namespace network_handler
 }  // namespace chromeos

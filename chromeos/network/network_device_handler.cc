@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "dbus/object_path.h"
@@ -41,17 +42,61 @@ std::string GetErrorNameForShillError(const std::string& shill_error_name) {
   return NetworkDeviceHandler::kErrorUnknown;
 }
 
-void InvokeShillErrorCallback(
-    const std::string& path,
+void HandleShillCallFailure(
+    const std::string& device_path,
     const network_handler::ErrorCallback& error_callback,
     const std::string& shill_error_name,
     const std::string& shill_error_message) {
   network_handler::ShillErrorCallbackFunction(
       GetErrorNameForShillError(shill_error_name),
-      path,
+      device_path,
       error_callback,
       shill_error_name,
       shill_error_message);
+}
+
+void IPConfigRefreshCallback(const std::string& ipconfig_path,
+                             DBusMethodCallStatus call_status) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    NET_LOG_ERROR(
+        base::StringPrintf("IPConfigs.Refresh Failed: %d", call_status),
+        ipconfig_path);
+  } else {
+    NET_LOG_EVENT("IPConfigs.Refresh Succeeded", ipconfig_path);
+  }
+}
+
+void RefreshIPConfigsCallback(
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& device_path,
+    const base::DictionaryValue& properties) {
+  const ListValue* ip_configs;
+  if (!properties.GetListWithoutPathExpansion(
+          flimflam::kIPConfigsProperty, &ip_configs)) {
+    NET_LOG_ERROR("RequestRefreshIPConfigs Failed", device_path);
+    network_handler::ShillErrorCallbackFunction(
+        "RequestRefreshIPConfigs Failed",
+        device_path,
+        error_callback,
+        std::string("Missing ") + flimflam::kIPConfigsProperty, "");
+    return;
+  }
+
+  for (size_t i = 0; i < ip_configs->GetSize(); i++) {
+    std::string ipconfig_path;
+    if (!ip_configs->GetString(i, &ipconfig_path))
+      continue;
+    DBusThreadManager::Get()->GetShillIPConfigClient()->Refresh(
+        dbus::ObjectPath(ipconfig_path),
+        base::Bind(&IPConfigRefreshCallback, ipconfig_path));
+  }
+  // It is safe to invoke |callback| here instead of waiting for the
+  // IPConfig.Refresh callbacks to complete because the Refresh DBus calls will
+  // be executed in order and thus before any further DBus requests that
+  // |callback| may issue.
+  if (!callback.is_null())
+    callback.Run();
 }
 
 }  // namespace
@@ -69,6 +114,26 @@ NetworkDeviceHandler::NetworkDeviceHandler() {
 NetworkDeviceHandler::~NetworkDeviceHandler() {
 }
 
+void NetworkDeviceHandler::GetDeviceProperties(
+    const std::string& device_path,
+    const network_handler::DictionaryResultCallback& callback,
+    const network_handler::ErrorCallback& error_callback) const {
+  DBusThreadManager::Get()->GetShillDeviceClient()->GetProperties(
+      dbus::ObjectPath(device_path),
+      base::Bind(&network_handler::GetPropertiesCallback,
+                 callback, error_callback, device_path));
+}
+
+void NetworkDeviceHandler::RequestRefreshIPConfigs(
+    const std::string& device_path,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  GetDeviceProperties(device_path,
+                      base::Bind(&RefreshIPConfigsCallback,
+                                 callback, error_callback),
+                      error_callback);
+}
+
 void NetworkDeviceHandler::SetCarrier(
     const std::string& device_path,
     const std::string& carrier,
@@ -78,8 +143,7 @@ void NetworkDeviceHandler::SetCarrier(
       dbus::ObjectPath(device_path),
       carrier,
       callback,
-      base::Bind(&NetworkDeviceHandler::HandleShillCallFailure,
-                 AsWeakPtr(), device_path, error_callback));
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
 void NetworkDeviceHandler::RequirePin(
@@ -93,8 +157,7 @@ void NetworkDeviceHandler::RequirePin(
       pin,
       require_pin,
       callback,
-      base::Bind(&NetworkDeviceHandler::HandleShillCallFailure,
-                 AsWeakPtr(), device_path, error_callback));
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
 void NetworkDeviceHandler::EnterPin(
@@ -106,8 +169,7 @@ void NetworkDeviceHandler::EnterPin(
       dbus::ObjectPath(device_path),
       pin,
       callback,
-      base::Bind(&NetworkDeviceHandler::HandleShillCallFailure,
-                 AsWeakPtr(), device_path, error_callback));
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
 void NetworkDeviceHandler::UnblockPin(
@@ -121,8 +183,7 @@ void NetworkDeviceHandler::UnblockPin(
       puk,
       new_pin,
       callback,
-      base::Bind(&NetworkDeviceHandler::HandleShillCallFailure,
-                 AsWeakPtr(), device_path, error_callback));
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
 void NetworkDeviceHandler::ChangePin(
@@ -136,16 +197,15 @@ void NetworkDeviceHandler::ChangePin(
       old_pin,
       new_pin,
       callback,
-      base::Bind(&NetworkDeviceHandler::HandleShillCallFailure,
-                 AsWeakPtr(), device_path, error_callback));
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
-void NetworkDeviceHandler::HandleShillCallFailure(
+void NetworkDeviceHandler::HandleShillCallFailureForTest(
     const std::string& device_path,
     const network_handler::ErrorCallback& error_callback,
     const std::string& shill_error_name,
     const std::string& shill_error_message) {
-  InvokeShillErrorCallback(
+  HandleShillCallFailure(
       device_path, error_callback, shill_error_name, shill_error_message);
 }
 

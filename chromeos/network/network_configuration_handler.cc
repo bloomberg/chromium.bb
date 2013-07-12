@@ -32,8 +32,6 @@ namespace {
 const char kErrorsListTag[] = "errors";
 const char kClearPropertiesFailedError[] = "Error.ClearPropertiesFailed";
 const char kClearPropertiesFailedErrorMessage[] = "Clear properties failed";
-const char kDBusFailedError[] = "Error.DBusFailed";
-const char kDBusFailedErrorMessage[] = "DBus call failed.";
 
 void ClearPropertiesCallback(
     const std::vector<std::string>& names,
@@ -70,30 +68,6 @@ void ClearPropertiesCallback(
     error_callback.Run(kClearPropertiesFailedError, error_data.Pass());
   } else if (!callback.is_null()) {
     callback.Run();
-  }
-}
-
-// Used to translate the dbus dictionary callback into one that calls
-// the error callback if we have a failure.
-void GetPropertiesCallback(
-    const network_handler::DictionaryResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& service_path,
-    DBusMethodCallStatus call_status,
-    const base::DictionaryValue& value) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    scoped_ptr<base::DictionaryValue> error_data(
-        network_handler::CreateErrorData(service_path,
-                                         kDBusFailedError,
-                                         kDBusFailedErrorMessage));
-    // Because services are added and removed frequently, we will see these
-    // failures regularly, so log as events not errors.
-    NET_LOG_EVENT(base::StringPrintf("GetProperties failed: %d", call_status),
-                  service_path);
-    if (!error_callback.is_null())
-      error_callback.Run(kDBusFailedError, error_data.Pass());
-  } else if (!callback.is_null()) {
-    callback.Run(service_path, value);
   }
 }
 
@@ -229,7 +203,7 @@ void NetworkConfigurationHandler::GetProperties(
     const network_handler::ErrorCallback& error_callback) const {
   DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
-      base::Bind(&GetPropertiesCallback,
+      base::Bind(&network_handler::GetPropertiesCallback,
                  callback, error_callback, service_path));
 }
 

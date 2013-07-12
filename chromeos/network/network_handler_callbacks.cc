@@ -11,6 +11,10 @@
 namespace chromeos {
 namespace network_handler {
 
+// None of these messages are user-facing, they should only appear in logs.
+const char kDBusFailedError[] = "Error.DBusFailed";
+const char kDBusFailedErrorMessage[] = "DBus call failed.";
+
 // These are names of fields in the error data dictionary for ErrorCallback.
 const char kErrorName[] = "errorName";
 const char kErrorDetail[] = "errorDetail";
@@ -59,6 +63,28 @@ void ShillErrorCallbackFunction(const std::string& error_name,
       CreateDBusErrorData(path, error_name, detail,
                           dbus_error_name, dbus_error_message));
   error_callback.Run(error_name, error_data.Pass());
+}
+
+void GetPropertiesCallback(
+    const network_handler::DictionaryResultCallback& callback,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& path,
+    DBusMethodCallStatus call_status,
+    const base::DictionaryValue& value) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    scoped_ptr<base::DictionaryValue> error_data(
+        network_handler::CreateErrorData(path,
+                                         kDBusFailedError,
+                                         kDBusFailedErrorMessage));
+    // Because network services are added and removed frequently, we will see
+    // these failures regularly, so log as events not errors.
+    NET_LOG_EVENT(base::StringPrintf("GetProperties failed: %d", call_status),
+                  path);
+    if (!error_callback.is_null())
+      error_callback.Run(kDBusFailedError, error_data.Pass());
+  } else if (!callback.is_null()) {
+    callback.Run(path, value);
+  }
 }
 
 }  // namespace network_handler
