@@ -28,7 +28,7 @@ const char kWidevineCdmPluginMimeTypeDescription[] =
 // File name of the CDM on different platforms.
 const char kWidevineCdmFileName[] =
 #if defined(OS_MACOSX)
-    "widevinecdm.dylib";
+    "libwidevinecdm.dylib";
 #elif defined(OS_WIN)
     "widevinecdm.dll";
 #else  // OS_LINUX, etc.
