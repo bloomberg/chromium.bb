@@ -12,7 +12,7 @@ DownloadRow::DownloadRow()
       state(content::DownloadItem::IN_PROGRESS),
       danger_type(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
       interrupt_reason(content::DOWNLOAD_INTERRUPT_REASON_NONE),
-      db_handle(0),
+      id(content::DownloadItem::kInvalidId),
       opened(false) {
 }
 
@@ -28,7 +28,7 @@ DownloadRow::DownloadRow(
     content::DownloadItem::DownloadState download_state,
     content::DownloadDangerType danger_type,
     content::DownloadInterruptReason interrupt_reason,
-    int64 handle,
+    uint32 id,
     bool download_opened)
     : current_path(current_path),
       target_path(target_path),
@@ -41,7 +41,7 @@ DownloadRow::DownloadRow(
       state(download_state),
       danger_type(danger_type),
       interrupt_reason(interrupt_reason),
-      db_handle(handle),
+      id(id),
       opened(download_opened) {
 }
 

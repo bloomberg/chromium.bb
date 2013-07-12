@@ -30,6 +30,7 @@
 #include "chrome/common/ref_counted_util.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
@@ -440,7 +441,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Implemented by the caller of 'CreateDownload' below, and is called when the
   // history service has created a new entry for a download in the history db.
-  typedef base::Callback<void(int64)> DownloadCreateCallback;
+  typedef base::Callback<void(bool)> DownloadCreateCallback;
 
   // Begins a history request to create a new row for a download. 'info'
   // contains all the download's creation state, and 'callback' runs when the
@@ -450,12 +451,9 @@ class HistoryService : public CancelableRequestProvider,
       const history::DownloadRow& info,
       const DownloadCreateCallback& callback);
 
-  // Implemented by the caller of 'GetNextDownloadId' below.
-  typedef base::Callback<void(int)> DownloadNextIdCallback;
-
-  // Runs the callback with the next available download id. The callback is
-  // called on the thread that calls GetNextDownloadId().
-  void GetNextDownloadId(const DownloadNextIdCallback& callback);
+  // Responds on the calling thread with the maximum id of all downloads records
+  // in the database plus 1.
+  void GetNextDownloadId(const content::DownloadIdCallback& callback);
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
@@ -476,7 +474,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Permanently remove some downloads from the history system. This is a 'fire
   // and forget' operation.
-  void RemoveDownloads(const std::set<int64>& db_handles);
+  void RemoveDownloads(const std::set<uint32>& ids);
 
   // Visit Segments ------------------------------------------------------------
 
@@ -561,6 +559,9 @@ class HistoryService : public CancelableRequestProvider,
   void NotifyVisitDBObserversOnAddVisit(const history::BriefVisitInfo& info);
 
   // Testing -------------------------------------------------------------------
+
+  // Runs |flushed| after bouncing off the history thread.
+  void FlushForTest(const base::Closure& flushed);
 
   // Designed for unit tests, this passes the given task on to the history
   // backend to be called once the history backend has terminated. This allows

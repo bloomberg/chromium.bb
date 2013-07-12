@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_H_
 
 #include "base/callback_forward.h"
-#include "content/public/browser/download_id.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -56,7 +55,7 @@ class CONTENT_EXPORT ResourceDispatcherHost {
       int route_id,
       bool prefer_cache,
       scoped_ptr<DownloadSaveInfo> save_info,
-      content::DownloadId download_id,
+      uint32 download_id,
       const DownloadStartedCallback& started_callback) = 0;
 
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.

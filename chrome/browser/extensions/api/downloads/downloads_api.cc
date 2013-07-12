@@ -70,7 +70,6 @@ namespace events = extensions::event_names;
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 
@@ -927,7 +926,7 @@ bool DownloadsSearchFunction::RunImpl() {
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
        it != results.end(); ++it) {
     DownloadItem* download_item = *it;
-    int32 download_id = download_item->GetId();
+    uint32 download_id = download_item->GetId();
     bool off_record = ((incognito_manager != NULL) &&
                        (incognito_manager->GetDownload(download_id) != NULL));
     scoped_ptr<base::DictionaryValue> json_item(DownloadItemToJSON(

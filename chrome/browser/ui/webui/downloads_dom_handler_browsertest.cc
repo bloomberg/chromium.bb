@@ -139,6 +139,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
     url_chain.push_back(url);
     base::Time current(base::Time::Now());
     download_manager()->CreateDownloadItem(
+        1, // id
         base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
         base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
         url_chain,
@@ -158,7 +159,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
         mock_handler_->downloads_list(),
         "[{\"file_externally_removed\": false,"
         "  \"file_name\": \"file\","
-        "  \"id\": 0,"
+        "  \"id\": 1,"
         "  \"otr\": false,"
         "  \"since_string\": \"Today\","
         "  \"state\": \"COMPLETE\","
@@ -197,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveAll) {
 IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveOneItem) {
   DownloadAnItem();
   base::ListValue item;
-  item.AppendInteger(0);
+  item.AppendInteger(1);
 
   mock_handler_->reset_downloads_list();
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -228,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, DownloadsRelayed) {
   EXPECT_TRUE(ListMatches(
       mock_handler_->download_updated(),
       "[{\"file_externally_removed\": true,"
-      "  \"id\": 0}]"));
+      "  \"id\": 1}]"));
 
   mock_handler_->reset_downloads_list();
   browser()->profile()->GetPrefs()->SetBoolean(

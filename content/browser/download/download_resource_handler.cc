@@ -35,7 +35,7 @@ namespace content {
 namespace {
 
 void CallStartedCBOnUIThread(
-    const DownloadResourceHandler::OnStartedCallback& started_cb,
+    const DownloadUrlParameters::OnStartedCallback& started_cb,
     DownloadItem* item,
     net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -50,7 +50,7 @@ void CallStartedCBOnUIThread(
 static void StartOnUIThread(
     scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<ByteStreamReader> stream,
-    const DownloadResourceHandler::OnStartedCallback& started_cb) {
+    const DownloadUrlParameters::OnStartedCallback& started_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadManager* download_manager = info->request_handle.GetDownloadManager();
@@ -62,12 +62,7 @@ static void StartOnUIThread(
     return;
   }
 
-  DownloadItem* item = download_manager->StartDownload(
-      info.Pass(), stream.Pass());
-
-  // |item| can be NULL if the download has been removed.
-  if (!started_cb.is_null())
-    started_cb.Run(item, item ? net::OK : net::ERR_ABORTED);
+  download_manager->StartDownload(info.Pass(), stream.Pass(), started_cb);
 }
 
 }  // namespace
@@ -75,9 +70,9 @@ static void StartOnUIThread(
 const int DownloadResourceHandler::kDownloadByteStreamSize = 100 * 1024;
 
 DownloadResourceHandler::DownloadResourceHandler(
-    DownloadId id,
+    uint32 id,
     net::URLRequest* request,
-    const DownloadResourceHandler::OnStartedCallback& started_cb,
+    const DownloadUrlParameters::OnStartedCallback& started_cb,
     scoped_ptr<DownloadSaveInfo> save_info)
     : download_id_(id),
       render_view_id_(0),               // Actually initialized below.

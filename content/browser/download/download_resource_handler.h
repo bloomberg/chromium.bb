@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -38,14 +37,12 @@ class CONTENT_EXPORT DownloadResourceHandler
   // downstream receiver of its output.
   static const int kDownloadByteStreamSize;
 
-  typedef DownloadUrlParameters::OnStartedCallback OnStartedCallback;
-
   // started_cb will be called exactly once on the UI thread.
   // |id| should be invalid if the id should be automatically assigned.
   DownloadResourceHandler(
-      DownloadId id,
+      uint32 id,
       net::URLRequest* request,
-      const OnStartedCallback& started_cb,
+      const DownloadUrlParameters::OnStartedCallback& started_cb,
       scoped_ptr<DownloadSaveInfo> save_info);
 
   virtual bool OnUploadProgress(int request_id,
@@ -106,7 +103,7 @@ class CONTENT_EXPORT DownloadResourceHandler
 
   void SetContentDisposition(const std::string& content_disposition);
 
-  DownloadId download_id_;
+  uint32 download_id_;
   GlobalRequestID global_id_;
   int render_view_id_;
   std::string content_disposition_;
@@ -114,7 +111,7 @@ class CONTENT_EXPORT DownloadResourceHandler
   net::URLRequest* request_;
   // This is read only on the IO thread, but may only
   // be called on the UI thread.
-  OnStartedCallback started_cb_;
+  DownloadUrlParameters::OnStartedCallback started_cb_;
   scoped_ptr<DownloadSaveInfo> save_info_;
 
   // Data flow

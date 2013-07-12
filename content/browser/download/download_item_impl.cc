@@ -88,6 +88,8 @@ bool IsDownloadResumptionEnabled() {
 
 }  // namespace
 
+const uint32 DownloadItem::kInvalidId = 0;
+
 const char DownloadItem::kEmptyFileHash[] = "";
 
 // The maximum number of attempts we will make to resume automatically.
@@ -95,7 +97,7 @@ const int DownloadItemImpl::kMaxAutoResumeAttempts = 5;
 
 // Constructor for reading from the history service.
 DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                                   DownloadId download_id,
+                                   uint32 download_id,
                                    const base::FilePath& current_path,
                                    const base::FilePath& target_path,
                                    const std::vector<GURL>& url_chain,
@@ -148,7 +150,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
 // Constructing for a regular download:
 DownloadItemImpl::DownloadItemImpl(
     DownloadItemImplDelegate* delegate,
-    DownloadId download_id,
+    uint32 download_id,
     const DownloadCreateInfo& info,
     const net::BoundNetLog& bound_net_log)
     : is_save_package_download_(false),
@@ -205,7 +207,7 @@ DownloadItemImpl::DownloadItemImpl(
 // Constructing for the "Save Page As..." feature:
 DownloadItemImpl::DownloadItemImpl(
     DownloadItemImplDelegate* delegate,
-    DownloadId download_id,
+    uint32 download_id,
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
@@ -451,11 +453,7 @@ void DownloadItemImpl::ShowDownloadInShell() {
   delegate_->ShowDownloadInShell(this);
 }
 
-int32 DownloadItemImpl::GetId() const {
-  return download_id_.local();
-}
-
-DownloadId DownloadItemImpl::GetGlobalId() const {
+uint32 DownloadItemImpl::GetId() const {
   return download_id_;
 }
 
@@ -751,7 +749,7 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
   std::string description =
       base::StringPrintf("{ id = %d"
                          " state = %s",
-                         download_id_.local(),
+                         download_id_,
                          DebugDownloadStateString(state_));
 
   // Construct a string of the URL chain.
@@ -1601,7 +1599,7 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
       base::Bind(&DownloadItemImpl::OnResumeRequestStarted,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  delegate_->ResumeInterruptedDownload(download_params.Pass(), GetGlobalId());
+  delegate_->ResumeInterruptedDownload(download_params.Pass(), GetId());
   // Just in case we were interrupted while paused.
   is_paused_ = false;
 

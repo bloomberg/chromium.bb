@@ -24,7 +24,10 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
   explicit MockDownloadManagerDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile),
         file_chooser_enabled_(false),
-        file_chooser_displayed_(false) {}
+        file_chooser_displayed_(false) {
+    if (!profile->IsOffTheRecord())
+      SetNextId(content::DownloadItem::kInvalidId + 1);
+  }
 
   void EnableFileChooser(bool enable) {
     file_chooser_enabled_ = enable;

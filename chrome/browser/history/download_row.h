@@ -33,7 +33,7 @@ struct DownloadRow {
       content::DownloadItem::DownloadState download_state,
       content::DownloadDangerType danger_type,
       content::DownloadInterruptReason interrupt_reason,
-      int64 handle,
+      uint32 id,
       bool download_opened);
   ~DownloadRow();
 
@@ -76,9 +76,8 @@ struct DownloadRow {
   // state == DownloadItem::INTERRUPTED
   content::DownloadInterruptReason interrupt_reason;
 
-  // The handle of the download in the database. Is not changed by
-  // UpdateDownload().
-  int64 db_handle;
+  // The id of the download in the database. Is not changed by UpdateDownload().
+  uint32 id;
 
   // Whether this download has ever been opened from the browser.
   bool opened;

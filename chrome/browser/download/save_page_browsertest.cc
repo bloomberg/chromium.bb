@@ -407,14 +407,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
       kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
 
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
-#define MAYBE_SaveHTMLOnlyCancel DISABLED_SaveHTMLOnlyCancel
-#else
-#define MAYBE_SaveHTMLOnlyCancel SaveHTMLOnlyCancel
-#endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyCancel) {
+// http://crbug.com/162323
+// http://crbug.com/163931
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;
@@ -449,9 +444,31 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyCancel) {
   // notification, then expect the contents of the downloaded file.
 }
 
+class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
+ public:
+  explicit DelayingDownloadManagerDelegate(Profile* profile)
+    : ChromeDownloadManagerDelegate(profile) {
+  }
+  virtual bool ShouldCompleteDownload(
+      content::DownloadItem* item,
+      const base::Closure& user_complete_callback) OVERRIDE {
+    return false;
+  }
+
+ protected:
+  virtual ~DelayingDownloadManagerDelegate() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DelayingDownloadManagerDelegate);
+};
+
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager(GetDownloadManager());
+  scoped_refptr<DelayingDownloadManagerDelegate> delaying_delegate(
+      new DelayingDownloadManagerDelegate(browser()->profile()));
+  delaying_delegate->SetNextId(content::DownloadItem::kInvalidId + 1);
+  manager->SetDelegate(delaying_delegate.get());
   std::vector<DownloadItem*> downloads;
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
@@ -471,6 +488,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
 
   EXPECT_FALSE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
+
+  manager->SetDelegate(NULL);
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323

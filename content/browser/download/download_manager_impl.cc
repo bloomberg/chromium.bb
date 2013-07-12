@@ -48,7 +48,7 @@ namespace content {
 namespace {
 
 void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
-                   DownloadId download_id) {
+                   uint32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
@@ -170,7 +170,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
-      DownloadId download_id,
+      uint32 download_id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
@@ -204,7 +204,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
-      DownloadId download_id,
+      uint32 download_id,
       const DownloadCreateInfo& info,
       const net::BoundNetLog& bound_net_log) OVERRIDE {
     return new DownloadItemImpl(delegate, download_id, info, bound_net_log);
@@ -212,7 +212,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
-      DownloadId download_id,
+      uint32 download_id,
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
@@ -245,25 +245,25 @@ DownloadManagerImpl::~DownloadManagerImpl() {
 }
 
 DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
-    DownloadId id, const DownloadCreateInfo& info) {
+    uint32 id, const DownloadCreateInfo& info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItemImpl* download =
       item_factory_->CreateActiveItem(this, id, info, bound_net_log);
-  downloads_[id.local()] = download;
+  downloads_[id] = download;
   return download;
 }
 
-DownloadId DownloadManagerImpl::GetNextId() {
-  DownloadId id;
-  if (delegate_)
-   id = delegate_->GetNextId();
-  if (!id.IsValid()) {
-    static int next_id;
-    id = DownloadId(browser_context_, ++next_id);
+void DownloadManagerImpl::GetNextId(const DownloadIdCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (delegate_) {
+    delegate_->GetNextId(callback);
+    return;
   }
-
-  return id;
+  static uint32 next_id = content::DownloadItem::kInvalidId + 1;
+  callback.Run(next_id++);
 }
 
 void DownloadManagerImpl::DetermineDownloadTarget(
@@ -352,20 +352,41 @@ void DownloadManagerImpl::Shutdown() {
   delegate_ = NULL;
 }
 
-DownloadItem* DownloadManagerImpl::StartDownload(
+void DownloadManagerImpl::StartDownload(
     scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<ByteStreamReader> stream) {
+    scoped_ptr<ByteStreamReader> stream,
+    const DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DownloadId id(info->download_id);
-  const bool new_download = !id.IsValid();
-  DownloadItemImpl* download = NULL;
-
+  DCHECK(info);
+  uint32 download_id = info->download_id;
+  const bool new_download = (download_id == content::DownloadItem::kInvalidId);
+  base::Callback<void(uint32)> got_id(base::Bind(
+      &DownloadManagerImpl::StartDownloadWithId,
+      weak_factory_.GetWeakPtr(),
+      base::Passed(info.Pass()),
+      base::Passed(stream.Pass()),
+      on_started,
+      new_download));
   if (new_download) {
-    id = GetNextId();
+    GetNextId(got_id);
+  } else {
+    got_id.Run(download_id);
+  }
+}
+
+void DownloadManagerImpl::StartDownloadWithId(
+    scoped_ptr<DownloadCreateInfo> info,
+    scoped_ptr<ByteStreamReader> stream,
+    const DownloadUrlParameters::OnStartedCallback& on_started,
+    bool new_download,
+    uint32 id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(content::DownloadItem::kInvalidId, id);
+  DownloadItemImpl* download = NULL;
+  if (new_download) {
     download = CreateActiveItem(id, *info);
   } else {
-    DownloadMap::iterator item_iterator = downloads_.find(id.local());
+    DownloadMap::iterator item_iterator = downloads_.find(id);
     // Trying to resume an interrupted download.
     if (item_iterator == downloads_.end() ||
         (item_iterator->second->GetState() == DownloadItem::CANCELLED)) {
@@ -373,7 +394,9 @@ DownloadItem* DownloadManagerImpl::StartDownload(
       // removed after it was resumed. Ignore. If the download is cancelled
       // while resuming, then also ignore the request.
       info->request_handle.CancelRequest();
-      return NULL;
+      if (!on_started.is_null())
+        on_started.Run(NULL, net::ERR_ABORTED);
+      return;
     }
     download = item_iterator->second;
     DCHECK_EQ(DownloadItem::INTERRUPTED, download->GetState());
@@ -407,7 +430,8 @@ DownloadItem* DownloadManagerImpl::StartDownload(
   if (new_download)
     FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
 
-  return download;
+  if (!on_started.is_null())
+    on_started.Run(download, net::OK);
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
@@ -431,7 +455,7 @@ void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
   }
 }
 
-void DownloadManagerImpl::OnFileExistenceChecked(int32 download_id,
+void DownloadManagerImpl::OnFileExistenceChecked(uint32 download_id,
                                                  bool result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!result) {  // File does not exist.
@@ -444,30 +468,48 @@ BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
   return browser_context_;
 }
 
-DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
+void DownloadManagerImpl::CreateSavePackageDownloadItem(
     const base::FilePath& main_file_path,
     const GURL& page_url,
     const std::string& mime_type,
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
-    DownloadItem::Observer* observer) {
+    const DownloadItemImplCreated& item_created) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GetNextId(base::Bind(
+      &DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
+      weak_factory_.GetWeakPtr(),
+      main_file_path,
+      page_url,
+      mime_type,
+      base::Passed(request_handle.Pass()),
+      item_created));
+}
+
+void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
+    const base::FilePath& main_file_path,
+    const GURL& page_url,
+    const std::string& mime_type,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
+    const DownloadItemImplCreated& item_created,
+    uint32 id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(content::DownloadItem::kInvalidId, id);
+  DCHECK(!ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this,
-      GetNextId(),
+      id,
       main_file_path,
       page_url,
       mime_type,
       request_handle.Pass(),
       bound_net_log);
-
-  download_item->AddObserver(observer);
-  DCHECK(!ContainsKey(downloads_, download_item->GetId()));
   downloads_[download_item->GetId()] = download_item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(
       this, download_item));
-
-  return download_item;
+  if (!item_created.is_null())
+    item_created.Run(download_item);
 }
 
 void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
@@ -481,7 +523,7 @@ void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
 // download.
 void DownloadManagerImpl::ResumeInterruptedDownload(
     scoped_ptr<content::DownloadUrlParameters> params,
-    content::DownloadId id) {
+    uint32 id) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -506,7 +548,7 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
   if (!download)
     return;
 
-  int32 download_id = download->GetId();
+  uint32 download_id = download->GetId();
   if (downloads_.find(download_id) == downloads_.end())
     return;
 
@@ -554,7 +596,8 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK(params->method() == "POST");
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &BeginDownload, base::Passed(&params), DownloadId()));
+      &BeginDownload, base::Passed(&params),
+      content::DownloadItem::kInvalidId));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
@@ -566,6 +609,7 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
 }
 
 DownloadItem* DownloadManagerImpl::CreateDownloadItem(
+    uint32 id,
     const base::FilePath& current_path,
     const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
@@ -578,9 +622,12 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened) {
+  DCHECK(!ContainsKey(downloads_, id));
+  if (ContainsKey(downloads_, id))
+    return NULL;
   DownloadItemImpl* item = item_factory_->CreatePersistedItem(
       this,
-      GetNextId(),
+      id,
       current_path,
       target_path,
       url_chain,
@@ -594,8 +641,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       interrupt_reason,
       opened,
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD));
-  DCHECK(!ContainsKey(downloads_, item->GetId()));
-  downloads_[item->GetId()] = item;
+  downloads_[id] = item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, item));
   VLOG(20) << __FUNCTION__ << "() download = " << item->DebugString(true);
   return item;
@@ -611,7 +657,7 @@ int DownloadManagerImpl::InProgressCount() const {
   return count;
 }
 
-DownloadItem* DownloadManagerImpl::GetDownload(int download_id) {
+DownloadItem* DownloadManagerImpl::GetDownload(uint32 download_id) {
   return ContainsKey(downloads_, download_id) ? downloads_[download_id] : NULL;
 }
 

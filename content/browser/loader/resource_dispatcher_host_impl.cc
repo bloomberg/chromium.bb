@@ -56,6 +56,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -246,7 +247,7 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
 #endif
 
 net::Error CallbackAndReturn(
-    const DownloadResourceHandler::OnStartedCallback& started_cb,
+    const DownloadUrlParameters::OnStartedCallback& started_cb,
     net::Error net_error) {
   if (started_cb.is_null())
     return net_error;
@@ -444,7 +445,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
     int route_id,
     bool prefer_cache,
     scoped_ptr<DownloadSaveInfo> save_info,
-    content::DownloadId download_id,
+    uint32 download_id,
     const DownloadStartedCallback& started_callback) {
   if (is_shutdown_)
     return CallbackAndReturn(started_callback, net::ERR_INSUFFICIENT_RESOURCES);
@@ -536,9 +537,9 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     bool is_content_initiated,
     bool must_download,
-    DownloadId id,
+    uint32 id,
     scoped_ptr<DownloadSaveInfo> save_info,
-    const DownloadResourceHandler::OnStartedCallback& started_cb) {
+    const DownloadUrlParameters::OnStartedCallback& started_cb) {
   scoped_ptr<ResourceHandler> handler(
       new DownloadResourceHandler(id, request, started_cb, save_info.Pass()));
   if (delegate_) {

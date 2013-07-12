@@ -33,7 +33,8 @@
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/download_id.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -87,7 +88,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int route_id,
       bool prefer_cache,
       scoped_ptr<DownloadSaveInfo> save_info,
-      content::DownloadId download_id,
+      uint32 download_id,
       const DownloadStartedCallback& started_callback) OVERRIDE;
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) OVERRIDE;
   virtual void BlockRequestsForRoute(int child_id, int route_id) OVERRIDE;
@@ -208,15 +209,15 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Must be called after the ResourceRequestInfo has been created
   // and associated with the request.
-  // |id| should be |DownloadId()| (null) to request automatic
+  // |id| should be |content::DownloadItem::kInvalidId| to request automatic
   // assignment.
   scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
       bool must_download,
-      DownloadId id,
+      uint32 id,
       scoped_ptr<DownloadSaveInfo> save_info,
-      const DownloadResourceHandler::OnStartedCallback& started_cb);
+      const DownloadUrlParameters::OnStartedCallback& started_cb);
 
   // Must be called after the ResourceRequestInfo has been created
   // and associated with the request.

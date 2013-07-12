@@ -116,10 +116,10 @@ class DownloadTestObserver : public DownloadManager::Observer,
   void SignalIfFinished();
 
   // Fake user click on "Accept".
-  void AcceptDangerousDownload(int32 download_id);
+  void AcceptDangerousDownload(uint32 download_id);
 
   // Fake user click on "Deny".
-  void DenyDangerousDownload(int32 download_id);
+  void DenyDangerousDownload(uint32 download_id);
 
   // The observed download manager.
   DownloadManager* download_manager_;
@@ -160,7 +160,7 @@ class DownloadTestObserver : public DownloadManager::Observer,
   DangerousDownloadAction dangerous_download_action_;
 
   // Holds the download ids which were dangerous.
-  std::set<int32> dangerous_downloads_seen_;
+  std::set<uint32> dangerous_downloads_seen_;
 
   base::WeakPtrFactory<DownloadTestObserver> weak_factory_;
 
@@ -280,7 +280,7 @@ class DownloadTestItemCreationObserver
 
   void WaitForDownloadItemCreation();
 
-  int download_id() const { return download_id_; }
+  uint32 download_id() const { return download_id_; }
   net::Error error() const { return error_; }
   bool started() const { return called_back_count_ > 0; }
   bool succeeded() const { return started() && (error_ == net::OK); }
@@ -295,7 +295,7 @@ class DownloadTestItemCreationObserver
   void DownloadItemCreationCallback(DownloadItem* item, net::Error error);
 
   // The download creation information we received.
-  int download_id_;
+  uint32 download_id_;
   net::Error error_;
 
   // Count of callbacks.

@@ -15,7 +15,6 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/download_destination_observer.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/content_switches.h"
@@ -44,8 +43,6 @@ namespace content {
 
 namespace {
 
-DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
-
 class MockDelegate : public DownloadItemImplDelegate {
  public:
   MockDelegate() : DownloadItemImplDelegate() {
@@ -62,11 +59,11 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl*));
 
   virtual void ResumeInterruptedDownload(
-      scoped_ptr<DownloadUrlParameters> params, DownloadId id) OVERRIDE {
+      scoped_ptr<DownloadUrlParameters> params, uint32 id) OVERRIDE {
     MockResumeInterruptedDownload(params.get(), id);
   }
   MOCK_METHOD2(MockResumeInterruptedDownload,
-               void(DownloadUrlParameters* params, DownloadId id));
+               void(DownloadUrlParameters* params, uint32 id));
 
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl*));
@@ -228,8 +225,7 @@ class DownloadItemTest : public testing::Test {
     scoped_ptr<DownloadCreateInfo> info_;
 
     info_.reset(new DownloadCreateInfo());
-    static int next_id = 0;
-    DownloadId id(DownloadId(kValidDownloadItemIdDomain, ++next_id));
+    static uint32 next_id = DownloadItem::kInvalidId + 1;
     info_->save_info = scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
     info_->save_info->prompt_for_save_location = false;
     info_->url_chain.push_back(GURL());
@@ -237,7 +233,7 @@ class DownloadItemTest : public testing::Test {
 
     DownloadItemImpl* download =
         new DownloadItemImpl(
-            &delegate_, id, *(info_.get()), net::BoundNetLog());
+            &delegate_, next_id++, *(info_.get()), net::BoundNetLog());
     allocated_downloads_.insert(download);
     return download;
   }

@@ -70,10 +70,6 @@ const bool kCaseSensitive = true;
 
 const int kMoveIterations = 30;
 
-void HistoryServiceQueried(int) {
-  base::MessageLoop::current()->Quit();
-}
-
 }  // namespace
 
 class FindInPageControllerTest : public InProcessBrowserTest {
@@ -181,8 +177,9 @@ class FindInPageControllerTest : public InProcessBrowserTest {
 
   void FlushHistoryService() {
     HistoryServiceFactory::GetForProfile(
-        browser()->profile(), Profile::IMPLICIT_ACCESS)->
-        GetNextDownloadId(base::Bind(&HistoryServiceQueried));
+        browser()->profile(), Profile::IMPLICIT_ACCESS)->FlushForTest(
+        base::Bind(&base::MessageLoop::Quit,
+                   base::Unretained(base::MessageLoop::current()->current())));
     content::RunMessageLoop();
   }
 };

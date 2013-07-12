@@ -53,13 +53,14 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
 #endif
 
   if (!profile_->IsOffTheRecord()) {
-    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+    HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile_, Profile::EXPLICIT_ACCESS);
-    if (hs)
-      download_history_.reset(new DownloadHistory(
-          manager,
-          scoped_ptr<DownloadHistory::HistoryAdapter>(
-            new DownloadHistory::HistoryAdapter(hs))));
+    history->GetNextDownloadId(base::Bind(
+        &ChromeDownloadManagerDelegate::SetNextId, manager_delegate_));
+    download_history_.reset(new DownloadHistory(
+        manager,
+        scoped_ptr<DownloadHistory::HistoryAdapter>(
+            new DownloadHistory::HistoryAdapter(history))));
   }
 
   // Pass an empty delegate when constructing the DownloadUIController. The

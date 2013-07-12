@@ -1294,9 +1294,9 @@ void HistoryBackend::GetMostRecentKeywordSearchTerms(
 
 // Downloads -------------------------------------------------------------------
 
-void HistoryBackend::GetNextDownloadId(int* id) {
+void HistoryBackend::GetNextDownloadId(uint32* next_id) {
   if (db_)
-    *id = db_->next_download_id();
+    db_->GetNextDownloadId(next_id);
 }
 
 // Get all the download entries from the database.
@@ -1314,43 +1314,45 @@ void HistoryBackend::UpdateDownload(const history::DownloadRow& data) {
 }
 
 void HistoryBackend::CreateDownload(const history::DownloadRow& history_info,
-                                    int64* db_handle) {
+                                    bool* success) {
   if (!db_)
     return;
-  *db_handle = db_->CreateDownload(history_info);
+  *success = db_->CreateDownload(history_info);
   ScheduleCommit();
 }
 
-void HistoryBackend::RemoveDownloads(const std::set<int64>& handles) {
+void HistoryBackend::RemoveDownloads(const std::set<uint32>& ids) {
   if (!db_)
     return;
-  int downloads_count_before = db_->CountDownloads();
+  size_t downloads_count_before = db_->CountDownloads();
   base::TimeTicks started_removing = base::TimeTicks::Now();
   // HistoryBackend uses a long-running Transaction that is committed
   // periodically, so this loop doesn't actually hit the disk too hard.
-  for (std::set<int64>::const_iterator it = handles.begin();
-       it != handles.end(); ++it) {
+  for (std::set<uint32>::const_iterator it = ids.begin();
+       it != ids.end(); ++it) {
     db_->RemoveDownload(*it);
   }
-  base::TimeTicks finished_removing = base::TimeTicks::Now();
-  int downloads_count_after = db_->CountDownloads();
-  int num_downloads_deleted = downloads_count_before - downloads_count_after;
-  if (num_downloads_deleted >= 0) {
-    UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCount",
-                         num_downloads_deleted);
-    base::TimeDelta micros = (1000 * (finished_removing - started_removing));
-    UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTime", micros);
-    if (num_downloads_deleted > 0) {
-      UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTimePerRecord",
-                          (1000 * micros) / num_downloads_deleted);
-    }
-  }
-  int num_downloads_not_deleted = handles.size() - num_downloads_deleted;
-  if (num_downloads_not_deleted >= 0) {
-    UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCountNotRemoved",
-                         num_downloads_not_deleted);
-  }
   ScheduleCommit();
+  base::TimeTicks finished_removing = base::TimeTicks::Now();
+  size_t downloads_count_after = db_->CountDownloads();
+
+  DCHECK_LE(downloads_count_after, downloads_count_before);
+  if (downloads_count_after > downloads_count_before)
+    return;
+  size_t num_downloads_deleted = downloads_count_before - downloads_count_after;
+  UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCount",
+                        num_downloads_deleted);
+  base::TimeDelta micros = (1000 * (finished_removing - started_removing));
+  UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTime", micros);
+  if (num_downloads_deleted > 0) {
+    UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTimePerRecord",
+                        (1000 * micros) / num_downloads_deleted);
+  }
+  DCHECK_GE(ids.size(), num_downloads_deleted);
+  if (ids.size() < num_downloads_deleted)
+    return;
+  UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCountNotRemoved",
+                        ids.size() - num_downloads_deleted);
 }
 
 void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,

@@ -47,7 +47,6 @@
 #endif
 
 using content::BrowserThread;
-using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using safe_browsing::DownloadProtectionService;
@@ -159,7 +158,7 @@ void CheckDownloadUrlDone(
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
-      next_download_id_(0),
+      next_download_id_(content::DownloadItem::kInvalidId),
       download_prefs_(new DownloadPrefs(profile)) {
 }
 
@@ -174,12 +173,41 @@ void ChromeDownloadManagerDelegate::Shutdown() {
   download_prefs_.reset();
 }
 
-DownloadId ChromeDownloadManagerDelegate::GetNextId() {
-  if (!profile_->IsOffTheRecord())
-    return DownloadId(this, next_download_id_++);
+void ChromeDownloadManagerDelegate::SetNextId(uint32 next_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK_NE(content::DownloadItem::kInvalidId, next_id);
+  next_download_id_ = next_id;
 
-  return content::BrowserContext::GetDownloadManager(
-      profile_->GetOriginalProfile())->GetDelegate()->GetNextId();
+  IdCallbackVector callbacks;
+  id_callbacks_.swap(callbacks);
+  for (IdCallbackVector::const_iterator it = callbacks.begin();
+       it != callbacks.end(); ++it) {
+    ReturnNextId(*it);
+  }
+}
+
+void ChromeDownloadManagerDelegate::GetNextId(
+    const content::DownloadIdCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (profile_->IsOffTheRecord()) {
+    content::BrowserContext::GetDownloadManager(
+        profile_->GetOriginalProfile())->GetDelegate()->GetNextId(callback);
+    return;
+  }
+  if (next_download_id_ == content::DownloadItem::kInvalidId) {
+    id_callbacks_.push_back(callback);
+    return;
+  }
+  ReturnNextId(callback);
+}
+
+void ChromeDownloadManagerDelegate::ReturnNextId(
+    const content::DownloadIdCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK_NE(content::DownloadItem::kInvalidId, next_download_id_);
+  callback.Run(next_download_id_++);
 }
 
 bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
@@ -256,7 +284,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 }
 
 void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
-    int download_id,
+    uint32 download_id,
     const base::Closure& user_complete_callback) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item)
@@ -426,8 +454,12 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
   }
 #endif
   DownloadPathReservationTracker::GetReservedPath(
-      download, virtual_path, download_prefs_->DownloadPath(),
-      create_directory, conflict_action, callback);
+      download,
+      virtual_path,
+      download_prefs_->DownloadPath(),
+      create_directory,
+      conflict_action,
+      callback);
 }
 
 void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
@@ -480,7 +512,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
 }
 
 void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
-    int32 download_id,
+    uint32 download_id,
     DownloadProtectionService::DownloadCheckResult result) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item || (item->GetState() != DownloadItem::IN_PROGRESS))

@@ -42,7 +42,6 @@ typedef std::map<GURL, scoped_refptr<RefCountedVector<GURL> > > RedirectMap;
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;
 
-typedef int64 DownloadID;   // Identifier for a download.
 typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 SegmentDurationID;  // Unique identifier for segment_duration.

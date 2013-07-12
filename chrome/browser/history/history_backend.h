@@ -307,12 +307,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Downloads -----------------------------------------------------------------
 
-  void GetNextDownloadId(int* id);
+  void GetNextDownloadId(uint32* next_id);
   void QueryDownloads(std::vector<DownloadRow>* rows);
   void UpdateDownload(const DownloadRow& data);
   void CreateDownload(const history::DownloadRow& history_info,
-                      int64* db_handle);
-  void RemoveDownloads(const std::set<int64>& db_handles);
+                      bool* success);
+  void RemoveDownloads(const std::set<uint32>& ids);
 
   // Segment usage -------------------------------------------------------------
 

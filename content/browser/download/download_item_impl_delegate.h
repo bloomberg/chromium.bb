@@ -69,7 +69,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   // Called when an interrupted download is resumed.
   virtual void ResumeInterruptedDownload(
       scoped_ptr<content::DownloadUrlParameters> params,
-      content::DownloadId id);
+      uint32 id);
 
   // For contextual issues like language and prefs.
   virtual BrowserContext* GetBrowserContext() const;

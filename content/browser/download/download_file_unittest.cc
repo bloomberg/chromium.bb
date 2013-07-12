@@ -62,8 +62,6 @@ MATCHER(IsNullCallback, "") { return (arg.is_null()); }
 
 }  // namespace
 
-DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
-
 class DownloadFileTest : public testing::Test {
  public:
 
@@ -71,7 +69,7 @@ class DownloadFileTest : public testing::Test {
   static const char* kTestData2;
   static const char* kTestData3;
   static const char* kDataHash;
-  static const int32 kDummyDownloadId;
+  static const uint32 kDummyDownloadId;
   static const int kDummyChildId;
   static const int kDummyRequestId;
 
@@ -331,7 +329,7 @@ const char* DownloadFileTest::kTestData3 = "Final line.";
 const char* DownloadFileTest::kDataHash =
     "CBF68BF10F8003DB86B31343AFAC8C7175BD03FB5FC905650F8C80AF087443A8";
 
-const int32 DownloadFileTest::kDummyDownloadId = 23;
+const uint32 DownloadFileTest::kDummyDownloadId = 23;
 const int DownloadFileTest::kDummyChildId = 3;
 const int DownloadFileTest::kDummyRequestId = 67;
 

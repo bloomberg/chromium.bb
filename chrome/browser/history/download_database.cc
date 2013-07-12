@@ -33,6 +33,8 @@ namespace {
 enum DroppedReason {
   DROPPED_REASON_BAD_STATE = 0,
   DROPPED_REASON_BAD_DANGER_TYPE = 1,
+  DROPPED_REASON_BAD_ID = 2,
+  DROPPED_REASON_DUPLICATE_ID = 3,
   DROPPED_REASON_MAX
 };
 
@@ -84,14 +86,7 @@ base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
 
 #endif
 
-// Key in the meta_table containing the next id to use for a new download in
-// this profile.
-static const char kNextDownloadId[] = "next_download_id";
-
 }  // namespace
-
-// static
-const int64 DownloadDatabase::kUninitializedHandle = -1;
 
 // These constants and the transformation functions below are used to allow
 // DownloadItem::DownloadState and DownloadDangerType to change without
@@ -195,8 +190,6 @@ content::DownloadDangerType DownloadDatabase::IntToDangerType(int danger_type) {
 DownloadDatabase::DownloadDatabase()
     : owning_thread_set_(false),
       owning_thread_(0),
-      next_id_(0),
-      next_db_handle_(0),
       in_progress_entry_cleanup_completed_(false) {
 }
 
@@ -212,7 +205,7 @@ bool DownloadDatabase::EnsureColumnExists(
 
 bool DownloadDatabase::MigrateDownloadsState() {
   sql::Statement statement(GetDB().GetUniqueStatement(
-        "UPDATE downloads SET state=? WHERE state=?"));
+      "UPDATE downloads SET state=? WHERE state=?"));
   statement.BindInt(0, kStateInterrupted);
   statement.BindInt(1, kStateBug140687);
   return statement.Run();
@@ -271,7 +264,6 @@ bool DownloadDatabase::MigrateReferrer() {
 }
 
 bool DownloadDatabase::InitDownloadTable() {
-  GetMetaTable().GetValue(kNextDownloadId, &next_id_);
   if (GetDB().DoesTableExist("downloads")) {
     return EnsureColumnExists("end_time", "INTEGER NOT NULL DEFAULT 0") &&
            EnsureColumnExists("opened", "INTEGER NOT NULL DEFAULT 0");
@@ -283,6 +275,26 @@ bool DownloadDatabase::InitDownloadTable() {
   }
 }
 
+void DownloadDatabase::GetNextDownloadId(uint32* id) {
+  sql::Statement select_max_id(GetDB().GetUniqueStatement(
+      "SELECT max(id) FROM downloads"));
+  if (!select_max_id.Step()) {
+    DCHECK(false);
+    *id = content::DownloadItem::kInvalidId + 1;
+    return;
+  }
+  // If there are zero records in the downloads table, then max(id) will return
+  // 0 = kInvalidId, so GetNextDownloadId() will set *id = kInvalidId + 1.
+  // If there is at least one record but all of the |id|s are <= kInvalidId,
+  // then max(id) will return <= kInvalidId, so GetNextDownloadId should return
+  // kInvalidId + 1. Note that any records with |id <= kInvalidId| will be
+  // dropped in QueryDownloads()
+  // SQLITE doesn't have unsigned integers.
+  *id = 1 + static_cast<uint32>(std::max(
+      static_cast<int64>(content::DownloadItem::kInvalidId),
+      select_max_id.ColumnInt64(0)));
+}
+
 bool DownloadDatabase::DropDownloadTable() {
   return GetDB().Execute("DROP TABLE downloads");
 }
@@ -292,11 +304,9 @@ void DownloadDatabase::QueryDownloads(
   EnsureInProgressEntriesCleanedUp();
 
   results->clear();
-  if (next_db_handle_ < 1)
-    next_db_handle_ = 1;
-  std::set<int64> db_handles;
+  std::set<uint32> ids;
 
-  std::map<DownloadID, DownloadRow*> info_map;
+  std::map<uint32, DownloadRow*> info_map;
 
   sql::Statement statement_main(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, current_path, target_path, start_time, received_bytes, "
@@ -308,8 +318,11 @@ void DownloadDatabase::QueryDownloads(
     scoped_ptr<DownloadRow> info(new DownloadRow());
     int column = 0;
 
-    int db_handle = statement_main.ColumnInt64(column++);
-    info->db_handle = db_handle;
+    // SQLITE does not have unsigned integers, so explicitly handle negative
+    // |id|s instead of casting them to very large uint32s, which would break
+    // the max(id) logic in GetNextDownloadId().
+    int64 signed_id = statement_main.ColumnInt64(column++);
+    info->id = static_cast<uint32>(signed_id);
     info->current_path = ColumnFilePath(statement_main, column++);
     info->target_path = ColumnFilePath(statement_main, column++);
     info->start_time = base::Time::FromInternalValue(
@@ -327,33 +340,30 @@ void DownloadDatabase::QueryDownloads(
         statement_main.ColumnInt64(column++));
     info->opened = statement_main.ColumnInt(column++) != 0;
     info->referrer_url = GURL(statement_main.ColumnString(column++));
-    if (info->db_handle >= next_db_handle_)
-      next_db_handle_ = info->db_handle + 1;
-    if (!db_handles.insert(info->db_handle).second) {
-      // info->db_handle was already in db_handles. The database is corrupt.
-      base::debug::Alias(&info->db_handle);
-      DCHECK(false);
-    }
 
     // If the record is corrupted, note that and drop it.
-    if (info->state == DownloadItem::MAX_DOWNLOAD_STATE ||
-        info->danger_type == content::DOWNLOAD_DANGER_TYPE_MAX) {
-      DroppedReason reason = DROPPED_REASON_MAX;
-      if (info->state == DownloadItem::MAX_DOWNLOAD_STATE)
-        reason = DROPPED_REASON_BAD_STATE;
-      else if (info->danger_type == content::DOWNLOAD_DANGER_TYPE_MAX)
-        reason = DROPPED_REASON_BAD_DANGER_TYPE;
-      else
-        NOTREACHED();
-
-      UMA_HISTOGRAM_ENUMERATION(
-          "Download.DatabaseRecordDropped", reason, DROPPED_REASON_MAX + 1);
-
-      continue;
+    // http://crbug.com/251269
+    DroppedReason dropped_reason = DROPPED_REASON_MAX;
+    if (signed_id <= static_cast<int64>(content::DownloadItem::kInvalidId)) {
+      // SQLITE doesn't have unsigned integers.
+      dropped_reason = DROPPED_REASON_BAD_ID;
+    } else if (!ids.insert(info->id).second) {
+      dropped_reason = DROPPED_REASON_DUPLICATE_ID;
+      NOTREACHED() << info->id;
+    } else if (info->state == DownloadItem::MAX_DOWNLOAD_STATE) {
+      dropped_reason = DROPPED_REASON_BAD_STATE;
+    } else if (info->danger_type == content::DOWNLOAD_DANGER_TYPE_MAX) {
+      dropped_reason = DROPPED_REASON_BAD_DANGER_TYPE;
     }
-
-    DCHECK(!ContainsKey(info_map, info->db_handle));
-    info_map[db_handle] = info.release();
+    if (dropped_reason != DROPPED_REASON_MAX) {
+      UMA_HISTOGRAM_ENUMERATION("Download.DatabaseRecordDropped",
+                                dropped_reason,
+                                DROPPED_REASON_MAX + 1);
+    } else {
+      DCHECK(!ContainsKey(info_map, info->id));
+      uint32 id = info->id;
+      info_map[id] = info.release();
+    }
   }
 
   sql::Statement statement_chain(GetDB().GetCachedStatement(
@@ -363,24 +373,29 @@ void DownloadDatabase::QueryDownloads(
 
   while (statement_chain.Step()) {
     int column = 0;
-    int64 db_handle = statement_chain.ColumnInt64(column++);
+    // See the comment above about SQLITE lacking unsigned integers.
+    int64 signed_id = statement_chain.ColumnInt64(column++);
     int chain_index = statement_chain.ColumnInt(column++);
+
+    if (signed_id <= static_cast<int64>(content::DownloadItem::kInvalidId))
+      continue;
+    uint32 id = static_cast<uint32>(signed_id);
 
     // Note that these DCHECKs may trip as a result of corrupted databases.
     // We have them because in debug builds the chances are higher there's
     // an actual bug than that the database is corrupt, but we handle the
     // DB corruption case in production code.
 
-    // Confirm the handle has already been seen--if it hasn't, discard the
+    // Confirm the id has already been seen--if it hasn't, discard the
     // record.
-    DCHECK(ContainsKey(info_map, db_handle));
-    if (!ContainsKey(info_map, db_handle))
+    DCHECK(ContainsKey(info_map, id));
+    if (!ContainsKey(info_map, id))
       continue;
 
     // Confirm all previous URLs in the chain have already been seen;
     // if not, fill in with null or discard record.
-    int current_chain_size = info_map[db_handle]->url_chain.size();
-    std::vector<GURL>* url_chain(&info_map[db_handle]->url_chain);
+    int current_chain_size = info_map[id]->url_chain.size();
+    std::vector<GURL>* url_chain(&info_map[id]->url_chain);
     DCHECK_EQ(chain_index, current_chain_size);
     while (current_chain_size < chain_index) {
       url_chain->push_back(GURL());
@@ -393,13 +408,13 @@ void DownloadDatabase::QueryDownloads(
     url_chain->push_back(GURL(statement_chain.ColumnString(2)));
   }
 
-  for (std::map<DownloadID, DownloadRow*>::iterator
+  for (std::map<uint32, DownloadRow*>::iterator
            it = info_map.begin(); it != info_map.end(); ++it) {
     DownloadRow* row = it->second;
     bool empty_url_chain = row->url_chain.empty();
     UMA_HISTOGRAM_BOOLEAN("Download.DatabaseEmptyUrlChain", empty_url_chain);
     if (empty_url_chain) {
-      RemoveDownload(row->db_handle);
+      RemoveDownload(row->id);
     } else {
       // Copy the contents of the stored info.
       results->push_back(*row);
@@ -412,7 +427,7 @@ void DownloadDatabase::QueryDownloads(
 bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   EnsureInProgressEntriesCleanedUp();
 
-  DCHECK(data.db_handle > 0);
+  DCHECK_NE(content::DownloadItem::kInvalidId, data.id);
   int state = StateToInt(data.state);
   if (state == kStateInvalid) {
     NOTREACHED();
@@ -439,7 +454,7 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   statement.BindInt64(column++, data.end_time.ToInternalValue());
   statement.BindInt64(column++, data.total_bytes);
   statement.BindInt(column++, (data.opened ? 1 : 0));
-  statement.BindInt64(column++, data.db_handle);
+  statement.BindInt(column++, data.id);
 
   return statement.Run();
 }
@@ -458,29 +473,20 @@ void DownloadDatabase::EnsureInProgressEntriesCleanedUp() {
   in_progress_entry_cleanup_completed_ = true;
 }
 
-int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
+bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
+  DCHECK_NE(content::DownloadItem::kInvalidId, info.id);
   EnsureInProgressEntriesCleanedUp();
 
-  if (next_db_handle_ == 0) {
-    // This is unlikely. All current known tests and users already call
-    // QueryDownloads() before CreateDownload().
-    std::vector<DownloadRow> results;
-    QueryDownloads(&results);
-    CHECK_NE(0, next_db_handle_);
-  }
-
   if (info.url_chain.empty())
-    return kUninitializedHandle;
+    return false;
 
   int state = StateToInt(info.state);
   if (state == kStateInvalid)
-    return kUninitializedHandle;
+    return false;
 
   int danger_type = DangerTypeToInt(info.danger_type);
   if (danger_type == kDangerTypeInvalid)
-    return kUninitializedHandle;
-
-  int db_handle = next_db_handle_++;
+    return false;
 
   {
     sql::Statement statement_insert(GetDB().GetCachedStatement(
@@ -492,7 +498,7 @@ int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
     int column = 0;
-    statement_insert.BindInt64(column++, db_handle);
+    statement_insert.BindInt(column++, info.id);
     BindFilePath(statement_insert, info.current_path, column++);
     BindFilePath(statement_insert, info.target_path, column++);
     statement_insert.BindInt64(column++, info.start_time.ToInternalValue());
@@ -512,22 +518,22 @@ int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
       // http://www.sqlite.org/c3ref/c_abort_rollback.html
       UMA_HISTOGRAM_ENUMERATION("Download.DatabaseMainInsertError",
                                 GetDB().GetErrorCode() & 0xff, 50);
-      return kUninitializedHandle;
+      return false;
     }
   }
 
   {
     sql::Statement count_urls(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "SELECT count(*) FROM downloads_url_chains WHERE id=?"));
-    count_urls.BindInt64(0, db_handle);
+    count_urls.BindInt(0, info.id);
     if (count_urls.Step()) {
       bool corrupt_urls = count_urls.ColumnInt(0) > 0;
       UMA_HISTOGRAM_BOOLEAN("Download.DatabaseCorruptUrls", corrupt_urls);
       if (corrupt_urls) {
         // There should not be any URLs in downloads_url_chains for this
-        // db_handle.  If there are, we don't want them to interfere with
+        // info.id.  If there are, we don't want them to interfere with
         // inserting the correct URLs, so just remove them.
-        RemoveDownloadURLs(db_handle);
+        RemoveDownloadURLs(info.id);
       }
     }
   }
@@ -538,48 +544,45 @@ int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
                                  "(id, chain_index, url) "
                                  "VALUES (?, ?, ?)"));
   for (size_t i = 0; i < info.url_chain.size(); ++i) {
-    statement_insert_chain.BindInt64(0, db_handle);
+    statement_insert_chain.BindInt(0, info.id);
     statement_insert_chain.BindInt(1, i);
     statement_insert_chain.BindString(2, info.url_chain[i].spec());
     if (!statement_insert_chain.Run()) {
       UMA_HISTOGRAM_ENUMERATION("Download.DatabaseURLChainInsertError",
                                 GetDB().GetErrorCode() & 0xff, 50);
-      RemoveDownload(db_handle);
-      return kUninitializedHandle;
+      RemoveDownload(info.id);
+      return false;
     }
     statement_insert_chain.Reset(true);
   }
-
-  // TODO(benjhayden) if(info.id>next_id_){setvalue;next_id_=info.id;}
-  GetMetaTable().SetValue(kNextDownloadId, ++next_id_);
-  return db_handle;
+  return true;
 }
 
-void DownloadDatabase::RemoveDownload(int64 handle) {
+void DownloadDatabase::RemoveDownload(uint32 id) {
   EnsureInProgressEntriesCleanedUp();
 
   sql::Statement downloads_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE id=?"));
-  downloads_statement.BindInt64(0, handle);
+  downloads_statement.BindInt(0, id);
   if (!downloads_statement.Run()) {
     UMA_HISTOGRAM_ENUMERATION("Download.DatabaseMainDeleteError",
                               GetDB().GetErrorCode() & 0xff, 50);
     return;
   }
-  RemoveDownloadURLs(handle);
+  RemoveDownloadURLs(id);
 }
 
-void DownloadDatabase::RemoveDownloadURLs(int64 handle) {
+void DownloadDatabase::RemoveDownloadURLs(uint32 id) {
   sql::Statement urlchain_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads_url_chains WHERE id=?"));
-  urlchain_statement.BindInt64(0, handle);
+  urlchain_statement.BindInt(0, id);
   if (!urlchain_statement.Run()) {
     UMA_HISTOGRAM_ENUMERATION("Download.DatabaseURLChainDeleteError",
                               GetDB().GetErrorCode() & 0xff, 50);
   }
 }
 
-int DownloadDatabase::CountDownloads() {
+size_t DownloadDatabase::CountDownloads() {
   EnsureInProgressEntriesCleanedUp();
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,

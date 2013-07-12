@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,8 +30,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(Remove, void());
   MOCK_METHOD0(OpenDownload, void());
   MOCK_METHOD0(ShowDownloadInShell, void());
-  MOCK_CONST_METHOD0(GetId, int32());
-  MOCK_CONST_METHOD0(GetGlobalId, DownloadId());
+  MOCK_CONST_METHOD0(GetId, uint32());
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(IsPaused, bool());

@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "content/browser/download/download_file.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/common/referrer.h"

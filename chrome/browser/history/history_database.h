@@ -179,9 +179,6 @@ class HistoryDatabase : public DownloadDatabase,
   // Overridden from URLDatabase:
   virtual sql::Connection& GetDB() OVERRIDE;
 
-  // Overridden from DownloadDatabase:
-  virtual sql::MetaTable& GetMetaTable() OVERRIDE;
-
   // Migration -----------------------------------------------------------------
 
   // Makes sure the version is up-to-date, updating if necessary. If the

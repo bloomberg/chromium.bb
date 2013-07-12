@@ -25,7 +25,7 @@ struct DownloadRow;
 // DownloadDatabase up to date.
 class DownloadHistory : public AllDownloadItemNotifier::Observer {
  public:
-  typedef std::set<int32> IdSet;
+  typedef std::set<uint32> IdSet;
 
   // Caller must guarantee that HistoryService outlives HistoryAdapter.
   class HistoryAdapter {
@@ -42,7 +42,7 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
 
     virtual void UpdateDownload(const history::DownloadRow& data);
 
-    virtual void RemoveDownloads(const std::set<int64>& db_handles);
+    virtual void RemoveDownloads(const std::set<uint32>& ids);
 
    private:
     HistoryService* history_;
@@ -54,14 +54,10 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
     Observer();
     virtual ~Observer();
 
-    // Fires when a download is added to or updated in the database. When
-    // downloads are first added, this fires after the callback from the
-    // database so that |info| includes the |db_handle|. When downloads are
-    // updated, this fires right after the message is sent to the database.
-    // |info| always includes the |db_handle|.
+    // Fires when a download is added to or updated in the database, just after
+    // the task is posted to the history thread.
     virtual void OnDownloadStored(content::DownloadItem* item,
-                                  const history::DownloadRow& info) {
-    }
+                                  const history::DownloadRow& info) {}
 
     // Fires when RemoveDownloads messages are sent to the DB thread.
     virtual void OnDownloadsRemoved(const IdSet& ids) {}
@@ -87,7 +83,6 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
   void RemoveObserver(Observer* observer);
 
  private:
-  typedef std::set<int64> HandleSet;
   typedef std::set<content::DownloadItem*> ItemSet;
 
   // Callback from |history_| containing all entries in the downloads database
@@ -100,7 +95,7 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
 
   // Callback from |history_| when an item was successfully inserted into the
   // database.
-  void ItemAdded(int32 id, int64 db_handle);
+  void ItemAdded(uint32 id, bool success);
 
   // AllDownloadItemNotifier::Observer
   virtual void OnDownloadCreated(
@@ -115,29 +110,28 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
   // Schedule a record to be removed from |history_| the next time
   // RemoveDownloadsBatch() runs. Schedule RemoveDownloadsBatch() to be run soon
   // if it isn't already scheduled.
-  void ScheduleRemoveDownload(int32 download_id, int64 db_handle);
+  void ScheduleRemoveDownload(uint32 download_id);
 
-  // Removes all |removing_handles_| from |history_|.
+  // Removes all |removing_ids_| from |history_|.
   void RemoveDownloadsBatch();
-
 
   AllDownloadItemNotifier notifier_;
 
   scoped_ptr<HistoryAdapter> history_;
 
-  // |db_handle| of the item being created in response to QueryCallback(),
-  // matched up with created items in OnDownloadCreated() so that the item is
-  // not re-added to the database. For items not created by QueryCallback(),
-  // this is DownloadDatabase::kUninitializedHandle.
-  int64 loading_db_handle_;
+  // Identifier of the item being created in QueryCallback(), matched up with
+  // created items in OnDownloadCreated() so that the item is not re-added to
+  // the database.
+  uint32 loading_id_;
 
-  // |db_handles| and |ids| of items that are scheduled for removal from
-  // history, to facilitate batching removals together for database efficiency.
-  HandleSet removing_handles_;
+  // Identifiers of items that are scheduled for removal from history, to
+  // facilitate batching removals together for database efficiency.
   IdSet removing_ids_;
 
   // |GetId()|s of items that were removed while they were being added, so that
-  // they can be removed when their db_handles are received from the database.
+  // they can be removed when the database finishes adding them.
+  // TODO(benjhayden) Can this be removed now that it doesn't need to wait for
+  // the db_handle, and can rely on PostTask sequentiality?
   IdSet removed_while_adding_;
 
   // Count the number of items in the history for UMA.

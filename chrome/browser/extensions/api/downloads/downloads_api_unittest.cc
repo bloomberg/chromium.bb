@@ -417,6 +417,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     url_chain.push_back(GURL());
     for (size_t i = 0; i < count; ++i) {
       DownloadItem* item = GetOnRecordManager()->CreateDownloadItem(
+          content::DownloadItem::kInvalidId + 1 + i,
           downloads_directory().Append(history_info[i].filename),
           downloads_directory().Append(history_info[i].filename),
           url_chain, GURL(),    // URL Chain, referrer
@@ -1188,7 +1189,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(result_list->GetDictionary(0, &item_value));
   int item_id = -1;
   ASSERT_TRUE(item_value->GetInteger("id", &item_id));
-  ASSERT_EQ(0, item_id);
+  ASSERT_EQ(all_downloads[0]->GetId(), static_cast<uint32>(item_id));
 }
 
 // Test the |id| parameter for search().
@@ -1198,7 +1199,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_SearchId) {
   ScopedItemVectorCanceller delete_items(&items);
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
-      new DownloadsSearchFunction(), "[{\"id\": 0}]"));
+      new DownloadsSearchFunction(), base::StringPrintf(
+          "[{\"id\": %u}]", items[0]->GetId())));
   ASSERT_TRUE(result.get());
   base::ListValue* result_list = NULL;
   ASSERT_TRUE(result->GetAsList(&result_list));
@@ -1207,7 +1209,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_SearchId) {
   ASSERT_TRUE(result_list->GetDictionary(0, &item_value));
   int item_id = -1;
   ASSERT_TRUE(item_value->GetInteger("id", &item_id));
-  ASSERT_EQ(0, item_id);
+  ASSERT_EQ(items[0]->GetId(), static_cast<uint32>(item_id));
 }
 
 // Test specifying both the |id| and |filename| parameters for search().

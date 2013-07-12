@@ -40,7 +40,6 @@ class TimeDelta;
 namespace content {
 
 class BrowserContext;
-class DownloadId;
 class DownloadManager;
 class WebContents;
 
@@ -78,6 +77,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Callback used with AcquireFileAndDeleteDownload().
   typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
+
+  static const uint32 kInvalidId;
 
   static const char kEmptyFileHash[];
 
@@ -151,8 +152,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // State accessors -----------------------------------------------------------
 
-  virtual int32 GetId() const = 0;
-  virtual DownloadId GetGlobalId() const = 0;
+  virtual uint32 GetId() const = 0;
   virtual DownloadState GetState() const = 0;
 
   // Returns the most recent interrupt reason for this download. Returns

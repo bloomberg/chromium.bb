@@ -36,9 +36,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 
@@ -51,7 +51,6 @@ class ByteStreamReader;
 class DownloadManagerDelegate;
 class DownloadQuery;
 class DownloadRequestHandle;
-class DownloadUrlParameters;
 struct DownloadCreateInfo;
 struct DownloadRetrieveInfo;
 
@@ -107,9 +106,10 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // to initiate the non-source portions of a download.
   // Returns the id assigned to the download.  If the DownloadCreateInfo
   // specifies an id, that id will be used.
-  virtual DownloadItem* StartDownload(
+  virtual void StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
-      scoped_ptr<ByteStreamReader> stream) = 0;
+      scoped_ptr<ByteStreamReader> stream,
+      const DownloadUrlParameters::OnStartedCallback& on_started) = 0;
 
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete
@@ -138,6 +138,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
   virtual DownloadItem* CreateDownloadItem(
+      uint32 id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
@@ -165,7 +166,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
 
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
-  virtual DownloadItem* GetDownload(int id) = 0;
+  virtual DownloadItem* GetDownload(uint32 id) = 0;
 };
 
 }  // namespace content

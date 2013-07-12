@@ -59,9 +59,13 @@ class ChromeDownloadManagerDelegate
 
   void SetDownloadManager(content::DownloadManager* dm);
 
+  // Callbacks passed to GetNextId() will not be called until SetNextId() is
+  // called.
+  void SetNextId(uint32 next_id);
+
   // content::DownloadManagerDelegate
   virtual void Shutdown() OVERRIDE;
-  virtual content::DownloadId GetNextId() OVERRIDE;
+  virtual void GetNextId(const content::DownloadIdCallback& callback) OVERRIDE;
   virtual bool DetermineDownloadTarget(
       content::DownloadItem* item,
       const content::DownloadTargetCallback& callback) OVERRIDE;
@@ -130,6 +134,8 @@ class ChromeDownloadManagerDelegate
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
 
+  typedef std::vector<content::DownloadIdCallback> IdCallbackVector;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -137,7 +143,7 @@ class ChromeDownloadManagerDelegate
 
   // Callback function after the DownloadProtectionService completes.
   void CheckClientDownloadDone(
-      int32 download_id,
+      uint32 download_id,
       safe_browsing::DownloadProtectionService::DownloadCheckResult result);
 
   // Internal gateways for ShouldCompleteDownload().
@@ -145,11 +151,14 @@ class ChromeDownloadManagerDelegate
       content::DownloadItem* item,
       const base::Closure& internal_complete_callback);
   void ShouldCompleteDownloadInternal(
-    int download_id,
+    uint32 download_id,
     const base::Closure& user_complete_callback);
 
+  void ReturnNextId(const content::DownloadIdCallback& callback);
+
   Profile* profile_;
-  int next_download_id_;
+  uint32 next_download_id_;
+  IdCallbackVector id_callbacks_;
   scoped_ptr<DownloadPrefs> download_prefs_;
 
   // Maps from pending extension installations to DownloadItem IDs.

@@ -28,6 +28,7 @@ class ShellDownloadManagerDelegate
   virtual bool ShouldOpenDownload(
       DownloadItem* item,
       const DownloadOpenDelayedCallback& callback) OVERRIDE;
+  virtual void GetNextId(const DownloadIdCallback& callback) OVERRIDE;
 
   // Inhibits prompting and sets the default download path.
   void SetDownloadBehaviorForTesting(
@@ -41,14 +42,14 @@ class ShellDownloadManagerDelegate
   friend class base::RefCountedThreadSafe<ShellDownloadManagerDelegate>;
 
 
-  void GenerateFilename(int32 download_id,
+  void GenerateFilename(uint32 download_id,
                         const DownloadTargetCallback& callback,
                         const base::FilePath& generated_name,
                         const base::FilePath& suggested_directory);
-  void OnDownloadPathGenerated(int32 download_id,
+  void OnDownloadPathGenerated(uint32 download_id,
                                const DownloadTargetCallback& callback,
                                const base::FilePath& suggested_path);
-  void ChooseDownloadPath(int32 download_id,
+  void ChooseDownloadPath(uint32 download_id,
                           const DownloadTargetCallback& callback,
                           const base::FilePath& suggested_path);
 

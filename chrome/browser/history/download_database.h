@@ -24,39 +24,33 @@ struct DownloadRow;
 // Maintains a table of downloads.
 class DownloadDatabase {
  public:
-  // The value of |db_handle| indicating that the associated DownloadItem is not
-  // yet persisted.
-  static const int64 kUninitializedHandle;
-
   // Must call InitDownloadTable before using any other functions.
   DownloadDatabase();
   virtual ~DownloadDatabase();
 
-  int next_download_id() const { return next_id_; }
+  void GetNextDownloadId(uint32* id);
 
   // Get all the downloads from the database.
   void QueryDownloads(
       std::vector<DownloadRow>* results);
 
   // Update the state of one download. Returns true if successful.
-  // Does not update |url|, |start_time|; uses |db_handle| only
+  // Does not update |url|, |start_time|; uses |id| only
   // to select the row in the database table to update.
   bool UpdateDownload(const DownloadRow& data);
 
-  // Create a new database entry for one download and return its primary db id.
-  int64 CreateDownload(const DownloadRow& info);
+  // Create a new database entry for one download and return true if the
+  // creation succeeded, false otherwise.
+  bool CreateDownload(const DownloadRow& info);
 
-  // Remove |handle| from the database.
-  void RemoveDownload(int64 handle);
+  // Remove |id| from the database.
+  void RemoveDownload(uint32 id);
 
-  int CountDownloads();
+  size_t CountDownloads();
 
  protected:
   // Returns the database for the functions in this interface.
   virtual sql::Connection& GetDB() = 0;
-
-  // Returns the meta-table object for the functions in this interface.
-  virtual sql::MetaTable& GetMetaTable() = 0;
 
   // Returns true if able to successfully rewrite the invalid values for the
   // |state| field from 3 to 4. Returns false if there was an error fixing the
@@ -110,7 +104,7 @@ class DownloadDatabase {
 
   bool EnsureColumnExists(const std::string& name, const std::string& type);
 
-  void RemoveDownloadURLs(int64 handle);
+  void RemoveDownloadURLs(uint32 id);
 
   // Utility functions for conversion between DownloadItem types
   // and DownloadDatabase constants.
@@ -121,9 +115,6 @@ class DownloadDatabase {
 
   bool owning_thread_set_;
   base::PlatformThreadId owning_thread_;
-
-  int next_id_;
-  int next_db_handle_;
 
   // Initialized to false on construction, and checked in all functional
   // routines post-migration in the database for a possible call to

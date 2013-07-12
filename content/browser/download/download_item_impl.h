@@ -19,7 +19,6 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_destination_observer.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -52,7 +51,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Constructing from persistent store:
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   DownloadId download_id,
+                   uint32 id,
                    const base::FilePath& current_path,
                    const base::FilePath& target_path,
                    const std::vector<GURL>& url_chain,
@@ -70,14 +69,14 @@ class CONTENT_EXPORT DownloadItemImpl
   // Constructing for a regular download.
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   DownloadId download_id,
+                   uint32 id,
                    const DownloadCreateInfo& info,
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for the "Save Page As..." feature:
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   DownloadId download_id,
+                   uint32 id,
                    const base::FilePath& path,
                    const GURL& url,
                    const std::string& mime_type,
@@ -99,8 +98,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void Remove() OVERRIDE;
   virtual void OpenDownload() OVERRIDE;
   virtual void ShowDownloadInShell() OVERRIDE;
-  virtual int32 GetId() const OVERRIDE;
-  virtual DownloadId GetGlobalId() const OVERRIDE;
+  virtual uint32 GetId() const OVERRIDE;
   virtual DownloadState GetState() const OVERRIDE;
   virtual DownloadInterruptReason GetLastReason() const OVERRIDE;
   virtual bool IsPaused() const OVERRIDE;
@@ -384,8 +382,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // download system.
   scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
-  // Download ID assigned by DownloadResourceHandler.
-  DownloadId download_id_;
+  uint32 download_id_;
 
   // Display name for the download. If this is empty, then the display name is
   // considered to be |target_path_.BaseName()|.

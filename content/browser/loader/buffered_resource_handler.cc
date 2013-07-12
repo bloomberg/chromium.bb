@@ -17,8 +17,9 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_id.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_response.h"
@@ -348,9 +349,9 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
           request_,
           true,  // is_content_initiated
           must_download,
-          DownloadId(),
+          content::DownloadItem::kInvalidId,
           scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo()),
-          DownloadResourceHandler::OnStartedCallback()));
+          DownloadUrlParameters::OnStartedCallback()));
   return UseAlternateNextHandler(handler.Pass());
 }
 

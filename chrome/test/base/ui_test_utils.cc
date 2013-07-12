@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"

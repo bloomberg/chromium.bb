@@ -297,6 +297,7 @@ void SavePackage::InternalInit() {
 
 bool SavePackage::Init(
     const SavePackageDownloadCreatedCallback& download_created_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Set proper running state.
   if (wait_state_ != INITIALIZE)
     return false;
@@ -313,13 +314,24 @@ bool SavePackage::Init(
   scoped_ptr<DownloadRequestHandleInterface> request_handle(
       new SavePackageRequestHandle(AsWeakPtr()));
   // The download manager keeps ownership but adds us as an observer.
-  download_ = download_manager_->CreateSavePackageDownloadItem(
+  download_manager_->CreateSavePackageDownloadItem(
       saved_main_file_path_,
       page_url_,
       ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ?
        "multipart/related" : "text/html"),
       request_handle.Pass(),
-      this);
+      base::Bind(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
+                 download_created_callback));
+  return true;
+}
+
+void SavePackage::InitWithDownloadItem(
+    const SavePackageDownloadCreatedCallback& download_created_callback,
+    DownloadItemImpl* item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(item);
+  download_ = item;
+  download_->AddObserver(this);
   // Confirm above didn't delete the tab out from under us.
   if (!download_created_callback.is_null())
     download_created_callback.Run(download_);
@@ -349,8 +361,6 @@ bool SavePackage::Init(
 
     DoSavingProcess();
   }
-
-  return true;
 }
 
 void SavePackage::OnMHTMLGenerated(const base::FilePath& path, int64 size) {

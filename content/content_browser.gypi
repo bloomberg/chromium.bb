@@ -73,7 +73,6 @@
     'public/browser/devtools_external_agent_proxy.h',
     'public/browser/devtools_external_agent_proxy_delegate.h',
     'public/browser/download_danger_type.h',
-    'public/browser/download_id.h',
     'public/browser/devtools_frontend_host_delegate.h',
     'public/browser/devtools_http_handler.h',
     'public/browser/devtools_http_handler_delegate.h',

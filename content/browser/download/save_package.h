@@ -23,6 +23,7 @@
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
+#include "net/base/net_errors.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -122,6 +123,10 @@ class CONTENT_EXPORT SavePackage
 
  private:
   friend class base::RefCountedThreadSafe<SavePackage>;
+
+  void InitWithDownloadItem(
+      const SavePackageDownloadCreatedCallback& download_created_callback,
+      DownloadItemImpl* item);
 
   // Callback for WebContents::GenerateMHTML().
   void OnMHTMLGenerated(const base::FilePath& path, int64 size);

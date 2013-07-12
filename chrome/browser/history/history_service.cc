@@ -63,6 +63,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -76,16 +77,9 @@ namespace {
 
 static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
-void DerefDownloadDbHandle(
-    const HistoryService::DownloadCreateCallback& callback,
-    int64* db_handle) {
-  callback.Run(*db_handle);
-}
-
-void DerefDownloadId(
-    const HistoryService::DownloadNextIdCallback& callback,
-    int* id) {
-  callback.Run(*id);
+template<typename PODType> void DerefPODType(
+    const base::Callback<void(PODType)>& callback, PODType* pod_value) {
+  callback.Run(*pod_value);
 }
 
 void RunWithFaviconResults(
@@ -462,6 +456,11 @@ HistoryService::Handle HistoryService::QuerySegmentDurationSince(
                   from_time, max_result_count);
 }
 
+void HistoryService::FlushForTest(const base::Closure& flushed) {
+  thread_->message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&base::DoNothing), flushed);
+}
+
 void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetOnBackendDestroyTask,
@@ -783,28 +782,28 @@ void HistoryService::CreateDownload(
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   LoadBackendIfNecessary();
-  int64* db_handle = new int64(
-      history::DownloadDatabase::kUninitializedHandle);
+  bool* success = new bool(false);
   thread_->message_loop_proxy()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&HistoryBackend::CreateDownload,
                  history_backend_.get(),
                  create_info,
-                 db_handle),
-      base::Bind(&DerefDownloadDbHandle, callback, base::Owned(db_handle)));
+                 success),
+      base::Bind(&DerefPODType<bool>, callback, base::Owned(success)));
 }
 
-void HistoryService::GetNextDownloadId(const DownloadNextIdCallback& callback) {
+void HistoryService::GetNextDownloadId(
+    const content::DownloadIdCallback& callback) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   LoadBackendIfNecessary();
-  int* id = new int(history::DownloadDatabase::kUninitializedHandle);
+  uint32* next_id = new uint32(content::DownloadItem::kInvalidId);
   thread_->message_loop_proxy()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&HistoryBackend::GetNextDownloadId,
                  history_backend_.get(),
-                 id),
-      base::Bind(&DerefDownloadId, callback, base::Owned(id)));
+                 next_id),
+      base::Bind(&DerefPODType<uint32>, callback, base::Owned(next_id)));
 }
 
 // Handle queries for a list of all downloads in the history database's
@@ -834,10 +833,10 @@ void HistoryService::UpdateDownload(const history::DownloadRow& data) {
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownload, data);
 }
 
-void HistoryService::RemoveDownloads(const std::set<int64>& db_handles) {
+void HistoryService::RemoveDownloads(const std::set<uint32>& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::RemoveDownloads, db_handles);
+                    &HistoryBackend::RemoveDownloads, ids);
 }
 
 HistoryService::Handle HistoryService::QueryHistory(

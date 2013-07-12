@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"

@@ -31,7 +31,7 @@ static const int kSomeKnownTime = 1355864160;
 static const char kSomeKnownTime8601[] = "2012-12-18T20:56:0";
 static const char k8601Suffix[] = ".000Z";
 
-bool IdNotEqual(int not_id, const DownloadItem& item) {
+bool IdNotEqual(uint32 not_id, const DownloadItem& item) {
   return item.GetId() != not_id;
 }
 
@@ -77,7 +77,7 @@ class DownloadQueryTest : public testing::Test {
   void ExpectStandardFilterResults() {
     Search();
     ASSERT_EQ(1U, results()->size());
-    ASSERT_EQ(0, results()->at(0)->GetId());
+    ASSERT_EQ(0U, results()->at(0)->GetId());
   }
 
   // If no sorters distinguish between two items, then DownloadQuery sorts by ID
@@ -86,8 +86,8 @@ class DownloadQueryTest : public testing::Test {
   void ExpectSortInverted() {
     Search();
     ASSERT_EQ(2U, results()->size());
-    ASSERT_EQ(1, results()->at(0)->GetId());
-    ASSERT_EQ(0, results()->at(1)->GetId());
+    ASSERT_EQ(1U, results()->at(0)->GetId());
+    ASSERT_EQ(0U, results()->at(1)->GetId());
   }
 
  private:
@@ -152,8 +152,8 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_EmptyQuery) {
   CreateMocks(2);
   Search();
   ASSERT_EQ(2U, results()->size());
-  ASSERT_EQ(0, results()->at(0)->GetId());
-  ASSERT_EQ(1, results()->at(1)->GetId());
+  ASSERT_EQ(0U, results()->at(0)->GetId());
+  ASSERT_EQ(1U, results()->at(1)->GetId());
 }
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_Limit) {
@@ -556,8 +556,8 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_DefaultSortById1) {
                      DownloadQuery::ASCENDING);
   Search();
   ASSERT_EQ(2U, results()->size());
-  EXPECT_EQ(0, results()->at(0)->GetId());
-  EXPECT_EQ(1, results()->at(1)->GetId());
+  EXPECT_EQ(0U, results()->at(0)->GetId());
+  EXPECT_EQ(1U, results()->at(1)->GetId());
 }
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_DefaultSortById2) {
@@ -568,8 +568,8 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_DefaultSortById2) {
                      DownloadQuery::DESCENDING);
   Search();
   ASSERT_EQ(2U, results()->size());
-  EXPECT_EQ(0, results()->at(0)->GetId());
-  EXPECT_EQ(1, results()->at(1)->GetId());
+  EXPECT_EQ(0U, results()->at(0)->GetId());
+  EXPECT_EQ(1U, results()->at(1)->GetId());
 }
 
 TEST_F(DownloadQueryTest, DownloadQueryFilterPerformance) {

@@ -215,7 +215,7 @@ void DownloadTestObserver::SignalIfFinished() {
     base::MessageLoopForUI::current()->Quit();
 }
 
-void DownloadTestObserver::AcceptDangerousDownload(int32 download_id) {
+void DownloadTestObserver::AcceptDangerousDownload(uint32 download_id) {
   // Download manager was shutdown before the UI thread could accept the
   // download.
   if (!download_manager_)
@@ -225,7 +225,7 @@ void DownloadTestObserver::AcceptDangerousDownload(int32 download_id) {
     download->ValidateDangerousDownload();
 }
 
-void DownloadTestObserver::DenyDangerousDownload(int32 download_id) {
+void DownloadTestObserver::DenyDangerousDownload(uint32 download_id) {
   // Download manager was shutdown before the UI thread could deny the
   // download.
   if (!download_manager_)
@@ -408,7 +408,7 @@ void DownloadTestFlushObserver::PingIOThread(int cycle) {
 }
 
 DownloadTestItemCreationObserver::DownloadTestItemCreationObserver()
-    : download_id_(DownloadId::Invalid().local()),
+    : download_id_(DownloadItem::kInvalidId),
       error_(net::OK),
       called_back_count_(0),
       waiting_(false) {

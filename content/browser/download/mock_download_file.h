@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/download_file.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +47,6 @@ class MockDownloadFile : virtual public DownloadFile {
   MOCK_METHOD0(SendUpdate, void());
   MOCK_CONST_METHOD0(Id, int());
   MOCK_METHOD0(GetDownloadManager, DownloadManager*());
-  MOCK_CONST_METHOD0(GlobalId, const DownloadId&());
   MOCK_CONST_METHOD0(DebugString, std::string());
 };
 

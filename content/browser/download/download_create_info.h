@@ -14,7 +14,6 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/base/net_log.h"
@@ -51,8 +50,8 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The total download size.
   int64 total_bytes;
 
-  // The (per-session) ID of the download.
-  DownloadId download_id;
+  // The ID of the download.
+  uint32 download_id;
 
   // True if the download was initiated by user action.
   bool has_user_gesture;

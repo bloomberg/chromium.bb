@@ -4,13 +4,12 @@
 
 #include "content/public/browser/download_manager_delegate.h"
 
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 
 namespace content {
 
-DownloadId DownloadManagerDelegate::GetNextId() {
-  return DownloadId::Invalid();
+void DownloadManagerDelegate::GetNextId(const DownloadIdCallback& callback) {
+  callback.Run(content::DownloadItem::kInvalidId);
 }
 
 bool DownloadManagerDelegate::DetermineDownloadTarget(

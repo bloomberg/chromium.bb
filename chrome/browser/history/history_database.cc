@@ -95,6 +95,9 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   CreateMainURLIndex();
   CreateKeywordSearchTermsIndices();
 
+  // TODO(benjhayden) Remove at some point.
+  meta_table_.DeleteKey("next_download_id");
+
   // Version check.
   sql::InitStatus version_status = EnsureCurrentVersion();
   if (version_status != sql::INIT_OK)
@@ -295,10 +298,6 @@ void HistoryDatabase::UpdateEarlyExpirationThreshold(base::Time threshold) {
 
 sql::Connection& HistoryDatabase::GetDB() {
   return db_;
-}
-
-sql::MetaTable& HistoryDatabase::GetMetaTable() {
-  return meta_table_;
 }
 
 // Migration -------------------------------------------------------------------

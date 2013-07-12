@@ -19,7 +19,7 @@ DownloadCreateInfo::DownloadCreateInfo(
     PageTransition transition_type)
     : start_time(start_time),
       total_bytes(total_bytes),
-      download_id(DownloadId::Invalid()),
+      download_id(DownloadItem::kInvalidId),
       has_user_gesture(has_user_gesture),
       transition_type(transition_type),
       save_info(new DownloadSaveInfo()),
@@ -28,7 +28,7 @@ DownloadCreateInfo::DownloadCreateInfo(
 
 DownloadCreateInfo::DownloadCreateInfo()
     : total_bytes(0),
-      download_id(DownloadId::Invalid()),
+      download_id(DownloadItem::kInvalidId),
       has_user_gesture(false),
       transition_type(PAGE_TRANSITION_LINK),
       save_info(new DownloadSaveInfo()) {
@@ -39,12 +39,12 @@ DownloadCreateInfo::~DownloadCreateInfo() {
 
 std::string DownloadCreateInfo::DebugString() const {
   return base::StringPrintf("{"
-                            " download_id = %s"
+                            " download_id = %u"
                             " url = \"%s\""
                             " request_handle = %s"
                             " total_bytes = %" PRId64
                             " }",
-                            download_id.DebugString().c_str(),
+                            download_id,
                             url().spec().c_str(),
                             request_handle.DebugString().c_str(),
                             total_bytes);

@@ -906,15 +906,16 @@ class DownloadTest : public InProcessBrowserTest {
       // won't be.
       creation_observer->WaitForDownloadItemCreation();
 
-      int32 invalid_id = content::DownloadId::Invalid().local();
       EXPECT_EQ(download_info.show_download_item,
                 creation_observer->succeeded());
       if (download_info.show_download_item) {
         EXPECT_EQ(net::OK, creation_observer->error());
-        EXPECT_NE(invalid_id, creation_observer->download_id());
+        EXPECT_NE(content::DownloadItem::kInvalidId,
+                  creation_observer->download_id());
       } else {
         EXPECT_NE(net::OK, creation_observer->error());
-        EXPECT_EQ(invalid_id, creation_observer->download_id());
+        EXPECT_EQ(content::DownloadItem::kInvalidId,
+                  creation_observer->download_id());
       }
     } else {
       // Navigate to URL normally, wait until done.
@@ -1916,6 +1917,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PRE_DownloadTest_History) {
   HistoryObserver observer(browser()->profile());
   DownloadAndWait(browser(), download_url);
   observer.WaitForStored();
+  HistoryServiceFactory::GetForProfile(
+      browser()->profile(), Profile::IMPLICIT_ACCESS)->FlushForTest(
+      base::Bind(&base::MessageLoop::Quit,
+                  base::Unretained(base::MessageLoop::current()->current())));
+  content::RunMessageLoop();
 }
 
 #if defined(OS_CHROMEOS)
@@ -2828,7 +2834,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
   for (int index = 0; index < 5; ++index) {
     DownloadAndWait(browser(), url);
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-    content::DownloadItem* item = manager->GetDownload(index);
+    content::DownloadItem* item = manager->GetDownload(
+        content::DownloadItem::kInvalidId + 1 + index);
     ASSERT_TRUE(item);
     ASSERT_EQ(DownloadItem::COMPLETE, item->GetState());
     base::FilePath target_path(item->GetTargetFilePath());

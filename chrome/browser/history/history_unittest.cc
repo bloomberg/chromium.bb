@@ -161,7 +161,9 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     base::MessageLoop::current()->Run();
   }
 
-  int64 AddDownload(DownloadItem::DownloadState state, const Time& time) {
+  bool AddDownload(uint32 id,
+                   DownloadItem::DownloadState state,
+                   const Time& time) {
     std::vector<GURL> url_chain;
     url_chain.push_back(GURL("foo-url"));
 
@@ -176,7 +178,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                          state,
                          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                          content::DOWNLOAD_INTERRUPT_REASON_NONE,
-                         0,
+                         id,
                          false);
     return db_->CreateDownload(download);
   }
@@ -223,9 +225,9 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
 
   // Add a download, test that it was added correctly, remove it, test that it
   // was removed.
-  DownloadID handle;
   Time now = Time();
-  EXPECT_NE(0, handle = AddDownload(DownloadItem::COMPLETE, now));
+  uint32 id = 1;
+  EXPECT_TRUE(AddDownload(id, DownloadItem::COMPLETE, Time()));
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(1U, downloads.size());
 
@@ -248,7 +250,9 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
             downloads[0].interrupt_reason);
   EXPECT_FALSE(downloads[0].opened);
 
-  db_->RemoveDownload(handle);
+  db_->QueryDownloads(&downloads);
+  EXPECT_EQ(1U, downloads.size());
+  db_->RemoveDownload(id);
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
 }
@@ -335,9 +339,9 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
         "received_bytes, total_bytes, state, end_time, opened) VALUES "
         "(?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
-    int64 db_handle = 0;
+    int64 id = 0;
     // Null path.
-    s.BindInt64(0, ++db_handle);
+    s.BindInt64(0, ++id);
     s.BindString(1, std::string());
     s.BindString(2, "http://whatever.com/index.html");
     s.BindInt64(3, now.ToTimeT());
@@ -350,7 +354,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
     s.Reset(true);
 
     // Non-null path.
-    s.BindInt64(0, ++db_handle);
+    s.BindInt64(0, ++id);
     s.BindString(1, "/path/to/some/file");
     s.BindString(2, "http://whatever.com/index1.html");
     s.BindInt64(3, now.ToTimeT());
@@ -487,11 +491,10 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   base::Time now(base::Time::Now());
 
   // Add some downloads.
-  AddDownload(DownloadItem::COMPLETE, now);
-  int64 did2 = AddDownload(DownloadItem::COMPLETE, now +
-                           base::TimeDelta::FromDays(2));
-  int64 did3 = AddDownload(DownloadItem::COMPLETE, now -
-                           base::TimeDelta::FromDays(2));
+  uint32 id1 = 1, id2 = 2, id3 = 3;
+  AddDownload(id1, DownloadItem::COMPLETE, now);
+  AddDownload(id2, DownloadItem::COMPLETE, now + base::TimeDelta::FromDays(2));
+  AddDownload(id3, DownloadItem::COMPLETE, now - base::TimeDelta::FromDays(2));
 
   // Confirm that resulted in the correct number of rows in the DB.
   DeleteBackend();
@@ -511,8 +514,8 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
 
   // Delete some rows and make sure the results are still correct.
   CreateBackendAndDatabase();
-  db_->RemoveDownload(did2);
-  db_->RemoveDownload(did3);
+  db_->RemoveDownload(id2);
+  db_->RemoveDownload(id3);
   DeleteBackend();
   {
     sql::Connection db;
@@ -544,15 +547,14 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
                        DownloadItem::COMPLETE,
                        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                        content::DOWNLOAD_INTERRUPT_REASON_NONE,
-                       0,
+                       1,
                        0);
 
   // Creating records without any urls should fail.
-  EXPECT_EQ(DownloadDatabase::kUninitializedHandle,
-            db_->CreateDownload(download));
+  EXPECT_FALSE(db_->CreateDownload(download));
 
   download.url_chain.push_back(GURL("foo-url"));
-  EXPECT_EQ(1, db_->CreateDownload(download));
+  EXPECT_TRUE(db_->CreateDownload(download));
 
   // Pretend that the URLs were dropped.
   DeleteBackend();
@@ -589,7 +591,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
   base::Time now(base::Time::Now());
 
   // Put an IN_PROGRESS download in the DB.
-  AddDownload(DownloadItem::IN_PROGRESS, now);
+  AddDownload(1, DownloadItem::IN_PROGRESS, now);
 
   // Confirm that they made it into the DB unchanged.
   DeleteBackend();
