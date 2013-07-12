@@ -59,7 +59,13 @@ CompositorOutputSurface::CompositorOutputSurface(
           RenderThreadImpl::current()->compositor_output_surface_filter()),
       routing_id_(routing_id),
       prefers_smoothness_(false),
-      main_thread_handle_(base::PlatformThread::CurrentHandle()) {
+#if defined(OS_WIN)
+      // TODO(epenner): Implement PlatformThread::CurrentHandle() on windows.
+      main_thread_handle_(base::PlatformThreadHandle())
+#else
+      main_thread_handle_(base::PlatformThread::CurrentHandle())
+#endif
+{
   DCHECK(output_surface_filter_.get());
   DetachFromThread();
   message_sender_ = RenderThreadImpl::current()->sync_message_filter();
