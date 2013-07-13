@@ -228,6 +228,11 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
        iter != invalid_tiles.end();
        ++iter)
     tiler_->TakeTile((*iter)->i(), (*iter)->j());
+
+  // TiledLayer must push properties every frame, since viewport state and
+  // occlusion from anywhere in the tree can change what the layer decides to
+  // push to the impl tree.
+  needs_push_properties_ = true;
 }
 
 bool TiledLayer::BlocksPendingCommit() const { return true; }

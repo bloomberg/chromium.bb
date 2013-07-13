@@ -139,6 +139,9 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
     scrollbar_layer->set_thumb_resource_id(0);
 
   scrollbar_layer->set_is_overlay_scrollbar(scrollbar_->IsOverlay());
+
+  // ScrollbarLayer must push properties every frame. crbug.com/259095
+  needs_push_properties_ = true;
 }
 
 ScrollbarLayer* ScrollbarLayer::ToScrollbarLayer() {

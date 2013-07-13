@@ -381,6 +381,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual bool SupportsLCDText() const;
 
+  bool needs_push_properties() const { return needs_push_properties_; }
+  bool descendant_needs_push_properties() const {
+    return num_dependents_need_push_properties_ > 0;
+  }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -392,10 +397,26 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetNeedsFullTreeSync();
   bool IsPropertyChangeAllowed() const;
 
+  void SetNeedsPushProperties();
+  void AddDependentNeedsPushProperties();
+  void RemoveDependentNeedsPushProperties();
+  bool parent_should_know_need_push_properties() const {
+    return needs_push_properties() || descendant_needs_push_properties();
+  }
+
   void reset_raster_scale_to_unknown() { raster_scale_ = 0.f; }
 
   // This flag is set when layer need repainting/updating.
   bool needs_display_;
+
+  // This flag is set when the layer needs to push properties to the impl
+  // side.
+  bool needs_push_properties_;
+
+  // The number of direct children or dependent layers that need to be recursed
+  // to in order for them or a descendent of them to push properties to the impl
+  // side.
+  int num_dependents_need_push_properties_;
 
   // Tracks whether this layer may have changed stacking order with its
   // siblings.

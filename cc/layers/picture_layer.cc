@@ -48,6 +48,12 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->invalidation_.Swap(&pile_invalidation_);
   layer_impl->pile_ = PicturePileImpl::CreateFromOther(pile_.get());
   layer_impl->SyncFromActiveLayer();
+
+  // PictureLayer must push properties every frame.
+  // TODO(danakj): If we can avoid requiring to do CreateTilingSetIfNeeded() and
+  // SyncFromActiveLayer() on every commit then this could go away, maybe
+  // conditionally. crbug.com/259402
+  needs_push_properties_ = true;
 }
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {

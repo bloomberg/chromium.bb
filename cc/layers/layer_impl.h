@@ -437,6 +437,10 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   scoped_ptr<base::Value> AsValue() const;
   virtual size_t GPUMemoryUsageInBytes() const;
 
+  // TODO(danakj): Be true only if needed. crbug.com/259511
+  bool needs_push_properties() const { return true; }
+  bool descendant_needs_push_properties() const { return true; }
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);
 

@@ -110,6 +110,7 @@ class TiledLayerTest : public testing::Test {
     DebugScopedSetImplThreadAndMainThreadBlocked
     impl_thread_and_main_thread_blocked(proxy_);
     layer->PushPropertiesTo(layer_impl);
+    layer->ResetNumDependentsNeedPushProperties();
   }
 
   void LayerUpdate(FakeTiledLayer* layer, TestOcclusionTracker* occluded) {
@@ -1646,9 +1647,9 @@ TEST_F(TiledLayerTest, DontAllocateContentsWhenTargetSurfaceCantBeAllocated) {
         new FakeTiledLayerImpl(host_impl_->active_tree(), child->id()));
     scoped_ptr<FakeTiledLayerImpl> child2_impl = make_scoped_ptr(
         new FakeTiledLayerImpl(host_impl_->active_tree(), child2->id()));
-    LayerPushPropertiesTo(root.get(), root_impl.get());
-    LayerPushPropertiesTo(child.get(), child_impl.get());
     LayerPushPropertiesTo(child2.get(), child2_impl.get());
+    LayerPushPropertiesTo(child.get(), child_impl.get());
+    LayerPushPropertiesTo(root.get(), root_impl.get());
 
     for (unsigned i = 0; i < 3; ++i) {
       for (unsigned j = 0; j < 2; ++j)
@@ -1685,9 +1686,9 @@ TEST_F(TiledLayerTest, DontAllocateContentsWhenTargetSurfaceCantBeAllocated) {
         new FakeTiledLayerImpl(host_impl_->active_tree(), child->id()));
     scoped_ptr<FakeTiledLayerImpl> child2_impl = make_scoped_ptr(
         new FakeTiledLayerImpl(host_impl_->active_tree(), child2->id()));
-    LayerPushPropertiesTo(root.get(), root_impl.get());
-    LayerPushPropertiesTo(child.get(), child_impl.get());
     LayerPushPropertiesTo(child2.get(), child2_impl.get());
+    LayerPushPropertiesTo(child.get(), child_impl.get());
+    LayerPushPropertiesTo(root.get(), root_impl.get());
 
     for (unsigned i = 0; i < 3; ++i) {
       for (unsigned j = 0; j < 2; ++j)
@@ -1723,9 +1724,9 @@ TEST_F(TiledLayerTest, DontAllocateContentsWhenTargetSurfaceCantBeAllocated) {
         new FakeTiledLayerImpl(host_impl_->active_tree(), child->id()));
     scoped_ptr<FakeTiledLayerImpl> child2_impl = make_scoped_ptr(
         new FakeTiledLayerImpl(host_impl_->active_tree(), child2->id()));
-    LayerPushPropertiesTo(root.get(), root_impl.get());
-    LayerPushPropertiesTo(child.get(), child_impl.get());
     LayerPushPropertiesTo(child2.get(), child2_impl.get());
+    LayerPushPropertiesTo(child.get(), child_impl.get());
+    LayerPushPropertiesTo(root.get(), root_impl.get());
 
     for (unsigned i = 0; i < 3; ++i) {
       for (unsigned j = 0; j < 2; ++j)

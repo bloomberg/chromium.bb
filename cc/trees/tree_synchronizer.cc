@@ -183,33 +183,80 @@ void UpdateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap* new_layers,
       new_layers, layer);
 }
 
+// static
+void TreeSynchronizer::SetNumDependentsNeedPushProperties(
+    Layer* layer, size_t num) {
+  layer->num_dependents_need_push_properties_ = num;
+}
+
+// static
+void TreeSynchronizer::SetNumDependentsNeedPushProperties(
+    LayerImpl* layer, size_t num) {
+}
+
+// static
 template <typename LayerType>
-void PushPropertiesInternal(LayerType* layer, LayerImpl* layer_impl) {
+void TreeSynchronizer::PushPropertiesInternal(
+    LayerType* layer,
+    LayerImpl* layer_impl,
+    size_t* num_dependents_need_push_properties_for_parent) {
   if (!layer) {
     DCHECK(!layer_impl);
     return;
   }
 
   DCHECK_EQ(layer->id(), layer_impl->id());
-  layer->PushPropertiesTo(layer_impl);
 
-  PushPropertiesInternal(layer->mask_layer(), layer_impl->mask_layer());
-  PushPropertiesInternal(layer->replica_layer(), layer_impl->replica_layer());
+  bool push_layer = layer->needs_push_properties();
+  bool recurse_on_children_and_dependents =
+      layer->descendant_needs_push_properties();
 
-  const OwnedLayerImplList& impl_children = layer_impl->children();
-  DCHECK_EQ(layer->children().size(), impl_children.size());
+  if (push_layer)
+    layer->PushPropertiesTo(layer_impl);
 
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    PushPropertiesInternal(layer->child_at(i), impl_children[i]);
+  size_t num_dependents_need_push_properties = 0;
+  if (recurse_on_children_and_dependents) {
+    PushPropertiesInternal(layer->mask_layer(),
+                           layer_impl->mask_layer(),
+                           &num_dependents_need_push_properties);
+    PushPropertiesInternal(layer->replica_layer(),
+                           layer_impl->replica_layer(),
+                           &num_dependents_need_push_properties);
+
+    const OwnedLayerImplList& impl_children = layer_impl->children();
+    DCHECK_EQ(layer->children().size(), impl_children.size());
+
+    for (size_t i = 0; i < layer->children().size(); ++i) {
+      PushPropertiesInternal(layer->child_at(i),
+                             impl_children[i],
+                             &num_dependents_need_push_properties);
+    }
+
+    // When PushPropertiesTo completes for a layer, it may still keep
+    // its needs_push_properties() state if the layer must push itself
+    // every PushProperties tree walk. Here we keep track of those layers, and
+    // ensure that their ancestors know about them for the next PushProperties
+    // tree walk.
+    SetNumDependentsNeedPushProperties(
+        layer, num_dependents_need_push_properties);
   }
+
+  bool add_self_to_parent = num_dependents_need_push_properties > 0 ||
+                            layer->needs_push_properties();
+  *num_dependents_need_push_properties_for_parent += add_self_to_parent ? 1 : 0;
 }
 
-void TreeSynchronizer::PushProperties(Layer* layer, LayerImpl* layer_impl) {
-  PushPropertiesInternal(layer, layer_impl);
+void TreeSynchronizer::PushProperties(Layer* layer,
+                                      LayerImpl* layer_impl) {
+  size_t num_dependents_need_push_properties = 0;
+  PushPropertiesInternal(
+      layer, layer_impl, &num_dependents_need_push_properties);
 }
 
 void TreeSynchronizer::PushProperties(LayerImpl* layer, LayerImpl* layer_impl) {
-  PushPropertiesInternal(layer, layer_impl);
+  size_t num_dependents_need_push_properties = 0;
+  PushPropertiesInternal(
+      layer, layer_impl, &num_dependents_need_push_properties);
 }
 
 }  // namespace cc

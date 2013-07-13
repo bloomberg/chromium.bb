@@ -123,6 +123,26 @@ void FakeTiledLayer::UpdateContentsScale(float ideal_contents_scale) {
                          &draw_properties().content_bounds);
 }
 
+void FakeTiledLayer::ResetNumDependentsNeedPushProperties() {
+  size_t num = 0;
+  if (mask_layer()) {
+    if (mask_layer()->needs_push_properties() ||
+        mask_layer()->descendant_needs_push_properties())
+      ++num;
+  }
+  if (replica_layer()) {
+    if (replica_layer()->needs_push_properties() ||
+        replica_layer()->descendant_needs_push_properties())
+      ++num;
+  }
+  for (size_t i = 0; i < children().size(); ++i) {
+    if (children()[i]->needs_push_properties() ||
+        children()[i]->descendant_needs_push_properties())
+      ++num;
+  }
+  num_dependents_need_push_properties_ = num;
+}
+
 LayerUpdater* FakeTiledLayer::Updater() const {
   return fake_updater_.get();
 }

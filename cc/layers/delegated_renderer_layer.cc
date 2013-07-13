@@ -60,6 +60,11 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
 
   if (client_)
     client_->DidCommitFrameData();
+
+  // TODO(danakj): TakeUnusedResourcesForChildCompositor requires a push
+  // properties to happen in order to push up newly unused resources returned
+  // from the parent compositor. crbug.com/259090
+  needs_push_properties_ = true;
 }
 
 void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {

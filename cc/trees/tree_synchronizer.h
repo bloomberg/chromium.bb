@@ -32,11 +32,21 @@ class CC_EXPORT TreeSynchronizer {
 
   // Pushes properties from a Layer or LayerImpl tree to a structurally
   // equivalent LayerImpl tree.
-  static void PushProperties(Layer* layer_root, LayerImpl* layer_impl_root);
+  static void PushProperties(Layer* layer_root,
+                             LayerImpl* layer_impl_root);
   static void PushProperties(LayerImpl* layer_root, LayerImpl* layer_impl_root);
 
  private:
   TreeSynchronizer();  // Not instantiable.
+
+  static void SetNumDependentsNeedPushProperties(Layer* layer, size_t num);
+  static void SetNumDependentsNeedPushProperties(LayerImpl* layer, size_t num);
+
+  template <typename LayerType>
+  static void PushPropertiesInternal(
+      LayerType* layer,
+      LayerImpl* layer_impl,
+      size_t* num_dependents_need_push_properties_for_parent);
 
   DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };

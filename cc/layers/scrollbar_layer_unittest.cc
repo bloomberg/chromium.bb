@@ -12,6 +12,7 @@
 #include "cc/resources/priority_calculator.h"
 #include "cc/resources/resource_update_queue.h"
 #include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_scrollbar.h"
@@ -28,8 +29,8 @@
 namespace cc {
 namespace {
 
-scoped_ptr<LayerImpl> LayerImplForScrollAreaAndScrollbar(
-    FakeLayerTreeHostImpl* host_impl,
+LayerImpl* LayerImplForScrollAreaAndScrollbar(
+    FakeLayerTreeHost* host,
     scoped_ptr<Scrollbar> scrollbar,
     bool reverse_order) {
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
@@ -39,53 +40,43 @@ scoped_ptr<LayerImpl> LayerImplForScrollAreaAndScrollbar(
                              child1->id());
   layer_tree_root->AddChild(child1);
   layer_tree_root->InsertChild(child2, reverse_order ? 0 : 1);
-  scoped_ptr<LayerImpl> layer_impl =
-      TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                         scoped_ptr<LayerImpl>(),
-                                         host_impl->active_tree());
-  TreeSynchronizer::PushProperties(layer_tree_root.get(), layer_impl.get());
-  return layer_impl.Pass();
+  host->SetRootLayer(layer_tree_root);
+  return host->CommitAndCreateLayerImplTree();
 }
 
 TEST(ScrollbarLayerTest, ResolveScrollLayerPointer) {
-  FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
+  LayerImpl* layer_impl_tree_root =
+      LayerImplForScrollAreaAndScrollbar(host.get(), scrollbar.Pass(), false);
 
-  {
-    scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
-    scoped_ptr<LayerImpl> layer_impl_tree_root =
-        LayerImplForScrollAreaAndScrollbar(
-            &host_impl, scrollbar.Pass(), false);
+  LayerImpl* cc_child1 = layer_impl_tree_root->children()[0];
+  ScrollbarLayerImpl* cc_child2 = static_cast<ScrollbarLayerImpl*>(
+      layer_impl_tree_root->children()[1]);
 
-    LayerImpl* cc_child1 = layer_impl_tree_root->children()[0];
-    ScrollbarLayerImpl* cc_child2 = static_cast<ScrollbarLayerImpl*>(
-        layer_impl_tree_root->children()[1]);
+  EXPECT_EQ(cc_child1->horizontal_scrollbar_layer(), cc_child2);
+}
 
-    EXPECT_EQ(cc_child1->horizontal_scrollbar_layer(), cc_child2);
-  }
-  {
-    // another traverse order
-    scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
-    scoped_ptr<LayerImpl> layer_impl_tree_root =
-        LayerImplForScrollAreaAndScrollbar(
-            &host_impl, scrollbar.Pass(), true);
+TEST(ScrollbarLayerTest, ResolveScrollLayerPointer_ReverseOrder) {
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
+  LayerImpl* layer_impl_tree_root =
+      LayerImplForScrollAreaAndScrollbar(host.get(), scrollbar.Pass(), true);
 
-    ScrollbarLayerImpl* cc_child1 = static_cast<ScrollbarLayerImpl*>(
-        layer_impl_tree_root->children()[0]);
-    LayerImpl* cc_child2 = layer_impl_tree_root->children()[1];
+  ScrollbarLayerImpl* cc_child1 = static_cast<ScrollbarLayerImpl*>(
+      layer_impl_tree_root->children()[0]);
+  LayerImpl* cc_child2 = layer_impl_tree_root->children()[1];
 
-    EXPECT_EQ(cc_child2->horizontal_scrollbar_layer(), cc_child1);
-  }
+  EXPECT_EQ(cc_child2->horizontal_scrollbar_layer(), cc_child1);
 }
 
 TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
-  FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
 
   // Create and attach a non-overlay scrollbar.
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
-  scoped_ptr<LayerImpl> layer_impl_tree_root =
-      LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
+  LayerImpl* layer_impl_tree_root =
+      LayerImplForScrollAreaAndScrollbar(host.get(), scrollbar.Pass(), false);
   ScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
 
@@ -100,7 +91,7 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   scrollbar.reset(new FakeScrollbar(false, false, true));
 
   layer_impl_tree_root =
-      LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
+      LayerImplForScrollAreaAndScrollbar(host.get(), scrollbar.Pass(), false);
   scrollbar_layer_impl =
       static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
 
@@ -112,8 +103,7 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
 }
 
 TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
-  FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
 
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
@@ -131,12 +121,9 @@ TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   content_layer->SetBounds(gfx::Size(100, 200));
   content_layer->SavePaintProperties();
 
-  scoped_ptr<LayerImpl> layer_impl_tree_root =
-      TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                         scoped_ptr<LayerImpl>(),
-                                         host_impl.active_tree());
-  TreeSynchronizer::PushProperties(layer_tree_root.get(),
-                                   layer_impl_tree_root.get());
+  host->SetRootLayer(layer_tree_root);
+
+  LayerImpl* layer_impl_tree_root = host->CommitAndCreateLayerImplTree();
 
   ScrollbarLayerImpl* cc_scrollbar_layer =
       static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
@@ -153,12 +140,7 @@ TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
 
   ScrollbarAnimationController* scrollbar_controller =
       layer_impl_tree_root->scrollbar_animation_controller();
-  layer_impl_tree_root =
-      TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                         layer_impl_tree_root.Pass(),
-                                         host_impl.active_tree());
-  TreeSynchronizer::PushProperties(layer_tree_root.get(),
-                                   layer_impl_tree_root.get());
+  layer_impl_tree_root = host->CommitAndCreateLayerImplTree();
   EXPECT_EQ(scrollbar_controller,
             layer_impl_tree_root->scrollbar_animation_controller());
 
@@ -175,12 +157,12 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   LayerTreeSettings layer_tree_settings;
   layer_tree_settings.solid_color_scrollbars = true;
   layer_tree_settings.solid_color_scrollbar_thickness_dip = 3;
-  FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(layer_tree_settings, &proxy);
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(layer_tree_settings);
 
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
-  scoped_ptr<LayerImpl> layer_impl_tree_root =
-      LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
+  LayerImpl* layer_impl_tree_root =
+      LayerImplForScrollAreaAndScrollbar(host.get(), scrollbar.Pass(), false);
   ScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
   scrollbar_layer_impl->set_thumb_thickness(3);
@@ -236,12 +218,12 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   LayerTreeSettings layer_tree_settings;
   layer_tree_settings.solid_color_scrollbars = true;
   layer_tree_settings.solid_color_scrollbar_thickness_dip = 3;
-  FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(layer_tree_settings, &proxy);
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(layer_tree_settings);
 
   scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
-  scoped_ptr<LayerImpl> layer_impl_tree_root =
-      LayerImplForScrollAreaAndScrollbar(&host_impl, scrollbar.Pass(), false);
+  LayerImpl* layer_impl_tree_root =
+      LayerImplForScrollAreaAndScrollbar(host.get(), scrollbar.Pass(), false);
   ScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
 

@@ -11,7 +11,8 @@ namespace cc {
 
 FakeContentLayer::FakeContentLayer(ContentLayerClient* client)
     : ContentLayer(client),
-      update_count_(0) {
+      update_count_(0),
+      push_properties_count_(0) {
   SetAnchorPoint(gfx::PointF(0.f, 0.f));
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
@@ -29,6 +30,11 @@ bool FakeContentLayer::Update(ResourceUpdateQueue* queue,
   bool updated = ContentLayer::Update(queue, occlusion);
   update_count_++;
   return updated;
+}
+
+void FakeContentLayer::PushPropertiesTo(LayerImpl* layer) {
+  ContentLayer::PushPropertiesTo(layer);
+  push_properties_count_++;
 }
 
 bool FakeContentLayer::HaveBackingAt(int i, int j) {

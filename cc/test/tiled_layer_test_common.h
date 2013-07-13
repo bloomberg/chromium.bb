@@ -119,6 +119,8 @@ class FakeTiledLayer : public TiledLayer {
   // Simulate CalcDrawProperties.
   void UpdateContentsScale(float ideal_contents_scale);
 
+  void ResetNumDependentsNeedPushProperties();
+
  protected:
   virtual LayerUpdater* Updater() const OVERRIDE;
   virtual void CreateUpdaterIfNeeded() OVERRIDE {}

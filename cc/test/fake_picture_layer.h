@@ -23,15 +23,21 @@ class FakePictureLayer : public PictureLayer {
   size_t update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
+  size_t push_properties_count() const { return push_properties_count_; }
+  void reset_push_properties_count() { push_properties_count_ = 0; }
+
   virtual bool Update(
       ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion) OVERRIDE;
+
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
  private:
   explicit FakePictureLayer(ContentLayerClient* client);
   virtual ~FakePictureLayer();
 
   size_t update_count_;
+  size_t push_properties_count_;
 };
 
 }  // namespace cc

@@ -151,6 +151,39 @@ TEST_F(LayerTreeHostPerfTestJsonReader,
   RunTest(false, false, false);
 }
 
+// Invalidates a leaf layer in the tree on the main thread after every commit.
+class LayerTreeHostPerfTestLeafInvalidates
+    : public LayerTreeHostPerfTestJsonReader {
+ public:
+  virtual void BuildTree() OVERRIDE {
+    LayerTreeHostPerfTestJsonReader::BuildTree();
+
+    // Find a leaf layer.
+    for (layer_to_invalidate_ = layer_tree_host()->root_layer();
+         layer_to_invalidate_->children().size();
+         layer_to_invalidate_ = layer_to_invalidate_->children()[0]) {}
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    if (TestEnded())
+      return;
+
+    static bool flip = true;
+    layer_to_invalidate_->SetOpacity(flip ? 1.f : 0.5f);
+    flip = !flip;
+  }
+
+ protected:
+  Layer* layer_to_invalidate_;
+};
+
+// Simulates a tab switcher scene with two stacks of 10 tabs each. Invalidate a
+// property on a leaf layer in the tree every commit.
+TEST_F(LayerTreeHostPerfTestLeafInvalidates, TenTenSingleThread) {
+  ReadTestFile("10_10_layer_tree");
+  RunTest(false, false, false);
+}
+
 // Simulates main-thread scrolling on each frame.
 class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
  public:

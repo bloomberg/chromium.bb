@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_scrollbar_layer.h"
 
+#include "base/auto_reset.h"
 #include "cc/resources/resource_update_queue.h"
 #include "cc/test/fake_scrollbar.h"
 
@@ -17,6 +18,7 @@ FakeScrollbarLayer::FakeScrollbarLayer(bool paint_during_update,
               new FakeScrollbar(paint_during_update, has_thumb, false)).Pass(),
           scrolling_layer_id),
       update_count_(0),
+      push_properties_count_(0),
       last_update_full_upload_size_(0),
       last_update_partial_upload_size_(0) {
   SetAnchorPoint(gfx::PointF(0.f, 0.f));
@@ -35,6 +37,16 @@ bool FakeScrollbarLayer::Update(ResourceUpdateQueue* queue,
   last_update_full_upload_size_ = queue->FullUploadSize() - full;
   last_update_partial_upload_size_ = queue->PartialUploadSize() - partial;
   return updated;
+}
+
+void FakeScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
+  ScrollbarLayer::PushPropertiesTo(layer);
+  ++push_properties_count_;
+}
+
+scoped_ptr<base::AutoReset<bool> > FakeScrollbarLayer::IgnoreSetNeedsCommit() {
+  return make_scoped_ptr(
+      new base::AutoReset<bool>(&ignore_set_needs_commit_, true));
 }
 
 }  // namespace cc
