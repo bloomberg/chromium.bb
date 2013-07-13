@@ -41,10 +41,6 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(
       vertical_adjust_(0.f),
       visible_to_total_length_ratio_(1.f),
       scroll_layer_id_(Layer::INVALID_ID),
-      is_scrollable_area_active_(false),
-      is_scroll_view_scrollbar_(false),
-      enabled_(false),
-      is_custom_scrollbar_(false),
       is_overlay_scrollbar_(false) {}
 
 ScrollbarLayerImpl::~ScrollbarLayerImpl() {}
@@ -69,6 +65,7 @@ void ScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_thumb_length(thumb_length_);
   scrollbar_layer->set_track_start(track_start_);
   scrollbar_layer->set_track_length(track_length_);
+  scrollbar_layer->set_is_overlay_scrollbar(is_overlay_scrollbar_);
 
   scrollbar_layer->set_track_resource_id(track_resource_id_);
   scrollbar_layer->set_thumb_resource_id(thumb_resource_id_);

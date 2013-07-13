@@ -45,6 +45,7 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
   void set_thumb_thickness(int thumb_thickness) {
     thumb_thickness_ = thumb_thickness;
   }
+  int thumb_thickness() const { return thumb_thickness_; }
   void set_thumb_length(int thumb_length) {
     thumb_length_ = thumb_length;
   }
@@ -66,6 +67,10 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
   void set_visible_to_total_length_ratio(float ratio) {
     visible_to_total_length_ratio_ = ratio;
   }
+  void set_is_overlay_scrollbar(bool is_overlay_scrollbar) {
+    is_overlay_scrollbar_ = is_overlay_scrollbar;
+  }
+  bool is_overlay_scrollbar() const { return is_overlay_scrollbar_; }
 
   void SetCurrentPos(float current_pos) { current_pos_ = current_pos; }
   void SetMaximum(int maximum) { maximum_ = maximum; }
@@ -101,10 +106,6 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
 
   int scroll_layer_id_;
 
-  bool is_scrollable_area_active_;
-  bool is_scroll_view_scrollbar_;
-  bool enabled_;
-  bool is_custom_scrollbar_;
   bool is_overlay_scrollbar_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerImpl);

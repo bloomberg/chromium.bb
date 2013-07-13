@@ -1291,13 +1291,6 @@ gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
   gfx::SizeF dip_size =
       gfx::ScaleSize(device_viewport_size(), 1.f / device_scale_factor());
 
-  // The clip layer should be used if non-overlay scrollbars may exist since
-  // it adjusts for them.
-  LayerImpl* clip_layer = active_tree_->RootClipLayer();
-  if (!Settings().solid_color_scrollbars && clip_layer &&
-      clip_layer->masks_to_bounds())
-    dip_size = clip_layer->bounds();
-
   float top_offset =
       top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
   return gfx::SizeF(dip_size.width(),

@@ -137,6 +137,8 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
     scrollbar_layer->set_thumb_resource_id(thumb_->texture()->resource_id());
   else
     scrollbar_layer->set_thumb_resource_id(0);
+
+  scrollbar_layer->set_is_overlay_scrollbar(scrollbar_->IsOverlay());
 }
 
 ScrollbarLayer* ScrollbarLayer::ToScrollbarLayer() {
