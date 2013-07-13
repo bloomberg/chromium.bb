@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "content/browser/device_orientation/device_motion_provider.h"
+
+#include "base/logging.h"
+#include "content/browser/device_orientation/data_fetcher_shared_memory.h"
 #include "content/common/device_motion_hardware_buffer.h"
 
 namespace content {
@@ -31,13 +33,15 @@ base::SharedMemoryHandle DeviceMotionProvider::GetSharedMemoryHandleForProcess(
 void DeviceMotionProvider::StartFetchingDeviceMotionData() {
   if (is_started_)
     return;
-  // TODO(timvolodine): call data_fetcher_->StartFetchingDeviceMotionData(
-  // SharedMemoryAsHardwareBuffer());
+  if (!data_fetcher_)
+    data_fetcher_.reset(new DataFetcherSharedMemory);
+  data_fetcher_->StartFetchingDeviceMotionData(SharedMemoryAsHardwareBuffer());
   is_started_ = true;
 }
 
 void DeviceMotionProvider::StopFetchingDeviceMotionData() {
-  // TODO(timvolodine): call data_fetcher_->StopFetchingDeviceMotionData();
+  if (data_fetcher_)
+    data_fetcher_->StopFetchingDeviceMotionData();
   is_started_ = false;
 }
 

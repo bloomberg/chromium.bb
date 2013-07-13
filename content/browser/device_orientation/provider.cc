@@ -12,7 +12,7 @@
 #if defined(OS_MACOSX)
 #include "content/browser/device_orientation/accelerometer_mac.h"
 #elif defined(OS_ANDROID)
-#include "content/browser/device_orientation/data_fetcher_impl_android.h"
+#include "content/browser/device_orientation/data_fetcher_orientation_android.h"
 #elif defined(OS_WIN)
 #include "content/browser/device_orientation/data_fetcher_impl_win.h"
 #endif
@@ -27,7 +27,7 @@ Provider* Provider::GetInstance() {
 #if defined(OS_MACOSX)
     default_factory = AccelerometerMac::Create;
 #elif defined(OS_ANDROID)
-    default_factory = DataFetcherImplAndroid::Create;
+    default_factory = DataFetcherOrientationAndroid::Create;
 #elif defined(OS_WIN)
     default_factory = DataFetcherImplWin::Create;
 #endif

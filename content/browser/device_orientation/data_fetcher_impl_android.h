@@ -8,11 +8,13 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/device_data.h"
+#include "content/common/content_export.h"
+#include "content/common/device_motion_hardware_buffer.h"
+
+template<typename T> struct DefaultSingletonTraits;
 
 namespace content {
-
 class Orientation;
 
 // Android implementation of DeviceOrientation API.
@@ -23,16 +25,16 @@ class Orientation;
 // previous value if any). Chrome calls GetDeviceData() which reads the most
 // recent value. Repeated calls to GetDeviceData() will return the same value.
 
-class DataFetcherImplAndroid : public DataFetcher {
+// TODO(timvolodine): Simplify this class and remove GetDeviceData() method,
+// once Device Orientation switches to shared memory implementation.
+// Also rename this class to SensorManagerAndroid.
+class CONTENT_EXPORT DataFetcherImplAndroid {
  public:
-  // Must be called at startup, before Create().
+  // Must be called at startup, before GetInstance().
   static void Init(JNIEnv* env);
 
-  // Factory function. We'll listen for events for the lifetime of this object.
-  // Returns NULL on error.
-  static DataFetcher* Create();
-
-  virtual ~DataFetcherImplAndroid();
+  // Needs to be thread-safe, because accessed from different threads.
+  static DataFetcherImplAndroid* GetInstance();
 
   // Called from Java via JNI.
   void GotOrientation(JNIEnv*, jobject,
@@ -44,21 +46,36 @@ class DataFetcherImplAndroid : public DataFetcher {
   void GotRotationRate(JNIEnv*, jobject,
                        double alpha, double beta, double gamma);
 
-  // Implementation of DataFetcher.
-  virtual const DeviceData* GetDeviceData(DeviceData::Type type) OVERRIDE;
+  const DeviceData* GetDeviceData(DeviceData::Type type);
 
- private:
+  virtual bool Start(DeviceData::Type event_type);
+  virtual void Stop(DeviceData::Type event_type);
+
+  // Shared memory related methods.
+  bool StartFetchingDeviceMotionData(DeviceMotionHardwareBuffer* buffer);
+  void StopFetchingDeviceMotionData();
+
+ protected:
   DataFetcherImplAndroid();
-  const Orientation* GetOrientation();
-
-  // Wrappers for JNI methods.
-  // TODO(timvolodine): move the DeviceData::Type enum to the service class
-  // once it is implemented.
-  bool Start(DeviceData::Type event_type, int rate_in_milliseconds);
-  void Stop(DeviceData::Type event_type);
+  virtual ~DataFetcherImplAndroid();
 
   virtual int GetNumberActiveDeviceMotionSensors();
 
+ private:
+  friend struct DefaultSingletonTraits<DataFetcherImplAndroid>;
+
+  const Orientation* GetOrientation();
+
+  void CheckBufferReadyToRead();
+  void SetBufferReadyStatus(bool ready);
+  void ClearInternalBuffers();
+
+  enum {
+    RECEIVED_MOTION_DATA_ACCELERATION = 0,
+    RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY = 1,
+    RECEIVED_MOTION_DATA_ROTATION_RATE = 2,
+    RECEIVED_MOTION_DATA_MAX = 3,
+  };
   // Value returned by GetDeviceData.
   scoped_refptr<Orientation> current_orientation_;
 
@@ -68,6 +85,10 @@ class DataFetcherImplAndroid : public DataFetcher {
 
   // The Java provider of orientation info.
   base::android::ScopedJavaGlobalRef<jobject> device_orientation_;
+  int number_active_device_motion_sensors_;
+  int received_motion_data_[RECEIVED_MOTION_DATA_MAX];
+  DeviceMotionHardwareBuffer* device_motion_buffer_;
+  bool is_buffer_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherImplAndroid);
 };

@@ -11,8 +11,7 @@
 #include "content/common/device_motion_hardware_buffer.h"
 
 namespace content {
-
-// TODO(timvolodine): Add data fetcher to this class.
+class DataFetcherSharedMemory;
 
 class CONTENT_EXPORT DeviceMotionProvider {
  public:
@@ -34,8 +33,7 @@ class CONTENT_EXPORT DeviceMotionProvider {
 
   DeviceMotionHardwareBuffer* SharedMemoryAsHardwareBuffer();
 
-  // TODO(timvolodine): add member variable,
-  // scoped_ptr<DataFetcherSharedMemory> data_fetcher_;
+  scoped_ptr<DataFetcherSharedMemory> data_fetcher_;
 
   bool is_started_;
 
