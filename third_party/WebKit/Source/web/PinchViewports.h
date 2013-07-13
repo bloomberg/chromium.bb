@@ -59,7 +59,7 @@ public:
     void setOverflowControlsHostLayer(WebCore::GraphicsLayer*);
     WebCore::GraphicsLayer* rootGraphicsLayer()
     {
-        return m_innerViewportClipLayer.get();
+        return m_innerViewportContainerLayer.get();
     }
     void setViewportSize(const WebCore::IntSize&);
 
@@ -76,7 +76,7 @@ private:
     void setupScrollbar(WebKit::WebScrollbar::Orientation);
 
     WebViewImpl* m_owner;
-    OwnPtr<WebCore::GraphicsLayer> m_innerViewportClipLayer;
+    OwnPtr<WebCore::GraphicsLayer> m_innerViewportContainerLayer;
     OwnPtr<WebCore::GraphicsLayer> m_pageScaleLayer;
     OwnPtr<WebCore::GraphicsLayer> m_innerViewportScrollLayer;
     OwnPtr<WebCore::GraphicsLayer> m_overlayScrollbarHorizontal;

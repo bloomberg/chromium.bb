@@ -330,8 +330,8 @@ private:
     
     RootLayerAttachment m_rootLayerAttachment;
 
-    // Enclosing clipping layer for iframe content
-    OwnPtr<GraphicsLayer> m_clipLayer;
+    // Enclosing container layer, which clips for iframe content
+    OwnPtr<GraphicsLayer> m_containerLayer;
     OwnPtr<GraphicsLayer> m_scrollLayer;
 
     HashSet<RenderLayer*> m_viewportConstrainedLayers;

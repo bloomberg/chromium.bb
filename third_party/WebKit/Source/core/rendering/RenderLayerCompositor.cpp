@@ -305,7 +305,7 @@ void RenderLayerCompositor::didChangeVisibleRect()
     if (!frameView)
         return;
 
-    IntRect visibleRect = m_clipLayer ? IntRect(IntPoint(), frameView->contentsSize()) : frameView->visibleContentRect();
+    IntRect visibleRect = m_containerLayer ? IntRect(IntPoint(), frameView->contentsSize()) : frameView->visibleContentRect();
     if (rootLayer->visibleRectChangeRequiresFlush(visibleRect)) {
         if (Page* page = this->page())
             page->chrome().client()->scheduleCompositingLayerFlush();
@@ -1132,9 +1132,9 @@ void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsO
 
 void RenderLayerCompositor::frameViewDidChangeSize()
 {
-    if (m_clipLayer) {
+    if (m_containerLayer) {
         FrameView* frameView = m_renderView->frameView();
-        m_clipLayer->setSize(frameView->unscaledVisibleContentSize());
+        m_containerLayer->setSize(frameView->unscaledVisibleContentSize());
 
         frameViewDidScroll();
         updateOverflowControlsLayers();
@@ -1194,7 +1194,7 @@ void RenderLayerCompositor::rootFixedBackgroundsChanged()
     // the frame scroll layer. The compositor does not own the background layer, it
     // just positions it (like the foreground layer).
     if (GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer())
-        m_clipLayer->addChildBelow(backgroundLayer, m_scrollLayer.get());
+        m_containerLayer->addChildBelow(backgroundLayer, m_scrollLayer.get());
 }
 
 bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
@@ -1491,9 +1491,9 @@ void RenderLayerCompositor::updateRootLayerPosition()
         m_rootContentLayer->setSize(documentRect.size());
         m_rootContentLayer->setPosition(documentRect.location());
     }
-    if (m_clipLayer) {
+    if (m_containerLayer) {
         FrameView* frameView = m_renderView->frameView();
-        m_clipLayer->setSize(frameView->unscaledVisibleContentSize());
+        m_containerLayer->setSize(frameView->unscaledVisibleContentSize());
     }
 
 #if ENABLE(RUBBER_BANDING)
@@ -2279,7 +2279,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
 
             // We want the overhang areas layer to be positioned below the frame contents,
             // so insert it below the clip layer.
-            m_overflowControlsHostLayer->addChildBelow(m_layerForOverhangAreas.get(), m_clipLayer.get());
+            m_overflowControlsHostLayer->addChildBelow(m_layerForOverhangAreas.get(), m_containerLayer.get());
         }
     } else if (m_layerForOverhangAreas) {
         m_layerForOverhangAreas->removeFromParent();
@@ -2379,7 +2379,7 @@ void RenderLayerCompositor::ensureRootLayer()
 
     if (!m_overflowControlsHostLayer) {
         ASSERT(!m_scrollLayer);
-        ASSERT(!m_clipLayer);
+        ASSERT(!m_containerLayer);
 
         // Create a layer to host the clipping layer and the overflow controls layers.
         m_overflowControlsHostLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
@@ -2388,11 +2388,12 @@ void RenderLayerCompositor::ensureRootLayer()
 #endif
 
         // Create a clipping layer if this is an iframe
-        m_clipLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        m_containerLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
 #ifndef NDEBUG
-        m_clipLayer->setName("frame clipping");
+        m_containerLayer->setName("frame clipping");
 #endif
-        m_clipLayer->setMasksToBounds(true);
+        if (!isMainFrame())
+            m_containerLayer->setMasksToBounds(true);
 
         m_scrollLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
 #ifndef NDEBUG
@@ -2402,8 +2403,8 @@ void RenderLayerCompositor::ensureRootLayer()
             scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(m_scrollLayer.get(), true);
 
         // Hook them up
-        m_overflowControlsHostLayer->addChild(m_clipLayer.get());
-        m_clipLayer->addChild(m_scrollLayer.get());
+        m_overflowControlsHostLayer->addChild(m_containerLayer.get());
+        m_containerLayer->addChild(m_scrollLayer.get());
         m_scrollLayer->addChild(m_rootContentLayer.get());
 
         frameViewDidChangeSize();
@@ -2456,7 +2457,7 @@ void RenderLayerCompositor::destroyRootLayer()
 
     if (m_overflowControlsHostLayer) {
         m_overflowControlsHostLayer = nullptr;
-        m_clipLayer = nullptr;
+        m_containerLayer = nullptr;
         m_scrollLayer = nullptr;
     }
     ASSERT(!m_scrollLayer);
@@ -2728,7 +2729,7 @@ void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
     info.addWeakPointer(m_renderView);
     info.addMember(m_rootContentLayer, "rootContentLayer");
-    info.addMember(m_clipLayer, "clipLayer");
+    info.addMember(m_containerLayer, "containerLayer");
     info.addMember(m_scrollLayer, "scrollLayer");
     info.addMember(m_viewportConstrainedLayers, "viewportConstrainedLayers");
     info.addMember(m_overflowControlsHostLayer, "overflowControlsHostLayer");

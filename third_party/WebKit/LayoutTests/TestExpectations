@@ -81,7 +81,6 @@ crbug.com/257132 http/tests/inspector/resource-har-conversion.html [ Failure Pas
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
 
 # Chromium r163873 slowed down these tests
-webkit.org/b/100287 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
 webkit.org/b/66989 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Slow ]
 
 webkit.org/b/101362 [ Debug ] fast/dom/Window/customized-property-survives-gc.html [ Slow ]
@@ -1649,6 +1648,13 @@ crbug.com/245558 [ MountainLion ] fast/forms/ValidityState-patternMismatch.html 
 crbug.com/245566 [ Linux Win Debug ] editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 crbug.com/247575 fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
+
+# Rebaseline after https://codereview.chromium.org/19019004/
+Bug(aelias) compositing/culling/filter-occlusion-blur-large.html [ Slow NeedsManualRebaseline ]
+Bug(aelias) compositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
+Bug(aelias) compositing/masks/masked-ancestor.html [ NeedsRebaseline ]
+Bug(aelias) virtual/softwarecompositing/culling/filter-occlusion-blur-large.html [ NeedsRebaseline ]
+Bug(aelias) virtual/softwarecompositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]

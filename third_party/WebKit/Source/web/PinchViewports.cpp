@@ -53,29 +53,32 @@ PassOwnPtr<PinchViewports> PinchViewports::create(WebViewImpl* owner)
 
 PinchViewports::PinchViewports(WebViewImpl* owner)
     : m_owner(owner)
-    , m_innerViewportClipLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
+    , m_innerViewportContainerLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
     , m_pageScaleLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
     , m_innerViewportScrollLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
     , m_overlayScrollbarHorizontal(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
     , m_overlayScrollbarVertical(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
 {
-    m_innerViewportClipLayer->setMasksToBounds(true);
-    m_innerViewportClipLayer->platformLayer()->setIsContainerForFixedPositionLayers(true);
+    m_innerViewportContainerLayer->platformLayer()->setIsContainerForFixedPositionLayers(true);
+    // No need for the inner viewport to clip, since the compositing
+    // surface takes care of it -- and clipping here would interfere with
+    // dynamically-sized viewports on Android.
+    m_innerViewportContainerLayer->setMasksToBounds(false);
 
     m_innerViewportScrollLayer->platformLayer()->setScrollable(true);
 
 #ifndef NDEBUG
-    m_innerViewportClipLayer->setName("inner viewport clip layer");
+    m_innerViewportContainerLayer->setName("inner viewport container layer");
     m_pageScaleLayer->setName("page scale layer");
     m_innerViewportScrollLayer->setName("inner viewport scroll layer");
     m_overlayScrollbarHorizontal->setName("overlay scrollbar horizontal");
     m_overlayScrollbarVertical->setName("overlay scrollbar vertical");
 #endif
 
-    m_innerViewportClipLayer->addChild(m_pageScaleLayer.get());
+    m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
     m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
-    m_innerViewportClipLayer->addChild(m_overlayScrollbarHorizontal.get());
-    m_innerViewportClipLayer->addChild(m_overlayScrollbarVertical.get());
+    m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
+    m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());
 
     // Setup the inner viewport overlay scrollbars.
     setupScrollbar(WebScrollbar::Horizontal);
@@ -86,7 +89,7 @@ PinchViewports::~PinchViewports() { }
 
 void PinchViewports::setViewportSize(const WebCore::IntSize& newSize)
 {
-    m_innerViewportClipLayer->setSize(newSize);
+    m_innerViewportContainerLayer->setSize(newSize);
 
     // Need to re-compute sizes for the overlay scrollbars.
     setupScrollbar(WebScrollbar::Horizontal);
@@ -97,11 +100,11 @@ void PinchViewports::setViewportSize(const WebCore::IntSize& newSize)
 // the inner/outer viewport fixed-position model for pinch zoom. When finished,
 // the tree will look like this (with * denoting added layers):
 //
-// *innerViewportClipLayer (fixed pos container)
+// *innerViewportContainerLayer (fixed pos container)
 //  +- *pageScaleLayer
 //  |   +- *innerViewportScrollLayer
 //  |       +-- overflowControlsHostLayer (root layer)
-//  |           +-- outerViewportClipLayer (fixed pos container) [frame clip layer in RenderLayerCompositor]
+//  |           +-- outerViewportContainerLayer (fixed pos container) [frame container layer in RenderLayerCompositor]
 //  |           |   +-- outerViewportScrollLayer [frame scroll layer in RenderLayerCompositor]
 //  |           |       +-- content layers ...
 //  |           +-- horizontal ScrollbarLayer (non-overlay)
@@ -142,10 +145,10 @@ void PinchViewports::setupScrollbar(WebScrollbar::Orientation orientation)
 
     const int overlayScrollbarThickness = m_owner->settingsImpl()->pinchOverlayScrollbarThickness();
 
-    int xPosition = isHorizontal ? 0 : m_innerViewportClipLayer->size().width() - overlayScrollbarThickness;
-    int yPosition = isHorizontal ? m_innerViewportClipLayer->size().height() - overlayScrollbarThickness : 0;
-    int width = isHorizontal ? m_innerViewportClipLayer->size().width() - overlayScrollbarThickness : overlayScrollbarThickness;
-    int height = isHorizontal ? overlayScrollbarThickness : m_innerViewportClipLayer->size().height() - overlayScrollbarThickness;
+    int xPosition = isHorizontal ? 0 : m_innerViewportContainerLayer->size().width() - overlayScrollbarThickness;
+    int yPosition = isHorizontal ? m_innerViewportContainerLayer->size().height() - overlayScrollbarThickness : 0;
+    int width = isHorizontal ? m_innerViewportContainerLayer->size().width() - overlayScrollbarThickness : overlayScrollbarThickness;
+    int height = isHorizontal ? overlayScrollbarThickness : m_innerViewportContainerLayer->size().height() - overlayScrollbarThickness;
 
     scrollbarGraphicsLayer->setPosition(WebCore::IntPoint(xPosition, yPosition));
     scrollbarGraphicsLayer->setSize(WebCore::IntSize(width, height));
@@ -159,7 +162,7 @@ void PinchViewports::registerViewportLayersWithTreeView(WebLayerTreeView* layerT
     WebCore::RenderLayerCompositor* compositor = m_owner->compositor();
     ASSERT(compositor);
     layerTreeView->registerPinchViewportLayers(
-        m_innerViewportClipLayer->platformLayer(),
+        m_innerViewportContainerLayer->platformLayer(),
         m_pageScaleLayer->platformLayer(),
         m_innerViewportScrollLayer->platformLayer(),
         compositor->scrollLayer()->platformLayer(),
