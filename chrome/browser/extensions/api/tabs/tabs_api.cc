@@ -1238,17 +1238,15 @@ bool TabsHighlightFunction::RunImpl() {
   ui::ListSelectionModel selection;
   int active_index = -1;
 
-  if (params->highlight_info.tabs.as_array.get()) {
-    std::vector<int> tab_indices = *params->highlight_info.tabs.as_array;
-
+  if (params->highlight_info.tabs.as_integers) {
+    std::vector<int>& tab_indices = *params->highlight_info.tabs.as_integers;
     // Create a new selection model as we read the list of tab indices.
     for (size_t i = 0; i < tab_indices.size(); ++i) {
-      if (!HighlightTab(tabstrip, &selection, &active_index, tab_indices[i])) {
-          return false;
-      }
+      if (!HighlightTab(tabstrip, &selection, &active_index, tab_indices[i]))
+        return false;
     }
   } else {
-    EXTENSION_FUNCTION_VALIDATE(params->highlight_info.tabs.as_integer.get());
+    EXTENSION_FUNCTION_VALIDATE(params->highlight_info.tabs.as_integer);
     if (!HighlightTab(tabstrip,
                       &selection,
                       &active_index,
@@ -1471,17 +1469,17 @@ bool TabsMoveFunction::RunImpl() {
   int* window_id = params->move_properties.window_id.get();
   base::ListValue tab_values;
 
-  std::vector<int> tab_ids;
-  if (params->tab_ids.as_array.get()) {
-    tab_ids = *params->tab_ids.as_array;
-
+  size_t num_tabs = 0;
+  if (params->tab_ids.as_integers) {
+    std::vector<int>& tab_ids = *params->tab_ids.as_integers;
+    num_tabs = tab_ids.size();
     for (size_t i = 0; i < tab_ids.size(); ++i) {
-      if (!MoveTab(tab_ids[i], &new_index, i, &tab_values, window_id)) {
+      if (!MoveTab(tab_ids[i], &new_index, i, &tab_values, window_id))
         return false;
-      }
     }
   } else {
     EXTENSION_FUNCTION_VALIDATE(params->tab_ids.as_integer);
+    num_tabs = 1;
     if (!MoveTab(*params->tab_ids.as_integer,
                  &new_index,
                  0,
@@ -1495,7 +1493,7 @@ bool TabsMoveFunction::RunImpl() {
     return true;
 
   // Only return the results as an array if there are multiple tabs.
-  if (tab_ids.size() > 1) {
+  if (num_tabs > 1) {
     SetResult(tab_values.DeepCopy());
   } else {
     Value* value = NULL;
@@ -1653,19 +1651,16 @@ bool TabsRemoveFunction::RunImpl() {
   scoped_ptr<tabs::Remove::Params> params(tabs::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (params->tab_ids.as_array.get()) {
-    std::vector<int> tab_ids = *params->tab_ids.as_array;
-
+  if (params->tab_ids.as_integers) {
+    std::vector<int>& tab_ids = *params->tab_ids.as_integers;
     for (size_t i = 0; i < tab_ids.size(); ++i) {
-      if (!RemoveTab(tab_ids[i])) {
+      if (!RemoveTab(tab_ids[i]))
         return false;
-      }
     }
   } else {
-    EXTENSION_FUNCTION_VALIDATE(params->tab_ids.as_integer.get());
-    if (!RemoveTab(*params->tab_ids.as_integer.get())) {
+    EXTENSION_FUNCTION_VALIDATE(params->tab_ids.as_integer);
+    if (!RemoveTab(*params->tab_ids.as_integer.get()))
       return false;
-    }
   }
   return true;
 }

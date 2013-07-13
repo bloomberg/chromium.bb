@@ -21,6 +21,22 @@
             "optional": true
           }
         }
+      },
+      {
+        "id": "NestedChoice",
+        "description": "Tests when some of the choices are choices themselves",
+        "choices": [
+          {"type": "integer"},
+          {"choices": [
+            {"type": "string"},
+            {"type": "boolean"}
+          ]},
+          {"choices": [
+            {"type": "double"},
+            {"$ref": "ChoiceType"},
+            {"type": "array", "items": {"$ref": "ChoiceType"}}
+          ]}
+        ]
       }
     ],
     "functions": [

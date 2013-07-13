@@ -94,7 +94,8 @@ class ModelTest(unittest.TestCase):
       'FOOBar': 'foo_bar',
       'foo.bar': 'foo_bar',
       'foo.BAR': 'foo_bar',
-      'foo.barBAZ': 'foo_bar_baz'
+      'foo.barBAZ': 'foo_bar_baz',
+      'foo_Bar_Baz_box': 'foo_bar_baz_box',
       }
     for name in expectations:
       self.assertEquals(expectations[name], model.UnixName(name));

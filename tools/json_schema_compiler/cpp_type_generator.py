@@ -152,7 +152,8 @@ class CppTypeGenerator(object):
         if dependency.hard:
           continue
         # Add more ways to forward declare things as necessary.
-        if dependency.type_.property_type == PropertyType.OBJECT:
+        if dependency.type_.property_type in (PropertyType.CHOICES,
+                                              PropertyType.OBJECT):
           c.Append('struct %s;' % dependency.type_.name)
       c.Append('}')
 

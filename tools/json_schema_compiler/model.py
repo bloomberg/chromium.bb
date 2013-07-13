@@ -156,14 +156,21 @@ class Type(object):
       self.property_type = PropertyType.STRING
     elif 'choices' in json:
       self.property_type = PropertyType.CHOICES
-      self.choices = [Type(self,
-                           # The name of the choice type - there had better be
-                           # either a type or a $ref specified for the choice.
-                           json.get('type', json.get('$ref')),
-                           json,
-                           namespace,
-                           origin)
-                      for json in json['choices']]
+      def generate_type_name(type_json):
+        if 'items' in type_json:
+          return '%ss' % generate_type_name(type_json['items'])
+        if '$ref' in type_json:
+          return type_json['$ref']
+        if 'type' in type_json:
+          return type_json['type']
+        return None
+      self.choices = [
+          Type(self,
+               generate_type_name(choice) or 'choice%s' % i,
+               choice,
+               namespace,
+               origin)
+          for i, choice in enumerate(json['choices'])]
     elif json_type == 'object':
       if not (
           'properties' in json or
@@ -335,7 +342,6 @@ class _Enum(object):
   """Superclass for enum types with a "name" field, setting up repr/eq/ne.
   Enums need to do this so that equality/non-equality work over pickling.
   """
-
   @staticmethod
   def GetAll(cls):
     """Yields all _Enum objects declared in |cls|.
@@ -348,14 +354,16 @@ class _Enum(object):
   def __init__(self, name):
     self.name = name
 
-  def __repr(self):
-    return self.name
-
   def __eq__(self, other):
     return type(other) == type(self) and other.name == self.name
-
   def __ne__(self, other):
     return not (self == other)
+
+  def __repr__(self):
+    return self.name
+
+  def __str__(self):
+    return repr(self)
 
 class _PropertyTypeInfo(_Enum):
   def __init__(self, is_fundamental, name):
@@ -365,19 +373,19 @@ class _PropertyTypeInfo(_Enum):
 class PropertyType(object):
   """Enum of different types of properties/parameters.
   """
-  INTEGER = _PropertyTypeInfo(True, "integer")
-  INT64 = _PropertyTypeInfo(True, "int64")
-  DOUBLE = _PropertyTypeInfo(True, "double")
-  BOOLEAN = _PropertyTypeInfo(True, "boolean")
-  STRING = _PropertyTypeInfo(True, "string")
-  ENUM = _PropertyTypeInfo(False, "enum")
-  ARRAY = _PropertyTypeInfo(False, "array")
-  REF = _PropertyTypeInfo(False, "ref")
-  CHOICES = _PropertyTypeInfo(False, "choices")
-  OBJECT = _PropertyTypeInfo(False, "object")
-  FUNCTION = _PropertyTypeInfo(False, "function")
-  BINARY = _PropertyTypeInfo(False, "binary")
   ANY = _PropertyTypeInfo(False, "any")
+  ARRAY = _PropertyTypeInfo(False, "array")
+  BINARY = _PropertyTypeInfo(False, "binary")
+  BOOLEAN = _PropertyTypeInfo(True, "boolean")
+  CHOICES = _PropertyTypeInfo(False, "choices")
+  DOUBLE = _PropertyTypeInfo(True, "double")
+  ENUM = _PropertyTypeInfo(False, "enum")
+  FUNCTION = _PropertyTypeInfo(False, "function")
+  INT64 = _PropertyTypeInfo(True, "int64")
+  INTEGER = _PropertyTypeInfo(True, "integer")
+  OBJECT = _PropertyTypeInfo(False, "object")
+  REF = _PropertyTypeInfo(False, "ref")
+  STRING = _PropertyTypeInfo(True, "string")
 
 @memoize
 def UnixName(name):
@@ -385,7 +393,7 @@ def UnixName(name):
   '''
   unix_name = []
   for i, c in enumerate(name):
-    if c.isupper() and i > 0:
+    if c.isupper() and i > 0 and name[i - 1] != '_':
       # Replace lowerUpper with lower_Upper.
       if name[i - 1].islower():
         unix_name.append('_')

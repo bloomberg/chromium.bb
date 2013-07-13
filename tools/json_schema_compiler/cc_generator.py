@@ -106,8 +106,8 @@ class _Generator(object):
       c.Append('}  // namespace %s' % classname)
     elif type_.property_type == PropertyType.ARRAY:
       c.Cblock(self._GenerateType(cpp_namespace, type_.item_type))
-    elif (type_.property_type == PropertyType.OBJECT or
-          type_.property_type == PropertyType.CHOICES):
+    elif type_.property_type in (PropertyType.CHOICES,
+                                 PropertyType.OBJECT):
       if cpp_namespace is None:
         classname_in_namespace = classname
       else:
@@ -187,8 +187,8 @@ class _Generator(object):
     )
     if type_.property_type == PropertyType.CHOICES:
       for choice in type_.choices:
-        value_type = cpp_util.GetValueType(self._type_helper.FollowRef(choice))
-        (c.Sblock('if (value.IsType(base::%s)) {' % value_type)
+        (c.Sblock('if (%s) {' % self._GenerateValueIsTypeExpression('value',
+                                                                    choice))
             .Concat(self._GeneratePopulateVariableFromValue(
                 choice,
                 '(&value)',
@@ -231,6 +231,14 @@ class _Generator(object):
     (c.Eblock('}')
       .Substitute({'namespace': cpp_namespace, 'name': classname}))
     return c
+
+  def _GenerateValueIsTypeExpression(self, var, type_):
+    real_type = self._type_helper.FollowRef(type_)
+    if real_type.property_type is PropertyType.CHOICES:
+      return '(%s)' % ' || '.join(self._GenerateValueIsTypeExpression(var,
+                                                                      choice)
+                                  for choice in real_type.choices)
+    return '%s.IsType(%s)' % (var, cpp_util.GetValueType(real_type))
 
   def _GenerateTypePopulateProperty(self, prop, src, dst):
     """Generate the code to populate a single property in a type.
@@ -645,35 +653,28 @@ class _Generator(object):
                                                     dst_var,
                                                     failure_value))
     elif underlying_type.property_type == PropertyType.BINARY:
-      (c.Append('if (!%(src_var)s->IsType(base::%(value_type)s))')
+      (c.Append('if (!%(src_var)s->IsType(base::Value::TYPE_BINARY))')
         .Append('  return %(failure_value)s;')
         .Append('const base::BinaryValue* binary_value =')
         .Append('    static_cast<const base::BinaryValue*>(%(src_var)s);')
-       )
+      )
       if is_ptr:
         (c.Append('%(dst_var)s.reset(')
           .Append('    new std::string(binary_value->GetBuffer(),')
           .Append('                    binary_value->GetSize()));')
-         )
+        )
       else:
         (c.Append('%(dst_var)s.assign(binary_value->GetBuffer(),')
           .Append('                   binary_value->GetSize());')
-         )
+        )
     else:
       raise NotImplementedError(type_)
-
-    sub = {
+    return c.Eblock('}').Substitute({
       'cpp_type': self._type_helper.GetCppType(type_),
       'src_var': src_var,
       'dst_var': dst_var,
       'failure_value': failure_value,
-    }
-
-    if underlying_type.property_type not in (PropertyType.ANY,
-                                             PropertyType.CHOICES):
-      sub['value_type'] = cpp_util.GetValueType(underlying_type)
-
-    return c.Eblock('}').Substitute(sub)
+    })
 
   def _GenerateListValueToEnumArrayConversion(self,
                                               item_type,

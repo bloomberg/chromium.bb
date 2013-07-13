@@ -216,7 +216,8 @@ class _Generator(object):
         .Append('%s%s Parse%s(const std::string& as_string);' %
                     (maybe_static, classname, classname))
       )
-    elif type_.property_type == PropertyType.OBJECT:
+    elif type_.property_type in (PropertyType.CHOICES,
+                                 PropertyType.OBJECT):
       if type_.description:
         c.Comment(type_.description)
       (c.Sblock('struct %(classname)s {')
@@ -238,64 +239,47 @@ class _Generator(object):
                         'FromValue(const base::Value& value);')
           )
       if type_.origin.from_client:
+        value_type = ('base::Value'
+                      if type_.property_type is PropertyType.CHOICES else
+                      'base::DictionaryValue')
         (c.Append()
-          .Comment('Returns a new base::DictionaryValue representing the'
-                   ' serialized form of this %s object.' % classname)
-          .Append('scoped_ptr<base::DictionaryValue> ToValue() const;')
+          .Comment('Returns a new %s representing the serialized form of this '
+                   '%s object.' % (value_type, classname))
+          .Append('scoped_ptr<%s> ToValue() const;' % value_type)
         )
-      properties = type_.properties.values()
-      (c.Append()
-        .Cblock(self._GenerateTypes(p.type_ for p in properties))
-        .Cblock(self._GenerateFields(properties)))
-      if type_.additional_properties is not None:
-        # Most additionalProperties actually have type "any", which is better
-        # modelled as a DictionaryValue rather than a map of string -> Value.
-        if type_.additional_properties.property_type == PropertyType.ANY:
-          c.Append('base::DictionaryValue additional_properties;')
-        else:
-          (c.Cblock(self._GenerateType(type_.additional_properties))
-            .Append('std::map<std::string, %s> additional_properties;' %
-                cpp_util.PadForGenerics(
-                    self._type_helper.GetCppType(type_.additional_properties,
-                                                 is_in_container=True)))
-          )
+      if type_.property_type == PropertyType.CHOICES:
+        # Choices are modelled with optional fields for each choice. Exactly one
+        # field of the choice is guaranteed to be set by the compiler.
+        c.Cblock(self._GenerateTypes(type_.choices))
+        c.Append('// Choices:')
+        for choice_type in type_.choices:
+          c.Append('%s as_%s;' % (
+              self._type_helper.GetCppType(choice_type, is_ptr=True),
+              choice_type.unix_name))
+      else:
+        properties = type_.properties.values()
+        (c.Append()
+          .Cblock(self._GenerateTypes(p.type_ for p in properties))
+          .Cblock(self._GenerateFields(properties)))
+        if type_.additional_properties is not None:
+          # Most additionalProperties actually have type "any", which is better
+          # modelled as a DictionaryValue rather than a map of string -> Value.
+          if type_.additional_properties.property_type == PropertyType.ANY:
+            c.Append('base::DictionaryValue additional_properties;')
+          else:
+            (c.Cblock(self._GenerateType(type_.additional_properties))
+              .Append('std::map<std::string, %s> additional_properties;' %
+                  cpp_util.PadForGenerics(
+                      self._type_helper.GetCppType(type_.additional_properties,
+                                                   is_in_container=True)))
+            )
       (c.Eblock()
         .Append()
         .Sblock(' private:')
           .Append('DISALLOW_COPY_AND_ASSIGN(%(classname)s);')
         .Eblock('};')
       )
-    elif type_.property_type == PropertyType.CHOICES:
-      if type_.description:
-        c.Comment(type_.description)
-      # Choices are modelled with optional fields for each choice. Exactly one
-      # field of the choice is guaranteed to be set by the compiler.
-      (c.Sblock('struct %(classname)s {')
-          .Append('%(classname)s();')
-          .Append('~%(classname)s();')
-          .Append())
-      c.Cblock(self._GenerateTypes(type_.choices))
-      if type_.origin.from_json:
-        (c.Comment('Populates a %s object from a base::Value. Returns'
-                   ' whether |out| was successfully populated.' % classname)
-          .Append('static bool Populate(const base::Value& value, '
-                  '%(classname)s* out);')
-          .Append()
-        )
-      if type_.origin.from_client:
-        (c.Comment('Returns a new base::Value representing the'
-                   ' serialized form of this %s object.' % classname)
-          .Append('scoped_ptr<base::Value> ToValue() const;')
-          .Append()
-        )
-      c.Append('// Choices:')
-      for choice_type in type_.choices:
-        c.Append('%s as_%s;' % (
-            self._type_helper.GetCppType(choice_type, is_ptr=True),
-            choice_type.unix_name))
-      c.Eblock('};')
-    c.Substitute({'classname': classname})
-    return c
+    return c.Substitute({'classname': classname})
 
   def _GenerateEvent(self, event):
     """Generates the namespaces for an event.

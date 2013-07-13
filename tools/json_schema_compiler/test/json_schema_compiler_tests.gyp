@@ -32,6 +32,8 @@
       ],
       'sources': [
         '<@(schema_files)',
+        'test_util.cc',
+        'test_util.h',
       ],
       'includes': ['../../../build/json_schema_compile.gypi'],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
