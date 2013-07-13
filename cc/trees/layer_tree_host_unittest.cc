@@ -1554,7 +1554,7 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     }
   }
 
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
+  virtual void DidCommit() OVERRIDE {
     if (!TestEnded())
       root_layer_->SetNeedsDisplay();
   }

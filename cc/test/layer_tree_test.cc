@@ -323,6 +323,8 @@ LayerTreeTest::~LayerTreeTest() {}
 void LayerTreeTest::EndTest() {
   // For the case where we EndTest during BeginTest(), set a flag to indicate
   // that the test should end the second BeginTest regains control.
+  ended_ = true;
+
   if (beginning_) {
     end_when_begin_returns_ = true;
   } else if (proxy()) {
@@ -454,8 +456,6 @@ void LayerTreeTest::ScheduleComposite() {
 }
 
 void LayerTreeTest::RealEndTest() {
-  ended_ = true;
-
   if (layer_tree_host_ && proxy()->CommitPendingForTesting()) {
     proxy()->MainThreadTaskRunner()->PostTask(
         FROM_HERE,
