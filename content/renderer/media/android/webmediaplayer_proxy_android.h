@@ -18,7 +18,7 @@
 
 namespace content {
 class WebMediaPlayerAndroid;
-class WebMediaPlayerManagerAndroid;
+class RendererMediaPlayerManager;
 
 // This class manages IPC communication between WebMediaPlayerAndroid and the
 // MediaPlayerManagerAndroid in the browser process.
@@ -29,7 +29,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   // WebMediaPlayerAndroid using player IDs.
   WebMediaPlayerProxyAndroid(
       RenderView* render_view,
-      WebMediaPlayerManagerAndroid* manager);
+      RendererMediaPlayerManager* manager);
   virtual ~WebMediaPlayerProxyAndroid();
 
   // RenderViewObserver overrides.
@@ -126,7 +126,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
 
-  WebMediaPlayerManagerAndroid* manager_;
+  RendererMediaPlayerManager* manager_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerProxyAndroid);
 };

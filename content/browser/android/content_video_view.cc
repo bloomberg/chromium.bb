@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/browser/android/media_player_manager_impl.h"
+#include "content/browser/android/browser_media_player_manager.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"
@@ -42,7 +42,7 @@ bool ContentVideoView::HasContentVideoView() {
 ContentVideoView::ContentVideoView(
     const ScopedJavaLocalRef<jobject>& context,
     const ScopedJavaLocalRef<jobject>& client,
-    MediaPlayerManagerImpl* manager)
+    BrowserMediaPlayerManager* manager)
     : manager_(manager) {
   DCHECK(!g_content_video_view);
   JNIEnv *env = AttachCurrentThread();

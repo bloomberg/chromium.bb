@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "content/renderer/media/android/proxy_media_keys.h"
-#include "content/renderer/media/android/webmediaplayer_manager_android.h"
+#include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_util.h"
@@ -64,7 +64,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
-    WebMediaPlayerManagerAndroid* manager,
+    RendererMediaPlayerManager* manager,
     WebMediaPlayerProxyAndroid* proxy,
     StreamTextureFactory* factory,
     media::MediaLog* media_log)

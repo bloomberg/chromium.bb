@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_IMPL_H_
-#define CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_IMPL_H_
+#ifndef CONTENT_BROWSER_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
+#define CONTENT_BROWSER_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -35,11 +35,11 @@ class WebContents;
 // them to corresponding MediaPlayerAndroid object. Callbacks from
 // MediaPlayerAndroid objects are converted to IPCs and then sent to the
 // render process.
-class CONTENT_EXPORT MediaPlayerManagerImpl
+class CONTENT_EXPORT BrowserMediaPlayerManager
     : public RenderViewHostObserver,
       public media::MediaPlayerManager {
  public:
-  virtual ~MediaPlayerManagerImpl();
+  virtual ~BrowserMediaPlayerManager();
 
   // RenderViewHostObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -103,7 +103,7 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
 
   // The instance of this class is supposed to be created by either Create()
   // method of MediaPlayerManager or the derived classes constructors.
-  explicit MediaPlayerManagerImpl(RenderViewHost* render_view_host);
+  explicit BrowserMediaPlayerManager(RenderViewHost* render_view_host);
 
   // Message handlers.
   virtual void OnEnterFullscreen(int player_id);
@@ -173,9 +173,9 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
   // Object for retrieving resources media players.
   scoped_ptr<media::MediaResourceGetter> media_resource_getter_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaPlayerManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(BrowserMediaPlayerManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_IMPL_H_
+#endif  // CONTENT_BROWSER_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_

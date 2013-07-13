@@ -168,7 +168,7 @@ struct FileChooserParams;
 struct RenderViewImplParams;
 
 #if defined(OS_ANDROID)
-class WebMediaPlayerManagerAndroid;
+class RendererMediaPlayerManager;
 class WebMediaPlayerProxyAndroid;
 #endif
 
@@ -254,7 +254,7 @@ class CONTENT_EXPORT RenderViewImpl
   }
 
 #if defined(OS_ANDROID)
-  WebMediaPlayerManagerAndroid* media_player_manager() {
+  RendererMediaPlayerManager* media_player_manager() {
     return media_player_manager_.get();
   }
 #endif
@@ -1464,7 +1464,7 @@ class CONTENT_EXPORT RenderViewImpl
   WebMediaPlayerProxyAndroid* media_player_proxy_;
 
   // The media player manager for managing all the media players on this view.
-  scoped_ptr<WebMediaPlayerManagerAndroid> media_player_manager_;
+  scoped_ptr<RendererMediaPlayerManager> media_player_manager_;
 
   // A date/time picker object for date and time related input elements.
   scoped_ptr<RendererDateTimePicker> date_time_picker_client_;

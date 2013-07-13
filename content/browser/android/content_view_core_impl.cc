@@ -15,9 +15,9 @@
 #include "base/values.h"
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "content/browser/android/browser_media_player_manager.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
-#include "content/browser/android/media_player_manager_impl.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
@@ -1328,11 +1328,12 @@ void ContentViewCoreImpl::AttachExternalVideoSurface(JNIEnv* env,
 #if defined(GOOGLE_TV)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
-  MediaPlayerManagerImpl* media_player_manager_impl =
-      rvhi ? static_cast<MediaPlayerManagerImpl*>(rvhi->media_player_manager())
+  BrowserMediaPlayerManager* browser_media_player_manager =
+      rvhi ? static_cast<BrowserMediaPlayerManager*>(
+                 rvhi->media_player_manager())
            : NULL;
-  if (media_player_manager_impl) {
-    media_player_manager_impl->AttachExternalVideoSurface(
+  if (browser_media_player_manager) {
+    browser_media_player_manager->AttachExternalVideoSurface(
         static_cast<int>(player_id), jsurface);
   }
 #endif
@@ -1344,11 +1345,11 @@ void ContentViewCoreImpl::DetachExternalVideoSurface(JNIEnv* env,
 #if defined(GOOGLE_TV)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
-  MediaPlayerManagerImpl* media_player_manager_impl =
+  MediaPlayerManagerImpl* browser_media_player_manager =
       rvhi ? static_cast<MediaPlayerManagerImpl*>(rvhi->media_player_manager())
            : NULL;
-  if (media_player_manager_impl) {
-    media_player_manager_impl->DetachExternalVideoSurface(
+  if (browser_media_player_manager) {
+    browser_media_player_manager->DetachExternalVideoSurface(
         static_cast<int>(player_id));
   }
 #endif

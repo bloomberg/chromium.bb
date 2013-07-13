@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/media_player_manager_impl.h"
+#include "content/browser/android/browser_media_player_manager.h"
 
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/media_resource_getter_impl.h"
@@ -37,25 +37,25 @@ media::MediaPlayerManager* MediaPlayerManager::Create(
     content::RenderViewHost* render_view_host) {
   if (g_factory_function)
     return g_factory_function(render_view_host);
-  return new content::MediaPlayerManagerImpl(render_view_host);
+  return new content::BrowserMediaPlayerManager(render_view_host);
 }
 
 }  // namespace media
 
 namespace content {
 
-MediaPlayerManagerImpl::MediaPlayerManagerImpl(
+BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
       fullscreen_player_id_(-1),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
 }
 
-MediaPlayerManagerImpl::~MediaPlayerManagerImpl() {}
+BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {}
 
-bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
+bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaPlayerManagerImpl, msg)
+  IPC_BEGIN_MESSAGE_MAP(BrowserMediaPlayerManager, msg)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_EnterFullscreen, OnEnterFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ExitFullscreen, OnExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerInitialize, OnInitialize)
@@ -91,7 +91,7 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void MediaPlayerManagerImpl::FullscreenPlayerPlay() {
+void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
     player->Start();
@@ -100,7 +100,7 @@ void MediaPlayerManagerImpl::FullscreenPlayerPlay() {
   }
 }
 
-void MediaPlayerManagerImpl::FullscreenPlayerPause() {
+void BrowserMediaPlayerManager::FullscreenPlayerPause() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
     player->Pause();
@@ -109,13 +109,13 @@ void MediaPlayerManagerImpl::FullscreenPlayerPause() {
   }
 }
 
-void MediaPlayerManagerImpl::FullscreenPlayerSeek(int msec) {
+void BrowserMediaPlayerManager::FullscreenPlayerSeek(int msec) {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player)
     player->SeekTo(base::TimeDelta::FromMilliseconds(msec));
 }
 
-void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
+void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
   Send(new MediaPlayerMsg_DidExitFullscreen(
       routing_id(), fullscreen_player_id_));
   video_view_.reset();
@@ -129,13 +129,14 @@ void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
     player->SetVideoSurface(gfx::ScopedJavaSurface());
 }
 
-void MediaPlayerManagerImpl::OnTimeUpdate(int player_id,
-                                          base::TimeDelta current_time) {
+void BrowserMediaPlayerManager::OnTimeUpdate(int player_id,
+                                             base::TimeDelta current_time) {
   Send(new MediaPlayerMsg_MediaTimeUpdate(
       routing_id(), player_id, current_time));
 }
 
-void MediaPlayerManagerImpl::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+void BrowserMediaPlayerManager::SetVideoSurface(
+    gfx::ScopedJavaSurface surface) {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
     player->SetVideoSurface(surface.Pass());
@@ -144,7 +145,7 @@ void MediaPlayerManagerImpl::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   }
 }
 
-void MediaPlayerManagerImpl::OnMediaMetadataChanged(
+void BrowserMediaPlayerManager::OnMediaMetadataChanged(
     int player_id, base::TimeDelta duration, int width, int height,
     bool success) {
   Send(new MediaPlayerMsg_MediaMetadataChanged(
@@ -153,19 +154,19 @@ void MediaPlayerManagerImpl::OnMediaMetadataChanged(
     video_view_->UpdateMediaMetadata();
 }
 
-void MediaPlayerManagerImpl::OnPlaybackComplete(int player_id) {
+void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(routing_id(), player_id));
   if (fullscreen_player_id_ != -1)
     video_view_->OnPlaybackComplete();
 }
 
-void MediaPlayerManagerImpl::OnMediaInterrupted(int player_id) {
+void BrowserMediaPlayerManager::OnMediaInterrupted(int player_id) {
   // Tell WebKit that the audio should be paused, then release all resources
   Send(new MediaPlayerMsg_DidMediaPlayerPause(routing_id(), player_id));
   OnReleaseResources(player_id);
 }
 
-void MediaPlayerManagerImpl::OnBufferingUpdate(
+void BrowserMediaPlayerManager::OnBufferingUpdate(
     int player_id, int percentage) {
   Send(new MediaPlayerMsg_MediaBufferingUpdate(
       routing_id(), player_id, percentage));
@@ -173,19 +174,19 @@ void MediaPlayerManagerImpl::OnBufferingUpdate(
     video_view_->OnBufferingUpdate(percentage);
 }
 
-void MediaPlayerManagerImpl::OnSeekComplete(int player_id,
-                                            base::TimeDelta current_time) {
+void BrowserMediaPlayerManager::OnSeekComplete(int player_id,
+                                               base::TimeDelta current_time) {
   Send(new MediaPlayerMsg_MediaSeekCompleted(
       routing_id(), player_id, current_time));
 }
 
-void MediaPlayerManagerImpl::OnError(int player_id, int error) {
+void BrowserMediaPlayerManager::OnError(int player_id, int error) {
   Send(new MediaPlayerMsg_MediaError(routing_id(), player_id, error));
   if (fullscreen_player_id_ != -1)
     video_view_->OnMediaPlayerError(error);
 }
 
-void MediaPlayerManagerImpl::OnVideoSizeChanged(
+void BrowserMediaPlayerManager::OnVideoSizeChanged(
     int player_id, int width, int height) {
   Send(new MediaPlayerMsg_MediaVideoSizeChanged(routing_id(), player_id,
       width, height));
@@ -193,12 +194,12 @@ void MediaPlayerManagerImpl::OnVideoSizeChanged(
     video_view_->OnVideoSizeChanged(width, height);
 }
 
-void MediaPlayerManagerImpl::OnReadFromDemuxer(
+void BrowserMediaPlayerManager::OnReadFromDemuxer(
     int player_id, media::DemuxerStream::Type type) {
   Send(new MediaPlayerMsg_ReadFromDemuxer(routing_id(), player_id, type));
 }
 
-void MediaPlayerManagerImpl::RequestMediaResources(int player_id) {
+void BrowserMediaPlayerManager::RequestMediaResources(int player_id) {
   int num_active_player = 0;
   ScopedVector<MediaPlayerAndroid>::iterator it;
   for (it = players_.begin(); it != players_.end(); ++it) {
@@ -226,11 +227,12 @@ void MediaPlayerManagerImpl::RequestMediaResources(int player_id) {
   }
 }
 
-void MediaPlayerManagerImpl::ReleaseMediaResources(int player_id) {
+void BrowserMediaPlayerManager::ReleaseMediaResources(int player_id) {
   // Nothing needs to be done.
 }
 
-media::MediaResourceGetter* MediaPlayerManagerImpl::GetMediaResourceGetter() {
+media::MediaResourceGetter*
+BrowserMediaPlayerManager::GetMediaResourceGetter() {
   if (!media_resource_getter_.get()) {
     RenderProcessHost* host = render_view_host()->GetProcess();
     BrowserContext* context = host->GetBrowserContext();
@@ -243,11 +245,11 @@ media::MediaResourceGetter* MediaPlayerManagerImpl::GetMediaResourceGetter() {
   return media_resource_getter_.get();
 }
 
-MediaPlayerAndroid* MediaPlayerManagerImpl::GetFullscreenPlayer() {
+MediaPlayerAndroid* BrowserMediaPlayerManager::GetFullscreenPlayer() {
   return GetPlayer(fullscreen_player_id_);
 }
 
-MediaPlayerAndroid* MediaPlayerManagerImpl::GetPlayer(int player_id) {
+MediaPlayerAndroid* BrowserMediaPlayerManager::GetPlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id)
@@ -256,7 +258,7 @@ MediaPlayerAndroid* MediaPlayerManagerImpl::GetPlayer(int player_id) {
   return NULL;
 }
 
-MediaDrmBridge* MediaPlayerManagerImpl::GetDrmBridge(int media_keys_id) {
+MediaDrmBridge* BrowserMediaPlayerManager::GetDrmBridge(int media_keys_id) {
   for (ScopedVector<MediaDrmBridge>::iterator it = drm_bridges_.begin();
       it != drm_bridges_.end(); ++it) {
     if ((*it)->media_keys_id() == media_keys_id)
@@ -265,7 +267,7 @@ MediaDrmBridge* MediaPlayerManagerImpl::GetDrmBridge(int media_keys_id) {
   return NULL;
 }
 
-void MediaPlayerManagerImpl::DestroyAllMediaPlayers() {
+void BrowserMediaPlayerManager::DestroyAllMediaPlayers() {
   players_.clear();
   if (fullscreen_player_id_ != -1) {
     video_view_.reset();
@@ -273,17 +275,17 @@ void MediaPlayerManagerImpl::DestroyAllMediaPlayers() {
   }
 }
 
-void MediaPlayerManagerImpl::OnMediaSeekRequest(
+void BrowserMediaPlayerManager::OnMediaSeekRequest(
     int player_id, base::TimeDelta time_to_seek, unsigned seek_request_id) {
   Send(new MediaPlayerMsg_MediaSeekRequest(
       routing_id(), player_id, time_to_seek, seek_request_id));
 }
 
-void MediaPlayerManagerImpl::OnMediaConfigRequest(int player_id) {
+void BrowserMediaPlayerManager::OnMediaConfigRequest(int player_id) {
   Send(new MediaPlayerMsg_MediaConfigRequest(routing_id(), player_id));
 }
 
-void MediaPlayerManagerImpl::OnProtectedSurfaceRequested(int player_id) {
+void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
   if (fullscreen_player_id_ == player_id)
     return;
   if (fullscreen_player_id_ != -1) {
@@ -294,30 +296,32 @@ void MediaPlayerManagerImpl::OnProtectedSurfaceRequested(int player_id) {
   OnEnterFullscreen(player_id);
 }
 
-void MediaPlayerManagerImpl::OnKeyAdded(int media_keys_id,
-                                        const std::string& session_id) {
+void BrowserMediaPlayerManager::OnKeyAdded(int media_keys_id,
+                                           const std::string& session_id) {
   Send(new MediaKeysMsg_KeyAdded(routing_id(), media_keys_id, session_id));
 }
 
-void MediaPlayerManagerImpl::OnKeyError(int media_keys_id,
-                                        const std::string& session_id,
-                                        media::MediaKeys::KeyError error_code,
-                                        int system_code) {
+void BrowserMediaPlayerManager::OnKeyError(
+    int media_keys_id,
+    const std::string& session_id,
+    media::MediaKeys::KeyError error_code,
+    int system_code) {
   Send(new MediaKeysMsg_KeyError(routing_id(), media_keys_id,
                                  session_id, error_code, system_code));
 }
 
-void MediaPlayerManagerImpl::OnKeyMessage(int media_keys_id,
-                                          const std::string& session_id,
-                                          const std::vector<uint8>& message,
-                                          const std::string& destination_url) {
+void BrowserMediaPlayerManager::OnKeyMessage(
+    int media_keys_id,
+    const std::string& session_id,
+    const std::vector<uint8>& message,
+    const std::string& destination_url) {
   Send(new MediaKeysMsg_KeyMessage(routing_id(), media_keys_id,
                                    session_id, message, destination_url));
 }
 
 #if defined(GOOGLE_TV)
-void MediaPlayerManagerImpl::AttachExternalVideoSurface(int player_id,
-                                                        jobject surface) {
+void BrowserMediaPlayerManager::AttachExternalVideoSurface(int player_id,
+                                                           jobject surface) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player) {
     player->SetVideoSurface(
@@ -325,13 +329,13 @@ void MediaPlayerManagerImpl::AttachExternalVideoSurface(int player_id,
   }
 }
 
-void MediaPlayerManagerImpl::DetachExternalVideoSurface(int player_id) {
+void BrowserMediaPlayerManager::DetachExternalVideoSurface(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->SetVideoSurface(gfx::ScopedJavaSurface());
 }
 
-void MediaPlayerManagerImpl::OnNotifyExternalSurface(
+void BrowserMediaPlayerManager::OnNotifyExternalSurface(
     int player_id, bool is_request, const gfx::RectF& rect) {
   if (!web_contents_)
     return;
@@ -343,7 +347,7 @@ void MediaPlayerManagerImpl::OnNotifyExternalSurface(
 }
 #endif
 
-void MediaPlayerManagerImpl::OnEnterFullscreen(int player_id) {
+void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
 
   if (video_view_.get()) {
@@ -362,7 +366,7 @@ void MediaPlayerManagerImpl::OnEnterFullscreen(int player_id) {
   }
 }
 
-void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
+void BrowserMediaPlayerManager::OnExitFullscreen(int player_id) {
   if (fullscreen_player_id_ == player_id) {
     MediaPlayerAndroid* player = GetPlayer(player_id);
     if (player)
@@ -371,7 +375,7 @@ void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
   }
 }
 
-void MediaPlayerManagerImpl::OnInitialize(
+void BrowserMediaPlayerManager::OnInitialize(
     int player_id,
     const GURL& url,
     media::MediaPlayerAndroid::SourceType source_type,
@@ -384,25 +388,25 @@ void MediaPlayerManagerImpl::OnInitialize(
       host->GetBrowserContext()->IsOffTheRecord(), this));
 }
 
-void MediaPlayerManagerImpl::OnStart(int player_id) {
+void BrowserMediaPlayerManager::OnStart(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Start();
 }
 
-void MediaPlayerManagerImpl::OnSeek(int player_id, base::TimeDelta time) {
+void BrowserMediaPlayerManager::OnSeek(int player_id, base::TimeDelta time) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->SeekTo(time);
 }
 
-void MediaPlayerManagerImpl::OnPause(int player_id) {
+void BrowserMediaPlayerManager::OnPause(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Pause();
 }
 
-void MediaPlayerManagerImpl::OnReleaseResources(int player_id) {
+void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   // Don't release the fullscreen player when tab visibility changes,
   // it will be released when user hit the back/home button or when
@@ -418,13 +422,13 @@ void MediaPlayerManagerImpl::OnReleaseResources(int player_id) {
 #endif
 }
 
-void MediaPlayerManagerImpl::OnDestroyPlayer(int player_id) {
+void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
   RemovePlayer(player_id);
   if (fullscreen_player_id_ == player_id)
     fullscreen_player_id_ = -1;
 }
 
-void MediaPlayerManagerImpl::OnDemuxerReady(
+void BrowserMediaPlayerManager::OnDemuxerReady(
     int player_id,
     const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
@@ -432,7 +436,7 @@ void MediaPlayerManagerImpl::OnDemuxerReady(
     player->DemuxerReady(params);
 }
 
-void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
+void BrowserMediaPlayerManager::OnReadFromDemuxerAck(
     int player_id,
     const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
@@ -440,22 +444,23 @@ void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
     player->ReadFromDemuxerAck(params);
 }
 
-void MediaPlayerManagerImpl::OnMediaSeekRequestAck(
+void BrowserMediaPlayerManager::OnMediaSeekRequestAck(
     int player_id, unsigned seek_request_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->OnSeekRequestAck(seek_request_id);
 }
 
-void MediaPlayerManagerImpl::OnInitializeCDM(int media_keys_id,
-                                             const std::vector<uint8>& uuid) {
+void BrowserMediaPlayerManager::OnInitializeCDM(
+    int media_keys_id,
+    const std::vector<uint8>& uuid) {
   AddDrmBridge(media_keys_id, uuid);
   // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
   // is the same as the |player_id|.
   OnSetMediaKeys(media_keys_id, media_keys_id);
 }
 
-void MediaPlayerManagerImpl::OnGenerateKeyRequest(
+void BrowserMediaPlayerManager::OnGenerateKeyRequest(
     int media_keys_id,
     const std::string& type,
     const std::vector<uint8>& init_data) {
@@ -464,10 +469,10 @@ void MediaPlayerManagerImpl::OnGenerateKeyRequest(
     drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
 }
 
-void MediaPlayerManagerImpl::OnAddKey(int media_keys_id,
-                                      const std::vector<uint8>& key,
-                                      const std::vector<uint8>& init_data,
-                                      const std::string& session_id) {
+void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
+                                         const std::vector<uint8>& key,
+                                         const std::vector<uint8>& init_data,
+                                         const std::string& session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (drm_bridge) {
     drm_bridge->AddKey(&key[0], key.size(), &init_data[0], init_data.size(),
@@ -475,26 +480,27 @@ void MediaPlayerManagerImpl::OnAddKey(int media_keys_id,
   }
 }
 
-void MediaPlayerManagerImpl::OnCancelKeyRequest(int media_keys_id,
-                                                const std::string& session_id) {
+void BrowserMediaPlayerManager::OnCancelKeyRequest(
+    int media_keys_id,
+    const std::string& session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (drm_bridge)
     drm_bridge->CancelKeyRequest(session_id);
 }
 
-void MediaPlayerManagerImpl::OnDurationChanged(
+void BrowserMediaPlayerManager::OnDurationChanged(
     int player_id, const base::TimeDelta& duration) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->DurationChanged(duration);
 }
 
-void MediaPlayerManagerImpl::AddPlayer(MediaPlayerAndroid* player) {
+void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
   DCHECK(!GetPlayer(player->player_id()));
   players_.push_back(player);
 }
 
-void MediaPlayerManagerImpl::RemovePlayer(int player_id) {
+void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
@@ -504,8 +510,8 @@ void MediaPlayerManagerImpl::RemovePlayer(int player_id) {
   }
 }
 
-void MediaPlayerManagerImpl::AddDrmBridge(int media_keys_id,
-                                          const std::vector<uint8>& uuid) {
+void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
+                                             const std::vector<uint8>& uuid) {
   DCHECK(!GetDrmBridge(media_keys_id));
   scoped_ptr<MediaDrmBridge> drm_bridge(
       MediaDrmBridge::Create(media_keys_id, uuid, this));
@@ -513,7 +519,7 @@ void MediaPlayerManagerImpl::AddDrmBridge(int media_keys_id,
   drm_bridges_.push_back(drm_bridge.release());
 }
 
-void MediaPlayerManagerImpl::RemoveDrmBridge(int media_keys_id) {
+void BrowserMediaPlayerManager::RemoveDrmBridge(int media_keys_id) {
   for (ScopedVector<MediaDrmBridge>::iterator it = drm_bridges_.begin();
       it != drm_bridges_.end(); ++it) {
     if ((*it)->media_keys_id() == media_keys_id) {
@@ -523,7 +529,8 @@ void MediaPlayerManagerImpl::RemoveDrmBridge(int media_keys_id) {
   }
 }
 
-void MediaPlayerManagerImpl::OnSetMediaKeys(int player_id, int media_keys_id) {
+void BrowserMediaPlayerManager::OnSetMediaKeys(int player_id,
+                                               int media_keys_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!player || !drm_bridge) {

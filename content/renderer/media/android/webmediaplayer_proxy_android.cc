@@ -7,14 +7,14 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/common/media/media_player_messages_android.h"
+#include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
-#include "content/renderer/media/android/webmediaplayer_manager_android.h"
 
 namespace content {
 
 WebMediaPlayerProxyAndroid::WebMediaPlayerProxyAndroid(
     RenderView* render_view,
-    WebMediaPlayerManagerAndroid* manager)
+    RendererMediaPlayerManager* manager)
     : RenderViewObserver(render_view), manager_(manager) {}
 
 WebMediaPlayerProxyAndroid::~WebMediaPlayerProxyAndroid() {

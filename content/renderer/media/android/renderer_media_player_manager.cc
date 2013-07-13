@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/android/webmediaplayer_manager_android.h"
+#include "content/renderer/media/android/renderer_media_player_manager.h"
 
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "ui/gfx/rect_f.h"
 
 namespace content {
 
-WebMediaPlayerManagerAndroid::WebMediaPlayerManagerAndroid()
+RendererMediaPlayerManager::RendererMediaPlayerManager()
     : next_media_player_id_(0),
       fullscreen_frame_(NULL) {
 }
 
-WebMediaPlayerManagerAndroid::~WebMediaPlayerManagerAndroid() {
+RendererMediaPlayerManager::~RendererMediaPlayerManager() {
   std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
   for (player_it = media_players_.begin();
       player_it != media_players_.end(); ++player_it) {
@@ -23,17 +23,17 @@ WebMediaPlayerManagerAndroid::~WebMediaPlayerManagerAndroid() {
   }
 }
 
-int WebMediaPlayerManagerAndroid::RegisterMediaPlayer(
+int RendererMediaPlayerManager::RegisterMediaPlayer(
     WebMediaPlayerAndroid* player) {
   media_players_[next_media_player_id_] = player;
   return next_media_player_id_++;
 }
 
-void WebMediaPlayerManagerAndroid::UnregisterMediaPlayer(int player_id) {
+void RendererMediaPlayerManager::UnregisterMediaPlayer(int player_id) {
   media_players_.erase(player_id);
 }
 
-void WebMediaPlayerManagerAndroid::ReleaseMediaResources() {
+void RendererMediaPlayerManager::ReleaseMediaResources() {
   std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
   for (player_it = media_players_.begin();
       player_it != media_players_.end(); ++player_it) {
@@ -45,7 +45,7 @@ void WebMediaPlayerManagerAndroid::ReleaseMediaResources() {
   }
 }
 
-WebMediaPlayerAndroid* WebMediaPlayerManagerAndroid::GetMediaPlayer(
+WebMediaPlayerAndroid* RendererMediaPlayerManager::GetMediaPlayer(
     int player_id) {
   std::map<int, WebMediaPlayerAndroid*>::iterator iter =
       media_players_.find(player_id);
@@ -54,24 +54,24 @@ WebMediaPlayerAndroid* WebMediaPlayerManagerAndroid::GetMediaPlayer(
   return NULL;
 }
 
-bool WebMediaPlayerManagerAndroid::CanEnterFullscreen(WebKit::WebFrame* frame) {
+bool RendererMediaPlayerManager::CanEnterFullscreen(WebKit::WebFrame* frame) {
   return !fullscreen_frame_ || IsInFullscreen(frame);
 }
 
-void WebMediaPlayerManagerAndroid::DidEnterFullscreen(WebKit::WebFrame* frame) {
+void RendererMediaPlayerManager::DidEnterFullscreen(WebKit::WebFrame* frame) {
   fullscreen_frame_ = frame;
 }
 
-void WebMediaPlayerManagerAndroid::DidExitFullscreen() {
+void RendererMediaPlayerManager::DidExitFullscreen() {
   fullscreen_frame_ = NULL;
 }
 
-bool WebMediaPlayerManagerAndroid::IsInFullscreen(WebKit::WebFrame* frame) {
+bool RendererMediaPlayerManager::IsInFullscreen(WebKit::WebFrame* frame) {
   return fullscreen_frame_ == frame;
 }
 
 #if defined(GOOGLE_TV)
-void WebMediaPlayerManagerAndroid::RetrieveGeometryChanges(
+void RendererMediaPlayerManager::RetrieveGeometryChanges(
     std::map<int, gfx::RectF>* changes) {
   DCHECK(changes->empty());
   for (std::map<int, WebMediaPlayerAndroid*>::iterator player_it =

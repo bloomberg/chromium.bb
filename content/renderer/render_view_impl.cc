@@ -226,9 +226,9 @@
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
+#include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_android.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
-#include "content/renderer/media/android/webmediaplayer_manager_android.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -939,7 +939,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-  media_player_manager_.reset(new WebMediaPlayerManagerAndroid());
+  media_player_manager_.reset(new RendererMediaPlayerManager());
 #endif
 
   // The next group of objects all implement RenderViewObserver, so are deleted
@@ -6022,7 +6022,7 @@ void RenderViewImpl::OnWasHidden() {
   RenderWidget::OnWasHidden();
 
 #if defined(OS_ANDROID)
-  // Inform WebMediaPlayerManagerAndroid to release all media player resources.
+  // Inform RendererMediaPlayerManager to release all media player resources.
   // unless some audio is playing.
   // If something is in progress the resource will not be freed, it will
   // only be freed once the tab is destroyed or if the user navigates away

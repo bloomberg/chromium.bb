@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
-#define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_RENDERER_MEDIA_PLAYER_MANAGER_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_RENDERER_MEDIA_PLAYER_MANAGER_H_
 
 #include <map>
 
@@ -23,10 +23,10 @@ class WebMediaPlayerAndroid;
 
 // Class for managing all the WebMediaPlayerAndroid objects in the same
 // RenderView.
-class WebMediaPlayerManagerAndroid {
+class RendererMediaPlayerManager {
  public:
-  WebMediaPlayerManagerAndroid();
-  virtual ~WebMediaPlayerManagerAndroid();
+  RendererMediaPlayerManager();
+  virtual ~RendererMediaPlayerManager();
 
   // Register and unregister a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
@@ -64,9 +64,9 @@ class WebMediaPlayerManagerAndroid {
   // WebFrame of the fullscreen video.
   WebKit::WebFrame* fullscreen_frame_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerManagerAndroid);
+  DISALLOW_COPY_AND_ASSIGN(RendererMediaPlayerManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_RENDERER_MEDIA_PLAYER_MANAGER_H_

@@ -45,7 +45,7 @@ class WebLayerImpl;
 
 namespace content {
 class WebMediaPlayerDelegate;
-class WebMediaPlayerManagerAndroid;
+class RendererMediaPlayerManager;
 class WebMediaPlayerProxyAndroid;
 
 #if defined(GOOGLE_TV)
@@ -74,7 +74,7 @@ class WebMediaPlayerAndroid
       WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
-      WebMediaPlayerManagerAndroid* manager,
+      RendererMediaPlayerManager* manager,
       WebMediaPlayerProxyAndroid* proxy,
       StreamTextureFactory* factory,
       media::MediaLog* media_log);
@@ -179,7 +179,7 @@ class WebMediaPlayerAndroid
   // Called when the player is released.
   virtual void OnPlayerReleased();
 
-  // This function is called by the WebMediaPlayerManagerAndroid to pause the
+  // This function is called by the RendererMediaPlayerManager to pause the
   // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
   virtual void ReleaseMediaResources();
@@ -323,7 +323,7 @@ class WebMediaPlayerAndroid
   mutable bool did_loading_progress_;
 
   // Manager for managing this object.
-  WebMediaPlayerManagerAndroid* manager_;
+  RendererMediaPlayerManager* manager_;
 
   // Player ID assigned by the |manager_|.
   int player_id_;
