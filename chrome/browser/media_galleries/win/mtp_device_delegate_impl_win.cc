@@ -363,7 +363,7 @@ MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
     : storage_device_info_(pnp_device_id, registered_device_path,
                            storage_object_id),
       init_state_(UNINITIALIZED),
-      media_task_runner_(MediaFileSystemMountPointProvider::MediaTaskRunner()),
+      media_task_runner_(MediaFileSystemBackend::MediaTaskRunner()),
       task_in_progress_(false),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
