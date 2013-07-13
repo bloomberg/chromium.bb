@@ -122,7 +122,7 @@ struct ParamTraits<bool> {
 
 template <>
 struct IPC_EXPORT ParamTraits<unsigned char> {
-  typedef unsigned short param_type;
+  typedef unsigned char param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
