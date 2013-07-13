@@ -2716,18 +2716,6 @@
         'test/gpu/gpu_feature_browsertest.cc',
       ],
     },
-    {
-      # Executable that contains a subset of the gpu tests which are run with a
-      # software rasterizer.
-      'target_name': 'soft_gpu_tests',
-      'type': 'executable',
-      'includes': [
-        'test/gpu/test_support_gpu.gypi'
-      ],
-      'sources': [
-        'test/gpu/gpu_pixel_browsertest.cc',
-      ],
-    },
   ],
   'conditions': [
     ['OS=="mac"', {
