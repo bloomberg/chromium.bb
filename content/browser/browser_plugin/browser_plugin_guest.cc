@@ -858,12 +858,8 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
 }
 
 void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
-  bool disable_dragdrop = true;
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserPluginDragDrop))
-    disable_dragdrop = false;
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+  bool disable_dragdrop = !CommandLine::ForCurrentProcess()->HasSwitch(
+                              switches::kEnableBrowserPluginDragDrop);
   if (disable_dragdrop) {
     // Initiating a drag from inside a guest is currently not supported without
     // the kEnableBrowserPluginDragDrop flag on a linux platform. So inject some
