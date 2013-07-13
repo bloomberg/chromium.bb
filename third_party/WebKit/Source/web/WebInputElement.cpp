@@ -33,15 +33,13 @@
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "TextFieldDecoratorImpl.h"
 #include "WebNodeCollection.h"
-#include "WebTextFieldDecoratorClient.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
-#include "core/html/shadow/TextFieldDecorationElement.h"
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 
@@ -252,16 +250,15 @@ WebString WebInputElement::directionForFormData() const
     return constUnwrap<HTMLInputElement>()->directionForFormData();
 }
 
-WebElement WebInputElement::decorationElementFor(WebTextFieldDecoratorClient* decoratorClient)
+// FIXME: Remove this once password_generation_manager.h stops using it.
+WebElement WebInputElement::decorationElementFor(void*)
 {
-    ShadowRoot* shadowRoot = unwrap<HTMLInputElement>()->youngestShadowRoot();
-    while (shadowRoot) {
-        TextFieldDecorationElement* decoration = TextFieldDecorationElement::fromShadowRoot(shadowRoot);
-        if (decoration && decoratorClient->isClientFor(decoration->textFieldDecorator()))
-            return WebElement(decoration);
-        shadowRoot = shadowRoot->olderShadowRoot();
-    }
-    return WebElement();
+    return passwordGeneratorButtonElement();
+}
+
+WebElement WebInputElement::passwordGeneratorButtonElement() const
+{
+    return WebElement(constUnwrap<HTMLInputElement>()->passwordGeneratorButtonElement());
 }
 
 WebInputElement::WebInputElement(const PassRefPtr<HTMLInputElement>& elem)

@@ -44,15 +44,13 @@
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -241,10 +239,8 @@ void TextFieldInputType::createShadowSubtree()
     ASSERT(!m_innerSpinButton);
 
     Document* document = element()->document();
-    ChromeClient* chromeClient = document->page() ? document->page()->chrome().client() : 0;
-    bool shouldAddDecorations = chromeClient && chromeClient->willAddTextFieldDecorationsTo(element());
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
-    bool createsContainer = shouldHaveSpinButton || needsContainer() || shouldAddDecorations;
+    bool createsContainer = shouldHaveSpinButton || needsContainer();
 
     m_innerText = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
@@ -273,9 +269,6 @@ void TextFieldInputType::createShadowSubtree()
         m_innerSpinButton = SpinButtonElement::create(document, *this);
         m_container->appendChild(m_innerSpinButton, IGNORE_EXCEPTION);
     }
-
-    if (shouldAddDecorations)
-        chromeClient->addTextFieldDecorationsTo(element());
 }
 
 HTMLElement* TextFieldInputType::containerElement() const

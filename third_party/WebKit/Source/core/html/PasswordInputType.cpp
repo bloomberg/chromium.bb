@@ -35,14 +35,49 @@
 #include "core/html/FormController.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
-#include <wtf/Assertions.h>
-#include <wtf/PassOwnPtr.h>
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
+#include "wtf/Assertions.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 PassOwnPtr<InputType> PasswordInputType::create(HTMLInputElement* element)
 {
     return adoptPtr(new PasswordInputType(element));
+}
+
+HTMLElement* PasswordInputType::passwordGeneratorButtonElement() const
+{
+    return m_generatorButton.get();
+}
+
+bool PasswordInputType::isPasswordGenerationEnabled() const
+{
+    Document* document = element()->document();
+    ChromeClient* chromeClient = document->page() ? document->page()->chrome().client() : 0;
+    return chromeClient && chromeClient->isPasswordGenerationEnabled();
+}
+
+bool PasswordInputType::needsContainer() const
+{
+    return BaseTextInputType::needsContainer() || isPasswordGenerationEnabled();
+}
+
+void PasswordInputType::createShadowSubtree()
+{
+    BaseTextInputType::createShadowSubtree();
+    if (isPasswordGenerationEnabled()) {
+        m_generatorButton = PasswordGeneratorButtonElement::create(element()->document());
+        m_generatorButton->decorate(element());
+    }
+}
+
+void PasswordInputType::destroyShadowSubtree()
+{
+    BaseTextInputType::destroyShadowSubtree();
+    m_generatorButton = 0;
 }
 
 const AtomicString& PasswordInputType::formControlType() const

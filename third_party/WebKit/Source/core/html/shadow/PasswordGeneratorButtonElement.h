@@ -28,19 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebTextFieldDecoratorClient.h"
+#ifndef PasswordGeneratorButtonElement_h
+#define PasswordGeneratorButtonElement_h
 
-#include "TextFieldDecoratorImpl.h"
-#include "core/html/shadow/TextFieldDecorationElement.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace WebKit {
+class CachedImage;
+class HTMLInputElement;
+class ShadowRoot;
 
-bool WebTextFieldDecoratorClient::isClientFor(TextFieldDecorator* decorator)
-{
-    return static_cast<TextFieldDecoratorImpl*>(decorator)->decoratorClient() == this;
+class PasswordGeneratorButtonElement FINAL : public HTMLDivElement {
+public:
+    static PassRefPtr<PasswordGeneratorButtonElement> create(Document* document)
+    {
+        return adoptRef(new PasswordGeneratorButtonElement(document));
+    }
+
+    void decorate(HTMLInputElement*);
+
+    virtual bool willRespondToMouseMoveEvents() OVERRIDE;
+    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+
+private:
+    PasswordGeneratorButtonElement(Document*);
+    virtual bool isPasswordGeneratorButtonElement() const OVERRIDE { return true; }
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual bool isMouseFocusable() const OVERRIDE { return false; }
+    virtual void defaultEventHandler(Event*) OVERRIDE;
+
+    CachedImage* imageForNormalState();
+    CachedImage* imageForHoverState();
+
+    HTMLInputElement* hostInput();
+    void updateImage();
+
+    CachedResourceHandle<CachedImage> m_cachedImageForNormalState;
+    CachedResourceHandle<CachedImage> m_cachedImageForHoverState;
+    bool m_isInHoverState;
+};
+
 }
-
-} // namespace WebKit
+#endif
