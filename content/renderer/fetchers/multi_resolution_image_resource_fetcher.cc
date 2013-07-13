@@ -44,7 +44,8 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
   std::vector<SkBitmap> bitmaps;
   if (!response.isNull()) {
     http_status_code_ = response.httpStatusCode();
-    if (http_status_code_ == 200) {
+    GURL url(response.url());
+    if (http_status_code_ == 200 || url.SchemeIsFile()) {
       // Request succeeded, try to convert it to an image.
       bitmaps = ImageDecoder::DecodeAll(
           reinterpret_cast<const unsigned char*>(data.data()), data.size());
