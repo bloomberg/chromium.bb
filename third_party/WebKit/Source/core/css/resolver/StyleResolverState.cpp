@@ -47,11 +47,23 @@ ElementResolveContext::ElementResolveContext(Element* element)
     m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
 }
 
+StyleResolveScope::StyleResolveScope(StyleResolverState* state, Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+    : m_state(state)
+{
+    m_state->initForStyleResolve(document, e, parentStyle, regionForStyling);
+}
+
+StyleResolveScope::~StyleResolveScope()
+{
+    m_state->clear();
+}
+
 void StyleResolverState::clear()
 {
     // FIXME: Use m_elementContent = ElementContext() instead.
     m_elementContext.deprecatedPartialClear();
 
+    m_style = 0;
     m_parentStyle = 0;
     m_regionForStyling = 0;
     m_elementStyleResources.clear();

@@ -123,6 +123,15 @@ public:
     const ContainerNode* scope;
 };
 
+struct CSSPropertyValue {
+    CSSPropertyValue(CSSPropertyID property, CSSValue* value)
+        : property(property), value(value) { }
+    // Stores value=propertySet.getPropertyCSSValue(id).get().
+    CSSPropertyValue(CSSPropertyID, const StylePropertySet&);
+    CSSPropertyID property;
+    CSSValue* value;
+};
+
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.
 class StyleResolver {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED;
@@ -181,7 +190,7 @@ private:
     bool canShareStyleWithControl(const ElementResolveContext&, Element* sharingCandidate) const;
     bool sharingCandidateHasIdenticalStyleAffectingAttributes(const ElementResolveContext&, Element* sharingCandidate) const;
 
-    PassRefPtr<RenderStyle> styleForKeyframe(const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
+    PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
 public:
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
@@ -197,9 +206,8 @@ public:
     PassRefPtr<CSSRuleList> pseudoStyleRulesForElement(Element*, PseudoId, unsigned rulesToInclude = AllButEmptyCSSRules);
 
 public:
-    void applyPropertyToStyle(CSSPropertyID, CSSValue*, RenderStyle*);
-
-    void applyPropertyToCurrentStyle(CSSPropertyID, CSSValue*);
+    // |properties| is an array with |count| elements.
+    void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
 
     void updateFont();
     void initializeFontStyle(Settings*);

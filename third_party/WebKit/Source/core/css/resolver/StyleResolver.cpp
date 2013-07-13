@@ -1014,13 +1014,11 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     }
 
     StyleResolverState& state = m_state;
-    state.initForStyleResolve(document(), element, defaultParent, regionForStyling);
+    StyleResolveScope resolveScope(&state, document(), element, defaultParent, regionForStyling);
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint() && state.parentStyle()) {
-        RenderStyle* sharedStyle = locateSharedStyle(state.elementContext());
-        if (sharedStyle) {
-            state.clear();
-            return sharedStyle;
-        }
+        RefPtr<RenderStyle> sharedStyle = locateSharedStyle(state.elementContext());
+        if (sharedStyle)
+            return sharedStyle.release();
     }
 
     if (state.parentStyle()) {
@@ -1071,8 +1069,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     // Clean up our style object's display and text decorations (among other fixups).
     adjustRenderStyle(state.style(), state.parentStyle(), element);
 
-    state.clear(); // Clear out for the next resolve.
-
     document()->didAccessStyleResolver();
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
@@ -1083,8 +1079,10 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(const RenderStyle* elementStyle, const StyleKeyframe* keyframe, KeyframeValue& keyframeValue)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle* elementStyle, const StyleKeyframe* keyframe, KeyframeValue& keyframeValue)
 {
+    StyleResolveScope resolveScope(&m_state, document(), e);
+
     MatchResult result;
     if (keyframe->properties())
         result.addMatchedProperties(keyframe->properties());
@@ -1160,12 +1158,10 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
     const Vector<RefPtr<StyleKeyframe> >& keyframes = keyframesRule->keyframes();
     for (unsigned i = 0; i < keyframes.size(); ++i) {
         // Apply the declaration to the style. This is a simplified version of the logic in styleForElement
-        m_state.initForStyleResolve(document(), e);
-
         const StyleKeyframe* keyframe = keyframes[i].get();
 
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(elementStyle, keyframe, keyframeValue));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, keyframe, keyframeValue));
 
         // Add this keyframe style to all the indicated key times
         Vector<float> keys;
@@ -1185,7 +1181,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
             zeroPercentKeyframe->setKeyText("0%");
         }
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(elementStyle, zeroPercentKeyframe, keyframeValue));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, zeroPercentKeyframe, keyframeValue));
         list.insert(keyframeValue);
     }
 
@@ -1197,7 +1193,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
             hundredPercentKeyframe->setKeyText("100%");
         }
         KeyframeValue keyframeValue(1, 0);
-        keyframeValue.setStyle(styleForKeyframe(elementStyle, hundredPercentKeyframe, keyframeValue));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, hundredPercentKeyframe, keyframeValue));
         list.insert(keyframeValue);
     }
 }
@@ -1210,7 +1206,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     StyleResolverState& state = m_state;
 
-    state.initForStyleResolve(document(), e, parentStyle);
+    StyleResolveScope resolveScope(&state, document(), e, parentStyle);
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());
@@ -1255,7 +1251,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
 PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 {
-    m_state.initForStyleResolve(document(), document()->documentElement()); // m_rootElementStyle will be set to the document style.
+    StyleResolveScope resolveScope(&m_state, document(), document()->documentElement()); // m_rootElementStyle will be set to the document style.
 
     m_state.setStyle(RenderStyle::create());
     m_state.style()->inheritFrom(m_state.rootElementStyle());
@@ -1711,7 +1707,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (!e || !e->document()->haveStylesheetsLoaded())
         return 0;
 
-    m_state.initForStyleResolve(document(), e, 0);
+    StyleResolveScope resolveScope(&m_state, document(), e);
 
     ElementRuleCollector collector(m_state.elementContext(), m_selectorFilter, m_state.style(), m_inspectorCSSOMWrappers);
     collector.setMode(SelectorChecker::CollectingRules);
@@ -2037,17 +2033,30 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
 }
 
-void StyleResolver::applyPropertyToStyle(CSSPropertyID id, CSSValue* value, RenderStyle* style)
-{
-    m_state.initForStyleResolve(document(), 0, style);
-    m_state.setStyle(style);
-    applyPropertyToCurrentStyle(id, value);
-}
+CSSPropertyValue::CSSPropertyValue(CSSPropertyID id, const StylePropertySet& propertySet)
+    : property(id), value(propertySet.getPropertyCSSValue(id).get())
+{ }
 
-void StyleResolver::applyPropertyToCurrentStyle(CSSPropertyID id, CSSValue* value)
+void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle* style)
 {
-    if (value)
-        applyProperty(id, value);
+    StyleResolveScope resolveScope(&m_state, document(), 0, style);
+    m_state.setStyle(style);
+    for (size_t i = 0; i < count; ++i) {
+        if (properties[i].value) {
+            // As described in BUG66291, setting font-size and line-height on a font may entail a CSSPrimitiveValue::computeLengthDouble call,
+            // which assumes the fontMetrics are available for the affected font, otherwise a crash occurs (see http://trac.webkit.org/changeset/96122).
+            // The updateFont() call below updates the fontMetrics and ensure the proper setting of font-size and line-height.
+            switch (properties[i].property) {
+            case CSSPropertyFontSize:
+            case CSSPropertyLineHeight:
+                updateFont();
+                break;
+            default:
+                break;
+            }
+            applyProperty(properties[i].property, properties[i].value);
+        }
+    }
 }
 
 static bool hasVariableReference(CSSValue* value)

@@ -82,6 +82,15 @@ private:
     bool m_resetStyleInheritance;
 };
 
+// Initializes a StyleResolverState within a scope.
+class StyleResolveScope {
+public:
+    StyleResolveScope(StyleResolverState*, Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    ~StyleResolveScope();
+private:
+    StyleResolverState* m_state;
+};
+
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
@@ -93,9 +102,6 @@ public:
     , m_fontDirty(false)
     , m_styleMap(*this, m_elementStyleResources)
     { }
-
-    void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
-    void clear();
 
     // These are all just pass-through methods to ElementResolveContext.
     Document* document() const { return m_elementContext.document(); }
@@ -176,6 +182,11 @@ public:
     bool useSVGZoomRules() const { return element() && element()->isSVGElement(); }
 
 private:
+    friend class StyleResolveScope;
+
+    void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    void clear();
+
     void initElement(Element*);
 
     ElementResolveContext m_elementContext;
