@@ -86,6 +86,9 @@ class JingleSession : public Session,
                        scoped_ptr<Authenticator> authenticator,
                        scoped_ptr<CandidateSessionConfig> config);
 
+  // Adds to a new channel the remote candidates received before it was created.
+  void AddPendingRemoteCandidates(Transport* channel, const std::string& name);
+
   // Called by JingleSessionManager for incoming connections.
   void InitializeIncomingConnection(const JingleMessage& initiate_message,
                                     scoped_ptr<Authenticator> authenticator);
@@ -165,6 +168,9 @@ class JingleSession : public Session,
 
   base::OneShotTimer<JingleSession> transport_infos_timer_;
   std::list<JingleMessage::NamedCandidate> pending_candidates_;
+
+  // Pending remote candidates, received before the local channels were created.
+  std::list<JingleMessage::NamedCandidate> pending_remote_candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };
