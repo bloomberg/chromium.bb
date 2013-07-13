@@ -368,6 +368,7 @@ bool LevelDBDatabase::Get(const StringPiece& key,
   }
   if (s.IsNotFound())
     return true;
+  HistogramLevelDBError("WebCore.IndexedDB.LevelDBReadErrors", s);
   LOG(ERROR) << "LevelDB get failed: " << s.ToString();
   return false;
 }

@@ -13024,6 +13024,40 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.LevelDBReadErrors" enum="LevelDBErrorTypes">
+  <summary>
+    Error classes returned by LevelDB when it failed to read a database.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBReadErrors.Corruption"
+    enum="LevelDBCorruptionTypes">
+  Types of corruption that LevelDB encounters when reading a database.
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBReadErrors.EnvMethod"
+    enum="LevelDBIOErrorMethods">
+  <summary>
+    LevelDBEnv methods that generated IO errors when reading a database.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBReadErrors.Errno"
+    enum="OSAgnosticErrno">
+  <summary>
+    Errno errors encountered by a single LevelDBEnv method when reading an
+    IndexedDB instance.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBReadErrors.PFE"
+    enum="PlatformFileError">
+  <summary>
+    PlatformFileErrors encountered by a single LevelDBEnv method when opening an
+    IndexedDB instance.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.LevelDBWriteErrors" enum="LevelDBErrorTypes">
   <summary>
     Error classes returned by LevelDB when it failed to write to a database.
@@ -20433,6 +20467,7 @@ other types of suffix sets.
   <group name="WritableFileSyncParent"
       label="ChromiumWritableFile::SyncParent"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.Errno"/>
+  <affected-histogram name="WebCore.IndexedDB.LevelDBReadErrors.Errno"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.Errno"/>
 </fieldtrial>
 
@@ -20447,6 +20482,7 @@ other types of suffix sets.
   <group name="RenameFile" label="ChromiumEnv::RenameFile"/>
   <group name="UnlockFile" label="ChromiumEnv::UnlockFile"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.PFE"/>
+  <affected-histogram name="WebCore.IndexedDB.LevelDBReadErrors.PFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.PFE"/>
 </fieldtrial>
 
