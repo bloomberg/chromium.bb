@@ -248,6 +248,8 @@ class MockConnectionManager : public ServerConnectionManager {
   // requests.
   void UpdateConnectionStatus();
 
+  void SetServerStatus(HttpResponse::ServerConnectionCode server_status);
+
   // Return by copy to be thread-safe.
   const std::string store_birthday() {
     base::AutoLock lock(store_birthday_lock_);

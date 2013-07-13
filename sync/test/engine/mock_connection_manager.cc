@@ -733,4 +733,9 @@ void MockConnectionManager::UpdateConnectionStatus() {
   }
 }
 
+void MockConnectionManager::SetServerStatus(
+    HttpResponse::ServerConnectionCode server_status) {
+  server_status_ = server_status;
+}
+
 }  // namespace syncer

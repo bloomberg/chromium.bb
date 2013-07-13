@@ -168,7 +168,8 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
       delay_provider_(delay_provider),
       syncer_(syncer),
       session_context_(context),
-      no_scheduling_allowed_(false) {
+      no_scheduling_allowed_(false),
+      do_poll_after_credentials_updated_(false) {
 }
 
 SyncSchedulerImpl::~SyncSchedulerImpl() {
@@ -478,6 +479,8 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
       nudge_tracker_,
       session.get());
   AdjustPolling(FORCE_RESET);
+  // Don't run poll job till the next time poll timer fires.
+  do_poll_after_credentials_updated_ = false;
 
   bool success = !premature_exit
       && !sessions::HasSyncerError(
@@ -519,6 +522,8 @@ bool SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
       GetRoutingInfoTypes(session_context_->routing_info()),
       session.get());
   AdjustPolling(FORCE_RESET);
+  // Don't run poll job till the next time poll timer fires.
+  do_poll_after_credentials_updated_ = false;
 
   bool success = !premature_exit
       && !sessions::HasSyncerError(
@@ -688,9 +693,16 @@ void SyncSchedulerImpl::TryCanaryJob() {
              CanRunNudgeJobNow(CANARY_PRIORITY)) {
     SDVLOG(2) << "Found pending nudge job; will run as canary";
     DoNudgeSyncSessionJob(CANARY_PRIORITY);
+  } else if (mode_ == NORMAL_MODE && CanRunJobNow(CANARY_PRIORITY) &&
+             do_poll_after_credentials_updated_) {
+    // Retry poll if poll timer recently fired and ProfileSyncService received
+    // fresh access token.
+    DoPollSyncSessionJob();
   } else {
     SDVLOG(2) << "Found no work to do; will not run a canary";
   }
+  // Don't run poll job till the next time poll timer fires.
+  do_poll_after_credentials_updated_ = false;
 }
 
 void SyncSchedulerImpl::PollTimerCallback() {
@@ -707,6 +719,14 @@ void SyncSchedulerImpl::PollTimerCallback() {
   }
 
   DoPollSyncSessionJob();
+  // Poll timer fires infrequently. Usually by this time access token is already
+  // expired and poll job will fail with auth error. Set flag to retry poll once
+  // ProfileSyncService gets new access token, TryCanaryJob will be called in
+  // this case.
+  if (HttpResponse::SYNC_AUTH_ERROR ==
+      session_context_->connection_manager()->server_status()) {
+    do_poll_after_credentials_updated_ = true;
+  }
 }
 
 void SyncSchedulerImpl::Unthrottle() {

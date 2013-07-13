@@ -1283,4 +1283,31 @@ TEST_F(SyncSchedulerTest, DoubleCanaryInConfigure) {
   PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
 }
 
+TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
+  SyncShareRecords records;
+  TimeDelta poll(TimeDelta::FromMilliseconds(15));
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
+
+  ::testing::InSequence seq;
+  EXPECT_CALL(*syncer(), PollSyncShare(_,_))
+      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
+           WithArg<1>(RecordSyncShareMultiple(&records, kMinNumSamples))));
+
+  connection()->SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+
+  // Run to wait for polling.
+  RunLoop();
+
+  // Normally OnCredentialsUpdated calls TryCanaryJob that doesn't run Poll,
+  // but after poll finished with auth error from poll timer it should retry
+  // poll once more
+  EXPECT_CALL(*syncer(), PollSyncShare(_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
+                      WithArg<1>(RecordSyncShare(&records))));
+  scheduler()->OnCredentialsUpdated();
+  connection()->SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
+  StopSyncScheduler();
+}
+
 }  // namespace syncer

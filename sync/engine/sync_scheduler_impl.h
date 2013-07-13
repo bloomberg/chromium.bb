@@ -311,6 +311,15 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // could result in tight sync loops hitting sync servers.
   bool no_scheduling_allowed_;
 
+  // crbug/251307. This is a workaround for M29. crbug/259913 tracks proper fix
+  // for M30.
+  // The issue is that poll job runs after few hours of inactivity and therefore
+  // will always fail with auth error because of expired access token. Once
+  // fresh access token is requested poll job is not retried.
+  // The change is to remember that poll timer just fired and retry poll job
+  // after credentials are updated.
+  bool do_poll_after_credentials_updated_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncSchedulerImpl);
 };
 
