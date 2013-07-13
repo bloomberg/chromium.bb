@@ -9,9 +9,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/pickle.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -24,7 +24,6 @@ static const int kStartWidth = 320;
 static const int kStartHeight = 240;
 static const int kWidthDelta = 4;
 static const int kHeightDelta = 3;
-static const char kFakeBufferHeader[] = "Fake Buffer";
 
 FakeDemuxerStream::FakeDemuxerStream(int num_configs,
                                      int num_buffers_in_one_config,
@@ -139,19 +138,10 @@ void FakeDemuxerStream::DoRead() {
     return;
   }
 
-  // Prepare the next buffer.
-  Pickle pickle;
-  pickle.WriteString(kFakeBufferHeader);
-  pickle.WriteInt(video_decoder_config_.coded_size().width());
-  pickle.WriteInt(video_decoder_config_.coded_size().height());
-  pickle.WriteInt64(current_timestamp_.InMilliseconds());
-
-  scoped_refptr<DecoderBuffer> buffer = DecoderBuffer::CopyFrom(
-      static_cast<const uint8*>(pickle.data()), pickle.size());
+  scoped_refptr<DecoderBuffer> buffer = CreateFakeVideoBufferForTest(
+      video_decoder_config_, current_timestamp_, duration_);
 
   // TODO(xhwang): Output out-of-order buffers if needed.
-  buffer->SetTimestamp(current_timestamp_);
-  buffer->SetDuration(duration_);
   current_timestamp_ += duration_;
 
   num_buffers_left_in_current_config_--;

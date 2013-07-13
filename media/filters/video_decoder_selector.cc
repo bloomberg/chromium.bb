@@ -68,7 +68,7 @@ void VideoDecoderSelector::SelectVideoDecoder(
       message_loop_, set_decryptor_ready_cb_));
 
   video_decoder_->Initialize(
-      input_stream_,
+      input_stream_->video_decoder_config(),
       BindToCurrentLoop(base::Bind(
           &VideoDecoderSelector::DecryptingVideoDecoderInitDone,
           weak_ptr_factory_.GetWeakPtr())),
@@ -122,7 +122,7 @@ void VideoDecoderSelector::InitializeDecoder(
   }
 
   (*iter)->Initialize(
-      input_stream_,
+      input_stream_->video_decoder_config(),
       BindToCurrentLoop(base::Bind(
           &VideoDecoderSelector::DecoderInitDone,
           weak_ptr_factory_.GetWeakPtr(),

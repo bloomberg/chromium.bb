@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
-#include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -32,10 +32,11 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   virtual ~DecryptingVideoDecoder();
 
   // VideoDecoder implementation.
-  virtual void Initialize(DemuxerStream* stream,
+  virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) OVERRIDE;
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                      const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
 
@@ -48,7 +49,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
     kDecryptorRequested,
     kPendingDecoderInit,
     kIdle,
-    kPendingDemuxerRead,
     kPendingDecode,
     kWaitingForKey,
     kDecodeFinished,
@@ -61,12 +61,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
 
   // Callback for Decryptor::InitializeVideoDecoder() during initialization.
   void FinishInitialization(bool success);
-
-  void ReadFromDemuxerStream();
-
-  // Callback for DemuxerStream::Read().
-  void DecryptAndDecodeBuffer(DemuxerStream::Status status,
-                              const scoped_refptr<DecoderBuffer>& buffer);
 
   void DecodePendingBuffer();
 
@@ -96,15 +90,14 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   ReadCB read_cb_;
   base::Closure reset_cb_;
 
-  // Pointer to the demuxer stream that will feed us compressed buffers.
-  DemuxerStream* demuxer_stream_;
+  VideoDecoderConfig config_;
 
   // Callback to request/cancel decryptor creation notification.
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 
   Decryptor* decryptor_;
 
-  // The buffer returned by the demuxer that needs decrypting/decoding.
+  // The buffer that needs decrypting/decoding.
   scoped_refptr<media::DecoderBuffer> pending_buffer_to_decode_;
 
   // Indicates the situation where new key is added during pending decode

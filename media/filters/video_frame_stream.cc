@@ -49,7 +49,8 @@ void VideoFrameStream::Initialize(DemuxerStream* stream,
   stream_ = stream;
 
   state_ = STATE_INITIALIZING;
-  decoder_selector_->SelectVideoDecoder(this, statistics_cb, base::Bind(
+  // TODO(xhwang): VideoDecoderSelector only needs a config to select a decoder.
+  decoder_selector_->SelectVideoDecoder(stream, statistics_cb, base::Bind(
       &VideoFrameStream::OnDecoderSelected, weak_this_));
 }
 
@@ -70,17 +71,15 @@ void VideoFrameStream::ReadFrame(const VideoDecoder::ReadCB& read_cb) {
   }
 
   read_cb_ = read_cb;
-  decoder_->Read(base::Bind(&VideoFrameStream::OnFrameReady, weak_this_));
+
+  if (state_ == STATE_FLUSHING_DECODER) {
+    FlushDecoder();
+    return;
+  }
+
+  ReadFromDemuxerStream();
 }
 
-// VideoDecoder API guarantees that if VideoDecoder::Reset() is called during
-// a pending read, the read callback must be fired before the reset callback is
-// fired. Therefore, we can call VideoDecoder::Reset() regardless of if we have
-// a pending read and always satisfy the reset callback when the decoder reset
-// is finished. The only exception is when Reset() is called during decoder
-// reinitialization. In this case we cannot and don't need to reset the decoder.
-// We should just wait for the reinitialization to finish to satisfy the reset
-// callback.
 void VideoFrameStream::Reset(const base::Closure& closure) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_STOPPED) << state_;
@@ -89,14 +88,21 @@ void VideoFrameStream::Reset(const base::Closure& closure) {
 
   reset_cb_ = closure;
 
-  // VideoDecoder does not need to be and cannot be Reset() during
-  // reinitialization. |decrypting_demuxer_stream_| was reset before decoder
+  // During decoder reinitialization, VideoDecoder does not need to be and
+  // cannot be Reset(). |decrypting_demuxer_stream_| was reset before decoder
   // reinitialization.
-  if (state_ == STATE_REINITIALIZING_DECODER)
+  // During pending demuxer read, VideoDecoder will be reset after demuxer read
+  // is returned (in OnBufferReady()).
+  if (state_ == STATE_REINITIALIZING_DECODER ||
+      state_ == STATE_PENDING_DEMUXER_READ) {
     return;
+  }
 
-  // We may or may not have pending read, but we'll start to reset everything
-  // regardless.
+  // VideoDecoder API guarantees that if VideoDecoder::Reset() is called during
+  // a pending decode, the decode callback must be fired before the reset
+  // callback is fired. Therefore, we can call VideoDecoder::Reset() regardless
+  // of if we have a pending decode and always satisfy the reset callback when
+  // the decoder reset is finished.
   if (decrypting_demuxer_stream_) {
     decrypting_demuxer_stream_->Reset(base::Bind(
         &VideoFrameStream::ResetDecoder, weak_this_));
@@ -113,22 +119,24 @@ void VideoFrameStream::Stop(const base::Closure& closure) {
 
   stop_cb_ = closure;
 
-  // The stopping will continue after all of the following pending callbacks
-  // (if they are not null) are satisfied.
+  // The stopping process will continue after the pending operation is finished.
   // TODO(xhwang): Now we cannot stop the initialization process through
   // VideoDecoderSelector. Fix this. See: http://crbug.com/222054
-  if (state_ == STATE_INITIALIZING)
+  if (state_ == STATE_INITIALIZING || state_ == STATE_PENDING_DEMUXER_READ)
     return;
 
-  // We may or may not have pending read and/or pending reset, but we'll start
-  // to stop everything regardless.
-
+  // VideoDecoder API guarantees that if VideoDecoder::Stop() is called during
+  // a pending reset or a pending decode, the callbacks are always fired in the
+  // decode -> reset -> stop order. Therefore, we can call VideoDecoder::Stop()
+  // regardless of if we have a pending decode or reset and always satisfy the
+  // stop callback when the decoder decode/reset is finished.
   if (decrypting_demuxer_stream_) {
     decrypting_demuxer_stream_->Reset(base::Bind(
         &VideoFrameStream::StopDecoder, weak_this_));
     return;
   }
 
+  // We may not have a |decoder_| if Stop() was called during initialization.
   if (decoder_) {
     StopDecoder();
     return;
@@ -146,46 +154,15 @@ bool VideoFrameStream::CanReadWithoutStalling() const {
   return decoder_->CanReadWithoutStalling();
 }
 
-void VideoFrameStream::Read(const DemuxerStream::ReadCB& demuxer_read_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
-  if (state_ == STATE_FLUSHING_DECODER) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        demuxer_read_cb, DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer()));
-    return;
-  }
-
-  stream_->Read(base::Bind(
-      &VideoFrameStream::OnBufferReady, weak_this_, demuxer_read_cb));
-}
-
-AudioDecoderConfig VideoFrameStream::audio_decoder_config() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  LOG(FATAL) << "Method audio_decoder_config() called on VideoFrameStream";
-  return stream_->audio_decoder_config();
-}
-
-VideoDecoderConfig VideoFrameStream::video_decoder_config() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  return stream_->video_decoder_config();
-}
-
-DemuxerStream::Type VideoFrameStream::type() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  return VIDEO;
-}
-
-void VideoFrameStream::EnableBitstreamConverter() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  NOTREACHED();
-}
-
 void VideoFrameStream::OnDecoderSelected(
     scoped_ptr<VideoDecoder> selected_decoder,
     scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
   DCHECK(!init_cb_.is_null());
+  DCHECK(read_cb_.is_null());
+  DCHECK(reset_cb_.is_null());
+
   decoder_selector_.reset();
 
   if (!selected_decoder) {
@@ -193,11 +170,12 @@ void VideoFrameStream::OnDecoderSelected(
     base::ResetAndReturn(&init_cb_).Run(false, false);
   } else {
     state_ = STATE_NORMAL;
-    decoder_ = selected_decoder.Pass();
     decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
-    if (decoder_->NeedsBitstreamConversion()) {
+    if (decrypting_demuxer_stream_)
+      stream_ = decrypting_demuxer_stream_.get();
+    decoder_ = selected_decoder.Pass();
+    if (decoder_->NeedsBitstreamConversion())
       stream_->EnableBitstreamConverter();
-    }
     // TODO(xhwang): We assume |decoder_->HasAlpha()| does not change after
     // reinitialization. Check this condition.
     base::ResetAndReturn(&init_cb_).Run(true, decoder_->HasAlpha());
@@ -210,75 +188,136 @@ void VideoFrameStream::OnDecoderSelected(
   }
 }
 
+void VideoFrameStream::SatisfyRead(VideoDecoder::Status status,
+                                   const scoped_refptr<VideoFrame>& frame) {
+  DCHECK(!read_cb_.is_null());
+  base::ResetAndReturn(&read_cb_).Run(status, frame);
+}
+
+void VideoFrameStream::AbortRead() {
+  SatisfyRead(VideoDecoder::kOk, NULL);
+}
+
+void VideoFrameStream::Decode(const scoped_refptr<DecoderBuffer>& buffer) {
+  DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
+  DCHECK(!read_cb_.is_null());
+  DCHECK(reset_cb_.is_null());
+  DCHECK(stop_cb_.is_null());
+  DCHECK(buffer);
+
+  decoder_->Decode(buffer, base::Bind(&VideoFrameStream::OnFrameReady,
+                                      weak_this_));
+}
+
+void VideoFrameStream::FlushDecoder() {
+  Decode(DecoderBuffer::CreateEOSBuffer());
+}
+
 void VideoFrameStream::OnFrameReady(const VideoDecoder::Status status,
                                     const scoped_refptr<VideoFrame>& frame) {
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK(!read_cb_.is_null());
 
-  if (status != VideoDecoder::kOk) {
+  if (status == VideoDecoder::kDecodeError ||
+      status == VideoDecoder::kDecryptError) {
     DCHECK(!frame.get());
     state_ = STATE_ERROR;
-    base::ResetAndReturn(&read_cb_).Run(status, NULL);
+    SatisfyRead(status, NULL);
     return;
   }
 
+  // Drop decoding result if Reset()/Stop() was called during decoding.
   // The stopping/resetting process will be handled when the decoder is
   // stopped/reset.
   if (!stop_cb_.is_null() || !reset_cb_.is_null()) {
-    base::ResetAndReturn(&read_cb_).Run(VideoDecoder::kOk, NULL);
+    AbortRead();
     return;
   }
 
-  // Decoder flush finished. Reinitialize the video decoder.
+  // Decoder flushed. Reinitialize the video decoder.
   if (state_ == STATE_FLUSHING_DECODER &&
       status == VideoDecoder::kOk && frame->IsEndOfStream()) {
     ReinitializeDecoder();
     return;
   }
 
-  base::ResetAndReturn(&read_cb_).Run(status, frame);
-}
-
-void VideoFrameStream::OnBufferReady(
-    const DemuxerStream::ReadCB& demuxer_read_cb,
-    DemuxerStream::Status status,
-    const scoped_refptr<DecoderBuffer>& buffer) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  // VideoFrameStream reads from demuxer stream only when in NORMAL state.
-  DCHECK_EQ(state_, STATE_NORMAL) << state_;
-  DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
-
-  if (status == DemuxerStream::kConfigChanged) {
-    DVLOG(2) << "OnBufferReady() - kConfigChanged";
-    state_ = STATE_FLUSHING_DECODER;
-    demuxer_read_cb.Run(DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer());
+  if (status == VideoDecoder::kNotEnoughData) {
+    if (state_ == STATE_NORMAL)
+      ReadFromDemuxerStream();
+    else if (state_ == STATE_FLUSHING_DECODER)
+      FlushDecoder();
     return;
   }
 
-  DCHECK(status == DemuxerStream::kOk || status == DemuxerStream::kAborted);
-  demuxer_read_cb.Run(status, buffer);
+  SatisfyRead(status, frame);
+}
+
+void VideoFrameStream::ReadFromDemuxerStream() {
+  DCHECK_EQ(state_, STATE_NORMAL) << state_;
+  DCHECK(!read_cb_.is_null());
+  DCHECK(reset_cb_.is_null());
+  DCHECK(stop_cb_.is_null());
+
+  state_ = STATE_PENDING_DEMUXER_READ;
+  stream_->Read(base::Bind(&VideoFrameStream::OnBufferReady, weak_this_));
+}
+
+void VideoFrameStream::OnBufferReady(
+    DemuxerStream::Status status,
+    const scoped_refptr<DecoderBuffer>& buffer) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, STATE_PENDING_DEMUXER_READ) << state_;
+  DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
+  DCHECK(!read_cb_.is_null());
+
+  state_ = STATE_NORMAL;
+
+  // Reset()/Stop() was postponed during STATE_PENDING_DEMUXER_READ state.
+  // We need to handle them in this function.
+
+  if (!stop_cb_.is_null()) {
+    AbortRead();
+    if (!reset_cb_.is_null())
+      Reset(base::ResetAndReturn(&reset_cb_));
+    Stop(base::ResetAndReturn(&stop_cb_));
+    return;
+  }
+
+  if (status == DemuxerStream::kConfigChanged) {
+    state_ = STATE_FLUSHING_DECODER;
+    if (!reset_cb_.is_null()) {
+      AbortRead();
+      Reset(base::ResetAndReturn(&reset_cb_));
+      // Reinitialization will continue after Reset() is done.
+    } else {
+      FlushDecoder();
+    }
+    return;
+  }
+
+  if (!reset_cb_.is_null()) {
+    AbortRead();
+    Reset(base::ResetAndReturn(&reset_cb_));
+    return;
+  }
+
+  if (status == DemuxerStream::kAborted) {
+    AbortRead();
+    return;
+  }
+
+  DCHECK(status == DemuxerStream::kOk) << status;
+  Decode(buffer);
 }
 
 void VideoFrameStream::ReinitializeDecoder() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_FLUSHING_DECODER) << state_;
 
-  DemuxerStream* stream = this;
-  if (decrypting_demuxer_stream_) {
-    // TODO(xhwang): Remove this hack! Since VideoFrameStream handles
-    // kConfigChange internally and hides it from downstream filters. The
-    // DecryptingDemuxerStream never receives kConfigChanged to reset it's
-    // internal VideoDecoderConfig. Call InitializeDecoderConfig() here
-    // explicitly to solve this. This will be removed when we separate the
-    // DemuxerStream from the VideoDecoder.
-    decrypting_demuxer_stream_->InitializeDecoderConfig();
-    stream = decrypting_demuxer_stream_.get();
-  }
-
-  DCHECK(stream->video_decoder_config().IsValidConfig());
+  DCHECK(stream_->video_decoder_config().IsValidConfig());
   state_ = STATE_REINITIALIZING_DECODER;
   decoder_->Initialize(
-      stream,
+      stream_->video_decoder_config(),
       base::Bind(&VideoFrameStream::OnDecoderReinitialized, weak_this_),
       statistics_cb_);
 }
@@ -287,16 +326,24 @@ void VideoFrameStream::OnDecoderReinitialized(PipelineStatus status) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER) << state_;
 
+  // ReinitializeDecoder() can be called in two cases:
+  // 1, Flushing decoder finished (see OnFrameReady()).
+  // 2, Reset() was called during flushing decoder (see OnDecoderReset()).
+  // Also, Reset()/Stop() can be called during pending ReinitializeDecoder().
+  // This function needs to handle them all!
+
   state_ = (status == PIPELINE_OK) ? STATE_NORMAL : STATE_ERROR;
 
-  if (!reset_cb_.is_null()) {
-    if (!read_cb_.is_null())
-      base::ResetAndReturn(&read_cb_).Run(VideoDecoder::kOk, NULL);
-    base::ResetAndReturn(&reset_cb_).Run();
-    return;
-  }
+  if (!read_cb_.is_null() && (!stop_cb_.is_null() || !reset_cb_.is_null()))
+    AbortRead();
 
-  DCHECK(!read_cb_.is_null());
+  if (!reset_cb_.is_null())
+    base::ResetAndReturn(&reset_cb_).Run();
+
+  // If !stop_cb_.is_null(), it will be handled in OnDecoderStopped().
+
+  if (read_cb_.is_null())
+    return;
 
   if (!stop_cb_.is_null()) {
     base::ResetAndReturn(&read_cb_).Run(VideoDecoder::kOk, NULL);
@@ -304,17 +351,16 @@ void VideoFrameStream::OnDecoderReinitialized(PipelineStatus status) {
   }
 
   if (state_ == STATE_ERROR) {
-    base::ResetAndReturn(&read_cb_).Run(VideoDecoder::kDecodeError, NULL);
+    SatisfyRead(VideoDecoder::kDecodeError, NULL);
     return;
   }
 
-  decoder_->Read(base::Bind(&VideoFrameStream::OnFrameReady, weak_this_));
+  ReadFromDemuxerStream();
 }
 
 void VideoFrameStream::ResetDecoder() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(state_ == STATE_NORMAL ||
-         state_ == STATE_FLUSHING_DECODER ||
+  DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR) << state_;
   DCHECK(!reset_cb_.is_null());
 
@@ -323,8 +369,7 @@ void VideoFrameStream::ResetDecoder() {
 
 void VideoFrameStream::OnDecoderReset() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(state_ == STATE_NORMAL ||
-         state_ == STATE_FLUSHING_DECODER ||
+  DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR) << state_;
   // If Reset() was called during pending read, read callback should be fired
   // before the reset callback is fired.
