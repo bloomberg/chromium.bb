@@ -39,3 +39,6 @@ enne@chromium.org
 
 # animation
 vollick@chromium.org
+
+per-file *.isolate=csharp@chromium.org
+per-file *.isolate=maruel@chromium.org

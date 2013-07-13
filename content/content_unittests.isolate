@@ -3,6 +3,25 @@
 # found in the LICENSE file.
 {
   'conditions': [
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '../third_party/hyphen/hyph_en_US.dic',
+        ],
+        'isolate_dependency_untracked': [
+          '../media/test/data/',
+          '../webkit/data/',
+          'test/data/',
+        ],
+      },
+    }],
+    ['OS=="android" or OS=="mac"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/content_resources.pak',
+        ],
+      },
+    }],
     ['OS=="linux"', {
       'variables': {
         'command': [
@@ -11,8 +30,10 @@
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_untracked': [
+        'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/libffmpegsumo.so',
+        ],
+        'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/test_data/',
         ],
       },
@@ -22,17 +43,11 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_untracked': [
-          '../third_party/hyphen/hyph_en_US.dic',
-          '../webkit/data/',
-          'test/data/',
-        ],
       },
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/content_resources.pak',
+        'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
       },
@@ -48,7 +63,7 @@
     }],
     ['OS=="win"', {
       'variables': {
-        'isolate_dependency_untracked': [
+        'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/icudt.dll',
         ],

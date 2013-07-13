@@ -55,6 +55,9 @@ def Dispatch(options):
                                     'apks',
                                     constants.BROWSERTEST_SUITE_NAME + '.apk')
 
+  deps_dir = gtest_dispatch._GenerateDepsDirUsingIsolate(
+      constants.BROWSERTEST_SUITE_NAME, options.build_type)
+
   # Constructs a new TestRunner with the current options.
   def RunnerFactory(device, shard_index):
     return test_runner.TestRunner(
@@ -69,7 +72,8 @@ def Dispatch(options):
         options.push_deps,
         constants.BROWSERTEST_TEST_PACKAGE_NAME,
         constants.BROWSERTEST_TEST_ACTIVITY_NAME,
-        constants.BROWSERTEST_COMMAND_LINE_FILE)
+        constants.BROWSERTEST_COMMAND_LINE_FILE,
+        deps_dir=deps_dir)
 
   # Get tests and split them up based on the number of devices.
   all_enabled = gtest_dispatch.GetAllEnabledTests(RunnerFactory,

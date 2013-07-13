@@ -29,6 +29,14 @@ import test_runner
 # blow up the dependency size (and the world).
 _ISOLATE_FILE_PATHS = {
     'base_unittests': 'base/base_unittests.isolate',
+    'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
+    'cc_perftests': 'cc/cc_perftests.isolate',
+    'components_unittests': 'components/components_unittests.isolate',
+    'content_browsertests': 'content/content_browsertests.isolate',
+    'content_unittests': 'content/content_unittests.isolate',
+    'media_unittests': 'media/media_unittests.isolate',
+    'net_unittests': 'net/net_unittests.isolate',
+    'ui_unittests': 'ui/ui_unittests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
 }
 
@@ -49,6 +57,9 @@ _DEPS_EXCLUSION_LIST = [
     'chrome/test/data/scroll',
     'chrome/test/data/third_party',
     'third_party/hunspell_dictionaries/*.dic',
+    # crbug.com/258690
+    'webkit/data/bmp_decoder',
+    'webkit/data/ico_decoder',
 ]
 
 _ISOLATE_SCRIPT = os.path.join(

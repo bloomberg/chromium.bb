@@ -6,3 +6,6 @@ scherkus@chromium.org
 shadi@chromium.org
 vrk@chromium.org
 xhwang@chromium.org
+
+per-file *.isolate=csharp@chromium.org
+per-file *.isolate=maruel@chromium.org

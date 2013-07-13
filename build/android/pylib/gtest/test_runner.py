@@ -30,110 +30,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
   # Ideally, we'd just push all test data. However, it has >100MB, and a lot
   # of the files are not relevant (some are used for browser_tests, others for
   # features not supported, etc..).
-  if test_suite_basename == 'media_unittests':
-    return [
-        'media/test/data',
-    ]
-  elif test_suite_basename == 'net_unittests':
-    return [
-        'chrome/test/data/animate1.gif',
-        'chrome/test/data/simple.html',
-        'net/data/cache_tests',
-        'net/data/filter_unittests',
-        'net/data/ftp',
-        'net/data/proxy_resolver_v8_tracing_unittest',
-        'net/data/proxy_resolver_v8_unittest',
-        'net/data/proxy_script_fetcher_unittest',
-        'net/data/ssl/certificates',
-        'net/data/test.html',
-        'net/data/url_request_unittest/',
-        ]
-  elif test_suite_basename == 'ui_unittests':
-    return [
-        'ui/base/test/data/data_pack_unittest/truncated-header.pak',
-    ]
-  elif test_suite_basename == 'content_unittests':
-    return [
-        'content/test/data/gpu/webgl_conformance_test_expectations.txt',
-        'content/test/data/page_state/',
-        'net/data/ssl/certificates/',
-        'third_party/hyphen/hyph_en_US.dic',
-        'webkit/data/dom_storage/webcore_test_database.localstorage',
-        ]
-  elif test_suite_basename == 'cc_perftests':
-    return [
-      'cc/test/data',
-    ]
-  elif test_suite_basename == 'content_browsertests':
-    return [
-        'content/test/data/content-disposition-inline.html',
-        'content/test/data/title1.html',
-        'content/test/data/post_message2.html',
-        'content/test/data/content-sniffer-test0.html.mock-http-headers',
-        'content/test/data/content-sniffer-test1.html.mock-http-headers',
-        'content/test/data/speech',
-        'content/test/data/page404.html.mock-http-headers',
-        'content/test/data/content-sniffer-test3.html',
-        'content/test/data/post_message.html',
-        'content/test/data/remove_frame_on_unload.html',
-        'content/test/data/cross-origin-redirect-blocked.html',
-        'content/test/data/prerender',
-        'content/test/data/device_orientation',
-        'content/test/data/content-disposition-empty.html',
-        'content/test/data/workers',
-        'content/test/data/content-sniffer-test3.html.mock-http-headers',
-        'content/test/data/content-sniffer-test0.html',
-        'content/test/data/browser_plugin_title_change.html',
-        'content/test/data/android',
-        'content/test/data/page404.html',
-        'content/test/data/dynamic2.html',
-        'content/test/data/browser_plugin_embedder.html',
-        'content/test/data/indexeddb',
-        'content/test/data/content-disposition-inline.html.mock-http-headers',
-        'content/test/data/nosniff-test.html',
-        'content/test/data/title3.html',
-        'content/test/data/browser_plugin_post_message_guest.html',
-        'content/test/data/content-disposition-empty.html.mock-http-headers',
-        'content/test/data/session_history',
-        'content/test/data/browser_plugin_embedder.html',
-        'content/test/data/overscroll_navigation.html',
-        'content/test/data/simple_database.html',
-        'content/test/data/gtk_key_bindings_test_gtkrc',
-        'content/test/data/browser_plugin_embedder_guest_unresponsive.html',
-        'content/test/data/sync_xmlhttprequest.html',
-        'content/test/data/content-sniffer-test3-frame.txt.mock-http-headers',
-        'content/test/data/frame_tree',
-        'content/test/data/content-sniffer-test2.html.mock-http-headers',
-        'content/test/data/sync_xmlhttprequest_disallowed.html',
-        'content/test/data/rwh_simple.html',
-        'content/test/data/title2.html',
-        'content/test/data/webkit',
-        'content/test/data/content-sniffer-test1.html',
-        'content/test/data/download',
-        'content/test/data/content-sniffer-test2.html',
-        'content/test/data/simple_page.html',
-        'content/test/data/google.mht',
-        'content/test/data/site_per_process_main.html',
-        'content/test/data/gpu',
-        'content/test/data/onunload_cookie.html',
-        'content/test/data/textinput',
-        'content/test/data/navigate_opener.html',
-        'content/test/data/dom_storage',
-        'content/test/data/sync_xmlhttprequest_during_unload.html',
-        'content/test/data/browser_plugin_dragging.html',
-        'content/test/data/fileapi',
-        'content/test/data/npapi',
-        'content/test/data/nosniff-test.html.mock-http-headers',
-        'content/test/data/accessibility',
-        'content/test/data/dynamic1.html',
-        'content/test/data/browser_plugin_focus_child.html',
-        'content/test/data/rwhv_compositing_animation.html',
-        'content/test/data/click-noreferrer-links.html',
-        'content/test/data/browser_plugin_focus.html',
-        'content/test/data/media',
-        'third_party/webgl_conformance',
-    ]
-  elif test_suite_basename == 'modules_unittests':
+  if test_suite_basename == 'modules_unittests':
     return [
         'resources',
         'data',
@@ -213,7 +110,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
   #override
   def PushDataDeps(self):
     self.adb.WaitForSdCardReady(20)
-    self.test_package.PushDataAndPakFiles()
     self.tool.CopyFiles()
     if self.test_package.test_suite_basename == 'webkit_unit_tests':
       self.PushWebKitUnitTestsData()
@@ -227,10 +123,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
             os.path.join(self.adb.GetExternalStorage(), p))
       return
 
+    device_dir = self.adb.GetExternalStorage()
+    # TODO(frankf): linux_dumper_unittest_helper needs to be in the same dir
+    # as breakpad_unittests exe. Find a better way to do this.
+    if self.test_package.test_suite_basename == 'breakpad_unittests':
+      device_dir = constants.TEST_EXECUTABLE_DIR
     for p in os.listdir(self._deps_dir):
       self.adb.PushIfNeeded(
           os.path.join(self._deps_dir, p),
-          os.path.join(self.adb.GetExternalStorage(), p))
+          os.path.join(device_dir, p))
 
   def PushWebKitUnitTestsData(self):
     """Pushes the webkit_unit_tests data files to the device.

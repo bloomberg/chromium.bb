@@ -87,30 +87,6 @@ class TestPackage(object):
         ret += [current + test_name]
     return ret
 
-  def PushDataAndPakFiles(self):
-    external_storage = self.adb.GetExternalStorage()
-    if (self.test_suite_basename == 'ui_unittests'):
-      self.adb.PushIfNeeded(
-          self.test_suite_dirname + '/chrome.pak',
-          external_storage + '/paks/chrome.pak')
-      self.adb.PushIfNeeded(
-          self.test_suite_dirname + '/locales/en-US.pak',
-          external_storage + '/paks/en-US.pak')
-    if self.test_suite_basename in ('content_unittests',
-                                    'components_unittests'):
-      self.adb.PushIfNeeded(
-          self.test_suite_dirname + '/content_resources.pak',
-          external_storage + '/paks/content_resources.pak')
-    if self.test_suite_basename == 'breakpad_unittests':
-      self.adb.PushIfNeeded(
-          self.test_suite_dirname + '/linux_dumper_unittest_helper',
-          constants.TEST_EXECUTABLE_DIR + '/linux_dumper_unittest_helper')
-    if self.test_suite_basename == 'content_browsertests':
-      self.adb.PushIfNeeded(
-          self.test_suite_dirname +
-          '/../content_shell/assets/content_shell.pak',
-          external_storage + '/paks/content_shell.pak')
-
   def _WatchTestOutput(self, p):
     """Watches the test output.
 

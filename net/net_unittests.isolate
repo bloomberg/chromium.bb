@@ -3,6 +3,19 @@
 # found in the LICENSE file.
 {
   'conditions': [
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '../chrome/test/data/animate1.gif',
+          '../chrome/test/data/server-unavailable.html',
+          '../chrome/test/data/server-unavailable.html.mock-http-headers',
+          '../chrome/test/data/simple.html',
+        ],
+        'isolate_dependency_untracked': [
+          'data/',
+        ],
+      },
+    }],
     ['OS=="linux"', {
       'variables': {
         'command': [
@@ -20,10 +33,6 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '../chrome/test/data/animate1.gif',
-          '../chrome/test/data/server-unavailable.html',
-          '../chrome/test/data/server-unavailable.html.mock-http-headers',
-          '../chrome/test/data/simple.html',
           '../testing/test_env.py',
           '../tools/swarm_client/run_isolated.py',
           '../tools/swarm_client/run_test_cases.py',
@@ -34,7 +43,6 @@
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/',
-          'data/',
           'tools/testserver/',
         ],
       },
