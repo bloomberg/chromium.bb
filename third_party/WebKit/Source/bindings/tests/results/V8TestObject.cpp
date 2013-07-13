@@ -1930,7 +1930,7 @@ static void contentDocumentAttrGetterCallback(v8::Local<v8::String> name, const 
 static void mutablePointAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(WTF::getPtr(SVGStaticPropertyTearOff<TestObj, FloatPoint>::create(imp, imp->mutablePoint(), &TestObj::updateMutablePoint)), info, imp));
+    v8SetReturnValue(info, toV8Fast(WTF::getPtr(SVGStaticPropertyTearOff<TestObj, SVGPoint>::create(imp, imp->mutablePoint(), &TestObj::updateMutablePoint)), info, imp));
     return;
 }
 
@@ -1944,7 +1944,7 @@ static void mutablePointAttrGetterCallback(v8::Local<v8::String> name, const v8:
 static void mutablePointAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<FloatPoint> >, v, V8SVGPoint::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, v, V8SVGPoint::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setMutablePoint(WTF::getPtr(v));
     return;
 }
@@ -1959,7 +1959,7 @@ static void mutablePointAttrSetterCallback(v8::Local<v8::String> name, v8::Local
 static void immutablePointAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(WTF::getPtr(SVGPropertyTearOff<FloatPoint>::create(imp->immutablePoint())), info, imp));
+    v8SetReturnValue(info, toV8Fast(WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePoint())), info, imp));
     return;
 }
 
@@ -1973,7 +1973,7 @@ static void immutablePointAttrGetterCallback(v8::Local<v8::String> name, const v
 static void immutablePointAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<FloatPoint> >, v, V8SVGPoint::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, v, V8SVGPoint::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setImmutablePoint(WTF::getPtr(v));
     return;
 }
@@ -4593,7 +4593,7 @@ static void convert5MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& ar
 static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    v8SetReturnValue(args, toV8(WTF::getPtr(SVGPropertyTearOff<FloatPoint>::create(imp->mutablePointFunction())), args.Holder(), args.GetIsolate()));
+    v8SetReturnValue(args, toV8(WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->mutablePointFunction())), args.Holder(), args.GetIsolate()));
     return;
 }
 
@@ -4607,7 +4607,7 @@ static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    v8SetReturnValue(args, toV8(WTF::getPtr(SVGPropertyTearOff<FloatPoint>::create(imp->immutablePointFunction())), args.Holder(), args.GetIsolate()));
+    v8SetReturnValue(args, toV8(WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())), args.Holder(), args.GetIsolate()));
     return;
 }
 

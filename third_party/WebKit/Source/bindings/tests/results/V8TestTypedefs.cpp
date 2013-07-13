@@ -403,7 +403,7 @@ static void funcWithClampMethodCallback(const v8::FunctionCallbackInfo<v8::Value
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    v8SetReturnValue(args, toV8(WTF::getPtr(SVGPropertyTearOff<FloatPoint>::create(imp->immutablePointFunction())), args.Holder(), args.GetIsolate()));
+    v8SetReturnValue(args, toV8(WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())), args.Holder(), args.GetIsolate()));
     return;
 }
 

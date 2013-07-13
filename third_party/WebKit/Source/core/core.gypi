@@ -3534,6 +3534,7 @@
             'svg/SVGPathUtilities.h',
             'svg/SVGPatternElement.cpp',
             'svg/SVGPatternElement.h',
+            'svg/SVGPoint.h',
             'svg/SVGPointList.cpp',
             'svg/SVGPointList.h',
             'svg/SVGPolyElement.cpp',

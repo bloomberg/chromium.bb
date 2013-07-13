@@ -101,9 +101,9 @@ float SVGPathElement::getTotalLength()
     return totalLength;
 }
 
-FloatPoint SVGPathElement::getPointAtLength(float length)
+SVGPoint SVGPathElement::getPointAtLength(float length)
 {
-    FloatPoint point;
+    SVGPoint point;
     getPointAtLengthOfSVGPathByteStream(pathByteStream(), length, point);
     return point;
 }

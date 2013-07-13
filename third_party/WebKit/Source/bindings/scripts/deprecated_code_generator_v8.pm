@@ -213,7 +213,7 @@ my %svgTypeNeedingTearOff = (
     "SVGNumber" => "SVGPropertyTearOff<float>",
     "SVGNumberList" => "SVGListPropertyTearOff<SVGNumberList>",
     "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
-    "SVGPoint" => "SVGPropertyTearOff<FloatPoint>",
+    "SVGPoint" => "SVGPropertyTearOff<SVGPoint>",
     "SVGPointList" => "SVGListPropertyTearOff<SVGPointList>",
     "SVGPreserveAspectRatio" => "SVGPropertyTearOff<SVGPreserveAspectRatio>",
     "SVGRect" => "SVGPropertyTearOff<FloatRect>",
@@ -419,8 +419,8 @@ sub SkipIncludeHeader
     return 1 if IsCallbackFunctionType($type);
     return 1 if $type eq "DOMString";
 
-    # Special case: SVGPoint.h / SVGNumber.h do not exist.
-    return 1 if $type eq "SVGPoint" or $type eq "SVGNumber";
+    # Special case: SVGNumber.h does not exist.
+    return 1 if $type eq "SVGNumber";
     return 0;
 }
 
@@ -525,10 +525,6 @@ sub GetSVGPropertyTypes
     } elsif ($svgNativeType =~ /SVGPathSegListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
         AddToHeaderIncludes("core/svg/properties/SVGPathSegListPropertyTearOff.h");
-    }
-
-    if ($svgPropertyType) {
-        $svgPropertyType = "SVGPoint" if $svgPropertyType eq "FloatPoint";
     }
 
     return ($svgPropertyType, $svgListPropertyType, $svgNativeType);

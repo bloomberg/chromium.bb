@@ -393,9 +393,9 @@ SVGAngle SVGSVGElement::createSVGAngle()
     return SVGAngle();
 }
 
-FloatPoint SVGSVGElement::createSVGPoint()
+SVGPoint SVGSVGElement::createSVGPoint()
 {
-    return FloatPoint();
+    return SVGPoint();
 }
 
 SVGMatrix SVGSVGElement::createSVGMatrix()

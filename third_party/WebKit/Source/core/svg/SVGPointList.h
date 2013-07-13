@@ -21,14 +21,13 @@
 #ifndef SVGPointList_h
 #define SVGPointList_h
 
+#include "core/svg/SVGPoint.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {
 
-class FloatPoint;
-
-class SVGPointList : public Vector<FloatPoint> {
+class SVGPointList : public Vector<SVGPoint> {
 public:
     SVGPointList() { }
 
@@ -38,7 +37,7 @@ public:
 template<>
 struct SVGPropertyTraits<SVGPointList> {
     static SVGPointList initialValue() { return SVGPointList(); }
-    typedef FloatPoint ListItemType;
+    typedef SVGPoint ListItemType;
 };
 
 } // namespace WebCore

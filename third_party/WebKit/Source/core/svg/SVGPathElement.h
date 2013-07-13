@@ -58,7 +58,7 @@ public:
     static PassRefPtr<SVGPathElement> create(const QualifiedName&, Document*);
     
     float getTotalLength();
-    FloatPoint getPointAtLength(float distance);
+    SVGPoint getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);
 
     PassRefPtr<SVGPathSegClosePath> createSVGPathSegClosePath(SVGPathSegRole role = PathSegUndefinedRole);
