@@ -127,13 +127,36 @@ struct parse_context {
 	unsigned int character_data_length;
 };
 
+static void *
+fail_on_null(void *p)
+{
+	if (p == NULL) {
+		fprintf(stderr, "wayland-scanner: out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	return p;
+}
+
+static void *
+xmalloc(size_t s)
+{
+	return fail_on_null(malloc(s));
+}
+
+static char *
+xstrdup(const char *s)
+{
+	return fail_on_null(strdup(s));
+}
+
 static char *
 uppercase_dup(const char *src)
 {
 	char *u;
 	int i;
 
-	u = strdup(src);
+	u = xstrdup(src);
 	for (i = 0; u[i]; i++)
 		u[i] = toupper(u[i]);
 	u[i] = '\0';
@@ -292,7 +315,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(ctx, "no protocol name given");
 
-		ctx->protocol->name = strdup(name);
+		ctx->protocol->name = xstrdup(name);
 		ctx->protocol->uppercase_name = uppercase_dup(name);
 		ctx->protocol->description = NULL;
 	} else if (strcmp(element_name, "copyright") == 0) {
@@ -304,8 +327,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (version == 0)
 			fail(ctx, "no interface version given");
 
-		interface = malloc(sizeof *interface);
-		interface->name = strdup(name);
+		interface = xmalloc(sizeof *interface);
+		interface->name = xstrdup(name);
 		interface->uppercase_name = uppercase_dup(name);
 		interface->version = version;
 		interface->description = NULL;
@@ -321,8 +344,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(ctx, "no request name given");
 
-		message = malloc(sizeof *message);
-		message->name = strdup(name);
+		message = xmalloc(sizeof *message);
+		message->name = xstrdup(name);
 		message->uppercase_name = uppercase_dup(name);
 		wl_list_init(&message->arg_list);
 		message->arg_count = 0;
@@ -359,8 +382,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(ctx, "no argument name given");
 
-		arg = malloc(sizeof *arg);
-		arg->name = strdup(name);
+		arg = xmalloc(sizeof *arg);
+		arg->name = xstrdup(name);
 
 		if (strcmp(type, "int") == 0)
 			arg->type = INT;
@@ -386,7 +409,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		case NEW_ID:
 		case OBJECT:
 			if (interface_name)
-				arg->interface_name = strdup(interface_name);
+				arg->interface_name = xstrdup(interface_name);
 			else
 				arg->interface_name = NULL;
 			break;
@@ -408,7 +431,7 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		arg->summary = NULL;
 		if (summary)
-			arg->summary = strdup(summary);
+			arg->summary = xstrdup(summary);
 
 		wl_list_insert(ctx->message->arg_list.prev, &arg->link);
 		ctx->message->arg_count++;
@@ -416,8 +439,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(ctx, "no enum name given");
 
-		enumeration = malloc(sizeof *enumeration);
-		enumeration->name = strdup(name);
+		enumeration = xmalloc(sizeof *enumeration);
+		enumeration->name = xstrdup(name);
 		enumeration->uppercase_name = uppercase_dup(name);
 		enumeration->description = NULL;
 		wl_list_init(&enumeration->entry_list);
@@ -430,12 +453,12 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(ctx, "no entry name given");
 
-		entry = malloc(sizeof *entry);
-		entry->name = strdup(name);
+		entry = xmalloc(sizeof *entry);
+		entry->name = xstrdup(name);
 		entry->uppercase_name = uppercase_dup(name);
-		entry->value = strdup(value);
+		entry->value = xstrdup(value);
 		if (summary)
-			entry->summary = strdup(summary);
+			entry->summary = xstrdup(summary);
 		else
 			entry->summary = NULL;
 		wl_list_insert(ctx->enumeration->entry_list.prev,
@@ -444,8 +467,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (summary == NULL)
 			fail(ctx, "description without summary");
 
-		description = malloc(sizeof *description);
-		description->summary = strdup(summary);
+		description = xmalloc(sizeof *description);
+		description->summary = xstrdup(summary);
 
 		if (ctx->message)
 			ctx->message->description = description;
