@@ -50,7 +50,7 @@ namespace WebCore {
 PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredDocument, v8::Handle<v8::Function> leftDocument, v8::Handle<v8::Function> attributeChanged)
 {
     // A given object can only be used as a Custom Element prototype
-    // once; see isCustomElementInterfacePrototypeObject
+    // once; see customElementIsInterfacePrototypeObject
 #define SET_HIDDEN_PROPERTY(Value, Name) \
     ASSERT(prototype->GetHiddenValue(V8HiddenPropertyName::customElement##Name()).IsEmpty()); \
     if (!Value.IsEmpty()) \
@@ -183,7 +183,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, sizeof(argv) / sizeof(v8::Handle<v8::Value>), argv);
+    ScriptController::callFunctionWithInstrumentation(scriptExecutionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv);
 }
 
 void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function>& weakCallback, Element* element)
