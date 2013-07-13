@@ -2018,6 +2018,8 @@ class BisectPerformanceMetrics(object):
           if k == first_working_revision:
             break
 
+          self.ChangeToDepotWorkingDirectory(v['depot'])
+
           info = self.source_control.QueryRevisionInfo(k)
 
           print
