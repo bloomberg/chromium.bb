@@ -16,7 +16,9 @@ body {
 }
 
 .non-google-page #ntp-contents {
+  position: absolute;
   top: -webkit-calc(50% - 155px);
+  width: 100%;
 }
 
 body.hide-fakebox-logo #logo,
