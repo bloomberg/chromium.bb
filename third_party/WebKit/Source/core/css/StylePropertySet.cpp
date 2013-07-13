@@ -377,9 +377,7 @@ static const CSSPropertyID staticBlockProperties[] = {
     CSSPropertyWebkitRegionBreakBefore,
     CSSPropertyWebkitRegionBreakInside,
     CSSPropertyTextAlign,
-#if ENABLE(CSS3_TEXT)
-    CSSPropertyWebkitTextAlignLast,
-#endif // CSS3_TEXT
+    CSSPropertyTextAlignLast,
     CSSPropertyTextIndent,
     CSSPropertyWidows
 };
