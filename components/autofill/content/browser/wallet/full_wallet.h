@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 
@@ -42,6 +43,10 @@ class FullWallet {
 
   // Whether or not |action| is in |required_actions_|.
   bool HasRequiredAction(RequiredAction action) const;
+
+  // The type of the card that this FullWallet contains and the last four digits
+  // like this "Visa - 4111".
+  base::string16 TypeAndLastFourDigits();
 
   bool operator==(const FullWallet& other) const;
   bool operator!=(const FullWallet& other) const;

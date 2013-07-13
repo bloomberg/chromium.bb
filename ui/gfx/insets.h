@@ -17,7 +17,7 @@ typedef struct _GtkBorder GtkBorder;
 
 namespace gfx {
 
-// An integer versin of gfx::Insets.
+// An integer version of gfx::Insets.
 class UI_EXPORT Insets : public InsetsBase<Insets, int> {
  public:
   Insets();

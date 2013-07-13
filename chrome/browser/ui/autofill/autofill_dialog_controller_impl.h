@@ -563,6 +563,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
 
+  // Shows an educational bubble if a new credit card was saved or the first few
+  // times an Online Wallet fronting card was generated.
+  void MaybeShowCreditCardBubble();
+
   // The |profile| for |contents_|.
   Profile* const profile_;
 
@@ -691,7 +695,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // recoverable.
   bool wallet_server_validation_recoverable_;
 
-
   typedef std::map<AutofillFieldType,
       std::pair<base::string16, base::string16> > TypeErrorInputMap;
   typedef std::map<DialogSection, TypeErrorInputMap> WalletValidationErrors;
@@ -711,6 +714,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // The Google Wallet cookie value, set as an authorization header on requests
   // to Wallet.
   std::string wallet_cookie_value_;
+
+  // Populated if the user chose to save a newly inputted credit card. Used to
+  // show a bubble as the dialog closes to confirm a user's new card info was
+  // saved. Never populated while incognito (as nothing's actually saved).
+  scoped_ptr<CreditCard> newly_saved_card_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

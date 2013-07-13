@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
+#include "chrome/browser/ui/views/location_bar/autofill_credit_card_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
@@ -180,6 +181,7 @@ LocationBarView::LocationBarView(Browser* browser,
       suggested_text_view_(NULL),
       keyword_hint_view_(NULL),
       zoom_view_(NULL),
+      autofill_credit_card_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       script_bubble_icon_view_(NULL),
       star_view_(NULL),
@@ -311,6 +313,9 @@ void LocationBarView::Init() {
     content_blocked_view->SetVisible(false);
     AddChildView(content_blocked_view);
   }
+
+  autofill_credit_card_view_ = new AutofillCreditCardView(model_, delegate_);
+  AddChildView(autofill_credit_card_view_);
 
   zoom_view_ = new ZoomView(model_, delegate_);
   zoom_view_->set_id(VIEW_ID_ZOOM_BUTTON);
@@ -458,6 +463,7 @@ void LocationBarView::SetAnimationOffset(int offset) {
 
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   RefreshContentSettingViews();
+  autofill_credit_card_view_->Update();
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
   RefreshPageActionViews();
@@ -518,6 +524,12 @@ void LocationBarView::InvalidatePageActions() {
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   open_pdf_in_reader_view_->Update(
       model_->GetInputInProgress() ? NULL : GetWebContents());
+  Layout();
+  SchedulePaint();
+}
+
+void LocationBarView::UpdateAutofillCreditCardView() {
+  autofill_credit_card_view_->Update();
   Layout();
   SchedulePaint();
 }
@@ -663,9 +675,6 @@ void LocationBarView::Layout() {
   if (!location_entry_.get())
     return;
 
-  // TODO(jhawkins): Remove once crbug.com/101994 is fixed.
-  CHECK(location_icon_view_);
-
   selected_keyword_view_->SetVisible(false);
   location_icon_view_->SetVisible(false);
   ev_bubble_view_->SetVisible(false);
@@ -768,6 +777,11 @@ void LocationBarView::Layout() {
           bubble_location_y, bubble_height, false, 0, item_padding,
           item_padding, (*i)->GetBuiltInHorizontalPadding(), (*i));
     }
+  }
+  if (autofill_credit_card_view_->visible()) {
+    trailing_decorations.AddDecoration(vertical_edge_thickness(),
+                                       location_height, 0,
+                                       autofill_credit_card_view_);
   }
   // Because IMEs may eat the tab key, we don't show "press tab to search" while
   // IME composition is in progress.
@@ -994,6 +1008,10 @@ void LocationBarView::OnMouseCaptureLost() {
     omnibox_win->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
 }
 #endif
+
+views::View* LocationBarView::autofill_credit_card_view() {
+  return autofill_credit_card_view_;
+}
 
 void LocationBarView::OnAutocompleteAccept(
     const GURL& url,

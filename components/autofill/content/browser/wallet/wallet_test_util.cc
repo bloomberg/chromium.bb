@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
@@ -84,8 +83,6 @@ scoped_ptr<Address> GetTestMinimalAddress() {
 }
 
 scoped_ptr<FullWallet> GetTestFullWallet() {
-  base::Time::Exploded exploded;
-  base::Time::Now().LocalExplode(&exploded);
   scoped_ptr<FullWallet> wallet(new FullWallet(FutureYear(),
                                                12,
                                                "528512",

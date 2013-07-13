@@ -1,0 +1,187 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CREDIT_CARD_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CREDIT_CARD_BUBBLE_CONTROLLER_H_
+
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
+
+class Profile;
+
+namespace content {
+class WebContents;
+}
+
+namespace gfx {
+class Image;
+}
+
+namespace ui {
+class Range;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
+namespace autofill {
+
+class AutofillCreditCardBubble;
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// AutofillCreditCardBubbleController
+//
+//  A class to show a bubble after successfully submitting the Autofill dialog.
+//  The bubble is shown when a new credit card is saved locally or to explain
+//  generated Online Wallet cards to the user. This class does not own the shown
+//  bubble, but only has a weak reference to it (it is often owned by the native
+//  platform's ui toolkit).
+//
+////////////////////////////////////////////////////////////////////////////////
+class AutofillCreditCardBubbleController
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<AutofillCreditCardBubbleController> {
+ public:
+  virtual ~AutofillCreditCardBubbleController();
+
+  // Registers preferences this class cares about.
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Whether the generated card bubble should be shown.
+  static bool ShouldShowGeneratedCardBubble(Profile* profile);
+
+  // Show a bubble to educate the user about generated (fronting) cards and how
+  // they are used to bill their original (backing) card.
+  static void ShowGeneratedCardBubble(content::WebContents* contents,
+                                      const base::string16& backing_card_name,
+                                      const base::string16& fronting_card_name);
+
+  // Show a bubble notifying the user that new credit card data has been saved.
+  static void ShowNewCardSavedBubble(content::WebContents* contents,
+                                     const base::string16& new_card_name);
+
+  // content::WebContentsObserver implementation.
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
+
+  // Whether |bubble_| is currently in the process of hiding.
+  bool IsHiding() const;
+
+  // An image that should be shown as an icon in the omnibox and pointed to by
+  // the bubble.
+  gfx::Image AnchorIcon() const;
+
+  // The title of the bubble. May be empty.
+  base::string16 BubbleTitle() const;
+
+  // The main text of the bubble.
+  base::string16 BubbleText() const;
+
+  // Ranges of text styles in the bubble's main content.
+  const std::vector<ui::Range>& BubbleTextRanges() const;
+
+  // The text of the link shown at the bubble of the bubble.
+  base::string16 LinkText() const;
+
+  // Called when the anchor for this bubble is clicked.
+  void OnAnchorClicked();
+
+  // Called when the link at the bottom of the bubble is clicked.
+  void OnLinkClicked();
+
+  // The web contents that successfully submitted the Autofill dialog (causing
+  // this bubble to show).
+  content::WebContents* web_contents() { return web_contents_; }
+  const content::WebContents* web_contents() const { return web_contents_; }
+
+ protected:
+  // Create a bubble connected to |web_contents|. Its content will be based on
+  // which |SetupAs*()| method is called.
+  explicit AutofillCreditCardBubbleController(content::WebContents* contents);
+
+  // Returns a base::WeakPtr that references |this|. Exposed for testing.
+  base::WeakPtr<AutofillCreditCardBubbleController> GetWeakPtr();
+
+  // Creates and returns an Autofill credit card bubble. Exposed for testing.
+  virtual base::WeakPtr<AutofillCreditCardBubble> CreateBubble();
+
+  // Whether the bubble can show currently.
+  virtual bool CanShow() const;
+
+  // Show a bubble to educate the user about generated (fronting) cards and how
+  // they are used to bill their original (backing) card. Exposed for testing.
+  virtual void ShowAsGeneratedCardBubble(
+      const base::string16& backing_card_name,
+      const base::string16& fronting_card_name);
+
+  // Show a bubble notifying the user that new credit card data has been saved.
+  // Exposed for testing.
+  virtual void ShowAsNewCardSavedBubble(const base::string16& new_card_name);
+
+ private:
+  friend class content::WebContentsUserData<AutofillCreditCardBubbleController>;
+
+  // Nukes the state of this controller and hides |bubble_| (if it exists).
+  void Reset();
+
+  // Generate bubble text and ranges now that this class knows which type of
+  // bubble it should be shown as. Called from |ShowAs*()| methods.
+  void SetUp();
+
+  // Whether the controller has been setup as a certain type of bubble.
+  bool IsSetup() const;
+
+  // Whether the bubble is an educational bubble about generated cards.
+  bool IsGeneratedCardBubble() const;
+
+  // An internal helper to show the bubble in response to successful Autofill
+  // dialog submission or anchor click.
+  void Show(bool was_anchor_click);
+
+  // Update the omnibox icon that |bubble_| will be anchored to.
+  void UpdateAnchor();
+
+  // Hides |bubble_| (if it exists and isn't already hiding).
+  void Hide();
+
+  // The web contents associated with this bubble.
+  content::WebContents* const web_contents_;
+
+  // The newly saved credit card.
+  base::string16 new_card_name_;
+
+  // The generated credit card number and associated backing card.
+  base::string16 fronting_card_name_;
+  base::string16 backing_card_name_;
+
+  // Bubble contents text and text ranges generated in |SetUp()|.
+  base::string16 bubble_text_;
+  std::vector<ui::Range> bubble_text_ranges_;
+
+  // A bubble view that's created by calling either |Show*()| method; owned by
+  // the native widget/hierarchy, not this class (though this class must outlive
+  // |bubble_|). NULL in many cases.
+  base::WeakPtr<AutofillCreditCardBubble> bubble_;
+
+  // Whether the anchor should currently be showing.
+  bool should_show_anchor_;
+
+  // A weak pointer factory for |Create()|.
+  base::WeakPtrFactory<AutofillCreditCardBubbleController> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardBubbleController);
+};
+
+}  // namespace autofill
+
+#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CREDIT_CARD_BUBBLE_CONTROLLER_H_

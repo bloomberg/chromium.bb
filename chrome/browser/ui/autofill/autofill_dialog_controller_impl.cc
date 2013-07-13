@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/autofill_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/browser/ui/browser.h"
@@ -201,9 +202,11 @@ void GetBillingInfoFromOutputs(const DetailOutputMap& output,
         cvc->assign(trimmed);
     } else if (it->first->type == ADDRESS_HOME_COUNTRY ||
                it->first->type == ADDRESS_BILLING_COUNTRY) {
+      if (profile) {
         profile->SetInfo(it->first->type,
                          trimmed,
                          g_browser_process->GetApplicationLocale());
+      }
     } else {
       // Copy the credit card name to |profile| in addition to |card| as
       // wallet::Instrument requires a recipient name for its billing address.
@@ -424,7 +427,7 @@ gfx::Image GetGeneratedCardImage(const string16& card_number) {
 AutofillDialogController::~AutofillDialogController() {}
 
 AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
-  if (popup_controller_.get())
+  if (popup_controller_)
     popup_controller_->Hide();
 
   GetMetricLogger().LogDialogInitialUserState(
@@ -1753,6 +1756,10 @@ void AutofillDialogControllerImpl::ViewClosed() {
   // TODO(ahutter): Once a user can cancel Autocheckout mid-flow, log that
   // metric here.
 
+  // Called from here rather than in ~AutofillDialogControllerImpl as this
+  // relies on virtual methods that change to their base class in the dtor.
+  MaybeShowCreditCardBubble();
+
   delete this;
 }
 
@@ -2666,8 +2673,11 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       card.SetRawInfo(CREDIT_CARD_NAME,
                       GetValueFromSection(SECTION_BILLING, NAME_FULL));
 
-      if (ShouldSaveDetailsLocally())
+      if (ShouldSaveDetailsLocally()) {
         GetManager()->SaveImportedCreditCard(card);
+        DCHECK(!profile()->IsOffTheRecord());
+        newly_saved_card_.reset(new CreditCard(card));
+      }
 
       AutofillCreditCardWrapper card_wrapper(&card);
       card_wrapper.FillFormStructure(inputs, compare, &form_structure_);
@@ -3414,6 +3424,35 @@ AutofillMetrics::DialogInitialUserStateMetric
   return has_autofill_profiles ?
       AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_HAS_AUTOFILL :
       AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_NO_AUTOFILL;
+}
+
+void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
+  if (newly_saved_card_) {
+    AutofillCreditCardBubbleController::ShowNewCardSavedBubble(
+        web_contents(), newly_saved_card_->TypeAndLastFourDigits());
+    return;
+  }
+
+  if (!full_wallet_ || !full_wallet_->billing_address() ||
+      !AutofillCreditCardBubbleController::ShouldShowGeneratedCardBubble(
+          profile())) {
+    // If this run of the dialog didn't result in a valid |full_wallet_| or the
+    // generated card bubble shouldn't be shown now, don't show it again.
+    return;
+  }
+
+  base::string16 backing_last_four;
+  if (ActiveInstrument()) {
+    backing_last_four = ActiveInstrument()->TypeAndLastFourDigits();
+  } else {
+    DetailOutputMap output;
+    view_->GetUserInput(SECTION_CC_BILLING, &output);
+    CreditCard card;
+    GetBillingInfoFromOutputs(output, &card, NULL, NULL);
+    backing_last_four = card.TypeAndLastFourDigits();
+  }
+  AutofillCreditCardBubbleController::ShowGeneratedCardBubble(
+      web_contents(), backing_last_four, full_wallet_->TypeAndLastFourDigits());
 }
 
 }  // namespace autofill

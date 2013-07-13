@@ -552,6 +552,10 @@ void Widget::CloseNow() {
   native_widget_->CloseNow();
 }
 
+bool Widget::IsClosed() const {
+  return widget_closed_;
+}
+
 void Widget::Show() {
   TRACE_EVENT0("views", "Widget::Show");
   if (non_client_view_) {

@@ -186,6 +186,12 @@ bool FullWallet::HasRequiredAction(RequiredAction action) const {
                    action) != required_actions_.end();
 }
 
+base::string16 FullWallet::TypeAndLastFourDigits() {
+  CreditCard card;
+  card.SetRawInfo(CREDIT_CARD_NUMBER, GetInfo(CREDIT_CARD_NUMBER));
+  return card.TypeAndLastFourDigits();
+}
+
 bool FullWallet::operator==(const FullWallet& other) const {
   if (expiration_month_ != other.expiration_month_)
     return false;

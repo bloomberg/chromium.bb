@@ -64,6 +64,11 @@ class LocationBar {
   // Updates the state of the button to open a PDF in Adobe Reader.
   virtual void UpdateOpenPDFInReaderPrompt() = 0;
 
+  // Updates the Autofill credit card view. This views serves as an anchor for
+  // the Autofill credit card bubble, which might show on successful run of the
+  // Autofill dialog.
+  virtual void UpdateAutofillCreditCardView() = 0;
+
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
   virtual void SaveStateToContents(content::WebContents* contents) = 0;

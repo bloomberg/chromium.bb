@@ -400,6 +400,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // any code that expects it to be valid beyond this call.
   void CloseNow();
 
+  // Whether the widget has been asked to close itself. In particular this is
+  // set to true after Close() has been invoked on the NativeWidget.
+  bool IsClosed() const;
+
   // Shows or hides the widget, without changing activation state.
   virtual void Show();
   void Hide();

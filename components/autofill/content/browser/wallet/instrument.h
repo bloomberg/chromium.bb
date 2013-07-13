@@ -69,7 +69,7 @@ class Instrument {
   int expiration_year() const { return expiration_year_; }
   const Address& address() const { return *address_; }
   FormOfPayment form_of_payment() const { return form_of_payment_; }
-  const base::string16& last_four_digits() { return last_four_digits_; }
+  const base::string16& last_four_digits() const { return last_four_digits_; }
 
  private:
   void Init();

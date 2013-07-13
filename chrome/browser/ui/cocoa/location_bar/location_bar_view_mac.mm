@@ -222,6 +222,11 @@ void LocationBarViewMac::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Mac.
 }
 
+void LocationBarViewMac::UpdateAutofillCreditCardView() {
+  // TODO(dbeam): encourage groby@ to implement via prodding or chocolate.
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
   // TODO(shess): Why SaveStateToContents vs SaveStateToTab?
   omnibox_view_->SaveStateToTab(contents);

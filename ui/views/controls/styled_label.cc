@@ -135,7 +135,8 @@ void StyledLabel::Layout() {
 }
 
 void StyledLabel::LinkClicked(Link* source, int event_flags) {
-  listener_->StyledLabelLinkClicked(link_targets_[source], event_flags);
+  if (listener_)
+    listener_->StyledLabelLinkClicked(link_targets_[source], event_flags);
 }
 
 int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {

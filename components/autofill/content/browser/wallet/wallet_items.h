@@ -118,7 +118,7 @@ class WalletItems {
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateMaskedInstrument);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
 
-    MaskedInstrument(const base::string16& descriptve_name,
+    MaskedInstrument(const base::string16& descriptive_name,
                      const Type& type,
                      const std::vector<base::string16>& supported_currencies,
                      const base::string16& last_four_digits,

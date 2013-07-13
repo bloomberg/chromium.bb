@@ -964,6 +964,10 @@ void LocationBarViewGtk::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Gtk.
 }
 
+void LocationBarViewGtk::UpdateAutofillCreditCardView() {
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewGtk::SaveStateToContents(WebContents* contents) {
   location_entry_->SaveStateToTab(contents);
 }
