@@ -224,9 +224,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text* text)
         // FIXME: Should this be included in forceInline?
         wrappingStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
 
-        StringBuilder openTag;
-        appendStyleNodeOpenTag(openTag, wrappingStyle->style(), text->document());
-        out.append(openTag.bloatedCharacters(), openTag.length());
+        appendStyleNodeOpenTag(out, wrappingStyle->style(), text->document());
     }
 
     if (!shouldAnnotate() || parentIsTextarea)

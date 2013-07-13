@@ -165,54 +165,54 @@ inline void CSSPreloadScanner::tokenize(UChar c, const SegmentedString& source)
     }
 }
 
-static String parseCSSStringOrURL(const UChar* characters, size_t length)
+static String parseCSSStringOrURL(const String& string)
 {
     size_t offset = 0;
-    size_t reducedLength = length;
+    size_t reducedLength = string.length();
 
-    while (reducedLength && isHTMLSpace(characters[offset])) {
+    while (reducedLength && isHTMLSpace(string[offset])) {
         ++offset;
         --reducedLength;
     }
-    while (reducedLength && isHTMLSpace(characters[offset + reducedLength - 1]))
+    while (reducedLength && isHTMLSpace(string[offset + reducedLength - 1]))
         --reducedLength;
 
     if (reducedLength >= 5
-            && (characters[offset] == 'u' || characters[offset] == 'U')
-            && (characters[offset + 1] == 'r' || characters[offset + 1] == 'R')
-            && (characters[offset + 2] == 'l' || characters[offset + 2] == 'L')
-            && characters[offset + 3] == '('
-            && characters[offset + reducedLength - 1] == ')') {
+        && (string[offset] == 'u' || string[offset] == 'U')
+        && (string[offset + 1] == 'r' || string[offset + 1] == 'R')
+        && (string[offset + 2] == 'l' || string[offset + 2] == 'L')
+        && string[offset + 3] == '('
+        && string[offset + reducedLength - 1] == ')') {
         offset += 4;
         reducedLength -= 5;
     }
 
-    while (reducedLength && isHTMLSpace(characters[offset])) {
+    while (reducedLength && isHTMLSpace(string[offset])) {
         ++offset;
         --reducedLength;
     }
-    while (reducedLength && isHTMLSpace(characters[offset + reducedLength - 1]))
+    while (reducedLength && isHTMLSpace(string[offset + reducedLength - 1]))
         --reducedLength;
 
-    if (reducedLength < 2 || characters[offset] != characters[offset + reducedLength - 1] || !(characters[offset] == '\'' || characters[offset] == '"'))
+    if (reducedLength < 2 || string[offset] != string[offset + reducedLength - 1] || !(string[offset] == '\'' || string[offset] == '"'))
         return String();
     offset++;
     reducedLength -= 2;
 
-    while (reducedLength && isHTMLSpace(characters[offset])) {
+    while (reducedLength && isHTMLSpace(string[offset])) {
         ++offset;
         --reducedLength;
     }
-    while (reducedLength && isHTMLSpace(characters[offset + reducedLength - 1]))
+    while (reducedLength && isHTMLSpace(string[offset + reducedLength - 1]))
         --reducedLength;
 
-    return String(characters + offset, reducedLength);
+    return string.substring(offset, reducedLength);
 }
 
 void CSSPreloadScanner::emitRule(const SegmentedString& source)
 {
-    if (equalIgnoringCase("import", m_rule.bloatedCharacters(), m_rule.length())) {
-        String url = parseCSSStringOrURL(m_ruleValue.bloatedCharacters(), m_ruleValue.length());
+    if (equalIgnoringCase(m_rule, "import")) {
+        String url = parseCSSStringOrURL(m_ruleValue.toStringPreserveCapacity());
         if (!url.isEmpty()) {
             KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
             TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
@@ -221,7 +221,7 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
             m_requests->append(request.release());
         }
         m_state = Initial;
-    } else if (equalIgnoringCase("charset", m_rule.bloatedCharacters(), m_rule.length()))
+    } else if (equalIgnoringCase(m_rule, "charset"))
         m_state = Initial;
     else
         m_state = DoneParsingImportRules;

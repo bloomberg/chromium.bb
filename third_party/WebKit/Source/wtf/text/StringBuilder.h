@@ -334,6 +334,23 @@ bool equal(const StringBuilder& s, const CharType* buffer, unsigned length)
     return equal(s.characters16(), buffer, length);
 }
 
+template<typename CharType>
+bool equalIgnoringCase(const StringBuilder& s, const CharType* buffer, unsigned length)
+{
+    if (s.length() != length)
+        return false;
+
+    if (s.is8Bit())
+        return equalIgnoringCase(s.characters8(), buffer, length);
+
+    return equalIgnoringCase(s.characters16(), buffer, length);
+}
+
+inline bool equalIgnoringCase(const StringBuilder& s, const char* string)
+{
+    return equalIgnoringCase(s, reinterpret_cast<const LChar*>(string), strlen(string));
+}
+
 template <typename StringType>
 bool equal(const StringBuilder& a, const StringType& b)
 {
@@ -352,6 +369,26 @@ bool equal(const StringBuilder& a, const StringType& b)
     if (b.is8Bit())
         return equal(a.characters16(), b.characters8(), a.length());
     return equal(a.characters16(), b.characters16(), a.length());
+}
+
+template <typename StringType>
+bool equalIgnoringCase(const StringBuilder& a, const StringType& b)
+{
+    if (a.length() != b.length())
+        return false;
+
+    if (!a.length())
+        return true;
+
+    if (a.is8Bit()) {
+        if (b.is8Bit())
+            return equalIgnoringCase(a.characters8(), b.characters8(), a.length());
+        return equalIgnoringCase(a.characters8(), b.characters16(), a.length());
+    }
+
+    if (b.is8Bit())
+        return equalIgnoringCase(a.characters16(), b.characters8(), a.length());
+    return equalIgnoringCase(a.characters16(), b.characters16(), a.length());
 }
 
 inline bool operator==(const StringBuilder& a, const StringBuilder& b) { return equal(a, b); }

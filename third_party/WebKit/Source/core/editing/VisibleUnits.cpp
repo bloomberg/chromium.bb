@@ -1136,13 +1136,13 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
             type = Position::PositionIsOffsetInAnchor;
             if (style->preserveNewline()) {
-                const UChar* chars = toRenderText(r)->bloatedCharacters();
-                int i = toRenderText(r)->textLength();
+                RenderText* text = toRenderText(r);
+                int i = text->textLength();
                 int o = offset;
                 if (n == startNode && o < i)
                     i = max(0, o);
                 while (--i >= 0) {
-                    if (chars[i] == '\n')
+                    if ((*text)[i] == '\n')
                         return VisiblePosition(Position(toText(n), i + 1), DOWNSTREAM);
                 }
             }
@@ -1219,10 +1219,10 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
             int length = toRenderText(r)->textLength();
             type = Position::PositionIsOffsetInAnchor;
             if (style->preserveNewline()) {
-                const UChar* chars = toRenderText(r)->bloatedCharacters();
+                RenderText* text = toRenderText(r);
                 int o = n == startNode ? offset : 0;
                 for (int i = o; i < length; ++i) {
-                    if (chars[i] == '\n')
+                    if ((*text)[i] == '\n')
                         return VisiblePosition(Position(toText(n), i), DOWNSTREAM);
                 }
             }
