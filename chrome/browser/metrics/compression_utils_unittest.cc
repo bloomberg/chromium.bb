@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/metrics/compression_utils.h"
@@ -13,16 +14,9 @@
 
 namespace {
 
-// The following disables C4309 for MSVC compiler. There is no suffix in C++ to
-// specify a width of less than an int and casting would make the code less
-// readable.
-#if defined(OS_WIN)
-#pragma warning( disable: 4309 )
-#endif
-
 // The data to be compressed by gzip. This is the hex representation of "hello
 // world".
-const char kData[] =
+const uint8 kData[] =
     {0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f,
      0x72, 0x6c, 0x64};
 
@@ -30,7 +24,7 @@ const char kData[] =
 // obtained by running echo -n "hello world" | gzip -c | hexdump -e '8 1 ",
 // 0x%x"' followed by 0'ing out the OS byte (10th byte) in the header. This is
 // so that the test passes on all platforms (that run various OS'es).
-const char kCompressedData[] =
+const uint8 kCompressedData[] =
     {0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0xcb, 0x48, 0xcd, 0xc9, 0xc9, 0x57, 0x28, 0xcf,
      0x2f, 0xca, 0x49, 0x01, 0x00, 0x85, 0x11, 0x4a, 0x0d,
@@ -42,11 +36,12 @@ const char kCompressedData[] =
 #endif
 
 TEST(CompressionUtilsTest, GzipCompression) {
-  std::string data(kData, arraysize(kData));
+  std::string data(reinterpret_cast<const char*>(kData), arraysize(kData));
   std::string compressed_data;
   EXPECT_TRUE(chrome::GzipCompress(data, &compressed_data));
-  std::string golden_compressed_data(kCompressedData,
-                                     arraysize(kCompressedData));
+  std::string golden_compressed_data(
+      reinterpret_cast<const char*>(kCompressedData),
+      arraysize(kCompressedData));
   EXPECT_EQ(golden_compressed_data, compressed_data);
 }
 
