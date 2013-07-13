@@ -6,14 +6,16 @@
 
 namespace syncer {
 
-FakeSyncScheduler::FakeSyncScheduler() {}
+FakeSyncScheduler::FakeSyncScheduler()
+    : created_on_loop_(base::MessageLoop::current()) {}
 
 FakeSyncScheduler::~FakeSyncScheduler() {}
 
 void FakeSyncScheduler::Start(Mode mode) {
 }
 
-void FakeSyncScheduler::RequestStop() {
+void FakeSyncScheduler::RequestStop(const base::Closure& callback) {
+  created_on_loop_->PostTask(FROM_HERE, callback);
 }
 
 void FakeSyncScheduler::ScheduleLocalNudge(

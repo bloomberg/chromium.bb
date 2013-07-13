@@ -43,8 +43,7 @@ TypedUrlChangeProcessor::TypedUrlChangeProcessor(
       profile_(profile),
       model_associator_(model_associator),
       history_backend_(history_backend),
-      backend_loop_(base::MessageLoop::current()),
-      disconnected_(false) {
+      expected_loop_(base::MessageLoop::current()) {
   DCHECK(model_associator);
   DCHECK(history_backend);
   DCHECK(error_handler);
@@ -56,18 +55,14 @@ TypedUrlChangeProcessor::TypedUrlChangeProcessor(
 }
 
 TypedUrlChangeProcessor::~TypedUrlChangeProcessor() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 }
 
 void TypedUrlChangeProcessor::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
-
-  base::AutoLock al(disconnect_lock_);
-  if (disconnected_)
-    return;
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 
   DVLOG(1) << "Observed typed_url change.";
   if (type == chrome::NOTIFICATION_HISTORY_URLS_MODIFIED) {
@@ -244,11 +239,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
-
-  base::AutoLock al(disconnect_lock_);
-  if (disconnected_)
-    return;
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 
   syncer::ReadNode typed_url_root(trans);
   if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
@@ -304,11 +295,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 }
 
 void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
-
-  base::AutoLock al(disconnect_lock_);
-  if (disconnected_)
-    return;
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 
   // Make sure we stop listening for changes while we're modifying the backend,
   // so we don't try to re-apply these changes to the sync DB.
@@ -330,23 +317,14 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
                            model_associator_->GetErrorPercentage());
 }
 
-void TypedUrlChangeProcessor::Disconnect() {
-  base::AutoLock al(disconnect_lock_);
-  disconnected_ = true;
-}
-
 void TypedUrlChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK_EQ(profile, profile_);
-  DCHECK(history_backend_);
-  DCHECK(backend_loop_);
-  backend_loop_->PostTask(FROM_HERE,
-                          base::Bind(&TypedUrlChangeProcessor::StartObserving,
-                                     base::Unretained(this)));
+  StartObserving();
 }
 
 void TypedUrlChangeProcessor::StartObserving() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(profile_);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
@@ -360,7 +338,7 @@ void TypedUrlChangeProcessor::StartObserving() {
 }
 
 void TypedUrlChangeProcessor::StopObserving() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(profile_);
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,

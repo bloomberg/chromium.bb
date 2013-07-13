@@ -170,6 +170,9 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   bool ShouldIgnoreUrl(const GURL& url);
 
  protected:
+  // Returns true if pending_abort_ is true. Overridable by tests.
+  virtual bool IsAbortPending();
+
   // Helper function that clears our error counters (used to reset stats after
   // model association so we can track model association errors separately).
   // Overridden by tests.
@@ -189,8 +192,11 @@ class TypedUrlModelAssociator : public AssociatorInterface {
 
   base::MessageLoop* expected_loop_;
 
-  bool abort_requested_;
-  base::Lock abort_lock_;
+  // Lock to ensure exclusive access to the pending_abort_ flag.
+  base::Lock pending_abort_lock_;
+
+  // Set to true if there's a pending abort.
+  bool pending_abort_;
 
   DataTypeErrorHandler* error_handler_; // Guaranteed to outlive datatypes.
 

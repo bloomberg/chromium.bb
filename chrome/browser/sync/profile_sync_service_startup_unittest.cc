@@ -84,7 +84,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   virtual void SetUp() {
     file_thread_.Start();
     io_thread_.StartIOThread();
-    db_thread_.Start();
     profile_->CreateRequestContext();
 #if defined(OS_CHROMEOS)
     SigninManagerFactory::GetInstance()->SetTestingFactory(
@@ -106,9 +105,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     // Pump messages posted by the sync core thread (which may end up
     // posting on the IO thread).
     ui_loop_.RunUntilIdle();
-    file_thread_.Stop();
-    db_thread_.Stop();
     io_thread_.Stop();
+    file_thread_.Stop();
     ui_loop_.RunUntilIdle();
   }
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_names.h"
@@ -126,20 +125,23 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
   }
 }
 
-ProfileSyncComponentsFactory::SyncComponents
-TypedUrlDataTypeController::CreateSyncComponents() {
+void TypedUrlDataTypeController::CreateSyncComponents() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
   DCHECK(backend_);
-  return profile_sync_factory()->CreateTypedUrlSyncComponents(
-      profile_sync_service(),
-      backend_,
-      this);
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
+      profile_sync_factory()->CreateTypedUrlSyncComponents(
+          profile_sync_service(),
+          backend_,
+          this);
+  set_model_associator(sync_components.model_associator);
+  set_change_processor(sync_components.change_processor);
 }
 
-void TypedUrlDataTypeController::DisconnectProcessor(
-    ChangeProcessor* processor) {
-  static_cast<TypedUrlChangeProcessor*>(processor)->Disconnect();
+void TypedUrlDataTypeController::StopModels() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
+  DVLOG(1) << "TypedUrlDataTypeController::StopModels(): State = " << state();
 }
 
 TypedUrlDataTypeController::~TypedUrlDataTypeController() {}

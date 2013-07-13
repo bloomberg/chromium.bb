@@ -36,8 +36,7 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
                bool(const tracked_objects::Location&,
                     const base::Closure&));
   MOCK_METHOD0(StartAssociation, void());
-  MOCK_METHOD0(CreateSyncComponents,
-               ProfileSyncComponentsFactory::SyncComponents());
+  MOCK_METHOD0(CreateSyncComponents, void());
   MOCK_METHOD3(StartDone,
                void(DataTypeController::StartResult result,
                     const syncer::SyncMergeResult& local_merge_result,
@@ -47,7 +46,8 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
                     DataTypeController::State new_state,
                     const syncer::SyncMergeResult& local_merge_result,
                     const syncer::SyncMergeResult& syncer_merge_result));
-  MOCK_METHOD1(DisconnectProcessor, void(ChangeProcessor*));
+  MOCK_METHOD0(StopModels, void());
+  MOCK_METHOD0(StopAssociation, void());
   MOCK_METHOD2(OnUnrecoverableErrorImpl, void(const tracked_objects::Location&,
                                               const std::string&));
   MOCK_METHOD2(RecordUnrecoverableError, void(const tracked_objects::Location&,

@@ -201,10 +201,8 @@ class SyncSchedulerTest : public testing::Test {
 
   // This stops the scheduler synchronously.
   void StopSyncScheduler() {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
-                   weak_ptr_factory_.GetWeakPtr()));
+    scheduler()->RequestStop(base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
+                             weak_ptr_factory_.GetWeakPtr()));
     RunLoop();
   }
 
@@ -234,8 +232,8 @@ class SyncSchedulerTest : public testing::Test {
     return dir_maker_.directory();
   }
 
-  base::MessageLoop loop_;
   base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
+  base::MessageLoop message_loop_;
   TestDirectorySetterUpper dir_maker_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<SyncSessionContext> context_;
