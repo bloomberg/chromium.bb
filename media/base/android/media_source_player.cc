@@ -529,17 +529,14 @@ void MediaSourcePlayer::DurationChanged(const base::TimeDelta& duration) {
 }
 
 void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
-  if (!is_audio_encrypted_ && !is_video_encrypted_)
-    return;
-
   // Currently we don't support DRM change during the middle of playback, even
   // if the player is paused.
   // TODO(qinmin): support DRM change after playback has started.
   // http://crbug.com/253792.
-  DCHECK(!audio_decoder_job_ || !audio_decoder_job_->is_decoding());
-  DCHECK(!video_decoder_job_ || !video_decoder_job_->is_decoding());
-  DCHECK_EQ(0u, audio_access_unit_index_);
-  DCHECK_EQ(0u, video_access_unit_index_);
+  if (GetCurrentTime() > base::TimeDelta()) {
+    LOG(INFO) << "Setting DRM bridge after play back has started. "
+              << "This is not well supported!";
+  }
 
   drm_bridge_ = drm_bridge;
 
