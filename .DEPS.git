@@ -354,12 +354,12 @@ deps_os = {
 include_rules = [
     '+base',
     '+build',
-    '+googleurl',
     '+ipc',
     '+library_loaders',
     '+testing',
     '+third_party/icu/public',
-    '+url'
+    '+url',
+    '!googleurl'
 ]
 
 skip_child_includes = [
