@@ -252,11 +252,13 @@ void CrasAudioHandler::SetInputMute(bool mute_on) {
 void CrasAudioHandler::SetActiveOutputNode(uint64 node_id) {
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetActiveOutputNode(node_id);
+  FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
 }
 
 void CrasAudioHandler::SetActiveInputNode(uint64 node_id) {
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetActiveInputNode(node_id);
+  FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
 }
 
 void CrasAudioHandler::SetVolumeGainPercentForDevice(uint64 device_id,
@@ -484,19 +486,13 @@ void CrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
   if (device.is_input) {
     if (!ChangeActiveDevice(device, &active_input_node_id_))
       return;
-
     SetupAudioInputState();
-    DBusThreadManager::Get()->GetCrasAudioClient()->SetActiveInputNode(
-        device.id);
-    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
+    SetActiveInputNode(active_input_node_id_);
   } else {
     if (!ChangeActiveDevice(device, &active_output_node_id_))
       return;
-
     SetupAudioOutputState();
-    DBusThreadManager::Get()->GetCrasAudioClient()->SetActiveOutputNode(
-        device.id);
-    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
+    SetActiveOutputNode(active_output_node_id_);
   }
 }
 

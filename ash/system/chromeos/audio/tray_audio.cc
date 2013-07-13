@@ -488,10 +488,7 @@ class AudioDetailedView : public TrayDetailsView,
       if (iter == device_map_.end())
         return;
       chromeos::AudioDevice& device = iter->second;
-      if (device.is_input)
-        CrasAudioHandler::Get()->SetActiveInputNode(device.id);
-      else
-        CrasAudioHandler::Get()->SetActiveOutputNode(device.id);
+      CrasAudioHandler::Get()->SwitchToDevice(device);
     }
   }
 

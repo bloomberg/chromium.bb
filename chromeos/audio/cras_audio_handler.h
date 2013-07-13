@@ -157,11 +157,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Mutes or unmutes audio input device.
   virtual void SetInputMute(bool mute_on);
 
-  // Sets the active audio output node to the node with |node_id|.
-  virtual void SetActiveOutputNode(uint64 node_id);
-
-  // Sets the active audio input node to the node with |node_id|.
-  virtual void SetActiveInputNode(uint64 node_id);
+  // Switches active audio device to |device|.
+  virtual void SwitchToDevice(const AudioDevice& device);
 
   // Sets volume/gain level for a device.
   virtual void SetVolumeGainPercentForDevice(uint64 device_id, int value);
@@ -185,6 +182,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Overriden from AudioPrefObserver.
   virtual void OnAudioPolicyPrefChanged() OVERRIDE;
+
+  // Sets the active audio output/input node to the node with |node_id|.
+  void SetActiveOutputNode(uint64 node_id);
+  void SetActiveInputNode(uint64 node_id);
 
   // Sets up the audio device state based on audio policy and audio settings
   // saved in prefs.
@@ -226,8 +227,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // |new_active_device|.
   bool ChangeActiveDevice(const AudioDevice& new_active_device,
                           uint64* current_active_node_id);
-
-  void SwitchToDevice(const AudioDevice& device);
 
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);

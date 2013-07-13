@@ -61,10 +61,7 @@ void MockCrasAudioHandler::SetOutputMute(bool mute_on) {
 void MockCrasAudioHandler::SetInputMute(bool mute_on) {
 }
 
-void MockCrasAudioHandler::SetActiveOutputNode(uint64 node_id) {
-}
-
-void MockCrasAudioHandler::SetActiveInputNode(uint64 node_id) {
+void MockCrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
 }
 
 MockCrasAudioHandler::MockCrasAudioHandler() : CrasAudioHandler(NULL) {

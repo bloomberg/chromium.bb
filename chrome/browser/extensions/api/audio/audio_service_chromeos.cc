@@ -124,10 +124,10 @@ void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
     bool found = FindDevice(GetIdFromStr(device_list[i]), &device);
     if (found) {
       if (device.is_input && !input_device_set) {
-        cras_audio_handler_->SetActiveInputNode(device.id);
+        cras_audio_handler_->SwitchToDevice(device);
         input_device_set = true;
       } else if (!device.is_input && !output_device_set) {
-        cras_audio_handler_->SetActiveOutputNode(device.id);
+        cras_audio_handler_->SwitchToDevice(device);
         output_device_set = true;
       }
     }

@@ -30,8 +30,7 @@ class CHROMEOS_EXPORT MockCrasAudioHandler : public CrasAudioHandler {
   virtual void AdjustOutputVolumeByPercent(int adjust_by_percent) OVERRIDE;
   virtual void SetOutputMute(bool mute_on) OVERRIDE;
   virtual void SetInputMute(bool mute_on) OVERRIDE;
-  virtual void SetActiveOutputNode(uint64 node_id) OVERRIDE;
-  virtual void SetActiveInputNode(uint64 node_id) OVERRIDE;
+  virtual void SwitchToDevice(const AudioDevice& device) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCrasAudioHandler);
