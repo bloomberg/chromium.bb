@@ -55,8 +55,6 @@
 #include "base/android/build_info.h"
 #endif
 
-#define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
-
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #include "ui/base/win/dpi.h"
@@ -422,15 +420,9 @@ void MetricsLog::RecordIncrementalStabilityElements(
   PrefService* pref = GetPrefService();
   DCHECK(pref);
 
-  OPEN_ELEMENT_FOR_SCOPE("profile");
-  WriteCommonEventAttributes();
-
-  {
-    OPEN_ELEMENT_FOR_SCOPE("stability");  // Minimal set of stability elements.
-    WriteRequiredStabilityAttributes(pref);
-    WriteRealtimeStabilityAttributes(pref);
-    WritePluginStabilityElements(plugin_list, pref);
-  }
+  WriteRequiredStabilityAttributes(pref);
+  WriteRealtimeStabilityAttributes(pref);
+  WritePluginStabilityElements(plugin_list, pref);
 }
 
 PrefService* MetricsLog::GetPrefService() {
@@ -465,7 +457,6 @@ void MetricsLog::WriteStabilityElement(
   // NOTE: This could lead to some data loss if this report isn't successfully
   //       sent, but that's true for all the metrics.
 
-  OPEN_ELEMENT_FOR_SCOPE("stability");
   WriteRequiredStabilityAttributes(pref);
   WriteRealtimeStabilityAttributes(pref);
 
@@ -487,17 +478,6 @@ void MetricsLog::WriteStabilityElement(
 
   // TODO(jar): The following are all optional, so we *could* optimize them for
   // values of zero (and not include them).
-
-  // Write the XML version.
-  WriteIntAttribute("incompleteshutdowncount", incomplete_shutdown_count);
-  WriteIntAttribute("breakpadregistrationok",
-                    breakpad_registration_success_count);
-  WriteIntAttribute("breakpadregistrationfail",
-                    breakpad_registration_failure_count);
-  WriteIntAttribute("debuggerpresent", debugger_present_count);
-  WriteIntAttribute("debuggernotpresent", debugger_not_present_count);
-
-  // Write the protobuf version.
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
   stability->set_incomplete_shutdown_count(incomplete_shutdown_count);
@@ -520,8 +500,6 @@ void MetricsLog::WritePluginStabilityElements(
   if (!plugin_stats_list)
     return;
 
-  OPEN_ELEMENT_FOR_SCOPE("plugins");
-
 #if defined(ENABLE_PLUGINS)
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
@@ -534,31 +512,6 @@ void MetricsLog::WritePluginStabilityElements(
     }
     DictionaryValue* plugin_dict = static_cast<DictionaryValue*>(*iter);
 
-    std::string plugin_name;
-    plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
-
-    std::string base64_name_hash;
-    uint64 numeric_name_hash_ignored;
-    CreateHashes(plugin_name, &base64_name_hash, &numeric_name_hash_ignored);
-
-    // Write the XML verison.
-    OPEN_ELEMENT_FOR_SCOPE("pluginstability");
-    // Use "filename" instead of "name", otherwise we need to update the
-    // UMA servers.
-    WriteAttribute("filename", base64_name_hash);
-
-    int launches = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
-    WriteIntAttribute("launchcount", launches);
-
-    int instances = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginInstances, &instances);
-    WriteIntAttribute("instancecount", instances);
-
-    int crashes = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginCrashes, &crashes);
-    WriteIntAttribute("crashcount", crashes);
-
     // Write the protobuf version.
     // Note that this search is potentially a quadratic operation, but given the
     // low number of plugins installed on a "reasonable" setup, this should be
@@ -566,6 +519,8 @@ void MetricsLog::WritePluginStabilityElements(
     // TODO(isherman): Verify that this does not show up as a hotspot in
     // profiler runs.
     const webkit::WebPluginInfo* plugin_info = NULL;
+    std::string plugin_name;
+    plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     const string16 plugin_name_utf16 = UTF8ToUTF16(plugin_name);
     for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
              plugin_list.begin();
@@ -580,20 +535,32 @@ void MetricsLog::WritePluginStabilityElements(
       NOTREACHED();
       continue;
     }
-    int loading_errors = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
-                            &loading_errors);
-    WriteIntAttribute("loadingerrorcount", loading_errors);
 
-    // Write the protobuf version.
     SystemProfileProto::Stability::PluginStability* plugin_stability =
         stability->add_plugin_stability();
     SetPluginInfo(*plugin_info, plugin_prefs,
                   plugin_stability->mutable_plugin());
-    plugin_stability->set_launch_count(launches);
-    plugin_stability->set_instance_count(instances);
-    plugin_stability->set_crash_count(crashes);
-    plugin_stability->set_loading_error_count(loading_errors);
+
+    int launches = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
+    if (launches > 0)
+      plugin_stability->set_launch_count(launches);
+
+    int instances = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginInstances, &instances);
+    if (instances > 0)
+      plugin_stability->set_instance_count(instances);
+
+    int crashes = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginCrashes, &crashes);
+    if (crashes > 0)
+      plugin_stability->set_crash_count(crashes);
+
+    int loading_errors = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
+                            &loading_errors);
+    if (loading_errors > 0)
+      plugin_stability->set_loading_error_count(loading_errors);
   }
 #endif  // defined(ENABLE_PLUGINS)
 
@@ -610,11 +577,6 @@ void MetricsLog::WriteRequiredStabilityAttributes(PrefService* pref) {
   int crash_count = pref->GetInteger(prefs::kStabilityCrashCount);
   pref->SetInteger(prefs::kStabilityCrashCount, 0);
 
-  // Write the XML version.
-  WriteIntAttribute("launchcount", launch_count);
-  WriteIntAttribute("crashcount", crash_count);
-
-  // Write the protobuf version.
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
   stability->set_launch_count(launch_count);
@@ -630,35 +592,30 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
       uma_proto()->mutable_system_profile()->mutable_stability();
   int count = pref->GetInteger(prefs::kStabilityPageLoadCount);
   if (count) {
-    WriteIntAttribute("pageloadcount", count);
     stability->set_page_load_count(count);
     pref->SetInteger(prefs::kStabilityPageLoadCount, 0);
   }
 
   count = pref->GetInteger(prefs::kStabilityRendererCrashCount);
   if (count) {
-    WriteIntAttribute("renderercrashcount", count);
     stability->set_renderer_crash_count(count);
     pref->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   }
 
   count = pref->GetInteger(prefs::kStabilityExtensionRendererCrashCount);
   if (count) {
-    WriteIntAttribute("extensionrenderercrashcount", count);
     stability->set_extension_renderer_crash_count(count);
     pref->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
   }
 
   count = pref->GetInteger(prefs::kStabilityRendererHangCount);
   if (count) {
-    WriteIntAttribute("rendererhangcount", count);
     stability->set_renderer_hang_count(count);
     pref->SetInteger(prefs::kStabilityRendererHangCount, 0);
   }
 
   count = pref->GetInteger(prefs::kStabilityChildProcessCrashCount);
   if (count) {
-    WriteIntAttribute("childprocesscrashcount", count);
     stability->set_child_process_crash_count(count);
     pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
   }
@@ -684,10 +641,8 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
 #endif  // OS_CHROMEOS
 
   int64 recent_duration = GetIncrementalUptime(pref);
-  if (recent_duration) {
-    WriteInt64Attribute("uptimesec", recent_duration);
+  if (recent_duration)
     stability->set_uptime_sec(recent_duration);
-  }
 }
 
 void MetricsLog::WritePluginList(
@@ -708,87 +663,11 @@ void MetricsLog::WritePluginList(
 
 void MetricsLog::RecordEnvironment(
          const std::vector<webkit::WebPluginInfo>& plugin_list,
-         const GoogleUpdateMetrics& google_update_metrics,
-         const DictionaryValue* profile_metrics) {
+         const GoogleUpdateMetrics& google_update_metrics) {
   DCHECK(!locked());
 
   PrefService* pref = GetPrefService();
-
-  OPEN_ELEMENT_FOR_SCOPE("profile");
-  WriteCommonEventAttributes();
-
   WriteStabilityElement(plugin_list, pref);
-
-  {
-    // Write the XML version.
-    // We'll write the protobuf version in RecordEnvironmentProto().
-    OPEN_ELEMENT_FOR_SCOPE("cpu");
-    WriteAttribute("arch", base::SysInfo::OperatingSystemArchitecture());
-  }
-
-  {
-    // Write the XML version.
-    // We'll write the protobuf version in RecordEnvironmentProto().
-    OPEN_ELEMENT_FOR_SCOPE("memory");
-    WriteIntAttribute("mb", base::SysInfo::AmountOfPhysicalMemoryMB());
-#if defined(OS_WIN)
-    WriteIntAttribute("dllbase", reinterpret_cast<int>(&__ImageBase));
-#endif
-  }
-
-  {
-    // Write the XML version.
-    // We'll write the protobuf version in RecordEnvironmentProto().
-    OPEN_ELEMENT_FOR_SCOPE("os");
-    WriteAttribute("name", base::SysInfo::OperatingSystemName());
-    WriteAttribute("version", base::SysInfo::OperatingSystemVersion());
-  }
-
-  {
-    OPEN_ELEMENT_FOR_SCOPE("gpu");
-    const gpu::GPUInfo& gpu_info =
-        GpuDataManager::GetInstance()->GetGPUInfo();
-
-    // Write the XML version.
-    // We'll write the protobuf version in RecordEnvironmentProto().
-    WriteIntAttribute("vendorid", gpu_info.gpu.vendor_id);
-    WriteIntAttribute("deviceid", gpu_info.gpu.device_id);
-  }
-
-  {
-    const gfx::Size display_size = GetScreenSize();
-
-    // Write the XML version.
-    // We'll write the protobuf version in RecordEnvironmentProto().
-    OPEN_ELEMENT_FOR_SCOPE("display");
-    WriteIntAttribute("xsize", display_size.width());
-    WriteIntAttribute("ysize", display_size.height());
-    WriteIntAttribute("screens", GetScreenCount());
-  }
-
-  {
-    OPEN_ELEMENT_FOR_SCOPE("bookmarks");
-    {
-      OPEN_ELEMENT_FOR_SCOPE("bookmarklocation");
-      WriteAttribute("name", "full-tree");
-      WriteIntAttribute("foldercount", 0);
-      WriteIntAttribute("itemcount", 0);
-    }
-    {
-      OPEN_ELEMENT_FOR_SCOPE("bookmarklocation");
-      WriteAttribute("name", "toolbar");
-      WriteIntAttribute("foldercount", 0);
-      WriteIntAttribute("itemcount", 0);
-    }
-  }
-
-  {
-    OPEN_ELEMENT_FOR_SCOPE("keywords");
-    WriteIntAttribute("count", pref->GetInteger(prefs::kNumKeywords));
-  }
-
-  if (profile_metrics)
-    WriteAllProfilesMetrics(*profile_metrics);
 
   RecordEnvironmentProto(plugin_list, google_update_metrics);
 }
@@ -924,64 +803,6 @@ void MetricsLog::RecordProfilerData(
   }
 
   WriteProfilerData(process_data, process_type, profile);
-}
-
-void MetricsLog::WriteAllProfilesMetrics(
-    const DictionaryValue& all_profiles_metrics) {
-  const std::string profile_prefix(prefs::kProfilePrefix);
-  for (DictionaryValue::Iterator i(all_profiles_metrics); !i.IsAtEnd();
-       i.Advance()) {
-    if (i.key().compare(0, profile_prefix.size(), profile_prefix) == 0) {
-      const DictionaryValue* profile;
-      if (i.value().GetAsDictionary(&profile))
-        WriteProfileMetrics(i.key().substr(profile_prefix.size()), *profile);
-    }
-  }
-}
-
-void MetricsLog::WriteProfileMetrics(const std::string& profileidhash,
-                                     const DictionaryValue& profile_metrics) {
-  OPEN_ELEMENT_FOR_SCOPE("userprofile");
-  WriteAttribute("profileidhash", profileidhash);
-  for (DictionaryValue::Iterator i(profile_metrics); !i.IsAtEnd();
-       i.Advance()) {
-    DCHECK_NE(i.key(), "id");
-    switch (i.value().GetType()) {
-      case Value::TYPE_STRING: {
-        std::string string_value;
-        if (i.value().GetAsString(&string_value)) {
-          OPEN_ELEMENT_FOR_SCOPE("profileparam");
-          WriteAttribute("name", i.key());
-          WriteAttribute("value", string_value);
-        }
-        break;
-      }
-
-      case Value::TYPE_BOOLEAN: {
-        bool bool_value;
-        if (i.value().GetAsBoolean(&bool_value)) {
-          OPEN_ELEMENT_FOR_SCOPE("profileparam");
-          WriteAttribute("name", i.key());
-          WriteIntAttribute("value", bool_value ? 1 : 0);
-        }
-        break;
-      }
-
-      case Value::TYPE_INTEGER: {
-        int int_value;
-        if (i.value().GetAsInteger(&int_value)) {
-          OPEN_ELEMENT_FOR_SCOPE("profileparam");
-          WriteAttribute("name", i.key());
-          WriteIntAttribute("value", int_value);
-        }
-        break;
-      }
-
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
 }
 
 void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {

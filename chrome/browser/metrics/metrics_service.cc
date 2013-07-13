@@ -427,7 +427,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount, 0);
 #endif  // OS_CHROMEOS
 
-  registry->RegisterDictionaryPref(prefs::kProfileMetrics);
   registry->RegisterIntegerPref(prefs::kNumKeywords, 0);
   registry->RegisterListPref(prefs::kMetricsInitialLogs);
   registry->RegisterListPref(prefs::kMetricsOngoingLogs);
@@ -886,22 +885,6 @@ void MetricsService::InitializeMetricsState() {
 
   // Bookkeeping for the uninstall metrics.
   IncrementLongPrefsValue(prefs::kUninstallLaunchCount);
-
-  // Save profile metrics.
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs) {
-    // Remove the current dictionary and store it for use when sending data to
-    // server. By removing the value we prune potentially dead profiles
-    // (and keys). All valid values are added back once services startup.
-    const DictionaryValue* profile_dictionary =
-        prefs->GetDictionary(prefs::kProfileMetrics);
-    if (profile_dictionary) {
-      // Do a deep copy of profile_dictionary since ClearPref will delete it.
-      profile_dictionary_.reset(static_cast<DictionaryValue*>(
-          profile_dictionary->DeepCopy()));
-      prefs->ClearPref(prefs::kProfileMetrics);
-    }
-  }
 
   // Get stats on use of command line.
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
@@ -1363,8 +1346,7 @@ void MetricsService::PrepareInitialLog() {
 
   DCHECK(initial_log_.get());
   initial_log_->set_hardware_class(hardware_class_);
-  initial_log_->RecordEnvironment(plugins_, google_update_metrics_,
-                                  profile_dictionary_.get());
+  initial_log_->RecordEnvironment(plugins_, google_update_metrics_);
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.

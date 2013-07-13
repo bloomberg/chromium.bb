@@ -479,9 +479,6 @@ extern const char kProfilesNumCreated[];
 extern const char kProfileInfoCache[];
 extern const char kProfileCreatedByVersion[];
 
-extern const char kProfileMetrics[];
-extern const char kProfilePrefix[];
-
 extern const char kStabilityExitedCleanly[];
 extern const char kStabilityStatsVersion[];
 extern const char kStabilityStatsBuildTime[];

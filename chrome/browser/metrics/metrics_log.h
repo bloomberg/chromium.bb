@@ -95,8 +95,7 @@ class MetricsLog : public MetricsLogBase {
   // dictionary giving the metrics for the profile.
   void RecordEnvironment(
       const std::vector<webkit::WebPluginInfo>& plugin_list,
-      const GoogleUpdateMetrics& google_update_metrics,
-      const base::DictionaryValue* profile_metrics);
+      const GoogleUpdateMetrics& google_update_metrics);
 
   // Records the current operating environment.  Takes the list of installed
   // plugins and Google Update statistics as parameters because those can't be
@@ -172,16 +171,6 @@ class MetricsLog : public MetricsLogBase {
 
   // Writes the list of installed plugins.
   void WritePluginList(const std::vector<webkit::WebPluginInfo>& plugin_list);
-
-  // Writes all profile metrics. This invokes WriteProfileMetrics for each key
-  // in all_profiles_metrics that starts with kProfilePrefix.
-  void WriteAllProfilesMetrics(
-      const base::DictionaryValue& all_profiles_metrics);
-
-  // Writes metrics for the profile identified by key. This writes all
-  // key/value pairs in profile_metrics.
-  void WriteProfileMetrics(const std::string& key,
-                           const base::DictionaryValue& profile_metrics);
 
   // Writes info about the Google Update install that is managing this client.
   // This is a no-op if called on a non-Windows platform.

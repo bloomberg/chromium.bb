@@ -478,10 +478,6 @@ class MetricsService
   // this factory are invalidated in ScheduleNextStateSave.
   base::WeakPtrFactory<MetricsService> state_saver_factory_;
 
-  // Dictionary containing all the profile specific metrics. This is set
-  // at creation time from the prefs.
-  scoped_ptr<base::DictionaryValue> profile_dictionary_;
-
   // The scheduler for determining when uploads should happen.
   scoped_ptr<MetricsReportingScheduler> scheduler_;
 

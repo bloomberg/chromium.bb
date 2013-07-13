@@ -137,7 +137,7 @@ class MetricsLogTest : public testing::Test {
     if (proto_only)
       log.RecordEnvironmentProto(plugins, google_update_metrics);
     else
-      log.RecordEnvironment(plugins, google_update_metrics, NULL);
+      log.RecordEnvironment(plugins, google_update_metrics);
 
     // Computed from original time of 1373051956.
     EXPECT_EQ(1373050800, log.system_profile().install_date());
@@ -335,42 +335,3 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
               tracked_object->process_type());
   }
 }
-
-#if defined(OS_CHROMEOS)
-TEST_F(MetricsLogTest, ChromeOSStabilityData) {
-  TestMetricsLog log(kClientId, kSessionId);
-
-  // Expect 3 warnings about not yet being able to send the
-  // Chrome OS stability stats.
-  std::vector<webkit::WebPluginInfo> plugins;
-  PrefService* prefs = log.GetPrefService();
-  log.WriteStabilityElement(plugins, prefs);
-  log.CloseLog();
-
-  int size = log.GetEncodedLogSizeXml();
-  ASSERT_GT(size, 0);
-
-  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityChildProcessCrashCount));
-  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityOtherUserCrashCount));
-  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityKernelCrashCount));
-  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilitySystemUncleanShutdownCount));
-
-  std::string encoded;
-  // Leave room for the NUL terminator.
-  bool encoding_result = log.GetEncodedLogXml(
-      WriteInto(&encoded, size + 1), size);
-  ASSERT_TRUE(encoding_result);
-
-  // Check that we can find childprocesscrashcount, but not
-  // any of the ChromeOS ones that we are not emitting until log
-  // servers can handle them.
-  EXPECT_NE(std::string::npos,
-            encoded.find(" childprocesscrashcount=\"10\""));
-  EXPECT_EQ(std::string::npos,
-            encoded.find(" otherusercrashcount="));
-  EXPECT_EQ(std::string::npos,
-            encoded.find(" kernelcrashcount="));
-  EXPECT_EQ(std::string::npos,
-            encoded.find(" systemuncleanshutdowns="));
-}
-#endif  // OS_CHROMEOS

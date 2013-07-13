@@ -1346,14 +1346,6 @@ const char kVariationsSeedDate[] = "variations_seed_date";
 // SHA-1 hash of the serialized variations seed data.
 const char kVariationsSeedHash[] = "variations_seed_hash";
 
-// Where profile specific metrics are placed.
-const char kProfileMetrics[] = "user_experience_metrics.profiles";
-
-// The metrics for a profile are stored as dictionary values under the
-// path kProfileMetrics. The individual metrics are placed under the path
-// kProfileMetrics.kProfilePrefix<hashed-profile-id>.
-const char kProfilePrefix[] = "profile-";
-
 // True if the previous run of the program exited cleanly.
 const char kStabilityExitedCleanly[] =
     "user_experience_metrics.stability.exited_cleanly";
