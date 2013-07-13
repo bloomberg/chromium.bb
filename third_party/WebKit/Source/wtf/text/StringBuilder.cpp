@@ -32,7 +32,7 @@
 
 namespace WTF {
 
-static size_t expandCapacity(size_t capacity, size_t newLength)
+static size_t expandedCapacity(size_t capacity, size_t newLength)
 {
     static const size_t minimumCapacity = 16;
     return std::max(capacity, std::max(minimumCapacity, newLength * 2));
@@ -227,10 +227,10 @@ CharType* StringBuilder::appendUninitializedSlow(unsigned requiredLength)
         // If the buffer is valid it must be at least as long as the current builder contents!
         ASSERT(m_buffer->length() >= m_length);
         
-        reallocateBuffer<CharType>(expandCapacity(capacity(), requiredLength));
+        reallocateBuffer<CharType>(expandedCapacity(capacity(), requiredLength));
     } else {
         ASSERT(m_string.length() == m_length);
-        allocateBuffer(m_length ? m_string.getCharacters<CharType>() : 0, expandCapacity(capacity(), requiredLength));
+        allocateBuffer(m_length ? m_string.getCharacters<CharType>() : 0, expandedCapacity(capacity(), requiredLength));
     }
     
     CharType* result = getBufferCharacters<CharType>() + m_length;
@@ -261,10 +261,10 @@ void StringBuilder::append(const UChar* characters, unsigned length)
             // If the buffer is valid it must be at least as long as the current builder contents!
             ASSERT(m_buffer->length() >= m_length);
             
-            allocateBufferUpConvert(m_buffer->characters8(), expandCapacity(capacity(), requiredLength));
+            allocateBufferUpConvert(m_buffer->characters8(), expandedCapacity(capacity(), requiredLength));
         } else {
             ASSERT(m_string.length() == m_length);
-            allocateBufferUpConvert(m_string.isNull() ? 0 : m_string.characters8(), expandCapacity(capacity(), requiredLength));
+            allocateBufferUpConvert(m_string.isNull() ? 0 : m_string.characters8(), expandedCapacity(capacity(), requiredLength));
         }
 
         memcpy(m_bufferCharacters16 + m_length, characters, static_cast<size_t>(length) * sizeof(UChar));        
