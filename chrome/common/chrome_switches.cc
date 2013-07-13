@@ -1006,19 +1006,6 @@ const char kOmniboxHistoryQuickProviderReorderForInliningEnabled[] = "1";
 // 0 means don't allow reordering results ( == current behavior as of 6/2012).
 const char kOmniboxHistoryQuickProviderReorderForInliningDisabled[] = "0";
 
-// Controls whether the omnibox's HistoryQuickProvider is allowed to
-// inline suggestions.
-const char kOmniboxInlineHistoryQuickProvider[] =
-    "omnibox-inline-history-quick-provider-allowed";
-// The values the kOmniboxInlineHistoryQuickProvider switch may have, as in
-// "--omnibox-inline-history-quick-provider-allowed=1"
-//   allowed: if HistoryQuickProvider thinks it appropriate, it can inline
-//   ( == current behavior as of 2/2012).
-const char kOmniboxInlineHistoryQuickProviderAllowed[] = "1";
-//   prohibited: never inline matches
-const char kOmniboxInlineHistoryQuickProviderProhibited[] = "0";
-//   auto: any other value => the code and field trial does what it wants.
-
 // When the option to block third-party cookies is enabled, only block
 // third-party cookies from being set.
 const char kOnlyBlockSettingThirdPartyCookies[] =

@@ -58,62 +58,6 @@ HistoryQuickProvider::HistoryQuickProvider(
           AutocompleteProvider::TYPE_HISTORY_QUICK),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       reorder_for_inlining_(false) {
-  enum InliningOption {
-    INLINING_PROHIBITED = 0,
-    INLINING_ALLOWED = 1,
-    INLINING_AUTO_BUT_NOT_IN_FIELD_TRIAL = 2,
-    INLINING_FIELD_TRIAL_DEFAULT_GROUP = 3,
-    INLINING_FIELD_TRIAL_EXPERIMENT_GROUP = 4,
-    NUM_OPTIONS = 5
-  };
-  // should always be overwritten
-  InliningOption inlining_option = NUM_OPTIONS;
-
-  const std::string switch_value = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOmniboxInlineHistoryQuickProvider);
-  if (switch_value == switches::kOmniboxInlineHistoryQuickProviderAllowed) {
-    inlining_option = INLINING_ALLOWED;
-    always_prevent_inline_autocomplete_ = false;
-  } else if (switch_value ==
-             switches::kOmniboxInlineHistoryQuickProviderProhibited) {
-    inlining_option = INLINING_PROHIBITED;
-    always_prevent_inline_autocomplete_ = true;
-  } else {
-    // We'll assume any other flag means automatic.
-    // Automatic means eligible for the field trial.
-
-    // For the field trial stuff to work correctly, we must be running
-    // on the same thread as the thread that created the field trial,
-    // which happens via a call to OmniboxFieldTrial::Active in
-    // chrome_browser_main.cc on the main thread.  Let's check this to
-    // be sure.  We check "if we've heard of the UI thread then we'd better
-    // be on it."  The first part is necessary so unit tests pass.  (Many
-    // unit tests don't set up the threading naming system; hence
-    // CurrentlyOn(UI thread) will fail.)
-    DCHECK(!content::BrowserThread::IsWellKnownThread(
-               content::BrowserThread::UI) ||
-           content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (OmniboxFieldTrial::InDisallowInlineHQPFieldTrial()) {
-      if (OmniboxFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup()) {
-        always_prevent_inline_autocomplete_ = true;
-        inlining_option = INLINING_FIELD_TRIAL_EXPERIMENT_GROUP;
-      } else {
-        always_prevent_inline_autocomplete_ = false;
-        inlining_option = INLINING_FIELD_TRIAL_DEFAULT_GROUP;
-      }
-    } else {
-      always_prevent_inline_autocomplete_ = false;
-      inlining_option = INLINING_AUTO_BUT_NOT_IN_FIELD_TRIAL;
-    }
-  }
-
-  // Add a beacon to the logs that'll allow us to identify later what
-  // inlining state a user is in.  Do this by incrementing a bucket in
-  // a histogram, where the bucket represents the user's inlining state.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Omnibox.InlineHistoryQuickProviderFieldTrialBeacon",
-      inlining_option, NUM_OPTIONS);
-
   reorder_for_inlining_ = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::
                           kOmniboxHistoryQuickProviderReorderForInlining) ==

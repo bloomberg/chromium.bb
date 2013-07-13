@@ -50,12 +50,9 @@ class HistoryProvider : public AutocompleteProvider {
   // Returns true if inline autocompletion should be prevented. Use this instead
   // of |input.prevent_inline_autocomplete| if the input is passed through
   // FixupUserInput(). This method returns true if
-  // |input.prevent_inline_autocomplete()| is true, or the input text contains
-  // trailing whitespace, or if always_prevent_inline_autocomplete is true.
+  // |input.prevent_inline_autocomplete()| is true or the input text contains
+  // trailing whitespace.
   bool PreventInlineAutocomplete(const AutocompleteInput& input);
-
-  // If true, we always prevent inline autocompletions.
-  bool always_prevent_inline_autocomplete_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_

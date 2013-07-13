@@ -17,7 +17,6 @@
 namespace {
 
 // Field trial names.
-const char kDisallowInlineHQPFieldTrialName[] = "OmniboxDisallowInlineHQP";
 const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
@@ -33,12 +32,6 @@ const char kAutocompleteDynamicFieldTrialPrefix[] = "AutocompleteDynamicTrial_";
 const int kMaxAutocompleteDynamicFieldTrials = 5;
 
 // Field trial experiment probabilities.
-
-// For inline History Quick Provider field trial, put 0% ( = 0/100 )
-// of the users in the disallow-inline experiment group.
-const base::FieldTrial::Probability kDisallowInlineHQPFieldTrialDivisor = 100;
-const base::FieldTrial::Probability
-    kDisallowInlineHQPFieldTrialExperimentFraction = 0;
 
 // For HistoryURL provider cull redirects field trial, put 0% ( = 0/100 )
 // of the users in the don't-cull-redirects experiment group.
@@ -70,10 +63,6 @@ const char kStopTimerExperimentGroupName[] = "UseStopTimer";
 // ActivateStaticTrials() method.
 bool static_field_trials_initialized = false;
 
-// Field trial ID for the disallow-inline History Quick Provider
-// experiment group.
-int disallow_inline_hqp_experiment_group = 0;
-
 // Field trial ID for the HistoryURL provider cull redirects experiment group.
 int hup_dont_cull_redirects_experiment_group = 0;
 
@@ -94,28 +83,12 @@ std::string DynamicFieldTrialName(int id) {
 void OmniboxFieldTrial::ActivateStaticTrials() {
   DCHECK(!static_field_trials_initialized);
 
-  // Create inline History Quick Provider field trial.
-  // Make it expire on November 8, 2012.
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-      kDisallowInlineHQPFieldTrialName, kDisallowInlineHQPFieldTrialDivisor,
-      "Standard", 2012, 11, 8, NULL));
-  // Because users tend to use omnibox without attention to it--habits
-  // get ingrained, users tend to learn that a particular suggestion is
-  // at a particular spot in the drop-down--we're going to make these
-  // field trials sticky.  We want users to stay in them once assigned
-  // so they have a better experience and also so we don't get weird
-  // effects as omnibox ranking keeps changing and users learn they can't
-  // trust the omnibox.
-  trial->UseOneTimeRandomization();
-  disallow_inline_hqp_experiment_group = trial->AppendGroup("DisallowInline",
-      kDisallowInlineHQPFieldTrialExperimentFraction);
-
   // Create the HistoryURL provider cull redirects field trial.
   // Make it expire on March 1, 2013.
-  trial = base::FieldTrialList::FactoryGetFieldTrial(
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
       kHUPCullRedirectsFieldTrialName, kHUPCullRedirectsFieldTrialDivisor,
-      "Standard", 2013, 3, 1, NULL);
+      "Standard", 2013, 3, 1, NULL));
   trial->UseOneTimeRandomization();
   hup_dont_cull_redirects_experiment_group =
       trial->AppendGroup("DontCullRedirects",
@@ -167,20 +140,6 @@ int OmniboxFieldTrial::GetDisabledProviderTypes() {
       provider_types |= types;
   }
   return provider_types;
-}
-
-bool OmniboxFieldTrial::InDisallowInlineHQPFieldTrial() {
-  return base::FieldTrialList::TrialExists(kDisallowInlineHQPFieldTrialName);
-}
-
-bool OmniboxFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
-  if (!base::FieldTrialList::TrialExists(kDisallowInlineHQPFieldTrialName))
-    return false;
-
-  // Return true if we're in the experiment group.
-  const int group = base::FieldTrialList::FindValue(
-      kDisallowInlineHQPFieldTrialName);
-  return group == disallow_inline_hqp_experiment_group;
 }
 
 void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(

@@ -131,16 +131,6 @@ const Experiment::Choice
     switches::kOmniboxHistoryQuickProviderReorderForInliningDisabled }
 };
 
-const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
-  { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_AUTOMATIC, "", "" },
-  { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_ALLOWED,
-    switches::kOmniboxInlineHistoryQuickProvider,
-    switches::kOmniboxInlineHistoryQuickProviderAllowed },
-  { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_PROHIBITED,
-    switches::kOmniboxInlineHistoryQuickProvider,
-    switches::kOmniboxInlineHistoryQuickProviderProhibited }
-};
-
 const Experiment::Choice kEnableCompositingForFixedPositionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -707,13 +697,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kOmniboxHistoryQuickProviderReorderForInliningChoices)
-  },
-  {
-    "omnibox-inline-history-quick-provider",
-    IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_NAME,
-    IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kOmniboxInlineHistoryQuickProviderChoices)
   },
   {
     "enable-panels",

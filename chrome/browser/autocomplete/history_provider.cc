@@ -21,8 +21,7 @@
 HistoryProvider::HistoryProvider(AutocompleteProviderListener* listener,
                                  Profile* profile,
                                  AutocompleteProvider::Type type)
-    : AutocompleteProvider(listener, profile, type),
-      always_prevent_inline_autocomplete_(false) {
+    : AutocompleteProvider(listener, profile, type) {
 }
 
 void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -157,7 +156,6 @@ size_t HistoryProvider::TrimHttpPrefix(string16* url) {
 bool HistoryProvider::PreventInlineAutocomplete(
     const AutocompleteInput& input) {
   return input.prevent_inline_autocomplete() ||
-      always_prevent_inline_autocomplete_ ||
       (!input.text().empty() &&
        IsWhitespace(input.text()[input.text().length() - 1]));
 }

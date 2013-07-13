@@ -34,19 +34,6 @@ class OmniboxFieldTrial {
   static int GetDisabledProviderTypes();
 
   // ---------------------------------------------------------
-  // For the inline History Quick Provider field trial.
-
-  // Returns whether the user is in any field trial group for this
-  // field trial.  False indicates that the field trial wasn't
-  // successfully created for some reason.
-  static bool InDisallowInlineHQPFieldTrial();
-
-  // Returns whether the user should get the experiment setup or
-  // the default setup for this field trial.  The experiment
-  // group prohibits inlining suggestions.
-  static bool InDisallowInlineHQPFieldTrialExperimentGroup();
-
-  // ---------------------------------------------------------
   // For the suggest field trial.
 
   // Populates |field_trial_hash| with hashes of the active suggest field trial
