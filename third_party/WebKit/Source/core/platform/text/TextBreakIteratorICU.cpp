@@ -234,7 +234,7 @@ static UBool textLatin1Access(UText* text, int64_t nativeIndex, UBool forward)
     UBool isAccessible;
     if (textInChunkOrOutOfRange(text, nativeIndex, nativeLength, forward, isAccessible))
         return isAccessible;
-    nativeIndex = textPinIndex(nativeIndex, nativeLength);
+    nativeIndex = textPinIndex(nativeIndex, nativeLength - 1);
     TextContext currentContext = textLatin1GetCurrentContext(text);
     TextContext newContext = textGetContext(text, nativeIndex, forward);
     ASSERT(newContext != NoContext);
@@ -357,7 +357,7 @@ static UBool textUTF16Access(UText* text, int64_t nativeIndex, UBool forward)
     UBool isAccessible;
     if (textInChunkOrOutOfRange(text, nativeIndex, nativeLength, forward, isAccessible))
         return isAccessible;
-    nativeIndex = textPinIndex(nativeIndex, nativeLength);
+    nativeIndex = textPinIndex(nativeIndex, nativeLength - 1);
     TextContext currentContext = textUTF16GetCurrentContext(text);
     TextContext newContext = textGetContext(text, nativeIndex, forward);
     ASSERT(newContext != NoContext);
