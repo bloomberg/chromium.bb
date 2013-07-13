@@ -361,7 +361,11 @@
     {
       "name": "ESPN",
       "url": "http://espn.go.com",
-      "why": "#1 sports"
+      "why": "#1 sports",
+      "smoothness": {
+        "action": "scroll",
+        "left_start_percentage": 0.1
+      }
     },
     {
       "url": "http://news.yahoo.com",
