@@ -361,7 +361,7 @@ void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
         "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
   }
   repaint_ack_pending_ = false;
-  in_flight_size_.SetSize(0, 0);
+  last_requested_size_.SetSize(0, 0);
 }
 
 void RenderWidgetHostImpl::SendScreenRects() {
@@ -591,7 +591,7 @@ void RenderWidgetHostImpl::WasResized() {
   float old_overdraw_bottom_height = overdraw_bottom_height_;
   overdraw_bottom_height_ = view_->GetOverdrawBottomHeight();
 
-  bool size_changed = new_size != current_size_;
+  bool size_changed = new_size != last_requested_size_;
   bool side_payload_changed =
       screen_info_out_of_date_ ||
       old_physical_backing_size != physical_backing_size_ ||
@@ -599,10 +599,6 @@ void RenderWidgetHostImpl::WasResized() {
       old_overdraw_bottom_height != overdraw_bottom_height_;
 
   if (!size_changed && !side_payload_changed)
-    return;
-
-  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_ &&
-      !side_payload_changed)
     return;
 
   if (!screen_info_) {
@@ -625,7 +621,7 @@ void RenderWidgetHostImpl::WasResized() {
   if (!Send(new ViewMsg_Resize(routing_id_, params))) {
     resize_ack_pending_ = false;
   } else {
-    in_flight_size_ = new_size;
+    last_requested_size_ = new_size;
   }
 }
 
@@ -1841,7 +1837,6 @@ void RenderWidgetHostImpl::OnUpdateRect(
   if (is_resize_ack) {
     DCHECK(!g_check_for_pending_resize_ack || resize_ack_pending_);
     resize_ack_pending_ = false;
-    in_flight_size_.SetSize(0, 0);
   }
 
   bool is_repaint_ack =

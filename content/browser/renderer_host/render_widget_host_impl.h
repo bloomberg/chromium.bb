@@ -792,7 +792,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // hand is updated when the resize message is sent. This is very similar to
   // |resize_ack_pending_|, but the latter is not set if the new size has width
   // or height zero, which is why we need this too.
-  gfx::Size in_flight_size_;
+  gfx::Size last_requested_size_;
 
   // The next auto resize to send.
   gfx::Size new_auto_size_;
