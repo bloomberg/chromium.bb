@@ -118,6 +118,12 @@ class FakeSchedulerClient : public SchedulerClient {
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE {
     return base::TimeDelta();
   }
+  virtual base::TimeDelta BeginFrameToCommitDurationEstimate() OVERRIDE {
+    return base::TimeDelta();
+  }
+  virtual base::TimeDelta CommitToActivateDurationEstimate() OVERRIDE {
+    return base::TimeDelta();
+  }
 
  protected:
   bool needs_begin_frame_;

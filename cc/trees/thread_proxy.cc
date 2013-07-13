@@ -29,7 +29,8 @@ const double kContextRecreationTickRate = 0.03;
 // Measured in seconds.
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
 
-const size_t kDrawDurationHistorySize = 60;
+const size_t kDurationHistorySize = 60;
+const double kCommitAndActivationDurationEstimationPercentile = 50.0;
 const double kDrawDurationEstimationPercentile = 100.0;
 const int kDrawDurationEstimatePaddingInMicroseconds = 0;
 
@@ -91,7 +92,9 @@ ThreadProxy::ThreadProxy(
       inside_draw_(false),
       defer_commits_(false),
       renew_tree_priority_on_impl_thread_pending_(false),
-      draw_duration_history_(kDrawDurationHistorySize) {
+      draw_duration_history_(kDurationHistorySize),
+      begin_frame_to_commit_duration_history_(kDurationHistorySize),
+      commit_to_activate_duration_history_(kDurationHistorySize) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_);
@@ -647,6 +650,7 @@ void ThreadProxy::ScheduledActionSendBeginFrameToMainThread() {
     begin_frame_sent_to_main_thread_completion_event_on_impl_thread_->Signal();
     begin_frame_sent_to_main_thread_completion_event_on_impl_thread_ = NULL;
   }
+  begin_frame_sent_to_main_thread_time_ = base::TimeTicks::HighResNow();
 }
 
 void ThreadProxy::BeginFrameOnMainThread(
@@ -870,6 +874,10 @@ void ThreadProxy::ScheduledActionCommit() {
     commit_completion_event_on_impl_thread_->Signal();
     commit_completion_event_on_impl_thread_ = NULL;
   }
+
+  commit_complete_time_ = base::TimeTicks::HighResNow();
+  begin_frame_to_commit_duration_history_.InsertSample(
+      commit_complete_time_ - begin_frame_sent_to_main_thread_time_);
 
   // SetVisible kicks off the next scheduler action, so this must be last.
   scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
@@ -1099,6 +1107,16 @@ base::TimeDelta ThreadProxy::DrawDurationEstimate() {
   base::TimeDelta padding = base::TimeDelta::FromMicroseconds(
       kDrawDurationEstimatePaddingInMicroseconds);
   return historical_estimate + padding;
+}
+
+base::TimeDelta ThreadProxy::BeginFrameToCommitDurationEstimate() {
+  return begin_frame_to_commit_duration_history_.Percentile(
+      kCommitAndActivationDurationEstimationPercentile);
+}
+
+base::TimeDelta ThreadProxy::CommitToActivateDurationEstimate() {
+  return commit_to_activate_duration_history_.Percentile(
+      kCommitAndActivationDurationEstimationPercentile);
 }
 
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {
@@ -1443,6 +1461,9 @@ void ThreadProxy::DidActivatePendingTree() {
     completion_event_for_commit_held_on_tree_activation_->Signal();
     completion_event_for_commit_held_on_tree_activation_ = NULL;
   }
+
+  commit_to_activate_duration_history_.InsertSample(
+      base::TimeTicks::HighResNow() - commit_complete_time_);
 }
 
 }  // namespace cc
