@@ -10,6 +10,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "content/public/browser/notification_service.h"
 #include "sync/api/sync_error_factory_mock.h"
+#include "sync/api/time.h"
 #include "sync/protocol/favicon_image_specifics.pb.h"
 #include "sync/protocol/favicon_tracking_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -1572,6 +1573,84 @@ TEST_F(SyncFaviconCacheTest, UpdatedOrphans) {
     }
   }
 
+  EXPECT_EQ(0U, GetTaskCount());
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+}
+
+// Verify that orphaned favicon images don't result in creating invalid
+// favicon tracking data.
+TEST_F(SyncFaviconCacheTest, PartialAssociationInfo) {
+  syncer::SyncDataList initial_image_data, initial_tracking_data;
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    sync_pb::EntitySpecifics image_specifics;
+    FillImageSpecifics(BuildFaviconData(i),
+                       image_specifics.mutable_favicon_image());
+    initial_image_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           image_specifics));
+    image_specifics.mutable_favicon_image()->clear_favicon_web();
+  }
+
+  SetUpInitialSync(initial_image_data, initial_tracking_data);
+  syncer::SyncChangeList change_list = processor()->GetAndResetChangeList();
+  EXPECT_TRUE(change_list.empty());
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+}
+
+// Tests that we don't choke if a favicon visit node with a null visit time is
+// present (see crbug.com/258196) and an update is made.
+TEST_F(SyncFaviconCacheTest, NullFaviconVisitTime) {
+  EXPECT_EQ(0U, GetFaviconCount());
+
+  syncer::SyncDataList initial_image_data, initial_tracking_data;
+  std::vector<int> expected_icons;
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    expected_icons.push_back(i);
+    sync_pb::EntitySpecifics image_specifics, tracking_specifics;
+    FillImageSpecifics(BuildFaviconData(i),
+                       image_specifics.mutable_favicon_image());
+    initial_image_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           image_specifics));
+    FillTrackingSpecifics(BuildFaviconData(i),
+                          tracking_specifics.mutable_favicon_tracking());
+    tracking_specifics.mutable_favicon_tracking()->set_last_visit_time_ms(
+        syncer::TimeToProtoTime(base::Time()));
+    initial_tracking_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           tracking_specifics));
+  }
+
+  cache()->MergeDataAndStartSyncing(syncer::FAVICON_IMAGES,
+                                    initial_image_data,
+                                    CreateAndPassProcessor(),
+                                    CreateAndPassSyncErrorFactory());
+  ASSERT_EQ(0U, processor()->GetAndResetChangeList().size());
+  cache()->MergeDataAndStartSyncing(syncer::FAVICON_TRACKING,
+                                    initial_tracking_data,
+                                    CreateAndPassProcessor(),
+                                    CreateAndPassSyncErrorFactory());
+  ASSERT_EQ((unsigned long)kFaviconBatchSize,
+            processor()->GetAndResetChangeList().size());
+  EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+
+  // Visit the favicons again.
+  EXPECT_EQ(0U, GetTaskCount());
+  for (int i = 0; i < kFaviconBatchSize; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i);
+    cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
+
+    syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+    ASSERT_EQ(1U, changes.size());
+    // Just verify the favicon url for the tracking specifics and that the
+    // timestamp is non-null.
+    EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, changes[0].change_type());
+    EXPECT_EQ(test_data.icon_url.spec(),
+              changes[0].sync_data().GetSpecifics().favicon_tracking().
+                  favicon_url());
+    EXPECT_NE(changes[0].sync_data().GetSpecifics().favicon_tracking().
+                  last_visit_time_ms(), 0);
+  }
   EXPECT_EQ(0U, GetTaskCount());
   EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
 }

@@ -213,6 +213,16 @@ bool FaviconInfoHasTracking(const SyncedFaviconInfo& favicon_info) {
   return !favicon_info.last_visit_time.is_null();
 }
 
+bool FaviconInfoHasValidTypeData(const SyncedFaviconInfo& favicon_info,
+                             syncer::ModelType type) {
+  if (type == syncer::FAVICON_IMAGES)
+    return FaviconInfoHasImages(favicon_info);
+  else if (type == syncer::FAVICON_TRACKING)
+    return FaviconInfoHasTracking(favicon_info);
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
@@ -243,14 +253,14 @@ syncer::SyncMergeResult FaviconCache::MergeDataAndStartSyncing(
   std::set<GURL> unsynced_favicon_urls;
   for (FaviconMap::const_iterator iter = synced_favicons_.begin();
        iter != synced_favicons_.end(); ++iter) {
-    unsynced_favicon_urls.insert(iter->first);
+    if (FaviconInfoHasValidTypeData(*(iter->second), type))
+      unsynced_favicon_urls.insert(iter->first);
   }
 
   syncer::SyncChangeList local_changes;
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
     GURL remote_url = GetFaviconURLFromSpecifics(iter->GetSpecifics());
-    CHECK(remote_url.is_valid());  // TODO(zea): remove this, crbug.com/258196.
     GURL favicon_url = GetLocalFaviconFromSyncedData(*iter);
     if (favicon_url.is_valid()) {
       unsynced_favicon_urls.erase(favicon_url);
@@ -772,9 +782,8 @@ void FaviconCache::UpdateFaviconVisitTime(const GURL& icon_url,
   DCHECK_EQ(recent_favicons_.size(), synced_favicons_.size());
   FaviconMap::const_iterator iter = synced_favicons_.find(icon_url);
   DCHECK(iter != synced_favicons_.end());
-  if (iter->second->last_visit_time >= time) {
+  if (iter->second->last_visit_time >= time)
     return;
-  }
   // Erase, update the time, then re-insert to maintain ordering.
   recent_favicons_.erase(iter->second);
   DVLOG(1) << "Updating " << icon_url.spec() << " visit time to "
@@ -862,9 +871,16 @@ void FaviconCache::MergeSyncFavicon(const syncer::SyncData& sync_favicon,
 
     // Tracking data is merged, such that bookmark data is the logical OR
     // of the two, and last visit time is the most recent.
-    UpdateFaviconVisitTime(favicon_url,
-                           syncer::ProtoTimeToTime(
-                               tracking_specifics.last_visit_time_ms()));
+
+    base::Time last_visit =  syncer::ProtoTimeToTime(
+        tracking_specifics.last_visit_time_ms());
+    // Due to crbug.com/258196, there are tracking nodes out there with
+    // null visit times. If this is one of those, artificially make it a valid
+    // visit time, so we know the node exists and update it properly on the next
+    // real visit.
+    if (last_visit.is_null())
+      last_visit = last_visit + base::TimeDelta::FromMilliseconds(1);
+    UpdateFaviconVisitTime(favicon_url, last_visit);
     favicon_info->is_bookmarked = (favicon_info->is_bookmarked ||
                                    tracking_specifics.is_bookmarked());
 
@@ -924,9 +940,15 @@ void FaviconCache::AddLocalFaviconFromSyncedData(
     SyncedFaviconInfo* favicon_info = GetFaviconInfo(favicon_url);
     if (!favicon_info)
       return;  // We reached the in-memory limit.
-    UpdateFaviconVisitTime(favicon_url,
-                           syncer::ProtoTimeToTime(
-                               tracking_specifics.last_visit_time_ms()));
+    base::Time last_visit =  syncer::ProtoTimeToTime(
+        tracking_specifics.last_visit_time_ms());
+    // Due to crbug.com/258196, there are tracking nodes out there with
+    // null visit times. If this is one of those, artificially make it a valid
+    // visit time, so we know the node exists and update it properly on the next
+    // real visit.
+    if (last_visit.is_null())
+      last_visit = last_visit + base::TimeDelta::FromMilliseconds(1);
+    UpdateFaviconVisitTime(favicon_url, last_visit);
     favicon_info->is_bookmarked = tracking_specifics.is_bookmarked();
     DCHECK(!favicon_info->last_visit_time.is_null());
   }
