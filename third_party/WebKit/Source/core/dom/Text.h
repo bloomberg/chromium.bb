@@ -69,6 +69,8 @@ private:
     virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
     virtual bool childTypeAllowed(NodeType) const OVERRIDE;
 
+    bool needsWhitespaceRenderer();
+
     virtual PassRefPtr<Text> cloneWithData(const String&);
 
 #ifndef NDEBUG

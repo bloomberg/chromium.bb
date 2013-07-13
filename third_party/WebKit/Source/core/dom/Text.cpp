@@ -26,6 +26,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ScopedEventQueue.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -279,19 +280,29 @@ void Text::attach(const AttachContext& context)
 
 bool Text::recalcTextStyle(StyleChange change)
 {
-    RenderText* renderer = toRenderText(this->renderer());
-
-    if (renderer) {
+    if (RenderText* renderer = toRenderText(this->renderer())) {
         if (change != NoChange || needsStyleRecalc())
             renderer->setStyle(document()->styleResolver()->styleForText(this));
         if (needsStyleRecalc())
             renderer->setText(dataImpl());
         clearNeedsStyleRecalc();
-    } else if (needsStyleRecalc()) {
+    } else if (needsStyleRecalc() || needsWhitespaceRenderer()) {
         reattach();
         return true;
     }
+    return false;
+}
 
+// If a whitespace node had no renderer and goes through a recalcStyle it may
+// need to create one if the parent style now has white-space: pre.
+bool Text::needsWhitespaceRenderer()
+{
+    ASSERT(!renderer());
+    ContainerNode* parent = parentNodeForRenderingAndStyle();
+    if (!parent)
+        return false;
+    if (RenderStyle* style = parent->renderStyle())
+        return style->preserveNewline();
     return false;
 }
 
