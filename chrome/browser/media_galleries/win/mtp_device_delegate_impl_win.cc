@@ -20,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
@@ -54,14 +53,6 @@ bool GetStorageInfoOnUIThread(const string16& storage_path,
   DCHECK(monitor);
   return monitor->GetMTPStorageInfoFromDeviceId(
       UTF16ToUTF8(storage_device_id), pnp_device_id, storage_object_id);
-}
-
-scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(
-          MediaFileSystemBackend::kMediaTaskRunnerName);
-  return pool->GetSequencedTaskRunner(media_sequence_token);
 }
 
 // Returns the object id of the file object specified by the |file_path|,
@@ -372,7 +363,7 @@ MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
     : storage_device_info_(pnp_device_id, registered_device_path,
                            storage_object_id),
       init_state_(UNINITIALIZED),
-      media_task_runner_(GetSequencedTaskRunner()),
+      media_task_runner_(MediaFileSystemMountPointProvider::MediaTaskRunner()),
       task_in_progress_(false),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
