@@ -93,6 +93,8 @@ class AutofillMetrics {
     DIALOG_CANCELED_NO_INVALID_FIELDS,
     // The user canceled with at least one invalid field.
     DIALOG_CANCELED_WITH_INVALID_FIELDS,
+    // The user canceled while the sign-in form was showing.
+    DIALOG_CANCELED_DURING_SIGNIN,
     NUM_DIALOG_DISMISSAL_STATES
   };
 

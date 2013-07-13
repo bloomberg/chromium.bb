@@ -33,6 +33,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -79,6 +80,9 @@ class MockAutofillMetrics : public AutofillMetrics {
   AutofillMetrics::AutocheckoutCompletionStatus autocheckout_status() const {
     return autocheckout_status_;
   }
+
+  MOCK_CONST_METHOD2(LogDialogDismissalState,
+                     void(DialogType dialog_type, DialogDismissalState state));
 
  private:
   DialogType dialog_type_;
@@ -342,6 +346,25 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->Hide();
+
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger().dialog_type());
+}
+
+// Ensure that the expected metric is logged when the dialog is closed during
+// signin.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, CloseDuringSignin) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->SignInLinkClicked();
+
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+                  AutofillMetrics::DIALOG_CANCELED_DURING_SIGNIN));
+  controller()->GetTestableView()->CancelForTesting();
 
   RunMessageLoop();
 

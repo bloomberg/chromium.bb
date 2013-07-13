@@ -3325,7 +3325,9 @@ void AutofillDialogControllerImpl::LogOnCancelMetrics() {
       GetDialogType(), AutofillMetrics::DIALOG_UI_CANCELED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
-  if (!IsManuallyEditingAnySection())
+  if (!signin_registrar_.IsEmpty())
+    dismissal_state = AutofillMetrics::DIALOG_CANCELED_DURING_SIGNIN;
+  else if (!IsManuallyEditingAnySection())
     dismissal_state = AutofillMetrics::DIALOG_CANCELED_NO_EDITS;
   else if (AllSectionsAreValid())
     dismissal_state = AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS;

@@ -1296,8 +1296,7 @@ void AutofillDialogViews::SubmitForTesting() {
 }
 
 void AutofillDialogViews::CancelForTesting() {
-  if (Cancel())
-    Hide();
+  GetDialogClientView()->CancelWindow();
 }
 
 string16 AutofillDialogViews::GetTextContentsOfInput(const DetailInput& input) {

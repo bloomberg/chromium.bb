@@ -13587,6 +13587,7 @@ other types of suffix sets.
   <int value="4" label="Canceled, no edits"/>
   <int value="5" label="Canceled, no invalid fields"/>
   <int value="6" label="Canceled, 1+ invalid fields"/>
+  <int value="7" label="Canceled during sign-in"/>
 </enum>
 
 <enum name="AutofillDialogInitialUserState" type="int">
