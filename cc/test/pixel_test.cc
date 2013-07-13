@@ -56,6 +56,7 @@ class PixelTest::PixelTestRendererClient
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE {
     return false;
   }
+  virtual void ReleaseGL() OVERRIDE {}
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) OVERRIDE {}
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {}
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {}

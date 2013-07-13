@@ -59,6 +59,7 @@ class SynchronousCompositorOutputSurface
 
   // Partial SynchronousCompositor API implementation.
   bool InitializeHwDraw();
+  void ReleaseHwDraw();
   bool DemandDrawHw(gfx::Size surface_size,
                     const gfx::Transform& transform,
                     gfx::Rect clip);

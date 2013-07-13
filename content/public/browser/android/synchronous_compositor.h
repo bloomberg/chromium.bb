@@ -37,9 +37,16 @@ class CONTENT_EXPORT SynchronousCompositor {
   // the caller.
   virtual void SetClient(SynchronousCompositorClient* client) = 0;
 
-  // One-time synchronously initialize compositor for hardware draw.
-  // It is invalid to DemandDrawHw before this returns true.
+  // Synchronously initialize compositor for hardware draw. Can only be called
+  // while compositor is in software only mode, either after compositor is
+  // first created or after ReleaseHwDraw is called. It is invalid to
+  // DemandDrawHw before this returns true.
   virtual bool InitializeHwDraw() = 0;
+
+  // Reverse of InitializeHwDraw above. Can only be called while hardware draw
+  // is already initialized. Brings compositor back to software only mode and
+  // releases all hardware resources.
+  virtual void ReleaseHwDraw() = 0;
 
   // "On demand" hardware draw. The content is first clipped to |damage_area|,
   // then transformed through |transform|, and finally clipped to |view_size|.

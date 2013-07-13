@@ -3106,8 +3106,8 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   }
 
   virtual void BeginTest() OVERRIDE {
-    initialized_gl_ = false;
-    num_draws_ = 0;
+    did_initialize_gl_ = false;
+    did_release_gl_ = false;
     PostSetNeedsCommitToMainThread();
   }
 
@@ -3125,44 +3125,56 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     ASSERT_TRUE(host_impl->RootLayer());
     FakePictureLayerImpl* layer_impl =
         static_cast<FakePictureLayerImpl*>(host_impl->RootLayer());
-    if (!initialized_gl_) {
+    if (!did_initialize_gl_) {
       EXPECT_EQ(1u, layer_impl->append_quads_count());
-      ImplThreadTaskRunner()->PostTask(FROM_HERE, base::Bind(
-          &LayerTreeHostTestDeferredInitialize::DeferredInitializeAndRedraw,
-          base::Unretained(this),
-          base::Unretained(host_impl)));
-    } else {
-      if (!num_draws_) {
-        EXPECT_EQ(2u, layer_impl->append_quads_count());
-        EndTest();
-      }
-      num_draws_++;
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &LayerTreeHostTestDeferredInitialize::DeferredInitializeAndRedraw,
+              base::Unretained(this),
+              base::Unretained(host_impl)));
+    } else if (did_initialize_gl_ && !did_release_gl_) {
+      EXPECT_EQ(2u, layer_impl->append_quads_count());
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &LayerTreeHostTestDeferredInitialize::ReleaseGLAndRedraw,
+              base::Unretained(this),
+              base::Unretained(host_impl)));
+    } else if (did_initialize_gl_ && did_release_gl_) {
+      EXPECT_EQ(3u, layer_impl->append_quads_count());
+      EndTest();
     }
   }
 
   void DeferredInitializeAndRedraw(LayerTreeHostImpl* host_impl) {
+    EXPECT_FALSE(did_initialize_gl_);
+    // SetAndInitializeContext3D calls SetNeedsCommit.
     EXPECT_TRUE(static_cast<FakeOutputSurface*>(host_impl->output_surface())
                     ->SetAndInitializeContext3D(
                           scoped_ptr<WebKit::WebGraphicsContext3D>(
                               TestWebGraphicsContext3D::Create())));
-    initialized_gl_ = true;
+    did_initialize_gl_ = true;
+  }
 
-    // Force redraw again.
-    host_impl->SetNeedsRedrawRect(gfx::Rect(1, 1));
-
-    // If we didn't swap this begin frame, we need to request another one.
-    host_impl->SetNeedsBeginFrame(true);
+  void ReleaseGLAndRedraw(LayerTreeHostImpl* host_impl) {
+    EXPECT_TRUE(did_initialize_gl_);
+    EXPECT_FALSE(did_release_gl_);
+    // ReleaseGL calls SetNeedsCommit.
+    static_cast<FakeOutputSurface*>(host_impl->output_surface())->ReleaseGL();
+    did_release_gl_ = true;
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_TRUE(initialized_gl_);
+    EXPECT_TRUE(did_initialize_gl_);
+    EXPECT_TRUE(did_release_gl_);
   }
 
  private:
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> layer_;
-  bool initialized_gl_;
-  int num_draws_;
+  bool did_initialize_gl_;
+  bool did_release_gl_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);

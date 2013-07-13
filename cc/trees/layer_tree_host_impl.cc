@@ -1480,12 +1480,13 @@ void LayerTreeHostImpl::ReleaseTreeResources() {
 
 void LayerTreeHostImpl::CreateAndSetRenderer(
     OutputSurface* output_surface,
-    ResourceProvider* resource_provider) {
+    ResourceProvider* resource_provider,
+    bool skip_gl_renderer) {
   DCHECK(!renderer_);
   if (output_surface->capabilities().delegated_rendering) {
     renderer_ =
         DelegatingRenderer::Create(this, output_surface, resource_provider);
-  } else if (output_surface->context3d()) {
+  } else if (output_surface->context3d() && !skip_gl_renderer) {
     renderer_ = GLRenderer::Create(this,
                                    output_surface,
                                    resource_provider,
@@ -1500,6 +1501,20 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
     renderer_->SetVisible(visible_);
     SetFullRootLayerDamage();
   }
+}
+
+void LayerTreeHostImpl::CreateAndSetTileManager(
+    ResourceProvider* resource_provider,
+    bool using_map_image) {
+  DCHECK(settings_.impl_side_painting);
+  DCHECK(resource_provider);
+  tile_manager_ = TileManager::Create(this,
+                                      resource_provider,
+                                      settings_.num_raster_threads,
+                                      rendering_stats_instrumentation_,
+                                      using_map_image);
+  UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
+  need_check_for_completed_tile_uploads_before_draw_ = false;
 }
 
 void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
@@ -1544,19 +1559,16 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (output_surface->capabilities().deferred_gl_initialization)
     EnforceZeroBudget(true);
 
-  CreateAndSetRenderer(output_surface.get(), resource_provider.get());
+  bool skip_gl_renderer = false;
+  CreateAndSetRenderer(
+      output_surface.get(), resource_provider.get(), skip_gl_renderer);
 
   if (!renderer_)
     return false;
 
   if (settings_.impl_side_painting) {
-    bool using_map_image = GetRendererCapabilities().using_map_image;
-    tile_manager_ = TileManager::Create(this,
-                                        resource_provider.get(),
-                                        settings_.num_raster_threads,
-                                        rendering_stats_instrumentation_,
-                                        using_map_image);
-    UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
+    CreateAndSetTileManager(resource_provider.get(),
+                            GetRendererCapabilities().using_map_image);
   }
 
   // Setup BeginFrameEmulation if it's not supported natively
@@ -1601,8 +1613,10 @@ bool LayerTreeHostImpl::DeferredInitialize(
 
   ReleaseTreeResources();
   renderer_.reset();
-  resource_provider_->Reinitialize(settings_.highp_threshold_min);
-  CreateAndSetRenderer(output_surface_.get(), resource_provider_.get());
+  resource_provider_->InitializeGL();
+  bool skip_gl_renderer = false;
+  CreateAndSetRenderer(
+      output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
 
   bool success = !!renderer_.get();
   client_->DidTryInitializeRendererOnImplThread(success,
@@ -1612,6 +1626,33 @@ bool LayerTreeHostImpl::DeferredInitialize(
     client_->SetNeedsCommitOnImplThread();
   }
   return success;
+}
+
+void LayerTreeHostImpl::ReleaseGL() {
+  DCHECK(output_surface_->capabilities().deferred_gl_initialization);
+  DCHECK(settings_.impl_side_painting);
+  DCHECK(settings_.solid_color_scrollbars);
+  DCHECK(output_surface_->context3d());
+
+  ReleaseTreeResources();
+  renderer_.reset();
+  tile_manager_.reset();
+  resource_provider_->InitializeSoftware();
+
+  bool skip_gl_renderer = true;
+  CreateAndSetRenderer(
+      output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
+  DCHECK(renderer_);
+
+  EnforceZeroBudget(true);
+  CreateAndSetTileManager(resource_provider_.get(),
+                          GetRendererCapabilities().using_map_image);
+  DCHECK(tile_manager_);
+
+  bool success = true;
+  client_->DidTryInitializeRendererOnImplThread(
+      success, scoped_refptr<ContextProvider>());
+  client_->SetNeedsCommitOnImplThread();
 }
 
 void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {

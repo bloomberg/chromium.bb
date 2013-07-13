@@ -137,6 +137,12 @@ bool SynchronousCompositorImpl::InitializeHwDraw() {
   return output_surface_->InitializeHwDraw();
 }
 
+void SynchronousCompositorImpl::ReleaseHwDraw() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(output_surface_);
+  return output_surface_->ReleaseHwDraw();
+}
+
 bool SynchronousCompositorImpl::DemandDrawHw(
       gfx::Size view_size,
       const gfx::Transform& transform,

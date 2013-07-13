@@ -164,6 +164,10 @@ bool SynchronousCompositorOutputSurface::InitializeHwDraw() {
                                    scoped_refptr<cc::ContextProvider>());
 }
 
+void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
+  cc::OutputSurface::ReleaseGL();
+}
+
 bool SynchronousCompositorOutputSurface::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,

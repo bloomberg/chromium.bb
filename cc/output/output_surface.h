@@ -133,6 +133,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   bool InitializeAndSetContext3D(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
       scoped_refptr<ContextProvider> offscreen_context_provider);
+  void ReleaseGL();
 
   void PostSwapBuffersComplete();
 
@@ -179,6 +180,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   friend class OutputSurfaceCallbacks;
 
   void SetContext3D(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
+  void ResetContext3D();
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
                        bool discard_backbuffer_when_not_visible);
 

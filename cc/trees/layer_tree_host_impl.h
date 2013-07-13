@@ -199,6 +199,7 @@ class CC_EXPORT LayerTreeHostImpl
   // OutputSurfaceClient implementation.
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
+  virtual void ReleaseGL() OVERRIDE;
   virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
@@ -399,7 +400,10 @@ class CC_EXPORT LayerTreeHostImpl
 
  private:
   void CreateAndSetRenderer(OutputSurface* output_surface,
-                            ResourceProvider* resource_provider);
+                            ResourceProvider* resource_provider,
+                            bool skip_gl_renderer);
+  void CreateAndSetTileManager(ResourceProvider* resource_provider,
+                               bool using_map_image);
   void ReleaseTreeResources();
   void EnforceZeroBudget(bool zero_budget);
 

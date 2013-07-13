@@ -452,7 +452,15 @@ void InProcessViewRenderer::OnAttachedToWindow(int width, int height) {
 void InProcessViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview",
                "InProcessViewRenderer::OnDetachedFromWindow");
-  // TODO(joth): Release GL resources. crbug.com/231986.
+
+  if (hardware_initialized_) {
+    DCHECK(compositor_);
+
+    ScopedAppGLStateRestore state_restore;
+    compositor_->ReleaseHwDraw();
+    hardware_initialized_ = false;
+  }
+
   attached_to_window_ = false;
 }
 
@@ -486,6 +494,12 @@ void InProcessViewRenderer::DidDestroyCompositor(
   TRACE_EVENT0("android_webview",
                "InProcessViewRenderer::DidDestroyCompositor");
   DCHECK(compositor_ == compositor);
+
+  // This can fail if Apps call destroy while the webview is still attached
+  // to the view tree. This is an illegal operation that will lead to leaks.
+  // Log for now. Consider a proper fix if this becomes a problem.
+  LOG_IF(ERROR, hardware_initialized_)
+      << "Destroy called before OnDetachedFromWindow. May Leak GL resources";
   compositor_ = NULL;
 }
 

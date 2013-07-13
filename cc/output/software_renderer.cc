@@ -198,6 +198,8 @@ bool SoftwareRenderer::IsSoftwareResource(
       return false;
     case ResourceProvider::Bitmap:
       return true;
+    case ResourceProvider::InvalidType:
+      break;
   }
 
   LOG(FATAL) << "Invalid resource type.";

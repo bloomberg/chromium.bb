@@ -48,6 +48,7 @@ class CC_EXPORT ResourceProvider {
     TextureUsageFramebuffer,
   };
   enum ResourceType {
+    InvalidType = 0,
     GLTexture = 1,
     Bitmap,
   };
@@ -57,7 +58,8 @@ class CC_EXPORT ResourceProvider {
 
   virtual ~ResourceProvider();
 
-  bool Reinitialize(int highp_threshold_min);
+  void InitializeSoftware();
+  bool InitializeGL();
 
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
@@ -72,9 +74,6 @@ class CC_EXPORT ResourceProvider {
 
   // Producer interface.
 
-  void set_default_resource_type(ResourceType type) {
-    default_resource_type_ = type;
-  }
   ResourceType default_resource_type() const { return default_resource_type_; }
   ResourceType GetResourceType(ResourceId id);
 
@@ -386,8 +385,10 @@ class CC_EXPORT ResourceProvider {
            resource->read_lock_fence->HasPassed();
   }
 
-  explicit ResourceProvider(OutputSurface* output_surface);
-  bool Initialize(int highp_threshold_min);
+  explicit ResourceProvider(OutputSurface* output_surface,
+                            int highp_threshold_min);
+
+  void CleanUpGLIfNeeded();
 
   const Resource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);
@@ -409,6 +410,7 @@ class CC_EXPORT ResourceProvider {
 
   OutputSurface* output_surface_;
   bool lost_output_surface_;
+  int highp_threshold_min_;
   ResourceId next_id_;
   ResourceMap resources_;
   int next_child_;

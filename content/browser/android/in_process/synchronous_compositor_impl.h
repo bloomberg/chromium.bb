@@ -48,6 +48,7 @@ class SynchronousCompositorImpl
   virtual void SetClient(SynchronousCompositorClient* compositor_client)
       OVERRIDE;
   virtual bool InitializeHwDraw() OVERRIDE;
+  virtual void ReleaseHwDraw() OVERRIDE;
   virtual bool DemandDrawHw(
       gfx::Size view_size,
       const gfx::Transform& transform,

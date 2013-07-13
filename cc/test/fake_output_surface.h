@@ -83,6 +83,8 @@ class FakeOutputSurface : public OutputSurface {
   bool SetAndInitializeContext3D(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
 
+  using OutputSurface::ReleaseGL;
+
  protected:
   FakeOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,

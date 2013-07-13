@@ -6027,6 +6027,12 @@ TEST_F(LayerTreeHostImplTest, DeferredInitializeSmoke) {
 
   // Defer intialized GL draw.
   DrawFrame();
+
+  // Revert back to software.
+  did_try_initialize_renderer_ = false;
+  output_surface_ptr->ReleaseGL();
+  EXPECT_TRUE(did_try_initialize_renderer_);
+  DrawFrame();
 }
 
 class ContextThatDoesNotSupportMemoryManagmentExtensions

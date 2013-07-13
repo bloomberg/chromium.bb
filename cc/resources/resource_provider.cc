@@ -155,9 +155,20 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     OutputSurface* output_surface,
     int highp_threshold_min) {
   scoped_ptr<ResourceProvider> resource_provider(
-      new ResourceProvider(output_surface));
-  if (!resource_provider->Initialize(highp_threshold_min))
+      new ResourceProvider(output_surface, highp_threshold_min));
+
+  bool success = false;
+  if (output_surface->context3d()) {
+    success = resource_provider->InitializeGL();
+  } else {
+    resource_provider->InitializeSoftware();
+    success = true;
+  }
+
+  if (!success)
     return scoped_ptr<ResourceProvider>();
+
+  DCHECK_NE(InvalidType, resource_provider->default_resource_type());
   return resource_provider.Pass();
 }
 
@@ -165,10 +176,7 @@ ResourceProvider::~ResourceProvider() {
   while (!resources_.empty())
     DeleteResourceInternal(resources_.begin(), ForShutdown);
 
-  WebGraphicsContext3D* context3d = output_surface_->context3d();
-  if (!context3d || !context3d->makeContextCurrent())
-    return;
-  texture_uploader_.reset();
+  CleanUpGLIfNeeded();
 }
 
 WebGraphicsContext3D* ResourceProvider::GraphicsContext3D() {
@@ -194,6 +202,8 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
     case Bitmap:
       DCHECK(format == GL_RGBA);
       return CreateBitmap(size);
+    case InvalidType:
+      break;
   }
 
   LOG(FATAL) << "Invalid default resource type.";
@@ -210,6 +220,8 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
     case Bitmap:
       DCHECK(format == GL_RGBA);
       return CreateBitmap(size);
+    case InvalidType:
+      break;
   }
 
   LOG(FATAL) << "Invalid default resource type.";
@@ -641,28 +653,39 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
   resource_provider_->UnlockForWrite(resource_id_);
 }
 
-ResourceProvider::ResourceProvider(OutputSurface* output_surface)
+ResourceProvider::ResourceProvider(OutputSurface* output_surface,
+                                   int highp_threshold_min)
     : output_surface_(output_surface),
       lost_output_surface_(false),
+      highp_threshold_min_(highp_threshold_min),
       next_id_(1),
       next_child_(1),
-      default_resource_type_(GLTexture),
+      default_resource_type_(InvalidType),
       use_texture_storage_ext_(false),
       use_texture_usage_hint_(false),
       use_shallow_flush_(false),
       max_texture_size_(0),
-      best_texture_format_(0) {
+      best_texture_format_(0) {}
+
+void ResourceProvider::InitializeSoftware() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(Bitmap, default_resource_type_);
+
+  CleanUpGLIfNeeded();
+
+  default_resource_type_ = Bitmap;
+  max_texture_size_ = INT_MAX / 2;
+  best_texture_format_ = GL_RGBA;
 }
 
-bool ResourceProvider::Initialize(int highp_threshold_min) {
+bool ResourceProvider::InitializeGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!texture_uploader_);
+  DCHECK_NE(GLTexture, default_resource_type_);
+
   WebGraphicsContext3D* context3d = output_surface_->context3d();
-  if (!context3d) {
-    default_resource_type_ = Bitmap;
-    max_texture_size_ = INT_MAX / 2;
-    best_texture_format_ = GL_RGBA;
-    return true;
-  }
+  DCHECK(context3d);
+
   if (!context3d->makeContextCurrent())
     return false;
 
@@ -696,13 +719,19 @@ bool ResourceProvider::Initialize(int highp_threshold_min) {
   return true;
 }
 
-bool ResourceProvider::Reinitialize(int highp_threshold_min) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void ResourceProvider::CleanUpGLIfNeeded() {
+  WebGraphicsContext3D* context3d = output_surface_->context3d();
+  if (default_resource_type_ != GLTexture) {
+    // We are not in GL mode, but double check before returning.
+    DCHECK(!context3d);
+    DCHECK(!texture_uploader_);
+    return;
+  }
 
-  // Only supports reinitializing from software mode.
-  DCHECK(!texture_uploader_);
-
-  return Initialize(highp_threshold_min);
+  DCHECK(context3d);
+  context3d->makeContextCurrent();
+  texture_uploader_.reset();
+  Finish();
 }
 
 int ResourceProvider::CreateChild() {

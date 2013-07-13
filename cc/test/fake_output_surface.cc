@@ -93,6 +93,7 @@ bool FakeOutputSurface::ForcedDrawToSoftwareDevice() const {
 
 bool FakeOutputSurface::SetAndInitializeContext3D(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
+  context3d_.reset();
   return InitializeAndSetContext3D(context3d.Pass(),
                                    scoped_refptr<ContextProvider>());
 }

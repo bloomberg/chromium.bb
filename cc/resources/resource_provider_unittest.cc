@@ -13,6 +13,7 @@
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/output_surface.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -333,38 +334,58 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   PendingProduceTextureList pending_produce_textures_;
 };
 
+void GetResourcePixels(ResourceProvider* resource_provider,
+                       ResourceProviderContext* context,
+                       ResourceProvider::ResourceId id,
+                       gfx::Size size,
+                       WGC3Denum format,
+                       uint8_t* pixels) {
+  switch (resource_provider->default_resource_type()) {
+    case ResourceProvider::GLTexture: {
+      ResourceProvider::ScopedReadLockGL lock_gl(resource_provider, id);
+      ASSERT_NE(0U, lock_gl.texture_id());
+      context->bindTexture(GL_TEXTURE_2D, lock_gl.texture_id());
+      context->GetPixels(size, format, pixels);
+      break;
+    }
+    case ResourceProvider::Bitmap: {
+      ResourceProvider::ScopedReadLockSoftware lock_software(resource_provider,
+                                                             id);
+      memcpy(pixels,
+             lock_software.sk_bitmap()->getPixels(),
+             lock_software.sk_bitmap()->getSize());
+      break;
+    }
+    case ResourceProvider::InvalidType:
+      NOTREACHED();
+      break;
+  }
+}
+
 class ResourceProviderTest
     : public testing::TestWithParam<ResourceProvider::ResourceType> {
  public:
   ResourceProviderTest()
-      : shared_data_(ContextSharedData::Create()),
-        output_surface_(FakeOutputSurface::Create3d(
-            ResourceProviderContext::Create(shared_data_.get())
-                .PassAs<WebKit::WebGraphicsContext3D>())),
-        resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)) {
-    resource_provider_->set_default_resource_type(GetParam());
+      : shared_data_(ContextSharedData::Create()) {
+    switch (GetParam()) {
+      case ResourceProvider::GLTexture:
+        output_surface_ =
+            FakeOutputSurface::Create3d(ResourceProviderContext::Create(
+                shared_data_.get()).PassAs<WebKit::WebGraphicsContext3D>());
+        break;
+      case ResourceProvider::Bitmap:
+        output_surface_ = FakeOutputSurface::CreateSoftware(
+            make_scoped_ptr(new SoftwareOutputDevice));
+        break;
+      case ResourceProvider::InvalidType:
+        NOTREACHED();
+        break;
+    }
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
   }
 
   ResourceProviderContext* context() {
     return static_cast<ResourceProviderContext*>(output_surface_->context3d());
-  }
-
-  void GetResourcePixels(ResourceProvider::ResourceId id,
-                         gfx::Size size,
-                         WGC3Denum format,
-                         uint8_t* pixels) {
-    if (GetParam() == ResourceProvider::GLTexture) {
-      ResourceProvider::ScopedReadLockGL lock_gl(resource_provider_.get(), id);
-      ASSERT_NE(0U, lock_gl.texture_id());
-      context()->bindTexture(GL_TEXTURE_2D, lock_gl.texture_id());
-      context()->GetPixels(size, format, pixels);
-    } else if (GetParam() == ResourceProvider::Bitmap) {
-      ResourceProvider::ScopedReadLockSoftware lock_software(
-          resource_provider_.get(), id);
-      memcpy(pixels,
-             lock_software.sk_bitmap()->getPixels(),
-             lock_software.sk_bitmap()->getSize());
-    }
   }
 
   void SetResourceFilter(ResourceProvider* resource_provider,
@@ -391,32 +412,40 @@ class ResourceProviderTest
   scoped_ptr<ResourceProvider> resource_provider_;
 };
 
-TEST_P(ResourceProviderTest, Basic) {
+void CheckCreateResource(ResourceProvider::ResourceType expected_default_type,
+                         ResourceProvider* resource_provider,
+                         ResourceProviderContext* context) {
+  DCHECK_EQ(expected_default_type, resource_provider->default_resource_type());
+
   gfx::Size size(1, 1);
   WGC3Denum format = GL_RGBA;
   size_t pixel_size = TextureSize(size, format);
   ASSERT_EQ(4U, pixel_size);
 
-  ResourceProvider::ResourceId id = resource_provider_->CreateResource(
+  ResourceProvider::ResourceId id = resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
-  EXPECT_EQ(1, static_cast<int>(resource_provider_->num_resources()));
-  if (GetParam() == ResourceProvider::GLTexture)
-    EXPECT_EQ(0, context()->texture_count());
+  EXPECT_EQ(1, static_cast<int>(resource_provider->num_resources()));
+  if (expected_default_type == ResourceProvider::GLTexture)
+    EXPECT_EQ(0, context->texture_count());
 
   uint8_t data[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
-  resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
-  if (GetParam() == ResourceProvider::GLTexture)
-    EXPECT_EQ(1, context()->texture_count());
+  resource_provider->SetPixels(id, data, rect, rect, gfx::Vector2d());
+  if (expected_default_type == ResourceProvider::GLTexture)
+    EXPECT_EQ(1, context->texture_count());
 
   uint8_t result[4] = { 0 };
-  GetResourcePixels(id, size, format, result);
+  GetResourcePixels(resource_provider, context, id, size, format, result);
   EXPECT_EQ(0, memcmp(data, result, pixel_size));
 
-  resource_provider_->DeleteResource(id);
-  EXPECT_EQ(0, static_cast<int>(resource_provider_->num_resources()));
-  if (GetParam() == ResourceProvider::GLTexture)
-    EXPECT_EQ(0, context()->texture_count());
+  resource_provider->DeleteResource(id);
+  EXPECT_EQ(0, static_cast<int>(resource_provider->num_resources()));
+  if (expected_default_type == ResourceProvider::GLTexture)
+    EXPECT_EQ(0, context->texture_count());
+}
+
+TEST_P(ResourceProviderTest, Basic) {
+  CheckCreateResource(GetParam(), resource_provider_.get(), context());
 }
 
 TEST_P(ResourceProviderTest, Upload) {
@@ -444,7 +473,8 @@ TEST_P(ResourceProviderTest, Upload) {
         id, image, image_rect, source_rect, dest_offset);
 
     uint8_t expected[16] = { 0, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-    GetResourcePixels(id, size, format, result);
+    GetResourcePixels(
+        resource_provider_.get(), context(), id, size, format, result);
     EXPECT_EQ(0, memcmp(expected, result, pixel_size));
   }
   {
@@ -454,7 +484,8 @@ TEST_P(ResourceProviderTest, Upload) {
         id, image, image_rect, source_rect, dest_offset);
 
     uint8_t expected[16] = { 0, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3 };
-    GetResourcePixels(id, size, format, result);
+    GetResourcePixels(
+        resource_provider_.get(), context(), id, size, format, result);
     EXPECT_EQ(0, memcmp(expected, result, pixel_size));
   }
   {
@@ -464,7 +495,8 @@ TEST_P(ResourceProviderTest, Upload) {
         id, image, image_rect, source_rect, dest_offset);
 
     uint8_t expected[16] = { 0, 1, 2, 3, 0, 0, 0, 0, 4, 5, 6, 7, 0, 1, 2, 3 };
-    GetResourcePixels(id, size, format, result);
+    GetResourcePixels(
+        resource_provider_.get(), context(), id, size, format, result);
     EXPECT_EQ(0, memcmp(expected, result, pixel_size));
   }
   {
@@ -475,7 +507,8 @@ TEST_P(ResourceProviderTest, Upload) {
         id, image, offset_image_rect, source_rect, dest_offset);
 
     uint8_t expected[16] = { 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3 };
-    GetResourcePixels(id, size, format, result);
+    GetResourcePixels(
+        resource_provider_.get(), context(), id, size, format, result);
     EXPECT_EQ(0, memcmp(expected, result, pixel_size));
   }
 
@@ -537,10 +570,12 @@ TEST_P(ResourceProviderTest, TransferResources) {
   EXPECT_FALSE(resource_provider_->InUseByConsumer(id2));
 
   uint8_t result[4] = { 0 };
-  GetResourcePixels(mapped_id1, size, format, result);
+  GetResourcePixels(
+      resource_provider_.get(), context(), mapped_id1, size, format, result);
   EXPECT_EQ(0, memcmp(data1, result, pixel_size));
 
-  GetResourcePixels(mapped_id2, size, format, result);
+  GetResourcePixels(
+      resource_provider_.get(), context(), mapped_id2, size, format, result);
   EXPECT_EQ(0, memcmp(data2, result, pixel_size));
   {
     // Check that transfering again the same resource from the child to the
@@ -1655,6 +1690,39 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
 
   resource_provider->ReleaseImage(id);
   resource_provider->DeleteResource(id);
+}
+
+void InitializeGLAndCheck(ResourceProvider* resource_provider,
+                          FakeOutputSurface* output_surface) {
+  scoped_ptr<ContextSharedData> shared_data = ContextSharedData::Create();
+  scoped_ptr<ResourceProviderContext> context =
+      ResourceProviderContext::Create(shared_data.release());
+  output_surface->SetAndInitializeContext3D(
+      context.PassAs<WebKit::WebGraphicsContext3D>());
+  EXPECT_TRUE(resource_provider->InitializeGL());
+  CheckCreateResource(
+      ResourceProvider::GLTexture,
+      resource_provider,
+      static_cast<ResourceProviderContext*>(output_surface->context3d()));
+}
+
+TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
+  FakeOutputSurfaceClient client;
+  scoped_ptr<FakeOutputSurface> output_surface(
+      FakeOutputSurface::CreateDeferredGL(
+          scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice)));
+  EXPECT_TRUE(output_surface->BindToClient(&client));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+
+  CheckCreateResource(ResourceProvider::Bitmap, resource_provider.get(), NULL);
+
+  InitializeGLAndCheck(resource_provider.get(), output_surface.get());
+
+  resource_provider->InitializeSoftware();
+  CheckCreateResource(ResourceProvider::Bitmap, resource_provider.get(), NULL);
+
+  InitializeGLAndCheck(resource_provider.get(), output_surface.get());
 }
 
 INSTANTIATE_TEST_CASE_P(

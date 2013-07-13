@@ -8,6 +8,8 @@
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
+#include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -37,6 +39,8 @@ class TestOutputSurface : public OutputSurface {
     return InitializeAndSetContext3D(new_context3d.Pass(),
                                      scoped_refptr<ContextProvider>());
   }
+
+  using OutputSurface::ReleaseGL;
 
   bool HasClientForTesting() {
     return HasClient();
@@ -78,69 +82,6 @@ class TestOutputSurface : public OutputSurface {
   }
 
   base::TimeDelta retroactive_begin_frame_period_;
-};
-
-class FakeOutputSurfaceClient : public OutputSurfaceClient {
- public:
-  FakeOutputSurfaceClient()
-      : begin_frame_count_(0),
-        deferred_initialize_result_(true),
-        deferred_initialize_called_(false),
-        did_lose_output_surface_called_(false),
-        memory_policy_(0),
-        discard_backbuffer_when_not_visible_(false) {}
-
-  virtual bool DeferredInitialize(
-      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE {
-    deferred_initialize_called_ = true;
-    return deferred_initialize_result_;
-  }
-  virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) OVERRIDE {}
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {
-    begin_frame_count_++;
-  }
-  virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {}
-  virtual void DidLoseOutputSurface() OVERRIDE {
-    did_lose_output_surface_called_ = true;
-  }
-  virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
-                                          gfx::Rect viewport) OVERRIDE {}
-  virtual void SetMemoryPolicy(
-      const ManagedMemoryPolicy& policy,
-      bool discard_backbuffer_when_not_visible) OVERRIDE {
-    memory_policy_ = policy;
-    discard_backbuffer_when_not_visible_ = discard_backbuffer_when_not_visible;
-  }
-
-  int begin_frame_count() {
-    return begin_frame_count_;
-  }
-
-  void set_deferred_initialize_result(bool result) {
-    deferred_initialize_result_ = result;
-  }
-
-  bool deferred_initialize_called() {
-    return deferred_initialize_called_;
-  }
-
-  bool did_lose_output_surface_called() {
-    return did_lose_output_surface_called_;
-  }
-
-  const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
-
-  bool discard_backbuffer_when_not_visible() const {
-    return discard_backbuffer_when_not_visible_;
-  }
-
- private:
-  int begin_frame_count_;
-  bool deferred_initialize_result_;
-  bool deferred_initialize_called_;
-  bool did_lose_output_surface_called_;
-  ManagedMemoryPolicy memory_policy_;
-  bool discard_backbuffer_when_not_visible_;
 };
 
 TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {
@@ -218,6 +159,9 @@ TEST_F(InitializeNewContext3D, Success) {
   output_surface_.context3d()->loseContextCHROMIUM(
       GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
   EXPECT_TRUE(client_.did_lose_output_surface_called());
+
+  output_surface_.ReleaseGL();
+  EXPECT_FALSE(output_surface_.context3d());
 }
 
 TEST_F(InitializeNewContext3D, Context3dMakeCurrentFails) {
