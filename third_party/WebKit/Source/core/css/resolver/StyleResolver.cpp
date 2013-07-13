@@ -527,7 +527,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
     RenderStyle* parentStyle = parent->renderStyle();
     unsigned subcount = 0;
     Node* thisCousin = parent;
-    Node* currentNode = parent->nextSibling();
+    Node* currentNode = parent->previousSibling();
 
     // Reserve the tries for this level. This effectively makes sure that the algorithm
     // will never go deeper than cStyleSearchLevelThreshold levels into recursion.
@@ -545,7 +545,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
             }
             if (subcount >= cStyleSearchThreshold)
                 return 0;
-            currentNode = currentNode->nextSibling();
+            currentNode = currentNode->previousSibling();
         }
         currentNode = locateCousinList(thisCousin->parentElement(), visitedNodeCount);
         thisCousin = currentNode;
@@ -739,7 +739,7 @@ bool StyleResolver::canShareStyleWithElement(const ElementResolveContext& contex
 
 inline Element* StyleResolver::findSiblingForStyleSharing(const ElementResolveContext& context, Node* node, unsigned& count) const
 {
-    for (; node; node = node->nextSibling()) {
+    for (; node; node = node->previousSibling()) {
         if (!node->isStyledElement())
             continue;
         if (canShareStyleWithElement(context, toElement(node)))
@@ -792,11 +792,11 @@ RenderStyle* StyleResolver::locateSharedStyle(const ElementResolveContext& conte
     // FIXME: This should be an explicit out parameter, instead of a member variable.
     m_elementAffectedByClassRules = context.element() && context.element()->hasClass() && classNamesAffectedByRules(context.element()->classNames());
 
-    // Check next siblings and their cousins.
+    // Check previous siblings and their cousins.
     unsigned count = 0;
     unsigned visitedNodeCount = 0;
     Element* shareElement = 0;
-    Node* cousinList = context.element()->nextSibling();
+    Node* cousinList = context.element()->previousSibling();
     while (cousinList) {
         shareElement = findSiblingForStyleSharing(context, cousinList, count);
         if (shareElement)
@@ -1711,7 +1711,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (!e || !e->document()->haveStylesheetsLoaded())
         return 0;
 
-    m_state.initForStyleResolve(document(), e);
+    m_state.initForStyleResolve(document(), e, 0);
 
     ElementRuleCollector collector(m_state.elementContext(), m_selectorFilter, m_state.style(), m_inspectorCSSOMWrappers);
     collector.setMode(SelectorChecker::CollectingRules);

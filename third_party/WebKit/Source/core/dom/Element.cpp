@@ -1545,28 +1545,27 @@ bool Element::recalcStyle(StyleChange change)
     // without doing way too much re-resolution.
     bool forceCheckOfNextElementSibling = false;
     bool forceCheckOfAnyElementSibling = false;
-    int indexForChild = 1;
-    if (hasDirectAdjacentRules || hasIndirectAdjacentRules) {
-        for (Node *child = firstChild(); child; child = child->nextSibling()) {
-            if (!child->isElementNode())
-                continue;
-            Element* element = toElement(child);
-            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
-            if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
-                element->setNeedsStyleRecalc();
-            forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
-            forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
-        }
-    }
-    // FIXME: Reversing the loop we call recalcStyle avoids an N^2 walk through the DOM to find the next renderer
-    // to insert before. The logic in NodeRenderingContext should be improved to make this unnecessary.
-    for (Node *child = lastChild(); child; child = child->previousSibling()) {
+    bool forceReattachOfAnyWhitespaceSibling = false;
+    for (Node* child = firstChild(); child; child = child->nextSibling()) {
         bool didReattach = false;
 
+        if (child->renderer())
+            forceReattachOfAnyWhitespaceSibling = false;
+
         if (child->isTextNode()) {
-            didReattach = toText(child)->recalcTextStyle(change);
+            if (forceReattachOfAnyWhitespaceSibling && toText(child)->containsOnlyWhitespace())
+                child->reattach();
+            else
+                didReattach = toText(child)->recalcTextStyle(change);
         } else if (child->isElementNode()) {
             Element* element = toElement(child);
+
+            if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
+                element->setNeedsStyleRecalc();
+
+            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
+            forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
+            forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
 
             if (shouldRecalcStyle(change, element)) {
                 parentPusher.push();
@@ -1574,8 +1573,7 @@ bool Element::recalcStyle(StyleChange change)
             }
         }
 
-        if (didReattach)
-            child->reattachWhitespaceSiblings();
+        forceReattachOfAnyWhitespaceSibling = didReattach || forceReattachOfAnyWhitespaceSibling;
     }
 
     if (shouldRecalcStyle(change, this))

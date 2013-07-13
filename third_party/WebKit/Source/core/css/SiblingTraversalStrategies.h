@@ -78,11 +78,14 @@ inline bool DOMSiblingTraversalStrategy::isLastOfType(Element* element, const Qu
 inline int DOMSiblingTraversalStrategy::countElementsBefore(Element* element) const
 {
     int count = 0;
-    // We can't use the same early return as is present in countElementsAfter due
-    // to the order we resolve style; if a new element is inserted into the middle,
-    // we'd end up using a stale cached childIndex.
-    for (const Element* sibling = element->previousElementSibling(); sibling; sibling = sibling->previousElementSibling())
-        ++count;
+    for (const Element* sibling = element->previousElementSibling(); sibling; sibling = sibling->previousElementSibling()) {
+        unsigned index = sibling->childIndex();
+        if (index) {
+            count += index;
+            break;
+        }
+        count++;
+    }
 
     return count;
 }
@@ -101,16 +104,8 @@ inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element* eleme
 inline int DOMSiblingTraversalStrategy::countElementsAfter(Element* element) const
 {
     int count = 0;
-    // We can use an early return here because we resolve style from lastChild to
-    // firstChild, so we're guaranteed to not have stale cached childIndices.
-    for (const Element* sibling = element->nextElementSibling(); sibling; sibling = sibling->nextElementSibling()) {
-        unsigned index = sibling->childIndex();
-        if (index) {
-            count += index;
-            break;
-        }
+    for (const Element* sibling = element->nextElementSibling(); sibling; sibling = sibling->nextElementSibling())
         ++count;
-    }
 
     return count;
 }
