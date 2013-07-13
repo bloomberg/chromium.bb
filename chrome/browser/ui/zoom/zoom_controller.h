@@ -49,10 +49,8 @@ class ZoomController : public content::WebContentsObserver,
   // Updates the zoom icon and zoom percentage based on current values and
   // notifies the observer if changes have occurred. |host| may be empty,
   // meaning the change should apply to ~all sites. If it is not empty, the
-  // change only affects sites with the given host. If |force_bubble| is true,
-  // the zoom bubble will appear even if |host| is empty, handling the case of
-  // temporary zoom (e.g., zooming within the PDF plugin).
-  void UpdateState(const std::string& host, bool force_bubble);
+  // change only affects sites with the given host.
+  void UpdateState(const std::string& host);
 
   // The current zoom percentage.
   int zoom_percent_;
