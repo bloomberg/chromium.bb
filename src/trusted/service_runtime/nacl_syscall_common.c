@@ -1727,6 +1727,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                               length >> NACL_PAGESHIFT,
                               NaClProtMap(prot),
                               NaClProtMap(max_prot),
+                              flags,
                               ndp,
                               offset);
   }

@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 
 NaClErrorCode NaClAllocAddrSpaceAslr(struct NaClApp *nap,
                                      enum NaClAslrMode aslr_mode) {
@@ -125,6 +126,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
                PROT_NONE,
                PROT_NONE,
+               NACL_ABI_MAP_PRIVATE,
                NULL,
                0);
 
@@ -157,6 +159,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                region_size >> NACL_PAGESHIFT,
                PROT_READ | PROT_EXEC,
                PROT_READ | PROT_EXEC,
+               NACL_ABI_MAP_PRIVATE,
                NULL,
                0);
 
@@ -182,6 +185,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ | PROT_EXEC,
                  PROT_READ | PROT_EXEC,
+                 NACL_ABI_MAP_PRIVATE,
                  nap->text_shm,
                  0);
   }
@@ -225,6 +229,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ,
                  PROT_READ,
+                 NACL_ABI_MAP_PRIVATE,
                  NULL,
                  0);
   }
@@ -260,6 +265,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ | PROT_WRITE,
                  PROT_READ | PROT_WRITE,
+                 NACL_ABI_MAP_PRIVATE,
                  NULL,
                  0);
   }
@@ -293,6 +299,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                nap->stack_size >> NACL_PAGESHIFT,
                PROT_READ | PROT_WRITE,
                PROT_READ | PROT_WRITE,
+               NACL_ABI_MAP_PRIVATE,
                NULL,
                0);
   return LOAD_OK;

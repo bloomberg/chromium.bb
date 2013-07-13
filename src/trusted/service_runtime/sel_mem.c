@@ -39,14 +39,15 @@ struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t         page_num,
                                           size_t            npages,
                                           int               prot,
                                           int               max_prot,
+                                          int               flags,
                                           struct NaClDesc   *desc,
                                           nacl_off64_t      offset) {
   struct NaClVmmapEntry *entry;
 
   NaClLog(4,
           "NaClVmmapEntryMake(0x%"NACL_PRIxPTR",0x%"NACL_PRIxS","
-          "0x%x,0x%x,0x%"NACL_PRIxPTR",0x%"NACL_PRIx64")\n",
-          page_num, npages, prot, max_prot, (uintptr_t) desc, offset);
+          "0x%x,0x%x,0x%x,0x%"NACL_PRIxPTR",0x%"NACL_PRIx64")\n",
+          page_num, npages, prot, max_prot, flags, (uintptr_t) desc, offset);
   entry = (struct NaClVmmapEntry *) malloc(sizeof *entry);
   if (NULL == entry) {
     return 0;
@@ -56,6 +57,7 @@ struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t         page_num,
   entry->npages = npages;
   entry->max_prot = max_prot;
   entry->prot = prot;
+  entry->flags = flags;
   entry->removed = 0;
   entry->desc = desc;
   if (desc != NULL) {
@@ -70,10 +72,10 @@ void  NaClVmmapEntryFree(struct NaClVmmapEntry *entry) {
   NaClLog(4,
           ("NaClVmmapEntryFree(0x%08"NACL_PRIxPTR
            "): (0x%"NACL_PRIxPTR",0x%"NACL_PRIxS","
-           "0x%x,0x%x,0x%"NACL_PRIxPTR",0x%"NACL_PRIx64")\n"),
+           "0x%x,0x%x,0x%x,0x%"NACL_PRIxPTR",0x%"NACL_PRIx64")\n"),
           (uintptr_t) entry,
           entry->page_num, entry->npages, entry->max_prot, entry->prot,
-          (uintptr_t) entry->desc, entry->offset);
+          entry->flags, (uintptr_t) entry->desc, entry->offset);
 
   if (entry->desc != NULL) {
     NaClDescSafeUnref(entry->desc);
@@ -92,6 +94,7 @@ void NaClVmentryPrint(void                  *state,
   printf("page num 0x%06x\n", (uint32_t)vmep->page_num);
   printf("num pages %d\n", (uint32_t)vmep->npages);
   printf("prot bits %x\n", vmep->prot);
+  printf("flags %x\n", vmep->flags);
   fflush(stdout);
 }
 
@@ -259,15 +262,16 @@ void NaClVmmapAdd(struct NaClVmmap  *self,
                   size_t            npages,
                   int               prot,
                   int               max_prot,
+                  int               flags,
                   struct NaClDesc   *desc,
                   nacl_off64_t      offset) {
   struct NaClVmmapEntry *entry;
 
   NaClLog(2,
           ("NaClVmmapAdd(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxPTR", "
-           "0x%"NACL_PRIxS", 0x%x, 0x%x, 0x%"NACL_PRIxPTR", "
+           "0x%"NACL_PRIxS", 0x%x, 0x%x, 0x%x, 0x%"NACL_PRIxPTR", "
            "0x%"NACL_PRIx64")\n"),
-          (uintptr_t) self, page_num, npages, prot, max_prot,
+          (uintptr_t) self, page_num, npages, prot, max_prot, flags,
           (uintptr_t) desc, offset);
   if (self->nvalid == self->size) {
     size_t                    new_size = 2 * self->size;
@@ -282,7 +286,8 @@ void NaClVmmapAdd(struct NaClVmmap  *self,
     self->size = new_size;
   }
   /* self->nvalid < self->size */
-  entry = NaClVmmapEntryMake(page_num, npages, prot, max_prot, desc, offset);
+  entry = NaClVmmapEntryMake(page_num, npages, prot, max_prot, flags, desc,
+                             offset);
 
   self->vmentry[self->nvalid] = entry;
   self->is_sorted = 0;
@@ -299,6 +304,7 @@ static void NaClVmmapUpdate(struct NaClVmmap  *self,
                             size_t            npages,
                             int               prot,
                             int               max_prot,
+                            int               flags,
                             int               remove,
                             struct NaClDesc   *desc,
                             nacl_off64_t      offset) {
@@ -308,9 +314,9 @@ static void NaClVmmapUpdate(struct NaClVmmap  *self,
 
   NaClLog(2,
           ("NaClVmmapUpdate(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxPTR", "
-           "0x%"NACL_PRIxS", 0x%x, 0x%x, %d, 0x%"NACL_PRIxPTR", "
+           "0x%"NACL_PRIxS", 0x%x, 0x%x, 0x%x, %d, 0x%"NACL_PRIxPTR", "
            "0x%"NACL_PRIx64")\n"),
-          (uintptr_t) self, page_num, npages, prot, max_prot,
+          (uintptr_t) self, page_num, npages, prot, max_prot, flags,
           remove, (uintptr_t) desc, offset);
   NaClVmmapMakeSorted(self);
 
@@ -333,6 +339,7 @@ static void NaClVmmapUpdate(struct NaClVmmap  *self,
                    ent_end_page - new_region_end_page,
                    ent->prot,
                    ent->max_prot,
+                   ent->flags,
                    ent->desc,
                    ent->offset + additional_offset);
       ent->npages = page_num - ent->page_num;
@@ -358,7 +365,7 @@ static void NaClVmmapUpdate(struct NaClVmmap  *self,
   }
 
   if (!remove) {
-    NaClVmmapAdd(self, page_num, npages, prot, max_prot, desc, offset);
+    NaClVmmapAdd(self, page_num, npages, prot, max_prot, flags, desc, offset);
   }
 
   NaClVmmapRemoveMarked(self);
@@ -369,6 +376,7 @@ void NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
                                size_t             npages,
                                int                prot,
                                int                max_prot,
+                               int                flags,
                                struct NaClDesc    *desc,
                                nacl_off64_t       offset) {
   NaClVmmapUpdate(self,
@@ -376,6 +384,7 @@ void NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
                   npages,
                   prot,
                   max_prot,
+                  flags,
                   /* remove= */ 0,
                   desc,
                   offset);
@@ -391,6 +400,7 @@ void NaClVmmapRemove(struct NaClVmmap   *self,
                   npages,
                   /* prot= */ 0,
                   /* max_prot= */ 0,
+                  /* flags= */ 0,
                   /* remove= */ 1,
                   desc,
                   offset);
@@ -439,6 +449,7 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    ent_end_page - new_region_end_page,
                    ent->prot,
                    ent->max_prot,
+                   ent->flags,
                    ent->desc,
                    ent->offset + additional_offset);
       ent->npages = page_num - ent->page_num;
@@ -448,6 +459,7 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    npages,
                    prot,
                    ent->max_prot,
+                   ent->flags,
                    ent->desc,
                    ent->offset + (page_num - ent->page_num));
       break;
@@ -460,6 +472,7 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    ent_end_page - page_num,
                    prot,
                    ent->max_prot,
+                   ent->flags,
                    ent->desc,
                    ent->offset + (page_num - ent->page_num));
       /* The remaining part (if any) will be added in other iteration. */
@@ -473,6 +486,7 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    npages,
                    prot,
                    ent->max_prot,
+                   ent->flags,
                    ent->desc,
                    ent->offset);
       ent->page_num = new_region_end_page;

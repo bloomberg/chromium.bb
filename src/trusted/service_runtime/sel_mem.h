@@ -41,6 +41,7 @@ struct NaClVmmapEntry {
   size_t            npages;     /* number of pages */
   int               prot;       /* mprotect attribute */
   int               max_prot;   /* maximum protection */
+  int               flags;      /* mapping flags */
   int               removed;    /* flag set in NaClVmmapUpdate */
   struct NaClDesc   *desc;      /* the backing store, if any */
   nacl_off64_t      offset;     /* offset into desc */
@@ -82,6 +83,7 @@ void  NaClVmmapAdd(struct NaClVmmap   *self,
                    size_t             npages,
                    int                prot,
                    int                max_prot,
+                   int                flags,
                    struct NaClDesc    *desc,
                    nacl_off64_t       offset);
 
@@ -94,6 +96,7 @@ void  NaClVmmapAddWithOverwrite(struct NaClVmmap  *self,
                                 size_t            npages,
                                 int               prot,
                                 int               max_prot,
+                                int               flags,
                                 struct NaClDesc   *desc,
                                 nacl_off64_t      offset);
 
