@@ -1251,12 +1251,13 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
 PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 {
-    StyleResolveScope resolveScope(&m_state, document(), document()->documentElement()); // m_rootElementStyle will be set to the document style.
+    StyleResolverState& state = m_state;
+    StyleResolveScope resolveScope(&state, document(), document()->documentElement()); // m_rootElementStyle will be set to the document style.
 
-    m_state.setStyle(RenderStyle::create());
-    m_state.style()->inheritFrom(m_state.rootElementStyle());
+    state.setStyle(RenderStyle::create());
+    state.style()->inheritFrom(state.rootElementStyle());
 
-    PageRuleCollector collector(m_state, pageIndex);
+    PageRuleCollector collector(state.elementContext(), pageIndex);
 
     collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
     collector.matchPageRules(m_ruleSets.userStyle());
@@ -1264,7 +1265,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
         scopedResolver->matchPageRules(collector);
 
-    m_state.setLineHeightValue(0);
+    state.setLineHeightValue(0);
     bool inheritedOnly = false;
 
     MatchResult& result = collector.matchedResult();
@@ -1275,18 +1276,18 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     updateFont();
 
     // Line-height is set when we are sure we decided on the font-size.
-    if (m_state.lineHeightValue())
-        applyProperty(CSSPropertyLineHeight, m_state.lineHeightValue());
+    if (state.lineHeightValue())
+        applyProperty(CSSPropertyLineHeight, state.lineHeightValue());
 
     applyMatchedProperties<LowPriorityProperties>(result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
     // Start loading resources referenced by this style.
-    m_styleResourceLoader.loadPendingResources(m_state.style(), m_state.elementStyleResources());
+    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
     document()->didAccessStyleResolver();
 
     // Now return the style.
-    return m_state.takeStyle();
+    return state.takeStyle();
 }
 
 PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()

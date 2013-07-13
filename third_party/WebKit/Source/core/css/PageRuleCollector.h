@@ -27,12 +27,12 @@
 
 namespace WebCore {
 
-class StyleResolverState;
+class ElementResolveContext;
 class StyleRulePage;
 
 class PageRuleCollector {
 public:
-    PageRuleCollector(const StyleResolverState&, int pageIndex);
+    PageRuleCollector(const ElementResolveContext&, int pageIndex);
 
     void matchPageRules(RuleSet* rules);
     MatchResult& matchedResult() { return m_result; }
@@ -45,7 +45,7 @@ private:
 
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>& rules, bool isLeftPage, bool isFirstPage, const String& pageName);
 
-    const StyleResolverState& m_state;
+    const ElementResolveContext& m_context;
     const bool m_isLeftPage;
     const bool m_isFirstPage;
     const String m_pageName;
