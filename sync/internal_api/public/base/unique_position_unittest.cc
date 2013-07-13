@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "sync/protocol/unique_position.pb.h"
@@ -99,48 +100,50 @@ const std::string kNormalSuffix(
       << " (" << m.ToDebugString() << " != " << n.ToDebugString() << ")";
 }
 
-// Test encoding and decoding of a small (uncompressed) position.
-TEST_F(UniquePositionTest, SerializeAndDeserializeSmallPosition) {
-  std::string serialized;
+// Test that the code can read the uncompressed serialization format.
+TEST_F(UniquePositionTest, DeserializeObsoleteUncompressedPosition) {
+  // We no longer support the encoding data in this format.  This hard-coded
+  // input is a serialization of kGenericPredecessor created by an older version
+  // of this code.
+  const char kSerializedCstr[] = {
+    '\x0a', '\x1f', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23',
+    '\x23', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23',
+    '\x23', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23', '\x23',
+    '\x23', '\x23', '\x23', '\x23', '\x23', '\xff' };
+  const std::string serialized(kSerializedCstr, sizeof(kSerializedCstr));
 
-  UniquePosition pos1 = kGenericPredecessor;
-  sync_pb::UniquePosition proto1;
-  pos1.ToProto(&proto1);
+  sync_pb::UniquePosition proto;
+  proto.ParseFromString(serialized);
 
   // Double-check that this test is testing what we think it tests.
-  EXPECT_TRUE(proto1.has_value());
-  EXPECT_FALSE(proto1.has_compressed_value());
-  EXPECT_FALSE(proto1.has_uncompressed_length());
+  EXPECT_TRUE(proto.has_value());
+  EXPECT_FALSE(proto.has_compressed_value());
+  EXPECT_FALSE(proto.has_uncompressed_length());
 
-  proto1.SerializeToString(&serialized);
-
-  sync_pb::UniquePosition proto2;
-  proto2.ParseFromString(serialized);
-  UniquePosition pos2 = UniquePosition::FromProto(proto2);
-
-  EXPECT_PRED_FORMAT2(Equals, pos1, pos2);
+  UniquePosition pos = UniquePosition::FromProto(proto);
+  EXPECT_PRED_FORMAT2(Equals, kGenericPredecessor, pos);
 }
 
-// Test encoding and decoding of a large (compressed) position.
-TEST_F(UniquePositionTest, SerializeAndDeserializeLargePosition) {
-  std::string serialized;
+// Test that the code can read the gzip serialization format.
+TEST_F(UniquePositionTest, DeserializeObsoleteGzippedPosition) {
+  // We no longer support the encoding data in this format.  This hard-coded
+  // input is a serialization of kHugePosition created by an older version of
+  // this code.
+  const char kSerializedCstr[] = {
+    '\x12', '\x0d', '\x78', '\x9c', '\xfb', '\xff', '\x7f', '\x60', '\xc1',
+    '\x6a', '\x00', '\xa2', '\x4c', '\x80', '\x2c', '\x18', '\x81', '\x01' };
+  const std::string serialized(kSerializedCstr, sizeof(kSerializedCstr));
 
-  UniquePosition pos1 = kHugePosition;
-  sync_pb::UniquePosition proto1;
-  pos1.ToProto(&proto1);
+  sync_pb::UniquePosition proto;
+  proto.ParseFromString(serialized);
 
   // Double-check that this test is testing what we think it tests.
-  EXPECT_FALSE(proto1.has_value());
-  EXPECT_TRUE(proto1.has_compressed_value());
-  EXPECT_TRUE(proto1.has_uncompressed_length());
+  EXPECT_FALSE(proto.has_value());
+  EXPECT_TRUE(proto.has_compressed_value());
+  EXPECT_TRUE(proto.has_uncompressed_length());
 
-  proto1.SerializeToString(&serialized);
-
-  sync_pb::UniquePosition proto2;
-  proto2.ParseFromString(serialized);
-  UniquePosition pos2 = UniquePosition::FromProto(proto2);
-
-  EXPECT_PRED_FORMAT2(Equals, pos1, pos2);
+  UniquePosition pos = UniquePosition::FromProto(proto);
+  EXPECT_PRED_FORMAT2(Equals, kHugePosition, pos);
 }
 
 class RelativePositioningTest : public UniquePositionTest { };
@@ -498,6 +501,9 @@ class PositionFromIntTest : public UniquePositionTest {
   }
 
  protected:
+  static const int64 kTestValues[];
+  static const size_t kNumTestValues;
+
   std::string NextSuffix() {
     return generator_.NextSuffix();
   }
@@ -506,7 +512,7 @@ class PositionFromIntTest : public UniquePositionTest {
   SuffixGenerator generator_;
 };
 
-const int64 kTestValues[] = {
+const int64 PositionFromIntTest::kTestValues[] = {
   0LL,
   1LL, -1LL,
   2LL, -2LL,
@@ -532,7 +538,8 @@ const int64 kTestValues[] = {
   kint64max - 1
 };
 
-const size_t kNumTestValues = arraysize(kTestValues);
+const size_t PositionFromIntTest::kNumTestValues =
+arraysize(PositionFromIntTest::kTestValues);
 
 TEST_F(PositionFromIntTest, IsValid) {
   for (size_t i = 0; i < kNumTestValues; ++i) {
@@ -583,6 +590,98 @@ TEST_F(PositionFromIntTest, ConsistentOrdering) {
             IndexedLessThan<UniquePosition, PositionLessThan>(positions));
   EXPECT_NE(original_ordering, int64_ordering);
   EXPECT_EQ(int64_ordering, position_ordering);
+}
+
+class CompressedPositionTest : public UniquePositionTest {
+ public:
+  CompressedPositionTest() {
+    positions_.push_back(
+        MakePosition( // Prefix starts with 256 0x00s
+            std::string("\x00\x00\x00\x00\xFF\xFF\xFE\xFF" "\x01", 9),
+            MakeSuffix('\x04')));
+    positions_.push_back(
+        MakePosition( // Prefix starts with four 0x00s
+            std::string("\x00\x00\x00\x00\xFF\xFF\xFF\xFB" "\x01", 9),
+            MakeSuffix('\x03')));
+    positions_.push_back(
+        MakePosition( // Prefix starts with four 0xFFs
+            std::string("\xFF\xFF\xFF\xFF\x00\x00\x00\x04" "\x01", 9),
+            MakeSuffix('\x01')));
+    positions_.push_back(
+        MakePosition( // Prefix starts with 256 0xFFs
+            std::string("\xFF\xFF\xFF\xFF\x00\x00\x01\x00" "\x01", 9),
+            MakeSuffix('\x02')));
+  }
+
+ private:
+  UniquePosition MakePosition(const std::string& compressed_prefix,
+                              const std::string& compressed_suffix);
+  std::string MakeSuffix(char unique_value);
+
+ protected:
+  std::vector<UniquePosition> positions_;
+};
+
+UniquePosition CompressedPositionTest::MakePosition(
+      const std::string& compressed_prefix,
+      const std::string& compressed_suffix) {
+  sync_pb::UniquePosition proto;
+  proto.set_custom_compressed_v1(
+      std::string(compressed_prefix + compressed_suffix));
+  return UniquePosition::FromProto(proto);
+}
+
+std::string CompressedPositionTest::MakeSuffix(char unique_value) {
+  // We're dealing in compressed positions in this test.  That means the
+  // suffix should be compressed, too.  To avoid complication, we use suffixes
+  // that don't have any repeating digits, and therefore are identical in
+  // compressed and uncompressed form.
+  std::string suffix;
+  for (size_t i = 0; i < UniquePosition::kSuffixLength; ++i) {
+    suffix.push_back(static_cast<char>(i));
+  }
+  suffix[UniquePosition::kSuffixLength-1] = unique_value;
+  return suffix;
+}
+
+// Make sure that serialization and deserialization routines are correct.
+TEST_F(CompressedPositionTest, SerializeAndDeserialize) {
+  for (std::vector<UniquePosition>::const_iterator it = positions_.begin();
+       it != positions_.end(); ++it) {
+    SCOPED_TRACE("iteration: " + it->ToDebugString());
+
+    sync_pb::UniquePosition proto;
+    it->ToProto(&proto);
+    UniquePosition deserialized = UniquePosition::FromProto(proto);
+
+    EXPECT_PRED_FORMAT2(Equals, *it, deserialized);
+
+  }
+}
+
+// Test that redundant serialization for legacy clients is correct, too.
+TEST_F(CompressedPositionTest, SerializeAndLegacyDeserialize) {
+  for (std::vector<UniquePosition>::const_iterator it = positions_.begin();
+       it != positions_.end(); ++it) {
+    SCOPED_TRACE("iteration: " + it->ToDebugString());
+    sync_pb::UniquePosition proto;
+
+    it->ToProto(&proto);
+
+    // Clear default encoding to force it to use legacy as fallback.
+    proto.clear_custom_compressed_v1();
+    UniquePosition deserialized = UniquePosition::FromProto(proto);
+
+    EXPECT_PRED_FORMAT2(Equals, *it, deserialized);
+  }
+}
+
+// Make sure the comparison functions are working correctly.
+// This requires values in the test harness to be hard-coded in ascending order.
+TEST_F(CompressedPositionTest, OrderingTest) {
+  for (size_t i = 0; i < positions_.size()-1; ++i) {
+    EXPECT_PRED_FORMAT2(LessThan, positions_[i], positions_[i+1]);
+  }
 }
 
 }  // namespace

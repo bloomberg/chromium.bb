@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/base/unique_position.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,15 +44,17 @@ UniquePosition UniquePosition::CreateInvalid() {
 
 // static.
 UniquePosition UniquePosition::FromProto(const sync_pb::UniquePosition& proto) {
-  if (proto.has_value()) {
-    return UniquePosition(proto.value());
+  if (proto.has_custom_compressed_v1()) {
+    return UniquePosition(proto.custom_compressed_v1());
+  } else if (proto.has_value() && !proto.value().empty()) {
+    return UniquePosition(Compress(proto.value()));
   } else if (proto.has_compressed_value() && proto.has_uncompressed_length()) {
     uLongf uncompressed_len = proto.uncompressed_length();
-    std::string uncompressed;
+    std::string un_gzipped;
 
-    uncompressed.resize(uncompressed_len);
+    un_gzipped.resize(uncompressed_len);
     int result = uncompress(
-        reinterpret_cast<Bytef*>(string_as_array(&uncompressed)),
+        reinterpret_cast<Bytef*>(string_as_array(&un_gzipped)),
         &uncompressed_len,
         reinterpret_cast<const Bytef*>(proto.compressed_value().data()),
         proto.compressed_value().size());
@@ -65,7 +68,7 @@ UniquePosition UniquePosition::FromProto(const sync_pb::UniquePosition& proto) {
           << " did not match specified length " << proto.uncompressed_length();
       return UniquePosition::CreateInvalid();
     }
-    return UniquePosition(uncompressed);
+    return UniquePosition(Compress(un_gzipped));
   } else {
     return UniquePosition::CreateInvalid();
   }
@@ -81,14 +84,14 @@ UniquePosition UniquePosition::FromInt64(
     bytes[i] = static_cast<uint8>(y);
     y >>= 8;
   }
-  return UniquePosition(bytes, suffix);
+  return UniquePosition(bytes + suffix, suffix);
 }
 
 // static.
 UniquePosition UniquePosition::InitialPosition(
     const std::string& suffix) {
   DCHECK(IsValidSuffix(suffix));
-  return UniquePosition(std::string(), suffix);
+  return UniquePosition(suffix, suffix);
 }
 
 // static.
@@ -97,8 +100,9 @@ UniquePosition UniquePosition::Before(
     const std::string& suffix) {
   DCHECK(IsValidSuffix(suffix));
   DCHECK(x.IsValid());
-  const std::string& before = FindSmallerWithSuffix(x.bytes_, suffix);
-  return UniquePosition(before, suffix);
+  const std::string& before = FindSmallerWithSuffix(
+      Uncompress(x.compressed_), suffix);
+  return UniquePosition(before + suffix, suffix);
 }
 
 // static.
@@ -107,8 +111,9 @@ UniquePosition UniquePosition::After(
     const std::string& suffix) {
   DCHECK(IsValidSuffix(suffix));
   DCHECK(x.IsValid());
-  const std::string& after = FindGreaterWithSuffix(x.bytes_, suffix);
-  return UniquePosition(after, suffix);
+  const std::string& after = FindGreaterWithSuffix(
+      Uncompress(x.compressed_), suffix);
+  return UniquePosition(after + suffix, suffix);
 }
 
 // static.
@@ -120,9 +125,11 @@ UniquePosition UniquePosition::Between(
   DCHECK(after.IsValid());
   DCHECK(before.LessThan(after));
   DCHECK(IsValidSuffix(suffix));
-  const std::string& mid =
-      FindBetweenWithSuffix(before.bytes_, after.bytes_, suffix);
-  return UniquePosition(mid, suffix);
+  const std::string& mid = FindBetweenWithSuffix(
+      Uncompress(before.compressed_),
+      Uncompress(after.compressed_),
+      suffix);
+  return UniquePosition(mid + suffix, suffix);
 }
 
 UniquePosition::UniquePosition() : is_valid_(false) {}
@@ -130,41 +137,50 @@ UniquePosition::UniquePosition() : is_valid_(false) {}
 bool UniquePosition::LessThan(const UniquePosition& other) const {
   DCHECK(this->IsValid());
   DCHECK(other.IsValid());
-  return bytes_ < other.bytes_;
+
+  return compressed_ < other.compressed_;
 }
 
 bool UniquePosition::Equals(const UniquePosition& other) const {
   if (!this->IsValid() && !other.IsValid())
     return true;
 
-  return bytes_ == other.bytes_;
+  return compressed_ == other.compressed_;
 }
 
 void UniquePosition::ToProto(sync_pb::UniquePosition* proto) const {
   proto->Clear();
-  if (bytes_.size() < kCompressBytesThreshold) {
+
+  // This is the current preferred foramt.
+  proto->set_custom_compressed_v1(compressed_);
+
+  // Some older clients (M28) don't know how to read that format.  We don't want
+  // to break them until they're obsolete.  We'll serialize to the old-style in
+  // addition to the new so they won't be confused.
+  std::string bytes = Uncompress(compressed_);
+  if (bytes.size() < kCompressBytesThreshold) {
     // If it's small, then just write it.  This is the common case.
-    proto->set_value(bytes_);
+    proto->set_value(bytes);
   } else {
     // We've got a large one.  Compress it.
-    proto->set_uncompressed_length(bytes_.size());
+    proto->set_uncompressed_length(bytes.size());
     std::string* compressed = proto->mutable_compressed_value();
 
-    uLongf compressed_len = compressBound(bytes_.size());
+    uLongf compressed_len = compressBound(bytes.size());
     compressed->resize(compressed_len);
     int result = compress(reinterpret_cast<Bytef*>(string_as_array(compressed)),
              &compressed_len,
-             reinterpret_cast<const Bytef*>(bytes_.data()),
-             bytes_.size());
+             reinterpret_cast<const Bytef*>(bytes.data()),
+             bytes.size());
     if (result != Z_OK) {
       NOTREACHED() << "Failed to compress position: " << result;
       // Maybe we can write an uncompressed version?
       proto->Clear();
-      proto->set_value(bytes_);
-    } else if (compressed_len >= bytes_.size()) {
+      proto->set_value(bytes);
+    } else if (compressed_len >= bytes.size()) {
       // Oops, we made it bigger.  Just write the uncompressed version instead.
       proto->Clear();
-      proto->set_value(bytes_);
+      proto->set_value(bytes);
     } else {
       // Success!  Don't forget to adjust the string's length.
       compressed->resize(compressed_len);
@@ -181,7 +197,7 @@ void UniquePosition::SerializeToString(std::string* blob) const {
 
 int64 UniquePosition::ToInt64() const {
   uint64 y = 0;
-  const std::string& s = bytes_;
+  const std::string& s = Uncompress(compressed_);
   size_t l = sizeof(int64);
   if (s.length() < l) {
     NOTREACHED();
@@ -202,19 +218,25 @@ bool UniquePosition::IsValid() const {
 }
 
 std::string UniquePosition::ToDebugString() const {
-  if (bytes_.empty())
+  const std::string bytes = Uncompress(compressed_);
+  if (bytes.empty())
     return std::string("INVALID[]");
 
-  std::string debug_string = base::HexEncode(bytes_.data(), bytes_.length());
+  std::string debug_string = base::HexEncode(bytes.data(), bytes.length());
   if (!IsValid()) {
     debug_string = "INVALID[" + debug_string + "]";
   }
-  return debug_string;;
+
+  std::string compressed_string =
+      base::HexEncode(compressed_.data(), compressed_.length());
+  debug_string.append(", compressed: " + compressed_string);
+  return debug_string;
 }
 
 std::string UniquePosition::GetSuffixForTest() const {
-  const size_t prefix_len = bytes_.length() - kSuffixLength;
-  return bytes_.substr(prefix_len, std::string::npos);
+  const std::string bytes = Uncompress(compressed_);
+  const size_t prefix_len = bytes.length() - kSuffixLength;
+  return bytes.substr(prefix_len, std::string::npos);
 }
 
 std::string UniquePosition::FindSmallerWithSuffix(
@@ -285,7 +307,6 @@ std::string UniquePosition::FindGreaterWithSuffix(
   }
 }
 
-// TODO(rlarocque): Is there a better algorithm that we could use here?
 // static
 std::string UniquePosition::FindBetweenWithSuffix(
     const std::string& before,
@@ -367,17 +388,256 @@ std::string UniquePosition::FindBetweenWithSuffix(
 }
 
 UniquePosition::UniquePosition(const std::string& internal_rep)
-    : bytes_(internal_rep),
-      is_valid_(IsValidBytes(bytes_)) {
+    : compressed_(internal_rep),
+      is_valid_(IsValidBytes(Uncompress(internal_rep))) {
 }
 
 UniquePosition::UniquePosition(
-    const std::string& prefix,
+    const std::string& uncompressed,
     const std::string& suffix)
-  : bytes_(prefix + suffix),
-    is_valid_(IsValidBytes(bytes_)) {
+  : compressed_(Compress(uncompressed)),
+    is_valid_(IsValidBytes(uncompressed)) {
+  DCHECK(uncompressed.rfind(suffix) + kSuffixLength == uncompressed.length());
   DCHECK(IsValidSuffix(suffix));
   DCHECK(IsValid());
+}
+
+// On custom compression:
+//
+// Let C(x) be the compression function and U(x) be the uncompression function.
+//
+// This compression scheme has a few special properties.  For one, it is
+// order-preserving.  For any two valid position strings x and y:
+//   x < y <=> C(x) < C(y)
+// This allows us keep the position strings compressed as we sort them.
+//
+// The compressed format and the decode algorithm:
+//
+// The compressed string is a series of blocks, almost all of which are 8 bytes
+// in length.  The only exception is the last block in the compressed string,
+// which may be a remainder block, which has length no greater than 7.  The
+// full-length blocks are either repeated character blocks or plain data blocks.
+// All blocks are entirely self-contained.  Their decoded values are independent
+// from that of their neighbours.
+//
+// A repeated character block is encoded into eight bytes and represents between
+// 4 and 2^31 repeated instances of a given character in the unencoded stream.
+// The encoding consists of a single character repeated four times, followed by
+// an encoded count.  The encoded count is stored as a big-endian 32 bit
+// integer.  There are 2^31 possible count values, and two encodings for each.
+// The high encoding is 'enc = kuint32max - count'; the low encoding is 'enc =
+// count'.  At compression time, the algorithm will choose between the two
+// encodings based on which of the two will maintain the appropriate sort
+// ordering (by a process which will be described below).  The decompression
+// algorithm need not concern itself with which encoding was used; it needs only
+// to decode it.  The decoded value of this block is "count" instances of the
+// character that was repeated four times in the first half of this block.
+//
+// A plain data block is encoded into eight bytes and represents exactly eight
+// bytes of data in the unencoded stream.  The plain data block must not begin
+// with the same character repeated four times.  It is allowed to contain such a
+// four-character sequence, just not at the start of the block.  The decoded
+// value of a plain data block is identical to its encoded value.
+//
+// A remainder block has length of at most seven.  It is a shorter version of
+// the plain data block.  It occurs only at the end of the encoded stream and
+// represents exactly as many bytes of unencoded data as its own length.  Like a
+// plain data block, the remainder block never begins with the same character
+// repeated four times.  The decoded value of this block is identical to its
+// encoded value.
+//
+// The encode algorithm:
+//
+// From the above description, it can be seen that there may be more than one
+// way to encode a given input string.  The encoder must be careful to choose
+// the encoding that guarantees sort ordering.
+//
+// The rules for the encoder are as follows:
+// 1. Iterate through the input string and produce output blocks one at a time.
+// 2. Where possible (ie. where the next four bytes of input consist of the
+//    same character repeated four times), produce a repeated data block of
+//    maximum possible length.
+// 3. If there is at least 8 bytes of data remaining and it is not possible
+//    to produce a repeated character block, produce a plain data block.
+// 4. If there are less than 8 bytes of data remaining and it is not possible
+//    to produce a repeated character block, produce a remainder block.
+// 5. When producing a repeated character block, the count encoding must be
+//    chosen in such a way that the sort ordering is maintained.  The choice is
+//    best illustrated by way of example:
+//
+//      When comparing two strings, the first of which begins with of 8
+//      instances of the letter 'B' and the second with 10 instances of the
+//      letter 'B', which of the two should compare lower?  The result depends
+//      on the 9th character of the first string, since it will be compared
+//      against the 9th 'B' in the second string.  If that character is an 'A',
+//      then the first string will compare lower.  If it is a 'C', then the
+//      first string will compare higher.
+//
+//    The key insight is that the comparison value of a repeated character block
+//    depends on the value of the character that follows it.  If the character
+//    follows the repeated character has a value greater than the repeated
+//    character itself, then a shorter run length should translate to a higher
+//    comparison value.  Therefore, we encode its count using the low encoding.
+//    Similarly, if the following character is lower, we use the high encoding.
+
+namespace {
+
+// Appends an encoded run length to |output_str|.
+static void WriteEncodedRunLength(uint32 length,
+                                  bool high_encoding,
+                                  std::string* output_str) {
+  CHECK_GE(length, 4U);
+  CHECK_LT(length, 0x80000000);
+
+  // Step 1: Invert the count, if necessary, to account for the following digit.
+  uint32 encoded_length;
+  if (high_encoding) {
+    encoded_length = 0xffffffff - length;
+  } else {
+    encoded_length = length;
+  }
+
+  // Step 2: Write it as big-endian so it compares correctly with memcmp(3).
+  output_str->append(1, 0xff & (encoded_length >> 24U));
+  output_str->append(1, 0xff & (encoded_length >> 16U));
+  output_str->append(1, 0xff & (encoded_length >> 8U));
+  output_str->append(1, 0xff & (encoded_length >> 0U));
+}
+
+// Reads an encoded run length for |str| at position |i|.
+static uint32 ReadEncodedRunLength(const std::string& str, size_t i) {
+  DCHECK_LE(i + 4, str.length());
+
+  // Step 1: Extract the big-endian count.
+  uint32 encoded_length =
+      ((uint8)(str[i+3]) << 0)  |
+      ((uint8)(str[i+2]) << 8)  |
+      ((uint8)(str[i+1]) << 16) |
+      ((uint8)(str[i+0]) << 24);
+
+  // Step 2: If this was an inverted count, un-invert it.
+  uint32 length;
+  if (encoded_length & 0x80000000) {
+    length = 0xffffffff - encoded_length;
+  } else {
+    length = encoded_length;
+  }
+
+  return length;
+}
+
+// A series of four identical chars at the beginning of a block indicates
+// the beginning of a repeated character block.
+static bool IsRepeatedCharPrefix(const std::string& chars, size_t start_index) {
+  return chars[start_index] == chars[start_index+1]
+      && chars[start_index] == chars[start_index+2]
+      && chars[start_index] == chars[start_index+3];
+}
+
+}  // namespace
+
+// static
+// Wraps the CompressImpl function with a bunch of DCHECKs.
+std::string UniquePosition::Compress(const std::string& str) {
+  DCHECK(IsValidBytes(str));
+  std::string compressed = CompressImpl(str);
+  DCHECK(IsValidCompressed(compressed));
+  DCHECK_EQ(str, Uncompress(compressed));
+  return compressed;
+}
+
+// static
+// Performs the order preserving run length compression of a given input string.
+std::string UniquePosition::CompressImpl(const std::string& str) {
+  std::string output;
+
+  // The compressed length will usually be at least as long as the suffix (28),
+  // since the suffix bytes are mostly random.  Most are a few bytes longer; a
+  // small few are tens of bytes longer.  Some early tests indicated that
+  // roughly 99% had length 40 or smaller.  We guess that pre-sizing for 48 is a
+  // good trade-off, but that has not been confirmed through profiling.
+  output.reserve(48);
+
+  // Each loop iteration will consume 8, or N bytes, where N >= 4 and is the
+  // length of a string of identical digits starting at i.
+  for (size_t i = 0; i < str.length(); ) {
+    if (i + 4 <= str.length() && IsRepeatedCharPrefix(str, i)) {
+      // Four identical bytes in a row at this position means that we must start
+      // a repeated character block.  Begin by outputting those four bytes.
+      output.append(str, i, 4);
+
+      // Determine the size of the run.
+      const char rep_digit = str[i];
+      const size_t runs_until = str.find_first_not_of(rep_digit, i+4);
+
+      // Handle the 'runs until end' special case specially.
+      size_t run_length;
+      bool encode_high;  // True if the next byte is greater than |rep_digit|.
+      if (runs_until == std::string::npos) {
+        run_length = str.length() - i;
+        encode_high = false;
+      } else {
+        run_length = runs_until - i;
+        encode_high = static_cast<uint8>(str[runs_until]) >
+            static_cast<uint8>(rep_digit);
+      }
+      DCHECK_LT(run_length, static_cast<size_t>(kint32max))
+          << "This implementation can't encode run-lengths greater than 2^31.";
+
+      WriteEncodedRunLength(run_length, encode_high, &output);
+      i += run_length;  // Jump forward by the size of the run length.
+    } else {
+      // Output up to eight bytes without any encoding.
+      const size_t len = std::min(static_cast<size_t>(8), str.length() - i);
+      output.append(str, i, len);
+      i += len;  // Jump forward by the amount of input consumed (usually 8).
+    }
+  }
+
+  return output;
+}
+
+// static
+// Uncompresses strings that were compresed with UniquePosition::Compress.
+std::string UniquePosition::Uncompress(const std::string& str) {
+  std::string output;
+  size_t i = 0;
+  // Iterate through the compressed string one block at a time.
+  for (i = 0; i + 8 <= str.length(); i += 8) {
+    if (IsRepeatedCharPrefix(str, i)) {
+      // Found a repeated character block.  Expand it.
+      const char rep_digit = str[i];
+      uint32 length = ReadEncodedRunLength(str, i+4);
+      output.append(length, rep_digit);
+    } else {
+      // Found a regular block.  Copy it.
+      output.append(str, i, 8);
+    }
+  }
+  // Copy the remaining bytes that were too small to form a block.
+  output.append(str, i, std::string::npos);
+  return output;
+}
+
+bool UniquePosition::IsValidCompressed(const std::string& str) {
+  for (size_t i = 0; i + 8 <= str.length(); i += 8) {
+    if (IsRepeatedCharPrefix(str, i)) {
+      uint32 count = ReadEncodedRunLength(str, i+4);
+      if (count < 4) {
+        // A repeated character block should at least represent the four
+        // characters that started it.
+        return false;
+      }
+      if (str[i] == str[i+4]) {
+        // Does the next digit after a count match the repeated character?  Then
+        // this is not the highest possible count.
+        return false;
+      }
+    }
+  }
+  // We don't bother looking for the existence or checking the validity of
+  // any partial blocks.  There's no way they could be invalid anyway.
+  return true;
 }
 
 }  // namespace syncer

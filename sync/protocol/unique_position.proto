@@ -35,4 +35,18 @@ message UniquePosition {
   // uncompressed_length field.
   optional bytes compressed_value = 2;
   optional uint64 uncompressed_length = 3;
+
+  // This encoding uses compression scheme designed especially for unique
+  // positions.  It has the property that X < Y precisely when Compressed(X) <
+  // Compressed(Y), which is very useful when the most common operation is to
+  // compare these positions against each other.  Their values may remain
+  // compressed in memory.
+  //
+  // The compression scheme is implemented and documented in
+  // sync/internal_api/base/unique_position.cc.
+  // 
+  // As of M30, this is the preferred encoding.  Newer clients may continue to
+  // populate the 'value' and 'compressed_value' fields to ensure backwards
+  // compatibility, but they will always try to read from this field first.
+  optional bytes custom_compressed_v1 = 4;
 }

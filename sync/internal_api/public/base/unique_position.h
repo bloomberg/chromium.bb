@@ -116,10 +116,22 @@ class SYNC_EXPORT_PRIVATE UniquePosition {
                                            const std::string& after,
                                            const std::string& suffix);
 
+  // Expects a run-length compressed string as input.  For internal use only.
   explicit UniquePosition(const std::string& internal_rep);
-  UniquePosition(const std::string& prefix, const std::string& suffix);
 
-  std::string bytes_;
+  // Expects an uncompressed prefix and suffix as input.  The |suffix| parameter
+  // must be a suffix of |uncompressed|.  For internal use only.
+  UniquePosition(const std::string& uncompressed, const std::string& suffix);
+
+  // Implementation of an order-preserving run-length compression scheme.
+  static std::string Compress(const std::string& input);
+  static std::string CompressImpl(const std::string& input);
+  static std::string Uncompress(const std::string& compressed);
+  static bool IsValidCompressed(const std::string& str);
+
+  // The position value after it has been run through the custom compression
+  // algorithm.  See Compress() and Uncompress() functions above.
+  std::string compressed_;
   bool is_valid_;
 };
 
