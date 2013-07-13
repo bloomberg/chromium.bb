@@ -1442,7 +1442,7 @@ _release.add_config('sonic-release',
 
 _release.add_config('stout-release',
   boards=['stout'],
-  hw_tests=HWTestConfig.DefaultList(num=3),
+  hw_tests=HWTestConfig.DefaultList(num=3, file_bugs=True),
 )
 
 _release.add_config('stout32-release',
