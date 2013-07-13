@@ -11,15 +11,7 @@
 namespace cc {
 namespace {
 
-class LayerTreeHostFiltersPixelTest : public LayerTreePixelTest {
-  virtual void BeginTest() OVERRIDE;
-};
-
-void LayerTreeHostFiltersPixelTest::BeginTest() {
-  LayerTreePixelTest::BeginTest();
-  pixel_comparator_.reset(
-      new FuzzyPixelComparator(true, 100.f, 0.f, 1.f, 2, 0));
-}
+class LayerTreeHostFiltersPixelTest : public LayerTreePixelTest {};
 
 TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
@@ -37,6 +29,22 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(2.f));
   blur->SetBackgroundFilters(filters);
+
+#if defined(OS_WIN)
+  // Windows has 436 pixels off by 1: crbug.com/259915
+  float percentage_pixels_large_error = 1.09f;  // 436px / (200*200)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 1.f;
+  int large_error_allowed = 1;
+  int small_error_allowed = 0;
+  pixel_comparator_.reset(new FuzzyPixelComparator(
+      true,  // discard_alpha
+      percentage_pixels_large_error,
+      percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels,
+      large_error_allowed,
+      small_error_allowed));
+#endif
 
   RunPixelTest(GL_WITH_BITMAP,
                background,
@@ -62,6 +70,22 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(5.f));
   blur->SetBackgroundFilters(filters);
+
+#if defined(OS_WIN)
+  // Windows has 2250 pixels off by at most 2: crbug.com/259922
+  float percentage_pixels_large_error = 5.625f;  // 2250px / (200*200)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 1.f;
+  int large_error_allowed = 2;
+  int small_error_allowed = 0;
+  pixel_comparator_.reset(new FuzzyPixelComparator(
+      true,  // discard_alpha
+      percentage_pixels_large_error,
+      percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels,
+      large_error_allowed,
+      small_error_allowed));
+#endif
 
   RunPixelTest(GL_WITH_BITMAP,
                background,
@@ -102,12 +126,12 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
   blur->SetBackgroundFilters(filters);
 
 #if defined(OS_WIN)
-  // Windows has 5 pixels off by 1: crbug.com/225027
-  float percentage_pixels_large_error = 0.0125f;  // 5px / (200*200)
-  float percentage_pixels_small_error = 0.0125f;  // 5px / (200*200)
+  // Windows has 151 pixels off by at most 2: crbug.com/225027
+  float percentage_pixels_large_error = 0.3775f;  // 151px / (200*200)
+  float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
-  int large_error_allowed = 1;
-  int small_error_allowed = 1;
+  int large_error_allowed = 2;
+  int small_error_allowed = 0;
   pixel_comparator_.reset(new FuzzyPixelComparator(
       true,  // discard_alpha
       percentage_pixels_large_error,
