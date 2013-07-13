@@ -7364,7 +7364,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
     file.Write("""
 namespace gles2 {
 
-NameToFunc g_gles2_function_table[] = {
+extern const NameToFunc g_gles2_function_table[] = {
 """)
     for func in self.original_functions:
       file.Write(
@@ -7468,7 +7468,7 @@ NameToFunc g_gles2_function_table[] = {
     enums = sorted(_ENUM_LISTS.keys())
     for enum in enums:
       if len(_ENUM_LISTS[enum]['valid']) > 0:
-        file.Write("static %s valid_%s_table[] = {\n" %
+        file.Write("static const %s valid_%s_table[] = {\n" %
                    (_ENUM_LISTS[enum]['type'], ToUnderscore(enum)))
         for value in _ENUM_LISTS[enum]['valid']:
           file.Write("  %s,\n" % value)
@@ -7524,12 +7524,13 @@ NameToFunc g_gles2_function_table[] = {
             dict[value] = name
 
     file = CHeaderWriter(filename)
-    file.Write("static GLES2Util::EnumToString enum_to_string_table[] = {\n")
+    file.Write("static const GLES2Util::EnumToString "
+               "enum_to_string_table[] = {\n")
     for value in dict:
       file.Write('  { %s, "%s", },\n' % (value, dict[value]))
     file.Write("""};
 
-const GLES2Util::EnumToString* GLES2Util::enum_to_string_table_ =
+const GLES2Util::EnumToString* const GLES2Util::enum_to_string_table_ =
     enum_to_string_table;
 const size_t GLES2Util::enum_to_string_table_len_ =
     sizeof(enum_to_string_table) / sizeof(enum_to_string_table[0]);
@@ -7542,7 +7543,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
         file.Write("std::string GLES2Util::GetString%s(uint32 value) {\n" %
                    enum)
         if len(_ENUM_LISTS[enum]['valid']) > 0:
-          file.Write("  static EnumToString string_table[] = {\n")
+          file.Write("  static const EnumToString string_table[] = {\n")
           for value in _ENUM_LISTS[enum]['valid']:
             file.Write('    { %s, "%s" },\n' % (value, value))
           file.Write("""  };

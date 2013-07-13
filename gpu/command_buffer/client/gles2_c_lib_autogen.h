@@ -761,7 +761,7 @@ void GLES2DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
 
 namespace gles2 {
 
-NameToFunc g_gles2_function_table[] = {
+extern const NameToFunc g_gles2_function_table[] = {
   { "glActiveTexture", reinterpret_cast<GLES2FunctionPointer>(
       glActiveTexture), },
   { "glAttachShader", reinterpret_cast<GLES2FunctionPointer>(

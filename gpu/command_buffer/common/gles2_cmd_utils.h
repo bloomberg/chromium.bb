@@ -167,7 +167,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static std::string GetQualifiedEnumString(
       const EnumToString* table, size_t count, uint32 value);
 
-  static const EnumToString* enum_to_string_table_;
+  static const EnumToString* const enum_to_string_table_;
   static const size_t enum_to_string_table_len_;
 
   int num_compressed_texture_formats_;
