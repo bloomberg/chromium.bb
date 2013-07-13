@@ -44,8 +44,8 @@
 #include "core/editing/htmlediting.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

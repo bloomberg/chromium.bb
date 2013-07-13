@@ -36,10 +36,10 @@
 #include "core/editing/htmlediting.h"
 #include "core/platform/graphics/LayoutPoint.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/Assertions.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 

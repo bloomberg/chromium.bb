@@ -35,7 +35,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

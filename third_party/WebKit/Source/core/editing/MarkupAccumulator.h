@@ -27,9 +27,9 @@
 #define MarkupAccumulator_h
 
 #include "core/editing/markup.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

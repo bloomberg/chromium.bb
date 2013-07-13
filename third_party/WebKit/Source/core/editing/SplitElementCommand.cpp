@@ -28,7 +28,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

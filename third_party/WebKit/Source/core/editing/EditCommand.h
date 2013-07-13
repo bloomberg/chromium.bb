@@ -30,7 +30,7 @@
 #include "core/editing/VisibleSelection.h"
 
 #ifndef NDEBUG
-#include <wtf/HashSet.h>
+#include "wtf/HashSet.h"
 #endif
 
 namespace WebCore {

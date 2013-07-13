@@ -39,7 +39,7 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
-#include <wtf/text/CString.h>
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

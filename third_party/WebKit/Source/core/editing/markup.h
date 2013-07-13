@@ -28,8 +28,8 @@
 
 #include "core/dom/ParserContentPolicy.h"
 #include "core/editing/HTMLInterchange.h"
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

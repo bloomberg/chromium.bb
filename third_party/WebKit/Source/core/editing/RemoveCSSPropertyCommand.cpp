@@ -30,7 +30,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

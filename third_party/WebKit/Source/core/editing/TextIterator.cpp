@@ -47,9 +47,9 @@
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
+#include "wtf/text/CString.h"
+#include "wtf/unicode/CharacterNames.h"
 #include <unicode/usearch.h>
-#include <wtf/text/CString.h>
-#include <wtf/unicode/CharacterNames.h>
 
 using namespace WTF::Unicode;
 using namespace std;
