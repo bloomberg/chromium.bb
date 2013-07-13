@@ -50,7 +50,7 @@ class MEDIA_EXPORT SincResampler {
   // greater than kKernelSize.  Specify kDefaultRequestSize if there are no
   // request size constraints.
   SincResampler(double io_sample_rate_ratio,
-                size_t request_frames,
+                int request_frames,
                 const ReadCB& read_cb);
   virtual ~SincResampler();
 
@@ -109,13 +109,13 @@ class MEDIA_EXPORT SincResampler {
   const ReadCB read_cb_;
 
   // The size (in samples) to request from each |read_cb_| execution.
-  const size_t request_frames_;
+  const int request_frames_;
 
   // The number of source frames processed per pass.
-  size_t block_size_;
+  int block_size_;
 
   // The size (in samples) of the internal buffer used by the resampler.
-  const size_t input_buffer_size_;
+  const int input_buffer_size_;
 
   // Contains kKernelOffsetCount kernels back-to-back, each of size kKernelSize.
   // The kernel offsets are sub-sample shifts of a windowed sinc shifted from

@@ -138,7 +138,7 @@ void SincResampler::InitializeCPUSpecificFeatures() {}
 #endif
 
 SincResampler::SincResampler(double io_sample_rate_ratio,
-                             size_t request_frames,
+                             int request_frames,
                              const ReadCB& read_cb)
     : io_sample_rate_ratio_(io_sample_rate_ratio),
       read_cb_(read_cb),
@@ -155,8 +155,9 @@ SincResampler::SincResampler(double io_sample_rate_ratio,
           base::AlignedAlloc(sizeof(float) * input_buffer_size_, 16))),
       r1_(input_buffer_.get()),
       r2_(input_buffer_.get() + kKernelSize / 2) {
+  CHECK_GT(request_frames_, 0);
   Flush();
-  CHECK_GT(block_size_, static_cast<size_t>(kKernelSize))
+  CHECK_GT(block_size_, kKernelSize)
       << "block_size must be greater than kKernelSize!";
 
   memset(kernel_storage_.get(), 0,
@@ -255,14 +256,25 @@ void SincResampler::Resample(int frames, float* destination) {
   int remaining_frames = frames;
 
   // Step (1) -- Prime the input buffer at the start of the input stream.
-  if (!buffer_primed_) {
+  if (!buffer_primed_ && remaining_frames) {
     read_cb_.Run(request_frames_, r0_);
     buffer_primed_ = true;
   }
 
-  // Step (2) -- Resample!
+  // Step (2) -- Resample!  const what we can outside of the loop for speed.  It
+  // actually has an impact on ARM performance.  See inner loop comment below.
+  const double current_io_ratio = io_sample_rate_ratio_;
+  const float* const kernel_ptr = kernel_storage_.get();
   while (remaining_frames) {
-    while (virtual_source_idx_ < block_size_) {
+    // |i| may be negative if the last Resample() call ended on an iteration
+    // that put |virtual_source_idx_| over the limit.
+    //
+    // Note: The loop construct here can severely impact performance on ARM
+    // or when built with clang.  See https://codereview.chromium.org/18566009/
+    for (int i = ceil((block_size_ - virtual_source_idx_) / current_io_ratio);
+         i > 0; --i) {
+      DCHECK_LT(virtual_source_idx_, block_size_);
+
       // |virtual_source_idx_| lies in between two kernel offsets so figure out
       // what they are.
       const int source_idx = virtual_source_idx_;
@@ -274,8 +286,8 @@ void SincResampler::Resample(int frames, float* destination) {
 
       // We'll compute "convolutions" for the two kernels which straddle
       // |virtual_source_idx_|.
-      const float* k1 = kernel_storage_.get() + offset_idx * kKernelSize;
-      const float* k2 = k1 + kKernelSize;
+      const float* const k1 = kernel_ptr + offset_idx * kKernelSize;
+      const float* const k2 = k1 + kKernelSize;
 
       // Ensure |k1|, |k2| are 16-byte aligned for SIMD usage.  Should always be
       // true so long as kKernelSize is a multiple of 16.
@@ -283,7 +295,7 @@ void SincResampler::Resample(int frames, float* destination) {
       DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
 
       // Initialize input pointer based on quantized |virtual_source_idx_|.
-      const float* input_ptr = r1_ + source_idx;
+      const float* const input_ptr = r1_ + source_idx;
 
       // Figure out how much to weight each kernel's "convolution".
       const double kernel_interpolation_factor =
@@ -292,7 +304,7 @@ void SincResampler::Resample(int frames, float* destination) {
           input_ptr, k1, k2, kernel_interpolation_factor);
 
       // Advance the virtual index.
-      virtual_source_idx_ += io_sample_rate_ratio_;
+      virtual_source_idx_ += current_io_ratio;
 
       if (!--remaining_frames)
         return;
