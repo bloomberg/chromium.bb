@@ -820,17 +820,31 @@ void RenderViewHostManager::ShutdownRenderViewHostsInSiteInstance(
 
   RenderWidgetHost::List widgets =
       RenderWidgetHostImpl::GetAllRenderWidgetHosts();
+
+  // Here deleting a RWH in widgets can possibly cause another RWH in
+  // the list to be deleted.  This can result in leaving a dangling
+  // pointer in the widgets list. Our assumption is that a widget
+  // deleted as that sort of side-effect should not be directly
+  // deleted here. Therefore, we first gather only widgets directly to
+  // be deleted so that we don't hit any future dangling pointers in
+  // widgets.
+  std::vector<RenderViewHostImpl*> rvhs_to_be_deleted;
+
   for (size_t i = 0; i < widgets.size(); ++i) {
     if (!widgets[i]->IsRenderView())
       continue;
-
     RenderViewHostImpl* rvh =
         static_cast<RenderViewHostImpl*>(RenderViewHost::From(widgets[i]));
     if (site_instance_id == rvh->GetSiteInstance()->GetId()) {
       DCHECK(rvh->is_swapped_out());
-      rvh->Shutdown();
+      rvhs_to_be_deleted.push_back(rvh);
     }
   }
+
+  // Finally we delete the gathered RVHs, which should not indirectly
+  // delete each other.
+  for (size_t i = 0; i < rvhs_to_be_deleted.size(); ++i)
+    rvhs_to_be_deleted[i]->Shutdown();
 }
 
 RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(

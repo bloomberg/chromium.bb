@@ -101,6 +101,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Returns all RenderWidgetHosts including swapped out ones for
   // internal use. The public interface
   // RendgerWidgetHost::GetRenderWidgetHosts only returns active ones.
+  // Keep in mind that there may be dependencies between these
+  // widgets.  If a caller indirectly causes one of the widgets to be
+  // deleted while iterating over the list, the deleted widget will
+  // stay in the list and possibly causes a use-after-free.  Take care
+  // to avoid deleting widgets as you iterate (e.g., see
+  // http://crbug.com/259859).  TODO(nasko): Improve this interface to
+  // better prevent UaFs.
   static std::vector<RenderWidgetHost*> GetAllRenderWidgetHosts();
 
   // Use RenderWidgetHostImpl::From(rwh) to downcast a

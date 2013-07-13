@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/javascript_message_type.h"
@@ -423,6 +424,61 @@ TEST_F(RenderViewHostManagerTest, ActiveViewCountWhileSwappingInandOut) {
   contents()->NavigateAndCommit(kUrl1);
 
   EXPECT_EQ(instance1->active_view_count(), 3U);
+}
+
+// This deletes a WebContents when the given RVH is deleted. This is
+// only for testing whether deleting an RVH does not cause any UaF in
+// other parts of the system. For now, this class is only used for the
+// next test cases to detect the bug mentioned at
+// http://crbug.com/259859.
+class RenderViewHostDestroyer : public content::RenderViewHostObserver {
+ public:
+  RenderViewHostDestroyer(RenderViewHost* render_view_host,
+                          WebContents* web_contents)
+      : content::RenderViewHostObserver(render_view_host),
+        web_contents_(web_contents) {}
+
+  virtual void RenderViewHostDestroyed(RenderViewHost* render_view_host)
+      OVERRIDE {
+    delete web_contents_;
+  }
+
+ private:
+  WebContents* web_contents_;
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostDestroyer);
+};
+
+// Test if ShutdownRenderViewHostsInSiteInstance() does not touch any
+// RenderWidget that has been freed while deleting a RenderViewHost in
+// a previous iteration. This is a regression test for
+// http://crbug.com/259859.
+TEST_F(RenderViewHostManagerTest,
+       DetectUseAfterFreeInShutdownRenderViewHostsInSiteInstance) {
+  const GURL kChromeURL("chrome://newtab");
+  const GURL kUrl1("http://www.google.com");
+  const GURL kUrl2("http://www.chromium.org");
+
+  // Navigate our first tab to a chrome url and then to the destination.
+  NavigateActiveAndCommit(kChromeURL);
+  TestRenderViewHost* ntp_rvh = static_cast<TestRenderViewHost*>(
+      contents()->GetRenderManagerForTesting()->current_host());
+
+  // Create one more tab and navigate to kUrl1.  web_contents is not
+  // wrapped as scoped_ptr since it intentionally deleted by destroyer
+  // below as part of this test.
+  TestWebContents* web_contents =
+      TestWebContents::Create(browser_context(), ntp_rvh->GetSiteInstance());
+  web_contents->NavigateAndCommit(kUrl1);
+  RenderViewHostDestroyer destroyer(ntp_rvh, web_contents);
+
+  // This causes the first tab to navigate to kUrl2, which destroys
+  // the ntp_rvh in ShutdownRenderViewHostsInSiteInstance(). When
+  // ntp_rvh is destroyed, it also destroys the RVHs in web_contents
+  // too. This can test whether
+  // SiteInstanceImpl::ShutdownRenderViewHostsInSiteInstance() can
+  // touch any object freed in this way or not while iterating through
+  // all widgets.
+  contents()->NavigateAndCommit(kUrl2);
 }
 
 // When there is an error with the specified page, renderer exits view-source
