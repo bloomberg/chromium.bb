@@ -62,11 +62,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "chrome/browser/policy/policy_schema.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/policy/policy_schema.h"
 #endif
 
 namespace em = enterprise_management;

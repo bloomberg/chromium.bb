@@ -835,8 +835,6 @@
             # Only extension API implementations should go here.
             'browser/chromeos/extensions/echo_private_api.cc',
             'browser/chromeos/extensions/echo_private_api.h',
-            'browser/chromeos/extensions/file_manager/file_browser_handler.cc',
-            'browser/chromeos/extensions/file_manager/file_browser_handler.h',
             'browser/chromeos/extensions/file_manager/file_browser_handler_api.cc',
             'browser/chromeos/extensions/file_manager/file_browser_handler_api.h',
             'browser/chromeos/extensions/file_manager/file_browser_private_api.cc',

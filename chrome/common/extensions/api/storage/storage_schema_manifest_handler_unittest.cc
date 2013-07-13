@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/storage/storage_schema_manifest_handler.h"
+#include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 
 #include <string>
 #include <vector>
@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,11 +33,6 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
     manifest_.SetString("name", "test");
     manifest_.SetString("version", "1.2.3.4");
     manifest_.SetInteger("manifest_version", 2);
-
-    storage_schema_manifest_handler_ = new StorageSchemaManifestHandler();
-    storage_schema_manifest_handler_->Register();
-    // This is used to invoke the private virtual methods.
-    handler_ = storage_schema_manifest_handler_;
   }
 
   scoped_refptr<Extension> CreateExtension(const std::string& schema) {
@@ -64,25 +60,20 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
       return testing::AssertionFailure() << "Failed to create test extension";
     std::string error;
     std::vector<InstallWarning> warnings;
-    if (handler_->Validate(extension.get(), &error, &warnings))
+    if (extension_file_util::ValidateExtension(
+            extension.get(), &error, &warnings))
       return testing::AssertionSuccess();
     return testing::AssertionFailure() << error;
   }
 
   base::ScopedTempDir temp_dir_;
   Feature::ScopedCurrentChannel scoped_channel_;
-  ManifestHandler* handler_;
-  StorageSchemaManifestHandler* storage_schema_manifest_handler_;
   base::DictionaryValue manifest_;
 };
 
 TEST_F(StorageSchemaManifestHandlerTest, Parse) {
   scoped_refptr<Extension> extension = CreateExtension("");
   ASSERT_TRUE(extension.get());
-
-  // No storage.managed_schema entry.
-  string16 error;
-  EXPECT_FALSE(handler_->Parse(extension.get(), &error));
 
   // Not a string.
   manifest_.SetInteger("storage.managed_schema", 123);
@@ -93,29 +84,23 @@ TEST_F(StorageSchemaManifestHandlerTest, Parse) {
   manifest_.SetString("storage.managed_schema", "schema.json");
   extension = CreateExtension("");
   ASSERT_TRUE(extension.get());
-  EXPECT_TRUE(handler_->Parse(extension.get(), &error)) << error;
 }
 
 TEST_F(StorageSchemaManifestHandlerTest, Validate) {
-  // Doesn't have storage permission.
-  EXPECT_FALSE(Validates(""));
-
-  // File doesn't exist.
   base::ListValue permissions;
   permissions.AppendString("storage");
   manifest_.Set("permissions", permissions.DeepCopy());
-  EXPECT_FALSE(Validates(""));
 
   // Absolute path.
-  manifest_.SetString("storage.managed_storage", "/etc/passwd");
+  manifest_.SetString("storage.managed_schema", "/etc/passwd");
   EXPECT_FALSE(Validates(""));
 
   // Path with ..
-  manifest_.SetString("storage.managed_storage", "../../../../../etc/passwd");
+  manifest_.SetString("storage.managed_schema", "../../../../../etc/passwd");
   EXPECT_FALSE(Validates(""));
 
   // Does not exist.
-  manifest_.SetString("storage.managed_storage", "not-there");
+  manifest_.SetString("storage.managed_schema", "not-there");
   EXPECT_FALSE(Validates(""));
 
   // Invalid JSON.

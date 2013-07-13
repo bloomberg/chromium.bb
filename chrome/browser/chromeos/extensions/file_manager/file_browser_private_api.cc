@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/logging.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
@@ -50,6 +49,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -405,8 +405,6 @@ std::string MakeWebAppTaskId(const std::string& app_id) {
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
     : event_router_(new FileManagerEventRouter(profile)) {
-  (new FileBrowserHandlerParser)->Register();
-
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<LogoutUserFunction>();

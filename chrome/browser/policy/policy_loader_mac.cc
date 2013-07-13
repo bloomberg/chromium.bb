@@ -19,9 +19,9 @@
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/policy/policy_schema.h"
 #include "chrome/browser/policy/preferences_mac.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/policy/policy_schema.h"
 #include "policy/policy_constants.h"
 
 using base::mac::CFCast;

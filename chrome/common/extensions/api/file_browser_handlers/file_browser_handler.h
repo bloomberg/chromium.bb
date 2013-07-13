@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_HANDLER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_API_FILE_BROWSER_HANDLERS_FILE_BROWSER_HANDLER_H_
+#define CHROME_COMMON_EXTENSIONS_API_FILE_BROWSER_HANDLERS_FILE_BROWSER_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -98,4 +98,4 @@ class FileBrowserHandlerParser : public extensions::ManifestHandler {
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_HANDLER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_API_FILE_BROWSER_HANDLERS_FILE_BROWSER_HANDLER_H_

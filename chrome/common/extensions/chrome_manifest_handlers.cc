@@ -8,13 +8,16 @@
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
+#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
+#include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #endif
 #include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
+#include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/api/page_launcher/page_launcher_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
@@ -43,6 +46,9 @@
 namespace extensions {
 
 void RegisterChromeManifestHandlers() {
+  // This can happen in unit tests, where the utility thread runs in-process.
+  if (ManifestHandler::IsRegistrationFinalized())
+    return;
 #if defined(ENABLE_EXTENSIONS)
   (new AppIsolationHandler)->Register();
   (new AppLaunchManifestHandler)->Register();
@@ -55,6 +61,7 @@ void RegisterChromeManifestHandlers() {
   (new DefaultLocaleHandler)->Register();
   (new DevToolsPageHandler)->Register();
   (new ExternallyConnectableHandler)->Register();
+  (new FileBrowserHandlerParser)->Register();
   (new FileHandlersParser)->Register();
   (new HomepageURLHandler)->Register();
   (new IconsHandler)->Register();
@@ -64,6 +71,7 @@ void RegisterChromeManifestHandlers() {
 #endif
   (new KioskEnabledHandler)->Register();
   (new ManagedModeHandler)->Register();
+  (new MediaGalleriesHandlerParser)->Register();
   (new MimeTypesHandlerParser)->Register();
   (new NaClModulesHandler)->Register();
   (new OAuth2ManifestHandler)->Register();
@@ -78,12 +86,14 @@ void RegisterChromeManifestHandlers() {
   (new ScriptBadgeHandler)->Register();
   (new SharedModuleHandler)->Register();
   (new SpellcheckHandler)->Register();
+  (new StorageSchemaManifestHandler)->Register();
   (new SystemIndicatorHandler)->Register();
   (new ThemeHandler)->Register();
   (new TtsEngineManifestHandler)->Register();
   (new UpdateURLHandler)->Register();
   (new URLOverridesHandler)->Register();
   (new WebAccessibleResourcesHandler)->Register();
+  ManifestHandler::FinalizeRegistration();
 #endif
 }
 

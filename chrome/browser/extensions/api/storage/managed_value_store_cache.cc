@@ -14,22 +14,22 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "chrome/browser/policy/policy_schema.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/value_store/value_store_change.h"
+#include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/policy/policy_schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -186,8 +186,6 @@ ManagedValueStoreCache::ManagedValueStoreCache(
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
   extension_tracker_.reset(new ExtensionTracker(profile_));
-
-  (new StorageSchemaManifestHandler)->Register();
 }
 
 ManagedValueStoreCache::~ManagedValueStoreCache() {

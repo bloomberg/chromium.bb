@@ -19,11 +19,11 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/media_galleries_handler.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 
@@ -86,7 +86,6 @@ MediaGalleriesPrivateAPI::MediaGalleriesPrivateAPI(Profile* profile)
     : profile_(profile),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
-  (new MediaGalleriesHandlerParser)->Register();
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, event_names::kOnAttachEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(

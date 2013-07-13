@@ -1428,8 +1428,6 @@
         'browser/policy/policy_loader_win.h',
         'browser/policy/policy_map.cc',
         'browser/policy/policy_map.h',
-        'browser/policy/policy_schema.cc',
-        'browser/policy/policy_schema.h',
         'browser/policy/policy_service.cc',
         'browser/policy/policy_service.h',
         'browser/policy/policy_service_impl.cc',

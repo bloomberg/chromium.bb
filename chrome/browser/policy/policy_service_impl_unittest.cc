@@ -15,7 +15,7 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "chrome/browser/policy/policy_schema.h"
+#include "chrome/common/policy/policy_schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"

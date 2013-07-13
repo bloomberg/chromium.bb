@@ -59,12 +59,16 @@ class ManifestHandler {
   // Associate us with our keys() in the manifest. A handler can register
   // for multiple keys. The global registry takes ownership of this;
   // if it has an existing handler for |key|, it replaces it with this.
-  // Typical usage:
+  // Manifest handlers must be registered at process startup in
+  // chrome_manifest_handlers.cc:
   // (new MyManifestHandler)->Register();
-  //
-  // WARNING: Manifest handlers registered only in the browser process
-  // are not available to renderers or utility processes.
   void Register();
+
+  // Calling FinalizeRegistration indicates that there are no more
+  // manifest handlers to be registered.
+  static void FinalizeRegistration();
+
+  static bool IsRegistrationFinalized();
 
   // Call Parse on all registered manifest handlers that should parse
   // this extension.
@@ -95,6 +99,8 @@ class ManifestHandlerRegistry {
   ManifestHandlerRegistry();
   ~ManifestHandlerRegistry();
 
+  void Finalize();
+
   void RegisterManifestHandler(const std::string& key,
                                linked_ptr<ManifestHandler> handler);
   bool ParseExtension(Extension* extension, string16* error);
@@ -123,7 +129,8 @@ class ManifestHandlerRegistry {
   // The priority for each manifest handler. Handlers with lower priority
   // values are evaluated first.
   ManifestHandlerPriorityMap priority_map_;
-  bool is_sorted_;
+
+  bool is_finalized_;
 };
 
 }  // namespace extensions

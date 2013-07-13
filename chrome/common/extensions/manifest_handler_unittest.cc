@@ -187,6 +187,7 @@ TEST_F(ManifestHandlerTest, DependentHandlers) {
   prereqs.push_back("k");
   (new TestManifestHandler("C.D", SingleKey("c.d"), prereqs, &watcher))->
       Register();
+  ManifestHandler::FinalizeRegistration();
 
   scoped_refptr<Extension> extension = ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
@@ -235,6 +236,7 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
   ParsingWatcher watcher;
   (new FailingTestManifestHandler(
       "A", SingleKey("a"), std::vector<std::string>(), &watcher))->Register();
+  ManifestHandler::FinalizeRegistration();
 
   extension = Extension::Create(
       base::FilePath(),

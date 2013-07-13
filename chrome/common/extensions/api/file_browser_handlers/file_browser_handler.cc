@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
+#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

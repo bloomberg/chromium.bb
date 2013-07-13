@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/storage/storage_schema_manifest_handler.h"
+#include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 
 #include <string>
 #include <vector>
@@ -13,11 +13,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/policy/policy_schema.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/policy/policy_schema.h"
 #include "extensions/common/install_warning.h"
 
 using extension_manifest_keys::kStorageManagedSchema;

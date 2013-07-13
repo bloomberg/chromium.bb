@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/media_galleries_handler.h"
+#include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

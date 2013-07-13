@@ -58,6 +58,16 @@ void ManifestHandler::Register() {
 }
 
 // static
+void ManifestHandler::FinalizeRegistration() {
+  GetRegistry()->Finalize();
+}
+
+// static
+bool ManifestHandler::IsRegistrationFinalized() {
+  return GetRegistry()->is_finalized_;
+}
+
+// static
 bool ManifestHandler::ParseExtension(Extension* extension, string16* error) {
   return GetRegistry()->ParseExtension(extension, error);
 }
@@ -75,21 +85,26 @@ const std::vector<std::string> ManifestHandler::SingleKey(
   return std::vector<std::string>(1, key);
 }
 
-ManifestHandlerRegistry::ManifestHandlerRegistry() : is_sorted_(false) {
+ManifestHandlerRegistry::ManifestHandlerRegistry() : is_finalized_(false) {
 }
 
 ManifestHandlerRegistry::~ManifestHandlerRegistry() {
 }
 
+void ManifestHandlerRegistry::Finalize() {
+  CHECK(!is_finalized_);
+  SortManifestHandlers();
+  is_finalized_ = true;
+}
+
 void ManifestHandlerRegistry::RegisterManifestHandler(
     const std::string& key, linked_ptr<ManifestHandler> handler) {
+  CHECK(!is_finalized_);
   handlers_[key] = handler;
-  is_sorted_ = false;
 }
 
 bool ManifestHandlerRegistry::ParseExtension(Extension* extension,
                                              string16* error) {
-  SortManifestHandlers();
   std::map<int, ManifestHandler*> handlers_by_priority;
   for (ManifestHandlerMap::iterator iter = handlers_.begin();
        iter != handlers_.end(); ++iter) {
@@ -141,11 +156,6 @@ ManifestHandlerRegistry* ManifestHandlerRegistry::SetForTesting(
 }
 
 void ManifestHandlerRegistry::SortManifestHandlers() {
-  if (is_sorted_)
-    return;
-
-  // Forget our existing sort order.
-  priority_map_.clear();
   std::set<ManifestHandler*> unsorted_handlers;
   for (ManifestHandlerMap::const_iterator iter = handlers_.begin();
        iter != handlers_.end(); ++iter) {
@@ -190,8 +200,6 @@ void ManifestHandlerRegistry::SortManifestHandlers() {
   // circular dependencies.
   CHECK(unsorted_handlers.size() == 0) << "Extension manifest handlers have "
                                        << "circular dependencies!";
-
-  is_sorted_ = true;
 }
 
 }  // namespace extensions
