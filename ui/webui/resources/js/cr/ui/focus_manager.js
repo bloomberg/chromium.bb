@@ -205,7 +205,7 @@ cr.define('cr.ui', function() {
           document.activeElement.blur();
         event.preventDefault();
       }
-    }, false);
+    }, true);
   };
 
   return {
