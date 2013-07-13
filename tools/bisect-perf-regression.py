@@ -1078,7 +1078,20 @@ class BisectPerformanceMetrics(object):
     metric_values = []
     for i in xrange(self.opts.repeat_test_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
-      (output, return_code) = RunProcessAndRetrieveOutput(args)
+      try:
+        (output, return_code) = RunProcessAndRetrieveOutput(args)
+      except OSError, e:
+        if e.errno == errno.ENOENT:
+          err_text  = ("Something went wrong running the performance test. "
+              "Please review the command line:\n\n")
+          if 'src/' in ' '.join(args):
+            err_text += ("Check that you haven't accidentally specified a path "
+                "with src/ in the command.\n\n")
+          err_text += ' '.join(args)
+          err_text += '\n'
+
+          return (err_text, -1)
+        raise
 
       if self.opts.output_buildbot_annotations:
         print output
