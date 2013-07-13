@@ -23,6 +23,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/content_resources.h"
 #include "third_party/zlib/google/zip.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "webkit/common/database/database_identifier.h"
 
 namespace content {
@@ -108,7 +109,7 @@ void IndexedDBInternalsUI::OnOriginsReady(
        ++iter) {
     base::DictionaryValue* info = new base::DictionaryValue;
     info->SetString("url", iter->origin_.spec());
-    info->SetDouble("size", iter->size_);
+    info->SetString("size", ui::FormatBytes(iter->size_));
     info->SetDouble("last_modified", iter->last_modified_.ToJsTime());
     info->SetString("path", iter->path_.value());
     urls.Append(info);
