@@ -66,10 +66,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void reshape(int width, int height);
   virtual void reshapeWithScaleFactor(int width, int height, float scaleFactor);
 
-  virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size);
-  virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,
-                                   WebGLId framebuffer, int width, int height);
-
   virtual void prepareTexture();
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
 
@@ -573,17 +569,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   WebKit::WebGraphicsContext3D::Attributes attributes_;
   int cached_width_, cached_height_;
 
-  // For tracking which FBO is bound.
-  WebGLId bound_fbo_;
-
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;
-
-  std::vector<uint8> scanline_;
-
-  void FlipVertically(uint8* framebuffer,
-                      unsigned int width,
-                      unsigned int height);
 };
 
 }  // namespace gpu

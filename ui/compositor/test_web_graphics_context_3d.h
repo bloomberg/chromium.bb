@@ -30,11 +30,6 @@ class COMPOSITOR_EXPORT TestWebGraphicsContext3D :
   virtual int width();
   virtual int height();
   virtual void reshape(int width, int height) {}
-  virtual bool readBackFramebuffer(unsigned char* pixels,
-                                   size_t bufferSize,
-                                   WebKit::WebGLId framebuffer,
-                                   int width,
-                                   int height);
   virtual void prepareTexture() {}
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) {}
   virtual void synthesizeGLError(WebKit::WGC3Denum value) {}

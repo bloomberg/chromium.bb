@@ -30,13 +30,6 @@ class CC_EXPORT FakeWebGraphicsContext3D
 
   virtual bool isGLES2Compliant();
 
-  virtual bool readBackFramebuffer(
-      unsigned char* pixels,
-      size_t buffer_size,
-      WebKit::WebGLId framebuffer,
-      int width,
-      int height);
-
   virtual WebKit::WebGLId getPlatformTextureId();
 
   virtual void prepareTexture() {}

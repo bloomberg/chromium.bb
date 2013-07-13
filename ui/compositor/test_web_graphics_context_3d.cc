@@ -33,15 +33,6 @@ int TestWebGraphicsContext3D::height() {
   return 0;
 }
 
-bool TestWebGraphicsContext3D::readBackFramebuffer(
-    unsigned char* pixels,
-    size_t bufferSize,
-    WebKit::WebGLId framebuffer,
-    int width,
-    int height) {
-  return false;
-}
-
 bool TestWebGraphicsContext3D::isContextLost() {
   return false;
 }

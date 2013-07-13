@@ -150,10 +150,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void reshapeWithScaleFactor(
       int width, int height, float scale_factor);
 
-  virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size);
-  virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,
-                                   WebGLId framebuffer, int width, int height);
-
   virtual void prepareTexture();
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
 
@@ -741,18 +737,10 @@ class WebGraphicsContext3DCommandBufferImpl
   gfx::GpuPreference gpu_preference_;
   int cached_width_, cached_height_;
 
-  // For tracking which FBO is bound.
-  WebGLId bound_fbo_;
-
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;
 
   base::WeakPtrFactory<WebGraphicsContext3DCommandBufferImpl> weak_ptr_factory_;
-
-  std::vector<uint8> scanline_;
-  void FlipVertically(uint8* framebuffer,
-                      unsigned int width,
-                      unsigned int height);
 
   bool initialized_;
   scoped_ptr<CommandBufferProxyImpl> command_buffer_;
