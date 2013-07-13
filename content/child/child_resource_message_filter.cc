@@ -4,6 +4,8 @@
 
 #include "content/child/child_resource_message_filter.h"
 
+#include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/common/resource_messages.h"

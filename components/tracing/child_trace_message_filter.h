@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
 #define COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
 
+#include "base/bind.h"
+#include "base/memory/ref_counted_memory.h"
 #include "ipc/ipc_channel_proxy.h"
 
 namespace base {
