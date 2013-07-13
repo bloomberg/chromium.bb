@@ -198,6 +198,36 @@ var testing = {};
     },
 
     /**
+      * Create a container of mocked standalone functions to handle
+      * '.'-separated |apiNames|, assign it to |this.mockApis|, register its API
+      * overrides and return it.
+      * @return {Mock} Mock handler class.
+      * @see makeMockFunctions
+      * @see registerMockApis
+      */
+    makeAndRegisterMockApis: function (apiNames) {
+      var apiMockNames = apiNames.map(function(name) {
+        return name.replace(/\./g, '_');
+      });
+
+      this.mockApis = makeMockFunctions(apiMockNames);
+      registerMockApis(this.mockApis);
+      return this.mockApis;
+    },
+
+    /**
+      * Create a container of mocked standalone functions to handle
+      * |functionNames|, assign it to |this.mockLocalFunctions| and return it.
+      * @param {!Array.<string>} functionNames
+      * @return {Mock} Mock handler class.
+      * @see makeMockFunctions
+      */
+    makeMockLocalFunctions: function(functionNames) {
+      this.mockLocalFunctions = makeMockFunctions(functionNames);
+      return this.mockLocalFunctions;
+    },
+
+    /**
      * Override this method to perform initialization during preload (such as
      * creating mocks and registering handlers).
      * @type {Function}
@@ -506,6 +536,28 @@ var testing = {};
   }
 
   /**
+   * Registers the mock API call and its function.
+   * @param {string} name The '_'-separated name of the API call.
+   * @param {function(...)} theFunction Mock function for this API call.
+   */
+  function registerMockApi(name, theFunction) {
+    var path = name.split('_');
+
+    var namespace = this;
+    for(var i = 0; i < path.length - 1; i++) {
+      var fieldName = path[i];
+      if(!namespace[fieldName])
+        namespace[fieldName] = {};
+
+      namespace = namespace[fieldName];
+    }
+
+    var fieldName = path[path.length-1];
+    assertEquals(undefined, namespace[fieldName]);
+    namespace[fieldName] = theFunction;
+  }
+
+  /**
    * Empty function for use in making mocks.
    * @const
    */
@@ -525,6 +577,31 @@ var testing = {};
   }
 
   /**
+    * Create a new class to handle |functionNames|, add method 'functions()'
+    * that returns a container of standalone functions based on the mock class
+    * members, and return it.
+    * @return {Mock} Mock handler class.
+    */
+  function makeMockFunctions(functionNames) {
+    var MockClass = makeMockClass(functionNames);
+    var mockFunctions = mock(MockClass);
+    var mockProxy = mockFunctions.proxy();
+
+    mockFunctions.functions_ = {};
+
+    for (var func in MockClass.prototype) {
+      if (typeof MockClass.prototype[func] === 'function')
+        mockFunctions.functions_[func] = mockProxy[func].bind(mockProxy);
+    }
+
+    mockFunctions.functions = function () {
+      return this.functions_;
+    };
+
+    return mockFunctions;
+  }
+
+  /**
    * Register all methods of {@code mockClass.prototype} as overrides to global
    * functions of the same name as the method, using the proxy of the
    * |mockObject| to handle the functions.
@@ -537,6 +614,19 @@ var testing = {};
     for (var func in mockClass.prototype) {
       if (typeof mockClass.prototype[func] === 'function')
         registerMockGlobal(func, mockProxy, mockProxy[func]);
+    }
+  }
+
+  /**
+   * Register all functions in |mockObject.functions()| as global API calls.
+   * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
+   * @see registerMockApi
+   */
+  function registerMockApis(mockObject) {
+    var functions = mockObject.functions();
+    for (var func in functions) {
+      if (typeof functions[func] === 'function')
+        registerMockApi(func, functions[func]);
     }
   }
 

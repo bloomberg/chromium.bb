@@ -40,3 +40,339 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
   testTaskPair(RETRY_DISMISS_TASK_NAME, RETRY_DISMISS_TASK_NAME, true);
 });
 
+/**
+ * Mocks global functions and APIs that initialize() depends upon.
+ * @param {Test} fixture Test fixture.
+ */
+function mockInitializeDependencies(fixture) {
+  fixture.makeAndRegisterMockGlobals([
+      'recordEvent',
+      'showWelcomeToast',
+      'startPollingCards']);
+  fixture.makeAndRegisterMockApis(
+      ['storage.get', 'chrome.identity.getAuthToken']);
+}
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'Initialize_ToastStateEmpty1',
+    function() {
+      // Tests the case when toast state is empty and NOTIFICATION_CARDS_URL is
+      // not set. In this case, the function should quietly exit after finding
+      // out that NOTIFICATION_CARDS_URL is empty.
+
+      // Setup and expectations.
+      var testToastState = {};
+      NOTIFICATION_CARDS_URL = undefined;
+
+      mockInitializeDependencies(this);
+
+      this.mockGlobals.expects(once()).recordEvent(
+          DiagnosticEvent.EXTENSION_START);
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('toastState')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+
+      // Invoking the tested function.
+      initialize();
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'Initialize_ToastStateEmpty2',
+    function() {
+      // Tests the case when toast state is empty and NOTIFICATION_CARDS_URL is
+      // set, but getAuthToken fails most likely because the user is not signed
+      // in. In this case, the function should quietly exit after finding out
+      // that getAuthToken fails.
+
+      // Setup and expectations.
+      var testToastState = {};
+      NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
+      var testIdentityToken = undefined;
+
+      mockInitializeDependencies(this);
+
+      this.mockGlobals.expects(once()).recordEvent(
+          DiagnosticEvent.EXTENSION_START);
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('toastState')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+      var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          chrome_identity_getAuthToken(
+              chromeIdentityGetAuthTokenSavedArgs.match(
+                  eqJSON({interactive: false})),
+              chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
+          will(invokeCallback(
+              chromeIdentityGetAuthTokenSavedArgs, 1, testIdentityToken));
+
+      // Invoking the tested function.
+      initialize();
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'Initialize_ToastStateEmpty3',
+    function() {
+      // Tests the case when toast state is empty and NOTIFICATION_CARDS_URL is
+      // set, and getAuthToken succeeds. In this case, the function should
+      // invoke showWelcomeToast().
+
+      // Setup and expectations.
+      var testToastState = {};
+      NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
+      var testIdentityToken = 'some identity token';
+
+      mockInitializeDependencies(this);
+
+      this.mockGlobals.expects(once()).recordEvent(
+          DiagnosticEvent.EXTENSION_START);
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('toastState')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+      var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          chrome_identity_getAuthToken(
+              chromeIdentityGetAuthTokenSavedArgs.match(
+                  eqJSON({interactive: false})),
+              chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
+          will(invokeCallback(
+              chromeIdentityGetAuthTokenSavedArgs, 1, testIdentityToken));
+      this.mockGlobals.expects(once()).showWelcomeToast();
+
+      // Invoking the tested function.
+      initialize();
+    });
+
+TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_ToastStateYes', function() {
+  // Tests the case when the user has answered "yes" to the toast in the past.
+  // In this case, the function should invoke startPollingCards().
+
+  // Setup and expectations.
+  var testToastState = {toastState: ToastOptionResponse.CHOSE_YES};
+
+  mockInitializeDependencies(this);
+
+  this.mockGlobals.expects(once()).recordEvent(DiagnosticEvent.EXTENSION_START);
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      storage_get(
+          storageGetSavedArgs.match(eq('toastState')),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+  this.mockGlobals.expects(once()).startPollingCards();
+
+  // Invoking the tested function.
+  initialize();
+});
+
+TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_ToastStateNo', function() {
+  // Tests the case when the user has answered "no" to the toast in the past.
+  // In this case, the function should do nothing.
+
+  // Setup and expectations.
+  var testToastState = {toastState: ToastOptionResponse.CHOSE_NO};
+
+  mockInitializeDependencies(this);
+
+  this.mockGlobals.expects(once()).recordEvent(DiagnosticEvent.EXTENSION_START);
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      storage_get(
+          storageGetSavedArgs.match(eq('toastState')),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(storageGetSavedArgs, 1, testToastState));
+
+  // Invoking the tested function.
+  initialize();
+});
+
+/**
+ * Mocks global functions and APIs that onNotificationClicked() depends upon.
+ * @param {Test} fixture Test fixture.
+ */
+function mockOnNotificationClickedDependencies(fixture) {
+  fixture.makeAndRegisterMockApis([
+      'storage.get',
+      'chrome.tabs.create',
+      'chrome.windows.create']);
+}
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'OnNotificationClicked_NoData',
+    function() {
+      // Tests the case when there is no data associated with notification id.
+      // In this case, the function should do nothing.
+
+      // Setup and expectations.
+      var testNotificationId = 'TEST_ID';
+      var testNotificationData = {};
+
+      mockOnNotificationClickedDependencies(this);
+      this.makeMockLocalFunctions(['selector']);
+
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('notificationsData')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+
+      // Invoking the tested function.
+      onNotificationClicked(
+          testNotificationId, this.mockLocalFunctions.functions().selector);
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'OnNotificationClicked_ActionUrlsNotObject',
+    function() {
+      // Tests the case when the data associated with notification id is not an
+      // object, probably because of a malformed server response.
+      // In this case, the function should do nothing.
+
+      // Setup and expectations.
+      var testActionUrls = 'string, not object';
+      var testNotificationId = 'TEST_ID';
+      var testNotificationData = {
+          notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
+      };
+
+      mockOnNotificationClickedDependencies(this);
+      this.makeMockLocalFunctions(['selector']);
+
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('notificationsData')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+
+      // Invoking the tested function.
+      onNotificationClicked(
+          testNotificationId, this.mockLocalFunctions.functions().selector);
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'OnNotificationClicked_UrlNotString',
+    function() {
+      // Tests the case when selector returns a non-string, probably because of
+      // a malformed server response.
+      // In this case, the function should do nothing.
+
+      // Setup and expectations.
+      var testActionUrls = {testField: 'TEST VALUE'};
+      var testNotificationId = 'TEST_ID';
+      var testNotificationData = {
+          notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
+      };
+      var testActionUrl = {};
+
+      mockOnNotificationClickedDependencies(this);
+      this.makeMockLocalFunctions(['selector']);
+
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('notificationsData')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
+          returnValue(testActionUrl));
+
+      // Invoking the tested function.
+      onNotificationClicked(
+          testNotificationId, this.mockLocalFunctions.functions().selector);
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'OnNotificationClicked_TabCreateSuccess',
+    function() {
+      // Tests the selected URL is OK and crome.tabs.create suceeds.
+
+      // Setup and expectations.
+      var testActionUrls = {testField: 'TEST VALUE'};
+      var testNotificationId = 'TEST_ID';
+      var testNotificationData = {
+          notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
+      };
+      var testActionUrl = 'http://testurl.com';
+      var testCreatedTab = {};
+
+      mockOnNotificationClickedDependencies(this);
+      this.makeMockLocalFunctions(['selector']);
+
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('notificationsData')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
+          returnValue(testActionUrl));
+      var chromeTabsCreateSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          chrome_tabs_create(
+              chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
+              chromeTabsCreateSavedArgs.match(ANYTHING)).
+          will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
+
+      // Invoking the tested function.
+      onNotificationClicked(
+          testNotificationId, this.mockLocalFunctions.functions().selector);
+    });
+
+TEST_F(
+    'GoogleNowBackgroundUnitTest',
+    'OnNotificationClicked_TabCreateFail',
+    function() {
+      // Tests the selected URL is OK and crome.tabs.create fails.
+      // In this case, the function should invoke chrome.windows.create as a
+      // second attempt.
+
+      // Setup and expectations.
+      var testActionUrls = {testField: 'TEST VALUE'};
+      var testNotificationId = 'TEST_ID';
+      var testNotificationData = {
+        notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
+      };
+      var testActionUrl = 'http://testurl.com';
+      var testCreatedTab = undefined; // chrome.tabs.create fails
+
+      mockOnNotificationClickedDependencies(this);
+      this.makeMockLocalFunctions(['selector']);
+
+      var storageGetSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          storage_get(
+              storageGetSavedArgs.match(eq('notificationsData')),
+              storageGetSavedArgs.match(ANYTHING)).
+          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
+          returnValue(testActionUrl));
+      var chromeTabsCreateSavedArgs = new SaveMockArguments();
+      this.mockApis.expects(once()).
+          chrome_tabs_create(
+              chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
+              chromeTabsCreateSavedArgs.match(ANYTHING)).
+          will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
+      this.mockApis.expects(once()).chrome_windows_create(
+          eqJSON({url: testActionUrl}));
+
+      // Invoking the tested function.
+      onNotificationClicked(
+          testNotificationId, this.mockLocalFunctions.functions().selector);
+    });
