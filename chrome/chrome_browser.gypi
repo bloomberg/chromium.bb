@@ -840,6 +840,8 @@
         'browser/importer/external_process_importer_client.h',
         'browser/importer/external_process_importer_host.cc',
         'browser/importer/external_process_importer_host.h',
+        'browser/importer/reencode_favicon.cc',
+        'browser/importer/reencode_favicon.h',
         'browser/importer/firefox3_importer.cc',
         'browser/importer/firefox3_importer.h',
         'browser/importer/firefox_importer_utils.cc',

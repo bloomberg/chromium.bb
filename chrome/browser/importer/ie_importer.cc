@@ -29,10 +29,10 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/importer/ie_importer_utils_win.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/pstore_declarations.h"
+#include "chrome/browser/importer/reencode_favicon.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_data_types.h"
@@ -360,9 +360,8 @@ bool ReadReencodedFaviconData(const string16& file,
     return false;
   }
 
-  const unsigned char* ptr =
-      reinterpret_cast<const unsigned char*>(image_data.c_str());
-  return FaviconUtil::ReencodeFavicon(ptr, image_data.size(), data);
+  return ReencodeFavicon(reinterpret_cast<const uint8*>(image_data.c_str()),
+                         image_data.size(), data);
 }
 
 // Loads favicon image data and registers to |favicon_map|.

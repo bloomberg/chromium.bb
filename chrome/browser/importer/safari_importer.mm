@@ -15,8 +15,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/reencode_favicon.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
@@ -176,7 +176,7 @@ void SafariImporter::LoadFaviconData(
       if (data.empty())
         continue;  // Data definitely invalid.
 
-      if (!FaviconUtil::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
+      if (!ReencodeFavicon(&data[0], data.size(), &usage.png_data))
         continue;  // Unable to decode.
 
       usage.urls = i->second;

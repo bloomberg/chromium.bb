@@ -11,7 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/importer/reencode_favicon.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "content/public/common/url_constants.h"
@@ -67,9 +67,8 @@ void DataURLToFaviconUsage(
     return;
 
   ImportedFaviconUsage usage;
-  if (!FaviconUtil::ReencodeFavicon(
-          reinterpret_cast<const unsigned char*>(&data[0]),
-          data.size(), &usage.png_data))
+  if (!ReencodeFavicon(reinterpret_cast<const uint8*>(&data[0]),
+                       data.size(), &usage.png_data))
     return;  // Unable to decode.
 
   // We need to make up a URL for the favicon. We use a version of the page's

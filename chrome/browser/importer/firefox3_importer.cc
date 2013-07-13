@@ -14,11 +14,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/importer/bookmark_html_reader.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/nss_decryptor.h"
+#include "chrome/browser/importer/reencode_favicon.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_url_row.h"
@@ -580,7 +580,7 @@ void Firefox3Importer::LoadFavicons(
       if (data.empty())
         continue;  // Data definitely invalid.
 
-      if (!FaviconUtil::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
+      if (!ReencodeFavicon(&data[0], data.size(), &usage.png_data))
         continue;  // Unable to decode.
 
       usage.urls = i->second;

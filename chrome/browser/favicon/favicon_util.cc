@@ -6,8 +6,6 @@
 
 #include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/history/select_favicon_frames.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/child/image_decoder_utils.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -15,7 +13,6 @@
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
-#include "url/gurl.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
@@ -199,31 +196,4 @@ size_t FaviconUtil::SelectBestFaviconFromBitmaps(
                             &selected_bitmap_indices, NULL);
   DCHECK_EQ(1u, selected_bitmap_indices.size());
   return selected_bitmap_indices[0];
-}
-
-// static
-bool FaviconUtil::ReencodeFavicon(const unsigned char* src_data,
-                                  size_t src_len,
-                                  std::vector<unsigned char>* png_data) {
-  // Decode the favicon using WebKit's image decoder.
-  SkBitmap decoded = content::DecodeImage(
-      src_data,
-      gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
-      src_len);
-  if (decoded.empty())
-    return false;  // Unable to decode.
-
-  if (decoded.width() != gfx::kFaviconSize ||
-      decoded.height() != gfx::kFaviconSize) {
-    // The bitmap is not the correct size, re-sample.
-    int new_width = decoded.width();
-    int new_height = decoded.height();
-    gfx::CalculateFaviconTargetSize(&new_width, &new_height);
-    decoded = skia::ImageOperations::Resize(
-        decoded, skia::ImageOperations::RESIZE_LANCZOS3, new_width, new_height);
-  }
-
-  // Encode our bitmap as a PNG.
-  gfx::PNGCodec::EncodeBGRASkBitmap(decoded, false, png_data);
-  return true;
 }
