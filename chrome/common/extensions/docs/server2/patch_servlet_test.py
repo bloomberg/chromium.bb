@@ -7,11 +7,12 @@ import unittest
 
 from empty_dir_file_system import EmptyDirFileSystem
 from fake_fetchers import ConfigureFakeFetchers
-from local_file_system import LocalFileSystem
+from host_file_system_creator import HostFileSystemCreator
 from patch_servlet import PatchServlet
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
 from servlet import Request
+from test_branch_utility import TestBranchUtility
 from test_util import DisableLogging
 
 _ALLOWED_HOST = 'https://chrome-apps-doc.appspot.com'
@@ -24,8 +25,11 @@ class _PatchServletDelegate(RenderServlet.Delegate):
   def CreateAppSamplesFileSystem(self, object_store_creator):
     return EmptyDirFileSystem()
 
-  def CreateHostFileSystemForBranch(self, channel):
-    return LocalFileSystem.Create()
+  def CreateBranchUtility(self, object_store_creator):
+    return TestBranchUtility.CreateWithCannedData()
+
+  def CreateHostFileSystemCreator(self, object_store_creator):
+    return HostFileSystemCreator.ForLocal(object_store_creator)
 
 class PatchServletTest(unittest.TestCase):
   def setUp(self):

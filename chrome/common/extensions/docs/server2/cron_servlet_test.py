@@ -7,8 +7,10 @@ import unittest
 
 from appengine_wrappers import GetAppVersion
 from app_yaml_helper import AppYamlHelper
+from caching_file_system import CachingFileSystem
 from cron_servlet import CronServlet
 from empty_dir_file_system import EmptyDirFileSystem
+from host_file_system_creator import HostFileSystemCreator
 from local_file_system import LocalFileSystem
 from mock_file_system import MockFileSystem
 from servlet import Request
@@ -29,10 +31,13 @@ class _TestDelegate(CronServlet.Delegate):
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
-  def CreateHostFileSystemForBranchAndRevision(self, branch, revision):
-    file_system = self._create_file_system(revision)
-    self.file_systems.append(file_system)
-    return file_system
+  def CreateHostFileSystemCreator(self, object_store_creator):
+    def constructor(branch, revision=None):
+      file_system = self._create_file_system(branch, revision)
+      self.file_systems.append(file_system)
+      return file_system
+    return HostFileSystemCreator(object_store_creator,
+                                 constructor_for_test=constructor)
 
   def CreateAppSamplesFileSystem(self, object_store_creator):
     return EmptyDirFileSystem()
@@ -49,7 +54,8 @@ class CronServletTest(unittest.TestCase):
   def testEverything(self):
     # All these tests are dependent (see above comment) so lump everything in
     # the one test.
-    delegate = _TestDelegate(lambda _: MockFileSystem(LocalFileSystem.Create()))
+    delegate = _TestDelegate(
+        lambda _, __: MockFileSystem(LocalFileSystem.Create()))
 
     # Test that the cron runs successfully.
     response = CronServlet(Request.ForTest('trunk'),
@@ -111,7 +117,7 @@ class CronServletTest(unittest.TestCase):
     storage_html_path = 'docs/templates/public/apps/storage.html'
     static_txt_path = 'docs/static/static.txt'
 
-    def create_file_system(revision):
+    def create_file_system(branch, revision=None):
       '''Creates a MockFileSystem at |revision| by applying that many |updates|
       to it.
       '''

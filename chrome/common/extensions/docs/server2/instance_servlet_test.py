@@ -21,9 +21,6 @@ class _TestDelegate(InstanceServlet.Delegate):
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
-  def CreateHostFileSystemForBranch(self, branch):
-    return self._file_system_type()
-
   def CreateAppSamplesFileSystem(self, object_store_creator):
     return EmptyDirFileSystem()
 

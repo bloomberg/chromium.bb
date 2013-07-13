@@ -16,24 +16,20 @@ class AppYamlHelper(object):
   '''Parses the app.yaml file, and is able to step back in the host file
   system's revision history to find when it changed to some given version.
   '''
-  class Delegate(object):
-    def GetHostFileSystemForRevision(self, revision):
-      '''Revision may not be None.
-      '''
-      raise NotImplementedError()
-
   def __init__(self,
                app_yaml_path,
                file_system_at_head,
-               delegate,
-               object_store_creator):
+               object_store_creator,
+               host_file_system_creator,
+               branch):
     self._app_yaml_path = app_yaml_path
     self._file_system_at_head = file_system_at_head
-    self._delegate = delegate
     self._store = object_store_creator.Create(
         AppYamlHelper,
         category=file_system_at_head.GetIdentity(),
         start_empty=False)
+    self._host_file_system_creator = host_file_system_creator
+    self._branch = branch
 
   @staticmethod
   def ExtractVersion(app_yaml, key='version'):
@@ -123,8 +119,9 @@ class AppYamlHelper(object):
       if found == 0:
         logging.warning('All revisions are greater than %s' % app_version)
         return 0
-      next_file_system = self._delegate.GetHostFileSystemForRevision(
-          found - 1)
+      next_file_system = self._host_file_system_creator.Create(
+          self._branch,
+          revision=found - 1)
 
     if found is None:
       raise ValueError('All revisions are less than %s' % app_version)

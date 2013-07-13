@@ -12,6 +12,7 @@ from caching_file_system import CachingFileSystem
 from caching_rietveld_patcher import CachingRietveldPatcher
 from chained_compiled_file_system import ChainedCompiledFileSystem
 from compiled_file_system import  CompiledFileSystem
+from host_file_system_creator import HostFileSystemCreator
 from instance_servlet import InstanceServlet
 from render_servlet import RenderServlet
 from rietveld_patcher import RietveldPatcher, RietveldPatcherError
@@ -30,10 +31,15 @@ class _PatchServletDelegate(RenderServlet.Delegate):
   def CreateServerInstanceForChannel(self, channel):
     base_object_store_creator = ObjectStoreCreator(channel,
                                                    start_empty=False)
+    branch_utility = self._delegate.CreateBranchUtility(
+        base_object_store_creator)
+    host_file_system_creator = self._delegate.CreateHostFileSystemCreator(
+        base_object_store_creator)
     # TODO(fj): Use OfflineFileSystem here once all json/idl files in api/
     # are pulled into data store by cron jobs.
     base_file_system = CachingFileSystem(
-        self._delegate.CreateHostFileSystemForBranch(channel),
+        host_file_system_creator.Create(
+            branch_utility.GetChannelInfo(channel).branch),
         base_object_store_creator)
     base_compiled_fs_factory = CompiledFileSystem.Factory(
         base_file_system, base_object_store_creator)
@@ -53,13 +59,16 @@ class _PatchServletDelegate(RenderServlet.Delegate):
     compiled_fs_factory = ChainedCompiledFileSystem.Factory(
         [(patched_compiled_fs_factory, patched_file_system),
          (base_compiled_fs_factory, base_file_system)])
+
     return ServerInstance(channel,
                           object_store_creator,
                           patched_file_system,
                           self._delegate.CreateAppSamplesFileSystem(
                               base_object_store_creator),
                           '/_patch/%s' % self._issue,
-                          compiled_fs_factory)
+                          compiled_fs_factory,
+                          branch_utility,
+                          host_file_system_creator)
 
 class PatchServlet(Servlet):
   '''Servlet which renders patched docs.

@@ -14,6 +14,7 @@ from caching_file_system import CachingFileSystem
 from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from github_file_system import GithubFileSystem
+from host_file_system_creator import HostFileSystemCreator
 from object_store_creator import ObjectStoreCreator
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
@@ -43,8 +44,8 @@ class CronServlet(Servlet):
     def CreateBranchUtility(self, object_store_creator):
       return BranchUtility.Create(object_store_creator)
 
-    def CreateHostFileSystemForBranchAndRevision(self, branch, revision):
-      return SubversionFileSystem.Create(branch, revision=revision)
+    def CreateHostFileSystemCreator(self, object_store_creator):
+      return HostFileSystemCreator(object_store_creator)
 
     def CreateAppSamplesFileSystem(self, object_store_creator):
       # TODO(kalman): CachingFileSystem wrapper for GithubFileSystem, but it's
@@ -180,21 +181,14 @@ class CronServlet(Servlet):
     '''
     channel = self._channel
     delegate = self._delegate
-
     server_instance_at_head = self._CreateServerInstance(channel, None)
-
-    get_branch_for_channel = self._GetBranchForChannel
-    class AppYamlHelperDelegate(AppYamlHelper.Delegate):
-      def GetHostFileSystemForRevision(self, revision):
-        return delegate.CreateHostFileSystemForBranchAndRevision(
-            get_branch_for_channel(channel),
-            revision)
 
     app_yaml_handler = AppYamlHelper(
         svn_constants.APP_YAML_PATH,
         server_instance_at_head.host_file_system,
-        AppYamlHelperDelegate(),
-        server_instance_at_head.object_store_creator)
+        server_instance_at_head.object_store_creator,
+        server_instance_at_head.host_file_system_creator,
+        self._GetBranchForChannel(channel))
 
     if app_yaml_handler.IsUpToDate(delegate.GetAppVersion()):
       # TODO(kalman): return a new ServerInstance at an explicit revision in
@@ -221,11 +215,12 @@ class CronServlet(Servlet):
 
   def _CreateServerInstance(self, channel, revision):
     object_store_creator = self._CreateObjectStoreCreator(channel)
-    host_file_system = CachingFileSystem(
-        self._delegate.CreateHostFileSystemForBranchAndRevision(
-            self._GetBranchForChannel(channel),
-            revision),
+    branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
+    host_file_system_creator = self._delegate.CreateHostFileSystemCreator(
         object_store_creator)
+    host_file_system = host_file_system_creator.Create(
+        branch_utility.GetChannelInfo(channel).branch,
+        revision=revision)
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
     compiled_host_fs_factory = CompiledFileSystem.Factory(
@@ -236,4 +231,6 @@ class CronServlet(Servlet):
                           host_file_system,
                           app_samples_file_system,
                           '' if channel == 'stable' else '/%s' % channel,
-                          compiled_host_fs_factory)
+                          compiled_host_fs_factory,
+                          branch_utility,
+                          host_file_system_creator)

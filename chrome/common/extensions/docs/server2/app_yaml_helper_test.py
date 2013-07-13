@@ -7,6 +7,7 @@ import unittest
 
 from app_yaml_helper import AppYamlHelper
 from file_system import FileNotFoundError
+from host_file_system_creator import HostFileSystemCreator
 from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
@@ -85,18 +86,17 @@ class AppYamlHelperTest(unittest.TestCase):
       file_system_at_head.Update(update)
       updates.append(update)
 
-    assert_true = self.assertTrue
-    class TestDelegate(AppYamlHelper.Delegate):
-      def GetHostFileSystemForRevision(self, revision):
-        assert_true(revision is not None)
-        assert_true(revision >= 0)
-        return MockFileSystem.Create(TestFileSystem(test_data),
-                                     updates[:revision])
-
+    def constructor(branch, revision=None):
+      return MockFileSystem.Create(TestFileSystem(test_data),
+                                   updates[:revision])
+    host_file_system_creator = HostFileSystemCreator(
+        ObjectStoreCreator.ForTest(),
+        constructor_for_test=constructor)
     helper = AppYamlHelper('server2/app.yaml',
                            file_system_at_head,
-                           TestDelegate(),
-                           ObjectStoreCreator.ForTest(disable_wrappers=False))
+                           ObjectStoreCreator.ForTest(disable_wrappers=False),
+                           host_file_system_creator,
+                           'trunk')
 
     def assert_is_up_to_date(version):
       self.assertTrue(helper.IsUpToDate(version),

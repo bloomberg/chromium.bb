@@ -90,32 +90,30 @@ class AvailabilityFinder(object):
                  object_store_creator,
                  compiled_host_fs_factory,
                  branch_utility,
-                 # Takes a |version|, and returns a caching offline or online
-                 # subversion file system for that version.
-                 create_file_system_at_version):
+                 host_file_system_creator):
       self._object_store_creator = object_store_creator
       self._compiled_host_fs_factory = compiled_host_fs_factory
       self._branch_utility = branch_utility
-      self._create_file_system_at_version = create_file_system_at_version
+      self._host_file_system_creator = host_file_system_creator
 
     def Create(self):
       return AvailabilityFinder(self._object_store_creator,
                                 self._compiled_host_fs_factory,
                                 self._branch_utility,
-                                self._create_file_system_at_version)
+                                self._host_file_system_creator)
 
   def __init__(self,
                object_store_creator,
                compiled_host_fs_factory,
                branch_utility,
-               create_file_system_at_version):
+               host_file_system_creator):
     self._object_store_creator = object_store_creator
     self._json_cache = compiled_host_fs_factory.Create(
         lambda _, json: json_parse.Parse(json),
         AvailabilityFinder,
         'json-cache')
     self._branch_utility = branch_utility
-    self._create_file_system_at_version = create_file_system_at_version
+    self._host_file_system_creator = host_file_system_creator
     self._object_store = object_store_creator.Create(AvailabilityFinder)
 
   @memoize
@@ -126,7 +124,8 @@ class AvailabilityFinder(object):
     extensions.
     '''
     fs_factory = CompiledFileSystem.Factory(
-        self._create_file_system_at_version(version),
+        self._host_file_system_creator.Create(
+            self._branch_utility.GetBranchForVersion(version)),
         self._object_store_creator)
     features_fs = fs_factory.Create(lambda _, json: json_parse.Parse(json),
                                     AvailabilityFinder,

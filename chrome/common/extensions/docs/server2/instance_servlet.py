@@ -4,17 +4,14 @@
 
 from appengine_wrappers import IsDevServer
 from branch_utility import BranchUtility
-from caching_file_system import CachingFileSystem
 from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from github_file_system import GithubFileSystem
+from host_file_system_creator import HostFileSystemCreator
 from third_party.json_schema_compiler.memoize import memoize
-from offline_file_system import OfflineFileSystem
 from render_servlet import RenderServlet
-from subversion_file_system import SubversionFileSystem
 from object_store_creator import ObjectStoreCreator
 from server_instance import ServerInstance
-from servlet import Servlet
 
 class _OfflineRenderServletDelegate(RenderServlet.Delegate):
   '''AppEngine instances should never need to call out to SVN. That should only
@@ -37,11 +34,11 @@ class _OfflineRenderServletDelegate(RenderServlet.Delegate):
   @memoize
   def CreateServerInstanceForChannel(self, channel):
     object_store_creator = ObjectStoreCreator(channel, start_empty=False)
-    branch = (self._delegate.CreateBranchUtility(object_store_creator)
-        .GetChannelInfo(channel).branch)
-    host_file_system = CachingFileSystem(
-        OfflineFileSystem(self._delegate.CreateHostFileSystemForBranch(branch)),
+    branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
+    host_file_system_creator = self._delegate.CreateHostFileSystemCreator(
         object_store_creator)
+    host_file_system = host_file_system_creator.Create(
+        branch_utility.GetChannelInfo(channel).branch)
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
     compiled_host_fs_factory = CompiledFileSystem.Factory(
@@ -52,7 +49,9 @@ class _OfflineRenderServletDelegate(RenderServlet.Delegate):
                           host_file_system,
                           app_samples_file_system,
                           '' if channel == 'stable' else '/%s' % channel,
-                          compiled_host_fs_factory)
+                          compiled_host_fs_factory,
+                          branch_utility,
+                          host_file_system_creator)
 
 class InstanceServlet(object):
   '''Servlet for running on normal AppEngine instances.
@@ -65,8 +64,8 @@ class InstanceServlet(object):
     def CreateBranchUtility(self, object_store_creator):
       return BranchUtility.Create(object_store_creator)
 
-    def CreateHostFileSystemForBranch(self, branch):
-      return SubversionFileSystem.Create(branch)
+    def CreateHostFileSystemCreator(self, object_store_creator):
+      return HostFileSystemCreator(object_store_creator, offline=True)
 
     def CreateAppSamplesFileSystem(self, object_store_creator):
       # TODO(kalman): OfflineServerInstance wrapper for GithubFileSystem, but

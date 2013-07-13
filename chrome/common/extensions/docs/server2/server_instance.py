@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from fnmatch import fnmatch
-import logging
 import mimetypes
 import traceback
 import os
@@ -12,6 +11,7 @@ from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
 from appengine_url_fetcher import AppEngineUrlFetcher
 from appengine_wrappers import GetAppVersion, IsDevServer
+from availability_finder import AvailabilityFinder
 from branch_utility import BranchUtility
 from caching_file_system import CachingFileSystem
 from compiled_file_system import CompiledFileSystem
@@ -19,8 +19,8 @@ from empty_dir_file_system import EmptyDirFileSystem
 from example_zipper import ExampleZipper
 from file_system import FileNotFoundError
 from github_file_system import GithubFileSystem
+from host_file_system_creator import HostFileSystemCreator
 from intro_data_source import IntroDataSource
-from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from offline_file_system import OfflineFileSystem
 from path_canonicalizer import PathCanonicalizer
@@ -28,9 +28,9 @@ from redirector import Redirector
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
 from sidenav_data_source import SidenavDataSource
-from subversion_file_system import SubversionFileSystem
 import svn_constants
 from template_data_source import TemplateDataSource
+from test_branch_utility import TestBranchUtility
 from test_object_store import TestObjectStore
 from third_party.json_schema_compiler.model import UnixName
 import url_constants
@@ -42,7 +42,9 @@ class ServerInstance(object):
                host_file_system,
                app_samples_file_system,
                base_path,
-               compiled_fs_factory):
+               compiled_fs_factory,
+               branch_utility,
+               host_file_system_creator):
     self.channel = channel
 
     self.object_store_creator = object_store_creator
@@ -52,6 +54,14 @@ class ServerInstance(object):
     self.app_samples_file_system = app_samples_file_system
 
     self.compiled_host_fs_factory = compiled_fs_factory
+
+    self.host_file_system_creator = host_file_system_creator
+
+    self.availability_finder_factory = AvailabilityFinder.Factory(
+        object_store_creator,
+        self.compiled_host_fs_factory,
+        branch_utility,
+        host_file_system_creator)
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_host_fs_factory,
@@ -137,7 +147,10 @@ class ServerInstance(object):
                           EmptyDirFileSystem(),
                           '',
                           CompiledFileSystem.Factory(file_system,
-                                                     object_store_creator))
+                                                     object_store_creator),
+                          TestBranchUtility.CreateWithCannedData(),
+                          HostFileSystemCreator.ForTest(file_system,
+                                                        object_store_creator))
 
   @staticmethod
   def ForLocal():
@@ -145,12 +158,16 @@ class ServerInstance(object):
     object_store_creator = ObjectStoreCreator(channel,
                                               start_empty=False,
                                               store_type=TestObjectStore)
-    file_system = CachingFileSystem(LocalFileSystem.Create(),
-                                    object_store_creator)
+    host_file_system_creator = HostFileSystemCreator.ForLocal(
+        object_store_creator)
+    trunk_file_system = host_file_system_creator.Create(
+        'trunk')
     return ServerInstance(
         channel,
         object_store_creator,
-        file_system,
+        trunk_file_system,
         EmptyDirFileSystem(),
         '',
-        CompiledFileSystem.Factory(file_system, object_store_creator))
+        CompiledFileSystem.Factory(trunk_file_system, object_store_creator),
+        TestBranchUtility.CreateWithCannedData(),
+        host_file_system_creator)

@@ -93,6 +93,8 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals(28, self._branch_util.GetLatestVersionNumber())
 
   def testGetBranchForVersion(self):
+    self.assertEquals(1500,
+        self._branch_util.GetBranchForVersion(28))
     self.assertEquals(1453,
         self._branch_util.GetBranchForVersion(27))
     self.assertEquals(1410,
