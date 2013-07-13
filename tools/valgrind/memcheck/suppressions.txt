@@ -6068,13 +6068,6 @@
    fun:_ZN7WebCore9RenderBox14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
 }
 {
-   bug_173356
-   Memcheck:Overlap
-   ...
-   fun:_ZN3gpu5gles2*Immediate4InitE*
-   fun:_ZN3gpu5gles2*GLES2ImplementationTest_*_Test8TestBodyEv
-}
-{
    bug_175100
    Memcheck:Leak
    ...

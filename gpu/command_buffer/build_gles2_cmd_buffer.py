@@ -4786,17 +4786,18 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the GLES2 Implemention unit test."""
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
+  %(type)s data[%(count)d] = {0};
   struct Cmds {
     cmds::%(name)sImmediate cmd;
     %(type)s data[%(count)d];
   };
 
-  Cmds expected;
   for (int jj = 0; jj < %(count)d; ++jj) {
-    expected.data[jj] = static_cast<%(type)s>(jj);
+    data[jj] = static_cast<%(type)s>(jj);
   }
-  expected.cmd.Init(%(cmd_args)s, &expected.data[0]);
-  gl_->%(name)s(%(args)s, &expected.data[0]);
+  Cmds expected;
+  expected.cmd.Init(%(cmd_args)s, &data[0]);
+  gl_->%(name)s(%(args)s, &data[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 """
@@ -5052,6 +5053,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the GLES2 Implemention unit test."""
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
+  %(type)s data[%(count_param)d][%(count)d] = {{0}};
   struct Cmds {
     cmds::%(name)sImmediate cmd;
     %(type)s data[%(count_param)d][%(count)d];
@@ -5060,11 +5062,11 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   Cmds expected;
   for (int ii = 0; ii < %(count_param)d; ++ii) {
     for (int jj = 0; jj < %(count)d; ++jj) {
-      expected.data[ii][jj] = static_cast<%(type)s>(ii * %(count)d + jj);
+      data[ii][jj] = static_cast<%(type)s>(ii * %(count)d + jj);
     }
   }
-  expected.cmd.Init(%(cmd_args)s, &expected.data[0][0]);
-  gl_->%(name)s(%(args)s, &expected.data[0][0]);
+  expected.cmd.Init(%(cmd_args)s, &data[0][0]);
+  gl_->%(name)s(%(args)s, &data[0][0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 """
