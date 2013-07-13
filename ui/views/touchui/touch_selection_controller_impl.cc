@@ -30,7 +30,9 @@ const SkColor kSelectionHandleLineColor =
 const int kSelectionHandlePadding = 10;
 
 // The minimum selection size to trigger selection controller.
-const int kMinSelectionSize = 4;
+// TODO(varunjain): Figure out if this is really required and get rid of it if
+// it isnt.
+const int kMinSelectionSize = 2;
 
 const int kContextMenuTimoutMs = 200;
 
@@ -74,6 +76,27 @@ bool IsEmptySelection(const gfx::Point& p1, const gfx::Point& p2) {
   return (abs(delta_x) < kMinSelectionSize && abs(delta_y) < kMinSelectionSize);
 }
 
+// Cannot use gfx::UnionRect since it does not work for empty rects.
+gfx::Rect Union(const gfx::Rect& r1, const gfx::Rect& r2) {
+  int rx = std::min(r1.x(), r2.x());
+  int ry = std::min(r1.y(), r2.y());
+  int rr = std::max(r1.right(), r2.right());
+  int rb = std::max(r1.bottom(), r2.bottom());
+
+  return gfx::Rect(rx, ry, rr - rx, rb - ry);
+}
+
+// Convenience method to convert a |rect| from screen to the |client|'s
+// coordinate system.
+// Note that this is not quite correct because it does not take into account
+// transforms such as rotation and scaling. This should be in TouchEditable.
+// TODO(varunjain): Fix this.
+gfx::Rect ConvertFromScreen(ui::TouchEditable* client, const gfx::Rect& rect) {
+  gfx::Point origin = rect.origin();
+  client->ConvertPointFromScreen(&origin);
+  return gfx::Rect(origin, rect.size());
+}
+
 }  // namespace
 
 namespace views {
@@ -84,8 +107,7 @@ class TouchSelectionControllerImpl::EditingHandleView
  public:
   explicit EditingHandleView(TouchSelectionControllerImpl* controller,
                              gfx::NativeView context)
-      : controller_(controller),
-        cursor_height_(0) {
+      : controller_(controller) {
     widget_.reset(CreateTouchSelectionPopupWidget(context, this));
     widget_->SetContentsView(this);
     widget_->SetAlwaysOnTop(true);
@@ -97,7 +119,10 @@ class TouchSelectionControllerImpl::EditingHandleView
   virtual ~EditingHandleView() {
   }
 
-  int cursor_height() const { return cursor_height_; }
+  int cursor_height() const { return selection_rect_.height(); }
+
+  // Current selection end point that this handle marks in screen coordinates.
+  const gfx::Rect selection_rect() const { return selection_rect_; }
 
   // Overridden from views::WidgetDelegateView:
   virtual bool WidgetHasHitTestMask() const OVERRIDE {
@@ -106,9 +131,9 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
-    mask->addRect(SkIntToScalar(0), SkIntToScalar(cursor_height_),
+    mask->addRect(SkIntToScalar(0), SkIntToScalar(cursor_height()),
         SkIntToScalar(image_size.width()) + 2 * kSelectionHandlePadding,
-        SkIntToScalar(cursor_height_ + image_size.height() +
+        SkIntToScalar(cursor_height() + image_size.height() +
             kSelectionHandlePadding));
   }
 
@@ -125,12 +150,12 @@ class TouchSelectionControllerImpl::EditingHandleView
     // Draw the cursor line.
     canvas->FillRect(
         gfx::Rect(cursor_pos_x, 0,
-                  2 * kSelectionHandleLineWidth + 1, cursor_height_),
+                  2 * kSelectionHandleLineWidth + 1, cursor_height()),
         kSelectionHandleLineColor);
 
     // Draw the handle image.
     canvas->DrawImageInt(*GetHandleImage()->ToImageSkia(),
-        kSelectionHandlePadding, cursor_height_);
+        kSelectionHandlePadding, cursor_height());
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
@@ -166,7 +191,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
     return gfx::Size(image_size.width() + 2 * kSelectionHandlePadding,
-        image_size.height() + cursor_height_ + kSelectionHandlePadding);
+        image_size.height() + cursor_height() + kSelectionHandlePadding);
   }
 
   bool IsWidgetVisible() const {
@@ -175,7 +200,7 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   void SetSelectionRectInScreen(const gfx::Rect& rect) {
     gfx::Size image_size = GetHandleImageSize();
-    cursor_height_ = rect.height();
+    selection_rect_ = rect;
     gfx::Rect widget_bounds(
         rect.x() - image_size.width() / 2 - kSelectionHandlePadding,
         rect.y(),
@@ -191,7 +216,7 @@ class TouchSelectionControllerImpl::EditingHandleView
  private:
   scoped_ptr<Widget> widget_;
   TouchSelectionControllerImpl* controller_;
-  int cursor_height_;
+  gfx::Rect selection_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(EditingHandleView);
 };
@@ -252,12 +277,8 @@ void TouchSelectionControllerImpl::SelectionChanged() {
       EditingHandleView* non_dragging_handle =
           dragging_handle_ == selection_handle_1_.get()?
               selection_handle_2_.get() : selection_handle_1_.get();
-      if (client_view_->GetBounds().Contains(r1.origin())) {
-        non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
-        non_dragging_handle->SetVisible(true);
-      } else {
-        non_dragging_handle->SetVisible(false);
-      }
+      non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
+      non_dragging_handle->SetVisible(client_view_->GetBounds().Contains(r1));
     }
   } else {
     UpdateContextMenu(r1.origin(), r2.origin());
@@ -272,19 +293,11 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     }
 
     cursor_handle_->SetVisible(false);
-    if (client_view_->GetBounds().Contains(r1.origin())) {
-      selection_handle_1_->SetSelectionRectInScreen(screen_rect_1);
-      selection_handle_1_->SetVisible(true);
-    } else {
-      selection_handle_1_->SetVisible(false);
-    }
+    selection_handle_1_->SetSelectionRectInScreen(screen_rect_1);
+    selection_handle_1_->SetVisible(client_view_->GetBounds().Contains(r1));
 
-    if (client_view_->GetBounds().Contains(r2.origin())) {
-      selection_handle_2_->SetSelectionRectInScreen(screen_rect_2);
-      selection_handle_2_->SetVisible(true);
-    } else {
-      selection_handle_2_->SetVisible(false);
-    }
+    selection_handle_2_->SetSelectionRectInScreen(screen_rect_2);
+    selection_handle_2_->SetVisible(client_view_->GetBounds().Contains(r2));
   }
 }
 
@@ -323,9 +336,9 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
     fixed_handle = selection_handle_2_.get();
 
   // Find selection end points in client_view's coordinate system.
-  gfx::Point p2(image_size.width() / 2 + kSelectionHandlePadding,
-                fixed_handle->cursor_height() / 2);
-  ConvertPointToClientView(fixed_handle, &p2);
+  gfx::Point p2 = fixed_handle->selection_rect().origin();
+  p2.Offset(0, fixed_handle->cursor_height() / 2);
+  client_view_->ConvertPointFromScreen(&p2);
 
   // Instruct client_view to select the region between p1 and p2. The position
   // of |fixed_handle| is the start and that of |dragging_handle| is the end
@@ -350,9 +363,9 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
 }
 
 void TouchSelectionControllerImpl::OpenContextMenu() {
-  gfx::Size image_size = GetHandleImageSize();
-  gfx::Point anchor = context_menu_->anchor_rect().CenterPoint();
-  anchor.Offset(0, -image_size.height() / 2);
+  // Context menu should appear centered on top of the selected region.
+  gfx::Point anchor(context_menu_->anchor_rect().CenterPoint().x(),
+                    context_menu_->anchor_rect().y());
   HideContextMenu();
   client_view_->OpenContextMenu(anchor);
 }
@@ -377,34 +390,34 @@ void TouchSelectionControllerImpl::OnWidgetBoundsChanged(
 
 void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   // Get selection end points in client_view's space.
-  gfx::Rect r1, r2;
-  client_view_->GetSelectionEndPoints(&r1, &r2);
-
-  gfx::Rect handle_1_bounds;
-  gfx::Rect handle_2_bounds;
+  gfx::Rect end_rect_1_in_screen;
+  gfx::Rect end_rect_2_in_screen;
   if (cursor_handle_->IsWidgetVisible()) {
-    handle_1_bounds = cursor_handle_->GetBoundsInScreen();
-    handle_2_bounds = handle_1_bounds;
+    end_rect_1_in_screen = cursor_handle_->selection_rect();
+    end_rect_2_in_screen = end_rect_1_in_screen;
   } else {
-    handle_1_bounds = selection_handle_1_->GetBoundsInScreen();
-    handle_2_bounds = selection_handle_2_->GetBoundsInScreen();
+    end_rect_1_in_screen = selection_handle_1_->selection_rect();
+    end_rect_2_in_screen = selection_handle_2_->selection_rect();
   }
+
+  // Convert from screen to client.
+  gfx::Rect end_rect_1(ConvertFromScreen(client_view_, end_rect_1_in_screen));
+  gfx::Rect end_rect_2(ConvertFromScreen(client_view_, end_rect_2_in_screen));
 
   // if selection is completely inside the view, we display the context menu
   // in the middle of the end points on the top. Else, we show it above the
   // visible handle. If no handle is visible, we do not show the menu.
   gfx::Rect menu_anchor;
   gfx::Rect client_bounds = client_view_->GetBounds();
-  if (client_bounds.Contains(r1.origin()) &&
-      client_bounds.Contains(r2.origin())) {
-    menu_anchor = gfx::UnionRects(handle_1_bounds, handle_2_bounds);
-  } else if (client_bounds.Contains(r1.origin())) {
-    menu_anchor = handle_1_bounds;
-  } else if (client_bounds.Contains(r2.origin())) {
-    menu_anchor = handle_2_bounds;
-  } else {
+  if (client_bounds.Contains(end_rect_1) &&
+      client_bounds.Contains(end_rect_2))
+    menu_anchor = Union(end_rect_1_in_screen,end_rect_2_in_screen);
+  else if (client_bounds.Contains(end_rect_1))
+    menu_anchor = end_rect_1_in_screen;
+  else if (client_bounds.Contains(end_rect_2))
+    menu_anchor = end_rect_2_in_screen;
+  else
     return;
-  }
 
   DCHECK(!context_menu_);
   context_menu_ = TouchEditingMenuView::Create(this, menu_anchor,

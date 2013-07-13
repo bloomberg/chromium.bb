@@ -430,6 +430,41 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 }
 
+TEST_F(TouchSelectionControllerImplTest,
+       HiddenSelectionHandleRetainsCursorPosition) {
+  // Create a textfield with lots of text in it.
+  CreateTextfield();
+  std::string textfield_text("some text");
+  for (int i = 0; i < 10; ++i)
+    textfield_text += textfield_text;
+  textfield_->SetText(ASCIIToUTF16(textfield_text));
+
+  // Tap the textfield to invoke selection.
+  ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f), 0);
+  textfield_view_->OnGestureEvent(&tap);
+
+  // Select some text such that one handle is hidden.
+  textfield_->SelectRange(ui::Range(10, textfield_text.length()));
+
+  // Check that one selection handle is hidden.
+  EXPECT_FALSE(IsSelectionHandle1Visible());
+  EXPECT_TRUE(IsSelectionHandle2Visible());
+  EXPECT_EQ(ui::Range(10, textfield_text.length()),
+            textfield_->GetSelectedRange());
+
+  // Drag the visible handle around and make sure the selection end point of the
+  // invisible handle does not change.
+  size_t visible_handle_position = textfield_->GetSelectedRange().end();
+  for (int i = 0; i < 10; ++i) {
+    SimulateSelectionHandleDrag(gfx::Point(-10, 0), 2);
+    // Make sure that the visible handle is being dragged.
+    EXPECT_NE(visible_handle_position, textfield_->GetSelectedRange().end());
+    visible_handle_position = textfield_->GetSelectedRange().end();
+    EXPECT_EQ((size_t) 10, textfield_->GetSelectedRange().start());
+  }
+}
+
 #if defined(USE_AURA)
 TEST_F(TouchSelectionControllerImplTest,
        DoubleTapInTextfieldWithCursorHandleShouldSelectWord) {
