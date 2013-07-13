@@ -105,8 +105,8 @@ class Plugin : public pp::InstancePrivate {
   bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info,
                       bool enable_dyncode_syscalls,
                       bool enable_exception_handling,
-                      pp::CompletionCallback init_done_cb,
-                      pp::CompletionCallback crash_cb);
+                      const pp::CompletionCallback& init_done_cb,
+                      const pp::CompletionCallback& crash_cb);
 
   // Finish hooking interfaces up, after low-level initialization is
   // complete.
@@ -330,13 +330,17 @@ class Plugin : public pp::InstancePrivate {
                             NaClSubprocess* subprocess,
                             const Manifest* manifest,
                             bool should_report_uma,
-                            bool uses_irt,
-                            bool uses_ppapi,
-                            bool enable_dyncode_syscalls,
-                            bool enable_exception_handling,
-                            ErrorInfo* error_info,
-                            pp::CompletionCallback init_done_cb,
-                            pp::CompletionCallback crash_cb);
+                            const SelLdrStartParams& params,
+                            const pp::CompletionCallback& init_done_cb,
+                            const pp::CompletionCallback& crash_cb);
+
+  // Start sel_ldr from the main thread, given the start params.
+  // Sets |success| to true on success.
+  // |pp_error| is set by CallOnMainThread (should be PP_OK).
+  void StartSelLdrOnMainThread(int32_t pp_error,
+                               ServiceRuntime* service_runtime,
+                               const SelLdrStartParams& params,
+                               bool* success);
 
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr
@@ -389,9 +393,6 @@ class Plugin : public pp::InstancePrivate {
   // information divided by the size of the nexe to another histogram.
   void HistogramStartupTimeSmall(const std::string& name, float dt);
   void HistogramStartupTimeMedium(const std::string& name, float dt);
-
-  // Determines the appropriate nexe for the sandbox and requests a load.
-  void RequestNexeLoad();
 
   // This NEXE is being used as a content type handler rather than directly by
   // an HTML document.

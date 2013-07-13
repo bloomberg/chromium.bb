@@ -42,6 +42,8 @@ namespace {
 // This allows us to send requests from background threads.
 // E.g., to do LaunchSelLdr for helper nexes (which is done synchronously),
 // in a background thread, to avoid jank.
+// TODO(jvoung): remove this since we are no longer launching from background
+// threads (or rename this if others are using it).
 base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
     g_background_thread_sender = LAZY_INSTANCE_INITIALIZER;
 
@@ -95,9 +97,7 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
                            void* imc_handle) {
   nacl::FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
-  if (sender == NULL)
-    sender = g_background_thread_sender.Pointer()->get();
-
+  DCHECK(sender);
   int routing_id = 0;
   // If the nexe uses ppapi APIs, we need a routing ID.
   // To get the routing ID, we must be on the main thread.

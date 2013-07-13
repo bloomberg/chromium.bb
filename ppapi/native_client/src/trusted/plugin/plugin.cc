@@ -373,17 +373,29 @@ void Plugin::ShutDownSubprocesses() {
                  static_cast<void*>(this)));
 }
 
+void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
+                                     ServiceRuntime* service_runtime,
+                                     const SelLdrStartParams& params,
+                                     bool* success) {
+  if (pp_error != PP_OK) {
+    PLUGIN_PRINTF(("Plugin::StartSelLdrOnMainThread: non-PP_OK arg "
+                   "-- SHOULD NOT HAPPEN\n"));
+    *success = false;
+    return;
+  }
+  *success = service_runtime->StartSelLdr(params);
+  // Signal outside of StartSelLdr here, so that the write to *success
+  // is done before signaling.
+  service_runtime->SignalStartSelLdrDone();
+}
+
 bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
                                   const Manifest* manifest,
                                   bool should_report_uma,
-                                  bool uses_irt,
-                                  bool uses_ppapi,
-                                  bool enable_dyncode_syscalls,
-                                  bool enable_exception_handling,
-                                  ErrorInfo* error_info,
-                                  pp::CompletionCallback init_done_cb,
-                                  pp::CompletionCallback crash_cb) {
+                                  const SelLdrStartParams& params,
+                                  const pp::CompletionCallback& init_done_cb,
+                                  const pp::CompletionCallback& crash_cb) {
   ServiceRuntime* new_service_runtime =
       new ServiceRuntime(this, manifest, should_report_uma, init_done_cb,
                          crash_cb);
@@ -391,24 +403,39 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
                  static_cast<void*>(new_service_runtime)));
   if (NULL == new_service_runtime) {
-    error_info->SetReport(ERROR_SEL_LDR_INIT,
-                          "sel_ldr init failure " + subprocess->description());
+    params.error_info->SetReport(
+        ERROR_SEL_LDR_INIT,
+        "sel_ldr init failure " + subprocess->description());
     return false;
   }
 
-  bool service_runtime_started =
-      new_service_runtime->Start(wrapper,
-                                 error_info,
-                                 manifest_base_url(),
-                                 uses_irt,
-                                 uses_ppapi,
-                                 enable_dev_interfaces_,
-                                 enable_dyncode_syscalls,
-                                 enable_exception_handling,
-                                 crash_cb);
+  // Now start the SelLdr instance.  This must be created on the main thread.
+  pp::Core* core = pp::Module::Get()->core();
+  bool service_runtime_started;
+  if (core->IsMainThread()) {
+    StartSelLdrOnMainThread(PP_OK, new_service_runtime, params,
+                            &service_runtime_started);
+  } else {
+    pp::CompletionCallback callback =
+        callback_factory_.NewCallback(&Plugin::StartSelLdrOnMainThread,
+                                      new_service_runtime, params,
+                                      &service_runtime_started);
+    core->CallOnMainThread(0, callback, 0);
+    new_service_runtime->WaitForSelLdrStart();
+  }
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
   if (!service_runtime_started) {
+    return false;
+  }
+
+  // Now actually load the nexe, which can happen on a background thread.
+  bool nexe_loaded = new_service_runtime->LoadNexeAndStart(wrapper,
+                                                           params.error_info,
+                                                           crash_cb);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (nexe_loaded=%d)\n",
+                 nexe_loaded));
+  if (!nexe_loaded) {
     return false;
   }
   return true;
@@ -418,20 +445,23 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             ErrorInfo* error_info,
                             bool enable_dyncode_syscalls,
                             bool enable_exception_handling,
-                            pp::CompletionCallback init_done_cb,
-                            pp::CompletionCallback crash_cb) {
+                            const pp::CompletionCallback& init_done_cb,
+                            const pp::CompletionCallback& crash_cb) {
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
+  SelLdrStartParams params(manifest_base_url(),
+                           error_info,
+                           true /* uses_irt */,
+                           true /* uses_ppapi */,
+                           enable_dev_interfaces_,
+                           enable_dyncode_syscalls,
+                           enable_exception_handling);
   if (!LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
                             true /* should_report_uma */,
-                            true /* uses_irt */,
-                            true /* uses_ppapi */,
-                            enable_dyncode_syscalls,
-                            enable_exception_handling,
-                            error_info, init_done_cb, crash_cb)) {
+                            params, init_done_cb, crash_cb)) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -490,16 +520,19 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   // Do not report UMA stats for translator-related nexes.
   // TODO(sehr): define new UMA stats for translator related nexe events.
   // NOTE: The PNaCl translator nexes are not built to use the IRT.  This is
-  // done to save on address space and swap space.  The PNaCl translator
-  // nexes also do not use PPAPI.  That allows the nexes to be launched
-  // off of the main thread and not block the UI.
+  // done to save on address space and swap space.
+  // TODO(jvoung): See if we still need the uses_ppapi variable, now that
+  // LaunchSelLdr always happens on the main thread.
+  SelLdrStartParams params(manifest_base_url(),
+                           error_info,
+                           false /* uses_irt */,
+                           false /* uses_ppapi */,
+                           enable_dev_interfaces_,
+                           false /* enable_dyncode_syscalls */,
+                           false /* enable_exception_handling */);
   if (!LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
                             false /* should_report_uma */,
-                            false /* uses_irt */,
-                            false /* uses_ppapi */,
-                            false /* enable_dyncode_syscalls */,
-                            false /* enable_exception_handling */,
-                            error_info,
+                            params,
                             pp::BlockUntilComplete(),
                             pp::BlockUntilComplete())) {
     return NULL;

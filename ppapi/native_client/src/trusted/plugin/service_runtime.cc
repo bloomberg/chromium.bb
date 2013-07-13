@@ -630,15 +630,16 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
     : plugin_(plugin),
       should_report_uma_(should_report_uma),
       reverse_service_(NULL),
-      subprocess_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
                                                 manifest,
                                                 this,
                                                 init_done_cb, crash_cb)),
-      exit_status_(-1) {
+      exit_status_(-1),
+      start_sel_ldr_done_(false) {
   NaClSrpcChannelInitialize(&command_channel_);
   NaClXMutexCtor(&mu_);
+  NaClXCondVarCtor(&cond_);
 }
 
 bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
@@ -714,41 +715,55 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   return true;
 }
 
-bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
-                           ErrorInfo* error_info,
-                           const nacl::string& url,
-                           bool uses_irt,
-                           bool uses_ppapi,
-                           bool enable_ppapi_dev,
-                           bool enable_dyncode_syscalls,
-                           bool enable_exception_handling,
-                           pp::CompletionCallback crash_cb) {
-  NaClLog(4, "ServiceRuntime::Start (nacl_desc=%p)\n",
-          reinterpret_cast<void*>(nacl_desc));
+bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
+  NaClLog(4, "ServiceRuntime::Start\n");
 
   nacl::scoped_ptr<SelLdrLauncherChrome>
       tmp_subprocess(new SelLdrLauncherChrome());
   if (NULL == tmp_subprocess.get()) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (subprocess create failed)\n");
-    error_info->SetReport(ERROR_SEL_LDR_CREATE_LAUNCHER,
-                          "ServiceRuntime: failed to create sel_ldr launcher");
+    params.error_info->SetReport(
+        ERROR_SEL_LDR_CREATE_LAUNCHER,
+        "ServiceRuntime: failed to create sel_ldr launcher");
     return false;
   }
   bool started = tmp_subprocess->Start(plugin_->pp_instance(),
-                                       url.c_str(),
-                                       uses_irt,
-                                       uses_ppapi,
-                                       enable_ppapi_dev,
-                                       enable_dyncode_syscalls,
-                                       enable_exception_handling);
+                                       params.url.c_str(),
+                                       params.uses_irt,
+                                       params.uses_ppapi,
+                                       params.enable_dev_interfaces,
+                                       params.enable_dyncode_syscalls,
+                                       params.enable_exception_handling);
   if (!started) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (start failed)\n");
-    error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
-                          "ServiceRuntime: failed to start");
+    params.error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
+                                 "ServiceRuntime: failed to start");
     return false;
   }
 
   subprocess_.reset(tmp_subprocess.release());
+  NaClLog(4, "ServiceRuntime::StartSelLdr (return 1)\n");
+  return true;
+}
+
+void ServiceRuntime::WaitForSelLdrStart() {
+  nacl::MutexLocker take(&mu_);
+  while(!start_sel_ldr_done_) {
+    NaClXCondVarWait(&cond_, &mu_);
+  }
+}
+
+void ServiceRuntime::SignalStartSelLdrDone() {
+  nacl::MutexLocker take(&mu_);
+  start_sel_ldr_done_ = true;
+  NaClXCondVarSignal(&cond_);
+}
+
+bool ServiceRuntime::LoadNexeAndStart(nacl::DescWrapper* nacl_desc,
+                                      ErrorInfo* error_info,
+                                      const pp::CompletionCallback& crash_cb) {
+  NaClLog(4, "ServiceRuntime::LoadNexeAndStart (nacl_desc=%p)\n",
+          reinterpret_cast<void*>(nacl_desc));
   if (!InitCommunication(nacl_desc, error_info)) {
     // On a load failure the service runtime does not crash itself to
     // avoid a race where the no-more-senders error on the reverse
@@ -769,7 +784,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
     return false;
   }
 
-  NaClLog(4, "ServiceRuntime::Start (return 1)\n");
+  NaClLog(4, "ServiceRuntime::LoadNexeAndStart (return 1)\n");
   return true;
 }
 
@@ -839,6 +854,7 @@ ServiceRuntime::~ServiceRuntime() {
   rev_interface_->Unref();
 
   anchor_->Unref();
+  NaClCondVarDtor(&cond_);
   NaClMutexDtor(&mu_);
 }
 
