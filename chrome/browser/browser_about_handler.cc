@@ -98,6 +98,7 @@ const char* const kPaths[] = {
   content::kChromeUIBlobInternalsHost,
   content::kChromeUIGpuHost,
   content::kChromeUIHistogramHost,
+  content::kChromeUIIndexedDBInternalsHost,
   content::kChromeUIMediaInternalsHost,
   content::kChromeUINetworkViewCacheHost,
   content::kChromeUITracingHost,
