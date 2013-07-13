@@ -40,7 +40,6 @@ struct NaClVmmapEntry {
   uintptr_t         page_num;   /* base virtual addr >> NACL_PAGESHIFT */
   size_t            npages;     /* number of pages */
   int               prot;       /* mprotect attribute */
-  int               max_prot;   /* maximum protection */
   int               flags;      /* mapping flags */
   int               removed;    /* flag set in NaClVmmapUpdate */
   struct NaClDesc   *desc;      /* the backing store, if any */
@@ -82,7 +81,6 @@ void  NaClVmmapAdd(struct NaClVmmap   *self,
                    uintptr_t          page_num,
                    size_t             npages,
                    int                prot,
-                   int                max_prot,
                    int                flags,
                    struct NaClDesc    *desc,
                    nacl_off64_t       offset);
@@ -95,7 +93,6 @@ void  NaClVmmapAddWithOverwrite(struct NaClVmmap  *self,
                                 uintptr_t         page_num,
                                 size_t            npages,
                                 int               prot,
-                                int               max_prot,
                                 int               flags,
                                 struct NaClDesc   *desc,
                                 nacl_off64_t      offset);
@@ -166,6 +163,8 @@ uintptr_t NaClVmmapFindMapSpaceAboveHint(struct NaClVmmap *self,
                                          size_t           num_pages);
 
 void NaClVmmapMakeSorted(struct NaClVmmap  *self);
+
+int NaClVmmapEntryMaxProt(struct NaClVmmapEntry *entry);
 
 EXTERN_C_END
 

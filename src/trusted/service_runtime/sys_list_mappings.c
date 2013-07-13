@@ -15,6 +15,7 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_list_mappings.h"
@@ -92,6 +93,7 @@ static void NaClSysListMappingsVisit(void *statev,
 
   uint32_t start = (uint32_t) (vmep->page_num << NACL_PAGESHIFT);
   uint32_t size = (uint32_t) (vmep->npages << NACL_PAGESHIFT);
+  uint32_t max_prot = NaClVmmapEntryMaxProt(vmep);
   /* Skip dynamic code region as its parts will be visited separately. */
   if (state->nap->dynamic_text_start == start &&
       state->nap->dynamic_text_end == start + size) {
@@ -102,7 +104,7 @@ static void NaClSysListMappingsVisit(void *statev,
       /* start= */ start,
       /* size= */ size,
       /* prot= */ vmep->prot,
-      /* max_prot= */ vmep->max_prot,
+      /* max_prot= */ max_prot,
       /* vmmap_type= */ vmep->desc != NULL);
 }
 

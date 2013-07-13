@@ -421,7 +421,7 @@ struct NaClDesc {
    * This is just a hint to the service runtime to try direct mmap --
    * the validator cache can still disallow the operation.
    */
-#define NACL_DESC_FLAGS_MMAP_EXEC_OK 0x1
+#define NACL_DESC_FLAGS_MMAP_EXEC_OK 0x1000
 
   /* private flags -- used internally by NaClDesc */
 #define NACL_DESC_FLAGS_PUBLIC_MASK 0xffff

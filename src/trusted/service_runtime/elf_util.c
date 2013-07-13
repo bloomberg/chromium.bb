@@ -705,7 +705,6 @@ NaClErrorCode NaClElfImageLoadDynamically(
                                   vaddr >> NACL_PAGESHIFT,
                                   mapping_size >> NACL_PAGESHIFT,
                                   PROT_READ,
-                                  PROT_READ,
                                   NACL_ABI_MAP_PRIVATE,
                                   NULL,
                                   0);

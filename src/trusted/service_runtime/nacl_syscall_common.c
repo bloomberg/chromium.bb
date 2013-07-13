@@ -1472,8 +1472,6 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
 
   /* [0, length) */
   if (length > 0) {
-    int max_prot;
-
     if (NULL == ndp) {
       NaClLog(4,
               ("NaClSysMmap: NaClDescIoDescMap(,,0x%08"NACL_PRIxPTR","
@@ -1716,17 +1714,10 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
       NaClLog(LOG_FATAL, "system mmap did not honor NACL_ABI_MAP_FIXED\n");
     }
 
-    /*
-     * TODO(phosek): we're recording potentially wrong info here, we shall add
-     * attribute bits to NaClDesc about open flags and use that info instead.
-     */
-    max_prot = (NULL != ndp && (flags & NACL_ABI_MAP_SHARED)) ?
-               prot : NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE;
     NaClVmmapAddWithOverwrite(&nap->mem_map,
                               NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
                               length >> NACL_PAGESHIFT,
                               NaClProtMap(prot),
-                              NaClProtMap(max_prot),
                               flags,
                               ndp,
                               offset);

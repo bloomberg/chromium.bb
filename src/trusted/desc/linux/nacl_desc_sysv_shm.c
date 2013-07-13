@@ -29,6 +29,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
@@ -76,6 +77,7 @@ static int NaClDescSysvShmSubclassCtorIntern(struct NaClDescSysvShm *self,
   self->size = size;
   self->rmid_in_dtor = rmid_in_dtor;
   basep->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescSysvShmVtbl;
+  (*NACL_VTBL(NaClDesc, basep)->SetFlags)(basep, NACL_ABI_O_RDWR);
   return 1;
 }
 
