@@ -1012,6 +1012,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebCoreLogChannels,
     switches::kEnableWebGLDraftExtensions,
     switches::kTraceToConsole,
+    switches::kEnableDeviceMotion,
     // Please keep these in alphabetical order. Compositor switches here should
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kBackgroundColorInsteadOfCheckerboard,

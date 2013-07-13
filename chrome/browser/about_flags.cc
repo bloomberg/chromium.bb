@@ -1636,6 +1636,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableAppList)
   },
 #endif
+  {
+    "enable-device-motion",
+    IDS_FLAGS_ENABLE_DEVICE_MOTION_NAME,
+    IDS_FLAGS_ENABLE_DEVICE_MOTION_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableDeviceMotion)
+  },
 };
 
 const Experiment* experiments = kExperiments;

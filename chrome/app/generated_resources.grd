@@ -7402,6 +7402,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to disable the app list on startup.">
         Disable the app launcher on startup. While this flag is set the launcher will be disabled every time Chrome starts. This is used for testing the app launcher install flow.
       </message>
+      <message name="IDS_FLAGS_ENABLE_DEVICE_MOTION_NAME" desc="Name of the flag to enable device motion DOM events.">
+        Enable device motion.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DEVICE_MOTION_DESCRIPTION" desc="Description for the flag to enable device motion.">
+        Enables device motion DOM events in JavaScript.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
