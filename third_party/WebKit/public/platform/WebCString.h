@@ -36,7 +36,8 @@
 
 #if INSIDE_WEBKIT
 #include <wtf/Forward.h>
-#else
+#endif
+#if !INSIDE_WEBKIT || defined(UNIT_TEST)
 #include <string>
 #endif
 
@@ -105,7 +106,8 @@ public:
         assign(s.data(), s.length());
         return *this;
     }
-
+#endif
+#if !INSIDE_WEBKIT || defined(UNIT_TEST)
     operator std::string() const
     {
         size_t len = length();
