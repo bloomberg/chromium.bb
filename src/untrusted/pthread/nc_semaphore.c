@@ -46,10 +46,6 @@
 
 /* Initialize semaphore  */
 int sem_init(sem_t *sem, int pshared, unsigned int value) {
-  if (NULL == sem) {
-    errno = EINVAL;
-    return -1;
-  }
   if (pshared) {
     /* We don't support shared semaphores yet. */
     errno = ENOSYS;
@@ -65,10 +61,6 @@ int sem_init(sem_t *sem, int pshared, unsigned int value) {
 }
 
 int sem_destroy(sem_t *sem) {
-  if (NULL == sem) {
-    errno = EINVAL;
-    return -1;
-  }
   if (sem->nwaiters != 0) {
     errno = EBUSY;
     return -1;
@@ -87,11 +79,6 @@ static int decrement_if_positive(volatile int *ptr) {
 }
 
 int sem_wait(sem_t *sem) {
-  if (NULL == sem) {
-    errno = EINVAL;
-    return -1;
-  }
-
   if (decrement_if_positive(&sem->count))
     return 0;
 
@@ -104,11 +91,6 @@ int sem_wait(sem_t *sem) {
 }
 
 int sem_post(sem_t *sem) {
-  if (NULL == sem) {
-    errno = EINVAL;
-    return -1;
-  }
-
   /* Increment sem->count, checking for overflow. */
   int old_value;
   do {
