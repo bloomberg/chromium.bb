@@ -383,9 +383,14 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return SpellcheckServiceFactory::GetForProfile(profile_)->
           GetCustomDictionary()->AsWeakPtr();
     case syncer::FAVICON_IMAGES:
-    case syncer::FAVICON_TRACKING:
-      return ProfileSyncServiceFactory::GetForProfile(profile_)->
-          GetSessionModelAssociator()->GetFaviconCache()->AsWeakPtr();
+    case syncer::FAVICON_TRACKING: {
+      browser_sync::SessionModelAssociator* model_associator =
+          ProfileSyncServiceFactory::GetForProfile(profile_)->
+              GetSessionModelAssociator();
+      if (!model_associator)
+        return base::WeakPtr<syncer::SyncableService>();
+      return model_associator->GetFaviconCache()->AsWeakPtr();
+    }
 #if defined(ENABLE_MANAGED_USERS)
     case syncer::MANAGED_USER_SETTINGS:
       return policy::ProfilePolicyConnectorFactory::GetForProfile(profile_)->
