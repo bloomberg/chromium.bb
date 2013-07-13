@@ -188,7 +188,7 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
   // Check that there's no tooltip yet.
   EXPECT_FALSE([controller_ view:nil
                 stringForToolTip:nil
-                           point:NSMakePoint(0,0)
+                           point:NSZeroPoint
                         userData:nil]);
 
   // Set up mouse event on overlap of tab1 + tab2.
@@ -202,7 +202,7 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
   EXPECT_STREQ("Tab2",
       [[controller_ view:nil
         stringForToolTip:nil
-                   point:NSMakePoint(0,0)
+                   point:NSZeroPoint
                 userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
 
 
@@ -213,7 +213,7 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
   EXPECT_STREQ("Tab1",
       [[controller_ view:nil
         stringForToolTip:nil
-                   point:NSMakePoint(0,0)
+                   point:NSZeroPoint
                 userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
 
   // Hover over tab 2.
@@ -223,7 +223,7 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
   EXPECT_STREQ("Tab2",
       [[controller_ view:nil
         stringForToolTip:nil
-                   point:NSMakePoint(0,0)
+                   point:NSZeroPoint
                 userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
 }
 
@@ -246,7 +246,7 @@ TEST_F(TabStripControllerTest, TabCloseDuringDrag) {
   [runner scheduleDelayedRun];
 
   NSEvent* event =
-      cocoa_test_event_utils::LeftMouseDownAtPoint(NSMakePoint(0, 0));
+      cocoa_test_event_utils::LeftMouseDownAtPoint(NSZeroPoint);
   [[controller_ dragController] maybeStartDrag:event forTab:tab];
 }
 

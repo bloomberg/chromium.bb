@@ -25,7 +25,7 @@ class AutofillSectionViewTest : public ui::CocoaTest {
 
   NSEvent* fakeEvent(NSEventType type) {
     return [NSEvent enterExitEventWithType:type
-                              location:NSMakePoint(0, 0)
+                              location:NSZeroPoint
                          modifierFlags:0
                              timestamp:0
                           windowNumber:[[view_ window] windowNumber]

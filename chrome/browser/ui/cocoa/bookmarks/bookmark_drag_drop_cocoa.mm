@@ -116,7 +116,7 @@ NSImage* DragImageForBookmark(NSImage* favicon, const string16& title) {
   NSImage* drag_image =
       [[[NSImage alloc] initWithSize:drag_image_size] autorelease];
   [drag_image lockFocus];
-  [favicon drawAtPoint:NSMakePoint(0, 0)
+  [favicon drawAtPoint:NSZeroPoint
               fromRect:NSZeroRect
              operation:NSCompositeSourceOver
               fraction:0.7];

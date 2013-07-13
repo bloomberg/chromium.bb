@@ -845,7 +845,7 @@ struct LayoutMetrics {
   // more items) using the keyboard, the scroll view seems to want to be
   // offset by default: [ http://crbug.com/101099 ].  Explicitly reseting the
   // scroll position here is a bit hacky, but it does seem to work.
-  [[scrollView_ contentView] scrollToPoint:NSMakePoint(0, 0)];
+  [[scrollView_ contentView] scrollToPoint:NSZeroPoint];
 
   NSSize newSize = NSMakeSize(windowWidth, 0.0);
   [self adjustWindowLeft:newWindowTopLeft.x size:newSize scrollingBy:0.0];

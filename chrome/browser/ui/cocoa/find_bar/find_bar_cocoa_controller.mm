@@ -295,7 +295,7 @@ const float kRightEdgeOffset = 25;
 
   // Animate the view into place.
   NSRect frame = [findBarView_ frame];
-  frame.origin = NSMakePoint(0, 0);
+  frame.origin = NSZeroPoint;
   [self setFindBarFrame:frame animate:animate duration:kFindBarOpenDuration];
 }
 

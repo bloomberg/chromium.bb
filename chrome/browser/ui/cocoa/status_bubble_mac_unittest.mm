@@ -34,7 +34,7 @@
 - (id)initWithWindow:(NSWindow*)window {
   if ((self = [super init])) {
     window_ = window;
-    baseFrameOffset_ = NSMakePoint(0, 0);
+    baseFrameOffset_ = NSZeroPoint;
   }
   return self;
 }

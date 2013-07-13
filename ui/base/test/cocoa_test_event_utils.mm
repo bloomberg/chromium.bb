@@ -46,7 +46,7 @@ NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
 }
 
 NSEvent* MouseEventWithType(NSEventType type, NSUInteger modifiers) {
-  return MouseEventAtPoint(NSMakePoint(0, 0), type, modifiers);
+  return MouseEventAtPoint(NSZeroPoint, type, modifiers);
 }
 
 static NSEvent* MouseEventAtPointInWindow(NSPoint point,

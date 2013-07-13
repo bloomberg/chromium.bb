@@ -107,7 +107,7 @@ NSEvent* SynthesizeKeyEvent(NSWindow* window,
   // location should be fine.
   NSEvent* event =
       [NSEvent keyEventWithType:type
-                       location:NSMakePoint(0, 0)
+                       location:NSZeroPoint
                   modifierFlags:flags
                       timestamp:TimeIntervalSinceSystemStartup()
                    windowNumber:[window windowNumber]

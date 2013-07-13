@@ -229,7 +229,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     [mainContainer_ setAnchorView:[[accountChooser_ subviews] objectAtIndex:1]];
 
     NSRect contentRect = clientRect;
-    contentRect.origin = NSMakePoint(0, 0);
+    contentRect.origin = NSZeroPoint;
     contentRect.size.width += 2 * chrome_style::kHorizontalPadding;
     contentRect.size.height += NSHeight(headerRect) +
                                chrome_style::kClientBottomPadding +

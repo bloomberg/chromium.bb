@@ -30,7 +30,7 @@ NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
   NSString* s = [NSString stringWithFormat:@"%C", uniChar];
 
   return [NSEvent keyEventWithType:type
-                          location:NSMakePoint(0, 0)
+                          location:NSZeroPoint
                      modifierFlags:NSCommandKeyMask
                          timestamp:0.0
                       windowNumber:0

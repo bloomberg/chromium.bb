@@ -602,7 +602,7 @@ void MessagePumpNSApplication::Quit() {
 
   // Send a fake event to wake the loop up.
   [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined
-                                      location:NSMakePoint(0, 0)
+                                      location:NSZeroPoint
                                  modifierFlags:0
                                      timestamp:0
                                   windowNumber:0

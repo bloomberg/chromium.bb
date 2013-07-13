@@ -3068,7 +3068,7 @@ static const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
   // Nothing matters except window, trackingNumber, and userData.
   int windowNumber = [[self window] windowNumber];
   NSEvent* fakeEvent = [NSEvent enterExitEventWithType:NSMouseExited
-                                              location:NSMakePoint(0, 0)
+                                              location:NSZeroPoint
                                          modifierFlags:0
                                              timestamp:0
                                           windowNumber:windowNumber
@@ -3084,7 +3084,7 @@ static const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
   // Nothing matters except window, trackingNumber, and userData.
   int windowNumber = [[self window] windowNumber];
   NSEvent* fakeEvent = [NSEvent enterExitEventWithType:NSMouseEntered
-                                              location:NSMakePoint(0, 0)
+                                              location:NSZeroPoint
                                          modifierFlags:0
                                              timestamp:0
                                           windowNumber:windowNumber

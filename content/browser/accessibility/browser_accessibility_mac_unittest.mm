@@ -111,7 +111,7 @@ TEST_F(BrowserAccessibilityTest, HitTestTest) {
 // Test doing a hit test on the edge of a child.
 TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
   BrowserAccessibilityCocoa* firstChild =
-      [accessibility_ accessibilityHitTest:NSMakePoint(0, 0)];
+      [accessibility_ accessibilityHitTest:NSZeroPoint];
   EXPECT_NSEQ(@"Child1",
       [firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
 }

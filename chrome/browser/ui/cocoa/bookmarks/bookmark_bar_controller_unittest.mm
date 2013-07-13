@@ -1046,7 +1046,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
 
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
-                to:NSMakePoint(0, 0)
+                to:NSZeroPoint
               copy:NO];
   EXPECT_NSEQ(@"c", [[[bar_ buttons] objectAtIndex:0] title]);
   // Make sure a 'copy' did not happen.

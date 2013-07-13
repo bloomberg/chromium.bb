@@ -182,7 +182,7 @@ TEST_F(TabControllerTest, UserSelection) {
   [[window contentView] addSubview:[controller view]];
   NSRect frame = [[controller view] frame];
   frame.size.width = [TabController minTabWidth];
-  frame.origin = NSMakePoint(0, 0);
+  frame.origin = NSZeroPoint;
   [[controller view] setFrame:frame];
 
   // Set the target and action.

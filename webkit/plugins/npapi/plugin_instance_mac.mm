@@ -57,7 +57,7 @@ NSEvent* NSEventForNPCocoaEvent(NPCocoaEvent* np_event, NSWindow* window) {
   // NPCocoaEvent doesn't have a timestamp, so just use the current time.
   NSEvent* event =
       [NSEvent mouseEventWithType:event_type
-                         location:NSMakePoint(0, 0)
+                         location:NSZeroPoint
                     modifierFlags:modifiers
                         timestamp:[[NSApp currentEvent] timestamp]
                      windowNumber:[window windowNumber]

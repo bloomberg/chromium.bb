@@ -28,7 +28,7 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
                   view:view
               dropData:dropData.get()
                  image:nil
-                offset:NSMakePoint(0, 0)
+                offset:NSZeroPoint
             pasteboard:[NSPasteboard pasteboardWithUniqueName]
      dragOperationMask:NSDragOperationCopy]);
 

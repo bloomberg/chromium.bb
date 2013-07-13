@@ -339,7 +339,7 @@ const CGFloat kWindowGradientHeight = 24.0;
 
   // Only paint the top of the window.
   NSRect windowRect = [view convertRect:[self frame] fromView:nil];
-  windowRect.origin = NSMakePoint(0, 0);
+  windowRect.origin = NSZeroPoint;
 
   NSRect paintRect = windowRect;
   paintRect.origin.y = NSMaxY(paintRect) - kBrowserFrameViewPaintHeight;
@@ -378,7 +378,7 @@ const CGFloat kWindowGradientHeight = 24.0;
     CGFloat lineWidth = [view cr_lineWidth];
 
     windowRect = [view convertRect:[self frame] fromView:nil];
-    windowRect.origin = NSMakePoint(0, 0);
+    windowRect.origin = NSZeroPoint;
     windowRect.origin.y -= 0.5 * lineWidth;
     windowRect.origin.x -= 0.5 * lineWidth;
     windowRect.size.width += lineWidth;

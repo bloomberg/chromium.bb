@@ -27,7 +27,7 @@
 - (NSPoint)themePatternPhase {
   id delegate = [self delegate];
   if (![delegate respondsToSelector:@selector(themePatternPhase)])
-    return NSMakePoint(0, 0);
+    return NSZeroPoint;
   return [delegate themePatternPhase];
 }
 

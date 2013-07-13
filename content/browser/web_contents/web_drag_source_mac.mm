@@ -311,7 +311,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
       contents_->GetRenderViewHost());
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
-    NSPoint localPoint = NSMakePoint(0, 0);
+    NSPoint localPoint = NSZeroPoint;
     if ([contentsView_ window])
       localPoint = [self convertScreenPoint:screenPoint];
     NSRect viewFrame = [contentsView_ frame];
@@ -341,7 +341,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
       contents_->GetRenderViewHost());
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
-    NSPoint localPoint = NSMakePoint(0, 0);
+    NSPoint localPoint = NSZeroPoint;
     if ([contentsView_ window])
       localPoint = [self convertScreenPoint:screenPoint];
     NSRect viewFrame = [contentsView_ frame];
