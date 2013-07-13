@@ -13,7 +13,6 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "googleurl/src/gurl.h"
 #include "grit/ui_strings.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"

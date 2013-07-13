@@ -22,9 +22,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend_consts.h"
+#include "url/gurl.h"
 
 #if (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 4)
 const int CUPS_PRINTER_SCANNER = 0x2000000;  // Scanner-only device

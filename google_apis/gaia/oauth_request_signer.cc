@@ -20,7 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "crypto/hmac.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace {
 

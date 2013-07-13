@@ -13,11 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
 #include "ui/base/text/text_elider.h"
+#include "url/gurl.h"
 
 using base::DictionaryValue;
 

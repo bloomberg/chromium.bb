@@ -9,12 +9,12 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "url/gurl.h"
 
 // This section contains helper code for PPD parsing for semantic capabilities.
 namespace {

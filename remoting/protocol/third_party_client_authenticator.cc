@@ -8,12 +8,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "googleurl/src/gurl.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "url/gurl.h"
 
 namespace remoting {
 namespace protocol {

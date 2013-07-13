@@ -9,8 +9,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/matcher/url_matcher_constants.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

@@ -39,7 +39,7 @@
 #import <AppKit/AppKit.h>		// for NSStringDrawing.h
 
 #import "NSString+Utils.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 
 @implementation NSString (ChimeraStringUtils)

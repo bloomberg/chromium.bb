@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace input_method {

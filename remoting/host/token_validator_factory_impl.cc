@@ -16,12 +16,12 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "crypto/random.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "url/gurl.h"
 
 namespace {
 

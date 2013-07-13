@@ -4,11 +4,11 @@
 
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
 
-#include "googleurl/src/gurl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
+#include "url/gurl.h"
 
 namespace ppapi {
 

@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/media_export.h"
+#include "url/gurl.h"
 
 namespace media {
 

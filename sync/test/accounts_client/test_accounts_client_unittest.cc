@@ -6,11 +6,11 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "sync/test/accounts_client/test_accounts_client.cc"
 #include "sync/test/accounts_client/test_accounts_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using std::string;
 using std::vector;

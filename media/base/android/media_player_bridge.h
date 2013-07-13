@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_listener.h"
+#include "url/gurl.h"
 
 namespace media {
 

@@ -14,8 +14,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_state.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using std::string;
 

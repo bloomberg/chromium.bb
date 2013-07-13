@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace input_method {

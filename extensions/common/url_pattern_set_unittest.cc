@@ -5,8 +5,8 @@
 #include "extensions/common/url_pattern_set.h"
 
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace extensions {
 

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/singleton.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // A signleton that provides all the URLs that are used for connecting to GAIA.
 class GaiaUrls {

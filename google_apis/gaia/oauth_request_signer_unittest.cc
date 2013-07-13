@@ -4,8 +4,8 @@
 
 #include "google_apis/gaia/oauth_request_signer.h"
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 // This value is used to seed the PRNG at the beginning of a sequence of
 // operations to produce a repeatable sequence.

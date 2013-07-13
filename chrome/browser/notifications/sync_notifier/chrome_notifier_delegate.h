@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/notifications/notification_delegate.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace notifier {
 

@@ -4,8 +4,8 @@
 
 #include "google_apis/gaia/gaia_auth_util.h"
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace gaia {
 

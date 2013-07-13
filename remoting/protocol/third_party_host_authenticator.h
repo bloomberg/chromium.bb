@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "remoting/protocol/third_party_authenticator_base.h"
+#include "url/gurl.h"
 
 namespace remoting {
 

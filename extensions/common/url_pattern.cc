@@ -10,8 +10,8 @@
 #include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_util.h"
+#include "url/gurl.h"
+#include "url/url_util.h"
 
 const char URLPattern::kAllUrlsPattern[] = "<all_urls>";
 

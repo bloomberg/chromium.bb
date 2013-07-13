@@ -20,10 +20,9 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "googleurl/src/gurl.h"
-#include "net/url_request/url_request.h"
-
 #include "jni/AwContentsIoThreadClient_jni.h"
+#include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

@@ -4,9 +4,9 @@
 
 #include "remoting/host/dns_blackhole_checker.h"
 
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace remoting {
 

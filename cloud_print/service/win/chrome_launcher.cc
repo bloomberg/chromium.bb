@@ -24,8 +24,8 @@
 #include "cloud_print/service/service_constants.h"
 #include "cloud_print/service/win/service_utils.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
+#include "url/gurl.h"
 
 namespace {
 

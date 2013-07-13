@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
 
 namespace extensions {
 

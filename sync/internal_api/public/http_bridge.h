@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/network_time_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -22,6 +21,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
+#include "url/gurl.h"
 
 class HttpBridgeTest;
 

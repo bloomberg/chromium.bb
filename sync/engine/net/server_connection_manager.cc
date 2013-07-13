@@ -12,13 +12,13 @@
 
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "sync/engine/net/url_translator.h"
 #include "sync/engine/syncer.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
+#include "url/gurl.h"
 
 namespace syncer {
 

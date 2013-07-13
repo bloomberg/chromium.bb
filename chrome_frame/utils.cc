@@ -37,12 +37,12 @@
 #include "chrome_frame/registry_list_preferences_holder.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
 #include "grit/chromium_strings.h"
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
 #include "ui/base/models/menu_model.h"
+#include "url/gurl.h"
+#include "url/url_canon.h"
 
 using base::win::RegKey;
 

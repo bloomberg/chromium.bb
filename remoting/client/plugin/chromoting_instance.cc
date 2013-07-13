@@ -18,7 +18,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media.h"
 #include "net/socket/ssl_server_socket.h"
@@ -35,13 +34,14 @@
 #include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
+#include "remoting/client/plugin/pepper_signal_strategy.h"
 #include "remoting/client/plugin/pepper_token_fetcher.h"
 #include "remoting/client/plugin/pepper_view.h"
-#include "remoting/client/plugin/pepper_signal_strategy.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
+#include "url/gurl.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
 #if defined(PostMessage)

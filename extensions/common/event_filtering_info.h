@@ -6,7 +6,7 @@
 #define EXTENSIONS_COMMON_EVENT_FILTERING_INFO_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace base {
 class Value;

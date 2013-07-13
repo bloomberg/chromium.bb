@@ -48,12 +48,12 @@ class InternetHandle {
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 #endif
 

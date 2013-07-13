@@ -13,8 +13,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
-#include "googleurl/src/gurl.h"
 #include "jni/AwQuotaManagerBridge_jni.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/quota/quota_types.h"
 

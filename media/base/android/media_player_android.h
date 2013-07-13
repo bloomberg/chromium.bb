@@ -10,10 +10,10 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
+#include "url/gurl.h"
 
 namespace media {
 

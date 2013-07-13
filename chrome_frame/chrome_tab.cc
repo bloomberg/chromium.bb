@@ -42,8 +42,8 @@
 #include "chrome_frame/pin_module.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
-#include "googleurl/src/url_util.h"
 #include "grit/chrome_frame_resources.h"
+#include "url/url_util.h"
 
 using base::win::RegKey;
 

@@ -10,7 +10,7 @@
 // want to pull googleurl into there, since it would be unnecessary bloat.
 
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace nacl {
 // Cache-related information about pexe files, sent from the plugin/renderer
