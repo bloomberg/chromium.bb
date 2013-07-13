@@ -886,22 +886,10 @@
    bug_251034_b
    Heapcheck:Leak
    ...
-   fun:gfx::OSMESAApiBase::OSMesaMakeCurrentFn
-   fun:gfx::GLContextOSMesa::MakeCurrent
    fun:Initialize
    fun:gpu::GLInProcessContext::CreateContext
    fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL
    fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent
-   fun:ui::DefaultContextFactory::CreateContextCommon
-   fun:ui::DefaultContextFactory::CreateOutputSurface
-   fun:ui::Compositor::CreateOutputSurface
-   fun:cc::LayerTreeHost::CreateOutputSurface
-   fun:cc::LayerTreeHost::InitializeProxy
-   fun:cc::LayerTreeHost::Initialize
-   fun:cc::LayerTreeHost::Create
-   fun:Compositor
-   fun:ui::TestCompositorHostX11::Show
-   fun:SetUp
 }
 {
    bug_251034_c
