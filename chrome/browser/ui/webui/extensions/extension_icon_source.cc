@@ -24,7 +24,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/child/image_decoder_utils.h"
 #include "extensions/common/extension_resource.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
@@ -53,7 +52,8 @@ SkBitmap DesaturateImage(const SkBitmap* image) {
 
 SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
   SkBitmap* decoded = new SkBitmap();
-  *decoded = content::DecodeImage(data, gfx::Size(), size);
+  bool success = gfx::PNGCodec::Decode(data, size, decoded);
+  DCHECK(success);
   return decoded;
 }
 
